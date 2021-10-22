@@ -20,7 +20,6 @@ namespace numerics = axom::numerics;
 //------------------------------------------------------------------------------
 namespace
 {
-
 using PointType3 = primal::Point<double, 3>;
 using VectorType3 = primal::Vector<double, 3>;
 using PointType2 = primal::Point<double, 2>;
@@ -91,8 +90,8 @@ void check_assignment_operator()
 //------------------------------------------------------------------------------
 TEST(primal_plane, construct_from_normal_and_point)
 {
-  VectorType3 normal{0.0, 0.0, 10.0};
-  PointType3 x{0.0, 0.0, 2.0};
+  VectorType3 normal {0.0, 0.0, 10.0};
+  PointType3 x {0.0, 0.0, 2.0};
 
   // test 3D
   primal::Plane<double, 3> P(normal, x);
@@ -103,8 +102,8 @@ TEST(primal_plane, construct_from_normal_and_point)
   EXPECT_EQ(P.getDimension(), 3);
 
   // test 2D
-  VectorType2 normal2{ 1.0, 2.0 };
-  PointType2 x2{ 1.0, 2.0 };
+  VectorType2 normal2 {1.0, 2.0};
+  PointType2 x2 {1.0, 2.0};
 
   primal::Plane<double, 2> P2(normal2, x2);
   ensure_unit_norm(P2.getNormal());
@@ -115,7 +114,7 @@ TEST(primal_plane, construct_from_normal_and_point)
 //------------------------------------------------------------------------------
 TEST(primal_plane, construct_from_normal_and_offset)
 {
-  VectorType3 normal{0.0, 0.0, 1.0};
+  VectorType3 normal {0.0, 0.0, 1.0};
   double offset = 2.0;
 
   // test 3D
@@ -126,7 +125,7 @@ TEST(primal_plane, construct_from_normal_and_offset)
   EXPECT_DOUBLE_EQ(P.getOffset(), offset);
 
   // test 2D
-  VectorType2 normal2{ 1.0, 2.0 };
+  VectorType2 normal2 {1.0, 2.0};
   offset = std::sqrt(5.0);
   primal::Plane<double, 2> P2(normal2, offset);
   ensure_unit_norm(P2.getNormal());
@@ -174,8 +173,8 @@ TEST(primal_plane, signed_distance_and_orientation)
   primal::Point<double, 3> x2 {2.0, 2.0, 3.0};
   primal::Point<double, 3> x3 {1.0, 3.0, 3.0};
 
-  double signed_distance = 0.0;   // stores computed signed distance.
-  PointType3 q{0.0, 0.0, 0.0};    // test query point
+  double signed_distance = 0.0;  // stores computed signed distance.
+  PointType3 q {0.0, 0.0, 0.0};  // test query point
 
   // STEP 0: test 3D
   primal::Plane<double, 3> P = primal::make_plane(x1, x2, x3);
@@ -201,7 +200,7 @@ TEST(primal_plane, signed_distance_and_orientation)
   primal::Point<double, 2> a {2.0, -1.0};
   primal::Point<double, 2> b {2.0, 2.0};
   primal::Plane<double, 2> P2 = primal::make_plane(a, b);
-  PointType2 q2{ 0.0, 0.0 };    // test query point
+  PointType2 q2 {0.0, 0.0};  // test query point
 
   // (a) test point above plane
   signed_distance = P2.signedDistance(q2);
@@ -310,7 +309,7 @@ TEST(primal_plane, flip)
   primal::Point<double, 2> a {2.0, -1.0};
   primal::Point<double, 2> b {2.0, 2.0};
   primal::Plane<double, 2> P2 = primal::make_plane(a, b);
-  PointType2 q2{ 0.0, 0.0 };
+  PointType2 q2 {0.0, 0.0};
   EXPECT_EQ(P2.getOrientation(q2), primal::ON_POSITIVE_SIDE);
   P2.flip();
   EXPECT_EQ(P2.getOrientation(q2), primal::ON_NEGATIVE_SIDE);

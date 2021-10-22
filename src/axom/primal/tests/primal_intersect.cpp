@@ -367,9 +367,9 @@ TEST(primal_intersect, triangle_aabb_intersection)
   EXPECT_FALSE(primal::intersect(unitTri, negBB));
 
   // Test new triangle whose edge crosses the BB
-  PointType t2_0{10., 0., 0.};
-  PointType t2_1{-10., 0., 0.};
-  PointType t2_2{0., 100., 0};
+  PointType t2_0 {10., 0., 0.};
+  PointType t2_1 {-10., 0., 0.};
+  PointType t2_2 {0., 100., 0};
 
   TriangleType xyTri(t2_0, t2_1, t2_2);
   BoundingBoxType bbOrigin(PointType::zero());
@@ -2201,22 +2201,22 @@ TEST(primal_intersect, plane_bb_test_intersection)
   BoundingBoxType unitBB(PointType::zero(), PointType::ones());
 
   // bottom face
-  VectorType normal1{0.0, 1.0, 0.0};
+  VectorType normal1 {0.0, 1.0, 0.0};
   double offset1 = 0.0;
   PlaneType p1(normal1, offset1);
 
   // top face
-  VectorType normal2{0.0, -1.0, 0.0};
+  VectorType normal2 {0.0, -1.0, 0.0};
   double offset2 = -1.0;
   PlaneType p2(normal2, offset2);
 
   // center
-  VectorType normal3{1.0, 1.0, 1.0};
+  VectorType normal3 {1.0, 1.0, 1.0};
   double offset3 = 0.5;
   PlaneType p3(normal3, offset3);
 
   // non-intersect
-  VectorType normal4{1.0, 1.0, 1.0};
+  VectorType normal4 {1.0, 1.0, 1.0};
   double offset4 = -0.5;
   PlaneType p4(normal4, offset4);
 
@@ -2258,17 +2258,17 @@ TEST(primal_intersect, plane_seg_test_intersection)
   SegmentType s_p(A_p, B_p);
 
   // intersect A
-  VectorType normal1{0.0, 1.0, 0.0};
+  VectorType normal1 {0.0, 1.0, 0.0};
   double offset1 = 0.0;
   PlaneType p1(normal1, offset1);
 
   // intersect midpoint
-  VectorType normal2{0.0, 1.0, 0.0};
+  VectorType normal2 {0.0, 1.0, 0.0};
   double offset2 = 0.5;
   PlaneType p2(normal2, offset2);
 
   // intersect B
-  VectorType normal3{0.0, 1.0, 0.0};
+  VectorType normal3 {0.0, 1.0, 0.0};
   double offset3 = 1.0;
   PlaneType p3(normal3, offset3);
 

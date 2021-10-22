@@ -216,8 +216,8 @@ void check_analytic_plane(bool use_shared = false)
   generate_planar_mesh_stl_file(file);
 
   // STEP 2: define analytic plane corresponding to the planar mesh;
-  const primal::Point<double, 3> origin{0.0, 0.0, 0.0};
-  const primal::Vector<double, 3> normal{0.0, 0.0, 1.0};
+  const primal::Point<double, 3> origin {0.0, 0.0, 0.0};
+  const primal::Vector<double, 3> normal {0.0, 0.0, 1.0};
   primal::Plane<double, 3> analytic_plane(normal, origin);
 
   // STEP 2: initialize the signed distance
