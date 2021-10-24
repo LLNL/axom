@@ -474,6 +474,14 @@ public:
    */
   Buffer* detachBuffer();
 
+  /*!
+   * \brief Clear data and metadata from a View.
+   *
+   * The view will be EMPTY. There will be no description
+   * or data associated with the View.
+   */
+  void clear();
+
   //@{
   //!  @name Methods to apply View description to data.
 
@@ -1314,6 +1322,15 @@ private:
    * \brief Set the shape to be a ndims dimensions with shape.
    */
   void describeShape(int ndims, const IndexType* shape);
+
+  /*!
+   * \brief Private method to remove user provided description.
+   */
+  void undescribe()
+  {
+    m_schema.reset();
+    m_shape.clear();
+  }
 
   /*!
    * \brief Copy view contents into an undescribed EMPTY view.
