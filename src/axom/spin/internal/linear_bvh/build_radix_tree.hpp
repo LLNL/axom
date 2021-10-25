@@ -179,7 +179,8 @@ void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
 
       // get the center and normalize it
       primal::Vector<FloatType, NDIMS> centroid(aabb.getCentroid());
-      centroid = primal::Vector<FloatType, NDIMS>((centroid - min_coord).array() * inv_extent.array());
+      centroid = primal::Vector<FloatType, NDIMS>(
+        (centroid - min_coord).array() * inv_extent.array());
       mcodes[i] = morton32_encode(centroid);
     });
 }
