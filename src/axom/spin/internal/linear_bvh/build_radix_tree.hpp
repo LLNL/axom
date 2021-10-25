@@ -161,9 +161,9 @@ void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
 
   primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
-  extent = bounds.getMax();
-  extent -= bounds.getMin();
-  min_coord = bounds.getMin();
+  extent = primal::Vector<FloatType, NDIMS>(bounds.getMax());
+  extent -= primal::Vector<FloatType, NDIMS>(bounds.getMin());
+  min_coord = primal::Vector<FloatType, NDIMS>(bounds.getMin());
 
   for(int i = 0; i < NDIMS; ++i)
   {
@@ -178,8 +178,8 @@ void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
       const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
-      primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
-      centroid = (centroid - min_coord).array() * inv_extent.array();
+      primal::Vector<FloatType, NDIMS> centroid(aabb.getCentroid());
+      centroid = primal::Vector<FloatType, NDIMS>((centroid - min_coord).array() * inv_extent.array());
       mcodes[i] = morton32_encode(centroid);
     });
 }
