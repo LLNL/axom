@@ -147,9 +147,8 @@ public:
 
     // Step 2: exclusive scan for offsets in candidate array
     using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    RAJA::exclusive_scan<exec_policy>(counts.data(),
-                                      counts.data() + npts,
-                                      offsets.data(),
+    RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts.data(), npts),
+                                      RAJA::make_span(offsets.data(), npts),
                                       RAJA::operators::plus<IndexType> {});
 
     IndexType totalCount = totalCountReduce.get();
