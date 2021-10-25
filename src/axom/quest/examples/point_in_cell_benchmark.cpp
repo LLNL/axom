@@ -64,6 +64,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts)
     using PointType = primal::Point<double, 2>;
     using BoxType = primal::BoundingBox<double, 2>;
     using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
+    using IndexType = typename quest::PointInCellTraits<mesh_tag>::IndexType;
 
     BoxType meshBb;
     {
@@ -93,7 +94,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts)
     SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
                                 timeInitQuery.elapsed()));
 
-    axom::IndexType* outCellIds = axom::allocate<axom::IndexType>(npts);
+    IndexType* outCellIds = axom::allocate<IndexType>(npts);
     // Run query
     utilities::Timer timeRunQuery(true);
     query.locatePoints(npts, pts, outCellIds);
@@ -111,6 +112,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts)
     using PointType = primal::Point<double, 3>;
     using BoxType = primal::BoundingBox<double, 3>;
     using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
+    using IndexType = typename quest::PointInCellTraits<mesh_tag>::IndexType;
 
     BoxType meshBb;
     {
@@ -142,7 +144,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts)
     SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
                                 timeInitQuery.elapsed()));
 
-    axom::IndexType* outCellIds = axom::allocate<axom::IndexType>(npts);
+    IndexType* outCellIds = axom::allocate<IndexType>(npts);
     // Run query
     utilities::Timer timeRunQuery(true);
     query.locatePoints(npts, pts, outCellIds);
