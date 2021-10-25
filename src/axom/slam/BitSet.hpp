@@ -18,6 +18,10 @@
 #include "axom/core/utilities/BitUtilities.hpp"
 #include "axom/slic.hpp"
 
+#ifdef AXOM_USE_RAJA
+  #include "RAJA/RAJA.hpp"
+#endif
+
 #include <vector>
 
 namespace axom
@@ -286,7 +290,6 @@ public:
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
-  AXOM_HOST_DEVICE
   void set(Index idx) { getWord(idx) |= mask(idx); }
 
   /**
@@ -303,6 +306,53 @@ public:
    * \pre \a idx must be between 0 and bitset.size()
    */
   bool test(Index idx) const { return (getWord(idx) & mask(idx)) != Word(0); }
+
+  /// @}
+
+  /// \name Atomic versions of single-bit operations
+  /// @{
+
+  /**
+   * \brief Clears bit at index \a idx
+   *
+   * \pre \a idx must be between 0 and bitset.size()
+   */
+  void atomicClear(Index idx)
+  {
+#ifdef AXOM_USE_RAJA
+    RAJA::atomicAnd<RAJA::auto_atomic>(&getWord(idx), ~mask(idx));
+#else
+    clear(idx);
+#endif
+  }
+
+  /**
+   * \brief Sets bit at index \a idx
+   *
+   * \pre \a idx must be between 0 and bitset.size()
+   */
+  AXOM_HOST_DEVICE void atomicSet(Index idx)
+  {
+#ifdef AXOM_USE_RAJA
+    RAJA::atomicOr<RAJA::auto_atomic>(&getWord(idx), mask(idx));
+#else
+    set(idx);
+#endif
+  }
+
+  /**
+   * \brief Toggles bit at index \a idx
+   *
+   * \pre \a idx must be between 0 and bitset.size()
+   */
+  void atomicFlip(Index idx)
+  {
+#ifdef AXOM_USE_RAJA
+    RAJA::atomicXor<RAJA::auto_atomic>(&getWord(idx), mask(idx));
+#else
+    flip(idx);
+#endif
+  }
 
   /// @}
 private:

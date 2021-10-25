@@ -286,7 +286,7 @@ public:
 
           for(int j = lower; j <= upper; ++j)
           {
-            binData[idim][j].set(elemIdx);
+            binData[idim][j].atomicSet(elemIdx);
           }
         }
       });
