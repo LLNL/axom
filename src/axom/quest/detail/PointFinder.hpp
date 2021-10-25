@@ -183,7 +183,7 @@ public:
     // Step 5: Check each candidate
     for_all<SEQ_EXEC>(
       npts,
-      AXOM_LAMBDA(IndexType i) {
+      AXOM_HOST_LAMBDA(IndexType i) {
         outCellIds[i] = PointInCellTraits<mesh_tag>::NO_CELL;
         SpacePoint pt = pts[i];
         SpacePoint isopar;
