@@ -117,6 +117,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Umpire dependency updated to 0.6.0
 - Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021).  This was required due to Spack
   moving to HDF5's CMake build system.
+- Internal BLT dependency updatd to 0.4.1
 
 
 ### Fixed
