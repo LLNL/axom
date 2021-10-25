@@ -315,9 +315,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   AXOM_PERF_MARK_SECTION(
     "exclusive_scan",
-    RAJA::exclusive_scan<exec_policy>(counts,
-                                      counts + numObjs,
-                                      offsets,
+    RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts, numObjs),
+                                      RAJA::make_span(offsets, numObjs),
                                       RAJA::operators::plus<IndexType> {}););
 
   int total_count = total_count_reduce.get();

@@ -34,12 +34,12 @@ class Scr(CMakePackage):
 
     # As of mid-2020, develop requires the "master" branch
     # of a few component libraries
-    depends_on('axl@master', when="@develop")
-    depends_on('kvtree@master', when="@develop")
-    depends_on('redset@master', when="@develop")
-    depends_on('er@master', when="@develop")
-    depends_on('rankstr@master', when="@develop")
-    depends_on('shuffile@master', when="@develop")
+    depends_on('axl@main', when="@develop")
+    depends_on('kvtree@main', when="@develop")
+    depends_on('redset@main', when="@develop")
+    depends_on('er@main', when="@develop")
+    depends_on('rankstr@main', when="@develop")
+    depends_on('shuffile@main', when="@develop")
 
     # SCR legacy is anything 2.x.x or earlier
     # SCR components is anything 3.x.x or later
