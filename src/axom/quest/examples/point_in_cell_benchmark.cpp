@@ -57,7 +57,7 @@ primal::Point<double, NDIMS> get_rand_pt(
 }
 
 template <typename ExecSpace>
-void benchmark_point_in_cell(mfem::Mesh& mesh, int npts)
+void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
 {
   if(mesh.SpaceDimension() == 2)
   {
@@ -86,7 +86,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts)
                                 npts,
                                 timeInitRandPts.elapsed()));
 
-    primal::Point<int, 2> bins(25);
+    primal::Point<int, 2> bins(nbins);
 
     utilities::Timer timeInitQuery(true);
     // Create PointInCell query object
@@ -136,7 +136,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts)
                                 npts,
                                 timeInitRandPts.elapsed()));
 
-    primal::Point<int, 3> bins(25);
+    primal::Point<int, 3> bins(nbins);
 
     utilities::Timer timeInitQuery(true);
     // Create PointInCell query object
@@ -163,6 +163,7 @@ struct Arguments
 {
   std::string file_name;
   int num_rand_pts {10000};
+  int num_bins {25};
   ExecPolicy exec_space {ExecPolicy::CPU};
 
   void parse(int argc, char** argv, axom::CLI::App& app)
@@ -175,6 +176,10 @@ struct Arguments
     app.add_option("-n,--num_pts",
                    this->num_rand_pts,
                    "the number of points to query");
+
+    app.add_option("-b,--num-bins",
+                   this->num_bins,
+                   "the number of bins to construct for each dimension");
 
     std::string pol_info =
       "Sets execution space of the SignedDistance query.\n";
@@ -236,16 +241,22 @@ int main(int argc, char** argv)
   switch(args.exec_space)
   {
   case ExecPolicy::CPU:
-    benchmark_point_in_cell<axom::SEQ_EXEC>(testMesh, args.num_rand_pts);
+    benchmark_point_in_cell<axom::SEQ_EXEC>(testMesh,
+                                            args.num_rand_pts,
+                                            args.num_bins);
     break;
 #ifdef AXOM_USE_OPENMP
   case ExecPolicy::OpenMP:
-    benchmark_point_in_cell<axom::OMP_EXEC>(testMesh, args.num_rand_pts);
+    benchmark_point_in_cell<axom::OMP_EXEC>(testMesh,
+                                            args.num_rand_pts,
+                                            args.num_bins);
     break;
 #endif
 #ifdef AXOM_USE_CUDA
   case ExecPolicy::GPU:
-    benchmark_point_in_cell<axom::CUDA_EXEC<256>>(testMesh, args.num_rand_pts);
+    benchmark_point_in_cell<axom::CUDA_EXEC<256>>(testMesh,
+                                                  args.num_rand_pts,
+                                                  args.num_bins);
     break;
 #endif
   default:
