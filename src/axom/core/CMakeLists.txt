@@ -82,11 +82,17 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
-blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ${ENABLE_CUDA} )
-blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
-blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
+blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
+blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
+
+# TODO: remove this when we figure out why RAJA::cub is not getting inherited from RAJA
+if (TARGET RAJA::cub AND RAJA_FOUND)
+  list(APPEND core_depends RAJA::cub)
+endif()
+
+blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ENABLE_CUDA )
+blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
 
 #------------------------------------------------------------------------------
 # Make/Install the library

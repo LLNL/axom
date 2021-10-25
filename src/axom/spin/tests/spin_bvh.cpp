@@ -1639,9 +1639,9 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
   umpire::Allocator allocator = rm.getAllocator(umpire::resource::Unified);
 
   umpire::Allocator pool_allocator =
-    rm.makeAllocator<umpire::strategy::DynamicPool>("DEVICE_POOL",
-                                                    allocator,
-                                                    POOL_SIZE);
+    rm.makeAllocator<umpire::strategy::QuickPool>("DEVICE_POOL",
+                                                  allocator,
+                                                  POOL_SIZE);
 
   const int allocID = pool_allocator.getId();
 
