@@ -701,13 +701,6 @@ void check_alloc(Array<T>& v, const int& id)
 template <typename T>
 void check_external_view(ArrayView<T>& v)
 {
-  // NOTE: No longer needed, this is true by definition of ArrayView
-  // ASSERT_TRUE(v.isExternal());
-
-  // NOTE: No longer needed, this is true by definition of ArrayView
-  /* Check that the array is full. */
-  // ASSERT_EQ(v.size(), v.capacity());
-
   const IndexType size = v.size();
   const IndexType num_values = size;
   T* const data_ptr = v.data();
@@ -737,18 +730,7 @@ void check_external_view(ArrayView<T>& v)
   }
 
   EXPECT_EQ(size, v.size());
-  // No longer needed, this is true by definition of ArrayView
-  // EXPECT_EQ(size, v.capacity());
   EXPECT_EQ(data_ptr, v.data());
-
-  // NOTE: These operations do not even exist for ArrayView
-  /* Since the array is full all of the following calls should require a
-   * reallocation and cause a fatal error. */
-  // T val = T();
-  // const char IGNORE_OUTPUT[] = ".*";
-  // EXPECT_DEATH_IF_SUPPORTED(v.push_back(val), IGNORE_OUTPUT);
-  // EXPECT_DEATH_IF_SUPPORTED(v.insert(0, 1, val), IGNORE_OUTPUT);
-  // EXPECT_DEATH_IF_SUPPORTED(v.reserve(size + 1), IGNORE_OUTPUT);
 }
 
 } /* end namespace internal */
