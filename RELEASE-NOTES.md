@@ -115,6 +115,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `axom::Array`-related classes have been moved into individual files.
 - Removed logic from ``axom::reallocate()`` relating to older versions of Umpire.
   Axom requires Umpire v2.1.0+
+- RAJA dependency updated to 0.14.0
+- Umpire dependency updated to 0.6.0
+- Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021).  This was required due to Spack
+  moving to HDF5's CMake build system.
+- Internal BLT dependency updatd to 0.4.1
 
 
 ### Fixed

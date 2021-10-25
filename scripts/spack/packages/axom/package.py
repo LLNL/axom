@@ -102,7 +102,7 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("lua", when="+lua")
 
     depends_on("scr", when="+scr")
-    depends_on("kvtree@master", when="+scr")
+    depends_on("kvtree@main", when="+scr")
     depends_on("dtcmp", when="+scr")
 
     depends_on("raja~openmp", when="+raja~openmp")

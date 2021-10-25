@@ -58,7 +58,8 @@ endif()
 #------------------------------------------------------------------------------
 if( HDF5_FOUND)
 
-    set( hdf5_smoke_dependencies hdf5 gtest )
+    # we rely on conduit for hdf5 functionality
+    set( hdf5_smoke_dependencies conduit::conduit gtest )
 
     blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 

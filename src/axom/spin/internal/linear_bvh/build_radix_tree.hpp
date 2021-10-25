@@ -238,7 +238,8 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
   AXOM_PERF_MARK_SECTION(
     "raja_stable_sort",
     using EXEC_POL = typename axom::execution_space<ExecSpace>::loop_policy;
-    RAJA::stable_sort_pairs<EXEC_POL>(mcodes, mcodes + size, iter););
+    RAJA::stable_sort_pairs<EXEC_POL>(RAJA::make_span(mcodes, size),
+                                      RAJA::make_span(iter, size)););
 }
 
 #else
