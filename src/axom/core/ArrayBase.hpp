@@ -16,8 +16,31 @@
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::inner_product
 
+#ifdef AXOM_USE_UMPIRE
+  #include "umpire/resource/MemoryResourceTypes.hpp"
+#endif
+
 namespace axom
 {
+/*! 
+ * \brief Memory spaces supported by Array-like types
+ *
+ * This abstraction is implemented on top of Umpire's MemoryResourceType enum
+ * in order to also include a "Dynamic" option as a default template parameter
+ * for Array-like types
+ */
+enum class MemorySpace
+{
+  Dynamic,
+#ifdef AXOM_USE_UMPIRE
+  Host,
+  Device,
+  Unified,
+  Pinned,
+  Constant
+#endif
+};
+
 // Forward declare the templated classes and operator function(s)
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase;
@@ -366,12 +389,13 @@ template <typename T, int DIM, typename ArrayType>
 inline std::ostream& print(std::ostream& os,
                            const ArrayBase<T, DIM, ArrayType>& array)
 {
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
-  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
-  // if there exists no allocator for Constant memory. Is there a more fine-grained
-  // approach we can use to see what allocators are available before trying to get their IDs?
-  if(static_cast<const ArrayType&>(array).getAllocatorID() ==
-     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
+#if defined(AXOM_USE_UMPIRE) && defined(UMPIRE_ENABLE_DEVICE)
+  const int alloc_id = static_cast<const ArrayType&>(array).getAllocatorID();
+  if(alloc_id == axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+  #ifdef UMPIRE_ENABLE_CONST
+     || alloc_id == axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
+  #endif
+  )
   {
     std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
     utilities::processAbort();
@@ -474,6 +498,54 @@ bool allNonNegative(const T (&arr)[N])
   }
   return true;
 }
+
+template <MemorySpace SPACE>
+inline int getAllocatorID();
+
+template <>
+inline int getAllocatorID<MemorySpace::Dynamic>()
+{
+  return axom::getDefaultAllocatorID();
+}
+
+#ifdef AXOM_USE_UMPIRE
+
+template <>
+inline int getAllocatorID<MemorySpace::Host>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Host);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Device>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Device);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Unified>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Pinned>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Pinned);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Constant>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Constant);
+}
+
+#endif
 
 }  // namespace detail
 

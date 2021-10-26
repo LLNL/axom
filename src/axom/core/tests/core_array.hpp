@@ -679,8 +679,8 @@ void check_swap(Array<T>& v)
   EXPECT_EQ(v_two, v_two_copy);
 }
 
-template <typename T>
-void check_alloc(Array<T>& v, const int& id)
+template <typename T, int DIM, axom::MemorySpace SPACE>
+void check_alloc(Array<T, DIM, SPACE>& v, const int id)
 {
   // Verify allocation
   EXPECT_EQ(v.getAllocatorID(), id);
@@ -913,18 +913,64 @@ TEST(core_array, checkAlloc)
 #endif
   };
 
-  for(int id : memory_locations)
+  for(double ratio = 1.0; ratio <= 2.0; ratio += 0.5)
   {
-    for(double ratio = 1.0; ratio <= 2.0; ratio += 0.5)
+    for(IndexType capacity = 4; capacity <= 512; capacity *= 2)
     {
-      for(IndexType capacity = 4; capacity <= 512; capacity *= 2)
+      // First use the dynamic option
+      for(int id : memory_locations)
       {
-        Array<int> v_int(capacity, capacity, id);
+        Array<int, 1, axom::MemorySpace::Dynamic> v_int(capacity, capacity, id);
         internal::check_alloc(v_int, id);
 
-        Array<double> v_double(capacity, capacity, id);
+        Array<double, 1, axom::MemorySpace::Dynamic> v_double(capacity,
+                                                              capacity,
+                                                              id);
         internal::check_alloc(v_double, id);
       }
+// Then, if Umpire is available, we can use the space as an explicit template parameter
+#ifdef AXOM_USE_UMPIRE
+  #ifdef UMPIRE_ENABLE_DEVICE
+      Array<int, 1, axom::MemorySpace::Device> v_int_device(capacity);
+      internal::check_alloc(
+        v_int_device,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+      Array<double, 1, axom::MemorySpace::Device> v_double_device(capacity);
+      internal::check_alloc(
+        v_double_device,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+  #endif
+  #ifdef UMPIRE_ENABLE_UM
+      Array<int, 1, axom::MemorySpace::Device> v_int_unified(capacity);
+      internal::check_alloc(
+        v_int_unified,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
+      Array<double, 1, axom::MemorySpace::Device> v_double_unified(capacity);
+      internal::check_alloc(
+        v_double_unified,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
+  #endif
+  #ifdef UMPIRE_ENABLE_CONST
+      Array<int, 1, axom::MemorySpace::Constant> v_int_const(capacity);
+      internal::check_alloc(
+        v_int_const,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Constant));
+      Array<double, 1, axom::MemorySpace::Constant> v_double_const(capacity);
+      internal::check_alloc(
+        v_double_const,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Constant));
+  #endif
+  #ifdef UMPIRE_ENABLE_PINNED
+      Array<int, 1, axom::MemorySpace::Pinned> v_int_pinned(capacity);
+      internal::check_alloc(
+        v_int_const,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Pinned));
+      Array<double, 1, axom::MemorySpace::Pinned> v_double_pinned(capacity);
+      internal::check_alloc(
+        v_double_pinned,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Pinned));
+  #endif
+#endif
     }
   }
 }
