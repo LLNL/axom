@@ -118,6 +118,19 @@ public:
   }
 
   /*!
+   * \brief Copy constructor for arrays of different type
+   * Because the element type (T) and dimension (DIM) are still locked down,
+   * this function is nominally used for copying ArrayBase metadata from
+   * Array <-> ArrayView and/or Array-like objects whose data are in different
+   * memory spaces
+   */
+  template <typename OtherArrayType>
+  ArrayBase(const ArrayBase<T, DIM, OtherArrayType>& other)
+    : m_dims(other.m_dims)
+    , m_strides(other.m_strides)
+  { }
+
+  /*!
    * \brief Dimension-aware accessor, returns a reference to the given value.
    *
    * \param [in] args the parameter pack of indices in each dimension.
@@ -273,6 +286,11 @@ class ArrayBase<T, 1, ArrayType>
 {
 public:
   ArrayBase(IndexType = 0) { }
+
+  // Empy implementation because no member data
+  template <typename OtherArrayType>
+  ArrayBase(const ArrayBase<T, 1, OtherArrayType>&)
+  { }
 
   /*!
    * \brief Push a value to the back of the array.

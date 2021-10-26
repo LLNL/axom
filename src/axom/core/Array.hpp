@@ -20,22 +20,6 @@
 
 namespace axom
 {
-// TODO: Add this as a non-type template parameter to Array/View
-// The intent is that there will also be a "Dynamic" or "Polymorphic"
-// resource type
-// enum MemoryResourceType
-// {
-//   Host,
-//   Device,
-//   Unified,
-//   Pinned,
-//   Constant,
-//   File,
-//   NoOp,
-//   Shared,
-//   Unknown
-// };
-
 // Forward declare the templated classes and operator function(s)
 template <typename T, int DIM, MemorySpace SPACE>
 class Array;
@@ -162,6 +146,25 @@ public:
    * \brief Move constructor for an Array instance 
    */
   Array(Array&& other);
+
+  /*! 
+   * \brief Constructor for transferring between memory spaces
+   * 
+   * \param [in] other The array in a different memory space to copy from
+   */
+  template <typename OtherArrayType>
+  Array(const ArrayBase<T, DIM, OtherArrayType>& other);
+
+  /*! 
+   * \brief Constructor for transferring between memory spaces
+   * 
+   * \param [in] other The array in a different memory space to copy from
+   */
+  template <MemorySpace OTHER_SPACE>
+  Array(const Array<T, DIM, OTHER_SPACE>& other)
+    : Array(
+        static_cast<const ArrayBase<T, DIM, Array<T, DIM, OTHER_SPACE>>&>(other))
+  { }
 
   /// @}
 
@@ -685,6 +688,22 @@ Array<T, DIM, SPACE>::Array(Array&& other)
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename OtherArrayType>
+Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
+  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+{
+  initialize(static_cast<const OtherArrayType&>(other).size(),
+             static_cast<const OtherArrayType&>(other).size());
+  // axom::copy is aware of pointers registered in Umpire, so this will handle
+  // the transfer between memory spaces
+  axom::copy(m_data,
+             static_cast<const OtherArrayType&>(other).data(),
+             m_num_elements * sizeof(T));
 }
 
 //------------------------------------------------------------------------------

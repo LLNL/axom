@@ -733,6 +733,60 @@ void check_external_view(ArrayView<T>& v)
   EXPECT_EQ(data_ptr, v.data());
 }
 
+#ifdef __CUDACC__
+
+template <typename T>
+__global__ void assign_raw(T* data, int N)
+{
+  for(int i = 0; i < N; i++)
+  {
+    data[i] = i;
+  }
+}
+
+// template <typename T, int DIM, axom::MemorySpace SPACE>
+// __global__ void assign_view(ArrayView<T, DIM, SPACE>& view)
+// {
+//   for(int i = 0; i < view.size(); i++)
+//   {
+//     view[i] = i * 2;
+//   }
+// }
+
+/*!
+ * \brief Check that an array can be modified/accessed from device code
+ * \param [in] v the array to check.
+ */
+template <typename T, int DIM, axom::MemorySpace SPACE>
+void check_device(Array<T, DIM, SPACE>& v)
+{
+  const IndexType size = v.size();
+  // Then assign to it via a raw device pointer
+  assign_raw<<<1, 1>>>(v.data(), size);
+
+  // Check the contents of the array by assigning to a Dynamic array
+  // The default Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 1> check_raw_array_dynamic = v;
+  EXPECT_EQ(check_raw_array_dynamic.size(), size);
+  for(int i = 0; i < check_raw_array_dynamic.size(); i++)
+  {
+    EXPECT_EQ(check_raw_array_dynamic[i], i);
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
+  Array<T, 1, axom::MemorySpace::Host> check_raw_array_host = v;
+  EXPECT_EQ(check_raw_array_host.size(), size);
+  for(int i = 0; i < check_raw_array_host.size(); i++)
+  {
+    EXPECT_EQ(check_raw_array_host[i], i);
+  }
+
+  // Then modify the underlying data via a view
+  // assign_view<<<1, 1>>>(v);
+}
+
+#endif  // __CUDACC__
+
 } /* end namespace internal */
 
 //------------------------------------------------------------------------------
@@ -1279,6 +1333,36 @@ TEST(core_array, check_multidimensional_view)
     // For a multidim array, op[] is a "flat" index into the raw data
     EXPECT_EQ(v_double_view[i], v_double_flat_view[i]);
   }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkDevice)
+{
+// FIXME: HIP
+#if !defined(__CUDACC__) || !defined(AXOM_USE_UMPIRE) || \
+  !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP()
+    << "CUDA is not available, skipping tests that use Array in device code";
+#else
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    std::cout << "testing cap " << capacity << std::endl;
+    // First allocate a Dynamic array in Device memory
+    Array<int, 1, axom::MemorySpace::Dynamic> v_int_dynamic(
+      capacity,
+      capacity,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+
+    internal::check_device(v_int_dynamic);
+
+    Array<double, 1, axom::MemorySpace::Dynamic> v_double_dynamic(
+      capacity,
+      capacity,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+
+    internal::check_device(v_double_dynamic);
+  }
+#endif
 }
 
 } /* end namespace axom */
