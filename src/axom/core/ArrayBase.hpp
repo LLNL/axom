@@ -173,13 +173,13 @@ public:
    * \pre 0 <= idx < m_num_elements
    */
   /// @{
-  T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE const T& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -256,9 +256,12 @@ protected:
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  AXOM_HOST_DEVICE ArrayType& asDerived()
+  {
+    return static_cast<ArrayType&>(*this);
+  }
   /// \overload
-  const ArrayType& asDerived() const
+  AXOM_HOST_DEVICE const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
@@ -267,7 +270,7 @@ private:
   /// @{
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
@@ -337,13 +340,13 @@ public:
    * \pre 0 <= idx < m_num_elements
    */
   /// @{
-  T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE const T& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -376,9 +379,12 @@ protected:
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  AXOM_HOST_DEVICE ArrayType& asDerived()
+  {
+    return static_cast<ArrayType&>(*this);
+  }
   /// \overload
-  const ArrayType& asDerived() const
+  AXOM_HOST_DEVICE const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
@@ -387,7 +393,7 @@ private:
   /// @{
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
@@ -562,6 +568,12 @@ inline int getAllocatorID<MemorySpace::Constant>()
   return axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Constant);
 }
+
+template <typename First, typename... Rest>
+struct first_type_is_integral
+{
+  static constexpr bool value = std::is_integral<First>::value;
+};
 
 #endif
 

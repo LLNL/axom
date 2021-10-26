@@ -72,6 +72,7 @@ public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
   static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
   using value_type = T;
+  static constexpr MemorySpace space = SPACE;
   using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>>;
 
 public:
@@ -131,7 +132,9 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <typename... Args>
+  template <typename... Args,
+            typename std::enable_if<
+              detail::first_type_is_integral<Args...>::value>::type* = nullptr>
   Array(Args... args);
 
   /*! 
@@ -154,17 +157,6 @@ public:
    */
   template <typename OtherArrayType>
   Array(const ArrayBase<T, DIM, OtherArrayType>& other);
-
-  /*! 
-   * \brief Constructor for transferring between memory spaces
-   * 
-   * \param [in] other The array in a different memory space to copy from
-   */
-  template <MemorySpace OTHER_SPACE>
-  Array(const Array<T, DIM, OTHER_SPACE>& other)
-    : Array(
-        static_cast<const ArrayBase<T, DIM, Array<T, DIM, OTHER_SPACE>>&>(other))
-  { }
 
   /// @}
 
@@ -236,8 +228,8 @@ public:
    */
   /// @{
 
-  inline T* data() { return m_data; }
-  inline const T* data() const { return m_data; }
+  AXOM_HOST_DEVICE inline T* data() { return m_data; }
+  AXOM_HOST_DEVICE inline const T* data() const { return m_data; }
 
   /// @}
 
@@ -495,7 +487,7 @@ public:
   /*!
    * \brief Return the number of elements stored in the data array.
    */
-  inline IndexType size() const { return m_num_elements; }
+  AXOM_HOST_DEVICE inline IndexType size() const { return m_num_elements; }
 
   /*!
    * \brief Update the number of elements stored in the data array.
@@ -607,7 +599,8 @@ Array<T, DIM, SPACE>::Array()
 { }
 
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args>
+template <typename... Args,
+          typename std::enable_if<detail::first_type_is_integral<Args...>::value>::type*>
 Array<T, DIM, SPACE>::Array(Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(args...)
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())

@@ -744,14 +744,14 @@ __global__ void assign_raw(T* data, int N)
   }
 }
 
-// template <typename T, int DIM, axom::MemorySpace SPACE>
-// __global__ void assign_view(ArrayView<T, DIM, SPACE>& view)
-// {
-//   for(int i = 0; i < view.size(); i++)
-//   {
-//     view[i] = i * 2;
-//   }
-// }
+template <typename T, int DIM, axom::MemorySpace SPACE>
+__global__ void assign_view(ArrayView<T, DIM, SPACE>& view)
+{
+  for(int i = 0; i < view.size(); i++)
+  {
+    view[i] = i * 2;
+  }
+}
 
 /*!
  * \brief Check that an array can be modified/accessed from device code
@@ -782,7 +782,25 @@ void check_device(Array<T, DIM, SPACE>& v)
   }
 
   // Then modify the underlying data via a view
-  // assign_view<<<1, 1>>>(v);
+  ArrayView<T, DIM, SPACE> view(v);
+  assign_view<<<1, 1>>>(view);
+
+  // Check the contents of the array by assigning to a Dynamic array
+  // The default Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 1> check_view_array_dynamic = view;
+  EXPECT_EQ(check_view_array_dynamic.size(), size);
+  for(int i = 0; i < check_view_array_dynamic.size(); i++)
+  {
+    EXPECT_EQ(check_view_array_dynamic[i], i * 2);
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
+  Array<T, 1, axom::MemorySpace::Host> check_view_array_host = view;
+  EXPECT_EQ(check_view_array_host.size(), size);
+  for(int i = 0; i < check_view_array_host.size(); i++)
+  {
+    EXPECT_EQ(check_view_array_host[i], i * 2);
+  }
 }
 
 #endif  // __CUDACC__
@@ -1346,8 +1364,7 @@ TEST(core_array, checkDevice)
 #else
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
-    std::cout << "testing cap " << capacity << std::endl;
-    // First allocate a Dynamic array in Device memory
+    // Allocate a Dynamic array in Device memory
     Array<int, 1, axom::MemorySpace::Dynamic> v_int_dynamic(
       capacity,
       capacity,
@@ -1361,6 +1378,14 @@ TEST(core_array, checkDevice)
       axom::getUmpireResourceAllocatorID(umpire::resource::Device));
 
     internal::check_device(v_double_dynamic);
+
+    // Then allocate an explicitly Device array
+    Array<int, 1, axom::MemorySpace::Device> v_int_device(capacity, capacity);
+    internal::check_device(v_int_device);
+
+    Array<double, 1, axom::MemorySpace::Device> v_double_device(capacity,
+                                                                capacity);
+    internal::check_device(v_double_device);
   }
 #endif
 }
