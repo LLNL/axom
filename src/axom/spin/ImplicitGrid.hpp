@@ -521,17 +521,59 @@ public:
     }
   }
 
+  /*!
+   * \brief Counts the number of elements in the implicit grid which may
+   *  intersect with the given point.
+   *
+   * \param [in] pt the point to query the implicit grid against.
+   *
+   * \return numCandidates the number of candidates for the given point.
+   */
   AXOM_HOST_DEVICE IndexType countCandidates(const SpacePoint& pt) const;
 
+  /*!
+   * \brief Counts the number of elements in the implicit grid which may
+   *  intersect with the given bounding box.
+   *
+   * \param [in] bbox the bounding box to query the implicit grid against.
+   *
+   * \return numCandidates the number of candidates for the given bounding box.
+   */
   AXOM_HOST_DEVICE IndexType countCandidates(const SpatialBoundingBox& bbox) const;
 
+  /*!
+   * \brief Iterates through the implicit grid, calling a given function for
+   *  each candidate element which potentially intersects the given point.
+   *
+   * \param [in] pt the point to query the implicit grid against.
+   * \param [in] candidateFunc the function object to be called for each
+   *  intersection candidate
+   *
+   * \note The supplied functor `candidateFunc` is expected to take one argument,
+   *  the index of the candidate element.
+   *  The functor may optionally return a boolean, where a value of `true`
+   *  terminates the candidate search early.
+   */
   template <typename FuncType>
   AXOM_HOST_DEVICE void visitCandidates(const SpacePoint& pt,
-                                        FuncType&& candidatePredicate) const;
+                                        FuncType&& candidateFunc) const;
 
+  /*!
+   * \brief Iterates through the implicit grid, calling a given function for
+   *  each candidate element which potentially intersects the given bounding box.
+   *
+   * \param [in] bbox the bounding box to query the implicit grid against.
+   * \param [in] candidateFunc the function object to be called for each
+   *  intersection candidate
+   *
+   * \note The supplied functor `candidateFunc` is expected to take one argument,
+   *  the index of the candidate element.
+   *  The functor may optionally return a boolean, where a value of `true`
+   *  terminates the candidate search early.
+   */
   template <typename FuncType>
   AXOM_HOST_DEVICE void visitCandidates(const SpatialBoundingBox& bbox,
-                                        FuncType&& candidatePredicate) const;
+                                        FuncType&& candidateFunc) const;
 
 private:
   template <typename FuncType, typename ReturnType>
