@@ -167,6 +167,18 @@ private:
   }
 
   /*!
+   * \brief Remove all attribute values.
+   */
+  void clear()
+  {
+    if(m_values != nullptr)
+    {
+      delete m_values;
+      m_values = nullptr;
+    }
+  }
+
+  /*!
    * \brief Return a scalar attribute value.
    */
   Node::ConstValue getScalar(const Attribute* attr) const;

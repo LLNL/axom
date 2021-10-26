@@ -370,6 +370,14 @@ void SIDRE_View_attach_buffer_shape(SIDRE_View *self,
   // splicer end class.View.method.attach_buffer_shape
 }
 
+void SIDRE_View_clear(SIDRE_View *self)
+{
+  axom::sidre::View *SH_this = static_cast<axom::sidre::View *>(self->addr);
+  // splicer begin class.View.method.clear
+  SH_this->clear();
+  // splicer end class.View.method.clear
+}
+
 void SIDRE_View_apply_0(SIDRE_View *self)
 {
   axom::sidre::View *SH_this = static_cast<axom::sidre::View *>(self->addr);
