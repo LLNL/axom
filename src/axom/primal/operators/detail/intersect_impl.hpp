@@ -760,11 +760,11 @@ bool intersect_tri_bbox(const primal::Triangle<T, 3>& tri,
 
   /// Final test -- face normal of triangle's plane
   VectorType planeNormal = VectorType::cross_product(f[0], f[1]);
-  double planeDist = planeNormal.dot(tri[0]);
+  double planeDist = planeNormal.dot(VectorType(tri[0]));
 
   double r = e[0] * std::abs(planeNormal[0]) + e[1] * std::abs(planeNormal[1]) +
     e[2] * std::abs(planeNormal[2]);
-  double s = planeNormal.dot(center) - planeDist;
+  double s = planeNormal.dot(VectorType(center)) - planeDist;
 
   return std::abs(s) <= r;
 }
