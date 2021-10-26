@@ -9,6 +9,7 @@ from os.path import join as pjoin
 
 from spack import *
 
+import re
 
 def get_spec_path(spec, package_name, path_replacements={}, use_bin=False):
     """Extracts the prefix path for the given spack package
@@ -268,16 +269,26 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                                         '--amdgpu-target=gfx906'))
             entries.append(cmake_cache_string("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
+
             hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
-            entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
-            # Try gcc later
-            #if ('%gcc' in spec):
-            #    gcc_bin = os.path.dirname(self.compiler.cxx)
-            #    gcc_prefix = join_path(gcc_bin, '..')
-            #    entries.append(cmake_cache_string("HIP_CLANG_FLAGS",
-            #    "--gcc-toolchain={0}".format(gcc_prefix)))
-            #    entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS",
-            #    hip_link_flags + " -Wl,-rpath {}/lib64".format(gcc_prefix)))
+
+            gcc_toolchain_regex = re.compile("--gcc-toolchain=(.*)")
+            gcc_name_regex = re.compile(".*gcc-name.*")
+            using_toolchain = list(filter(gcc_toolchain_regex.match, spec.compiler_flags['cxxflags']))
+            if(using_toolchain):
+              gcc_toolchain_path = gcc_toolchain_regex.match(using_toolchain[0])
+            if ('%gcc' in spec) or (using_toolchain):
+                if ('%gcc' in spec):
+                    gcc_bin = os.path.dirname(self.compiler.cxx)
+                    gcc_prefix = join_path(gcc_bin, '..')
+                else:
+                    gcc_prefix = gcc_toolchain_path.group(1)
+                entries.append(cmake_cache_string("HIP_CLANG_FLAGS",
+                "--gcc-toolchain={0}".format(gcc_prefix)))
+                entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS",
+                hip_link_flags + " -Wl,-rpath {}/lib64".format(gcc_prefix)))
+            else:
+                entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
         entries.append("#------------------{0}".format("-" * 30))
         entries.append("# Hardware Specifics")
