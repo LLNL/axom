@@ -510,7 +510,7 @@ public:
 
   QueryObject(const SpatialBoundingBox& spaceBb,
               const LatticeType& lattice,
-              BinBitMap (&binData)[NDIMS])
+              const BinBitMap (&binData)[NDIMS])
     : m_bb(spaceBb)
     , m_lattice(lattice)
   {
@@ -626,7 +626,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::getQueryObject() const
                 "ImplicitGrid::QueryObject must be copy-constructible.");
 
   SLIC_ASSERT(m_initialized);
-  return QueryObject {m_bb, m_lattice, const_cast<ImplicitGrid*>(this)->m_binData};
+  return QueryObject {m_bb, m_lattice, this->m_binData};
 }
 
 template <int NDIMS, typename ExecSpace, typename IndexType>
