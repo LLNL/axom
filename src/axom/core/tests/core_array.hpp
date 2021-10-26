@@ -745,7 +745,7 @@ __global__ void assign_raw(T* data, int N)
 }
 
 template <typename T, int DIM, axom::MemorySpace SPACE>
-__global__ void assign_view(ArrayView<T, DIM, SPACE>& view)
+__global__ void assign_view(ArrayView<T, DIM, SPACE> view)
 {
   for(int i = 0; i < view.size(); i++)
   {

@@ -523,6 +523,13 @@ bool allNonNegative(const T (&arr)[N])
   return true;
 }
 
+/// \brief Checks if the first type in a parameter pack is integral
+template <typename First, typename... Rest>
+struct first_type_is_integral
+{
+  static constexpr bool value = std::is_integral<First>::value;
+};
+
 template <MemorySpace SPACE>
 inline int getAllocatorID();
 
@@ -568,12 +575,6 @@ inline int getAllocatorID<MemorySpace::Constant>()
   return axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Constant);
 }
-
-template <typename First, typename... Rest>
-struct first_type_is_integral
-{
-  static constexpr bool value = std::is_integral<First>::value;
-};
 
 #endif
 
