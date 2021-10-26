@@ -85,7 +85,7 @@ public:
    * \param [in] arr The numeric array to copy from
    */
   AXOM_HOST_DEVICE
-  Point(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
+  explicit Point(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a point from the first sz values of the input array.
@@ -94,7 +94,7 @@ public:
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    */
   AXOM_HOST_DEVICE
-  Point(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
+  explicit Point(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
 
   /*!
    * \brief Creates a point from an initializer list

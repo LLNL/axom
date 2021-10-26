@@ -58,6 +58,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds a new query for intersection-based "shaping" of revolved contours onto 3D hexahedral meshes.
   This capability uses a RAJA policy operate on various execution spaces (host, openmp, device).
 - Quest: Adds a "shaping" example for embedding a klee specification onto an MFEM mesh
+- Added Sidre function `View::clear()`.
 - Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
   This replaces the external buffer logic previously provided by `axom::Array`.
 

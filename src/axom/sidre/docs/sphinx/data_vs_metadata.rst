@@ -53,7 +53,7 @@ We begin by creating a view "aview" in group "A" describing an integer array
 of length 10 and allocating the array, all in one method call. This creates a 
 buffer in the datastore which holds the array data. Then, we get a pointer to 
 the start of the array from the view and initialize the array values. To give 
-some insight into how Sidre orks, we access and print various pieces of 
+some insight into how Sidre works, we access and print various pieces of 
 information about the state of the group, view, and buffer. We also print the 
 value of the buffer array at slot 5 to confirm that the buffer is indeed 
 holding the view's data. 
@@ -256,7 +256,7 @@ Example 4: More Basic Mechanics
 -------------------------------------
 
 The last example should help to make clear the point made at the beginning of
-this section end the end of example three about all Sidre operations being 
+this section and at the end of example three about all Sidre operations being 
 simple and explicit.
 
 We start with a fresh datastore with one group "A" in the root group. We
