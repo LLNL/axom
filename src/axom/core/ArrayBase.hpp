@@ -126,6 +126,8 @@ public:
     return asDerived().data()[idx];
   }
 
+  /// @{
+
   /*!
    * \brief Accessor, returns a reference to the given value.
    * For multidimensional arrays, indexes into the (flat) raw data.
@@ -136,7 +138,6 @@ public:
    *
    * \pre 0 <= idx < m_num_elements
    */
-  /// @{
   T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
@@ -310,6 +311,7 @@ public:
   /// @}
 
   /// \brief Swaps two ArrayBases
+  /// No member data, so this is a no-op
   void swap(ArrayBase&) { }
 
   /*!
