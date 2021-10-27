@@ -36,140 +36,53 @@ namespace axom
 //   Unknown
 // };
 
-namespace detail
-{
-// Takes the product of a parameter pack of T
-template <typename T, int N>
-T packProduct(const T (&arr)[N])
-{
-  return std::accumulate(arr, arr + N, 1, std::multiplies<T> {});
-}
-
-template <typename T, int N>
-bool allNonNegative(const T (&arr)[N])
-{
-  for(int i = 0; i < N; i++)
-  {
-    if(arr[i] < 0)
-    {
-      return false;
-    }
-  }
-  return true;
-}
-
-};  // namespace detail
-
 // Forward declare the templated classes and operator function(s)
 template <typename T, int DIM>
 class Array;
 
-/// \name Overloaded Array Operator(s)
-/// @{
-
-/*! 
- * \brief Overloaded output stream operator. Outputs the Array to the
- *  given output stream.
- *
- * \param [in,out] os output stream object.
- * \param [in] arr user-supplied Array instance.
- * \return os the updated output stream object.
- */
-template <typename T, int DIM>
-std::ostream& operator<<(std::ostream& os, const Array<T, DIM>& arr);
-
-/*!
- * \brief Equality comparison operator for Arrays
- *
- * \param [in] lhs left Array to compare
- * \param [in] rhs right Array to compare
- * \return true if the Arrays have the same allocator ID, are of equal length,
- * and have the same elements.
- */
-template <typename T, int DIM>
-bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
-
-/*!
- * \brief Inequality comparison operator for Arrays
- *
- * \param [in] lhs left Array to compare
- * \param [in] rhs right Array to compare
- * \return true if the Arrays do not have the same allocator ID, are not of
- * equal length, or do not have the same elements.
- */
-template <typename T, int DIM>
-bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs);
-
-/// @}
-
 /*!
  * \class Array
  *
- * \brief Provides a generic array container.
+ * \brief Provides a generic multidimensional array container.
  *
- *  The Array class provides a generic array container with
- *  dynamic reallocation and insertion. Each element in the array is
- *  stored contiguously.
+ *  The Array class provides a generic multidimensional array 
+ *  container with dynamic reallocation and insertion.  The dimensionality
+ *  of the array must be known at compile time but the extents in each dimension
+ *  are dynamic and can be changed at runtime.  Array elements are stored
+ *  contiguously.
  *
  *  \note For a multi-component array container, where each element
- *  is a tuple of 1 or more components, Axom provides the MCArray class.
+ *  is a tuple of 1 or more components, Axom provides the MCArray alias, which
+ *  corresponds to Array<T, 2>.
  *
  *  The Array class mirrors std::vector, with future support for GPUs
- *  in-development.  This class is currently being modified to support
- *  multidimensional arrays that roughly resemble numpy's ndarray.
+ *  in-development.  The class's multidimensional array functionality roughly
+    mirrors the multidimensional array support provided by numpy's ndarray.
  * 
  *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
  * 
  *  This class is meant to be a drop-in replacement for std::vector.
  *  However, it differs in its memory management and construction semantics.
- *  Specifically, we also allow axom::Array to wrap memory that it does
- *  not own (external storage), we do not require axom::Array to initialize/construct
- *  its memory at allocation time, and we use axom's memory_management
+ *  Specifically, we do not require axom::Array to initialize/construct
+ *  its memory at allocation time and we use axom's memory_management
  *  and allocator ID abstractions rather than std::allocator.
  *
+ *  Array always retains exclusive ownership of its data and is responsible for
+ *  freeing its memory.
+ *
+ *  \see ArrayView for non-owning views of one- or multi-dimensional data
  *  Depending on which constructor is used, the Array object can have two
  *  different underlying storage types:
  *
- *  * <b> Native Storage </b> <br />
- *
- *     When using native storage, the Array object manages all memory.
- *     Typically, the Array object will allocate extra space to facilitate
- *     the insertion of new elements and minimize the number of reallocations.
- *     The actual capacity of the array (i.e., total number of elements that
- *     the Array can hold) can be queried by calling the capacity() function.
- *     When allocated memory is used up, inserting a new element triggers a
- *     reallocation.  At each reallocation, extra space is allocated
- *     according to the <em> resize_ratio </em> parameter, which is set to 2.0
- *     by default. To return all extra memory, an application can call
- *     `shrink()`.
- *
- *     \warning Reallocations tend to be costly operations in terms of performance.
- *      Use `reserve()` when the number of nodes is known a priori, or
- *      use a constructor that takes an actual size and capacity when possible.
- *
- *     \note The Array destructor deallocates and returns all memory associated
- *      with it to the system.
- *
- *  * <b> External Storage </b> <br />
- *
- *    An Array object may be constructed from an external, user-supplied buffer
- *    consisting of the given number of elements. In this case, the Array
- *    object does not own the memory.  Instead, the Array object makes a
- *    shallow copy of the pointer.
- *
- *    \warning An Array object that points to an external buffer has a fixed
- *     size and cannot be dynamically resized.
- *
- *    \note The Array destructor does not deallocate a user-supplied buffer,
- *     since it does not manage that memory.
- *
- *
  * \tparam T the type of the values to hold.
  * \tparam DIM The dimension of the array.
+ * 
+ * \pre T must be CopyAssignable and Erasable
+ * \see https://en.cppreference.com/w/cpp/named_req
  *
  */
 template <typename T, int DIM = 1>
-class Array : public ArrayBase<T, DIM>
+class Array : public ArrayBase<T, DIM, Array<T, DIM>>
 {
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
@@ -227,70 +140,17 @@ public:
   template <typename... Args>
   Array(Args... args);
 
-  /*!
-   * \brief Generic constructor for an Array of arbitrary dimension with external data
-   *
-   * \param [in] data the external data this Array will wrap.
-   * \param [in] args The parameter pack containing the "shape" of the Array
-   * \see https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty
-   *
-   * \pre sizeof...(Args) == DIM
-   *
-   * \post capacity() >= size()
-   * \post size() == num_elements
-   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
-   */
-  template <typename... Args>
-  Array(T* data, Args... args);
-
   /*! 
    * \brief Copy constructor for an Array instance 
    * 
    * \param [in] allocator_id the ID of the allocator to use (optional)
-   *
-   * \note If you use the copy constructor on an argument Array 
-   *  with data from an external data buffer, the copy-constructed Array 
-   *  will have a deep copy of the data and own the data copy. 
    */
   Array(const Array& other, int allocator_id = axom::getDefaultAllocatorID());
 
   /*! 
    * \brief Move constructor for an Array instance 
-   *
-   * \note If you use the move constructor on an argument Array with an 
-   *  external data buffer, the move-constructed Array will wrap the external 
-   *  data buffer and the argument Array will be left in a valid empty state. 
    */
   Array(Array&& other);
-
-  /// @}
-
-  /// \name External Storage Array Constructors
-  /// @{
-
-  /*!
-   * \brief Constructs an Array instance with the given number of elements from
-   *  an external data buffer.
-   *
-   * \param [in] data the external data this Array will wrap.
-   * \param [in] num_elements the number of elements in the Array.
-   * \param [in] capacity the capacity of the external buffer.
-   *
-   * \pre data != nullptr
-   * \pre num_elements > 0
-   *
-   * \post getResizeRatio == 0.0
-   *
-   * \note a capacity is specified for the number of elements to store in the
-   *  array and does not correspond to the actual bytesize.
-   * \note If no capacity or capacity less than num_elements is specified then
-   *  it will default to the number of elements.
-   *
-   * \note This constructor wraps the supplied buffer and does not own the data.
-   *  Consequently, the Array instance cannot be reallocated.
-   */
-  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
-  Array(T* data, IndexType num_elements, IndexType capacity = 0);
 
   /// @}
 
@@ -299,20 +159,17 @@ public:
 
   /*! 
    * \brief Copy assignment operator for Array 
-   * 
-   * \note If you use the copy assignment operator on an argument Array 
-   *  with data from an external data buffer, the copy-assigned Array 
-   *  will have a deep copy of the data and own the data copy. 
    *
    * \note The data will be allocated using the allocator ID of the
    *  copy-assigned Array, not the argument Array.
+   * 
+   * \pre T must be TriviallyCopyable
    */
   Array& operator=(const Array& other)
   {
     if(this != &other)
     {
       m_resize_ratio = other.m_resize_ratio;
-      m_is_external = false;
       initialize(other.size(), other.capacity());
       axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
     }
@@ -321,17 +178,13 @@ public:
   }
 
   /*! 
-   * \brief Move assignment operator for Array 
-   * 
-   * \note If you use the move assignment operator on an argument Array with 
-   *  an external data buffer, the move-assigned Array will wrap the external 
-   *  data buffer and the argument Array will be left in a valid empty state. 
+   * \brief Move assignment operator for Array
    */
   Array& operator=(Array&& other)
   {
     if(this != &other)
     {
-      if(m_data != nullptr && !m_is_external)
+      if(m_data != nullptr)
       {
         axom::deallocate(m_data);
       }
@@ -340,14 +193,12 @@ public:
       m_num_elements = other.m_num_elements;
       m_capacity = other.m_capacity;
       m_resize_ratio = other.m_resize_ratio;
-      m_is_external = other.m_is_external;
       m_allocator_id = other.m_allocator_id;
 
       other.m_data = nullptr;
       other.m_num_elements = 0;
       other.m_capacity = 0;
       other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
-      other.m_is_external = false;
       other.m_allocator_id = INVALID_ALLOCATOR_ID;
     }
 
@@ -357,35 +208,12 @@ public:
   /// @}
 
   /*!
-   * Destructor. Frees the associated buffer unless the memory is external.
+   * Destructor. Frees the associated buffer.
    */
   virtual ~Array();
 
   /// \name Array element access operators
   /// @{
-
-  /*!
-   * \brief Accessor, returns a reference to the given value.
-   * For multidimensional arrays, indexes into the (flat) raw data.
-   *
-   * \param [in] idx the position of the value to return.
-   *
-   * \note equivalent to *(array.data() + idx).
-   *
-   * \pre 0 <= idx < m_num_elements
-   */
-  /// @{
-  T& operator[](const IndexType idx)
-  {
-    assert(inBounds(idx));
-    return m_data[idx];
-  }
-  /// \overload
-  const T& operator[](const IndexType idx) const
-  {
-    assert(inBounds(idx));
-    return m_data[idx];
-  }
 
   // TODO: Implement View class for the case where sizeof...(Args) < DIM (i.e., where the indexing results in a nonscalar)
 
@@ -394,8 +222,8 @@ public:
    */
   /// @{
 
-  T* data() { return m_data; }
-  const T* data() const { return m_data; }
+  inline T* data() { return m_data; }
+  inline const T* data() const { return m_data; }
 
   /// @}
 
@@ -530,16 +358,21 @@ public:
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
 
   // Make the overload "visible"
-  using ArrayBase<T, DIM>::insert;
+  using ArrayBase<T, DIM, Array<T, DIM>>::insert;
 
   /*!
    * \brief Appends an Array to the end of the calling object
    *
    * \param [in] other The Array to append
+   * \tparam OtherArrayType The underlying type of the other array
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  void append(const Array& other) { ArrayBase<T, DIM>::insert(size(), other); }
+  template <typename OtherArrayType>
+  void append(const ArrayBase<T, DIM, OtherArrayType>& other)
+  {
+    ArrayBase<T, DIM, Array<T, DIM>>::insert(size(), other);
+  }
 
   /*!
    * \brief Erases an element from the Array 
@@ -568,6 +401,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by 1.
+   *
+   * \pre T must be MoveAssignable
    */
   template <typename... Args>
   void emplace(IndexType pos, Args&&... args);
@@ -580,6 +415,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by 1.
+   *
+   * \pre T must be MoveAssignable
    *
    * \return An ArrayIterator to the emplaced element.
    */
@@ -644,7 +481,7 @@ public:
   /*!
    * \brief Return the number of elements stored in the data array.
    */
-  IndexType size() const { return m_num_elements; }
+  inline IndexType size() const { return m_num_elements; }
 
   /*!
    * \brief Update the number of elements stored in the data array.
@@ -656,8 +493,6 @@ public:
 
   /*!
    * \brief Exchanges the contents of this Array with the other.
-   *
-   * \note The externality of the buffers will follow the swap
    */
   void swap(Array<T, DIM>& other);
 
@@ -677,19 +512,6 @@ public:
    * \brief Get the ID for the umpire allocator
    */
   int getAllocatorID() const { return m_allocator_id; }
-
-  /*!
-   * \brief Return true iff the external buffer constructor was called.
-   */
-  bool isExternal() const { return m_is_external; }
-
-  /*!
-   * \brief Prints the Array
-   *
-   * \param os The output stream to write to
-   * \return A reference to the modified ostream
-   */
-  std::ostream& print(std::ostream& os) const;
 
   /// @}
 
@@ -747,23 +569,12 @@ protected:
    */
   virtual void dynamicRealloc(IndexType new_num_elements);
 
-  /// \name Internal bounds-checking routines
-  /// @{
-
-  /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
-  {
-    return idx >= 0 && idx < m_num_elements;
-  }
-  /// @}
-
   T* m_data = nullptr;
   /// \brief The full number of elements in the array
   ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
   IndexType m_num_elements = 0;
   IndexType m_capacity = 0;
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
-  bool m_is_external = false;
   int m_allocator_id;
 };
 
@@ -783,7 +594,7 @@ Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 template <typename T, int DIM>
 template <typename... Args>
 Array<T, DIM>::Array(Args... args)
-  : ArrayBase<T, DIM>(args...)
+  : ArrayBase<T, DIM, Array<T, DIM>>(args...)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -792,24 +603,6 @@ Array<T, DIM>::Array(Args... args)
   const IndexType tmp_args[] = {args...};
   assert(detail::allNonNegative(tmp_args));
   initialize(detail::packProduct(tmp_args), 0);
-}
-
-template <typename T, int DIM>
-template <typename... Args>
-Array<T, DIM>::Array(T* data, Args... args)
-  : ArrayBase<T, DIM>(args...)
-  , m_data(data)
-  , m_resize_ratio(0.0)
-  , m_is_external(true)
-  , m_allocator_id(INVALID_ALLOCATOR_ID)
-{
-  static_assert(sizeof...(Args) == DIM,
-                "Array size must match number of dimensions");
-  // Intel hits internal compiler error when casting as part of function call
-  const IndexType tmp_args[] = {args...};
-  const auto num_elements = detail::packProduct(tmp_args);
-  m_capacity = num_elements;
-  updateNumElements(num_elements);
 }
 
 //------------------------------------------------------------------------------
@@ -823,25 +616,9 @@ Array<T, DIM>::Array(IndexType num_elements, IndexType capacity, int allocator_i
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
-Array<T, DIM>::Array(T* data, IndexType num_elements, IndexType capacity)
-  : m_data(data)
-  , m_num_elements(num_elements)
-  , m_resize_ratio(0.0)
-  , m_is_external(true)
-  , m_allocator_id(INVALID_ALLOCATOR_ID)
-{
-  m_capacity = (capacity < num_elements) ? num_elements : capacity;
-
-  assert(m_num_elements >= 0);
-  assert(m_num_elements <= m_capacity);
-  assert(m_data != nullptr || m_capacity <= 0);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
 Array<T, DIM>::Array(const Array& other, int allocator_id)
-  : ArrayBase<T, DIM>(static_cast<const ArrayBase<T, DIM>&>(other))
+  : ArrayBase<T, DIM, Array<T, DIM>>(
+      static_cast<const ArrayBase<T, DIM, Array<T, DIM>>&>(other))
   , m_allocator_id(allocator_id)
 {
   initialize(other.size(), other.capacity());
@@ -851,7 +628,8 @@ Array<T, DIM>::Array(const Array& other, int allocator_id)
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
 Array<T, DIM>::Array(Array&& other)
-  : ArrayBase<T, DIM>(static_cast<ArrayBase<T, DIM>&&>(std::move(other)))
+  : ArrayBase<T, DIM, Array<T, DIM>>(
+      static_cast<ArrayBase<T, DIM, Array<T, DIM>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
   , m_allocator_id(axom::getDefaultAllocatorID())
 {
@@ -859,13 +637,11 @@ Array<T, DIM>::Array(Array&& other)
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
-  m_is_external = other.m_is_external;
   m_allocator_id = other.m_allocator_id;
 
   other.m_data = nullptr;
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
-  other.m_is_external = false;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
 }
 
@@ -873,7 +649,7 @@ Array<T, DIM>::Array(Array&& other)
 template <typename T, int DIM>
 Array<T, DIM>::~Array()
 {
-  if(m_data != nullptr && !m_is_external)
+  if(m_data != nullptr)
   {
     axom::deallocate(m_data);
   }
@@ -889,20 +665,6 @@ inline void Array<T, DIM>::fill(const T& value)
   {
     m_data[i] = value;
   }
-}
-
-//------------------------------------------------------------------------------
-template <typename T>
-inline void ArrayBase<T, 1>::push_back(const T& value)
-{
-  emplace_back(value);
-}
-
-//------------------------------------------------------------------------------
-template <typename T>
-inline void ArrayBase<T, 1>::push_back(T&& value)
-{
-  emplace_back(std::move(value));
 }
 
 //------------------------------------------------------------------------------
@@ -1086,14 +848,6 @@ inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::emplace(
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-template <typename... Args>
-inline void ArrayBase<T, 1>::emplace_back(Args&&... args)
-{
-  asDerived().emplace(asDerived().size(), args...);
-}
-
-//------------------------------------------------------------------------------
 template <typename T, int DIM>
 template <typename... Args>
 inline void Array<T, DIM>::resize(Args... args)
@@ -1105,8 +859,8 @@ inline void Array<T, DIM>::resize(Args... args)
   assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
 
-  static_cast<ArrayBase<T, DIM>&>(*this) =
-    ArrayBase<T, DIM> {static_cast<IndexType>(args)...};
+  static_cast<ArrayBase<T, DIM, Array<T, DIM>>&>(*this) =
+    ArrayBase<T, DIM, Array<T, DIM>> {static_cast<IndexType>(args)...};
 
   if(new_num_elements > m_capacity)
   {
@@ -1120,50 +874,21 @@ inline void Array<T, DIM>::resize(Args... args)
 template <typename T, int DIM>
 inline void Array<T, DIM>::swap(Array<T, DIM>& other)
 {
-  ArrayBase<T, DIM>::swap(other);
+  ArrayBase<T, DIM, Array<T, DIM>>::swap(other);
   T* temp_data = m_data;
   IndexType temp_num_elements = m_num_elements;
   IndexType temp_capacity = m_capacity;
   double temp_resize_ratio = m_resize_ratio;
-  bool temp_is_external = m_is_external;
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
-  m_is_external = other.m_is_external;
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
-  other.m_is_external = temp_is_external;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
-inline std::ostream& Array<T, DIM>::print(std::ostream& os) const
-{
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
-  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
-  // if there exists no allocator for Constant memory. Is there a more fine-grained
-  // approach we can use to see what allocators are available before trying to get their IDs?
-  if(m_allocator_id ==
-     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
-  {
-    std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
-    utilities::processAbort();
-  }
-#endif
-
-  os << "[ ";
-  for(IndexType i = 0; i < m_num_elements; i++)
-  {
-    os << m_data[i] << " ";
-  }
-  os << " ]";
-
-  return os;
 }
 
 //------------------------------------------------------------------------------
@@ -1236,17 +961,6 @@ inline void Array<T, DIM>::setCapacity(IndexType new_capacity)
 {
   assert(new_capacity >= 0);
 
-  if(m_is_external && new_capacity <= m_capacity)
-  {
-    return;
-  }
-
-  if(m_is_external)
-  {
-    std::cerr << "Cannot reallocate an externally provided buffer.";
-    utilities::processAbort();
-  }
-
   if(new_capacity < m_num_elements)
   {
     updateNumElements(new_capacity);
@@ -1262,12 +976,6 @@ inline void Array<T, DIM>::setCapacity(IndexType new_capacity)
 template <typename T, int DIM>
 inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
 {
-  if(m_is_external)
-  {
-    std::cerr << "Cannot reallocate an externally provided buffer.";
-    utilities::processAbort();
-  }
-
   assert(m_resize_ratio >= 1.0);
   IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
   const IndexType block_size = this->blockSize();
@@ -1290,46 +998,6 @@ inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
   m_capacity = new_capacity;
 
   assert(m_data != nullptr || m_capacity <= 0);
-}
-
-//------------------------------------------------------------------------------
-/// Free functions implementing Array's operator(s)
-//------------------------------------------------------------------------------
-template <typename T, int DIM>
-std::ostream& operator<<(std::ostream& os, const Array<T, DIM>& arr)
-{
-  arr.print(os);
-  return os;
-}
-
-template <typename T, int DIM>
-bool operator==(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
-{
-  if(lhs.getAllocatorID() != rhs.getAllocatorID())
-  {
-    return false;
-  }
-
-  if(lhs.shape() != rhs.shape())
-  {
-    return false;
-  }
-
-  for(int i = 0; i < lhs.size(); i++)
-  {
-    if(!(lhs[i] == rhs[i]))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-template <typename T, int DIM>
-bool operator!=(const Array<T, DIM>& lhs, const Array<T, DIM>& rhs)
-{
-  return !(lhs == rhs);
 }
 
 } /* namespace axom */
