@@ -58,6 +58,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds a new query for intersection-based "shaping" of revolved contours onto 3D hexahedral meshes.
   This capability uses a RAJA policy operate on various execution spaces (host, openmp, device).
 - Quest: Adds a "shaping" example for embedding a klee specification onto an MFEM mesh
+- Added Sidre function `View::clear()`.
 - Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
   This replaces the external buffer logic previously provided by `axom::Array`.
 
@@ -115,6 +116,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `axom::Array`-related classes have been moved into individual files.
 - Removed logic from ``axom::reallocate()`` relating to older versions of Umpire.
   Axom requires Umpire v2.1.0+
+- RAJA dependency updated to 0.14.0
+- Umpire dependency updated to 0.6.0
+- Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021).  This was required due to Spack
+  moving to HDF5's CMake build system.
+- Internal BLT dependency updatd to 0.4.1
 
 
 ### Fixed

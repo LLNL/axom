@@ -110,6 +110,8 @@ void SIDRE_View_attach_buffer_shape(SIDRE_View* self,
                                     const SIDRE_IndexType* shape,
                                     SIDRE_Buffer* buff);
 
+void SIDRE_View_clear(SIDRE_View* self);
+
 void SIDRE_View_apply_0(SIDRE_View* self);
 
 void SIDRE_View_apply_nelems(SIDRE_View* self, SIDRE_IndexType num_elems);

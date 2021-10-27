@@ -171,7 +171,7 @@ template <int DIM>
 primal::Point<double, DIM> getCentroid(const primal::Point<double, DIM>& pt0,
                                        const primal::Point<double, DIM>& pt1)
 {
-  return (pt0.array() + pt1.array()) / 2.;
+  return primal::Point<double, DIM>((pt0.array() + pt1.array()) / 2.);
 }
 
 /*!
@@ -182,7 +182,8 @@ primal::Point<double, DIM> getCentroid(const primal::Point<double, DIM>& pt0,
                                        const primal::Point<double, DIM>& pt1,
                                        const primal::Point<double, DIM>& pt2)
 {
-  return (pt0.array() + pt1.array() + pt2.array()) / 3.;
+  return primal::Point<double, DIM>((pt0.array() + pt1.array() + pt2.array()) /
+                                    3.);
 }
 
 /*!
@@ -194,7 +195,8 @@ primal::Point<double, DIM> getCentroid(const primal::Point<double, DIM>& pt0,
                                        const primal::Point<double, DIM>& pt2,
                                        const primal::Point<double, DIM>& pt3)
 {
-  return (pt0.array() + pt1.array() + pt2.array() + pt3.array()) / 4.;
+  return primal::Point<double, DIM>(
+    (pt0.array() + pt1.array() + pt2.array() + pt3.array()) / 4.);
 }
 
 /*!

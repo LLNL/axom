@@ -216,8 +216,8 @@ void check_analytic_plane(bool use_shared = false)
   generate_planar_mesh_stl_file(file);
 
   // STEP 2: define analytic plane corresponding to the planar mesh;
-  const double origin[] = {0.0, 0.0, 0.0};
-  const double normal[] = {0.0, 0.0, 1.0};
+  const primal::Point<double, 3> origin {0.0, 0.0, 0.0};
+  const primal::Vector<double, 3> normal {0.0, 0.0, 1.0};
   primal::Plane<double, 3> analytic_plane(normal, origin);
 
   // STEP 2: initialize the signed distance
@@ -231,9 +231,10 @@ void check_analytic_plane(bool use_shared = false)
   {
     double pt[NDIMS];
     mesh.getNode(inode, pt);
+    primal::Point<double, NDIMS> thepoint(pt);
     phi[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
 
-    const double phi_expected = analytic_plane.signedDistance(pt);
+    const double phi_expected = analytic_plane.signedDistance(thepoint);
     EXPECT_DOUBLE_EQ(phi[inode], phi_expected);
     err[inode] = utilities::abs(phi[inode] - phi_expected);
   }

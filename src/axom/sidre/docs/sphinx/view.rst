@@ -136,6 +136,7 @@ View Property Operations
  * Is the view equivalent to another view; i.e., are names and data descriptions
    the same?
  * Rename a view.
+ * Clear the view by removing description and data.
 
 Data Association Queries
 --------------------------

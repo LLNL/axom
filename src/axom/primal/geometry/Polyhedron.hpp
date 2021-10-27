@@ -382,7 +382,7 @@ public:
     }
     sum /= numVertices();
 
-    return sum;
+    return PointType(sum);
   }
 
 private:

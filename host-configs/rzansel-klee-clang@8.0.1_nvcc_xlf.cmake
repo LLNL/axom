@@ -9,19 +9,13 @@
 #------------------------------------------------------------------------------
 # Compiler Spec: clang@8.0.1_nvcc_xlf
 #------------------------------------------------------------------------------
-# Note:
-#  Contains a parallel build of MFEM generated using: 
-#    >./scripts/llnl_scripts/build_tpls.py  --spec "%clang@8.0.1_nvcc_xlf~openmp~devtools+mfem+cuda+c2c cuda_arch=70 ^mfem+mpi+metis+zlib"
-#  and adds a flag to use the axom version of mfem sidre data collection (see bottom of file)
-#------------------------------------------------------------------------------
-
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_08_05_09_17_56/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_20_23_46/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_08_05_09_17_56/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_20_23_46/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_08_05_09_17_56/spack/lib/spack/env/clang/flang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_20_23_46/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
@@ -32,8 +26,6 @@ else()
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACHE PATH "")
 
 endif()
-
-set(CMAKE_Fortran_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -107,9 +99,9 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_08_05_09_17_56/clang-8.0.1_nvcc_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_20_23_46/clang-8.0.1_nvcc_xlf" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-develop" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
@@ -119,9 +111,9 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
 set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.12.1" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0" CACHE PATH "")
 
 # scr not built
 
@@ -135,8 +127,4 @@ set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
 
 set(ENABLE_DOCS OFF CACHE BOOL "")
 
-#------------------------------------------------------------------------------
-# Additional setup for Klee examples
-#------------------------------------------------------------------------------
-set(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION ON CACHE STRING "")
 
