@@ -10,11 +10,11 @@
 #include "axom/core/Macros.hpp"               // for axom macros
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
+#include "axom/core/StackArray.hpp"
+#include "axom/core/numerics/matvecops.hpp"  // for dot_product
 
 // C/C++ includes
-#include <array>     // for std::array
 #include <iostream>  // for std::cerr and std::ostream
-#include <numeric>   // for std::inner_product
 
 #ifdef AXOM_USE_UMPIRE
   #include "umpire/resource/MemoryResourceTypes.hpp"
@@ -126,8 +126,8 @@ public:
    */
   template <typename OtherArrayType>
   ArrayBase(const ArrayBase<T, DIM, OtherArrayType>& other)
-    : m_dims(other.m_dims)
-    , m_strides(other.m_strides)
+    : m_dims(other.shape())
+    , m_strides(other.strides())
   { }
 
   /*!
@@ -142,22 +142,20 @@ public:
    */
   template <typename... Args,
             typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  T& operator()(Args... args)
+  AXOM_HOST_DEVICE T& operator()(Args... args)
   {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
+    const IndexType indices[] = {static_cast<IndexType>(args)...};
+    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
   template <typename... Args,
             typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  const T& operator()(Args... args) const
+  AXOM_HOST_DEVICE const T& operator()(Args... args) const
   {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
+    const IndexType indices[] = {static_cast<IndexType>(args)...};
+    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
@@ -195,10 +193,16 @@ public:
   }
 
   /// \brief Returns the dimensions of the Array
-  const std::array<IndexType, DIM>& shape() const { return m_dims; }
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& shape() const
+  {
+    return m_dims;
+  }
 
   /// \brief Returns the strides of the Array
-  const std::array<IndexType, DIM>& strides() const { return m_strides; }
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
+  {
+    return m_strides;
+  }
 
   /*!
    * \brief Appends an Array to the end of the calling object
@@ -279,9 +283,9 @@ private:
 
 protected:
   /// \brief The sizes (extents?) in each dimension
-  std::array<IndexType, DIM> m_dims;
+  StackArray<IndexType, DIM> m_dims;
   /// \brief The strides in each dimension
-  std::array<IndexType, DIM> m_strides;
+  StackArray<IndexType, DIM> m_strides;
 };
 
 /// \brief Array implementation specific to 1D Arrays
@@ -326,9 +330,12 @@ public:
   void emplace_back(Args&&... args);
 
   /// \brief Returns the dimensions of the Array
-  // FIXME: std::array is used for consistency with multidim case, should we just return the scalar?
+  // FIXME: StackArray is used for consistency with multidim case, should we just return the scalar?
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
-  std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
+  AXOM_HOST_DEVICE StackArray<IndexType, 1> shape() const
+  {
+    return {{asDerived().size()}};
+  }
 
   /*!
    * \brief Accessor, returns a reference to the given value.
