@@ -15,6 +15,7 @@
 
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
+#include <numeric>   // for std::accumulate
 
 #ifdef AXOM_USE_UMPIRE
   #include "umpire/resource/MemoryResourceTypes.hpp"
