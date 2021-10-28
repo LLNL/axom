@@ -810,7 +810,7 @@ __global__ void assign_raw_2d(T* data, int M, int N)
   {
     for(int j = 0; j < N; j++)
     {
-      data[i * N + j] = i * N + j;
+      data[i * N + j] = i * i + j;
     }
   }
 }
@@ -822,7 +822,7 @@ __global__ void assign_view_2d(ArrayView<T, 2, SPACE> view)
   {
     for(int j = 0; j < view.shape()[1]; j++)
     {
-      view(i, j) = (i * view.shape()[1] + j) * 2;
+      view(i, j) = j * j + i;
     }
   }
 }
@@ -850,7 +850,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   {
     for(int j = 0; j < N; j++)
     {
-      EXPECT_EQ(check_raw_array_dynamic(i, j), i * N + j);
+      EXPECT_EQ(check_raw_array_dynamic(i, j), i * i + j);
     }
   }
 
@@ -863,7 +863,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   {
     for(int j = 0; j < N; j++)
     {
-      EXPECT_EQ(check_raw_array_host(i, j), i * N + j);
+      EXPECT_EQ(check_raw_array_host(i, j), i * i + j);
     }
   }
 
@@ -881,7 +881,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   {
     for(int j = 0; j < N; j++)
     {
-      EXPECT_EQ(check_view_array_dynamic(i, j), 2 * (i * N + j));
+      EXPECT_EQ(check_view_array_dynamic(i, j), j * j + i);
     }
   }
 
@@ -894,7 +894,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   {
     for(int j = 0; j < N; j++)
     {
-      EXPECT_EQ(check_view_array_host(i, j), 2 * (i * N + j));
+      EXPECT_EQ(check_view_array_host(i, j), j * j + i);
     }
   }
 }

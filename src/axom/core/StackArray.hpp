@@ -63,8 +63,10 @@ struct StackArray
   /// @{
 
   AXOM_HOST_DEVICE T* begin() noexcept { return &m_data[0]; }
+  AXOM_HOST_DEVICE const T* begin() const noexcept { return &m_data[0]; }
 
   AXOM_HOST_DEVICE T* end() noexcept { return &m_data[0] + N; }
+  AXOM_HOST_DEVICE const T* end() const noexcept { return &m_data[0] + N; }
 
   /// @}
 
