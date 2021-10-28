@@ -13,7 +13,7 @@
 
 #include "axom/core.hpp"
 #include "axom/slam.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -38,10 +38,10 @@ struct Value_Checker
       if(values.size() != vec.size())
       {
         SLIC_ERROR(
-          fmt::format("Sizes of arrays are different. 'values' has {} "
-                      "elements; 'vec' has {} elements",
-                      values.size(),
-                      vec.size()));
+          axom::fmt::format("Sizes of arrays are different. 'values' has {} "
+                            "elements; 'vec' has {} elements",
+                            values.size(),
+                            vec.size()));
       }
       else
       {
