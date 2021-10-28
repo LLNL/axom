@@ -173,6 +173,8 @@ public:
   {
     SLIC_ASSERT(!m_initialized);
 
+    m_allocatorId = allocatorID;
+
     // Setup Grid Resolution, dealing with possible null pointer
     if(gridRes == nullptr)
     {
@@ -383,6 +385,33 @@ public:
   }
 
   /*!
+   * \brief Returns a list of candidates in the vicinity of a set of query
+   *  objects.
+   *
+   * \tparam QueryGeom The type of the query object (e.g. point or box)
+   * \param [in] qsize The number of objects to query against the implicit grid
+   * \param [in] queryObjs The array of query objects, of length qsize
+   * \param [out] outOffsets Offsets into the candidates array for each query
+   *  object
+   * \param [out] out counts The number of candidates for each query object
+   * \param [out] candidates The candidate IDs for each query object
+   *
+   * \note The output arrays are allocated inside the function, using the given
+   *  allocator ID passed in during implicit grid initialization.
+   *
+   * \note Upon completion, the ith query point has:
+   *  * counts[ i ] candidates
+   *  * Stored in the candidates array in the following range:
+   *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
+   */
+  template <typename QueryGeom>
+  void getCandidatesAsArray(IndexType qsize,
+                            const QueryGeom* queryObjs,
+                            axom::Array<IndexType>& outOffsets,
+                            axom::Array<IndexType>& outCounts,
+                            axom::Array<IndexType>& outCandidates);
+
+  /*!
    * Tests whether grid cell gridPt indexes the element with index idx
    *
    * \param [in] gridCell The cell within the ImplicitGrid that we are testing
@@ -473,6 +502,9 @@ private:
 
   //! The data associated with each bin
   BinBitMap m_binData[NDIMS];
+
+  //! The allocator ID to use
+  int m_allocatorId;
 
   //! Tracks whether the ImplicitGrid has been initialized
   bool m_initialized;
@@ -627,6 +659,71 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::getQueryObject() const
 
   SLIC_ASSERT(m_initialized);
   return QueryObject {m_bb, m_lattice, this->m_binData};
+}
+
+template <int NDIMS, typename ExecSpace, typename IndexType>
+template <typename QueryGeom>
+void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
+  IndexType qsize,
+  const QueryGeom* queryObjs,
+  axom::Array<IndexType>& outOffsets,
+  axom::Array<IndexType>& outCounts,
+  axom::Array<IndexType>& outCandidates)
+{
+  auto gridQuery = getQueryObject();
+
+  outCounts = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
+  outOffsets = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
+#ifdef AXOM_USE_RAJA
+  IndexType* countsPtr = outCounts.data();
+  IndexType* offsetsPtr = outOffsets.data();
+
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
+  // Step 1: count number of candidate intersections for each point
+  for_all<ExecSpace>(
+    qsize,
+    AXOM_LAMBDA(IndexType i) {
+      countsPtr[i] = gridQuery.countCandidates(queryObjs[i]);
+      totalCountReduce += countsPtr[i];
+    });
+
+  // Step 2: exclusive scan for offsets in candidate array
+  using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(countsPtr, qsize),
+                                    RAJA::make_span(offsetsPtr, qsize),
+                                    RAJA::operators::plus<IndexType> {});
+
+  IndexType totalCount = totalCountReduce.get();
+
+  // Step 3: allocate memory for all candidates
+  outCandidates = axom::Array<IndexType>(totalCount, totalCount, m_allocatorId);
+  IndexType* candidatesPtr = outCandidates.data();
+
+  // Step 4: fill candidate array for each query box
+  for_all<ExecSpace>(
+    qsize,
+    AXOM_LAMBDA(IndexType i) {
+      int startIdx = offsetsPtr[i];
+      int currCount = 0;
+      auto onCandidate = [&](int candidateIdx) -> bool {
+        candidatesPtr[startIdx] = candidateIdx;
+        currCount++;
+        startIdx++;
+        return currCount >= countsPtr[i];
+      };
+      gridQuery.visitCandidates(queryObjs[i], onCandidate);
+    });
+#else
+  for(int i = 0; i < qsize; i++)
+  {
+    outCounts[i] = 0;
+    gridQuery.visitCandidates(queryObjs[i], [&](int candidateIdx) {
+      outCounts[i]++;
+      outCandidates.push_back(candidateIdx);
+    });
+  }
+#endif
 }
 
 template <int NDIMS, typename ExecSpace, typename IndexType>
