@@ -69,6 +69,9 @@ struct BitTraits<axom::uint8>
 /* clang-format off */
 AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 {
+#ifdef AXOM_DEVICE_CODE
+  return word != axom::uint64(0) ? __ffsll(word) - 1 : 64;
+#else
   // Explicit implementation adapted from bit twiddling hacks
   // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
   // and modified for 64 bits:
@@ -86,6 +89,7 @@ AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
   if (word & 0x5555555555555555) { cnt -=  1; }
 
   return cnt;
+#endif
 }
 /* clang-format on */
 

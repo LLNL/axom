@@ -759,6 +759,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
     {
       currWord &= m_binData[idim][cellIdx[idim]].data()[iword];
     }
+    if(currWord == BitsetType::Word {0})
+    {
+      continue;
+    }
     // currWord now contains the resulting candidacy information
     // for our given point
     ncandidates += axom::utilities::popCount(currWord);
@@ -773,8 +777,20 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
 {
   if(!m_bb.intersectsWith(bbox)) return 0;
 
-  const GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
-  const GridCell upperCell = m_lattice.gridCell(bbox.getMax());
+  GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
+  GridCell upperCell = m_lattice.gridCell(bbox.getMax());
+
+  for(int idim = 0; idim < NDIMS; idim++)
+  {
+    // Note: Need to clamp the gridCell ranges since the input box boundaries
+    //       are not restricted to the implicit grid's bounding box
+    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], 0);
+    upperCell[idim] =
+      axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
+  }
+
+  const GridCell lowerRange = lowerCell;
+  const GridCell upperRange = upperCell;
 
   IndexType ncandidates {0};
 
@@ -787,19 +803,18 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
     BitsetType::Word currWord = ~(BitsetType::Word {0});
     for(int idim = 0; idim < NDIMS; idim++)
     {
-      // Note: Need to clamp the gridCell ranges since the input box boundaries
-      //       are not restricted to the implicit grid's bounding box
-      int lower = axom::utilities::clampLower(lowerCell[idim], 0);
-      int upper =
-        axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
       // Compute candidates across all bins for current word
       BitsetType::Word dimWord {0};
-      for(int ibin = lower; ibin <= upper; ibin++)
+      for(int ibin = lowerRange[idim]; ibin <= upperRange[idim]; ibin++)
       {
         dimWord |= m_binData[idim][ibin].data()[iword];
       }
       // Intersect with candidate sets from other dimensions
       currWord &= dimWord;
+    }
+    if(currWord == BitsetType::Word {0})
+    {
+      continue;
     }
     // currWord now contains the resulting candidacy information
     // for our given point
@@ -843,20 +858,23 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     {
       currWord &= m_binData[idim][cellIdx[idim]].data()[iword];
     }
+    if(currWord == BitsetType::Word {0})
+    {
+      continue;
+    }
     // currWord now contains the resulting candidacy information
     // for our given point
     int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
-    for(int ibit = 0; ibit < numBits; ibit++)
+    int currBit = axom::utilities::trailingZeros(currWord);
+    while(currBit < numBits)
     {
-      BitsetType::Word mask = BitsetType::Word {1} << ibit;
-      if((currWord & mask) != BitsetType::Word {0})
+      bool found = getVisitResult(candidatePredicate,
+                                  iword * BitsetType::BitsPerWord + currBit);
+      currBit++;
+      currBit += axom::utilities::trailingZeros(currWord >> currBit);
+      if(found)
       {
-        bool found = getVisitResult(candidatePredicate,
-                                    iword * BitsetType::BitsPerWord + ibit);
-        if(found)
-        {
-          return;
-        }
+        return;
       }
     }
   }
@@ -871,8 +889,20 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
 {
   if(!m_bb.intersectsWith(bbox)) return;
 
-  const GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
-  const GridCell upperCell = m_lattice.gridCell(bbox.getMax());
+  GridCell lowerCell = m_lattice.gridCell(bbox.getMin());
+  GridCell upperCell = m_lattice.gridCell(bbox.getMax());
+
+  for(int idim = 0; idim < NDIMS; idim++)
+  {
+    // Note: Need to clamp the gridCell ranges since the input box boundaries
+    //       are not restricted to the implicit grid's bounding box
+    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], 0);
+    upperCell[idim] =
+      axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
+  }
+
+  const GridCell lowerRange = lowerCell;
+  const GridCell upperRange = upperCell;
 
   const int bitsPerWord = BitsetType::BitsPerWord;
 
@@ -885,34 +915,32 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     BitsetType::Word currWord = ~(BitsetType::Word {0});
     for(int idim = 0; idim < NDIMS; idim++)
     {
-      // Note: Need to clamp the gridCell ranges since the input box boundaries
-      //       are not restricted to the implicit grid's bounding box
-      int lower = axom::utilities::clampLower(lowerCell[idim], 0);
-      int upper =
-        axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
       // Compute candidates across all bins for current word
       BitsetType::Word dimWord {0};
-      for(int ibin = lower; ibin <= upper; ibin++)
+      for(int ibin = lowerRange[idim]; ibin <= upperRange[idim]; ibin++)
       {
         dimWord |= m_binData[idim][ibin].data()[iword];
       }
       // Intersect with candidate sets from other dimensions
       currWord &= dimWord;
     }
+    if(currWord == BitsetType::Word {0})
+    {
+      continue;
+    }
     // currWord now contains the resulting candidacy information
     // for our given point
     int numBits = axom::utilities::min(bitsPerWord, bitsetSize - (iword * 64));
-    for(int ibit = 0; ibit < numBits; ibit++)
+    int currBit = axom::utilities::trailingZeros(currWord);
+    while(currBit < numBits)
     {
-      BitsetType::Word mask = BitsetType::Word {1} << ibit;
-      if((currWord & mask) != BitsetType::Word {0})
+      bool found = getVisitResult(candidatePredicate,
+                                  iword * BitsetType::BitsPerWord + currBit);
+      currBit++;
+      currBit += axom::utilities::trailingZeros(currWord >> currBit);
+      if(found)
       {
-        bool found = getVisitResult(candidatePredicate,
-                                    iword * BitsetType::BitsPerWord + ibit);
-        if(found)
-        {
-          return;
-        }
+        return;
       }
     }
   }
