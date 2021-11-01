@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core/Array.hpp"
+#include "axom/core/ArrayView.hpp"
 #include "axom/core/memory_management.hpp"
 
 #include "gtest/gtest.h"
@@ -698,14 +699,8 @@ void check_alloc(Array<T>& v, const int& id)
  * \param [in] v the external array to check.
  */
 template <typename T>
-void check_external(Array<T>& v)
+void check_external_view(ArrayView<T>& v)
 {
-  const char IGNORE_OUTPUT[] = ".*";
-  ASSERT_TRUE(v.isExternal());
-
-  /* Check that the array is full. */
-  ASSERT_EQ(v.size(), v.capacity());
-
   const IndexType size = v.size();
   const IndexType num_values = size;
   T* const data_ptr = v.data();
@@ -735,15 +730,7 @@ void check_external(Array<T>& v)
   }
 
   EXPECT_EQ(size, v.size());
-  EXPECT_EQ(size, v.capacity());
   EXPECT_EQ(data_ptr, v.data());
-
-  /* Since the array is full all of the following calls should require a
-   * reallocation and cause a fatal error. */
-  T val = T();
-  EXPECT_DEATH_IF_SUPPORTED(v.push_back(val), IGNORE_OUTPUT);
-  EXPECT_DEATH_IF_SUPPORTED(v.insert(0, 1, val), IGNORE_OUTPUT);
-  EXPECT_DEATH_IF_SUPPORTED(v.reserve(size + 1), IGNORE_OUTPUT);
 }
 
 } /* end namespace internal */
@@ -943,7 +930,7 @@ TEST(core_array, checkAlloc)
 }
 
 //------------------------------------------------------------------------------
-TEST(core_array_DeathTest, checkExternal)
+TEST(core_array, checkExternalView)
 {
   constexpr double MAGIC_NUM = 5683578.8;
   constexpr IndexType MAX_SIZE = 256;
@@ -959,16 +946,16 @@ TEST(core_array_DeathTest, checkExternal)
 
   for(IndexType size = 16; size <= MAX_SIZE; size *= 2)
   {
-    Array<int> v_int(buffer.ints, size, size / 16);
-    EXPECT_EQ(v_int.data(), buffer.ints);
-    internal::check_external(v_int);
+    ArrayView<int> v_int_view(buffer.ints, size);
+    EXPECT_EQ(v_int_view.data(), buffer.ints);
+    internal::check_external_view(v_int_view);
 
-    Array<double> v_double(buffer.doubles, size, size / 16);
-    EXPECT_EQ(v_double.data(), buffer.doubles);
-    internal::check_external(v_double);
+    ArrayView<double> v_double_view(buffer.doubles, size);
+    EXPECT_EQ(v_double_view.data(), buffer.doubles);
+    internal::check_external_view(v_double_view);
 
     /* Set v_double's data to MAGIC_NUM */
-    v_double.fill(MAGIC_NUM);
+    std::fill_n(v_double_view.data(), size, MAGIC_NUM);
 
     /* Check that the data still exists in the buffer */
     for(IndexType i = 0; i < MAX_VALUES; ++i)
@@ -1040,20 +1027,11 @@ TEST(core_array, check_move_copy)
     Array<int> v_int(size, capacity);
     v_int.fill(MAGIC_INT);
 
-    std::vector<int> ints(size, MAGIC_INT);
-    Array<int> v_int_external(ints.data(), size, capacity);
-
     Array<int> v_int_copy_ctor(v_int);
     Array<int> v_int_copy_assign;
     v_int_copy_assign = v_int;
     EXPECT_EQ(v_int, v_int_copy_ctor);
     EXPECT_EQ(v_int, v_int_copy_assign);
-
-    Array<int> v_int_external_copy_ctor(v_int_external);
-    Array<int> v_int_external_copy_assign;
-    v_int_external_copy_assign = v_int_external;
-    EXPECT_NE(v_int_external, v_int_external_copy_ctor);
-    EXPECT_NE(v_int_external, v_int_external_copy_assign);
 
     Array<int> v_int_move_assign;
     v_int_move_assign = std::move(v_int_copy_assign);
@@ -1067,20 +1045,11 @@ TEST(core_array, check_move_copy)
     Array<double> v_double(size, capacity);
     v_double.fill(MAGIC_DOUBLE);
 
-    std::vector<double> doubles(size, MAGIC_DOUBLE);
-    Array<double> v_double_external(doubles.data(), size, capacity);
-
     Array<double> v_double_copy_ctor(v_double);
     Array<double> v_double_copy_assign;
     v_double_copy_assign = v_double;
     EXPECT_EQ(v_double, v_double_copy_ctor);
     EXPECT_EQ(v_double, v_double_copy_assign);
-
-    Array<double> v_double_external_copy_ctor(v_double_external);
-    Array<double> v_double_external_copy_assign;
-    v_double_external_copy_assign = v_double_external;
-    EXPECT_NE(v_double_external, v_double_external_copy_ctor);
-    EXPECT_NE(v_double_external, v_double_external_copy_assign);
 
     Array<double> v_double_move_assign;
     v_double_move_assign = std::move(v_double_copy_assign);
@@ -1089,6 +1058,38 @@ TEST(core_array, check_move_copy)
     EXPECT_EQ(v_double, v_double_move_ctor);
     EXPECT_EQ(v_double_copy_assign.data(), nullptr);
     EXPECT_EQ(v_double_copy_ctor.data(), nullptr);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, check_view_move_copy)
+{
+  constexpr int MAGIC_INT = 255;
+  constexpr double MAGIC_DOUBLE = 5683578.8;
+
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    IndexType size = capacity;
+
+    /* Check copy and move semantics for ArrayView of ints */
+    std::vector<int> ints(size, MAGIC_INT);
+    ArrayView<int> v_int_view(ints.data(), size);
+
+    ArrayView<int> v_int_view_copy_ctor(v_int_view);
+    ArrayView<int> v_int_view_copy_assign;
+    v_int_view_copy_assign = v_int_view;
+    EXPECT_EQ(v_int_view, v_int_view_copy_ctor);
+    EXPECT_EQ(v_int_view, v_int_view_copy_assign);
+
+    /* Check copy and move semantics for ArrayView of doubles */
+    std::vector<double> doubles(size, MAGIC_DOUBLE);
+    ArrayView<double> v_double_view(doubles.data(), size);
+
+    ArrayView<double> v_double_view_copy_ctor(v_double_view);
+    ArrayView<double> v_double_view_copy_assign;
+    v_double_view_copy_assign = v_double_view;
+    EXPECT_EQ(v_double_view, v_double_view_copy_ctor);
+    EXPECT_EQ(v_double_view, v_double_view_copy_assign);
   }
 }
 
@@ -1159,6 +1160,74 @@ TEST(core_array, check_multidimensional)
   {
     // For a multidim array, op[] is a "flat" index into the raw data
     EXPECT_EQ(v_double[i], v_double_flat[i]);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, check_multidimensional_view)
+{
+  constexpr int MAGIC_INT = 255;
+  constexpr double MAGIC_DOUBLE = 5683578.8;
+
+  // First test multidimensional int arrays
+  int v_int_arr[] = {MAGIC_INT, MAGIC_INT, MAGIC_INT, MAGIC_INT};
+  ArrayView<int, 2> v_int_view(v_int_arr, 2, 2);
+  // Make sure the number of elements and contents are correct
+  EXPECT_EQ(v_int_view.size(), 2 * 2);
+  std::array<IndexType, 2> expected_shape = {2, 2};
+  EXPECT_EQ(v_int_view.shape(), expected_shape);
+  for(const auto val : v_int_view)
+  {
+    EXPECT_EQ(val, MAGIC_INT);
+  }
+  // Then assign different values to each element
+  v_int_view(0, 0) = 1;
+  v_int_view(0, 1) = 2;
+  v_int_view(1, 0) = 3;
+  v_int_view(1, 1) = 4;
+
+  // FIXME: Should we add a std::initializer_list ctor?
+  int v_int_flat_arr[] = {1, 2, 3, 4};
+  ArrayView<int> v_int_flat_view(v_int_flat_arr, 4);
+  std::array<IndexType, 1> expected_flat_shape = {4};
+  EXPECT_EQ(v_int_flat_view.shape(), expected_flat_shape);
+
+  for(int i = 0; i < v_int_flat_view.size(); i++)
+  {
+    // For a multidim array, op[] is a "flat" index into the raw data
+    EXPECT_EQ(v_int_view[i], v_int_flat_view[i]);
+  }
+
+  double v_double_arr[4 * 3 * 2];
+  std::fill_n(v_double_arr, 4 * 3 * 2, MAGIC_DOUBLE);
+  ArrayView<double, 3> v_double_view(v_double_arr, 4, 3, 2);
+  EXPECT_EQ(v_double_view.size(), 4 * 3 * 2);
+  std::array<IndexType, 3> expected_double_shape = {4, 3, 2};
+  EXPECT_EQ(v_double_view.shape(), expected_double_shape);
+  for(const auto val : v_double_view)
+  {
+    EXPECT_EQ(val, MAGIC_DOUBLE);
+  }
+
+  double v_double_flat_arr[4 * 3 * 2];
+  ArrayView<double> v_double_flat_view(v_double_flat_arr, 4 * 3 * 2);
+  int double_flat_idx = 0;
+  for(int i = 0; i < v_double_view.shape()[0]; i++)
+  {
+    for(int j = 0; j < v_double_view.shape()[1]; j++)
+    {
+      for(int k = 0; k < v_double_view.shape()[2]; k++)
+      {
+        v_double_view(i, j, k) = (i * i) + (5 * j) + k;
+        v_double_flat_view[double_flat_idx++] = (i * i) + (5 * j) + k;
+      }
+    }
+  }
+
+  for(int i = 0; i < v_double_view.size(); i++)
+  {
+    // For a multidim array, op[] is a "flat" index into the raw data
+    EXPECT_EQ(v_double_view[i], v_double_flat_view[i]);
   }
 }
 
