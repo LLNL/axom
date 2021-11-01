@@ -22,15 +22,9 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/memory_management.hpp"
 
-#ifdef WIN32
-  #include "windows.h"
-void sleep(int numSeconds)
-{
-  int numMilliSecs = numSeconds * 1000;
-  Sleep(numMilliSecs);
-}
-#else
-  #include <unistd.h>  // for sleep()
+#ifdef AXOM_USE_RAJA
+  #include "axom/core/execution/execution_space.hpp"
+  #include "axom/core/execution/for_all.hpp"
 #endif
 
 // C/C++ includes
@@ -176,8 +170,99 @@ void demoArrayBasic()
   // _iteration_end
 }
 
+#ifdef __CUDACC__
+
+// Aliases used for convenience
+using UnifiedIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Unified>;
+using DeviceIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Device>;
+
+__global__ void add(const UnifiedIntArrayView A,
+                    const UnifiedIntArrayView B,
+                    DeviceIntArrayView C)
+{
+  for(int i = 0; i < A.size(); i++)
+  {
+    C[i] = A[i] + B[i];
+  }
+}
+
+#endif
+
+void demoArrayDevice()
+{
+  //This example requires Umpire
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+  // _cuda_array_start
+  constexpr int N = 10;
+  const int allocator_id = axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
+
+  // By default the memory space can be specified at runtime.
+  // If this argument is not provided host memory will be allocated.
+  axom::Array<int> A_dynamic(N, N, allocator_id);
+
+  // We also have the option to "lock down" the memory space to allow for
+  // compile-time guarantees against dereferencing pointers in the wrong memory space.
+  axom::Array<int, 1, axom::MemorySpace::Unified> B_unified(N);
+
+  // Despite having different types, both of these arrays are in unified memory.
+  for(int i = 0; i < N; i++)
+  {
+    A_dynamic[i] = i * 5;
+    B_unified[i] = i * 2;
+  }
+
+  // Since our kernel requires at compile time that its arguments to be in unified memory,
+  // we lock down the dynamic array.  In the general case this will result in a transfer,
+  // but because the dynamic array happens to be in unified memory a direct copy is possible.
+  axom::Array<int, 1, axom::MemorySpace::Unified> A_unified = A_dynamic;
+
+  // The result array is allocated in device memory
+  axom::Array<int, 1, axom::MemorySpace::Device> C_device(N);
+
+  // Passing by reference is not possible for CUDA kernels, so the three arrays
+  // are converted to corresponding ArrayViews that are "shallow copies" of the
+  // original Array.
+  add<<<1, 1>>>(A_unified, B_unified, C_device);
+
+  // Since our result array is in device memory, we copy it to host memory so we can view it.
+  axom::Array<int, 1, axom::MemorySpace::Host> C_host = C_device;
+  std::cout << "Array C_host = " << C_host << std::endl;
+
+  // Since by default allocations happen in host memory, we could have also used a dynamic array (the default)
+  axom::Array<int> C_dynamic = C_device;
+  std::cout << "Array C_dynamic = " << C_dynamic << std::endl;
+
+  // _cuda_array_end
+
+  #ifdef AXOM_USE_RAJA
+  // _array_w_raja_begin
+  // To use a lambda as a kernel, we create the ArrayViews explicitly.
+  const UnifiedIntArrayView A_view = A_unified;
+  const UnifiedIntArrayView B_view = B_unified;
+  // Create a new array for our RAJA result
+  axom::Array<int, 1, axom::MemorySpace::Device> C_device_raja(N);
+  DeviceIntArrayView C_view = C_device_raja;
+
+  // Declare the lambda mutable so our copy of C_view (captured by value) is mutable
+  axom::for_all<axom::CUDA_EXEC<1>>(
+    0,
+    N,
+    [=] AXOM_HOST_DEVICE(axom::IndexType i) mutable {
+      C_view[i] = A_view[i] + B_view[i] + 1;
+    });
+
+  // Finally, copy things over to host mmemory so we can display the data
+  axom::Array<int, 1, axom::MemorySpace::Host> C_host_raja = C_view;
+  std::cout << "Array C_host_raja = " << C_host_raja << std::endl;
+  // _array_w_raja_end
+  #endif
+#endif
+}
+
 int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
 {
   demoArrayBasic();
+  demoArrayDevice();
   return 0;
 }
