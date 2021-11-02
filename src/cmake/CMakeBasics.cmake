@@ -19,19 +19,37 @@ include(cmake/AxomMacros.cmake)
 #------------------------------------------------------------------------------
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
 
-if(NOT CMAKE_CONFIGURATION_TYPES)
-    #--------------------------------------------------------------------------
-    # Add define we can use when debug builds are enabled
-    #--------------------------------------------------------------------------
-    if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
-        add_definitions(-DAXOM_DEBUG)
-    endif()
-else ()
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
-      $<$<CONFIG:Debug>:AXOM_DEBUG>
-      $<$<CONFIG:RelWithDebInfo>:AXOM_DEBUG>
-    )
+#------------------------------------------------------------------------------
+# Set up AXOM_DEBUG, as appropriate, based on config type.
+# Result is stored in AXOM_DEBUG_DEFINE_STRING variable
+#------------------------------------------------------------------------------
+set(AXOM_DEBUG_DEFINE_STRING)
+
+# Handle the three valid values for AXOM_DEBUG_DEFINE: {on, off, default}
+string(TOUPPER "${AXOM_DEBUG_DEFINE}" _axom_debug_define_upper)
+if("${_axom_debug_define_upper}" MATCHES "ON|TRUE")
+  set(AXOM_DEBUG_DEFINE_STRING "AXOM_DEBUG")
+elseif("${_axom_debug_define_upper}" MATCHES "OFF|FALSE")
+  # no-op
+elseif("${_axom_debug_define_upper}" MATCHES "DEFAULT")
+  # Default behavior is to be on for Debug and RelWithDebInfo configurations and off otherwise
+  if(NOT CMAKE_CONFIGURATION_TYPES)
+      if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
+        set(AXOM_DEBUG_DEFINE_STRING "AXOM_DEBUG")
+      endif()
+  else ()
+      set(AXOM_DEBUG_DEFINE_STRING "$<$<CONFIG:Debug,RelWithDebInfo>:AXOM_DEBUG>")
+  endif()
+else()  # Handle bad value for AXOM_DEBUG_DEFINE variable
+  message(FATAL_ERROR 
+    "Invalid value for AXOM_DEBUG_DEFINE. Must be 'DEFAULT', 'ON' or 'OFF'; was '${AXOM_DEBUG_DEFINE}'")
 endif()
+
+# Add the AXOM_DEBUG compile definition, if non-empty
+if(AXOM_DEBUG_DEFINE_STRING)
+  set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")
+endif()
+
 
 #------------------------------------------------------------------------------
 # Fortran Configuration
