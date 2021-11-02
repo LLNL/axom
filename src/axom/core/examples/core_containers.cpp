@@ -172,6 +172,7 @@ void demoArrayBasic()
 
 #ifdef __CUDACC__
 
+// _cuda_kernel_start
 // Aliases used for convenience
 using UnifiedIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Unified>;
 using DeviceIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Device>;
@@ -185,6 +186,7 @@ __global__ void add(const UnifiedIntArrayView A,
     C[i] = A[i] + B[i];
   }
 }
+// _cuda_kernel_end
 
 #endif
 
@@ -192,7 +194,7 @@ void demoArrayDevice()
 {
   //This example requires Umpire
 #if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  // _cuda_array_start
+  // _cuda_array_create_start
   constexpr int N = 10;
   const int allocator_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
@@ -220,6 +222,9 @@ void demoArrayDevice()
   // The result array is allocated in device memory
   axom::Array<int, 1, axom::MemorySpace::Device> C_device(N);
 
+  // _cuda_array_create_end
+  // _cuda_array_call_start
+
   // Passing by reference is not possible for CUDA kernels, so the three arrays
   // are converted to corresponding ArrayViews that are "shallow copies" of the
   // original Array.
@@ -232,11 +237,10 @@ void demoArrayDevice()
   // Since by default allocations happen in host memory, we could have also used a dynamic array (the default)
   axom::Array<int> C_dynamic = C_device;
   std::cout << "Array C_dynamic = " << C_dynamic << std::endl;
-
-  // _cuda_array_end
+  // _cuda_array_call_end
 
   #ifdef AXOM_USE_RAJA
-  // _array_w_raja_begin
+  // _array_w_raja_start
   // To use a lambda as a kernel, we create the ArrayViews explicitly.
   const UnifiedIntArrayView A_view = A_unified;
   const UnifiedIntArrayView B_view = B_unified;

@@ -17,6 +17,10 @@ Axom Core contains the ``Array``, ``ArrayView``, and ``StackArray`` classes.
 Among other things, these data containers facilitate porting code that uses 
 ``std::vector`` to GPUs.
 
+#####
+Array
+#####
+
 ``Array`` is a multidimensional contiguous container template. In the 
 1-dimensional case, this class behaves similar to ``std::vector``. In higher 
 dimensions, some vector-like functionality, such as ``push_back``, are not
@@ -79,6 +83,10 @@ The output of this example is::
     [8, 0, -1]
   ]
 
+#########
+ArrayView
+#########
+
 It is also often useful to wrap an external, user-supplied buffer without taking ownership
 of the data.  For this purpose Axom provides the ``ArrayView`` class, which is a lightweight
 wrapper over a buffer that provides one- or multi-dimensional indexing/reshaping semantics.
@@ -136,6 +144,69 @@ The output of this example is::
   In ArrayView c, index (2, 1) yields 4
   Range-based for loop over ArrayView c yields: 1 5 6 9 1 4
   Standard for loop over ArrayView c yields: 1 5 6 9 1 4
+
+########################
+Using Arrays in GPU Code
+########################
+
+Instead of writing kernels and device functions that operate on raw pointers, we can use ``ArrayView``
+in device code. The basic "workflow" for this process is as follows:
+
+  1. Create an ``Array`` allocated in device-accessible memory via either specifying an allocator ID
+     or using a class template parameter for the desired memory space.
+  2. Write a kernel that accepts an ``ArrayView`` parameter **by value**.
+  3. Create an ``ArrayView`` from the ``Array`` to call the function.  For non-templated kernels
+     an implicit conversion is provided.
+
+
+The full template signature for ``Array`` (``ArrayView`` has an analogous signature) is
+``Array<typename T, int DIM = 1, MemorySpace SPACE = MemorySpace::Dynamic>``.  Of particular interest
+is the last parameter, which specifies the memory space in which the array's data are allocated.
+The default, ``Dynamic``, means that the memory space is set via an allocator ID at runtime.
+
+.. note:: Allocating ``Array``s in different memory spaces is only possible when Umpire is available.
+
+Setting the ``MemorySpace`` to an option other than ``Dynamic`` - e.g., ``MemorySpace::Device`` provides
+a compile-time guarantee that data can always be accessed from a GPU.  "Locking down" the memory space at
+compile time can help to prevent illegal memory accesses and segmentation faults when pointers are dereferenced
+from the wrong execution space.
+
+For example, a GPU kernel can require that its argument arrays be allocated in a specific memory space.
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _cuda_kernel_start
+   :end-before: _cuda_kernel_end
+   :language: C++
+
+To illustrate how different memory spaces can be required, the inputs happen to be in unified memory and the output in
+device memory.
+
+The following snippet illustrates how one would create and initialize the inputs/outputs to this kernel.  Note
+how a "Dynamic" ``Array`` can be converted into an ``Array`` whose memory space is locked down.
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _cuda_array_create_start
+   :end-before: _cuda_array_create_end
+   :language: C++
+
+We can now launch the kernel and display the results via a transfer back to host-accessible memory:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _cuda_array_call_start
+   :end-before: _cuda_array_call_end
+   :language: C++
+
+If RAJA is available, we can also use Axom's acceleration utilities to perform an operation on the GPU
+via a lambda:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _array_w_raja_start
+   :end-before: _array_w_raja_end
+   :language: C++
+
+##########
+StackArray
+##########
 
 The ``StackArray`` class is a work-around for a limitation in older versions
 of the nvcc compiler, which do not capture arrays on the stack in device 

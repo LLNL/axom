@@ -61,6 +61,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added Sidre function `View::clear()`.
 - Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
   This replaces the external buffer logic previously provided by `axom::Array`.
+- `axom::Array` is now GPU-compatible, in particular via a memory space template parameter and via 
+  extensions to `axom::ArrayView` that allow for copying into kernels and transfers between memory spaces.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
