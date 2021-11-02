@@ -1,0 +1,107 @@
+#!/usr/bin/bash
+ 
+## The top line is for bash users. If you use a different shell,
+## change to that shell.
+##
+## Created by Ines Heinz - please provide feedback to me at
+## heinz2@llnl.gov.
+##
+## Take this code block and copy it into a file called sbatchScript
+## then run the script by typing "sbatch sbatchScript"
+##
+## I urge you to cd to the directory where you want to
+## do things, then copy this script there, then run.
+## Trust me, it is easier this way.
+##
+## Remember, two pound signs means a comment, while
+##           one pound sign means a command to SLURM.
+##           after all the SLURM setup, put the commands you need.
+##
+## This script as written does the following;
+##    run with a quality of service (qos) set to normal
+##    name the job BANANA
+##    use bank cbronze
+##    set the max runtime to 1 hour
+##    use the pbatch partition, not pdebug
+##    run on one node
+##    run a couple of commands
+##    complete
+## If you run this and then suddenly realize the job
+## is going to go horribly wrong, type the first line
+## to get the list of jobs you have in the queue.
+## Then type the second line to kill the job before it
+## throws out gigabytes of trash to your home directory.
+##    showq -v -u `whoami`  
+##    scancel <jobid>  
+  
+###########################################################
+## Give your job a name - let's call this one BANANA
+## Don't put spaces in the name.
+##SBATCH --job-name=BANANA
+#SBATCH --job-name=axom_corona
+  
+###########################################################
+## Pick your quality of service
+## normal - means that it can't be pre-empted and you have
+##          to wait to get to the top of the queue
+## standby - you will be pre-empted if someone using qos
+##           normal wants the nodes (used in special cases)
+## expedite - you get to the top of the queue - only use
+##            this if you are approved
+#SBATCH --qos=normal
+ 
+###########################################################
+## Set your bank
+## If you don't set your bank, you will be using your
+## default bank -which may not exist or it may be set to
+## only allow you qos standby
+##
+## To find out which banks are available to you on a
+## machine type "sacctmgr list user `whoami` witha" at the prompt
+##SBATCH --account=cbronze
+#SBATCH --account=guests
+ 
+###########################################################
+## Set your time limit in hours:minutes:seconds
+## to find out how long a batch job can run, type
+## news job.lim.`uname -n | sed -e 's/[0-9]*$//'`
+## at the prompt
+##SBATCH --time=1:00:00
+#SBATCH --time=1:30:00
+ 
+###########################################################
+## Choose to run in the pbatch or pdebug pool. The pdebug
+## pool is only for debugging, not production work!
+## To find out what pools are available on the machine,
+## type 'sinfo' at the prompt.
+##SBATCH --partition=pbatch
+#SBATCH --partition=mi60
+ 
+###########################################################
+## Set the number of nodes you want to use :
+## on most of our machines, you automatically get all the
+## processors on those nodes for your exclusive use.
+## if you want to see the number of processors on a given
+## node of a machine, type "news job.lim.`uname -n | sed -e 's/[0-9]*$//'`"
+#SBATCH --nodes=1
+ 
+###########################################################
+## Run the test
+## To get an idea of when the job is going to start
+##      showstart <jobID>
+## To get an idea of where the job is in the queue
+##      showq -v -i | more
+## the next lines are where you put your actual commands
+ 
+## Using uberenv to build Corona TPL's
+##module load opt
+##module load rocm
+##./scripts/uberenv/uberenv.py --spec="%clang@9.0.0~cpp14~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" &> spack_output.txt
+
+## Building Axom (hip, no cuda, no fortran)
+module load opt
+module load rocm
+./config-build.py -hc corona-toss_3_x86_64_ib-clang@9.0.0.cmake -DENABLE_FORTRAN=OFF &> config_output.txt
+cd build-corona-toss_3_x86_64_ib-clang@9.0.0-debug/
+make VERBOSE=1 -j  &> mj_output.txt
+make test &> mt_output.txt
