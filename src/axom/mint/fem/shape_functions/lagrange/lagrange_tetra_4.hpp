@@ -106,7 +106,8 @@ public:
     phi[3] = t;
   }
 
-  static void computeDerivatives(const double* AXOM_NOT_USED(xr), double* phidot)
+  static void computeDerivatives(const double* AXOM_UNUSED_PARAM(xr),
+                                 double* phidot)
   {
     SLIC_ASSERT(phidot != nullptr);
 

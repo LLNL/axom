@@ -294,8 +294,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
         int32 count = 0;
         PrimitiveType primitive {objs[i]};
 
-        auto leafAction = [&count](int32 AXOM_NOT_USED(current_node),
-                                   const int32* AXOM_NOT_USED(leaf_nodes)) {
+        auto leafAction = [&count](int32 AXOM_UNUSED_PARAM(current_node),
+                                   const int32* AXOM_UNUSED_PARAM(leaf_nodes)) {
           count++;
         };
 
