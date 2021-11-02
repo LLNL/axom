@@ -115,13 +115,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `utilities::string::split` now returns a vector instead of using an out-parameter,
   Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
 - `axom::Array`-related classes have been moved into individual files.
-- Removed logic from ``axom::reallocate()`` relating to older versions of Umpire.
-  Axom requires Umpire v2.1.0+
 - RAJA dependency updated to 0.14.0
-- Umpire dependency updated to 0.6.0
-- Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021).  This was required due to Spack
-  moving to HDF5's CMake build system.
-- Internal BLT dependency updatd to 0.4.1
+- Umpire dependency updated to 0.6.0. Support for versions prior to v2.1.0 was removed. 
+- Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021). This was required because Spack
+  is now using `HDF5`'s CMake build system.
+- Internal BLT dependency updated to 0.4.1
 
 
 ### Fixed
@@ -134,7 +132,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Delayed finalizing reloaded mesh in `MFEMSidreDataCollection` until after setting
   the nodal `GridFunction` (when applicable)
 - Transposed `R` and `Z` coordinates when linearizing NURBS curves in `c2c` reader
-- Fixed user-reported in/out ambiguity within some InOutOctree cases with grazing triangles
+- Fixed user-reported in/out ambiguity within some `InOutOctree` cases with grazing triangles
 
 ## [Version 0.5.0] - Release date 2021-05-14
 
@@ -551,7 +549,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The root CMake file for Axom is now located in ``<axom>/src``'s root directory,
   rather than in ``<axom>``
 - Prefixed all Axom CMake options with AXOM_ to avoid conflicts
-- `ENABLE_SPARSEHASE` -> `AXOM_ENABLE_SPARSEHASH`
+- `ENABLE_SPARSEHASH` -> `AXOM_ENABLE_SPARSEHASH`
 - `ENABLE_ALL_COMPONENTS` -> `AXOM_ENABLE_COMPONENTS`
 - `ENABLE_<component name>` -> `AXOM_ENABLE_<component name>`
 - `MINT_USE_64BIT_INDEXTYPE` -> `AXOM_MINT_USE_64BIT_INDEXTYPE`
@@ -630,7 +628,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Security
 - Use this section in case of vulnerabilities
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.5.0...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.6.0...develop
+[Version 0.6.0]: https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0
 [Version 0.5.0]: https://github.com/LLNL/axom/compare/v0.4.0...v0.5.0
 [Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
