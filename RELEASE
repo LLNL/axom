@@ -1,6 +1,6 @@
 *******************************************************************************
 
-Axom: ................................, version 0.5.0
+Axom: ................................, version 0.6.0
 
 Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
@@ -18,11 +18,13 @@ OCEC-17-187
 
 The Axom development team is comprised of:
 
-Rich Hornung (hornung1@llnl.gov)
 Arlie Capps (capps2@llnl.gov)
 Noah Elliott (elliott22@llnl.gov)
+Josh Essman (essman1@llnl.gov)
 Brian Han (han12@llnl.gov)
 Cyrus Harrison (harrison37@llnl.gov)
+Rich Hornung (hornung1@llnl.gov)
+Esteban Pauli (pauli2@llnl.gov)
 Lee Taylor (taylor16@llnl.gov)
 Kenny Weiss (kweiss@llnl.gov)
 Chris White (white238@llnl.gov)
