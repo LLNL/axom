@@ -165,7 +165,7 @@
 /*!
  * \def AXOM_DEBUG_PARAM(x)
  * \brief Macro used to silence compiler warnings about parameters
- *        that are used in debug code but not in release code.
+ *        that are only used when AXOM_DEBUG is defined
  * \note Default values are ok
  * \code
  *
