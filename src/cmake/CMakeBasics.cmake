@@ -45,12 +45,6 @@ else()  # Handle bad value for AXOM_DEBUG_DEFINE variable
     "Invalid value for AXOM_DEBUG_DEFINE. Must be 'DEFAULT', 'ON' or 'OFF'; was '${AXOM_DEBUG_DEFINE}'")
 endif()
 
-# Add the AXOM_DEBUG compile definition, if non-empty
-if(AXOM_DEBUG_DEFINE_STRING)
-  set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")
-endif()
-
-
 #------------------------------------------------------------------------------
 # Fortran Configuration
 #------------------------------------------------------------------------------
