@@ -216,7 +216,7 @@ inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& pt,
   Vector<T, NDIMS> e = obb.getExtents();
   const Vector<T, NDIMS>* u = obb.getAxes();
 
-  Vector<T, NDIMS> pt_l = obb.toLocal(pt);
+  Vector<T, NDIMS> pt_l(obb.toLocal(pt));
   Vector<T, NDIMS> res(obb.getCentroid());
 
   for(int i = 0; i < NDIMS; i++)

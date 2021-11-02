@@ -263,6 +263,7 @@ View* View::attachBuffer(Buffer* buff)
     {
       getOwningGroup()->getDataStore()->destroyBuffer(old_buffer);
     }
+    unapply();
   }
   else if(m_state == EMPTY && buff != nullptr)
   {
@@ -299,6 +300,43 @@ Buffer* View::detachBuffer()
   }
 
   return buff;
+}
+
+/*
+ *************************************************************************
+ *
+ * Clear data and metadata from a View.
+ *
+ *************************************************************************
+ */
+void View::clear()
+{
+  switch(m_state)
+  {
+  case EMPTY:
+    undescribe();
+    break;
+  case BUFFER:
+    attachBuffer(nullptr);
+    undescribe();
+    break;
+  case EXTERNAL:
+    setExternalDataPtr(nullptr);
+    undescribe();
+    break;
+  case STRING:
+  case SCALAR:
+    unapply();
+    undescribe();
+    break;
+  default:
+    SLIC_ASSERT_MSG(false,
+                    SIDRE_VIEW_LOG_PREPEND << "View is in unexpected state: "
+                                           << getStateStringName(m_state));
+  }
+
+  m_attr_values.clear();
+  m_state = EMPTY;
 }
 
 /*
