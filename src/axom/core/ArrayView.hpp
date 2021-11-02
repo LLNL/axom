@@ -101,8 +101,6 @@ public:
 
   /*!
    * \brief Get the ID for the umpire allocator
-   * 
-   * FIXME: This is just a stand-in impl, extend this class to support wrapping of GPU pointers
    */
   int getAllocatorID() const { return m_allocator_id; }
 

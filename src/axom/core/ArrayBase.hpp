@@ -26,7 +26,7 @@ namespace axom
 /*! 
  * \brief Memory spaces supported by Array-like types
  *
- * This abstraction is implemented on top of Umpire's MemoryResourceType enum
+ * This abstraction is not implemented using Umpire's MemoryResourceType enum
  * in order to also include a "Dynamic" option as a default template parameter
  * for Array-like types
  */
@@ -331,7 +331,6 @@ public:
   void emplace_back(Args&&... args);
 
   /// \brief Returns the dimensions of the Array
-  // FIXME: StackArray is used for consistency with multidim case, should we just return the scalar?
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
   AXOM_HOST_DEVICE StackArray<IndexType, 1> shape() const
   {
@@ -551,6 +550,7 @@ struct first_type_is_integral
   static constexpr bool value = first_type_is_integral_impl<Args...>::value;
 };
 
+/// \brief Translates between the MemorySpace enum and Umpire allocator IDs
 template <MemorySpace SPACE>
 inline int getAllocatorID();
 

@@ -74,7 +74,7 @@ struct StackArray
 };
 
 /*!
- * \brief Equality comparison operator for Array-likes
+ * \brief Equality comparison operator for StackArray
  *
  * \param [in] lhs left StackArray to compare
  * \param [in] rhs right StackArray to compare
