@@ -29,10 +29,10 @@ cmake_dependent_option(AXOM_ENABLE_MPI3 "Enables use of MPI-3 features" OFF "ENA
 mark_as_advanced(AXOM_ENABLE_MPI3)
 
 #--------------------------------------------------------------------------
-# Option to control if AXOM_DEFINE compiler define is enabled
+# Option to control whether AXOM_DEFINE compiler define is enabled
 #
-# Possible values are "ON", "OFF" and "DEFAULT"
-# By default AXOM_DEBUG is defined in Debug and RelWithDebInfo configurations
+# Possible values are: "ON", "OFF" and "DEFAULT"
+# By default, AXOM_DEBUG is defined in Debug and RelWithDebInfo configurations
 #--------------------------------------------------------------------------
-set(AXOM_DEBUG_DEFINE "DEFAULT" CACHE STRING "Determines if AXOM_DEBUG is defined.")
+set(AXOM_DEBUG_DEFINE "DEFAULT" CACHE STRING "Controls whether AXOM_DEBUG compiler define is enabled")
 set_property(CACHE AXOM_DEBUG_DEFINE PROPERTY STRINGS "DEFAULT" "ON" "OFF")

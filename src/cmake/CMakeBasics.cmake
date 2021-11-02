@@ -20,10 +20,10 @@ include(cmake/AxomMacros.cmake)
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
 
 #------------------------------------------------------------------------------
-# Set up AXOM_DEBUG, as appropriate, based on config type.
-# Result is stored in AXOM_DEBUG_DEFINE_STRING variable
+# Set up AXOM_DEBUG compiler define string, as appropriate, based on config type.
+# Result is stored in AXOM_DEBUG_DEFINE_STRING cache variable
 #------------------------------------------------------------------------------
-set(AXOM_DEBUG_DEFINE_STRING)
+set(AXOM_DEBUG_DEFINE_STRING "")
 
 # Handle the three valid values for AXOM_DEBUG_DEFINE: {on, off, default}
 string(TOUPPER "${AXOM_DEBUG_DEFINE}" _axom_debug_define_upper)
@@ -40,10 +40,13 @@ elseif("${_axom_debug_define_upper}" MATCHES "DEFAULT")
   else ()
       set(AXOM_DEBUG_DEFINE_STRING "$<$<CONFIG:Debug,RelWithDebInfo>:AXOM_DEBUG>")
   endif()
-else()  # Handle bad value for AXOM_DEBUG_DEFINE variable
+else()  # Handle bad value for AXOM_DEBUG_DEFINE config variable
   message(FATAL_ERROR 
     "Invalid value for AXOM_DEBUG_DEFINE. Must be 'DEFAULT', 'ON' or 'OFF'; was '${AXOM_DEBUG_DEFINE}'")
 endif()
+
+set(AXOM_DEBUG_DEFINE_STRING "${AXOM_DEBUG_DEFINE_STRING}" CACHE STRING "" FORCE)
+mark_as_advanced(AXOM_DEBUG_DEFINE_STRING)
 
 #------------------------------------------------------------------------------
 # Fortran Configuration
