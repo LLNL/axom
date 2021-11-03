@@ -21,6 +21,9 @@
       "intel@18.0.2~cpp14~openmp+devtools+mfem+c2c",
       "intel@19.0.4~cpp14~openmp+devtools+mfem+c2c" ],
 
+    "toss_4_x86_64_ib_cray":
+    [ "clang@12.0.0~cpp14~openmp+rocm+mfem+c2c amdgpu_target=gfx908 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
+
     "blueos_3_ppc64le_ib_p9":
     [ "clang@9.0.0~cpp14~openmp+devtools+mfem+c2c",
       "clang@8.0.1~cpp14~openmp+devtools+mfem+cuda+c2c cuda_arch=70",
