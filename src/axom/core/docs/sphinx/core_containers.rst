@@ -154,7 +154,7 @@ in device code. The basic "workflow" for this process is as follows:
 
   1. Create an ``Array`` allocated in device-accessible memory via either specifying an allocator ID
      or using a class template parameter for the desired memory space.
-  2. Write a kernel that accepts an ``ArrayView`` parameter **by value**.
+  2. Write a kernel that accepts an ``ArrayView`` parameter **by value**, not by reference or pointer.
   3. Create an ``ArrayView`` from the ``Array`` to call the function.  For non-templated kernels
      an implicit conversion is provided.
 
@@ -166,7 +166,7 @@ The default, ``Dynamic``, means that the memory space is set via an allocator ID
 
 .. note:: Allocating ``Array``s in different memory spaces is only possible when Umpire is available.
 
-Setting the ``MemorySpace`` to an option other than ``Dynamic`` - e.g., ``MemorySpace::Device`` provides
+Setting the ``MemorySpace`` to an option other than ``Dynamic`` (for example, ``MemorySpace::Device``) provides
 a compile-time guarantee that data can always be accessed from a GPU.  "Locking down" the memory space at
 compile time can help to prevent illegal memory accesses and segmentation faults when pointers are dereferenced
 from the wrong execution space.

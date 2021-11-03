@@ -199,7 +199,10 @@ void demoArrayDevice()
   const int allocator_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
 
-  // By default the memory space can be specified at runtime.
+  // The last template parameter specifies a memory space.
+  // Its default value is Dynamic, which lets the user specify the
+  // memory space at runtime with a memory allocator ID.  The
+  // third constructor parameter specifies the allocator.
   // If this argument is not provided host memory will be allocated.
   axom::Array<int> A_dynamic(N, N, allocator_id);
 
