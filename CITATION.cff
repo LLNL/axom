@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use Axom, please cite it as follows."
+title: "Axom:  CS infrastructure components for HPC applications"
+doi: 10.11578/dc.20210915.2
+url: https://github.com/llnl/axom
+license: BSD-3-Clause
+authors:
+- family-names: Capps
+  given-names: Arlie
+- family-names: Carson
+  given-names: Robert
+- family-names: Corbett
+  given-names: Benjamin
+- family-names: Elliott
+  given-names: Noah
+- family-names: Essman
+  given-names: Josh
+- family-names: Han
+  given-names: Brian
+- family-names: Harrison
+  given-names: Cyrus
+- family-names: Hornung
+  given-names: Richard
+- family-names: Larsen
+  given-names: Matthew
+- family-names: Moody
+  given-names: Adam
+- family-names: Pauli
+  given-names: Esteban
+- family-names: Settgast
+  given-names: Randolph
+- family-names: Taylor
+  given-names: Lee
+- family-names: Weiss
+  given-names: Kenneth
+  orcid:  "https://orcid.org/0000-0001-6649-8022"
+- family-names: White
+  given-names: Christopher
+- family-names: Yang
+  given-names: Max
+- family-names: Zagaris
+  given-names: George
+

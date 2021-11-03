@@ -4,15 +4,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file
+ * \file closest_point.hpp
  *
  * \brief Consists of a set of methods that compute the closest point on a
  *  geometric primitive B from another geometric primitive A.
  *
  */
 
-#ifndef CLOSEST_POINT_HPP_
-#define CLOSEST_POINT_HPP_
+#ifndef AXOM_PRIMAL_CLOSEST_POINT_HPP_
+#define AXOM_PRIMAL_CLOSEST_POINT_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
@@ -58,9 +58,9 @@ namespace primal
  *  Chapter 5.1.5 Closest Point on Triangle to Point".
  */
 template <typename T, int NDIMS>
-inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
-                                     const Triangle<T, NDIMS>& tri,
-                                     int* loc = nullptr)
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Triangle<T, NDIMS>& tri,
+                                                      int* loc = nullptr)
 {
 // convenience macros to access triangle vertices
 #define A(t) t[0]
@@ -216,7 +216,7 @@ inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& pt,
   Vector<T, NDIMS> e = obb.getExtents();
   const Vector<T, NDIMS>* u = obb.getAxes();
 
-  Vector<T, NDIMS> pt_l = obb.toLocal(pt);
+  Vector<T, NDIMS> pt_l(obb.toLocal(pt));
   Vector<T, NDIMS> res(obb.getCentroid());
 
   for(int i = 0; i < NDIMS; i++)
@@ -240,7 +240,7 @@ inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& pt,
   return Point<T, NDIMS>(res.array());
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* CLOSEST_POINT_HPP_ */
+#endif  // AXOM_PRIMAL_CLOSEST_POINT_HPP_

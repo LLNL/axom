@@ -26,6 +26,8 @@
  * each prepended with an underscore.
  */
 
+#include "axom/config.hpp"
+
 // _prims_header_start
 // Axom primitives
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -65,7 +67,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 // _using_start
 // "using" directives to simplify code
@@ -563,7 +565,7 @@ void showOrientation()
   // Helper variables
   // Project onto the XY plane
   PointType ppos = PointType::make_point(pos[0], pos[1], 0.);
-  PointType pcpl = PointType::make_point(cpl[0], cpl[1], 0.);
+  //PointType pcpl = PointType::make_point(cpl[0], cpl[1], 0.);
 
   // Now write out an Asymptote file showing what we did.
   std::string basefname = "showOrientation";
@@ -753,9 +755,8 @@ BoundingBoxType findBbox(TriangleType& tri)
 
 int main(int argc, char** argv)
 {
-  // Deal with unused variables
-  AXOM_DEBUG_VAR(argc);
-  AXOM_DEBUG_VAR(argv);
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
 
   showClip();
   showClosestPoint();

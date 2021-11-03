@@ -136,20 +136,19 @@ packages:
 
 # Globally lock version of third party libraries
   conduit:
-    version: [0.6.0]
-    variants: ~shared
+    version: [0.7.2axom]
+    variants: ~shared~test
   hdf5:
-    buildable: False
-    externals:
-    - spec: hdf5@1.8.10~shared
-      prefix: /usr/gapps/ale3d/toss_3_x86_64_ib/icc19/PUBLIC/packages/hdf5/1.8.10.1c
+    variants: ~shared~mpi
   mfem:
     variants: ~mpi~metis~zlib
+  raja:
+    variants: ~shared~examples~exercises
   scr:
     version: [develop]
     variants: ~shared
   umpire:
-    variants: ~shared
+    variants: ~shared~examples
 
 # Globally lock in versions of Devtools
   cppcheck:

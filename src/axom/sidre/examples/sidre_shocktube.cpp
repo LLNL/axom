@@ -28,6 +28,8 @@
 //#include "Vista.h"
 //#include "View.h"
 
+#include "axom/config.hpp"
+
 // Sidre component headers
 #include "axom/sidre.hpp"
 

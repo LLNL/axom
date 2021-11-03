@@ -4,15 +4,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-#include <vector>
-#include <cmath>
-
+#include "axom/config.hpp"
 #include "axom/core/utilities/Timer.hpp"
 #include "axom/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
 #include "../HydroC.hpp"
 
+#include <cmath>
+#include <vector>
 
 using namespace tinyHydro;
 

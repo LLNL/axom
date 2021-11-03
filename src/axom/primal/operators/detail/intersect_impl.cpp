@@ -498,6 +498,6 @@ bool intervalsDisjoint(double d0, double d1, double d2, double r)
   return d1 < -r || d0 > r;
 }
 
-} /* end namespace detail */
-} /* end namespace primal */
-} /* end namespace axom */
+}  // end namespace detail
+}  // end namespace primal
+}  // end namespace axom

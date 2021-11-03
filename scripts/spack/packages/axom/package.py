@@ -1,13 +1,13 @@
 # Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
-# Spack Project Developers. See the top-level LICENSE file for details.
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
-
-from spack import *
 
 import os
 import socket
 from os.path import join as pjoin
+
+from spack import *
 
 
 def get_spec_path(spec, package_name, path_replacements={}, use_bin=False):
@@ -39,6 +39,7 @@ class Axom(CachedCMakePackage, CudaPackage):
 
     version('main', branch='main', submodules=True)
     version('develop', branch='develop', submodules=True)
+    version('0.5.0', tag='v0.5.0', submodules=True)
     version('0.4.0', tag='v0.4.0', submodules=True)
     version('0.3.3', tag='v0.3.3', submodules=True)
     version('0.3.2', tag='v0.3.2', submodules=True)
@@ -56,6 +57,9 @@ class Axom(CachedCMakePackage, CudaPackage):
     variant('debug',    default=False,
             description='Build debug instead of optimized version')
 
+    variant('examples', default=True, description='Build examples')
+    variant('tools',    default=True, description='Build tools')
+
     variant('cpp14',    default=True, description="Build with C++14 support")
 
     variant('fortran',  default=True, description="Build with Fortran support")
@@ -65,6 +69,7 @@ class Axom(CachedCMakePackage, CudaPackage):
     variant("mpi",      default=True, description="Build MPI support")
     variant('openmp',   default=True, description='Turn on OpenMP support.')
 
+    variant("c2c",      default=False, description="Build with c2c")
     variant("mfem",     default=False, description="Build with mfem")
     variant("hdf5",     default=True, description="Build with hdf5")
     variant("lua",      default=True, description="Build with Lua")
@@ -90,12 +95,14 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("conduit~hdf5", when="~hdf5")
 
     # HDF5 needs to be the same as Conduit's
-    depends_on("hdf5@1.8.19:1.8.999~cxx~shared~fortran", when="+hdf5")
+    # FIXME: remove these hardcoded variants when we move to the new concretizer
+    # DO NOT PUSH UP TO SPACK PROPER
+    depends_on("hdf5@1.8.19:1.8.999~shared~cxx~fortran", when="+hdf5")
 
     depends_on("lua", when="+lua")
 
     depends_on("scr", when="+scr")
-    depends_on("kvtree@master", when="+scr")
+    depends_on("kvtree@main", when="+scr")
     depends_on("dtcmp", when="+scr")
 
     depends_on("raja~openmp", when="+raja~openmp")
@@ -112,6 +119,8 @@ class Axom(CachedCMakePackage, CudaPackage):
         depends_on('umpire cuda_arch={0}'.format(sm_),
                    when='+umpire cuda_arch={0}'.format(sm_))
 
+    depends_on("c2c", when="+c2c")
+
     depends_on("mfem", when="+mfem")
     depends_on("mfem~mpi", when="+mfem~mpi")
 
@@ -126,7 +135,19 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("py-shroud", when="+devtools")
     depends_on("llvm+clang@10.0.0", when="+devtools", type='build')
 
-    conflict("conduit@:0.6.0", when="@0.5.0:")
+    # Conduit's cmake config files moved and < 0.4.0 can't find it
+    conflicts("^conduit@0.7.2:", when="@:0.4.0")
+
+    # Sidre requires conduit_blueprint_mpi.hpp
+    conflicts("^conduit@:0.6.0", when="@0.5.0:")
+
+    def flag_handler(self, name, flags):
+        if self.spec.satisfies('%cce') and name == 'fflags':
+            flags.append('-ef')
+
+        if name in ('cflags', 'cxxflags', 'cppflags', 'fflags'):
+            return (None, None, None)  # handled in the cmake cache
+        return (flags, None, None)
 
     def _get_sys_type(self, spec):
         sys_type = spec.architecture
@@ -180,39 +201,38 @@ class Axom(CachedCMakePackage, CudaPackage):
         spec = self.spec
         entries = super(Axom, self).initconfig_hardware_entries()
 
-        if spec.satisfies('target=ppc64le:'):
-            if spec.satisfies('^cuda'):
-                entries.append(cmake_cache_option("ENABLE_CUDA", True))
-                entries.append(cmake_cache_option("CUDA_SEPARABLE_COMPILATION",
-                                                  True))
+        if "+cuda" in spec:
+            entries.append(cmake_cache_option("ENABLE_CUDA", True))
+            entries.append(cmake_cache_option("CUDA_SEPARABLE_COMPILATION",
+                                              True))
 
+            entries.append(
+                cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
+
+            # CUDA_FLAGS
+            cudaflags  = "-restrict --expt-extended-lambda "
+
+            if not spec.satisfies('cuda_arch=none'):
+                cuda_arch = spec.variants['cuda_arch'].value[0]
+                entries.append(cmake_cache_string(
+                    "CMAKE_CUDA_ARCHITECTURES",
+                    cuda_arch))
+                cudaflags += '-arch sm_${CMAKE_CUDA_ARCHITECTURES} '
+            else:
                 entries.append(
-                    cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
+                    "# cuda_arch could not be determined\n\n")
 
-                # CUDA_FLAGS
-                cudaflags  = "-restrict --expt-extended-lambda "
+            if "+cpp14" in spec:
+                cudaflags += " -std=c++14"
+            else:
+                cudaflags += " -std=c++11"
+            entries.append(
+                cmake_cache_string("CMAKE_CUDA_FLAGS", cudaflags))
 
-                if not spec.satisfies('cuda_arch=none'):
-                    cuda_arch = spec.variants['cuda_arch'].value[0]
-                    entries.append(cmake_cache_string(
-                        "CMAKE_CUDA_ARCHITECTURES",
-                        cuda_arch))
-                    cudaflags += '-arch sm_${CMAKE_CUDA_ARCHITECTURES} '
-                else:
-                    entries.append(
-                        "# cuda_arch could not be determined\n\n")
-
-                if "+cpp14" in spec:
-                    cudaflags += " -std=c++14"
-                else:
-                    cudaflags += " -std=c++11"
-                entries.append(
-                    cmake_cache_string("CMAKE_CUDA_FLAGS", cudaflags))
-
-                entries.append(
-                    "# nvcc does not like gtest's 'pthreads' flag\n")
-                entries.append(
-                    cmake_cache_option("gtest_disable_pthreads", True))
+            entries.append(
+                "# nvcc does not like gtest's 'pthreads' flag\n")
+            entries.append(
+                cmake_cache_option("gtest_disable_pthreads", True))
 
         entries.append("#------------------{0}".format("-" * 30))
         entries.append("# Hardware Specifics")
@@ -228,41 +248,51 @@ class Axom(CachedCMakePackage, CudaPackage):
             not spec.satisfies('+cuda target=ppc64le:')
         ))
 
-        if spec.satisfies('target=ppc64le:'):
-            if (self.compiler.fc is not None) and ("xlf" in self.compiler.fc):
-                description = ("Converts C-style comments to Fortran style "
-                               "in preprocessed files")
-                entries.append(cmake_cache_string(
-                    "BLT_FORTRAN_FLAGS",
-                    "-WF,-C!  -qxlf2003=polymorphic",
-                    description))
-                # Grab lib directory for the current fortran compiler
-                libdir = pjoin(os.path.dirname(
-                               os.path.dirname(self.compiler.fc)),
-                               "lib")
-                description = ("Adds a missing rpath for libraries "
-                               "associated with the fortran compiler")
-                linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
-                entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS",
-                                                  linker_flags, description))
-                if "+shared" in spec:
-                    linker_flags = "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath," \
-                                   + libdir
-                    entries.append(cmake_cache_string(
-                        "CMAKE_SHARED_LINKER_FLAGS",
-                        linker_flags, description))
+        if (self.compiler.fc is not None) and ("xlf" in self.compiler.fc):
+            # Grab lib directory for the current fortran compiler
+            libdir = pjoin(os.path.dirname(
+                           os.path.dirname(self.compiler.fc)),
+                           "lib")
+            description = ("Adds a missing rpath for libraries "
+                           "associated with the fortran compiler")
 
-            # Fix for working around CMake adding implicit link directories
-            # returned by the BlueOS compilers to link executables with
-            # non-system default stdlib
-            _gcc_prefix = "/usr/tce/packages/gcc/gcc-4.9.3/lib64"
-            if os.path.exists(_gcc_prefix):
-                _gcc_prefix2 = pjoin(
-                    _gcc_prefix,
-                    "gcc/powerpc64le-unknown-linux-gnu/4.9.3")
-                _link_dirs = "{0};{1}".format(_gcc_prefix, _gcc_prefix2)
+            linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
+
+            entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS",
+                                              linker_flags, description))
+
+            if "+shared" in spec:
+                linker_flags = "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath," \
+                               + libdir
                 entries.append(cmake_cache_string(
-                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE", _link_dirs))
+                    "CMAKE_SHARED_LINKER_FLAGS",
+                    linker_flags, description))
+
+            description = ("Converts C-style comments to Fortran style "
+                           "in preprocessed files")
+            entries.append(cmake_cache_string(
+                "BLT_FORTRAN_FLAGS",
+                "-WF,-C!  -qxlf2003=polymorphic",
+                description))
+
+            if spec.satisfies('target=ppc64le:'):
+                # Fix for working around CMake adding implicit link directories
+                # returned by the BlueOS compilers to link executables with
+                # non-system default stdlib
+                _roots = ["/usr/tce/packages/gcc/gcc-4.9.3",
+                          "/usr/tce/packages/gcc/gcc-4.9.3/gnu"]
+                _subdirs = ["lib64",
+                            "lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3"]
+                _existing_paths = []
+                for root in _roots:
+                    for subdir in _subdirs:
+                        _curr_path = pjoin(root, subdir)
+                        if os.path.exists(_curr_path):
+                            _existing_paths.append(_curr_path)
+                if _existing_paths:
+                    entries.append(cmake_cache_string(
+                        "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                        ";".join(_existing_paths)))
 
         return entries
 
@@ -270,7 +300,7 @@ class Axom(CachedCMakePackage, CudaPackage):
         spec = self.spec
         entries = super(Axom, self).initconfig_mpi_entries()
 
-        if spec.satisfies('^mpi'):
+        if "+mpi" in spec:
             entries.append(cmake_cache_option("ENABLE_MPI", True))
             if spec['mpi'].name == 'spectrum-mpi':
                 entries.append(cmake_cache_string("BLT_MPI_COMMAND_APPEND",
@@ -305,26 +335,25 @@ class Axom(CachedCMakePackage, CudaPackage):
         entries.append(cmake_cache_path("CONDUIT_DIR", conduit_dir))
 
         # optional tpls
-        for dep in ('mfem', 'hdf5', 'lua', 'raja', 'umpire'):
+        for dep in ('c2c', 'mfem', 'hdf5', 'lua', 'raja', 'umpire'):
             if '+%s' % dep in spec:
                 dep_dir = get_spec_path(spec, dep, path_replacements)
                 entries.append(cmake_cache_path('%s_DIR' % dep.upper(),
                                                 dep_dir))
             else:
-                entries.append('# %s not build\n' % dep.upper())
-
+                entries.append('# %s not built\n' % dep.upper())
 
         if '+scr' in spec:
             dep_dir = get_spec_path(spec, 'scr', path_replacements)
             entries.append(cmake_cache_path('SCR_DIR', dep_dir))
-           
+
             # scr's dependencies
             for dep in ('kvtree', 'dtcmp'):
                 if spec.satisfies('^{0}'.format(dep)):
                     dep_dir = get_spec_path(spec, dep, path_replacements)
                     entries.append(cmake_cache_path('%s_DIR' % dep.upper(), dep_dir))
         else:
-            entries.append('# scr not build\n')
+            entries.append('# scr not built\n')
 
         ##################################
         # Devtools
@@ -395,5 +424,15 @@ class Axom(CachedCMakePackage, CudaPackage):
 
         options.append(self.define_from_variant(
             'BUILD_SHARED_LIBS', 'shared'))
+        options.append(self.define_from_variant(
+            'AXOM_ENABLE_EXAMPLES', 'examples'))
+        options.append(self.define_from_variant(
+            'AXOM_ENABLE_TOOLS', 'tools'))
 
         return options
+
+    def patch(self):
+        if self.spec.satisfies('%cce'):
+            filter_file('PROPERTIES LINKER_LANGUAGE CXX',
+                        'PROPERTIES LINKER_LANGUAGE CXX \n LINK_FLAGS "-fopenmp"',
+                        'src/axom/quest/examples/CMakeLists.txt')

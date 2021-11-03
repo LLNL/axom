@@ -7,7 +7,6 @@
 #------------------------------------------------------------------------------
 
 set(spin_tests
-    spin_bvhtree.cpp
     spin_implicit_grid.cpp
     spin_morton.cpp
     spin_octree.cpp
@@ -16,13 +15,13 @@ set(spin_tests
     spin_uniform_grid.cpp
    )
 
-set(spin_depends
-    spin
+set(spin_tests_depends
+    axom
     gtest
     fmt
     )
 
-blt_list_append( TO spin_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO spin_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach ( test ${spin_tests} )
 
@@ -32,7 +31,7 @@ foreach ( test ${spin_tests} )
       NAME       ${test_name}_test
       SOURCES    ${test}
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON ${spin_depends}
+      DEPENDS_ON ${spin_tests_depends}
       FOLDER     axom/spin/tests
       )
 
@@ -43,13 +42,13 @@ foreach ( test ${spin_tests} )
 
 endforeach()
 
-if ( RAJA_FOUND AND UMPIRE_FOUND )
+if (AXOM_ENABLE_MINT)
 
     blt_add_executable(
       NAME       spin_bvh_test
       SOURCES    spin_bvh.cpp
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON mint ${spin_depends}
+      DEPENDS_ON ${spin_tests_depends}
       FOLDER     axom/spin/tests
       )
 
@@ -59,12 +58,16 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
       NUM_OMP_THREADS 4
       )
 
-    # fix for rzmanta of following runtime error:
-    #   CUDAassert: peer access is not supported between these two devices /unimportant/path/raja-0.12.1/include/RAJA/policy/cuda/sort.hpp 341
-    #   unknown file: Failure
-    #   C++ exception with description "CUDAassert" thrown in the test body.
-    set_property(TEST spin_bvh
-                 APPEND
-                 PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
+    if ( RAJA_FOUND AND UMPIRE_FOUND )
+
+        # fix for rzmanta of following runtime error:
+        #   CUDAassert: peer access is not supported between these two devices /unimportant/path/raja-0.12.1/include/RAJA/policy/cuda/sort.hpp 341
+        #   unknown file: Failure
+        #   C++ exception with description "CUDAassert" thrown in the test body.
+        set_property(TEST spin_bvh
+                     APPEND
+                     PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
+
+    endif()
 
 endif()

@@ -9,8 +9,8 @@
  * \brief A Polygon primitive for primal
  */
 
-#ifndef PRIMAL_POLYGON_HPP_
-#define PRIMAL_POLYGON_HPP_
+#ifndef AXOM_PRIMAL_POLYGON_HPP_
+#define AXOM_PRIMAL_POLYGON_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -44,12 +44,12 @@ template <typename T, int NDIMS>
 class Polygon
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
-  typedef NumericArray<T, NDIMS> NumArrayType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+  using NumArrayType = NumericArray<T, NDIMS>;
 
 private:
-  typedef std::vector<PointType> Coords;
+  using Coords = std::vector<PointType>;
 
 public:
   /*! Default constructor for an empty polygon   */
@@ -63,7 +63,7 @@ public:
    * \pre numExpectedVerts is not negative
    *
    */
-  Polygon(int numExpectedVerts)
+  explicit Polygon(int numExpectedVerts)
   {
     SLIC_ASSERT(numExpectedVerts >= 0);
     m_vertices.reserve(numExpectedVerts);
@@ -103,7 +103,7 @@ public:
     }
     sum /= numVertices();
 
-    return sum;
+    return PointType(sum);
   }
 
   /*!
@@ -155,4 +155,4 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly)
 }  // namespace primal
 }  // namespace axom
 
-#endif  // PRIMAL_POLYGON_HPP_
+#endif  // AXOM_PRIMAL_POLYGON_HPP_

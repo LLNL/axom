@@ -20,7 +20,7 @@ set( mint_examples
      user_guide/mint_getting_started.cpp
    )
 
-set( mint_example_dependencies mint )
+set( mint_example_dependencies axom )
 
 blt_list_append( TO mint_example_dependencies ELEMENTS cuda
                  IF ${ENABLE_CUDA} )

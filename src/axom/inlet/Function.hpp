@@ -19,7 +19,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/sidre.hpp"
 
@@ -521,11 +521,9 @@ class Function : public Verifiable<Function>
 public:
   Function(axom::sidre::Group* sidreGroup,
            axom::sidre::Group* root,
-           FunctionVariant&& func,
-           bool docEnabled = true)
+           FunctionVariant&& func)
     : m_sidreGroup(sidreGroup)
     , m_sidreRootGroup(root)
-    , m_docEnabled(docEnabled)
     , m_func(std::move(func))
   {
     m_func.setName(name());
@@ -575,56 +573,21 @@ public:
   */
   std::string name() const;
 
-  /*!
-   *****************************************************************************
-   * \brief This will be called by Inlet::verify to verify the contents of this
-   *  Function
-   *****************************************************************************
-   */
-  bool verify() const;
+  bool verify(std::vector<VerificationError>* errors = nullptr) const override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the required status of this Container.
-   *
-   * Set whether this Container is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \param [in] isRequired Boolean value of whether Container is required
-   *
-   * \return Reference to this instance of Container
-   *****************************************************************************
-   */
-  Function& required(bool isRequired = true);
+  Function& required(bool isRequired = true) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Container.
-   *
-   * Return that this Function is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Function is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
+  bool isRequired() const override;
 
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this function
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Container::verify().
-   *****************************************************************************
-  */
-  Function& registerVerifier(std::function<bool(const Function&)> lambda);
+  using Verifiable<Function>::registerVerifier;
+
+  Function& registerVerifier(Verifier lambda) override;
 
 private:
   // This function's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
-  bool m_docEnabled;
-  std::function<bool(const Function&)> m_verifier;
+  Verifier m_verifier;
   FunctionVariant m_func;
 };
 

@@ -5,7 +5,6 @@
 
 #include "axom/slic/interface/slic.hpp"  // for slic macros
 
-#include "axom/core/Array.hpp"                // for axom::Array
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::max()
 
 #include "axom/mint/config.hpp"                // for IndexType
@@ -99,10 +98,10 @@ void create_sidre_data(sidre::DataStore& ds, int dimension)
 
     // NOTE: even though the array goes out-of-scope here, the data
     // remains persistent in sidre
-    sidre::Array<double> coord_array(coord_view,
-                                     SMALL_NUM_NODES,
-                                     1,
-                                     SMALL_NUM_NODES);
+    sidre::deprecated::MCArray<double> coord_array(coord_view,
+                                                   SMALL_NUM_NODES,
+                                                   1,
+                                                   SMALL_NUM_NODES);
 
     coord_array.set(ptrs[idim], SMALL_NUM_NODES, 0);
   }  // END for all dimensions
@@ -186,7 +185,7 @@ void check_constructor(int dimension,
   // STEP 2: check actual capacity
   const IndexType actual_capacity = coords->capacity();
 
-  const double ratio = Array<double>::DEFAULT_RESIZE_RATIO;
+  const double ratio = deprecated::MCArray<double>::DEFAULT_RESIZE_RATIO;
   const IndexType expected_computed_capacity =
     utilities::max(DEFAULT_CAPACITY,
                    static_cast<IndexType>(numNodes * ratio + 0.5));
@@ -1058,7 +1057,7 @@ TEST(mint_mesh_coordinates, change_resize_ratio)
 {
   constexpr int NDIMS = 3;
   constexpr double DEFAULT_RESIZE_RATIO =
-    axom::Array<double>::DEFAULT_RESIZE_RATIO;
+    deprecated::MCArray<double>::DEFAULT_RESIZE_RATIO;
   constexpr double NEW_RESIZE_RATIO = 2.5;
 
   MeshCoordinates mc(NDIMS);
@@ -1260,14 +1259,14 @@ TEST(mint_mesh_coordinates, sidre_push_constructor)
       EXPECT_TRUE(mesh_coords.numNodes() <= mesh_coords.capacity());
 
       IndexType capacity = SMALL_NUM_NODES * mesh_coords.getResizeRatio() + 0.5;
-      if(capacity < axom::Array<IndexType>::MIN_DEFAULT_CAPACITY)
+      if(capacity < MCArray<IndexType>::MIN_DEFAULT_CAPACITY)
       {
-        capacity = axom::Array<IndexType>::MIN_DEFAULT_CAPACITY;
+        capacity = MCArray<IndexType>::MIN_DEFAULT_CAPACITY;
       }
       EXPECT_EQ(mesh_coords.capacity(), capacity);
 
       // populate the coordinates, writes to the corresponding sidre views
-      axom::Array<double> xx(dim, 1, dim);
+      axom::deprecated::MCArray<double> xx(dim, 1, dim);
       for(int inode = 0; inode < SMALL_NUM_NODES; ++inode)
       {
         for(int j = 0; j < dim; ++j)

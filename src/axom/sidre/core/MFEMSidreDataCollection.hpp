@@ -505,11 +505,7 @@ public:
 
   /** @brief Updates the DataCollection's mesh and registered fields
       with the values from the data store. */
-  void UpdateMeshAndFieldsFromDS()
-  {
-    reconstructMesh();
-    reconstructFields();
-  }
+  void UpdateMeshAndFieldsFromDS();
 
   /// Verifies that the contents of the mesh blueprint data is valid.
   bool verifyMeshBlueprint();
@@ -565,12 +561,19 @@ private:
   // retain a non-owning pointer and manage memory via unique_ptr in
   // this class for consistency
   std::unique_ptr<mfem::Mesh> m_owned_mesh;
-  std::vector<std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
-  std::vector<std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
+  // To avoid wasting memory, mfem::FEColl and mfem::FESpace objects with the same
+  // basis are reused
+  // NOTE: The FESpace objects are tied to a mesh instance, but because these variables
+  // are only modified after m_owned_mesh is reconstructed, no explicit logic
+  // is required to maintain coherency
+  std::unordered_map<std::string, std::unique_ptr<mfem::FiniteElementCollection>> m_fecolls;
+  std::unordered_map<std::string, std::unique_ptr<mfem::FiniteElementSpace>> m_fespaces;
   std::vector<std::unique_ptr<mfem::GridFunction>> m_owned_gridfuncs;
 
   // Used for reconstructed QuadratureFunctions
-  std::vector<std::unique_ptr<mfem::QuadratureSpace>> m_quadspaces;
+  // To avoid wasting memory, mfem::QSpace objects with the same
+  // basis are reused
+  std::unordered_map<std::string, std::unique_ptr<mfem::QuadratureSpace>> m_quadspaces;
   std::vector<std::unique_ptr<mfem::QuadratureFunction>> m_owned_quadfuncs;
 
   // Private helper functions
@@ -595,8 +598,12 @@ private:
   // Used as part of Load()
   void reconstructMesh();
 
+  // Reconstructs a single field from its corresponding Sidre group
+  void reconstructField(Group* field_grp);
+
   // Reconstructs all non-mesh-related fields using the current contents
-  // of the datastore, used as part of Load()
+  // of the datastore, used as part of Load() - it is expected/required
+  // that the nodel grid function has already been reconstructed/registered
   void reconstructFields();
 
   /**

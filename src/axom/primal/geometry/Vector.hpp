@@ -3,13 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef VECTOR_HPP_
-#define VECTOR_HPP_
+#ifndef AXOM_PRIMAL_VECTOR_HPP_
+#define AXOM_PRIMAL_VECTOR_HPP_
 
 // axom_utils includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/numerics/matvecops.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 // Primal includes
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -36,7 +37,8 @@ class Vector;
  * \return C resulting vector, \f$ C_i = A_i + B_i \forall i \f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A, const Vector<T, NDIMS>& B);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A,
+                                            const Vector<T, NDIMS>& B);
 
 /*!
  * \brief Subtracts vectors A, B and stores the result into a new vector C
@@ -45,7 +47,8 @@ Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A, const Vector<T, NDIMS>& B)
  * \return C resulting vector, \f$ C_i = A_i - B_i \forall i \f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& A, const Vector<T, NDIMS>& B);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& A,
+                                            const Vector<T, NDIMS>& B);
 
 /*!
  * \brief Unary negation of a vector instance.
@@ -62,7 +65,8 @@ Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1);
  * \return C resulting vector, \f$ \ni: C_i = scalar*vec_i, \forall i\f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec,
+                                            const T scalar);
 
 /*!
  * \brief Scalar multiplication of vector; Scalar on lhs.
@@ -71,7 +75,8 @@ Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar);
  * \return C resulting vector, \f$ \ni: C_i = scalar*vec_i, \forall i\f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator*(const T scalar, const Vector<T, NDIMS>& vec);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator*(const T scalar,
+                                            const Vector<T, NDIMS>& vec);
 
 /*!
  * \brief Scalar division of vector; Scalar on rhs.
@@ -94,6 +99,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec);
 /// @}
 
 /*!
+ * \accelerated
  * \class Vector
  *
  * \brief Represents a vector, \f$ v \in \mathcal{R}^d \f$. It provides access
@@ -110,7 +116,8 @@ template <typename T, int NDIMS>
 class Vector
 {
 public:
-  typedef Point<T, NDIMS> PointType;
+  using PointType = Point<T, NDIMS>;
+  using CoordType = T;
 
 public:
   /*!
@@ -128,7 +135,7 @@ public:
    * \param [in] arr The numeric array to copy from
    */
   AXOM_HOST_DEVICE
-  Vector(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
+  explicit Vector(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a vector from the first sz values of the input array.
@@ -138,7 +145,7 @@ public:
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    */
   AXOM_HOST_DEVICE
-  Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
+  explicit Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
 
   /*!
    * \brief Constructor to create vector from a Point
@@ -146,21 +153,7 @@ public:
    * \note Equivalent to Vector( Point::zero(), pt)
    */
   AXOM_HOST_DEVICE
-  Vector(const Point<T, NDIMS>& pt) : m_components(pt.array()) { }
-
-  /*!
-   * \brief Copy constructor
-   * \param [in] other The vector to copy
-   */
-  AXOM_HOST_DEVICE
-  Vector(const Vector<T, NDIMS>& other) : m_components(other.array()) { }
-
-  /*!
-   * \brief Copy assignment operator
-   * \param [in] other The vector to copy
-   */
-  AXOM_HOST_DEVICE
-  Vector& operator=(const Vector<T, NDIMS>& other);
+  explicit Vector(const Point<T, NDIMS>& pt) : m_components(pt.array()) { }
 
   /*!
    * \brief Constructs a vector from point A to point B.
@@ -183,12 +176,6 @@ public:
   Vector(std::initializer_list<T> values)
     : Vector {values.begin(), static_cast<int>(values.size())}
   { }
-
-  /*!
-   * \brief Destructor.
-   */
-  AXOM_HOST_DEVICE
-  ~Vector() { }
 
   /*!
    * \brief Returns the dimension of this vector instance.
@@ -231,6 +218,7 @@ public:
   /*!
    * \brief Equality comparison operator for vectors.
    */
+  AXOM_HOST_DEVICE
   friend bool operator==(const Vector& lhs, const Vector& rhs)
   {
     return lhs.m_components == rhs.m_components;
@@ -249,6 +237,7 @@ public:
    * \param [in] v the vector to add.
    * \return A reference to the Vector instance after vector addition.
    */
+  AXOM_HOST_DEVICE
   Vector<T, NDIMS>& operator+=(const Vector<T, NDIMS>& v);
 
   /*!
@@ -256,6 +245,7 @@ public:
    * \param [in] v the vector to subtract.
    * \return A reference to the Vector instance after vector subtraction.
    */
+  AXOM_HOST_DEVICE
   Vector<T, NDIMS>& operator-=(const Vector<T, NDIMS>& v);
 
   /*!
@@ -263,6 +253,7 @@ public:
    * \param [in] scalar the scalar value to multiply with this vector.
    * \return A reference to the vector instance after scalar multiplication.
    */
+  AXOM_HOST_DEVICE
   Vector<T, NDIMS>& operator*=(T scalar);
 
   /*!
@@ -273,6 +264,13 @@ public:
    */
   AXOM_HOST_DEVICE
   Vector<T, NDIMS>& operator/=(T scalar);
+
+  /*!
+   * \brief Check if this is a zero vector
+   * \return whether this vector consists of all zeros
+   */
+  AXOM_HOST_DEVICE
+  bool is_zero() const;
 
   /*!
    * \brief Dot product of the Vector instance with another vector v
@@ -300,6 +298,7 @@ public:
   /*!
    * \brief Component-wise negation of the vector.
    */
+  AXOM_HOST_DEVICE
   void negate();
 
   /*!
@@ -379,14 +378,6 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator=(const Vector<T, NDIMS>& other)
-{
-  m_components = other.array();
-  return *this;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)
 {
   m_components *= scalar;
@@ -461,6 +452,20 @@ inline void Vector<T, NDIMS>::negate()
   {
     m_components[i] = -m_components[i];
   }
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+inline bool Vector<T, NDIMS>::is_zero() const
+{
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    if(!utilities::isNearlyEqual(m_components[i], 0.0))
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 //------------------------------------------------------------------------------
@@ -591,8 +596,7 @@ inline Vector<T, NDIMS> Vector<T, NDIMS>::make_vector(const T& x,
   return Vector(tmp_array, NDIMS);
 }
 
-} /* namespace primal */
+}  // namespace primal
+}  // namespace axom
 
-} /* namespace axom */
-
-#endif /* VECTOR_HXX_ */
+#endif  // AXOM_PRIMAL_VECTOR_HPP_

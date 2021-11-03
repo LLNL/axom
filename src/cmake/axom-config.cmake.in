@@ -34,6 +34,7 @@ if(NOT AXOM_FOUND)
 
   # Axom components
   set(AXOM_ENABLE_INLET       "@AXOM_ENABLE_INLET@")
+  set(AXOM_ENABLE_KLEE        "@AXOM_ENABLE_KLEE@")
   set(AXOM_ENABLE_LUMBERJACK  "@AXOM_ENABLE_LUMBERJACK@")
   set(AXOM_ENABLE_MINT        "@AXOM_ENABLE_MINT@")
   set(AXOM_ENABLE_PRIMAL      "@AXOM_ENABLE_PRIMAL@")
@@ -50,6 +51,7 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_SPARSEHASH     "@AXOM_USE_SPARSEHASH@")
 
   # Axom external TPLs
+  set(AXOM_USE_C2C            "@AXOM_USE_C2C@")
   set(AXOM_USE_CONDUIT        "@AXOM_USE_CONDUIT@")
   set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
   set(AXOM_USE_LUA            "@AXOM_USE_LUA@")
@@ -63,13 +65,20 @@ if(NOT AXOM_FOUND)
   #----------------------------------------------------------------------------
   include(CMakeFindDependencyMacro)
 
+  # c2c
+  if(AXOM_USE_C2C)
+    set(AXOM_C2C_DIR     "@C2C_DIR@")
+    # Note: Targets not currently imported
+  endif()
+
   # conduit
   if(AXOM_USE_CONDUIT)
     set(AXOM_CONDUIT_DIR  "@CONDUIT_DIR@")
     if(NOT CONDUIT_DIR) 
       set(CONDUIT_DIR ${AXOM_CONDUIT_DIR}) 
     endif()
-    find_dependency(Conduit REQUIRED NO_DEFAULT_PATH PATHS "${CONDUIT_DIR}/lib/cmake")
+    find_dependency(Conduit REQUIRED NO_DEFAULT_PATH
+                    PATHS "${CONDUIT_DIR}/@AXOM_CONDUIT_CONFIG_SUBDIR@")
   endif()
 
   # hdf5

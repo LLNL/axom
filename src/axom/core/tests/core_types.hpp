@@ -6,6 +6,7 @@
 // Axom includes
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/Macros.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -49,9 +50,8 @@ void check_mpi_type(std::size_t expected_num_bytes, MPI_Datatype expected_mpi_ty
 
 #else
 
-  /* silence compiler warnings */
-  static_cast<void>(expected_num_bytes);
-  static_cast<void>(expected_mpi_type);
+  AXOM_UNUSED_VAR(expected_num_bytes);
+  AXOM_UNUSED_VAR(expected_mpi_type);
 
 #endif /* AXOM_USE_MPI */
 }

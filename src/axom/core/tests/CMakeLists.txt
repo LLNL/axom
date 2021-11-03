@@ -33,12 +33,14 @@ set(gtest_utils_tests
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_nvtx_settings.hpp
+    utils_stringUtilities.hpp
+    utils_system.hpp
     utils_utilities.hpp
     utils_about.hpp
     )
 
 set(utils_tests_depends
-    core
+    axom
     gtest
     )
 
@@ -86,6 +88,29 @@ if (ENABLE_MPI)
     axom_add_test( NAME          ${test_suite}_mpi
                    COMMAND       core_mpi_tests --gtest_filter=${test_suite}*
                    NUM_MPI_TASKS 1 )
+  endforeach()
+endif()
+
+#------------------------------------------------------------------------------
+# OpenMP GTests
+#------------------------------------------------------------------------------
+if (ENABLE_OPENMP AND AXOM_USE_RAJA)
+  set( core_openmp_tests
+       core_openmp_map.hpp
+       )
+
+  blt_add_executable( NAME       core_openmp_tests
+                      SOURCES    core_openmp_main.cpp
+                      HEADERS    ${core_mpi_tests}
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${utils_tests_depends} openmp
+                      FOLDER     axom/core/tests )
+
+  foreach( test_suite ${core_openmp_tests} )
+    get_filename_component( test_suite ${test_suite} NAME_WE )
+    axom_add_test( NAME          ${test_suite}_openmp
+                   COMMAND       core_openmp_tests --gtest_filter=${test_suite}*
+                   NUM_OMP_THREADS 24 )
   endforeach()
 endif()
 

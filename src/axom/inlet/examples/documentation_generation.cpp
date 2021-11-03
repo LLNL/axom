@@ -8,7 +8,7 @@
 #include "axom/inlet.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 #include <iostream>
 #include <limits>
 
@@ -180,13 +180,13 @@ int main(int argc, char** argv)
   axom::slic::SimpleLogger logger;
 
   // Handle command line arguments
-  CLI::App app {"Basic example of Axom's Inlet component"};
+  axom::CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled {false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
 
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
-  opt->check(CLI::ExistingFile);
+  opt->check(axom::CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
 
@@ -202,15 +202,10 @@ int main(int argc, char** argv)
 
   // Generate the documentation
   // _inlet_documentation_generation_start
-  auto sphinxWriter = std::make_unique<SphinxWriter>("example_doc.rst");
-  inlet.registerWriter(std::move(sphinxWriter));
+  inlet.write(SphinxWriter("example_doc.rst"));
   // _inlet_documentation_generation_end
-  inlet.write();
 
-  auto schemaWriter =
-    std::make_unique<axom::inlet::JSONSchemaWriter>("example_doc.json");
-  inlet.registerWriter(std::move(schemaWriter));
-  inlet.write();
+  inlet.write(axom::inlet::JSONSchemaWriter("example_doc.json"));
 
   if(docsEnabled)
   {

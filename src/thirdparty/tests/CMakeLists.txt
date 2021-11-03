@@ -58,7 +58,8 @@ endif()
 #------------------------------------------------------------------------------
 if( HDF5_FOUND)
 
-    set( hdf5_smoke_dependencies hdf5 gtest )
+    # we rely on conduit for hdf5 functionality
+    set( hdf5_smoke_dependencies conduit::conduit gtest )
 
     blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 
@@ -178,6 +179,22 @@ if (SOL_FOUND)
 
     axom_add_test(NAME    sol_smoke
                   COMMAND sol_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
+# Smoke test for c2c third party library
+#------------------------------------------------------------------------------
+
+if (C2C_FOUND)
+    blt_add_executable(
+        NAME       c2c_smoke_test
+        SOURCES    c2c_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON c2c gtest
+        FOLDER     axom/thirdparty/tests )
+
+    axom_add_test(NAME    c2c_smoke
+                  COMMAND c2c_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------

@@ -5,11 +5,15 @@
 
 #include "axom/inlet.hpp"
 
-#include <iostream>
-#include <unordered_map>
-#include "CLI11/CLI11.hpp"
+#include "axom/core.hpp"
+#include "axom/primal.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
+
+#include "axom/CLI11.hpp"
+
+#include <unordered_map>
+#include <iostream>
 
 using axom::inlet::FunctionType;
 using axom::inlet::Inlet;
@@ -96,7 +100,7 @@ struct BoundaryCondition
 
 inlet::InletVector toInletVector(const mfem::Vector& vec)
 {
-  return {vec.GetData(), vec.Size()};
+  return {axom::primal::Vector3D {vec.GetData(), vec.Size()}, vec.Size()};
 }
 
 // Uses out-params to match MFEM semantics
@@ -174,11 +178,12 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  CLI::App app {"Example of Axom's Inlet component with user-defined types"};
+  axom::CLI::App app {
+    "Example of Axom's Inlet component with user-defined types"};
   // Intended to be used with mfem_coef.lua
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
-  opt->check(CLI::ExistingFile);
+  opt->check(axom::CLI::ExistingFile);
 
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
@@ -217,16 +222,18 @@ int main(int argc, char** argv)
     if(info.second.scalar_func)
     {
       const double result = info.second.scalar_func(input_vec, t);
-      SLIC_INFO(fmt::format("Calling scalar function with {0} returned: {1}",
-                            toInletVector(input_vec),
-                            result));
+      SLIC_INFO(
+        axom::fmt::format("Calling scalar function with {0} returned: {1}",
+                          toInletVector(input_vec),
+                          result));
     }
     else if(info.second.vec_func)
     {
       info.second.vec_func(input_vec, t, output_vec);
-      SLIC_INFO(fmt::format("Calling vector function with {0} returned: {1}",
-                            toInletVector(input_vec),
-                            toInletVector(output_vec)));
+      SLIC_INFO(
+        axom::fmt::format("Calling vector function with {0} returned: {1}",
+                          toInletVector(input_vec),
+                          toInletVector(output_vec)));
     }
     bcs.emplace(info.first, BoundaryCondition {std::move(info.second), dim});
   }
@@ -234,18 +241,15 @@ int main(int argc, char** argv)
   if(docsEnabled)
   {
     const std::string docFileName = "mfem_coefficient.rst";
-    std::unique_ptr<inlet::SphinxWriter> writer(
-      new inlet::SphinxWriter(docFileName));
-    inlet.registerWriter(std::move(writer));
-    inlet.write();
+    inlet.write(inlet::SphinxWriter(docFileName));
     SLIC_INFO("Documentation was written to " << docFileName);
   }
 
   return 0;
 #else   // MFEM_STDFUNCTION_COEF
-  // Quiet unused variable warnings
-  AXOM_DEBUG_VAR(argc);
-  AXOM_DEBUG_VAR(argv);
+
+  AXOM_UNUSED_VAR(argc);
+  AXOM_UNUSED_VAR(argv);
 
   return 0;
 #endif  // MFEM_STDFUNCTION_COEF

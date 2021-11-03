@@ -228,7 +228,7 @@ TAB_SIZE               = 4
 # "Side Effects:". You can put \n's in the value part of an alias to insert
 # newlines.
 
-ALIASES                =
+ALIASES                = "accelerated=\xrefitem accelerated_list \"\"\"\"" 
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -776,6 +776,9 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/core \
                          @PROJECT_SOURCE_DIR@/axom/core/utilities \
                          @PROJECT_SOURCE_DIR@/axom/core/numerics \
+                         @PROJECT_SOURCE_DIR@/axom/klee \
+                         @PROJECT_SOURCE_DIR@/axom/klee/doxygen_mainpage.md \
+                         @PROJECT_SOURCE_DIR@/axom/core/execution \
                          @PROJECT_SOURCE_DIR@/axom/inlet \
                          @PROJECT_SOURCE_DIR@/axom/inlet/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/lumberjack \

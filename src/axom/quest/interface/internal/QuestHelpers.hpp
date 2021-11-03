@@ -7,20 +7,17 @@
 #define QUEST_HELPERS_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time definitions
-
-// Mint includes
-#include "axom/mint/mesh/Mesh.hpp"  // for mint::Mesh
-
-// Quest includes
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
-#include "axom/quest/stl/STLReader.hpp"
+#include "axom/quest/readers/STLReader.hpp"
 
 // C/C++ includes
-#include <string>  // for C++ string
+#include <string>
 
 /*!
- * \file
+ * \file QuestHelpers.hpp
  *
  * \brief Helper methods that can be used across the different Quest queries.
  */
@@ -32,6 +29,35 @@ namespace internal
 {
 constexpr int READ_FAILED = -1;
 constexpr int READ_SUCCESS = 0;
+
+/*!
+ * \brief Simple RAII-based utility class to update the slic logging level within a scope
+ *
+ * The original logging level will be restored when this instance goes out of scope
+ */
+class ScopedLogLevelChanger
+{
+public:
+  ScopedLogLevelChanger(slic::message::Level newLevel)
+  {
+    if(slic::isInitialized())
+    {
+      m_previousLevel = slic::getLoggingMsgLevel();
+      slic::setLoggingMsgLevel(newLevel);
+    }
+  }
+
+  ~ScopedLogLevelChanger()
+  {
+    if(slic::isInitialized())
+    {
+      slic::setLoggingMsgLevel(m_previousLevel);
+    }
+  }
+
+private:
+  slic::message::Level m_previousLevel;
+};
 
 /// \name MPI Helper/Wrapper Methods
 /// @{
@@ -195,12 +221,12 @@ MPI_Aint allocate_shared_buffer(int local_rank_id,
  * \post intra_node_comm != MPI_COMM_NULL
  * \post shared_window != MPI_WIN_NULL
  */
-int read_mesh_shared(const std::string& file,
-                     MPI_Comm global_comm,
-                     unsigned char*& mesh_buffer,
-                     mint::Mesh*& m,
-                     MPI_Comm& intra_node_comm,
-                     MPI_Win& shared_window);
+int read_stl_mesh_shared(const std::string& file,
+                         MPI_Comm global_comm,
+                         unsigned char*& mesh_buffer,
+                         mint::Mesh*& m,
+                         MPI_Comm& intra_node_comm,
+                         MPI_Win& shared_window);
 #endif
 
 /*!
@@ -210,8 +236,7 @@ int read_mesh_shared(const std::string& file,
  * \param [out] m user-supplied pointer to point to the mesh object.
  * \param [in] comm the MPI communicator, only applicable when MPI is available.
  *
- * \note This method currently expects the surface mesh to be given in STL
- *  format.
+ * \note This method currently expects the surface mesh to be given in STL format.
  *
  * \note The caller is responsible for properly de-allocating the mesh object
  *  that is returned by this function.
@@ -229,9 +254,42 @@ int read_mesh_shared(const std::string& file,
  * \see STLReader
  * \see PSTLReader
  */
-int read_mesh(const std::string& file,
-              mint::Mesh*& m,
-              MPI_Comm comm = MPI_COMM_SELF);
+int read_stl_mesh(const std::string& file,
+                  mint::Mesh*& m,
+                  MPI_Comm comm = MPI_COMM_SELF);
+
+#ifdef AXOM_USE_C2C
+/*!
+ * \brief Reads in the contour mesh from the specified file
+ *
+ * \param [in] file the file consisting of a C2C contour defined by one or more c2c::Piece
+ * \param [in] segmentsPerPiece number of segments to sample per contour Piece
+ * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
+ * \param [out] m user-supplied pointer to point to the mesh object
+ * \param [in] comm the MPI communicator, only applicable when MPI is available
+ *
+ * \note The caller is responsible for properly de-allocating the mesh object
+ *  that is returned by this function
+ *
+ * \return status set to zero on success, or to a non-zero value otherwise
+ *
+ * \pre m == nullptr
+ * \pre !file.empty()
+ *
+ * \post m != nullptr
+ * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \post m->hasMixedCellTypes() == false
+ * \post m->getCellType() == mint::SEGMENT
+ *
+ * \see C2CReader
+ * \see PC2CReader
+ */
+int read_c2c_mesh(const std::string& file,
+                  int segmentsPerPiece,
+                  double vertexWeldThreshold,
+                  mint::Mesh*& m,
+                  MPI_Comm comm = MPI_COMM_SELF);
+#endif  // AXOM_USE_C2C
 
 /// @}
 

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SPARSE_OCTREE_LEVEL__HXX_
-#define SPARSE_OCTREE_LEVEL__HXX_
+#ifndef AXOM_SPIN_SPARSE_OCTREE_LEVEL__HPP_
+#define AXOM_SPIN_SPARSE_OCTREE_LEVEL__HPP_
 
 #include "axom/config.hpp"
 
@@ -18,7 +18,7 @@
 #include <type_traits>
 
 #if defined(AXOM_USE_SPARSEHASH)
-  #include <sparsehash/dense_hash_map>
+  #include "axom/sparsehash/dense_hash_map"
 #else
   #include <unordered_map>
 #endif
@@ -50,7 +50,7 @@ struct BroodRepresentationTraits
 
   // Requires a uint for RepresentationType with 8-,16-,32-, or 64- bits
 #if defined(AXOM_USE_SPARSEHASH)
-  using MapType = google::dense_hash_map<RepresentationType, BroodDataType>;
+  using MapType = axom::google::dense_hash_map<RepresentationType, BroodDataType>;
 #else
   using MapType = std::unordered_map<RepresentationType, BroodDataType>;
 #endif
@@ -98,7 +98,8 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType, primal::Point<Co
                          "CoordType must be integral");
 
 #if defined(AXOM_USE_SPARSEHASH)
-  using MapType = google::dense_hash_map<GridPt, BroodDataType, PointHashType>;
+  using MapType =
+    axom::google::dense_hash_map<GridPt, BroodDataType, PointHashType>;
 #else
   using MapType = std::unordered_map<GridPt, BroodDataType, PointHashType>;
 #endif
@@ -403,4 +404,4 @@ private:
 }  // end namespace spin
 }  // end namespace axom
 
-#endif  // SPARSE_OCTREE_LEVEL__HXX_
+#endif  // AXOM_SPIN_SPARSE_OCTREE_LEVEL__HPP_

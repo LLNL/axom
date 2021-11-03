@@ -18,6 +18,7 @@
 
 // Axom includes
 #include "axom/core/Array.hpp"
+#include "axom/core/ArrayView.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/memory_management.hpp"
 
@@ -38,34 +39,35 @@ void sleep(int numSeconds)
 
 void showArray(axom::Array<int>& a, const char* name)
 {
-  std::cout << "Array " << name << " = [";
-  for(int i = 0; i < a.size(); ++i)
+  std::cout << "Array " << name << " = " << a << std::endl;
+}
+
+void showTupleArray(axom::MCArray<int>& a, const char* name)
+{
+  const auto numComponents = a.shape()[1];
+  std::cout << "MCArray " << name << " with " << a.shape()[0] << " "
+            << numComponents << "-tuples = [" << std::endl;
+  for(int i = 0; i < a.shape()[0]; ++i)
   {
-    if(i > 0)
-    {
-      std::cout << ", ";
-    }
-    std::cout << a[i];
+    std::cout << "  "
+              << axom::ArrayView<int>(a.data() + (i * numComponents),
+                                      numComponents)
+              << std::endl;
   }
   std::cout << "]" << std::endl;
 }
 
-void showTupleArray(axom::Array<int>& a, const char* name)
+void showTupleArrayView(axom::MCArrayView<int>& a, const char* name)
 {
-  std::cout << "Array " << name << " with " << a.size() << " "
-            << a.numComponents() << "-tuples = [" << std::endl;
-  for(int i = 0; i < a.size(); ++i)
+  const auto numComponents = a.shape()[1];
+  std::cout << "MCArrayView " << name << " with " << a.shape()[0] << " "
+            << numComponents << "-tuples = [" << std::endl;
+  for(int i = 0; i < a.shape()[0]; ++i)
   {
-    std::cout << "  [";
-    for(int j = 0; j < a.numComponents(); ++j)
-    {
-      if(j > 0)
-      {
-        std::cout << ", ";
-      }
-      std::cout << a(i, j);
-    }
-    std::cout << "]" << std::endl;
+    std::cout << "  "
+              << axom::ArrayView<int>(a.data() + (i * numComponents),
+                                      numComponents)
+              << std::endl;
   }
   std::cout << "]" << std::endl;
 }
@@ -80,61 +82,98 @@ void demoArrayBasic()
   a[1] = 5;
   a[2] = 11;
 
-  // An Array increases in size if a value is appended.
-  a.append(4);
-  std::cout << "After appending a value, a's length = " << a.size() << std::endl;
+  // An Array increases in size if a value is pushed back.
+  a.push_back(4);
+  std::cout << "After pushing back a value, a's length = " << a.size()
+            << std::endl;
 
   // You can also insert a value in the middle of the Array.
-  // Here we insert value 6 at position 2 and value 1 and position 4.
+  // Here we insert value 6 at position 2 and value 1 at position 4.
   showArray(a, "a");
-  a.insert(6, 2);
-  a.insert(1, 4);
+  a.insert(2, 6);
+  a.insert(4, 1);
   std::cout << "After inserting two values, ";
   showArray(a, "a");
   // _arraybasic_end
 
   // _arraytuple_start
-  // Here is an Array of ints, containing two triples.
-  axom::Array<int> b(2, 3);
+  // Here is an MCArray of ints, containing two triples.
+  const int numTuples = 2;
+  const int numComponents = 3;
+  axom::MCArray<int> b(numTuples, numComponents);
   // Set tuple 0 to (1, 4, 2).
   b(0, 0) = 1;
   b(0, 1) = 4;
   b(0, 2) = 2;
   // Set tuple 1 to one tuple, (8, 0, -1).
-  // The first argument to set() is the buffer to copy into the Array, the
+  // The first argument to set() is the buffer to copy into the MCArray, the
   // second is the number of tuples in the buffer, and the third argument
   // is the first tuple to fill from the buffer.
   int ival[3] = {8, 0, -1};
-  b.set(ival, 1, 1);
+  b.set(ival, 3, 3);
 
   showTupleArray(b, "b");
 
-  // Now, insert two tuples, (0, -1, 1), (1, -1, 0), into the Array, directly
+  // Now, insert two tuples, (0, -1, 1), (1, -1, 0), into the MCArray, directly
   // after tuple 0.
   int jval[6] = {0, -1, 1, 1, -1, 0};
-  b.insert(jval, 2, 1);
+  b.insert(1, numTuples * numComponents, jval);
 
   showTupleArray(b, "b");
   // _arraytuple_end
 
   // _extbuffer_start
-  // The internal buffer maintained by an Array is accessible.
-  int* pa = a.getData();
-  // An Array can be constructed with a pointer to an external buffer.
+  // The internal buffer maintained by an MCArray is accessible.
+  int* pa = a.data();
+  // An MCArray can be constructed with a pointer to an external buffer.
   // Here's an Array interpreting the memory pointed to by pa as three 2-tuples.
-  axom::Array<int> c(pa, 3, 2);
+  axom::MCArrayView<int> c(pa, 3, 2);
 
-  showTupleArray(c, "c");
+  showArray(a, "a");
+  showTupleArrayView(c, "c");
 
   // Since c is an alias to a's internal memory, changes affect both Arrays.
-  a(0, 0) = 1;
+  a[0] = 1;
   c(1, 1) = 9;
 
-  std::cout << "Arrays a and c use the same memory, a's internal buffer."
-            << std::endl;
+  std::cout
+    << "Array a and MCArrayView c use the same memory, a's internal buffer."
+    << std::endl;
   showArray(a, "a");
-  showTupleArray(c, "c");
+  showTupleArrayView(c, "c");
   // _extbuffer_end
+
+  // _iteration_start
+  // Iteration over multidimensional arrays uses the shape() method
+  // to retrieve the extents in each dimension.
+  for(int i = 0; i < c.shape()[0]; i++)
+  {
+    for(int j = 0; j < c.shape()[1]; j++)
+    {
+      // Note that c's operator() accepts two arguments because it is two-dimensional
+      std::cout << "In ArrayView c, index (" << i << ", " << j << ") yields "
+                << c(i, j) << std::endl;
+    }
+  }
+
+  // To iterate over the "flat" data in an Array, regardless of dimension,
+  // use a range-based for loop.
+  std::cout << "Range-based for loop over ArrayView c yields: ";
+  for(const int value : c)
+  {
+    std::cout << value << " ";
+  }
+  std::cout << std::endl;
+
+  // Alternatively, the "flat" data can be iterated over with operator[]
+  // from 0 -> size().
+  std::cout << "Standard for loop over ArrayView c yields: ";
+  for(int i = 0; i < c.size(); i++)
+  {
+    std::cout << c[i] << " ";
+  }
+  std::cout << std::endl;
+  // _iteration_end
 }
 
 int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))

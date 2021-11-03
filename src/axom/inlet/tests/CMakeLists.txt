@@ -16,14 +16,15 @@ set(gtest_inlet_tests
     inlet_jsonschema_writer.cpp
     inlet_Inlet.cpp 
     inlet_object.cpp
-    inlet_restart.cpp )
+    inlet_restart.cpp
+    inlet_errors.cpp )
 
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
 
 blt_add_library(NAME        inlet_test_utils
                 SOURCES     inlet_test_utils.cpp
                 HEADERS     inlet_test_utils.hpp
-                DEPENDS_ON  inlet gtest )
+                DEPENDS_ON  axom gtest gmock)
 
 foreach(test ${gtest_inlet_tests})
     get_filename_component( test_name ${test} NAME_WE )

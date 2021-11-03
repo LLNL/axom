@@ -6,6 +6,7 @@
 #ifndef MINT_RECTILINEARMESH_HPP_
 #define MINT_RECTILINEARMESH_HPP_
 
+#include "axom/config.hpp"
 #include "axom/mint/mesh/StructuredMesh.hpp"  // base class
 #include "axom/mint/config.hpp"               // for compile-time definitions
 
@@ -196,10 +197,10 @@ public:
                   IndexType Nj = -1,
                   IndexType Nk = -1);
 
-  RectilinearMesh(sidre::Group* group,
-                  IndexType Ni,
-                  IndexType Nj = -1,
-                  IndexType Nk = -1)
+  AXOM_EXPORT RectilinearMesh(sidre::Group* group,
+                              IndexType Ni,
+                              IndexType Nj = -1,
+                              IndexType Nk = -1)
     : RectilinearMesh(group, "", "", Ni, Nj, Nk)
   { }
 
@@ -285,7 +286,7 @@ private:
 
 #endif
 
-  Array<double>* m_coordinates[3] = {nullptr, nullptr, nullptr};
+  axom::deprecated::MCArray<double>* m_coordinates[3] = {nullptr, nullptr, nullptr};
 
   DISABLE_COPY_AND_ASSIGNMENT(RectilinearMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(RectilinearMesh);

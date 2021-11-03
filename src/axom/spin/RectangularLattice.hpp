@@ -3,9 +3,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SPIN_RECTANGULAR_LATTICE_HPP_
-#define SPIN_RECTANGULAR_LATTICE_HPP_
+#ifndef AXOM_SPIN_RECTANGULAR_LATTICE_HPP_
+#define AXOM_SPIN_RECTANGULAR_LATTICE_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -172,8 +173,9 @@ public:
    */
   SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
-    return SpatialBoundingBox(spacePoint(cell),
-                              spacePoint(cell.array() + GridCell(1).array()));
+    return SpatialBoundingBox(
+      spacePoint(cell),
+      spacePoint(GridCell(cell.array() + GridCell(1).array())));
   }
 
   /*! Simple formatted print of a rectangular lattice */
@@ -293,4 +295,4 @@ std::ostream& operator<<(
 }  // end namespace spin
 }  // end namespace axom
 
-#endif  // SPIN_RECTANGULAR_LATTICE_HPP_
+#endif  // AXOM_SPIN_RECTANGULAR_LATTICE_HPP_

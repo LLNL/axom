@@ -11,7 +11,8 @@
 #------------------------------------------------------------------------------
 set(example_sources
     core_numerics.cpp
-    core_containers.cpp )
+    core_containers.cpp 
+    core_acceleration.cpp)
 
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
@@ -22,7 +23,7 @@ foreach(example_source ${example_sources})
         NAME        ${exe_name}_ex
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  core
+        DEPENDS_ON  axom
         FOLDER      axom/core/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -32,11 +33,20 @@ foreach(example_source ${example_sources})
     endif()
 endforeach()
 
+if(ENABLE_CUDA)
+      blt_add_executable(
+          NAME        ${exe_name}_cuda_on_ex
+          SOURCES     core_acceleration.cpp
+          OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+          DEPENDS_ON  axom cuda
+          FOLDER      axom/core/examples )
+endif()
+
 blt_add_executable(
     NAME        core_utilities_ex
     SOURCES     core_utilities.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  core
+    DEPENDS_ON  axom
     FOLDER      axom/core/examples )
 
 if(AXOM_ENABLE_TESTS)

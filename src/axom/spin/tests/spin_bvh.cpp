@@ -12,14 +12,15 @@
 #include "axom/core/numerics/Matrix.hpp"
 
 // axom/primal includes
+#include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/utils/ZipPoint.hpp"
+#include "axom/primal/utils/ZipBoundingBox.hpp"
 
 // axom/spin includes
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
-
-#include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
-#include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
 
 // axom/mint includes
 #include "axom/mint/mesh/Mesh.hpp"
@@ -42,17 +43,24 @@ namespace xargs = mint::xargs;
 namespace
 {
 //------------------------------------------------------------------------------
-template <typename FloatType>
+template <typename FloatType, int NDIMS>
 void dump_ray(const std::string& file,
               FloatType t,
-              FloatType x0,
-              FloatType nx,
-              FloatType y0,
-              FloatType ny,
-              FloatType z0 = 0.0,
-              FloatType nz = 0.0)
+              const primal::Ray<FloatType, NDIMS>& ray)
 {
   std::ofstream ofs(file.c_str());
+
+  // Expand 2D points into 3D
+  primal::Point<FloatType, 3> orig_3d(0.0), at_3d(0.0);
+  primal::Vector<FloatType, 3> norm_3d(0.0);
+
+  primal::Point<FloatType, NDIMS> ray_at_t = ray.at(t);
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    orig_3d[dim] = ray.origin()[dim];
+    norm_3d[dim] = ray.direction()[dim];
+    at_3d[dim] = ray_at_t[dim];
+  }
 
   ofs << "# vtk DataFile Version 3.0\n";
   ofs << "Ray Data\n";
@@ -60,11 +68,8 @@ void dump_ray(const std::string& file,
   ofs << "DATASET UNSTRUCTURED_GRID\n";
 
   ofs << "POINTS 2 double\n";
-  ofs << x0 << " " << y0 << " " << z0 << std::endl;
-
-  ofs << (x0 + t * nx) << " ";
-  ofs << (y0 + t * ny) << " ";
-  ofs << (z0 + t * nz) << std::endl;
+  ofs << orig_3d[0] << " " << orig_3d[1] << " " << orig_3d[2] << std::endl;
+  ofs << at_3d[0] << " " << at_3d[1] << " " << at_3d[2] << std::endl;
 
   ofs << "CELLS 1 3\n";
   ofs << "2 0 1\n";
@@ -74,7 +79,7 @@ void dump_ray(const std::string& file,
 
   ofs << "CELL_DATA 1\n";
   ofs << "VECTORS normal double\n";
-  ofs << nx << " " << ny << " " << nz << std::endl;
+  ofs << norm_3d[0] << " " << norm_3d[1] << " " << norm_3d[2] << std::endl;
 
   ofs.close();
 }
@@ -82,12 +87,12 @@ void dump_ray(const std::string& file,
 //------------------------------------------------------------------------------
 
 /*!
- * \brief Give a 2D mesh object, this method generates an array of axis-aligned
+ * \brief Given a mesh object, this method generates an array of axis-aligned
  *  bounding boxes corresponding to each constituent cell of the mesh and
  *  a corresponding centroid.
  *
  * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of bounding boxes [xmin,ymin,xmax,ymax....]
+ * \param [out] aabbs array of bounding boxes
  *
  * \note The intent of this method is to generate synthetic input test data
  *  to test the functionality of the BVH.
@@ -98,21 +103,22 @@ void dump_ray(const std::string& file,
  * \pre aabbs == nullptr
  * \post aabbs != nullptr
  */
-template <typename FloatType>
-void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
+template <typename FloatType, int NDIMS>
+void generate_aabbs(const mint::Mesh* mesh,
+                    primal::BoundingBox<FloatType, NDIMS>*& aabbs)
 {
   // sanity checks
   EXPECT_TRUE(aabbs == nullptr);
+  EXPECT_EQ(NDIMS, mesh->getDimension());
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
 
   // calculate some constants
-  constexpr int ndims = 2;
-  constexpr int stride = 2 * ndims;
-
-  EXPECT_EQ(ndims, mesh->getDimension());
+  constexpr int nodes_per_dim = 1 << NDIMS;
 
   // allocate output arrays
   const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * stride);
+  aabbs = axom::allocate<BoxType>(ncells);
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -120,22 +126,17 @@ void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
+      primal::BoundingBox<double, NDIMS> range;
 
-      for(IndexType inode = 0; inode < 4; ++inode)
+      for(IndexType inode = 0; inode < nodes_per_dim; ++inode)
       {
-        const double* node = coords.getColumn(inode);
+        primal::Point<double, NDIMS> node {coords.getColumn(inode)};
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
+        range.addPoint(node);
       }  // END for all cells nodes
 
-      const IndexType offset = cellIdx * stride;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = xrange.max();
-      aabbs[offset + 3] = yrange.max();
+      aabbs[cellIdx].clear();
+      aabbs[cellIdx].addBox(range);
     });
 
   // post-condition sanity checks
@@ -145,85 +146,13 @@ void generate_aabbs2d(const mint::Mesh* mesh, FloatType*& aabbs)
 //------------------------------------------------------------------------------
 
 /*!
- * \brief Give a 3D mesh object, this method generates an array of axis-aligned
- *  bounding boxes (AABBS) corresponding to each constituent cell of the mesh
- *  and a corresponding centroid.
- *
- * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of AABBS [xmin,ymin,zmin,xmax,ymax,zmax....]
- *
- * \note The intent of this method is to generate synthetic input test data
- *  to test the functionality of the BVH.
- *
- * \warning This method allocates aabbs internally. The caller is responsible
- *  for properly deallocating aabbs.
- *
- * \pre aabbs == nullptr
- * \pre xc != nullptr
- * \pre yc != nullptr
- * \pre zc != nullptr
- *
- * \post aabbs != nullptr
- */
-template <typename FloatType>
-void generate_aabbs3d(const mint::Mesh* mesh, FloatType*& aabbs)
-{
-  // sanity checks
-  EXPECT_TRUE(aabbs == nullptr);
-
-  // calculate some constants
-  constexpr int ndims = 3;
-  constexpr int stride = 2 * ndims;
-
-  EXPECT_EQ(ndims, mesh->getDimension());
-
-  // allocate output arrays
-  const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * stride);
-
-  using exec_policy = axom::SEQ_EXEC;
-  mint::for_all_cells<exec_policy, xargs::coords>(
-    mesh,
-    AXOM_LAMBDA(IndexType cellIdx,
-                numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<double> xrange;
-      spin::internal::linear_bvh::Range<double> yrange;
-      spin::internal::linear_bvh::Range<double> zrange;
-
-      for(IndexType inode = 0; inode < 8; ++inode)
-      {
-        const double* node = coords.getColumn(inode);
-
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
-        zrange.include(node[mint::Z_COORDINATE]);
-      }  // END for all cells nodes
-
-      const IndexType offset = cellIdx * stride;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = zrange.min();
-      aabbs[offset + 3] = xrange.max();
-      aabbs[offset + 4] = yrange.max();
-      aabbs[offset + 5] = zrange.max();
-    });
-
-  // post-condition sanity checks
-  EXPECT_TRUE(aabbs != nullptr);
-}
-
-//------------------------------------------------------------------------------
-
-/*!
- * \brief Give a 2D mesh object, this method generates an array of axis-aligned
+ * \brief Given a mesh object, this method generates an array of axis-aligned
  *  bounding boxes corresponding to each constituent cell of the mesh and
  *  a corresponding centroid.
  *
  * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of bounding boxes [xmin,ymin,xmax,ymax....]
- * \param [out] xc buffer to store the x-component of the cell centroids
- * \param [out] yc buffer to store the y-component of the cell centroids
+ * \param [out] aabbs array of bounding boxes
+ * \param [out] c buffer to store the cell centroids
  *
  * \note The intent of this method is to generate synthetic input test data
  *  to test the functionality of the BVH.
@@ -232,73 +161,30 @@ void generate_aabbs3d(const mint::Mesh* mesh, FloatType*& aabbs)
  *  for properly deallocating aabbs.
  *
  * \pre aabbs == nullptr
- * \pre xc != nullptr
- * \pre yc != nullptr
+ * \pre c != nullptr
  *
  * \post aabbs != nullptr
  */
-template <typename FloatType>
-void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
-                                    FloatType*& aabbs,
-                                    FloatType* xc,
-                                    FloatType* yc)
+template <typename FloatType, int NDIMS>
+void generate_aabbs_and_centroids(const mint::Mesh* mesh,
+                                  primal::BoundingBox<FloatType, NDIMS>*& aabbs,
+                                  primal::Point<FloatType, NDIMS>* c)
 {
   // sanity checks
   EXPECT_TRUE(aabbs == nullptr);
-  EXPECT_TRUE(xc != nullptr);
-  EXPECT_TRUE(yc != nullptr);
+  EXPECT_TRUE(c != nullptr);
 
   // calculate some constants
-  constexpr double ONE_OVER_4 = 1.f / 4.f;
-  constexpr int NDIMS = 2;
-  constexpr int STRIDE = 2 * NDIMS;
+  constexpr int NUM_NODES_PER_CELL = 1 << NDIMS;
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
 
   EXPECT_EQ(NDIMS, mesh->getDimension());
 
   // allocate output arrays
   const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * STRIDE);
-
-#ifdef __ibmxl__
-
-  /* workaround for IBM XL compiler */
-  constexpr int NUM_NODES_PER_CELL = 4;
-  for(IndexType icell = 0; icell < ncells; ++icell)
-  {
-    spin::internal::linear_bvh::Range<FloatType> xrange;
-    spin::internal::linear_bvh::Range<FloatType> yrange;
-
-    IndexType nodeIDs[NUM_NODES_PER_CELL];
-    const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
-    EXPECT_EQ(numNodesPerCell, NUM_NODES_PER_CELL);
-
-    FloatType xsum = 0.0;
-    FloatType ysum = 0.0;
-    for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
-    {
-      const IndexType& nodeIdx = nodeIDs[inode];
-
-      double coords[NDIMS];
-      mesh->getNode(nodeIdx, coords);
-
-      xsum += coords[mint::X_COORDINATE];
-      ysum += coords[mint::Y_COORDINATE];
-
-      xrange.include(coords[mint::X_COORDINATE]);
-      yrange.include(coords[mint::Y_COORDINATE]);
-    }  // END for all cell nodes
-
-    xc[icell] = xsum * ONE_OVER_4;
-    yc[icell] = ysum * ONE_OVER_4;
-
-    const IndexType offset = icell * STRIDE;
-    aabbs[offset] = xrange.min();
-    aabbs[offset + 1] = yrange.min();
-    aabbs[offset + 2] = xrange.max();
-    aabbs[offset + 3] = yrange.max();
-  }  // END for all cells
-
-#else
+  aabbs = axom::allocate<BoxType>(ncells);
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells<exec_policy, xargs::coords>(
@@ -306,176 +192,35 @@ void generate_aabbs_and_centroids2d(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<FloatType> xrange;
-      spin::internal::linear_bvh::Range<FloatType> yrange;
+      BoxType range;
 
-      FloatType xsum = 0.0;
-      FloatType ysum = 0.0;
+      PointType sum(0.0);
 
-      for(IndexType inode = 0; inode < 4; ++inode)
+      for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
       {
         const double* node = coords.getColumn(inode);
-        xsum += node[mint::X_COORDINATE];
-        ysum += node[mint::Y_COORDINATE];
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
+        PointType coords;
+        for(int dim = 0; dim < NDIMS; dim++)
+        {
+          coords[dim] = node[dim];
+          sum[dim] += node[dim];
+        }
+
+        range.addPoint(coords);
       }  // END for all cells nodes
-
-      xc[cellIdx] = xsum * ONE_OVER_4;
-      yc[cellIdx] = ysum * ONE_OVER_4;
-
-      const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = xrange.max();
-      aabbs[offset + 3] = yrange.max();
-    });
-
-#endif  // __ibmxl__
-
-  // post-condition sanity checks
-  EXPECT_TRUE(aabbs != nullptr);
-}
-
-//------------------------------------------------------------------------------
-
-/*!
- * \brief Give a 3D mesh object, this method generates an array of axis-aligned
- *  bounding boxes (AABBS) corresponding to each constituent cell of the mesh
- *  and a corresponding centroid.
- *
- * \param [in]  mesh pointer to the mesh object.
- * \param [out] aabbs flat array of AABBS [xmin,ymin,zmin,xmax,ymax,zmax....]
- * \param [out] xc buffer to store the x-component of the cell centroids
- * \param [out] yc buffer to store the y-component of the cell centroids
- * \param [out] zc buffer to store the z-component of the cell centroids
- *
- * \note The intent of this method is to generate synthetic input test data
- *  to test the functionality of the BVH.
- *
- * \warning This method allocates aabbs internally. The caller is responsible
- *  for properly deallocating aabbs.
- *
- * \pre aabbs == nullptr
- * \pre xc != nullptr
- * \pre yc != nullptr
- * \pre zc != nullptr
- *
- * \post aabbs != nullptr
- */
-template <typename FloatType>
-void generate_aabbs_and_centroids3d(const mint::Mesh* mesh,
-                                    FloatType*& aabbs,
-                                    FloatType* xc,
-                                    FloatType* yc,
-                                    FloatType* zc)
-{
-  // sanity checks
-  EXPECT_TRUE(aabbs == nullptr);
-  EXPECT_TRUE(xc != nullptr);
-  EXPECT_TRUE(yc != nullptr);
-  EXPECT_TRUE(zc != nullptr);
-
-  // calculate some constants
-  constexpr double ONE_OVER_8 = 1.f / 8.f;
-  constexpr int NDIMS = 3;
-  constexpr int STRIDE = 2 * NDIMS;
-
-  EXPECT_EQ(NDIMS, mesh->getDimension());
-
-  // allocate output arrays
-  const IndexType ncells = mesh->getNumberOfCells();
-  aabbs = axom::allocate<FloatType>(ncells * STRIDE);
-
-#ifdef __ibmxl__
-
-  /* workaround for IBM XL compiler */
-  constexpr int NUM_NODES_PER_CELL = 8;
-  for(IndexType icell = 0; icell < ncells; ++icell)
-  {
-    spin::internal::linear_bvh::Range<FloatType> xrange;
-    spin::internal::linear_bvh::Range<FloatType> yrange;
-    spin::internal::linear_bvh::Range<FloatType> zrange;
-
-    IndexType nodeIDs[NUM_NODES_PER_CELL];
-    const IndexType numNodesPerCell = mesh->getCellNodeIDs(icell, nodeIDs);
-    EXPECT_EQ(numNodesPerCell, NUM_NODES_PER_CELL);
-
-    FloatType xsum = 0.0;
-    FloatType ysum = 0.0;
-    FloatType zsum = 0.0;
-    for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
-    {
-      const IndexType& nodeIdx = nodeIDs[inode];
-
-      double coords[NDIMS];
-      mesh->getNode(nodeIdx, coords);
-
-      xsum += coords[mint::X_COORDINATE];
-      ysum += coords[mint::Y_COORDINATE];
-      zsum += coords[mint::Z_COORDINATE];
-
-      xrange.include(coords[mint::X_COORDINATE]);
-      yrange.include(coords[mint::Y_COORDINATE]);
-      zrange.include(coords[mint::Z_COORDINATE]);
-    }  // END for all cell nodes
-
-    xc[icell] = xsum * ONE_OVER_8;
-    yc[icell] = ysum * ONE_OVER_8;
-    zc[icell] = zsum * ONE_OVER_8;
-
-    const IndexType offset = icell * STRIDE;
-    aabbs[offset] = xrange.min();
-    aabbs[offset + 1] = yrange.min();
-    aabbs[offset + 2] = zrange.min();
-    aabbs[offset + 3] = xrange.max();
-    aabbs[offset + 4] = yrange.max();
-    aabbs[offset + 5] = zrange.max();
-  }  // END for all cells
-
-#else
-
-  using exec_policy = axom::SEQ_EXEC;
-  mint::for_all_cells<exec_policy, xargs::coords>(
-    mesh,
-    AXOM_LAMBDA(IndexType cellIdx,
-                numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
-      spin::internal::linear_bvh::Range<FloatType> xrange;
-      spin::internal::linear_bvh::Range<FloatType> yrange;
-      spin::internal::linear_bvh::Range<FloatType> zrange;
-
-      FloatType xsum = 0.0;
-      FloatType ysum = 0.0;
-      FloatType zsum = 0.0;
-
-      for(IndexType inode = 0; inode < 8; ++inode)
+      for(int dim = 0; dim < NDIMS; dim++)
       {
-        const double* node = coords.getColumn(inode);
-        xsum += node[mint::X_COORDINATE];
-        ysum += node[mint::Y_COORDINATE];
-        zsum += node[mint::Z_COORDINATE];
+        sum[dim] /= NUM_NODES_PER_CELL;
+      }
 
-        xrange.include(node[mint::X_COORDINATE]);
-        yrange.include(node[mint::Y_COORDINATE]);
-        zrange.include(node[mint::Z_COORDINATE]);
-      }  // END for all cells nodes
+      c[cellIdx] = range.getCentroid();
+#ifndef __CUDA_ARCH__
+      EXPECT_EQ(c[cellIdx], sum);
+#endif
 
-      xc[cellIdx] = xsum * ONE_OVER_8;
-      yc[cellIdx] = ysum * ONE_OVER_8;
-      zc[cellIdx] = zsum * ONE_OVER_8;
-
-      const IndexType offset = cellIdx * STRIDE;
-      aabbs[offset] = xrange.min();
-      aabbs[offset + 1] = yrange.min();
-      aabbs[offset + 2] = zrange.min();
-      aabbs[offset + 3] = xrange.max();
-      aabbs[offset + 4] = yrange.max();
-      aabbs[offset + 5] = zrange.max();
+      aabbs[cellIdx] = range;
     });
-
-#endif  // __ibmxl__
 
   // post-condition sanity checks
   EXPECT_TRUE(aabbs != nullptr);
@@ -493,31 +238,30 @@ void check_build_bvh2d()
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  FloatType* boxes = axom::allocate<FloatType>(8);
-  boxes[0] = boxes[1] = 0.;
-  boxes[2] = boxes[3] = 1.;
-  boxes[4] = boxes[5] = 1.;
-  boxes[6] = boxes[7] = 2.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
+  boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(boxes, NUM_BOXES);
 
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
 
-  bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
-
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 2.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
   }
 
   axom::deallocate(boxes);
@@ -536,31 +280,30 @@ void check_build_bvh3d()
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS = 3;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  FloatType* boxes = axom::allocate<FloatType>(12);
-  boxes[0] = boxes[1] = boxes[2] = 0.;
-  boxes[3] = boxes[4] = boxes[5] = 1.;
-  boxes[6] = boxes[7] = boxes[8] = 1.;
-  boxes[9] = boxes[10] = boxes[11] = 2.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
+  boxes[1] = BoxType {PointType(1.), PointType(2.)};
 
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(boxes, NUM_BOXES);
 
   int allocatorID = bvh.getAllocatorID();
   EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
 
-  bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
-
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 2.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
   }
 
   axom::deallocate(boxes);
@@ -574,6 +317,9 @@ void check_find_bounding_boxes3d()
   constexpr int NDIMS = 3;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
@@ -581,57 +327,44 @@ void check_find_bounding_boxes3d()
   // (-1.0,-1.0,-1.0) but different upper right max.
   // The first bounding box is setup such that it intersects
   // 18 bounding boxes of the mesh.
-  FloatType* xmin = axom::allocate<FloatType>(N);
-  FloatType* ymin = axom::allocate<FloatType>(N);
-  FloatType* zmin = axom::allocate<FloatType>(N);
-  xmin[0] = xmin[1] = ymin[0] = ymin[1] = zmin[0] = zmin[1] = -1.0;
+  BoxType* query_boxes = axom::allocate<BoxType>(N);
+  query_boxes[0].clear();
+  query_boxes[1].clear();
 
-  FloatType* xmax = axom::allocate<FloatType>(N);
-  FloatType* ymax = axom::allocate<FloatType>(N);
-  FloatType* zmax = axom::allocate<FloatType>(N);
-  xmax[0] = 2.5;
-  ymax[0] = 2.5;
-  zmax[0] = 1.5;
-  xmax[1] = ymax[1] = zmax[1] = -0.5;
+  query_boxes[0].addPoint(PointType {-1., -1., -1.});
+  query_boxes[1].addPoint(PointType {-1., -1., -1.});
+
+  query_boxes[0].addPoint(PointType {2.5, 2.5, 1.5});
+  query_boxes[1].addPoint(PointType {-0.5, -0.5, -0.5});
 
   // setup a test mesh (3 x 3 x 3)
   double lo[NDIMS] = {0.0, 0.0, 0.0};
   double hi[NDIMS] = {3.0, 3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs3d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findBoundingBoxes(offsets,
-                        counts,
-                        candidates,
-                        N,
-                        xmin,
-                        xmax,
-                        ymin,
-                        ymax,
-                        zmin,
-                        zmax);
+  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the bounding box ID
@@ -693,12 +426,7 @@ void check_find_bounding_boxes3d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(xmin);
-  axom::deallocate(xmax);
-  axom::deallocate(ymin);
-  axom::deallocate(ymax);
-  axom::deallocate(zmin);
-  axom::deallocate(zmax);
+  axom::deallocate(query_boxes);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -711,51 +439,53 @@ void check_find_bounding_boxes2d()
   constexpr int NDIMS = 2;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // setup query bounding boxes: both boxes are source at (-1.0,-1.0) but have
   // different max (upper right). The first box is setup to intersect six
   // bounding boxes of the mesh.
-  FloatType* xmin = axom::allocate<FloatType>(N);
-  FloatType* ymin = axom::allocate<FloatType>(N);
-  xmin[0] = xmin[1] = ymin[0] = ymin[1] = -1.0;
+  BoxType* query_boxes = axom::allocate<BoxType>(N);
+  query_boxes[0].clear();
+  query_boxes[1].clear();
 
-  FloatType* xmax = axom::allocate<FloatType>(N);
-  FloatType* ymax = axom::allocate<FloatType>(N);
-  xmax[0] = 2.5;
-  ymax[0] = 1.5;
-  xmax[1] = ymax[1] = -0.1;
+  query_boxes[0].addPoint(PointType {-1., -1.});
+  query_boxes[1].addPoint(PointType {-1., -1.});
+
+  query_boxes[0].addPoint(PointType {2.5, 1.5});
+  query_boxes[1].addPoint(PointType {-0.1, -0.1});
 
   // setup a test mesh (3 x 3)
   double lo[NDIMS] = {0.0, 0.0};
   double hi[NDIMS] = {3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs2d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findBoundingBoxes(offsets, counts, candidates, N, xmin, xmax, ymin, ymax);
+  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the bounding box ID
@@ -801,10 +531,7 @@ void check_find_bounding_boxes2d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(xmin);
-  axom::deallocate(xmax);
-  axom::deallocate(ymin);
-  axom::deallocate(ymax);
+  axom::deallocate(query_boxes);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -816,27 +543,27 @@ void check_find_rays3d()
   constexpr int NDIMS = 3;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using RayType = typename primal::Ray<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using VectorType = typename primal::Vector<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
   // opposite directions. The first ray is setup such that it intersects
   // three bounding boxes of the mesh.
-  FloatType* x0 = axom::allocate<FloatType>(N);
-  FloatType* y0 = axom::allocate<FloatType>(N);
-  FloatType* z0 = axom::allocate<FloatType>(N);
-  x0[0] = x0[1] = y0[0] = y0[1] = z0[0] = z0[1] = -1.0;
-
-  FloatType* nx = axom::allocate<FloatType>(N);
-  FloatType* ny = axom::allocate<FloatType>(N);
-  FloatType* nz = axom::allocate<FloatType>(N);
-  nx[0] = ny[0] = nz[0] = 1.0;
-  nx[1] = ny[1] = nz[1] = -1.0;
+  RayType* query_rays = axom::allocate<RayType>(N);
+  query_rays[0] =
+    RayType {PointType {-1.0, -1.0, -1.0}, VectorType {1.0, 1.0, 1.0}};
+  query_rays[1] =
+    RayType {PointType {-1.0, -1.0, -1.0}, VectorType {-1.0, -1.0, -1.0}};
 
 #ifdef VTK_DEBUG
   FloatType t = 5.0;
-  dump_ray("ray0.vtk", t, x0[0], nx[0], y0[0], ny[0], z0[0], nz[0]);
-  dump_ray("ray1.vtk", t, x0[1], nx[1], y0[1], ny[1], z0[1], nz[1]);
+  dump_ray("ray0.vtk", t, query_rays[0]);
+  dump_ray("ray1.vtk", t, query_rays[1]);
 #endif
 
   // setup a test mesh
@@ -844,30 +571,29 @@ void check_find_rays3d()
   double hi[NDIMS] = {3.0, 3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs3d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findRays(offsets, counts, candidates, N, x0, nx, y0, ny, z0, nz);
+  bvh.findRays(offsets, counts, candidates, N, query_rays);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the ray ID
@@ -930,12 +656,7 @@ void check_find_rays3d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(x0);
-  axom::deallocate(nx);
-  axom::deallocate(y0);
-  axom::deallocate(ny);
-  axom::deallocate(z0);
-  axom::deallocate(nz);
+  axom::deallocate(query_rays);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -948,25 +669,35 @@ void check_find_rays2d()
   constexpr int NDIMS = 2;
   constexpr IndexType N = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using RayType = typename primal::Ray<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+  using VectorType = typename primal::Vector<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
   // opposite directions. The first ray is setup such that it intersects
   // seven bounding boxes of the mesh.
-  FloatType* x0 = axom::allocate<FloatType>(N);
-  FloatType* y0 = axom::allocate<FloatType>(N);
-  x0[0] = x0[1] = y0[0] = y0[1] = -1.0;
-
-  FloatType* nx = axom::allocate<FloatType>(N);
-  FloatType* ny = axom::allocate<FloatType>(N);
-  nx[0] = ny[0] = 1.0;
-  nx[1] = ny[1] = -1.0;
+  RayType* query_rays = axom::allocate<RayType>(N);
+  query_rays[0] = RayType {PointType {-1.0, -1.0}, VectorType {1.0, 1.0}};
+  query_rays[1] = RayType {PointType {-1.0, -1.0}, VectorType {-1.0, -1.0}};
 
 #ifdef VTK_DEBUG
   FloatType t = 5.0;
-  dump_ray("ray0.vtk", t, x0[0], nx[0], y0[0], ny[0]);
-  dump_ray("ray1.vtk", t, x0[1], nx[1], y0[1], ny[1]);
+  dump_ray("ray0.vtk",
+           t,
+           query_rays[0].origin()[0],
+           query_rays[0].direction()[0],
+           query_rays[0].origin()[1],
+           query_rays[0].direction()[1]);
+  dump_ray("ray1.vtk",
+           t,
+           query_rays[1].origin()[0],
+           query_rays[1].direction()[0],
+           query_rays[1].origin()[1],
+           query_rays[1].direction()[1]);
 #endif
 
   // setup a test mesh
@@ -974,30 +705,29 @@ void check_find_rays2d()
   double hi[NDIMS] = {3.0, 3.0};
   mint::UniformMesh mesh(lo, hi, 4, 4);
   const IndexType ncells = mesh.getNumberOfCells();
-  FloatType* aabbs = nullptr;
-  generate_aabbs2d(&mesh, aabbs);
+  BoxType* aabbs = nullptr;
+  generate_aabbs(&mesh, aabbs);
   EXPECT_TRUE(aabbs != nullptr);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
   // check BVH bounding box
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
   IndexType* offsets = axom::allocate<IndexType>(N);
   IndexType* counts = axom::allocate<IndexType>(N);
   IndexType* candidates = nullptr;
-  bvh.findRays(offsets, counts, candidates, N, x0, nx, y0, ny);
+  bvh.findRays(offsets, counts, candidates, N, query_rays);
   EXPECT_TRUE(candidates != nullptr);
 
   // flag cells that are found by the ray ID
@@ -1047,10 +777,7 @@ void check_find_rays2d()
   axom::deallocate(counts);
   axom::deallocate(aabbs);
 
-  axom::deallocate(x0);
-  axom::deallocate(nx);
-  axom::deallocate(y0);
-  axom::deallocate(ny);
+  axom::deallocate(query_rays);
 
   axom::setDefaultAllocator(current_allocator);
 }
@@ -1080,40 +807,41 @@ void check_find_points3d()
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  using PointType = primal::Point<double, NDIMS>;
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using PointDbl = primal::Point<double, NDIMS>;
 
   double lo[NDIMS] = {0.0, 0.0, 0.0};
   double hi[NDIMS] = {3.0, 3.0, 3.0};
   int res[NDIMS] = {N - 1, N - 1, N - 1};
 
   mint::UniformMesh mesh(lo, hi, N, N, N);
-  FloatType* xc = mesh.createField<FloatType>("xc", mint::CELL_CENTERED);
-  FloatType* yc = mesh.createField<FloatType>("yc", mint::CELL_CENTERED);
-  FloatType* zc = mesh.createField<FloatType>("zc", mint::CELL_CENTERED);
+  FloatType* centroids_raw =
+    mesh.createField<FloatType>("centroid", mint::CELL_CENTERED, NDIMS);
+  PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  FloatType* aabbs = nullptr;
-  generate_aabbs_and_centroids3d(&mesh, aabbs, xc, yc, zc);
+  BoxType* aabbs = nullptr;
+  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
   IndexType* offsets = axom::allocate<IndexType>(ncells);
   IndexType* counts = axom::allocate<IndexType>(ncells);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   EXPECT_TRUE(candidates != nullptr);
 
@@ -1121,7 +849,7 @@ void check_find_points3d()
 
   for(IndexType i = 0; i < ncells; ++i)
   {
-    PointType q = PointType::make_point(xc[i], yc[i], zc[i]);
+    PointDbl q = PointDbl {centroids[i][0], centroids[i][1], centroids[i][2]};
     const int donorCellIdx = ug.getBinIndex(q);
     EXPECT_EQ(counts[i], 1);
     EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
@@ -1133,12 +861,12 @@ void check_find_points3d()
   constexpr double OFFSET = 10.0;
   for(IndexType i = 0; i < ncells; ++i)
   {
-    xc[i] += OFFSET;
-    yc[i] += OFFSET;
-    zc[i] += OFFSET;
+    centroids[i][0] += OFFSET;
+    centroids[i][1] += OFFSET;
+    centroids[i][2] += OFFSET;
   }
 
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
@@ -1178,39 +906,41 @@ void check_find_points2d()
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-  using PointType = primal::Point<double, NDIMS>;
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using PointDbl = primal::Point<double, NDIMS>;
 
   double lo[NDIMS] = {0.0, 0.0};
   double hi[NDIMS] = {3.0, 3.0};
   int res[NDIMS] = {N - 1, N - 1};
 
   mint::UniformMesh mesh(lo, hi, N, N);
-  FloatType* xc = mesh.createField<FloatType>("xc", mint::CELL_CENTERED);
-  FloatType* yc = mesh.createField<FloatType>("yc", mint::CELL_CENTERED);
+  FloatType* centroids_raw =
+    mesh.createField<FloatType>("centroid", mint::CELL_CENTERED, NDIMS);
+  PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
   const IndexType ncells = mesh.getNumberOfCells();
 
-  FloatType* aabbs = nullptr;
-  generate_aabbs_and_centroids2d(&mesh, aabbs, xc, yc);
+  BoxType* aabbs = nullptr;
+  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
 
   // construct the BVH
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(aabbs, ncells);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(aabbs, ncells);
 
-  FloatType min[NDIMS];
-  FloatType max[NDIMS];
-  bvh.getBounds(min, max);
-  for(int i = 0; i < NDIMS; ++i)
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(min[i], lo[i]);
-    EXPECT_DOUBLE_EQ(max[i], hi[i]);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
   }
 
   // traverse the BVH to find the candidates for all the centroids
   IndexType* offsets = axom::allocate<IndexType>(ncells);
   IndexType* counts = axom::allocate<IndexType>(ncells);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   EXPECT_TRUE(candidates != nullptr);
 
@@ -1218,7 +948,7 @@ void check_find_points2d()
 
   for(IndexType i = 0; i < ncells; ++i)
   {
-    PointType q = PointType::make_point(xc[i], yc[i]);
+    PointDbl q = PointDbl {centroids[i][0], centroids[i][1]};
     const int donorCellIdx = ug.getBinIndex(q);
     EXPECT_EQ(counts[i], 1);
     EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
@@ -1230,11 +960,11 @@ void check_find_points2d()
   constexpr double OFFSET = 10.0;
   for(IndexType i = 0; i < ncells; ++i)
   {
-    xc[i] += OFFSET;
-    yc[i] += OFFSET;
+    centroids[i][0] += OFFSET;
+    centroids[i][1] += OFFSET;
   }
 
-  bvh.findPoints(offsets, counts, candidates, ncells, xc, yc);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
@@ -1264,54 +994,50 @@ void check_single_box2d()
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS = 2;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1]
-  FloatType* boxes = axom::allocate<FloatType>(4);
-  boxes[0] = boxes[1] = 0.;
-  boxes[2] = boxes[3] = 1.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
 
   // construct a BVH with a single box
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(boxes, NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 1.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 1.0);
   }
 
   // run the find algorithm w/ the centroid of the bounding box as input.
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
-  FloatType* xc = axom::allocate<FloatType>(NUM_BOXES);
-  FloatType* yc = axom::allocate<FloatType>(NUM_BOXES);
-  xc[0] = yc[0] = 0.5;
+  PointType centroid {0.5, 0.5};
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_TRUE(candidates != nullptr);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
   axom::deallocate(candidates);
 
   // shift centroid outside of the BVH, should return no candidates.
-  xc[0] += 10.0;
-  yc[0] += 10.0;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc);
+  centroid[0] += 10.0;
+  centroid[1] += 10.0;
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 0);
 
-  axom::deallocate(xc);
-  axom::deallocate(yc);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);
@@ -1333,56 +1059,50 @@ void check_single_box3d()
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS = 3;
 
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+
   const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1] x [0,1]
-  FloatType* boxes = axom::allocate<FloatType>(6);
-  boxes[0] = boxes[1] = boxes[2] = 0.;
-  boxes[3] = boxes[4] = boxes[5] = 1.;
+  BoxType* boxes = axom::allocate<BoxType>(2);
+  boxes[0] = BoxType {PointType(0.), PointType(1.)};
 
   // construct a BVH with a single box
-  spin::BVH<NDIMS, ExecSpace, FloatType> bvh(boxes, NUM_BOXES);
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.initialize(boxes, NUM_BOXES);
 
   // check the bounds -- should match the bounds of the input bounding box
-  FloatType lo[NDIMS];
-  FloatType hi[NDIMS];
-  bvh.getBounds(lo, hi);
+  BoxType bounds = bvh.getBounds();
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(lo[idim], 0.0);
-    EXPECT_DOUBLE_EQ(hi[idim], 1.0);
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 1.0);
   }
 
   // run the find algorithm w/ the centroid of the bounding box as input.
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
-  FloatType* xc = axom::allocate<FloatType>(NUM_BOXES);
-  FloatType* yc = axom::allocate<FloatType>(NUM_BOXES);
-  FloatType* zc = axom::allocate<FloatType>(NUM_BOXES);
-  xc[0] = yc[0] = zc[0] = 0.5;
+  PointType centroid {0.5, 0.5, 0.5};
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_TRUE(candidates != nullptr);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
   axom::deallocate(candidates);
 
   // shift centroid outside of the BVH, should return no candidates.
-  xc[0] += 10.0;
-  yc[0] += 10.0;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc, zc);
+  centroid[0] += 10.0;
+  centroid[1] += 10.0;
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 0);
 
-  axom::deallocate(xc);
-  axom::deallocate(yc);
-  axom::deallocate(zc);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);
@@ -1390,359 +1110,260 @@ void check_single_box3d()
   axom::setDefaultAllocator(current_allocator);
 }
 
+//------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the construction of the BVH in 3D by inserting two bounding
+ *  boxes in the BVH and ensuring that the bounds of the BVH are as expected.
+ */
+template <typename ExecSpace, typename FloatType>
+void check_build_bvh_zip3d()
+{
+  constexpr int NUM_BOXES = 2;
+  constexpr int NDIMS = 3;
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using ZipIter = typename primal::ZipIndexable<BoxType>;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  FloatType* xmin = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* ymin = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* zmin = axom::allocate<FloatType>(NUM_BOXES);
+
+  FloatType* xmax = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* ymax = axom::allocate<FloatType>(NUM_BOXES);
+  FloatType* zmax = axom::allocate<FloatType>(NUM_BOXES);
+
+  xmin[0] = ymin[0] = zmin[0] = 0.;
+  xmax[0] = ymax[0] = zmax[0] = 1.;
+  xmin[1] = ymin[1] = zmin[1] = 1.;
+  xmax[1] = ymax[1] = zmax[1] = 2.;
+
+  ZipIter it {{xmin, ymin, zmin}, {xmax, ymax, zmax}};
+
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(it, NUM_BOXES);
+
+  int allocatorID = bvh.getAllocatorID();
+  EXPECT_EQ(allocatorID, axom::execution_space<ExecSpace>::allocatorID());
+
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
+  {
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
+  }
+
+  axom::deallocate(xmin);
+  axom::deallocate(ymin);
+  axom::deallocate(zmin);
+
+  axom::deallocate(xmax);
+  axom::deallocate(ymax);
+  axom::deallocate(zmax);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
+//------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the find algorithm of the BVH in 3D.
+ *
+ *  A uniform mesh is used for this test where the query points are generated
+ *  by taking the centroids of the constituent cells of the mesh. Since the
+ *  mesh is a uniform, cartesian mesh the find algorithm should return exactly
+ *  one candidate for each query point corresponding to the cell on the mesh
+ *  that generated the centroid. This property is checked by using the
+ *  spin::UniformGrid class.
+ *
+ *  In addition, the test shifts the points by an offset to ensure that points
+ *  outside the mesh return no candidate.
+ *
+ */
+template <typename ExecSpace, typename FloatType>
+void check_find_points_zip3d()
+{
+  constexpr int NDIMS = 3;
+  constexpr IndexType N = 4;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using PointDbl = primal::Point<double, NDIMS>;
+
+  double lo[NDIMS] = {0.0, 0.0, 0.0};
+  double hi[NDIMS] = {3.0, 3.0, 3.0};
+  int res[NDIMS] = {N - 1, N - 1, N - 1};
+
+  mint::UniformMesh mesh(lo, hi, N, N, N);
+  FloatType* centroids_raw =
+    mesh.createField<FloatType>("centroid", mint::CELL_CENTERED, NDIMS);
+  PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
+  const IndexType ncells = mesh.getNumberOfCells();
+
+  BoxType* aabbs = nullptr;
+  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
+
+  FloatType* xs = axom::allocate<FloatType>(ncells);
+  FloatType* ys = axom::allocate<FloatType>(ncells);
+  FloatType* zs = axom::allocate<FloatType>(ncells);
+
+  for(int icell = 0; icell < ncells; icell++)
+  {
+    xs[icell] = centroids[icell][0];
+    ys[icell] = centroids[icell][1];
+    zs[icell] = centroids[icell][2];
+  }
+
+  primal::ZipIndexable<PointType> zip_test {{xs, ys, zs}};
+
+  // construct the BVH
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(aabbs, ncells);
+
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
+  {
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+  }
+
+  // traverse the BVH to find the candidates for all the centroids
+  IndexType* offsets = axom::allocate<IndexType>(ncells);
+  IndexType* counts = axom::allocate<IndexType>(ncells);
+  IndexType* candidates = nullptr;
+  bvh.findPoints(offsets, counts, candidates, ncells, zip_test);
+
+  EXPECT_TRUE(candidates != nullptr);
+
+  spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
+
+  for(IndexType i = 0; i < ncells; ++i)
+  {
+    PointDbl q = PointDbl {centroids[i][0], centroids[i][1], centroids[i][2]};
+    const int donorCellIdx = ug.getBinIndex(q);
+    EXPECT_EQ(counts[i], 1);
+    EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
+  }  // END for all cell centroids
+
+  axom::deallocate(xs);
+  axom::deallocate(ys);
+  axom::deallocate(zs);
+  axom::deallocate(offsets);
+  axom::deallocate(candidates);
+  axom::deallocate(counts);
+  axom::deallocate(aabbs);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
+//------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the find algorithm of the BVH in 2D.
+ *
+ *  A uniform mesh is used for this test where the query points are generated
+ *  by taking the centroids of the constituent cells of the mesh. Since the
+ *  mesh is a uniform, cartesian mesh the find algorithm should return exactly
+ *  one candidate for each query point corresponding to the cell on the mesh
+ *  that generated the centroid. This property is checked by using the
+ *  spin::UniformGrid class.
+ *
+ *  In addition, the test shifts the points by an offset to ensure that points
+ *  outside the mesh return no candidate.
+ *
+ */
+template <typename ExecSpace, typename FloatType>
+void check_find_points_zip2d()
+{
+  constexpr int NDIMS = 2;
+  constexpr IndexType N = 4;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+  using PointDbl = primal::Point<double, NDIMS>;
+
+  double lo[NDIMS] = {0.0, 0.0};
+  double hi[NDIMS] = {3.0, 3.0};
+  int res[NDIMS] = {N - 1, N - 1};
+
+  mint::UniformMesh mesh(lo, hi, N, N);
+  FloatType* centroids_raw =
+    mesh.createField<FloatType>("centroid", mint::CELL_CENTERED, NDIMS);
+  PointType* centroids = reinterpret_cast<PointType*>(centroids_raw);
+  const IndexType ncells = mesh.getNumberOfCells();
+
+  BoxType* aabbs = nullptr;
+  generate_aabbs_and_centroids(&mesh, aabbs, centroids);
+
+  FloatType* xs = axom::allocate<FloatType>(ncells);
+  FloatType* ys = axom::allocate<FloatType>(ncells);
+  FloatType* zs = nullptr;
+
+  for(int icell = 0; icell < ncells; icell++)
+  {
+    xs[icell] = centroids[icell][0];
+    ys[icell] = centroids[icell][1];
+  }
+
+  primal::ZipIndexable<PointType> zip_test {{xs, ys, zs}};
+
+  // construct the BVH
+  spin::BVH<NDIMS, ExecSpace, FloatType> bvh;
+  bvh.setScaleFactor(1.0);  // i.e., no scaling
+  bvh.initialize(aabbs, ncells);
+
+  BoxType bounds = bvh.getBounds();
+
+  for(int idim = 0; idim < NDIMS; ++idim)
+  {
+    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
+    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+  }
+
+  // traverse the BVH to find the candidates for all the centroids
+  IndexType* offsets = axom::allocate<IndexType>(ncells);
+  IndexType* counts = axom::allocate<IndexType>(ncells);
+  IndexType* candidates = nullptr;
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
+
+  EXPECT_TRUE(candidates != nullptr);
+
+  spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
+
+  for(IndexType i = 0; i < ncells; ++i)
+  {
+    PointDbl q = PointDbl {centroids[i][0], centroids[i][1]};
+    const int donorCellIdx = ug.getBinIndex(q);
+    EXPECT_EQ(counts[i], 1);
+    EXPECT_EQ(donorCellIdx, candidates[offsets[i]]);
+  }  // END for all cell centroids
+
+  axom::deallocate(offsets);
+  axom::deallocate(candidates);
+  axom::deallocate(counts);
+  axom::deallocate(aabbs);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
 } /* end unnamed namespace */
 
 //------------------------------------------------------------------------------
 // UNIT TESTS
-//------------------------------------------------------------------------------
-TEST(spin_bvh, query_point_accessor)
-{
-  constexpr double VAL = 42.0;
-  constexpr IndexType ID = 0;
-
-  double x[] = {VAL};
-  double y[] = {VAL + 1.5};
-  double z[] = {VAL + 2.5};
-
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using QueryAccessor2D = bvh::QueryAccessor<2, double>;
-  using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Point2D = bvh::Vec<double, 2>;
-  using Point3D = bvh::Vec<double, 3>;
-
-  Point2D test_point2d;
-  QueryAccessor2D::getPoint(test_point2d, ID, x, y, nullptr);
-  EXPECT_DOUBLE_EQ(test_point2d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(test_point2d[1], y[ID]);
-
-  Point3D test_point3d;
-  QueryAccessor3D::getPoint(test_point3d, 0, x, y, z);
-  EXPECT_DOUBLE_EQ(test_point3d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(test_point3d[1], y[ID]);
-  EXPECT_DOUBLE_EQ(test_point3d[2], z[ID]);
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, query_ray_accessor)
-{
-  constexpr double VAL = 42.0;
-  constexpr IndexType ID = 0;
-
-  double x[] = {VAL};
-  double y[] = {VAL + 1.5};
-  double z[] = {VAL + 2.5};
-
-  double nx[] = {VAL};
-  double ny[] = {VAL + 1.5};
-  double nz[] = {VAL + 2.5};
-
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using QueryAccessor2D = bvh::QueryAccessor<2, double>;
-  using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using Ray2D = bvh::Vec<double, 4>;
-  using Ray3D = bvh::Vec<double, 6>;
-
-  Ray2D ray2d;
-  QueryAccessor2D::getRay(ray2d, ID, x, nx, y, ny, nullptr, nullptr);
-  EXPECT_DOUBLE_EQ(ray2d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(ray2d[1], y[ID]);
-
-  EXPECT_DOUBLE_EQ(ray2d[2], nx[ID]);
-  EXPECT_DOUBLE_EQ(ray2d[3], ny[ID]);
-
-  Ray3D ray3d;
-  QueryAccessor3D::getRay(ray3d, ID, x, nx, y, ny, z, nz);
-  EXPECT_DOUBLE_EQ(ray3d[0], x[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[1], y[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[2], z[ID]);
-
-  EXPECT_DOUBLE_EQ(ray3d[3], nx[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[4], ny[ID]);
-  EXPECT_DOUBLE_EQ(ray3d[5], nz[ID]);
-}
-
-TEST(spin_bvh, query_bounding_box_accessor)
-{
-  constexpr double VAL = 42.0;
-  constexpr IndexType ID = 0;
-
-  double xmin[] = {VAL};
-  double ymin[] = {VAL + 1.5};
-  double zmin[] = {VAL + 2.5};
-
-  double xmax[] = {VAL};
-  double ymax[] = {VAL + 1.5};
-  double zmax[] = {VAL + 2.5};
-
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using QueryAccessor2D = bvh::QueryAccessor<2, double>;
-  using QueryAccessor3D = bvh::QueryAccessor<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
-
-  BoundingBox2D box2D;
-  QueryAccessor2D::getBoundingBox(box2D, ID, xmin, xmax, ymin, ymax, nullptr, nullptr);
-
-  EXPECT_DOUBLE_EQ(box2D[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box2D[1], ymin[ID]);
-
-  EXPECT_DOUBLE_EQ(box2D[2], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box2D[3], ymax[ID]);
-
-  BoundingBox3D box3D;
-  QueryAccessor3D::getBoundingBox(box3D, ID, xmin, xmax, ymin, ymax, zmin, zmax);
-
-  EXPECT_DOUBLE_EQ(box3D[0], xmin[ID]);
-  EXPECT_DOUBLE_EQ(box3D[1], ymin[ID]);
-  EXPECT_DOUBLE_EQ(box3D[2], zmin[ID]);
-
-  EXPECT_DOUBLE_EQ(box3D[3], xmax[ID]);
-  EXPECT_DOUBLE_EQ(box3D[4], ymax[ID]);
-  EXPECT_DOUBLE_EQ(box3D[5], zmax[ID]);
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_boundingBoxIntersectsLeftBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
-
-  BoundingBox2D s1, s2;
-  s1[0] = 0.;  // LeftBin.xmin
-  s1[1] = 0.;  // LeftBin.ymin
-  s1[2] = 0.;  // LeftBin.zmin
-
-  s1[3] = 1.;  // LeftBin.xmax
-  s2[0] = 1.;  // LeftBin.ymax
-  s2[1] = 1.;  // LeftBin.zmax
-
-  BoundingBox2D box2d;
-  box2d[0] = -1.0;
-  box2d[1] = -1.0;
-  box2d[2] = 1.0;
-  box2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::boundingBoxIntersectsLeftBin(box2d, s1, s2));
-
-  // non-intersecting
-  box2d[2] = -0.5;
-  box2d[3] = -0.5;
-  EXPECT_FALSE(TraversalPredicates2D::boundingBoxIntersectsLeftBin(box2d, s1, s2));
-
-  BoundingBox3D box3d;
-  box3d[0] = -1.0;
-  box3d[1] = -1.0;
-  box3d[2] = -1.0;
-  box3d[3] = 1.0;
-  box3d[4] = 1.0;
-  box3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::boundingBoxIntersectsLeftBin(box3d, s1, s2));
-
-  // non-intersecting
-  box3d[3] = -0.5;
-  box3d[4] = -0.5;
-  box3d[5] = -0.5;
-  EXPECT_FALSE(TraversalPredicates3D::boundingBoxIntersectsLeftBin(box3d, s1, s2));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_boundingBoxIntersectsRightBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using BoundingBox2D = bvh::Vec<double, 4>;
-  using BoundingBox3D = bvh::Vec<double, 6>;
-
-  BoundingBox2D s2, s3;
-  s2[2] = 0.;  // RightBin.xmin
-  s2[3] = 0.;  // RightBin.ymin
-  s3[0] = 0.;  // RightBin.zmin
-
-  s3[1] = 1.;  // RightBin.xmax
-  s3[2] = 1.;  // RightBin.ymax
-  s3[3] = 1.;  // RightBin.zmax
-
-  BoundingBox2D box2d;
-  box2d[0] = -1.0;
-  box2d[1] = -1.0;
-  box2d[2] = 1.0;
-  box2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::boundingBoxIntersectsRightBin(box2d, s2, s3));
-
-  // non-intersecting
-  box2d[2] = -0.5;
-  box2d[3] = -0.5;
-  EXPECT_FALSE(
-    TraversalPredicates2D::boundingBoxIntersectsRightBin(box2d, s2, s3));
-
-  BoundingBox3D box3d;
-  box3d[0] = -1.0;
-  box3d[1] = -1.0;
-  box3d[2] = -1.0;
-  box3d[3] = 1.0;
-  box3d[4] = 1.0;
-  box3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::boundingBoxIntersectsRightBin(box3d, s2, s3));
-
-  // non-intersecting
-  box3d[3] = -0.5;
-  box3d[4] = -0.5;
-  box3d[5] = -0.5;
-  EXPECT_FALSE(
-    TraversalPredicates3D::boundingBoxIntersectsRightBin(box3d, s2, s3));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_rayIntersectsLeftBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-  using RayType = bvh::Vec<double, 6>;
-
-  VecType s1, s2;
-  s1[0] = 0.;  // LeftBin.xmin
-  s1[1] = 0.;  // LeftBin.ymin
-  s1[2] = 0.;  // LeftBin.zmin
-
-  s1[3] = 1.;  // LeftBin.xmax
-  s2[0] = 1.;  // LeftBin.ymax
-  s2[1] = 1.;  // LeftBin.zmax
-
-  RayType ray2d;
-  ray2d[0] = -1.0;
-  ray2d[1] = -1.0;
-  ray2d[2] = 1.0;
-  ray2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::rayIntersectsLeftBin(ray2d, s1, s2));
-
-  // flip normal
-  ray2d[2] = -1.0;
-  ray2d[3] = -1.0;
-  EXPECT_FALSE(TraversalPredicates2D::rayIntersectsLeftBin(ray2d, s1, s2));
-
-  RayType ray3d;
-  ray3d[0] = -1.0;
-  ray3d[1] = -1.0;
-  ray3d[2] = -1.0;
-  ray3d[3] = 1.0;
-  ray3d[4] = 1.0;
-  ray3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::rayIntersectsLeftBin(ray3d, s1, s2));
-
-  // flip normal
-  ray3d[3] = -1.0;
-  ray3d[4] = -1.0;
-  ray3d[5] = -1.0;
-  EXPECT_FALSE(TraversalPredicates3D::rayIntersectsLeftBin(ray3d, s1, s2));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_rayIntersectsRightBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-  using RayType = bvh::Vec<double, 6>;
-
-  VecType s2, s3;
-  s2[2] = 0.;  // RightBin.xmin
-  s2[3] = 0.;  // RightBin.ymin
-  s3[0] = 0.;  // RightBin.zmin
-
-  s3[1] = 1.;  // RightBin.xmax
-  s3[2] = 1.;  // RightBin.ymax
-  s3[3] = 1.;  // RightBin.zmax
-
-  RayType ray2d;
-  ray2d[0] = -1.0;
-  ray2d[1] = -1.0;
-  ray2d[2] = 1.0;
-  ray2d[3] = 1.0;
-  EXPECT_TRUE(TraversalPredicates2D::rayIntersectsRightBin(ray2d, s2, s3));
-
-  // flip normal
-  ray2d[2] = -1.0;
-  ray2d[3] = -1.0;
-  EXPECT_FALSE(TraversalPredicates2D::rayIntersectsRightBin(ray2d, s2, s3));
-
-  RayType ray3d;
-  ray3d[0] = -1.0;
-  ray3d[1] = -1.0;
-  ray3d[2] = -1.0;
-  ray3d[3] = 1.0;
-  ray3d[4] = 1.0;
-  ray3d[5] = 1.0;
-  EXPECT_TRUE(TraversalPredicates3D::rayIntersectsRightBin(ray3d, s2, s3));
-
-  // flip normal
-  ray3d[3] = -1.0;
-  ray3d[4] = -1.0;
-  ray3d[5] = -1.0;
-  EXPECT_FALSE(TraversalPredicates3D::rayIntersectsRightBin(ray3d, s2, s3));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_pointInLeftBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-
-  VecType in_point, out_point, s1, s2;
-
-  in_point[0] = in_point[1] = in_point[2] = 0.5;
-  out_point[0] = out_point[1] = out_point[2] = 1.5;
-
-  s1[0] = 0.;  // LeftBin.xmin
-  s1[1] = 0.;  // LeftBin.ymin
-  s1[2] = 0.;  // LeftBin.zmin
-
-  s1[3] = 1.;  // LeftBin.xmax
-  s2[0] = 1.;  // LeftBin.ymax
-  s2[1] = 1.;  // LeftBin.zmax
-
-  EXPECT_TRUE(TraversalPredicates2D::pointInLeftBin(in_point, s1, s2));
-  EXPECT_TRUE(TraversalPredicates3D::pointInLeftBin(in_point, s1, s2));
-
-  EXPECT_FALSE(TraversalPredicates2D::pointInLeftBin(out_point, s1, s2));
-  EXPECT_FALSE(TraversalPredicates3D::pointInLeftBin(out_point, s1, s2));
-}
-
-//------------------------------------------------------------------------------
-TEST(spin_bvh, traversal_predicates_pointInRightBin)
-{
-  namespace bvh = axom::spin::internal::linear_bvh;
-  using TraversalPredicates2D = bvh::TraversalPredicates<2, double>;
-  using TraversalPredicates3D = bvh::TraversalPredicates<3, double>;
-  using VecType = bvh::Vec<double, 4>;
-
-  VecType in_point, out_point, s2, s3;
-
-  in_point[0] = in_point[1] = in_point[2] = 0.5;
-  out_point[0] = out_point[1] = out_point[2] = 1.5;
-
-  s2[2] = 0.;  // RightBin.xmin
-  s2[3] = 0.;  // RightBin.ymin
-  s3[0] = 0.;  // RightBin.zmin
-
-  s3[1] = 1.;  // RightBin.xmax
-  s3[2] = 1.;  // RightBin.ymax
-  s3[3] = 1.;  // RightBin.zmax
-
-  EXPECT_TRUE(TraversalPredicates2D::pointInRightBin(in_point, s2, s3));
-  EXPECT_TRUE(TraversalPredicates3D::pointInRightBin(in_point, s2, s3));
-
-  EXPECT_FALSE(TraversalPredicates2D::pointInRightBin(out_point, s2, s3));
-  EXPECT_FALSE(TraversalPredicates3D::pointInRightBin(out_point, s2, s3));
-}
-
 //------------------------------------------------------------------------------
 TEST(spin_bvh, construct2D_sequential)
 {
@@ -1814,7 +1435,28 @@ TEST(spin_bvh, single_box3d_sequential)
 }
 
 //------------------------------------------------------------------------------
-#ifdef AXOM_USE_OPENMP
+TEST(spin_bvh, construct3D_sequential_zip)
+{
+  check_build_bvh_zip3d<axom::SEQ_EXEC, double>();
+  check_build_bvh_zip3d<axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
+TEST(spin_bvh, find_points_2d_sequential_zip)
+{
+  check_find_points_zip2d<axom::SEQ_EXEC, double>();
+  check_find_points_zip2d<axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
+TEST(spin_bvh, find_points_3d_sequential_zip)
+{
+  check_find_points_zip3d<axom::SEQ_EXEC, double>();
+  check_find_points_zip3d<axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
 TEST(spin_bvh, construct2D_omp)
 {
@@ -1997,9 +1639,9 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
   umpire::Allocator allocator = rm.getAllocator(umpire::resource::Unified);
 
   umpire::Allocator pool_allocator =
-    rm.makeAllocator<umpire::strategy::DynamicPool>("DEVICE_POOL",
-                                                    allocator,
-                                                    POOL_SIZE);
+    rm.makeAllocator<umpire::strategy::QuickPool>("DEVICE_POOL",
+                                                  allocator,
+                                                  POOL_SIZE);
 
   const int allocID = pool_allocator.getId();
 
@@ -2012,44 +1654,47 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
   constexpr int NUM_BOXES = 1;
 
   using FloatType = double;
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
 
   // single bounding box in [0,1] x [0,1] x [0,1]
-  FloatType* boxes = axom::allocate<FloatType>(6, allocID);
+  BoxType* boxes = axom::allocate<BoxType>(1, allocID);
   axom::for_all<exec>(
     0,
-    6,
-    AXOM_LAMBDA(axom::IndexType idx) { boxes[idx] = (idx < 3) ? 0.0 : 1.0; });
+    1,
+    AXOM_LAMBDA(axom::IndexType idx) {
+      boxes[idx] = {PointType(0.), PointType(1.)};
+    });
 
   // construct a BVH with a single box
-  spin::BVH<NDIMS, exec, FloatType> bvh(boxes, NUM_BOXES, allocID);
-  EXPECT_EQ(bvh.getAllocatorID(), allocID);
+  spin::BVH<NDIMS, exec, FloatType> bvh;
 
   bvh.setScaleFactor(1.0);  // i.e., no scaling
-  bvh.build();
+  bvh.setAllocatorID(allocID);
+  bvh.initialize(boxes, NUM_BOXES);
+  EXPECT_EQ(bvh.getAllocatorID(), allocID);
 
   // run the find algorithm w/ the centroid of the bounding box as input.
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
-  FloatType* xc = axom::allocate<FloatType>(NUM_BOXES, allocID);
-  FloatType* yc = axom::allocate<FloatType>(NUM_BOXES, allocID);
-  FloatType* zc = axom::allocate<FloatType>(NUM_BOXES, allocID);
+  PointType* centroid = axom::allocate<PointType>(NUM_BOXES, allocID);
   axom::for_all<exec>(
     0,
     1,
-    AXOM_LAMBDA(axom::IndexType idx) { xc[idx] = yc[idx] = zc[idx] = 0.5; });
+    AXOM_LAMBDA(axom::IndexType idx) {
+      centroid[idx] = PointType {0.5, 0.5, 0.5};
+    });
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES, allocID);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES, allocID);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, xc, yc, zc);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid);
   EXPECT_TRUE(candidates != nullptr);
 
   // Ensure the BVH uses interally the supplied pool allocator
   EXPECT_EQ(rm.getAllocator(candidates).getId(), allocID);
 
-  axom::deallocate(xc);
-  axom::deallocate(yc);
-  axom::deallocate(zc);
+  axom::deallocate(centroid);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);

@@ -9,7 +9,7 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/Array.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -21,6 +21,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 namespace axom
@@ -153,7 +154,10 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new Array<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values =
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               m_stride,
+                                               ID_capacity);
   }
 
   /*!
@@ -173,7 +177,10 @@ public:
   {
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
-    m_values = new Array<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values =
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               m_stride,
+                                               ID_capacity);
   }
 
   /// @}
@@ -214,7 +221,10 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new Array<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new axom::deprecated::MCArray<IndexType>(values,
+                                                        n_IDs,
+                                                        m_stride,
+                                                        ID_capacity);
   }
 
   /*!
@@ -244,7 +254,10 @@ public:
     , m_stride(stride)
     , m_values(nullptr)
   {
-    m_values = new Array<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new axom::deprecated::MCArray<IndexType>(values,
+                                                        n_IDs,
+                                                        m_stride,
+                                                        ID_capacity);
   }
 
   /// @}
@@ -322,7 +335,10 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values = new sidre::Array<IndexType>(connec_view, 0, m_stride, ID_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         m_stride,
+                                                         ID_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -360,7 +376,10 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values = new sidre::Array<IndexType>(connec_view, 0, m_stride, ID_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         m_stride,
+                                                         ID_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -487,7 +506,7 @@ public:
       return nullptr;
     }
 
-    return static_cast<sidre::Array<IndexType>*>(m_values)
+    return static_cast<sidre::deprecated::MCArray<IndexType>*>(m_values)
       ->getView()
       ->getOwningGroup()
       ->getParent();
@@ -711,7 +730,7 @@ public:
 private:
   CellType m_cell_type;
   IndexType m_stride;
-  Array<IndexType>* m_values;
+  axom::deprecated::MCArray<IndexType>* m_values;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

@@ -8,8 +8,8 @@
  * \brief Defines templated OctreeBase class and its inner class BlockIndex
  */
 
-#ifndef OCTREE_BASE__HXX_
-#define OCTREE_BASE__HXX_
+#ifndef AXOM_SPIN_OCTREE_BASE__HPP_
+#define AXOM_SPIN_OCTREE_BASE__HPP_
 
 #include "axom/config.hpp"
 #include "axom/slic.hpp"
@@ -980,4 +980,4 @@ protected:
 }  // end namespace spin
 }  // end namespace axom
 
-#endif  // OCTREE_BASE_HXX_
+#endif  // AXOM_SPIN_OCTREE_BASE__HPP_

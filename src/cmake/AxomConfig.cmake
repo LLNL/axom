@@ -13,7 +13,7 @@ message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 ## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code. We
 ## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
-set(TPL_DEPS CLI11 CONDUIT CUDA FMT HDF5 LUA MFEM MPI OPENMP RAJA SCR SOL SPARSEHASH UMPIRE )
+set(TPL_DEPS C2C CLI11 CONDUIT CUDA FMT HDF5 LUA MFEM MPI OPENMP RAJA SCR SOL SPARSEHASH UMPIRE )
 foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
@@ -52,7 +52,7 @@ convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 file(READ ${CMAKE_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
 
 #------------------------------------------------------------------------------
-# Compiler checks
+# Compiler and language related configuration variables
 #------------------------------------------------------------------------------
 
 if(ENABLE_FORTRAN)
@@ -79,6 +79,23 @@ if(ENABLE_FORTRAN)
 
 endif(ENABLE_FORTRAN)
 
+# The following MSVC pragmas caused problems for the Cray Fortran compiler,
+# so only add them when using MSVC
+if(COMPILER_FAMILY_IS_MSVC)
+  set(AXOM_MSVC_PRAGMAS [=[
+#if defined(_MSC_VER)
+  /* Turn off warning about lack of DLL interface */
+  #pragma warning(disable:4251)
+  /* Turn off warning non-dll class is base for dll-interface class */
+  #pragma warning(disable:4275)
+  /* Turn off warning about identifier truncation */
+  #pragma warning(disable:4786)  
+#endif  /* defined(_MSC_VER) */
+]=])
+endif()
+
+
+# Generate the configuration header file
 axom_configure_file(
     ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
     ${CMAKE_BINARY_DIR}/include/axom/config.hpp

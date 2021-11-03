@@ -15,10 +15,8 @@ int main()
   // Parse example input file
   lr->parseString("values = { [1] = 'start', [2] = 'stop', [3] = 'pause' }");
 
-  axom::sidre::DataStore ds;
-
   // Initialize Inlet
-  axom::inlet::Inlet inlet(std::move(lr), ds.getRoot());
+  axom::inlet::Inlet inlet(std::move(lr));
 
   // Register the verifier, which will verify the array values
   auto& vals = inlet.getGlobalContainer().addStringArray("values");

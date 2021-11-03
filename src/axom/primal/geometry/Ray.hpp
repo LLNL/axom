@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef RAY_HPP_
-#define RAY_HPP_
+#ifndef AXOM_PRIMAL_RAY_HPP_
+#define AXOM_PRIMAL_RAY_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Segment.hpp"
@@ -42,17 +42,22 @@ template <typename T, int NDIMS>
 class Ray
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Segment<T, NDIMS> SegmentType;
-  typedef Vector<T, NDIMS> VectorType;
+  using CoordType = T;
+  using PointType = Point<T, NDIMS>;
+  using SegmentType = Segment<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
 public:
+  /// Disable the default constructor
+  Ray() = delete;
+
   /*!
    * \brief Constructs a ray object with the given origin and direction.
    * \param [in] origin the origin of the ray.
    * \param [in] direction the direction of the ray.
    * \pre direction.squared_norm()!= 0.0
    */
+  AXOM_HOST_DEVICE
   Ray(const PointType& origin, const VectorType& direction);
 
   /*!
@@ -62,14 +67,10 @@ public:
   explicit Ray(const SegmentType& S);
 
   /*!
-   * \brief Ray Destructor.
-   */
-  ~Ray();
-
-  /*!
    * \brief Returns the point of origin of this Ray instance.
    * \return origin a point instance corresponding to the origin of the ray.
    */
+  AXOM_HOST_DEVICE
   const PointType& origin() const { return m_origin; };
 
   /*!
@@ -78,6 +79,7 @@ public:
    * \return p a point along the ray.
    * \pre \f$ t \ge 0 \f$
    */
+  AXOM_HOST_DEVICE
   PointType at(const T& t) const;
 
   /*!
@@ -85,6 +87,7 @@ public:
    * \return direction the direction vector of the ray.
    * \post direction.norm()==1
    */
+  AXOM_HOST_DEVICE
   const VectorType& direction() const { return m_direction; };
 
   /*!
@@ -100,12 +103,6 @@ public:
   }
 
 private:
-  /*!
-   * \brief Default Constructor. Does nothing.
-   * \note Made private to prevent its use in application code.
-   */
-  Ray() {};
-
   PointType m_origin;
   VectorType m_direction;
 };
@@ -133,17 +130,11 @@ Ray<T, NDIMS>::Ray(const PointType& origin, const VectorType& direction)
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 Ray<T, NDIMS>::Ray(const SegmentType& S)
+  : m_origin(S.source())
+  , m_direction(VectorType(S.source(), S.target()).unitVector())
 {
-  m_origin = S.source();
-
-  VectorType dir(S.source(), S.target());
-  m_direction = dir.unitVector();
+  SLIC_ASSERT(m_direction.squared_norm() != 0.0);
 }
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-Ray<T, NDIMS>::~Ray()
-{ }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
@@ -167,7 +158,7 @@ std::ostream& operator<<(std::ostream& os, const Ray<T, NDIMS>& ray)
   return os;
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* RAY_HPP_ */
+#endif  // AXOM_PRIMAL_RAY_HPP_

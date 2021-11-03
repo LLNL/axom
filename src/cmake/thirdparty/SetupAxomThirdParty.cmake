@@ -163,14 +163,52 @@ else()
 endif()
 
 
+#------------------------------------------------------------------------------
+# LUA
+#------------------------------------------------------------------------------
+if (LUA_DIR)
+    include(cmake/thirdparty/FindLUA.cmake)
+    blt_import_library(
+        NAME          lua
+        INCLUDES      ${LUA_INCLUDE_DIR}
+        LIBRARIES     ${LUA_LIBRARY}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE    ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS lua)
+else()
+    message(STATUS "LUA support is OFF")
+    set(LUA_FOUND OFF CACHE BOOL "")
+endif()
+
+
+#------------------------------------------------------------------------------
+# C2C
+#------------------------------------------------------------------------------
+if (C2C_DIR)
+    include(cmake/thirdparty/FindC2C.cmake)
+    blt_import_library(
+        NAME          c2c
+        INCLUDES      ${C2C_INCLUDE_DIR}
+        LIBRARIES     ${C2C_LIBRARY}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE    ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS c2c)
+else()
+    message(STATUS "c2c support is OFF")
+    set(C2C_FOUND OFF CACHE BOOL "")
+endif()
+
+
+#------------------------------------------------------------------------------
 # Remove exported OpenMP flags because they are not language agnostic
+#------------------------------------------------------------------------------
 set(_props)
 if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0" )
     list(APPEND _props INTERFACE_LINK_OPTIONS)
 endif()
 list(APPEND _props INTERFACE_COMPILE_OPTIONS)
 
-foreach(_target RAJA camp umpire umpire_alloc)
+foreach(_target RAJA camp umpire umpire_alloc conduit::conduit)
     if(TARGET ${_target})
         message(STATUS "Removing OpenMP Flags from target[${_target}]")
 
@@ -188,23 +226,15 @@ foreach(_target RAJA camp umpire umpire_alloc)
     endif()
 endforeach()
 
-
-#------------------------------------------------------------------------------
-# LUA
-#------------------------------------------------------------------------------
-if (LUA_DIR)
-    include(cmake/thirdparty/FindLUA.cmake)
-    blt_import_library(
-        NAME          lua
-        INCLUDES      ${LUA_INCLUDE_DIR}
-        LIBRARIES     ${LUA_LIBRARY}
-        TREAT_INCLUDES_AS_SYSTEM ON
-        EXPORTABLE    ON)
-    blt_list_append(TO TPL_DEPS ELEMENTS lua)
-else()
-    message(STATUS "LUA support is OFF")
-    set(LUA_FOUND OFF CACHE BOOL "")
+# Newer versions of RAJA keeps its flags in a specific target
+if(TARGET RAJA)
+    get_target_property(_flags RAJA INTERFACE_LINK_LIBRARIES)
+    if ( _flags )
+        list(REMOVE_ITEM _flags "RAJA::openmp")
+        set_target_properties( RAJA PROPERTIES INTERFACE_LINK_LIBRARIES "${_flags}" )
+    endif()
 endif()
+
 
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file

@@ -3,15 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef NUMERIC_ARRAY_HPP_
-#define NUMERIC_ARRAY_HPP_
+#ifndef AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
+#define AXOM_PRIMAL_NUMERIC_ARRAY_HPP_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
-#include <cstring>    // For memcpy()
 #include <algorithm>  // For std:: copy and fill
 #include <ostream>    // For print() and operator <<
 #include <initializer_list>
@@ -34,8 +33,8 @@ class NumericArray;
  * \return status true if lhs==rhs, otherwise, false.
  */
 template <typename T, int SIZE>
-bool operator==(const NumericArray<T, SIZE>& lhs,
-                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE bool operator==(const NumericArray<T, SIZE>& lhs,
+                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Checks if two numeric arrays are *not* component-wise equal.
@@ -54,8 +53,8 @@ bool operator!=(const NumericArray<T, SIZE>& lhs,
  * \return C resulting numeric array from the component-wise addition.
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator+(const NumericArray<T, SIZE>& lhs,
-                                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator+(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Performs component-wise subtraction of two numeric arrays.
@@ -100,8 +99,8 @@ NumericArray<T, SIZE> operator*(double scalar, const NumericArray<T, SIZE>& arr)
  * \return C resulting numeric array, \f$ \ni: C_i = lhs_i * rhs_i, \forall i\f$
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& lhs,
-                                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Component-wise division of NumericArrays
@@ -168,6 +167,7 @@ struct NonChar<unsigned char>
 };
 
 /*!
+ * \accelerated
  * \class NumericArray
  *
  * \brief A simple statically sized array of data with component-wise operators.
@@ -178,12 +178,6 @@ struct NonChar<unsigned char>
 template <typename T, int SIZE>
 class NumericArray
 {
-public:
-  enum
-  {
-    NBYTES = SIZE * sizeof(T)
-  };
-
 public:
   // -- TODO: Add static_assert that T has numeric type --
 
@@ -219,31 +213,11 @@ public:
   { }
 
   /*!
-   * \brief Copy constructor.
-   * \param [in] other The numeric array to copy
-   */
-  AXOM_HOST_DEVICE
-  NumericArray(const NumericArray& other) { *this = other; };
-
-  /*!
-   * \brief Destructor.
-   */
-  AXOM_HOST_DEVICE
-  ~NumericArray() { }
-
-  /*!
    * \brief Returns the dimension of this numeric array instance.
    * \return d the dimension (size) of the array
    * \post d >= 1.
    */
   static int size() { return SIZE; };
-
-  /*!
-   * \brief Assignment operator.
-   * \param [in] rhs a numeric array instance on the right hand side.
-   */
-  AXOM_HOST_DEVICE
-  NumericArray& operator=(const NumericArray& rhs);
 
   /*!
    * \brief Access operator for individual components.
@@ -273,6 +247,7 @@ public:
    * \pre The user needs to make sure that the provided array has been allocated
    * and has sufficient space for SIZE coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const;
 
   /*!
@@ -288,6 +263,7 @@ public:
    * Adds the numeric array arr to this instance (component-wise).
    * \return A reference to the NumericArray instance after addition.
    */
+  AXOM_HOST_DEVICE
   NumericArray<T, SIZE>& operator+=(const NumericArray<T, SIZE>& arr);
 
   /*!
@@ -465,21 +441,6 @@ NumericArray<T, SIZE>::NumericArray(const T* vals, int sz)
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline AXOM_HOST_DEVICE NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator=(
-  const NumericArray<T, SIZE>& rhs)
-{
-  if(this == &rhs)
-  {
-    return *this;
-  }
-
-  // copy all the data
-  memcpy(m_components, rhs.m_components, NBYTES);
-  return *this;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int SIZE>
 inline T& NumericArray<T, SIZE>::operator[](int i)
 {
   verifyIndex(i);
@@ -513,7 +474,10 @@ template <typename T, int SIZE>
 void NumericArray<T, SIZE>::to_array(T* arr) const
 {
   SLIC_ASSERT(arr != nullptr);
-  memcpy(arr, m_components, NBYTES);
+  for(int dim = 0; dim < SIZE; ++dim)
+  {
+    arr[dim] = m_components[dim];
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -841,8 +805,7 @@ inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr)
   return result;
 }
 
-} /* namespace primal*/
+}  // namespace primal
+}  // namespace axom
 
-} /* namespace axom */
-
-#endif /* NUMERIC_ARRAY_HXX_ */
+#endif  // AXOM_PRIMAL_NUMERIC_ARRAY_HPP_

@@ -10,7 +10,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/Array.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
@@ -18,6 +18,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 #include <cstring>
@@ -62,13 +63,21 @@ public:
   ConnectivityArray(IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
     : m_values(nullptr)
-    , m_types(new Array<CellType>(axom::internal::ZERO, 1, ID_capacity))
-    , m_offsets(
-        new Array<IndexType>(axom::internal::ZERO, 1, m_types->capacity() + 1))
+    , m_types(new axom::deprecated::MCArray<CellType>(
+        axom::deprecated::internal::ZERO,
+        1,
+        ID_capacity))
+    , m_offsets(new axom::deprecated::MCArray<IndexType>(
+        axom::deprecated::internal::ZERO,
+        1,
+        m_types->capacity() + 1))
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
-    m_values = new Array<IndexType>(axom::internal::ZERO, 1, new_value_capacity);
+    m_values =
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               1,
+                                               new_value_capacity);
 
     m_offsets->append(0);
   }
@@ -112,9 +121,12 @@ public:
                     IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
     : m_values(nullptr)
-    , m_types(new Array<CellType>(types, n_IDs, 1, ID_capacity))
-    , m_offsets(
-        new Array<IndexType>(offsets, n_IDs + 1, 1, m_types->capacity() + 1))
+    , m_types(
+        new axom::deprecated::MCArray<CellType>(types, n_IDs, 1, ID_capacity))
+    , m_offsets(new axom::deprecated::MCArray<IndexType>(offsets,
+                                                         n_IDs + 1,
+                                                         1,
+                                                         m_types->capacity() + 1))
   {
     SLIC_ERROR_IF(n_IDs < 0,
                   "Number of IDs must be positive, not " << n_IDs << ".");
@@ -128,7 +140,8 @@ public:
                     << "Expected item 0 to be 0 not " << (*m_offsets)[0] << ".");
 
     IndexType n_values = (*m_offsets)[n_IDs];
-    m_values = new Array<IndexType>(values, n_values, 1, value_capacity);
+    m_values =
+      new axom::deprecated::MCArray<IndexType>(values, n_values, 1, value_capacity);
   }
 
   /// @}
@@ -203,7 +216,7 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* offsets_view = elems_group->getView("offsets");
-    m_offsets = new sidre::Array<IndexType>(
+    m_offsets = new sidre::deprecated::MCArray<IndexType>(
       offsets_view,
       1,
       1,
@@ -212,13 +225,17 @@ public:
     (*m_offsets)[0] = 0;
 
     sidre::View* types_view = elems_group->getView("types");
-    m_types = new sidre::Array<CellType>(types_view, 0, 1, ID_capacity);
+    m_types =
+      new sidre::deprecated::MCArray<CellType>(types_view, 0, 1, ID_capacity);
     SLIC_ASSERT(m_types != nullptr);
 
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values = new sidre::Array<IndexType>(connec_view, 0, 1, new_value_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         1,
+                                                         new_value_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -406,7 +423,7 @@ public:
       return nullptr;
     }
 
-    return static_cast<sidre::Array<IndexType>*>(m_values)
+    return static_cast<sidre::deprecated::MCArray<IndexType>*>(m_values)
       ->getView()
       ->getOwningGroup()
       ->getParent();
@@ -643,9 +660,9 @@ public:
   /// @}
 
 private:
-  Array<IndexType>* m_values;
-  Array<CellType>* m_types;
-  Array<IndexType>* m_offsets;
+  axom::deprecated::MCArray<IndexType>* m_values;
+  axom::deprecated::MCArray<CellType>* m_types;
+  axom::deprecated::MCArray<IndexType>* m_offsets;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

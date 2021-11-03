@@ -12,9 +12,6 @@ else()
     cmake_minimum_required(VERSION 3.8.2)
 endif()
 
-message(STATUS "Using CMake version ${CMAKE_VERSION}")
-
-
 project(axom LANGUAGES C CXX)
 
 if (ENABLE_FORTRAN)
@@ -43,6 +40,8 @@ else()
     endif()
 endif()
 
+set(ENABLE_GMOCK ON CACHE STRING "")
+
 if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # Set some default BLT options before loading BLT only if not included in
     # another project
@@ -50,9 +49,33 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
         set(BLT_CXX_STD "c++11" CACHE STRING "")
     endif()
 
-    set(ENABLE_ASTYLE      OFF CACHE BOOL "")
-    set(ENABLE_CLANGTIDY   OFF CACHE BOOL "")
-    set(ENABLE_UNCRUSTIFY  OFF CACHE BOOL "")
+    # These are not used in Axom, turn them off
+    set(_unused_blt_tools
+        CLANGQUERY
+        CLANGTIDY
+        VALGRIND
+        ASTYLE
+        CMAKEFORMAT
+        UNCRUSTIFY
+        YAPF)
+    foreach(_tool ${_unused_blt_tools})
+        set(ENABLE_${_tool} OFF CACHE BOOL "")
+    endforeach()
+
+    # These are only used by Axom developers, so turn them off
+    # unless an explicit executable path is given
+    set(_used_blt_tools
+        CLANGFORMAT
+        CPPCHECK
+        DOXYGEN
+        SPHINX)
+    foreach(_tool ${_used_blt_tools})
+        if(NOT ${_tool}_EXECUTABLE)
+            set(ENABLE_${_tool} OFF CACHE BOOL "")
+        else()
+            set(ENABLE_${_tool} ON CACHE BOOL "")
+        endif()
+    endforeach()
 
     set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
 
@@ -94,14 +117,18 @@ add_subdirectory(thirdparty)
 include(cmake/AxomVersion.cmake)
 add_subdirectory(axom)
 
-add_subdirectory(tools)
+if(AXOM_ENABLE_TOOLS)
+    add_subdirectory(tools)
+endif()
+
+# Using Axom install examples
 add_subdirectory(examples)
 
-if (AXOM_ENABLE_DOCS)
-  if (SPHINX_FOUND)
-    blt_add_sphinx_target( axom_docs )
-  endif()
-  add_subdirectory(docs)
+if(AXOM_ENABLE_DOCS)
+    if(SPHINX_FOUND)
+        blt_add_sphinx_target( axom_docs )
+    endif()
+    add_subdirectory(docs)
 endif()
 
 #------------------------------------------------------------------------------

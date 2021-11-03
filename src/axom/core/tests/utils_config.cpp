@@ -54,6 +54,10 @@ TEST(utils_config, config_libraries)
 
   std::vector<std::string> libs;
 
+#ifdef AXOM_USE_C2C
+  libs.push_back("c2c");
+#endif
+
 #ifdef AXOM_USE_CLI11
   libs.push_back("CLI11");
 #endif

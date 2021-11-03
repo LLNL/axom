@@ -7,10 +7,11 @@
 
 #include <iostream>
 
-#include "CLI11/CLI11.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/CLI11.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/slic/core/SimpleLogger.hpp"
+#include "axom/primal.hpp"
 
 namespace inlet = axom::inlet;
 using Vector = inlet::FunctionType::Vector;
@@ -21,7 +22,7 @@ Vector toVector(const std::vector<double>& vec)
 {
   // Narrow from std::size_t to int
   const int size = vec.size();
-  return {{vec.data(), size}, size};
+  return {axom::primal::Vector3D {vec.data(), size}, size};
 }
 
 // A union of the members required for each of the operations is stored for simplicity
@@ -133,19 +134,19 @@ std::ostream& operator<<(std::ostream& os, const Operator& op)
   {
   case Operator::Type::Translate:
     os << "   Translation operator:\n";
-    os << fmt::format("      with vector: {0}\n", op.translate);
+    os << axom::fmt::format("      with vector: {0}\n", op.translate);
     break;
   case Operator::Type::Rotate:
     os << "   Rotation operator:\n";
-    os << fmt::format("      with axis: {0}\n", op.axis);
-    os << fmt::format("      with center: {0}\n", op.center);
+    os << axom::fmt::format("      with axis: {0}\n", op.axis);
+    os << axom::fmt::format("      with center: {0}\n", op.center);
     break;
   case Operator::Type::Slice:
     os << "   Slice operator:\n";
-    os << fmt::format("      with x-coord: {0}\n", op.x);
-    os << fmt::format("      with y-coord: {0}\n", op.y);
-    os << fmt::format("      with z-coord: {0}\n", op.z);
-    os << fmt::format("       with origin: {0}\n", op.origin);
+    os << axom::fmt::format("      with x-coord: {0}\n", op.x);
+    os << axom::fmt::format("      with y-coord: {0}\n", op.y);
+    os << axom::fmt::format("      with z-coord: {0}\n", op.z);
+    os << axom::fmt::format("       with origin: {0}\n", op.origin);
     break;
   default:
     SLIC_ERROR("Operator had unknown type");
@@ -212,8 +213,8 @@ struct FromInlet<Geometry>
 
 std::ostream& operator<<(std::ostream& os, const Geometry& geom)
 {
-  os << fmt::format("Geometry in format: '{0}'\n", geom.format);
-  os << fmt::format("  with path: '{0}'\n", geom.path);
+  os << axom::fmt::format("Geometry in format: '{0}'\n", geom.format);
+  os << axom::fmt::format("  with path: '{0}'\n", geom.path);
   for(const auto& op : geom.operators)
   {
     os << op;
@@ -247,7 +248,7 @@ struct Shape
 
 std::ostream& operator<<(std::ostream& os, const Shape& shape)
 {
-  os << fmt::format("Shape: '{0}'\n", shape.name);
+  os << axom::fmt::format("Shape: '{0}'\n", shape.name);
   os << shape.geom;
   return os;
 }
@@ -312,7 +313,8 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  CLI::App app {"Example of Axom's Inlet component for nested structures"};
+  axom::CLI::App app {
+    "Example of Axom's Inlet component for nested structures"};
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
   bool strictVerification {false};
@@ -321,10 +323,9 @@ int main(int argc, char** argv)
                "Warns if any unexpected fields are provided");
   CLI11_PARSE(app, argc, argv);
 
-  axom::sidre::DataStore ds;
   auto reader = std::unique_ptr<inlet::YAMLReader>(new inlet::YAMLReader());
   reader->parseString(input);
-  inlet::Inlet inlet(std::move(reader), ds.getRoot());
+  inlet::Inlet inlet(std::move(reader));
 
   // _inlet_nested_struct_array_start
   auto& shapes_container = inlet.addStructArray("shapes");
@@ -355,14 +356,8 @@ int main(int argc, char** argv)
   if(docsEnabled)
   {
     const std::string docFileName = "nested_structs";
-    std::unique_ptr<inlet::SphinxWriter> sphinxWriter(
-      new inlet::SphinxWriter(docFileName + ".rst"));
-    inlet.registerWriter(std::move(sphinxWriter));
-    inlet.write();
-    std::unique_ptr<inlet::JSONSchemaWriter> schemaWriter(
-      new inlet::JSONSchemaWriter(docFileName + ".json"));
-    inlet.registerWriter(std::move(schemaWriter));
-    inlet.write();
+    inlet.write(inlet::SphinxWriter(docFileName + ".rst"));
+    inlet.write(inlet::JSONSchemaWriter(docFileName + ".json"));
     SLIC_INFO("Documentation was written to " << docFileName
                                               << " (rst and json)");
   }

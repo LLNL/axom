@@ -11,8 +11,6 @@
 #include "axom/core/Types.hpp"   // for axom types
 #include "axom/slic.hpp"         // for SLIC macros
 
-#include "axom/spin/internal/linear_bvh/BVHData.hpp"
-
 namespace axom
 {
 namespace spin
@@ -33,58 +31,73 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \brief Generic BVH traversal routine.
  *
  * \param [in] inner_nodes pointer to the BVH bins.
+ * \param [in] inner_node_children pointer to pairs of child indices.
  * \param [in] leaf_nodes pointer to the leaf node IDs.
  * \param [in] p the primitive in query, e.g., a point, ray, etc.
- * \param [in] L functor that defines the check for the left bin
- * \param [in] R functor that defines the check for right bin
+ * \param [in] B functor that defines the check for the bins
  * \param [in] A functor that defines the leaf action
+ * \param [in] Comp functor used for determining which child node to traverse
+ *  down first if both bins are to be traversed
  *
- * \note The supplied functors, `L`, `R`, are expected to take the following
- *  three arguments:
+ * \note The supplied functor `B` is expected to take the following two
+ *  arguments:
  *    (1) The supplied primitive, p
- *    (2) a vec4_t< FloatType > of the first segment that defines the BVH bin
- *    (3) a vec4_t< FloatType > of the second segment that defines the BVH bin
+ *    (2) a primal::BoundingBox< FloatType, NDIMS > of the BVH bin
+ *
+ * \note The supplied functor `Comp` is expected to take the following three
+ *  arguments:
+ *    (1) The left child bounding box
+ *    (2) The right child bounding box
+ *    (3) The primitive being queried
+ *  It should return true if the primitive is closer to the right child bounding
+ *  box (indicating a swap is necessary) and false if the primitive is closer to
+ *  the left child bounding box.
  *
  * \see BVHData for the details on the internal data layout of the BVH.
  *
- * \note Moreover, the functors `L`, `R` return a boolean status that indicates
+ * \note Moreover, the functor `B` returns a boolean status that indicates
  *  if the specified traversal predicate is satisfied.
  *
- * \see TraversalPredicates for the collection of defined predicates.
  */
-template <typename FloatType,
+template <int NDIMS,
+          typename FloatType,
           typename PrimitiveType,
-          typename InLeftCheck,
-          typename InRightCheck,
-          typename LeafAction>
-AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
-                                          const int32* leaf_nodes,
-                                          const PrimitiveType& p,
-                                          InLeftCheck&& L,
-                                          InRightCheck&& R,
-                                          LeafAction&& A)
+          typename InBinCheck,
+          typename LeafAction,
+          typename TraversePref>
+AXOM_HOST_DEVICE inline void bvh_traverse(
+  const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
+  const int32* inner_node_children,
+  const int32* leaf_nodes,
+  const PrimitiveType& p,
+  InBinCheck&& B,
+  LeafAction&& A,
+  TraversePref&& Comp)
 {
-  using VecType = vec4_t<FloatType>;
+  using BBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   // setup stack
-  constexpr int32 ISIZE = sizeof(int32);
   constexpr int32 STACK_SIZE = 64;
   constexpr int32 BARRIER = -2000000000;
   int32 todo[STACK_SIZE];
   int32 stackptr = 0;
   todo[stackptr] = BARRIER;
 
+  int32 found_leaf = 0;
   int32 current_node = 0;
+
   while(current_node != BARRIER)
   {
-    if(!leaf_node(current_node))
+    // Traverse until we hit a leaf node or the barrier.
+    while(!leaf_node(current_node))
     {
-      const VecType first4 = inner_nodes[current_node + 0];
-      const VecType second4 = inner_nodes[current_node + 1];
-      const VecType third4 = inner_nodes[current_node + 2];
-
-      const bool in_left = L(p, first4, second4);
-      const bool in_right = R(p, second4, third4);
+      BBoxType left_bin = inner_nodes[current_node + 0];
+      BBoxType right_bin = inner_nodes[current_node + 1];
+      const bool in_left = B(p, left_bin);
+      const bool in_right = B(p, right_bin);
+      int32 l_child = inner_node_children[current_node + 0];
+      int32 r_child = inner_node_children[current_node + 1];
+      bool swap = Comp(left_bin, right_bin, p);
 
       if(!in_left && !in_right)
       {
@@ -94,40 +107,50 @@ AXOM_HOST_DEVICE inline void bvh_traverse(const vec4_t<FloatType>* inner_nodes,
       }
       else
       {
-        VecType children = inner_nodes[current_node + 3];
-
-        // memcpy the int bits hidden in the floats
-        int32 l_child;
-        memcpy(&l_child, &children[0], ISIZE);
-        int32 r_child;
-        memcpy(&r_child, &children[1], ISIZE);
-
         current_node = (in_left) ? l_child : r_child;
-
         if(in_left && in_right)
         {
+          if(swap)
+          {
+            // Ensure we go down the closer of the two children.
+            // (For a user-defined meaning of "closer")
+            axom::utilities::swap(current_node, r_child);
+          }
+
           stackptr++;
           todo[stackptr] = r_child;
-          // TODO: if we are in both children we could
-          // go down the "closer" first by perhaps the distance
-          // from the point to the center of the aabb
         }
-
       }  // END else
 
-    }  // END if
-    else
+      if(leaf_node(current_node) && !leaf_node(found_leaf))
+      {
+        // Save this leaf and continue traversing
+        found_leaf = current_node;
+        if(current_node != BARRIER)
+        {
+          current_node = todo[stackptr];
+          stackptr--;
+        }
+      }
+    }  // END while
+
+    // After the traversal, each thread may have found:
+    // - two leaf nodes (found_leaf=l1, current_node=l2)
+    // - one leaf node (found_leaf=l1, current_node=BARRIER)
+    // - no leaf nodes (found_leaf=0, current_node=BARRIER)
+    while(leaf_node(found_leaf) && found_leaf != BARRIER)
     {
-      // compute leaf index
-      current_node = -current_node - 1;  // swap the neg address
-
-      // execute leaf action
-      A(current_node, leaf_nodes);
-
-      current_node = todo[stackptr];
-      stackptr--;
-    }  // END else
-
+      int leaf_idx = -found_leaf - 1;
+      A(leaf_idx, leaf_nodes);
+      found_leaf = current_node;
+      if(leaf_node(current_node) && current_node != BARRIER)
+      {
+        // pop the stack and continue
+        current_node = todo[stackptr];
+        stackptr--;
+      }
+    }
+    found_leaf = 0;
   }  // END while
 }
 

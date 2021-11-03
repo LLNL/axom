@@ -21,7 +21,7 @@ extern "C" {
 // splicer end C_definitions
 
 #ifdef AXOM_USE_MPI
-int QUEST_inout_init_mpi(const char* fileName, MPI_Fint comm)
+int QUEST_inout_init_mpi(const char *fileName, MPI_Fint comm)
 {
   // splicer begin function.inout_init_mpi
   const std::string SHCXX_fileName(fileName);
@@ -33,7 +33,7 @@ int QUEST_inout_init_mpi(const char* fileName, MPI_Fint comm)
 #endif  // ifdef AXOM_USE_MPI
 
 #ifdef AXOM_USE_MPI
-int QUEST_inout_init_mpi_bufferify(const char* fileName,
+int QUEST_inout_init_mpi_bufferify(const char *fileName,
                                    int LfileName,
                                    MPI_Fint comm)
 {
@@ -47,7 +47,7 @@ int QUEST_inout_init_mpi_bufferify(const char* fileName,
 #endif  // ifdef AXOM_USE_MPI
 
 #ifndef AXOM_USE_MPI
-int QUEST_inout_init_serial(const char* fileName)
+int QUEST_inout_init_serial(const char *fileName)
 {
   // splicer begin function.inout_init_serial
   const std::string SHCXX_fileName(fileName);
@@ -58,7 +58,7 @@ int QUEST_inout_init_serial(const char* fileName)
 #endif  // ifndef AXOM_USE_MPI
 
 #ifndef AXOM_USE_MPI
-int QUEST_inout_init_serial_bufferify(const char* fileName, int LfileName)
+int QUEST_inout_init_serial_bufferify(const char *fileName, int LfileName)
 {
   // splicer begin function.inout_init_serial_bufferify
   const std::string SHCXX_fileName(fileName, LfileName);
@@ -74,6 +74,14 @@ bool QUEST_inout_initialized(void)
   bool SHC_rv = axom::quest::inout_initialized();
   return SHC_rv;
   // splicer end function.inout_initialized
+}
+
+int QUEST_inout_set_dimension(int dim)
+{
+  // splicer begin function.inout_set_dimension
+  int SHC_rv = axom::quest::inout_set_dimension(dim);
+  return SHC_rv;
+  // splicer end function.inout_set_dimension
 }
 
 int QUEST_inout_set_verbose(bool verbosity)
@@ -92,6 +100,14 @@ int QUEST_inout_set_vertex_weld_threshold(double thresh)
   // splicer end function.inout_set_vertex_weld_threshold
 }
 
+int QUEST_inout_set_segments_per_knot_span(int segmentsPerKnotSpan)
+{
+  // splicer begin function.inout_set_segments_per_knot_span
+  int SHC_rv = axom::quest::inout_set_segments_per_knot_span(segmentsPerKnotSpan);
+  return SHC_rv;
+  // splicer end function.inout_set_segments_per_knot_span
+}
+
 bool QUEST_inout_evaluate_0(double x, double y)
 {
   // splicer begin function.inout_evaluate_0
@@ -108,7 +124,7 @@ bool QUEST_inout_evaluate_1(double x, double y, double z)
   // splicer end function.inout_evaluate_1
 }
 
-int QUEST_inout_mesh_min_bounds(double* coords)
+int QUEST_inout_mesh_min_bounds(double *coords)
 {
   // splicer begin function.inout_mesh_min_bounds
   int SHC_rv = axom::quest::inout_mesh_min_bounds(coords);
@@ -116,7 +132,7 @@ int QUEST_inout_mesh_min_bounds(double* coords)
   // splicer end function.inout_mesh_min_bounds
 }
 
-int QUEST_inout_mesh_max_bounds(double* coords)
+int QUEST_inout_mesh_max_bounds(double *coords)
 {
   // splicer begin function.inout_mesh_max_bounds
   int SHC_rv = axom::quest::inout_mesh_max_bounds(coords);
@@ -124,7 +140,7 @@ int QUEST_inout_mesh_max_bounds(double* coords)
   // splicer end function.inout_mesh_max_bounds
 }
 
-int QUEST_inout_mesh_center_of_mass(double* coords)
+int QUEST_inout_mesh_center_of_mass(double *coords)
 {
   // splicer begin function.inout_mesh_center_of_mass
   int SHC_rv = axom::quest::inout_mesh_center_of_mass(coords);
@@ -149,7 +165,7 @@ int QUEST_inout_finalize(void)
 }
 
 #ifdef AXOM_USE_MPI
-int QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm)
+int QUEST_signed_distance_init_mpi(const char *file, MPI_Fint comm)
 {
   // splicer begin function.signed_distance_init_mpi
   const std::string SHCXX_file(file);
@@ -161,7 +177,7 @@ int QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm)
 #endif  // ifdef AXOM_USE_MPI
 
 #ifdef AXOM_USE_MPI
-int QUEST_signed_distance_init_mpi_bufferify(const char* file,
+int QUEST_signed_distance_init_mpi_bufferify(const char *file,
                                              int Lfile,
                                              MPI_Fint comm)
 {
@@ -175,7 +191,7 @@ int QUEST_signed_distance_init_mpi_bufferify(const char* file,
 #endif  // ifdef AXOM_USE_MPI
 
 #ifndef AXOM_USE_MPI
-int QUEST_signed_distance_init_serial(const char* file)
+int QUEST_signed_distance_init_serial(const char *file)
 {
   // splicer begin function.signed_distance_init_serial
   const std::string SHCXX_file(file);
@@ -186,7 +202,7 @@ int QUEST_signed_distance_init_serial(const char* file)
 #endif  // ifndef AXOM_USE_MPI
 
 #ifndef AXOM_USE_MPI
-int QUEST_signed_distance_init_serial_bufferify(const char* file, int Lfile)
+int QUEST_signed_distance_init_serial_bufferify(const char *file, int Lfile)
 {
   // splicer begin function.signed_distance_init_serial_bufferify
   const std::string SHCXX_file(file, Lfile);
@@ -204,7 +220,7 @@ bool QUEST_signed_distance_initialized(void)
   // splicer end function.signed_distance_initialized
 }
 
-void QUEST_signed_distance_get_mesh_bounds(double* lo, double* hi)
+void QUEST_signed_distance_get_mesh_bounds(double *lo, double *hi)
 {
   // splicer begin function.signed_distance_get_mesh_bounds
   axom::quest::signed_distance_get_mesh_bounds(lo, hi);
@@ -232,18 +248,11 @@ void QUEST_signed_distance_set_compute_signs(bool computeSign)
   // splicer end function.signed_distance_set_compute_signs
 }
 
-void QUEST_signed_distance_set_max_levels(int maxLevels)
+void QUEST_signed_distance_set_allocator(int allocatorID)
 {
-  // splicer begin function.signed_distance_set_max_levels
-  axom::quest::signed_distance_set_max_levels(maxLevels);
-  // splicer end function.signed_distance_set_max_levels
-}
-
-void QUEST_signed_distance_set_max_occupancy(int maxOccupancy)
-{
-  // splicer begin function.signed_distance_set_max_occupancy
-  axom::quest::signed_distance_set_max_occupancy(maxOccupancy);
-  // splicer end function.signed_distance_set_max_occupancy
+  // splicer begin function.signed_distance_set_allocator
+  axom::quest::signed_distance_set_allocator(allocatorID);
+  // splicer end function.signed_distance_set_allocator
 }
 
 void QUEST_signed_distance_set_verbose(bool status)
@@ -258,6 +267,15 @@ void QUEST_signed_distance_use_shared_memory(bool status)
   // splicer begin function.signed_distance_use_shared_memory
   axom::quest::signed_distance_use_shared_memory(status);
   // splicer end function.signed_distance_use_shared_memory
+}
+
+void QUEST_signed_distance_set_execution_space(int execSpace)
+{
+  // splicer begin function.signed_distance_set_execution_space
+  axom::quest::SignedDistExec SHCXX_execSpace =
+    static_cast<axom::quest::SignedDistExec>(execSpace);
+  axom::quest::signed_distance_set_execution_space(SHCXX_execSpace);
+  // splicer end function.signed_distance_set_execution_space
 }
 
 double QUEST_signed_distance_evaluate(double x, double y, double z)
@@ -276,7 +294,7 @@ void QUEST_signed_distance_finalize(void)
 }
 
 // Release library allocated memory.
-void QUEST_SHROUD_memory_destructor(QUEST_SHROUD_capsule_data* cap)
+void QUEST_SHROUD_memory_destructor(QUEST_SHROUD_capsule_data *cap)
 {
   cap->addr = nullptr;
   cap->idtor = 0;  // avoid deleting again

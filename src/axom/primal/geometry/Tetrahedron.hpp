@@ -3,9 +3,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef TETRAHEDRON_HPP_
-#define TETRAHEDRON_HPP_
+#ifndef AXOM_PRIMAL_TETRAHEDRON_HPP_
+#define AXOM_PRIMAL_TETRAHEDRON_HPP_
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"  // For numerics::determinant()
 #include "axom/core/utilities/Utilities.hpp"
 
@@ -43,7 +44,7 @@ public:
   /*!
    * \brief Default constructor. Creates a degenerate tetrahedron.
    */
-  Tetrahedron() { }
+  AXOM_HOST_DEVICE Tetrahedron() { }
 
   /*!
    * \brief Custom Constructor. Creates a tetrahedron from the 4 points A,B,C,D.
@@ -52,6 +53,7 @@ public:
    * \param [in] C point instance corresponding to vertex C of the tetrahedron.
    * \param [in] D point instance corresponding to vertex D of the tetrahedron.
    */
+  AXOM_HOST_DEVICE
   Tetrahedron(const PointType& A,
               const PointType& B,
               const PointType& C,
@@ -64,16 +66,11 @@ public:
   }
 
   /*!
-   * \brief Destructor
-   */
-  ~Tetrahedron() { }
-
-  /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, or 3
    */
-  PointType& operator[](int idx)
+  AXOM_HOST_DEVICE PointType& operator[](int idx)
   {
     SLIC_ASSERT(idx >= 0 && idx < NUM_TET_VERTS);
     return m_points[idx];
@@ -84,7 +81,7 @@ public:
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, or 3
    */
-  const PointType& operator[](int idx) const
+  AXOM_HOST_DEVICE const PointType& operator[](int idx) const
   {
     SLIC_ASSERT(idx >= 0 && idx < NUM_TET_VERTS);
     return m_points[idx];
@@ -181,7 +178,7 @@ public:
   }
 
   /*!
-   * \brief Returns the signed volume of the tetrahedron
+   * \brief Returns the absolute (unsigned) volume of the tetrahedron
    * \sa signedVolume()
    */
   double volume() const { return axom::utilities::abs(signedVolume()); }
@@ -195,6 +192,7 @@ private:
    * \return The signed parallelepiped volume
    * \sa signedVolume(), volume()
    */
+  AXOM_HOST_DEVICE
   double ppedVolume() const
   {
     if(NDIMS != 3)
@@ -232,7 +230,7 @@ std::ostream& operator<<(std::ostream& os, const Tetrahedron<T, NDIMS>& tet)
   return os;
 }
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
-#endif /* TETRAHEDRON_HPP_ */
+#endif  // AXOM_PRIMAL_TETRAHEDRON_HPP_

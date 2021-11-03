@@ -6,7 +6,7 @@
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/slic.hpp"
 
 namespace axom
@@ -305,10 +305,8 @@ bool Field::isUserProvided() const
   {
     auto status = static_cast<ReaderResult>(
       static_cast<int>(m_sidreGroup->getView("retrieval_status")->getData()));
-    if(status != ReaderResult::Success)
-    {
-      return false;
-    }
+    // Even if it wasn't of the right type, we still say that it was user-provided
+    return (status != ReaderResult::NotFound);
   }
   return exists();
 }
@@ -428,7 +426,7 @@ Field& Field::validValues(const std::initializer_list<double>& set)
   return validValues(std::vector<double>(set));
 }
 
-Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
+Field& Field::registerVerifier(Verifier lambda)
 {
   SLIC_WARNING_IF(m_verifier,
                   fmt::format("[Inlet] Verifier for Field "
@@ -438,10 +436,10 @@ Field& Field::registerVerifier(std::function<bool(const Field&)> lambda)
   return *this;
 }
 
-bool Field::verify() const
+bool Field::verify(std::vector<VerificationError>* errors) const
 {
   // If this field was required, make sure something was defined in it
-  if(!verifyRequired(*m_sidreGroup, m_sidreGroup->hasView("value"), "Field"))
+  if(!verifyRequired(*m_sidreGroup, m_sidreGroup->hasView("value"), "Field", errors))
   {
     return false;
   }
@@ -453,7 +451,7 @@ bool Field::verify() const
       "[Inlet] Value did not meet range/valid "
       "value(s) constraints: {0}",
       m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
+    INLET_VERIFICATION_WARNING(m_sidreGroup->getPathName(), msg, errors);
     return false;
   }
 
@@ -465,15 +463,17 @@ bool Field::verify() const
       "[Inlet] Default value did not meet range/valid "
       "value(s) constraints: {0}",
       m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
+    INLET_VERIFICATION_WARNING(m_sidreGroup->getPathName(), msg, errors);
     return false;
   }
 
   // Lambda verification step
-  if(m_verifier && !m_verifier(*this))
+  if(m_verifier && !m_verifier(*this, errors))
   {
-    SLIC_WARNING(fmt::format("[Inlet] Field failed lambda verification: {0}",
-                             m_sidreGroup->getPathName()));
+    const std::string msg =
+      fmt::format("[Inlet] Field failed lambda verification: {0}",
+                  m_sidreGroup->getPathName());
+    INLET_VERIFICATION_WARNING(m_sidreGroup->getPathName(), msg, errors);
     return false;
   }
   return true;
@@ -549,16 +549,16 @@ bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const
 
 std::string Field::name() const
 {
-  return removePrefix(m_sidreRootGroup->getPathName(),
-                      m_sidreGroup->getPathName());
+  return utilities::string::removePrefix(m_sidreRootGroup->getPathName(),
+                                         m_sidreGroup->getPathName());
 }
 
-bool AggregateField::verify() const
+bool AggregateField::verify(std::vector<VerificationError>* errors) const
 {
   return std::all_of(
     m_fields.begin(),
     m_fields.end(),
-    [](const VerifiableScalar& field) { return field.verify(); });
+    [&errors](const VerifiableScalar& field) { return field.verify(errors); });
 }
 
 AggregateField& AggregateField::required(bool isRequired)
@@ -696,8 +696,7 @@ AggregateField& AggregateField::validValues(const std::initializer_list<double>&
   return *this;
 }
 
-AggregateField& AggregateField::registerVerifier(
-  std::function<bool(const Field&)> lambda)
+AggregateField& AggregateField::registerVerifier(Verifier lambda)
 {
   for(auto& field : m_fields)
   {

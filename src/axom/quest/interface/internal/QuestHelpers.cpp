@@ -3,24 +3,18 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Types.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 
-// Slic includes
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
-#include "axom/slic/streams/GenericOutputStream.hpp"
-#if defined(AXOM_USE_MPI) && defined(AXOM_USE_LUMBERJACK)
-  #include "axom/slic/streams/LumberjackStream.hpp"
-#elif defined(AXOM_USE_MPI) && !defined(AXOM_USE_LUMBERJACK)
-  #include "axom/slic/streams/SynchronizedStream.hpp"
-#endif
-
-// Mint includes
-#include "axom/mint/mesh/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
+#include "axom/core.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // Quest includes
 #ifdef AXOM_USE_MPI
-  #include "axom/quest/stl/PSTLReader.hpp"
+  #include "axom/quest/readers/PSTLReader.hpp"
+#endif
+
+#if defined(AXOM_USE_MPI) && defined(AXOM_USE_C2C)
+  #include "axom/quest/readers/PC2CReader.hpp"
 #endif
 
 #include <limits>
@@ -204,12 +198,12 @@ MPI_Aint allocate_shared_buffer(int local_rank_id,
  * Reads in the surface mesh from the specified file into a shared
  * memory buffer that is attached to the given MPI shared window.
  */
-int read_mesh_shared(const std::string& file,
-                     MPI_Comm global_comm,
-                     unsigned char*& mesh_buffer,
-                     mint::Mesh*& m,
-                     MPI_Comm& intra_node_comm,
-                     MPI_Win& shared_window)
+int read_stl_mesh_shared(const std::string& file,
+                         MPI_Comm global_comm,
+                         unsigned char*& mesh_buffer,
+                         mint::Mesh*& m,
+                         MPI_Comm& intra_node_comm,
+                         MPI_Win& shared_window)
 {
   SLIC_ASSERT(global_comm != MPI_COMM_NULL);
   SLIC_ASSERT(intra_node_comm == MPI_COMM_NULL);
@@ -310,7 +304,7 @@ int read_mesh_shared(const std::string& file,
 /*
  * Reads in the surface mesh from the specified file.
  */
-int read_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
+int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
 {
   // NOTE: STL meshes are always 3D
   constexpr int DIMENSION = 3;
@@ -326,21 +320,20 @@ int read_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
   // STEP 1: allocate output mesh object
   m = new TriangleMesh(DIMENSION, mint::TRIANGLE);
 
-  // STEP 2: allocate reader
-  quest::STLReader* reader = nullptr;
+  // STEP 2: construct STL reader
 #ifdef AXOM_USE_MPI
-  reader = new quest::PSTLReader(comm);
+  quest::PSTLReader reader(comm);
 #else
-  static_cast<void>(comm);  // to silence compiler warnings
-  reader = new quest::STLReader();
+  AXOM_UNUSED_VAR(comm);
+  quest::STLReader reader;
 #endif
 
   // STEP 3: read the mesh from the STL file
-  reader->setFileName(file);
-  int rc = reader->read();
+  reader.setFileName(file);
+  int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader->getMesh(static_cast<TriangleMesh*>(m));
+    reader.getMesh(static_cast<TriangleMesh*>(m));
   }
   else
   {
@@ -349,12 +342,59 @@ int read_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
     m = nullptr;
   }
 
-  // STEP 4: delete the reader
-  delete reader;
-  reader = nullptr;
+  return rc;
+}
+
+#ifdef AXOM_USE_C2C
+/*
+ * Reads in the contour mesh from the specified file.
+ */
+int read_c2c_mesh(const std::string& file,
+                  int segmentsPerPiece,
+                  double vertexWeldThreshold,
+                  mint::Mesh*& m,
+                  MPI_Comm comm)
+{
+  // NOTE: C2C meshes are always 2D
+  constexpr int DIMENSION = 2;
+  using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+
+  // STEP 0: check input mesh pointer
+  if(m != nullptr)
+  {
+    SLIC_WARNING("supplied mesh pointer is not null!");
+    return READ_FAILED;
+  }
+
+  // STEP 1: allocate output mesh object
+  m = new SegmentMesh(DIMENSION, mint::SEGMENT);
+
+  // STEP 2: construct C2C reader
+  #ifdef AXOM_USE_MPI
+  quest::PC2CReader reader(comm);
+  #else
+  AXOM_UNUSED_VAR(comm);
+  quest::C2CReader reader;
+  #endif
+
+  // STEP 3: read the mesh from the input file
+  reader.setFileName(file);
+  reader.setVertexWeldingThreshold(vertexWeldThreshold);
+  int rc = reader.read();
+  if(rc == READ_SUCCESS)
+  {
+    reader.getLinearMesh(static_cast<SegmentMesh*>(m), segmentsPerPiece);
+  }
+  else
+  {
+    SLIC_WARNING("reading C2C file failed, setting mesh to NULL");
+    delete m;
+    m = nullptr;
+  }
 
   return rc;
 }
+#endif  // AXOM_USE_C2C
 
 /// Mesh Helper Methods
 
@@ -428,7 +468,7 @@ void logger_init(bool& isInitialized, bool& mustFinalize, bool verbose, MPI_Comm
   msgfmt.insert(0, "[<RANK>]", 8);
   ls = new slic::SynchronizedStream(&std::cout, comm, msgfmt);
 #else
-  static_cast<void>(comm);  // to silence compiler warnings
+  AXOM_UNUSED_VAR(comm);
   ls = new slic::GenericOutputStream(&std::cout, msgfmt);
 #endif
 
@@ -448,6 +488,6 @@ void logger_finalize(bool mustFinalize)
   }
 }
 
-} /* end namespace internal */
-} /* end namespace quest    */
-} /* end namespace axom     */
+}  // end namespace internal
+}  // end namespace quest
+}  // end namespace axom

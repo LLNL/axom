@@ -10,8 +10,8 @@
  *        another primal primitive
  */
 
-#ifndef PRIMAL_CLIPPING_HPP_
-#define PRIMAL_CLIPPING_HPP_
+#ifndef AXOM_PRIMAL_CLIP_HPP_
+#define AXOM_PRIMAL_CLIP_HPP_
 
 #include "axom/core/utilities/Utilities.hpp"
 
@@ -19,6 +19,10 @@
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
+#include "axom/primal/geometry/Polyhedron.hpp"
+#include "axom/primal/geometry/Octahedron.hpp"
+#include "axom/primal/geometry/Plane.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 
 #include "axom/primal/operators/detail/clip_impl.hpp"
 
@@ -41,8 +45,8 @@ namespace primal
 template <typename T>
 Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 {
-  typedef BoundingBox<T, 3> BoundingBoxType;
-  typedef Polygon<T, 3> PolygonType;
+  using BoundingBoxType = BoundingBox<T, 3>;
+  using PolygonType = Polygon<T, 3>;
 
   // Use two polygons with pointers for 'back-buffer'-like swapping
   const int MAX_VERTS = 6;
@@ -94,7 +98,38 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
   return *currentPoly;
 }
 
+/*!
+ * \brief Clips a 3D octahedron against a tetrahedron in 3D, returning
+ *        the geometric intersection of the octahedron and the tetrahedron
+ *        as a polyhedron
+ *
+ *  This function clips the octahedron by the 4 planes obtained from the
+ *  tetrahedron's faces (normals point inward). Clipping the
+ *  octahedron/polyhedron by each plane gives the polyhedron above that plane.
+ *  Clipping the polyhedron by a plane involves
+ *  finding new vertices at the intersection of the polyhedron edges and
+ *  the plane, removing vertices from the polyhedron that are below the
+ *  plane, and redefining the neighbors for each vertex (a vertex is a
+ *  neighbor of another vertex if there is an edge between them).
+ *
+ *
+ * \param [in] oct The octahedron to clip
+ * \param [in] tet The tetrahedron to clip against
+ * \param [in] eps The epsilon value
+ * \return A polyhedron of the octahedron clipped against the tetrahedron.
+ *
+ * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
+                                       const Tetrahedron<T, 3>& tet,
+                                       double eps = 1.e-10)
+{
+  return detail::clipOctahedron(oct, tet, eps);
+}
+
 }  // namespace primal
 }  // namespace axom
 
-#endif  // PRIMAL_CLIPPING_HPP_
+#endif  // AXOM_PRIMAL_CLIP_HPP_

@@ -10,8 +10,8 @@
  * geometric primitives intersect
  */
 
-#ifndef PRIMAL_INTERSECT_IMPL_HPP_
-#define PRIMAL_INTERSECT_IMPL_HPP_
+#ifndef AXOM_PRIMAL_INTERSECT_IMPL_HPP_
+#define AXOM_PRIMAL_INTERSECT_IMPL_HPP_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
@@ -19,6 +19,7 @@
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
+#include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Segment.hpp"
@@ -30,7 +31,7 @@ namespace primal
 {
 namespace detail
 {
-//---------------------------- FUNCTION DECLARATIONS ---------------------------
+//--------------------TYPE ALIASES AND FUNCTION DECLARATIONS ------------------
 
 using Vector3 = primal::Vector<double, 3>;
 using Point3 = primal::Point<double, 3>;
@@ -672,70 +673,6 @@ inline int countZeros(double x, double y, double z, double EPS)
 /*! @} */
 
 /*!
- * \brief Computes the intersection of the given segment, S, with the Box, bb.
- *     ip the point of intersection on S.
- * \return status true iff bb intersects with S, otherwise, false.
- *
- * Computes Segment Box intersection using the slab method from pg 180 of
- * Real Time Collision Detection by Christer Ericson.
- * WIP: More test cases for this
- */
-template <typename T, int DIM>
-bool intersect_seg_bbox(const primal::Segment<T, DIM>& S,
-                        const primal::BoundingBox<T, DIM>& bb,
-                        primal::Point<T, DIM>& ip)
-{
-  primal::Vector<T, DIM> direction(S.source(), S.target());
-  primal::Ray<T, DIM> R(S.source(), direction);
-
-  // These operations constrain the parameter specifying ray-slab intersection
-  // points to exclude points not within the segment.
-  T tmin = static_cast<T>(0);
-  T tmax = static_cast<T>(direction.norm());
-
-  for(int i = 0; i < DIM; i++)
-  {
-    if(axom::utilities::isNearlyEqual(R.direction()[i],
-                                      std::numeric_limits<T>::min(),
-                                      1.0e-9))
-    {
-      T pointDim = R.origin()[i];
-      if((pointDim < bb.getMin()[i]) || (pointDim > bb.getMax()[i]))
-      {
-        return false;
-      }
-    }
-    else
-    {
-      T ood = (static_cast<T>(1.0)) / (R.direction()[i]);
-      T t1 = ((bb.getMin()[i] - R.origin()[i]) * ood);
-      T t2 = ((bb.getMax()[i] - R.origin()[i]) * ood);
-
-      if(t1 > t2)
-      {
-        std::swap(t1, t2);
-      }
-
-      tmin = axom::utilities::max(tmin, t1);
-      tmax = axom::utilities::min(tmax, t2);
-
-      if(tmin > tmax)
-      {
-        return false;
-      }
-    }
-  }
-
-  for(int i = 0; i < DIM; i++)
-  {
-    ip.data()[i] = R.origin()[i] + R.direction()[i] * tmin;
-  }
-
-  return true;
-}
-
-typedef primal::Vector<double, 3> Vector3;
-/*!
  * \brief Helper function to find disjoint projections for the AABB-triangle
  * test
  * \param d0 The first value defining the test interval
@@ -823,11 +760,11 @@ bool intersect_tri_bbox(const primal::Triangle<T, 3>& tri,
 
   /// Final test -- face normal of triangle's plane
   VectorType planeNormal = VectorType::cross_product(f[0], f[1]);
-  double planeDist = planeNormal.dot(tri[0]);
+  double planeDist = planeNormal.dot(VectorType(tri[0]));
 
   double r = e[0] * std::abs(planeNormal[0]) + e[1] * std::abs(planeNormal[1]) +
     e[2] * std::abs(planeNormal[2]);
-  double s = planeNormal.dot(center) - planeDist;
+  double s = planeNormal.dot(VectorType(center)) - planeDist;
 
   return std::abs(s) <= r;
 }
@@ -1185,8 +1122,83 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
   return true;
 }
 
-} /* end namespace detail */
-} /* end namespace primal */
-} /* end namespace axom */
+/*!
+ * \brief Determines if a 3D plane intersects a 3D bounding box.
+ *        By default (checkOverlaps is false), checks if |s| <= r, 
+ *        where "s" is the distance of the bounding box center to the plane,
+ *        and "r" is the projected radius of the bounding box along the line
+ *        parallel to the plane normal and going through the box center.
+ *        If checkOverlaps is true, checks if |s| < r,
+ *        where the bounding box overlaps both half spaces of the plane.
+ * \param [in] p A 3D plane
+ * \param [in] bb A 3D bounding box
+ * \param [in] checkOverlaps If true, checks if bounding box overlaps both 
+ *             halfspaces of the plane.
+ *             Otherwise, overlap of both halfspaces is not guaranteed.
+ *             Default is false.
+ * \param [in] EPS tolerance parameter for determining if "s"
+ *             is just within min/max of "r".
+ * \return true iff plane intersects with bounding box, otherwise, false.
+ */
+template <typename T>
+AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
+                                           const BoundingBox<T, 3>& bb,
+                                           bool checkOverlaps = false,
+                                           double EPS = 1E-12)
+{
+  typedef Vector<T, 3> VectorType;
 
-#endif  // PRIMAL_INTERSECT_IMPL_HPP_
+  VectorType c(bb.getCentroid());
+  VectorType e(bb.getCentroid(), bb.getMax());
+
+  T r = e[0] * utilities::abs<T>(p.getNormal()[0]) +
+    e[1] * utilities::abs<T>(p.getNormal()[1]) +
+    e[2] * utilities::abs<T>(p.getNormal()[2]);
+
+  T s = p.getNormal().dot(c) - p.getOffset();
+
+  if(checkOverlaps)
+  {
+    return isLt(utilities::abs<T>(s), r, EPS);
+  }
+
+  else
+  {
+    return isLeq(utilities::abs<T>(s), r, EPS);
+  }
+}
+
+/*!
+ * \brief Determines if a 3D plane intersects a 3D segment.
+ * \param [in] b1 A 3D plane
+ * \param [in] b2 A 3D segment
+ * \param [out] t Intersection point of plane and seg, w.r.t. 
+ *   parametrization of seg
+ * \return true iff plane intersects with segment, otherwise, false.
+ */
+template <typename T>
+AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
+                                          const Segment<T, 3>& seg,
+                                          T& t)
+{
+  typedef Vector<T, 3> VectorType;
+
+  VectorType ab(seg.source(), seg.target());
+  VectorType normal = plane.getNormal();
+
+  t = (plane.getOffset() - normal.dot(VectorType(seg.source()))) /
+    (normal.dot(ab));
+
+  if(t >= 0.0 && t <= 1.0)
+  {
+    return true;
+  }
+
+  return false;
+}
+
+}  // end namespace detail
+}  // end namespace primal
+}  // end namespace axom
+
+#endif  // AXOM_PRIMAL_INTERSECT_IMPL_HPP_

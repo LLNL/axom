@@ -49,8 +49,10 @@ declarations:
 
       - decl: bool inout_initialized()
 
+      - decl: int inout_set_dimension( int dim )
       - decl: int inout_set_verbose( bool verbosity )
       - decl: int inout_set_vertex_weld_threshold( double thresh )
+      - decl: int inout_set_segments_per_knot_span( int segmentsPerKnotSpan )
 
       - decl: bool inout_evaluate(double x, double y, double z=0.0)
 
@@ -68,6 +70,13 @@ declarations:
       - decl: int inout_finalize()
 
       ## Signed Distance Function API
+      - decl: |
+          enum class SignedDistExec
+          {
+            CPU = 0,
+            OpenMP = 1,
+            GPU = 2
+          };
       - decl: int signed_distance_init( const std::string& file, MPI_Comm comm )
         format:
           function_suffix: _mpi
@@ -89,10 +98,10 @@ declarations:
       - decl: void signed_distance_set_dimension( int dim )
       - decl: void signed_distance_set_closed_surface( bool status )
       - decl: void signed_distance_set_compute_signs( bool computeSign )
-      - decl: void signed_distance_set_max_levels( int maxLevels )
-      - decl: void signed_distance_set_max_occupancy( int maxOccupancy )
+      - decl: void signed_distance_set_allocator( int allocatorID )
       - decl: void signed_distance_set_verbose( bool status )
       - decl: void signed_distance_use_shared_memory( bool status )
+      - decl: void signed_distance_set_execution_space( SignedDistExec execSpace )
 
       - decl: double signed_distance_evaluate( double x, double y, double z )
 

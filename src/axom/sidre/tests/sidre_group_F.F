@@ -62,16 +62,16 @@ contains
     grp2 = root%get_group("test/a")
     grp3 = root%get_group("test")
 
-    call assert_true(root%get_name() == "" )
-    call assert_true(root%get_path() == "" )
-    call assert_true(root%get_path_name() == "" )
+    call assert_true(root%get_name() == " " )
+    call assert_true(root%get_path() == " " )
+    call assert_true(root%get_path_name() == " " )
 
     call assert_true(grp2%get_name() == "a" )
     call assert_true(grp2%get_path() == "test" )
     call assert_true(grp2%get_path_name() == "test/a" )
 
     call assert_true(grp3%get_name() == "test" )
-    call assert_true(grp3%get_path() == "" )
+    call assert_true(grp3%get_path() == " " )
     call assert_true(grp3%get_path_name() == "test" )
 
     call assert_true(group%get_name() == "c" )

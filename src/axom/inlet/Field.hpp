@@ -79,210 +79,41 @@ public:
    */
   const axom::sidre::Group* sidreGroup() const { return m_sidreGroup; };
 
-  /*!
-   *****************************************************************************
-   * \brief Set the required status of this Field.
-   *
-   * Set whether this Field is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \param [in] isRequired Boolean value of whether Field is required
-   *
-   * \return Reference to this instance of this class
-   *****************************************************************************
-   */
-  Field& required(bool isRequired = true);
+  Field& required(bool isRequired = true) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Field.
-   *
-   * Return that this Field is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Field is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
+  bool isRequired() const override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default string value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& defaultValue(const std::string& value);
+  Field& defaultValue(const std::string& value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default string value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& defaultValue(const char* value);
+  Field& defaultValue(const char* value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default boolean value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& defaultValue(bool value);
+  Field& defaultValue(bool value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default integer value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& defaultValue(int value);
+  Field& defaultValue(int value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default double value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& defaultValue(double value);
+  Field& defaultValue(double value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the range of this Field.
-   *
-   * Set the continuous range for the Field in the input file.
-   *
-   * \param [in] startVal The start of the range
-   * 
-   * \param [in] endVal The end of the range
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& range(double startVal, double endVal);
+  Field& range(double startVal, double endVal) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the range of this Field.
-   *
-   * Set the continuous range for the Field in the input file.
-   *
-   * \param [in] startVal The start of the range
-   * 
-   * \param [in] endVal The end of the range
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& range(int startVal, int endVal);
+  Field& range(int startVal, int endVal) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An vector containing the set of allowed integer values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& validValues(const std::vector<int>& set);
+  Field& validValues(const std::vector<int>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An vector containing the set of allowed double values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& validValues(const std::vector<double>& set);
+  Field& validValues(const std::vector<double>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set A vector containing the set of allowed string values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& validValues(const std::vector<std::string>& set);
+  Field& validValues(const std::vector<std::string>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An initializer list containing the set of allowed C-string 
-   * values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& validValues(const std::initializer_list<const char*>& set);
+  Field& validValues(const std::initializer_list<const char*>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An initializer list containing the valid integer values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& validValues(const std::initializer_list<int>& set);
+  Field& validValues(const std::initializer_list<int>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An initializer list containing the valid double values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  Field& validValues(const std::initializer_list<double>& set);
+  Field& validValues(const std::initializer_list<double>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this Field's contents
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Field::verify().
-   *****************************************************************************
-  */
-  Field& registerVerifier(std::function<bool(const Field&)> lambda);
+  using VerifiableScalar::registerVerifier;
 
-  /*!
-   *****************************************************************************
-   * \brief Called by Inlet::verify to verify the contents of this Field.
-   *****************************************************************************
-  */
-  bool verify() const;
+  Field& registerVerifier(Verifier lambda) override;
+
+  bool verify(std::vector<VerificationError>* errors = nullptr) const override;
 
   /*!
    *****************************************************************************
@@ -420,7 +251,7 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled;
-  std::function<bool(const Field&)> m_verifier;
+  Verifier m_verifier;
 };
 
 // Prototypes for template specializations
@@ -453,211 +284,41 @@ public:
 
   virtual ~AggregateField() = default;
 
-  /*!
-   *****************************************************************************
-   * \brief Called by Inlet::verify to verify the contents of this Field.
-   *****************************************************************************
-  */
-  bool verify() const;
+  bool verify(std::vector<VerificationError>* errors = nullptr) const override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the required status of this Field.
-   *
-   * Set whether this Field is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \param [in] isRequired Boolean value of whether Field is required
-   *
-   * \return Reference to this instance of this class
-   *****************************************************************************
-   */
-  AggregateField& required(bool isRequired);
+  AggregateField& required(bool isRequired) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Return the required status of this Field.
-   *
-   * Return that this Field is required, or not, to be in the input file.
-   * The default behavior is to not be required.
-   *
-   * \return Boolean value of whether this Field is required
-   *****************************************************************************
-   */
-  bool isRequired() const;
+  bool isRequired() const override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default string value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& defaultValue(const std::string& value);
+  AggregateField& defaultValue(const std::string& value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default string value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& defaultValue(const char* value);
+  AggregateField& defaultValue(const char* value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default boolean value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& defaultValue(bool value);
+  AggregateField& defaultValue(bool value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default integer value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& defaultValue(int value);
+  AggregateField& defaultValue(int value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the default value of this Field.
-   *
-   * Set the default value for the Field in the input file.
-   *
-   * \param [in] value The default double value
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& defaultValue(double value);
+  AggregateField& defaultValue(double value) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the range of this Field.
-   *
-   * Set the continuous range for the Field in the input file.
-   *
-   * \param [in] startVal The start of the range
-   * 
-   * \param [in] endVal The end of the range
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& range(double startVal, double endVal);
+  AggregateField& range(double startVal, double endVal) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the range of this Field.
-   *
-   * Set the continuous range for the Field in the input file.
-   *
-   * \param [in] startVal The start of the range
-   * 
-   * \param [in] endVal The end of the range
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& range(int startVal, int endVal);
+  AggregateField& range(int startVal, int endVal) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An vector containing the set of allowed integer values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& validValues(const std::vector<int>& set);
+  AggregateField& validValues(const std::vector<int>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An vector containing the set of allowed double values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& validValues(const std::vector<double>& set);
+  AggregateField& validValues(const std::vector<double>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set A vector containing the set of allowed string values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& validValues(const std::vector<std::string>& set);
+  AggregateField& validValues(const std::vector<std::string>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An initializer list containing the set of allowed C-string 
-   * values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& validValues(const std::initializer_list<const char*>& set);
+  AggregateField& validValues(const std::initializer_list<const char*>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An initializer list containing the valid integer values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& validValues(const std::initializer_list<int>& set);
+  AggregateField& validValues(const std::initializer_list<int>& set) override;
 
-  /*!
-   *****************************************************************************
-   * \brief Set the valid values for this Field.
-   *
-   * \param [in] set An initializer list containing the valid double values
-   *
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& validValues(const std::initializer_list<double>& set);
-  /*!
-   *****************************************************************************
-   * \brief Registers the function object that will verify this Field's contents
-   * during the verification stage.
-   * 
-   * \param [in] The function object that will be called by Field::verify().
-   * 
-   * \return Reference to this Field instance
-   *****************************************************************************
-  */
-  AggregateField& registerVerifier(std::function<bool(const Field&)> lambda);
+  AggregateField& validValues(const std::initializer_list<double>& set) override;
+
+  using VerifiableScalar::registerVerifier;
+
+  AggregateField& registerVerifier(Verifier lambda) override;
 
 private:
   std::vector<std::reference_wrapper<VerifiableScalar>> m_fields;

@@ -24,7 +24,7 @@ set(gtest_sidre_tests
    sidre_native_layout.cpp
    sidre_attribute.cpp
    sidre_iterator.cpp
-   sidre_array.cpp
+   sidre_mcarray.cpp
    )
 
 set(gtest_sidre_C_tests
@@ -55,7 +55,7 @@ foreach(test ${gtest_sidre_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON sidre gtest
+                        DEPENDS_ON axom gtest
                         FOLDER axom/sidre/tests
                         )
 
@@ -104,17 +104,25 @@ endif()
 #------------------------------------------------------------------------------
 # Add MFEMSidreDataCollection tests
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    set(_sidre_mfem_dc_depends axom gtest)
+
     blt_add_executable( NAME sidre_mfem_datacollection_test
                         SOURCES sidre_mfem_datacollection.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON sidre gtest
+                        DEPENDS_ON ${_sidre_mfem_dc_depends}
                         FOLDER axom/sidre/tests
                         )
-    if (ENABLE_MPI AND MFEM_USE_MPI)
+    if (ENABLE_MPI)
+        if(MFEM_USE_MPI)
+            set(_nranks 2)
+        else()
+            set(_nranks 1)
+        endif()
+
         axom_add_test( NAME sidre_mfem_datacollection
                        COMMAND sidre_mfem_datacollection_test
-                       NUM_MPI_TASKS 2
+                       NUM_MPI_TASKS ${_nranks}
                        )
     else()
         axom_add_test( NAME    sidre_mfem_datacollection

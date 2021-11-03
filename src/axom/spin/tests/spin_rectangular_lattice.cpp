@@ -114,7 +114,7 @@ TEST(spin_rectangle_lattice, lattice_ctor_degenerate_spacing)
     constexpr double SMALL_EPS = 1E-40;  // small, but above the threshold
 
     SpacePt origin(1.1);
-    SpaceVector spacing = SpacePt::make_point(.1, SMALL_EPS);
+    SpaceVector spacing(SpacePt::make_point(.1, SMALL_EPS));
 
     SpaceVector expSpacing;
     expSpacing[0] = .1;
@@ -143,7 +143,7 @@ TEST(spin_rectangle_lattice, lattice_ctor_degenerate_spacing)
     constexpr double SMALL_EPS = 1E-100;  // small, and below the threshold
 
     SpacePt origin(1.1);
-    SpaceVector spacing = SpacePt::make_point(.1, SMALL_EPS);
+    SpaceVector spacing(SpacePt::make_point(.1, SMALL_EPS));
 
     SpaceVector expSpacing;
     expSpacing[0] = .1;

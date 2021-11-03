@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level LICENSE file for details.
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
@@ -11,209 +11,219 @@
 #include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
+#include "axom/core/ArrayBase.hpp"
+#include "axom/core/ArrayIteratorBase.hpp"
 
 // C/C++ includes
-#include <cstring>   // for std::memcpy
-#include <iostream>  // for std::cerr
+#include <algorithm>  // for std::transform
+#include <iostream>   // for std::cerr and std::ostream
 
 namespace axom
 {
-/* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
- * constructor calls. */
-namespace internal
-{
-constexpr IndexType ZERO = 0;
-}
+// TODO: Add this as a non-type template parameter to Array/View
+// The intent is that there will also be a "Dynamic" or "Polymorphic"
+// resource type
+// enum MemoryResourceType
+// {
+//   Host,
+//   Device,
+//   Unified,
+//   Pinned,
+//   Constant,
+//   File,
+//   NoOp,
+//   Shared,
+//   Unknown
+// };
+
+// Forward declare the templated classes and operator function(s)
+template <typename T, int DIM>
+class Array;
 
 /*!
  * \class Array
  *
- * \brief Provides a generic multi-component array container.
+ * \brief Provides a generic multidimensional array container.
  *
- *  The Array class provides a generic multi-component array container with
- *  dynamic re-allocation and insertion. Each element in the array is a tuple
- *  consisting of 1 or more components, which are stored contiguously.
+ *  The Array class provides a generic multidimensional array 
+ *  container with dynamic reallocation and insertion.  The dimensionality
+ *  of the array must be known at compile time but the extents in each dimension
+ *  are dynamic and can be changed at runtime.  Array elements are stored
+ *  contiguously.
  *
+ *  \note For a multi-component array container, where each element
+ *  is a tuple of 1 or more components, Axom provides the MCArray alias, which
+ *  corresponds to Array<T, 2>.
+ *
+ *  The Array class mirrors std::vector, with future support for GPUs
+ *  in-development.  The class's multidimensional array functionality roughly
+    mirrors the multidimensional array support provided by numpy's ndarray.
+ * 
+ *  \see https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html
+ * 
+ *  This class is meant to be a drop-in replacement for std::vector.
+ *  However, it differs in its memory management and construction semantics.
+ *  Specifically, we do not require axom::Array to initialize/construct
+ *  its memory at allocation time and we use axom's memory_management
+ *  and allocator ID abstractions rather than std::allocator.
+ *
+ *  Array always retains exclusive ownership of its data and is responsible for
+ *  freeing its memory.
+ *
+ *  \see ArrayView for non-owning views of one- or multi-dimensional data
  *  Depending on which constructor is used, the Array object can have two
  *  different underlying storage types:
  *
- *  * <b> Native Storage </b> <br />
- *
- *     When using native storage, the Array object manages all memory.
- *     Typically, the Array object will allocate extra space to facilitate
- *     the insertion of new elements and minimize the number of reallocations.
- *     The actual capacity of the array (i.e., total number of tuples that the
- *     Array can hold) can be queried by calling the capacity() function.
- *     When allocated memory is used up, inserting a new element triggers a
- *     re-allocation.  At each re-allocation, extra space is allocated
- *     according to the <em> resize_ratio </em> parameter, which is set to 2.0
- *     by default. To return all extra memory, an application can call
- *     `shrink()`.
- *
- *     \note The Array destructor deallocates and returns all memory associated
- *      with it to the system.
- *
- *  * <b> External Storage </b> <br />
- *
- *    An Array object may be constructed from an external, user-supplied buffer
- *    consisting of the given number of tuples and specified number of
- *    components per tuple.  In this case, the Array object does not own the
- *    memory.  Instead, the Array object makes a shallow copy of the pointer.
- *
- *    \warning An Array object that points to an external buffer has a fixed
- *     size and cannot be dynamically resized.
- *
- *    \note The Array destructor does not deallocate a user-supplied buffer,
- *     since it does not manage that memory.
- *
- * \warning Reallocations tend to be costly operations in terms of performance.
- *  Use `reserve()` when the number of nodes is known a priori, or opt to
- *  use a constructor that takes an actual size and capacity when possible.
- *
  * \tparam T the type of the values to hold.
+ * \tparam DIM The dimension of the array.
+ * 
+ * \pre T must be CopyAssignable and Erasable
+ * \see https://en.cppreference.com/w/cpp/named_req
  *
  */
-template <typename T>
-class Array
+template <typename T, int DIM = 1>
+class Array : public ArrayBase<T, DIM, Array<T, DIM>>
 {
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
   static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
+  using value_type = T;
+  using ArrayIterator = ArrayIteratorBase<Array<T, DIM>>;
 
 public:
   /// \name Native Storage Array Constructors
   /// @{
 
+  /*! 
+   * \brief Default constructor. Constructs an Array instance with no elements
+   *  and default allocator ID. 
+   *
+   */
+  Array();
+
   /*!
-   * \brief Constructs an Array instance with the given number of tuples.
+   * \brief Constructs a 1D Array instance with the given number of elements.
    *
-   * \param [in] num_tuples the number of tuples the Array holds.
-   * \param [in] num_components the number of values per tuple. If not
-   *  specified defaults to 1.
-   * \param [in] capacity the number of tuples to allocate space for.
+   * \param [in] num_elements the number of elements the Array holds.
+   * \param [in] capacity the number of elements to allocate space for.
+   * \param [in] allocator_id the ID of the allocator to use (optional)
    *
-   * \note If no capacity or capacity less than num_tuples is specified
-   *  then it will default to at least num_tuples * DEFAULT_RESIZE_RATIO.
-   * \note a capacity is specified for the number of tuples to store in the
+   * \note If no capacity or capacity less than num_elements is specified
+   *  then it will default to at least num_elements * DEFAULT_RESIZE_RATIO.
+   * \note a capacity is specified for the number of elements to store in the
    *  array and does not correspond to the actual bytesize.
+   * \note The option to select a capacity is only available for 1-dimensional Arrays
    *
-   * \pre num_tuples >= 0
-   * \pre num_components >= 1
+   * \pre num_elements >= 0
    *
    * \post capacity() >= size()
-   * \post size() == num_tuples
-   * \post numComponents() == num_components
+   * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array(IndexType num_tuples, IndexType num_components = 1, IndexType capacity = 0);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  Array(IndexType num_elements,
+        IndexType capacity = 0,
+        int allocator_id = axom::getDefaultAllocatorID());
+
+  /*!
+   * \brief Generic constructor for an Array of arbitrary dimension
+   *
+   * \param [in] args The parameter pack containing the "shape" of the Array
+   * \see https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty
+   *
+   * \pre sizeof...(Args) == DIM
+   *
+   * \post capacity() >= size()
+   * \post size() == num_elements
+   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
+   */
+  template <typename... Args>
+  Array(Args... args);
+
+  /*! 
+   * \brief Copy constructor for an Array instance 
+   * 
+   * \param [in] allocator_id the ID of the allocator to use (optional)
+   */
+  Array(const Array& other, int allocator_id = axom::getDefaultAllocatorID());
+
+  /*! 
+   * \brief Move constructor for an Array instance 
+   */
+  Array(Array&& other);
 
   /// @}
 
-  /// \name External Storage Array Constructors
+  /// \name Array copy and move operators
   /// @{
 
-  /*!
-   * \brief Constructs an Array instance with the given number of tuples from
-   *  an external data buffer.
+  /*! 
+   * \brief Copy assignment operator for Array 
    *
-   * \param [in] data the external data this Array will wrap.
-   * \param [in] num_tuples the number of tuples in the Array.
-   * \param [in] num_components the number of values per tuple. If not
-   *  specified defaults to 1.
-   * \param [in] capacity the capacity of the external buffer.
-   *
-   * \pre data != nullptr
-   * \pre num_tuples > 0
-   * \pre num_components >= 1
-   *
-   * \post numComponents() == num_components
-   * \post getResizeRatio == 0.0
-   *
-   * \note a capacity is specified for the number of tuples to store in the
-   *  array and does not correspond to the actual bytesize.
-   * \note If no capacity or capacity less than num_tuples is specified then
-   *  it will default to the number of tuples.
-   *
-   * \note This constructor wraps the supplied buffer and does not own the data.
-   *  Consequently, the Array instance cannot be reallocated.
+   * \note The data will be allocated using the allocator ID of the
+   *  copy-assigned Array, not the argument Array.
+   * 
+   * \pre T must be TriviallyCopyable
    */
-  Array(T* data,
-        IndexType num_tuples,
-        IndexType num_components = 1,
-        IndexType capacity = 0);
+  Array& operator=(const Array& other)
+  {
+    if(this != &other)
+    {
+      m_resize_ratio = other.m_resize_ratio;
+      initialize(other.size(), other.capacity());
+      axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
+    }
+
+    return *this;
+  }
+
+  /*! 
+   * \brief Move assignment operator for Array
+   */
+  Array& operator=(Array&& other)
+  {
+    if(this != &other)
+    {
+      if(m_data != nullptr)
+      {
+        axom::deallocate(m_data);
+      }
+
+      m_data = other.m_data;
+      m_num_elements = other.m_num_elements;
+      m_capacity = other.m_capacity;
+      m_resize_ratio = other.m_resize_ratio;
+      m_allocator_id = other.m_allocator_id;
+
+      other.m_data = nullptr;
+      other.m_num_elements = 0;
+      other.m_capacity = 0;
+      other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
+      other.m_allocator_id = INVALID_ALLOCATOR_ID;
+    }
+
+    return *this;
+  }
 
   /// @}
 
   /*!
-   * Destructor. Frees the associated buffer unless the memory is external.
+   * Destructor. Frees the associated buffer.
    */
   virtual ~Array();
 
-  /// \name Array tuple access operators
+  /// \name Array element access operators
   /// @{
 
-  /*!
-   * \brief Accessor, returns a reference to the given component of the
-   *  specified tuple.
-   *
-   * \param [in] pos the tuple to query.
-   * \param [in] component the component to return.
-   *
-   * \pre 0 <= pos < size()
-   * \pre 0 <= component < numComponents()
-   */
-  /// @{
-
-  inline T& operator()(IndexType pos, IndexType component = 0)
-  {
-    assert(inBounds(pos, component));
-
-    return m_data[pos * m_num_components + component];
-  }
-
-  inline const T& operator()(IndexType pos, IndexType component = 0) const
-  {
-    assert(inBounds(pos, component));
-
-    return m_data[pos * m_num_components + component];
-  }
-
-  /// @}
-
-  /*!
-   * \brief Accessor, returns a reference to the given value.
-   *
-   * \param [in] idx the position of the value to return.
-   *
-   * \note equivalent to *(array.getData() + idx).
-   *
-   * \pre 0 <= idx < m_num_tuples * m_num_components
-   */
-  /// @{
-
-  T& operator[](IndexType idx)
-  {
-    assert(inBounds(idx));
-
-    return m_data[idx];
-  }
-
-  const T& operator[](IndexType idx) const
-  {
-    assert(inBounds(idx));
-
-    return m_data[idx];
-  }
-
-  /// @}
+  // TODO: Implement View class for the case where sizeof...(Args) < DIM (i.e., where the indexing results in a nonscalar)
 
   /*!
    * \brief Return a pointer to the array of data.
    */
   /// @{
 
-  T* getData() { return m_data; }
-  const T* getData() const { return m_data; }
+  inline T* data() { return m_data; }
+  inline const T* data() const { return m_data; }
 
   /// @}
 
@@ -227,92 +237,191 @@ public:
    *
    * \param [in] value the value to set to.
    */
-  void fill(const T& value)
-  {
-    std::fill_n(m_data, m_num_tuples * m_num_components, value);
-  }
+  void fill(const T& value);
 
   /*!
-   * \brief Append a value to the end of the array.
+   * \brief Modify the values of existing elements.
    *
-   * \param [in] value the value to append.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   *
-   * \pre m_num_components == 1.
-   */
-  void append(const T& value);
-
-  /*!
-   * \brief Append tuples to the end of the array.
-   *
-   * \param [in] tuples the tuples to append.
-   * \param [in] n the number of tuples to append.
-   *
-   * \note It's assumed that tuples is of length n * m_num_components.
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void append(const T* tuples, IndexType n);
-
-  /*!
-   * \brief Modify the values of existing tuples.
-   *
-   * \param [in] tuples the new tuples to write.
-   * \param [in] n the number of tuples to write.
+   * \param [in] elements the new elements to write.
+   * \param [in] n the number of elements to write.
    * \param [in] pos the position at which to begin writing.
    *
-   * \note It's assumed that tuples is of length n * m_num_components.
+   * \note It's assumed that elements is of length n.
    * \note The size is unchanged by calls to set.
    *
-   * \pre pos + n <= m_num_tuples.
+   * \pre pos + n <= m_num_elements.
    */
-  void set(const T* tuples, IndexType n, IndexType pos);
+  void set(const T* elements, IndexType n, IndexType pos);
 
   /*!
-   * \brief Insert a tuple into the array at the given position.
+   * \brief Clears the contents of the array
+   * 
+   * \post size of Array is 0
+   * \post capacity is unchanged
+   */
+  void clear();
+
+  /*!
+   * \brief Insert an element into the array at the given position.
    *
-   * \param [in] value the value to insert.
    * \param [in] pos the position at which to insert.
+   * \param [in] value the element value to insert.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by 1.
    *
-   * \pre numComponents() == 1.
    */
-  void insert(const T& value, IndexType pos);
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  void insert(IndexType pos, const T& value);
 
   /*!
-   * \brief Insert tuples into the array at the given position.
+   * \brief Insert an element into the array at the value before pos.
    *
-   * \param [in] tuples the tuples to insert.
-   * \param [in] n the number of tuples to insert.
+   * \param [in] pos the ArrayIterator before which value will be inserted.
+   * \param [in] value the element value to insert.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   *
+   * \return ArrayIterator to inserted value
+   */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  ArrayIterator insert(ArrayIterator pos, const T& value);
+
+  /*!
+   * \brief Insert elements into the array at the given position.
+   *
    * \param [in] pos the position at which to begin the insertion.
+   * \param [in] n the number of elements to insert.
+   * \param [in] values the element values to insert.
    *
-   * \note It's assumed that tuples is of length n * m_num_components.
+   * \note It's assumed that elements is of length n.
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by n.
    *
-   * \pre pos <= m_num_tuples.
+   * \pre pos <= m_num_elements.
    */
-  void insert(const T* tuples, IndexType n, IndexType pos);
+  void insert(IndexType pos, IndexType n, const T* values);
 
   /*!
-   * \brief Insert multiple copies of the same value at the given position.
+   * \brief Insert elements into the array at the value before pos.
    *
-   * \param [in] n the number of tuples to insert.
-   * \param [in] pos the position to insert at.
-   * \param [in] value the value for each component of the new tuples. If not
-   *  specified defaults to the default value of T (zero for most numeric
-   *  types).
+   * \param [in] pos the ArrayIterator before which value will be inserted.
+   * \param [in] n the number of elements to insert.
+   * \param [in] values the element values to insert.
+   *
+   * \note It's assumed that elements is of length n.
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by n.
+   *
+   * \pre pos <= end()
+   *
+   * \return ArrayIterator to first element inserted (pos if n == 0)
+   */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  ArrayIterator insert(ArrayIterator pos, IndexType n, const T* values);
+
+  /*!
+   * \brief Insert n copies of element into the array at the given position.
+   *
+   * \param [in] pos the position at which to begin the insertion.
+   * \param [in] n the number of elements to insert.
+   * \param [in] value the element value to insert.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by n.
-   * \note This method is used to create space for tuples in the middle of the
-   *  array.
+   * \note This method is used to create space for elements in the middle of
+   *  the array.
    *
-   * \pre pos <= m_num_tuples.
+   * \pre pos <= m_num_elements.
    */
-  void emplace(IndexType n, IndexType pos, const T& value = T());
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  void insert(IndexType pos, IndexType n, const T& value);
+
+  /*!
+   * \brief Insert n copies of element into the array at the value before pos.
+   *
+   * \param [in] pos the ArrayIterator before which value will be inserted.
+   * \param [in] n the number of elements to insert.
+   * \param [in] value the element value to insert.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by n.
+   * \note This method is used to create space for elements in the middle of
+   *  the array.
+   *
+   * \pre pos <= end()
+   *
+   * \return ArrayIterator to first element inserted (pos if n == 0)
+   */
+  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
+  ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
+
+  // Make the overload "visible"
+  using ArrayBase<T, DIM, Array<T, DIM>>::insert;
+
+  /*!
+   * \brief Appends an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   * \tparam OtherArrayType The underlying type of the other array
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  template <typename OtherArrayType>
+  void append(const ArrayBase<T, DIM, OtherArrayType>& other)
+  {
+    ArrayBase<T, DIM, Array<T, DIM>>::insert(size(), other);
+  }
+
+  /*!
+   * \brief Erases an element from the Array 
+   *
+   * \param [in] pos the ArrayIterator to the element in the Array
+   *
+   * \return An ArrayIterator following the last element removed.
+   */
+  ArrayIterator erase(ArrayIterator pos);
+
+  /*!
+   * \brief Erases elements in the range [first, last) from the Array
+   *
+   * \param [in] first the ArrayIterator to the beginning of the range.
+   * \param [in] last the ArrayIterator to end of range.
+   *
+   * \return An ArrayIterator following the last element removed. 
+   */
+  ArrayIterator erase(ArrayIterator first, ArrayIterator last);
+
+  /*!
+   * \brief Inserts new element into Array at the given position.
+   *
+   * \param [in] pos the position to insert element at.
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   *
+   * \pre T must be MoveAssignable
+   */
+  template <typename... Args>
+  void emplace(IndexType pos, Args&&... args);
+
+  /*!
+   * \brief Inserts new element into Array before pos.
+   *
+   * \param [in] pos the ArrayIterator to insert element before.
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   *
+   * \pre T must be MoveAssignable
+   *
+   * \return An ArrayIterator to the emplaced element.
+   */
+  template <typename... Args>
+  ArrayIterator emplace(ArrayIterator pos, Args&&... args);
 
   /// @}
 
@@ -320,7 +429,7 @@ public:
   /// @{
 
   /*!
-   * \brief Return the number of tuples allocated for the data array.
+   * \brief Return the number of elements allocated for the data array.
    */
   IndexType capacity() const { return m_capacity; }
 
@@ -328,7 +437,7 @@ public:
    * \brief Increase the capacity. Does nothing if the new capacity is less
    *  than the current capacity.
    *
-   * \param [in] capacity the new number of tuples to allocate.
+   * \param [in] capacity the new number of elements to allocate.
    */
   void reserve(IndexType capacity)
   {
@@ -339,28 +448,53 @@ public:
   }
 
   /*!
+   * \brief Returns an ArrayIterator to the first element of the Array
+   */
+  ArrayIterator begin()
+  {
+    assert(m_data != nullptr);
+    return ArrayIterator(0, this);
+  }
+
+  /*!
+   * \brief Returns an ArrayIterator to the element following the last
+   *  element of the Array.
+   */
+  ArrayIterator end()
+  {
+    assert(m_data != nullptr);
+    return ArrayIterator(size(), this);
+  }
+
+  /*!
    * \brief Shrink the capacity to be equal to the size.
    */
-  void shrink() { setCapacity(m_num_tuples); }
+  void shrink() { setCapacity(m_num_elements); }
 
   /*!
    * \brief Returns true iff the Array stores no elements.
    *
    * \note If the Array is empty the capacity can still be greater than zero.
    */
-  bool empty() const { return m_num_tuples == 0; }
+  bool empty() const { return m_num_elements == 0; }
 
   /*!
-   * \brief Return the number of tuples stored in the data array.
+   * \brief Return the number of elements stored in the data array.
    */
-  IndexType size() const { return m_num_tuples; }
+  inline IndexType size() const { return m_num_elements; }
 
   /*!
-   * \brief Update the number of tuples stored in the data array.
+   * \brief Update the number of elements stored in the data array.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  void resize(IndexType new_num_tuples);
+  template <typename... Args>
+  void resize(Args... args);
+
+  /*!
+   * \brief Exchanges the contents of this Array with the other.
+   */
+  void swap(Array<T, DIM>& other);
 
   /*!
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
@@ -375,55 +509,36 @@ public:
   void setResizeRatio(double ratio) { m_resize_ratio = ratio; }
 
   /*!
-   * \brief Return the number of components per tuple.
+   * \brief Get the ID for the umpire allocator
    */
-  IndexType numComponents() const { return m_num_components; }
-
-  /*!
-   * \brief Return true iff the external buffer constructor was called.
-   */
-  bool isExternal() const { return m_is_external; }
-
-  /*!
-   * \brief Return true iff a sidre constructor was called.
-   */
-  virtual bool isInSidre() const { return false; }
+  int getAllocatorID() const { return m_allocator_id; }
 
   /// @}
 
 protected:
-  /*! \brief Default constructor supports infrastructure in subclasses. */
-  Array();
-
   /*!
-   * \brief Initialize an Array instance with the given number of tuples.
+   * \brief Initialize an Array instance with the given number of elements.
    *
-   * \param [in] num_tuples the number of tuples the Array holds.
-   * \param [in] num_components the number of values per tuple. If not
-   *  specified defaults to 1.
-   * \param [in] capacity the number of tuples to allocate space for.
+   * \param [in] num_elements the number of elements the Array holds.
+   * \param [in] capacity the number of elements to allocate space for.
    *
-   * \note If no capacity or capacity less than num_tuples is specified
-   *  then it will default to at least num_tuples * DEFAULT_RESIZE_RATIO.
-   * \note a capacity is specified for the number of tuples to store in the
+   * \note If no capacity or capacity less than num_elements is specified
+   *  then it will default to at least num_elements * DEFAULT_RESIZE_RATIO.
+   * \note a capacity is specified for the number of elements to store in the
    *  array and does not correspond to the actual bytesize.
    *
-   * \pre num_tuples >= 0
-   * \pre num_components >= 1
+   * \pre num_elements >= 0
    *
    * \post capacity() >= size()
-   * \post size() == num_tuples
-   * \post numComponents() == num_components
+   * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  void initialize(IndexType num_tuples,
-                  IndexType num_components,
-                  IndexType capacity);
+  void initialize(IndexType num_elements, IndexType capacity);
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
    *
-   * \param [in] n the number of tuples to insert.
+   * \param [in] n the number of elements to insert.
    * \param [in] pos the position at which to begin the insertion.
    *
    * \return a pointer to the beginning of the insertion space.
@@ -433,109 +548,108 @@ protected:
   T* reserveForInsert(IndexType n, IndexType pos);
 
   /*!
-   * \brief Update the number of tuples.
+   * \brief Update the number of elements.
    *
-   * \param [in] new_num_tuples the new number of tuples.
+   * \param [in] new_num_elements the new number of elements.
    */
-  virtual void updateNumTuples(IndexType new_num_tuples);
+  virtual void updateNumElements(IndexType new_num_elements);
 
   /*!
-   * \brief Set the number of tuples allocated for the data array.
+   * \brief Set the number of elements allocated for the data array.
    *
-   * \param [in] capacity the new number of tuples to allocate.
+   * \param [in] capacity the new number of elements to allocate.
    */
   virtual void setCapacity(IndexType new_capacity);
 
   /*!
    * \brief Reallocates the data array when the size exceeds the capacity.
    *
-   * \param [in] new_num_tuples the number of tuples which exceeds the current
-   *  capacity.
+   * \param [in] new_num_elements the number of elements which exceeds the
+   *  current capacity.
    */
-  virtual void dynamicRealloc(IndexType new_num_tuples);
+  virtual void dynamicRealloc(IndexType new_num_elements);
 
-  /// \name Internal bounds-checking routines
-  /// @{
-
-  /*! \brief Test if pos and component are within bounds */
-  inline bool inBounds(IndexType pos, IndexType component) const
-  {
-    return (pos >= 0 && pos < m_num_tuples) &&
-      (component >= 0 && component < m_num_components);
-  }
-
-  /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
-  {
-    return idx >= 0 && idx < m_num_tuples * m_num_components;
-  }
-  /// @}
-
-  T* m_data;
-  IndexType m_num_tuples;
-  IndexType m_capacity;
-  IndexType m_num_components;
-  double m_resize_ratio;
-  bool const m_is_external;
-
-  DISABLE_COPY_AND_ASSIGNMENT(Array);
-  DISABLE_MOVE_AND_ASSIGNMENT(Array);
+  T* m_data = nullptr;
+  /// \brief The full number of elements in the array
+  ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
+  IndexType m_num_elements = 0;
+  IndexType m_capacity = 0;
+  double m_resize_ratio = DEFAULT_RESIZE_RATIO;
+  int m_allocator_id;
 };
+
+/// \brief Helper alias for multi-component arrays
+template <typename T>
+using MCArray = Array<T, 2>;
 
 //------------------------------------------------------------------------------
 //                            Array IMPLEMENTATION
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-template <typename T>
-Array<T>::Array()
-  : m_data(nullptr)
-  , m_num_tuples(0)
-  , m_capacity(0)
-  , m_num_components(1)
-  , m_resize_ratio(DEFAULT_RESIZE_RATIO)
-  , m_is_external(false)
+template <typename T, int DIM>
+Array<T, DIM>::Array() : m_allocator_id(axom::getDefaultAllocatorID())
 { }
 
-//------------------------------------------------------------------------------
-template <typename T>
-Array<T>::Array(IndexType num_tuples, IndexType num_components, IndexType capacity)
-  : m_data(nullptr)
-  , m_num_tuples(0)
-  , m_capacity(0)
-  , m_num_components(0)
-  , m_resize_ratio(DEFAULT_RESIZE_RATIO)
-  , m_is_external(false)
+template <typename T, int DIM>
+template <typename... Args>
+Array<T, DIM>::Array(Args... args)
+  : ArrayBase<T, DIM, Array<T, DIM>>(args...)
+  , m_allocator_id(axom::getDefaultAllocatorID())
 {
-  initialize(num_tuples, num_components, capacity);
+  static_assert(sizeof...(Args) == DIM,
+                "Array size must match number of dimensions");
+  // Intel hits internal compiler error when casting as part of function call
+  const IndexType tmp_args[] = {args...};
+  assert(detail::allNonNegative(tmp_args));
+  initialize(detail::packProduct(tmp_args), 0);
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-Array<T>::Array(T* data,
-                IndexType num_tuples,
-                IndexType num_components,
-                IndexType capacity)
-  : m_data(data)
-  , m_num_tuples(num_tuples)
-  , m_capacity(0)
-  , m_num_components(num_components)
+template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+Array<T, DIM>::Array(IndexType num_elements, IndexType capacity, int allocator_id)
+  : m_allocator_id(allocator_id)
+{
+  initialize(num_elements, capacity);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+Array<T, DIM>::Array(const Array& other, int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM>>(
+      static_cast<const ArrayBase<T, DIM, Array<T, DIM>>&>(other))
+  , m_allocator_id(allocator_id)
+{
+  initialize(other.size(), other.capacity());
+  axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+Array<T, DIM>::Array(Array&& other)
+  : ArrayBase<T, DIM, Array<T, DIM>>(
+      static_cast<ArrayBase<T, DIM, Array<T, DIM>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
-  , m_is_external(true)
+  , m_allocator_id(axom::getDefaultAllocatorID())
 {
-  m_capacity = (capacity < num_tuples) ? num_tuples : capacity;
+  m_data = other.m_data;
+  m_num_elements = other.m_num_elements;
+  m_capacity = other.m_capacity;
+  m_resize_ratio = other.m_resize_ratio;
+  m_allocator_id = other.m_allocator_id;
 
-  assert(m_num_tuples >= 0);
-  assert(m_num_components >= 1);
-  assert(m_num_tuples <= m_capacity);
-  assert(m_data != nullptr || m_capacity <= 0);
+  other.m_data = nullptr;
+  other.m_capacity = 0;
+  other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
+  other.m_allocator_id = INVALID_ALLOCATOR_ID;
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-Array<T>::~Array()
+template <typename T, int DIM>
+Array<T, DIM>::~Array()
 {
-  if(m_data != nullptr && !m_is_external)
+  if(m_data != nullptr)
   {
     axom::deallocate(m_data);
   }
@@ -544,200 +658,332 @@ Array<T>::~Array()
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::append(const T& value)
+template <typename T, int DIM>
+inline void Array<T, DIM>::fill(const T& value)
 {
-  assert(m_num_components == 1);
-
-  IndexType new_size = m_num_tuples + 1;
-  if(new_size > m_capacity)
+  for(IndexType i = 0; i < m_num_elements; i++)
   {
-    dynamicRealloc(new_size);
+    m_data[i] = value;
   }
-
-  m_data[m_num_tuples] = value;
-  updateNumTuples(new_size);
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::append(const T* tuples, IndexType n)
+template <typename T, int DIM>
+inline void Array<T, DIM>::set(const T* elements, IndexType n, IndexType pos)
 {
-  IndexType new_size = m_num_tuples + n;
-  if(new_size > m_capacity)
-  {
-    dynamicRealloc(new_size);
-  }
-
-  T* cur_end = m_data + m_num_tuples * m_num_components;
-  std::memcpy(cur_end, tuples, n * m_num_components * sizeof(T));
-  updateNumTuples(new_size);
-}
-
-//------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::set(const T* tuples, IndexType n, IndexType pos)
-{
-  assert(tuples != nullptr);
+  assert(elements != nullptr);
   assert(pos >= 0);
-  assert(pos + n <= m_num_tuples);
+  assert(pos + n <= m_num_elements);
 
-  T* set_position = &m_data[pos * m_num_components];
-  IndexType byte_size = n * m_num_components * sizeof(T);
-  std::memcpy(set_position, tuples, byte_size);
+  for(IndexType i = 0; i < n; ++i)
+  {
+    m_data[pos + i] = elements[i];
+  }
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::insert(const T& value, IndexType pos)
+template <typename T, int DIM>
+inline void Array<T, DIM>::clear()
 {
-  assert(m_num_components == 1);
+  // This most likely needs to be a call to erase() instead.
+  for(IndexType i = 0; i < m_num_elements; ++i)
+  {
+    m_data[i].~T();
+  }
+
+  updateNumElements(0);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+inline void Array<T, DIM>::insert(IndexType pos, const T& value)
+{
   reserveForInsert(1, pos);
   m_data[pos] = value;
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::insert(const T* tuples, IndexType n, IndexType pos)
+template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
+  Array<T, DIM>::ArrayIterator pos,
+  const T& value)
 {
-  assert(tuples != nullptr);
-  T* insert_pos = reserveForInsert(n, pos);
-  std::memcpy(insert_pos, tuples, n * m_num_components * sizeof(T));
+  assert(pos >= begin() && pos <= end());
+  insert(pos - begin(), value);
+  return pos;
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::emplace(IndexType n, IndexType pos, const T& value)
+template <typename T, int DIM>
+inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T* values)
 {
-  T* insert_pos = reserveForInsert(n, pos);
-  std::fill_n(insert_pos, n * numComponents(), value);
-}
-
-//------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::resize(IndexType new_num_tuples)
-{
-  assert(new_num_tuples >= 0);
-
-  if(new_num_tuples > m_capacity)
+  assert(values != nullptr);
+  reserveForInsert(n, pos);
+  for(IndexType i = 0; i < n; ++i)
   {
-    dynamicRealloc(new_num_tuples);
+    m_data[pos + i] = values[i];
+  }
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
+  Array<T, DIM>::ArrayIterator pos,
+  IndexType n,
+  const T* values)
+{
+  assert(pos >= begin() && pos <= end());
+  insert(pos - begin(), n, values);
+  return pos;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+inline void Array<T, DIM>::insert(IndexType pos, IndexType n, const T& value)
+{
+  reserveForInsert(n, pos);
+  for(IndexType i = 0; i < n; ++i)
+  {
+    m_data[pos + i] = value;
+  }
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::insert(
+  Array<T, DIM>::ArrayIterator pos,
+  IndexType n,
+  const T& value)
+{
+  assert(pos >= begin() && pos <= end());
+  insert(pos - begin(), n, value);
+  return pos;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::erase(
+  Array<T, DIM>::ArrayIterator pos)
+{
+  assert(pos >= begin() && pos < end());
+  int counter = 0;
+
+  while(pos < end() - 1)
+  {
+    *pos = *(pos + 1);
+    pos += 1;
+    counter += 1;
+  }
+  (*pos).~T();
+
+  updateNumElements(m_num_elements - 1);
+  return pos - counter;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::erase(
+  Array<T, DIM>::ArrayIterator first,
+  Array<T, DIM>::ArrayIterator last)
+{
+  assert(first >= begin() && first < end());
+  assert(last >= first && last <= end());
+
+  // Empty range, return last
+  if(first == last)
+  {
+    return last;
   }
 
-  updateNumTuples(new_num_tuples);
+  int count = 0;
+
+  // Erase [first,last) elements
+  while(first < last)
+  {
+    (*first).~T();
+    first++;
+    count++;
+  }
+
+  first -= count;
+  int shifted = 0;
+
+  // Shift [last, end) elements over
+  while(last < end())
+  {
+    *first = *last;
+    first++;
+    last++;
+    shifted++;
+  }
+
+  updateNumElements(m_num_elements - count);
+  return first - shifted;
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::initialize(IndexType num_tuples,
-                                 IndexType num_components,
-                                 IndexType capacity)
+template <typename T, int DIM>
+template <typename... Args>
+inline void Array<T, DIM>::emplace(IndexType pos, Args&&... args)
 {
-  assert(num_tuples >= 0);
-  assert(num_components > 0);
+  reserveForInsert(1, pos);
+  m_data[pos] = std::move(T(std::forward<Args>(args)...));
+}
 
-  m_num_tuples = num_tuples;
-  m_num_components = num_components;
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+template <typename... Args>
+inline typename Array<T, DIM>::ArrayIterator Array<T, DIM>::emplace(
+  Array<T, DIM>::ArrayIterator pos,
+  Args&&... args)
+{
+  assert(pos >= begin() && pos <= end());
+  emplace(pos - begin(), args...);
+  return pos;
+}
 
-  if(capacity < 0 || num_tuples > capacity)
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+template <typename... Args>
+inline void Array<T, DIM>::resize(Args... args)
+{
+  static_assert(sizeof...(Args) == DIM,
+                "Array size must match number of dimensions");
+  // Intel hits internal compiler error when casting as part of function call
+  const IndexType tmp_args[] = {args...};
+  assert(detail::allNonNegative(tmp_args));
+  const auto new_num_elements = detail::packProduct(tmp_args);
+
+  static_cast<ArrayBase<T, DIM, Array<T, DIM>>&>(*this) =
+    ArrayBase<T, DIM, Array<T, DIM>> {static_cast<IndexType>(args)...};
+
+  if(new_num_elements > m_capacity)
+  {
+    dynamicRealloc(new_num_elements);
+  }
+
+  updateNumElements(new_num_elements);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+inline void Array<T, DIM>::swap(Array<T, DIM>& other)
+{
+  ArrayBase<T, DIM, Array<T, DIM>>::swap(other);
+  T* temp_data = m_data;
+  IndexType temp_num_elements = m_num_elements;
+  IndexType temp_capacity = m_capacity;
+  double temp_resize_ratio = m_resize_ratio;
+
+  m_data = other.m_data;
+  m_num_elements = other.m_num_elements;
+  m_capacity = other.m_capacity;
+  m_resize_ratio = other.m_resize_ratio;
+
+  other.m_data = temp_data;
+  other.m_num_elements = temp_num_elements;
+  other.m_capacity = temp_capacity;
+  other.m_resize_ratio = temp_resize_ratio;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM>
+inline void Array<T, DIM>::initialize(IndexType num_elements, IndexType capacity)
+{
+  assert(num_elements >= 0);
+
+  if(capacity < 0 || num_elements > capacity)
   {
     capacity = 0;
   }
 
   if(capacity == 0)
   {
-    capacity =
-      (num_tuples > MIN_DEFAULT_CAPACITY) ? num_tuples : MIN_DEFAULT_CAPACITY;
+    capacity = (num_elements > MIN_DEFAULT_CAPACITY) ? num_elements
+                                                     : MIN_DEFAULT_CAPACITY;
   }
   setCapacity(capacity);
+  updateNumElements(num_elements);
 
-  // sanity checks
+  // quick checks
   assert(m_data != nullptr);
-  assert(m_num_tuples >= 0);
-  assert(m_capacity >= m_num_tuples);
-  assert(m_num_components >= 1);
+  assert(m_num_elements >= 0);
+  assert(m_capacity >= m_num_elements);
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline T* Array<T>::reserveForInsert(IndexType n, IndexType pos)
+template <typename T, int DIM>
+inline T* Array<T, DIM>::reserveForInsert(IndexType n, IndexType pos)
 {
   assert(n >= 0);
   assert(pos >= 0);
-  assert(pos <= m_num_tuples);
+  assert(pos <= m_num_elements);
 
   if(n == 0)
   {
-    return m_data + pos * m_num_components;
+    return m_data + pos;
   }
 
-  IndexType new_size = m_num_tuples + n;
+  IndexType new_size = m_num_elements + n;
   if(new_size > m_capacity)
   {
     dynamicRealloc(new_size);
   }
 
-  T* const insert_pos = m_data + pos * m_num_components;
-  T* cur_pos = m_data + (m_num_tuples * m_num_components) - 1;
+  T* const insert_pos = m_data + pos;
+  T* cur_pos = m_data + m_num_elements - 1;
   for(; cur_pos >= insert_pos; --cur_pos)
   {
-    *(cur_pos + n * m_num_components) = *cur_pos;
+    *(cur_pos + n) = *cur_pos;
   }
 
-  updateNumTuples(new_size);
+  updateNumElements(new_size);
   return insert_pos;
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::updateNumTuples(IndexType new_num_tuples)
+template <typename T, int DIM>
+inline void Array<T, DIM>::updateNumElements(IndexType new_num_elements)
 {
-  assert(new_num_tuples >= 0);
-  assert(new_num_tuples <= m_capacity);
-  m_num_tuples = new_num_tuples;
+  assert(new_num_elements >= 0);
+  assert(new_num_elements <= m_capacity);
+  m_num_elements = new_num_elements;
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::setCapacity(IndexType new_capacity)
+template <typename T, int DIM>
+inline void Array<T, DIM>::setCapacity(IndexType new_capacity)
 {
   assert(new_capacity >= 0);
 
-  if(m_is_external && new_capacity <= m_capacity)
+  if(new_capacity < m_num_elements)
   {
-    return;
+    updateNumElements(new_capacity);
   }
 
-  if(m_is_external)
-  {
-    std::cerr << "Cannot reallocate an externally provided buffer.";
-    utilities::processAbort();
-  }
-
-  if(new_capacity < m_num_tuples)
-  {
-    updateNumTuples(new_capacity);
-  }
-
-  m_data = axom::reallocate(m_data, new_capacity * m_num_components);
+  m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
   m_capacity = new_capacity;
 
   assert(m_data != nullptr || m_capacity <= 0);
 }
 
 //------------------------------------------------------------------------------
-template <typename T>
-inline void Array<T>::dynamicRealloc(IndexType new_num_tuples)
+template <typename T, int DIM>
+inline void Array<T, DIM>::dynamicRealloc(IndexType new_num_elements)
 {
-  if(m_is_external)
-  {
-    std::cerr << "Cannot reallocate an externally provided buffer.";
-    utilities::processAbort();
-  }
-
   assert(m_resize_ratio >= 1.0);
-  const IndexType new_capacity =
-    static_cast<IndexType>(new_num_tuples * m_resize_ratio + 0.5);
+  IndexType new_capacity = new_num_elements * m_resize_ratio + 0.5;
+  const IndexType block_size = this->blockSize();
+  const IndexType remainder = new_capacity % block_size;
+  if(remainder != 0)
+  {
+    new_capacity += block_size - remainder;
+  }
 
   if(m_resize_ratio < 1.0)
   {
@@ -748,7 +994,7 @@ inline void Array<T>::dynamicRealloc(IndexType new_num_tuples)
     utilities::processAbort();
   }
 
-  m_data = axom::reallocate(m_data, new_capacity * m_num_components);
+  m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
   m_capacity = new_capacity;
 
   assert(m_data != nullptr || m_capacity <= 0);

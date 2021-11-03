@@ -40,6 +40,7 @@
  * \endverbatim
  */
 
+#include "axom/config.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 

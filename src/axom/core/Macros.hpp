@@ -142,15 +142,15 @@
 
 /*!
  *
- * \def AXOM_DEBUG_VAR(x)
+ * \def AXOM_UNUSED_VAR(x)
  * \brief Macro used to silence compiler warnings about variables
  *        that are defined but not used.
  * \note The intent is to use this macro for variables that are only used
- *       for debugging purposes (e.g. in debug assertions). For example:
+ *       within compiler defines (e.g. in debug assertions). For example:
  * \code
  *
  *  double myVar = ...
- *  AXOM_DEBUG_VAR(myVar);
+ *  AXOM_UNUSED_VAR(myVar);
  *
  *  // code emits the following warning in release builds
  *  // if extra warnings are enabled and this macro is not called
@@ -160,7 +160,7 @@
  *
  * \endcode
  */
-#define AXOM_DEBUG_VAR(_x) static_cast<void>(_x)
+#define AXOM_UNUSED_VAR(_x) static_cast<void>(_x)
 
 /*!
  * \def AXOM_DEBUG_PARAM(x)
@@ -255,7 +255,7 @@
  * \endcode
  */
 #define DISABLE_MOVE_AND_ASSIGNMENT(className) \
-  className(const className&&) = delete;       \
-  className& operator=(const className&&) = delete
+  className(className&&) = delete;             \
+  className& operator=(className&&) = delete
 
 #endif /* AXOM_MACROS_HPP_ */

@@ -59,6 +59,7 @@
 /*
  * Compiler defines for libraries (built-in and third party)
  */
+#cmakedefine AXOM_USE_C2C
 #cmakedefine AXOM_USE_CLI11
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CUDA
@@ -92,6 +93,7 @@
  * Compiler defines for Axom components
  */
 #cmakedefine AXOM_USE_INLET
+#cmakedefine AXOM_USE_KLEE
 #cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
 #cmakedefine AXOM_USE_PRIMAL
@@ -103,10 +105,20 @@
 
 
 /*
+ * Inline axom's macros related to export symbols, e.g. AXOM_EXPORT
+ */
+@INLINED_AXOM_EXPORTS@
+
+
+/*
  * Compiler defines to configure the built-in fmt library
+ * Redefines FMT_DEPRECATED to workaround nvcc compiler error
  */
 #cmakedefine01 FMT_EXCEPTIONS
 #cmakedefine01 FMT_HEADER_ONLY
+#ifndef WIN32
+#define FMT_DEPRECATED AXOM_DEPRECATED
+#endif
 
 /*
  * Compiler defines to configure the built-in sparsehash library
@@ -114,23 +126,11 @@
 #cmakedefine SPARSEHASH_HASHFUN_HEADER @SPARSEHASH_HASHFUN_HEADER@
 #cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
-/*
- * Inline axom's macros related to export symbols, e.g. AXOM_EXPORT
- */
-@INLINED_AXOM_EXPORTS@
-
 
 /*
- * Disables some MSVC warnings related to shared libraries
+ * Disable some MSVC warnings related to shared libraries, if applicable
  */
-#if defined(_MSC_VER)
-/* Turn off warning about lack of DLL interface */
-#pragma warning(disable:4251)
-/* Turn off warning non-dll class is base for dll-interface class */
-#pragma warning(disable:4275)
-/* Turn off warning about identifier truncation */
-#pragma warning(disable:4786)
-#endif  /* defined(_MSC_VER) */
+@AXOM_MSVC_PRAGMAS@
 
 
 #endif  /* AXOM_COMMON_CONFIG_HPP */

@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_05_05_17_26_40/spack/lib/spack/env/xl/xlc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_21_01_46/spack/lib/spack/env/xl/xlc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_05_05_17_26_40/spack/lib/spack/env/xl/xlc++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_21_01_46/spack/lib/spack/env/xl/xlc++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_05_05_17_26_40/spack/lib/spack/env/xl/xlf90" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_21_01_46/spack/lib/spack/env/xl/xlf90" CACHE PATH "")
 
 else()
 
@@ -26,12 +26,6 @@ else()
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003" CACHE PATH "")
 
 endif()
-
-set(CMAKE_Fortran_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
-
-set(CMAKE_C_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
-
-set(CMAKE_CXX_COMPILER_ID "XL" CACHE STRING "Override to proper compiler family for XL")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -89,13 +83,13 @@ set(ENABLE_OPENMP OFF CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
 
-set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE STRING "Converts C-style comments to Fortran style in preprocessed files")
-
 set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.08.20/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.08.20/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
 
-set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
+set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE STRING "Converts C-style comments to Fortran style in preprocessed files")
+
+set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # TPLs
@@ -103,9 +97,11 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_05_05_17_26_40/xl-16.1.1_nvcc" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_10_19_21_01_46/xl-16.1.1_nvcc" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.6.0" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-develop" CACHE PATH "")
+
+set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
 
@@ -113,11 +109,11 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
 set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.12.1" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-4.0.1" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0" CACHE PATH "")
 
-# scr not build
+# scr not built
 
 #------------------------------------------------------------------------------
 # Devtools

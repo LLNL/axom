@@ -37,7 +37,7 @@ foreach(example ${inlet_examples})
     blt_add_executable( NAME       inlet_${ex_name}_ex
                         SOURCES    ${example}
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON inlet
+                        DEPENDS_ON axom
                         FOLDER     axom/inlet/examples )
 endforeach()
 
@@ -45,7 +45,7 @@ if (SOL_FOUND AND MFEM_FOUND)
     blt_add_executable( NAME       inlet_mfem_coefficient_ex
                         SOURCES    mfem_coefficient.cpp
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON inlet mfem
+                        DEPENDS_ON axom mfem
                         FOLDER     axom/inlet/examples )
 endif()
 

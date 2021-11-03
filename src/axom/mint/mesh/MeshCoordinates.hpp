@@ -7,10 +7,10 @@
 #define MINT_MESHCOORDINATES_HPP_
 
 #include "axom/core/Macros.hpp"  // for Axom macros and definitions
-#include "axom/core/Array.hpp"   // for axom::Array
+#include "axom/mint/deprecated/MCArray.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/Array.hpp"  // for sidre::Array
+  #include "axom/mint/deprecated/SidreMCArray.hpp"  // for sidre::deprecated::MCArray
 #endif
 
 #include "axom/slic/interface/slic.hpp"  // for slic logging macros
@@ -101,10 +101,10 @@ static constexpr int Z_COORDINATE = 2;
  *  Use `reserve()` when the number of nodes is known a priori, or opt to
  *  use a constructor that takes an actual size and capacity when possible.
  *
- * \see axom::Array
+ * \see axom::deprecated::MCArray
  * \see mint::Mesh
  * \see sidre::Group
- * \see sidre::Array
+ * \see sidre::deprecated::MCArray
  */
 class MeshCoordinates
 {
@@ -593,7 +593,7 @@ private:
   sidre::Group* m_group;
 #endif
   int m_ndims;
-  Array<double>* m_coordinates[3] = {nullptr, nullptr, nullptr};
+  axom::deprecated::MCArray<double>* m_coordinates[3] = {nullptr, nullptr, nullptr};
 
   DISABLE_COPY_AND_ASSIGNMENT(MeshCoordinates);
   DISABLE_MOVE_AND_ASSIGNMENT(MeshCoordinates);
@@ -1021,7 +1021,8 @@ inline void MeshCoordinates::initialize(IndexType numNodes, IndexType maxCapacit
 
   for(int i = 0; i < m_ndims; ++i)
   {
-    m_coordinates[i] = new Array<double>(numNodes, 1, maxCapacity);
+    m_coordinates[i] =
+      new axom::deprecated::MCArray<double>(numNodes, 1, maxCapacity);
   }
 
   SLIC_ASSERT(consistencyCheck());

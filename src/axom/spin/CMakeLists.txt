@@ -17,7 +17,7 @@ axom_component_requires(NAME       SPIN
 #------------------------------------------------------------------------------
 set( spin_headers
 
-     BVHTree.hpp
+     BVH.hpp
      Brood.hpp
      DenseOctreeLevel.hpp
      ImplicitGrid.hpp
@@ -28,39 +28,20 @@ set( spin_headers
      SparseOctreeLevel.hpp
      SpatialOctree.hpp
      UniformGrid.hpp
+
+     ## internal
+     internal/linear_bvh/RadixTree.hpp
+     internal/linear_bvh/build_radix_tree.hpp
+     internal/linear_bvh/bvh_traverse.hpp
+     internal/linear_bvh/bvh_vtkio.hpp
+
+     ## policy
+     policy/LinearBVH.hpp
    )
 
 set( spin_sources
      ../Axom.cpp
    )
-
-#------------------------------------------------------------------------------
-# Specify Spin headers/sources that depend on RAJA and Umpire
-#------------------------------------------------------------------------------
-if ( RAJA_FOUND AND UMPIRE_FOUND )
-
-  set( spin_headers
-       ${spin_headers}
-       BVH.hpp
-
-       ## internal
-       internal/linear_bvh/BVHData.hpp
-       internal/linear_bvh/BVH_impl.hpp
-       internal/linear_bvh/QueryAccessor.hpp
-       internal/linear_bvh/RadixTree.hpp
-       internal/linear_bvh/TraversalPredicates.hpp
-       internal/linear_bvh/aabb.hpp
-       internal/linear_bvh/build_radix_tree.hpp
-       internal/linear_bvh/bvh_traverse.hpp
-       internal/linear_bvh/bvh_vtkio.hpp
-       internal/linear_bvh/emit_bvh.hpp
-       internal/linear_bvh/math.hpp
-       internal/linear_bvh/range.hpp
-       internal/linear_bvh/vec.hpp
-
-      )
-
-endif()
 
 #------------------------------------------------------------------------------
 # Specify spin dependencies

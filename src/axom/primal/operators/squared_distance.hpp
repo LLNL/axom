@@ -4,14 +4,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file
+ * \file squared_distance.hpp
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
  *  the "signed" squared distance between two geometric entities.
  */
 
-#ifndef SQUAREDDISTANCE_HPP_
-#define SQUAREDDISTANCE_HPP_
+#ifndef AXOM_PRIMAL_SQUAREDDISTANCE_HPP_
+#define AXOM_PRIMAL_SQUAREDDISTANCE_HPP_
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -55,7 +55,8 @@ inline double squared_distance(const double* A, const double* B, int N)
  * \return d the distance from point A to point B.
  */
 template <typename T, int NDIMS>
-inline double squared_distance(const Point<T, NDIMS>& A, const Point<T, NDIMS>& B)
+AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
+                                                const Point<T, NDIMS>& B)
 {
   Vector<T, NDIMS> v(A, B);
   return (v.squared_norm());
@@ -69,8 +70,8 @@ inline double squared_distance(const Point<T, NDIMS>& A, const Point<T, NDIMS>& 
  * \return d the signed distance from P to the closest point on B.
  */
 template <typename T, int NDIMS>
-inline double squared_distance(const Point<T, NDIMS>& P,
-                               const BoundingBox<T, NDIMS>& B)
+AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
+                                                const BoundingBox<T, NDIMS>& B)
 {
   if(B.contains(P))
   {
@@ -154,4 +155,4 @@ inline double squared_distance(const Point<T, NDIMS>& P,
 }  // namespace primal
 }  // namespace axom
 
-#endif /* SQUAREDDISTANCE_HPP_ */
+#endif  // AXOM_PRIMAL_SQUAREDDISTANCE_HPP_

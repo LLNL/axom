@@ -13,12 +13,18 @@
 #include <axom/config.hpp>
 ! splicer end file_top
 module axom_quest
+    use iso_c_binding, only : C_INT
     ! splicer begin module_use
     ! splicer end module_use
     implicit none
 
     ! splicer begin module_top
     ! splicer end module_top
+
+    !  enum class axom::quest::SignedDistExec
+    integer(C_INT), parameter :: signeddistexec_cpu = 0
+    integer(C_INT), parameter :: signeddistexec_openmp = 1
+    integer(C_INT), parameter :: signeddistexec_gpu = 2
 
     interface
 
@@ -78,6 +84,15 @@ module axom_quest
             logical(C_BOOL) :: SHT_rv
         end function c_inout_initialized
 
+        function quest_inout_set_dimension(dim) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_set_dimension")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: dim
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_set_dimension
+
         function c_inout_set_verbose(verbosity) &
                 result(SHT_rv) &
                 bind(C, name="QUEST_inout_set_verbose")
@@ -95,6 +110,16 @@ module axom_quest
             real(C_DOUBLE), value, intent(IN) :: thresh
             integer(C_INT) :: SHT_rv
         end function quest_inout_set_vertex_weld_threshold
+
+        function quest_inout_set_segments_per_knot_span( &
+                segmentsPerKnotSpan) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_set_segments_per_knot_span")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: segmentsPerKnotSpan
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_set_segments_per_knot_span
 
         function c_inout_evaluate_0(x, y) &
                 result(SHT_rv) &
@@ -245,19 +270,12 @@ module axom_quest
             logical(C_BOOL), value, intent(IN) :: computeSign
         end subroutine c_signed_distance_set_compute_signs
 
-        subroutine quest_signed_distance_set_max_levels(maxLevels) &
-                bind(C, name="QUEST_signed_distance_set_max_levels")
+        subroutine quest_signed_distance_set_allocator(allocatorID) &
+                bind(C, name="QUEST_signed_distance_set_allocator")
             use iso_c_binding, only : C_INT
             implicit none
-            integer(C_INT), value, intent(IN) :: maxLevels
-        end subroutine quest_signed_distance_set_max_levels
-
-        subroutine quest_signed_distance_set_max_occupancy(maxOccupancy) &
-                bind(C, name="QUEST_signed_distance_set_max_occupancy")
-            use iso_c_binding, only : C_INT
-            implicit none
-            integer(C_INT), value, intent(IN) :: maxOccupancy
-        end subroutine quest_signed_distance_set_max_occupancy
+            integer(C_INT), value, intent(IN) :: allocatorID
+        end subroutine quest_signed_distance_set_allocator
 
         subroutine c_signed_distance_set_verbose(status) &
                 bind(C, name="QUEST_signed_distance_set_verbose")
@@ -272,6 +290,13 @@ module axom_quest
             implicit none
             logical(C_BOOL), value, intent(IN) :: status
         end subroutine c_signed_distance_use_shared_memory
+
+        subroutine quest_signed_distance_set_execution_space(execSpace) &
+                bind(C, name="QUEST_signed_distance_set_execution_space")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: execSpace
+        end subroutine quest_signed_distance_set_execution_space
 
         function quest_signed_distance_evaluate(x, y, z) &
                 result(SHT_rv) &

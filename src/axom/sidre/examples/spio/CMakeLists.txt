@@ -21,7 +21,7 @@ if (SCR_FOUND)
     list(APPEND example_sources IO_SCR_Output.cpp)
 endif() 
 
-set(spio_example_depends sidre conduit::conduit slic ${EXTRA_LIBS})
+set(spio_example_depends axom gtest ${EXTRA_LIBS})
 blt_list_append(TO spio_example_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO spio_example_depends ELEMENTS scr  IF SCR_FOUND)
 
@@ -45,7 +45,7 @@ endforeach()
                 axom_add_test(
                     NAME spio_IO_SCR_Checkpoint
                     COMMAND spio_IO_SCR_Checkpoint_ex 
-                    NUM_MPI_TASKS 2 )
+                    NUM_MPI_TASKS 4 )
             else()
                 axom_add_test(
                     NAME spio_IO_SCR_Checkpoint

@@ -54,8 +54,7 @@ void demoFileSystemAndString(const char* argv0)
 #else
   const char pathsep = '/';
 #endif
-  std::vector<std::string> cmp;
-  string::split(cmp, cwd, pathsep);
+  std::vector<std::string> cmp = string::split(cwd, pathsep);
 
   // Count how many start with "ax" or end with "exe"
   // (we could also use std::count_if)
@@ -123,7 +122,7 @@ int main(int argc, char** argv)
 
   if(argc == 1)
   {
-    std::cerr << "Error: not path given on command line" << std::endl;
+    std::cerr << "Error: no path given on command line" << std::endl;
     return 1;
   }
   else

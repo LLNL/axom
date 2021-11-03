@@ -30,13 +30,9 @@ axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-if (AXOM_ENABLE_SIDRE)
-    axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-else()
-    message(STATUS "Axom Component Inlet turned off due to AXOM_ENABLE_SIDRE=OFF")
-    set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
-endif()
+axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME klee   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
 if(ENABLE_CUDA)
     # Force "early" device linking to avoid propagating an NVCC link dependency
@@ -46,7 +42,7 @@ endif()
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
                 SOURCES    Axom.cpp
-                DEPENDS_ON ${AXOM_COMPONENTS_ENABLED})
+                DEPENDS_ON core ${AXOM_COMPONENTS_ENABLED})
 
 install(TARGETS              axom
         EXPORT               axom-targets

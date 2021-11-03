@@ -10,7 +10,7 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       QUEST
-                        COMPONENTS MINT PRIMAL SLAM SLIC)
+                        COMPONENTS MINT PRIMAL SLAM SLIC SPIN)
 
 #------------------------------------------------------------------------------
 # Specify headers, sources and dependencies
@@ -23,73 +23,99 @@ set( quest_headers
     AllNearestNeighbors.hpp
     detail/AllNearestNeighbors_detail.hpp
 
+    ## Shaping
+    Discretize.hpp
+    detail/Discretize_detail.hpp
+
     ## In/out query
     InOutOctree.hpp
+    detail/inout/BlockData.hpp
+    detail/inout/MeshWrapper.hpp
+    detail/inout/InOutOctreeMeshDumper.hpp
+    detail/inout/InOutOctreeStats.hpp
+    detail/inout/InOutOctreeValidator.hpp
 
-    # Mesh tester headers
+    # Mesh tester
     MeshTester.hpp
 
-    # PointInCell headers
+    # PointInCell
     PointInCell.hpp
     detail/PointFinder.hpp
     detail/PointInCellMeshWrapper_mfem.hpp
-    
-    ## STL library headers
-    stl/STLReader.hpp
 
-    ## quest interface headers
+    ## File readers
+    readers/STLReader.hpp
+
+    ## quest interface
     interface/internal/mpicomm_wrapper.hpp
     interface/internal/QuestHelpers.hpp
-
     interface/inout.hpp
     interface/signed_distance.hpp
-    
+
     )
 
 set( quest_sources
 
+    ## Signed-distance query
+    SignedDistance.cpp
+
     ## All-nearest-neighbors query
     AllNearestNeighbors.cpp
 
-    ## Geometry Sources
-    # <nothing yet>
+    ## Discretize shapes
+    Discretize.cpp
 
-    ## Mesh tester sources
+    ## Mesh tester
     MeshTester.cpp
 
-    ## STL library sources
-    stl/STLReader.cpp
+    ## File readers
+    readers/STLReader.cpp
 
-    ## quest interface sources
+    ## quest interface
     interface/internal/QuestHelpers.cpp
-    
     interface/inout.cpp
     interface/signed_distance.cpp
 
    )
 
-set( quest_depends_on
-     core
-     slic
-     mint
-     slam
-     spin
-     primal
-     fmt
-     )
 
-blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
-blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
+set( quest_depends_on
+    core
+    slic
+    mint
+    slam
+    spin
+    primal
+    fmt
+    )
+
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
+blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
+blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
+blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
+
+if(MFEM_FOUND AND AXOM_USE_KLEE AND AXOM_USE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    list(APPEND quest_headers Shaper.hpp
+                              SamplingShaper.hpp
+                              IntersectionShaper.hpp
+                              detail/shaping/shaping_helpers.hpp)
+    list(APPEND quest_sources Shaper.cpp
+                              detail/shaping/shaping_helpers.cpp)
+endif()
+
+if(C2C_FOUND)
+    list(APPEND quest_headers readers/C2CReader.hpp)
+    list(APPEND quest_sources readers/C2CReader.cpp)
+    list(APPEND quest_depends_on c2c)
+endif()
 
 if (ENABLE_MPI)
-    list(APPEND quest_headers stl/PSTLReader.hpp)
-    list(APPEND quest_sources stl/PSTLReader.cpp)
+    list(APPEND quest_headers readers/PSTLReader.hpp)
+    blt_list_append(TO quest_headers IF C2C_FOUND ELEMENTS readers/PC2CReader.hpp)
 
-    blt_list_append(TO quest_depends_on
-                    IF AXOM_ENABLE_LUMBERJACK
-                    ELEMENTS lumberjack )
-
+    list(APPEND quest_sources readers/PSTLReader.cpp)
+    blt_list_append(TO quest_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
+    
     list(APPEND quest_depends_on mpi)
 endif()
 
@@ -137,11 +163,11 @@ axom_install_component(NAME    quest
 # Add tests and examples
 #------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
-  add_subdirectory(examples)
+    add_subdirectory(examples)
 endif()
 
 if (AXOM_ENABLE_TESTS)
-  add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()
 
 axom_add_code_checks(PREFIX quest)

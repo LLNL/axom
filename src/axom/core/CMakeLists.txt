@@ -15,6 +15,7 @@ set(core_headers
     utilities/AnnotationMacros.hpp
     utilities/FileUtilities.hpp
     utilities/StringUtilities.hpp
+    utilities/System.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
     utilities/About.hpp
@@ -39,7 +40,12 @@ set(core_headers
 
     ## core
     Array.hpp
+    ArrayBase.hpp
+    ArrayIteratorBase.hpp
+    ArrayView.hpp
+    IteratorBase.hpp
     Macros.hpp
+    Map.hpp
     Path.hpp
     StackArray.hpp
     Types.hpp
@@ -59,6 +65,7 @@ set(core_headers
 set(core_sources
     utilities/FileUtilities.cpp
     utilities/StringUtilities.cpp
+    utilities/System.cpp
     utilities/Utilities.cpp
     utilities/About.cpp
 
@@ -76,11 +83,17 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
-blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ${ENABLE_CUDA} )
-blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
-blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
+blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
+blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
+
+# TODO: remove this when we figure out why RAJA::cub is not getting inherited from RAJA
+if (TARGET RAJA::cub AND RAJA_FOUND)
+  list(APPEND core_depends RAJA::cub)
+endif()
+
+blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ENABLE_CUDA )
+blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
 
 #------------------------------------------------------------------------------
 # Make/Install the library

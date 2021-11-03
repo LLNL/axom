@@ -19,6 +19,8 @@
 #include <vector>
 #include <initializer_list>
 
+#include "axom/inlet/inlet_utils.hpp"
+
 namespace axom
 {
 namespace inlet
@@ -43,8 +45,19 @@ class Field;
 class VerifiableScalar
 {
 public:
+  /**
+   * A function which can verify the contents of the item being verified.
+   * It should report any errors via the INLET_VERIFICATION_WARNING macro,
+   * passing in the given array of errors.
+   */
+  using Verifier = std::function<bool(const axom::inlet::Field&,
+                                      std::vector<VerificationError>* errors)>;
+
+  virtual ~VerifiableScalar() = default;
+
   // Should not be reassignable
   VerifiableScalar& operator=(const VerifiableScalar&) = delete;
+
   /*!
    *****************************************************************************
    * \brief Set the required status of this object.
@@ -76,11 +89,21 @@ public:
    * \brief Registers the function object that will verify this object's contents
    * during the verification stage.
    * 
-   * \param [in] The function object.
+   * \param [in] lambda The function object.
    *****************************************************************************
   */
-  virtual VerifiableScalar& registerVerifier(
-    std::function<bool(const axom::inlet::Field&)> lambda) = 0;
+  VerifiableScalar& registerVerifier(
+    std::function<bool(const axom::inlet::Field&)> lambda);
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this object's contents
+   * during the verification stage.
+   *
+   * \param [in] verifier The function object.
+   *****************************************************************************
+  */
+  virtual VerifiableScalar& registerVerifier(Verifier verifier) = 0;
 
   /*!
    *****************************************************************************
@@ -247,9 +270,15 @@ public:
   /*!
    *****************************************************************************
    * \brief Verifies the object to make sure it satisfies the imposed requirements
+   * \param [in] errors An optional vector of errors to append to in the case
+   * of verification failure
+   * 
+   * Ownership is not taken of @a errors, the raw pointer is only used for its
+   * optional reference semantics, as opposed to something like
+   * std::optional<std::reference_wrapper<T>>
    *****************************************************************************
   */
-  virtual bool verify() const = 0;
+  virtual bool verify(std::vector<VerificationError>* errors = nullptr) const = 0;
 };
 
 }  // namespace inlet

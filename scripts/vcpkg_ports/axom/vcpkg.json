@@ -1,0 +1,21 @@
+{
+  "name": "axom",
+  "version-string": "develop",
+  "homepage": "https://github.com/llnl/axom",
+  "description": "Host-config generator for Axom TPLs",
+  "dependencies": ["blt"],
+  "default-features": [
+    "mfem",
+    "conduit"
+  ],
+  "features": {
+    "mfem": {
+      "description": "mfem functionality for axom",
+      "dependencies" : ["mfem"]
+    },
+    "conduit": {
+      "description": "conduit functionality for axom",
+      "dependencies": ["conduit"]
+    }
+  }
+}
