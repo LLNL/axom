@@ -33,11 +33,11 @@ elseif("${_axom_debug_define_upper}" MATCHES "OFF|FALSE")
   # no-op
 elseif("${_axom_debug_define_upper}" MATCHES "DEFAULT")
   # Default behavior is to be on for Debug and RelWithDebInfo configurations and off otherwise
-  if(NOT CMAKE_CONFIGURATION_TYPES)
+  if(NOT CMAKE_CONFIGURATION_TYPES) # This case handles single-config generators, e.g. make
       if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
         set(AXOM_DEBUG_DEFINE_STRING "AXOM_DEBUG")
       endif()
-  else ()
+  else () # This case handles multi-config generators, e.g. MSVC
       set(AXOM_DEBUG_DEFINE_STRING "$<$<CONFIG:Debug,RelWithDebInfo>:AXOM_DEBUG>")
   endif()
 else()  # Handle bad value for AXOM_DEBUG_DEFINE config variable
