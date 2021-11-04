@@ -17,8 +17,11 @@ TEST(core_about, print_about) { axom::about(); }
 TEST(core_about, get_version)
 {
   std::ostringstream EXPECTED_VERSION_STRING;
-  EXPECTED_VERSION_STRING << AXOM_VERSION_FULL << "-";
-  EXPECTED_VERSION_STRING << AXOM_VERSION_EXTRA;
+  EXPECTED_VERSION_STRING << AXOM_VERSION_FULL;
+
+#ifdef AXOM_VERSION_EXTRA
+  EXPECTED_VERSION_STRING << "-" << AXOM_VERSION_EXTRA;
+#endif 
 
   std::string axom_version = axom::getVersion();
   EXPECT_EQ(EXPECTED_VERSION_STRING.str(), axom_version);
