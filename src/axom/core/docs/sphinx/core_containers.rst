@@ -41,7 +41,7 @@ by default. To return all extra memory, an application can call
   Use ``reserve()`` when the number of nodes is known a priori, or
   use a constructor that takes an actual size and capacity when possible.
   
-.. note:: The Array destructor deallocates and returns all memory associated
+.. note:: The ``Array`` destructor deallocates and returns all memory associated
   with it to the system.
 
 Here's an example showing how to use ``Array`` instead of ``std::vector``.
@@ -164,7 +164,7 @@ The full template signature for ``Array`` (``ArrayView`` has an analogous signat
 is the last parameter, which specifies the memory space in which the array's data are allocated.
 The default, ``Dynamic``, means that the memory space is set via an allocator ID at runtime.
 
-.. note:: Allocating ``Array``s in different memory spaces is only possible when Umpire is available.
+.. note:: Allocating ``Array`` s in different memory spaces is only possible when Umpire is available.
 
 Setting the ``MemorySpace`` to an option other than ``Dynamic`` (for example, ``MemorySpace::Device``) provides
 a compile-time guarantee that data can always be accessed from a GPU.  "Locking down" the memory space at
@@ -172,14 +172,13 @@ compile time can help to prevent illegal memory accesses and segmentation faults
 from the wrong execution space.
 
 For example, a GPU kernel can require that its argument arrays be allocated in a specific memory space.
+To illustrate how different memory spaces can be required, the following kernel requires that its
+input arrays ``A`` and ``B`` are in unified memory and its output array ``C`` is in device memory.
 
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _cuda_kernel_start
    :end-before: _cuda_kernel_end
    :language: C++
-
-To illustrate how different memory spaces can be required, the inputs happen to be in unified memory and the output in
-device memory.
 
 The following snippet illustrates how one would create and initialize the inputs/outputs to this kernel.  Note
 how a "Dynamic" ``Array`` can be converted into an ``Array`` whose memory space is locked down.
@@ -188,6 +187,10 @@ how a "Dynamic" ``Array`` can be converted into an ``Array`` whose memory space 
    :start-after: _cuda_array_create_start
    :end-before: _cuda_array_create_end
    :language: C++
+
+.. note:: Unless the Dynamic memory space is in use, the ``Array`` constructor will
+   ignore an allocator ID that doesn't match its memory space, and in debug
+   builds will print a warning at runtime.
 
 We can now launch the kernel and display the results via a transfer back to host-accessible memory:
 

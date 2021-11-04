@@ -534,20 +534,21 @@ bool allNonNegative(const T (&arr)[N])
 
 /// \brief Indirection needed to dodge an MSVC compiler bug
 template <typename... Args>
-struct first_type_is_integral_impl : std::false_type
+struct all_types_are_integral_impl : std::true_type
 { };
 
 template <typename First, typename... Rest>
-struct first_type_is_integral_impl<First, Rest...>
+struct all_types_are_integral_impl<First, Rest...>
 {
-  static constexpr bool value = std::is_integral<First>::value;
+  static constexpr bool value = std::is_integral<First>::value &&
+    all_types_are_integral_impl<Rest...>::value;
 };
 
 /// \brief Checks if the first type in a parameter pack is integral
 template <typename... Args>
-struct first_type_is_integral
+struct all_types_are_integral
 {
-  static constexpr bool value = first_type_is_integral_impl<Args...>::value;
+  static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
 
 /// \brief Translates between the MemorySpace enum and Umpire allocator IDs

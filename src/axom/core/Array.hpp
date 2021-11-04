@@ -134,7 +134,7 @@ public:
    */
   template <typename... Args,
             typename std::enable_if<
-              detail::first_type_is_integral<Args...>::value>::type* = nullptr>
+              detail::all_types_are_integral<Args...>::value>::type* = nullptr>
   Array(Args... args);
 
   /*! 
@@ -277,7 +277,6 @@ public:
    * \note The size increases by 1.
    *
    */
-  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   void insert(IndexType pos, const T& value);
 
   /*!
@@ -291,7 +290,6 @@ public:
    *
    * \return ArrayIterator to inserted value
    */
-  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   ArrayIterator insert(ArrayIterator pos, const T& value);
 
   /*!
@@ -324,7 +322,6 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
-  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T* values);
 
   /*!
@@ -341,7 +338,6 @@ public:
    *
    * \pre pos <= m_num_elements.
    */
-  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   void insert(IndexType pos, IndexType n, const T& value);
 
   /*!
@@ -360,7 +356,6 @@ public:
    *
    * \return ArrayIterator to first element inserted (pos if n == 0)
    */
-  template <IndexType SFINAE = DIM, typename std::enable_if<SFINAE == 1>::type* = nullptr>
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
 
   // Make the overload "visible"
@@ -600,7 +595,7 @@ Array<T, DIM, SPACE>::Array()
 
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args,
-          typename std::enable_if<detail::first_type_is_integral<Args...>::value>::type*>
+          typename std::enable_if<detail::all_types_are_integral<Args...>::value>::type*>
 Array<T, DIM, SPACE>::Array(Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(args...)
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
@@ -750,20 +745,20 @@ inline void Array<T, DIM, SPACE>::clear()
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline void Array<T, DIM, SPACE>::insert(IndexType pos, const T& value)
 {
+  static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(1, pos);
   m_data[pos] = value;
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::insert(
   Array<T, DIM, SPACE>::ArrayIterator pos,
   const T& value)
 {
+  static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), value);
   return pos;
@@ -783,12 +778,12 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T* va
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::insert(
   Array<T, DIM, SPACE>::ArrayIterator pos,
   IndexType n,
   const T* values)
 {
+  static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), n, values);
   return pos;
@@ -796,9 +791,9 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::insert
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T& value)
 {
+  static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(n, pos);
   for(IndexType i = 0; i < n; ++i)
   {
@@ -808,12 +803,12 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T& va
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <IndexType SFINAE, typename std::enable_if<SFINAE == 1>::type*>
 inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::insert(
   Array<T, DIM, SPACE>::ArrayIterator pos,
   IndexType n,
   const T& value)
 {
+  static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), n, value);
   return pos;
