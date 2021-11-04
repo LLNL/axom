@@ -19,6 +19,17 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+###  Added
+- Added a config variable, `AXOM_DEBUG_DEFINE` to control whether the `AXOM_DEBUG` compiler define is enabled.
+  By `DEFAULT`, it is enabled for `Debug` and `RelWithDebInfo` configurations, but this can be overriden
+  by setting `AXOM_DEBUG_DEFINE` to `ON` or `OFF`. 
+###  Changed
+- Renamed `AXOM_NOT_USED` macro to `AXOM_UNUSED_PARAM` for better consistency with other Axom macros
+
+###  Fixed
+- The `AXOM_DEBUG` compiler define is now properly exported via the `axom` CMake target when it is enabled
+
+
 ## [Version 0.6.0] - Release date 2021-11-04
 
 ### Added
