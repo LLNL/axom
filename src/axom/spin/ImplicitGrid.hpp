@@ -205,9 +205,17 @@ public:
     {
       m_bins[i] = BinSet(m_gridRes[i]);
       m_binData[i] = BinBitMap(&m_bins[i], BitsetType {}, 1, allocatorID);
+      m_minBlockBin[i] =
+        axom::Array<IndexType>(m_gridRes[i], m_gridRes[i], allocatorID);
+      m_maxBlockBin[i] =
+        axom::Array<IndexType>(m_gridRes[i], m_gridRes[i], allocatorID);
       for(int ibin = 0; ibin < m_bins[i].size(); ibin++)
       {
         m_binData[i][ibin] = BitsetType(numElts, allocatorID);
+        // We set initial min/max word indices to dummy values. These will be
+        // set correctly on the first call to ImplicitGrid::insert().
+        m_minBlockBin[i][ibin] = numElts;
+        m_maxBlockBin[i][ibin] = 0;
       }
     }
 
@@ -258,12 +266,18 @@ public:
     LatticeType lattice = m_lattice;
 
     BitsetType* binData[NDIMS];
+    IndexType* minBlkBins[NDIMS];
+    IndexType* maxBlkBins[NDIMS];
     IndexType highestBins[NDIMS];
     for(int i = 0; i < NDIMS; i++)
     {
       binData[i] = m_binData[i].data().data();
       highestBins[i] = m_binData[i].set()->size() - 1;
+      minBlkBins[i] = m_minBlockBin[i].data();
+      maxBlkBins[i] = m_maxBlockBin[i].data();
     }
+
+    using AtomicPol = typename axom::execution_space<ExecSpace>::atomic_policy;
 
     for_all<ExecSpace>(
       nelems,
@@ -286,9 +300,18 @@ public:
           const IndexType upper =
             axom::utilities::clampUpper(upperCell[idim], highestBins[idim]);
 
+          const IndexType word = elemIdx / BitsetType::BitsPerWord;
+
           for(int j = lower; j <= upper; ++j)
           {
             binData[idim][j].atomicSet(elemIdx);
+#ifdef AXOM_USE_RAJA
+            RAJA::atomicMin<AtomicPol>(&minBlkBins[idim][j], word);
+            RAJA::atomicMax<AtomicPol>(&maxBlkBins[idim][j], word);
+#else
+            minBlkBins[idim][j] = std::min(minBlkBins[idim][j], word);
+            maxBlkBins[idim][j] = std::max(maxBlkBins[idim][j], word);
+#endif
           }
         }
       });
@@ -503,6 +526,12 @@ private:
   //! The data associated with each bin
   BinBitMap m_binData[NDIMS];
 
+  //! The lowest word index in each bin with at least one bit set
+  axom::Array<IndexType> m_minBlockBin[NDIMS];
+
+  //! The highest word index in each bin with at least one bit set
+  axom::Array<IndexType> m_maxBlockBin[NDIMS];
+
   //! The allocator ID to use
   int m_allocatorId;
 
@@ -542,7 +571,9 @@ public:
 
   QueryObject(const SpatialBoundingBox& spaceBb,
               const LatticeType& lattice,
-              const BinBitMap (&binData)[NDIMS])
+              const BinBitMap (&binData)[NDIMS],
+              const axom::Array<IndexType> (&minBlkBins)[NDIMS],
+              const axom::Array<IndexType> (&maxBlkBins)[NDIMS])
     : m_bb(spaceBb)
     , m_lattice(lattice)
   {
@@ -550,6 +581,8 @@ public:
     {
       m_highestBins[idim] = binData[idim].set()->size() - 1;
       m_binData[idim] = binData[idim].data().data();
+      m_minBlkBin[idim] = minBlkBins[idim].data();
+      m_maxBlkBin[idim] = maxBlkBins[idim].data();
     }
   }
 
@@ -637,6 +670,67 @@ private:
     return VisitDispatch<FuncType, ReturnType>::getResult(type, arg);
   }
 
+  /*!
+   * \brief Gets the expected range of word indices where bits may be set for
+   *  a given bin coordinate.
+   *
+   * \param [in] cellIdx the bin indices
+   * \param [out] minWord the lowest-indexed word where a bit may be set
+   * \param [out] maxWord the highest-indexed word where a bit may be set
+   */
+  AXOM_HOST_DEVICE void getWordBounds(const GridCell& cellIdx,
+                                      IndexType& minWord,
+                                      IndexType& maxWord) const
+  {
+    minWord = m_minBlkBin[0][cellIdx[0]];
+    maxWord = m_maxBlkBin[0][cellIdx[0]];
+    for(int idim = 1; idim < NDIMS; idim++)
+    {
+      // Intersect with word ranges of other dimensions
+      minWord = axom::utilities::max(m_minBlkBin[idim][cellIdx[idim]], minWord);
+      maxWord = axom::utilities::min(m_maxBlkBin[idim][cellIdx[idim]], maxWord);
+    }
+  }
+
+  /*!
+   * \brief Gets the expected range of word indices where bits may be set for
+   *  a given range of bin coordinate.
+   *
+   * \param [in] lowerRange the lower bound of bin coordinates
+   * \param [in] upperRange the upper bound of bin coordinates
+   * \param [out] minWord the lowest-indexed word where a bit may be set
+   * \param [out] maxWord the highest-indexed word where a bit may be set
+   */
+  AXOM_HOST_DEVICE void getWordBounds(const GridCell& lowerRange,
+                                      const GridCell& upperRange,
+                                      IndexType& minWord,
+                                      IndexType& maxWord) const
+  {
+    for(int idim = 0; idim < NDIMS; idim++)
+    {
+      IndexType minWordDim = m_minBlkBin[idim][lowerRange[idim]],
+                maxWordDim = m_maxBlkBin[idim][upperRange[idim]];
+      for(int ibin = lowerRange[idim] + 1; ibin <= upperRange[idim]; ibin++)
+      {
+        // Take the union of candidate bins within a dimension
+        minWordDim = axom::utilities::min(m_minBlkBin[idim][ibin], minWordDim);
+        maxWordDim = axom::utilities::max(m_maxBlkBin[idim][ibin], maxWordDim);
+      }
+
+      if(idim == 0)
+      {
+        minWord = minWordDim;
+        maxWord = maxWordDim;
+      }
+      else
+      {
+        // Intersect the resulting ranges between dimensions
+        minWord = axom::utilities::max(minWordDim, minWord);
+        maxWord = axom::utilities::min(maxWordDim, maxWord);
+      }
+    }
+  }
+
   //! The bounding box of the ImplicitGrid
   SpatialBoundingBox m_bb;
 
@@ -648,6 +742,12 @@ private:
 
   //! The data associated with each bin
   const BitsetType* m_binData[NDIMS];
+
+  //! The lowest word index in each bin with at least one bit set
+  const IndexType* m_minBlkBin[NDIMS];
+
+  //! The highest word index in each bin with at least one bit set
+  const IndexType* m_maxBlkBin[NDIMS];
 };
 
 template <int NDIMS, typename ExecSpace, typename IndexType>
@@ -658,7 +758,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::getQueryObject() const
                 "ImplicitGrid::QueryObject must be copy-constructible.");
 
   SLIC_ASSERT(m_initialized);
-  return QueryObject {m_bb, m_lattice, this->m_binData};
+  return QueryObject {m_bb, m_lattice, m_binData, m_minBlockBin, m_maxBlockBin};
 }
 
 template <int NDIMS, typename ExecSpace, typename IndexType>
@@ -733,7 +833,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
 {
   if(!m_bb.contains(pt)) return 0;
 
-  const GridCell gridCell = m_lattice.gridCell(pt);
+  GridCell gridCell = m_lattice.gridCell(pt);
 
   IndexType ncandidates {0};
 
@@ -741,18 +841,19 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   //       to handle points on the upper boundaries of the bbox
   //       This is valid since we've already ensured that pt is in the bbox.
 
-  IndexType cellIdx[NDIMS];
   for(int idim = 0; idim < NDIMS; idim++)
   {
-    cellIdx[idim] =
+    gridCell[idim] =
       axom::utilities::clampUpper(gridCell[idim], m_highestBins[idim]);
   }
 
+  const GridCell cellIdx = gridCell;
+
   // HACK: we use the underlying word data in the bitsets
   // is it possible to lazy-evaluate whole-bitset operations?
-  int nbits = m_binData[0][0].size();
-  int nwords = 1 + (nbits - 1) / BitsetType::BitsPerWord;
-  for(int iword = 0; iword <= nwords; iword++)
+  IndexType minWord, maxWord;
+  getWordBounds(cellIdx, minWord, maxWord);
+  for(int iword = minWord; iword <= maxWord; iword++)
   {
     BitsetType::Word currWord = ~(BitsetType::Word {0});
     for(int idim = 0; idim < NDIMS; idim++)
@@ -796,9 +897,9 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
 
   // HACK: we use the underlying word data in the bitsets
   // is it possible to lazy-evaluate whole-bitset operations?
-  int bitsetSize = m_binData[0][0].size();
-  int nwords = 1 + (bitsetSize - 1) / BitsetType::BitsPerWord;
-  for(int iword = 0; iword <= nwords; iword++)
+  IndexType minWord, maxWord;
+  getWordBounds(lowerRange, upperRange, minWord, maxWord);
+  for(int iword = minWord; iword <= maxWord; iword++)
   {
     BitsetType::Word currWord = ~(BitsetType::Word {0});
     for(int idim = 0; idim < NDIMS; idim++)
@@ -832,7 +933,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
 {
   if(!m_bb.contains(pt)) return;
 
-  const GridCell gridCell = m_lattice.gridCell(pt);
+  GridCell gridCell = m_lattice.gridCell(pt);
 
   const int bitsPerWord = BitsetType::BitsPerWord;
 
@@ -840,18 +941,20 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   //       to handle points on the upper boundaries of the bbox
   //       This is valid since we've already ensured that pt is in the bbox.
 
-  IndexType cellIdx[NDIMS];
   for(int idim = 0; idim < NDIMS; idim++)
   {
-    cellIdx[idim] =
+    gridCell[idim] =
       axom::utilities::clampUpper(gridCell[idim], m_highestBins[idim]);
   }
+
+  const GridCell cellIdx = gridCell;
 
   // HACK: we use the underlying word data in the bitsets
   // is it possible to lazy-evaluate whole-bitset operations?
   int nbits = m_binData[0][0].size();
-  int nwords = 1 + (nbits - 1) / BitsetType::BitsPerWord;
-  for(int iword = 0; iword <= nwords; iword++)
+  IndexType minWord, maxWord;
+  getWordBounds(cellIdx, minWord, maxWord);
+  for(int iword = minWord; iword <= maxWord; iword++)
   {
     BitsetType::Word currWord = ~(BitsetType::Word {0});
     for(int idim = 0; idim < NDIMS; idim++)
@@ -908,9 +1011,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
 
   // HACK: we use the underlying word data in the bitsets
   // is it possible to lazy-evaluate whole-bitset operations?
-  int bitsetSize = m_binData[0][0].size();
-  int nwords = 1 + (bitsetSize - 1) / BitsetType::BitsPerWord;
-  for(int iword = 0; iword <= nwords; iword++)
+  int nbits = m_binData[0][0].size();
+  IndexType minWord, maxWord;
+  getWordBounds(lowerRange, upperRange, minWord, maxWord);
+  for(int iword = minWord; iword <= maxWord; iword++)
   {
     BitsetType::Word currWord = ~(BitsetType::Word {0});
     for(int idim = 0; idim < NDIMS; idim++)
@@ -930,7 +1034,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     }
     // currWord now contains the resulting candidacy information
     // for our given point
-    int numBits = axom::utilities::min(bitsPerWord, bitsetSize - (iword * 64));
+    int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
     int currBit = axom::utilities::trailingZeros(currWord);
     while(currBit < numBits)
     {
