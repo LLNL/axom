@@ -169,7 +169,7 @@ public:
   * in region defined by bounding box \a queryBounds
   */
   void computeVolumeFractionsBaseline(mfem::DataCollection* dc,
-                                      int AXOM_NOT_USED(sampleRes),
+                                      int AXOM_UNUSED_PARAM(sampleRes),
                                       int outputOrder)
   {
     // Step 1 -- generate a QField w/ the spatial coordinates

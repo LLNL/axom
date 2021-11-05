@@ -73,7 +73,7 @@ void SynchronizedStream::append(message::Level msgLevel,
                                 const std::string& tagName,
                                 const std::string& fileName,
                                 int line,
-                                bool AXOM_NOT_USED(filter_duplicates))
+                                bool AXOM_UNUSED_PARAM(filter_duplicates))
 {
   if(m_cache == nullptr)
   {

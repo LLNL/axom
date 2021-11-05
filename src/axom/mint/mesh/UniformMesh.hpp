@@ -6,11 +6,11 @@
 #ifndef MINT_UNIFORMMESH_HPP_
 #define MINT_UNIFORMMESH_HPP_
 
-#include "axom/core/StackArray.hpp"           // for StackArray
-#include "axom/mint/config.hpp"               // for IndexType, int64
-#include "axom/mint/mesh/StructuredMesh.hpp"  // for StructuredMesh
+#include "axom/core/StackArray.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/StructuredMesh.hpp"
 
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
+#include "axom/slic/interface/slic.hpp"
 
 namespace axom
 {
@@ -221,13 +221,13 @@ public:
    */
   /// @{
 
-  virtual double* getCoordinateArray(int AXOM_NOT_USED(dim)) final override
+  virtual double* getCoordinateArray(int AXOM_UNUSED_PARAM(dim)) final override
   {
     SLIC_ERROR("getCoordinateArray() is not supported for UniformMesh");
     return nullptr;
   }
 
-  virtual const double* getCoordinateArray(int AXOM_NOT_USED(dim)) const final override
+  virtual const double* getCoordinateArray(int AXOM_UNUSED_PARAM(dim)) const final override
   {
     SLIC_ERROR("getCoordinateArray() is not supported for UniformMesh");
     return nullptr;
