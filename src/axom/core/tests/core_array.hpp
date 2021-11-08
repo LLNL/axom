@@ -733,7 +733,7 @@ void check_external_view(ArrayView<T>& v)
   EXPECT_EQ(data_ptr, v.data());
 }
 
-#ifdef __CUDACC__
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
 
 template <typename T>
 __global__ void assign_raw(T* data, int N)
@@ -899,7 +899,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   }
 }
 
-#endif  // __CUDACC__
+#endif  // defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
 
 } /* end namespace internal */
 

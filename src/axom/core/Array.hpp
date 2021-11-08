@@ -8,7 +8,6 @@
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
-#include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
 #include "axom/core/ArrayBase.hpp"

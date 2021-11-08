@@ -8,6 +8,7 @@
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
+#include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
 #include "axom/core/StackArray.hpp"
@@ -17,31 +18,8 @@
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
 
-#ifdef AXOM_USE_UMPIRE
-  #include "umpire/resource/MemoryResourceTypes.hpp"
-#endif
-
 namespace axom
 {
-/*! 
- * \brief Memory spaces supported by Array-like types
- *
- * This abstraction is not implemented using Umpire's MemoryResourceType enum
- * in order to also include a "Dynamic" option as a default template parameter
- * for Array-like types
- */
-enum class MemorySpace
-{
-  Dynamic,
-#ifdef AXOM_USE_UMPIRE
-  Host,
-  Device,
-  Unified,
-  Pinned,
-  Constant
-#endif
-};
-
 // Forward declare the templated classes and operator function(s)
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase;
@@ -550,55 +528,6 @@ struct all_types_are_integral
 {
   static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
-
-/// \brief Translates between the MemorySpace enum and Umpire allocator IDs
-template <MemorySpace SPACE>
-inline int getAllocatorID();
-
-template <>
-inline int getAllocatorID<MemorySpace::Dynamic>()
-{
-  return axom::getDefaultAllocatorID();
-}
-
-#ifdef AXOM_USE_UMPIRE
-
-template <>
-inline int getAllocatorID<MemorySpace::Host>()
-{
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Host);
-}
-
-template <>
-inline int getAllocatorID<MemorySpace::Device>()
-{
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Device);
-}
-
-template <>
-inline int getAllocatorID<MemorySpace::Unified>()
-{
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Unified);
-}
-
-template <>
-inline int getAllocatorID<MemorySpace::Pinned>()
-{
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Pinned);
-}
-
-template <>
-inline int getAllocatorID<MemorySpace::Constant>()
-{
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Constant);
-}
-
-#endif
 
 }  // namespace detail
 

@@ -170,7 +170,13 @@ void demoArrayBasic()
   // _iteration_end
 }
 
-#ifdef __CUDACC__
+// The following example requires CUDA + Umpire + unified memory
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA) && \
+  defined(__CUDACC__) && defined(UMPIRE_ENABLE_UM)
+  #define AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
+#endif
+
+#ifdef AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
 
 // _cuda_kernel_start
 // Aliases used for convenience
@@ -192,8 +198,7 @@ __global__ void add(const UnifiedIntArrayView A,
 
 void demoArrayDevice()
 {
-  //This example requires Umpire
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA) && defined(__CUDACC__)
+#ifdef AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
   // _cuda_array_create_start
   constexpr int N = 10;
   const int allocator_id = axom::getUmpireResourceAllocatorID(
@@ -217,7 +222,7 @@ void demoArrayDevice()
     B_unified[i] = i * 2;
   }
 
-  // Since our kernel requires at compile time that its arguments to be in unified memory,
+  // Since our kernel requires that its arguments to be in unified memory at compile time,
   // we lock down the dynamic array.  In the general case this will result in a transfer,
   // but because the dynamic array happens to be in unified memory a direct copy is possible.
   axom::Array<int, 1, axom::MemorySpace::Unified> A_unified = A_dynamic;
@@ -259,7 +264,7 @@ void demoArrayDevice()
       C_view[i] = A_view[i] + B_view[i] + 1;
     });
 
-  // Finally, copy things over to host mmemory so we can display the data
+  // Finally, copy things over to host memory so we can display the data
   axom::Array<int, 1, axom::MemorySpace::Host> C_host_raja = C_view;
   std::cout << "Array C_host_raja = " << C_host_raja << std::endl;
   // _array_w_raja_end
