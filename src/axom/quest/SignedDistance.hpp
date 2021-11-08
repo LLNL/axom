@@ -599,7 +599,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
   {
     int candidate_loc;
     PointType candidate_pt =
-      closest_point(qpt, surface_elems[ei], &candidate_loc);
+      closest_point(qpt, surface_elems[ei], &candidate_loc, EPS);
     double sq_dist = squared_distance(qpt, candidate_pt);
 
     // Check the type of intersection we found
@@ -608,22 +608,21 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
     // Determine if the closest point is on an edge or vertex
     const bool is_cpt_shared = isClosestPointTypeShared(cpt_type);
 
-    // Don't clear normals if new point is on edge or vertex
-    // and we've already found a point on this edge or vertex
-    const bool shouldClearVecs =
-      // Clear if we're not computing normals
-      !computeNormal ||
-      // or not in a shared configuration
-      !is_cpt_shared ||
-      // Also clear we've not yet seen a shared closest point type
-      !isClosestPointTypeShared(currMin.minType) ||
-      // finally, if there was a previous shared point -- check if it's approximately the same
-      !isNearlyEqual(squared_distance(candidate_pt, currMin.minPt), 0., EPS);
-
     bool shouldUpdateNormals = false;
 
     if(sq_dist < currMin.minSqDist)
     {
+      // Clear the sum of normals if:
+      const bool shouldClearVecs =
+        // we're not computing normals
+        !computeNormal ||
+        // or we're not in a shared configuration
+        !is_cpt_shared ||
+        // or, if previous closest point type was different than current
+        (currMin.minType != cpt_type) ||
+        // finally, if there was a previous shared point -- check if approximately same as current
+        !isNearlyEqual(squared_distance(candidate_pt, currMin.minPt), 0., EPS);
+
       currMin.minSqDist = sq_dist;
       currMin.minPt = candidate_pt;
       currMin.minType = cpt_type;
@@ -640,7 +639,8 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
     }
     else
     {
-      shouldUpdateNormals = (computeNormal && is_cpt_shared) &&
+      shouldUpdateNormals = computeNormal && is_cpt_shared &&
+        (currMin.minType == cpt_type) &&
         isNearlyEqual(squared_distance(candidate_pt, currMin.minPt), 0., EPS);
     }
 
