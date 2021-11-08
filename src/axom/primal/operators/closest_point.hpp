@@ -17,7 +17,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
-
+#include "axom/primal/operators/detail/intersect_impl.hpp"
 namespace axom
 {
 namespace primal
@@ -60,10 +60,14 @@ namespace primal
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                                       const Triangle<T, NDIMS>& tri,
-                                                      int* loc = nullptr)
+                                                      int* loc = nullptr,
+                                                      double EPS = 1E-8)
 {
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
+
+  using detail::isGeq;
+  using detail::isLeq;
 
   const PointType& A = tri[0];
   const PointType& B = tri[1];
@@ -75,7 +79,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   const VectorType ap(A, P);
   const T d1 = VectorType::dot_product(ab, ap);
   const T d2 = VectorType::dot_product(ac, ap);
-  if(d1 <= 0.0f && d2 <= 0.0f)
+  if(isLeq(d1, T(0), EPS) && isLeq(d2, T(0), EPS))
   {
     // A is the closest point
     if(loc != nullptr)
@@ -91,7 +95,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   const VectorType bp(B, P);
   const T d3 = VectorType::dot_product(ab, bp);
   const T d4 = VectorType::dot_product(ac, bp);
-  if(d3 >= 0.0f && d4 <= d3)
+  if(isGeq(d3, T(0), EPS) && isLeq(d4, d3, EPS))
   {
     // B is the closest point
     if(loc != nullptr)
@@ -105,7 +109,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   //----------------------------------------------------------------------------
   // Check if P in edge region of AB
   const T vc = d1 * d4 - d3 * d2;
-  if(vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f)
+  if(isLeq(vc, T(0), EPS) && isGeq(d1, T(0), EPS) && isLeq(d3, T(0), EPS))
   {
     const T v = d1 / (d1 - d3);
     const VectorType v_ab = ab * v;
@@ -123,7 +127,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   const VectorType cp(C, P);
   const T d5 = VectorType::dot_product(ab, cp);
   const T d6 = VectorType::dot_product(ac, cp);
-  if(d6 >= 0.0f && d5 <= d6)
+  if(isGeq(d6, T(0), EPS) && isLeq(d5, d6, EPS))
   {
     // C is the closest point
     if(loc != nullptr)
@@ -137,7 +141,7 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   //----------------------------------------------------------------------------
   // Check if P in edge region of AC
   const T vb = d5 * d2 - d1 * d6;
-  if(vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f)
+  if(isLeq(vb, T(0), EPS) && isGeq(d2, T(0), EPS) && isLeq(d6, T(0), EPS))
   {
     const T w = d2 / (d2 - d6);
     const VectorType w_ac = ac * w;
@@ -153,7 +157,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
   //----------------------------------------------------------------------------
   // Check if P in edge region of BC
   T va = d3 * d6 - d5 * d4;
-  if(va <= 0.0f && (d4 - d3) >= 0.0f && (d5 - d6) >= 0.0f)
+  if(isLeq(va, T(0), EPS) && isGeq(d4 - d3, T(0), EPS) &&
+     isGeq(d5 - d6, T(0), EPS))
   {
     const T w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
     const VectorType bc(B, C);
