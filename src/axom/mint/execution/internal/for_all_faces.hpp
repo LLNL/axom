@@ -309,8 +309,8 @@ inline void for_all_faces_impl(xargs::nodeids,
       xargs::ij(),
       m,
       AXOM_LAMBDA(IndexType faceID,
-                  IndexType AXOM_NOT_USED(i),
-                  IndexType AXOM_NOT_USED(j)) {
+                  IndexType AXOM_UNUSED_PARAM(i),
+                  IndexType AXOM_UNUSED_PARAM(j)) {
         IndexType nodes[2];
         nodes[0] = faceID;
         nodes[1] = nodes[0] + cellNodeOffset3;
@@ -320,7 +320,7 @@ inline void for_all_faces_impl(xargs::nodeids,
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType AXOM_NOT_USED(i), IndexType j) {
+      AXOM_LAMBDA(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType j) {
         const IndexType shiftedID = faceID - numIFaces;
         IndexType nodes[2];
         nodes[0] = shiftedID + j;
@@ -349,8 +349,8 @@ inline void for_all_faces_impl(xargs::nodeids,
       xargs::ijk(),
       m,
       AXOM_LAMBDA(IndexType faceID,
-                  IndexType AXOM_NOT_USED(i),
-                  IndexType AXOM_NOT_USED(j),
+                  IndexType AXOM_UNUSED_PARAM(i),
+                  IndexType AXOM_UNUSED_PARAM(j),
                   IndexType k) {
         IndexType nodes[4];
         nodes[0] = faceID + k * INodeResolution;
@@ -364,7 +364,7 @@ inline void for_all_faces_impl(xargs::nodeids,
       xargs::ijk(),
       m,
       AXOM_LAMBDA(IndexType faceID,
-                  IndexType AXOM_NOT_USED(i),
+                  IndexType AXOM_UNUSED_PARAM(i),
                   IndexType j,
                   IndexType k) {
         const IndexType shiftedID = faceID - numIFaces;
@@ -380,7 +380,7 @@ inline void for_all_faces_impl(xargs::nodeids,
       xargs::ijk(),
       m,
       AXOM_LAMBDA(IndexType faceID,
-                  IndexType AXOM_NOT_USED(i),
+                  IndexType AXOM_UNUSED_PARAM(i),
                   IndexType j,
                   IndexType k) {
         const IndexType shiftedID = faceID - numIJFaces;
@@ -904,7 +904,7 @@ inline void for_all_faces_impl(xargs::coords,
 struct for_all_face_nodes_functor
 {
   template <typename ExecPolicy, typename MeshType, typename KernelType>
-  inline void operator()(ExecPolicy AXOM_NOT_USED(policy),
+  inline void operator()(ExecPolicy AXOM_UNUSED_PARAM(policy),
                          const MeshType& m,
                          KernelType&& kernel) const
   {

@@ -314,7 +314,7 @@ inline void for_all_cells_impl(xargs::faceids,
     for_all_cells_impl<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType cellID, IndexType AXOM_NOT_USED(i), IndexType j) {
+      AXOM_LAMBDA(IndexType cellID, IndexType AXOM_UNUSED_PARAM(i), IndexType j) {
         IndexType faces[4];
 
         /* The I_DIRECTION faces */
@@ -340,7 +340,7 @@ inline void for_all_cells_impl(xargs::faceids,
       xargs::ijk(),
       m,
       AXOM_LAMBDA(IndexType cellID,
-                  IndexType AXOM_NOT_USED(i),
+                  IndexType AXOM_UNUSED_PARAM(i),
                   IndexType j,
                   IndexType k) {
         IndexType faces[6];
@@ -599,7 +599,7 @@ inline void for_all_cells_impl(xargs::coords,
 struct for_all_cell_nodes_functor
 {
   template <typename ExecPolicy, typename MeshType, typename KernelType>
-  inline void operator()(ExecPolicy AXOM_NOT_USED(policy),
+  inline void operator()(ExecPolicy AXOM_UNUSED_PARAM(policy),
                          const MeshType& m,
                          KernelType&& kernel) const
   {
@@ -657,7 +657,7 @@ inline void for_all_cells_impl(xargs::coords,
       m,
       AXOM_LAMBDA(IndexType cellID,
                   const IndexType* nodeIDs,
-                  IndexType AXOM_NOT_USED(numNodes)) {
+                  IndexType AXOM_UNUSED_PARAM(numNodes)) {
         double coords[2] = {x[nodeIDs[0]], x[nodeIDs[1]]};
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);

@@ -125,7 +125,7 @@ void generate_aabbs(const mint::Mesh* mesh,
     mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
+                const IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
       primal::BoundingBox<double, NDIMS> range;
 
       for(IndexType inode = 0; inode < nodes_per_dim; ++inode)
@@ -191,7 +191,7 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
     mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
+                const IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
       BoxType range;
 
       PointType sum(0.0);
