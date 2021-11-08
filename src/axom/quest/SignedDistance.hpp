@@ -138,13 +138,10 @@ private:
       detail::ClosestPointLocType::uninitialized};
     /// Index within mesh of closest element
     int minElem;
-    /// The actual cell element
+    /// Contains geometry of the closest element
     TriangleType minTri;
-
-    /// The normal, if the closest point is on an edge
+    /// Weighted sum of normals when closest pt is on edge or vertex
     VectorType sumNormals {};
-    /// The normal, if the closest point is a node
-    VectorType sumNormalsAngWt {};
   };
 
 public:
@@ -613,10 +610,8 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
     if(sq_dist < currMin.minSqDist)
     {
       // Clear the sum of normals if:
-      const bool shouldClearVecs =
-        // we're not computing normals
-        !computeNormal ||
-        // or we're not in a shared configuration
+      const bool shouldClearNormals =
+        // we're not in a shared configuration
         !is_cpt_shared ||
         // or, if previous closest point type was different than current
         (currMin.minType != cpt_type) ||
@@ -629,10 +624,9 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
       currMin.minElem = cellId;
       currMin.minTri = surface_elems[ei];
 
-      if(shouldClearVecs)
+      if(computeNormal && shouldClearNormals)
       {
         currMin.sumNormals = VectorType {};
-        currMin.sumNormalsAngWt = VectorType {};
       }
 
       shouldUpdateNormals = (computeNormal && is_cpt_shared);
@@ -661,7 +655,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
           // Candidate closest point is on a vertex - add the angle-weighted
           // normal of a face potentially sharing a vertex
           double alpha = surface_elems[ei].angle(candidate_loc);
-          currMin.sumNormalsAngWt += (norm.unitVector() * alpha);
+          currMin.sumNormals += (norm.unitVector() * alpha);
         }
         else
         {
@@ -691,20 +685,8 @@ inline double SignedDistance<NDIMS, ExecSpace>::computeSign(
     // CASE 1: closest point is on the face of the surface element
     N = currMin.minTri.normal();
     break;
-  case detail::ClosestPointLocType::edge:
-    // CASE 2: closest point is on an edge, use sum of normals of equidistant faces
-    // TODO: Sometimes, the traversal fails to find the opposite face, so only
-    // a single face's normal is accumulated here. The proper solution would be
-    // to precompute edge pseudo-normals during construction time, but that
-    // would also require generating cell-to-face connectivity for the surface mesh.
+  default:  // Use precomputed normal for edges and vertices
     N = currMin.sumNormals;
-    break;
-  case detail::ClosestPointLocType::vertex:
-    // CASE 3: closest point is on a node, use angle-weighted pseudo-normal
-    N = currMin.sumNormalsAngWt;
-    break;
-  default:
-    SLIC_WARNING("Did not find a valid closest point for query point: " << qpt);
     break;
   }
 
