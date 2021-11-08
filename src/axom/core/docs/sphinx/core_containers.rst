@@ -165,13 +165,48 @@ is the last parameter, which specifies the memory space in which the array's dat
 The default, ``Dynamic``, means that the memory space is set via an allocator ID at runtime.
 
 .. note:: Allocating ``Array`` s in different memory spaces is only possible when Umpire is available.
+   To learn more about Umpire, see the `Umpire documentation <https://readthedocs.org/projects/umpire>`_
 
 Setting the ``MemorySpace`` to an option other than ``Dynamic`` (for example, ``MemorySpace::Device``) provides
 a compile-time guarantee that data can always be accessed from a GPU.  "Locking down" the memory space at
 compile time can help to prevent illegal memory accesses and segmentation faults when pointers are dereferenced
 from the wrong execution space.
 
-For example, a GPU kernel can require that its argument arrays be allocated in a specific memory space.
+To summarize, there are a couple different options for creating an ``ArrayView``.
+Consider a function that takes as an argument an ``ArrayView`` on the device:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _basic_array_function_start
+   :end-before: _basic_array_function_end
+   :language: C++
+
+To create an argument to this function we can select the space either at runtime or at compile-time as follows:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _basic_array_device_create_start
+   :end-before: _basic_array_device_create_end
+   :language: C++
+
+The first way we can create the required ``ArrayView`` is by implicit conversion, which also simplifies
+the process of "locking down" a ``MemorySpace::Dynamic`` array to an explicit memory space - ``MemorySpace:Device`` in this case.
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _basic_array_device_implicit_start
+   :end-before: _basic_array_device_implicit_end
+   :language: C++
+
+.. warning:: If we had attempted to convert from a ``MemorySpace::Dynamic`` array that had been allocated in host memory,
+  for example, an error would be produced at runtime.
+
+We can also explicitly construct the ``ArrayView`` before calling the function.
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _basic_array_device_explicit_start
+   :end-before: _basic_array_device_explicit_end
+   :language: C++
+
+A more realistic example of this functionality involves a GPU kernel requiring
+that its argument arrays be allocated in a specific memory space.
 To illustrate how different memory spaces can be required, the following kernel requires that its
 input arrays ``A`` and ``B`` are in unified memory and its output array ``C`` is in device memory.
 
@@ -180,8 +215,7 @@ input arrays ``A`` and ``B`` are in unified memory and its output array ``C`` is
    :end-before: _cuda_kernel_end
    :language: C++
 
-The following snippet illustrates how one would create and initialize the inputs/outputs to this kernel.  Note
-how a "Dynamic" ``Array`` can be converted into an ``Array`` whose memory space is locked down.
+The following snippet illustrates how one would create and initialize the inputs/outputs to this kernel.
 
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _cuda_array_create_start

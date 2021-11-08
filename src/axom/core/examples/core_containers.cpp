@@ -194,13 +194,39 @@ __global__ void add(const UnifiedIntArrayView A,
 }
 // _cuda_kernel_end
 
+// _basic_array_function_start
+void takesDeviceArrayView(axom::ArrayView<int, 1, axom::MemorySpace::Device>) { }
+// _basic_array_function_end
 #endif
 
 void demoArrayDevice()
 {
 #ifdef AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
-  // _cuda_array_create_start
+  // _basic_array_device_create_start
   constexpr int N = 10;
+  // An device array can be constructed by either specifying the corresponding allocator ID...
+  const int device_allocator_id = axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Device);
+  axom::Array<int> device_array_dynamic(N, N, device_allocator_id);
+  // ...or by providing the memory space via template parameter:
+  axom::Array<int, 1, axom::MemorySpace::Device> device_array_template(N);
+  // _basic_array_device_create_end
+
+  // _basic_array_device_implicit_start
+  takesDeviceArrayView(device_array_dynamic);
+  takesDeviceArrayView(device_array_template);
+  // _basic_array_device_implicit_end
+
+  // _basic_array_device_explicit_start
+  axom::ArrayView<int, 1, axom::MemorySpace::Device> view_of_dynamic_array(
+    device_array_dynamic);
+  takesDeviceArrayView(view_of_dynamic_array);
+  axom::ArrayView<int, 1, axom::MemorySpace::Device> view_of_template_array(
+    device_array_template);
+  takesDeviceArrayView(view_of_template_array);
+  // _basic_array_device_explicit_end
+
+  // _cuda_array_create_start
   const int allocator_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
 
@@ -222,11 +248,6 @@ void demoArrayDevice()
     B_unified[i] = i * 2;
   }
 
-  // Since our kernel requires that its arguments to be in unified memory at compile time,
-  // we lock down the dynamic array.  In the general case this will result in a transfer,
-  // but because the dynamic array happens to be in unified memory a direct copy is possible.
-  axom::Array<int, 1, axom::MemorySpace::Unified> A_unified = A_dynamic;
-
   // The result array is allocated in device memory
   axom::Array<int, 1, axom::MemorySpace::Device> C_device(N);
 
@@ -236,7 +257,11 @@ void demoArrayDevice()
   // Passing by reference is not possible for CUDA kernels, so the three arrays
   // are converted to corresponding ArrayViews that are "shallow copies" of the
   // original Array.
-  add<<<1, 1>>>(A_unified, B_unified, C_device);
+  // Note that even though A's memory space has not been locked down at compile time,
+  // we are able to pass it as an argument - it will be implicitly converted to an ArrayView
+  // of the correct type. Also note that if we had not constructed A with the UM allocator ID,
+  // this conversion would fail and produce an error at runtime.
+  add<<<1, 1>>>(A_dynamic, B_unified, C_device);
 
   // Since our result array is in device memory, we copy it to host memory so we can view it.
   axom::Array<int, 1, axom::MemorySpace::Host> C_host = C_device;
@@ -250,7 +275,7 @@ void demoArrayDevice()
   #ifdef AXOM_USE_RAJA
   // _array_w_raja_start
   // To use a lambda as a kernel, we create the ArrayViews explicitly.
-  const UnifiedIntArrayView A_view = A_unified;
+  const UnifiedIntArrayView A_view = A_dynamic;
   const UnifiedIntArrayView B_view = B_unified;
   // Create a new array for our RAJA result
   axom::Array<int, 1, axom::MemorySpace::Device> C_device_raja(N);

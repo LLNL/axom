@@ -61,6 +61,10 @@ public:
    * \param [in] other The array in a different memory space to copy from
    * 
    * \note The parameter is non-const because \a other can be modified through the constructed View
+   * 
+   * \note This constructor is left implicit to allow for convenient function calls that convert
+   * from \p Array -> \p ArrayView or from dynamic memory spaces to an \p ArrayView of explicitly specified
+   * space.
    */
   template <typename OtherArrayType>
   ArrayView(ArrayBase<T, DIM, OtherArrayType>& other);
@@ -94,7 +98,14 @@ public:
    */
   /// @{
 
-  AXOM_HOST_DEVICE inline T* data() { return m_data; }
+  AXOM_HOST_DEVICE inline T* data()
+  {
+#ifdef AXOM_DEVICE_CODE
+    static_assert(SPACE != MemorySpace::Constant,
+                  "Cannot modify Constant memory from device code");
+#endif
+    return m_data;
+  }
   AXOM_HOST_DEVICE inline const T* data() const { return m_data; }
 
   /// @}
