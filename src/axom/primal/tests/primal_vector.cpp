@@ -4,8 +4,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 #include "axom/core/execution/execution_space.hpp"  // for execution_space traits
 #include "axom/core/execution/for_all.hpp"          // for_all()
@@ -296,6 +298,38 @@ TEST(primal_vector, vector_zero)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_vector, add_point_vector)
+{
+  constexpr int DIM = 3;
+  using QPt = primal::Point<double, DIM>;
+  using QVec = primal::Vector<double, DIM>;
+
+  {
+    QPt one {1.};
+    QVec zero {0.0};
+    EXPECT_EQ(one, one + zero);
+    EXPECT_EQ(one, zero + one);
+    EXPECT_EQ(zero + one, one + zero);
+  }
+
+  {
+    QPt pt {1.23, 4.56, 7.89};
+    QVec vec {.23, .56, .89};
+
+    EXPECT_EQ(pt + vec, vec + pt);
+
+    QPt pv = pt + -vec;
+    QPt vp = -vec + pt;
+    QPt exp {1, 4, 7};
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_DOUBLE_EQ(pv[i], vp[i]);
+      EXPECT_DOUBLE_EQ(exp[i], pv[i]);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
 {
   using seq_exec = axom::SEQ_EXEC;
@@ -319,19 +353,13 @@ AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 
