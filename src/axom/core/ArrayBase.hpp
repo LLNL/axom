@@ -522,7 +522,7 @@ struct all_types_are_integral_impl<First, Rest...>
     all_types_are_integral_impl<Rest...>::value;
 };
 
-/// \brief Checks if the first type in a parameter pack is integral
+/// \brief Checks if all types in a parameter pack are integral
 template <typename... Args>
 struct all_types_are_integral
 {
