@@ -94,7 +94,7 @@ public:
    * \brief Constructor. Creates an oriented bounding box containing a single
    * point. Extents are all zero, and axes are set to identity.
    */
-  OrientedBoundingBox(const PointType& pt);
+  explicit OrientedBoundingBox(const PointType& pt);
 
   /*!
    * \brief Constructor. Creates an oriented bounding box from a collection of
@@ -619,7 +619,7 @@ bool OrientedBoundingBox<T, NDIMS>::contains(const Point<OtherType, NDIMS>& othe
   {
     return false;
   }
-  Vector<T, NDIMS> pt_l = this->toLocal(otherPt);
+  Vector<T, NDIMS> pt_l(this->toLocal(otherPt));
   T proj;
   T margin = static_cast<T>(EPS);
   for(int i = 0; i < NDIMS; i++)

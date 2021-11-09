@@ -7,7 +7,7 @@
 #define AXOM_SLIC_MACROS_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Macros.hpp"  // for AXOM_HOST_DEVICE macros
+#include "axom/core/Macros.hpp"
 
 /*!
  * \file slic_macros.hpp
@@ -125,7 +125,7 @@
  * \brief Asserts that a given expression is true. If the expression is not true
  *  an error will be logged and the application will be aborted.
  * \param [in] EXP user-supplied boolean expression.
- * \note This macro is only active when debugging is turned on.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  * \warning This macro calls processAbort() if EXP is false.
  *
  * Usage:
@@ -150,7 +150,7 @@
  * \brief Same as SLIC_ASSERT, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message
- * \note This macro is only active when debugging is turned on.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  * \warning This macro calls processAbort() if EXP is false.
  * \see SLIC_ASSERT( EXP )
  *
@@ -183,7 +183,7 @@
  *  a warning is logged, but, in contrast to the similar SLIC_ASSERT macro the
  *  application is not aborted.
  * \param [in] EXP user-supplied boolean expression.
- * \note This macro is only active when debugging is turned on.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code
@@ -214,7 +214,7 @@
  * \brief Same as SLIC_CHECK, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message
- * \note This macro is only active when debugging is turned on.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  * \see SLIC_DEBUG( EXP )
  *
  * Usage:
@@ -316,7 +316,7 @@
  * \def SLIC_DEBUG( msg )
  * \brief Logs a Debug message.
  * \param [in] msg user-supplied message
- * \note The SLIC_Debug macro is active in debug mode.
+ * \note The SLIC_Debug macro is active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code
@@ -340,7 +340,7 @@
  * \brief Logs an Debug message iff EXP is true
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message.
- * \note The SLIC_DEBUG_IF macro is active in debug mode.
+ * \note The SLIC_DEBUG_IF macro is active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code

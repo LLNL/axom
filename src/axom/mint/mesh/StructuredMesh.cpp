@@ -25,7 +25,7 @@ bool validStructuredMeshType(int type)
           (type == STRUCTURED_UNIFORM_MESH));
 }
 
-inline int dim(const IndexType& AXOM_NOT_USED(Ni),
+inline int dim(const IndexType& AXOM_UNUSED_PARAM(Ni),
                const IndexType& Nj,
                const IndexType& Nk)
 {

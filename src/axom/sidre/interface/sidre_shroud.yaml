@@ -603,6 +603,8 @@ declarations:
 
 #  - decl: Buffer * detachBuffer()
 
+  - decl: void clear()
+
   - decl: View* apply()
     return_this: True
 

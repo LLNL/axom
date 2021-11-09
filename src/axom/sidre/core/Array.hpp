@@ -32,7 +32,7 @@ constexpr axom::IndexType ZERO = 0;
 namespace detail
 {
 inline void describeViewImpl(TypeID T_type,
-                             const std::array<axom::IndexType, 1>& shape,
+                             const StackArray<axom::IndexType, 1>& shape,
                              View* view)
 {
   SLIC_ASSERT(view != nullptr);
@@ -43,7 +43,7 @@ inline void describeViewImpl(TypeID T_type,
 }
 
 inline void describeViewImpl(TypeID T_type,
-                             const std::array<axom::IndexType, 2>& shape,
+                             const StackArray<axom::IndexType, 2>& shape,
                              View* view)
 {
   SLIC_ASSERT(view != nullptr);
@@ -125,9 +125,11 @@ public:
 
   /*!
    * \brief Copy constructor.
-   * \param [in] other The array to copy from
+
+   * Deleted because copies would have to reference the same underlying
+   * Sidre buffer, which does not match the underlying axom::Array ownership model
    */
-  Array(const Array& other);
+  Array(const Array&) = delete;
 
   /*!
    * \brief Move constructor.
@@ -240,9 +242,11 @@ public:
 
   /*!
    * \brief Copy assignment.
-   * \param [in] other The Array to copy from
+   * 
+   * Deleted because copies would have to reference the same underlying
+   * Sidre buffer, which does not match the underlying axom::Array ownership model
    */
-  Array& operator=(const Array& other);
+  Array& operator=(const Array&) = delete;
 
   /*!
    * \brief Move assignment.
@@ -349,12 +353,6 @@ using MCArray = Array<T, 2>;
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM>
-Array<T, DIM>::Array(const Array<T, DIM>& other)
-  : axom::Array<T, DIM>(static_cast<const axom::Array<T, DIM>&>(other))
-  , m_view(other.m_view)
-{ }
-
-template <typename T, int DIM>
 Array<T, DIM>::Array(Array<T, DIM>&& other)
   : axom::Array<T, DIM>(static_cast<axom::Array<T, DIM>&&>(std::move(other)))
   , m_view(other.m_view)
@@ -363,14 +361,6 @@ Array<T, DIM>::Array(Array<T, DIM>&& other)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM>
-Array<T, DIM>& Array<T, DIM>::operator=(const Array<T, DIM>& other)
-{
-  axom::Array<T, DIM>::operator=(other);
-  m_view = other.m_view;
-  return *this;
-}
-
 template <typename T, int DIM>
 Array<T, DIM>& Array<T, DIM>::operator=(Array<T, DIM>&& other)
 {

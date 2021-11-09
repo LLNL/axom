@@ -14,14 +14,14 @@ if(NOT AXOM_FOUND)
   # Set version and paths
   #----------------------------------------------------------------------------
   
-  set(AXOM_VERSION       "@AXOM_VERSION_FULL@")
-  set(AXOM_VERSION_MAJOR "@AXOM_VERSION_MAJOR@")
-  set(AXOM_VERSION_MINOR "@AXOM_VERSION_MINOR@")
-  set(AXOM_VERSION_PATCH "@AXOM_VERSION_PATCH@")
+  set(AXOM_VERSION          "@AXOM_VERSION_FULL@")
+  set(AXOM_VERSION_MAJOR    "@AXOM_VERSION_MAJOR@")
+  set(AXOM_VERSION_MINOR    "@AXOM_VERSION_MINOR@")
+  set(AXOM_VERSION_PATCH    "@AXOM_VERSION_PATCH@")
   
-  set(AXOM_INSTALL_PREFIX "@AXOM_INSTALL_PREFIX@")
-  set(AXOM_INCLUDE_DIRS "${AXOM_INSTALL_PREFIX}/include")
-
+  set(AXOM_INSTALL_PREFIX   "@AXOM_INSTALL_PREFIX@")
+  set(AXOM_INCLUDE_DIRS     "${AXOM_INSTALL_PREFIX}/include")
+  
   #----------------------------------------------------------------------------
   # Set user configuration options and features
   #----------------------------------------------------------------------------
@@ -59,6 +59,10 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_RAJA           "@AXOM_USE_RAJA@")
   set(AXOM_USE_SCR            "@AXOM_USE_SCR@")
   set(AXOM_USE_UMPIRE         "@AXOM_USE_UMPIRE@")
+
+  # Configration for Axom compiler defines
+  set(AXOM_DEBUG_DEFINE         "@AXOM_DEBUG_DEFINE@")
+  set(AXOM_DEBUG_DEFINE_STRING  "@AXOM_DEBUG_DEFINE_STRING@")
 
   #----------------------------------------------------------------------------
   # Bring in required  dependencies for this axom configuration

@@ -348,6 +348,7 @@ module axom_sidre
         procedure :: attach_buffer_type_int32_t => view_attach_buffer_type_int32_t
         procedure :: attach_buffer_type_int64_t => view_attach_buffer_type_int64_t
         procedure :: attach_buffer_shape => view_attach_buffer_shape
+        procedure :: clear => view_clear
         procedure :: apply_0 => view_apply_0
         procedure :: apply_nelems => view_apply_nelems
         procedure :: apply_nelems_offset => view_apply_nelems_offset
@@ -2120,6 +2121,13 @@ module axom_sidre
             integer(C_INT64_T), intent(IN) :: shape(*)
             type(SIDRE_SHROUD_buffer_capsule), intent(INOUT) :: buff
         end subroutine c_view_attach_buffer_shape
+
+        subroutine c_view_clear(self) &
+                bind(C, name="SIDRE_View_clear")
+            import :: SIDRE_SHROUD_view_capsule
+            implicit none
+            type(SIDRE_SHROUD_view_capsule), intent(IN) :: self
+        end subroutine c_view_clear
 
         subroutine c_view_apply_0(self) &
                 bind(C, name="SIDRE_View_apply_0")
@@ -5251,6 +5259,13 @@ contains
             buff%cxxmem)
         ! splicer end class.View.method.attach_buffer_shape
     end subroutine view_attach_buffer_shape
+
+    subroutine view_clear(obj)
+        class(SidreView) :: obj
+        ! splicer begin class.View.method.clear
+        call c_view_clear(obj%cxxmem)
+        ! splicer end class.View.method.clear
+    end subroutine view_clear
 
     subroutine view_apply_0(obj)
         class(SidreView) :: obj

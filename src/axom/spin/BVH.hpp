@@ -148,7 +148,7 @@ private:
   {
   private:
     template <typename U, typename Ret = decltype(std::declval<U&>()[0])>
-    static Ret array_operator_type(U AXOM_NOT_USED(obj))
+    static Ret array_operator_type(U AXOM_UNUSED_PARAM(obj))
     { }
 
     static std::false_type array_operator_type(...)

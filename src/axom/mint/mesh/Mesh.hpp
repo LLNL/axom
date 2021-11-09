@@ -267,8 +267,8 @@ public:
    * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellNodeIDs(IndexType AXOM_NOT_USED(cellID),
-                                   IndexType* AXOM_NOT_USED(nodes)) const = 0;
+  virtual IndexType getCellNodeIDs(IndexType AXOM_UNUSED_PARAM(cellID),
+                                   IndexType* AXOM_UNUSED_PARAM(nodes)) const = 0;
 
   /*!
    * \brief Return the number of faces associated with the given cell.
@@ -276,7 +276,7 @@ public:
    * \param [in] cellID the ID of the cell in question.
    */
   virtual IndexType getNumberOfCellFaces(
-    IndexType AXOM_NOT_USED(cellID) = 0) const = 0;
+    IndexType AXOM_UNUSED_PARAM(cellID) = 0) const = 0;
 
   /*!
    * \brief Populates the given buffer with the IDs of the faces of the given
@@ -289,8 +289,8 @@ public:
    * \pre faces != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellFaceIDs(IndexType AXOM_NOT_USED(cellID),
-                                   IndexType* AXOM_NOT_USED(faces)) const = 0;
+  virtual IndexType getCellFaceIDs(IndexType AXOM_UNUSED_PARAM(cellID),
+                                   IndexType* AXOM_UNUSED_PARAM(faces)) const = 0;
 
   /// @}
 
@@ -367,14 +367,15 @@ public:
    *
    * \param [in] faceID the ID of the face in question.
    */
-  virtual CellType getFaceType(IndexType AXOM_NOT_USED(faceID)) const = 0;
+  virtual CellType getFaceType(IndexType AXOM_UNUSED_PARAM(faceID)) const = 0;
 
   /*!
    * \brief Return the number of nodes associated with the given face.
    *
    * \param [in] faceID the ID of the face in question.
    */
-  virtual IndexType getNumberOfFaceNodes(IndexType AXOM_NOT_USED(faceID)) const = 0;
+  virtual IndexType getNumberOfFaceNodes(
+    IndexType AXOM_UNUSED_PARAM(faceID)) const = 0;
 
   /*!
    * \brief Copy the IDs of the nodes that compose the given face into the
@@ -389,8 +390,8 @@ public:
    * \pre nodes != nullptr
    * \pre 0 <= faceID < getNumberOfFaces()
    */
-  virtual IndexType getFaceNodeIDs(IndexType AXOM_NOT_USED(faceID),
-                                   IndexType* AXOM_NOT_USED(nodes)) const = 0;
+  virtual IndexType getFaceNodeIDs(IndexType AXOM_UNUSED_PARAM(faceID),
+                                   IndexType* AXOM_UNUSED_PARAM(nodes)) const = 0;
 
   /*!
    * \brief Copy the IDs of the cells adjacent to the given face into the
@@ -405,9 +406,9 @@ public:
    *
    * \pre 0 <= faceID < getNumberOfFaces()
    */
-  virtual void getFaceCellIDs(IndexType AXOM_NOT_USED(faceID),
-                              IndexType& AXOM_NOT_USED(cellIDOne),
-                              IndexType& AXOM_NOT_USED(cellIDTwo)) const = 0;
+  virtual void getFaceCellIDs(IndexType AXOM_UNUSED_PARAM(faceID),
+                              IndexType& AXOM_UNUSED_PARAM(cellIDOne),
+                              IndexType& AXOM_UNUSED_PARAM(cellIDTwo)) const = 0;
 
   /// @}
 

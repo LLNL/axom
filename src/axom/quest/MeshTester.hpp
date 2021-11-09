@@ -161,28 +161,29 @@ void findTriMeshIntersectionsBVH(
 
   // Initialize the bounding box for each Triangle and marks
   // if the Triangle is degenerate.
-  AXOM_PERF_MARK_SECTION("init_tri_bb",
-                         mint::for_all_cells<ExecSpace, mint::xargs::coords>(
-                           surface_mesh,
-                           AXOM_LAMBDA(IndexType cellIdx,
-                                       numerics::Matrix<double> & coords,
-                                       const IndexType* AXOM_NOT_USED(nodeIds)) {
-                             detail::Triangle3 tri;
+  AXOM_PERF_MARK_SECTION(
+    "init_tri_bb",
+    mint::for_all_cells<ExecSpace, mint::xargs::coords>(
+      surface_mesh,
+      AXOM_LAMBDA(IndexType cellIdx,
+                  numerics::Matrix<double> & coords,
+                  const IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
+        detail::Triangle3 tri;
 
-                             for(IndexType inode = 0; inode < 3; ++inode)
-                             {
-                               const double* node = coords.getColumn(inode);
-                               tri[inode][0] = node[mint::X_COORDINATE];
-                               tri[inode][1] = node[mint::Y_COORDINATE];
-                               tri[inode][2] = node[mint::Z_COORDINATE];
-                             }  // END for all cells nodes
+        for(IndexType inode = 0; inode < 3; ++inode)
+        {
+          const double* node = coords.getColumn(inode);
+          tri[inode][0] = node[mint::X_COORDINATE];
+          tri[inode][1] = node[mint::Y_COORDINATE];
+          tri[inode][2] = node[mint::Z_COORDINATE];
+        }  // END for all cells nodes
 
-                             degenerate[cellIdx] = (tri.degenerate() ? 1 : 0);
+        degenerate[cellIdx] = (tri.degenerate() ? 1 : 0);
 
-                             tris[cellIdx] = tri;
+        tris[cellIdx] = tri;
 
-                             aabbs[cellIdx] = compute_bounding_box(tri);
-                           }););
+        aabbs[cellIdx] = compute_bounding_box(tri);
+      }););
 
   // Copy degenerate data back to host
   int* host_degenerate =

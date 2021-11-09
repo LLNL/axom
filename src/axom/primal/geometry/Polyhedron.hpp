@@ -382,7 +382,7 @@ public:
     }
     sum /= numVertices();
 
-    return sum;
+    return PointType(sum);
   }
 
 private:
@@ -405,7 +405,7 @@ private:
     axom::int8 checkedSize = 0;
     axom::int8 facesAdded = 0;
     // # edges * (# vertices per edge) * (# orientation per edge)
-    axom::int8 checkedEdges[MAX_VERTS * 2 * 2];
+    axom::int8 checkedEdges[MAX_VERTS * 2 * 2] = {0};
 
     // Check each vertex
     for(int i = 0; i < numVertices(); i++)

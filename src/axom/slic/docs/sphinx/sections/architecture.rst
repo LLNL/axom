@@ -400,7 +400,7 @@ The ``MyStream`` class implements the ``LogStream::append()`` method of the
                           const std::string& tagName,
                           const std::string& fileName,
                           int line,
-                          bool AXOM_NOT_USED(filtered_duplicates) )
+                          bool AXOM_UNUSED_PARAM(filtered_duplicates) )
    {
       assert( m_stream != nillptr );
 

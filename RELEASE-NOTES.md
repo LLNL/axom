@@ -17,13 +17,25 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased] - Release date yyyy-mm-dd
+
+###  Added
+- Added a config variable, `AXOM_DEBUG_DEFINE` to control whether the `AXOM_DEBUG` compiler define is enabled.
+  By `DEFAULT`, it is enabled for `Debug` and `RelWithDebInfo` configurations, but this can be overriden
+  by setting `AXOM_DEBUG_DEFINE` to `ON` or `OFF`. 
+###  Changed
+- Renamed `AXOM_NOT_USED` macro to `AXOM_UNUSED_PARAM` for better consistency with other Axom macros
+
+###  Fixed
+- The `AXOM_DEBUG` compiler define is now properly exported via the `axom` CMake target when it is enabled
+
+
+## [Version 0.6.0] - Release date 2021-11-04
 
 ### Added
 - Added new CMake option to allow users to turn off Axom created tools: `AXOM_ENABLE_TOOLS`
-- Inlet can now log verification errors to a user-processable list instead of using SLIC
-- SPIO: Added new mapping arrays to the automatically-generated Blueprint
+- Inlet can now log verification errors to a user-processable list instead of using Slic
+- Sidre parallel I/O: Added new mapping arrays to the automatically-generated Blueprint
   index to support new schema for multi-domain parallel meshes.
 - Added support for optional third-party `c2c` ("contours to codes") library for parsing 2D spline data.
   `c2c` is currently only available for Axom configurations on LLNL platforms.
@@ -58,6 +70,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: Adds a new query for intersection-based "shaping" of revolved contours onto 3D hexahedral meshes.
   This capability uses a RAJA policy operate on various execution spaces (host, openmp, device).
 - Quest: Adds a "shaping" example for embedding a klee specification onto an MFEM mesh
+- Added Sidre function `View::clear()`.
+- Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
+  This replaces the external buffer logic previously provided by `axom::Array`.
+- `axom::Array` is now GPU-compatible, in particular via a memory space template parameter and via 
+  extensions to `axom::ArrayView` that allow for copying into kernels and transfers between memory spaces.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -111,13 +128,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `utilities::string::split` now returns a vector instead of using an out-parameter,
   Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
 - `axom::Array`-related classes have been moved into individual files.
-- Removed logic from ``axom::reallocate()`` relating to older versions of Umpire.
-  Axom requires Umpire v2.1.0+
 - RAJA dependency updated to 0.14.0
-- Umpire dependency updated to 0.6.0
-- Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021).  This was required due to Spack
-  moving to HDF5's CMake build system.
-- Internal BLT dependency updatd to 0.4.1
+- Umpire dependency updated to 0.6.0. Support for versions prior to v2.1.0 was removed. 
+- Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021). This was required because Spack
+  is now using `HDF5`'s CMake build system.
+- Internal BLT dependency updated to 0.4.1
 
 
 ### Fixed
@@ -130,7 +145,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Delayed finalizing reloaded mesh in `MFEMSidreDataCollection` until after setting
   the nodal `GridFunction` (when applicable)
 - Transposed `R` and `Z` coordinates when linearizing NURBS curves in `c2c` reader
-- Fixed user-reported in/out ambiguity within some InOutOctree cases with grazing triangles
+- Fixed user-reported in/out ambiguity within some `InOutOctree` cases with grazing triangles
 
 ## [Version 0.5.0] - Release date 2021-05-14
 
@@ -138,7 +153,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added the MFEMSidreDataCollection class for describing [MFEM] meshes and associated fields.  This
   class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
   *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
-- Added `slic::setAbortFunction` to configure a custom callback when SLIC aborts.
+- Added `slic::setAbortFunction` to configure a custom callback when Slic aborts.
 - Added a `batched` option to quest's `InOutOctree` containment query example application.
   This uses a kernel to test for containment on an array of points.
   The query uses OpenMP threading, when available.
@@ -182,7 +197,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Changed
 - Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
-- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
+- The Sidre Datastore no longer rewires Conduit's error handlers to Slic by default. 
   It can be  explicitly rewired using the static
   `DataStore::setConduitSLICMessageHandlers()` method.
 - Inlet: Changed `SchemaCreator` to an abstract class and added missing functions
@@ -547,7 +562,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The root CMake file for Axom is now located in ``<axom>/src``'s root directory,
   rather than in ``<axom>``
 - Prefixed all Axom CMake options with AXOM_ to avoid conflicts
-- `ENABLE_SPARSEHASE` -> `AXOM_ENABLE_SPARSEHASH`
+- `ENABLE_SPARSEHASH` -> `AXOM_ENABLE_SPARSEHASH`
 - `ENABLE_ALL_COMPONENTS` -> `AXOM_ENABLE_COMPONENTS`
 - `ENABLE_<component name>` -> `AXOM_ENABLE_<component name>`
 - `MINT_USE_64BIT_INDEXTYPE` -> `AXOM_MINT_USE_64BIT_INDEXTYPE`
@@ -626,7 +641,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Security
 - Use this section in case of vulnerabilities
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.5.0...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.6.0...develop
+[Version 0.6.0]: https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0
 [Version 0.5.0]: https://github.com/LLNL/axom/compare/v0.4.0...v0.5.0
 [Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3

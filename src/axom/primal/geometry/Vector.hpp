@@ -135,7 +135,7 @@ public:
    * \param [in] arr The numeric array to copy from
    */
   AXOM_HOST_DEVICE
-  Vector(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
+  explicit Vector(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a vector from the first sz values of the input array.
@@ -145,7 +145,7 @@ public:
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    */
   AXOM_HOST_DEVICE
-  Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
+  explicit Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
 
   /*!
    * \brief Constructor to create vector from a Point
@@ -153,7 +153,7 @@ public:
    * \note Equivalent to Vector( Point::zero(), pt)
    */
   AXOM_HOST_DEVICE
-  Vector(const Point<T, NDIMS>& pt) : m_components(pt.array()) { }
+  explicit Vector(const Point<T, NDIMS>& pt) : m_components(pt.array()) { }
 
   /*!
    * \brief Constructs a vector from point A to point B.

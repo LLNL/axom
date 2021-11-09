@@ -174,8 +174,9 @@ public:
    */
   SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
-    return SpatialBoundingBox(spacePoint(cell),
-                              spacePoint(cell.array() + GridCell(1).array()));
+    return SpatialBoundingBox(
+      spacePoint(cell),
+      spacePoint(GridCell(cell.array() + GridCell(1).array())));
   }
 
   /*! Simple formatted print of a rectangular lattice */

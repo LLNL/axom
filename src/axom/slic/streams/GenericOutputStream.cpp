@@ -30,7 +30,7 @@ void GenericOutputStream::append(message::Level msgLevel,
                                  const std::string& tagName,
                                  const std::string& fileName,
                                  int line,
-                                 bool AXOM_NOT_USED(filtered_duplicates))
+                                 bool AXOM_UNUSED_PARAM(filtered_duplicates))
 {
   if(m_stream == nullptr)
   {
