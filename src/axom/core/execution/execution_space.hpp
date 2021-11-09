@@ -86,7 +86,7 @@ struct execution_space
   static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; };
 };
 
-} /* namespace axom */
+}  // namespace axom
 
 // execution_space traits specialization
 #include "axom/core/execution/internal/seq_exec.hpp"
@@ -100,4 +100,4 @@ struct execution_space
   #include "axom/core/execution/internal/cuda_exec.hpp"
 #endif
 
-#endif /* AXOM_SPIN_EXECUTIONSPACE_HPP_ */
+#endif  // AXOM_EXECUTIONSPACE_HPP_
