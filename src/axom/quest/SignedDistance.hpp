@@ -653,7 +653,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
         // potentially-adjacent face
         currMin.sumNormals += norm;
         break;
-      case detail::ClosestPointLocType::face:
+      case detail::ClosestPointLocType::vertex:
         if(!surface_elems[ei].degenerate())
         {
           // Candidate closest point is on a vertex - add the angle-weighted
