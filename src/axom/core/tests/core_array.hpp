@@ -679,8 +679,8 @@ void check_swap(Array<T>& v)
   EXPECT_EQ(v_two, v_two_copy);
 }
 
-template <typename T>
-void check_alloc(Array<T>& v, const int& id)
+template <typename T, int DIM, axom::MemorySpace SPACE>
+void check_alloc(Array<T, DIM, SPACE>& v, const int id)
 {
   // Verify allocation
   EXPECT_EQ(v.getAllocatorID(), id);
@@ -732,6 +732,175 @@ void check_external_view(ArrayView<T>& v)
   EXPECT_EQ(size, v.size());
   EXPECT_EQ(data_ptr, v.data());
 }
+
+// FIXME: HIP
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+
+template <typename T>
+__global__ void assign_raw(T* data, int N)
+{
+  for(int i = 0; i < N; i++)
+  {
+    data[i] = i;
+  }
+}
+
+template <typename T, int DIM, axom::MemorySpace SPACE>
+__global__ void assign_view(ArrayView<T, DIM, SPACE> view)
+{
+  for(int i = 0; i < view.size(); i++)
+  {
+    view[i] = i * 2;
+  }
+}
+
+/*!
+ * \brief Check that an array can be modified/accessed from device code
+ * \param [in] v the array to check.
+ */
+template <typename T, int DIM, axom::MemorySpace SPACE>
+void check_device(Array<T, DIM, SPACE>& v)
+{
+  const IndexType size = v.size();
+  // Then assign to it via a raw device pointer
+  assign_raw<<<1, 1>>>(v.data(), size);
+
+  // Check the contents of the array by assigning to a Dynamic array
+  // The default Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 1> check_raw_array_dynamic = v;
+  EXPECT_EQ(check_raw_array_dynamic.size(), size);
+  for(int i = 0; i < check_raw_array_dynamic.size(); i++)
+  {
+    EXPECT_EQ(check_raw_array_dynamic[i], i);
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
+  Array<T, 1, axom::MemorySpace::Host> check_raw_array_host = v;
+  EXPECT_EQ(check_raw_array_host.size(), size);
+  for(int i = 0; i < check_raw_array_host.size(); i++)
+  {
+    EXPECT_EQ(check_raw_array_host[i], i);
+  }
+
+  // Then modify the underlying data via a view
+  ArrayView<T, DIM, SPACE> view(v);
+  assign_view<<<1, 1>>>(view);
+
+  // Check the contents of the array by assigning to a Dynamic array
+  // The default Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 1> check_view_array_dynamic = view;
+  EXPECT_EQ(check_view_array_dynamic.size(), size);
+  for(int i = 0; i < check_view_array_dynamic.size(); i++)
+  {
+    EXPECT_EQ(check_view_array_dynamic[i], i * 2);
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
+  Array<T, 1, axom::MemorySpace::Host> check_view_array_host = view;
+  EXPECT_EQ(check_view_array_host.size(), size);
+  for(int i = 0; i < check_view_array_host.size(); i++)
+  {
+    EXPECT_EQ(check_view_array_host[i], i * 2);
+  }
+}
+
+template <typename T>
+__global__ void assign_raw_2d(T* data, int M, int N)
+{
+  for(int i = 0; i < N; i++)
+  {
+    for(int j = 0; j < N; j++)
+    {
+      data[i * N + j] = i * i + j;
+    }
+  }
+}
+
+template <typename T, axom::MemorySpace SPACE>
+__global__ void assign_view_2d(ArrayView<T, 2, SPACE> view)
+{
+  for(int i = 0; i < view.shape()[0]; i++)
+  {
+    for(int j = 0; j < view.shape()[1]; j++)
+    {
+      view(i, j) = j * j + i;
+    }
+  }
+}
+
+/*!
+ * \brief Check that a 2D array can be modified/accessed from device code
+ * \param [in] v the array to check.
+ */
+template <typename T, axom::MemorySpace SPACE>
+void check_device_2D(Array<T, 2, SPACE>& v)
+{
+  const IndexType size = v.size();
+  const IndexType M = v.shape()[0];
+  const IndexType N = v.shape()[1];
+  // Then assign to it via a raw device pointer
+  assign_raw_2d<<<1, 1>>>(v.data(), M, N);
+
+  // Check the contents of the array by assigning to a Dynamic array
+  // The default Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 2> check_raw_array_dynamic = v;
+  EXPECT_EQ(check_raw_array_dynamic.size(), size);
+  EXPECT_EQ(check_raw_array_dynamic.shape(), v.shape());
+
+  for(int i = 0; i < M; i++)
+  {
+    for(int j = 0; j < N; j++)
+    {
+      EXPECT_EQ(check_raw_array_dynamic(i, j), i * i + j);
+    }
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
+  Array<T, 2, axom::MemorySpace::Host> check_raw_array_host = v;
+  EXPECT_EQ(check_raw_array_host.size(), size);
+  EXPECT_EQ(check_raw_array_host.shape(), v.shape());
+
+  for(int i = 0; i < M; i++)
+  {
+    for(int j = 0; j < N; j++)
+    {
+      EXPECT_EQ(check_raw_array_host(i, j), i * i + j);
+    }
+  }
+
+  // Then modify the underlying data via a view
+  ArrayView<T, 2, SPACE> view(v);
+  assign_view_2d<<<1, 1>>>(view);
+
+  // Check the contents of the array by assigning to a Dynamic array
+  // The default Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 2> check_view_array_dynamic = view;
+  EXPECT_EQ(check_view_array_dynamic.size(), size);
+  EXPECT_EQ(check_view_array_dynamic.shape(), v.shape());
+
+  for(int i = 0; i < M; i++)
+  {
+    for(int j = 0; j < N; j++)
+    {
+      EXPECT_EQ(check_view_array_dynamic(i, j), j * j + i);
+    }
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
+  Array<T, 2, axom::MemorySpace::Host> check_view_array_host = view;
+  EXPECT_EQ(check_view_array_host.size(), size);
+  EXPECT_EQ(check_view_array_host.shape(), v.shape());
+
+  for(int i = 0; i < M; i++)
+  {
+    for(int j = 0; j < N; j++)
+    {
+      EXPECT_EQ(check_view_array_host(i, j), j * j + i);
+    }
+  }
+}
+
+#endif  // defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
 
 } /* end namespace internal */
 
@@ -913,18 +1082,68 @@ TEST(core_array, checkAlloc)
 #endif
   };
 
-  for(int id : memory_locations)
+  for(double ratio = 1.0; ratio <= 2.0; ratio += 0.5)
   {
-    for(double ratio = 1.0; ratio <= 2.0; ratio += 0.5)
+    for(IndexType capacity = 4; capacity <= 512; capacity *= 2)
     {
-      for(IndexType capacity = 4; capacity <= 512; capacity *= 2)
+      // First use the dynamic option
+      for(int id : memory_locations)
       {
-        Array<int> v_int(capacity, capacity, id);
+        Array<int, 1, axom::MemorySpace::Dynamic> v_int(capacity, capacity, id);
         internal::check_alloc(v_int, id);
 
-        Array<double> v_double(capacity, capacity, id);
+        Array<double, 1, axom::MemorySpace::Dynamic> v_double(capacity,
+                                                              capacity,
+                                                              id);
         internal::check_alloc(v_double, id);
       }
+// Then, if Umpire is available, we can use the space as an explicit template parameter
+#ifdef AXOM_USE_UMPIRE
+  #ifdef UMPIRE_ENABLE_DEVICE
+      Array<int, 1, axom::MemorySpace::Device> v_int_device(capacity, capacity);
+      internal::check_alloc(
+        v_int_device,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+      Array<double, 1, axom::MemorySpace::Device> v_double_device(capacity,
+                                                                  capacity);
+      internal::check_alloc(
+        v_double_device,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+  #endif
+  #ifdef UMPIRE_ENABLE_UM
+      Array<int, 1, axom::MemorySpace::Unified> v_int_unified(capacity, capacity);
+      internal::check_alloc(
+        v_int_unified,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
+      Array<double, 1, axom::MemorySpace::Unified> v_double_unified(capacity,
+                                                                    capacity);
+      internal::check_alloc(
+        v_double_unified,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
+  #endif
+  #ifdef UMPIRE_ENABLE_CONST
+      Array<int, 1, axom::MemorySpace::Constant> v_int_const(capacity, capacity);
+      internal::check_alloc(
+        v_int_const,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Constant));
+      Array<double, 1, axom::MemorySpace::Constant> v_double_const(capacity,
+                                                                   capacity);
+      internal::check_alloc(
+        v_double_const,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Constant));
+  #endif
+  #ifdef UMPIRE_ENABLE_PINNED
+      Array<int, 1, axom::MemorySpace::Pinned> v_int_pinned(capacity, capacity);
+      internal::check_alloc(
+        v_int_pinned,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Pinned));
+      Array<double, 1, axom::MemorySpace::Pinned> v_double_pinned(capacity,
+                                                                  capacity);
+      internal::check_alloc(
+        v_double_pinned,
+        axom::getUmpireResourceAllocatorID(umpire::resource::Pinned));
+  #endif
+#endif
     }
   }
 }
@@ -1105,7 +1324,7 @@ TEST(core_array, check_multidimensional)
   v_int.fill(MAGIC_INT);
   // Make sure the number of elements and contents are correct
   EXPECT_EQ(v_int.size(), 2 * 2);
-  std::array<IndexType, 2> expected_shape = {2, 2};
+  StackArray<IndexType, 2> expected_shape = {2, 2};
   EXPECT_EQ(v_int.shape(), expected_shape);
   for(const auto val : v_int)
   {
@@ -1123,7 +1342,7 @@ TEST(core_array, check_multidimensional)
   v_int_flat[1] = 2;
   v_int_flat[2] = 3;
   v_int_flat[3] = 4;
-  std::array<IndexType, 1> expected_flat_shape = {4};
+  StackArray<IndexType, 1> expected_flat_shape = {4};
   EXPECT_EQ(v_int_flat.shape(), expected_flat_shape);
 
   for(int i = 0; i < v_int_flat.size(); i++)
@@ -1135,7 +1354,7 @@ TEST(core_array, check_multidimensional)
   Array<double, 3> v_double(4, 3, 2);
   v_double.fill(MAGIC_DOUBLE);
   EXPECT_EQ(v_double.size(), 4 * 3 * 2);
-  std::array<IndexType, 3> expected_double_shape = {4, 3, 2};
+  StackArray<IndexType, 3> expected_double_shape = {4, 3, 2};
   EXPECT_EQ(v_double.shape(), expected_double_shape);
   for(const auto val : v_double)
   {
@@ -1174,7 +1393,7 @@ TEST(core_array, check_multidimensional_view)
   ArrayView<int, 2> v_int_view(v_int_arr, 2, 2);
   // Make sure the number of elements and contents are correct
   EXPECT_EQ(v_int_view.size(), 2 * 2);
-  std::array<IndexType, 2> expected_shape = {2, 2};
+  StackArray<IndexType, 2> expected_shape = {2, 2};
   EXPECT_EQ(v_int_view.shape(), expected_shape);
   for(const auto val : v_int_view)
   {
@@ -1189,7 +1408,7 @@ TEST(core_array, check_multidimensional_view)
   // FIXME: Should we add a std::initializer_list ctor?
   int v_int_flat_arr[] = {1, 2, 3, 4};
   ArrayView<int> v_int_flat_view(v_int_flat_arr, 4);
-  std::array<IndexType, 1> expected_flat_shape = {4};
+  StackArray<IndexType, 1> expected_flat_shape = {4};
   EXPECT_EQ(v_int_flat_view.shape(), expected_flat_shape);
 
   for(int i = 0; i < v_int_flat_view.size(); i++)
@@ -1202,7 +1421,7 @@ TEST(core_array, check_multidimensional_view)
   std::fill_n(v_double_arr, 4 * 3 * 2, MAGIC_DOUBLE);
   ArrayView<double, 3> v_double_view(v_double_arr, 4, 3, 2);
   EXPECT_EQ(v_double_view.size(), 4 * 3 * 2);
-  std::array<IndexType, 3> expected_double_shape = {4, 3, 2};
+  StackArray<IndexType, 3> expected_double_shape = {4, 3, 2};
   EXPECT_EQ(v_double_view.shape(), expected_double_shape);
   for(const auto val : v_double_view)
   {
@@ -1229,6 +1448,65 @@ TEST(core_array, check_multidimensional_view)
     // For a multidim array, op[] is a "flat" index into the raw data
     EXPECT_EQ(v_double_view[i], v_double_flat_view[i]);
   }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkDevice)
+{
+// FIXME: HIP
+#if !defined(__CUDACC__) || !defined(AXOM_USE_UMPIRE) || \
+  !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP()
+    << "CUDA is not available, skipping tests that use Array in device code";
+#else
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    // Allocate a Dynamic array in Device memory
+    Array<int, 1, axom::MemorySpace::Dynamic> v_int_dynamic(
+      capacity,
+      capacity,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+
+    internal::check_device(v_int_dynamic);
+
+    Array<double, 1, axom::MemorySpace::Dynamic> v_double_dynamic(
+      capacity,
+      capacity,
+      axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+
+    internal::check_device(v_double_dynamic);
+
+    // Then allocate an explicitly Device array
+    Array<int, 1, axom::MemorySpace::Device> v_int_device(capacity, capacity);
+    internal::check_device(v_int_device);
+
+    Array<double, 1, axom::MemorySpace::Device> v_double_device(capacity,
+                                                                capacity);
+    internal::check_device(v_double_device);
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkDevice2D)
+{
+// FIXME: HIP
+#if !defined(__CUDACC__) || !defined(AXOM_USE_UMPIRE) || \
+  !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP()
+    << "CUDA is not available, skipping tests that use Array in device code";
+#else
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    // Allocate an explicitly Device array
+    Array<int, 2, axom::MemorySpace::Device> v_int_device(capacity, capacity);
+    internal::check_device_2D(v_int_device);
+
+    Array<double, 2, axom::MemorySpace::Device> v_double_device(capacity,
+                                                                capacity);
+    internal::check_device_2D(v_double_device);
+  }
+#endif
 }
 
 } /* end namespace axom */
