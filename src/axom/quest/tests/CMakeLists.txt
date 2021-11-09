@@ -184,13 +184,15 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
         # Datasets contain a mesh name and resolution delimited by a colon
-        set(quest_regression_datasets sphere:16)
+        set(quest_regression_datasets sphere:16
+                                      tetrahedron:31)
 
         # Add additional regression datasets when its config variable is defined
         blt_list_append(
             TO          quest_regression_datasets
             ELEMENTS    aatbase_3_binary:16
                         aatbase_3_binary:32
+                        boxedSphere:40
                         cap:16
                         cap:32
                         naca0012:16
@@ -199,7 +201,9 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
                         plane_binary:32
                         plane_simp:16
                         plane_simp:32
+                        plane_simp:120_120_60
                         sphere:32
+                        tetrahedron:100
             IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
 
