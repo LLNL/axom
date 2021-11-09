@@ -207,7 +207,7 @@ public:
     return cellIndex;
   }
 
-  void locatePoints(int npts,
+  void locatePoints(axom::IndexType npts,
                     const Point2DType* pts,
                     IndexType* outCellIds,
                     Point2DType* outIsopar = nullptr)
@@ -220,7 +220,7 @@ public:
     m_pointFinder2D->locatePoints(npts, pts, outCellIds, outIsopar);
   }
 
-  void locatePoints(int npts,
+  void locatePoints(axom::IndexType npts,
                     const Point3DType* pts,
                     IndexType* outCellIds,
                     Point3DType* outIsopar = nullptr) const

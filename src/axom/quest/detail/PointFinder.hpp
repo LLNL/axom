@@ -71,7 +71,7 @@ public:
     SLIC_ASSERT(m_meshWrapper != nullptr);
     SLIC_ASSERT(bboxScaleFactor >= 1.);
 
-    const IndexType numCells = m_meshWrapper->numElements();
+    const axom::IndexType numCells = m_meshWrapper->numElements();
 
     // setup bounding boxes -- Slightly scaled for robustness
 
@@ -122,7 +122,7 @@ public:
     return containingCell;
   }
 
-  void locatePoints(int npts,
+  void locatePoints(axom::IndexType npts,
                     const SpacePoint* pts,
                     IndexType* outCellIds,
                     SpacePoint* outIsoparametricCoords) const
@@ -151,7 +151,7 @@ public:
                                       RAJA::make_span(offsets.data(), npts),
                                       RAJA::operators::plus<IndexType> {});
 
-    IndexType totalCount = totalCountReduce.get();
+    axom::IndexType totalCount = totalCountReduce.get();
 
     // Step 3: allocate memory for all candidates
     axom::Array<IndexType> candidates(totalCount, totalCount, m_allocatorID);

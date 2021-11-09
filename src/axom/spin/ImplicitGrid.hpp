@@ -205,10 +205,12 @@ public:
     {
       m_bins[i] = BinSet(m_gridRes[i]);
       m_binData[i] = BinBitMap(&m_bins[i], BitsetType {}, 1, allocatorID);
+
+      axom::IndexType gridResDim = m_gridRes[i];
       m_minBlockBin[i] =
-        axom::Array<IndexType>(m_gridRes[i], m_gridRes[i], allocatorID);
+        axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
       m_maxBlockBin[i] =
-        axom::Array<IndexType>(m_gridRes[i], m_gridRes[i], allocatorID);
+        axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
       for(int ibin = 0; ibin < m_bins[i].size(); ibin++)
       {
         m_binData[i][ibin] = BitsetType(numElts, allocatorID);
@@ -428,7 +430,7 @@ public:
    *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
    */
   template <typename QueryGeom>
-  void getCandidatesAsArray(IndexType qsize,
+  void getCandidatesAsArray(axom::IndexType qsize,
                             const QueryGeom* queryObjs,
                             axom::Array<IndexType>& outOffsets,
                             axom::Array<IndexType>& outCounts,
@@ -764,7 +766,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::getQueryObject() const
 template <int NDIMS, typename ExecSpace, typename IndexType>
 template <typename QueryGeom>
 void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
-  IndexType qsize,
+  axom::IndexType qsize,
   const QueryGeom* queryObjs,
   axom::Array<IndexType>& outOffsets,
   axom::Array<IndexType>& outCounts,
@@ -794,7 +796,7 @@ void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
                                     RAJA::make_span(offsetsPtr, qsize),
                                     RAJA::operators::plus<IndexType> {});
 
-  IndexType totalCount = totalCountReduce.get();
+  axom::IndexType totalCount = totalCountReduce.get();
 
   // Step 3: allocate memory for all candidates
   outCandidates = axom::Array<IndexType>(totalCount, totalCount, m_allocatorId);
