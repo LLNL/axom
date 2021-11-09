@@ -142,6 +142,8 @@ private:
     TriangleType minTri;
     /// Weighted sum of normals when closest pt is on edge or vertex
     VectorType sumNormals {};
+    /// Count of the number of elements found at the current closest distance
+    int minCount {0};
   };
 
 public:
@@ -627,6 +629,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
       if(computeNormal && shouldClearNormals)
       {
         currMin.sumNormals = VectorType {};
+        currMin.minCount = 0;
       }
 
       shouldUpdateNormals = (computeNormal && is_cpt_shared);
@@ -641,6 +644,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
     if(shouldUpdateNormals)
     {
       VectorType norm = surface_elems[ei].normal();
+      ++currMin.minCount;
 
       switch(cpt_type)
       {
