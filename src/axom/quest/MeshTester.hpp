@@ -402,7 +402,9 @@ void findTriMeshIntersectionsImplicitGrid(
     surface_mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
+                const IndexType* nodeIds) {
+      AXOM_UNUSED_VAR(nodeIds);
+
       detail::Triangle3 tri;
 
       for(IndexType inode = 0; inode < 3; ++inode)
