@@ -16,7 +16,7 @@ set(quest_tests
     quest_vertex_weld.cpp
    )
 
-blt_list_append(TO       quest_tests 
+blt_list_append(TO       quest_tests
                 IF       C2C_FOUND
                 ELEMENTS quest_c2c_reader.cpp)
 
@@ -96,7 +96,7 @@ set(quest_mpi_tests
     )
 
 # Optionally, add tests that require AXOM_DATA_DIR
-blt_list_append(TO       quest_mpi_tests 
+blt_list_append(TO       quest_mpi_tests
                 IF       AXOM_DATA_DIR
                 ELEMENTS quest_inout_interface.cpp )
 
@@ -182,39 +182,40 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
     # Add resolution tests for each dataset and resolution
     if(AXOM_DATA_DIR)
         set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
-        
-        set(quest_regression_datasets
-            sphere
-        )
-        set(quest_regression_resolutions
-            16
-        )
 
+        # Datasets contain a mesh name and resolution delimited by a colon
+        set(quest_regression_datasets sphere:16)
+
+        # Add additional regression datasets when its config variable is defined
         blt_list_append(
             TO          quest_regression_datasets
-            ELEMENTS    aatbase_3_binary
-                        cap
-                        naca0012
-                        plane_binary
-                        plane_simp
-            IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
-           )
-        blt_list_append(
-            TO          quest_regression_resolutions
-            ELEMENTS    32
+            ELEMENTS    aatbase_3_binary:16
+                        aatbase_3_binary:32
+                        cap:16
+                        cap:32
+                        naca0012:16
+                        naca0012:32
+                        plane_binary:16
+                        plane_binary:32
+                        plane_simp:16
+                        plane_simp:32
+                        sphere:32
             IF          AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
            )
 
-        foreach(dataset ${quest_regression_datasets})
-            foreach(res ${quest_regression_resolutions})
-                axom_add_test(
-                    NAME quest_regression_${dataset}_${res}
-                    COMMAND ${test_name}
-                            --mesh ${quest_data_dir}/${dataset}.stl
-                            --baseline ${quest_data_dir}/regression/${dataset}_${res}_baseline.root
-                    NUM_MPI_TASKS 1
-                )
-            endforeach()
+        foreach(el ${quest_regression_datasets})
+            # Extract mesh and resolution from the dataset string
+            string(REPLACE ":" ";" _dataset_res ${el})
+            list(GET _dataset_res 0 _dataset)
+            list(GET _dataset_res 1 _res)
+
+            axom_add_test(
+                NAME quest_regression_${_dataset}_${_res}
+                COMMAND ${test_name}
+                        --mesh ${quest_data_dir}/${_dataset}.stl
+                        --baseline ${quest_data_dir}/regression/${_dataset}_${_res}_baseline.root
+                NUM_MPI_TASKS 1
+            )
         endforeach()
     endif()
 endif()
