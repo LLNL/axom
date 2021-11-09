@@ -733,6 +733,7 @@ void check_external_view(ArrayView<T>& v)
   EXPECT_EQ(data_ptr, v.data());
 }
 
+// FIXME: HIP
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
 
 template <typename T>
