@@ -87,7 +87,7 @@ enum class ClosestPointLocType
 };
 
 /// Converts from \a loc code returned by primal::closest_point() to a \a ClosestPointLocType enum
-inline ClosestPointLocType getClosestPointLocType(int loc)
+AXOM_HOST_DEVICE inline ClosestPointLocType getClosestPointLocType(int loc)
 {
   SLIC_ASSERT_MSG(loc >= -3,
                   "Invalid closest point location type: "
@@ -108,7 +108,7 @@ inline ClosestPointLocType getClosestPointLocType(int loc)
 }
 
 /// A \a ClosestPointLocType is shared for a vertex or edge, unshared otherwise
-inline bool isClosestPointTypeShared(ClosestPointLocType cpt)
+AXOM_HOST_DEVICE inline bool isClosestPointTypeShared(ClosestPointLocType cpt)
 {
   return cpt == ClosestPointLocType::edge || cpt == ClosestPointLocType::vertex;
 }
@@ -656,10 +656,6 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
           // normal of a face potentially sharing a vertex
           double alpha = surface_elems[ei].angle(candidate_loc);
           currMin.sumNormals += (norm.unitVector() * alpha);
-        }
-        else
-        {
-          SLIC_WARNING("Triangle for closest point was degenerate");
         }
         break;
       default:
