@@ -330,6 +330,39 @@ TEST(primal_vector, add_point_vector)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_vector, subtract_points)
+{
+  constexpr int DIM = 3;
+  using QPt = primal::Point<double, DIM>;
+  using QVec = primal::Vector<double, DIM>;
+
+  {
+    QPt zeroPt {0.0};
+    QPt onePt {1.0};
+
+    QVec oneVec {1.0};
+
+    EXPECT_EQ(oneVec, onePt - zeroPt);
+    EXPECT_EQ(-oneVec, zeroPt - onePt);
+  }
+
+  {
+    QPt head {1.23, 4.56, 7.89};
+    QPt tail {.23, .56, .89};
+
+    QVec diff = head - tail;
+    QVec exp {1, 4, 7};
+    QVec ctor(tail, head);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_DOUBLE_EQ(exp[i], diff[i]);
+      EXPECT_DOUBLE_EQ(ctor[i], diff[i]);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
 {
   using seq_exec = axom::SEQ_EXEC;

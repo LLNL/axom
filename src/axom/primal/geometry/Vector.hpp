@@ -74,6 +74,16 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& A,
                                             const Vector<T, NDIMS>& B);
 
 /*!
+ * \brief Subtracts Point \a t from Point \a h, yielding a vector
+ * \param [in] h the head of the resulting vector
+ * \param [in] t the tail of the resulting vector
+ * \return resulting vector, \f$ V_i = h_i - t_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
+                                            const Point<T, NDIMS>& t);
+
+/*!
  * \brief Unary negation of a vector instance.
  * \param [in] vec1 vector instance to negate.
  * \return C resulting vector from unary negation.
@@ -607,6 +617,14 @@ inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1,
   Vector<T, NDIMS> result(vec1);
   result -= vec2;
   return result;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
+                                            const Point<T, NDIMS>& t)
+{
+  return Vector<T, NDIMS>(t, h);
 }
 
 //------------------------------------------------------------------------------
