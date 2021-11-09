@@ -592,7 +592,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
   using axom::utilities::isNearlyEqual;
   using detail::getClosestPointLocType;
   using detail::isClosestPointTypeShared;
-  constexpr double EPS = 1e-8;
+  constexpr double EPS = 1e-12;
 
   for(int ei = 0; ei < num_candidates; ei++)
   {
