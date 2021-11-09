@@ -64,8 +64,8 @@ packages:
     externals:
     #- spec: cray-mpich@8.1.7%clang@12.0.0
     #  prefix: /opt/cray/pe/mpich/8.1.7/ofi/amd/4.0/
-    - spec: cray-mpich@8.1.7%clang@12.0.0+slurm
-      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.7-rocmcc-4.2.0/
+    - spec: cray-mpich@8.1.9%clang@12.0.0+slurm
+      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.2.0/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
