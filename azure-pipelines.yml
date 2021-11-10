@@ -35,6 +35,7 @@ jobs:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
+        BUILD_TYPE: 'Release'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
@@ -90,7 +91,7 @@ jobs:
   - script:  |
       echo " -e $TEST_TARGET -e $COMPILER -e $DO_BUILD -e $DO_TEST -e $CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh"
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
-      docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
+      docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS -e BUILD_TYPE $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
 
     condition: eq( variables['Agent.OS'], 'Linux')
     displayName: 'Linux Build & Test ($(TEST_TARGET))'
