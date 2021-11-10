@@ -8,7 +8,7 @@
 """
  file: llnl_lc_uberenv_install_tools.py
 
- description: 
+ description:
   helpers for installing axom tpls on llnl lc systems.
 
 """
@@ -232,7 +232,7 @@ def archive_tpl_logs(prefix, job_name, timestamp):
             os.makedirs(archive_spec_dir)
 
         copy_if_exists(tpl_log, pjoin(archive_spec_dir, "output.log.spack.txt"))
-        
+
         # Note: There should only be one of these per spec
         config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
         if len(config_spec_logs) > 0:
@@ -296,7 +296,7 @@ def uberenv_build(prefix, spec, project_file, mirror_path):
     cmd += "--mirror=\"{0}\" ".format(mirror_path)
     if project_file:
         cmd += "--project-json=\"{0}\" ".format(project_file)
-        
+
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec.replace(" ", "_"))
     print("[starting tpl install of spec %s]" % spec)
     print("[log file: %s]" % spack_tpl_build_log)
@@ -322,7 +322,10 @@ def uberenv_build(prefix, spec, project_file, mirror_path):
 # helpers for testing a set of host configs
 ############################################################
 
-def build_and_test_host_config(test_root, host_config, report_to_stdout = False, extra_cmake_options = ""):
+def build_and_test_host_config(test_root, host_config, 
+                               report_to_stdout = False,
+                               extra_cmake_options = "",
+                               build_type = "Debug"):
     host_config_root = get_host_config_root(host_config)
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
@@ -335,7 +338,7 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print("[starting configure of %s]" % host_config)
     print("[log file: %s]" % cfg_output_file)
-    res = sexe("python config-build.py -bp %s -ip %s -hc %s %s" % (build_dir, install_dir, host_config, extra_cmake_options),
+    res = sexe("python config-build.py -bp %s -ip %s -bt %s -hc %s %s" % (build_dir, install_dir, build_type, host_config, extra_cmake_options),
                output_file = cfg_output_file,
                echo=True)
 
@@ -346,11 +349,11 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
     if res != 0:
         print("[ERROR: Configure for host-config: %s failed]\n" % host_config)
         return res
-        
+
     ####
     # build, test, and install
     ####
-    
+
     # build the code
     bld_output_file =  pjoin(build_dir,"output.log.make.txt")
     print("[starting build]")
@@ -512,7 +515,13 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
     return 0
 
 
-def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_configs, report_to_stdout = False, extra_cmake_options = ""):
+def build_and_test_host_configs(prefix,
+                                job_name,
+                                timestamp,
+                                use_generated_host_configs,
+                                report_to_stdout = False,
+                                extra_cmake_options = "",
+                                build_type = "Debug"):
     host_configs = get_host_configs_for_current_machine(prefix, use_generated_host_configs)
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
@@ -524,14 +533,17 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
 
     test_root =  get_build_and_test_root(prefix, timestamp)
     os.mkdir(test_root)
-    write_build_info(pjoin(test_root,"info.json"), job_name) 
+    write_build_info(pjoin(test_root,"info.json"), job_name)
     ok  = []
     bad = []
     for host_config in host_configs:
         build_dir = get_build_dir(test_root, host_config)
 
         start_time = time.time()
-        if build_and_test_host_config(test_root, host_config, report_to_stdout, extra_cmake_options) == 0:
+        if build_and_test_host_config(test_root, host_config,
+                                      report_to_stdout = report_to_stdout,
+                                      extra_cmake_options=extra_cmake_options,
+                                      build_type = build_type) == 0:
             ok.append(host_config)
             log_success(build_dir, job_name, timestamp)
         else:
@@ -566,8 +578,7 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
 
 def set_group_and_perms(directory):
     """
-    Sets the proper group and access permissions of given input
-    directory. 
+    Sets the proper group and access permissions of given input directory.
     """
 
     skip = True
@@ -657,7 +668,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
             src_build_failed = True
         else:
             print("[SUCCESS: Build and test of src vs tpls test passed.]\n")
- 
+
     # set proper perms for installed tpls
     set_group_and_perms(prefix)
 
@@ -861,7 +872,7 @@ def get_compiler_from_spec(spec):
     compiler = spec
     for c in ['~', '+']:
         index = compiler.find(c)
-        if index != -1: 
+        if index != -1:
             compiler = compiler[:index]
     return compiler
 

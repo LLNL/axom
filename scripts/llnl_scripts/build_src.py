@@ -9,7 +9,7 @@
 """
  file: build_src.py
 
- description: 
+ description:
   Builds all Axom with the host-configs for the current machine.
 
 """
@@ -37,6 +37,12 @@ def parse_args():
                       dest="hostconfig",
                       default="",
                       help="Specific host-config file to build (Tries multiple known paths to locate given file)")
+    # Build type for the configuration
+    parser.add_option("--build-type",
+                      dest="buildtype",
+                      default="Debug",
+                      choices = ("Debug", "RelWithDebInfo", "Release", "MinSizeRel"),
+                      help="The CMake build type to use")
     # Extra cmake options to pass to config build
     parser.add_option("--extra-cmake-options",
                       dest="extra_cmake_options",
@@ -56,7 +62,7 @@ def parse_args():
     # parse args
     ###############
     opts, extras = parser.parse_args()
-    # we want a dict b/c the values could 
+    # we want a dict b/c the values could
     # be passed without using optparse
     opts = vars(opts)
 
@@ -100,7 +106,10 @@ def main():
         # Default to build all SYS_TYPE's host-configs in host-config/
         build_all = not opts["hostconfig"] and not opts["automation"]
         if build_all:
-            res = build_and_test_host_configs(repo_dir, job_name, timestamp, False, opts["verbose"], opts["extra_cmake_options"])
+            res = build_and_test_host_configs(repo_dir, job_name, timestamp, False,
+                                              report_to_stdout = opts["verbose"],
+                                              extra_cmake_options = opts["extra_cmake_options"],
+                                              build_type = opts["build_type"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
@@ -149,7 +158,10 @@ def main():
             test_root = get_build_and_test_root(repo_dir, timestamp)
             test_root = "{0}_{1}".format(test_root, hostconfig.replace(".cmake", "").replace("@","_"))
             os.mkdir(test_root)
-            res = build_and_test_host_config(test_root, hostconfig_path, opts["verbose"], opts["extra_cmake_options"])
+            res = build_and_test_host_config(test_root, hostconfig_path,
+                                             report_to_stdout = opts["verbose"],
+                                             extra_cmake_options = opts["extra_cmake_options"],
+                                             build_type = opts["build_type"])
 
         # Archive logs
         if opts["archive"] != "":
