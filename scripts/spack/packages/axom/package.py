@@ -275,6 +275,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
 
+            # Temporary Fix for mpi for gfx908 until wrapper paths are fixed
+            if "gfx908" in archs:
+                hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -L{0}/../llvm/lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64:{0}/../llvm/lib -lamdhip64 -lhsakmt -lhsa-runtime64 -lpgmath -lflang -lflangrti -lompstub".format(hip_root)
+
             gcc_toolchain_regex = re.compile("--gcc-toolchain=(.*)")
             gcc_name_regex = re.compile(".*gcc-name.*")
             using_toolchain = list(filter(gcc_toolchain_regex.match, spec.compiler_flags['cxxflags']))

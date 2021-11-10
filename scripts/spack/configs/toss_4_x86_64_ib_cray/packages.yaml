@@ -22,39 +22,39 @@ packages:
       mpi: [cray-mpich]
 
   hip:
-    version: [4.2.0]
+    version: [4.3.1]
     buildable: false
     externals:
-    - spec: hip@4.2.0
-      prefix: /opt/rocm-4.2.0/hip
+    - spec: hip@4.3.1
+      prefix: /opt/rocm-4.3.1/hip
 
   llvm-amdgpu:
-    version: [4.2.0]
+    version: [4.3.1]
     buildable: false
     externals:
-    - spec: llvm-amdgpu@4.2.0
-      prefix: /opt/rocm-4.2.0/llvm
+    - spec: llvm-amdgpu@4.3.1
+      prefix: /opt/rocm-4.3.1/llvm
 
   hsa-rocr-dev:
-    version: [4.2.0]
+    version: [4.3.1]
     buildable: false
     externals:
-    - spec: hsa-rocr-dev@4.2.0
-      prefix: /opt/rocm-4.2.0/
+    - spec: hsa-rocr-dev@4.3.1
+      prefix: /opt/rocm-4.3.1/
 
   rocminfo:
-    version: [4.2.0]
+    version: [4.3.1]
     buildable: false
     externals:
-    - spec: rocminfo@4.2.0
-      prefix: /opt/rocm-4.2.0/
+    - spec: rocminfo@4.3.1
+      prefix: /opt/rocm-4.3.1/
 
   rocm-device-libs:
-    version: [4.2.0]
+    version: [4.3.1]
     buildable: false
     externals:
-    - spec: rocm-device-libs@4.2.0
-      prefix: /opt/rocm-4.2.0/
+    - spec: rocm-device-libs@4.3.1
+      prefix: /opt/rocm-4.3.1/
 
 # Lock down which MPI we are using
   mpi:
@@ -62,10 +62,10 @@ packages:
   cray-mpich:
     buildable: false
     externals:
-    #- spec: cray-mpich@8.1.7%clang@12.0.0
-    #  prefix: /opt/cray/pe/mpich/8.1.7/ofi/amd/4.0/
-    - spec: cray-mpich@8.1.9%clang@12.0.0+slurm
-      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.2.0/
+    #- spec: cray-mpich@8.1.7%clang@13.0.0
+    #  prefix: /opt/cray/pe/mpich/8.1.9/ofi/amd/4.3
+    - spec: cray-mpich@8.1.9%clang@13.0.0+slurm
+      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
@@ -92,11 +92,11 @@ packages:
     - spec: bzip2
       prefix: /usr
   cmake:
-    version: [3.14.5]
+    version: [3.19.2]
     buildable: false
     externals:
     - spec: cmake
-      prefix: /usr/tce/packages/cmake/cmake-3.14.5
+      prefix: /usr/tce/packages/cmake/cmake-3.19.2
   gettext:
     buildable: false
     externals:
