@@ -39,44 +39,6 @@ const std::string MFEMSidreDataCollection::s_attribute_suffix =
   "_material_attribute";
 const std::string MFEMSidreDataCollection::s_coordset_name = "coords";
 
-namespace detail
-{
-/**
- * @brief Implements an analogue to mfem::FiniteElementCollection::New
- * for mfem::QuadratureSpaces - basis currently must be of form QF_Default_[ORDER]_[VDIM]
- * @param[in] name The name that encodes the QuadratureSpace data
- * @param[in] mesh The mesh to construct the QuadratureSpace with
- * @param[out] vdim The vector dimension parsed from the basis name - unlike FEColl/FESpace,
- * QSpaces do not contain vdim information, but it may be useful for the caller when constructing
- * the QFunc
- */
-mfem::QuadratureSpace* NewQuadratureSpace(const std::string& name,
-                                          Mesh* mesh,
-                                          int& vdim)
-{
-  const auto tokens = utilities::string::rsplitN(name, 4, '_');
-  // Uses raw pointers for consistency with MFEM
-  mfem::QuadratureSpace* qspace = nullptr;
-  if((tokens.size() == 4) && (tokens[0] == "QF"))
-  {
-    // Right now only the Default type is supported
-    if(tokens[1] == "Default")
-    {
-      if(conduit::utils::string_is_integer(tokens[2]) &&
-         conduit::utils::string_is_integer(tokens[3]))
-      {
-        int order = conduit::utils::string_to_value<int>(tokens[2]);
-        vdim = conduit::utils::string_to_value<int>(tokens[3]);
-        qspace = new mfem::QuadratureSpace(mesh, order);
-      }
-    }
-  }
-  SLIC_ERROR_IF(!qspace, "Unrecognized QuadratureSpace name: " << name);
-  return qspace;
-}
-
-}  // namespace detail
-
 // Constructor that will automatically create the sidre data store and necessary
 // data groups for domain and global data.
 MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_name,
@@ -1386,12 +1348,8 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   // Set the "basis" string using the qf's order and vdim, overwrite if
   // necessary.
   sidre::View* v = alloc_view(grp, "basis");
-  // In the future, we should be able to have mfem::QuadratureFunction provide us this name.
-  // FIXME: QF order can be retrieved directly as of MFEM 4.3
   const std::string basis_name =
-    fmt::format("QF_Default_{0}_{1}",
-                qf->GetSpace()->GetElementIntRule(0).GetOrder(),
-                qf->GetVDim());
+    fmt::format("{0}_{1}", qf->GetSpace()->Name(), qf->GetVDim());
   v->setString(basis_name);
 
   // Set the topology of the QuadratureFunction.
@@ -2438,7 +2396,12 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
       // The vdim is being overwritten here with the value in the basis string so we
       // can correctly construct the QuadratureFunction
       m_quadspaces[basis_name] = std::unique_ptr<mfem::QuadratureSpace>(
-        detail::NewQuadratureSpace(basis_name, mesh, vdim));
+        mfem::QuadratureSpace::New(basis_name.c_str(), mesh));
+      const auto pos = basis_name.find_last_of('_');
+      if(pos != std::string::npos)
+      {
+        vdim = conduit::utils::string_to_value<int>(basis_name.substr(pos + 1));
+      }
       is_gridfunc = false;
     }
     // Only need to create a new FEColl if one doesn't already exist
