@@ -109,7 +109,7 @@ def main():
             res = build_and_test_host_configs(repo_dir, job_name, timestamp, False,
                                               report_to_stdout = opts["verbose"],
                                               extra_cmake_options = opts["extra_cmake_options"],
-                                              build_type = opts["build_type"])
+                                              build_type = opts["buildtype"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
@@ -161,7 +161,7 @@ def main():
             res = build_and_test_host_config(test_root, hostconfig_path,
                                              report_to_stdout = opts["verbose"],
                                              extra_cmake_options = opts["extra_cmake_options"],
-                                             build_type = opts["build_type"])
+                                             build_type = opts["buildtype"])
 
         # Archive logs
         if opts["archive"] != "":
