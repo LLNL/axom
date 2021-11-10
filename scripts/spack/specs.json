@@ -17,7 +17,7 @@
     [ "clang@9.0.0~cpp14+devtools+mfem+c2c",
       "clang@10.0.0~cpp14+devtools+mfem+c2c",
       "gcc@8.1.0~cpp14+devtools+mfem+c2c",
-      "gcc@8.1_no_fortran~cpp14~fortran+devtools+mfem+c2c",
+      "gcc@8.1_no_fortran~cpp14~fortran+devtools~mfem+c2c",
       "intel@18.0.2~cpp14~openmp+devtools+mfem+c2c",
       "intel@19.0.4~cpp14~openmp+devtools+mfem+c2c" ],
 
