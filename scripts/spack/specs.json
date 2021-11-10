@@ -31,7 +31,7 @@
     "blueos_3_ppc64le_ib_p9":
     [ "clang@9.0.0_upstream_xlf~cpp14~openmp+devtools+mfem+c2c",
       "clang@8.0.1_nvcc_xlf~cpp14~openmp+devtools+mfem+cuda+c2c cuda_arch=70",
-      "gcc@7.3.1~cpp14+devtools+mfem+c2c",
+      "gcc@7.3.1~cpp14+devtools~mfem+c2c",
       "xl@16.1.1_coral~cpp14~openmp+devtools+mfem+c2c",
       "xl@16.1.1_nvcc~cpp14~openmp+devtools+mfem+cuda+c2c cuda_arch=70" ],
 
