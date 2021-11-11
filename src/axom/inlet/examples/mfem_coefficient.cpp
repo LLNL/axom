@@ -100,7 +100,7 @@ struct BoundaryCondition
 
 inlet::InletVector toInletVector(const mfem::Vector& vec)
 {
-  return {vec.GetData(), vec.Size()};
+  return inlet::InletVector {vec.GetData(), vec.Size()};
 }
 
 // Uses out-params to match MFEM semantics

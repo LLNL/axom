@@ -25,6 +25,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   by setting `AXOM_DEBUG_DEFINE` to `ON` or `OFF`. 
 ###  Changed
 - Renamed `AXOM_NOT_USED` macro to `AXOM_UNUSED_PARAM` for better consistency with other Axom macros
+- Added `explicit` to `axom::Inlet::InletVector` constructors and added a constructor that accepts a `double*`
 
 ###  Fixed
 - The `AXOM_DEBUG` compiler define is now properly exported via the `axom` CMake target when it is enabled

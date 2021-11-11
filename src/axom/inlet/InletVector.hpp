@@ -66,7 +66,10 @@ struct InletVector
    * \param [in] d The dimension of the vector
    *******************************************************************************
    */
-  InletVector(primal::Vector3D&& v, int d = 3) : vec(std::move(v)), dim(d) { }
+  explicit InletVector(primal::Vector3D&& v, int d = 3)
+    : vec(std::move(v))
+    , dim(d)
+  { }
 
   /*!
    *******************************************************************************
@@ -79,7 +82,8 @@ struct InletVector
    * is not dependent on the lifetime of the pointer.
    *******************************************************************************
    */
-  InletVector(const double* values, int d = 3) : vec(values, d), dim(d) { }
+  explicit InletVector(const double* values, int d = 3) : vec(values, d), dim(d)
+  { }
 
   /*!
    *******************************************************************************
