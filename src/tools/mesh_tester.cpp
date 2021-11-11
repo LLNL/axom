@@ -725,7 +725,20 @@ int main(int argc, char** argv)
     {
       switch(params.policy)
       {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+      case seq:
+#ifdef AXOM_USE_RAJA
+        SLIC_INFO(
+          "ImplicitGrid was compiled with RAJA - seq and raja_seq "
+          "execution will be equivalent");
+#endif
+        quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+#ifdef AXOM_USE_RAJA
       case raja_seq:
         quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(
           surface_mesh,
@@ -744,7 +757,7 @@ int main(int argc, char** argv)
           params.intersectionThreshold);
         break;
   #endif
-  #ifdef AXOM_USE_CUDA
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case raja_cuda:
         quest::findTriMeshIntersectionsImplicitGrid<cuda_exec, double>(
           surface_mesh,
@@ -754,7 +767,7 @@ int main(int argc, char** argv)
           params.intersectionThreshold);
         break;
   #endif
-#endif  // AXOM_USE_RAJA && AXOM_USE_UMPIRE
+#endif  // AXOM_USE_RAJA
       default:
         SLIC_ERROR("Unhandled runtime policy case " << params.policy);
         break;
