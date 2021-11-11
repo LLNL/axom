@@ -70,6 +70,19 @@ struct InletVector
 
   /*!
    *******************************************************************************
+   * \brief Constructs a vector with a pointer and a dimension
+   * 
+   * \param [in] values The pointer to the vector data
+   * \param [in] d The dimension of the vector (length of the data)
+   * 
+   * \note Data is copied from the pointer - lifetime of the constructed InletVector
+   * is not dependent on the lifetime of the pointer.
+   *******************************************************************************
+   */
+  InletVector(const double* values, int d = 3) : vec(values, d), dim(d) { }
+
+  /*!
+   *******************************************************************************
    * \brief Retrieves an element of the vector
    * 
    * \param [in] i The index of the element to retrieve (zero-indexed)
