@@ -100,9 +100,9 @@ packages:
     variants: ~shared~test
   hdf5:
     variants: ~shared~mpi
-  # do shared mfem to allow PIC flag in mfem
   hypre:
     version: [2.20.0]
+  # do shared mfem to allow PIC flag in mfem
   mfem:
     version: [4.2.0]
     variants: +shared~static
