@@ -113,15 +113,13 @@ LuaReader::LuaReader()
     "new",
     axom::sol::factories(
       [](double x, double y, double z) {
-        return FunctionType::Vector {primal::Vector3D {x, y, z}, 3};
+        return FunctionType::Vector {x, y, z};
       },
       [](double x, double y) {
-        return FunctionType::Vector {primal::Vector3D {x, y}, 2};
+        return FunctionType::Vector {x, y};
       },
       // Assume three for a default constructor
-      [] {
-        return FunctionType::Vector {primal::Vector3D {}, 3};
-      }),
+      [] { return FunctionType::Vector {}; }),
     // Add vector addition operation
     axom::sol::meta_function::addition,
     [](const FunctionType::Vector& u, const FunctionType::Vector& v) {
