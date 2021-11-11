@@ -111,7 +111,9 @@ public:
     SpacePoint pt(pos);
     SpacePoint isopar;
 
-    locatePoints(1, &pt, &containingCell, &isopar);
+    locatePoints(axom::ArrayView<const SpacePoint>(&pt, 1),
+                 &containingCell,
+                 &isopar);
 
     // Copy data back to input parameter isoparametric, if necessary
     if(isoparametric != nullptr)
@@ -122,12 +124,13 @@ public:
     return containingCell;
   }
 
-  void locatePoints(axom::IndexType npts,
-                    const SpacePoint* pts,
+  void locatePoints(axom::ArrayView<const SpacePoint> pts,
                     IndexType* outCellIds,
                     SpacePoint* outIsoparametricCoords) const
   {
     auto gridQuery = m_grid.getQueryObject();
+
+    axom::IndexType npts = pts.size();
 
     axom::Array<IndexType> offsets(npts, npts, m_allocatorID);
     axom::Array<IndexType> counts(npts, npts, m_allocatorID);

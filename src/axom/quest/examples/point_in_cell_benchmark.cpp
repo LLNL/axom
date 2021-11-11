@@ -97,7 +97,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
     IndexType* outCellIds = axom::allocate<IndexType>(npts);
     // Run query
     utilities::Timer timeRunQuery(true);
-    query.locatePoints(npts, pts, outCellIds);
+    query.locatePoints(axom::ArrayView<const PointType>(pts, npts), outCellIds);
     double time = timeRunQuery.elapsed();
     SLIC_INFO(
       axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
@@ -147,7 +147,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
     IndexType* outCellIds = axom::allocate<IndexType>(npts);
     // Run query
     utilities::Timer timeRunQuery(true);
-    query.locatePoints(npts, pts, outCellIds);
+    query.locatePoints(axom::ArrayView<const PointType>(pts, npts), outCellIds);
     double time = timeRunQuery.elapsed();
     SLIC_INFO(
       axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
