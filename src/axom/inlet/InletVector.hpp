@@ -66,7 +66,24 @@ struct InletVector
    * \param [in] d The dimension of the vector
    *******************************************************************************
    */
-  InletVector(primal::Vector3D&& v, int d = 3) : vec(std::move(v)), dim(d) { }
+  explicit InletVector(primal::Vector3D&& v, int d = 3)
+    : vec(std::move(v))
+    , dim(d)
+  { }
+
+  /*!
+   *******************************************************************************
+   * \brief Constructs a vector with a pointer and a dimension
+   * 
+   * \param [in] values The pointer to the vector data
+   * \param [in] d The dimension of the vector (length of the data)
+   * 
+   * \note Data is copied from the pointer - lifetime of the constructed InletVector
+   * is not dependent on the lifetime of the pointer.
+   *******************************************************************************
+   */
+  explicit InletVector(const double* values, int d = 3) : vec(values, d), dim(d)
+  { }
 
   /*!
    *******************************************************************************
