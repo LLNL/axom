@@ -20,7 +20,7 @@ using Vector = inlet::FunctionType::Vector;
 // to a geometric vector type
 Vector toVector(const std::vector<double>& vec)
 {
-  return {vec.data(), static_cast<int>(vec.size())};
+  return Vector {vec.data(), static_cast<int>(vec.size())};
 }
 
 // A union of the members required for each of the operations is stored for simplicity
