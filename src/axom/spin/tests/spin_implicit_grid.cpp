@@ -44,26 +44,40 @@ using MyTypes = ::testing::Types<axom::spin::ImplicitGrid<1>,
 
 TYPED_TEST_SUITE(ImplicitGridTest, MyTypes);
 
-#ifdef AXOM_USE_CUDA
 template <typename T>
-class ImplicitGridGPUTest : public ::testing::Test
+class ImplicitGridExecTest;
+
+template <int Dim, typename Exec>
+class ImplicitGridExecTest<axom::spin::ImplicitGrid<Dim, Exec>>
+  : public ::testing::Test
 {
 public:
-  using GridT = T;
+  using GridT = axom::spin::ImplicitGrid<Dim, Exec>;
   using GridCell = typename GridT::GridCell;
   using SpacePt = typename GridT::SpacePoint;
   using BBox = typename GridT::SpatialBoundingBox;
+  using ExecSpace = Exec;
 
   static const int DIM = SpacePt::DIMENSION;
 };
 
-using GPUPolicy = axom::CUDA_EXEC<256>;
-using MyTypesGPU = ::testing::Types<axom::spin::ImplicitGrid<1, GPUPolicy>,
-                                    axom::spin::ImplicitGrid<2, GPUPolicy>,
-                                    axom::spin::ImplicitGrid<3, GPUPolicy>>;
-
-TYPED_TEST_SUITE(ImplicitGridGPUTest, MyTypesGPU);
+/*! Type list for TypedTests on ImplicitGrid with execution space set*/
+using MyTypesExec = ::testing::Types<
+#ifdef AXOM_USE_OPENMP
+  axom::spin::ImplicitGrid<1, axom::OMP_EXEC>,
+  axom::spin::ImplicitGrid<2, axom::OMP_EXEC>,
+  axom::spin::ImplicitGrid<3, axom::OMP_EXEC>,
 #endif
+#ifdef AXOM_USE_CUDA
+  axom::spin::ImplicitGrid<1, axom::CUDA_EXEC<256>>,
+  axom::spin::ImplicitGrid<2, axom::CUDA_EXEC<256>>,
+  axom::spin::ImplicitGrid<3, axom::CUDA_EXEC<256>>,
+#endif
+  axom::spin::ImplicitGrid<1, axom::SEQ_EXEC>,
+  axom::spin::ImplicitGrid<2, axom::SEQ_EXEC>,
+  axom::spin::ImplicitGrid<3, axom::SEQ_EXEC>>;
+
+TYPED_TEST_SUITE(ImplicitGridExecTest, MyTypesExec);
 
 TYPED_TEST(ImplicitGridTest, initialization)
 {
@@ -434,8 +448,7 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt)
   }
 }
 
-template <typename TestFixture, typename ExecSpace>
-void run_query_obj_pt_query()
+TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
 {
   const int DIM = TestFixture::DIM;
   using GridCell = typename TestFixture::GridCell;
@@ -443,11 +456,11 @@ void run_query_obj_pt_query()
   using GridT = typename TestFixture::GridT;
   using SpacePt = typename TestFixture::SpacePt;
 
-  SLIC_INFO("Test ImplicitGrid getCandidates() for points in " << DIM << "D");
+  SLIC_INFO("Test ImplicitGrid getCandidatesAsArray() with "
+            << axom::execution_space<typename TestFixture::ExecSpace>::name()
+            << " execution space for points in " << DIM << "D");
 
   using IndexType = typename GridT::IndexType;
-
-  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -479,39 +492,24 @@ void run_query_obj_pt_query()
       SpacePt::make_point(.35, 0.25, 0.99),  // outside coord 2
     };
 
-    int* numCandidates = axom::allocate<int>(10, allocatorID);
-    int* candidates = axom::allocate<int>(10, allocatorID);
+    axom::Array<int> count, offset, candidates;
 
     // Run query against implicit grid
-    auto queryObj = grid.getQueryObject();
-    axom::for_all<axom::SEQ_EXEC>(
-      10,
-      AXOM_LAMBDA(IndexType i) {
-        numCandidates[i] = 0;
-        queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
-          if(numCandidates[i] == 0)
-          {
-            candidates[i] = candidateIdx;
-          }
-          numCandidates[i]++;
-        });
-      });
+    grid.getCandidatesAsArray(10, queryPts, offset, count, candidates);
 
     // Test some points that are expected to match
     for(int i = 0; i < 5; ++i)
     {
       std::unordered_set<int> expected {1};
-      EXPECT_EQ(1, numCandidates[i]);
+      EXPECT_EQ(1, count[i]);
       EXPECT_EQ(1, candidates[i]);
     }
 
     // Test some points that are expected to not match
     for(int i = 5; i < 6 + DIM; ++i)
     {
-      EXPECT_EQ(0, numCandidates[i]);
+      EXPECT_EQ(0, count[i]);
     }
-    axom::deallocate(numCandidates);
-    axom::deallocate(candidates);
   }
 
   BBox objBox2(SpacePt::make_point(.75, .85, .85), SpacePt(.85));
@@ -528,39 +526,19 @@ void run_query_obj_pt_query()
                           // Should be inside obj2 and obj3, but not obj1
                           SpacePt::make_point(.85, .85, .85)};
 
-    int* numCandidates = axom::allocate<int>(3, allocatorID);
-    int* candidates = axom::allocate<int>(3 * 3, allocatorID);
+    axom::Array<int> count, offset, candidates;
 
     // Run query against implicit grid
-    auto queryObj = grid.getQueryObject();
-    axom::for_all<axom::SEQ_EXEC>(
-      3,
-      AXOM_LAMBDA(IndexType i) {
-        numCandidates[i] = 0;
-        queryObj.visitCandidates(queryPts[i], [&](int candidateIdx) {
-          int startIdx = 3 * i;
-          int slotIdx = numCandidates[i];
-          numCandidates[i]++;
-          if(slotIdx < 3)
-          {
-            candidates[startIdx + slotIdx] = candidateIdx;
-          }
-        });
-      });
+    grid.getCandidatesAsArray(3, queryPts, offset, count, candidates);
     std::unordered_set<int> expected[] = {{2}, {3}, {2, 3}};
 
     for(int i = 0; i < 3; i++)
     {
-      std::unordered_set<int> actual(candidates + 3 * i,
-                                     candidates + 3 * i + numCandidates[i]);
+      std::unordered_set<int> actual(candidates.data() + offset[i],
+                                     candidates.data() + offset[i] + count[i]);
       EXPECT_EQ(expected[i], actual);
     }
   }
-}
-
-TYPED_TEST(ImplicitGridTest, get_candidates_pt_query_obj)
-{
-  run_query_obj_pt_query<TestFixture, axom::SEQ_EXEC>();
 }
 
 TYPED_TEST(ImplicitGridTest, get_candidates_box)
@@ -745,8 +723,7 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box)
   }
 }
 
-template <typename TestFixture, typename ExecSpace>
-void run_query_obj_box_query()
+TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
 {
   const int DIM = TestFixture::DIM;
   using GridCell = typename TestFixture::GridCell;
@@ -754,11 +731,11 @@ void run_query_obj_box_query()
   using GridT = typename TestFixture::GridT;
   using SpacePt = typename TestFixture::SpacePt;
 
-  SLIC_INFO("Test ImplicitGrid visitCandidates() for boxes in " << DIM << "D");
+  SLIC_INFO("Test ImplicitGrid getCandidatesAsArray() with "
+            << axom::execution_space<typename TestFixture::ExecSpace>::name()
+            << " execution space for boxes in " << DIM << "D");
 
   using IndexType = typename GridT::IndexType;
-
-  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -852,53 +829,24 @@ void run_query_obj_box_query()
                                    DIM * 6,
                                    DIM * 10};
 
-  int* numCandidates = axom::allocate<int>(N_QUERIES, allocatorID);
-  // each query box gets DIM*10 slots
-  int* candidates = axom::allocate<int>(N_QUERIES * DIM * 10, allocatorID);
+  axom::Array<int> offset, count, candidates;
 
   // Run query against implicit grid
-  auto queryObj = grid.getQueryObject();
-  axom::for_all<ExecSpace>(
-    N_QUERIES,
-    AXOM_LAMBDA(IndexType i) {
-      numCandidates[i] = 0;
-      queryObj.visitCandidates(queryBoxes[i], [&](int candidateIdx) {
-        int startIdx = i * DIM * 10;
-        int slotIdx = numCandidates[i];
-        numCandidates[i]++;
-        if(slotIdx < DIM * 10)
-        {
-          candidates[startIdx + slotIdx] = candidateIdx;
-        }
-      });
-    });
+  grid.getCandidatesAsArray(N_QUERIES, queryBoxes, offset, count, candidates);
+
   for(int i = 0; i < N_QUERIES; i++)
   {
-    EXPECT_EQ(expectedVisits[i], numCandidates[i]);
+    EXPECT_EQ(expectedVisits[i], count[i]);
   }
 
   // check single cell results
 
-  std::unordered_set<int> query_4(candidates + 4 * DIM * 10,
-                                  candidates + 4 * DIM * 10 + numCandidates[4]);
+  std::unordered_set<int> query_4(candidates.data() + offset[4],
+                                  candidates.data() + offset[4] + count[4]);
   EXPECT_EQ(DIM >= 1, query_4.count(5) == 1);
   EXPECT_EQ(DIM >= 2, query_4.count(15) == 1);
   EXPECT_EQ(DIM >= 3, query_4.count(25) == 1);
-  axom::deallocate(candidates);
-  axom::deallocate(numCandidates);
 }
-
-TYPED_TEST(ImplicitGridTest, get_candidates_box_query_obj)
-{
-  run_query_obj_box_query<TestFixture, axom::SEQ_EXEC>();
-}
-
-#ifdef AXOM_USE_CUDA
-TYPED_TEST(ImplicitGridGPUTest, get_candidates_box_query_obj)
-{
-  run_query_obj_box_query<TestFixture, GPUPolicy>();
-}
-#endif
 
 //----------------------------------------------------------------------
 
