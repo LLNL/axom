@@ -4,8 +4,8 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-#include "fmt/fmt.hpp"
-#include "fmt/locale.h"
+#include "axom/fmt.hpp"
+#include "axom/fmt/locale.h"
 
 #ifndef AXOM_USE_MFEM
   #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
@@ -132,10 +132,10 @@ void computeVolumeFractions(const std::string& matField,
                             QFunctionCollection& inoutQFuncs,
                             int outputOrder)
 {
-  using axom::utilities::string::splitLastNTokens;
+  using axom::utilities::string::rsplitN;
 
-  auto matName = splitLastNTokens(matField, 2, '_')[1];
-  auto volFracName = fmt::format("vol_frac_{}", matName);
+  auto matName = rsplitN(matField, 2, '_')[1];
+  auto volFracName = axom::fmt::format("vol_frac_{}", matName);
 
   // Grab a pointer to the inout samples QFunc
   mfem::QuadratureFunction* inout = inoutQFuncs.Get(matField);
@@ -143,21 +143,21 @@ void computeVolumeFractions(const std::string& matField,
   const int sampleOrder = inout->GetSpace()->GetElementIntRule(0).GetOrder();
   const int sampleNQ = inout->GetSpace()->GetElementIntRule(0).GetNPoints();
   const int sampleSZ = inout->GetSpace()->GetSize();
-  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
-                        "In computeVolumeFractions(): sample order {} | "
-                        "sample num qpts {} |  total samples {:L}",
-                        sampleOrder,
-                        sampleNQ,
-                        sampleSZ));
+  SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
+                              "In computeVolumeFractions(): sample order {} | "
+                              "sample num qpts {} |  total samples {:L}",
+                              sampleOrder,
+                              sampleNQ,
+                              sampleSZ));
 
   mfem::Mesh* mesh = dc->GetMesh();
   const int dim = mesh->Dimension();
   const int NE = mesh->GetNE();
 
-  SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
-                        "Mesh has dim {} and {:L} elements",
-                        dim,
-                        NE));
+  SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
+                              "Mesh has dim {} and {:L} elements",
+                              dim,
+                              NE));
 
   // Project QField onto volume fractions field
 
@@ -211,13 +211,13 @@ void computeVolumeFractions(const std::string& matField,
     }
   }
   timer.stop();
-  SLIC_INFO(
-    fmt::format(std::locale("en_US.UTF-8"),
-                "\t Generating volume fractions '{}' took {:.3f} seconds (@ "
-                "{:L} dofs processed per second)",
-                volFracName,
-                timer.elapsed(),
-                static_cast<int>(fes->GetNDofs() / timer.elapsed())));
+  SLIC_INFO(axom::fmt::format(
+    std::locale("en_US.UTF-8"),
+    "\t Generating volume fractions '{}' took {:.3f} seconds (@ "
+    "{:L} dofs processed per second)",
+    volFracName,
+    timer.elapsed(),
+    static_cast<int>(fes->GetNDofs() / timer.elapsed())));
 }
 
 /** 
@@ -266,10 +266,10 @@ void FCT_project(mfem::DenseMatrix& M,
 
 #ifdef AXOM_DEBUG
   SLIC_WARNING_IF(!(y_min < y_avg + 1e-12 && y_avg < y_max + 1e-12),
-                  fmt::format("Average ({}) is out of bounds [{},{}]: ",
-                              y_avg,
-                              y_min - 1e-12,
-                              y_max + 1e-12));
+                  axom::fmt::format("Average ({}) is out of bounds [{},{}]: ",
+                                    y_avg,
+                                    y_min - 1e-12,
+                                    y_max + 1e-12));
 #endif
 
   Vector z(s);
@@ -372,7 +372,7 @@ void computeVolumeFractionsIdentity(mfem::DataCollection* dc,
   const int dim = mesh->Dimension();
   const int NE = mesh->GetNE();
 
-  std::cout << fmt::format("Mesh has dim {} and {} elements", dim, NE)
+  std::cout << axom::fmt::format("Mesh has dim {} and {} elements", dim, NE)
             << std::endl;
 
   mfem::L2_FECollection* fec =
