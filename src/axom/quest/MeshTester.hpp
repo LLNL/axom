@@ -315,6 +315,7 @@ void findTriMeshIntersectionsBVH(
 
   axom::setDefaultAllocator(current_allocator);
 }
+#endif
 
 /*!
  * \brief Find self-intersections and degenerate triangles in a surface mesh
@@ -376,8 +377,10 @@ void findTriMeshIntersectionsImplicitGrid(
   axom::Array<BoxType> aabbs(ncells);
   BoxType* p_aabbs = aabbs.data();
 
+#ifdef AXOM_USE_RAJA
   RAJA::ReduceMin<reduce_pol, double> xmin(DBL_MAX), ymin(DBL_MAX), zmin(DBL_MAX);
   RAJA::ReduceMax<reduce_pol, double> xmax(DBL_MIN), ymax(DBL_MIN), zmax(DBL_MIN);
+
   // Get the global bounding box.
   mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
     surface_mesh,
@@ -392,6 +395,16 @@ void findTriMeshIntersectionsImplicitGrid(
 
   BoxType global_box(PointType {xmin.get(), ymin.get(), zmin.get()},
                      PointType {xmax.get(), ymax.get(), zmax.get()});
+#else
+  BoxType global_box;
+
+  // Get the global bounding box.
+  mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
+    surface_mesh,
+    [=, &global_box](IndexType, double x, double y, double z) {
+      global_box.addPoint(PointType {x, y, z});
+    });
+#endif
 
   // Slightly scale the box
   global_box.scale(1.0001);
@@ -477,7 +490,11 @@ void findTriMeshIntersectionsImplicitGrid(
         {
           if(i < p_candidates[p_offsets[i] + j])
           {
+#ifdef AXOM_USE_RAJA
             auto idx = RAJA::atomicAdd<atomic_pol>(p_numValidCandidates, 1);
+#else
+            auto idx = p_numValidCandidates[0]++;
+#endif
             p_indices[idx] = i;
             p_validCandidates[idx] = p_candidates[p_offsets[i] + j];
           }
@@ -495,7 +512,12 @@ void findTriMeshIntersectionsImplicitGrid(
                              false,
                              intersectionThreshold))
         {
+#ifdef AXOM_USE_RAJA
           auto idx = RAJA::atomicAdd<atomic_pol>(p_numIntersectionPairs, 2);
+#else
+          auto idx = p_numIntersectionPairs[0];
+          p_numIntersectionPairs[0] += 2;
+#endif
           p_intersectionPairs[idx] = index;
           p_intersectionPairs[idx + 1] = candidate;
         }
@@ -509,7 +531,6 @@ void findTriMeshIntersectionsImplicitGrid(
   }
   axom::setDefaultAllocator(current_allocator);
 }
-#endif
 
 /*!
  * \brief Find self-intersections and degenerate triangles in a surface mesh

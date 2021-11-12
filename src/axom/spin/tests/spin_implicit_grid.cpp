@@ -63,7 +63,7 @@ public:
 
 /*! Type list for TypedTests on ImplicitGrid with execution space set*/
 using MyTypesExec = ::testing::Types<
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
   axom::spin::ImplicitGrid<1, axom::OMP_EXEC>,
   axom::spin::ImplicitGrid<2, axom::OMP_EXEC>,
   axom::spin::ImplicitGrid<3, axom::OMP_EXEC>,

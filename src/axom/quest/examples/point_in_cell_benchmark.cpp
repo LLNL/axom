@@ -33,11 +33,13 @@ enum class ExecPolicy
 
 const std::map<std::string, ExecPolicy> validExecPolicies {
   {"seq", ExecPolicy::CPU},
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_USE_RAJA
+  #ifdef AXOM_USE_OPENMP
   {"omp", ExecPolicy::OpenMP},
-#endif
-#ifdef AXOM_USE_CUDA
+  #endif
+  #ifdef AXOM_USE_CUDA
   {"gpu", ExecPolicy::GPU}
+  #endif
 #endif
 };
 
@@ -184,11 +186,13 @@ struct Arguments
     std::string pol_info =
       "Sets execution space of the SignedDistance query.\n";
     pol_info += "Set to \'seq\' to use sequential execution policy.";
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_USE_RAJA
+  #ifdef AXOM_USE_OPENMP
     pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
-#endif
-#ifdef AXOM_USE_CUDA
+  #endif
+  #ifdef AXOM_USE_CUDA
     pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
+  #endif
 #endif
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
       ->capture_default_str()
@@ -245,19 +249,21 @@ int main(int argc, char** argv)
                                             args.num_rand_pts,
                                             args.num_bins);
     break;
-#ifdef AXOM_USE_OPENMP
+#ifdef AXOM_USE_RAJA
+  #ifdef AXOM_USE_OPENMP
   case ExecPolicy::OpenMP:
     benchmark_point_in_cell<axom::OMP_EXEC>(testMesh,
                                             args.num_rand_pts,
                                             args.num_bins);
     break;
-#endif
-#ifdef AXOM_USE_CUDA
+  #endif
+  #ifdef AXOM_USE_CUDA
   case ExecPolicy::GPU:
     benchmark_point_in_cell<axom::CUDA_EXEC<256>>(testMesh,
                                                   args.num_rand_pts,
                                                   args.num_bins);
     break;
+  #endif
 #endif
   default:
     SLIC_ERROR("Unsupported execution space.");

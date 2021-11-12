@@ -34,17 +34,17 @@
 // RAJA policies
 #include "axom/mint/execution/internal/structured_exec.hpp"
 
-// clang-format off
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
-  using seq_exec = axom::SEQ_EXEC;
+using seq_exec = axom::SEQ_EXEC;
 
+// clang-format off
+#if defined(AXOM_USE_RAJA)
   #if defined(AXOM_USE_OPENMP)
     using omp_exec = axom::OMP_EXEC;
   #else
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
