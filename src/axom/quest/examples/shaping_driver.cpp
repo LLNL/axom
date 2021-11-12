@@ -395,7 +395,7 @@ int main(int argc, char** argv)
 
   // Apply error checking
 #ifndef AXOM_USE_C2C
-  SLIC_ERROR_IF(shapeDim == klee::Dimension::Two,
+  SLIC_ERROR_IF(shapeDim == klee::Dimensions::Two,
                 "Shaping with contour files requires an Axom configured with "
                 "the C2C library");
 #endif
