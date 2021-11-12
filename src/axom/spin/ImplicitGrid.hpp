@@ -242,9 +242,6 @@ public:
    *
    * \param [in] bbox The bounding box of the element
    * \param [in] idx  The index of the element
-   *
-   * \note \a bbox is intentionally passed by value since insert()
-   * modifies its bounds
    */
   void insert(const SpatialBoundingBox& bbox, IndexType idx)
   {

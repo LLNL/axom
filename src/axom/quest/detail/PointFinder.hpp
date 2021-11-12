@@ -183,6 +183,8 @@ public:
       });
 
     // Step 5: Check each candidate
+    // TODO: This only supports sequential execution right now, because we
+    // don't build MFEM in a thread-safe manner.
     for_all<SEQ_EXEC>(
       npts,
       AXOM_HOST_LAMBDA(IndexType i) {
