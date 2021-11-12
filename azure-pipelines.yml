@@ -46,7 +46,7 @@ jobs:
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
       osx_gcc:
-        VM_ImageName: 'macos-10.14'
+        VM_ImageName: 'macos-1015'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
         TEST_TARGET: 'osx_gcc'
       windows:
