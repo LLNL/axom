@@ -817,6 +817,7 @@ void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
       gridQuery.visitCandidates(queryObjs[i], onCandidate);
     });
 #else
+  outOffsets[0] = 0;
   for(int i = 0; i < qsize; i++)
   {
     outCounts[i] = 0;
@@ -824,6 +825,10 @@ void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
       outCounts[i]++;
       outCandidates.push_back(candidateIdx);
     });
+    if(i + 1 < qsize)
+    {
+      outOffsets[i + 1] = outOffsets[i] + outCounts[i];
+    }
   }
 #endif
 }

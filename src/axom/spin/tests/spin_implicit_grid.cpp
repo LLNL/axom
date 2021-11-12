@@ -495,7 +495,7 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
     axom::Array<int> count, offset, candidates;
 
     // Run query against implicit grid
-    grid.getCandidatesAsArray(10, queryPts, offset, count, candidates);
+    grid.getCandidatesAsArray(9, queryPts, offset, count, candidates);
 
     // Test some points that are expected to match
     for(int i = 0; i < 5; ++i)
