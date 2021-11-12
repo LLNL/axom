@@ -100,9 +100,12 @@ packages:
     variants: ~shared~test
   hdf5:
     variants: ~shared~mpi
+  hypre:
+    version: [2.20.0]
   # do shared mfem to allow PIC flag in mfem
   mfem:
-    variants: +shared~static~mpi~metis~zlib
+    version: [4.2.0]
+    variants: +shared~static
   raja:
     variants: ~shared~examples~exercises
   scr:
