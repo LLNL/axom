@@ -26,6 +26,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Changed
 - Renamed `AXOM_NOT_USED` macro to `AXOM_UNUSED_PARAM` for better consistency with other Axom macros
 - Added `explicit` to `axom::Inlet::InletVector` constructors and added a constructor that accepts a `double*`
+- `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` configuration option is now `ON` by default (rather than `OFF`).
+  This option should be disabled if `mfem` was configured with `MFEM_USE_SIDRE`.
 
 ###  Fixed
 - The `AXOM_DEBUG` compiler define is now properly exported via the `axom` CMake target when it is enabled
