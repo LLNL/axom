@@ -8,6 +8,8 @@
 
 #------------------------------------------------------------------------------
 # Check necessary dependencies
+#
+# Note: Quest also optionally depends on Klee, when Klee is enabled
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       QUEST
                         COMPONENTS MINT PRIMAL SLAM SLIC SPIN)
