@@ -254,7 +254,7 @@ public:
    *
    * \param [in] nelems the number of elements to insert
    * \param [in] bboxes an array of bounding boxes for each element
-   * \param [in] startIdx the first index of the first bounding box in bboxes
+   * \param [in] startIdx the index of the first bounding box in bboxes
    */
   void insert(IndexType nelems,
               const SpatialBoundingBox* bboxes,
