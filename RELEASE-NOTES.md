@@ -22,7 +22,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Added
 - Added a config variable, `AXOM_DEBUG_DEFINE` to control whether the `AXOM_DEBUG` compiler define is enabled.
   By `DEFAULT`, it is enabled for `Debug` and `RelWithDebInfo` configurations, but this can be overriden
-  by setting `AXOM_DEBUG_DEFINE` to `ON` or `OFF`. 
+  by setting `AXOM_DEBUG_DEFINE` to `ON` or `OFF`.
+- `axom::Array` is now GPU-compatible, in particular via a memory space template parameter and via
+  extensions to `axom::ArrayView` that allow for copying into kernels and transfers between memory spaces.
+- Adds some utility arithmetic operators for adding and subracting `primal::Point`s and `primal::Vector`s
+
 ###  Changed
 - Renamed `AXOM_NOT_USED` macro to `AXOM_UNUSED_PARAM` for better consistency with other Axom macros
 - Added `explicit` to `axom::Inlet::InletVector` constructors and added a constructor that accepts a `double*`
@@ -31,6 +35,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ###  Fixed
 - The `AXOM_DEBUG` compiler define is now properly exported via the `axom` CMake target when it is enabled
+- Added tolerance parameter `EPS` to `primal::closest_point()` operator. This effectively snaps
+  closest points to the triangle boundaries vertices and edges when they are within `EPS`,
+  improving consistency when, e.g., querying multiple triangles from the same mesh.
+- Fixed regression in `SignedDistance` queries for query points closest to edges or vertices
+  of the input triangle mesh
 
 
 ## [Version 0.6.0] - Release date 2021-11-04
@@ -76,8 +85,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added Sidre function `View::clear()`.
 - Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
   This replaces the external buffer logic previously provided by `axom::Array`.
-- `axom::Array` is now GPU-compatible, in particular via a memory space template parameter and via 
-  extensions to `axom::ArrayView` that allow for copying into kernels and transfers between memory spaces.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
