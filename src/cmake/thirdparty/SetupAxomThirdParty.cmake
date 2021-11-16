@@ -74,18 +74,6 @@ else()
     set(RAJA_FOUND FALSE CACHE BOOL "")
 endif()
 
-
-#------------------------------------------------------------------------------
-# HDF5
-#------------------------------------------------------------------------------
-if (HDF5_DIR)
-    include(cmake/thirdparty/SetupHDF5.cmake)
-    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
-else()
-    message(STATUS "HDF5 support is OFF")
-endif()
-
-
 #------------------------------------------------------------------------------
 # Conduit
 #------------------------------------------------------------------------------
@@ -102,6 +90,16 @@ if (CONDUIT_DIR)
                  "${CONDUIT_INSTALL_PREFIX}/include/conduit/")
 else()
     message(STATUS "Conduit support is OFF")
+endif()
+
+#------------------------------------------------------------------------------
+# HDF5
+#------------------------------------------------------------------------------
+if (HDF5_DIR)
+    include(cmake/thirdparty/SetupHDF5.cmake)
+    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
+else()
+    message(STATUS "HDF5 support is OFF")
 endif()
 
 #------------------------------------------------------------------------------
