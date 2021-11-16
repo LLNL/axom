@@ -34,17 +34,15 @@ compilers:
 - compiler:
     environment: {}
     extra_rpaths: []
-    flags:
-      cflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.1.0
-      cxxflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.1.0
+    flags: {}
     modules: []
     operating_system: rhel7
     paths:
-      cc: /opt/rocm-4.1.0/llvm/bin/clang
-      cxx: /opt/rocm-4.1.0/llvm/bin/clang++
-      f77: /usr/tce/packages/gcc/gcc-8.1.0/bin/gfortran
-      fc: /usr/tce/packages/gcc/gcc-8.1.0/bin/gfortran
-    spec: clang@rocm
+      cc: /opt/rocm-4.3.0/bin/amdclang
+      cxx: /opt/rocm-4.3.0/bin/hipcc
+      f77: /opt/rocm-4.3.0/bin/amdflang
+      fc: /opt/rocm-4.3.0/bin/amdflang
+    spec: clang@13.0.0
     target: x86_64
 - compiler:
     environment: {}
