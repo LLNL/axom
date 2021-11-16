@@ -34,39 +34,39 @@ packages:
       prefix: /usr/tce/packages/cuda/cuda-10.1.168
 
   hip:
-    version: [4.1.0]
+    version: [4.3.0]
     buildable: false
     externals:
-    - spec: hip@4.1.0
-      prefix: /opt/rocm-4.1.0/hip
+    - spec: hip@4.3.0
+      prefix: /opt/rocm-4.3.0/hip
 
   llvm-amdgpu:
-    version: [4.1.0]
+    version: [4.3.0]
     buildable: false
     externals:
-    - spec: llvm-amdgpu@4.1.0
-      prefix: /opt/rocm-4.1.0/llvm
+    - spec: llvm-amdgpu@4.3.0
+      prefix: /opt/rocm-4.3.0/llvm
 
   hsa-rocr-dev:
-    version: [4.1.0]
+    version: [4.3.0]
     buildable: false
     externals:
-    - spec: hsa-rocr-dev@4.1.0
-      prefix: /opt/rocm-4.1.0/
+    - spec: hsa-rocr-dev@4.3.0
+      prefix: /opt/rocm-4.3.0/
 
   rocminfo:
-    version: [4.1.0]
+    version: [4.3.0]
     buildable: false
     externals:
-    - spec: rocminfo@4.1.0
-      prefix: /opt/rocm-4.1.0/
+    - spec: rocminfo@4.3.0
+      prefix: /opt/rocm-4.3.0/
 
   rocm-device-libs:
-    version: [4.1.0]
+    version: [4.3.0]
     buildable: false
     externals:
-    - spec: rocm-device-libs@4.1.0
-      prefix: /opt/rocm-4.1.0/
+    - spec: rocm-device-libs@4.3.0
+      prefix: /opt/rocm-4.3.0/
 
 # Lock down which MPI we are using
   mpi:
@@ -86,6 +86,8 @@ packages:
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
     - spec: mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
+    - spec: mvapich2@2.3%clang@13.0.0 process_managers=slurm arch=linux-rhel7-ivybridge
+      prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-12.0.0
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
@@ -112,11 +114,11 @@ packages:
     - spec: bzip2
       prefix: /usr
   cmake:
-    version: [3.14.5]
+    version: [3.21.1]
     buildable: false
     externals:
     - spec: cmake
-      prefix: /usr/tce/packages/cmake/cmake-3.14.5
+      prefix: /usr/tce/packages/cmake/cmake-3.21.1
   gettext:
     buildable: false
     externals:
