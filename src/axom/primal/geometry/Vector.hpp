@@ -27,6 +27,9 @@ namespace primal
 template <typename T, int NDIMS>
 class Vector;
 
+template <typename T, int NDIMS>
+class Point;
+
 /// \name Forward Declared Overloaded Operators
 /// @{
 
@@ -41,6 +44,26 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A,
                                             const Vector<T, NDIMS>& B);
 
 /*!
+ * \brief Adds vector \a V to point \a P and stores the result into a new point
+ * \param [in] P point on the left-hand side.
+ * \param [in] V vector on the right-hand side.
+ * \return resulting point, \f$ p'_i = p_i + v_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V);
+
+/*!
+ * \brief Adds vector \a V to point \a P and stores the result into a new point
+ * \param [in] V vector on the left-hand side.
+ * \param [in] P point on the right-hand side.
+ * \return resulting point, \f$ p'_i = v_i + p_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
+                                           const Point<T, NDIMS>& P);
+
+/*!
  * \brief Subtracts vectors A, B and stores the result into a new vector C
  * \param [in] A vector on the left-hand side.
  * \param [in] B vector on the right-hand side.
@@ -49,6 +72,16 @@ AXOM_HOST_DEVICE Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A,
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& A,
                                             const Vector<T, NDIMS>& B);
+
+/*!
+ * \brief Subtracts Point \a t from Point \a h, yielding a vector
+ * \param [in] h the head of the resulting vector
+ * \param [in] t the tail of the resulting vector
+ * \return resulting vector, \f$ V_i = h_i - t_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
+                                            const Point<T, NDIMS>& t);
 
 /*!
  * \brief Unary negation of a vector instance.
@@ -552,6 +585,23 @@ inline Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& vec1,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V)
+{
+  Point<T, NDIMS> result(P);
+  result.array() += V.array();
+  return result;
+}
+
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
+                                           const Point<T, NDIMS>& P)
+{
+  return P + V;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
 inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar)
 {
   Vector<T, NDIMS> result(vec);
@@ -567,6 +617,14 @@ inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1,
   Vector<T, NDIMS> result(vec1);
   result -= vec2;
   return result;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
+                                            const Point<T, NDIMS>& t)
+{
+  return Vector<T, NDIMS>(t, h);
 }
 
 //------------------------------------------------------------------------------

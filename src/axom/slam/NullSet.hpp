@@ -50,7 +50,10 @@ public:
   inline bool isSubset() const { return false; }
   const ParentSet* parentSet() const { return this; }
 
-  bool isValid(bool AXOM_NOT_USED(verboseOutput) = false) const { return true; }
+  bool isValid(bool AXOM_UNUSED_PARAM(verboseOutput) = false) const
+  {
+    return true;
+  }
 
   bool empty() const { return true; }
 

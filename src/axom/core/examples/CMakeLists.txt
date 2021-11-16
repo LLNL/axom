@@ -34,9 +34,16 @@ foreach(example_source ${example_sources})
 endforeach()
 
 if(ENABLE_CUDA)
-      blt_add_executable(
-          NAME        ${exe_name}_cuda_on_ex
+    blt_add_executable(
+          NAME        core_acceleration_cuda_on_ex
           SOURCES     core_acceleration.cpp
+          OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+          DEPENDS_ON  axom cuda
+          FOLDER      axom/core/examples )
+
+    blt_add_executable(
+          NAME        core_containers_cuda_on_ex
+          SOURCES     core_containers.cpp
           OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
           DEPENDS_ON  axom cuda
           FOLDER      axom/core/examples )

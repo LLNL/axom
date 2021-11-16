@@ -15,6 +15,7 @@
   #include "umpire/config.hpp"
   #include "umpire/ResourceManager.hpp"
   #include "umpire/op/MemoryOperationRegistry.hpp"
+  #include "umpire/resource/MemoryResourceTypes.hpp"
   #include "umpire/strategy/QuickPool.hpp"
 #else
   #include <cstring>  // for std::memcpy
@@ -24,6 +25,25 @@
 namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
+
+/*! 
+ * \brief Memory spaces supported by Array-like types
+ *
+ * This abstraction is not implemented using Umpire's MemoryResourceType enum
+ * in order to also include a "Dynamic" option as a default template parameter
+ * for Array-like types
+ */
+enum class MemorySpace
+{
+  Dynamic,
+#ifdef AXOM_USE_UMPIRE
+  Host,
+  Device,
+  Unified,
+  Pinned,
+  Constant
+#endif
+};
 
 /// \name Memory Management Routines
 /// @{
@@ -250,6 +270,59 @@ inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept
   std::memcpy(dst, src, numbytes);
 #endif
 }
+
+namespace detail
+{
+/// \brief Translates between the MemorySpace enum and Umpire allocator IDs
+template <MemorySpace SPACE>
+inline int getAllocatorID();
+
+template <>
+inline int getAllocatorID<MemorySpace::Dynamic>()
+{
+  return axom::getDefaultAllocatorID();
+}
+
+#ifdef AXOM_USE_UMPIRE
+
+template <>
+inline int getAllocatorID<MemorySpace::Host>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Host);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Device>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Device);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Unified>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Pinned>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Pinned);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Constant>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Constant);
+}
+
+#endif
+
+}  // namespace detail
 
 }  // namespace axom
 

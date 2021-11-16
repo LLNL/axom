@@ -77,6 +77,42 @@ struct UcdMeshData
  */
 bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData);
 
+/// Enum for different 'location' types returned by primal::closest_point()
+enum class ClosestPointLocType
+{
+  uninitialized = -1,
+  vertex = 0,
+  edge = 1,
+  face = 2
+};
+
+/// Converts from \a loc code returned by primal::closest_point() to a \a ClosestPointLocType enum
+AXOM_HOST_DEVICE inline ClosestPointLocType getClosestPointLocType(int loc)
+{
+  SLIC_ASSERT_MSG(loc >= -3,
+                  "Invalid closest point location type: "
+                    << loc << ". See documentation for primal::closest_point().");
+  switch(loc)
+  {
+  case -3:  // intentional fall-through
+  case -2:
+  case -1:
+    return ClosestPointLocType::edge;
+  case 0:  // intentional fall-through
+  case 1:
+  case 2:
+    return ClosestPointLocType::vertex;
+  default:
+    return ClosestPointLocType::face;
+  }
+}
+
+/// A \a ClosestPointLocType is shared for a vertex or edge, unshared otherwise
+AXOM_HOST_DEVICE inline bool isClosestPointTypeShared(ClosestPointLocType cpt)
+{
+  return cpt == ClosestPointLocType::edge || cpt == ClosestPointLocType::vertex;
+}
+
 }  // end namespace detail
 
 template <int NDIMS, typename ExecSpace = axom::SEQ_EXEC>
@@ -93,15 +129,21 @@ public:
 private:
   struct MinCandidate
   {
-    double minSqDist =
-      numerics::floating_point_limits<double>::max();  // Squared distance to query point
-    PointType minPt {};   // Closest point on element
-    int minLoc;           // Location of closest point on element
-    int minElem;          // Closest element index in mesh
-    TriangleType minTri;  // The actual cell element
-
-    VectorType sumNormals {};  // The normal if the closest point is on an edge
-    VectorType sumNormalsAngWt {};  // The normal if the closest point is a node
+    /// Squared distance to query point
+    double minSqDist {numerics::floating_point_limits<double>::max()};
+    /// Closest point on element
+    PointType minPt {};
+    /// Type of the closest point
+    detail::ClosestPointLocType minType {
+      detail::ClosestPointLocType::uninitialized};
+    /// Index within mesh of closest element
+    int minElem;
+    /// Contains geometry of the closest element
+    TriangleType minTri;
+    /// Weighted sum of normals when closest pt is on edge or vertex
+    VectorType sumNormals {};
+    /// Count of the number of elements found at the current closest distance
+    int minCount {0};
   };
 
 public:
@@ -267,8 +309,7 @@ private:
                                               bool computeSign);
 
   /*!
-   * \brief Computes the sign of the given query point given the closest point
-   *  data.
+   * \brief Computes the sign of the given query point given the closest point data
    *
    * \param [in] qpt query point to check against surface element
    * \param [in] currMin the minimum-distance surface element data
@@ -546,56 +587,83 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
       TriangleType {meshPts[nodes[0]], meshPts[nodes[2]], meshPts[nodes[3]]};
   }
 
+  using axom::primal::closest_point;
+  using axom::primal::squared_distance;
+  using axom::utilities::isNearlyEqual;
+  using detail::getClosestPointLocType;
+  using detail::isClosestPointTypeShared;
+  constexpr double EPS = 1e-12;
+
   for(int ei = 0; ei < num_candidates; ei++)
   {
     int candidate_loc;
     PointType candidate_pt =
-      axom::primal::closest_point(qpt, surface_elems[ei], &candidate_loc);
-    double sq_dist = axom::primal::squared_distance(qpt, candidate_pt);
+      closest_point(qpt, surface_elems[ei], &candidate_loc, EPS);
+    double sq_dist = squared_distance(qpt, candidate_pt);
 
-    bool shares_min_pt = true;
+    // Check the type of intersection we found
+    const auto cpt_type = getClosestPointLocType(candidate_loc);
+
+    // Determine if the closest point is on an edge or vertex
+    const bool is_cpt_shared = isClosestPointTypeShared(cpt_type);
+
+    bool shouldUpdateNormals = false;
 
     if(sq_dist < currMin.minSqDist)
     {
+      // Clear the sum of normals if:
+      const bool shouldClearNormals =
+        // we're not in a shared configuration
+        !is_cpt_shared ||
+        // or, if previous closest point type was different than current
+        (currMin.minType != cpt_type) ||
+        // finally, if there was a previous shared point -- check if approximately same as current
+        !isNearlyEqual(squared_distance(candidate_pt, currMin.minPt), 0., EPS);
+
       currMin.minSqDist = sq_dist;
       currMin.minPt = candidate_pt;
-      currMin.minLoc = candidate_loc;
+      currMin.minType = cpt_type;
       currMin.minElem = cellId;
       currMin.minTri = surface_elems[ei];
 
-      currMin.sumNormals = VectorType {};
-      currMin.sumNormalsAngWt = VectorType {};
+      if(computeNormal && shouldClearNormals)
+      {
+        currMin.sumNormals = VectorType {};
+        currMin.minCount = 0;
+      }
+
+      shouldUpdateNormals = (computeNormal && is_cpt_shared);
     }
     else
     {
-      // check if we have an element sharing the same closest point
-      double pt_dist_to_curr =
-        axom::primal::squared_distance(candidate_pt, currMin.minPt);
-      shares_min_pt = axom::utilities::isNearlyEqual(pt_dist_to_curr, 0.0, 1e-16);
+      shouldUpdateNormals = computeNormal && is_cpt_shared &&
+        (currMin.minType == cpt_type) &&
+        isNearlyEqual(squared_distance(candidate_pt, currMin.minPt), 0., EPS);
     }
 
-    if(computeNormal && shares_min_pt &&
-       currMin.minLoc < TriangleType::NUM_TRI_VERTS)
+    if(shouldUpdateNormals)
     {
       VectorType norm = surface_elems[ei].normal();
+      ++currMin.minCount;
 
-      // 0 = closest point on edge
-      // 1 = closest point on vertex
-      // 2 = closest point on face
-      int cpt_type = (candidate_loc + 3) / 3;
-
-      if(cpt_type == 0)
+      switch(cpt_type)
       {
+      case detail::ClosestPointLocType::edge:
         // Candidate closest point is on an edge - add the normal of a
         // potentially-adjacent face
         currMin.sumNormals += norm;
-      }
-      else if(cpt_type == 1 && !surface_elems[ei].degenerate())
-      {
-        // Candidate closest point is on a vertex - add the angle-weighted
-        // normal of a face potentially sharing a vertex
-        double alpha = surface_elems[ei].angle(candidate_loc);
-        currMin.sumNormalsAngWt += (norm.unitVector() * alpha);
+        break;
+      case detail::ClosestPointLocType::vertex:
+        if(!surface_elems[ei].degenerate())
+        {
+          // Candidate closest point is on a vertex - add the angle-weighted
+          // normal of a face potentially sharing a vertex
+          double alpha = surface_elems[ei].angle(candidate_loc);
+          currMin.sumNormals += (norm.unitVector() * alpha);
+        }
+        break;
+      default:
+        break;  // no-op
       }
     }
   }
@@ -608,34 +676,22 @@ inline double SignedDistance<NDIMS, ExecSpace>::computeSign(
   const MinCandidate& currMin)
 {
   double sgn = 1.0;
-  // STEP 1: Select the pseudo-normal N at the closest point to calculate the
-  // sign.
+  // STEP 1: Select the pseudo-normal N at the closest point to calculate the sign.
   // There are effectively 3 cases based on the location of the closest point.
   VectorType N;
-  if(currMin.minLoc >= TriangleType::NUM_TRI_VERTS)
+  switch(currMin.minType)
   {
+  case detail::ClosestPointLocType::face:
     // CASE 1: closest point is on the face of the surface element
     N = currMin.minTri.normal();
-  }
-  else if(currMin.minLoc < 0)
-  {
-    // CASE 2: closest point is on an edge, use sum of normals of equidistant
-    // faces
-    // TODO: Sometimes, the traversal fails to find the opposite face, so only
-    // a single face's normal is accumulated here. The proper solution would be
-    // to precompute edge pseudo-normals during construction time, but that
-    // would also require generating cell-to-face connectivity for the surface
-    // mesh.
+    break;
+  default:  // Use precomputed normal for edges and vertices
     N = currMin.sumNormals;
+    break;
   }
-  else
-  {
-    // CASE 3: closest point is on a node, use angle-weighted pseudo-normal
-    N = currMin.sumNormalsAngWt;
-  }
+
   // STEP 2: Given the pseudo-normal, N, and the vector r from the closest point
-  // to the query point, compute the sign by checking the sign of their dot
-  // product.
+  // to the query point, compute the sign by checking the sign of their dot product.
   VectorType r(currMin.minPt, qpt);
   double dotprod = r.dot(N);
   sgn = (dotprod >= 0.0) ? 1.0 : -1.0;

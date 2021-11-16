@@ -78,7 +78,7 @@ struct Arguments
   bool use_shared {false};
   bool use_batched_query {false};
   bool ignore_signs {false};
-  quest::SignedDistExec exec_space;
+  quest::SignedDistExec exec_space {quest::SignedDistExec::CPU};
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {

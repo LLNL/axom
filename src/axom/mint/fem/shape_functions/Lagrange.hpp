@@ -7,7 +7,7 @@
 #define MINT_LAGRANGE_SHAPEFUNCTION_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"  // For AXOM_STATIC_ASSERT(), AXOM_NOT_USED()
+#include "axom/core/Macros.hpp"
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -143,7 +143,7 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void getCenter(double* AXOM_NOT_USED(center))
+  static void getCenter(double* AXOM_UNUSED_PARAM(center))
   {
     constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
     AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
@@ -159,7 +159,7 @@ public:
    * \note The coordinates are arranged in column-major flat array layout.
    * \note This method is implemented in specialized instances.
    */
-  static void getCoords(double* AXOM_NOT_USED(coords))
+  static void getCoords(double* AXOM_UNUSED_PARAM(coords))
   {
     constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
     AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
@@ -178,8 +178,8 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void computeShape(const double* AXOM_NOT_USED(nc),
-                           double* AXOM_NOT_USED(phi))
+  static void computeShape(const double* AXOM_UNUSED_PARAM(nc),
+                           double* AXOM_UNUSED_PARAM(phi))
   {
     constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
     AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);
@@ -198,8 +198,8 @@ public:
    *
    * \note This method is implemented in specialized instances.
    */
-  static void computeDerivatives(const double* AXOM_NOT_USED(nc),
-                                 double* AXOM_NOT_USED(phidot))
+  static void computeDerivatives(const double* AXOM_UNUSED_PARAM(nc),
+                                 double* AXOM_UNUSED_PARAM(phidot))
   {
     constexpr int cell_value = mint::cellTypeToInt(CELLTYPE);
     AXOM_STATIC_ASSERT(cell_value >= 0 && cell_value < mint::NUM_CELL_TYPES);

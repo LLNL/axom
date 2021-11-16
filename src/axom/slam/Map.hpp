@@ -394,7 +394,7 @@ private:
 
   // setStride function should not be called after constructor is called.
   // This (should) override the StridePolicy setStride(s) function.
-  void setStride(SetPosition AXOM_NOT_USED(str))
+  void setStride(SetPosition AXOM_UNUSED_PARAM(str))
   {
     SLIC_ASSERT_MSG(false,
                     "Stride should not be changed after construction of map.");

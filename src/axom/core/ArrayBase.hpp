@@ -8,13 +8,15 @@
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
+#include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
+#include "axom/core/StackArray.hpp"
+#include "axom/core/numerics/matvecops.hpp"  // for dot_product
 
 // C/C++ includes
-#include <array>     // for std::array
 #include <iostream>  // for std::cerr and std::ostream
-#include <numeric>   // for std::inner_product
+#include <numeric>   // for std::accumulate
 
 namespace axom
 {
@@ -95,6 +97,19 @@ public:
   }
 
   /*!
+   * \brief Copy constructor for arrays of different type
+   * Because the element type (T) and dimension (DIM) are still locked down,
+   * this function is nominally used for copying ArrayBase metadata from
+   * Array <-> ArrayView and/or Array-like objects whose data are in different
+   * memory spaces
+   */
+  template <typename OtherArrayType>
+  ArrayBase(const ArrayBase<T, DIM, OtherArrayType>& other)
+    : m_dims(other.shape())
+    , m_strides(other.strides())
+  { }
+
+  /*!
    * \brief Dimension-aware accessor, returns a reference to the given value.
    *
    * \param [in] args the parameter pack of indices in each dimension.
@@ -106,22 +121,20 @@ public:
    */
   template <typename... Args,
             typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  T& operator()(Args... args)
+  AXOM_HOST_DEVICE T& operator()(Args... args)
   {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
+    const IndexType indices[] = {static_cast<IndexType>(args)...};
+    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
   template <typename... Args,
             typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  const T& operator()(Args... args) const
+  AXOM_HOST_DEVICE const T& operator()(Args... args) const
   {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
+    const IndexType indices[] = {static_cast<IndexType>(args)...};
+    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
@@ -138,13 +151,13 @@ public:
    *
    * \pre 0 <= idx < m_num_elements
    */
-  T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE const T& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -159,10 +172,16 @@ public:
   }
 
   /// \brief Returns the dimensions of the Array
-  const std::array<IndexType, DIM>& shape() const { return m_dims; }
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& shape() const
+  {
+    return m_dims;
+  }
 
   /// \brief Returns the strides of the Array
-  const std::array<IndexType, DIM>& strides() const { return m_strides; }
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
+  {
+    return m_strides;
+  }
 
   /*!
    * \brief Appends an Array to the end of the calling object
@@ -221,9 +240,12 @@ protected:
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  AXOM_HOST_DEVICE ArrayType& asDerived()
+  {
+    return static_cast<ArrayType&>(*this);
+  }
   /// \overload
-  const ArrayType& asDerived() const
+  AXOM_HOST_DEVICE const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
@@ -232,7 +254,7 @@ private:
   /// @{
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
@@ -240,9 +262,9 @@ private:
 
 protected:
   /// \brief The sizes (extents?) in each dimension
-  std::array<IndexType, DIM> m_dims;
+  StackArray<IndexType, DIM> m_dims;
   /// \brief The strides in each dimension
-  std::array<IndexType, DIM> m_strides;
+  StackArray<IndexType, DIM> m_strides;
 };
 
 /// \brief Array implementation specific to 1D Arrays
@@ -251,6 +273,11 @@ class ArrayBase<T, 1, ArrayType>
 {
 public:
   ArrayBase(IndexType = 0) { }
+
+  // Empy implementation because no member data
+  template <typename OtherArrayType>
+  ArrayBase(const ArrayBase<T, 1, OtherArrayType>&)
+  { }
 
   /*!
    * \brief Push a value to the back of the array.
@@ -282,9 +309,11 @@ public:
   void emplace_back(Args&&... args);
 
   /// \brief Returns the dimensions of the Array
-  // FIXME: std::array is used for consistency with multidim case, should we just return the scalar?
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
-  std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
+  AXOM_HOST_DEVICE StackArray<IndexType, 1> shape() const
+  {
+    return {{asDerived().size()}};
+  }
 
   /*!
    * \brief Accessor, returns a reference to the given value.
@@ -297,13 +326,13 @@ public:
    * \pre 0 <= idx < m_num_elements
    */
   /// @{
-  T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE const T& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -337,9 +366,12 @@ protected:
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  AXOM_HOST_DEVICE ArrayType& asDerived()
+  {
+    return static_cast<ArrayType&>(*this);
+  }
   /// \overload
-  const ArrayType& asDerived() const
+  AXOM_HOST_DEVICE const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
@@ -348,7 +380,7 @@ private:
   /// @{
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
@@ -368,12 +400,13 @@ template <typename T, int DIM, typename ArrayType>
 inline std::ostream& print(std::ostream& os,
                            const ArrayBase<T, DIM, ArrayType>& array)
 {
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
-  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
-  // if there exists no allocator for Constant memory. Is there a more fine-grained
-  // approach we can use to see what allocators are available before trying to get their IDs?
-  if(static_cast<const ArrayType&>(array).getAllocatorID() ==
-     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
+#if defined(AXOM_USE_UMPIRE) && defined(UMPIRE_ENABLE_DEVICE)
+  const int alloc_id = static_cast<const ArrayType&>(array).getAllocatorID();
+  if(alloc_id == axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+  #ifdef UMPIRE_ENABLE_CONST
+     || alloc_id == axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
+  #endif
+  )
   {
     std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
     utilities::processAbort();
@@ -476,6 +509,25 @@ bool allNonNegative(const T (&arr)[N])
   }
   return true;
 }
+
+/// \brief Indirection needed to dodge an MSVC compiler bug
+template <typename... Args>
+struct all_types_are_integral_impl : std::true_type
+{ };
+
+template <typename First, typename... Rest>
+struct all_types_are_integral_impl<First, Rest...>
+{
+  static constexpr bool value = std::is_integral<First>::value &&
+    all_types_are_integral_impl<Rest...>::value;
+};
+
+/// \brief Checks if all types in a parameter pack are integral
+template <typename... Args>
+struct all_types_are_integral
+{
+  static constexpr bool value = all_types_are_integral_impl<Args...>::value;
+};
 
 }  // namespace detail
 

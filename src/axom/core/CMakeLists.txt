@@ -107,6 +107,12 @@ blt_add_library( NAME        core
                  OBJECT      TRUE
                  )
 
+# Add the AXOM_DEBUG compile definition, if non-empty
+if(AXOM_DEBUG_DEFINE_STRING)
+  blt_add_target_definitions(TO core SCOPE PUBLIC TARGET_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")
+endif()
+
+
 axom_write_unified_header( NAME    core
                            HEADERS ${core_headers}
                            )
