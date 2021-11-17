@@ -104,12 +104,6 @@ include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
 
 #------------------------------------------------------------------------------
-# Global includes for the Axom projects (restrict these as much as possible)
-#------------------------------------------------------------------------------
-include_directories(${CMAKE_BINARY_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR})
-
-#------------------------------------------------------------------------------
 # Add source directories
 #------------------------------------------------------------------------------
 add_subdirectory(thirdparty)

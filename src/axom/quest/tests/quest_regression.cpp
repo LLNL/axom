@@ -114,7 +114,8 @@ struct Input
       .add_option("-m,--mesh",
                   meshName,
                   "Surface mesh file (STL files are currently supported)")
-      ->required();
+      ->required()
+      ->check(axom::CLI::ExistingFile);
 
     app
       .add_flag("--distance,!--no-distance",
@@ -130,10 +131,12 @@ struct Input
     // Note: Baselines comparisons only supported when Axom is configured with hdf5
     // Users must supply either a baseline, or both the query resolution and bounding box
 #ifdef AXOM_USE_HDF5
-    app.add_option("-b,--baseline",
-                   baselineRoot,
-                   "root file of baseline, a sidre rootfile.\n"
-                   "Note: Only supported when Axom configured with hdf5");
+    app
+      .add_option("-b,--baseline",
+                  baselineRoot,
+                  "root file of baseline, a sidre rootfile.\n"
+                  "Note: Only supported when Axom configured with hdf5")
+      ->check(axom::CLI::ExistingFile);
 #endif
 
     // user can supply 1 or 3 values for resolution
