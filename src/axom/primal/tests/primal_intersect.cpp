@@ -9,7 +9,7 @@
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/memory_management.hpp"
-#include "axom/core/execution/for_all.hpp"          // for_all()
+#include "axom/core/execution/for_all.hpp"  // for_all()
 
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
