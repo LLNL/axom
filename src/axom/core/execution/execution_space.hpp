@@ -79,11 +79,13 @@ struct execution_space
   using atomic_policy = void;
   using sync_policy = void;
 
-  static constexpr bool async() noexcept { return false; };
-  static constexpr bool valid() noexcept { return false; };
-  static constexpr bool onDevice() noexcept { return false; };
-  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; };
-  static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; };
+  static constexpr MemorySpace memory_space = MemorySpace::Dynamic;
+
+  static constexpr bool async() noexcept { return false; }
+  static constexpr bool valid() noexcept { return false; }
+  static constexpr bool onDevice() noexcept { return false; }
+  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; }
+  static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; }
 };
 
 }  // namespace axom
