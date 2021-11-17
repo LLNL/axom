@@ -48,6 +48,10 @@ if ( RAJA_FOUND )
                       DEPENDS_ON ${raja_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
 
+  target_include_directories(raja_smoke_test PUBLIC 
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+      $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
+
   axom_add_test( NAME    raja_smoke
                  COMMAND raja_smoke_test )
 
@@ -69,8 +73,12 @@ if( HDF5_FOUND)
                        DEPENDS_ON ${hdf5_smoke_dependencies}
                        FOLDER axom/thirdparty/tests )
 
+    target_include_directories(hdf5_smoke_test PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
+
     axom_add_test(NAME hdf5_smoke
-                 COMMAND hdf5_smoke_test)
+                  COMMAND hdf5_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------

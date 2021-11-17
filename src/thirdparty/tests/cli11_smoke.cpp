@@ -9,7 +9,6 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "axom/config.hpp"
 #include "axom/CLI11.hpp"
 
 #include <iostream>

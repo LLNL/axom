@@ -20,9 +20,7 @@ using Vector = inlet::FunctionType::Vector;
 // to a geometric vector type
 Vector toVector(const std::vector<double>& vec)
 {
-  // Narrow from std::size_t to int
-  const int size = vec.size();
-  return {axom::primal::Vector3D {vec.data(), size}, size};
+  return Vector {vec.data(), static_cast<int>(vec.size())};
 }
 
 // A union of the members required for each of the operations is stored for simplicity

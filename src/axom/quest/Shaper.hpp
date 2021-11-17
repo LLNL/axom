@@ -13,7 +13,7 @@
 #define AXOM_QUEST_SHAPER__HPP_
 
 #include "axom/config.hpp"
-#ifndef AXOM_ENABLE_KLEE
+#ifndef AXOM_USE_KLEE
   #error Shaping functionality requires Axom to be configured with the Klee component
 #endif
 #ifndef AXOM_USE_MFEM

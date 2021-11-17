@@ -115,9 +115,9 @@ Axom has the following inter-component dependencies:
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
-- Quest depends on Slam, Spin, Primal, and Mint
 - Inlet depends on Sidre, Slic, and Primal
 - Klee depends on Sidre, Slic, Inlet and Primal
+- Quest depends on Slam, Spin, Primal, Mint, and, optionally, Klee
 
 The figure below summarizes these dependencies. Solid links indicate hard 
 dependencies; dashed links indicate optional dependencies.

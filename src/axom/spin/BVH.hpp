@@ -100,11 +100,13 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  *     spin::BVH< DIMENSION, axom::OMP_EXEC > bvh;
  *     bvh.initialize( aabbs, numItems );
  *
- *     // query points supplied in arrays, qx, qy, qz,
+ *     // query points supplied in arrays, qx, qy, qz
  *     const axom::IndexType numPoints = ...
  *     const double* qx = ...
  *     const double* qy = ...
  *     const double* qz = ...
+ *     //use the ZipPoint class to tie them together
+ *     ZipPoint qpts {{qx,qy,qz}};
  *
  *     // output array buffers
  *     axom::IndexType* offsets    = axom::allocate< IndexType >( numPoints );
@@ -113,7 +115,7 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  *
  *     // find candidates in parallel, allocates and populates the supplied
  *     // candidates array
- *     bvh.findPoints( offsets, counts, candidates, numPoints, qx, qy, qz );
+ *     bvh.findPoints( offsets, counts, candidates, numPoints, qpts );
  *     SLIC_ASSERT( candidates != nullptr );
  *
  *     ...

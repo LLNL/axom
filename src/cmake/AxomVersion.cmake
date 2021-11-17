@@ -10,7 +10,7 @@
 #------------------------------------------------------------------------------
 set(AXOM_VERSION_MAJOR 0)
 set(AXOM_VERSION_MINOR 6)
-set(AXOM_VERSION_PATCH 0)
+set(AXOM_VERSION_PATCH 1)
 string(CONCAT AXOM_VERSION_FULL
     "v${AXOM_VERSION_MAJOR}"
     ".${AXOM_VERSION_MINOR}"
