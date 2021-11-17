@@ -94,14 +94,14 @@
 ## the next lines are where you put your actual commands
  
 ## Using uberenv to build Corona TPL's
-## module load opt
-## module load rocm/4.3.0
-## ./scripts/uberenv/uberenv.py --spec="%clang@13.0.0~cpp14~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" &> spack_output.txt
+##module load opt
+##module load rocm/4.3.0
+##./scripts/uberenv/uberenv.py --spec="%clang@13.0.0_hip~cpp14~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" &> spack_output.txt
 
 ## Building Axom (hip, no cuda, no fortran)
 module load opt
 module load rocm
-./config-build.py -hc corona-toss_3_x86_64_ib-clang@13.0.0.cmake -DENABLE_FORTRAN=OFF &> config_output.txt
-cd build-corona-toss_3_x86_64_ib-clang@13.0.0-debug/
+./config-build.py -hc corona-toss_3_x86_64_ib-clang@13.0.0_hip.cmake -DENABLE_FORTRAN=OFF &> config_output.txt
+cd build-corona-toss_3_x86_64_ib-clang@13.0.0_hip-debug/
 make VERBOSE=1 -j  &> mj_output.txt
 make test &> mt_output.txt

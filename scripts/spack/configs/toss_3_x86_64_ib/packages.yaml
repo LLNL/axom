@@ -86,7 +86,7 @@ packages:
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
     - spec: mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
-    - spec: mvapich2@2.3%clang@13.0.0 process_managers=slurm arch=linux-rhel7-ivybridge
+    - spec: mvapich2@2.3%clang@13.0.0_hip process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-12.0.0
 
   # blas is a bit more complicated because its a virtual package so fake it with
@@ -114,11 +114,13 @@ packages:
     - spec: bzip2
       prefix: /usr
   cmake:
-    version: [3.21.1]
+    version: [3.14.5, 3.16.8]
     buildable: false
     externals:
-    - spec: cmake
-      prefix: /usr/tce/packages/cmake/cmake-3.21.1
+    - spec: cmake@3.14.5
+      prefix: /usr/tce/packages/cmake/cmake-3.14.5
+    - spec: cmake@3.16.8
+      prefix: /usr/tce/packages/cmake/cmake-3.16.8
   gettext:
     buildable: false
     externals:
