@@ -19,6 +19,14 @@
 
 namespace axom
 {
+namespace ArrayOptions
+{
+/// \brief A "tag type" for constructing an Array without initializing its memory
+struct Uninitialized
+{ };
+
+}  // namespace ArrayOptions
+
 // Forward declare the templated classes and operator function(s)
 template <typename T, int DIM, MemorySpace SPACE>
 class Array;
@@ -136,6 +144,12 @@ public:
               detail::all_types_are_integral<Args...>::value>::type* = nullptr>
   Array(Args... args);
 
+  /// \overload
+  template <typename... Args,
+            typename std::enable_if<
+              detail::all_types_are_integral<Args...>::value>::type* = nullptr>
+  Array(ArrayOptions::Uninitialized, Args... args);
+
   /*! 
    * \brief Copy constructor for an Array instance 
    * 
@@ -199,6 +213,7 @@ public:
       m_capacity = other.m_capacity;
       m_resize_ratio = other.m_resize_ratio;
       m_allocator_id = other.m_allocator_id;
+      m_default_construct = other.m_default_construct;
 
       other.m_data = nullptr;
       other.m_num_elements = 0;
@@ -576,6 +591,8 @@ protected:
   IndexType m_capacity = 0;
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
   int m_allocator_id;
+  /// \brief Whether to default-construct elements - only applies if T is DefaultConstructible
+  bool m_default_construct = true;
 };
 
 /// \brief Helper alias for multi-component arrays
@@ -592,12 +609,30 @@ Array<T, DIM, SPACE>::Array()
   : m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 { }
 
+//------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args,
           typename std::enable_if<detail::all_types_are_integral<Args...>::value>::type*>
 Array<T, DIM, SPACE>::Array(Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(args...)
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+{
+  static_assert(sizeof...(Args) == DIM,
+                "Array size must match number of dimensions");
+  // Intel hits internal compiler error when casting as part of function call
+  const IndexType tmp_args[] = {args...};
+  assert(detail::allNonNegative(tmp_args));
+  initialize(detail::packProduct(tmp_args), 0);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename... Args,
+          typename std::enable_if<detail::all_types_are_integral<Args...>::value>::type*>
+Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(args...)
+  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+  , m_default_construct(false)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
@@ -670,6 +705,7 @@ Array<T, DIM, SPACE>::Array(Array&& other)
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_allocator_id = other.m_allocator_id;
+  m_default_construct = other.m_default_construct;
 
   other.m_data = nullptr;
   other.m_capacity = 0;
@@ -923,20 +959,23 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::swap(Array<T, DIM, SPACE>& other)
 {
   ArrayBase<T, DIM, Array<T, DIM, SPACE>>::swap(other);
-  T* temp_data = m_data;
-  IndexType temp_num_elements = m_num_elements;
-  IndexType temp_capacity = m_capacity;
-  double temp_resize_ratio = m_resize_ratio;
+  T* const temp_data = m_data;
+  const IndexType temp_num_elements = m_num_elements;
+  const IndexType temp_capacity = m_capacity;
+  const double temp_resize_ratio = m_resize_ratio;
+  const bool temp_default_construct = m_default_construct;
 
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
+  m_default_construct = other.m_default_construct;
 
   other.m_data = temp_data;
   other.m_num_elements = temp_num_elements;
   other.m_capacity = temp_capacity;
   other.m_resize_ratio = temp_resize_ratio;
+  other.m_default_construct = temp_default_construct;
 }
 
 //------------------------------------------------------------------------------
@@ -1001,13 +1040,12 @@ inline void Array<T, DIM, SPACE>::updateNumElements(IndexType new_num_elements)
 {
   assert(new_num_elements >= 0);
   assert(new_num_elements <= m_capacity);
-
-  int new_elems = new_num_elements - m_num_elements;
-  for(int ielem = 0; ielem < new_elems; ielem++)
+  if(m_default_construct)
   {
-    // TODO: what to do here when T isn't default-constructible?
-    // we should probably do what std::vector does (zero out memory?)
-    new(&m_data[ielem + m_num_elements]) T;
+    detail::initializeInPlace(m_data,
+                              m_num_elements,
+                              new_num_elements,
+                              std::is_default_constructible<T> {});
   }
 
   m_num_elements = new_num_elements;

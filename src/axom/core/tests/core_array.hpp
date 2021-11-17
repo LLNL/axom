@@ -1509,4 +1509,43 @@ TEST(core_array, checkDevice2D)
 #endif
 }
 
+struct HasDefault
+{
+  int member = 255;
+};
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkDefaultInitialization)
+{
+  constexpr int MAGIC_INT = 255;
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    Array<HasDefault> v_has_default(capacity);
+    for(const auto& ele : v_has_default)
+    {
+      EXPECT_EQ(ele.member, MAGIC_INT);
+    }
+
+    Array<HasDefault, 2> v_has_default_2d(capacity, capacity);
+    for(const auto& ele : v_has_default_2d)
+    {
+      EXPECT_EQ(ele.member, MAGIC_INT);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkUninitialized)
+{
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    // There's not really a way of checking if memory has *not* been initialized
+    // But we can at least make sure the following statements compile
+    Array<HasDefault> v_has_default(ArrayOptions::Uninitialized {}, capacity);
+    Array<HasDefault, 2> v_has_default_2d(ArrayOptions::Uninitialized {},
+                                          capacity,
+                                          capacity);
+  }
+}
+
 } /* end namespace axom */

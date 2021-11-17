@@ -529,6 +529,33 @@ struct all_types_are_integral
   static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
 
+/*!
+ * \brief Default-initializes the "new" segment of an array
+ *
+ * \param [inout] data The data to initialize
+ * \param [in] current_num_elements The length of the already-initialized data at the start of \a data
+ * \param [in] new_num_elements The total length of \a data
+ * 
+ * The final parameter is intended to be used via tag dispatch with std::is_default_constructible
+ */
+template <typename T>
+void initializeInPlace(T* data,
+                       const IndexType current_num_elements,
+                       const IndexType new_num_elements,
+                       std::true_type)
+{
+  int new_elems = new_num_elements - current_num_elements;
+  for(int ielem = 0; ielem < new_elems; ielem++)
+  {
+    new(&data[ielem + current_num_elements]) T;
+  }
+}
+
+/// \overload
+template <typename T>
+void initializeInPlace(T*, const IndexType, const IndexType, std::false_type)
+{ }
+
 }  // namespace detail
 
 } /* namespace axom */
