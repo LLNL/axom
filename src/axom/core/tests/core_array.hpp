@@ -647,10 +647,20 @@ void check_emplace(Array<T>& v)
   }
 }
 
-template <typename T>
-void check_swap(Array<T>& v)
+// Clumsy implementation of https://numpy.org/doc/stable/reference/generated/numpy.zeros_like.html
+// for testing purposes
+template <typename T, int DIM>
+Array<T, DIM> zeros_like(const Array<T, DIM>& other)
 {
-  axom::Array<T> v_two(v.size());
+  Array<T, DIM> zeros(other);
+  zeros.fill(T {});
+  return zeros;
+}
+
+template <typename T, int DIM>
+void check_swap(Array<T, DIM>& v)
+{
+  auto v_two = zeros_like(v);
 
   /* Push 0...size elements */
   for(int i = 0; i < v.size(); i++)
@@ -660,8 +670,8 @@ void check_swap(Array<T>& v)
   }
 
   /* Create copies */
-  axom::Array<T> v_copy(v);
-  axom::Array<T> v_two_copy(v_two);
+  axom::Array<T, DIM> v_copy(v);
+  axom::Array<T, DIM> v_two_copy(v_two);
 
   EXPECT_EQ(v, v_copy);
   EXPECT_EQ(v_two, v_two_copy);
@@ -1053,6 +1063,12 @@ TEST(core_array, checkSwap)
 
     Array<double> v_double(size);
     internal::check_swap(v_double);
+
+    Array<int, 2> v_int_2d(size, size);
+    internal::check_swap(v_int_2d);
+
+    Array<double, 2> v_double_2d(size, size);
+    internal::check_swap(v_double);
   }
 }
 
@@ -1275,6 +1291,64 @@ TEST(core_array, check_move_copy)
     Array<double> v_double_move_ctor = std::move(v_double_copy_ctor);
     EXPECT_EQ(v_double, v_double_move_assign);
     EXPECT_EQ(v_double, v_double_move_ctor);
+    EXPECT_EQ(v_double_copy_assign.data(), nullptr);
+    EXPECT_EQ(v_double_copy_ctor.data(), nullptr);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, check_move_copy_multidimensional)
+{
+  constexpr int MAGIC_INT = 255;
+  constexpr double MAGIC_DOUBLE = 5683578.8;
+
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    IndexType size = capacity;
+
+    /* Check copy and move semantics for Array of ints */
+    Array<int, 2> v_int(size, size);
+    v_int.fill(MAGIC_INT);
+
+    Array<int, 2> v_int_copy_ctor(v_int);
+    Array<int, 2> v_int_copy_assign;
+    v_int_copy_assign = v_int;
+    EXPECT_EQ(v_int, v_int_copy_ctor);
+    EXPECT_EQ(v_int, v_int_copy_assign);
+    // operator== already checks the shape, but we should also check the strides
+    EXPECT_EQ(v_int.strides(), v_int_copy_ctor.strides());
+    EXPECT_EQ(v_int.strides(), v_int_copy_assign.strides());
+
+    Array<int, 2> v_int_move_assign;
+    v_int_move_assign = std::move(v_int_copy_assign);
+    Array<int, 2> v_int_move_ctor = std::move(v_int_copy_ctor);
+    EXPECT_EQ(v_int, v_int_move_assign);
+    EXPECT_EQ(v_int, v_int_move_ctor);
+    EXPECT_EQ(v_int.strides(), v_int_move_assign.strides());
+    EXPECT_EQ(v_int.strides(), v_int_move_ctor.strides());
+    EXPECT_EQ(v_int_copy_assign.data(), nullptr);
+    EXPECT_EQ(v_int_copy_ctor.data(), nullptr);
+
+    /* Check copy and move semantics for Array of doubles */
+    Array<double, 2> v_double(size, size);
+    v_double.fill(MAGIC_DOUBLE);
+
+    Array<double, 2> v_double_copy_ctor(v_double);
+    Array<double, 2> v_double_copy_assign;
+    v_double_copy_assign = v_double;
+    EXPECT_EQ(v_double, v_double_copy_ctor);
+    EXPECT_EQ(v_double, v_double_copy_assign);
+    // operator== already checks the shape, but we should also check the strides
+    EXPECT_EQ(v_double.strides(), v_double_copy_ctor.strides());
+    EXPECT_EQ(v_double.strides(), v_double_copy_assign.strides());
+
+    Array<double, 2> v_double_move_assign;
+    v_double_move_assign = std::move(v_double_copy_assign);
+    Array<double, 2> v_double_move_ctor = std::move(v_double_copy_ctor);
+    EXPECT_EQ(v_double, v_double_move_assign);
+    EXPECT_EQ(v_double, v_double_move_ctor);
+    EXPECT_EQ(v_double.strides(), v_double_move_assign.strides());
+    EXPECT_EQ(v_double.strides(), v_double_move_ctor.strides());
     EXPECT_EQ(v_double_copy_assign.data(), nullptr);
     EXPECT_EQ(v_double_copy_ctor.data(), nullptr);
   }

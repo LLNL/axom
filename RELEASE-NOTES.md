@@ -19,6 +19,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+###  Fixed
+- Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
+
 ## [Version 0.6.1] - Release date 2021-11-17
 
 ###  Added

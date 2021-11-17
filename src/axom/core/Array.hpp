@@ -174,6 +174,7 @@ public:
   {
     if(this != &other)
     {
+      static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
       m_resize_ratio = other.m_resize_ratio;
       initialize(other.size(), other.capacity());
       axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
@@ -193,6 +194,8 @@ public:
       {
         axom::deallocate(m_data);
       }
+      static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) =
+        std::move(other);
 
       m_data = other.m_data;
       m_num_elements = other.m_num_elements;
