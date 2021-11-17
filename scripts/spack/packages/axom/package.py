@@ -89,7 +89,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     # Dependencies
     # -----------------------------------------------------------------------
     # Basics
-    depends_on("cmake@3.8.2:", type='build')
+    depends_on("cmake@3.8.2:", type='build', when="~rocm")
+    depends_on("cmake@3.16.8:", type='build', when="+rocm")
+
+
     depends_on("mpi", when="+mpi")
 
     # Libraries

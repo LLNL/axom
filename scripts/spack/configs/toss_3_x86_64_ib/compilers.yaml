@@ -42,7 +42,7 @@ compilers:
       cxx: /opt/rocm-4.3.0/bin/hipcc
       f77: /opt/rocm-4.3.0/bin/amdflang
       fc: /opt/rocm-4.3.0/bin/amdflang
-    spec: clang@13.0.0
+    spec: clang@13.0.0_hip
     target: x86_64
 - compiler:
     environment: {}
