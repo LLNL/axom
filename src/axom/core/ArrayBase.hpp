@@ -166,10 +166,10 @@ public:
   /// @}
 
   /// \brief Swaps two ArrayBases
-  friend void swap(ArrayBase& lhs, ArrayBase& rhs)
+  void swap(ArrayBase& other)
   {
-    std::swap(lhs.m_dims, rhs.m_dims);
-    std::swap(lhs.m_strides, rhs.m_strides);
+    std::swap(m_dims, other.m_dims);
+    std::swap(m_strides, other.m_strides);
   }
 
   /// \brief Returns the dimensions of the Array
