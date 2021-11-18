@@ -79,3 +79,27 @@ AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
     EXPECT_EQ(localArr[i], N - i);
   }
 }
+
+AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using KernelArray = typename TestFixture::KernelArray;
+  using HostArray = typename TestFixture::HostArray;
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr int N = 374;
+  KernelArray arr(N);
+
+  // Modify array using mutable lambda and ArrayView
+  auto arr_view = arr.view();
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
+
+  // Check array contents on device
+  HostArray localArr = arr;
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i], N - i);
+  }
+}

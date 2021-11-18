@@ -10,7 +10,7 @@
 #include "axom/core/memory_management.hpp"
 
 /*!
- * \file
+ * \file execution_space.hpp
  *
  * \brief Defines the list of available execution spaces for axom.
  *
