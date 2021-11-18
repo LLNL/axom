@@ -8,16 +8,16 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Array.hpp"
 #include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/synchronize.hpp"
 #include "axom/core/execution/for_all.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
 
-//------------------------------------------------------------------------------
-//  HELPER METHODS
-//------------------------------------------------------------------------------
 namespace
 {
+//------------------------------------------------------------------------------
+//  This test harness defines some types that are useful for the tests below
 //------------------------------------------------------------------------------
 template <typename TheExecSpace>
 class core_array_for_all : public ::testing::Test
@@ -48,7 +48,9 @@ using MyTypes = ::testing::Types<
   axom::OMP_EXEC,
 #endif
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  axom::CUDA_EXEC<100>,
   axom::CUDA_EXEC<256>,
+  axom::CUDA_EXEC<256, axom::ASYNC>,
 #endif
   axom::SEQ_EXEC>;
 
@@ -56,6 +58,7 @@ TYPED_TEST_SUITE(core_array_for_all, MyTypes);
 
 }  // end anonymous namespace
 
+//------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
 {
   using ExecSpace = typename TestFixture::ExecSpace;
@@ -73,6 +76,12 @@ AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
     N,
     AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
 
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
   // Check array contents on device
   HostArray localArr = arr;
   for(int i = 0; i < N; ++i)
@@ -81,6 +90,7 @@ AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
   }
 }
 
+//------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
 {
   using ExecSpace = typename TestFixture::ExecSpace;
@@ -97,6 +107,12 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
     N,
     AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
 
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
   // Check array contents on device
   HostArray localArr = arr;
   for(int i = 0; i < N; ++i)
@@ -105,6 +121,7 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
   }
 }
 
+//------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
 {
   using ExecSpace = typename TestFixture::ExecSpace;
@@ -123,6 +140,12 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
   axom::for_all<ExecSpace>(
     N,
     AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
 
   // Check array contents on device
   HostArray localArr(arr, hostAllocID);
