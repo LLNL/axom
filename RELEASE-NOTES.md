@@ -19,6 +19,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+###  Added
+- Adds a `view()` method to `axom::Array` class to simplify creation of a corresponding `axom::ArrayView`
+  
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
 
