@@ -1636,7 +1636,9 @@ TEST(core_array, checkConstConversion)
   EXPECT_EQ(v_int, v_int_view);
   ArrayView<const int> v_int_view_copy = v_int_view;
   EXPECT_EQ(v_int, v_int_view_copy);
-  // ArrayView<int> v_int_view_copy_non_const = v_int_view; // Fails as it should
+  // ArrayView<int> v_int_view_copy_non_const = v_int_view; // Fails to compile as it should
+  // v_int_view[1] = 12; // Fails to compile as it should
+
   Array<double, 2> v_double_2d(size, size);
   for(int i = 0; i < size; i++)
   {
@@ -1650,6 +1652,7 @@ TEST(core_array, checkConstConversion)
   EXPECT_EQ(v_double_2d, v_double_2d_view);
   ArrayView<const double, 2> v_double_2d_view_copy = v_double_2d_view;
   EXPECT_EQ(v_double_2d, v_double_2d_view_copy);
+  // v_double_2d_view_copy(0,0) = 1.1; // Fails to compile as it should
 }
 
 } /* end namespace axom */

@@ -19,6 +19,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+###  Changed
+- `axom::Array` now default-initializes its data by default. To leave data uninitialized, pass 
+  an `axom::ArrayOptions::Uninitialized` as the first constructor argument
+- `axom::ArrayView<const T>` can now be created from a `const Array<T>`
+
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
 
