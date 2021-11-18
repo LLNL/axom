@@ -774,6 +774,71 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, dc_par_reload_gf_ordering)
+{
+  const std::string first_field_name = "test_field_1";
+  const std::string second_field_name = "test_field_2";
+
+  // 3D tet mesh
+  mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::ParFiniteElementSpace first_parfes(&parmesh,
+                                           &fec,
+                                           1,
+                                           mfem::Ordering::byNODES);
+  mfem::ParFiniteElementSpace second_parfes(&parmesh,
+                                            &fec,
+                                            3,
+                                            mfem::Ordering::byVDIM);
+
+  // The mesh must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh);
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  mfem::ParGridFunction first_gf_write(&first_parfes,
+                                       static_cast<double*>(nullptr));
+  mfem::ParGridFunction second_gf_write(&second_parfes,
+                                        static_cast<double*>(nullptr));
+
+  // Register to allocate storage internally, then write to it
+  sdc_writer.RegisterField(first_field_name, &first_gf_write);
+  sdc_writer.RegisterField(second_field_name, &second_gf_write);
+
+  mfem::ConstantCoefficient three_and_a_half(3.5);
+  first_gf_write.ProjectCoefficient(three_and_a_half);
+
+  mfem::ConstantCoefficient five_and_a_half(5.5);
+  second_gf_write.ProjectCoefficient(five_and_a_half);
+
+  sdc_writer.SetCycle(0);
+  sdc_writer.Save();
+
+  MFEMSidreDataCollection sdc_reader(testName());
+
+  // Needs to be set "manually" in order for everything to be loaded in properly
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+  sdc_reader.Load();
+
+  auto first_gf_read = sdc_reader.GetField(first_field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(first_gf_read));
+  auto second_gf_read = sdc_reader.GetField(second_field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(second_gf_read));
+
+  EXPECT_EQ(first_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byNODES);
+  EXPECT_EQ(second_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byVDIM);
+
+  // Make sure the gridfunction was actually read in
+  EXPECT_LT(first_gf_read->ComputeL2Error(three_and_a_half), EPSILON);
+  EXPECT_LT(second_gf_read->ComputeL2Error(five_and_a_half), EPSILON);
+
+  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
 TEST(sidre_datacollection, dc_par_reload_mesh_1D_small)
 {
   // 1D mesh divided into segments

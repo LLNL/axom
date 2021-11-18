@@ -21,6 +21,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
+- Fixed over-eager caching of restored `mfem::FiniteElementSpaces` in `sidre::MFEMSidreDataCollection`
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
