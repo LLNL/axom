@@ -5,6 +5,7 @@
 
 // Axom includes
 #include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 #include "axom/core/Array.hpp"
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
@@ -18,24 +19,50 @@
 namespace
 {
 //------------------------------------------------------------------------------
-template <typename ExecSpace>
-void check_array_for_all_templated_memory()
+template <typename TheExecSpace>
+class core_array_for_all : public ::testing::Test
 {
-  // Introduce some type aliases
+public:
+  using ExecSpace = TheExecSpace;
+
+  // Define some memory spaces
 #ifdef AXOM_USE_UMPIRE
-  constexpr axom::MemorySpace host_memory = axom::MemorySpace::Host;
+  static constexpr axom::MemorySpace host_memory = axom::MemorySpace::Host;
 #else
-  constexpr axom::MemorySpace host_memory = axom::MemorySpace::Dynamic;
+  static constexpr axom::MemorySpace host_memory = axom::MemorySpace::Dynamic;
 #endif
 
-  constexpr axom::MemorySpace exec_space_memory =
+  static constexpr axom::MemorySpace exec_space_memory =
     axom::execution_space<ExecSpace>::memory_space;
 
+  // Define some Array type aliases
   using HostArray = axom::Array<int, 1, host_memory>;
   using KernelArray = axom::Array<int, 1, exec_space_memory>;
   using KernelArrayView = axom::ArrayView<int, 1, exec_space_memory>;
+};
 
-  // Create an array of N items using default allocator ExecSpace
+// Generate a list of available execution types
+using MyTypes = ::testing::Types<
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+  axom::OMP_EXEC,
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  axom::CUDA_EXEC<256>,
+#endif
+  axom::SEQ_EXEC>;
+
+TYPED_TEST_SUITE(core_array_for_all, MyTypes);
+
+}  // end anonymous namespace
+
+AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using KernelArray = typename TestFixture::KernelArray;
+  using KernelArrayView = typename TestFixture::KernelArrayView;
+  using HostArray = typename TestFixture::HostArray;
+
+  // Create an array of N items using default MemorySpace for ExecSpace
   constexpr int N = 374;
   KernelArray arr(N);
 
@@ -52,32 +79,3 @@ void check_array_for_all_templated_memory()
     EXPECT_EQ(localArr[i], N - i);
   }
 }
-
-}  // namespace
-
-//------------------------------------------------------------------------------
-//  UNIT TESTS
-//------------------------------------------------------------------------------
-TEST(core_array_for_all, seq_exec)
-{
-  check_array_for_all_templated_memory<axom::SEQ_EXEC>();
-}
-
-//------------------------------------------------------------------------------
-
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
-TEST(core_array_for_all, omp_exec)
-{
-  check_array_for_all_templated_memory<axom::OMP_EXEC>();
-}
-#endif
-
-//------------------------------------------------------------------------------
-
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-TEST(core_array_for_all, cuda_exec)
-{
-  constexpr int BLOCK_SIZE = 256;
-  check_array_for_all_templated_memory<axom::CUDA_EXEC<BLOCK_SIZE>>();
-}
-#endif
