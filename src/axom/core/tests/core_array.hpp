@@ -1548,4 +1548,34 @@ TEST(core_array, checkUninitialized)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(core_array, checkConstConversion)
+{
+  constexpr IndexType size = 10;
+  Array<int> v_int(size);
+  for(int i = 0; i < v_int.size(); i++)
+  {
+    v_int[i] = i;
+  }
+  const Array<int>& v_int_cref = v_int;
+  ArrayView<const int> v_int_view = v_int_cref;
+  EXPECT_EQ(v_int, v_int_view);
+  ArrayView<const int> v_int_view_copy = v_int_view;
+  EXPECT_EQ(v_int, v_int_view_copy);
+  // ArrayView<int> v_int_view_copy_non_const = v_int_view; // Fails as it should
+  Array<double, 2> v_double_2d(size, size);
+  for(int i = 0; i < size; i++)
+  {
+    for(int j = 0; j < size; j++)
+    {
+      v_double_2d(i, j) = 7.1 * i + j * 2.3;
+    }
+  }
+  const Array<double, 2>& v_double_2d_cref = v_double_2d;
+  ArrayView<const double, 2> v_double_2d_view = v_double_2d_cref;
+  EXPECT_EQ(v_double_2d, v_double_2d_view);
+  ArrayView<const double, 2> v_double_2d_view_copy = v_double_2d_view;
+  EXPECT_EQ(v_double_2d, v_double_2d_view_copy);
+}
+
 } /* end namespace axom */

@@ -68,6 +68,10 @@ public:
    */
   template <typename OtherArrayType>
   ArrayView(ArrayBase<T, DIM, OtherArrayType>& other);
+  /// \overload
+  template <typename OtherArrayType>
+  ArrayView(
+    const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other);
 
   /*!
    * \brief Return the number of elements stored in the data array.
@@ -175,6 +179,32 @@ ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
   , m_num_elements(static_cast<OtherArrayType&>(other).size())
   , m_allocator_id(static_cast<OtherArrayType&>(other).getAllocatorID())
 {
+#ifdef AXOM_DEBUG
+  // If it's not dynamic, the allocator ID from the argument array has to match the template param.
+  // If that's not the case then things have gone horribly wrong somewhere.
+  if(SPACE != MemorySpace::Dynamic &&
+     m_allocator_id != axom::detail::getAllocatorID<SPACE>())
+  {
+    std::cerr << "Input argument allocator does not match the explicitly "
+                 "provided memory space\n";
+    utilities::processAbort();
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename OtherArrayType>
+ArrayView<T, DIM, SPACE>::ArrayView(
+  const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
+  , m_data(static_cast<const OtherArrayType&>(other).data())
+  , m_num_elements(static_cast<const OtherArrayType&>(other).size())
+  , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
+{
+  static_assert(
+    std::is_const<T>::value,
+    "Cannot create an ArrayView of non-const type from a const Array");
 #ifdef AXOM_DEBUG
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.

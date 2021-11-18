@@ -438,6 +438,35 @@ public:
   template <typename... Args>
   ArrayIterator emplace(ArrayIterator pos, Args&&... args);
 
+  /*!
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to be added to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void push_back(const T& value);
+
+  /*!
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to move to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void push_back(T&& value);
+
+  /*!
+   * \brief Inserts new element at the end of the Array.
+   *
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   */
+  template <typename... Args>
+  void emplace_back(Args&&... args);
+
   /// @}
 
   /// \name Array methods to query and set attributes
@@ -929,6 +958,31 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::emplac
   assert(pos >= begin() && pos <= end());
   emplace(pos - begin(), args...);
   return pos;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+inline void Array<T, DIM, SPACE>::push_back(const T& value)
+{
+  static_assert(DIM == 1, "push_back is only supported for 1D arrays");
+  emplace_back(value);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+inline void Array<T, DIM, SPACE>::push_back(T&& value)
+{
+  static_assert(DIM == 1, "push_back is only supported for 1D arrays");
+  emplace_back(std::move(value));
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename... Args>
+inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
+{
+  static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
+  emplace(size(), args...);
 }
 
 //------------------------------------------------------------------------------

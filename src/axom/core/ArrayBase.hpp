@@ -47,9 +47,9 @@ std::ostream& operator<<(std::ostream& os,
  * \return true if the Arrays have the same allocator ID, are of equal shape,
  * and have the same elements.
  */
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs);
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs);
 
 /*!
  * \brief Inequality comparison operator for Arrays
@@ -59,9 +59,9 @@ bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
  * \return true if the Arrays do not have the same allocator ID, are not of
  * equal shape, or do not have the same elements.
  */
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs);
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs);
 
 /// @}
 
@@ -104,7 +104,8 @@ public:
    * memory spaces
    */
   template <typename OtherArrayType>
-  ArrayBase(const ArrayBase<T, DIM, OtherArrayType>& other)
+  ArrayBase(
+    const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_dims(other.shape())
     , m_strides(other.strides())
   { }
@@ -276,37 +277,8 @@ public:
 
   // Empy implementation because no member data
   template <typename OtherArrayType>
-  ArrayBase(const ArrayBase<T, 1, OtherArrayType>&)
+  ArrayBase(const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
-
-  /*!
-   * \brief Push a value to the back of the array.
-   *
-   * \param [in] value the value to be added to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void push_back(const T& value);
-
-  /*!
-   * \brief Push a value to the back of the array.
-   *
-   * \param [in] value the value to move to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void push_back(T&& value);
-
-  /*!
-   * \brief Inserts new element at the end of the Array.
-   *
-   * \param [in] args the arguments to forward to constructor of the element.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   * \note The size increases by 1.
-   */
-  template <typename... Args>
-  void emplace_back(Args&&... args);
 
   /// \brief Returns the dimensions of the Array
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
@@ -432,10 +404,13 @@ std::ostream& operator<<(std::ostream& os, const ArrayBase<T, DIM, ArrayType>& a
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs)
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs)
 {
+  static_assert(std::is_same<typename std::remove_const<T1>::type,
+                             typename std::remove_const<T2>::type>::value,
+                "Cannot compare Arrays of incompatible type");
   if(static_cast<const LArrayType&>(lhs).getAllocatorID() !=
      static_cast<const RArrayType&>(rhs).getAllocatorID())
   {
@@ -459,33 +434,11 @@ bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs)
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs)
 {
   return !(lhs == rhs);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayBase<T, 1, ArrayType>::push_back(const T& value)
-{
-  emplace_back(value);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayBase<T, 1, ArrayType>::push_back(T&& value)
-{
-  emplace_back(std::move(value));
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-template <typename... Args>
-inline void ArrayBase<T, 1, ArrayType>::emplace_back(Args&&... args)
-{
-  asDerived().emplace(asDerived().size(), args...);
 }
 
 namespace detail
