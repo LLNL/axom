@@ -37,6 +37,7 @@ public:
 
   // Define some Array type aliases
   using HostArray = axom::Array<int, 1, host_memory>;
+  using DynamicArray = axom::Array<int, 1, axom::MemorySpace::Dynamic>;
   using KernelArray = axom::Array<int, 1, exec_space_memory>;
   using KernelArrayView = axom::ArrayView<int, 1, exec_space_memory>;
 };
@@ -98,6 +99,33 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
 
   // Check array contents on device
   HostArray localArr = arr;
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i], N - i);
+  }
+}
+
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+
+  // Modify array using mutable lambda and ArrayView
+  auto arr_view = arr.view();
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
+
+  // Check array contents on device
+  HostArray localArr(arr, hostAllocID);
   for(int i = 0; i < N; ++i)
   {
     EXPECT_EQ(localArr[i], N - i);
