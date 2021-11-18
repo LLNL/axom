@@ -16,6 +16,7 @@
 
 set(core_serial_tests
     core_array.hpp
+    core_array_for_all.hpp
     core_execution_for_all.hpp
     core_execution_space.hpp
     core_memory_management.hpp

@@ -7,13 +7,14 @@
 
 #include "axom/config.hpp"  // for compile-time definitions
 
+#include "core_array.hpp"
+#include "core_array_for_all.hpp"
 #include "core_execution_for_all.hpp"
 #include "core_execution_space.hpp"
 #include "core_memory_management.hpp"
 #include "core_Path.hpp"
 #include "core_stack_array.hpp"
 #include "core_map.hpp"
-#include "core_array.hpp"
 
 #ifndef AXOM_USE_MPI
   #include "core_types.hpp"
@@ -27,8 +28,8 @@
 #include "numerics_linear_solve.hpp"
 #include "numerics_lu.hpp"
 #include "numerics_matrix.hpp"
-#include "numerics_polynomial_solvers.hpp"
 #include "numerics_matvecops.hpp"
+#include "numerics_polynomial_solvers.hpp"
 
 #include "utils_Timer.hpp"
 #include "utils_endianness.hpp"
