@@ -14,7 +14,7 @@
 // gtest includes
 #include "gtest/gtest.h"
 
-namespace
+namespace testing
 {
 //------------------------------------------------------------------------------
 //  This test harness defines some types that are useful for the tests below
@@ -55,8 +55,6 @@ using MyTypes = ::testing::Types<
   axom::SEQ_EXEC>;
 
 TYPED_TEST_SUITE(core_array_for_all, MyTypes);
-
-}  // end anonymous namespace
 
 //------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
@@ -154,3 +152,5 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
     EXPECT_EQ(localArr[i], N - i);
   }
 }
+
+}  // end namespace testing
