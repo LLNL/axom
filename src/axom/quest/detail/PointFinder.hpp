@@ -128,22 +128,48 @@ public:
                     IndexType* outCellIds,
                     SpacePoint* outIsoparametricCoords) const
   {
+    constexpr bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
+#ifdef AXOM_USE_UMPIRE
+    // Use unified memory if we execute on GPU, otherwise use host memory
+    constexpr axom::MemorySpace UnifiedSpace =
+      DeviceExec ? axom::MemorySpace::Unified : axom::MemorySpace::Host;
+
+    using IndexArray = axom::Array<IndexType, 1, UnifiedSpace>;
+    using HostIndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Host>;
+    using HostPointArray = axom::Array<SpacePoint, 1, axom::MemorySpace::Host>;
+
+    using IndexView = axom::ArrayView<IndexType, 1, UnifiedSpace>;
+    using HostIndexView = axom::ArrayView<IndexType, 1, axom::MemorySpace::Host>;
+    using HostPointView = axom::ArrayView<SpacePoint, 1, axom::MemorySpace::Host>;
+    using ConstHostPointView =
+      axom::ArrayView<const SpacePoint, 1, axom::MemorySpace::Host>;
+#else
+    using IndexArray = axom::Array<IndexType>;
+    using HostIndexArray = IndexArray;
+    using HostPointArray = PointArray;
+
+    using IndexView = axom::ArrayView<IndexType>;
+    using HostIndexView = IndexView;
+    using HostPointView = PointView;
+    using ConstHostPointView = axom::ArrayView<const SpacePoint>;
+#endif  // AXOM_USE_UMPIRE
+
     auto gridQuery = m_grid.getQueryObject();
 
     axom::IndexType npts = pts.size();
 
-    axom::Array<IndexType> offsets(npts, npts, m_allocatorID);
-    axom::Array<IndexType> counts(npts, npts, m_allocatorID);
+    IndexArray offsets(npts);
+    IndexArray counts(npts);
 
 #ifdef AXOM_USE_RAJA
-    IndexType* countsPtr = counts.data();
+    IndexView countsPtr = counts;
 
     using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
     RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
     // Step 1: count number of candidate intersections for each point
     for_all<ExecSpace>(
       npts,
-      AXOM_LAMBDA(IndexType i) {
+      AXOM_LAMBDA(IndexType i) mutable {
         countsPtr[i] = gridQuery.countCandidates(pts[i]);
         totalCountReduce += countsPtr[i];
       });
@@ -157,15 +183,15 @@ public:
     axom::IndexType totalCount = totalCountReduce.get();
 
     // Step 3: allocate memory for all candidates
-    axom::Array<IndexType> candidates(totalCount, totalCount, m_allocatorID);
-    IndexType* candidatesPtr = candidates.data();
-    IndexType* offsetsPtr = offsets.data();
+    IndexArray candidates(totalCount);
+    IndexView candidatesPtr = candidates;
+    IndexView offsetsPtr = offsets;
     const SpatialBoundingBox* cellBBoxes = m_cellBBoxes.data();
 
     // Step 4: fill candidate array for each query box
     for_all<ExecSpace>(
       npts,
-      AXOM_LAMBDA(IndexType i) {
+      AXOM_LAMBDA(IndexType i) mutable {
         int startIdx = offsetsPtr[i];
         int currCount = 0;
         auto onCandidate = [&](int candidateIdx) -> bool {
@@ -182,31 +208,66 @@ public:
         countsPtr[i] = currCount;
       });
 
+    HostPointArray ptsHost, outIsoparHost;
+    HostIndexArray outCellIdsHost;
+
+    // For sequential/OpenMP execution, just use the argument pointers
+    // directly.
+    ConstHostPointView ptsHostPtr = pts;
+    HostIndexView outCellIdsPtr(outCellIds, pts.size());
+    HostPointView outIsoparPtr(outIsoparametricCoords, pts.size());
+
+    if(DeviceExec)
+    {
+      // Copy points to host memory.
+      // TODO: see if we support copying ArrayView<const T> -> Array<T>
+      ptsHost = HostPointArray(pts.size());
+      axom::copy(ptsHost.data(), pts.data(), sizeof(SpacePoint) * pts.size());
+      ptsHostPtr = ConstHostPointView(ptsHost.data(), ptsHost.size());
+      // Allocate intermediate output buffers on the host side.
+      outCellIdsHost.resize(pts.size());
+      if(outIsoparametricCoords)
+      {
+        outIsoparHost.resize(pts.size());
+      }
+    }
+
     // Step 5: Check each candidate
     // TODO: This only supports sequential execution right now, because we
     // don't build MFEM in a thread-safe manner.
     for_all<SEQ_EXEC>(
       npts,
-      AXOM_HOST_LAMBDA(IndexType i) {
-        outCellIds[i] = PointInCellTraits<mesh_tag>::NO_CELL;
+      AXOM_HOST_LAMBDA(IndexType i) mutable {
+        outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
         SpacePoint pt = pts[i];
         SpacePoint isopar;
         for(int icell = 0; icell < countsPtr[i]; icell++)
         {
-          int cellIdx = candidates[icell + offsetsPtr[i]];
+          int cellIdx = candidatesPtr[icell + offsetsPtr[i]];
           // if isopar is in the proper range
           if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
           {
             // then we have found the cellID
-            outCellIds[i] = cellIdx;
+            outCellIdsPtr[i] = cellIdx;
             break;
           }
         }
         if(outIsoparametricCoords != nullptr)
         {
-          outIsoparametricCoords[i] = isopar;
+          outIsoparPtr[i] = isopar;
         }
       });
+
+    if(DeviceExec)
+    {
+      // Copy back to GPU memory.
+      axom::copy(outCellIds,
+                 outCellIdsHost.data(),
+                 outCellIdsHost.size() * sizeof(IndexType));
+      axom::copy(outIsoparametricCoords,
+                 outIsoparHost.data(),
+                 outIsoparHost.size() * sizeof(SpacePoint));
+    }
 #else
     for(int i = 0; i < npts; i++)
     {

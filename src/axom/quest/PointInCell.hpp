@@ -108,6 +108,8 @@ public:
    * \param [in] resolution Grid resolution for the spatial index. Default: NULL
    * \param [in] bboxTolerance A tolerance factor by which to expand
    * the bounding boxes. Default: 1e-8
+   * \param [in] allocatorId Currently unused. Default value is based on the
+   *  allocator ID set for the specified execution space.
    *
    * \note The bboxTolerance should be a small positive number.  It helps avoid
    * numerical issues in the bounding box containment queries by slightly
