@@ -523,12 +523,6 @@ public:
    * \brief Returns a view of the array
    * \sa ArrayView
    */
-  const ArrayViewType view() const { return ArrayViewType(*this); }
-
-  /*!
-   * \brief Returns a view of the array
-   * \sa ArrayView
-   */
   ArrayViewType view() { return ArrayViewType(*this); }
 
   /// @}
