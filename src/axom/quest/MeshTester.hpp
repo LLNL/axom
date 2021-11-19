@@ -464,9 +464,19 @@ void findTriMeshIntersectionsImplicitGrid(
 
   axom::Array<int> indices(candidates.size());
   axom::Array<int> validCandidates(candidates.size());
-  axom::Array<int> numValidCandidates(1);
   axom::Array<int> intersectionPairs(candidates.size());
+#ifdef AXOM_USE_UMPIRE
+  // Use unified memory if we execute on GPU, otherwise use host memory
+  constexpr axom::MemorySpace UnifiedSpace =
+    axom::execution_space<ExecSpace>::onDevice() ? axom::MemorySpace::Unified
+                                                 : axom::MemorySpace::Host;
+
+  axom::Array<int, 1, UnifiedSpace> numValidCandidates(1);
+  axom::Array<int, 1, UnifiedSpace> numIntersectionPairs(1);
+#else
+  axom::Array<int> numValidCandidates(1);
   axom::Array<int> numIntersectionPairs(1);
+#endif
   numValidCandidates[0] = 0;
   numIntersectionPairs[0] = 0;
 
@@ -523,10 +533,22 @@ void findTriMeshIntersectionsImplicitGrid(
         }
       });
     int isectCounter_host = p_numIntersectionPairs[0];
-    for(int i = 0; i < isectCounter_host; i += 2)
+
     {
-      intersections.push_back(
-        std::make_pair(intersectionPairs[i], intersectionPairs[i + 1]));
+#ifdef AXOM_USE_UMPIRE
+      axom::Array<int, 1, axom::MemorySpace::Host> isectPairBacking =
+        intersectionPairs;
+      axom::ArrayView<int, 1, axom::MemorySpace::Host> isectPairHost =
+        isectPairBacking;
+#else
+      axom::ArrayView<int> isectPairHost = intersectionPairs;
+#endif
+
+      for(int i = 0; i < isectCounter_host; i += 2)
+      {
+        intersections.push_back(
+          std::make_pair(isectPairHost[i], isectPairHost[i + 1]));
+      }
     }
   }
   axom::setDefaultAllocator(current_allocator);
