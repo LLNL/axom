@@ -241,6 +241,8 @@ via a lambda:
    :end-before: _array_w_raja_end
    :language: C++
 
+.. note:: We need to mark the lambda as `mutable` if we want to modify the array (array view) data.
+
 ##########
 StackArray
 ##########

@@ -52,6 +52,12 @@ packages:
     externals:
     - spec: netlib-lapack@3.8.0 %clang@8.0.1_nvcc_xlf
       prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    - spec: netlib-lapack@3.8.0 %clang@9.0.0_upstream_xlf
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    - spec: netlib-lapack@3.8.0 %xl@16.1.1_coral
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    - spec: netlib-lapack@3.8.0 %xl@16.1.1_nvcc
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
 
 # System level packages to not build
   autoconf:
@@ -119,7 +125,7 @@ packages:
   hypre:
     version: [2.20.0]
   mfem:
-    variants: ~mpi~metis~zlib
+    version: [4.2.0]
   raja:
     variants: ~shared~examples~exercises
   scr:

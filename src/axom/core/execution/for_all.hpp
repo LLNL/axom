@@ -6,14 +6,14 @@
 #ifndef AXOM_CORE_EXECUTION_FOR_ALL_HPP_
 #define AXOM_CORE_EXECUTION_FOR_ALL_HPP_
 
-#include "axom/config.hpp"                         /* compile time defs */
-#include "axom/core/execution/execution_space.hpp" /* execution_space traits */
-#include "axom/core/Macros.hpp"                    /* for axom Macros */
-#include "axom/core/Types.hpp"                     /* for axom::IndexType */
+#include "axom/config.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/Types.hpp"
 
 // C/C++ includes
-#include <type_traits>  // for std::is_same()
-#include <utility>      // for std::forward()
+#include <type_traits>
+#include <utility>
 
 namespace axom
 {
@@ -106,6 +106,6 @@ inline void for_all(const IndexType& N, KernelType&& kernel) noexcept
 
 /// @}
 
-} /* namespace axom */
+}  // namespace axom
 
-#endif /* AXOM_CORE_EXECUTION_FOR_ALL_HPP_ */
+#endif  // AXOM_CORE_EXECUTION_FOR_ALL_HPP_

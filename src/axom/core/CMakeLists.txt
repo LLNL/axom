@@ -108,6 +108,13 @@ blt_add_library( NAME        core
                  OBJECT      TRUE
                  )
 
+# Basic includes that should be inherited to all Axom targets
+target_include_directories(core PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    )
+
 # Add the AXOM_DEBUG compile definition, if non-empty
 if(AXOM_DEBUG_DEFINE_STRING)
   blt_add_target_definitions(TO core SCOPE PUBLIC TARGET_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")

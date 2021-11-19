@@ -18,16 +18,19 @@ function or_die () {
 }
 
 or_die cd axom
-git submodule init 
-git submodule update 
+git submodule init
+git submodule update
 
 echo HOST_CONFIG
 echo $HOST_CONFIG
 
+export BUILD_TYPE=${BUILD_TYPE:-Debug}
+
+
 if [[ "$DO_BUILD" == "yes" ]] ; then
     echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
-    or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -DENABLE_GTEST_DEATH_TESTS=ON ${CMAKE_EXTRA_FLAGS}
-    or_die cd build-$HOST_CONFIG-debug
+    or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -bt ${BUILD_TYPE} -DENABLE_GTEST_DEATH_TESTS=ON ${CMAKE_EXTRA_FLAGS}
+    or_die cd build-$HOST_CONFIG-${BUILD_TYPE,,}
     echo "~~~~~~ BUILDING ~~~~~~~~"
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then
         or_die make -j 10

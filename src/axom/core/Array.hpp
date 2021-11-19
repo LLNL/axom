@@ -6,16 +6,17 @@
 #ifndef AXOM_ARRAY_HPP_
 #define AXOM_ARRAY_HPP_
 
-#include "axom/config.hpp"                    // for compile-time defines
-#include "axom/core/Macros.hpp"               // for axom macros
-#include "axom/core/utilities/Utilities.hpp"  // for processAbort()
-#include "axom/core/Types.hpp"                // for IndexType definition
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/Types.hpp"
 #include "axom/core/ArrayBase.hpp"
 #include "axom/core/ArrayIteratorBase.hpp"
+#include "axom/core/ArrayView.hpp"
 
 // C/C++ includes
-#include <algorithm>  // for std::transform
-#include <iostream>   // for std::cerr and std::ostream
+#include <algorithm>
+#include <iostream>
 
 namespace axom
 {
@@ -73,6 +74,8 @@ public:
   using value_type = T;
   static constexpr MemorySpace space = SPACE;
   using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>>;
+
+  using ArrayViewType = ArrayView<T, DIM, SPACE>;
 
 public:
   /// \name Native Storage Array Constructors
@@ -174,6 +177,7 @@ public:
   {
     if(this != &other)
     {
+      static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
       m_resize_ratio = other.m_resize_ratio;
       initialize(other.size(), other.capacity());
       axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
@@ -193,6 +197,8 @@ public:
       {
         axom::deallocate(m_data);
       }
+      static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) =
+        std::move(other);
 
       m_data = other.m_data;
       m_num_elements = other.m_num_elements;
@@ -512,6 +518,12 @@ public:
    * \brief Get the ID for the umpire allocator
    */
   int getAllocatorID() const { return m_allocator_id; }
+
+  /*!
+   * \brief Returns a view of the array
+   * \sa ArrayView
+   */
+  ArrayViewType view() { return ArrayViewType(*this); }
 
   /// @}
 

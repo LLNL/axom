@@ -8,6 +8,8 @@
 
 #------------------------------------------------------------------------------
 # Check necessary dependencies
+#
+# Note: Quest also optionally depends on Klee, when Klee is enabled
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       QUEST
                         COMPONENTS MINT PRIMAL SLAM SLIC SPIN)
@@ -94,7 +96,7 @@ blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
 
-if(MFEM_FOUND AND AXOM_USE_KLEE AND AXOM_USE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND quest_headers Shaper.hpp
                               SamplingShaper.hpp
                               IntersectionShaper.hpp
