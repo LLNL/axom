@@ -258,7 +258,7 @@
 /*!
  * \def AXOM_TYPED_TEST(CaseName, TestName)
  * \brief Minor tweak of gtest's TYPED_TEST macro to work with device code
- * \note Can be used after including `gtest/gtest.h`
+ * \note Can be used in test files after including `gtest/gtest.h`
  */
 // Specifically, we expose the `TestBody()` method as public instead of private
 #define AXOM_TYPED_TEST(CaseName, TestName)                                         \

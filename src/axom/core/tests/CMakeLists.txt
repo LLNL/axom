@@ -19,10 +19,10 @@ set(core_serial_tests
     core_array_for_all.hpp
     core_execution_for_all.hpp
     core_execution_space.hpp
+    core_map.hpp
     core_memory_management.hpp
     core_Path.hpp
     core_stack_array.hpp
-    core_map.hpp
 
     numerics_determinants.hpp
     numerics_eigen_solve.hpp
@@ -35,14 +35,14 @@ set(core_serial_tests
     numerics_matvecops.hpp
     numerics_polynomial_solvers.hpp
 
-    utils_Timer.hpp
+    utils_about.hpp
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_nvtx_settings.hpp
     utils_stringUtilities.hpp
     utils_system.hpp
+    utils_Timer.hpp
     utils_utilities.hpp
-    utils_about.hpp
     )
 
 set(core_test_depends

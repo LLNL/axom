@@ -11,10 +11,10 @@
 #include "core_array_for_all.hpp"
 #include "core_execution_for_all.hpp"
 #include "core_execution_space.hpp"
+#include "core_map.hpp"
 #include "core_memory_management.hpp"
 #include "core_Path.hpp"
 #include "core_stack_array.hpp"
-#include "core_map.hpp"
 
 #ifndef AXOM_USE_MPI
   #include "core_types.hpp"
@@ -31,14 +31,14 @@
 #include "numerics_matvecops.hpp"
 #include "numerics_polynomial_solvers.hpp"
 
-#include "utils_Timer.hpp"
+#include "utils_about.hpp"
 #include "utils_endianness.hpp"
 #include "utils_fileUtilities.hpp"
 #include "utils_nvtx_settings.hpp"
 #include "utils_stringUtilities.hpp"
 #include "utils_system.hpp"
+#include "utils_Timer.hpp"
 #include "utils_utilities.hpp"
-#include "utils_about.hpp"
 
 int main(int argc, char** argv)
 {

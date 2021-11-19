@@ -80,7 +80,7 @@ AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
     axom::synchronize<ExecSpace>();
   }
 
-  // Check array contents on device
+  // Check array contents on host
   HostArray localArr = arr;
   for(int i = 0; i < N; ++i)
   {
@@ -111,7 +111,7 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
     axom::synchronize<ExecSpace>();
   }
 
-  // Check array contents on device
+  // Check array contents on host
   HostArray localArr = arr;
   for(int i = 0; i < N; ++i)
   {
@@ -145,7 +145,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
     axom::synchronize<ExecSpace>();
   }
 
-  // Check array contents on device
+  // Check array contents on host
   HostArray localArr(arr, hostAllocID);
   for(int i = 0; i < N; ++i)
   {

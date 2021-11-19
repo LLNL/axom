@@ -3,23 +3,27 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/StackArray.hpp" /* for axom::StackArray */
+#include "axom/core/StackArray.hpp"
 #include "axom/core/Map.hpp"
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"
 #include <string>
 
 namespace experimental = axom::experimental;
 
 namespace
+
 {
-struct TestHash
+// Note: axom::Map does not (currently) rehash during insertion operations.
+// Most of the tests below assume that a Map with N slots can store all keys
+// from 0 to N-1 without a rehash. This is possible with the identity hash function
+struct IdentityHash
 {
   std::size_t operator()(int i) const { return i; }
 };
 
 using TestKey = int;
 using TestVal = int;
-using TestMap = experimental::Map<TestKey, TestVal, TestHash>;
+using TestMap = experimental::Map<TestKey, TestVal, IdentityHash>;
 
 TestMap init(int N, int len)
 {
@@ -433,7 +437,7 @@ TEST(core_map, hashmap_return_value)
     const int buckets_len = 3;
     auto fn = [](TestKey i) { return i * i + i; };
 
-    // Use the test map
+    // Use the test map, with the identity hash function
     {
       auto map = ::init_filled_map<TestMap>(buckets_num, buckets_len, fn);
 
@@ -447,7 +451,7 @@ TEST(core_map, hashmap_return_value)
         EXPECT_EQ(exp_value, value);
       }
     }
-    // Use a map with the default hash function
+    // Use a map with the compiler's default std::hash function
     {
       using DefaultHasherMap = experimental::Map<TestKey, TestVal>;
       auto map =
