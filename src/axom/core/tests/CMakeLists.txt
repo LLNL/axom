@@ -4,16 +4,22 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
 # Tests for Axom's Core component
+#
+# Note: The tests in this file are consolidated into a few executables.
+# In addition to adding files to the lists below, you'll also have  to #include 
+# your headers in the appropriate 'main' cpp file, e.g. `core_serial_main.cpp`
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# Specify list of tests
+# Specify list of serial tests
 #------------------------------------------------------------------------------
 
-set(gtest_utils_tests
+set(core_serial_tests
     core_array.hpp
+    core_array_for_all.hpp
     core_execution_for_all.hpp
     core_execution_space.hpp
+    core_map.hpp
     core_memory_management.hpp
     core_Path.hpp
     core_stack_array.hpp
@@ -29,22 +35,22 @@ set(gtest_utils_tests
     numerics_matvecops.hpp
     numerics_polynomial_solvers.hpp
 
-    utils_Timer.hpp
+    utils_about.hpp
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_nvtx_settings.hpp
     utils_stringUtilities.hpp
     utils_system.hpp
+    utils_Timer.hpp
     utils_utilities.hpp
-    utils_about.hpp
     )
 
-set(utils_tests_depends
+set(core_test_depends
     axom
     gtest
     )
 
-blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO core_test_depends ELEMENTS cuda IF ENABLE_CUDA )
 
 #------------------------------------------------------------------------------
 # Serial GTests
@@ -52,17 +58,17 @@ blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 # Only enable this test in serial mode if ENABLE_MPI is off
 if (NOT ENABLE_MPI)
-  list(APPEND gtest_utils_tests core_types.hpp)
+  list(APPEND core_serial_tests core_types.hpp)
 endif()
 
 blt_add_executable( NAME       core_serial_tests
                     SOURCES    core_serial_main.cpp
-                    HEADERS    ${gtest_utils_tests}
+                    HEADERS    ${core_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON ${utils_tests_depends}
+                    DEPENDS_ON ${core_test_depends}
                     FOLDER     axom/core/tests )
 
-foreach(test_suite ${gtest_utils_tests})
+foreach(test_suite ${core_serial_tests})
     get_filename_component( test_suite ${test_suite} NAME_WE )
     axom_add_test( NAME    ${test_suite}_serial
                    COMMAND core_serial_tests --gtest_filter=${test_suite}* )
@@ -80,7 +86,7 @@ if (ENABLE_MPI)
                       SOURCES    core_mpi_main.cpp
                       HEADERS    ${core_mpi_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON ${utils_tests_depends} mpi
+                      DEPENDS_ON ${core_test_depends} mpi
                       FOLDER     axom/core/tests )
 
   foreach( test_suite ${core_mpi_tests} )
@@ -103,7 +109,7 @@ if (ENABLE_OPENMP AND AXOM_USE_RAJA)
                       SOURCES    core_openmp_main.cpp
                       HEADERS    ${core_mpi_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON ${utils_tests_depends} openmp
+                      DEPENDS_ON ${core_test_depends} openmp
                       FOLDER     axom/core/tests )
 
   foreach( test_suite ${core_openmp_tests} )

@@ -983,14 +983,13 @@ TEST(core_array, checkResize)
 //------------------------------------------------------------------------------
 TEST(core_array_DeathTest, checkResize)
 {
-  const char IGNORE_OUTPUT[] = ".*";
   constexpr IndexType ZERO = 0;
   IndexType size = 100;
 
   /* Resizing isn't allowed with a ratio less than 1.0. */
   Array<int> v_int(ZERO, size);
   v_int.setResizeRatio(0.99);
-  EXPECT_DEATH_IF_SUPPORTED(internal::check_resize(v_int), IGNORE_OUTPUT);
+  EXPECT_DEATH_IF_SUPPORTED(internal::check_resize(v_int), "");
 }
 
 //------------------------------------------------------------------------------
