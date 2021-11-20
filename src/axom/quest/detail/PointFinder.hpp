@@ -146,11 +146,11 @@ public:
 #else
     using IndexArray = axom::Array<IndexType>;
     using HostIndexArray = IndexArray;
-    using HostPointArray = PointArray;
+    using HostPointArray = axom::Array<SpacePoint>;
 
     using IndexView = axom::ArrayView<IndexType>;
     using HostIndexView = IndexView;
-    using HostPointView = PointView;
+    using HostPointView = axom::Array<SpacePoint>;
     using ConstHostPointView = axom::ArrayView<const SpacePoint>;
 #endif  // AXOM_USE_UMPIRE
 
