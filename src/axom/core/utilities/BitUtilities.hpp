@@ -3,22 +3,23 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
- * \file BitTwiddle
+/*!
  *
- * \brief Some bit twiddling operations in support of slam::BitSet
+ * \file BitUtilities.hpp
+ *
+ * \brief Header file containing bitwise utility functions.
+ *
  */
 
-#ifndef SLAM_BIT_TWIDDLE_H_
-#define SLAM_BIT_TWIDDLE_H_
+#ifndef AXOM_BIT_UTILITIES_HPP
+#define AXOM_BIT_UTILITIES_HPP
 
+#include "axom/core/Macros.hpp"  // for AXOM_DEVICE_CODE
 #include "axom/core/Types.hpp"
 
 namespace axom
 {
-namespace slam
-{
-namespace internal
+namespace utilities
 {
 /**
  * Helper traits template for determining the number of bits and bytes
@@ -30,45 +31,33 @@ struct BitTraits;
 template <>
 struct BitTraits<axom::uint64>
 {
-  enum
-  {
-    NUM_BYTES = 8,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 6
-  };
+  constexpr static int NUM_BYTES = 8;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 6;
 };
 
 template <>
 struct BitTraits<axom::uint32>
 {
-  enum
-  {
-    NUM_BYTES = 4,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 5
-  };
+  constexpr static int NUM_BYTES = 4;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 5;
 };
 
 template <>
 struct BitTraits<axom::uint16>
 {
-  enum
-  {
-    NUM_BYTES = 2,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 4
-  };
+  constexpr static int NUM_BYTES = 2;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 4;
 };
 
 template <>
 struct BitTraits<axom::uint8>
 {
-  enum
-  {
-    NUM_BYTES = 1,
-    BITS_PER_WORD = NUM_BYTES << 3,
-    LG_BITS_PER_WORD = 3
-  };
+  constexpr static int NUM_BYTES = 1;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 3;
 };
 
 /**
@@ -78,8 +67,11 @@ struct BitTraits<axom::uint8>
  * starting with the least significant bit, or 64 if \a word == 0.
  */
 /* clang-format off */
-inline int trailingZeros(axom::uint64 word)
+AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 {
+#ifdef AXOM_DEVICE_CODE
+  return word != axom::uint64(0) ? __ffsll(word) - 1 : 64;
+#else
   // Explicit implementation adapted from bit twiddling hacks
   // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
   // and modified for 64 bits:
@@ -97,12 +89,17 @@ inline int trailingZeros(axom::uint64 word)
   if (word & 0x5555555555555555) { cnt -=  1; }
 
   return cnt;
+#endif
 }
 /* clang-format on */
 
 /** Counts the number of set bits in \a word */
-inline int popCount(axom::uint64 word)
+AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 {
+#ifdef AXOM_DEVICE_CODE
+  // Use CUDA intrinsic for popcount
+  return __popcll(word);
+#else
   // 64 bit popcount implementation from:
   // http://chessprogramming.wikispaces.com/Population+Count#SWARPopcount
 
@@ -120,10 +117,10 @@ inline int popCount(axom::uint64 word)
   word = (word & masks[1]) + ((word >> 2) & masks[1]);
   word = (word + (word >> 4)) & masks[2];
   return static_cast<int>((word * masks[3]) >> 56);
+#endif
 }
 
-}  // end namespace internal
-}  // end namespace slam
-}  // end namespace axom
+}  // namespace utilities
+}  // namespace axom
 
-#endif  //  SLAM_BIT_TWIDDLE_H_
+#endif  // AXOM_BIT_UTILITIES_HPP

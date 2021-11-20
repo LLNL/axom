@@ -34,17 +34,17 @@
 // RAJA policies
 #include "axom/mint/execution/internal/structured_exec.hpp"
 
-// clang-format off
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
-  using seq_exec = axom::SEQ_EXEC;
+using seq_exec = axom::SEQ_EXEC;
 
+// clang-format off
+#if defined(AXOM_USE_RAJA)
   #if defined(AXOM_USE_OPENMP)
     using omp_exec = axom::OMP_EXEC;
   #else
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
@@ -117,6 +117,7 @@ private:
 const std::set<std::string> Input::s_validMethods({
   "bvh",
   "uniform",
+  "implicit",
   "naive"
 });
 
@@ -143,7 +144,8 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
       "Method to use. \n"
       "Set to \'bvh\' to use the bounding volume hierarchy spatial index.\n"
       "Set to \'naive\' to use the naive algorithm (without a spatial index).\n"
-      "Set to \'uniform\' to use the uniform grid spatial index.")
+      "Set to \'uniform\' to use the uniform grid spatial index.\n"
+      "Set to \'implicit\' to use the implicit grid spatial index.")
     ->capture_default_str()
     ->check(axom::CLI::IsMember {Input::s_validMethods});
 
@@ -719,6 +721,58 @@ int main(int argc, char** argv)
         break;
       }
     }  // end of if method == 'bvh'
+    else if(params.method == "implicit")
+    {
+      switch(params.policy)
+      {
+      case seq:
+#ifdef AXOM_USE_RAJA
+        SLIC_INFO(
+          "ImplicitGrid was compiled with RAJA - seq and raja_seq "
+          "execution will be equivalent");
+#endif
+        quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+#ifdef AXOM_USE_RAJA
+      case raja_seq:
+        quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #ifdef AXOM_USE_OPENMP
+      case raja_omp:
+        quest::findTriMeshIntersectionsImplicitGrid<omp_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+      case raja_cuda:
+        quest::findTriMeshIntersectionsImplicitGrid<cuda_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #endif
+#endif  // AXOM_USE_RAJA
+      default:
+        SLIC_ERROR("Unhandled runtime policy case " << params.policy);
+        break;
+      }
+    }
     else
     {
       // _check_repair_intersections_start

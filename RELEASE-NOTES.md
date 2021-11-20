@@ -21,6 +21,19 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ###  Added
 - Adds a `view()` method to `axom::Array` class to simplify creation of a corresponding `axom::ArrayView`
+- Adds GPU/OpenMP support to `spin::ImplicitGrid`.
+  The following functions run with the user-specified execution space (specified as a template argument
+  on `ImplicitGrid`):
+  - `ImplicitGrid::insert(nelems, bboxes)`: insert a batch of bounding boxes into the implicit grid
+  - `ImplicitGrid::getCandidatesAsArray(nquery, queryObjs, ...)`: query the implicit grid for a batch of
+    query objects, and generate a CSR-format array for the candidates.
+  In addition, `ImplicitGrid::getQueryObject()` returns an object that may be used within a GPU kernel
+  to query the implicit grid.
+- Added initial implementation of GPU/OpenMP-accelerated point-in-cell queries
+- Added an alternative surface mesh tester function to Quest, based on `ImplicitGrid`
+
+###  Changed
+- Moved bit-twiddling functions to core component
   
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
