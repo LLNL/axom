@@ -447,6 +447,8 @@ public:
    * \param [in] value the value to be added to the back.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
+   * 
+   * \pre DIM == 1
    */
   void push_back(const T& value);
 
@@ -456,6 +458,8 @@ public:
    * \param [in] value the value to move to the back.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
+   * 
+   * \pre DIM == 1
    */
   void push_back(T&& value);
 
@@ -466,6 +470,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by 1.
+   * 
+   * \pre DIM == 1
    */
   template <typename... Args>
   void emplace_back(Args&&... args);
@@ -1016,23 +1022,11 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::swap(Array<T, DIM, SPACE>& other)
 {
   ArrayBase<T, DIM, Array<T, DIM, SPACE>>::swap(other);
-  T* const temp_data = m_data;
-  const IndexType temp_num_elements = m_num_elements;
-  const IndexType temp_capacity = m_capacity;
-  const double temp_resize_ratio = m_resize_ratio;
-  const bool temp_default_construct = m_default_construct;
-
-  m_data = other.m_data;
-  m_num_elements = other.m_num_elements;
-  m_capacity = other.m_capacity;
-  m_resize_ratio = other.m_resize_ratio;
-  m_default_construct = other.m_default_construct;
-
-  other.m_data = temp_data;
-  other.m_num_elements = temp_num_elements;
-  other.m_capacity = temp_capacity;
-  other.m_resize_ratio = temp_resize_ratio;
-  other.m_default_construct = temp_default_construct;
+  axom::swap(m_data, other.m_data);
+  axom::swap(m_num_elements, other.m_num_elements);
+  axom::swap(m_capacity, other.m_capacity);
+  axom::swap(m_resize_ratio, other.m_resize_ratio);
+  axom::swap(m_default_construct, other.m_default_construct);
 }
 
 //------------------------------------------------------------------------------

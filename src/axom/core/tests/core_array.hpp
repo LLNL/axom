@@ -1594,6 +1594,19 @@ TEST(core_array, checkDefaultInitialization)
   constexpr int MAGIC_INT = 255;
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
+    // Make sure the array gets zero-initialized
+    Array<int> v_int(capacity);
+    for(const auto ele : v_int)
+    {
+      EXPECT_EQ(ele, 0);
+    }
+
+    Array<int, 2> v_int_2d(capacity, capacity);
+    for(const auto ele : v_int_2d)
+    {
+      EXPECT_EQ(ele, 0);
+    }
+
     Array<HasDefault> v_has_default(capacity);
     for(const auto& ele : v_has_default)
     {
