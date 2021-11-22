@@ -6,16 +6,17 @@
 #ifndef AXOM_ARRAY_HPP_
 #define AXOM_ARRAY_HPP_
 
-#include "axom/config.hpp"                    // for compile-time defines
-#include "axom/core/Macros.hpp"               // for axom macros
-#include "axom/core/utilities/Utilities.hpp"  // for processAbort()
-#include "axom/core/Types.hpp"                // for IndexType definition
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/Types.hpp"
 #include "axom/core/ArrayBase.hpp"
 #include "axom/core/ArrayIteratorBase.hpp"
+#include "axom/core/ArrayView.hpp"
 
 // C/C++ includes
-#include <algorithm>  // for std::transform
-#include <iostream>   // for std::cerr and std::ostream
+#include <algorithm>
+#include <iostream>
 
 namespace axom
 {
@@ -73,6 +74,8 @@ public:
   using value_type = T;
   static constexpr MemorySpace space = SPACE;
   using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>>;
+
+  using ArrayViewType = ArrayView<T, DIM, SPACE>;
 
 public:
   /// \name Native Storage Array Constructors
@@ -515,6 +518,12 @@ public:
    * \brief Get the ID for the umpire allocator
    */
   int getAllocatorID() const { return m_allocator_id; }
+
+  /*!
+   * \brief Returns a view of the array
+   * \sa ArrayView
+   */
+  ArrayViewType view() { return ArrayViewType(*this); }
 
   /// @}
 
@@ -1004,6 +1013,15 @@ inline void Array<T, DIM, SPACE>::updateNumElements(IndexType new_num_elements)
 {
   assert(new_num_elements >= 0);
   assert(new_num_elements <= m_capacity);
+
+  int new_elems = new_num_elements - m_num_elements;
+  for(int ielem = 0; ielem < new_elems; ielem++)
+  {
+    // TODO: what to do here when T isn't default-constructible?
+    // we should probably do what std::vector does (zero out memory?)
+    new(&m_data[ielem + m_num_elements]) T;
+  }
+
   m_num_elements = new_num_elements;
 }
 

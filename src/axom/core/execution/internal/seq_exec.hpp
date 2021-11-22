@@ -46,10 +46,16 @@ struct execution_space<SEQ_EXEC>
 
   using sync_policy = void;
 
-  static constexpr bool async() noexcept { return false; };
-  static constexpr bool valid() noexcept { return true; };
-  static constexpr bool onDevice() noexcept { return false; };
-  static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; };
+#ifdef AXOM_USE_UMPIRE
+  static constexpr MemorySpace memory_space = MemorySpace::Host;
+#else
+  static constexpr MemorySpace memory_space = MemorySpace::Dynamic;
+#endif
+
+  static constexpr bool async() noexcept { return false; }
+  static constexpr bool valid() noexcept { return true; }
+  static constexpr bool onDevice() noexcept { return false; }
+  static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; }
   static int allocatorID() noexcept
   {
 #ifdef AXOM_USE_UMPIRE
@@ -57,9 +63,9 @@ struct execution_space<SEQ_EXEC>
 #else
     return axom::getDefaultAllocatorID();
 #endif
-  };
+  }
 };
 
-} /* namespace axom */
+}  // namespace axom
 
-#endif /* AXOM_SEQ_EXEC_HPP_ */
+#endif  // AXOM_SEQ_EXEC_HPP_

@@ -506,7 +506,7 @@ int BoundingBox<T, NDIMS>::getLongestDimension() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansionAmount)
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansionAmount)
 {
   for(int dim = 0; dim < NDIMS; ++dim)
   {

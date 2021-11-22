@@ -38,11 +38,11 @@ class PointInCellMeshWrapper;
  *   \arg axom::quest::PointInCellTraits
  *   \arg axom::quest::detail::PointInCellMeshWrapper
  */
-template <int NDIMS, typename mesh_tag>
+template <int NDIMS, typename mesh_tag, typename ExecSpace>
 class PointFinder
 {
 public:
-  using GridType = spin::ImplicitGrid<NDIMS>;
+  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace>;
 
   using SpacePoint = typename GridType::SpacePoint;
   using SpatialBoundingBox = typename GridType::SpatialBoundingBox;
@@ -63,20 +63,23 @@ public:
    */
   PointFinder(const MeshWrapperType* meshWrapper,
               const int* res,
-              double bboxScaleFactor)
+              double bboxScaleFactor,
+              int allocatorID)
     : m_meshWrapper(meshWrapper)
+    , m_allocatorID(allocatorID)
   {
     SLIC_ASSERT(m_meshWrapper != nullptr);
     SLIC_ASSERT(bboxScaleFactor >= 1.);
 
-    const int numCells = m_meshWrapper->numElements();
+    const axom::IndexType numCells = m_meshWrapper->numElements();
 
     // setup bounding boxes -- Slightly scaled for robustness
 
     SpatialBoundingBox meshBBox;
-    m_cellBBoxes = std::vector<SpatialBoundingBox>(numCells);
+    m_cellBBoxes =
+      axom::Array<SpatialBoundingBox>(numCells, numCells, allocatorID);
     m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor,
-                                                        m_cellBBoxes,
+                                                        m_cellBBoxes.data(),
                                                         meshBBox);
 
     // initialize implicit grid, handle case where resolution is a NULL pointer
@@ -84,18 +87,15 @@ public:
     {
       using GridResolution = axom::primal::Point<int, NDIMS>;
       GridResolution gridRes(res);
-      m_grid.initialize(meshBBox, &gridRes, numCells);
+      m_grid.initialize(meshBBox, &gridRes, numCells, allocatorID);
     }
     else
     {
-      m_grid.initialize(meshBBox, nullptr, numCells);
+      m_grid.initialize(meshBBox, nullptr, numCells, allocatorID);
     }
 
     // add mesh elements to grid
-    for(int i = 0; i < numCells; ++i)
-    {
-      m_grid.insert(m_cellBBoxes[i], i);
-    }
+    m_grid.insert(numCells, m_cellBBoxes.data());
   }
 
   /*!
@@ -105,34 +105,15 @@ public:
    */
   IndexType locatePoint(const double* pos, double* isoparametric) const
   {
-    using BitsetType = typename GridType::BitsetType;
-
     IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
 
     SLIC_ASSERT(pos != nullptr);
     SpacePoint pt(pos);
     SpacePoint isopar;
 
-    // Note: ImplicitGrid::getCandidates() checks the mesh bounding box for us
-    BitsetType candidates = m_grid.getCandidates(pt);
-
-    bool foundContainingCell = false;
-    for(IndexType cellIdx = candidates.find_first();
-        !foundContainingCell && cellIdx != BitsetType::npos;
-        cellIdx = candidates.find_next(cellIdx))
-    {
-      // First check that pt is in bounding box of element
-      if(cellBoundingBox(cellIdx).contains(pt))
-      {
-        // if isopar is in the proper range
-        if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
-        {
-          // then we have found the cellID
-          foundContainingCell = true;
-          containingCell = cellIdx;
-        }
-      }
-    }
+    locatePoints(axom::ArrayView<const SpacePoint>(&pt, 1),
+                 &containingCell,
+                 &isopar);
 
     // Copy data back to input parameter isoparametric, if necessary
     if(isoparametric != nullptr)
@@ -141,6 +122,176 @@ public:
     }
 
     return containingCell;
+  }
+
+  void locatePoints(axom::ArrayView<const SpacePoint> pts,
+                    IndexType* outCellIds,
+                    SpacePoint* outIsoparametricCoords) const
+  {
+    constexpr bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
+#ifdef AXOM_USE_UMPIRE
+    // Use unified memory if we execute on GPU, otherwise use host memory
+    constexpr axom::MemorySpace UnifiedSpace =
+      DeviceExec ? axom::MemorySpace::Unified : axom::MemorySpace::Host;
+
+    using IndexArray = axom::Array<IndexType, 1, UnifiedSpace>;
+    using HostIndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Host>;
+    using HostPointArray = axom::Array<SpacePoint, 1, axom::MemorySpace::Host>;
+
+    using IndexView = axom::ArrayView<IndexType, 1, UnifiedSpace>;
+    using HostIndexView = axom::ArrayView<IndexType, 1, axom::MemorySpace::Host>;
+    using HostPointView = axom::ArrayView<SpacePoint, 1, axom::MemorySpace::Host>;
+    using ConstHostPointView =
+      axom::ArrayView<const SpacePoint, 1, axom::MemorySpace::Host>;
+#else
+    using IndexArray = axom::Array<IndexType>;
+    using HostIndexArray = IndexArray;
+    using HostPointArray = axom::Array<SpacePoint>;
+
+    using IndexView = axom::ArrayView<IndexType>;
+    using HostIndexView = IndexView;
+    using HostPointView = axom::Array<SpacePoint>;
+    using ConstHostPointView = axom::ArrayView<const SpacePoint>;
+#endif  // AXOM_USE_UMPIRE
+
+    auto gridQuery = m_grid.getQueryObject();
+
+    axom::IndexType npts = pts.size();
+
+    IndexArray offsets(npts);
+    IndexArray counts(npts);
+
+#ifdef AXOM_USE_RAJA
+    IndexView countsPtr = counts;
+
+    using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+    RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
+    // Step 1: count number of candidate intersections for each point
+    for_all<ExecSpace>(
+      npts,
+      AXOM_LAMBDA(IndexType i) mutable {
+        countsPtr[i] = gridQuery.countCandidates(pts[i]);
+        totalCountReduce += countsPtr[i];
+      });
+
+    // Step 2: exclusive scan for offsets in candidate array
+    using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+    RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts.data(), npts),
+                                      RAJA::make_span(offsets.data(), npts),
+                                      RAJA::operators::plus<IndexType> {});
+
+    axom::IndexType totalCount = totalCountReduce.get();
+
+    // Step 3: allocate memory for all candidates
+    IndexArray candidates(totalCount);
+    IndexView candidatesPtr = candidates;
+    IndexView offsetsPtr = offsets;
+    const SpatialBoundingBox* cellBBoxes = m_cellBBoxes.data();
+
+    // Step 4: fill candidate array for each query box
+    for_all<ExecSpace>(
+      npts,
+      AXOM_LAMBDA(IndexType i) mutable {
+        int startIdx = offsetsPtr[i];
+        int currCount = 0;
+        auto onCandidate = [&](int candidateIdx) -> bool {
+          // Check that point is in bounding box of candidate element
+          if(cellBBoxes[candidateIdx].contains(pts[i]))
+          {
+            candidatesPtr[startIdx] = candidateIdx;
+            currCount++;
+            startIdx++;
+          }
+          return currCount >= countsPtr[i];
+        };
+        gridQuery.visitCandidates(pts[i], onCandidate);
+        countsPtr[i] = currCount;
+      });
+
+    HostPointArray ptsHost, outIsoparHost;
+    HostIndexArray outCellIdsHost;
+
+    // For sequential/OpenMP execution, just use the argument pointers
+    // directly.
+    ConstHostPointView ptsHostPtr = pts;
+    HostIndexView outCellIdsPtr(outCellIds, pts.size());
+    HostPointView outIsoparPtr(outIsoparametricCoords, pts.size());
+
+    if(DeviceExec)
+    {
+      // Copy points to host memory.
+      // TODO: see if we support copying ArrayView<const T> -> Array<T>
+      ptsHost = HostPointArray(pts.size());
+      axom::copy(ptsHost.data(), pts.data(), sizeof(SpacePoint) * pts.size());
+      ptsHostPtr = ConstHostPointView(ptsHost.data(), ptsHost.size());
+      // Allocate intermediate output buffers on the host side.
+      outCellIdsHost.resize(pts.size());
+      if(outIsoparametricCoords)
+      {
+        outIsoparHost.resize(pts.size());
+      }
+    }
+
+    // Step 5: Check each candidate
+    // TODO: This only supports sequential execution right now, because we
+    // don't build MFEM in a thread-safe manner.
+    for_all<SEQ_EXEC>(
+      npts,
+      AXOM_HOST_LAMBDA(IndexType i) mutable {
+        outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
+        SpacePoint pt = pts[i];
+        SpacePoint isopar;
+        for(int icell = 0; icell < countsPtr[i]; icell++)
+        {
+          int cellIdx = candidatesPtr[icell + offsetsPtr[i]];
+          // if isopar is in the proper range
+          if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
+          {
+            // then we have found the cellID
+            outCellIdsPtr[i] = cellIdx;
+            break;
+          }
+        }
+        if(outIsoparametricCoords != nullptr)
+        {
+          outIsoparPtr[i] = isopar;
+        }
+      });
+
+    if(DeviceExec)
+    {
+      // Copy back to GPU memory.
+      axom::copy(outCellIds,
+                 outCellIdsHost.data(),
+                 outCellIdsHost.size() * sizeof(IndexType));
+      axom::copy(outIsoparametricCoords,
+                 outIsoparHost.data(),
+                 outIsoparHost.size() * sizeof(SpacePoint));
+    }
+#else
+    for(int i = 0; i < npts; i++)
+    {
+      SpacePoint pt = pts[i];
+      SpacePoint isopar;
+      gridQuery.visitCandidates(pt, [&](int candidateIdx) -> bool {
+        if(m_cellBBoxes[candidateIdx].contains(pts[i]))
+        {
+          if(m_meshWrapper->locatePointInCell(candidateIdx,
+                                              pt.data(),
+                                              isopar.data()))
+          {
+            outCellIds[i] = candidateIdx;
+            return true;
+          }
+        }
+        return false;
+      });
+      if(outIsoparametricCoords != nullptr)
+      {
+        outIsoparametricCoords[i] = isopar;
+      }
+    }
+#endif
   }
 
   /*! Returns a const reference to the given cells's bounding box */
@@ -152,7 +303,8 @@ public:
 private:
   GridType m_grid;
   const MeshWrapperType* m_meshWrapper;
-  std::vector<SpatialBoundingBox> m_cellBBoxes;
+  axom::Array<SpatialBoundingBox> m_cellBBoxes;
+  int m_allocatorID;
 };
 
 }  // end namespace detail

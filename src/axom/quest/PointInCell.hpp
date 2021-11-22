@@ -85,7 +85,7 @@ class PointInCellMeshWrapper;
  * for [mfem](http://mfem.org) meshes of arbitrary order.  It uses
  * the mesh_tag \a quest_point_in_cell_mfem_tag
  */
-template <typename mesh_tag>
+template <typename mesh_tag, typename ExecSpace = axom::SEQ_EXEC>
 class PointInCell
 {
 public:
@@ -93,10 +93,13 @@ public:
   using MeshType = typename MeshTraits::MeshType;
   using IndexType = typename MeshTraits::IndexType;
 
+  using Point2DType = primal::Point<double, 2>;
+  using Point3DType = primal::Point<double, 3>;
+
   using MeshWrapperType = detail::PointInCellMeshWrapper<mesh_tag>;
 
-  using PointFinder2D = detail::PointFinder<2, mesh_tag>;
-  using PointFinder3D = detail::PointFinder<3, mesh_tag>;
+  using PointFinder2D = detail::PointFinder<2, mesh_tag, ExecSpace>;
+  using PointFinder3D = detail::PointFinder<3, mesh_tag, ExecSpace>;
 
   /*!
    * Construct a point in cell query structure over a computational mesh
@@ -105,6 +108,8 @@ public:
    * \param [in] resolution Grid resolution for the spatial index. Default: NULL
    * \param [in] bboxTolerance A tolerance factor by which to expand
    * the bounding boxes. Default: 1e-8
+   * \param [in] allocatorId Currently unused. Default value is based on the
+   *  allocator ID set for the specified execution space.
    *
    * \note The bboxTolerance should be a small positive number.  It helps avoid
    * numerical issues in the bounding box containment queries by slightly
@@ -118,7 +123,10 @@ public:
    * \pre If resolution is not NULL, it must have space for at least
    * meshDimension() entries.
    */
-  PointInCell(MeshType* mesh, int* resolution = nullptr, double bboxTolerance = 1e-8)
+  PointInCell(MeshType* mesh,
+              int* resolution = nullptr,
+              double bboxTolerance = 1e-8,
+              int allocatorID = axom::execution_space<ExecSpace>::allocatorID())
     : m_meshWrapper(mesh)
     , m_pointFinder2D(nullptr)
     , m_pointFinder3D(nullptr)
@@ -133,11 +141,11 @@ public:
     {
     case 2:
       m_pointFinder2D =
-        new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor);
+        new PointFinder2D(&m_meshWrapper, resolution, bboxScaleFactor, allocatorID);
       break;
     case 3:
       m_pointFinder3D =
-        new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor);
+        new PointFinder3D(&m_meshWrapper, resolution, bboxScaleFactor, allocatorID);
       break;
     default:
       SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
@@ -199,6 +207,30 @@ public:
     }
 
     return cellIndex;
+  }
+
+  void locatePoints(axom::ArrayView<const Point2DType> pts,
+                    IndexType* outCellIds,
+                    Point2DType* outIsopar = nullptr)
+  {
+    SLIC_ASSERT(pts.size() > 0);
+    SLIC_ASSERT(pts.data() != nullptr);
+    SLIC_ASSERT(outCellIds != nullptr);
+    SLIC_ASSERT(m_pointFinder2D != nullptr);
+
+    m_pointFinder2D->locatePoints(pts, outCellIds, outIsopar);
+  }
+
+  void locatePoints(axom::ArrayView<const Point3DType> pts,
+                    IndexType* outCellIds,
+                    Point3DType* outIsopar = nullptr) const
+  {
+    SLIC_ASSERT(pts.size() > 0);
+    SLIC_ASSERT(pts.data() != nullptr);
+    SLIC_ASSERT(outCellIds != nullptr);
+    SLIC_ASSERT(m_pointFinder3D != nullptr);
+
+    m_pointFinder3D->locatePoints(pts, outCellIds, outIsopar);
   }
 
   /*!

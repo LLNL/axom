@@ -219,12 +219,17 @@ void demoArrayDevice()
   // _basic_array_device_implicit_end
 
   // _basic_array_device_explicit_start
-  axom::ArrayView<int, 1, axom::MemorySpace::Device> view_of_dynamic_array(
-    device_array_dynamic);
+  using DeviceArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Device>;
+
+  DeviceArrayView view_of_dynamic_array(device_array_dynamic);
   takesDeviceArrayView(view_of_dynamic_array);
-  axom::ArrayView<int, 1, axom::MemorySpace::Device> view_of_template_array(
-    device_array_template);
+
+  DeviceArrayView view_of_template_array(device_array_template);
   takesDeviceArrayView(view_of_template_array);
+
+  // Create an explicit ArrayView using Array::view()
+  auto view_of_array_using_view_method = device_array_dynamic.view();
+  takesDeviceArrayView(view_of_array_using_view_method);
   // _basic_array_device_explicit_end
 
   // _cuda_array_create_start
