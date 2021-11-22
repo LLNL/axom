@@ -6,9 +6,10 @@
 #ifndef AXOM_ARRAYBASE_HPP_
 #define AXOM_ARRAYBASE_HPP_
 
-#include "axom/config.hpp"                    // for compile-time defines
-#include "axom/core/Macros.hpp"               // for axom macros
-#include "axom/core/memory_management.hpp"    // for memory allocation functions
+#include "axom/config.hpp"                  // for compile-time defines
+#include "axom/core/Macros.hpp"             // for axom macros
+#include "axom/core/memory_management.hpp"  // for memory allocation functions
+#include "axom/core/execution/for_all.hpp"
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
 #include "axom/core/StackArray.hpp"
@@ -486,27 +487,41 @@ struct all_types_are_integral
  * \brief Default-initializes the "new" segment of an array
  *
  * \param [inout] data The data to initialize
- * \param [in] current_num_elements The length of the already-initialized data at the start of \a data
- * \param [in] new_num_elements The total length of \a data
+ * \param [in] pos The beginning of the subset of \a data that should be initialized
+ * \param [in] len The length of the subset of \a data that is to be initialized
+ * \param [in] alloc_id The allocator ID with which \a data was allocated
  * 
  * The final parameter is intended to be used via tag dispatch with std::is_default_constructible
  */
 template <typename T>
 void initializeInPlace(T* data,
-                       const IndexType current_num_elements,
-                       const IndexType new_num_elements,
+                       const IndexType pos,
+                       const IndexType len,
+                       const int alloc_id,
                        std::true_type)
 {
-  int new_elems = new_num_elements - current_num_elements;
-  for(int ielem = 0; ielem < new_elems; ielem++)
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE) && \
+  defined(UMPIRE_ENABLE_DEVICE)
+  if(alloc_id == getAllocatorID<MemorySpace::Device>())
   {
-    new(&data[ielem + current_num_elements]) T;
+    axom::for_all<axom::CUDA_EXEC<256>>(
+      pos,
+      pos + len,
+      AXOM_LAMBDA(axom::IndexType i) { new(&data[i]) T {}; });
+    return;
+  }
+#else
+  AXOM_UNUSED_VAR(alloc_id);
+#endif
+  for(int ielem = 0; ielem < len; ielem++)
+  {
+    new(&data[pos + ielem]) T {};
   }
 }
 
 /// \overload
 template <typename T>
-void initializeInPlace(T*, const IndexType, const IndexType, std::false_type)
+void initializeInPlace(T*, const IndexType, const IndexType, const int, std::false_type)
 { }
 
 }  // namespace detail

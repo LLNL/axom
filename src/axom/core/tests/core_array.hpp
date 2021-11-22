@@ -1622,6 +1622,33 @@ TEST(core_array, checkDefaultInitialization)
 }
 
 //------------------------------------------------------------------------------
+TEST(core_array, checkDefaultInitializationDevice)
+{
+// FIXME: HIP
+#if !defined(__CUDACC__) || !defined(AXOM_USE_UMPIRE) || \
+  !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP()
+    << "CUDA is not available, skipping tests that use Array in device code";
+#else
+  constexpr int MAGIC_INT = 255;
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    // Allocate an explicitly Device array
+    Array<HasDefault, 1, axom::MemorySpace::Device> v_has_default_device(capacity);
+
+    // Then copy it to the host
+    Array<HasDefault, 1, axom::MemorySpace::Host> v_has_default_host(
+      v_has_default_device);
+
+    for(const auto& ele : v_has_default_host)
+    {
+      EXPECT_EQ(ele.member, MAGIC_INT);
+    }
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
 TEST(core_array, checkUninitialized)
 {
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)

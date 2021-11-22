@@ -1009,9 +1009,20 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
   static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) =
     ArrayBase<T, DIM, Array<T, DIM, SPACE>> {static_cast<IndexType>(args)...};
 
+  const IndexType prev_num_elements = m_num_elements;
+
   if(new_num_elements > m_capacity)
   {
     dynamicRealloc(new_num_elements);
+  }
+
+  if(m_default_construct)
+  {
+    detail::initializeInPlace(m_data,
+                              prev_num_elements,
+                              new_num_elements - prev_num_elements,
+                              m_allocator_id,
+                              std::is_default_constructible<T> {});
   }
 
   updateNumElements(new_num_elements);
@@ -1022,11 +1033,11 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::swap(Array<T, DIM, SPACE>& other)
 {
   ArrayBase<T, DIM, Array<T, DIM, SPACE>>::swap(other);
-  axom::swap(m_data, other.m_data);
-  axom::swap(m_num_elements, other.m_num_elements);
-  axom::swap(m_capacity, other.m_capacity);
-  axom::swap(m_resize_ratio, other.m_resize_ratio);
-  axom::swap(m_default_construct, other.m_default_construct);
+  axom::utilities::swap(m_data, other.m_data);
+  axom::utilities::swap(m_num_elements, other.m_num_elements);
+  axom::utilities::swap(m_capacity, other.m_capacity);
+  axom::utilities::swap(m_resize_ratio, other.m_resize_ratio);
+  axom::utilities::swap(m_default_construct, other.m_default_construct);
 }
 
 //------------------------------------------------------------------------------
@@ -1047,6 +1058,15 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
                                                      : MIN_DEFAULT_CAPACITY;
   }
   setCapacity(capacity);
+  if(m_default_construct)
+  {
+    detail::initializeInPlace(m_data,
+                              0,
+                              num_elements,
+                              m_allocator_id,
+
+                              std::is_default_constructible<T> {});
+  }
   updateNumElements(num_elements);
 
   // quick checks
@@ -1074,11 +1094,22 @@ inline T* Array<T, DIM, SPACE>::reserveForInsert(IndexType n, IndexType pos)
     dynamicRealloc(new_size);
   }
 
+  // FIXME: Won't this fail if m_data is in device memory?
   T* const insert_pos = m_data + pos;
   T* cur_pos = m_data + m_num_elements - 1;
   for(; cur_pos >= insert_pos; --cur_pos)
   {
     *(cur_pos + n) = *cur_pos;
+  }
+
+  // Initialize the subset of the array that was just allocated
+  if(m_default_construct)
+  {
+    detail::initializeInPlace(m_data,
+                              pos,
+                              n,
+                              m_allocator_id,
+                              std::is_default_constructible<T> {});
   }
 
   updateNumElements(new_size);
@@ -1091,13 +1122,6 @@ inline void Array<T, DIM, SPACE>::updateNumElements(IndexType new_num_elements)
 {
   assert(new_num_elements >= 0);
   assert(new_num_elements <= m_capacity);
-  if(m_default_construct)
-  {
-    detail::initializeInPlace(m_data,
-                              m_num_elements,
-                              new_num_elements,
-                              std::is_default_constructible<T> {});
-  }
 
   m_num_elements = new_num_elements;
 }
@@ -1110,6 +1134,8 @@ inline void Array<T, DIM, SPACE>::setCapacity(IndexType new_capacity)
 
   if(new_capacity < m_num_elements)
   {
+    // No need to default-initialize here because this is only
+    // when the array is being shrunk
     updateNumElements(new_capacity);
   }
 
