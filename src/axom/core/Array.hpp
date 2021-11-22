@@ -81,7 +81,8 @@ public:
   static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
   using value_type = T;
   static constexpr MemorySpace space = SPACE;
-  using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>>;
+  using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>, T>;
+  using ConstArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>, const T>;
 
   using ArrayViewType = ArrayView<T, DIM, SPACE>;
   using ConstArrayViewType = ArrayView<const T, DIM, SPACE>;
@@ -513,6 +514,13 @@ public:
     return ArrayIterator(0, this);
   }
 
+  /// \overload
+  ConstArrayIterator begin() const
+  {
+    assert(m_data != nullptr);
+    return ConstArrayIterator(0, this);
+  }
+
   /*!
    * \brief Returns an ArrayIterator to the element following the last
    *  element of the Array.
@@ -521,6 +529,13 @@ public:
   {
     assert(m_data != nullptr);
     return ArrayIterator(size(), this);
+  }
+
+  /// \overload
+  ConstArrayIterator end() const
+  {
+    assert(m_data != nullptr);
+    return ConstArrayIterator(size(), this);
   }
 
   /*!

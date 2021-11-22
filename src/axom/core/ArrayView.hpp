@@ -37,7 +37,9 @@ public:
   using value_type = T;
   static constexpr int dimension = DIM;
   static constexpr MemorySpace space = SPACE;
-  using ArrayViewIterator = ArrayIteratorBase<ArrayView<T, DIM, SPACE>>;
+  using ArrayViewIterator = ArrayIteratorBase<ArrayView<T, DIM, SPACE>, T>;
+  using ConstArrayViewIterator =
+    ArrayIteratorBase<ArrayView<T, DIM, SPACE>, const T>;
 
   /// \brief Default constructor
   ArrayView() : m_allocator_id(axom::detail::getAllocatorID<SPACE>()) { }
@@ -87,6 +89,13 @@ public:
     return ArrayViewIterator(0, this);
   }
 
+  /// \overload
+  ConstArrayViewIterator begin() const
+  {
+    assert(m_data != nullptr);
+    return ConstArrayViewIterator(0, this);
+  }
+
   /*!
    * \brief Returns an ArrayViewIterator to the element following the last
    *  element of the Array.
@@ -95,6 +104,13 @@ public:
   {
     assert(m_data != nullptr);
     return ArrayViewIterator(size(), this);
+  }
+
+  /// \overload
+  ConstArrayViewIterator end() const
+  {
+    assert(m_data != nullptr);
+    return ConstArrayViewIterator(size(), this);
   }
 
   /*!

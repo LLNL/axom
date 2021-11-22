@@ -120,6 +120,76 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
 }
 
 //------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView_const)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using KernelArray = typename TestFixture::KernelArray;
+  using HostArray = typename TestFixture::HostArray;
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr int N = 374;
+  KernelArray arr(N);
+
+  // Populate an array on the host...
+  HostArray source(N);
+  for(int i = 0; i < N; ++i)
+  {
+    source[i] = i;
+  }
+
+  // Then copy it over to the device
+  KernelArray kernelSource = source;
+  auto kernelSourceView = kernelSource.view();
+
+  // First, modify array using lambda and KernelArray::ArrayView operator[] const
+  auto arrData = arr.data();
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) {
+      arrData[idx] = N - kernelSourceView[idx];
+    });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Check array contents on host
+  HostArray localArr = arr;
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i], N - i);
+  }
+
+  // Then modify array using lambda and KernelArray::ConstArrayView operator[] const
+  KernelArray arrConst(N);
+  auto arrConstData = arrConst.data();
+
+  const KernelArray& kernelSourceCref = kernelSource;
+  auto kernelSourceConstView = kernelSourceCref.view();
+
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) {
+      arrConstData[idx] = N - kernelSourceConstView[idx];
+    });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Check array contents on host
+  HostArray localArrConst = arrConst;
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i], N - i);
+  }
+}
+
+//------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
 {
   using ExecSpace = typename TestFixture::ExecSpace;

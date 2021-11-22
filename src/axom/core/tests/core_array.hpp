@@ -1678,6 +1678,13 @@ TEST(core_array, checkConstConversion)
   // ArrayView<int> v_int_view_copy_non_const = v_int_view; // Fails to compile as it should
   // v_int_view[1] = 12; // Fails to compile as it should
 
+  // Check begin() const and end() const
+  int idx = 0;
+  for(const auto& ele : v_int_cref)
+  {
+    EXPECT_EQ(ele, idx++);
+  }
+
   Array<double, 2> v_double_2d(size, size);
   for(int i = 0; i < size; i++)
   {

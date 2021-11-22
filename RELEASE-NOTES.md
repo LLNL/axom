@@ -31,6 +31,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   to query the implicit grid.
 - Added initial implementation of GPU/OpenMP-accelerated point-in-cell queries
 - Added an alternative surface mesh tester function to Quest, based on `ImplicitGrid`
+- Add `const` versions of `begin()` and `end()` for `Array` and `ArrayView`
 
 ###  Changed
 - Moved bit-twiddling functions to core component
