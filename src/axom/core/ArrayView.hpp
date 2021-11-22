@@ -161,9 +161,12 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   if(SPACE == MemorySpace::Dynamic)
   {
     auto& rm = umpire::ResourceManager::getInstance();
-    if(rm.hasAllocator(data))
+
+    using NonConstT = typename std::remove_const<T>::type;
+    // TODO: There's no reason these Umpire methods should take a non-const pointer.
+    if(rm.hasAllocator(const_cast<NonConstT*>(data)))
     {
-      auto alloc = rm.getAllocator(data);
+      auto alloc = rm.getAllocator(const_cast<NonConstT*>(data));
       m_allocator_id = alloc.getId();
     }
   }

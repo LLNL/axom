@@ -6,14 +6,14 @@
 #ifndef AXOM_MAP_HPP_
 #define AXOM_MAP_HPP_
 
-#include "axom/config.hpp"                  // for compile-time defines
-#include "axom/core/Macros.hpp"             // for axom macros
-#include "axom/core/memory_management.hpp"  // for memory allocation functions
-#include "axom/core/execution/execution_space.hpp"  // for execution spaces
-#include "axom/core/Types.hpp"                      // for axom types
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/memory_management.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/Types.hpp"
 
 // C/C++ includes
-#include <functional>  //for hashing until a custom method is defined
+#include <functional>
 #include <iostream>
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
@@ -355,6 +355,10 @@ template <typename Key, typename T, typename Hash = std::hash<Key>, typename Pol
 class Map
 {
 public:
+  using key_type = Key;
+  using mapped_type = T;
+
+public:
   /// \name Map Constructors
   /// @{
 
@@ -374,6 +378,62 @@ public:
     m_end.value = T {0};
     m_end.next = -2;
   }
+
+  /*!
+   *\brief Move constructor for Map
+   *
+   * \param [in] other The Map to move from
+   */
+  Map(Map&& other) noexcept
+    : m_buckets(nullptr)
+    , m_bucket_count(0)
+    , m_bucket_len(0)
+    , m_size(0)
+    , m_load_factor(0)
+    , m_bucket_fill(false)
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    , locks(nullptr)
+#endif
+  {
+    *this = std::move(other);
+  }
+
+  /// @}
+
+  /*!
+   *\brief Move assignment for Map
+   *
+   * \param [in] other The Map to move from
+   */
+  Map& operator=(Map&& other) noexcept
+  {
+    if(this != &other)
+    {
+      clear();
+
+      m_buckets = other.m_buckets;
+      m_bucket_count = other.m_bucket_count;
+      m_bucket_len = other.m_bucket_len;
+      m_size = other.m_size;
+      m_load_factor = other.m_load_factor;
+      m_end = other.m_end;
+      pol = other.pol;
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+      locks = other.locks;
+#endif
+
+      other.m_buckets = nullptr;
+      other.m_bucket_count = 0;
+      other.m_bucket_len = 0;
+      other.m_size = 0;
+      other.m_load_factor = 0;
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+      other.locks = nullptr;
+#endif
+    }
+    return *this;
+  }
+
   /// @}
 
   /*!

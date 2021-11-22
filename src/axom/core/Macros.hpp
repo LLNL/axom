@@ -4,11 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- *
  * \file AxomMacros.hpp
  *
  * \brief Contains several useful macros for the axom project
- *
  */
 
 #ifndef AXOM_MACROS_HPP_
@@ -257,4 +255,38 @@
   className(className&&) = delete;             \
   className& operator=(className&&) = delete
 
-#endif /* AXOM_MACROS_HPP_ */
+/*!
+ * \def AXOM_TYPED_TEST(CaseName, TestName)
+ * \brief Minor tweak of gtest's TYPED_TEST macro to work with device code
+ * \note Can be used in test files after including `gtest/gtest.h`
+ */
+// Specifically, we expose the `TestBody()` method as public instead of private
+#define AXOM_TYPED_TEST(CaseName, TestName)                                         \
+  static_assert(sizeof(GTEST_STRINGIFY_(TestName)) > 1,                             \
+                "test-name must not be empty");                                     \
+  template <typename gtest_TypeParam_>                                              \
+  class GTEST_TEST_CLASS_NAME_(CaseName, TestName)                                  \
+    : public CaseName<gtest_TypeParam_>                                             \
+  {                                                                                 \
+  public:                                                                           \
+    typedef CaseName<gtest_TypeParam_> TestFixture;                                 \
+    typedef gtest_TypeParam_ TypeParam;                                             \
+    void TestBody() override;                                                       \
+  };                                                                                \
+  static bool gtest_##CaseName##_##TestName##_registered_ GTEST_ATTRIBUTE_UNUSED_ = \
+    ::testing::internal::TypeParameterizedTest<                                     \
+      CaseName,                                                                     \
+      ::testing::internal::TemplateSel<GTEST_TEST_CLASS_NAME_(CaseName, TestName)>, \
+      GTEST_TYPE_PARAMS_(CaseName)>::                                               \
+      Register(                                                                     \
+        "",                                                                         \
+        ::testing::internal::CodeLocation(__FILE__, __LINE__),                      \
+        GTEST_STRINGIFY_(CaseName),                                                 \
+        GTEST_STRINGIFY_(TestName),                                                 \
+        0,                                                                          \
+        ::testing::internal::GenerateNames<GTEST_NAME_GENERATOR_(CaseName),         \
+                                           GTEST_TYPE_PARAMS_(CaseName)>());        \
+  template <typename gtest_TypeParam_>                                              \
+  void GTEST_TEST_CLASS_NAME_(CaseName, TestName)<gtest_TypeParam_>::TestBody()
+
+#endif  // AXOM_MACROS_HPP_

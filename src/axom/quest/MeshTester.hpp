@@ -27,6 +27,8 @@
   #include "axom/mint/execution/internal/structured_exec.hpp"
 #endif
 
+#include "axom/spin/ImplicitGrid.hpp"
+
 // Umpire
 #if defined(AXOM_USE_UMPIRE)
   #include "umpire/strategy/QuickPool.hpp"
@@ -314,6 +316,243 @@ void findTriMeshIntersectionsBVH(
   axom::setDefaultAllocator(current_allocator);
 }
 #endif
+
+/*!
+ * \brief Find self-intersections and degenerate triangles in a surface mesh
+ *  utilizing an implicit grid spatial index.
+ *
+ * \param [in] surface_mesh A triangle mesh in three dimensions
+ * \param [out] intersection Pairs of indices of intersecting mesh triangles
+ * \param [out] degenerateIndices indices of degenerate mesh triangles
+ * \param [in] spatialIndexResolution The grid resolution for the index
+ * structure (default: 0)
+ * \param [in] intersectionThreshold Tolerance threshold for triangle
+ * intersection tests (default: 1E-8)
+ * After running this function over a surface mesh, intersection will be filled
+ * with pairs of indices of intersecting triangles and degenerateIndices will
+ * be filled with the indices of the degenerate triangles in the mesh.
+ * Triangles that share vertex pairs (adjacent triangles in a watertight
+ * surface mesh) are not reported as intersecting.  Degenerate triangles
+ * are not reported as intersecting other triangles.
+ *
+ * This function uses a quest::ImplicitGrid spatial index.  Input
+ * spatialIndexResolution specifies the bin size for the UniformGrid.  The
+ * default value of 0 causes this routine to calculate a heuristic bin size
+ * based on the cube root of the number of cells in the mesh.
+ */
+template <typename ExecSpace, typename FloatType>
+void findTriMeshIntersectionsImplicitGrid(
+  mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
+  std::vector<std::pair<int, int>>& intersections,
+  std::vector<int>& degenerateIndices,
+  int spatialIndexResolution = 0,
+  double intersectionThreshold = 1E-8)
+{
+  AXOM_PERF_MARK_FUNCTION("findTriMeshIntersectionsImplicitGrid");
+
+  constexpr int NDIMS = 3;
+  using BoxType = typename primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = typename primal::Point<FloatType, NDIMS>;
+
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+  SLIC_INFO("Running ImplicitGrid intersection algorithm "
+            << " in execution Space: "
+            << axom::execution_space<ExecSpace>::name());
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+  const int ncells = surface_mesh->getNumberOfCells();
+
+  axom::Array<detail::Triangle3> tris(ncells);
+  detail::Triangle3* p_tris = tris.data();
+
+  // Marks each cell/triangle as degenerate (1) or not (0)
+  axom::Array<int> degenerate(ncells);
+  int* p_degenerate = degenerate.data();
+
+  // Each access-aligned bounding box represented by 2 (x,y,z) points
+  axom::Array<BoxType> aabbs(ncells);
+  BoxType* p_aabbs = aabbs.data();
+
+#ifdef AXOM_USE_RAJA
+  RAJA::ReduceMin<reduce_pol, double> xmin(DBL_MAX), ymin(DBL_MAX), zmin(DBL_MAX);
+  RAJA::ReduceMax<reduce_pol, double> xmax(DBL_MIN), ymax(DBL_MIN), zmax(DBL_MIN);
+
+  // Get the global bounding box.
+  mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
+    surface_mesh,
+    AXOM_LAMBDA(IndexType, double x, double y, double z) {
+      xmin.min(x);
+      xmax.max(x);
+      ymin.min(y);
+      ymax.max(y);
+      zmin.min(z);
+      zmax.max(z);
+    });
+
+  BoxType global_box(PointType {xmin.get(), ymin.get(), zmin.get()},
+                     PointType {xmax.get(), ymax.get(), zmax.get()});
+#else
+  BoxType global_box;
+
+  // Get the global bounding box.
+  mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
+    surface_mesh,
+    [=, &global_box](IndexType, double x, double y, double z) {
+      global_box.addPoint(PointType {x, y, z});
+    });
+#endif
+
+  // Slightly scale the box
+  global_box.scale(1.0001);
+
+  // Initialize the bounding box for each Triangle and marks
+  // if the Triangle is degenerate.
+  mint::for_all_cells<ExecSpace, mint::xargs::coords>(
+    surface_mesh,
+    AXOM_LAMBDA(IndexType cellIdx,
+                numerics::Matrix<double> & coords,
+                const IndexType* nodeIds) {
+      AXOM_UNUSED_VAR(nodeIds);
+
+      detail::Triangle3 tri;
+
+      for(IndexType inode = 0; inode < 3; ++inode)
+      {
+        const double* node = coords.getColumn(inode);
+        tri[inode][0] = node[mint::X_COORDINATE];
+        tri[inode][1] = node[mint::Y_COORDINATE];
+        tri[inode][2] = node[mint::Z_COORDINATE];
+      }  // END for all cells nodes
+
+      p_degenerate[cellIdx] = (tri.degenerate() ? 1 : 0);
+
+      p_tris[cellIdx] = tri;
+
+      p_aabbs[cellIdx] = compute_bounding_box(tri);
+    });
+
+  // Return degenerateIndices
+  for(int i = 0; i < ncells; i++)
+  {
+    if(degenerate[i] == 1)
+    {
+      degenerateIndices.push_back(i);
+    }
+  }
+
+  // find the specified resolution.  If we're passed a number less than one,
+  // use the cube root of the number of triangles.
+  if(spatialIndexResolution < 1)
+  {
+    spatialIndexResolution = (int)(1 + std::pow(ncells, 1 / 3.));
+  }
+  axom::primal::Point<int, NDIMS> resolutions(spatialIndexResolution);
+
+  // Create an implicit grid over our elements
+  axom::spin::ImplicitGrid<NDIMS, ExecSpace> gridIndex(global_box,
+                                                       &resolutions,
+                                                       ncells);
+  gridIndex.insert(ncells, aabbs.data());
+
+  // Run query for candidate intersections
+  axom::Array<int> offsets, counts, candidates;
+  gridIndex.getCandidatesAsArray(ncells, aabbs.data(), offsets, counts, candidates);
+
+  axom::Array<int> indices(candidates.size());
+  axom::Array<int> validCandidates(candidates.size());
+  axom::Array<int> intersectionPairs(candidates.size());
+#ifdef AXOM_USE_UMPIRE
+  // Use unified memory if we execute on GPU, otherwise use host memory
+  constexpr axom::MemorySpace UnifiedSpace =
+    axom::execution_space<ExecSpace>::onDevice() ? axom::MemorySpace::Unified
+                                                 : axom::MemorySpace::Host;
+
+  axom::Array<int, 1, UnifiedSpace> numValidCandidates(1);
+  axom::Array<int, 1, UnifiedSpace> numIntersectionPairs(1);
+#else
+  axom::Array<int> numValidCandidates(1);
+  axom::Array<int> numIntersectionPairs(1);
+#endif
+  numValidCandidates[0] = 0;
+  numIntersectionPairs[0] = 0;
+
+  {
+    int* p_offsets = offsets.data();
+    int* p_counts = counts.data();
+    int* p_candidates = candidates.data();
+
+    int* p_indices = indices.data();
+    int* p_validCandidates = validCandidates.data();
+    int* p_numValidCandidates = numValidCandidates.data();
+
+    int* p_intersectionPairs = intersectionPairs.data();
+    int* p_numIntersectionPairs = numIntersectionPairs.data();
+
+    // Initialize triangle indices and valid candidates
+    for_all<ExecSpace>(
+      ncells,
+      AXOM_LAMBDA(IndexType i) {
+        for(int j = 0; j < p_counts[i]; j++)
+        {
+          if(i < p_candidates[p_offsets[i] + j])
+          {
+#ifdef AXOM_USE_RAJA
+            auto idx = RAJA::atomicAdd<atomic_pol>(p_numValidCandidates, 1);
+#else
+            auto idx = p_numValidCandidates[0]++;
+#endif
+            p_indices[idx] = i;
+            p_validCandidates[idx] = p_candidates[p_offsets[i] + j];
+          }
+        }
+      });
+
+    // Perform triangle-triangle tests
+    for_all<ExecSpace>(
+      numValidCandidates[0],
+      AXOM_LAMBDA(IndexType i) {
+        int index = p_indices[i];
+        int candidate = p_validCandidates[i];
+        if(primal::intersect(p_tris[index],
+                             p_tris[candidate],
+                             false,
+                             intersectionThreshold))
+        {
+#ifdef AXOM_USE_RAJA
+          auto idx = RAJA::atomicAdd<atomic_pol>(p_numIntersectionPairs, 2);
+#else
+          auto idx = p_numIntersectionPairs[0];
+          p_numIntersectionPairs[0] += 2;
+#endif
+          p_intersectionPairs[idx] = index;
+          p_intersectionPairs[idx + 1] = candidate;
+        }
+      });
+    int isectCounter_host = p_numIntersectionPairs[0];
+
+    {
+#ifdef AXOM_USE_UMPIRE
+      axom::Array<int, 1, axom::MemorySpace::Host> isectPairBacking =
+        intersectionPairs;
+      axom::ArrayView<int, 1, axom::MemorySpace::Host> isectPairHost =
+        isectPairBacking;
+#else
+      axom::ArrayView<int> isectPairHost = intersectionPairs;
+#endif
+
+      for(int i = 0; i < isectCounter_host; i += 2)
+      {
+        intersections.push_back(
+          std::make_pair(isectPairHost[i], isectPairHost[i + 1]));
+      }
+    }
+  }
+  axom::setDefaultAllocator(current_allocator);
+}
 
 /*!
  * \brief Find self-intersections and degenerate triangles in a surface mesh

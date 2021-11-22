@@ -198,13 +198,10 @@ public:
    * \pre \a bboxScaleFactor >= 1.
    */
   template <int NDIMS>
-  void computeBoundingBoxes(
-    double bboxScaleFactor,
-    std::vector<axom::primal::BoundingBox<double, NDIMS>>& eltBBoxes,
-    axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
+  void computeBoundingBoxes(double bboxScaleFactor,
+                            axom::primal::BoundingBox<double, NDIMS>* eltBBoxes,
+                            axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
-    SLIC_ASSERT(static_cast<int>(eltBBoxes.size()) >= numElements());
-
     if(m_isHighOrder)
     {
       computeHighOrderBoundingBoxes(bboxScaleFactor, eltBBoxes, meshBBox);
@@ -287,7 +284,7 @@ private:
   template <int NDIMS>
   void computeHighOrderBoundingBoxes(
     double bboxScaleFactor,
-    std::vector<axom::primal::BoundingBox<double, NDIMS>>& eltBBoxes,
+    axom::primal::BoundingBox<double, NDIMS>* eltBBoxes,
     axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
     typedef axom::primal::Point<double, NDIMS> SpacePoint;
@@ -402,7 +399,7 @@ private:
   template <int NDIMS>
   void computeLowOrderBoundingBoxes(
     double bboxScaleFactor,
-    std::vector<axom::primal::BoundingBox<double, NDIMS>>& eltBBoxes,
+    axom::primal::BoundingBox<double, NDIMS>* eltBBoxes,
     axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
     typedef axom::primal::Point<double, NDIMS> SpacePoint;
