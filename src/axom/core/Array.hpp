@@ -1076,7 +1076,6 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
                               0,
                               num_elements,
                               m_allocator_id,
-
                               std::is_default_constructible<T> {});
   }
   updateNumElements(num_elements);

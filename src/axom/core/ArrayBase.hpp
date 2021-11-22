@@ -6,10 +6,9 @@
 #ifndef AXOM_ARRAYBASE_HPP_
 #define AXOM_ARRAYBASE_HPP_
 
-#include "axom/config.hpp"                  // for compile-time defines
-#include "axom/core/Macros.hpp"             // for axom macros
-#include "axom/core/memory_management.hpp"  // for memory allocation functions
-#include "axom/core/execution/for_all.hpp"
+#include "axom/config.hpp"                    // for compile-time defines
+#include "axom/core/Macros.hpp"               // for axom macros
+#include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
 #include "axom/core/StackArray.hpp"
@@ -107,6 +106,14 @@ public:
   template <typename OtherArrayType>
   ArrayBase(
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
+    : m_dims(other.shape())
+    , m_strides(other.strides())
+  { }
+
+  /// \overload
+  template <typename OtherArrayType>
+  ArrayBase(
+    const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_dims(other.shape())
     , m_strides(other.strides())
   { }
@@ -279,6 +286,12 @@ public:
   // Empy implementation because no member data
   template <typename OtherArrayType>
   ArrayBase(const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
+  { }
+
+  // Empy implementation because no member data
+  template <typename OtherArrayType>
+  ArrayBase(
+    const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
 
   /// \brief Returns the dimensions of the Array
@@ -504,10 +517,12 @@ void initializeInPlace(T* data,
   defined(UMPIRE_ENABLE_DEVICE)
   if(alloc_id == getAllocatorID<MemorySpace::Device>())
   {
-    axom::for_all<axom::CUDA_EXEC<256>>(
-      pos,
-      pos + len,
-      AXOM_LAMBDA(axom::IndexType i) { new(&data[i]) T {}; });
+    // If we instantiated a fill kernel here it would require
+    // that T's default ctor is device-annotated which is too
+    // strict of a requirement, so we copy a buffer instead.
+    T* tmp_buffer = new T[len]();
+    axom::copy(data + pos, tmp_buffer, len * sizeof(T));
+    delete[] tmp_buffer;
     return;
   }
 #else
