@@ -84,6 +84,7 @@ public:
   using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>>;
 
   using ArrayViewType = ArrayView<T, DIM, SPACE>;
+  using ConstArrayViewType = ArrayView<const T, DIM, SPACE>;
 
 public:
   /// \name Native Storage Array Constructors
@@ -574,6 +575,8 @@ public:
    * \sa ArrayView
    */
   ArrayViewType view() { return ArrayViewType(*this); }
+  /// \overload
+  ConstArrayViewType view() const { return ConstArrayViewType(*this); }
 
   /// @}
 
