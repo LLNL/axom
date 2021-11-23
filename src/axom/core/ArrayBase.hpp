@@ -17,7 +17,7 @@
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
-#ifdef __IBMCPP__
+#ifdef __ibmxl__
   #include <algorithm>  // for std::fill_n due to XL bug
 #endif
 
@@ -534,11 +534,11 @@ void initializeInPlace(T* data,
   for(int ielem = 0; ielem < len; ielem++)
   {
     new(&data[pos + ielem]) T {};
-    // XL deviates from the standard in the above line, so we initialize directly
-#ifdef _IBMCPP__
-    std::fill_n(data + pos, len, T {});
-#endif
   }
+  // XL deviates from the standard in the above line, so we initialize directly
+#ifdef __ibmxl__
+  std::fill_n(data + pos, len, T {});
+#endif
 }
 
 /// \overload
