@@ -225,6 +225,8 @@ public:
    */
   PointType evaluate(T t) const
   {
+    using axom::utilities::lerp;
+
     PointType ptval;
 
     const int ord = getOrder();
@@ -243,7 +245,7 @@ public:
         const int end = ord - p;
         for(int k = 0; k <= end; ++k)
         {
-          dCarray[k] = (1 - t) * dCarray[k] + t * dCarray[k + 1];
+          dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
         }
       }
       ptval[i] = dCarray[0];
@@ -262,6 +264,7 @@ public:
    */
   VectorType dt(T t) const
   {
+    using axom::utilities::lerp;
     VectorType val;
 
     const int ord = getOrder();
@@ -281,7 +284,7 @@ public:
         const int end = ord - p;
         for(int k = 0; k <= end; ++k)
         {
-          dCarray[k] = (1 - t) * dCarray[k] + t * dCarray[k + 1];
+          dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
         }
       }
       val[i] = ord * (dCarray[1] - dCarray[0]);
@@ -318,12 +321,7 @@ public:
       const int end = ord - p;
       for(int k = 0; k <= end; ++k)
       {
-        PointType& pt1 = c2[k];
-        const PointType& pt2 = c2[k + 1];
-        for(int i = 0; i < NDIMS; ++i)
-        {
-          pt1[i] = (1 - t) * pt1[i] + t * pt2[i];
-        }
+        c2[k] = PointType::lerp(c2[k], c2[k + 1], t);
       }
       c1[p] = c2[0];
     }

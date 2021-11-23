@@ -109,6 +109,15 @@ inline AXOM_HOST_DEVICE void swap(T& a, T& b)
   b = tmp;
 }
 
+/*! 
+ * \brief returns the linear interpolation of \a A and \a B at \a t. i.e. (1-t)A+tB
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T lerp(T A, T B, T t)
+{
+  return (1 - t) * A + t * B;
+}
+
 /*!
  * \brief Returns the base 2 logarithm of the input.
  * \param [in] val The input value

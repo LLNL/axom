@@ -242,3 +242,53 @@ TEST(utils_utilities, binomial_coefficient)
     }
   }
 }
+
+TEST(utils_utilities, lerp)
+{
+  std::cout << "Testing lerp function." << std::endl;
+
+  {
+    double A = 0.;
+    double B = 1.;
+
+    EXPECT_DOUBLE_EQ(0., axom::utilities::lerp(A, B, 0.));
+    EXPECT_DOUBLE_EQ(1., axom::utilities::lerp(A, B, 1.));
+    EXPECT_DOUBLE_EQ(.5, axom::utilities::lerp(A, B, .5));
+
+    for(double t = -2.0; t < 2.0; t += 0.05)
+    {
+      EXPECT_DOUBLE_EQ(t, axom::utilities::lerp(A, B, t));
+    }
+  }
+
+  // Test endpoint interpolation
+  {
+    const double lower = -.23;  // Arbitrary end points
+    const double upper = 5.73;
+    for(int i = 0; i < 100; ++i)
+    {
+      double A = axom::utilities::random_real(lower, upper);
+      double B = axom::utilities::random_real(lower, upper);
+
+      EXPECT_DOUBLE_EQ(A, axom::utilities::lerp(A, B, 0.));
+      EXPECT_DOUBLE_EQ(B, axom::utilities::lerp(B, A, 0.));
+      EXPECT_DOUBLE_EQ(B, axom::utilities::lerp(A, B, 1.));
+      EXPECT_DOUBLE_EQ(A, axom::utilities::lerp(B, A, 1.));
+    }
+  }
+
+  // Compute using different form
+  {
+    const double lower = -.23;  // Arbitrary end points
+    const double upper = 5.73;
+    for(int i = 0; i < 100; ++i)
+    {
+      double A = axom::utilities::random_real(lower, upper);
+      double B = axom::utilities::random_real(lower, upper);
+      double t = axom::utilities::random_real(-1.5, 1.5);
+
+      double exp = A + (B - A) * t;
+      EXPECT_NEAR(exp, axom::utilities::lerp(A, B, t), 1e-12);
+    }
+  }
+}
