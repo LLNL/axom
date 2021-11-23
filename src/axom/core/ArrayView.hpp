@@ -37,7 +37,9 @@ public:
   using value_type = T;
   static constexpr int dimension = DIM;
   static constexpr MemorySpace space = SPACE;
-  using ArrayViewIterator = ArrayIteratorBase<ArrayView<T, DIM, SPACE>>;
+  using ArrayViewIterator = ArrayIteratorBase<ArrayView<T, DIM, SPACE>, T>;
+  using ConstArrayViewIterator =
+    ArrayIteratorBase<ArrayView<T, DIM, SPACE>, const T>;
 
   /// \brief Default constructor
   ArrayView() : m_allocator_id(axom::detail::getAllocatorID<SPACE>()) { }
@@ -68,6 +70,10 @@ public:
    */
   template <typename OtherArrayType>
   ArrayView(ArrayBase<T, DIM, OtherArrayType>& other);
+  /// \overload
+  template <typename OtherArrayType>
+  ArrayView(
+    const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other);
 
   /*!
    * \brief Return the number of elements stored in the data array.
@@ -83,6 +89,13 @@ public:
     return ArrayViewIterator(0, this);
   }
 
+  /// \overload
+  ConstArrayViewIterator begin() const
+  {
+    assert(m_data != nullptr);
+    return ConstArrayViewIterator(0, this);
+  }
+
   /*!
    * \brief Returns an ArrayViewIterator to the element following the last
    *  element of the Array.
@@ -91,6 +104,13 @@ public:
   {
     assert(m_data != nullptr);
     return ArrayViewIterator(size(), this);
+  }
+
+  /// \overload
+  ConstArrayViewIterator end() const
+  {
+    assert(m_data != nullptr);
+    return ConstArrayViewIterator(size(), this);
   }
 
   /*!
@@ -178,6 +198,32 @@ ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
   , m_num_elements(static_cast<OtherArrayType&>(other).size())
   , m_allocator_id(static_cast<OtherArrayType&>(other).getAllocatorID())
 {
+#ifdef AXOM_DEBUG
+  // If it's not dynamic, the allocator ID from the argument array has to match the template param.
+  // If that's not the case then things have gone horribly wrong somewhere.
+  if(SPACE != MemorySpace::Dynamic &&
+     m_allocator_id != axom::detail::getAllocatorID<SPACE>())
+  {
+    std::cerr << "Input argument allocator does not match the explicitly "
+                 "provided memory space\n";
+    utilities::processAbort();
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename OtherArrayType>
+ArrayView<T, DIM, SPACE>::ArrayView(
+  const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
+  , m_data(static_cast<const OtherArrayType&>(other).data())
+  , m_num_elements(static_cast<const OtherArrayType&>(other).size())
+  , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
+{
+  static_assert(
+    std::is_const<T>::value,
+    "Cannot create an ArrayView of non-const type from a const Array");
 #ifdef AXOM_DEBUG
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.

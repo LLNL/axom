@@ -1582,4 +1582,123 @@ TEST(core_array, checkDevice2D)
 #endif
 }
 
+struct HasDefault
+{
+  int member = 255;
+};
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkDefaultInitialization)
+{
+  constexpr int MAGIC_INT = 255;
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    // Make sure the array gets zero-initialized
+    Array<int> v_int(capacity);
+    for(const auto ele : v_int)
+    {
+      EXPECT_EQ(ele, 0);
+    }
+
+    Array<int, 2> v_int_2d(capacity, capacity);
+    for(const auto ele : v_int_2d)
+    {
+      EXPECT_EQ(ele, 0);
+    }
+
+    Array<HasDefault> v_has_default(capacity);
+    for(const auto& ele : v_has_default)
+    {
+      EXPECT_EQ(ele.member, MAGIC_INT);
+    }
+
+    Array<HasDefault, 2> v_has_default_2d(capacity, capacity);
+    for(const auto& ele : v_has_default_2d)
+    {
+      EXPECT_EQ(ele.member, MAGIC_INT);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkDefaultInitializationDevice)
+{
+// FIXME: HIP
+#if !defined(__CUDACC__) || !defined(AXOM_USE_UMPIRE) || \
+  !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP()
+    << "CUDA is not available, skipping tests that use Array in device code";
+#else
+  constexpr int MAGIC_INT = 255;
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    // Allocate an explicitly Device array
+    Array<HasDefault, 1, axom::MemorySpace::Device> v_has_default_device(capacity);
+
+    // Then copy it to the host
+    Array<HasDefault, 1, axom::MemorySpace::Host> v_has_default_host(
+      v_has_default_device);
+
+    for(const auto& ele : v_has_default_host)
+    {
+      EXPECT_EQ(ele.member, MAGIC_INT);
+    }
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkUninitialized)
+{
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    // There's not really a way of checking if memory has *not* been initialized
+    // But we can at least make sure the following statements compile
+    Array<HasDefault> v_has_default(ArrayOptions::Uninitialized {}, capacity);
+    Array<HasDefault, 2> v_has_default_2d(ArrayOptions::Uninitialized {},
+                                          capacity,
+                                          capacity);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(core_array, checkConstConversion)
+{
+  constexpr IndexType size = 10;
+  Array<int> v_int(size);
+  for(int i = 0; i < v_int.size(); i++)
+  {
+    v_int[i] = i;
+  }
+  const Array<int>& v_int_cref = v_int;
+  ArrayView<const int> v_int_view = v_int_cref;
+  EXPECT_EQ(v_int, v_int_view);
+  ArrayView<const int> v_int_view_copy = v_int_view;
+  EXPECT_EQ(v_int, v_int_view_copy);
+  // ArrayView<int> v_int_view_copy_non_const = v_int_view; // Fails to compile as it should
+  // v_int_view[1] = 12; // Fails to compile as it should
+
+  // Check begin() const and end() const
+  int idx = 0;
+  for(const auto& ele : v_int_cref)
+  {
+    EXPECT_EQ(ele, idx++);
+  }
+
+  Array<double, 2> v_double_2d(size, size);
+  for(int i = 0; i < size; i++)
+  {
+    for(int j = 0; j < size; j++)
+    {
+      v_double_2d(i, j) = 7.1 * i + j * 2.3;
+    }
+  }
+  const Array<double, 2>& v_double_2d_cref = v_double_2d;
+  ArrayView<const double, 2> v_double_2d_view = v_double_2d_cref;
+  EXPECT_EQ(v_double_2d, v_double_2d_view);
+  ArrayView<const double, 2> v_double_2d_view_copy = v_double_2d_view;
+  EXPECT_EQ(v_double_2d, v_double_2d_view_copy);
+  // v_double_2d_view_copy(0,0) = 1.1; // Fails to compile as it should
+}
+
 } /* end namespace axom */

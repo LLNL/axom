@@ -31,12 +31,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   to query the implicit grid.
 - Added initial implementation of GPU/OpenMP-accelerated point-in-cell queries
 - Added an alternative surface mesh tester function to Quest, based on `ImplicitGrid`
+- Add `const` versions of `begin()` and `end()` for `Array` and `ArrayView`
 
 ###  Changed
 - Moved bit-twiddling functions to core component
+- `axom::Array` now default-initializes its data by default. To leave data uninitialized, pass 
+  an `axom::ArrayOptions::Uninitialized` as the first constructor argument
+- `axom::ArrayView<const T>` can now be created from a `const Array<T>`
 - Instead of saving the entire `DataStore`, `MFEMSidreDataCollection` will now save only
   its domain and global groups
-  
+
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
 - Fixed over-eager caching of restored `mfem::FiniteElementSpaces` in `sidre::MFEMSidreDataCollection`
