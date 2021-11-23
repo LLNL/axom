@@ -17,6 +17,7 @@
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
 #include "axom/primal/operators/compute_moments.hpp"
+#include "axom/primal/operators/detail/compute_moments_impl.hpp"
 
 namespace primal = axom::primal;
 
@@ -116,7 +117,7 @@ TEST(primal_compute_moments, sector_weights)
   // See doxygen comment for primal::sector_area(BezierCurve)
 
   using CoordType = double;
-  primal::internal::MemoizedSectorAreaWeights<CoordType> memoizedSectorWeights;
+  primal::detail::MemoizedSectorAreaWeights<CoordType> memoizedSectorWeights;
 
   // order 1
   {
