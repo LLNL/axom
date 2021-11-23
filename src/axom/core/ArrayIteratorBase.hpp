@@ -19,35 +19,43 @@ namespace axom
  *          Each increment operation advances the iterator to the next
  *          element in the Array-like.
  * \tparam ArrayType The type of the array to iterate over
+ * \tparam ValueType The type of the array's elements
  */
-template <typename ArrayType>
+template <typename ArrayType, typename ValueType>
 class ArrayIteratorBase
-  : public IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>
+  : public IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>
 {
 public:
-  ArrayIteratorBase(IndexType pos, ArrayType* arr)
-    : IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>(pos)
+  using ArrayPointerType =
+    typename std::conditional<std::is_const<ValueType>::value,
+                              const ArrayType*,
+                              ArrayType*>::type;
+  // FIXME: Define the iterator_traits types (or possibly in IteratorBase)
+  // https://en.cppreference.com/w/cpp/iterator/iterator_traits
+
+  ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
+    : IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>(pos)
     , m_arrayPtr(arr)
   { }
 
   /**
    * \brief Returns the current iterator value
    */
-  typename ArrayType::value_type& operator*()
+  ValueType& operator*()
   {
-    return (
-      *m_arrayPtr)[IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>::m_pos];
+    return (*m_arrayPtr)[IteratorBase<ArrayIteratorBase<ArrayType, ValueType>,
+                                      IndexType>::m_pos];
   }
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
   void advance(IndexType n)
   {
-    IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>::m_pos += n;
+    IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>::m_pos += n;
   }
 
 protected:
-  ArrayType* const m_arrayPtr;
+  ArrayPointerType const m_arrayPtr;
 };  // end of ArrayIteratorBase class
 
 /// @}
