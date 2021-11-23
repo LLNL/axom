@@ -1123,7 +1123,7 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
       }
     }
 
-    triPt = poly.centroid();
+    triPt = poly.vertexMean();
 
     /// Use a ray from the query point to the triangle point to find an
     /// intersection. Note: We have to check all triangles to ensure that
