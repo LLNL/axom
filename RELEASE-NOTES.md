@@ -38,6 +38,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `axom::Array` now default-initializes its data by default. To leave data uninitialized, pass 
   an `axom::ArrayOptions::Uninitialized` as the first constructor argument
 - `axom::ArrayView<const T>` can now be created from a `const Array<T>`
+- Added new `ExecSpace` template parameter to `spin::ImplicitGrid`.
+  `ExecSpace` is now the second template parameter (out of three) and defaults to `axom::SEQ_EXEC`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
