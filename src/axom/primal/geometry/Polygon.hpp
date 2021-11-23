@@ -12,9 +12,9 @@
 #ifndef AXOM_PRIMAL_POLYGON_HPP_
 #define AXOM_PRIMAL_POLYGON_HPP_
 
+#include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
-#include <vector>
 #include <ostream>
 
 namespace axom
@@ -42,10 +42,7 @@ template <typename T, int NDIMS>
 class Polygon
 {
 public:
-  using PointType = Point<T, NDIMS>;
-
-private:
-  using Coords = std::vector<PointType>;
+  using PointType = primal::Point<T, NDIMS>;
 
 public:
   /*! Default constructor for an empty polygon   */
@@ -91,11 +88,12 @@ public:
 
     PointType sum;
 
-    for(int i = 0; i < numVertices(); ++i)
+    const int sz = numVertices();
+    for(int i = 0; i < sz; ++i)
     {
       sum.array() += m_vertices[i].array();
     }
-    sum.array() /= numVertices();
+    sum.array() /= sz;
 
     return sum;
   }
@@ -133,7 +131,7 @@ public:
   bool isValid() const { return m_vertices.size() >= 3; }
 
 private:
-  Coords m_vertices;
+  axom::Array<PointType> m_vertices;
 };
 
 //------------------------------------------------------------------------------
