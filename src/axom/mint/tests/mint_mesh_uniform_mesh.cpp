@@ -164,13 +164,13 @@ TEST(mint_mesh_uniform_mesh, native_constructor)
       m = new UniformMesh(lo, hi, N[0], N[1], N[2]);
     }
 
-    internal::check_constructor(m, idim, lo, h, N);
+    axom::mint::internal::check_constructor(m, idim, lo, h, N);
     EXPECT_FALSE(m->hasSidreGroup());
 
-    internal::check_create_fields(m);
-    internal::check_fields(m, false);
+    axom::mint::internal::check_create_fields(m);
+    axom::mint::internal::check_fields(m, false);
     m->setExtent(idim, node_ext);
-    internal::check_node_extent(m, node_ext);
+    axom::mint::internal::check_node_extent(m, node_ext);
     delete m;
   }  // END for all dimensions
 }
@@ -210,19 +210,19 @@ TEST(mint_mesh_uniform_mesh, sidre_constructor)
     }  // END switch
 
     EXPECT_TRUE(m->hasSidreGroup());
-    internal::check_constructor(m, idim, lo, h, N);
-    internal::check_create_fields(m);
+    axom::mint::internal::check_constructor(m, idim, lo, h, N);
+    axom::mint::internal::check_create_fields(m);
     m->setExtent(idim, node_ext);
-    internal::check_node_extent(m, node_ext);
+    axom::mint::internal::check_node_extent(m, node_ext);
 
     delete m;
     m = nullptr;
 
     // STEP 2: pull the mesh from the sidre groups, and check with expected
     m = new UniformMesh(meshGroup);
-    internal::check_constructor(m, idim, lo, h, N);
-    internal::check_fields(m, true);
-    internal::check_node_extent(m, node_ext);
+    axom::mint::internal::check_constructor(m, idim, lo, h, N);
+    axom::mint::internal::check_fields(m, true);
+    axom::mint::internal::check_node_extent(m, node_ext);
     delete m;
 
     // STEP 3: ensure the data is persistent in sidre
@@ -248,7 +248,7 @@ TEST(mint_mesh_uniform_mesh, check_evaluate_coordinate)
     case 1:
     {
       UniformMesh m(lo, hi, N[0]);
-      internal::check_constructor(&m, idim, lo, h, N);
+      axom::mint::internal::check_constructor(&m, idim, lo, h, N);
       EXPECT_FALSE(m.hasSidreGroup());
 
       const IndexType Ni = m.getNodeResolution(I_DIRECTION);
@@ -266,7 +266,7 @@ TEST(mint_mesh_uniform_mesh, check_evaluate_coordinate)
     case 2:
     {
       UniformMesh m(lo, hi, N[0], N[1]);
-      internal::check_constructor(&m, idim, lo, h, N);
+      axom::mint::internal::check_constructor(&m, idim, lo, h, N);
       EXPECT_FALSE(m.hasSidreGroup());
 
       const IndexType Ni = m.getNodeResolution(I_DIRECTION);
@@ -295,7 +295,7 @@ TEST(mint_mesh_uniform_mesh, check_evaluate_coordinate)
       EXPECT_EQ(idim, 3);
       {
         UniformMesh m(lo, hi, N[0], N[1], N[2]);
-        internal::check_constructor(&m, idim, lo, h, N);
+        axom::mint::internal::check_constructor(&m, idim, lo, h, N);
         EXPECT_FALSE(m.hasSidreGroup());
 
         const IndexType Ni = m.getNodeResolution(I_DIRECTION);

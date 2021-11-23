@@ -17,6 +17,9 @@
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
+#ifdef __ibmxl__
+  #include <algorithm>  // for std::fill_n due to XL bug
+#endif
 
 namespace axom
 {
@@ -47,9 +50,9 @@ std::ostream& operator<<(std::ostream& os,
  * \return true if the Arrays have the same allocator ID, are of equal shape,
  * and have the same elements.
  */
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs);
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs);
 
 /*!
  * \brief Inequality comparison operator for Arrays
@@ -59,9 +62,9 @@ bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
  * \return true if the Arrays do not have the same allocator ID, are not of
  * equal shape, or do not have the same elements.
  */
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs);
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs);
 
 /// @}
 
@@ -104,7 +107,16 @@ public:
    * memory spaces
    */
   template <typename OtherArrayType>
-  ArrayBase(const ArrayBase<T, DIM, OtherArrayType>& other)
+  ArrayBase(
+    const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
+    : m_dims(other.shape())
+    , m_strides(other.strides())
+  { }
+
+  /// \overload
+  template <typename OtherArrayType>
+  ArrayBase(
+    const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_dims(other.shape())
     , m_strides(other.strides())
   { }
@@ -276,37 +288,14 @@ public:
 
   // Empy implementation because no member data
   template <typename OtherArrayType>
-  ArrayBase(const ArrayBase<T, 1, OtherArrayType>&)
+  ArrayBase(const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
 
-  /*!
-   * \brief Push a value to the back of the array.
-   *
-   * \param [in] value the value to be added to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void push_back(const T& value);
-
-  /*!
-   * \brief Push a value to the back of the array.
-   *
-   * \param [in] value the value to move to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void push_back(T&& value);
-
-  /*!
-   * \brief Inserts new element at the end of the Array.
-   *
-   * \param [in] args the arguments to forward to constructor of the element.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   * \note The size increases by 1.
-   */
-  template <typename... Args>
-  void emplace_back(Args&&... args);
+  // Empy implementation because no member data
+  template <typename OtherArrayType>
+  ArrayBase(
+    const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>&)
+  { }
 
   /// \brief Returns the dimensions of the Array
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
@@ -432,10 +421,13 @@ std::ostream& operator<<(std::ostream& os, const ArrayBase<T, DIM, ArrayType>& a
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs)
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs)
 {
+  static_assert(std::is_same<typename std::remove_const<T1>::type,
+                             typename std::remove_const<T2>::type>::value,
+                "Cannot compare Arrays of incompatible type");
   if(static_cast<const LArrayType&>(lhs).getAllocatorID() !=
      static_cast<const RArrayType&>(rhs).getAllocatorID())
   {
@@ -459,33 +451,11 @@ bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs)
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs)
 {
   return !(lhs == rhs);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayBase<T, 1, ArrayType>::push_back(const T& value)
-{
-  emplace_back(value);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayBase<T, 1, ArrayType>::push_back(T&& value)
-{
-  emplace_back(std::move(value));
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-template <typename... Args>
-inline void ArrayBase<T, 1, ArrayType>::emplace_back(Args&&... args)
-{
-  asDerived().emplace(asDerived().size(), args...);
 }
 
 namespace detail
@@ -528,6 +498,53 @@ struct all_types_are_integral
 {
   static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
+
+/*!
+ * \brief Default-initializes the "new" segment of an array
+ *
+ * \param [inout] data The data to initialize
+ * \param [in] pos The beginning of the subset of \a data that should be initialized
+ * \param [in] len The length of the subset of \a data that is to be initialized
+ * \param [in] alloc_id The allocator ID with which \a data was allocated
+ * 
+ * The final parameter is intended to be used via tag dispatch with std::is_default_constructible
+ */
+template <typename T>
+void initializeInPlace(T* data,
+                       const IndexType pos,
+                       const IndexType len,
+                       const int alloc_id,
+                       std::true_type)
+{
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE) && \
+  defined(UMPIRE_ENABLE_DEVICE)
+  if(alloc_id == getAllocatorID<MemorySpace::Device>())
+  {
+    // If we instantiated a fill kernel here it would require
+    // that T's default ctor is device-annotated which is too
+    // strict of a requirement, so we copy a buffer instead.
+    T* tmp_buffer = new T[len]();
+    axom::copy(data + pos, tmp_buffer, len * sizeof(T));
+    delete[] tmp_buffer;
+    return;
+  }
+#else
+  AXOM_UNUSED_VAR(alloc_id);
+#endif
+  for(int ielem = 0; ielem < len; ielem++)
+  {
+    new(&data[pos + ielem]) T {};
+  }
+  // XL deviates from the standard in the above line, so we initialize directly
+#ifdef __ibmxl__
+  std::fill_n(data + pos, len, T {});
+#endif
+}
+
+/// \overload
+template <typename T>
+void initializeInPlace(T*, const IndexType, const IndexType, const int, std::false_type)
+{ }
 
 }  // namespace detail
 
