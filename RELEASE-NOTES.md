@@ -34,6 +34,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ###  Changed
 - Moved bit-twiddling functions to core component
+- Instead of saving the entire `DataStore`, `MFEMSidreDataCollection` will now save only
+  its domain and global groups
   
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s

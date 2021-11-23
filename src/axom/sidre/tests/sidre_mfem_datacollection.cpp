@@ -778,6 +778,7 @@ TEST(sidre_datacollection, dc_par_reload_gf_ordering)
 {
   const std::string first_field_name = "test_field_1";
   const std::string second_field_name = "test_field_2";
+  const std::string third_field_name = "test_field_3";
 
   // 3D tet mesh
   mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
@@ -792,6 +793,10 @@ TEST(sidre_datacollection, dc_par_reload_gf_ordering)
                                             &fec,
                                             3,
                                             mfem::Ordering::byVDIM);
+  mfem::ParFiniteElementSpace third_parfes(&parmesh,
+                                           &fec,
+                                           3,
+                                           mfem::Ordering::byNODES);
 
   // The mesh must be owned by Sidre to properly manage data in case of
   // a simulated restart (save -> load)
@@ -804,16 +809,22 @@ TEST(sidre_datacollection, dc_par_reload_gf_ordering)
                                        static_cast<double*>(nullptr));
   mfem::ParGridFunction second_gf_write(&second_parfes,
                                         static_cast<double*>(nullptr));
+  mfem::ParGridFunction third_gf_write(&third_parfes,
+                                       static_cast<double*>(nullptr));
 
   // Register to allocate storage internally, then write to it
   sdc_writer.RegisterField(first_field_name, &first_gf_write);
   sdc_writer.RegisterField(second_field_name, &second_gf_write);
+  sdc_writer.RegisterField(third_field_name, &third_gf_write);
 
   mfem::ConstantCoefficient three_and_a_half(3.5);
   first_gf_write.ProjectCoefficient(three_and_a_half);
 
   mfem::ConstantCoefficient five_and_a_half(5.5);
   second_gf_write.ProjectCoefficient(five_and_a_half);
+
+  mfem::ConstantCoefficient seven_and_a_half(5.5);
+  third_gf_write.ProjectCoefficient(seven_and_a_half);
 
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
@@ -828,15 +839,147 @@ TEST(sidre_datacollection, dc_par_reload_gf_ordering)
   EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(first_gf_read));
   auto second_gf_read = sdc_reader.GetField(second_field_name);
   EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(second_gf_read));
+  auto third_gf_read = sdc_reader.GetField(third_field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(third_gf_read));
 
   EXPECT_EQ(first_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byNODES);
   EXPECT_EQ(second_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byVDIM);
+  EXPECT_EQ(third_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byNODES);
+
+  // Make sure the gridfunction was actually read in
+  EXPECT_LT(first_gf_read->ComputeL2Error(three_and_a_half), EPSILON);
+  EXPECT_LT(second_gf_read->ComputeL2Error(five_and_a_half), EPSILON);
+  EXPECT_LT(third_gf_read->ComputeL2Error(seven_and_a_half), EPSILON);
+
+  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_par_reload_multi_datastore)
+{
+  const std::string first_coll_name = testName() + "first";
+  const std::string second_coll_name = testName() + "second";
+  const std::string field_name = "test_field";
+  // 3D tet mesh
+  mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
+  mfem::ParMesh first_parmesh(MPI_COMM_WORLD, mesh);
+  mfem::ParMesh second_parmesh(MPI_COMM_WORLD, mesh);
+
+  mfem::H1_FECollection fec(1, first_parmesh.Dimension());
+
+  mfem::ParFiniteElementSpace first_parfes(&first_parmesh, &fec);
+  mfem::ParFiniteElementSpace second_parfes(&second_parmesh, &fec);
+
+  axom::sidre::DataStore ds_write;
+
+  auto first_global_grp =
+    ds_write.getRoot()->createGroup(first_coll_name + "_global");
+  auto first_bp_index_grp =
+    first_global_grp->createGroup("blueprint_index/" + first_coll_name);
+  auto first_domain_grp = ds_write.getRoot()->createGroup(first_coll_name);
+
+  auto second_global_grp =
+    ds_write.getRoot()->createGroup(second_coll_name + "_global");
+  auto second_bp_index_grp =
+    second_global_grp->createGroup("blueprint_index/" + second_coll_name);
+  auto second_domain_grp = ds_write.getRoot()->createGroup(second_coll_name);
+
+  // The mesh must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection first_sdc_writer(first_coll_name,
+                                           first_bp_index_grp,
+                                           first_domain_grp,
+                                           owns_mesh);
+  first_sdc_writer.SetComm(MPI_COMM_WORLD);
+  first_sdc_writer.SetMesh(&first_parmesh);
+
+  MFEMSidreDataCollection second_sdc_writer(second_coll_name,
+                                            second_bp_index_grp,
+                                            second_domain_grp,
+                                            owns_mesh);
+  second_sdc_writer.SetComm(MPI_COMM_WORLD);
+  second_sdc_writer.SetMesh(&second_parmesh);
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  mfem::ParGridFunction first_gf_write(&first_parfes,
+                                       static_cast<double*>(nullptr));
+  mfem::ParGridFunction second_gf_write(&second_parfes,
+                                        static_cast<double*>(nullptr));
+
+  // Register to allocate storage internally, then write to it
+  first_sdc_writer.RegisterField(field_name, &first_gf_write);
+  second_sdc_writer.RegisterField(field_name, &second_gf_write);
+
+  mfem::ConstantCoefficient three_and_a_half(3.5);
+  first_gf_write.ProjectCoefficient(three_and_a_half);
+
+  mfem::ConstantCoefficient five_and_a_half(5.5);
+  second_gf_write.ProjectCoefficient(five_and_a_half);
+
+  first_sdc_writer.SetCycle(0);
+  first_sdc_writer.Save();
+
+  second_sdc_writer.SetCycle(0);
+  second_sdc_writer.Save();
+
+  axom::sidre::DataStore ds_read;
+
+  first_global_grp = ds_read.getRoot()->createGroup(first_coll_name + "_global");
+  first_bp_index_grp =
+    first_global_grp->createGroup("blueprint_index/" + first_coll_name);
+  first_domain_grp = ds_read.getRoot()->createGroup(first_coll_name);
+
+  second_global_grp =
+    ds_read.getRoot()->createGroup(second_coll_name + "_global");
+  second_bp_index_grp =
+    second_global_grp->createGroup("blueprint_index/" + second_coll_name);
+  second_domain_grp = ds_read.getRoot()->createGroup(second_coll_name);
+
+  MFEMSidreDataCollection first_sdc_reader(first_coll_name,
+                                           first_bp_index_grp,
+                                           first_domain_grp,
+                                           owns_mesh);
+  MFEMSidreDataCollection second_sdc_reader(second_coll_name,
+                                            second_bp_index_grp,
+                                            second_domain_grp,
+                                            owns_mesh);
+
+  // Needs to be set "manually" in order for everything to be loaded in properly
+  first_sdc_reader.SetComm(MPI_COMM_WORLD);
+  first_sdc_reader.Load();
+
+  first_sdc_reader.SetGroupPointers(
+    ds_read.getRoot()->getGroup(first_coll_name + "_global/blueprint_index/" +
+                                first_coll_name),
+    ds_read.getRoot()->getGroup(first_coll_name));
+
+  first_sdc_reader.UpdateStateFromDS();
+  first_sdc_reader.UpdateMeshAndFieldsFromDS();
+
+  second_sdc_reader.SetComm(MPI_COMM_WORLD);
+  second_sdc_reader.Load();
+
+  second_sdc_reader.SetGroupPointers(
+    ds_read.getRoot()->getGroup(second_coll_name + "_global/blueprint_index/" +
+                                second_coll_name),
+    ds_read.getRoot()->getGroup(second_coll_name));
+
+  second_sdc_reader.UpdateStateFromDS();
+  second_sdc_reader.UpdateMeshAndFieldsFromDS();
+
+  auto first_gf_read = first_sdc_reader.GetField(field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(first_gf_read));
+
+  auto second_gf_read = second_sdc_reader.GetField(field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(second_gf_read));
 
   // Make sure the gridfunction was actually read in
   EXPECT_LT(first_gf_read->ComputeL2Error(three_and_a_half), EPSILON);
   EXPECT_LT(second_gf_read->ComputeL2Error(five_and_a_half), EPSILON);
 
-  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+  EXPECT_TRUE(first_sdc_reader.verifyMeshBlueprint());
+  EXPECT_TRUE(second_sdc_reader.verifyMeshBlueprint());
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_1D_small)

@@ -869,7 +869,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
 
     IOManager reader(m_comm);
     // Get the paths in which the global and domain groups are stored
-    // This allows for a datastire structure other than the one used when this
+    // This allows for a datastore structure other than the one used when this
     // class owns the DataStore
     Group* global_grp = m_bp_index_grp->getParent()->getParent();
     Group* domain_grp = m_bp_grp->getParent();
@@ -2536,6 +2536,8 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
       SLIC_ERROR("Cannot reconstruct grid function - field values not found");
     }
 
+    // We cache the FESpaces to avoid reconstructing them when not needed
+    // An FESpace is uniquely identified by the basis of its FEColl and its ordering
     const std::string fespace_id =
       axom::fmt::format("{0}_{1}",
                         basis_name,
