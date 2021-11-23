@@ -202,54 +202,6 @@ public:
     return isNearlyEqual(squared_distance(lastPrev, firstCur), 0., sq_tol);
   }
 
-  /// \brief Returns the area enclosed by the CurvedPolygon
-  T area(double tol = 1e-8) const
-  {
-    const int ngon = numEdges();
-    T A = 0.0;
-    if(!isClosed(1e3 * tol))
-    {
-      SLIC_DEBUG("Warning! The area is 0 because the element is not closed.");
-      return A;
-    }
-    else
-    {
-      for(int ed = 0; ed < ngon; ++ed)
-      {
-        A += m_edges[ed].sectorArea();
-      }
-      return A;
-    }
-  }
-
-  /// \brief Returns the centroid of the CurvedPolygon
-  PointType centroid(double tol = 1e-8) const
-  {
-    const int ngon = numEdges();
-    PointType M = PointType::make_point(0.0, 0.0);
-    if(!isClosed(1e3 * tol))
-    {
-      SLIC_DEBUG(
-        "Warning! The moments are 0 because the element is not closed.");
-      return M;
-    }
-    else
-    {
-      const T A = area();
-      if(A != 0.)
-      {
-        for(int ed = 0; ed < ngon; ++ed)
-        {
-          PointType Mc = m_edges[ed].sectorCentroid();
-          M[0] += (Mc[0]);
-          M[1] += (Mc[1]);
-        }
-        M.array() /= A;
-      }
-      return M;
-    }
-  }
-
   /// \brief Reverses orientation of a CurvedPolygon
   void reverseOrientation()
   {

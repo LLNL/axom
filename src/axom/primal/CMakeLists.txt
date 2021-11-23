@@ -43,6 +43,7 @@ set( primal_headers
      operators/orientation.hpp
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
+     operators/compute_moments.hpp
      operators/in_sphere.hpp
      operators/split.hpp
 
