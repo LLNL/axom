@@ -49,6 +49,7 @@ changes are made, this guide should be updated accordingly.
    pull_requests
    component_org
    testing
+   updating_tpls
    misc_tasks
 
 
