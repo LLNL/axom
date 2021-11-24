@@ -113,9 +113,9 @@ getting started with them.
 
   * See :ref:`github-label` for more information about how we use Git and Github.
 
-* **Bamboo.** We use Bamboo for continuous integration to ensure code quality on our LC systems.:  `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_
+* **Gitlab.** We use Gitlab for continuous integration to ensure code quality on our LC systems.:  `Axom Gitlab project <https://lc.llnl.gov/gitlab/axom/axom>`_
 
-  * See :ref:`bamboo-label` for more information about how we use Bamboo.
+  * See :ref:`gitlab-label` for more information about how we use Gitlab.
 
 * **Azure Pipelines.** We use Azure Pipelines for continuous integration to ensure every code change passes a
   level of quality before being merged.:  `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_

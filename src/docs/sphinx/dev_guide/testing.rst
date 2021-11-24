@@ -35,11 +35,10 @@ When developing software, it is important to keep these thoughts in mind and
 to use tests effectively to meet your goals. Exposing issues when designing 
 and refactoring individual software components may be best accomplished with 
 unit tests, often run manually as you are adding or modifying code. Detecting 
-broken regressions (e.g., "this used to work, but something changed and now it doesn't") may be best done by frequently running automated integration tests.
+broken regressions (e.g., "this used to work, but something changed and now
+it doesn't") may be best done by frequently running automated integration tests.
 
-This section describes how to write and manually run tests in Axom. In
-:ref:`bamboo-label`, we describe our automated testing process using the
-Atlassian Bamboo tool.
+This section describes how to write and manually run tests in Axom.
 
 ==================================
 A Few Guidelines for Writing Tests
@@ -355,10 +354,10 @@ Examples::
   sidre_buffer_F.f     ('Buffer' class Fortran unit test)
 
 When test files are named like this, it is easy to see what they contain.
-Additionally, when added to the appropriate CMakeLists.txt file
-(see src/components/sidre/tests/CmakeLists.txt file for example), the 
+Additionally, when added to the appropriate ``CMakeLists.txt`` file
+(see ``src/components/sidre/tests/CmakeLists.txt file`` for example), the 
 extension '_test' will be added to the make target name so that the 
-test will appear as follows in the make target listing when 'make help' 
+test will appear as follows in the make target listing when ``make help``
 is typed::
 
   sidre_buffer_test
@@ -384,8 +383,8 @@ Examples::
 Running Tests and Examples
 ============================
 
-Axom examples and tests can be run in multiple different ways using make
-targets, Bamboo continuous integration (CI) tool, or manually. The best 
+Axom examples and tests can be run in multiple different ways using the make
+target, ``test``, or manually individually after they are built. The best 
 choice for running them depends on what you are trying to do.
 
 For example, if you build Axom and want to make sure everything is working
@@ -400,9 +399,3 @@ If a test fails, you can invoke its executable directly to see the detailed
 output of which checks passed or failed. This is especially useful when 
 you are modifying or adding code and need to understand how unit test details
 are working, for example.
-
-Lastly, you can run suites of tests, such as all tests on a set of platforms
-and compilers, using Bamboo. See :ref:`bamboo-label` for information about 
-running tests using the *Bamboo* tool.
-
-
