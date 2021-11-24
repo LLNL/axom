@@ -139,14 +139,14 @@ Top-level component directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The top-level component directory contains a `CMakeLists.txt`, e.g., 
-`axom/src/components/sidre/CmakeLists.txt`, which contains the following items:
+`axom/src/components/sidre/CMakeLists.txt`, which contains the following items:
 
   #. Checks for necessary dependencies with useful error or warning messages; 
      e.g.,::
 
-       if(NOT HDF5_FOUND)
-         message(FATAL_ERROR "Sidre requires HDF5. Set HDF5_DIR to HDF5 installation.")
-       endif()
+       axom_component_requires(NAME       Sidre
+                               COMPONENTS SLIC
+                               TPLS       Conduit )
 
   #. Subdirectories additions with guards as needed; e.g.,::
 
