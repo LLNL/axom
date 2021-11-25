@@ -149,10 +149,12 @@ other Axom developers to use, to use in Axom CI testing, etc.
              will build the TPLs for the clang 10.0.0 compiler. Please see the
              ``scripts/spack/specs.json`` file for available specs. 
 
-#. When you are confident that everything is correct, log in as user
-   ``atk`` to each of the machines named in Axom's standard host-configs and run
+#. When you are confident that everything is correct, become the service user
+   ``atk``, which requires a certain level of permission, on to each of the
+   machines named in Axom's standard host-configs. Run the following script
+   which will build all specs for the machine you are on:
 
-   $ scripts/llnl/build_tpl.py
+   ``$ scripts/llnl/build_tpl.py``
 
    This will do all of the standard installations in the shared directories
    used by Axom developers. When completed, they will produce new host-config
@@ -161,8 +163,9 @@ other Axom developers to use, to use in Axom CI testing, etc.
    ``host-configs`` subdirectory and commit them to your branch. Make sure all
    file changes from all previous steps are also committed and pushed upstream.
 
-#. Next, build the docker images for continuous integration using GitHub
-   actions. From Axom's GitHub page, click on "Actions" and then on "Docker
+#. Next, build the docker images for continuous integration using
+   `GitHub Actions <https://github.com/LLNL/axom/actions/workflows/docker_build_tpls.yml>`_.
+   From Axom's GitHub page, click on "Actions" and then on "Docker
    TPL build" in the "Workflows" menu. Find the "Run Workflow" drop-down
    menu, select your branch, and click on the "Run workflow" button. This
    will launch the build of the docker images.
