@@ -194,10 +194,10 @@ public:
   void reverseOrientation()
   {
     const int ord = getOrder();
-    CoordsVec old_controlPoints = m_controlPoints;
-    for(int i = 0; i <= ord; ++i)
+    const int mid = (ord + 1) / 2;
+    for(int i = 0; i < mid; ++i)
     {
-      m_controlPoints[i] = old_controlPoints[ord - i];
+      axom::utilities::swap(m_controlPoints[i], m_controlPoints[ord - i]);
     }
   }
 

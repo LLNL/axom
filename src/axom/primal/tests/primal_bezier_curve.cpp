@@ -443,6 +443,55 @@ TEST(primal_beziercurve, isLinear)
   }
 }
 
+TEST(primal_beziercurve, reverseOrientation)
+{
+  SLIC_INFO("Testing reverseOrientation() on Bezier curves");
+
+  {
+    const int DIM = 2;
+    using CoordType = double;
+    using PointType = primal::Point<CoordType, DIM>;
+    using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+    // test different orders
+    for(int order = 0; order <= 10; ++order)
+    {
+      // control points for curve monotonically increase
+      axom::Array<PointType> pts(order + 1);
+      for(int i = 0; i <= order; ++i)
+      {
+        pts[i] = PointType(i);
+      }
+      BezierCurveType curve(pts.data(), order);
+
+      for(int i = 1; i <= order; ++i)
+      {
+        EXPECT_GT(curve[i][0], curve[i - 1][0]);
+      }
+
+      // create a reversed curve and check that it monotonically decreases
+      BezierCurveType reversed = curve;
+      reversed.reverseOrientation();
+
+      for(int i = 1; i <= order; ++i)
+      {
+        EXPECT_LT(reversed[i][0], reversed[i - 1][0]);
+      }
+
+      // Check that the control points are actually reversed
+      for(int i = 0; i <= order; ++i)
+      {
+        EXPECT_EQ(curve[i], reversed[order - i]);
+      }
+
+      // check that reversing again reverts to the original
+      BezierCurveType reversedAgain = reversed;
+      reversedAgain.reverseOrientation();
+      EXPECT_EQ(curve, reversedAgain);
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
