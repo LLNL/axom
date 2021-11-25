@@ -158,9 +158,11 @@ TEST(primal_curvedpolygon, isClosed)
 
   SLIC_INFO("Test checking if CurvedPolygon is closed.");
 
-  CurvedPolygonType bPolygon;
-  EXPECT_EQ(0, bPolygon.numEdges());
-  EXPECT_EQ(false, bPolygon.isClosed());
+  {
+    CurvedPolygonType bPolygon;
+    EXPECT_EQ(0, bPolygon.numEdges());
+    EXPECT_FALSE(bPolygon.isClosed());
+  }
 
   std::vector<PointType> CP = {PointType {0.6, 1.2},
                                PointType {0.3, 2.0},
@@ -168,18 +170,28 @@ TEST(primal_curvedpolygon, isClosed)
                                PointType {0.6, 1.2}};
   std::vector<int> orders = {1, 1, 1};
 
-  std::vector<PointType> subCP = {PointType {0.6, 1.2}, PointType {0.3, 2.0}};
-  std::vector<int> suborders = {1};
-  CurvedPolygonType subPolygon = createPolygon(subCP, suborders);
-  EXPECT_EQ(false, subPolygon.isClosed());
+  {
+    std::vector<PointType> subCP = {PointType {0.6, 1.2}, PointType {0.3, 2.0}};
+    std::vector<int> suborders = {1};
+    CurvedPolygonType subPolygon = createPolygon(subCP, suborders);
+    EXPECT_FALSE(subPolygon.isClosed());
+  }
 
-  bPolygon = createPolygon(CP, orders);
+  {
+    CurvedPolygonType bPolygon = createPolygon(CP, orders);
+    EXPECT_EQ(3, bPolygon.numEdges());
+    EXPECT_TRUE(bPolygon.isClosed());
 
-  EXPECT_EQ(3, bPolygon.numEdges());
-  EXPECT_EQ(true, bPolygon.isClosed());
+    bPolygon[2][1][0] -= 2e-15;
+    EXPECT_FALSE(bPolygon.isClosed(1e-15));
+  }
 
-  bPolygon[2][1][0] -= 2e-15;
-  EXPECT_EQ(false, bPolygon.isClosed(1e-15));
+  {
+    CurvedPolygonType bPolygon = createPolygon(CP, orders);
+
+    bPolygon[1][0][0] = 5;
+    EXPECT_FALSE(bPolygon.isClosed(1e-15));
+  }
 }
 
 //----------------------------------------------------------------------------------
@@ -194,7 +206,7 @@ TEST(primal_curvedpolygon, isClosed_BiGon)
 
   CurvedPolygonType bPolygon;
   EXPECT_EQ(0, bPolygon.numEdges());
-  EXPECT_EQ(false, bPolygon.isClosed());
+  EXPECT_FALSE(bPolygon.isClosed());
 
   // Bi-gon defined by a quadratic edge and a straight line
   std::vector<PointType> CP = {PointType {0.8, .25},
@@ -435,11 +447,12 @@ TEST(primal_curvedpolygon, reverseOrientation)
   using SegmentType = primal::Segment<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
-  // Create a set of line segments on the unit circle
+  // Test several n-gons discretizing the unit circle
   const int MAX_SEG = 10;
   const PointType origin;
   for(int nseg = 3; nseg < MAX_SEG; ++nseg)
   {
+    // Create an n-gon with line segments going CCW along the unit circle
     CurvedPolygonType poly(nseg);
     axom::Array<PointType> pts(nseg + 1);
     for(int i = 0; i < nseg; ++i)
@@ -453,8 +466,9 @@ TEST(primal_curvedpolygon, reverseOrientation)
     {
       poly[i] = BezierCurveType(&pts[i], order);
     }
+    EXPECT_TRUE(poly.isClosed());
 
-    // Perform some checks
+    // Perform some checks on the polygon
     for(int i = 0; i < nseg; ++i)
     {
       // check that the end point of each segment is equal to the start of the next
@@ -467,7 +481,7 @@ TEST(primal_curvedpolygon, reverseOrientation)
       EXPECT_EQ(primal::ON_NEGATIVE_SIDE, primal::orientation(origin, seg));
     }
 
-    // Create a polygon of reversed segments;
+    // Create a polygon with reversed orientation
     CurvedPolygonType reversed = poly;
     reversed.reverseOrientation();
 
@@ -490,7 +504,7 @@ TEST(primal_curvedpolygon, reverseOrientation)
       EXPECT_EQ(primal::ON_POSITIVE_SIDE, primal::orientation(origin, seg));
     }
 
-    // Check that reversing twice yields the original;
+    // Check that reversing twice yields the original
     CurvedPolygonType reversedAgain = reversed;
     reversedAgain.reverseOrientation();
     EXPECT_EQ(poly, reversedAgain);

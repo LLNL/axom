@@ -184,22 +184,19 @@ public:
       return false;
     }
 
-    // foreach edge: check last vertex of current edge against first vertex of next edge
-    for(int i = 1; i < nEdges; ++i)
+    // foreach edge: check last vertex of previous edge against first vertex of current edge
+    for(int cur = 0, prev = nEdges - 1; cur < nEdges; prev = cur++)
     {
-      const auto ord = m_edges[i - 1].getOrder();
-      const auto& lastPrev = m_edges[i - 1][ord];
-      const auto& firstCur = m_edges[i][0];
+      const auto ord = m_edges[prev].getOrder();
+      const auto& lastPrev = m_edges[prev][ord];
+      const auto& firstCur = m_edges[cur][0];
       if(!isNearlyEqual(squared_distance(lastPrev, firstCur), 0., sq_tol))
       {
         return false;
       }
     }
-    // check last edge against first
-    const auto ord = m_edges[nEdges - 1].getOrder();
-    const auto& lastPrev = m_edges[nEdges - 1][ord];
-    const auto& firstCur = m_edges[0][0];
-    return isNearlyEqual(squared_distance(lastPrev, firstCur), 0., sq_tol);
+
+    return true;
   }
 
   /// \brief Reverses orientation of a CurvedPolygon
