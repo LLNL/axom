@@ -49,6 +49,7 @@ traditional sense. To update one of these packages in Axom, simply go into
 its directory in Axom and check out a new version. If a version is intended
 to be changed in the Axom repo, make the version change on a branch and 
 submit a GitHub pull request as you would do for other software changes.
+More info on :ref:`toolkitbuild-label`.
 
 Built-in TPLs
 -------------
@@ -81,9 +82,9 @@ instructions on how to update a built-in TPL are as follows:
    be able to directly apply the patch but it will give you the general idea
    on what needs to be applied.  For example, the namespace update mentioned above.
 
-#. Ensure that the build and tests still pass. More info on testing :ref:`testing-label`.
+#. Ensure that the build and tests still pass. More info on :ref:`testing-label`.
 
-#. Follow the normal pull request work flow. More info on PRs :ref:`pullrequest-label`.
+#. Follow the normal pull request work flow. More info on :ref:`pullrequest-label`.
 
 
 TPLs (system-level and external libraries)
@@ -150,7 +151,7 @@ other Axom developers to use, to use in Axom CI testing, etc.
              ``scripts/spack/specs.json`` file for available specs. 
 
 #. When you are confident that everything is correct, become the service user
-   ``atk``, which requires a certain level of permission, on to each of the
+   ``atk``, which requires a certain level of permission, on each of the
    machines named in Axom's standard host-configs. Run the following script
    which will build all specs for the machine you are on:
 
