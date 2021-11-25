@@ -104,9 +104,11 @@ and implementation files, as well as user documentation, examples and tests.
 
 Axom has the following built-in third party libraries:
 
+  `CLI11 <https://github.com/CLIUtils/CLI11>`_
+      BSD-licensed C++ options parser
   `fmt <http://fmtlib.net/latest/index.html>`_
       BSD-licensed string formatting library
-  `CLI11 <https://github.com/CLIUtils/CLI11>`_
-      BSD-licenced C++ options parser
+  `sol <https://github.com/ThePhD/sol2>`_, 
+      MIT-licensed C++ library binding to Lua
   `sparsehash <https://github.com/sparsehash/sparsehash>`_
-      BSD-licenced associative containers for C++
+      BSD-licensed associative containers for C++

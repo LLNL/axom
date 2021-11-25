@@ -62,7 +62,7 @@ expose for downstream customers to use if they wish.
     intuitive interface.
   * `fmt <https://github.com/fmtlib/fmt>`_, is an open-source formatting
     library providing a fast and safe alternative to C stdio and C++ iostreams.
-  * `sol <https://github.com/ThePhD/sol2>`_,  is a C++ library binding to Lua.
+  * `sol <https://github.com/ThePhD/sol2>`_, is a C++ library binding to Lua.
   * `Sparsehash <https://github.com/sparsehash/sparsehash>`_, contains several
     hash-map implementations.
 
