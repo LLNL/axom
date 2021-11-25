@@ -10,12 +10,18 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
+#include "axom/primal/geometry/OrientationResult.hpp"
+#include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/operators/compute_moments.hpp"
+#include "axom/primal/operators/orientation.hpp"
 
 #include <numeric>
+#include <math.h>
 
 namespace primal = axom::primal;
 
@@ -415,6 +421,79 @@ TEST(primal_curvedpolygon, moments_quad_all_orders)
 
     bPolygon = createPolygon(CP, orders);
     checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-15);
+  }
+}
+
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, reverseOrientation)
+{
+  const int DIM = 2;
+  const int order = 1;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using SegmentType = primal::Segment<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  // Create a set of line segments on the unit circle
+  const int MAX_SEG = 10;
+  const PointType origin;
+  for(int nseg = 3; nseg < MAX_SEG; ++nseg)
+  {
+    CurvedPolygonType poly(nseg);
+    axom::Array<PointType> pts(nseg + 1);
+    for(int i = 0; i < nseg; ++i)
+    {
+      const double theta = i / static_cast<double>(nseg) * (2. * M_PI);
+      pts[i] = PointType {cos(theta), sin(theta)};
+    }
+    pts[nseg] = pts[0];
+
+    for(int i = 0; i < nseg; ++i)
+    {
+      poly[i] = BezierCurveType(&pts[i], order);
+    }
+
+    // Perform some checks
+    for(int i = 0; i < nseg; ++i)
+    {
+      // check that the end point of each segment is equal to the start of the next
+      auto& currentEnd = poly[i][order];
+      auto& nextStart = poly[(i + 1) % nseg][0];
+      EXPECT_EQ(currentEnd, nextStart);
+
+      // check that the orientation of segment midpoints goes in the same direction
+      SegmentType seg(poly[i].evaluate(0.5), poly[(i + 1) % nseg].evaluate(0.5));
+      EXPECT_EQ(primal::ON_NEGATIVE_SIDE, primal::orientation(origin, seg));
+    }
+
+    // Create a polygon of reversed segments;
+    CurvedPolygonType reversed = poly;
+    reversed.reverseOrientation();
+
+    EXPECT_EQ(poly.numEdges(), reversed.numEdges());
+
+    // Perform some checks on the reversed polygon
+    for(int i = 0; i < nseg; ++i)
+    {
+      // check that order of each segment stayed the same
+      EXPECT_EQ(poly[i].getOrder(), reversed[i].getOrder());
+
+      // check that the end point of each segment is equal to the start of the next
+      auto& currentEnd = reversed[i][order];
+      auto& nextStart = reversed[(i + 1) % nseg][0];
+      EXPECT_EQ(currentEnd, nextStart);
+
+      // check that segment midpoints are oriented in same direction (opposite of origin)
+      SegmentType seg(reversed[i].evaluate(0.5),
+                      reversed[(i + 1) % nseg].evaluate(0.5));
+      EXPECT_EQ(primal::ON_POSITIVE_SIDE, primal::orientation(origin, seg));
+    }
+
+    // Check that reversing twice yields the original;
+    CurvedPolygonType reversedAgain = reversed;
+    reversedAgain.reverseOrientation();
+    EXPECT_EQ(poly, reversedAgain);
   }
 }
 

@@ -206,11 +206,23 @@ public:
   void reverseOrientation()
   {
     const int ngon = numEdges();
-    std::vector<BezierCurve<T, NDIMS>> old_edges = m_edges;
-    for(int i = 0; i < ngon; ++i)
+    const int mid = ngon >> 1;
+    const bool isOdd = (ngon & 1) != 0;
+
+    // Swap matching left/right cases, unmatched center is dealt with below
+    for(int i = 0; i < mid; ++i)
     {
-      old_edges[ngon - 1 - i].reverseOrientation();
-      m_edges[i] = old_edges[ngon - 1 - i];
+      const int left = i;
+      const int right = ngon - i - 1;
+      m_edges[left].reverseOrientation();
+      m_edges[right].reverseOrientation();
+      axom::utilities::swap(m_edges[left], m_edges[right]);
+    }
+
+    // Handle unmatched center curve, if necessary
+    if(isOdd)
+    {
+      m_edges[mid].reverseOrientation();
     }
   }
 
