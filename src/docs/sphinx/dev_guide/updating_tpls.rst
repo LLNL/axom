@@ -65,10 +65,10 @@ expose for downstream customers to use if they wish.
   * `Sparsehash <https://github.com/sparsehash/sparsehash>`_, contains several
     hash-map implementations.
 
-..note:: Axom patches all built-in TPLs to be under the `axom` namespace.
-  This is to prevent symbol collisions with other projects, either our
-  dependencies or downstream customers who wish their own versions.  For
-  example, `fmt::format("foo")` is `axom::fmt("foo")`.
+.. note:: Axom patches all built-in TPLs to be under the `axom` namespace.
+   This is to prevent symbol collisions with other projects, either our
+   dependencies or downstream customers who wish their own versions.  For
+   example, `fmt::format("foo")` is `axom::fmt("foo")`.
 
 They can be found in our repository here: `src/thirdparty`. The basic 
 instructions on how to update a built-in TPL are as follows:
