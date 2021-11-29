@@ -12,6 +12,8 @@
     "__comment__":"# a more specific machine name is defined.                                    ",
     "__comment__":"#                                                                             ",
     "__comment__":"##############################################################################",
+    "__comment__":"corona spec:                                                                  ",
+    "__comment__":"clang@13.0.0_hip_no_fortran~cpp14~fortran~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm",
 
     "toss_3_x86_64_ib":
     [ "clang@9.0.0~cpp14+devtools+mfem+c2c",

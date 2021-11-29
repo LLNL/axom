@@ -134,6 +134,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     depends_on("mfem", when="+mfem")
     depends_on("mfem~mpi", when="+mfem~mpi")
+    depends_on("hypre~fortran", when="+mfem~fortran")
 
     depends_on("python", when="+python")
 

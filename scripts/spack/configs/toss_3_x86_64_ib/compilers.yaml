@@ -40,9 +40,9 @@ compilers:
     paths:
       cc: /opt/rocm-4.3.0/bin/amdclang
       cxx: /opt/rocm-4.3.0/bin/hipcc
-      f77: /opt/rocm-4.3.0/bin/amdflang
-      fc: /opt/rocm-4.3.0/bin/amdflang
-    spec: clang@13.0.0_hip
+      f77:
+      fc:
+    spec: clang@13.0.0_hip_no_fortran
     target: x86_64
 - compiler:
     environment: {}

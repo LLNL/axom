@@ -88,7 +88,7 @@ packages:
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
     - spec: mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
-    - spec: mvapich2@2.3%clang@13.0.0_hip process_managers=slurm arch=linux-rhel7-ivybridge
+    - spec: mvapich2@2.3%clang@13.0.0_hip_no_fortran process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-12.0.0
 
   # blas is a bit more complicated because its a virtual package so fake it with
