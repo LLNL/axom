@@ -26,7 +26,7 @@
 namespace primal = axom::primal;
 
 /*!
- * Helper function to compute the area and centroid of a curved polygon and to check that they match expectations, 
+ * Helper function to compute the area and centroid of a curved polygon and to check that they match expectations,
  * stored in \a expArea and \a expCentroid. Areas and Moments are computed within tolerance \a eps and checks use \a test_eps.
  */
 template <typename CoordType>
@@ -46,9 +46,9 @@ void checkMoments(const primal::CurvedPolygon<CoordType, 2>& bPolygon,
 }
 
 /*!
- * Helper function to create a CurvedPolygon from a list of control points and a list of orders of component curves. 
- * Control points should be given as a list of Points in order of orientation with no duplicates except that 
- * the first control point should also be the last control point (if the polygon is closed). 
+ * Helper function to create a CurvedPolygon from a list of control points and a list of orders of component curves.
+ * Control points should be given as a list of Points in order of orientation with no duplicates except that
+ * the first control point should also be the last control point (if the polygon is closed).
  * Orders should be given as a list of ints in order of orientation, representing the orders of the component curves.
  */
 template <typename CoordType, int DIM>

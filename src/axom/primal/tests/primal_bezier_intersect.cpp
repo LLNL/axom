@@ -32,15 +32,16 @@ namespace primal = axom::primal;
  * Param \a shouldPrintIntersections is used for debugging and for generating
  * the initial array of expected intersections.
  */
-template <typename CoordType, int DIM>
-void checkIntersections(const primal::BezierCurve<CoordType, DIM>& curve1,
-                        const primal::BezierCurve<CoordType, DIM>& curve2,
+template <typename CoordType>
+void checkIntersections(const primal::BezierCurve<CoordType, 2>& curve1,
+                        const primal::BezierCurve<CoordType, 2>& curve2,
                         const std::vector<CoordType>& exp_s,
                         const std::vector<CoordType>& exp_t,
                         double eps,
                         double test_eps,
                         bool shouldPrintIntersections = false)
 {
+  constexpr int DIM = 2;
   using Array = std::vector<CoordType>;
 
   // Check validity of input data exp_s and exp_t.
@@ -196,7 +197,7 @@ TEST(primal_bezier_inter, linear_bezier)
 
 TEST(primal_bezier_inter, linear_bezier_interp_params)
 {
-  static const int DIM = 2;
+  constexpr int DIM = 2;
 
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
