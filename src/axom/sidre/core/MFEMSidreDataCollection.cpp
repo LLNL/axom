@@ -871,6 +871,8 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     // Get the paths in which the global and domain groups are stored
     // This allows for a datastore structure other than the one used when this
     // class owns the DataStore
+    SLIC_ERROR_IF(!m_bp_index_grp || !m_bp_grp,
+                  "Blueprint pointers must not be null");
     Group* global_grp = m_bp_index_grp->getParent()->getParent();
     Group* domain_grp = m_bp_grp->getParent();
     const std::string global_path = global_grp->getPath();
@@ -902,7 +904,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     }
     domain_group_parent->destroyGroup(new_domain_group->getName());
     domain_group_parent->moveGroup(new_domain_group);
-    // Finally we can delete the temporary group
+    // Now that the data has been transferred, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_load");
 
     // Get some data in support of error checks below
@@ -1046,6 +1048,8 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
 
     // Create a shallow mirror of the DataStore structure that only includes
     // the data relevant to the calling DataCollection
+    SLIC_ERROR_IF(!m_bp_index_grp || !m_bp_grp,
+                  "Blueprint pointers must not be null");
     Group* global_grp = m_bp_index_grp->getParent()->getParent();
     Group* domain_grp = m_bp_grp->getParent();
     const std::string global_path = global_grp->getPath();
@@ -1071,7 +1075,7 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
     temp_domain_grp->copyGroup(domain_grp);
 
     writer.write(temp_root, num_procs, file_path, protocol);
-    // Finally we can delete the temporary group
+    // Now that we've written the data, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_save");
 
     if(myid == 0)

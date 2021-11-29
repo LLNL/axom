@@ -859,6 +859,7 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
   const std::string first_coll_name = testName() + "first";
   const std::string second_coll_name = testName() + "second";
   const std::string field_name = "test_field";
+  const std::string useless_view_name = "useless_view";
   // 3D tet mesh
   mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
   mfem::ParMesh first_parmesh(MPI_COMM_WORLD, mesh);
@@ -870,6 +871,9 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
   mfem::ParFiniteElementSpace second_parfes(&second_parmesh, &fec);
 
   axom::sidre::DataStore ds_write;
+
+  // We want to make sure this isn't restored
+  ds_write.getRoot()->createViewString(useless_view_name, "useless_data");
 
   auto first_global_grp =
     ds_write.getRoot()->createGroup(first_coll_name + "_global");
@@ -948,6 +952,9 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
   // Needs to be set "manually" in order for everything to be loaded in properly
   first_sdc_reader.SetComm(MPI_COMM_WORLD);
   first_sdc_reader.Load();
+
+  // Make sure that the useless view wasn't read back in
+  EXPECT_FALSE(ds_read.getRoot()->hasView(useless_view_name));
 
   first_sdc_reader.SetGroupPointers(
     ds_read.getRoot()->getGroup(first_coll_name + "_global/blueprint_index/" +
