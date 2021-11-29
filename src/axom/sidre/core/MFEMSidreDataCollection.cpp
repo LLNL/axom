@@ -868,6 +868,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     std::string suffixedPath = endsWith(path, ".root") ? path : path + ".root";
 
     IOManager reader(m_comm);
+
     // Get the paths in which the global and domain groups are stored
     // This allows for a datastore structure other than the one used when this
     // class owns the DataStore
@@ -892,9 +893,11 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     {
       global_group_parent = datastore_root->getGroup(global_path);
     }
+
     // The group may already exist, but we're going to overwrite it
     global_group_parent->destroyGroup(new_global_group->getName());
     global_group_parent->moveGroup(new_global_group);
+
     // Then transfer the domain group in the same way
     Group* new_domain_group = temp_root->getGroup(domain_grp->getPathName());
     Group* domain_group_parent = datastore_root;
@@ -904,6 +907,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     }
     domain_group_parent->destroyGroup(new_domain_group->getName());
     domain_group_parent->moveGroup(new_domain_group);
+
     // Now that the data has been transferred, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_load");
 
@@ -1075,6 +1079,7 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
     temp_domain_grp->copyGroup(domain_grp);
 
     writer.write(temp_root, num_procs, file_path, protocol);
+
     // Now that we've written the data, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_save");
 
