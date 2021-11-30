@@ -12,3 +12,16 @@ compilers:
       fc:
     spec: clang@13.0.0_hip_no_fortran
     target: x86_64
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: rhel8
+    paths:
+      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdclang
+      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/hipcc
+      f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
+      fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
+    spec: clang@13.0.0_hip
+    target: x86_64
