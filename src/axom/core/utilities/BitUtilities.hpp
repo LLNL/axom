@@ -134,37 +134,37 @@ AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 word)
 {
 #ifdef AXOM_DEVICE_CODE
   // Use CUDA intrinsic for count leading zeros
-  return __clz(x);
+  return __clz(word);
 #else
   axom::int32 y;
   axom::int32 n = 32;
-  y = x >> 16;
+  y = word >> 16;
   if(y != 0)
   {
     n = n - 16;
-    x = y;
+    word = y;
   }
-  y = x >> 8;
+  y = word >> 8;
   if(y != 0)
   {
     n = n - 8;
-    x = y;
+    word = y;
   }
-  y = x >> 4;
+  y = word >> 4;
   if(y != 0)
   {
     n = n - 4;
-    x = y;
+    word = y;
   }
-  y = x >> 2;
+  y = word >> 2;
   if(y != 0)
   {
     n = n - 2;
-    x = y;
+    word = y;
   }
-  y = x >> 1;
+  y = word >> 1;
   if(y != 0) return axom::int32(n - 2);
-  return axom::int32(n - x);
+  return axom::int32(n - word);
 #endif
 }
 
