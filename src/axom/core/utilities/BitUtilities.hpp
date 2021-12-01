@@ -61,8 +61,8 @@ struct BitTraits<axom::uint8>
 };
 
 /**
- * Counts the number of trailing zeros in \a word
- *
+ * \brief Counts the number of trailing zeros in \a word
+ * \accelerated
  * \return The number of zeros to the right of the first set bit in \word,
  * starting with the least significant bit, or 64 if \a word == 0.
  */
@@ -93,7 +93,11 @@ AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 }
 /* clang-format on */
 
-/** Counts the number of set bits in \a word */
+/*!
+ * \brief Counts the number of set bits in \a word
+ * \accelerated
+ * \return number of bits in \a word that are set to 1
+ */
 AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 {
 #ifdef AXOM_DEVICE_CODE
@@ -120,11 +124,13 @@ AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 #endif
 }
 
-//------------------------------------------------------------------------------
-//
-// count leading zeros
-//
-AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 x)
+/*!
+ * \brief Counts the number of leading zeros in \a word
+ * \accelerated
+ * \return The number of zeros to the left of the first set bit in \word,
+ * starting with the least significant bit.
+ */
+AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 word)
 {
 #ifdef AXOM_DEVICE_CODE
   // Use CUDA intrinsic for count leading zeros
