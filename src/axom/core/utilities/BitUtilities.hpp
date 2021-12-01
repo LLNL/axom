@@ -120,6 +120,48 @@ AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 #endif
 }
 
+//------------------------------------------------------------------------------
+//
+// count leading zeros
+//
+AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 x)
+{
+#ifdef AXOM_DEVICE_CODE
+  // Use CUDA intrinsic for count leading zeros
+  return __clz(x);
+#else
+  axom::int32 y;
+  axom::int32 n = 32;
+  y = x >> 16;
+  if(y != 0)
+  {
+    n = n - 16;
+    x = y;
+  }
+  y = x >> 8;
+  if(y != 0)
+  {
+    n = n - 8;
+    x = y;
+  }
+  y = x >> 4;
+  if(y != 0)
+  {
+    n = n - 4;
+    x = y;
+  }
+  y = x >> 2;
+  if(y != 0)
+  {
+    n = n - 2;
+    x = y;
+  }
+  y = x >> 1;
+  if(y != 0) return axom::int32(n - 2);
+  return axom::int32(n - x);
+#endif
+}
+
 }  // namespace utilities
 }  // namespace axom
 
