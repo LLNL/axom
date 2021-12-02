@@ -19,7 +19,7 @@ class ArrayView;
 template <typename T, int DIM, MemorySpace SPACE>
 struct ArrayTraits<ArrayView<T, DIM, SPACE>>
 {
-    constexpr static bool IsView = true;
+  constexpr static bool IsView = true;
 };
 
 /// \name ArrayView to wrap a pointer and provide indexing semantics
@@ -108,10 +108,7 @@ public:
    */
   /// @{
 
-  AXOM_HOST_DEVICE inline T* data() const
-  {
-    return m_data;
-  }
+  AXOM_HOST_DEVICE inline T* data() const { return m_data; }
 
   /// @}
 
@@ -148,9 +145,8 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
 #ifdef AXOM_DEVICE_CODE
-    static_assert((SPACE == MemorySpace::Constant)
-                  == std::is_const<T>::value,
-                  "T must be const if memory space is Constant memory");
+  static_assert((SPACE == MemorySpace::Constant) == std::is_const<T>::value,
+                "T must be const if memory space is Constant memory");
 #endif
   // Intel hits internal compiler error when casting as part of function call
   IndexType tmp_args[] = {args...};

@@ -96,6 +96,7 @@ class ArrayBase
 {
 private:
   constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
+
 public:
   /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
    * std::span; a const ArrayView will still allow for mutating the underlying
@@ -303,6 +304,7 @@ class ArrayBase<T, 1, ArrayType>
 {
 private:
   constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
+
 public:
   /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
    * std::span; a const ArrayView will still allow for mutating the underlying

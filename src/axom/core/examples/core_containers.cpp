@@ -288,12 +288,9 @@ void demoArrayDevice()
   DeviceIntArrayView C_view = C_device_raja;
 
   // Write to the underlying array through C_view, which is captured by value
-  axom::for_all<axom::CUDA_EXEC<1>>(
-    0,
-    N,
-    [=] AXOM_HOST_DEVICE(axom::IndexType i) {
-      C_view[i] = A_view[i] + B_view[i] + 1;
-    });
+  axom::for_all<axom::CUDA_EXEC<1>>(0, N, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+    C_view[i] = A_view[i] + B_view[i] + 1;
+  });
 
   // Finally, copy things over to host memory so we can display the data
   axom::Array<int, 1, axom::MemorySpace::Host> C_host_raja = C_view;
