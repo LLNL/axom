@@ -287,11 +287,11 @@ void demoArrayDevice()
   axom::Array<int, 1, axom::MemorySpace::Device> C_device_raja(N);
   DeviceIntArrayView C_view = C_device_raja;
 
-  // Declare the lambda mutable so our copy of C_view (captured by value) is mutable
+  // Write to the underlying array through C_view, which is captured by value
   axom::for_all<axom::CUDA_EXEC<1>>(
     0,
     N,
-    [=] AXOM_HOST_DEVICE(axom::IndexType i) mutable {
+    [=] AXOM_HOST_DEVICE(axom::IndexType i) {
       C_view[i] = A_view[i] + B_view[i] + 1;
     });
 
