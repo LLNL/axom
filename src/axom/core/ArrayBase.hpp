@@ -27,6 +27,9 @@ namespace axom
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase;
 
+template <typename ArrayType>
+struct ArrayTraits;
+
 /// \name Overloaded ArrayBase Operator(s)
 /// @{
 
@@ -87,7 +90,10 @@ bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase
 {
+private:
+  constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
 public:
+  using ConstT = typename std::conditional<IsArrayView, T, const T>::type;
   /*!
    * \brief Parameterized constructor that sets up the default strides
    *
@@ -143,7 +149,7 @@ public:
   /// \overload
   template <typename... Args,
             typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  AXOM_HOST_DEVICE const T& operator()(Args... args) const
+  AXOM_HOST_DEVICE ConstT& operator()(Args... args) const
   {
     const IndexType indices[] = {static_cast<IndexType>(args)...};
     const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
@@ -169,7 +175,7 @@ public:
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE ConstT& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -283,7 +289,10 @@ protected:
 template <typename T, typename ArrayType>
 class ArrayBase<T, 1, ArrayType>
 {
+private:
+  constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
 public:
+  using ConstT = typename std::conditional<IsArrayView, T, const T>::type;
   ArrayBase(IndexType = 0) { }
 
   // Empy implementation because no member data
@@ -321,7 +330,7 @@ public:
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE ConstT& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];

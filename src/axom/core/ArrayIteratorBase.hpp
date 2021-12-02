@@ -25,9 +25,12 @@ template <typename ArrayType, typename ValueType>
 class ArrayIteratorBase
   : public IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>
 {
+private:
+  constexpr static bool ReturnConstRef = std::is_const<ValueType>::value;
+  constexpr static bool FromArrayView = !std::is_const<typename ArrayType::ConstT>::value;
 public:
   using ArrayPointerType =
-    typename std::conditional<std::is_const<ValueType>::value,
+    typename std::conditional<ReturnConstRef || FromArrayView,
                               const ArrayType*,
                               ArrayType*>::type;
   // FIXME: Define the iterator_traits types (or possibly in IteratorBase)

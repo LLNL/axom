@@ -16,6 +16,12 @@ namespace axom
 template <typename T, int DIM, MemorySpace SPACE>
 class ArrayView;
 
+template <typename T, int DIM, MemorySpace SPACE>
+struct ArrayTraits<ArrayView<T, DIM, SPACE>>
+{
+    constexpr static bool IsView = true;
+};
+
 /// \name ArrayView to wrap a pointer and provide indexing semantics
 /// @{
 
@@ -38,8 +44,6 @@ public:
   static constexpr int dimension = DIM;
   static constexpr MemorySpace space = SPACE;
   using ArrayViewIterator = ArrayIteratorBase<ArrayView<T, DIM, SPACE>, T>;
-  using ConstArrayViewIterator =
-    ArrayIteratorBase<ArrayView<T, DIM, SPACE>, const T>;
 
   /// \brief Default constructor
   ArrayView() : m_allocator_id(axom::detail::getAllocatorID<SPACE>()) { }
@@ -83,34 +87,20 @@ public:
   /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
    */
-  ArrayViewIterator begin()
+  ArrayViewIterator begin() const
   {
     assert(m_data != nullptr);
     return ArrayViewIterator(0, this);
-  }
-
-  /// \overload
-  ConstArrayViewIterator begin() const
-  {
-    assert(m_data != nullptr);
-    return ConstArrayViewIterator(0, this);
   }
 
   /*!
    * \brief Returns an ArrayViewIterator to the element following the last
    *  element of the Array.
    */
-  ArrayViewIterator end()
+  ArrayViewIterator end() const
   {
     assert(m_data != nullptr);
     return ArrayViewIterator(size(), this);
-  }
-
-  /// \overload
-  ConstArrayViewIterator end() const
-  {
-    assert(m_data != nullptr);
-    return ConstArrayViewIterator(size(), this);
   }
 
   /*!
@@ -118,15 +108,10 @@ public:
    */
   /// @{
 
-  AXOM_HOST_DEVICE inline T* data()
+  AXOM_HOST_DEVICE inline T* data() const
   {
-#ifdef AXOM_DEVICE_CODE
-    static_assert(SPACE != MemorySpace::Constant,
-                  "Cannot modify Constant memory from device code");
-#endif
     return m_data;
   }
-  AXOM_HOST_DEVICE inline const T* data() const { return m_data; }
 
   /// @}
 
@@ -162,6 +147,11 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
+#ifdef AXOM_DEVICE_CODE
+    static_assert((SPACE == MemorySpace::Constant)
+                  == std::is_const<T>::value,
+                  "T must be const if memory space is Constant memory");
+#endif
   // Intel hits internal compiler error when casting as part of function call
   IndexType tmp_args[] = {args...};
   m_num_elements = detail::packProduct(tmp_args);

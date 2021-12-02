@@ -68,11 +68,11 @@ AXOM_TYPED_TEST(core_array_for_all, explicit_ArrayView)
   constexpr int N = 374;
   KernelArray arr(N);
 
-  // Modify array using mutable lambda and ArrayView
+  // Modify array using lambda and ArrayView
   KernelArrayView arr_view(arr);
   axom::for_all<ExecSpace>(
     N,
-    AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
+    AXOM_LAMBDA(axom::IndexType idx) { arr_view[idx] = N - idx; });
 
   // handles synchronization, if necessary
   if(axom::execution_space<ExecSpace>::async())
@@ -99,11 +99,11 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
   constexpr int N = 374;
   KernelArray arr(N);
 
-  // Modify array using mutable lambda and ArrayView
+  // Modify array using lambda and ArrayView
   auto arr_view = arr.view();
   axom::for_all<ExecSpace>(
     N,
-    AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
+    AXOM_LAMBDA(axom::IndexType idx) { arr_view[idx] = N - idx; });
 
   // handles synchronization, if necessary
   if(axom::execution_space<ExecSpace>::async())
@@ -203,11 +203,11 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
   constexpr axom::IndexType N = 374;
   DynamicArray arr(N, N, kernelAllocID);
 
-  // Modify array using mutable lambda and ArrayView
+  // Modify array using lambda and ArrayView
   auto arr_view = arr.view();
   axom::for_all<ExecSpace>(
     N,
-    AXOM_LAMBDA(axom::IndexType idx) mutable { arr_view[idx] = N - idx; });
+    AXOM_LAMBDA(axom::IndexType idx) { arr_view[idx] = N - idx; });
 
   // handles synchronization, if necessary
   if(axom::execution_space<ExecSpace>::async())

@@ -32,6 +32,12 @@ struct Uninitialized
 template <typename T, int DIM, MemorySpace SPACE>
 class Array;
 
+template <typename T, int DIM, MemorySpace SPACE>
+struct ArrayTraits<Array<T, DIM, SPACE>>
+{
+    constexpr static bool IsView = false;
+};
+
 /*!
  * \class Array
  *
