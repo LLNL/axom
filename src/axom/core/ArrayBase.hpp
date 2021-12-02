@@ -86,6 +86,10 @@ bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
  * const T* data() const;
  * int getAllocatorID() const;
  * \endcode
+ *
+ * \pre A specialization of ArrayTraits for all ArrayTypes must also be provided
+ * with the boolean value IsView, which affects the const-ness of returned
+ * references.
  */
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase
@@ -93,7 +97,15 @@ class ArrayBase
 private:
   constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
 public:
+  /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
+   * std::span; a const ArrayView will still allow for mutating the underlying
+   * pointed-to data.
+   *
+   * If ArrayType is an Array, we use deep-const semantics, akin to std::vector;
+   * a const Array will prevent modifications of the underlying Array data.
+   */
   using ConstT = typename std::conditional<IsArrayView, T, const T>::type;
+
   /*!
    * \brief Parameterized constructor that sets up the default strides
    *
@@ -292,6 +304,13 @@ class ArrayBase<T, 1, ArrayType>
 private:
   constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
 public:
+  /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
+   * std::span; a const ArrayView will still allow for mutating the underlying
+   * pointed-to data.
+   *
+   * If ArrayType is an Array, we use deep-const semantics, akin to std::vector;
+   * a const Array will prevent modifications of the underlying Array data.
+   */
   using ConstT = typename std::conditional<IsArrayView, T, const T>::type;
   ArrayBase(IndexType = 0) { }
 
