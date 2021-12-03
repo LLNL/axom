@@ -27,8 +27,11 @@ namespace axom
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase;
 
+namespace detail
+{
 template <typename ArrayType>
 struct ArrayTraits;
+}
 
 /// \name Overloaded ArrayBase Operator(s)
 /// @{
@@ -95,7 +98,7 @@ template <typename T, int DIM, typename ArrayType>
 class ArrayBase
 {
 private:
-  constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
+  constexpr static bool is_array_view = detail::ArrayTraits<ArrayType>::is_view;
 
 public:
   /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
@@ -105,7 +108,7 @@ public:
    * If ArrayType is an Array, we use deep-const semantics, akin to std::vector;
    * a const Array will prevent modifications of the underlying Array data.
    */
-  using ConstT = typename std::conditional<IsArrayView, T, const T>::type;
+  using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
   /*!
    * \brief Parameterized constructor that sets up the default strides
@@ -162,7 +165,7 @@ public:
   /// \overload
   template <typename... Args,
             typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  AXOM_HOST_DEVICE ConstT& operator()(Args... args) const
+  AXOM_HOST_DEVICE RealConstT& operator()(Args... args) const
   {
     const IndexType indices[] = {static_cast<IndexType>(args)...};
     const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
@@ -188,7 +191,7 @@ public:
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE ConstT& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -303,7 +306,7 @@ template <typename T, typename ArrayType>
 class ArrayBase<T, 1, ArrayType>
 {
 private:
-  constexpr static bool IsArrayView = ArrayTraits<ArrayType>::IsView;
+  constexpr static bool is_array_view = detail::ArrayTraits<ArrayType>::is_view;
 
 public:
   /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
@@ -313,7 +316,8 @@ public:
    * If ArrayType is an Array, we use deep-const semantics, akin to std::vector;
    * a const Array will prevent modifications of the underlying Array data.
    */
-  using ConstT = typename std::conditional<IsArrayView, T, const T>::type;
+  using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
+
   ArrayBase(IndexType = 0) { }
 
   // Empy implementation because no member data
@@ -351,7 +355,7 @@ public:
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE ConstT& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];

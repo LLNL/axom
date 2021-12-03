@@ -16,11 +16,16 @@ namespace axom
 template <typename T, int DIM, MemorySpace SPACE>
 class ArrayView;
 
+namespace detail
+{
+// Static information to pass to ArrayBase
 template <typename T, int DIM, MemorySpace SPACE>
 struct ArrayTraits<ArrayView<T, DIM, SPACE>>
 {
-  constexpr static bool IsView = true;
+  constexpr static bool is_view = true;
 };
+
+}  // namespace detail
 
 /// \name ArrayView to wrap a pointer and provide indexing semantics
 /// @{

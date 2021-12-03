@@ -28,7 +28,7 @@ class ArrayIteratorBase
 private:
   constexpr static bool ReturnConstRef = std::is_const<ValueType>::value;
   constexpr static bool FromArrayView =
-    !std::is_const<typename ArrayType::ConstT>::value;
+    !std::is_const<typename ArrayType::RealConstT>::value;
 
 public:
   using ArrayPointerType =
