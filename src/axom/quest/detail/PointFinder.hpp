@@ -129,26 +129,20 @@ public:
                     SpacePoint* outIsoparametricCoords) const
   {
     constexpr bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
+    using IndexArray = axom::Array<IndexType>;
+    using IndexView = axom::ArrayView<IndexType>;
 #ifdef AXOM_USE_UMPIRE
-    // Use device memory if we execute on GPU, otherwise use host memory
-    constexpr axom::MemorySpace DeviceSpace =
-      DeviceExec ? axom::MemorySpace::Device : axom::MemorySpace::Host;
-
-    using IndexArray = axom::Array<IndexType, 1, DeviceSpace>;
     using HostIndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointArray = axom::Array<SpacePoint, 1, axom::MemorySpace::Host>;
 
-    using IndexView = axom::ArrayView<IndexType, 1, DeviceSpace>;
     using HostIndexView = axom::ArrayView<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointView = axom::ArrayView<SpacePoint, 1, axom::MemorySpace::Host>;
     using ConstHostPointView =
       axom::ArrayView<const SpacePoint, 1, axom::MemorySpace::Host>;
 #else
-    using IndexArray = axom::Array<IndexType>;
     using HostIndexArray = IndexArray;
     using HostPointArray = axom::Array<SpacePoint>;
 
-    using IndexView = axom::ArrayView<IndexType>;
     using HostIndexView = IndexView;
     using HostPointView = axom::Array<SpacePoint>;
     using ConstHostPointView = axom::ArrayView<const SpacePoint>;
@@ -158,8 +152,8 @@ public:
 
     axom::IndexType npts = pts.size();
 
-    IndexArray offsets(npts);
-    IndexArray counts(npts);
+    IndexArray offsets(npts, npts, m_allocatorID);
+    IndexArray counts(npts, npts, m_allocatorID);
 
 #ifdef AXOM_USE_RAJA
     IndexView countsPtr = counts;
@@ -183,7 +177,7 @@ public:
     axom::IndexType totalCount = totalCountReduce.get();
 
     // Step 3: allocate memory for all candidates
-    IndexArray candidates(totalCount);
+    IndexArray candidates(totalCount, totalCount, m_allocatorID);
     IndexView candidatesPtr = candidates;
     IndexView offsetsPtr = offsets;
     const SpatialBoundingBox* cellBBoxes = m_cellBBoxes.data();
