@@ -69,6 +69,11 @@ class Conduit(CMakePackage):
     variant("shared", default=True, description="Build Conduit as shared libs")
     variant("test", default=True, description='Enable Conduit unit tests')
 
+    # AXOM EDIT START
+    variant("examples", default=True, description="Build Conduit examples")
+    variant("utils", default=True, description='Build Conduit utils')
+    # AXOM EDIT END
+
     # variants for python support
     variant("python", default=False, description="Build Conduit Python support")
     variant("fortran", default=True, description="Build Conduit Fortran support")
@@ -422,6 +427,21 @@ class Conduit(CMakePackage):
                         flags = "${CMAKE_SHARED_LINKER_FLAGS} " + rpaths
                         cfg.write(cmake_cache_entry(
                                   "CMAKE_SHARED_LINKER_FLAGS", flags))
+
+        # AXOM EDIT START
+        #######################
+        # Examples and Utils
+        #######################
+        if "+examples" in spec:
+            cfg.write(cmake_cache_entry("ENABLE_EXAMPLES", "ON"))
+        else:
+            cfg.write(cmake_cache_entry("ENABLE_EXAMPLES", "OFF"))
+
+        if "+utils" in spec:
+            cfg.write(cmake_cache_entry("ENABLE_UTILS", "ON"))
+        else:
+            cfg.write(cmake_cache_entry("ENABLE_UTILS", "OFF"))
+        # AXOM EDIT END
 
         #######################
         # Python

@@ -6,8 +6,8 @@ compilers:
     modules: []
     operating_system: rhel8
     paths:
-      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdclang
-      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/hipcc
+      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/amdclang
+      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/hipcc
       f77:
       fc:
     spec: clang@13.0.0_hip_no_fortran
@@ -19,9 +19,9 @@ compilers:
     modules: []
     operating_system: rhel8
     paths:
-      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdclang
-      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/hipcc
-      f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
-      fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
+      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/amdclang
+      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/hipcc
+      f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/crayftn
+      fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/crayftn
     spec: clang@13.0.0_hip
     target: x86_64

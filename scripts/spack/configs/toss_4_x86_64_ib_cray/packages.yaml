@@ -62,12 +62,12 @@ packages:
   cray-mpich:
     buildable: false
     externals:
-    #- spec: cray-mpich@8.1.7%clang@13.0.0
+    #- spec: cray-mpich@8.1.9%clang@13.0.0
     #  prefix: /opt/cray/pe/mpich/8.1.9/ofi/amd/4.3
     - spec: cray-mpich@8.1.9%clang@13.0.0_hip_no_fortran+slurm
-      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1/
+      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1-cce-13.0.0/
     - spec: cray-mpich@8.1.9%clang@13.0.0_hip+slurm
-      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1/
+      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1-cce-13.0.0/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
@@ -151,16 +151,20 @@ packages:
     buildable: false
     externals:
     - spec: pdsh@2.33
-      prefix: /usr 
+      prefix: /usr
 
 # Globally lock version of third party libraries
   conduit:
     version: [0.7.2axom]
-    variants: ~shared~test
+    variants: ~shared~test~utils~examples
   hdf5:
     variants: ~shared~mpi
+  hypre:
+    version: [2.20.0]
   mfem:
+    # TODO remove variants to get parallel MFEM - issue with linking mpi related libraries
     variants: ~mpi~metis~zlib
+    version: [4.2.0]
   raja:
     variants: ~shared~examples~exercises
   scr:
