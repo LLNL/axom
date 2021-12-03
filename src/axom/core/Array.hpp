@@ -187,6 +187,10 @@ public:
   template <typename OtherArrayType>
   Array(const ArrayBase<T, DIM, OtherArrayType>& other);
 
+  /// \overload
+  template <typename OtherArrayType>
+  Array(const ArrayBase<const T, DIM, OtherArrayType>& other);
+
   /// @}
 
   /// \name Array copy and move operators
@@ -793,6 +797,22 @@ Array<T, DIM, SPACE>::Array(Array&& other)
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename OtherArrayType>
 Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
+  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+{
+  initialize(static_cast<const OtherArrayType&>(other).size(),
+             static_cast<const OtherArrayType&>(other).size());
+  // axom::copy is aware of pointers registered in Umpire, so this will handle
+  // the transfer between memory spaces
+  axom::copy(m_data,
+             static_cast<const OtherArrayType&>(other).data(),
+             m_num_elements * sizeof(T));
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename OtherArrayType>
+Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
