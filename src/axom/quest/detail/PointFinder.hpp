@@ -130,15 +130,15 @@ public:
   {
     constexpr bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
 #ifdef AXOM_USE_UMPIRE
-    // Use unified memory if we execute on GPU, otherwise use host memory
-    constexpr axom::MemorySpace UnifiedSpace =
-      DeviceExec ? axom::MemorySpace::Unified : axom::MemorySpace::Host;
+    // Use device memory if we execute on GPU, otherwise use host memory
+    constexpr axom::MemorySpace DeviceSpace =
+      DeviceExec ? axom::MemorySpace::Device : axom::MemorySpace::Host;
 
-    using IndexArray = axom::Array<IndexType, 1, UnifiedSpace>;
+    using IndexArray = axom::Array<IndexType, 1, DeviceSpace>;
     using HostIndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointArray = axom::Array<SpacePoint, 1, axom::MemorySpace::Host>;
 
-    using IndexView = axom::ArrayView<IndexType, 1, UnifiedSpace>;
+    using IndexView = axom::ArrayView<IndexType, 1, DeviceSpace>;
     using HostIndexView = axom::ArrayView<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointView = axom::ArrayView<SpacePoint, 1, axom::MemorySpace::Host>;
     using ConstHostPointView =
@@ -211,25 +211,43 @@ public:
     HostPointArray ptsHost, outIsoparHost;
     HostIndexArray outCellIdsHost;
 
+    HostIndexArray candidatesHost, offsetsHost, countsHost;
+
     // For sequential/OpenMP execution, just use the argument pointers
     // directly.
-    ConstHostPointView ptsHostPtr = pts;
+    ConstHostPointView ptsHostPtr;
     HostIndexView outCellIdsPtr(outCellIds, pts.size());
     HostPointView outIsoparPtr(outIsoparametricCoords, pts.size());
 
+    HostIndexView candidatesHostPtr, offsetsHostPtr, countsHostPtr;
+
     if(DeviceExec)
     {
-      // Copy points to host memory.
-      // TODO: see if we support copying ArrayView<const T> -> Array<T>
-      ptsHost = HostPointArray(pts.size());
-      axom::copy(ptsHost.data(), pts.data(), sizeof(SpacePoint) * pts.size());
-      ptsHostPtr = ConstHostPointView(ptsHost.data(), ptsHost.size());
+      // Copy points and candidate intersections to host memory.
+      ptsHost = pts;
+      candidatesHost = candidates;
+      offsetsHost = offsets;
+      countsHost = counts;
+      // Set up views from intermediate host arrays
+      ptsHostPtr = ptsHost;
+      candidatesHostPtr = candidatesHost;
+      offsetsHostPtr = offsetsHost;
+      countsHostPtr = countsHost;
       // Allocate intermediate output buffers on the host side.
       outCellIdsHost.resize(pts.size());
       if(outIsoparametricCoords)
       {
         outIsoparHost.resize(pts.size());
       }
+      outCellIdsPtr = outCellIdsHost;
+      outIsoparPtr = outIsoparHost;
+    }
+    else
+    {
+      ptsHostPtr = pts;
+      candidatesHostPtr = candidates;
+      offsetsHostPtr = offsets;
+      countsHostPtr = counts;
     }
 
     // Step 5: Check each candidate
@@ -239,11 +257,11 @@ public:
       npts,
       AXOM_HOST_LAMBDA(IndexType i) {
         outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
-        SpacePoint pt = pts[i];
+        SpacePoint pt = ptsHostPtr[i];
         SpacePoint isopar;
-        for(int icell = 0; icell < countsPtr[i]; icell++)
+        for(int icell = 0; icell < countsHostPtr[i]; icell++)
         {
-          int cellIdx = candidatesPtr[icell + offsetsPtr[i]];
+          int cellIdx = candidatesHostPtr[icell + offsetsHostPtr[i]];
           // if isopar is in the proper range
           if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
           {
