@@ -145,7 +145,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
 #ifdef AXOM_DEVICE_CODE
-  static_assert((SPACE == MemorySpace::Constant) == std::is_const<T>::value,
+  static_assert((SPACE != MemorySpace::Constant) || std::is_const<T>::value,
                 "T must be const if memory space is Constant memory");
 #endif
   // Intel hits internal compiler error when casting as part of function call
