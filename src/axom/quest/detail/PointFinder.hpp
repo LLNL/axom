@@ -202,17 +202,22 @@ public:
         countsPtr[i] = currCount;
       });
 
+    // Temporary host arrays we copy device-side data into when the candidate
+    // search is conducted on the GPU
     HostPointArray ptsHost, outIsoparHost;
     HostIndexArray outCellIdsHost;
-
     HostIndexArray candidatesHost, offsetsHost, countsHost;
 
     // For sequential/OpenMP execution, just use the argument pointers
     // directly.
-    ConstHostPointView ptsHostPtr;
     HostIndexView outCellIdsPtr(outCellIds, pts.size());
     HostPointView outIsoparPtr(outIsoparametricCoords, pts.size());
 
+    // If the candidate search takes place on the GPU, we need to copy the
+    // device-side data first, then set these array views to point to the
+    // intermediate arrays. Otherwise, we can set these to point to the result
+    // arrays directly.
+    ConstHostPointView ptsHostPtr;
     HostIndexView candidatesHostPtr, offsetsHostPtr, countsHostPtr;
 
     if(DeviceExec)
