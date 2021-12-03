@@ -169,7 +169,7 @@ public:
     // Step 1: count number of candidate intersections for each point
     for_all<ExecSpace>(
       npts,
-      AXOM_LAMBDA(IndexType i) mutable {
+      AXOM_LAMBDA(IndexType i) {
         countsPtr[i] = gridQuery.countCandidates(pts[i]);
         totalCountReduce += countsPtr[i];
       });
@@ -191,7 +191,7 @@ public:
     // Step 4: fill candidate array for each query box
     for_all<ExecSpace>(
       npts,
-      AXOM_LAMBDA(IndexType i) mutable {
+      AXOM_LAMBDA(IndexType i) {
         int startIdx = offsetsPtr[i];
         int currCount = 0;
         auto onCandidate = [&](int candidateIdx) -> bool {
@@ -237,7 +237,7 @@ public:
     // don't build MFEM in a thread-safe manner.
     for_all<SEQ_EXEC>(
       npts,
-      AXOM_HOST_LAMBDA(IndexType i) mutable {
+      AXOM_HOST_LAMBDA(IndexType i) {
         outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
         SpacePoint pt = pts[i];
         SpacePoint isopar;

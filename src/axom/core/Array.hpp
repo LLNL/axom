@@ -32,6 +32,17 @@ struct Uninitialized
 template <typename T, int DIM, MemorySpace SPACE>
 class Array;
 
+namespace detail
+{
+// Static information to pass to ArrayBase
+template <typename T, int DIM, MemorySpace SPACE>
+struct ArrayTraits<Array<T, DIM, SPACE>>
+{
+  constexpr static bool is_view = false;
+};
+
+}  // namespace detail
+
 /*!
  * \class Array
  *
