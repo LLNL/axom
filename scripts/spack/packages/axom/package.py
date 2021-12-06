@@ -197,6 +197,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         if "+fortran" in spec or self.compiler.fc is not None:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", True))
+            entries.append(cmake_cache_string("CMAKE_Fortran_COMPILER",
+                           os.environ['FC']))
         else:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", False))
 
@@ -275,6 +277,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 arch_str = ",".join(archs)
                 entries.append(cmake_cache_string(
                     "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
+                entries.append(cmake_cache_string(
+                    "CMAKE_HIP_ARCHITECTURES", arch_str))
             entries.append(cmake_cache_string("HIP_RUNTIME_INCLUDE_DIRS",
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
 
@@ -282,8 +286,19 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             # Above hip_link_flags are already part of the wrapped compilers on TOSS4 systems
             if "gfx908" in archs:
-                # Fix for mpi for rocm until wrapper paths are fixed
-                hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -Wl,-rpath,{0}/../llvm/lib -lpgmath -lflang -lflangrti -lompstub".format(hip_root)
+                # Fix for working around CMake adding implicit link directories
+                # returned by the Cray crayftn compiler to link executables with
+                # non-system default stdlib
+                entries.append(cmake_cache_string(
+                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                    "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
+
+                # Fixes for mpi for rocm until wrapper paths are fixed
+                #Flags for crayftn
+                hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.0/cce/x86_64/lib:/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
+
+                # Flags for amdflang
+                #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -Wl,-rpath,{0}/../llvm/lib -lpgmath -lflang -lflangrti -lompstub".format(hip_root)
 
             gcc_toolchain_regex = re.compile("--gcc-toolchain=(.*)")
             gcc_name_regex = re.compile(".*gcc-name.*")
