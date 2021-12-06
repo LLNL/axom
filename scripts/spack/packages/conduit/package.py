@@ -369,8 +369,10 @@ class Conduit(CMakePackage):
         if cxxflags:
             cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS", cxxflags))
         fflags = ' '.join(spec.compiler_flags['fflags'])
-        if self.spec.satisfies('%cce'):
+        # AXOM EDIT START
+        if self.spec.satisfies('%cce') or ("crayftn" in f_compiler):
             fflags += " -ef"
+        # AXOM EDIT END
         if fflags:
             cfg.write(cmake_cache_entry("CMAKE_Fortran_FLAGS", fflags))
 
