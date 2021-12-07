@@ -161,10 +161,10 @@ other Axom developers to use during development, to use in Axom Gitlab CI testin
 
    Run the corresponding command for the system you are on::
 
-   # blueos
-   $ lalloc 1 -W 120 scripts/llnl/build_tpl.py
-   # toss3
-   $ srun -N1 --interactive -t 120 scripts/llnl/build_tpl.py
+     # blueos
+     $ lalloc 1 -W 120 scripts/llnl/build_tpl.py
+     # toss3
+     $ srun -N1 --interactive -t 120 scripts/llnl/build_tpl.py
 
    This script will build all third-party libraries for all compilers specs
    for the machine you are on. These will be installed into shared directories
