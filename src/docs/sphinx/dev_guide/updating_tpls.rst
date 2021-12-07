@@ -150,16 +150,28 @@ other Axom developers to use during development, to use in Axom Gitlab CI testin
              will build the TPLs for the clang 10.0.0 compiler. Please see the
              ``scripts/spack/specs.json`` file for available specs. 
 
-#. When you are confident that everything is correct, become the service user
-   ``atk``, which requires a certain level of permission, on each of the
-   machines named in Axom's standard host-configs. Run the following script
-   which will build all specs for the machine you are on:
+#. **Install TPLs on all required LC machines.**
+   This step need to be run on each of the machines named in Axom's standard host-configs.
+   When you are confident that everything is correct, become the service user
+   ``atk`` via the following command::
 
-   ``$ scripts/llnl/build_tpl.py``
+   $ xsu atk
 
-   This will do all of the standard installations in the shared directories
+   .. note:: This command requires a certain level of permission.
+
+   Run the corresponding command for the system you are on::
+
+   # blueos
+   $ lalloc 1 -W 120 scripts/llnl/build_tpl.py
+   # toss3
+   $ srun -N1 --interactive -t 120 scripts/llnl/build_tpl.py
+
+   This script will build all third-party libraries for all compilers specs
+   for the machine you are on. These will be installed into shared directories
    used by Axom developers. When completed, they will produce new host-config
-   files for each configuration. Give these files to your regular user account
+   files for each configuration. These host-configs will be at the base of the repository
+   and named in the following pattern: ``<machine name>-<SYS_TYPE>-<compiler spec>.cmake``
+   Give these files to your regular user account
    and log back in to that account. Copy these new host-config files to the
    ``host-configs`` subdirectory and commit them to your branch. Make sure all
    file changes from all previous steps are also committed and pushed upstream.
