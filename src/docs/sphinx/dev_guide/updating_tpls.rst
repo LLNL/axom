@@ -87,14 +87,15 @@ instructions on how to update a built-in TPL are as follows:
 #. Follow the normal pull request work flow. More info on :ref:`pullrequest-label`.
 
 
-TPLs (system-level and external libraries)
-------------------------------------------
+Shared Third-party Library Installation Steps
+---------------------------------------------
 
 The following instructions describe how to install local copies of Axom
-TPLs on Livermore Computing (LC) platforms. Typically, this process is 
-followed when you want to build and test Axom against new versions of TPLs
-to make sure everything works properly before deploying a new TPL set for
-other Axom developers to use during development, to use in Axom Gitlab CI testing, etc.
+TPLs on Livermore Computing (LC) platforms and recreate our Docker containers
+with a new set of TPLs. Typically, this process is followed when you want to 
+update one or more TPLs which Axom depends on. After they are built and
+the required changes are merged into develop, they will be available for
+other Axom developers to use during development, in Axom Gitlab CI testing, etc.
 
 #. **Working on a local branch.** 
    Make a local clone of the Axom repo and create a branch to work on. Working
