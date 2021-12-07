@@ -95,7 +95,7 @@ It is often useful to have a different set of TPLs during the development proces
 For example, you may want to try out a new library or version of an existing library.
 
 From the top-level Axom directory, run the following script to build all TPLs
-for all existing compiler spec on the platform you are currently on::
+for all existing compiler specs on the platform you are currently on::
 
 $ ./scripts/llnl_scripts/build_tpls.py -d local/install/path
 
