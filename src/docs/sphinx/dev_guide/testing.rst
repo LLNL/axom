@@ -383,7 +383,7 @@ Examples::
 Running Tests and Examples
 ============================
 
-Axom examples and tests can be run in multiple different ways using the make
+Axom examples and tests can be run in different ways. For example, you can run all tests via the command ``make test``.  Alternatively, you can run each test individually by manually running its executable.
 target, ``test``, or manually individually after they are built. The best 
 choice for running them depends on what you are trying to do.
 
