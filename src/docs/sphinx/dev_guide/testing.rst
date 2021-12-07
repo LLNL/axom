@@ -169,7 +169,7 @@ respectively::
     ::testing::InitGoogleTest(&argc, argv);
 
     SimpleLogger logger;  // create & initialize test logger,
-                            // finalized when exiting main scope
+                          // finalized when exiting main scope
 
     MPI_Init(&argc, &argv);
 
