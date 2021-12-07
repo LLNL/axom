@@ -94,7 +94,7 @@ The following instructions describe how to install local copies of Axom
 TPLs on Livermore Computing (LC) platforms. Typically, this process is 
 followed when you want to build and test Axom against new versions of TPLs
 to make sure everything works properly before deploying a new TPL set for
-other Axom developers to use, to use in Axom CI testing, etc.
+other Axom developers to use during development, to use in Axom Gitlab CI testing, etc.
 
 #. **Working on a local branch.** 
    Make a local clone of the Axom repo and create a branch to work on. Working
