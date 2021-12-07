@@ -21,7 +21,7 @@
 #include <list>
 #include <vector>
 #include <set>
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace axom
 {
@@ -70,7 +70,10 @@ private:
     ElementFacePair(int el, int* vlist)
     {
       element_idx = el;
-      for(int i = 0; i < (int)TOP_DIM; i++) face_vidx[i] = vlist[i];
+      for(int i = 0; i < (int)TOP_DIM; i++)
+      {
+        face_vidx[i] = vlist[i];
+      }
     }
   };
 
@@ -151,7 +154,7 @@ public:
       m_num_removed_elements_since_last_compact = 0;
     }
 
-    SLIC_WARNING_IF(!m_mesh.isValid(true),
+    SLIC_WARNING_IF(!m_mesh.isValid(),
                     "IA m_mesh is invalid after adding new point");
   }
 
@@ -167,18 +170,17 @@ public:
    * \note The suffix ".vtk" will be appended to the provided  filename
    * \details This function uses mint to write the m_mesh to VTK format.
    */
-  void writeToVTKFile(const std::string filename)
+  void writeToVTKFile(const std::string& filename)
   {
     m_mesh.compact();
-    const auto CELL_TYPE =
-      DIMENSION == 2 ? axom::mint::TRIANGLE : axom::mint::TET;
+    const auto CELL_TYPE = DIMENSION == 2 ? mint::TRIANGLE : mint::TET;
 
-    axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE> mint_mesh(DIMENSION,
-                                                               CELL_TYPE);
+    using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+    UMesh mint_mesh(DIMENSION, CELL_TYPE);
 
     for(int i = 0; i < m_mesh.vertex_set.size(); i++)
     {
-      mint_mesh.appendNodes(m_mesh.getVertexPoint(i).data());
+      mint_mesh.appendNodes(m_mesh.getVertexPoint(i).data(), 1);
     }
 
     for(int i = 0; i < m_mesh.ev_rel.size(); i++)
