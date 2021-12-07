@@ -111,13 +111,13 @@ arise. The generated host-config files will be located in the top-level Axom
 directory of your local clone of the repo. If any changes to Axom code are 
 needed to work with the TPL update(s), make the changes and test them.
 
-.. note:: You can build a subset of TPLs for a platform, by passing Spack
-          spec arguments to the Python script. For example,
+.. note:: You can build a subset of TPLs for a platform, by passing a Spack
+          spec arguments to the `build_tpls.py` script. For example,
 
-          ``$ ./scripts/llnl_scripts/build_tpls.py --spec clang@10.0.0~cpp14+devtools+mfem+c2c ...``
+          ``--spec clang@10.0.0~cpp14+devtools+mfem+c2c``
 
           will build the TPLs for the clang 10.0.0 compiler. Please see the
-          ``scripts/spack/specs.json`` file for available specs. 
+          ``scripts/spack/specs.json`` file for a list of currently tested specs. 
 
 
 Shared Third-party Library Installation Steps
