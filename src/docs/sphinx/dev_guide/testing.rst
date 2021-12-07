@@ -376,6 +376,7 @@ The format of an example file name is::
   <component name>_<example name>_<optional language specifier>_ex
 
 Examples::
+
   sidre_shocktube_ex.cpp    ('shocktube' C++ example)
   sidre_shocktube_F_ex.f    ('shocktube' Fortran example)
 
@@ -383,12 +384,12 @@ Examples::
 Running Tests and Examples
 ============================
 
-Axom examples and tests can be run in different ways. For example, you can run all tests via the command ``make test``.  Alternatively, you can run each test individually by manually running its executable.
-target, ``test``, or manually individually after they are built. The best 
-choice for running them depends on what you are trying to do.
+Axom examples and tests can be run in different ways. Examples and tests
+can be run individually by manually running their executables. Built examples
+are in the build directory under ``examples`` and tests are under ``tests``.
 
-For example, if you build Axom and want to make sure everything is working
-properly, you can type the following command in the build directory::
+Tests can also be ran as a suite with the build target `test` from the
+build directory.  For example::
 
   $ make test 
 
