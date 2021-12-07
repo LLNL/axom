@@ -75,7 +75,7 @@ They can be found in our repository here: `src/thirdparty`. The basic
 instructions on how to update a built-in TPL are as follows:
 
 #. Download the new release and override the source that is already there.
-   This can often involve removing no-longer needed files but most of the
+   This can often involve removing files no-longer needed but most of the
    current ones are a single header file.
 
 #. Review and apply the existing patch files. More than likely, you will not
