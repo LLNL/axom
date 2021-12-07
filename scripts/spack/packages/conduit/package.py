@@ -69,11 +69,6 @@ class Conduit(CMakePackage):
     variant("shared", default=True, description="Build Conduit as shared libs")
     variant("test", default=True, description='Enable Conduit unit tests')
 
-    # AXOM EDIT START
-    variant("examples", default=True, description="Build Conduit examples")
-    variant("utils", default=True, description='Build Conduit utils')
-    # AXOM EDIT END
-
     # variants for python support
     variant("python", default=False, description="Build Conduit Python support")
     variant("fortran", default=True, description="Build Conduit Fortran support")
@@ -103,6 +98,11 @@ class Conduit(CMakePackage):
     #######################
     # CMake
     #######################
+    # AXOM EDIT START
+    # Update blt to get access to BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE variable
+    depends_on('blt@0.4.1:', type='build', when='@0.7.2axom')
+    # AXOM EDIT START
+
     # cmake 3.14.1 or newer
     depends_on("cmake@3.14.1:", type='build')
 
@@ -310,6 +310,9 @@ class Conduit(CMakePackage):
 
         # are we on a specific machine
         on_blueos = 'blueos' in sys_type
+        # AXOM EDIT START
+        on_toss4 = 'toss_4' in sys_type
+        # AXOM EDIT END
 
         ##############################################
         # Find and record what CMake is used
@@ -369,9 +372,20 @@ class Conduit(CMakePackage):
         if cxxflags:
             cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS", cxxflags))
         fflags = ' '.join(spec.compiler_flags['fflags'])
+
         # AXOM EDIT START
+        cfg.write(cmake_cache_entry("BLT_SOURCE_DIR", spec['blt'].prefix))
+
         if self.spec.satisfies('%cce') or ("crayftn" in f_compiler):
             fflags += " -ef"
+
+            # Fix for working around CMake adding implicit link directories
+            # returned by the Cray crayftn compiler to link executables with
+            # non-system default stdlib
+            if on_toss4:
+                cfg.write(cmake_cache_entry(
+                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                    "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
         # AXOM EDIT END
         if fflags:
             cfg.write(cmake_cache_entry("CMAKE_Fortran_FLAGS", fflags))
@@ -429,21 +443,6 @@ class Conduit(CMakePackage):
                         flags = "${CMAKE_SHARED_LINKER_FLAGS} " + rpaths
                         cfg.write(cmake_cache_entry(
                                   "CMAKE_SHARED_LINKER_FLAGS", flags))
-
-        # AXOM EDIT START
-        #######################
-        # Examples and Utils
-        #######################
-        if "+examples" in spec:
-            cfg.write(cmake_cache_entry("ENABLE_EXAMPLES", "ON"))
-        else:
-            cfg.write(cmake_cache_entry("ENABLE_EXAMPLES", "OFF"))
-
-        if "+utils" in spec:
-            cfg.write(cmake_cache_entry("ENABLE_UTILS", "ON"))
-        else:
-            cfg.write(cmake_cache_entry("ENABLE_UTILS", "OFF"))
-        # AXOM EDIT END
 
         #######################
         # Python
