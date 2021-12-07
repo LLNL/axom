@@ -87,6 +87,39 @@ instructions on how to update a built-in TPL are as follows:
 #. Follow the normal pull request work flow. More info on :ref:`pullrequest-label`.
 
 
+.. _local-tpls-label:
+Local Third-party Library Installation
+--------------------------------------
+
+It is often useful to have a different set of TPLs during the development process.
+For example, you may want to try out a new library or version of an existing library.
+
+From the top-level Axom directory, run the following script to build all TPLs
+for all existing compiler spec on the platform you are currently on::
+
+$ ./scripts/llnl_scripts/build_tpls.py -d local/install/path
+
+where ``local/install/path`` is a directory location where you want the 
+libraries to be installed.
+
+It will output whether the TPL install succeeded and, 
+subsequently, whether an Axom build against the TPL install succeeded.
+
+Running the script produces new host-config files (i.e., CMake cache files) 
+that you can use to build and test Axom with the installation, if issues
+arise. The generated host-config files will be located in the top-level Axom
+directory of your local clone of the repo. If any changes to Axom code are 
+needed to work with the TPL update(s), make the changes and test them.
+
+.. note:: You can build a subset of TPLs for a platform, by passing Spack
+          spec arguments to the Python script. For example,
+
+          ``$ ./scripts/llnl_scripts/build_tpls.py --spec clang@10.0.0~cpp14+devtools+mfem+c2c ...``
+
+          will build the TPLs for the clang 10.0.0 compiler. Please see the
+          ``scripts/spack/specs.json`` file for available specs. 
+
+
 Shared Third-party Library Installation Steps
 ---------------------------------------------
 
@@ -124,32 +157,9 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    sub-directory for each TPL Axom uses. Modify the contents of the Spack
    package file ``package.py`` in each package sub-directory as needed. 
 
-#. **Test installation.**
-   Do a test installation of your changes in a local directory by running
-   the following command in the top-level Axom directory::
+   .. note:: Before continuing, you will want to test the installation works
+             on all LC systems with the steps in :ref:`local-tpls-label`.
 
-   $ ./scripts/llnl_scripts/build_tpls.py -d local/install/path
-
-   where ``local/install/path`` is a directory location where you want the 
-   libraries to be installed.
-
-   The script will do a full installation of all TPLs for the plaform you 
-   are running on. It will output whether the TPL install succeeded and, 
-   subsequently, whether an Axom build against the TPL install succeeded.
-
-   Running the script produces new host-config files (i.e., CMake cache files) 
-   that you can use to build and test Axom with the installation, if issues
-   arise. The generated host-config files will be located in the top-level Axom
-   directory of your local clone of the repo. If any changes to Axom code are 
-   needed to work with the TPL update(s), make the changes and test them.
-
-   .. note:: You can build a subset of TPLs for a platform, by passing Spack
-             spec arguments to the Python script. For example,
-
-             ``$ ./scripts/llnl_scripts/build_tpls.py --spec clang@10.0.0~cpp14+devtools+mfem+c2c ...``
-
-             will build the TPLs for the clang 10.0.0 compiler. Please see the
-             ``scripts/spack/specs.json`` file for available specs. 
 
 #. **Install TPLs on all required LC machines.**
    This step need to be run on each of the machines named in Axom's standard host-configs.
