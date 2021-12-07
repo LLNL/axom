@@ -10,7 +10,7 @@ Axom Tests and Examples
 ****************************************
 
 This section describes how to build and organize tests and examples
-for Axom components. These live in `tests` and `examples` directories
+for Axom components. These live in ``tests`` and ``examples`` directories
 within each component top-level directory. 
 
 Comprehensive collections of well-designed unit tests and integration 
@@ -88,7 +88,7 @@ for C and C++ unit tests and we use the
 Organization of tests in either language/framework are similar should 
 follow the principles summarized in the guidelines above. Each Google Test or 
 FRUIT file is compiled into its own executable that can be run directly or 
-as a 'make' target. Each executable may contain multiple tests. So that 
+as the build target ``test``. Each executable may contain multiple tests. So that 
 running individual tests as needed is not overly burdensome, such as unit 
 tests for a C++ class, we put all tests for distinct software units in files 
 separate from those for other units. Tests within each file should be sized
@@ -122,21 +122,21 @@ The contents of a typical Google Test file look like this::
 
   // Etc.
 
-Each unit test is defined by the Google Test `TEST()` macro which accepts a 
+Each unit test is defined by the Google Test ``TEST()`` macro which accepts a 
 *test case name* identifier, such as the name of the C++ class being tested, 
 and a *test name*, which indicates the functionality being verified by the 
 test. For each test, logical assertions are defined using 
 Google Test `assertion macros`. Failure of expected values will cause the test 
 to fail, but other tests will continue to run. 
 
-Note that the Google Test framework will generate a 'main()' routine for 
+Note that the Google Test framework will generate a ``main()`` routine for 
 each test file if it is not explicitly provided. However, sometimes it is 
-necessary to provide a 'main()' routine that contains operation to run 
+necessary to provide a ``main()`` routine that contains operation to run 
 before or after the unit tests in a file; e.g., initialization code or 
-pre-/post-processing operations. A 'main()' routine provided in a test 
+pre-/post-processing operations. A ``main()`` routine provided in a test 
 file should be placed at the end of the file in which it resides.
 
-Here is an example 'main()' from an Axom test that sets up a slic logger
+Here is an example ``main()`` from an Axom test that sets up a slic logger
 object to be used in tests:: 
 
   int main(int argc, char * argv[])
@@ -155,10 +155,10 @@ object to be used in tests::
   }
 
 Note that Google Test is initialized first, followed by initialization of the
-slic SimpleLogger object. The `RUN_ALL_TESTS()` Google Test macro will 
+slic SimpleLogger object. The ``RUN_ALL_TESTS()`` Google Test macro will 
 run all the tests in the file. 
 
-As another example, consider a set of tests that use MPI.  The 'main()' 
+As another example, consider a set of tests that use MPI.  The ``main()`` 
 routine will initialize and finalize MPI before and after tests are run,
 respectively::
 
@@ -180,7 +180,7 @@ respectively::
     return result;
   }
 
-Note that Google test is initialized before 'MPI_Init()' is called. 
+Note that Google test is initialized before ``MPI_Init()`` is called. 
 
 Other Google Test features, such as *fixtures*, may be used as well. 
 
@@ -252,12 +252,6 @@ program is defined at the end of the test file and is organized as follows::
 
 Please refer to the `FRUIT documentation <https://sourceforge.net/projects/fortranxunit/>`_ for more information.
 
-===========================
-Integration Tests
-===========================
-
-.. important:: Fill this in when we know what we want to do for this...
-
 =======================================
 CMake Files and Variables for Tests
 =======================================
@@ -266,14 +260,14 @@ The `CMakeLists.txt` file in component test directory defines the
 following items:
 
   #. Variables for test source files as needed. Separate variables should
-     be used for Fortran, C++, etc. For example, `gtest_sidre_tests` for
-     C++ tests, `gtest_sidre_C_tests` for C tests, and `fruit_sidre_tests`
+     be used for Fortran, C++, etc. For example, ``gtest_sidre_tests`` for
+     C++ tests, ``gtest_sidre_C_tests`` for C tests, and ``fruit_sidre_tests``
      for Fortran tests. Note that we use the *Google Test* framework for C
      and C++ tests and *Fruit* for Fortran tests.
 
   #. An executable and test variable for each test executable to be
-     generated. These variables use the `blt_add_executable` and
-     `axom_add_test` macros, respectively, as described above.
+     generated. These variables use the ``blt_add_executable`` and
+     ``axom_add_test`` macros, respectively, as described above.
 
 .. note:: Fortran executables and tests should be guarded to prevent
           generation when Fortran is not enabled.
@@ -289,9 +283,9 @@ Examples for Axom components serve to illustrate more realistic usage of
 those components. They can also be run as tests if that's appropriate.
 
 The source code for each component test should be contained in the component 
-`examples` directory if it is contained in one file. If it contains multiple
+``examples`` directory if it is contained in one file. If it contains multiple
 files, these should be placed in a descriptively-named subdirectory 
-of the `examples` directory.
+of the ``examples`` directory.
 
 In addition, each example should be given its own CMake-generated make target.
 
@@ -300,16 +294,16 @@ In addition, each example should be given its own CMake-generated make target.
 CMake Files and Variables for Examples
 =======================================
 
-The `CMakeLists.txt` file in each component's 'examples' directory defines the
+The ``CMakeLists.txt`` file in each component's ``examples`` directory defines the
 following items:
 
   #. Variables for example source files and header files as needed
      Separate variables should be used for Fortran, C++, etc. For example,
-     `example_sources` for C++, `F_example_sources` for Fortran.
+     ``example_sources`` for C++, ``F_example_sources`` for Fortran.
 
   #. An executable and test variable for each example executable to be
      generated and each executable to be run as a test. These definitions
-     use the `blt_add_executable` and `axom_add_test` macros, respectively.
+     use the ``blt_add_executable`` and ``axom_add_test`` macros, respectively.
      For example::
 
        blt_add_executable(NAME  <example executable name>
@@ -334,8 +328,8 @@ Filename and CMake Target Conventions for Axom Tests and Examples
 
 The conventions in this section are intended to make it easy to tell what
 is in a given component test or example file and to make it easy to run
-desired test or example. In Axom, we use 'make' targets to build and run 
-tests and examples. Typing `make help` will list all available targets. When 
+desired test or example. In Axom, we use ``make`` targets to build and run 
+tests and examples. Typing ``make help`` will list all available targets. When 
 the following conventions are followed, all test and example targets for a 
 component will be grouped together in this listing. Also, it will be clear 
 from each target name what the target is for.
@@ -388,7 +382,7 @@ Axom examples and tests can be run in different ways. Examples and tests
 can be run individually by manually running their executables. Built examples
 are in the build directory under ``examples`` and tests are under ``tests``.
 
-Tests can also be ran as a suite with the build target `test` from the
+Tests can also be ran as a suite with the build target ``test`` from the
 build directory.  For example::
 
   $ make test 
