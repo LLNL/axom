@@ -141,8 +141,8 @@ Top-level component directory
 The top-level component directory contains a ``CMakeLists.txt``, e.g., 
 ``axom/src/components/sidre/CMakeLists.txt``, which contains the following items:
 
-  #. Checks for necessary dependencies with useful error or warning messages; 
-     e.g.,::
+  #. A CMake macro call that checks for any of the required components and/or third-party dependencies
+     and errors out with a helpful message, e.g.,::
 
        axom_component_requires(NAME       Sidre
                                COMPONENTS SLIC
