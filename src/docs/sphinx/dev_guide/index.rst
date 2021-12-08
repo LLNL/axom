@@ -4,7 +4,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 #####################
-Axom Developer Guide
+Developer Guide
 #####################
 
 This guide describes important aspects of software development processes used

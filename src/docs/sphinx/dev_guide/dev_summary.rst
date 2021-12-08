@@ -4,7 +4,7 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 ****************************************
-Axom Development Process Summary
+Development Process Summary
 ****************************************
 
 This section provides a high-level overview of key Axom software development

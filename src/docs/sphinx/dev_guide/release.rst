@@ -6,7 +6,7 @@
 .. _release-label:
 
 *******************************************
-Axom Release Process
+Release Process
 *******************************************
 
 The Axom team decides as a group when the code is ready for a release.

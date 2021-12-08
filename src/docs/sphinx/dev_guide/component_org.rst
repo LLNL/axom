@@ -6,7 +6,7 @@
 .. _componentorg-label:
 
 ******************************************************
-Axom Component Structure
+Component Structure
 ******************************************************
 
 This section describes the structure of directories, files, and their contents

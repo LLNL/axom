@@ -6,7 +6,7 @@
 .. _testing-label:
 
 ****************************************
-Axom Tests and Examples
+Tests and Examples
 ****************************************
 
 This section describes how to build and organize tests and examples
