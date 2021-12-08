@@ -161,7 +161,7 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
 
 
 #. **Install TPLs on all required LC machines.**
-   This step need to be run on each of the machines named in Axom's standard host-configs.
+   This step needs to be run on each of the machines named in Axom's standard host-configs.
    When you are confident that everything is correct, become the service user
    ``atk`` via the following command::
 
