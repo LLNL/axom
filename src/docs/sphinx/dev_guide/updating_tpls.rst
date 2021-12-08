@@ -71,7 +71,7 @@ expose for downstream customers to use if they wish.
    dependencies or downstream customers who wish their own versions.  For
    example, ``fmt::format("foo")`` is ``axom::fmt::format("foo")``.
 
-They can be found in our repository here: `src/thirdparty`. The basic 
+They can be found in the directory: ``src/thirdparty``. The basic 
 instructions on how to update a built-in TPL are as follows:
 
 #. Download the new release and override the source that is already there.
