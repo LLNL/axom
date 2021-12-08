@@ -283,7 +283,7 @@ that must be added:
      a file includes files containing Shroud-generated 'extern C' prototypes.
 
   #. Directories to hold the generated files for different languages; e.g.,
-     `c_fortran` for C and Fortran APIs, `python` for python API, etc.
+     ``c_fortran`` for C and Fortran APIs, ``python`` for python API, etc.
 
   #. 'Splicer' files containing code snippets that get inserted in the
      generated files.
@@ -305,7 +305,7 @@ that must be added:
      directories to put generated files in, which splicer files to use, etc.
 
 The end result of properly setting up these pieces is a make target called
-`generate_sidre_shroud` that can be invoked to generate *sidre* API code
+``generate_sidre_shroud`` that can be invoked to generate *sidre* API code
 in other languages Axom supports.
 
 

@@ -113,7 +113,7 @@ directory of your local clone of the repo. If any changes to Axom code are
 needed to work with the TPL update(s), make the changes and test them.
 
 .. note:: You can build a subset of TPLs for a platform, by passing a Spack
-          spec arguments to the `build_tpls.py` script. For example,
+          spec arguments to the ``build_tpls.py`` script. For example,
 
           ``--spec clang@10.0.0~cpp14+devtools+mfem+c2c``
 
