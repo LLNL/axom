@@ -188,6 +188,10 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    ``host-configs`` subdirectory and commit them to your branch. Make sure all
    file changes from all previous steps are also committed and pushed upstream.
 
+   .. note:: If this step fails, delete the time date stamped directory that was created.
+             If you forget to do this, it will eventually be deleted by hand in bulk when
+             they are past a certain age and no longer needed.
+
 #. **Build new Docker images.**
    We utilize Docker images that have pre-built TPLs in our Github CI checks.
    To build these, go to our
