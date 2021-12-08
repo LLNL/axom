@@ -183,13 +183,16 @@ public:
    * \brief Constructor for transferring between memory spaces
    * 
    * \param [in] other The array in a different memory space to copy from
+   * \param [in] allocator_id the ID of the allocator to use (optional)
    */
   template <typename OtherArrayType>
-  Array(const ArrayBase<T, DIM, OtherArrayType>& other);
+  Array(const ArrayBase<T, DIM, OtherArrayType>& other,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /// \overload
   template <typename OtherArrayType>
-  Array(const ArrayBase<const T, DIM, OtherArrayType>& other);
+  Array(const ArrayBase<const T, DIM, OtherArrayType>& other,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /// @}
 
@@ -796,9 +799,10 @@ Array<T, DIM, SPACE>::Array(Array&& other)
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename OtherArrayType>
-Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other)
+Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other,
+                            int allocatorId)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
-  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+  , m_allocator_id(allocatorId)
 {
   initialize(static_cast<const OtherArrayType&>(other).size(),
              static_cast<const OtherArrayType&>(other).size());
@@ -812,9 +816,10 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other)
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename OtherArrayType>
-Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other)
+Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other,
+                            int allocatorId)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
-  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+  , m_allocator_id(allocatorId)
 {
   initialize(static_cast<const OtherArrayType&>(other).size(),
              static_cast<const OtherArrayType&>(other).size());
