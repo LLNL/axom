@@ -137,7 +137,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     depends_on("mfem", when="+mfem")
     depends_on("mfem~mpi", when="+mfem~mpi")
-    depends_on("hypre~fortran", when="+mfem~fortran")
+
+    # Disable fortran, causing "cannot compile a simple Fortran program"
+    # with rocm
+    depends_on("hypre~fortran", when="+mfem+rocm")
 
     depends_on("python", when="+python")
 
@@ -197,8 +200,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         if "+fortran" in spec or self.compiler.fc is not None:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", True))
-            entries.append(cmake_cache_string("CMAKE_Fortran_COMPILER",
-                           os.environ['FC']))
         else:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", False))
 
@@ -458,7 +459,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 "# Root directory for generated developer tools\n")
             entries.append(cmake_cache_path("DEVTOOLS_ROOT", devtools_root))
 
-            # Only turn on clangformat support if devtools is on
+        if "+devtools" in spec and 'toss_4' not in os.environ["SYS_TYPE"]:
+            # Only turn on clangformat support if devtools is on and not TOSS4
             clang_fmt_path = spec['llvm'].prefix.bin.join('clang-format')
             entries.append(cmake_cache_path(
                 "CLANGFORMAT_EXECUTABLE", clang_fmt_path))

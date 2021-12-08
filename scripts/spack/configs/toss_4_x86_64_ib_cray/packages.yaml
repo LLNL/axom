@@ -162,8 +162,6 @@ packages:
   hypre:
     version: [2.20.0]
   mfem:
-    # TODO remove variants to get parallel MFEM - issue with linking mpi related libraries
-    variants: ~mpi~metis~zlib
     version: [4.2.0]
   raja:
     variants: ~shared~examples~exercises
