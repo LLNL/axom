@@ -156,7 +156,7 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    sub-directory for each TPL Axom uses. Modify the contents of the Spack
    package file ``package.py`` in each package sub-directory as needed. 
 
-   .. note:: Before continuing, you will want to test the installation works
+   .. note:: Before continuing, you should test that the installation works
              on all LC systems with the steps in :ref:`local-tpls-label`.
 
 
