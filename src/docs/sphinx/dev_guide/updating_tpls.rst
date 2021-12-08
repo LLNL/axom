@@ -178,7 +178,8 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
      $ srun -N1 --interactive -t 120 scripts/llnl/build_tpl.py
 
    This script will build all third-party libraries for all compilers specs
-   for the machine you are on. These will be installed into shared directories
+   for the machine you are on. These will be installed into the shared LC directory
+   ``/usr/workspace/axom/libs/<SYS_TYPE>/<time date>/<compiler>``
    used by Axom developers. When completed, they will produce new host-config
    files for each configuration. These host-configs will be at the base of the repository
    and named in the following pattern: ``<machine name>-<SYS_TYPE>-<compiler spec>.cmake``
