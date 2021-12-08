@@ -132,9 +132,7 @@ the required changes are merged into develop, they will be available for
 other Axom developers to use during development, in Axom Gitlab CI testing, etc.
 
 #. **Working on a local branch.** 
-   Make a local clone of the Axom repo and create a branch to work on. Working
-   on a separate branch is a good practice to avoid propagating mis-steps
-   to other users and/or developers.
+   Make a local clone of the Axom repo and create a branch to work on.
 
 #. **Changing versions of system packages or other TPLs.**
    To change a version of a system package, which applies to an LC platforms 

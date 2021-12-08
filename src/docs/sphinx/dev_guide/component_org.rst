@@ -148,6 +148,13 @@ The top-level component directory contains a ``CMakeLists.txt``, e.g.,
                                COMPONENTS SLIC
                                TPLS       Conduit )
 
+     .. note:: These dependencies should be limited to the requirements of this singular component.
+               Do not list inherited dependencies unless they are used directly in this component.
+               Instead ensure that the upstream component has the correct requirements listed.
+
+     .. note:: Optional dependencies should *not* be listed here. Instead toggle their behaviors
+               via CMake logic by adding defines, source files, and dependencies.
+
   #. Subdirectories additions with guards as needed; e.g.,::
 
        add_subdirectory(src)  
@@ -179,9 +186,9 @@ Component src directory
 
 The ``CMakeLists.txt`` file in the component ``src`` directory defines:
 
-  #. A variable for component header files named `<component name>_headers`
-  #. A variable for component source files named `<component name>_sources`
-  #. A variable for component dependencies named `<component name>_depends`
+  #. A variable for component header files named ``<component name>_headers``
+  #. A variable for component source files named ``<component name>_sources``
+  #. A variable for component dependencies named ``<component name>_depends``
 
 For example, these variables for the *sidre* component are ``sidre_headers``,
 ``sidre_sources``, and ``sidre_depends``. 
@@ -214,15 +221,11 @@ All components should follow this format to describe the library information.
 Component docs directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A component `docs` directory contains a ``CMakeLists.txt`` file that uses
-the CMake ``add_subdirectory`` command to add `sphinx` and `doxygen` 
-subdirectories to the build configuration. These should be guarded to prevent
-addition if either *Sphinx* or *Doxygen* are not found.
-
-``CMakeLists.txt`` files in the `sphinx` and `doxygen` subdirectories add
-targets and dependencies for each type of documentation build. For example,
-the *sidre* component generates `sidre_docs` and `sidre_doxygen` targets
-for these document types.
+A component ``docs`` directory contains a ``sphinx`` that has the
+hand-written user documentation that is built and hosted on the Axom's
+`ReadTheDocs <https://axom.readthedocs.io/en/develop/index.html>`_
+page. These are included by listing them in the Table of Contents 
+and in the Documentation section of ``src/index.rst``.
 
 Component tests and examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -266,7 +269,7 @@ Typically, we use the Shroud tool to generate C and Fortran APIs from our C++
 interface code. Shroud is a python script that generate code
 from a *yaml* file that describes C++ types and their interfaces. It was
 developed for the Axom project and has since been generalized and is supported
-as a standalone project. ***Add link to Shroud project***
+as a `standalone project <https://github.com/LLNL/shroud>`_.
 To illustrate what is needed to generate multi-language API code via a make 
 target in the Axom build system, we describe the contents of the *sidre* 
 Axom component interface directory ``axom/src/components/sidre/src/interface``
