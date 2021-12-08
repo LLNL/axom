@@ -144,7 +144,7 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    has a ``packages.yaml`` file which contains an entry for each system level
    package we rely on. Find the entry for the library you wish to update and 
    change the version number. Do this for each system you want to test/change,
-   including configurations in the `docker` subdirectory.
+   including configurations in the ``docker`` subdirectory.
 
    .. note:: Alongside each ``packages.yaml`` in each system package directory,
              there is a ``compilers.yaml`` file containing compiler and 
