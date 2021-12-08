@@ -50,6 +50,9 @@ public:
   using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
   using IndexType = typename MeshWrapperType::IndexType;
 
+private:
+  constexpr static bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
+
 public:
   /*!
    * Constructor for PointFinder
@@ -76,11 +79,24 @@ public:
     // setup bounding boxes -- Slightly scaled for robustness
 
     SpatialBoundingBox meshBBox;
-    m_cellBBoxes =
-      axom::Array<SpatialBoundingBox>(numCells, numCells, allocatorID);
+#ifdef AXOM_USE_UMPIRE
+    axom::Array<SpatialBoundingBox, 1, MemorySpace::Host> cellBBoxesHost(numCells);
+#else
+    axom::Array<SpatialBoundingBox> cellBBoxesHost(numCells);
+#endif
     m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor,
-                                                        m_cellBBoxes.data(),
+                                                        cellBBoxesHost.data(),
                                                         meshBBox);
+    if(DeviceExec)
+    {
+      // Copy the host-side bounding boxes to GPU memory.
+      m_cellBBoxes =
+        axom::Array<SpatialBoundingBox>(cellBBoxesHost, m_allocatorID);
+    }
+    else
+    {
+      m_cellBBoxes = std::move(cellBBoxesHost);
+    }
 
     // initialize implicit grid, handle case where resolution is a NULL pointer
     if(res != nullptr)
@@ -111,9 +127,18 @@ public:
     SpacePoint pt(pos);
     SpacePoint isopar;
 
-    locatePoints(axom::ArrayView<const SpacePoint>(&pt, 1),
-                 &containingCell,
-                 &isopar);
+    if(DeviceExec)
+    {
+      axom::Array<SpacePoint> dev_ptr(axom::ArrayView<const SpacePoint>(&pt, 1),
+                                      m_allocatorID);
+      locatePoints(dev_ptr, &containingCell, &isopar);
+    }
+    else
+    {
+      locatePoints(axom::ArrayView<const SpacePoint>(&pt, 1),
+                   &containingCell,
+                   &isopar);
+    }
 
     // Copy data back to input parameter isoparametric, if necessary
     if(isoparametric != nullptr)
@@ -128,7 +153,6 @@ public:
                     IndexType* outCellIds,
                     SpacePoint* outIsoparametricCoords) const
   {
-    constexpr bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
     using IndexArray = axom::Array<IndexType>;
     using IndexView = axom::ArrayView<IndexType>;
 #ifdef AXOM_USE_UMPIRE
