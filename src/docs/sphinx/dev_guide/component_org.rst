@@ -276,7 +276,7 @@ Axom component interface directory ``axom/src/components/sidre/src/interface``
 that must be added:
 
   #. A *yaml* file, named ``sidre_shroud.yaml``, which contains an annotated 
-     description of C++ types and their interfaces in *sidre* C++ files. 
+     description of C++ types and their interfaces in *sidre* C++ files.
      This file and its contents are generated manually.
 
   #. Header files, such as ``sidre.h``, that can be included in C files. Such
