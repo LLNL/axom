@@ -167,7 +167,7 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
 
    $ xsu atk
 
-   .. note:: This command requires a certain level of permission.
+   .. note:: This command requires special access permissions. If you need them, contact the Axom team.
 
    Run the corresponding command for the system you are on::
 
