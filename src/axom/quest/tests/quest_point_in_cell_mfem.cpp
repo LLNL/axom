@@ -259,8 +259,7 @@ public:
       pts.push_back(axom::quest::utilities::randomSpacePt<DIM>(-bds, bds));
     }
 
-    axom::Array<SpacePt> exec_pts(1, 1, m_allocatorID);
-    exec_pts = pts;
+    axom::Array<SpacePt> exec_pts(pts, m_allocatorID);
 
     return exec_pts;
   }
