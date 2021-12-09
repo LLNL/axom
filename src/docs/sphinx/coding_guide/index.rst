@@ -3,7 +3,7 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Axom Coding Guidelines
+Coding Guidelines
 ==============================
 
 These guidelines define code style conventions for the Axom project. Most of the

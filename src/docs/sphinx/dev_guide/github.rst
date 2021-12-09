@@ -345,10 +345,6 @@ Step 4 -- Create a pull request
     will indicate this and will not let you merge until all conflicts are
     resolved.
 
-    .. important:: **You must run the CZ Bamboo plan 'Build and Test Branch' 
-                   and verify all tests pass before you merge.** 
-                   See :ref:`bamboo-label` for more information.
-
     The preferred way to resolve conflicts at this point is to go into your 
     topic branch and do the following::
 
