@@ -78,12 +78,21 @@ public:
    *    conduit_json
    *    json
    *
+   * The output will consist of a root file and a subdirectory containing
+   * data output files. The name of the root file will be the file_base
+   * parameter with the suffix ".root" appended, while the subdirectory
+   * will have the file_base string as its name. Exception:  If the file_base
+   * parameter is provided as a string ending in ".root", that string will be
+   * unchanged and used as the root file's name, while the subdirectory
+   * name will be the file_base string with the ".root" suffix removed from
+   * its end.
+   *
    * \note The sidre_hdf5 and conduit_hdf5 protocols are only available
    * when Axom is configured with hdf5.
    *
    * \param group         Group to write to output
    * \param num_files     number of output data files
-   * \param file_string   base name for output files
+   * \param file_base     base name for output files
    * \param protocol      identifies I/O protocol
    * \param tree_pattern  Optional tree pattern string placed in root file,
    *                      to set search path for data in the output files
@@ -91,7 +100,7 @@ public:
    */
   void write(sidre::Group* group,
              int num_files,
-             const std::string& file_string,
+             const std::string& file_base,
              const std::string& protocol,
              const std::string& tree_pattern = "datagroup");
 
@@ -233,12 +242,12 @@ public:
    * may change the inpt files.
    *
    * \param group         Group to fill with input data
-   * \param file_string   base name of input files
+   * \param root_file     root file containing input data
    * \param protocol      identifies I/O protocol
    * \param preserve_contents   Preserves group's existing contents if true
    */
   void read(sidre::Group* group,
-            const std::string& file_string,
+            const std::string& root_file, 
             const std::string& protocol,
             bool preserve_contents = false);
 
@@ -293,10 +302,24 @@ public:
 private:
   DISABLE_COPY_AND_ASSIGNMENT(IOManager);
 
-  void createRootFile(const std::string& file_base,
-                      int num_files,
-                      const std::string& protocol,
-                      const std::string& tree_pattern);
+  /*!
+   * \brief create the root file for new output
+   *
+   * The root file will contain information about the organization of the
+   * output subdirectory and files containing sidre data. It will be
+   * named as the root_base string plus the suffix ".root", unless
+   * root_base already ends with ".root", in which case no additional
+   * suffix will be added.
+   *
+   * The returned string will be identical to root_base, except when
+   * root_base is provided with the suffix ".root" already there, in
+   * which case the returned string will be the root_base string with
+   * the ".root" suffix removed from its end.
+   */
+  std::string createRootFile(const std::string& root_base,
+                             int num_files,
+                             const std::string& protocol,
+                             const std::string& tree_pattern);
 
   std::string getProtocol(const std::string& root_name);
 
