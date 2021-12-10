@@ -247,7 +247,7 @@ public:
    * \param preserve_contents   Preserves group's existing contents if true
    */
   void read(sidre::Group* group,
-            const std::string& root_file, 
+            const std::string& root_file,
             const std::string& protocol,
             bool preserve_contents = false);
 

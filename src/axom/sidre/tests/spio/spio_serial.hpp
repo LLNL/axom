@@ -221,5 +221,4 @@ TEST(spio_serial, rootfile_suffix)
             ds->getRoot()->getView("grp/i")->getData<int>());
   EXPECT_EQ(ds_suffix.getRoot()->getView("grp/i")->getData<int>(),
             ds_nosuffix.getRoot()->getView("grp/i")->getData<int>());
- 
 }

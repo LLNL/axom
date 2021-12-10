@@ -173,7 +173,8 @@ void IOManager::write(sidre::Group* datagroup,
   SLIC_ERROR_IF(m_use_scr && num_files != m_comm_size,
                 "SCR requires a file per process");
 
-  std::string output_base = createRootFile(file_base, num_files, protocol, tree_pattern);
+  std::string output_base =
+    createRootFile(file_base, num_files, protocol, tree_pattern);
   MPI_Barrier(m_mpi_comm);
 
   std::string root_name = output_base + ".root";
@@ -471,12 +472,12 @@ std::string IOManager::createRootFile(const std::string& root_base,
 
   std::string suffix(".root");
   std::string file_base(root_base);
-   
+
   size_t base_size = file_base.size();
   size_t suffix_size = suffix.size();
-  if (base_size > suffix_size)
+  if(base_size > suffix_size)
   {
-    if (file_base.compare(base_size - suffix_size, suffix_size, suffix) == 0)
+    if(file_base.compare(base_size - suffix_size, suffix_size, suffix) == 0)
     {
       // file_base has ".root" suffix, so remove it.
       file_base.erase(base_size - suffix_size);
