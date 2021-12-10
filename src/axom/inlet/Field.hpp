@@ -200,37 +200,43 @@ private:
    * \brief Checks the validity of a field value
    *
    * \param [in] view The view to verify
+   * \param [out] errors The list of errors to record to, when non-null
    *
    * \return Whether the value satisfied all constraints
    *****************************************************************************
   */
-  bool verifyValue(const axom::sidre::View& view) const;
+  bool verifyValue(const axom::sidre::View& view,
+                   std::vector<VerificationError>* errors = nullptr) const;
 
   /*!
    *****************************************************************************
    * \brief Checks if the given value is within the range.
    * 
    * \param [in] view The view containing the value that will be checked.
+   * \param [out] errors The list of errors to record to, when non-null
    * 
    * \return true if the given value was within its respective range, else false.
    * \pre T must define bool operator<=(T, T)
    *****************************************************************************
    */
   template <typename T>
-  bool checkRange(const axom::sidre::View& view) const;
+  bool checkRange(const axom::sidre::View& view,
+                  std::vector<VerificationError>* errors = nullptr) const;
 
   /*!
    *****************************************************************************
    * \brief Checks if the given value is found in the list of valid values.
    * 
    * \param [in] view The view containing the value that will be checked.
+   * \param [out] errors The list of errors to record to, when non-null
    * 
    * \return true if the given target was found in its respective valid values, 
    *  else false.
    *****************************************************************************
    */
   template <typename T>
-  bool searchValidValues(const axom::sidre::View& view) const;
+  bool searchValidValues(const axom::sidre::View& view,
+                         std::vector<VerificationError>* errors = nullptr) const;
 
   /*!
    *****************************************************************************
@@ -268,7 +274,9 @@ template <>
 std::string Field::get<std::string>() const;
 
 template <>
-bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const;
+bool Field::searchValidValues<std::string>(
+  const axom::sidre::View& view,
+  std::vector<VerificationError>* errors) const;
 
 /*!
    *****************************************************************************

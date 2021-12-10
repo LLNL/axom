@@ -868,7 +868,48 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     std::string suffixedPath = endsWith(path, ".root") ? path : path + ".root";
 
     IOManager reader(m_comm);
-    reader.read(m_bp_grp->getDataStore()->getRoot(), suffixedPath);
+
+    // Get the paths in which the global and domain groups are stored
+    // This allows for a datastore structure other than the one used when this
+    // class owns the DataStore
+    SLIC_ERROR_IF(!m_bp_index_grp || !m_bp_grp,
+                  "Blueprint pointers must not be null");
+    Group* global_grp = m_bp_index_grp->getParent()->getParent();
+    Group* domain_grp = m_bp_grp->getParent();
+    const std::string global_path = global_grp->getPath();
+    const std::string domain_path = domain_grp->getPath();
+
+    // Create a temporary group to read the data into
+    // This is done instead of creating a temp DataStore so the buffers are intact
+    Group* temp_root =
+      m_bp_grp->getDataStore()->getRoot()->createGroup("_sidre_tmp_load");
+    reader.read(temp_root, suffixedPath);
+
+    // First transfer the global group from the temp group to its correct location
+    Group* datastore_root = m_bp_grp->getDataStore()->getRoot();
+    Group* new_global_group = temp_root->getGroup(global_grp->getPathName());
+    Group* global_group_parent = datastore_root;
+    if(!global_path.empty())
+    {
+      global_group_parent = datastore_root->getGroup(global_path);
+    }
+
+    // The group may already exist, but we're going to overwrite it
+    global_group_parent->destroyGroup(new_global_group->getName());
+    global_group_parent->moveGroup(new_global_group);
+
+    // Then transfer the domain group in the same way
+    Group* new_domain_group = temp_root->getGroup(domain_grp->getPathName());
+    Group* domain_group_parent = datastore_root;
+    if(!domain_path.empty())
+    {
+      domain_group_parent = datastore_root->getGroup(domain_path);
+    }
+    domain_group_parent->destroyGroup(new_domain_group->getName());
+    domain_group_parent->moveGroup(new_domain_group);
+
+    // Now that the data has been transferred, we can delete the temporary group
+    temp_root->getParent()->destroyGroup("_sidre_tmp_load");
 
     // Get some data in support of error checks below
     numInputRanks = reader.getNumGroupsFromRoot(suffixedPath);
@@ -1008,8 +1049,40 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
   if(m_comm != MPI_COMM_NULL)
   {
     IOManager writer(m_comm);
-    sidre::DataStore* datastore = m_bp_grp->getDataStore();
-    writer.write(datastore->getRoot(), num_procs, file_path, protocol);
+
+    // Create a shallow mirror of the DataStore structure that only includes
+    // the data relevant to the calling DataCollection
+    SLIC_ERROR_IF(!m_bp_index_grp || !m_bp_grp,
+                  "Blueprint pointers must not be null");
+    Group* global_grp = m_bp_index_grp->getParent()->getParent();
+    Group* domain_grp = m_bp_grp->getParent();
+    const std::string global_path = global_grp->getPath();
+    const std::string domain_path = domain_grp->getPath();
+    Group* temp_root =
+      m_bp_grp->getDataStore()->getRoot()->createGroup("_sidre_tmp_save");
+
+    // First shallow copy the global group into the temporary group
+    Group* temp_global_grp = temp_root;
+    // We wouldn't need an extra conditional if hasGroup("") returned true
+    if(!global_path.empty())
+    {
+      temp_global_grp = alloc_group(temp_root, global_path);
+    }
+    temp_global_grp->copyGroup(global_grp);
+
+    // Then shallow copy the domain group in the same way
+    Group* temp_domain_grp = temp_root;
+    if(!domain_path.empty())
+    {
+      temp_domain_grp = alloc_group(temp_root, domain_path);
+    }
+    temp_domain_grp->copyGroup(domain_grp);
+
+    writer.write(temp_root, num_procs, file_path, protocol);
+
+    // Now that we've written the data, we can delete the temporary group
+    temp_root->getParent()->destroyGroup("_sidre_tmp_save");
+
     if(myid == 0)
     {
       if(protocol == "sidre_hdf5")
@@ -2472,15 +2545,22 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
       SLIC_ERROR("Cannot reconstruct grid function - field values not found");
     }
 
+    // We cache the FESpaces to avoid reconstructing them when not needed
+    // An FESpace is uniquely identified by the basis of its FEColl and its ordering
+    const std::string fespace_id =
+      axom::fmt::format("{0}_{1}",
+                        basis_name,
+                        (ordering == mfem::Ordering::byVDIM) ? "nodes" : "vdim");
+
     // Only need to create a new FESpace if one doesn't already exist
-    if(is_gridfunc && (m_fespaces.count(basis_name) == 0))
+    if(is_gridfunc && (m_fespaces.count(fespace_id) == 0))
     {
       // FiniteElementSpace - mesh ptr and FEColl ptr
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
       auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
       if(parmesh)
       {
-        m_fespaces[basis_name] = std::unique_ptr<mfem::ParFiniteElementSpace>(
+        m_fespaces[fespace_id] = std::unique_ptr<mfem::ParFiniteElementSpace>(
           new mfem::ParFiniteElementSpace(parmesh,
                                           m_fecolls.at(basis_name).get(),
                                           vdim,
@@ -2489,7 +2569,7 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
       else
   #endif
       {
-        m_fespaces[basis_name] = std::unique_ptr<mfem::FiniteElementSpace>(
+        m_fespaces[fespace_id] = std::unique_ptr<mfem::FiniteElementSpace>(
           new mfem::FiniteElementSpace(mesh,
                                        m_fecolls.at(basis_name).get(),
                                        vdim,
@@ -2503,7 +2583,7 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     {
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
       auto parfes = dynamic_cast<mfem::ParFiniteElementSpace*>(
-        m_fespaces.at(basis_name).get());
+        m_fespaces.at(fespace_id).get());
       if(parfes)
       {
         m_owned_gridfuncs.emplace_back(new mfem::ParGridFunction(parfes, values));
@@ -2512,7 +2592,7 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
   #endif
       {
         m_owned_gridfuncs.emplace_back(
-          new mfem::GridFunction(m_fespaces.at(basis_name).get(), values));
+          new mfem::GridFunction(m_fespaces.at(fespace_id).get(), values));
       }
 
       // Register a non-owning pointer with the base subobject

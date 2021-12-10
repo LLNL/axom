@@ -101,12 +101,3 @@ developed and maintained in a largely self-contained fashion. Axom
 component dependencies are essentially treated as library dependencies.
 Each component directory contains subdirectories for the component header
 and implementation files, as well as user documentation, examples and tests.
-
-Axom has the following built-in third party libraries:
-
-  `fmt <http://fmtlib.net/latest/index.html>`_
-      BSD-licensed string formatting library
-  `CLI11 <https://github.com/CLIUtils/CLI11>`_
-      BSD-licenced C++ options parser
-  `sparsehash <https://github.com/sparsehash/sparsehash>`_
-      BSD-licenced associative containers for C++

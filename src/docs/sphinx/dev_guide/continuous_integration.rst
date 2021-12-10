@@ -29,7 +29,7 @@ Axom's Github project is also configured to require pull requests to pass checks
 from our LC GitLab CI (as described below).
 
 
-.. _bamboo-label:
+.. _gitlab-label:
 
 ==========
 LC GitLab 

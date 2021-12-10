@@ -20,8 +20,9 @@
 
 #include "axom/spin/MortonIndex.hpp"
 
-#include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
-#include "axom/slic/interface/slic.hpp"       // for slic
+#include "axom/core/utilities/Utilities.hpp"     // for isNearlyEqual()
+#include "axom/core/utilities/BitUtilities.hpp"  // for leadingZeros()
+#include "axom/slic/interface/slic.hpp"          // for slic
 
 #if defined(AXOM_USE_RAJA)
   // RAJA includes
@@ -269,43 +270,6 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 #endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
-//
-// count leading zeros
-//
-inline AXOM_HOST_DEVICE axom::int32 clz(axom::int32 x)
-{
-  axom::int32 y;
-  axom::int32 n = 32;
-  y = x >> 16;
-  if(y != 0)
-  {
-    n = n - 16;
-    x = y;
-  }
-  y = x >> 8;
-  if(y != 0)
-  {
-    n = n - 8;
-    x = y;
-  }
-  y = x >> 4;
-  if(y != 0)
-  {
-    n = n - 4;
-    x = y;
-  }
-  y = x >> 2;
-  if(y != 0)
-  {
-    n = n - 2;
-    x = y;
-  }
-  y = x >> 1;
-  if(y != 0) return axom::int32(n - 2);
-  return axom::int32(n - x);
-}
-
-//------------------------------------------------------------------------------
 template <typename IntType, typename MCType>
 AXOM_HOST_DEVICE IntType delta(const IntType& a,
                                const IntType& b,
@@ -323,7 +287,7 @@ AXOM_HOST_DEVICE IntType delta(const IntType& a,
   tie = (exor == 0);
   //break the tie, a and b must always differ
   exor = tie ? uint32(a) ^ uint32(bb) : exor;
-  int32 count = clz(exor);
+  int32 count = axom::utilities::leadingZeros(exor);
   if(tie) count += 32;
   count = (out_of_range) ? -1 : count;
   return count;

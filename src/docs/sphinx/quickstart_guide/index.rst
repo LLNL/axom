@@ -3,7 +3,7 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Axom Quickstart Guide
+Quickstart Guide
 =====================
 
 This guide provides information to help Axom users and developers get

@@ -40,9 +40,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `axom::ArrayView<const T>` can now be created from a `const Array<T>`
 - Added new `ExecSpace` template parameter to `spin::ImplicitGrid`.
   `ExecSpace` is now the second template parameter (out of three) and defaults to `axom::SEQ_EXEC`.
+- Instead of saving the entire `DataStore`, `MFEMSidreDataCollection` will now save only
+  its domain and global groups
+- When an `inlet::Field` fails a range or valid value constraint, the provided value and
+  corresponding range/set of valid values are now included in the error message
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
+- Fixed over-eager caching of restored `mfem::FiniteElementSpaces` in `sidre::MFEMSidreDataCollection`
+- Fixed a bug in which Inlet verification bails out on the first failure, which resulted in
+  incomplete error lists
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
