@@ -16,8 +16,6 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-#include "axom/primal.hpp"
-
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/CardinalityPolicies.hpp"
 
@@ -61,16 +59,13 @@ template <unsigned int TDIM = 2,
 class IAMesh
 {
 public:
-  enum
-  {
-    COORDS_PER_VERT = SDIM,    //2 or 3 dimensional space
-    VERTS_PER_ELEM = TDIM + 1  //3 = triangle, 4 = tetrahedron
-  };
+  static constexpr int COORDS_PER_VERT = SDIM;     //2 or 3 dimensional space
+  static constexpr int VERTS_PER_ELEM = TDIM + 1;  //3 = triangle, 4 = tetrahedron
 
   using IndexType = axom::IndexType;
   using DataType = double;
 
-  using IndexListType = std::vector<IndexType>;
+  using IndexArray = std::vector<IndexType>;
 
   using Point = PointType;
   using PositionType = IndexType;
@@ -81,11 +76,8 @@ public:
   using VertexSet = slam::DynamicSet<PositionType, ElementType>;
   using ElementSet = slam::DynamicSet<PositionType, ElementType>;
 
-  enum
-  {
-    INVALID_VERTEX_INDEX = VertexSet::INVALID_ENTRY,
-    INVALID_ELEMENT_INDEX = ElementSet::INVALID_ENTRY
-  };
+  static constexpr int INVALID_VERTEX_INDEX = VertexSet::INVALID_ENTRY;
+  static constexpr int INVALID_ELEMENT_INDEX = ElementSet::INVALID_ENTRY;
 
   /// types for Relations
   using STLIndirection =
@@ -175,7 +167,7 @@ public:
    * \note If the index is invalid or out of bounds,
    * an empty list is returned.
    */
-  IndexListType getVerticesInElement(IndexType element_idx) const;
+  IndexArray getVerticesInElement(IndexType element_idx) const;
 
   /**
    * \brief Given a vertex index, return a list of incident elements
@@ -184,7 +176,7 @@ public:
    * an empty list is returned. This function may return incorrect/partial
    * results if the mesh is not a manifold mesh.
    */
-  IndexListType getElementsWithVertex(IndexType vertex_idx) const;
+  IndexArray getElementsWithVertex(IndexType vertex_idx) const;
 
   /**
    * \brief Given an element index, and a face index i,
@@ -193,7 +185,7 @@ public:
    * \details If the element index is invalid or out of bounds,
    * an empty list is returned.
    */
-  IndexListType getElementFace(IndexType element_idx, IndexType face_idx) const;
+  IndexArray getElementFace(IndexType element_idx, IndexType face_idx) const;
 
   /**
    * \brief Given an element index, return a list of adjacent elements
@@ -203,7 +195,7 @@ public:
    *
    * TODO: Add what happens when neighbor elements are invalid
    */
-  IndexListType getElementNeighbors(IndexType element_idx) const;
+  IndexArray getElementNeighbors(IndexType element_idx) const;
 
   /**
    * \brief Given a vertex index, return its Point coordinate.
@@ -342,10 +334,10 @@ public:
 
 private:
   //helper functions to find element to element relations
-  typedef PositionType ElementIndexType;
-  typedef PositionType FaceIndexType;
-  typedef std::pair<ElementIndexType, FaceIndexType> ElementAndFaceIdxType;
-  typedef std::map<IndexListType, ElementAndFaceIdxType> V2EMapType;
+  using ElementIndexType = PositionType;
+  using FaceIndexType = PositionType;
+  using ElementAndFaceIdxType = std::pair<ElementIndexType, FaceIndexType>;
+  using V2EMapType = std::map<IndexArray, ElementAndFaceIdxType>;
 
   /**
    * \brief Helper function to find adjacent elements when adding a new element

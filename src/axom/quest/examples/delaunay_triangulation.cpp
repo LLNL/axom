@@ -23,11 +23,10 @@ using namespace axom;
 //This is the length of the bounding rectangle to contain the random points
 double BOUNDING_BOX_DIM[] = {2.0, 2.0, 2.0};
 
-typedef int IndexType;
-typedef double DataType;
-
-typedef axom::primal::Point2D Point2D;
-typedef axom::primal::Point3D Point3D;
+using IndexType = int;
+using DataType = double;
+using Point2D = axom::primal::Point2D;
+using Point3D = axom::primal::Point3D;
 
 enum InputStatus
 {
@@ -150,9 +149,9 @@ template <unsigned int dimension>
 int run_delaunay(int numPoints, int numOutputVTKsteps, std::string outputVTKFile)
 {
   // Create Delaunay Triangulation on random points
-  typedef axom::quest::Delaunay<dimension> Delaunay;
-  typedef typename Delaunay::PointType PointType;
-  typedef axom::primal::BoundingBox<DataType, dimension> BoundingBox;
+  using Delaunay = axom::quest::Delaunay<dimension>;
+  using PointType = typename Delaunay::PointType;
+  using BoundingBox = axom::primal::BoundingBox<DataType, dimension>;
   Delaunay dt;
 
   int stepOutputCount = 1;

@@ -41,19 +41,20 @@ public:
   };
 
   using DataType = double;
-  using Indextype = axom::IndexType;
-
   using PointType = primal::Point<DataType, DIMENSION>;
+  using IAMeshType = slam::IAMesh<DIMENSION, DIMENSION, PointType>;
+
+  using Indextype = typename IAMeshType::IndexType;
+  using IndexArray = typename IAMeshType::IndexArray;
+
   using BaryCoordType = primal::Point<DataType, DIMENSION + 1>;
   using Point2DType = primal::Point<DataType, 2>;
   using Point3DType = primal::Point<DataType, 3>;
   using Point4DType = primal::Point<DataType, 4>;
-  using IAMeshType = slam::IAMesh<DIMENSION, DIMENSION, PointType>;
   using Triangle2D = axom::primal::Triangle<DataType, 2>;
   using Tetrahedron3D = axom::primal::Tetrahedron<DataType, 3>;
   using BoundingBox = axom::primal::BoundingBox<DataType, DIMENSION>;
 
-  using IndexListType = typename IAMeshType::IndexListType;
   using IndexPairType = std::pair<IndexType, IndexType>;
 
 private:
@@ -78,8 +79,8 @@ private:
   };
 
   std::vector<ElementFacePair<DIMENSION>> cavity_face_list;
-  std::vector<IndexType> cavity_element_list;
-  std::vector<IndexType> new_elements;
+  IndexArray cavity_element_list;
+  IndexArray new_elements;
   std::set<IndexType> checked_element_set;
 
 public:
@@ -100,7 +101,7 @@ public:
   void initializeBoundary(const BoundingBox& bb)
   {
     std::vector<DataType> points;
-    std::vector<IndexType> elem;
+    IndexArray elem;
 
     generateInitialMesh(points, elem, bb);
 
@@ -207,10 +208,10 @@ public:
 
       //Collect a list of elements to remove first, because
       //the list may be incomplete if generated during the removal.
-      IndexListType elements_to_remove;
+      IndexArray elements_to_remove;
       for(unsigned int i = 0; i < num_boundary_pts; i++)
       {
-        IndexListType elist = m_mesh.getElementsWithVertex(i);
+        IndexArray elist = m_mesh.getElementsWithVertex(i);
         elements_to_remove.insert(elements_to_remove.end(),
                                   elist.begin(),
                                   elist.end());
@@ -259,7 +260,7 @@ private:
         return element_i;  //return if inside or on triangle
       }
 
-      std::vector<IndexType> zlist = m_mesh.getElementNeighbors(element_i);
+      IndexArray zlist = m_mesh.getElementNeighbors(element_i);
       element_i = zlist[(i + 1) % VERT_PER_ELEMENT];
 
       // Either there is a hole in the m_mesh, or the point is outside of the m_mesh.
@@ -288,7 +289,7 @@ private:
       cavity_element_list.push_back(element_idx);
 
       //check for each faces
-      IndexListType nbr_elements = m_mesh.getElementNeighbors(element_idx);
+      IndexArray nbr_elements = m_mesh.getElementNeighbors(element_idx);
       SLIC_ASSERT(nbr_elements.size() == VERT_PER_ELEMENT);
 
       for(int face_i = 0; face_i < (int)VERT_PER_ELEMENT; face_i++)
@@ -301,7 +302,7 @@ private:
               ? findCavityElementsRec(query_pt, nbr_elem)
               : !axom::slam::is_subset(nbr_elem, cavity_element_list)))
         {
-          IndexListType vlist = m_mesh.getElementFace(element_idx, face_i);
+          IndexArray vlist = m_mesh.getElementFace(element_idx, face_i);
 
           //For tetrahedron, if the element face is odd, reverse vertex order
           if(DIMENSION == 3 && face_i % 2 == 1)
@@ -454,7 +455,7 @@ template <>
 Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
 {
-  IndexListType verts = m_mesh.getVerticesInElement(element_idx);
+  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
 
   Triangle2D tri(m_mesh.getVertexPoint(verts[0]),
                  m_mesh.getVertexPoint(verts[1]),
@@ -470,7 +471,7 @@ template <>
 Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
 {
-  IndexListType verts = m_mesh.getVerticesInElement(element_idx);
+  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
 
   Tetrahedron3D tet(m_mesh.getVertexPoint(verts[0]),
                     m_mesh.getVertexPoint(verts[1]),
@@ -486,7 +487,7 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
 template <>
 bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
 {
-  IndexListType verts = m_mesh.getVerticesInElement(element_idx);
+  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
@@ -497,7 +498,7 @@ bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_i
 template <>
 bool Delaunay<3>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
 {
-  IndexListType verts = m_mesh.getVerticesInElement(element_idx);
+  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);

@@ -6,7 +6,7 @@
 /**
  * \file slam_IA.cpp
  *
- * \brief ...
+ * \brief This file contains tests for slam's IA mesh
  */
 
 #include "gtest/gtest.h"
@@ -144,7 +144,7 @@ const IndexType BasicTetMeshData::el_nbr_rel [] = {
 template <typename IAMeshType>
 bool isInBoundary(const IAMeshType& ia_mesh, IndexType vert_id, IndexType elem_id)
 {
-  typename IAMeshType::IndexListType ev = ia_mesh.getVerticesInElement(elem_id);
+  typename IAMeshType::IndexArray ev = ia_mesh.getVerticesInElement(elem_id);
   const int sz = ev.size();
   for(int j = 0; j < sz; ++j)
   {
@@ -163,7 +163,7 @@ bool isInBoundary(const IAMeshType& ia_mesh, IndexType vert_id, IndexType elem_i
 template <typename IAMeshType>
 bool isAdjacent(const IAMeshType& ia_mesh, IndexType el_1, IndexType el_2)
 {
-  typename IAMeshType::IndexListType ee = ia_mesh.getElementNeighbors(el_2);
+  typename IAMeshType::IndexArray ee = ia_mesh.getElementNeighbors(el_2);
   const int sz = ee.size();
   for(int j = 0; j < sz; ++j)
   {
@@ -224,7 +224,7 @@ TEST(slam_IA, basic_tri_mesh)
   const int SDIM = 3;
   using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
 
-  using IndexListType = IAMeshType::IndexListType;
+  using IndexArray = IAMeshType::IndexArray;
 
   const int vert_per_elem = IAMeshType::VERTS_PER_ELEM;
   EXPECT_EQ(3, vert_per_elem);
@@ -249,7 +249,7 @@ TEST(slam_IA, basic_tri_mesh)
   // Test Element boundary relation
   for(int e_i = 0; e_i < numElems; ++e_i)
   {
-    IndexListType r = ia_mesh.getVerticesInElement(e_i);
+    IndexArray r = ia_mesh.getVerticesInElement(e_i);
     const int numEV = r.size();
     EXPECT_EQ(vert_per_elem, numEV);
     for(int i = 0; i < numEV; i++)
@@ -261,7 +261,7 @@ TEST(slam_IA, basic_tri_mesh)
   // Test Vertex co-boundary relation
   for(int v_i = 0; v_i < numVerts; ++v_i)
   {
-    IndexListType r = ia_mesh.getElementsWithVertex(v_i);
+    IndexArray r = ia_mesh.getElementsWithVertex(v_i);
     const int numVE = r.size();
     EXPECT_EQ(basic_mesh_data.vert_to_el_num[v_i], numVE);
     for(int i = 0; i < numVE; i++)
@@ -276,7 +276,7 @@ TEST(slam_IA, basic_tri_mesh)
   // Test Element adjacency relation
   for(int e_i = 0; e_i < numElems; ++e_i)
   {
-    IndexListType r = ia_mesh.getElementNeighbors(e_i);
+    IndexArray r = ia_mesh.getElementNeighbors(e_i);
     const int numEE = r.size();
     EXPECT_EQ(numAdjacentElems, numEE);
     for(int i = 0; i < numEE; ++i)
@@ -303,7 +303,7 @@ TEST(slam_IA, dynamically_build_tri_mesh)
   const int TDIM = 2;
   const int SDIM = 3;
   using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
-  using IndexListType = IAMeshType::IndexListType;
+  using IndexArray = IAMeshType::IndexArray;
 
   const int vert_per_elem = IAMeshType::VERTS_PER_ELEM;
   EXPECT_EQ(3, vert_per_elem);
@@ -351,7 +351,7 @@ TEST(slam_IA, dynamically_build_tri_mesh)
   // Check that the element boundary relation is correct
   for(int e_i = 0; e_i < numTris; ++e_i)
   {
-    IndexListType r = ia_mesh.getVerticesInElement(e_i);
+    IndexArray r = ia_mesh.getVerticesInElement(e_i);
     const int sz = r.size();
     EXPECT_EQ(vert_per_elem, sz);
 
@@ -365,7 +365,7 @@ TEST(slam_IA, dynamically_build_tri_mesh)
   // Check that the vertex co-boundary relation is correct
   for(int v_i = 0; v_i < numVerts; ++v_i)
   {
-    IndexListType r = ia_mesh.getElementsWithVertex(v_i);
+    IndexArray r = ia_mesh.getElementsWithVertex(v_i);
     const int numVE = r.size();
     EXPECT_EQ(basic_mesh_data.vert_to_el_num[v_i], numVE);
 
@@ -381,7 +381,7 @@ TEST(slam_IA, dynamically_build_tri_mesh)
   // Check the element adjacencies are correct
   for(int e_i = 0; e_i < numTris; ++e_i)
   {
-    IndexListType r = ia_mesh.getElementNeighbors(e_i);
+    IndexArray r = ia_mesh.getElementNeighbors(e_i);
     const int numEE = r.size();
     EXPECT_EQ(numAdjacentElems, numEE);
     for(int i = 0; i < numEE; ++i)
@@ -489,7 +489,7 @@ TEST(slam_IA, basic_tet_mesh)
   const int vert_per_elem = 4;
   const int coord_per_vert = 3;
   using IAMeshType = slam::IAMesh<vert_per_elem - 1, coord_per_vert, PointType>;
-  using IndexListType = IAMeshType::IndexListType;
+  using IndexArray = IAMeshType::IndexArray;
 
   BasicTetMeshData basic_mesh_data;
   IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
@@ -506,7 +506,7 @@ TEST(slam_IA, basic_tet_mesh)
 
   for(int el_i = 0; el_i < ia_mesh.getNumberOfElements(); el_i++)
   {
-    IndexListType r = ia_mesh.getVerticesInElement(el_i);
+    IndexArray r = ia_mesh.getVerticesInElement(el_i);
     EXPECT_EQ((int)r.size(), vert_per_elem);
     for(int i = 0; i < (int)r.size(); i++)
     {
@@ -516,7 +516,7 @@ TEST(slam_IA, basic_tet_mesh)
 
   for(int vert_i = 0; vert_i < ia_mesh.getNumberOfVertices(); vert_i++)
   {
-    IndexListType r = ia_mesh.getElementsWithVertex(vert_i);
+    IndexArray r = ia_mesh.getElementsWithVertex(vert_i);
     EXPECT_EQ((int)r.size(), basic_mesh_data.vert_to_el_num[vert_i]);
     for(int i = 0; i < (int)r.size(); i++)
     {

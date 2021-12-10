@@ -48,7 +48,7 @@ IAMesh<TDIM, SDIM, P>::ElemNbrFinder(V2EMapType& vertpair_to_elem_map,
   //       mesh element. It is used to find the element index of the opposite
   //       face within the mesh
 
-  IndexListType vlist = getElementFace(element_i, side_i);
+  IndexArray vlist = getElementFace(element_i, side_i);
   std::sort(vlist.begin(), vlist.end());
 
   ElementAndFaceIdxType zs_pair(element_i, side_i);
@@ -292,10 +292,10 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
-typename IAMesh<TDIM, SDIM, P>::IndexListType
+typename IAMesh<TDIM, SDIM, P>::IndexArray
 IAMesh<TDIM, SDIM, P>::getVerticesInElement(IndexType element_idx) const
 {
-  IndexListType ret;
+  IndexArray ret;
   if(!ev_rel.isValidEntry(element_idx))
   {
     SLIC_WARNING("Attempting to retrieve data with an invalid element");
@@ -313,10 +313,10 @@ IAMesh<TDIM, SDIM, P>::getVerticesInElement(IndexType element_idx) const
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
-typename IAMesh<TDIM, SDIM, P>::IndexListType
+typename IAMesh<TDIM, SDIM, P>::IndexArray
 IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
 {
-  IndexListType ret;
+  IndexArray ret;
 
   if(!ve_rel.isValidEntry(vertex_idx))
   {
@@ -330,7 +330,7 @@ IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
   IndexType starting_element_idx = ve_rel[vertex_idx][0];
 
   ret.push_back(starting_element_idx);
-  IndexListType element_traverse_queue;
+  IndexArray element_traverse_queue;
   element_traverse_queue.push_back(starting_element_idx);
 
   while(element_traverse_queue.size() > 0)
@@ -396,11 +396,11 @@ IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
-typename IAMesh<TDIM, SDIM, P>::IndexListType
-IAMesh<TDIM, SDIM, P>::getElementFace(IndexType element_idx,
-                                      IndexType face_idx) const
+typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace(
+  IndexType element_idx,
+  IndexType face_idx) const
 {
-  IndexListType ret;
+  IndexArray ret;
 
   if(!element_set.isValidEntry(element_idx))
   {
@@ -424,10 +424,10 @@ IAMesh<TDIM, SDIM, P>::getElementFace(IndexType element_idx,
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
-typename IAMesh<TDIM, SDIM, P>::IndexListType
+typename IAMesh<TDIM, SDIM, P>::IndexArray
 IAMesh<TDIM, SDIM, P>::getElementNeighbors(IndexType element_idx) const
 {
-  IndexListType ret;
+  IndexArray ret;
 
   if(!ee_rel.isValidEntry(element_idx))
   {
@@ -465,7 +465,7 @@ void IAMesh<TDIM, SDIM, P>::removeVertex(IndexType vertex_idx)
   }
 
   //check if any element uses this vertex. If so, remove them too.
-  std::vector<IndexType> attached_elements = getElementsWithVertex(vertex_idx);
+  IndexArray attached_elements = getElementsWithVertex(vertex_idx);
   for(int i = 0; i < (int)attached_elements.size(); i++)
   {
     removeElement(attached_elements[i]);
@@ -491,8 +491,7 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
   {
     IndexType vertex_i = ev_rel[element_idx][i];
 
-    std::vector<IndexType> element_with_this_vertex =
-      getElementsWithVertex(vertex_i);
+    IndexArray element_with_this_vertex = getElementsWithVertex(vertex_i);
 
     if(element_with_this_vertex.size() == 1)
     {  //the element being removed is the last element using this vertex
@@ -601,7 +600,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   std::set<IndexType> elem_list;
   for(int n = 0; n < VERTS_PER_ELEM; n++)
   {
-    std::vector<IndexType> ele_list_short = getElementsWithVertex(nlist[n]);
+    IndexArray ele_list_short = getElementsWithVertex(nlist[n]);
     for(unsigned int i = 0; i < ele_list_short.size(); i++)
     {
       elem_list.insert(ele_list_short[i]);
@@ -660,8 +659,8 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   const std::vector<IndexType>& new_elements)
 {
   using IndexPairType = std::pair<IndexType, IndexType>;
-  using FaceVertMapType = std::map<IndexListType, IndexPairType>;
-  using FaceVertPairType = std::pair<IndexListType, IndexPairType>;
+  using FaceVertMapType = std::map<IndexArray, IndexPairType>;
+  using FaceVertPairType = std::pair<IndexArray, IndexPairType>;
   FaceVertMapType vert_map;
 
   for(unsigned int i = 0; i < new_elements.size(); i++)
@@ -670,7 +669,7 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
 
     for(int face_i = 0; face_i < VERTS_PER_ELEM; face_i++)
     {
-      IndexListType fv_list = getElementFace(el, face_i);
+      IndexArray fv_list = getElementFace(el, face_i);
 
       //only concerned with faces that contain the vertex in question
       if(!is_subset(vertex_idx, fv_list)) continue;
@@ -703,8 +702,8 @@ template <unsigned int TDIM, unsigned int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::compact()
 {
   //Construct an array that maps original set indices to new compacted indices
-  std::vector<IndexType> vertex_set_map(vertex_set.size(), -1);
-  std::vector<IndexType> element_set_map(element_set.size(), -1);
+  IndexArray vertex_set_map(vertex_set.size(), -1);
+  IndexArray element_set_map(element_set.size(), -1);
 
   int v_count = 0;
   for(auto i = 0; i < vertex_set.size(); ++i)
