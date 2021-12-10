@@ -135,7 +135,7 @@ public:
    * \brief Construct an IA mesh with the given point coordinate and vertex
    * indices for each elements
    */
-  IAMesh(std::vector<double>& points, std::vector<int>& ev_vec);
+  IAMesh(std::vector<double>& points, std::vector<IndexType>& ev_vec);
 
   /**
    * \brief Copy constructor

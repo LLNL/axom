@@ -207,7 +207,8 @@ IAMesh<TDIM, SDIM, P>& IAMesh<TDIM, SDIM, P>::operator=(const IAMesh& m)
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
-IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points, std::vector<int>& tri)
+IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
+                              std::vector<IndexType>& tri)
   : vertex_set(points.size() / COORDS_PER_VERT)
   , element_set(tri.size() / VERTS_PER_ELEM)
   , ev_rel(&element_set, &vertex_set)

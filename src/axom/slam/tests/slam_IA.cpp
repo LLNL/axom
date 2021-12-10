@@ -22,17 +22,18 @@ namespace slam = axom::slam;
 namespace
 {
 using PointType = slam::util::Point3<double>;
+using IndexType = axom::IndexType;
 
 struct BasicTriMeshData
 {
   //This is the surface of a regular cube composed of 12 triangles
   std::vector<double> points;
-  std::vector<int> elem;
+  std::vector<IndexType> elem;
 
   static const double point_arr[];
-  static const int tri_arr[];
-  static const int vert_to_el_num[];  // for verification purpose
-  static const int el_nbr_rel[];
+  static const IndexType tri_arr[];
+  static const IndexType vert_to_el_num[];  // for verification purpose
+  static const IndexType el_nbr_rel[];
 
   BasicTriMeshData()
     : points(point_arr, point_arr + 24)
@@ -54,7 +55,7 @@ const double BasicTriMeshData::point_arr [] = {
   1.0, 1.0, 0.0,
   1.0, 1.0, 1.0
 };
-const int BasicTriMeshData::tri_arr [] = {
+const IndexType BasicTriMeshData::tri_arr [] = {
   0, 6, 4,
   0, 2, 6,
   0, 3, 2,
@@ -68,10 +69,10 @@ const int BasicTriMeshData::tri_arr [] = {
   1, 5, 7,
   1, 7, 3
 };
-const int BasicTriMeshData::vert_to_el_num [] = {
+const IndexType BasicTriMeshData::vert_to_el_num [] = {
   6, 4, 4, 4, 4, 4, 4, 6
 };
-const int BasicTriMeshData::el_nbr_rel [] = {
+const IndexType BasicTriMeshData::el_nbr_rel [] = {
   1,5,7,
   2,3,0,
   8,4,1,
@@ -92,12 +93,12 @@ struct BasicTetMeshData
   //cube divided into six tets
 
   std::vector<double> points;
-  std::vector<int> elem;
+  std::vector<IndexType> elem;
 
   static const double point_arr[];
-  static const int tet_arr[];
-  static const int vert_to_el_num[];
-  static const int el_nbr_rel[];
+  static const IndexType tet_arr[];
+  static const IndexType vert_to_el_num[];
+  static const IndexType el_nbr_rel[];
 
   BasicTetMeshData()
     : points(point_arr, point_arr + 24)
@@ -116,7 +117,7 @@ const double BasicTetMeshData::point_arr[] = {
   1.0,  1.0, -1.0,
   1.0,  1.0,  1.0
 };
-const int BasicTetMeshData::tet_arr [] = {
+const IndexType BasicTetMeshData::tet_arr [] = {
   3,2,4,0,
   3,1,4,0,
   3,6,2,4,
@@ -124,10 +125,10 @@ const int BasicTetMeshData::tet_arr [] = {
   3,5,1,4,
   3,5,7,4
 };
-const int BasicTetMeshData::vert_to_el_num [] = {
+const IndexType BasicTetMeshData::vert_to_el_num [] = {
   2, 2, 2, 6, 6, 2, 2, 2
 };
-const int BasicTetMeshData::el_nbr_rel [] = {
+const IndexType BasicTetMeshData::el_nbr_rel [] = {
   2,-1,1,-1,
   4,-1,0,-1,
   -1,-1,0,3,
@@ -141,7 +142,7 @@ const int BasicTetMeshData::el_nbr_rel [] = {
  * element with ID \a elem_id in mesh \a ia_mesh
  */
 template <typename IAMeshType>
-bool isInBoundary(const IAMeshType& ia_mesh, int vert_id, int elem_id)
+bool isInBoundary(const IAMeshType& ia_mesh, IndexType vert_id, IndexType elem_id)
 {
   typename IAMeshType::IndexListType ev = ia_mesh.getVerticesInElement(elem_id);
   const int sz = ev.size();
@@ -160,7 +161,7 @@ bool isInBoundary(const IAMeshType& ia_mesh, int vert_id, int elem_id)
  * element with ID \a el_2 in mesh \a ia_mesh
  */
 template <typename IAMeshType>
-bool isAdjacent(const IAMeshType& ia_mesh, int el_1, int el_2)
+bool isAdjacent(const IAMeshType& ia_mesh, IndexType el_1, IndexType el_2)
 {
   typename IAMeshType::IndexListType ee = ia_mesh.getElementNeighbors(el_2);
   const int sz = ee.size();

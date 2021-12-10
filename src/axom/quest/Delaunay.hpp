@@ -41,7 +41,7 @@ public:
   };
 
   using DataType = double;
-  using Indextype = int;
+  using Indextype = axom::IndexType;
 
   using PointType = primal::Point<DataType, DIMENSION>;
   using BaryCoordType = primal::Point<DataType, DIMENSION + 1>;
@@ -65,9 +65,9 @@ private:
   template <unsigned int TOP_DIM>
   struct ElementFacePair
   {
-    int element_idx;
-    int face_vidx[TOP_DIM];
-    ElementFacePair(int el, int* vlist)
+    IndexType element_idx;
+    IndexType face_vidx[TOP_DIM];
+    ElementFacePair(IndexType el, IndexType* vlist)
     {
       element_idx = el;
       for(int i = 0; i < (int)TOP_DIM; i++)
@@ -185,7 +185,7 @@ public:
 
     for(int i = 0; i < m_mesh.ev_rel.size(); i++)
     {
-      const int* ptr = &(m_mesh.ev_rel[i][0]);
+      const auto* ptr = &(m_mesh.ev_rel[i][0]);
       mint_mesh.appendCell(ptr, CELL_TYPE);
     }
     mint::write_vtk(&mint_mesh, filename);
