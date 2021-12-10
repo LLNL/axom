@@ -50,6 +50,9 @@ public:
   using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
   using IndexType = typename MeshWrapperType::IndexType;
 
+private:
+  constexpr static bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
+
 public:
   /*!
    * Constructor for PointFinder
@@ -76,11 +79,24 @@ public:
     // setup bounding boxes -- Slightly scaled for robustness
 
     SpatialBoundingBox meshBBox;
-    m_cellBBoxes =
-      axom::Array<SpatialBoundingBox>(numCells, numCells, allocatorID);
+#ifdef AXOM_USE_UMPIRE
+    axom::Array<SpatialBoundingBox, 1, MemorySpace::Host> cellBBoxesHost(numCells);
+#else
+    axom::Array<SpatialBoundingBox> cellBBoxesHost(numCells);
+#endif
     m_meshWrapper->template computeBoundingBoxes<NDIMS>(bboxScaleFactor,
-                                                        m_cellBBoxes.data(),
+                                                        cellBBoxesHost.data(),
                                                         meshBBox);
+    if(DeviceExec)
+    {
+      // Copy the host-side bounding boxes to GPU memory.
+      m_cellBBoxes =
+        axom::Array<SpatialBoundingBox>(cellBBoxesHost, m_allocatorID);
+    }
+    else
+    {
+      m_cellBBoxes = std::move(cellBBoxesHost);
+    }
 
     // initialize implicit grid, handle case where resolution is a NULL pointer
     if(res != nullptr)
@@ -111,9 +127,18 @@ public:
     SpacePoint pt(pos);
     SpacePoint isopar;
 
-    locatePoints(axom::ArrayView<const SpacePoint>(&pt, 1),
-                 &containingCell,
-                 &isopar);
+    if(DeviceExec)
+    {
+      axom::Array<SpacePoint> dev_ptr(axom::ArrayView<const SpacePoint>(&pt, 1),
+                                      m_allocatorID);
+      locatePoints(dev_ptr, &containingCell, &isopar);
+    }
+    else
+    {
+      locatePoints(axom::ArrayView<const SpacePoint>(&pt, 1),
+                   &containingCell,
+                   &isopar);
+    }
 
     // Copy data back to input parameter isoparametric, if necessary
     if(isoparametric != nullptr)
@@ -128,27 +153,20 @@ public:
                     IndexType* outCellIds,
                     SpacePoint* outIsoparametricCoords) const
   {
-    constexpr bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
+    using IndexArray = axom::Array<IndexType>;
+    using IndexView = axom::ArrayView<IndexType>;
 #ifdef AXOM_USE_UMPIRE
-    // Use unified memory if we execute on GPU, otherwise use host memory
-    constexpr axom::MemorySpace UnifiedSpace =
-      DeviceExec ? axom::MemorySpace::Unified : axom::MemorySpace::Host;
-
-    using IndexArray = axom::Array<IndexType, 1, UnifiedSpace>;
     using HostIndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointArray = axom::Array<SpacePoint, 1, axom::MemorySpace::Host>;
 
-    using IndexView = axom::ArrayView<IndexType, 1, UnifiedSpace>;
     using HostIndexView = axom::ArrayView<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointView = axom::ArrayView<SpacePoint, 1, axom::MemorySpace::Host>;
     using ConstHostPointView =
       axom::ArrayView<const SpacePoint, 1, axom::MemorySpace::Host>;
 #else
-    using IndexArray = axom::Array<IndexType>;
     using HostIndexArray = IndexArray;
     using HostPointArray = axom::Array<SpacePoint>;
 
-    using IndexView = axom::ArrayView<IndexType>;
     using HostIndexView = IndexView;
     using HostPointView = axom::Array<SpacePoint>;
     using ConstHostPointView = axom::ArrayView<const SpacePoint>;
@@ -158,8 +176,8 @@ public:
 
     axom::IndexType npts = pts.size();
 
-    IndexArray offsets(npts);
-    IndexArray counts(npts);
+    IndexArray offsets(npts, npts, m_allocatorID);
+    IndexArray counts(npts, npts, m_allocatorID);
 
 #ifdef AXOM_USE_RAJA
     IndexView countsPtr = counts;
@@ -183,7 +201,7 @@ public:
     axom::IndexType totalCount = totalCountReduce.get();
 
     // Step 3: allocate memory for all candidates
-    IndexArray candidates(totalCount);
+    IndexArray candidates(totalCount, totalCount, m_allocatorID);
     IndexView candidatesPtr = candidates;
     IndexView offsetsPtr = offsets;
     const SpatialBoundingBox* cellBBoxes = m_cellBBoxes.data();
@@ -208,28 +226,51 @@ public:
         countsPtr[i] = currCount;
       });
 
+    // Temporary host arrays we copy device-side data into when the candidate
+    // search is conducted on the GPU
     HostPointArray ptsHost, outIsoparHost;
     HostIndexArray outCellIdsHost;
+    HostIndexArray candidatesHost, offsetsHost, countsHost;
 
     // For sequential/OpenMP execution, just use the argument pointers
     // directly.
-    ConstHostPointView ptsHostPtr = pts;
     HostIndexView outCellIdsPtr(outCellIds, pts.size());
     HostPointView outIsoparPtr(outIsoparametricCoords, pts.size());
 
+    // If the candidate search takes place on the GPU, we need to copy the
+    // device-side data first, then set these array views to point to the
+    // intermediate arrays. Otherwise, we can set these to point to the result
+    // arrays directly.
+    ConstHostPointView ptsHostPtr;
+    HostIndexView candidatesHostPtr, offsetsHostPtr, countsHostPtr;
+
     if(DeviceExec)
     {
-      // Copy points to host memory.
-      // TODO: see if we support copying ArrayView<const T> -> Array<T>
-      ptsHost = HostPointArray(pts.size());
-      axom::copy(ptsHost.data(), pts.data(), sizeof(SpacePoint) * pts.size());
-      ptsHostPtr = ConstHostPointView(ptsHost.data(), ptsHost.size());
+      // Copy points and candidate intersections to host memory.
+      ptsHost = pts;
+      candidatesHost = candidates;
+      offsetsHost = offsets;
+      countsHost = counts;
+      // Set up views from intermediate host arrays
+      ptsHostPtr = ptsHost;
+      candidatesHostPtr = candidatesHost;
+      offsetsHostPtr = offsetsHost;
+      countsHostPtr = countsHost;
       // Allocate intermediate output buffers on the host side.
       outCellIdsHost.resize(pts.size());
       if(outIsoparametricCoords)
       {
         outIsoparHost.resize(pts.size());
       }
+      outCellIdsPtr = outCellIdsHost;
+      outIsoparPtr = outIsoparHost;
+    }
+    else
+    {
+      ptsHostPtr = pts;
+      candidatesHostPtr = candidates;
+      offsetsHostPtr = offsets;
+      countsHostPtr = counts;
     }
 
     // Step 5: Check each candidate
@@ -239,11 +280,11 @@ public:
       npts,
       AXOM_HOST_LAMBDA(IndexType i) {
         outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
-        SpacePoint pt = pts[i];
+        SpacePoint pt = ptsHostPtr[i];
         SpacePoint isopar;
-        for(int icell = 0; icell < countsPtr[i]; icell++)
+        for(int icell = 0; icell < countsHostPtr[i]; icell++)
         {
-          int cellIdx = candidatesPtr[icell + offsetsPtr[i]];
+          int cellIdx = candidatesHostPtr[icell + offsetsHostPtr[i]];
           // if isopar is in the proper range
           if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
           {
