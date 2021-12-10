@@ -110,13 +110,14 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
+  ArrayBase() : m_dims {} { updateStrides(); }
+
   /*!
    * \brief Parameterized constructor that sets up the default strides
    *
    * \param [in] args the parameter pack of sizes in each dimension.
    */
-  template <typename... Args>
-  ArrayBase(Args... args) : m_dims {static_cast<IndexType>(args)...}
+  ArrayBase(const StackArray<IndexType, DIM>& args) : m_dims {args}
   {
     updateStrides();
   }
@@ -319,6 +320,8 @@ public:
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
   ArrayBase(IndexType = 0) { }
+
+  ArrayBase(const StackArray<IndexType, 1>&) { }
 
   // Empy implementation because no member data
   template <typename OtherArrayType>

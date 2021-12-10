@@ -143,7 +143,7 @@ using MCArrayView = ArrayView<T, 2>;
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
-  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(args...)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>({args...})
   , m_data(data)
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
