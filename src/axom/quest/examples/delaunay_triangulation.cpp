@@ -159,6 +159,9 @@ void run_delaunay(const Input& params)
   //Remove the starting rectangular box
   dt.removeBoundary();
 
+  // Check that the mesh is valid
+  SLIC_ASSERT(dt.getMeshData()->isValid(true));
+
   // Write the final mesh to a vtk file
   {
     std::string fname = axom::fmt::format("{}.vtk", outputVTKFile);
