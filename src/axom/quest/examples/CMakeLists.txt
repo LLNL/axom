@@ -119,16 +119,19 @@ if (ENABLE_FORTRAN)
         FOLDER     axom/quest/examples
         )
 
-    blt_add_executable(
-        NAME        quest_inout_interface_F_ex
-        SOURCES     quest_inout_interface.F
-        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
-        FOLDER      axom/quest/examples
-        )
+    # This target fails to compile with hip on corona debug
+    if(NOT ${SITE} MATCHES "corona$" AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        blt_add_executable(
+            NAME        quest_inout_interface_F_ex
+            SOURCES     quest_inout_interface.F
+            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
+            FOLDER      axom/quest/examples
+            )
+    endif()
 
     # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
-    if (NOT ENABLE_CUDA)
+    if (NOT ENABLE_CUDA AND NOT ${SITE} MATCHES "corona$" AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly.
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
             set_target_properties( quest_signed_distance_interface_F_ex
@@ -145,7 +148,7 @@ if (ENABLE_FORTRAN)
         endif()
     endif()
 
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND NOT ${SITE} MATCHES "corona$" AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         if (ENABLE_MPI)
             axom_add_test(
                 NAME quest_inout_interface_mpi_F_test
