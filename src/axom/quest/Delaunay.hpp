@@ -1,14 +1,4 @@
 
-/**
- * \file Delaunay.hpp
- *
- * \brief Construct delaunay triangulation by inserting points one by one.
- * A bounding box of the points needs to be defined first via initializeBoundary(...)
- *
- * A bounding box of the points needs to be defined first via
- * the initializeBoundary() function
- */
-
 #ifndef QUEST_DELAUNAY_H_
 #define QUEST_DELAUNAY_H_
 
@@ -16,7 +6,9 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
-#include "axom/mint.hpp"  //for writing out to VTK file
+#include "axom/mint.hpp"
+
+#include "axom/fmt.hpp"
 
 #include <list>
 #include <vector>
@@ -27,43 +19,45 @@ namespace axom
 {
 namespace quest
 {
-template <unsigned int DIMENSION = 2>
+/**
+ * \brief A class for incremental generation of a 2D or 3D Delaunay triangulation
+ *
+ * Construct a Delaunay triangulation incrementally by inserting points one by one.
+ * A bounding box of the points needs to be defined first via \a initializeBoundary(...)
+ */
+template <int DIM = 2>
 class Delaunay
 {
 public:
-  AXOM_STATIC_ASSERT_MSG(DIMENSION == 2 || DIMENSION == 3,
-                         "The template parameter DIMENSION can only be 2 or 3. "
-                         "Other dimensions are not supported");
-
-  enum
-  {
-    VERT_PER_ELEMENT = DIMENSION + 1
-  };
+  AXOM_STATIC_ASSERT_MSG(DIM == 2 || DIM == 3,
+                         "The template parameter DIM can only be 2 or 3. ");
 
   using DataType = double;
-  using PointType = primal::Point<DataType, DIMENSION>;
-  using IAMeshType = slam::IAMesh<DIMENSION, DIMENSION, PointType>;
+  using PointType = primal::Point<DataType, DIM>;
+  using IAMeshType = slam::IAMesh<DIM, DIM, PointType>;
 
   using Indextype = typename IAMeshType::IndexType;
   using IndexArray = typename IAMeshType::IndexArray;
 
-  using BaryCoordType = primal::Point<DataType, DIMENSION + 1>;
+  using BaryCoordType = primal::Point<DataType, DIM + 1>;
   using Point2DType = primal::Point<DataType, 2>;
   using Point3DType = primal::Point<DataType, 3>;
   using Point4DType = primal::Point<DataType, 4>;
   using Triangle2D = axom::primal::Triangle<DataType, 2>;
   using Tetrahedron3D = axom::primal::Tetrahedron<DataType, 3>;
-  using BoundingBox = axom::primal::BoundingBox<DataType, DIMENSION>;
+  using BoundingBox = axom::primal::BoundingBox<DataType, DIM>;
 
   using IndexPairType = std::pair<IndexType, IndexType>;
 
-private:
-  IAMeshType m_mesh;
-  BoundingBox m_bounding_box;
-  bool m_has_boundary;
-  int m_num_removed_elements_since_last_compact;
+  static constexpr int VERT_PER_ELEMENT = DIM + 1;
+  static constexpr IndexType INVALID_ID = -1;
 
-  template <unsigned int TOP_DIM>
+private:
+  using ModularFaceIndex = axom::slam::ModularInt<
+    axom::slam::policies::CompileTimeSize<IndexType, VERT_PER_ELEMENT>>;
+
+  /// Helper struct for storing the facet indices of each simplex
+  template <int TOP_DIM>
   struct ElementFacePair
   {
     IndexType element_idx;
@@ -71,14 +65,20 @@ private:
     ElementFacePair(IndexType el, IndexType* vlist)
     {
       element_idx = el;
-      for(int i = 0; i < (int)TOP_DIM; i++)
+      for(int i = 0; i < TOP_DIM; i++)
       {
         face_vidx[i] = vlist[i];
       }
     }
   };
 
-  std::vector<ElementFacePair<DIMENSION>> cavity_face_list;
+private:
+  IAMeshType m_mesh;
+  BoundingBox m_bounding_box;
+  bool m_has_boundary;
+  int m_num_removed_elements_since_last_compact;
+
+  std::vector<ElementFacePair<DIM>> cavity_face_list;
   IndexArray cavity_element_list;
   IndexArray new_elements;
   std::set<IndexType> checked_element_set;
@@ -90,9 +90,7 @@ public:
   Delaunay()
     : m_has_boundary(false)
     , m_num_removed_elements_since_last_compact(0)
-  {
-    SLIC_ASSERT(DIMENSION == 2 || DIMENSION == 3);
-  }
+  { }
 
   /**
    * \brief Defines the boundary of the triangulation.
@@ -134,6 +132,14 @@ public:
 
     IndexType element_i = findContainingElement(new_pt);
 
+    if(element_i == INVALID_ID)
+    {
+      SLIC_WARNING(axom::fmt::format(
+        "Could not insert point {} into Delaunay triangulation: Element "
+        "containing that point was not found"));
+      return;
+    }
+
     findCavityElements(new_pt, element_i);
 
     createCavity();
@@ -168,16 +174,16 @@ public:
    * \brief Write the m_mesh to a legacy VTK file
    *
    * \param filename The name of the file to write to,
-   * \note The suffix ".vtk" will be appended to the provided  filename
+   * \note The suffix ".vtk" will be appended to the provided filename
    * \details This function uses mint to write the m_mesh to VTK format.
    */
   void writeToVTKFile(const std::string& filename)
   {
     m_mesh.compact();
-    const auto CELL_TYPE = DIMENSION == 2 ? mint::TRIANGLE : mint::TET;
+    const auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
 
     using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
-    UMesh mint_mesh(DIMENSION, CELL_TYPE);
+    UMesh mint_mesh(DIM, CELL_TYPE);
 
     for(int i = 0; i < m_mesh.vertex_set.size(); i++)
     {
@@ -204,12 +210,12 @@ public:
     if(m_has_boundary)
     {
       //remove the boundary box, which will be the first 4 points for triangles, first 8 for tetrahedron
-      unsigned int num_boundary_pts = DIMENSION == 2 ? 4 : 8;
+      const int num_boundary_pts = DIM == 2 ? 4 : 8;
 
       //Collect a list of elements to remove first, because
       //the list may be incomplete if generated during the removal.
       IndexArray elements_to_remove;
-      for(unsigned int i = 0; i < num_boundary_pts; i++)
+      for(int i = 0; i < num_boundary_pts; i++)
       {
         IndexArray elist = m_mesh.getElementsWithVertex(i);
         elements_to_remove.insert(elements_to_remove.end(),
@@ -222,24 +228,35 @@ public:
           m_mesh.removeElement(elements_to_remove[i]);
       }
 
-      for(unsigned int i = 0; i < num_boundary_pts; i++) m_mesh.removeVertex(i);
+      for(int i = 0; i < num_boundary_pts; i++)
+      {
+        m_mesh.removeVertex(i);
+      }
 
       m_has_boundary = false;
     }
   }
 
-  /**
-    * \brief Get the IA mesh data pointer
-    */
+  /// \brief Get the IA mesh data pointer
   const IAMeshType* getMeshData() const { return &m_mesh; }
 
 private:
-  /**
-   * \brief Find the index of the element that contains the query point, or the element closest to the point.
-   */
+  /// \brief Find the index of the element that contains the query point, or the element closest to the point.
   IndexType findContainingElement(const PointType& query_pt)
   {
-    SLIC_ASSERT(!m_mesh.isEmpty());
+    if(m_mesh.isEmpty())
+    {
+      SLIC_ERROR(
+        "Attempting to insert point into empty Delaunay triangulation."
+        "Delaunay::initializeBoundary() needs to be called first");
+      return INVALID_ID;
+    }
+    if(!m_bounding_box.contains(query_pt))
+    {
+      SLIC_WARNING(
+        "Attempting to locate element at location outside valid domain");
+      return INVALID_ID;
+    }
 
     //find the last valid element to use as starting element
     IndexType element_i = m_mesh.getValidElementIndex();
@@ -248,20 +265,17 @@ private:
     {
       BaryCoordType bary_coord = getBaryCoords(element_i, query_pt);
 
-      //Find the most negative
-      IndexType i = 0;
-      for(unsigned int d = 1; d < VERT_PER_ELEMENT; d++)
+      //Find the index of the most negative barycentric coord
+      ModularFaceIndex idx(bary_coord.array().argMin());
+
+      if(bary_coord[idx] >= 0)  // inside if smallest bary coord positive
       {
-        if(bary_coord[i] > bary_coord[d]) i = d;
+        return element_i;
       }
 
-      if(bary_coord[i] >= 0)
-      {                    // bary_val bigger than zero -> inside triangle
-        return element_i;  //return if inside or on triangle
-      }
-
+      // else, move to that neighbor
       IndexArray zlist = m_mesh.getElementNeighbors(element_i);
-      element_i = zlist[(i + 1) % VERT_PER_ELEMENT];
+      element_i = zlist[idx + 1];
 
       // Either there is a hole in the m_mesh, or the point is outside of the m_mesh.
       // Logically, this should never happen.
@@ -281,7 +295,7 @@ private:
    */
   bool findCavityElementsRec(const PointType& query_pt, IndexType element_idx)
   {
-    bool is_in_circle = isPointInSphere(query_pt, element_idx);
+    const bool is_in_circle = isPointInSphere(query_pt, element_idx);
 
     if(is_in_circle)
     {
@@ -305,15 +319,12 @@ private:
           IndexArray vlist = m_mesh.getElementFace(element_idx, face_i);
 
           //For tetrahedron, if the element face is odd, reverse vertex order
-          if(DIMENSION == 3 && face_i % 2 == 1)
+          if(DIM == 3 && face_i % 2 == 1)
           {
-            IndexType tmp = vlist[1];
-            vlist[1] = vlist[2];
-            vlist[2] = tmp;
+            axom::utilities::swap(vlist[1], vlist[2]);
           }
 
-          cavity_face_list.push_back(
-            ElementFacePair<DIMENSION>(element_idx, &vlist[0]));
+          cavity_face_list.push_back(ElementFacePair<DIM>(element_idx, &vlist[0]));
         }
       }
       return false;
@@ -345,8 +356,6 @@ private:
     SLIC_ASSERT_MSG(cavity_element_list.size() > 0,
                     "Error: New point is not contained in the mesh");
     SLIC_ASSERT(cavity_face_list.size() > 0);
-
-    return;
   }
 
   /**
@@ -357,15 +366,11 @@ private:
     for(unsigned int i = 0; i < cavity_element_list.size(); i++)
     {
       m_mesh.removeElement(cavity_element_list[i]);
-      m_num_removed_elements_since_last_compact++;
+      ++m_num_removed_elements_since_last_compact;
     }
-
-    return;
   }
 
-  /**
-    * \brief Fill in the delaunay cavity
-    */
+  /// \brief Fill in the delaunay cavity
   void delaunayBall(IndexType new_pt_i)
   {
     new_elements.clear();
@@ -373,7 +378,7 @@ private:
     for(unsigned int i = 0; i < cavity_face_list.size(); i++)
     {
       IndexType vlist[VERT_PER_ELEMENT];
-      for(unsigned int d = 0; d < VERT_PER_ELEMENT - 1; d++)
+      for(int d = 0; d < VERT_PER_ELEMENT - 1; ++d)
       {
         vlist[d] = cavity_face_list[i].face_vidx[d];
       }
@@ -382,8 +387,6 @@ private:
       IndexType new_el = m_mesh.addElement(vlist);
       new_elements.push_back(new_el);
     }
-
-    return;
   }
 
   /**
@@ -405,7 +408,7 @@ private:
 // Below are 2D and 3D specializations for methods in the Delaunay class
 //********************************************************************************
 
-// this is the 2D specialization for generateInitialMesh(...)
+// 2D specialization for generateInitialMesh(...)
 template <>
 void Delaunay<2>::generateInitialMesh(std::vector<DataType>& points,
                                       std::vector<IndexType>& elem,
@@ -413,44 +416,56 @@ void Delaunay<2>::generateInitialMesh(std::vector<DataType>& points,
 {
   //Set up the initial IA mesh of 2 triangles forming a rectangle
 
-  DataType xmin = bb.getMin()[0];
-  DataType xmax = bb.getMax()[0];
-  DataType ymin = bb.getMin()[1];
-  DataType ymax = bb.getMax()[1];
+  const PointType& mins = bb.getMin();
+  const PointType& maxs = bb.getMax();
 
-  static const DataType point_arr[] = {xmin, ymin, xmin, ymax, xmax, ymin, xmax, ymax};
-  static const IndexType tri_arr[] = {0, 2, 1, 3, 1, 2};
-  points.assign(point_arr, point_arr + sizeof(point_arr) / sizeof(point_arr[0]));
-  elem.assign(tri_arr, tri_arr + sizeof(tri_arr) / sizeof(tri_arr[0]));
+  // clang-format off
+  std::vector<DataType> pt { mins[0], mins[1], 
+                             mins[0], maxs[1], 
+                             maxs[0], mins[1], 
+                             maxs[0], maxs[1] };
+
+  std::vector<IndexType> el { 0, 2, 1, 
+                              3, 1, 2 };
+  // clang-format on
+
+  points.swap(pt);
+  elem.swap(el);
 }
 
-// this is the 3D specialization for generateInitialMesh(...)
+// 3D specialization for generateInitialMesh(...)
 template <>
 void Delaunay<3>::generateInitialMesh(std::vector<DataType>& points,
                                       std::vector<IndexType>& elem,
                                       const BoundingBox& bb)
 {
   //Set up the initial IA mesh of 6 tetrahedrons forming a cube
+  const PointType& mins = bb.getMin();
+  const PointType& maxs = bb.getMax();
 
-  DataType xmin = bb.getMin()[0];
-  DataType xmax = bb.getMax()[0];
-  DataType ymin = bb.getMin()[1];
-  DataType ymax = bb.getMax()[1];
-  DataType zmin = bb.getMin()[2];
-  DataType zmax = bb.getMax()[2];
+  // clang-format off
+  std::vector<DataType> pt { mins[0], mins[1], mins[2], 
+                             mins[0], mins[1], maxs[2], 
+                             mins[0], maxs[1], mins[2], 
+                             mins[0], maxs[1], maxs[2],
+                             maxs[0], mins[1], mins[2], 
+                             maxs[0], mins[1], maxs[2], 
+                             maxs[0], maxs[1], mins[2], 
+                             maxs[0], maxs[1], maxs[2] };
 
-  static const DataType point_arr[] = {
-    xmin, ymin, zmin, xmin, ymin, zmax, xmin, ymax, zmin, xmin, ymax, zmax,
-    xmax, ymin, zmin, xmax, ymin, zmax, xmax, ymax, zmin, xmax, ymax, zmax};
+  std::vector<IndexType> el { 3, 2, 4, 0, 
+                              3, 4, 1, 0, 
+                              3, 2, 6, 4,
+                              3, 6, 7, 4, 
+                              3, 5, 1, 4, 
+                              3, 7, 5, 4 };
+  // clang-format on
 
-  static const IndexType tet_arr[] = {3, 2, 4, 0, 3, 4, 1, 0, 3, 2, 6, 4,
-                                      3, 6, 7, 4, 3, 5, 1, 4, 3, 7, 5, 4};
-
-  points.assign(point_arr, point_arr + sizeof(point_arr) / sizeof(point_arr[0]));
-  elem.assign(tet_arr, tet_arr + sizeof(tet_arr) / sizeof(tet_arr[0]));
+  points.swap(pt);
+  elem.swap(el);
 }
 
-// this is the 2D specialization for getBaryCoords(...)
+// 2D specialization for getBaryCoords(...)
 template <>
 Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
@@ -466,7 +481,7 @@ Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
   return bary_co;
 }
 
-// this is the 3D specialization for getBaryCoords(...)
+// 3D specialization for getBaryCoords(...)
 template <>
 Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
@@ -483,7 +498,7 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
   return bary_co;
 }
 
-// this is the 2D specialization for isPointInSphere(...)
+// 2D specialization for isPointInSphere(...)
 template <>
 bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
 {
@@ -494,7 +509,7 @@ bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_i
   return axom::primal::in_sphere(query_pt, p0, p1, p2);
 }
 
-// this is the 3D specialization for isPointInSphere(...)
+// 3D specialization for isPointInSphere(...)
 template <>
 bool Delaunay<3>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
 {

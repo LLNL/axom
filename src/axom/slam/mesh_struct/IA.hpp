@@ -259,7 +259,7 @@ public:
    */
   IndexType getValidElementIndex() const
   {
-    for(int i = element_set.size() - 1; true; i--)
+    for(int i = element_set.size() - 1; true; --i)
     {
       if(isValidElementEntry(i))
       {
