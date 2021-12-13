@@ -15,6 +15,7 @@
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
 
 #include <cmath>    // for acos()
 #include <ostream>  // for std::ostream
@@ -135,6 +136,49 @@ public:
     return 0.5 * VectorType::cross_product(v, w).norm();
   }
 
+  /**
+   * \brief Returns the circumsphere of the triangle
+   *
+   * Implements formula from https://mathworld.wolfram.com/Circumcircle.html
+   */
+  primal::Sphere<T, NDIMS> circumsphere() const
+  {
+    // TODO: only allow this for 2D triangles
+
+    using axom::numerics::determinant;
+    using axom::utilities::abs;
+
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
+
+    // clang-format off
+    const Point<T, 3> sq {A[0] * A[0] + A[1] * A[1],
+                          B[0] * B[0] + B[1] * B[1],
+                          C[0] * C[0] + C[1] * C[1]};
+
+    const double  a =  determinant(A[0], A[1], 1.,
+                                   B[0], B[1], 1.,
+                                   C[0], C[1], 1.);
+
+    const double bx = -determinant(sq[0], A[1], 1.,
+                                   sq[1], B[1], 1.,
+                                   sq[2], C[1], 1.);
+
+    const double by =  determinant(sq[0], A[0], 1.,
+                                   sq[1], B[0], 1.,
+                                   sq[2], C[0], 1.);
+
+    const double  c = -determinant(sq[0], A[0], A[1],
+                                   sq[1], B[0], B[1],
+                                   sq[2], C[0], C[1]);
+    // clang-format on
+
+    const T center[2] = {-bx / (2 * a), -by / (2 * a)};
+    const T radius = sqrt(bx * bx + by * by - 4 * a * c) / (2 * abs(a));
+    return primal::Sphere<T, 2>(center, radius);
+  }
+
 private:
   /*!
    * \brief Return the volume of the parallelepiped defined by this triangle
@@ -146,8 +190,7 @@ private:
   double ppedVolume(const PointType& p) const
   {
     /* This method returns double (instead of T) and explicitly specializes
-       determinant() on type double to avoid confusion of deduced template
-       types. */
+       determinant() on type double to avoid confusion of deduced template types. */
     const PointType& A = m_points[0];
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];

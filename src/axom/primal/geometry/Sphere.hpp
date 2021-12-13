@@ -202,7 +202,7 @@ inline T Sphere<T, NDIMS>::computeSignedDistance(const T* q) const
 {
   SLIC_ASSERT(q != nullptr);
 
-  T d = 0.0;
+  T d {0};
   for(int i = 0; i < NDIMS; ++i)
   {
     const T dx = q[i] - m_center[i];
@@ -222,11 +222,11 @@ inline int Sphere<T, NDIMS>::getOrientation(const T* q, double TOL) const
 
   int orient = -1;
 
-  if(axom::utilities::isNearlyEqual(signed_distance, 0.0, TOL))
+  if(axom::utilities::isNearlyEqual(signed_distance, 0., TOL))
   {
     orient = ON_BOUNDARY;
   }
-  else if(signed_distance < 0.0f)
+  else if(signed_distance < T {0})
   {
     // inside
     orient = ON_NEGATIVE_SIDE;
