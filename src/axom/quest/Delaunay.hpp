@@ -50,7 +50,7 @@ public:
   using IndexPairType = std::pair<IndexType, IndexType>;
 
   static constexpr int VERT_PER_ELEMENT = DIM + 1;
-  static constexpr IndexType INVALID_ID = -1;
+  static constexpr IndexType INVALID_INDEX = -1;
 
 private:
   using ModularFaceIndex = axom::slam::ModularInt<
@@ -78,14 +78,10 @@ private:
   bool m_has_boundary;
   int m_num_removed_elements_since_last_compact;
 
-  std::vector<ElementFacePair<DIM>> cavity_face_list;
-  IndexArray cavity_element_list;
-  IndexArray new_elements;
-  std::set<IndexType> checked_element_set;
-
 public:
   /**
-   * \brief Default Constructor. User need to call initializeBoundary(BoundingBox) before adding points.
+   * \brief Default constructor
+   * \note User need to call initializeBoundary(BoundingBox) before adding points.
    */
   Delaunay()
     : m_has_boundary(false)
@@ -110,11 +106,10 @@ public:
   }
 
   /**
-   * \brief Adds a new point to the mesh and locally re-triangulates
-   * the mesh to ensure that it stays Delaunay.
+   * \brief Adds a new point and locally re-triangulates the mesh to ensure that it stays Delaunay
    *
-   * This function will traverse the m_mesh to find the element that contains
-   * this point, create the Delaunay cavity, which takes out all the elements
+   * This function will traverse the mesh to find the element that contains
+   * this point, creates the Delaunay cavity, which takes out all the elements
    * that contains the point in its sphere, and fill it with a Delaunay ball.
    *
    * \pre The current mesh must already be Delaunay.
@@ -130,35 +125,33 @@ public:
     SLIC_ASSERT_MSG(m_bounding_box.contains(new_pt),
                     "Error: new point is outside of the boundary box.");
 
+    // Find the mesh element containing the insertion point
     IndexType element_i = findContainingElement(new_pt);
 
-    if(element_i == INVALID_ID)
+    if(element_i == INVALID_INDEX)
     {
       SLIC_WARNING(axom::fmt::format(
-        "Could not insert point {} into Delaunay triangulation: Element "
-        "containing that point was not found"));
+        "Could not insert point {} into Delaunay triangulation: "
+        "Element containing that point was not found",
+        new_pt));
       return;
     }
 
-    findCavityElements(new_pt, element_i);
-
-    createCavity();
-
-    //Add the new point
+    // Run the insertion operation by finding invalidated elements around the point (the "cavity")
+    // and replacing them with new valid elements (the Delaunay "ball")
+    InsertionHelper insertionHelper(m_mesh);
+    insertionHelper.findCavityElements(new_pt, element_i);
+    insertionHelper.createCavity();
     IndexType new_pt_i = m_mesh.addVertex(new_pt);
+    insertionHelper.delaunayBall(new_pt_i);
 
-    delaunayBall(new_pt_i);
+    m_num_removed_elements_since_last_compact +=
+      insertionHelper.numRemovedElements();
 
-    m_mesh.fixVertexNeighborhood(new_pt_i, new_elements);
-
-    //call compact() if there are too many invalid points
-    //This auto-compacting feature is hard coded. It may be good to let user have control
-    // of this option in the future.
-    if(m_num_removed_elements_since_last_compact > 64 &&
-       m_num_removed_elements_since_last_compact > (m_mesh.element_set.size() / 2))
+    // Compact the mesh if there are too many removed elements
+    if(shouldCompactMesh())
     {
-      m_mesh.compact();
-      m_num_removed_elements_since_last_compact = 0;
+      this->compactMesh();
     }
 
     SLIC_WARNING_IF(!m_mesh.isValid(),
@@ -179,22 +172,25 @@ public:
    */
   void writeToVTKFile(const std::string& filename)
   {
-    m_mesh.compact();
+    using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
     const auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
 
-    using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+    this->compactMesh();
+
     UMesh mint_mesh(DIM, CELL_TYPE);
 
-    for(int i = 0; i < m_mesh.vertex_set.size(); i++)
+    const int NV = m_mesh.vertex_set.size();
+    for(int i = 0; i < NV; ++i)
     {
       mint_mesh.appendNodes(m_mesh.getVertexPoint(i).data(), 1);
     }
 
-    for(int i = 0; i < m_mesh.ev_rel.size(); i++)
+    const int NE = m_mesh.ev_rel.size();
+    for(int i = 0; i < NE; ++i)
     {
-      const auto* ptr = &(m_mesh.ev_rel[i][0]);
-      mint_mesh.appendCell(ptr, CELL_TYPE);
+      mint_mesh.appendCell(&(m_mesh.ev_rel[i][0]), CELL_TYPE);
     }
+
     mint::write_vtk(&mint_mesh, filename);
   }
 
@@ -202,37 +198,37 @@ public:
    * \brief Removes the vertices that defines the boundary of the mesh,
    * and the elements attached to them.
    *
-   * \details After this function is called,
-   * no more points can be added to the m_mesh.
+   * \details After this function is called, no more points can be added to the m_mesh.
    */
   void removeBoundary()
   {
     if(m_has_boundary)
     {
       //remove the boundary box, which will be the first 4 points for triangles, first 8 for tetrahedron
-      const int num_boundary_pts = DIM == 2 ? 4 : 8;
+      const int num_boundary_pts = 1 << DIM;
 
       //Collect a list of elements to remove first, because
       //the list may be incomplete if generated during the removal.
       IndexArray elements_to_remove;
-      for(int i = 0; i < num_boundary_pts; i++)
+      for(int i = 0; i < num_boundary_pts; ++i)
       {
         IndexArray elist = m_mesh.getElementsWithVertex(i);
         elements_to_remove.insert(elements_to_remove.end(),
                                   elist.begin(),
                                   elist.end());
       }
-      for(unsigned int i = 0; i < elements_to_remove.size(); i++)
+      for(unsigned int i = 0; i < elements_to_remove.size(); ++i)
       {
         if(m_mesh.isValidElementEntry(elements_to_remove[i]))
           m_mesh.removeElement(elements_to_remove[i]);
       }
 
-      for(int i = 0; i < num_boundary_pts; i++)
+      for(int i = 0; i < num_boundary_pts; ++i)
       {
         m_mesh.removeVertex(i);
       }
 
+      this->compactMesh();
       m_has_boundary = false;
     }
   }
@@ -249,13 +245,13 @@ private:
       SLIC_ERROR(
         "Attempting to insert point into empty Delaunay triangulation."
         "Delaunay::initializeBoundary() needs to be called first");
-      return INVALID_ID;
+      return INVALID_INDEX;
     }
     if(!m_bounding_box.contains(query_pt))
     {
       SLIC_WARNING(
         "Attempting to locate element at location outside valid domain");
-      return INVALID_ID;
+      return INVALID_INDEX;
     }
 
     //find the last valid element to use as starting element
@@ -283,110 +279,20 @@ private:
     }
   }
 
-  /**
-   * \brief Helper function returns true if the query point is in the sphere formed by the element vertices
-   */
-  bool isPointInSphere(const PointType& query_pt, IndexType element_idx);
-
-  /**
-   * \brief recursive function to find cavity elements given a point to be added
-   * \details Check if the point is in the circle/sphere of the element, if so,
-   * recursively call the neighboring elements.
-   */
-  bool findCavityElementsRec(const PointType& query_pt, IndexType element_idx)
+  /// \brief Predicate for when to compact internal mesh data structures after removing elements
+  bool shouldCompactMesh() const
   {
-    const bool is_in_circle = isPointInSphere(query_pt, element_idx);
-
-    if(is_in_circle)
-    {
-      //add to cavity elements
-      cavity_element_list.push_back(element_idx);
-
-      //check for each faces
-      IndexArray nbr_elements = m_mesh.getElementNeighbors(element_idx);
-      SLIC_ASSERT(nbr_elements.size() == VERT_PER_ELEMENT);
-
-      for(int face_i = 0; face_i < (int)VERT_PER_ELEMENT; face_i++)
-      {
-        IndexType nbr_elem = nbr_elements[face_i];
-
-        //The latter case is a checked element that is not a cavity element
-        if(!m_mesh.isValidElementEntry(nbr_elem) ||
-           (checked_element_set.insert(nbr_elem).second
-              ? findCavityElementsRec(query_pt, nbr_elem)
-              : !axom::slam::is_subset(nbr_elem, cavity_element_list)))
-        {
-          IndexArray vlist = m_mesh.getElementFace(element_idx, face_i);
-
-          //For tetrahedron, if the element face is odd, reverse vertex order
-          if(DIM == 3 && face_i % 2 == 1)
-          {
-            axom::utilities::swap(vlist[1], vlist[2]);
-          }
-
-          cavity_face_list.push_back(ElementFacePair<DIM>(element_idx, &vlist[0]));
-        }
-      }
-      return false;
-    }
-    else
-    {
-      //add to cavity faces
-      return true;
-    }
+    // Note: This auto-compacting feature is hard coded.
+    // It may be good to let user have control of this option in the future.
+    return m_num_removed_elements_since_last_compact > 64 &&
+      m_num_removed_elements_since_last_compact > (m_mesh.element_set.size() / 2);
   }
 
-  /**
-   * \brief Find the list of element indices whose sphere contains query point
-   *
-   * \details This function start from an element, and search through the
-   * neighboring elements, returning a list of element indices
-   * whose circle/sphere defined by its vertices contains the query point.
-   * \param query_pt the query point
-   * \param element_i the element to start the search at
-   */
-  void findCavityElements(const PointType& query_pt, IndexType element_i)
+  /// \brief Compacts the underlying mesh
+  void compactMesh()
   {
-    cavity_element_list.clear();
-    cavity_face_list.clear();
-    checked_element_set.clear();
-    checked_element_set.insert(element_i);
-    findCavityElementsRec(query_pt, element_i);
-
-    SLIC_ASSERT_MSG(cavity_element_list.size() > 0,
-                    "Error: New point is not contained in the mesh");
-    SLIC_ASSERT(cavity_face_list.size() > 0);
-  }
-
-  /**
-    * \brief Remove the elements in the delaunay cavity
-    */
-  void createCavity()
-  {
-    for(unsigned int i = 0; i < cavity_element_list.size(); i++)
-    {
-      m_mesh.removeElement(cavity_element_list[i]);
-      ++m_num_removed_elements_since_last_compact;
-    }
-  }
-
-  /// \brief Fill in the delaunay cavity
-  void delaunayBall(IndexType new_pt_i)
-  {
-    new_elements.clear();
-
-    for(unsigned int i = 0; i < cavity_face_list.size(); i++)
-    {
-      IndexType vlist[VERT_PER_ELEMENT];
-      for(int d = 0; d < VERT_PER_ELEMENT - 1; ++d)
-      {
-        vlist[d] = cavity_face_list[i].face_vidx[d];
-      }
-      vlist[VERT_PER_ELEMENT - 1] = new_pt_i;
-
-      IndexType new_el = m_mesh.addElement(vlist);
-      new_elements.push_back(new_el);
-    }
+    m_mesh.compact();
+    m_num_removed_elements_since_last_compact = 0;
   }
 
   /**
@@ -402,11 +308,136 @@ private:
    */
   BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt);
 
-};  //END class Delaunay
+private:
+  /**
+   * \brief Helper class to locally insert a new point into a Delaunay complex while keeping the mesh Delaunay
+   */
+  struct InsertionHelper
+  {
+  public:
+    InsertionHelper(IAMeshType& mesh) : m_mesh(mesh) { }
 
-//********************************************************************************
+    /**
+   * \brief Find the list of elements whose circumspheres contain the query point
+   *
+   * \details This function starts from an element \a element_i, and searches through
+   * neighboring elements for a list of element indices whose circumspheres contains the query point.
+   * It uses a recursive helper function \a findCavityElementsRec()
+   *
+   * \param query_pt the query point
+   * \param element_i the element to start the search at
+   */
+    void findCavityElements(const PointType& query_pt, IndexType element_i)
+    {
+      m_checked_element_set.insert(element_i);
+      findCavityElementsRec(query_pt, element_i);
+
+      SLIC_ASSERT_MSG(!m_cavity_element_list.empty(),
+                      "Error: New point is not contained in the mesh");
+      SLIC_ASSERT(!m_cavity_face_list.empty());
+    }
+
+    /**
+   * \brief recursive function to find cavity elements given a point to be added
+   * \details Check if the point is in the circumsphere element, if so,
+   * recursively call the neighboring elements.
+   */
+    bool findCavityElementsRec(const PointType& query_pt, IndexType element_idx)
+    {
+      const bool is_in_circle = isPointInSphere(query_pt, element_idx);
+
+      // Base case: Element element_idx was valid (i.e. query_pt is outside its circumcircle)
+      if(!is_in_circle)
+      {
+        return true;
+      }
+
+      // Recursive case: Add element to list and check its neighbors
+      m_cavity_element_list.push_back(element_idx);
+
+      //check for each faces; m_checked_element_set ensures we only check each element once
+      IndexArray neighbors = m_mesh.getElementNeighbors(element_idx);
+      SLIC_ASSERT(neighbors.size() == VERT_PER_ELEMENT);
+
+      for(int face_i = 0; face_i < VERT_PER_ELEMENT; ++face_i)
+      {
+        IndexType nbr = neighbors[face_i];
+
+        //The latter case is a checked element that is not a cavity element
+        if(!m_mesh.isValidElementEntry(nbr) ||
+           (m_checked_element_set.insert(nbr).second
+              ? findCavityElementsRec(query_pt, nbr)
+              : !axom::slam::is_subset(nbr, m_cavity_element_list)))
+        {
+          IndexArray vlist = m_mesh.getElementFace(element_idx, face_i);
+
+          //For tetrahedron, if the element face is odd, reverse vertex order
+          if(DIM == 3 && face_i % 2 == 1)
+          {
+            axom::utilities::swap(vlist[1], vlist[2]);
+          }
+
+          m_cavity_face_list.push_back(
+            ElementFacePair<DIM>(element_idx, vlist.data()));
+        }
+      }
+      return false;
+    }
+
+    /**
+    * \brief Remove the elements in the Delaunay cavity
+    */
+    void createCavity()
+    {
+      const int NE = m_cavity_element_list.size();
+      for(int i = 0; i < NE; ++i)
+      {
+        m_mesh.removeElement(m_cavity_element_list[i]);
+      }
+    }
+
+    /// \brief Fill in the Delaunay cavity with new elements containing the insertion point
+    void delaunayBall(IndexType new_pt_i)
+    {
+      const int numFaces = m_cavity_face_list.size();
+      m_new_elements.reserve(numFaces);
+
+      for(int i = 0; i < numFaces; i++)
+      {
+        // Create a new element from the face and the inserted point
+        IndexType vlist[VERT_PER_ELEMENT];
+        for(int d = 0; d < VERT_PER_ELEMENT - 1; ++d)
+        {
+          vlist[d] = m_cavity_face_list[i].face_vidx[d];
+        }
+        vlist[VERT_PER_ELEMENT - 1] = new_pt_i;
+
+        IndexType new_el = m_mesh.addElement(vlist);
+        m_new_elements.push_back(new_el);
+      }
+
+      // Fix neighborhood around the new point
+      m_mesh.fixVertexNeighborhood(new_pt_i, m_new_elements);
+    }
+
+    /// \brief Returns the number of elements removed during this insertion
+    int numRemovedElements() const { return m_cavity_element_list.size(); }
+
+    /// \brief Helper function returns true if the query point is in the sphere formed by the element vertices
+    bool isPointInSphere(const PointType& query_pt, IndexType element_idx);
+
+  public:
+    IAMeshType& m_mesh;
+    std::vector<ElementFacePair<DIM>> m_cavity_face_list;
+    IndexArray m_cavity_element_list;
+    IndexArray m_new_elements;
+    std::set<IndexType> m_checked_element_set;
+  };
+};
+
+//--------------------------------------------------------------------------------
 // Below are 2D and 3D specializations for methods in the Delaunay class
-//********************************************************************************
+//--------------------------------------------------------------------------------
 
 // 2D specialization for generateInitialMesh(...)
 template <>
@@ -500,7 +531,8 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
 
 // 2D specialization for isPointInSphere(...)
 template <>
-bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
+bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
+                                                   IndexType element_idx)
 {
   IndexArray verts = m_mesh.getVerticesInElement(element_idx);
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
@@ -511,7 +543,8 @@ bool Delaunay<2>::isPointInSphere(const PointType& query_pt, IndexType element_i
 
 // 3D specialization for isPointInSphere(...)
 template <>
-bool Delaunay<3>::isPointInSphere(const PointType& query_pt, IndexType element_idx)
+bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
+                                                   IndexType element_idx)
 {
   IndexArray verts = m_mesh.getVerticesInElement(element_idx);
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
