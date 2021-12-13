@@ -110,6 +110,18 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
+  template <int SliceDim>
+  using SliceType = typename std::conditional<
+    SliceDim == DIM,
+    T&,
+    typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
+
+  template <int SliceDim>
+  using ConstSliceType = typename std::conditional<
+    SliceDim == DIM,
+    RealConstT&,
+    typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
+
   ArrayBase() : m_dims {} { updateStrides(); }
 
   /*!
@@ -154,24 +166,47 @@ public:
    * \pre sizeof...(Args) == DIM
    * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
    */
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  AXOM_HOST_DEVICE T& operator()(Args... args)
+  template <typename... Args>
+  AXOM_HOST_DEVICE SliceType<sizeof...(Args)> operator()(Args... args)
   {
-    const IndexType indices[] = {static_cast<IndexType>(args)...};
-    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    static_assert(sizeof...(Args) <= DIM,
+                  "Index dimensions different from array dimensions");
+    constexpr int UDim = sizeof...(Args);
+    const StackArray<IndexType, UDim> indices {static_cast<IndexType>(args)...};
+    return (*this)[indices];
   }
   /// \overload
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  AXOM_HOST_DEVICE RealConstT& operator()(Args... args) const
+  template <typename... Args>
+  AXOM_HOST_DEVICE ConstSliceType<sizeof...(Args)> operator()(Args... args) const
   {
-    const IndexType indices[] = {static_cast<IndexType>(args)...};
-    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    static_assert(sizeof...(Args) <= DIM,
+                  "Index dimensions different from array dimensions");
+    constexpr int UDim = sizeof...(Args);
+    const StackArray<IndexType, UDim> indices {static_cast<IndexType>(args)...};
+    return (*this)[indices];
+  }
+
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> operator[](const StackArray<IndexType, UDim>& idx)
+  {
+    static_assert(UDim <= DIM,
+                  "Index dimensions cannot be larger than array dimensions");
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
+    assert(inBounds(baseIdx));
+    return SliceHelper<UDim>::impl(asDerived().data(), baseIdx, m_dims);
+  }
+
+  template <int UDim>
+  AXOM_HOST_DEVICE ConstSliceType<UDim> operator[](
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    static_assert(UDim <= DIM,
+                  "Index dimensions cannot be larger than array dimensions");
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
+    assert(inBounds(baseIdx));
+    return SliceHelper<UDim>::impl(asDerived().data(), baseIdx, m_dims);
   }
 
   /// @{
@@ -186,13 +221,13 @@ public:
    *
    * \pre 0 <= idx < m_num_elements
    */
-  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& flatIdx(const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& flatIdx(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -295,6 +330,55 @@ private:
   }
   /// @}
 
+  template <int UDim>
+  struct SliceHelper
+  {
+    using BaseT = typename std::remove_const<T>::type;
+    AXOM_HOST_DEVICE static SliceType<UDim> impl(
+      BaseT* data,
+      IndexType baseIdx,
+      const StackArray<IndexType, DIM>& oldDims)
+    {
+      StackArray<IndexType, DIM - UDim> new_inds;
+      for(int i = 0; i < DIM - UDim; i++)
+      {
+        new_inds[i] = oldDims[UDim + i];
+      }
+      return SliceType<UDim>(data + baseIdx, new_inds);
+    }
+
+    AXOM_HOST_DEVICE static ConstSliceType<UDim> impl(
+      const BaseT* data,
+      IndexType baseIdx,
+      const StackArray<IndexType, DIM>& oldDims)
+    {
+      StackArray<IndexType, DIM - UDim> new_inds;
+      for(int i = 0; i < DIM - UDim; i++)
+      {
+        new_inds[i] = oldDims[UDim + i];
+      }
+      return ConstSliceType<UDim>(data + baseIdx, new_inds);
+    }
+  };
+
+  template <>
+  struct SliceHelper<DIM>
+  {
+    using BaseT = typename std::remove_const<T>::type;
+    AXOM_HOST_DEVICE static SliceType<DIM> impl(BaseT* data,
+                                                IndexType baseIdx,
+                                                const StackArray<IndexType, DIM>&)
+    {
+      return data[baseIdx];
+    }
+
+    AXOM_HOST_DEVICE static ConstSliceType<DIM>
+    impl(const BaseT* data, IndexType baseIdx, const StackArray<IndexType, DIM>&)
+    {
+      return data[baseIdx];
+    }
+  };
+
 protected:
   /// \brief The sizes (extents?) in each dimension
   StackArray<IndexType, DIM> m_dims;
@@ -359,6 +443,28 @@ public:
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+
+  /*!
+   * \brief Accessor, returns a reference to the given value.
+   * For multidimensional arrays, indexes into the (flat) raw data.
+   *
+   * \param [in] idx the position of the value to return.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre 0 <= idx < m_num_elements
+   */
+  AXOM_HOST_DEVICE T& flatIdx(const IndexType idx)
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// \overload
+  AXOM_HOST_DEVICE RealConstT& flatIdx(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -478,7 +584,7 @@ bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
 
   for(int i = 0; i < static_cast<const LArrayType&>(lhs).size(); i++)
   {
-    if(!(lhs[i] == rhs[i]))
+    if(!(lhs.flatIdx(i) == rhs.flatIdx(i)))
     {
       return false;
     }

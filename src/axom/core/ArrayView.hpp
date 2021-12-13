@@ -23,6 +23,9 @@ template <typename T, int DIM, MemorySpace SPACE>
 struct ArrayTraits<ArrayView<T, DIM, SPACE>>
 {
   constexpr static bool is_view = true;
+
+  template <int SliceDim>
+  using Slice = ArrayView<T, DIM - SliceDim, SPACE>;
 };
 
 }  // namespace detail
@@ -65,6 +68,8 @@ public:
    */
   template <typename... Args>
   ArrayView(T* data, Args... args);
+
+  ArrayView(T* data, const StackArray<IndexType, DIM>& shape);
 
   /*! 
    * \brief Constructor for transferring between memory spaces
@@ -143,19 +148,26 @@ using MCArrayView = ArrayView<T, 2>;
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
-  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>({args...})
-  , m_data(data)
-  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+  : ArrayView(data, {args...})
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+ArrayView<T, DIM, SPACE>::ArrayView(T* data,
+                                    const StackArray<IndexType, DIM>& shape)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape)
+  , m_data(data)
+  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+{
 #ifdef AXOM_DEVICE_CODE
   static_assert((SPACE != MemorySpace::Constant) || std::is_const<T>::value,
                 "T must be const if memory space is Constant memory");
 #endif
   // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
-  m_num_elements = detail::packProduct(tmp_args);
+  m_num_elements = detail::packProduct(shape.m_data);
 
 #ifdef AXOM_USE_UMPIRE
   // If we have Umpire, we can try and see what space the pointer is allocated in

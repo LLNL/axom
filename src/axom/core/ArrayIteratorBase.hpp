@@ -48,8 +48,8 @@ public:
    */
   ValueType& operator*()
   {
-    return (*m_arrayPtr)[IteratorBase<ArrayIteratorBase<ArrayType, ValueType>,
-                                      IndexType>::m_pos];
+    return m_arrayPtr->flatIdx(
+      IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>::m_pos);
   }
 
 protected:
