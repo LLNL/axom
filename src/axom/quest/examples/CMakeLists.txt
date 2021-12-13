@@ -120,7 +120,7 @@ if (ENABLE_FORTRAN)
         )
 
     # This target fails to compile with hip on corona debug
-    if(NOT ${SITE} MATCHES "corona$" AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(NOT ${SITE} MATCHES "^corona" OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         blt_add_executable(
             NAME        quest_inout_interface_F_ex
             SOURCES     quest_inout_interface.F
@@ -128,38 +128,44 @@ if (ENABLE_FORTRAN)
             DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
             FOLDER      axom/quest/examples
             )
+
+        if (NOT ENABLE_CUDA)
+            if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+                set_target_properties(quest_inout_interface_F_ex
+                                      PROPERTIES LINKER_LANGUAGE Fortran)
+            else()
+                set_target_properties(quest_inout_interface_F_ex
+                                      PROPERTIES LINKER_LANGUAGE CXX)
+            endif()
+        endif()
     endif()
 
     # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
-    if (NOT ENABLE_CUDA AND NOT ${SITE} MATCHES "corona$" AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (NOT ENABLE_CUDA)
         # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly.
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
             set_target_properties( quest_signed_distance_interface_F_ex
                                    PROPERTIES LINKER_LANGUAGE Fortran)
-
-            set_target_properties(quest_inout_interface_F_ex
-                                  PROPERTIES LINKER_LANGUAGE Fortran)
         else()
             set_target_properties( quest_signed_distance_interface_F_ex
                                    PROPERTIES LINKER_LANGUAGE CXX)
-
-            set_target_properties(quest_inout_interface_F_ex
-                                  PROPERTIES LINKER_LANGUAGE CXX)
         endif()
     endif()
 
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND NOT ${SITE} MATCHES "corona$" AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-        if (ENABLE_MPI)
-            axom_add_test(
-                NAME quest_inout_interface_mpi_F_test
-                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                NUM_MPI_TASKS 2
-                )
-        else()
-            axom_add_test(
-                NAME quest_inout_interface_F_test
-                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                )
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        if(NOT ${SITE} MATCHES "^corona" OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+            if (ENABLE_MPI)
+                axom_add_test(
+                    NAME quest_inout_interface_mpi_F_test
+                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                    NUM_MPI_TASKS 2
+                    )
+            else()
+                axom_add_test(
+                    NAME quest_inout_interface_F_test
+                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                    )
+            endif()
         endif()
     endif()
 endif()
