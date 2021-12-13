@@ -164,7 +164,7 @@ void demoArrayBasic()
   std::cout << "Standard for loop over ArrayView c yields: ";
   for(int i = 0; i < c.size(); i++)
   {
-    std::cout << c[i] << " ";
+    std::cout << c.flatIdx(i) << " ";
   }
   std::cout << std::endl;
   // _iteration_end

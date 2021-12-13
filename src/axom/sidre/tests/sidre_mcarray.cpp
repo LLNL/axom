@@ -153,7 +153,7 @@ void check_storage(MCArray<T>& v)
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
       EXPECT_EQ(v(i, j), i * num_components + j);
-      EXPECT_EQ(v[i * num_components + j], i * num_components + j);
+      EXPECT_EQ(v.flatIdx(i * num_components + j), i * num_components + j);
       EXPECT_EQ(data_ptr[i * num_components + j], i * num_components + j);
     }
   }
@@ -173,7 +173,7 @@ void check_storage(MCArray<T>& v)
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
       EXPECT_EQ(v(i, j), i * j - 5 * i + 7 * j);
-      EXPECT_EQ(v[i * num_components + j], i * j - 5 * i + 7 * j);
+      EXPECT_EQ(v.flatIdx(i * num_components + j), i * j - 5 * i + 7 * j);
       EXPECT_EQ(data_ptr[i * num_components + j], i * j - 5 * i + 7 * j);
     }
   }
