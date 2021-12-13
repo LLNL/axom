@@ -11,12 +11,13 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
+#include "axom/primal/geometry/OrientationResult.hpp"
 
 #include "axom/fmt.hpp"
 
 #include <cmath>
 
-using namespace axom;
+namespace primal = axom::primal;
 
 TEST(primal_triangle, triangle_area_2D)
 {
@@ -119,7 +120,7 @@ TEST(primal_triangle, triangle_physical_to_bary)
     QPoint bary = tri.physToBarycentric(query);
     QPoint phys = tri.baryToPhysical(bary);
 
-    SLIC_DEBUG(fmt::format(
+    SLIC_DEBUG(axom::fmt::format(
       "Computed barycentric coordinates for triangle {} and point {} are {}",
       tri,
       query,
@@ -181,7 +182,7 @@ TEST(primal_triangle, triangle_bary_to_physical)
     QPoint phys = tri.baryToPhysical(query);
     QPoint bary = tri.physToBarycentric(phys);
 
-    SLIC_DEBUG(fmt::format(
+    SLIC_DEBUG(axom::fmt::format(
       "Computed physical coordinates for triangle {} at barycentric {} are {}",
       tri,
       query,
@@ -311,9 +312,9 @@ TEST(primal_triangle, triangle_2D_circumsphere)
   using QTri = primal::Triangle<CoordType, DIM>;
   using QSphere = primal::Sphere<CoordType, DIM>;
 
-  using axom::primal::ON_BOUNDARY;
-  using axom::primal::ON_NEGATIVE_SIDE;
-  using axom::primal::ON_POSITIVE_SIDE;
+  using primal::ON_BOUNDARY;
+  using primal::ON_NEGATIVE_SIDE;
+  using primal::ON_POSITIVE_SIDE;
 
   // Test triangles
   std::vector<QTri> tris = {

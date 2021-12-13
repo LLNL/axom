@@ -217,6 +217,7 @@ public:
    */
   Point<double, 3> physToBarycentric(const PointType& p) const
   {
+    using axom::numerics::determinant;
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
     Point<double, 3> bary;
@@ -254,15 +255,9 @@ public:
 
     // Compute ood * area of each sub-triangle
     bary[0] = ood *
-      numerics::determinant(p[c0] - B[c0],
-                            p[c1] - B[c1],
-                            B[c0] - C[c0],
-                            B[c1] - C[c1]);
+      determinant(p[c0] - B[c0], p[c1] - B[c1], B[c0] - C[c0], B[c1] - C[c1]);
     bary[1] = ood *
-      numerics::determinant(p[c0] - C[c0],
-                            p[c1] - C[c1],
-                            C[c0] - A[c0],
-                            C[c1] - A[c1]);
+      determinant(p[c0] - C[c0], p[c1] - C[c1], C[c0] - A[c0], C[c1] - A[c1]);
     bary[2] = 1. - bary[0] - bary[1];
 
     return bary;
@@ -282,8 +277,7 @@ public:
     PointType res;
     for(int i = 0; i < NDIMS; ++i)
     {
-      res[i] = bary[0] * m_points[0][i] + bary[1] * m_points[1][i] +
-        bary[2] * m_points[2][i];
+      res.array() += bary[i] * m_points[i].array();
     }
 
     return res;

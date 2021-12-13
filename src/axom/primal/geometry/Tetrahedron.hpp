@@ -6,16 +6,16 @@
 #ifndef AXOM_PRIMAL_TETRAHEDRON_HPP_
 #define AXOM_PRIMAL_TETRAHEDRON_HPP_
 
-#include "axom/core/Macros.hpp"
-#include "axom/core/numerics/Determinants.hpp"  // For numerics::determinant()
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 
+#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
-#include <ostream>  // for std::ostream
+#include <ostream>
 
 namespace axom
 {
@@ -32,13 +32,10 @@ template <typename T, int NDIMS>
 class Tetrahedron
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
-  enum
-  {
-    NUM_TET_VERTS = 4
-  };
+  static constexpr int NUM_TET_VERTS = 4;
 
 public:
   /*!
@@ -103,6 +100,8 @@ public:
    */
   Point<double, 4> physToBarycentric(const PointType& p) const
   {
+    using axom::numerics::determinant;
+
     Point<double, 4> bary;
 
     const PointType& p0 = m_points[0];
@@ -119,26 +118,25 @@ public:
     const double detScale = 1. / det0;
 
     // clang-format off
-    const double det1 = axom::numerics::determinant(
-      1.0,  p[0],  p[1],  p[2],
-      1.0, p1[0], p1[1], p1[2],
-      1.0, p2[0], p2[1], p2[2],
-      1.0, p3[0], p3[1], p3[2]);
-    const double det2 = axom::numerics::determinant(
-      1.0, p0[0], p0[1], p0[2],
-      1.0,  p[0],  p[1],  p[2],
-      1.0, p2[0], p2[1], p2[2],
-      1.0, p3[0], p3[1], p3[2]);
-    const double det3 = axom::numerics::determinant(
-      1.0, p0[0], p0[1], p0[2],
-      1.0, p1[0], p1[1], p1[2],
-      1.0,  p[0],  p[1],  p[2],
-      1.0, p3[0], p3[1], p3[2]);
-    const double det4 = axom::numerics::determinant(
-      1.0, p0[0], p0[1], p0[2],
-      1.0, p1[0], p1[1], p1[2],
-      1.0, p2[0], p2[1], p2[2],
-      1.0,  p[0],  p[1],  p[2]);
+    const double det1 = determinant(1.0,  p[0],  p[1],  p[2],
+                                    1.0, p1[0], p1[1], p1[2],
+                                    1.0, p2[0], p2[1], p2[2],
+                                    1.0, p3[0], p3[1], p3[2]);
+
+    const double det2 = determinant(1.0, p0[0], p0[1], p0[2],
+                                    1.0,  p[0],  p[1],  p[2],
+                                    1.0, p2[0], p2[1], p2[2],
+                                    1.0, p3[0], p3[1], p3[2]);
+
+    const double det3 = determinant(1.0, p0[0], p0[1], p0[2],
+                                    1.0, p1[0], p1[1], p1[2],
+                                    1.0,  p[0],  p[1],  p[2],
+                                    1.0, p3[0], p3[1], p3[2]);
+
+    const double det4 = determinant(1.0, p0[0], p0[1], p0[2],
+                                    1.0, p1[0], p1[1], p1[2],
+                                    1.0, p2[0], p2[1], p2[2],
+                                    1.0,  p[0],  p[1],  p[2]);
     // clang-format on
 
     bary[0] = det1 * detScale;
@@ -152,6 +150,26 @@ public:
         << (bary[0] + bary[1] + bary[2] + bary[3]));
 
     return bary;
+  }
+
+  /*!
+   * \brief Returns the physical coordinates of a barycentric point
+   * \param [in] bary Barycentric coordinates relative to this tetrahedron
+   * \return Physical point represented by bary
+   */
+  PointType baryToPhysical(const Point<double, 4>& bary) const
+  {
+    SLIC_CHECK_MSG(
+      axom::utilities::isNearlyEqual(1., bary[0] + bary[1] + bary[2] + bary[3]),
+      "Barycentric coordinates must sum to (near) one.");
+
+    PointType res;
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      res.array() += bary[i] * m_points[i].array();
+    }
+
+    return res;
   }
 
   /*!
@@ -182,6 +200,63 @@ public:
    * \sa signedVolume()
    */
   double volume() const { return axom::utilities::abs(signedVolume()); }
+
+  /**
+   * \brief Returns the circumsphere of the tetrahedron
+   *
+   * Implements formula from https://mathworld.wolfram.com/Circumsphere.html
+   * \note This function is only available for 3D tetrahedra in 3D
+   */
+  template <int TDIM = NDIMS>
+  typename std::enable_if<TDIM == 3, primal::Sphere<T, 3>>::type circumsphere() const
+  {
+    using axom::numerics::determinant;
+    using axom::numerics::dot_product;
+    using axom::utilities::abs;
+    using NumericArrayType = primal::NumericArray<T, NDIMS>;
+    using SphereType = primal::Sphere<T, NDIMS>;
+
+    const PointType& p0 = m_points[0];
+    const PointType& p1 = m_points[1];
+    const PointType& p2 = m_points[2];
+    const PointType& p3 = m_points[3];
+
+    // clang-format off
+    const Point<T, 4> sq { dot_product(p0.data(), p0.data(), NDIMS),
+                           dot_product(p1.data(), p1.data(), NDIMS),
+                           dot_product(p2.data(), p2.data(), NDIMS),
+                           dot_product(p3.data(), p3.data(), NDIMS)};
+
+    const double  a =  determinant(p0[0], p0[1], p0[2], 1.,
+                                   p1[0], p1[1], p1[2], 1.,
+                                   p2[0], p2[1], p2[2], 1.,
+                                   p3[0], p3[1], p3[2], 1.);
+
+    const double dx =  determinant(sq[0], p0[1], p0[2], 1.,
+                                   sq[1], p1[1], p1[2], 1.,
+                                   sq[2], p2[1], p2[2], 1.,
+                                   sq[3], p3[1], p3[2], 1.);
+
+    const double dy = -determinant(sq[0], p0[0], p0[2], 1.,
+                                   sq[1], p1[0], p1[2], 1.,
+                                   sq[2], p2[0], p2[2], 1.,
+                                   sq[3], p3[0], p3[2], 1.);
+
+    const double dz =  determinant(sq[0], p0[0], p0[1], 1.,
+                                   sq[1], p1[0], p1[1], 1.,
+                                   sq[2], p2[0], p2[1], 1.,
+                                   sq[3], p3[0], p3[1], 1.);
+
+    const double  c =  determinant(sq[0], p0[0], p0[1], p0[2],
+                                   sq[1], p1[0], p1[1], p1[2],
+                                   sq[2], p2[0], p2[1], p2[2],
+                                   sq[3], p3[0], p3[1], p3[2]);
+    // clang-format on
+
+    const auto center = NumericArrayType {dx, dy, dz} / (2 * a);
+    const T radius = sqrt(dx * dx + dy * dy + dz * dz - 4 * a * c) / (2 * abs(a));
+    return SphereType(center.data(), radius);
+  }
 
 private:
   /*!
