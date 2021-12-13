@@ -7,18 +7,15 @@
 #define AXOM_PRIMAL_TRIANGLE_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Macros.hpp"
-#include "axom/core/numerics/Determinants.hpp"
-#include "axom/core/utilities/Utilities.hpp"
-
+#include "axom/core.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 
-#include <cmath>    // for acos()
-#include <ostream>  // for std::ostream
+#include <cmath>
+#include <ostream>
 
 namespace axom
 {
@@ -49,10 +46,7 @@ public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
 
-  enum
-  {
-    NUM_TRI_VERTS = 3
-  };
+  static constexpr int NUM_TRI_VERTS = 3;
 
 public:
   /*!
@@ -140,22 +134,25 @@ public:
    * \brief Returns the circumsphere of the triangle
    *
    * Implements formula from https://mathworld.wolfram.com/Circumcircle.html
+   * \note This function is only available for triangles in 2D
    */
-  primal::Sphere<T, NDIMS> circumsphere() const
+  template <int TDIM = NDIMS>
+  typename std::enable_if<TDIM == 2, primal::Sphere<T, 2>>::type circumsphere() const
   {
-    // TODO: only allow this for 2D triangles
-
     using axom::numerics::determinant;
+    using axom::numerics::dot_product;
     using axom::utilities::abs;
+    using NumericArrayType = primal::NumericArray<T, NDIMS>;
+    using SphereType = primal::Sphere<T, NDIMS>;
 
     const PointType& A = m_points[0];
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
 
     // clang-format off
-    const Point<T, 3> sq {A[0] * A[0] + A[1] * A[1],
-                          B[0] * B[0] + B[1] * B[1],
-                          C[0] * C[0] + C[1] * C[1]};
+    const Point<T, 4> sq { dot_product(A.data(), A.data(), NDIMS),
+                           dot_product(B.data(), B.data(), NDIMS),
+                           dot_product(C.data(), C.data(), NDIMS)};
 
     const double  a =  determinant(A[0], A[1], 1.,
                                    B[0], B[1], 1.,
@@ -174,9 +171,9 @@ public:
                                    sq[2], C[0], C[1]);
     // clang-format on
 
-    const T center[2] = {-bx / (2 * a), -by / (2 * a)};
+    const auto center = NumericArrayType {-bx, -by} / (2 * a);
     const T radius = sqrt(bx * bx + by * by - 4 * a * c) / (2 * abs(a));
-    return primal::Sphere<T, 2>(center, radius);
+    return SphereType(center.data(), radius);
   }
 
 private:
