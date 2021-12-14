@@ -53,12 +53,12 @@ IAMesh<TDIM, SDIM, P>::ElemNbrFinder(V2EMapType& vertpair_to_elem_map,
 
   ElementAndFaceIdxType zs_pair(element_i, side_i);
 
-  std::pair<V2EMapType::iterator, bool> map_ret2;
-  map_ret2 = vertpair_to_elem_map.insert(std::make_pair(vlist, zs_pair));
+  auto map_ret2 = vertpair_to_elem_map.insert(std::make_pair(vlist, zs_pair));
   if(!map_ret2.second)  //if this pair is in the map, we've found our match
   {
+    auto orig_pair = map_ret2.first->second;
     vertpair_to_elem_map.erase(map_ret2.first);
-    return map_ret2.first->second;
+    return orig_pair;
   }
 
   //No matching pair is found. Return an invalid pair
