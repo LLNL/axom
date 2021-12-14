@@ -17,6 +17,8 @@
 #define AXOM_PRIMAL_IN_SPHERE_H_
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 
 namespace axom
@@ -54,6 +56,19 @@ inline bool in_sphere(const Point<T, 2>& q,
 }
 
 /*!
+ * \brief Tests whether a query point lies inside a 2D triangle's circumcircle
+ *
+ * \param [in] q the query point
+ * \param [in] tri the triangle
+ * \see in_sphere
+ */
+template <typename T>
+inline bool in_sphere(const Point<T, 2>& q, const Triangle<T, 2>& tri)
+{
+  return in_sphere(q, tri[0], tri[1], tri[2]);
+}
+
+/*!
  * \brief Tests whether a query point lies inside a 3D tetrahedron's
  * circumsphere
  *
@@ -86,6 +101,19 @@ inline bool in_sphere(const Point<T, 3>& q,
 
   double det = axom::numerics::determinant(mat);
   return det < 0;
+}
+
+/*!
+ * \brief Tests whether a query point lies inside a 3D tetrahedron's circumsphere
+ *
+ * \param [in] q the query point
+ * \param [in] tet the tetrahedron
+ * \see in_sphere
+ */
+template <typename T>
+inline bool in_sphere(const Point<T, 3>& q, const Tetrahedron<T, 3>& tet)
+{
+  return in_sphere(q, tet[0], tet[1], tet[2], tet[3]);
 }
 
 }  // namespace primal
