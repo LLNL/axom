@@ -122,14 +122,15 @@ public:
     RealConstT&,
     typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
 
-  ArrayBase() : m_dims {} { updateStrides(); }
+  AXOM_HOST_DEVICE ArrayBase() : m_dims {} { updateStrides(); }
 
   /*!
    * \brief Parameterized constructor that sets up the default strides
    *
    * \param [in] args the parameter pack of sizes in each dimension.
    */
-  ArrayBase(const StackArray<IndexType, DIM>& args) : m_dims {args}
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& args)
+    : m_dims {args}
   {
     updateStrides();
   }
@@ -304,7 +305,7 @@ protected:
    * In the future, this class will support different striding schemes (e.g., column-major)
    * and/or user-provided striding
    */
-  void updateStrides()
+  AXOM_HOST_DEVICE void updateStrides()
   {
     // Row-major
     m_strides[DIM - 1] = 1;
@@ -405,9 +406,9 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
-  ArrayBase(IndexType = 0) { }
+  AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { }
 
-  ArrayBase(const StackArray<IndexType, 1>&) { }
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&) { }
 
   // Empy implementation because no member data
   template <typename OtherArrayType>
@@ -607,9 +608,14 @@ namespace detail
 {
 // Takes the product of a parameter pack of T
 template <typename T, int N>
-T packProduct(const T (&arr)[N])
+AXOM_HOST_DEVICE T packProduct(const T (&arr)[N])
 {
-  return std::accumulate(arr, arr + N, 1, std::multiplies<T> {});
+  T prod = 1;
+  for(int idx = 0; idx < N; idx++)
+  {
+    prod *= arr[idx];
+  }
+  return prod;
 }
 
 template <typename T, int N>
