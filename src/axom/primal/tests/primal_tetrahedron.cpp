@@ -16,7 +16,7 @@
 
 #include "axom/fmt.hpp"
 
-#include <cmath>
+#include <math.h>
 
 namespace primal = axom::primal;
 
@@ -47,24 +47,24 @@ protected:
     qData1[2] = QPoint {0, 0, 1};
     qData1[3] = QPoint {0, 0, 0};
 
+    double angles[3];
+    for(int i = 0; i < 3; ++i)
+    {
+      angles[i] = i * M_PI / 3.;
+    }
+
     // Define coordinates for third tetrahedron
     const double sc2 = .1;
-    qData2[0] =
-      QPoint {sc2 * std::cos(0 * M_PI / 3.), sc2 * std::sin(0 * M_PI / 3.), 0};
-    qData2[1] =
-      QPoint {sc2 * std::cos(1 * M_PI / 3.), sc2 * std::sin(1 * M_PI / 3.), 0};
-    qData2[2] =
-      QPoint {sc2 * std::cos(2 * M_PI / 3.), sc2 * std::sin(2 * M_PI / 3.), 0};
+    qData2[0] = QPoint {sc2 * std::cos(angles[0]), sc2 * std::sin(angles[0]), 0};
+    qData2[1] = QPoint {sc2 * std::cos(angles[1]), sc2 * std::sin(angles[1]), 0};
+    qData2[2] = QPoint {sc2 * std::cos(angles[2]), sc2 * std::sin(angles[2]), 0};
     qData2[3] = QPoint {0, 0, 100.};
 
     // Define coordinates for fourth tetrahedron
     const double sc3 = 100.;
-    qData3[0] =
-      QPoint {sc3 * std::cos(0 * M_PI / 3.), sc3 * std::sin(0 * M_PI / 3.), 0};
-    qData3[1] =
-      QPoint {sc3 * std::cos(1 * M_PI / 3.), sc3 * std::sin(1 * M_PI / 3.), 0};
-    qData3[2] =
-      QPoint {sc3 * std::cos(2 * M_PI / 3.), sc3 * std::sin(2 * M_PI / 3.), 0};
+    qData3[0] = QPoint {sc3 * std::cos(angles[0]), sc3 * std::sin(angles[0]), 0};
+    qData3[1] = QPoint {sc3 * std::cos(angles[1]), sc3 * std::sin(angles[1]), 0};
+    qData3[2] = QPoint {sc3 * std::cos(angles[2]), sc3 * std::sin(angles[2]), 0};
     qData3[3] = QPoint {0, 0, .1};
   }
 
