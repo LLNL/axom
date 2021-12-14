@@ -158,13 +158,15 @@ public:
   { }
 
   /*!
-   * \brief Dimension-aware accessor, returns a reference to the given value.
+   * \brief Dimension-aware accessor; with N=DIM indices, returns a reference
+   *  to the given value at that index. Otherwise, returns a sub-array pointed
+   *  to by the given sub-index.
    *
    * \param [in] args the parameter pack of indices in each dimension.
    *
    * \note equivalent to *(array.data() + idx).
    *
-   * \pre sizeof...(Args) == DIM
+   * \pre sizeof...(Args) <= DIM
    * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
    */
   template <typename... Args>
@@ -187,18 +189,39 @@ public:
     return (*this)[indices];
   }
 
+  /*!
+   * \brief Scalar accessor; returns a sub-array referenced by the given sub-
+   *  index, beginning at array(idx, 0...)
+   *
+   * \param [in] idx the index of the first dimension.
+   *
+   * \pre 0 <= idx < m_dims[0]
+   */
   AXOM_HOST_DEVICE SliceType<1> operator[](const IndexType idx)
   {
     const StackArray<IndexType, 1> slice {idx};
     return (*this)[slice];
   }
 
+  /// \overload
   AXOM_HOST_DEVICE ConstSliceType<1> operator[](const IndexType idx) const
   {
     const StackArray<IndexType, 1> slice {idx};
     return (*this)[slice];
   }
 
+  /*!
+   * \brief Dimension-aware accessor; with UDim=DIM indices, returns a reference
+   *  to the given value at that index. Otherwise, returns a sub-array pointed
+   *  to by the given sub-index.
+   *
+   * \param [in] args a stack array of indices in each dimension.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre UDim <= DIM
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, UDim)
+   */
   template <int UDim>
   AXOM_HOST_DEVICE SliceType<UDim> operator[](const StackArray<IndexType, UDim>& idx)
   {
@@ -207,6 +230,7 @@ public:
     return sliceImpl(idx);
   }
 
+  /// \overload
   template <int UDim>
   AXOM_HOST_DEVICE ConstSliceType<UDim> operator[](
     const StackArray<IndexType, UDim>& idx) const
@@ -336,6 +360,11 @@ private:
     return idx >= 0 && idx < asDerived().size();
   }
   /// @}
+
+  /// \name Internal subarray slicing methods
+  /// @{
+
+  /*! \brief Returns a subarray given UDim indices */
   template <int UDim>
   AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(const StackArray<IndexType, UDim>& idx)
   {
@@ -350,6 +379,7 @@ private:
     return SliceType<UDim>(asDerived().data() + baseIdx, new_inds);
   }
 
+  /// \overload
   template <int UDim>
   AXOM_HOST_DEVICE ConstSliceType<UDim> sliceImpl(
     const StackArray<IndexType, UDim>& idx) const
@@ -365,6 +395,7 @@ private:
     return SliceType<UDim>(asDerived().data() + baseIdx, new_inds);
   }
 
+  /*! \brief Returns a scalar reference given a full set of indices */
   AXOM_HOST_DEVICE SliceType<DIM> sliceImpl(const StackArray<IndexType, DIM>& idx)
   {
     const IndexType baseIdx =
@@ -373,6 +404,7 @@ private:
     return asDerived().data()[baseIdx];
   }
 
+  /// \overload
   AXOM_HOST_DEVICE ConstSliceType<DIM> sliceImpl(
     const StackArray<IndexType, DIM>& idx) const
   {
@@ -381,6 +413,7 @@ private:
     assert(inBounds(baseIdx));
     return asDerived().data()[baseIdx];
   }
+  /// @}
 
 protected:
   /// \brief The sizes (extents?) in each dimension
