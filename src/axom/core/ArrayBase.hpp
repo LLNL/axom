@@ -31,7 +31,10 @@ namespace detail
 {
 template <typename ArrayType>
 struct ArrayTraits;
-}
+
+template <typename T, int DIM>
+class ArrayViewProxy;
+}  // namespace detail
 
 /// \name Overloaded ArrayBase Operator(s)
 /// @{
@@ -114,13 +117,13 @@ public:
   using SliceType = typename std::conditional<
     SliceDim == DIM,
     T&,
-    typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
+    const typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
 
   template <int SliceDim>
   using ConstSliceType = typename std::conditional<
     SliceDim == DIM,
     RealConstT&,
-    typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
+    const typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
 
   AXOM_HOST_DEVICE ArrayBase() : m_dims {} { updateStrides(); }
 
@@ -376,7 +379,10 @@ private:
     {
       new_inds[i] = m_dims[UDim + i];
     }
-    return SliceType<UDim>(asDerived().data() + baseIdx, new_inds);
+    detail::ArrayViewProxy<T, DIM - UDim> viewProxy(asDerived().data() + baseIdx,
+                                                    asDerived().getAllocatorID(),
+                                                    new_inds);
+    return SliceType<UDim>(viewProxy);
   }
 
   /// \overload
@@ -392,7 +398,10 @@ private:
     {
       new_inds[i] = m_dims[UDim + i];
     }
-    return SliceType<UDim>(asDerived().data() + baseIdx, new_inds);
+    detail::ArrayViewProxy<T, DIM - UDim> viewProxy(asDerived().data() + baseIdx,
+                                                    asDerived().getAllocatorID(),
+                                                    new_inds);
+    return ConstSliceType<UDim>(viewProxy);
   }
 
   /*! \brief Returns a scalar reference given a full set of indices */
@@ -729,6 +738,58 @@ void initializeInPlace(T* data,
 template <typename T>
 void initializeInPlace(T*, const IndexType, const IndexType, const int, std::false_type)
 { }
+
+template <typename T, int DIM>
+struct ArrayTraits<ArrayViewProxy<T, DIM>>
+{
+  constexpr static bool is_view = true;
+
+  template <int SliceDim>
+  using Slice = ArrayViewProxy<T, DIM - SliceDim>;
+};
+
+/*!
+ * \brief Proxy class for efficiently constructing slice ArrayViews by using
+ *  the generic ArrayBase constructor in ArrayView. This avoids the cost of
+ *  looking up the correct allocator ID from the other ArrayView constructors.
+ */
+template <typename T, int DIM>
+class ArrayViewProxy : public ArrayBase<T, DIM, ArrayViewProxy<T, DIM>>
+{
+public:
+  AXOM_HOST_DEVICE ArrayViewProxy(T* data,
+                                  int allocatorID,
+                                  const StackArray<IndexType, DIM>& shape)
+    : ArrayBase<T, DIM, ArrayViewProxy<T, DIM>>(shape)
+    , m_data(data)
+    , m_allocatorID(allocatorID)
+    , m_size(packProduct(shape.m_data))
+  { }
+
+  /*!
+   * \brief Return the number of elements stored in the data array.
+   */
+  inline AXOM_HOST_DEVICE IndexType size() const { return m_size; }
+
+  /*!
+   * \brief Return a pointer to the array of data.
+   */
+  /// @{
+
+  AXOM_HOST_DEVICE inline T* data() const { return m_data; }
+
+  /// @}
+
+  /*!
+   * \brief Get the ID for the umpire allocator
+   */
+  int getAllocatorID() const { return m_allocatorID; }
+
+private:
+  T* const m_data;
+  const int m_allocatorID;
+  const IndexType m_size;
+};
 
 }  // namespace detail
 
