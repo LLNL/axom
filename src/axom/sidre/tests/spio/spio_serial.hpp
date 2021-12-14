@@ -185,7 +185,7 @@ TEST(spio_serial, rootfile_suffix)
   // case is that the suffix ".root" is appended to the string to name the
   // root file, and the given string is used to name the subdirectory holding
   // the data files. The exception is if the string already has the suffix
-  // ".root", is is used unchanged to name the root file, and the suffix is
+  // ".root", it is used unchanged to name the root file, and the suffix is
   // removed to create a base string to name the subdirectory and the data
   // files.
 
