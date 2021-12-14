@@ -7,6 +7,7 @@
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
+#include "axom/spin.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -153,9 +154,33 @@ public:
     {
       this->compactMesh();
     }
+  }
 
-    SLIC_WARNING_IF(!m_mesh.isValid(),
-                    "IA m_mesh is invalid after adding new point");
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2, Triangle2D>::type getElement(
+    int element_index) const
+  {
+    IndexArray verts = m_mesh.getVerticesInElement(element_index);
+
+    const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
+    const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
+    const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
+
+    return Triangle2D(p0, p1, p2);
+  }
+
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 3, Tetrahedron3D>::type getElement(
+    int element_index) const
+  {
+    IndexArray verts = m_mesh.getVerticesInElement(element_index);
+
+    const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
+    const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
+    const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
+    const PointType& p3 = m_mesh.getVertexPoint(verts[3]);
+
+    return Tetrahedron3D(p0, p1, p2, p3);
   }
 
   /**
@@ -235,6 +260,117 @@ public:
 
   /// \brief Get the IA mesh data pointer
   const IAMeshType* getMeshData() const { return &m_mesh; }
+
+  /**
+   * \brief Checks that the underlying mesh is a valid Delaunay triangulation of the point set
+   *
+   * A Delaunay triangulation is valid when none of the vertices are inside the circumspheres 
+   * of any of the elements of the mesh
+   */
+  bool isValid(bool verboseOutput = false) const
+  {
+    // We use an ImplicitGrid spatial index to find the candidate elements
+    // whose circumsphere might contain the vertices of the mesh
+
+    using ImplicitGridType = spin::ImplicitGrid<DIM>;
+    using NumericArrayType = primal::NumericArray<DataType, DIM>;
+    using BitsetType = typename ImplicitGridType::BitsetType;
+
+    bool valid = true;
+
+    std::vector<std::pair<IndexType, IndexType>> invalidEntries;
+
+    const int NE = m_mesh.getNumberOfElements();
+    ImplicitGridType grid(m_bounding_box, nullptr, NE);
+
+    // Add (bounding boxes of) element circumspheres to implicit grid
+    for(int element_idx = 0; element_idx < NE; ++element_idx)
+    {
+      if(m_mesh.isValidElementEntry(element_idx))
+      {
+        const auto sphere = this->getElement(element_idx).circumsphere();
+        const auto center = NumericArrayType(sphere.getCenter());
+        const auto offset = NumericArrayType(sphere.getRadius());
+
+        BoundingBox bb;
+        bb.addPoint(PointType(center - offset));
+        bb.addPoint(PointType(center + offset));
+
+        grid.insert(bb, element_idx);  // insert valid entries into grid
+      }
+    }
+
+    // for each vertex -- check in_sphere condition for candidate element
+    const int NV = m_mesh.getNumberOfVertices();
+    for(int vertex_idx = 0; vertex_idx < NV; ++vertex_idx)
+    {
+      const auto& vertex = m_mesh.getVertexPoint(vertex_idx);
+
+      auto candidates = grid.getCandidates(vertex);
+      for(auto element_idx = candidates.find_first();  //
+          element_idx != BitsetType::npos;
+          element_idx = candidates.find_next(element_idx))
+      {
+        // skip if element at this index is not valid
+        if(!m_mesh.isValidElementEntry(element_idx))
+        {
+          continue;
+        }
+
+        // also skip if this is a vertex of the element
+        if(axom::slam::is_subset<IndexType>(
+             vertex_idx,
+             m_mesh.getVerticesInElement(element_idx)))
+        {
+          continue;
+        }
+
+        // check insphere condition
+        if(primal::in_sphere(vertex, getElement(element_idx)))
+        {
+          valid = false;
+
+          if(verboseOutput)
+          {
+            invalidEntries.push_back(std::make_pair(vertex_idx, element_idx));
+          }
+        }
+      }
+    }
+
+    if(verboseOutput)
+    {
+      if(valid)
+      {
+        SLIC_INFO("Delaunay complex was valid");
+      }
+      else
+      {
+        axom::fmt::memory_buffer out;
+        for(const auto& pr : invalidEntries)
+        {
+          auto vertex_idx = pr.first;
+          auto element_idx = pr.second;
+          axom::fmt::format_to(
+            out,
+            "\n\tVertex {} @ {}; Element {}: {} w/ circumsphere: {}",
+            vertex_idx,
+            m_mesh.getVertexPoint(vertex_idx),
+            element_idx,
+            this->getElement(element_idx),
+            this->getElement(element_idx).circumsphere());
+        }
+
+        SLIC_INFO(
+          axom::fmt::format("Delaunay complex was NOT valid. There were {} "
+                            "vertices in the circumsphere of an element. {}",
+                            invalidEntries.size(),
+                            axom::fmt::to_string(out)));
+      }
+    }
+
+    return valid;
+  }
 
 private:
   /// \brief Find the index of the element that contains the query point, or the element closest to the point.
@@ -402,7 +538,7 @@ private:
       const int numFaces = m_cavity_face_list.size();
       m_new_elements.reserve(numFaces);
 
-      for(int i = 0; i < numFaces; i++)
+      for(int i = 0; i < numFaces; ++i)
       {
         // Create a new element from the face and the inserted point
         IndexType vlist[VERT_PER_ELEMENT];

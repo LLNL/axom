@@ -161,6 +161,7 @@ void run_delaunay(const Input& params)
 
   // Check that the mesh is valid
   SLIC_ASSERT(dt.getMeshData()->isValid(true));
+  SLIC_ASSERT(dt.isValid(true));
 
   // Write the final mesh to a vtk file
   {
