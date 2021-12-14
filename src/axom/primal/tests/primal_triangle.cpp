@@ -12,6 +12,7 @@
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientationResult.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -192,6 +193,79 @@ TEST(primal_triangle, triangle_bary_to_physical)
     {
       EXPECT_NEAR(phys[i], expWorld[i], EPS);
       EXPECT_NEAR(bary[i], query[i], EPS);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_triangle, triangle_roundtrip_bary_to_physical)
+{
+  const int DIM = 2;
+  const double EPS = 1e-12;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTri = primal::Triangle<CoordType, DIM>;
+  using RPoint = primal::Point<CoordType, QTri::NUM_TRI_VERTS>;
+
+  QPoint pt[3] = {QPoint {1, 0},  //
+                  QPoint {0, 1},
+                  QPoint {1, 1}};
+
+  QTri tri(pt[0], pt[1], pt[2]);
+
+  // test vertices
+  {
+    RPoint b_in[3] = {RPoint {1., 0., 0.},
+                      RPoint {0., 1., 0.},
+                      RPoint {0., 0., 1.}};
+
+    QPoint p_exp[3] = {tri[0], tri[1], tri[2]};
+
+    for(int i = 0; i < 3; ++i)
+    {
+      QPoint b2p = tri.baryToPhysical(b_in[i]);
+      EXPECT_NEAR(0., primal::squared_distance(p_exp[i], b2p), EPS);
+
+      RPoint p2b = tri.physToBarycentric(b2p);
+      EXPECT_NEAR(0., primal::squared_distance(b_in[i], p2b), EPS);
+    }
+  }
+
+  // test edges
+  {
+    RPoint b_in[3] = {RPoint {.5, .5, 0.},
+                      RPoint {.5, 0., .5},
+                      RPoint {0., .5, .5}};
+
+    QPoint p_exp[3] = {QPoint::midpoint(tri[0], tri[1]),
+                       QPoint::midpoint(tri[0], tri[2]),
+                       QPoint::midpoint(tri[1], tri[2])};
+
+    for(int i = 0; i < 3; ++i)
+    {
+      QPoint b2p = tri.baryToPhysical(b_in[i]);
+      EXPECT_NEAR(0., primal::squared_distance(p_exp[i], b2p), EPS);
+
+      RPoint p2b = tri.physToBarycentric(b2p);
+      EXPECT_NEAR(0., primal::squared_distance(b_in[i], p2b), EPS);
+    }
+  }
+
+  // test barycenter
+  {
+    const double third = 1. / 3.;
+    RPoint b_in[1] = {RPoint {third, third, third}};
+
+    QPoint p_exp[1] = {
+      QPoint(third * (tri[0].array() + tri[1].array() + tri[2].array()))};
+
+    for(int i = 0; i < 1; ++i)
+    {
+      QPoint b2p = tri.baryToPhysical(b_in[i]);
+      EXPECT_NEAR(0., primal::squared_distance(p_exp[i], b2p), EPS);
+
+      RPoint p2b = tri.physToBarycentric(b2p);
+      EXPECT_NEAR(0., primal::squared_distance(b_in[i], p2b), EPS);
     }
   }
 }

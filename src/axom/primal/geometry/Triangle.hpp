@@ -275,7 +275,7 @@ public:
       "Barycentric coordinates must sum to (near) one.");
 
     PointType res;
-    for(int i = 0; i < NDIMS; ++i)
+    for(int i = 0; i < NUM_TRI_VERTS; ++i)
     {
       res.array() += bary[i] * m_points[i].array();
     }
