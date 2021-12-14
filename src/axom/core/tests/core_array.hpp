@@ -1453,6 +1453,21 @@ TEST(core_array, check_multidimensional)
     // For a multidim array, op[] is a "flat" index into the raw data
     EXPECT_EQ(v_double.flatIdx(i), v_double_flat[i]);
   }
+
+  for(int i = 0; i < v_double.shape()[0]; i++)
+  {
+    Array<double, 2> v_double_subarray_2d = v_double[i];
+    for(int j = 0; j < v_double.shape()[1]; j++)
+    {
+      Array<double> v_double_subarray_1d = v_double(i, j);
+      for(int k = 0; k < v_double.shape()[2]; k++)
+      {
+        EXPECT_EQ(v_double(i, j, k), v_double[i][j][k]);
+        EXPECT_EQ(v_double(i, j, k), v_double_subarray_2d(j, k));
+        EXPECT_EQ(v_double(i, j, k), v_double_subarray_1d[k]);
+      }
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -1520,6 +1535,21 @@ TEST(core_array, check_multidimensional_view)
   {
     // For a multidim array, op[] is a "flat" index into the raw data
     EXPECT_EQ(v_double_view.flatIdx(i), v_double_flat_view[i]);
+  }
+
+  for(int i = 0; i < v_double_view.shape()[0]; i++)
+  {
+    Array<double, 2> v_double_subarray_2d = v_double_view[i];
+    for(int j = 0; j < v_double_view.shape()[1]; j++)
+    {
+      Array<double> v_double_subarray_1d = v_double_view(i, j);
+      for(int k = 0; k < v_double_view.shape()[2]; k++)
+      {
+        EXPECT_EQ(v_double_view(i, j, k), v_double_view[i][j][k]);
+        EXPECT_EQ(v_double_view(i, j, k), v_double_subarray_2d(j, k));
+        EXPECT_EQ(v_double_view(i, j, k), v_double_subarray_1d[k]);
+      }
+    }
   }
 }
 

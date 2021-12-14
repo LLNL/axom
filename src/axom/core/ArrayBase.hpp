@@ -186,6 +186,18 @@ public:
     return (*this)[indices];
   }
 
+  AXOM_HOST_DEVICE SliceType<1> operator[](const IndexType idx)
+  {
+    const StackArray<IndexType, 1> slice {idx};
+    return (*this)[slice];
+  }
+
+  AXOM_HOST_DEVICE ConstSliceType<1> operator[](const IndexType idx) const
+  {
+    const StackArray<IndexType, 1> slice {idx};
+    return (*this)[slice];
+  }
+
   template <int UDim>
   AXOM_HOST_DEVICE SliceType<UDim> operator[](const StackArray<IndexType, UDim>& idx)
   {
