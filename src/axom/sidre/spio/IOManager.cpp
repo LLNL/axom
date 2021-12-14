@@ -9,6 +9,7 @@
 // Other axom headers
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 // SiDRe project headers
 #include "axom/sidre/core/Buffer.hpp"
@@ -470,19 +471,7 @@ std::string IOManager::createRootFile(const std::string& root_base,
 {
   conduit::Node n;
 
-  std::string suffix(".root");
-  std::string file_base(root_base);
-
-  size_t base_size = file_base.size();
-  size_t suffix_size = suffix.size();
-  if(base_size > suffix_size)
-  {
-    if(file_base.compare(base_size - suffix_size, suffix_size, suffix) == 0)
-    {
-      // file_base has ".root" suffix, so remove it.
-      file_base.erase(base_size - suffix_size);
-    }
-  }
+  std::string file_base(utilities::string::removeSuffix(root_base, ".root"));
 
   if(m_my_rank == 0)
   {
