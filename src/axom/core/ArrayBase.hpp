@@ -191,10 +191,7 @@ public:
   {
     static_assert(UDim <= DIM,
                   "Index dimensions cannot be larger than array dimensions");
-    const IndexType baseIdx =
-      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
-    assert(inBounds(baseIdx));
-    return SliceHelper<UDim>::impl(asDerived().data(), baseIdx, m_dims);
+    return sliceImpl(idx);
   }
 
   template <int UDim>
@@ -203,10 +200,7 @@ public:
   {
     static_assert(UDim <= DIM,
                   "Index dimensions cannot be larger than array dimensions");
-    const IndexType baseIdx =
-      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
-    assert(inBounds(baseIdx));
-    return SliceHelper<UDim>::impl(asDerived().data(), baseIdx, m_dims);
+    return sliceImpl(idx);
   }
 
   /// @{
@@ -329,55 +323,51 @@ private:
     return idx >= 0 && idx < asDerived().size();
   }
   /// @}
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(const StackArray<IndexType, UDim>& idx)
+  {
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
+    assert(inBounds(baseIdx));
+    StackArray<IndexType, DIM - UDim> new_inds;
+    for(int i = 0; i < DIM - UDim; i++)
+    {
+      new_inds[i] = m_dims[UDim + i];
+    }
+    return SliceType<UDim>(asDerived().data() + baseIdx, new_inds);
+  }
 
   template <int UDim>
-  struct SliceHelper
+  AXOM_HOST_DEVICE ConstSliceType<UDim> sliceImpl(
+    const StackArray<IndexType, UDim>& idx) const
   {
-    using BaseT = typename std::remove_const<T>::type;
-    AXOM_HOST_DEVICE static SliceType<UDim> impl(
-      BaseT* data,
-      IndexType baseIdx,
-      const StackArray<IndexType, DIM>& oldDims)
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
+    assert(inBounds(baseIdx));
+    StackArray<IndexType, DIM - UDim> new_inds;
+    for(int i = 0; i < DIM - UDim; i++)
     {
-      StackArray<IndexType, DIM - UDim> new_inds;
-      for(int i = 0; i < DIM - UDim; i++)
-      {
-        new_inds[i] = oldDims[UDim + i];
-      }
-      return SliceType<UDim>(data + baseIdx, new_inds);
+      new_inds[i] = m_dims[UDim + i];
     }
+    return SliceType<UDim>(asDerived().data() + baseIdx, new_inds);
+  }
 
-    AXOM_HOST_DEVICE static ConstSliceType<UDim> impl(
-      const BaseT* data,
-      IndexType baseIdx,
-      const StackArray<IndexType, DIM>& oldDims)
-    {
-      StackArray<IndexType, DIM - UDim> new_inds;
-      for(int i = 0; i < DIM - UDim; i++)
-      {
-        new_inds[i] = oldDims[UDim + i];
-      }
-      return ConstSliceType<UDim>(data + baseIdx, new_inds);
-    }
-  };
-
-  template <>
-  struct SliceHelper<DIM>
+  AXOM_HOST_DEVICE SliceType<DIM> sliceImpl(const StackArray<IndexType, DIM>& idx)
   {
-    using BaseT = typename std::remove_const<T>::type;
-    AXOM_HOST_DEVICE static SliceType<DIM> impl(BaseT* data,
-                                                IndexType baseIdx,
-                                                const StackArray<IndexType, DIM>&)
-    {
-      return data[baseIdx];
-    }
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
+    assert(inBounds(baseIdx));
+    return asDerived().data()[baseIdx];
+  }
 
-    AXOM_HOST_DEVICE static ConstSliceType<DIM>
-    impl(const BaseT* data, IndexType baseIdx, const StackArray<IndexType, DIM>&)
-    {
-      return data[baseIdx];
-    }
-  };
+  AXOM_HOST_DEVICE ConstSliceType<DIM> sliceImpl(
+    const StackArray<IndexType, DIM>& idx) const
+  {
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
+    assert(inBounds(baseIdx));
+    return asDerived().data()[baseIdx];
+  }
 
 protected:
   /// \brief The sizes (extents?) in each dimension
