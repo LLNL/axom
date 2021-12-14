@@ -284,10 +284,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                                         "{0}/include;{0}/../hsa/include".format(hip_root)))
 
             # Fixes for mpi for rocm until wrapper paths are fixed
-            # Flags are already part of the wrapped compilers on TOSS4 systems
-            hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
+            # These flags are already part of the wrapped compilers on TOSS4 systems
+            #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
 
-            if "gfx908" in archs:
+            # Flags for crayftn
+            if "crayftn" in self.compiler.fc:
                 # Fix for working around CMake adding implicit link directories
                 # returned by the Cray crayftn compiler to link executables with
                 # non-system default stdlib
@@ -295,8 +296,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
                     "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
 
-            #Flags for crayftn
-            if "crayftn" in self.compiler.fc:
                 hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.0/cce/x86_64/lib:/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
 
             # Flags for amdflang
