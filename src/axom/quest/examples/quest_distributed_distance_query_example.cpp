@@ -76,37 +76,54 @@ public:
     : m_allocatorID(allocatorID)
   { }
 
+public:  // Query properties
+  void setVerbosity(bool isVerbose) { m_isVerbose = isVerbose; }
+
+public:
   /// Utility function to generate an array of 2D points
   void generatePoints(double radius, int numPoints)
   {
     using axom::utilities::random_real;
 
-    m_points.clear();
-    m_points.reserve(numPoints);
-
+    // Generate in host because random_real is not yet ported to the device
+    PointArray pts;
+    pts.reserve(numPoints);
     for(int i = 0; i < numPoints; ++i)
     {
       const double angleInRadians = random_real(0., 2 * M_PI);
       const double rsinT = radius * std::sin(angleInRadians);
       const double rcosT = radius * std::cos(angleInRadians);
 
-      m_points.emplace_back(Point2D {rcosT, rsinT});
+      pts.emplace_back(PointType {rcosT, rsinT});
     }
+
+    if(m_isVerbose)
+    {
+      SLIC_INFO("Points on object:");
+      const auto& arr = m_points;
+      for(auto i : slam::PositionSet<int>(arr.size()))
+      {
+        const double mag = sqrt(arr[i][0] * arr[i][0] + arr[i][1] * arr[i][1]);
+        SLIC_INFO(axom::fmt::format("\t{}: {} -- {}", i, arr[i], mag));
+      }
+    }
+
+    m_points = PointArray(pts, m_allocatorID); // copy to ExecSpace
   }
 
   bool generateBVHTree()
   {
     const int npts = m_points.size();
-    BoxType* boxes = axom::allocate<BoxType>(npts, m_allocatorID);
+    axom::Array<BoxType> boxesArray(npts, npts, m_allocatorID);
+    auto boxesView = boxesArray.view();
     axom::for_all<ExecSpace>(
       npts,
-      AXOM_LAMBDA(axom::IndexType i) { boxes[i] = BoxType {m_points[i]}; });
+      AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {m_points[i]}; });
 
     // Build bounding volume hierarchy
     m_bvh.setAllocatorID(m_allocatorID);
-    int result = m_bvh.initialize(boxes, npts);
+    int result = m_bvh.initialize(boxesView, npts);
 
-    axom::deallocate(boxes);
     return (result == spin::BVH_BUILD_OK);
   }
 
@@ -117,9 +134,14 @@ public:
 
     const int nPts = queryPts.size();
 
-    cpIndexes.resize(nPts);
-    /// Create an ArrayView that is compatible with cpIndexes
-    axom::IndexType* indexData = cpIndexes.data();
+    /// Create an ArrayView in ExecSpace that is compatible with cpIndexes
+    axom::Array<axom::IndexType> cp_idx(nPts, nPts, m_allocatorID);
+    auto query_inds = cp_idx.view();
+
+    /// Create an ArrayView in ExecSpace that is compatible with queryPts
+    PointArray execPoints(nPts, nPts, m_allocatorID);
+    execPoints = queryPts;
+    auto query_pts = execPoints.view();
 
     // Get a device-useable iterator
     auto it = m_bvh.getTraverser();
@@ -132,7 +154,7 @@ public:
       axom::for_all<ExecSpace>(
         nPts,
         AXOM_LAMBDA(int32 idx) mutable {
-          PointType qpt = queryPts[idx];
+          PointType qpt = query_pts[idx];
 
           MinCandidate curr_min {};
 
@@ -156,8 +178,10 @@ public:
           // Traverse the tree, searching for the point with minimum distance.
           it.traverse_tree(qpt, searchMinDist, traversePredicate);
 
-          indexData[idx] = curr_min.minElem;
+          query_inds[idx] = curr_min.minElem;
         }););
+
+    cpIndexes = query_inds;
   }
 
   const PointArray& points() const { return m_points; }
@@ -168,6 +192,7 @@ private:
   BVHTreeType m_bvh;
 
   int m_allocatorID;
+  bool m_isVerbose {false};
 };
 
 class MeshWrapper
@@ -314,6 +339,14 @@ private:
   sidre::MFEMSidreDataCollection m_dc;
 };
 
+/// Choose runtime policy for RAJA
+enum class RuntimePolicy
+{
+  seq = 0,
+  omp = 1,
+  cuda = 2
+};
+
 /// Struct to parse and store the input parameters
 struct Input
 {
@@ -322,9 +355,24 @@ public:
 
   double circleRadius {1.0};
   int circlePoints {100};
+  RuntimePolicy policy {RuntimePolicy::seq};
 
 private:
   bool m_verboseOutput {false};
+
+  // clang-format off
+  const std::map<std::string, RuntimePolicy> s_validPolicies{
+    #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+      {"seq", RuntimePolicy::seq}
+      #ifdef AXOM_USE_OPENMP
+    , {"omp", RuntimePolicy::omp}
+      #endif
+      #ifdef AXOM_USE_CUDA
+    , {"cuda", RuntimePolicy::cuda}
+      #endif
+    #endif
+  };
+  // clang-format on
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
@@ -359,6 +407,11 @@ public:
     app.add_option("-n,--num-samples", circlePoints)
       ->description("Number of points for circle")
       ->capture_default_str();
+
+    app.add_option("-p, --policy", policy)
+      ->description("Set runtime policy for point query method")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
 
     app.get_formatter()->column_width(60);
 
@@ -411,9 +464,20 @@ int main(int argc, char** argv)
   }
 
   constexpr int DIM = 2;
-  using ExecSpace = axom::SEQ_EXEC;
-  using ClosestPointQueryType = ClosestPointQuery<2, ExecSpace>;
-  using PointArray = ClosestPointQueryType::PointArray;
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  using SeqClosestPointQueryType = ClosestPointQuery<2, axom::SEQ_EXEC>;
+
+  #ifdef AXOM_USE_OPENMP
+  using OmpClosestPointQueryType = ClosestPointQuery<2, axom::OMP_EXEC>;
+  #endif
+
+  #ifdef AXOM_USE_CUDA
+  using CudaClosestPointQueryType = ClosestPointQuery<2, axom::CUDA_EXEC<256>>;
+  #endif
+#endif
+
+  using PointArray = SeqClosestPointQueryType::PointArray;
   using IndexSet = slam::PositionSet<>;
   using IndexArray = axom::Array<axom::IndexType>;
 
@@ -433,42 +497,72 @@ int main(int argc, char** argv)
   // Create an array for the indices of the closest points
   IndexArray cpIndices;
 
+  // Create an array to hold the object points
+  PointArray objectPts;
+
   //---------------------------------------------------------------------------
-  // Initialize spatial index for querying points
+  // Initialize spatial index for querying points, and run query
   //---------------------------------------------------------------------------
 
-  SLIC_INFO(
+  auto init_str =
     axom::fmt::format("{:=^80}",
                       axom::fmt::format("Initializing BVH tree over {} points",
-                                        params.circlePoints)));
+                                        params.circlePoints));
 
-  ClosestPointQueryType query;
-
-  query.generatePoints(params.circleRadius, params.circlePoints);
-
-  if(params.isVerbose())
-  {
-    SLIC_INFO("Points on object:");
-    const auto& arr = query.points();
-    for(auto i : IndexSet(arr.size()))
-    {
-      const double mag = sqrt(arr[i][0] * arr[i][0] + arr[i][1] * arr[i][1]);
-      SLIC_INFO(axom::fmt::format("\t{}: {} -- {}", i, arr[i], mag));
-    }
-  }
-
-  // Generate BVH tree over the points
-  query.generateBVHTree();
-
-  //---------------------------------------------------------------------------
-  // Run the closest point query
-  //---------------------------------------------------------------------------
-
-  SLIC_INFO(axom::fmt::format(
+  auto query_str = axom::fmt::format(
     "{:=^80}",
-    axom::fmt::format("Computing closest points for {} query points", nQueryPts)));
+    axom::fmt::format("Computing closest points for {} query points", nQueryPts));
 
-  query.computeClosestPoints(qPts, cpIndices);
+  switch(params.policy)
+  {
+  case RuntimePolicy::seq:
+  {
+    SeqClosestPointQueryType query;
+    query.setVerbosity(params.isVerbose());
+    query.generatePoints(params.circleRadius, params.circlePoints);
+
+    SLIC_INFO(init_str);
+    query.generateBVHTree();
+
+    SLIC_INFO(query_str);
+    query.computeClosestPoints(qPts, cpIndices);
+    objectPts = query.points();
+  }
+  break;
+  case RuntimePolicy::omp:
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && \
+  defined(AXOM_USE_OPENMP)
+  {
+    OmpClosestPointQueryType query;
+    query.setVerbosity(params.isVerbose());
+    query.generatePoints(params.circleRadius, params.circlePoints);
+
+    SLIC_INFO(init_str);
+    query.generateBVHTree();
+
+    SLIC_INFO(query_str);
+    query.computeClosestPoints(qPts, cpIndices);
+    objectPts = query.points();
+  }
+#endif
+  break;
+  case RuntimePolicy::cuda:
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
+  {
+    CudaClosestPointQueryType query;
+    query.setVerbosity(params.isVerbose());
+    query.generatePoints(params.circleRadius, params.circlePoints);
+
+    SLIC_INFO(init_str);
+    query.generateBVHTree();
+
+    SLIC_INFO(query_str);
+    query.computeClosestPoints(qPts, cpIndices);
+    objectPts = query.points();
+  }
+#endif
+  break;
+  }
 
   if(params.isVerbose())
   {
@@ -483,7 +577,6 @@ int main(int argc, char** argv)
   // Transform closest points to distances and directions
   //---------------------------------------------------------------------------
   using primal::squared_distance;
-  const auto& objectPts = query.points();
 
   auto* distances = mesh_wrapper.getDC()->GetField("distance");
   auto* directions = mesh_wrapper.getDC()->GetField("direction");
