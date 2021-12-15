@@ -9,6 +9,7 @@
 // Other axom headers
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 // SiDRe project headers
 #include "axom/sidre/core/Buffer.hpp"
@@ -152,7 +153,7 @@ std::string IOManager::correspondingRelayProtocol(const std::string& sidre_proto
  */
 void IOManager::write(sidre::Group* datagroup,
                       int num_files,
-                      const std::string& file_string,
+                      const std::string& file_base,
                       const std::string& protocol,
                       const std::string& tree_pattern)
 {
@@ -173,11 +174,11 @@ void IOManager::write(sidre::Group* datagroup,
   SLIC_ERROR_IF(m_use_scr && num_files != m_comm_size,
                 "SCR requires a file per process");
 
-  std::string root_string = file_string;
-  createRootFile(root_string, num_files, protocol, tree_pattern);
+  std::string output_base =
+    createRootFile(file_base, num_files, protocol, tree_pattern);
   MPI_Barrier(m_mpi_comm);
 
-  std::string root_name = root_string + ".root";
+  std::string root_name = output_base + ".root";
 
   if(protocol == "sidre_hdf5")
   {
@@ -241,7 +242,7 @@ void IOManager::write(sidre::Group* datagroup,
   else
   {
     int set_id = m_baton->wait();
-    std::string file_name = fmt::sprintf("%s_%07d", file_string, set_id);
+    std::string file_name = fmt::sprintf("%s_%07d", file_base, set_id);
 
     std::string obase = file_name + "." + protocol;
     datagroup->save(obase, protocol);
@@ -463,12 +464,14 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
  *
  *************************************************************************
  */
-void IOManager::createRootFile(const std::string& file_base,
-                               int num_files,
-                               const std::string& protocol,
-                               const std::string& tree_pattern)
+std::string IOManager::createRootFile(const std::string& root_base,
+                                      int num_files,
+                                      const std::string& protocol,
+                                      const std::string& tree_pattern)
 {
   conduit::Node n;
+
+  std::string file_base(utilities::string::removeSuffix(root_base, ".root"));
 
   if(m_my_rank == 0)
   {
@@ -523,6 +526,8 @@ void IOManager::createRootFile(const std::string& file_base,
 
     conduit::relay::io::save(n, root_file_name, relay_protocol);
   }
+
+  return file_base;
 }
 
 /*
