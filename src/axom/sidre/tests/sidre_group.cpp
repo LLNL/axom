@@ -603,6 +603,8 @@ TEST(sidre_group, string_list)
   // Put strings into the Group.
   for(auto itr = str_vec.begin(); itr != str_vec.end(); ++itr)
   {
+    // The first parameter will be ignored when creating a View in a Group
+    // that uses list collections, so we use the empty string
     View* str_view = my_strings->createViewString("", *itr);
     EXPECT_FALSE(str_view == nullptr);
     EXPECT_TRUE(str_view->isString());
