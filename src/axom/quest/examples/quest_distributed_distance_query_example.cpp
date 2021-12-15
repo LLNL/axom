@@ -170,6 +170,150 @@ private:
   int m_allocatorID;
 };
 
+class MeshWrapper
+{
+public:
+  MeshWrapper() : m_dc("closest_point", nullptr, true) { }
+
+  // Returns a pointer to the MFEMSidreDataCollection
+  sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
+  const sidre::MFEMSidreDataCollection* getDC() const { return &m_dc; }
+
+  /// Returns an array containing the positions of the mesh vertices
+  template <typename PointArray>
+  PointArray getVertexPositions()
+  {
+    auto* mesh = m_dc.GetMesh();
+    const int NV = mesh->GetNV();
+    PointArray arr(NV);
+
+    for(auto i : slam::PositionSet<int>(NV))
+    {
+      mesh->GetNode(i, arr[i].data());
+    }
+
+    return arr;
+  }
+
+  /// Saves the data collection to disk
+  void saveMesh()
+  {
+#ifdef MFEM_USE_MPI
+    SLIC_INFO(axom::fmt::format(
+      "{:=^80}",
+      axom::fmt::format("Saving mesh '{}' to disk", m_dc.GetCollectionName())));
+
+    m_dc.Save();
+#endif
+  }
+
+  /**
+   * Loads the mesh as an MFEMSidreDataCollection with 
+   * the following fields: "positions", "distances", "directions"
+   */
+  void setupMesh(const std::string& fileName, const std::string meshFile)
+  {
+    SLIC_INFO(axom::fmt::format("{:=^80}",
+                                axom::fmt::format("Loading '{}' mesh", fileName)));
+
+    sidre::MFEMSidreDataCollection originalMeshDC(fileName, nullptr, false);
+    {
+      originalMeshDC.SetComm(MPI_COMM_WORLD);
+      originalMeshDC.Load(meshFile, "sidre_hdf5");
+    }
+    SLIC_ASSERT_MSG(originalMeshDC.GetMesh()->Dimension() == 2,
+                    "This application currently only supports 2D meshes");
+    // TODO: Check order and apply LOR, if necessary
+
+    const int DIM = originalMeshDC.GetMesh()->Dimension();
+
+    // Create the data collection
+    mfem::Mesh* cpMesh = nullptr;
+    {
+      m_dc.SetMeshNodesName("positions");
+
+      auto* pmesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC.GetMesh());
+      cpMesh = (pmesh != nullptr) ? new mfem::ParMesh(*pmesh)
+                                  : new mfem::Mesh(*originalMeshDC.GetMesh());
+      m_dc.SetMesh(cpMesh);
+    }
+
+    // Register the distance and direction grid function
+    constexpr int order = 1;
+    auto* fec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
+    mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(cpMesh, fec);
+    mfem::GridFunction* distances = new mfem::GridFunction(fes);
+    distances->MakeOwner(fec);
+    m_dc.RegisterField("distance", distances);
+
+    auto* vfec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
+    mfem::FiniteElementSpace* vfes =
+      new mfem::FiniteElementSpace(cpMesh, vfec, DIM);
+    mfem::GridFunction* directions = new mfem::GridFunction(vfes);
+    directions->MakeOwner(vfec);
+    m_dc.RegisterField("direction", directions);
+  }
+
+  /// Prints some info about the mesh
+  void printMeshInfo()
+  {
+    switch(m_dc.GetMesh()->Dimension())
+    {
+    case 2:
+      printMeshInfo<2>();
+      break;
+    case 3:
+      printMeshInfo<3>();
+      break;
+    }
+  }
+
+private:
+  /**
+  * \brief Print some info about the mesh
+  *
+  * \note In MPI-based configurations, this is a collective call, but only prints on rank 0
+  */
+  template <int DIM>
+  void printMeshInfo()
+  {
+    mfem::Mesh* mesh = m_dc.GetMesh();
+
+    int myRank = 0;
+    int numElements = mesh->GetNE();
+
+    mfem::Vector mins, maxs;
+#ifdef MFEM_USE_MPI
+    auto* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+    if(pmesh != nullptr)
+    {
+      pmesh->GetBoundingBox(mins, maxs);
+      numElements = pmesh->ReduceInt(numElements);
+      myRank = pmesh->GetMyRank();
+    }
+    else
+#endif
+    {
+      mesh->GetBoundingBox(mins, maxs);
+    }
+
+    if(myRank == 0)
+    {
+      SLIC_INFO(axom::fmt::format(
+        "Mesh has {} elements and (approximate) bounding box {}",
+        numElements,
+        primal::BoundingBox<double, DIM>(
+          primal::Point<double, DIM>(mins.GetData()),
+          primal::Point<double, DIM>(maxs.GetData()))));
+    }
+
+    slic::flushStreams();
+  }
+
+private:
+  sidre::MFEMSidreDataCollection m_dc;
+};
+
 /// Struct to parse and store the input parameters
 struct Input
 {
@@ -226,46 +370,6 @@ public:
   }
 };
 
-/**
- * \brief Print some info about the mesh
- *
- * \note In MPI-based configurations, this is a collective call, but only prints on rank 0
- */
-template <int DIM>
-void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
-{
-  int myRank = 0;
-  int numElements = mesh->GetNE();
-
-  mfem::Vector mins, maxs;
-#ifdef MFEM_USE_MPI
-  auto* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-  if(pmesh != nullptr)
-  {
-    pmesh->GetBoundingBox(mins, maxs);
-    numElements = pmesh->ReduceInt(numElements);
-    myRank = pmesh->GetMyRank();
-  }
-  else
-#endif
-  {
-    mesh->GetBoundingBox(mins, maxs);
-  }
-
-  if(myRank == 0)
-  {
-    SLIC_INFO(axom::fmt::format(
-      "{} mesh has {} elements and (approximate) bounding box {}",
-      prefixMessage,
-      numElements,
-      primal::BoundingBox<double, DIM>(
-        primal::Point<double, DIM>(mins.GetData()),
-        primal::Point<double, DIM>(maxs.GetData()))));
-  }
-
-  slic::flushStreams();
-}
-
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
@@ -306,43 +410,31 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-  //---------------------------------------------------------------------------
-  // Load mesh
-  //---------------------------------------------------------------------------
   constexpr int DIM = 2;
-
-  SLIC_INFO(axom::fmt::format(
-    "{:=^80}",
-    axom::fmt::format("Loading '{}' mesh", params.getDCMeshName())));
-
-  const bool dc_owns_data = true;
-  sidre::MFEMSidreDataCollection originalMeshDC(params.getDCMeshName(),
-                                                nullptr,
-                                                dc_owns_data);
-  {
-    originalMeshDC.SetComm(MPI_COMM_WORLD);
-    originalMeshDC.Load(params.meshFile, "sidre_hdf5");
-  }
-  SLIC_ASSERT_MSG(originalMeshDC.GetMesh()->Dimension() == DIM,
-                  "This application currently only supports 2D meshes");
-  // TODO: Check order and apply LOR, if necessary
-
-  mfem::Mesh* cpMesh = nullptr;
-  sidre::MFEMSidreDataCollection closestPointDC("closest_point",
-                                                cpMesh,
-                                                dc_owns_data);
-  {
-    closestPointDC.SetMeshNodesName("positions");
-
-    auto* pmesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC.GetMesh());
-    cpMesh = (pmesh != nullptr) ? new mfem::ParMesh(*pmesh)
-                                : new mfem::Mesh(*originalMeshDC.GetMesh());
-    closestPointDC.SetMesh(cpMesh);
-  }
-  printMeshInfo<DIM>(closestPointDC.GetMesh(), "After loading");
+  using ExecSpace = axom::SEQ_EXEC;
+  using ClosestPointQueryType = ClosestPointQuery<2, ExecSpace>;
+  using PointArray = ClosestPointQueryType::PointArray;
+  using IndexSet = slam::PositionSet<>;
+  using IndexArray = axom::Array<axom::IndexType>;
 
   //---------------------------------------------------------------------------
-  // Initialize spatial index
+  // Load mesh and get vertex positions
+  //---------------------------------------------------------------------------
+
+  MeshWrapper mesh_wrapper;
+
+  mesh_wrapper.setupMesh(params.getDCMeshName(), params.meshFile);
+  mesh_wrapper.printMeshInfo();
+
+  // Copy mesh nodes into qpts array
+  auto qPts = mesh_wrapper.getVertexPositions<PointArray>();
+  const int nQueryPts = qPts.size();
+
+  // Create an array for the indices of the closest points
+  IndexArray cpIndices;
+
+  //---------------------------------------------------------------------------
+  // Initialize spatial index for querying points
   //---------------------------------------------------------------------------
 
   SLIC_INFO(
@@ -350,10 +442,6 @@ int main(int argc, char** argv)
                       axom::fmt::format("Initializing BVH tree over {} points",
                                         params.circlePoints)));
 
-  using ExecSpace = axom::SEQ_EXEC;
-  using ClosestPointQueryType = ClosestPointQuery<2, ExecSpace>;
-  using PointArray = ClosestPointQueryType::PointArray;
-  using IndexSet = slam::PositionSet<>;
   ClosestPointQueryType query;
 
   query.generatePoints(params.circleRadius, params.circlePoints);
@@ -373,55 +461,33 @@ int main(int argc, char** argv)
   query.generateBVHTree();
 
   //---------------------------------------------------------------------------
-  // Set up query points
+  // Run the closest point query
   //---------------------------------------------------------------------------
-  const int nQueryPts = cpMesh->GetNV();
 
   SLIC_INFO(axom::fmt::format(
     "{:=^80}",
     axom::fmt::format("Computing closest points for {} query points", nQueryPts)));
 
-  // Copy mesh nodes into qpts array
-  PointArray qPts(nQueryPts);
-  for(auto i : IndexSet(nQueryPts))
-  {
-    cpMesh->GetNode(i, qPts[i].data());
-  }
-
-  // Register the distances grid function
-  constexpr int order = 1;
-  auto* fec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
-  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(cpMesh, fec);
-  mfem::GridFunction* distances = new mfem::GridFunction(fes);
-  distances->MakeOwner(fec);
-  closestPointDC.RegisterField("distance", distances);
-
-  auto* vfec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
-  mfem::FiniteElementSpace* vfes =
-    new mfem::FiniteElementSpace(cpMesh, vfec, DIM);
-  mfem::GridFunction* directions = new mfem::GridFunction(vfes);
-  directions->MakeOwner(vfec);
-  closestPointDC.RegisterField("direction", directions);
-
-  using IndexArray = axom::Array<axom::IndexType>;
-  IndexArray cpIndices;
   query.computeClosestPoints(qPts, cpIndices);
 
   if(params.isVerbose())
   {
     SLIC_INFO(axom::fmt::format("Closest points ({}):", cpIndices.size()));
-    for(auto i : slam::PositionSet<>(cpIndices.size()))
+    for(auto i : IndexSet(cpIndices.size()))
     {
       SLIC_INFO(axom::fmt::format("\t{}: {}", i, cpIndices[i]));
     }
   }
 
-  SLIC_INFO(axom::fmt::format(" distance size: {}", distances->Size()));
-
+  //---------------------------------------------------------------------------
   // Transform closest points to distances and directions
+  //---------------------------------------------------------------------------
   using primal::squared_distance;
   const auto& objectPts = query.points();
 
+  auto* distances = mesh_wrapper.getDC()->GetField("distance");
+  auto* directions = mesh_wrapper.getDC()->GetField("direction");
+  SLIC_INFO(axom::fmt::format(" distance size: {}", distances->Size()));
   mfem::Array<int> dofs;
   for(auto i : IndexSet(nQueryPts))
   {
@@ -434,20 +500,9 @@ int main(int argc, char** argv)
   }
 
   //---------------------------------------------------------------------------
-  // Save meshes and fields
+  // Cleanup, save mesh/fields and exit
   //---------------------------------------------------------------------------
-#ifdef MFEM_USE_MPI
-  SLIC_INFO(
-    axom::fmt::format("{:=^80}",
-                      axom::fmt::format("Saving mesh '{}' to disk",
-                                        closestPointDC.GetCollectionName())));
-
-  closestPointDC.Save();
-#endif
-
-  //---------------------------------------------------------------------------
-  // Cleanup and exit
-  //---------------------------------------------------------------------------
+  mesh_wrapper.saveMesh();
 
 #ifdef AXOM_USE_MPI
   MPI_Finalize();
