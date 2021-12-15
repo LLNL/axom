@@ -44,7 +44,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   its domain and global groups
 - When an `inlet::Field` fails a range or valid value constraint, the provided value and
   corresponding range/set of valid values are now included in the error message
-
+- IOManager::write now allows the calling code to pass in the full name of
+  the root file that it will produce.
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
 - Fixed over-eager caching of restored `mfem::FiniteElementSpaces` in `sidre::MFEMSidreDataCollection`
