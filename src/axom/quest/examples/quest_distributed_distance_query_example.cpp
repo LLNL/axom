@@ -118,6 +118,7 @@ public:
     const int nPts = queryPts.size();
 
     cpIndexes.resize(nPts);
+    /// Create an ArrayView that is compatible with cpIndexes
     axom::IndexType* indexData = cpIndexes.data();
 
     // Get a device-useable iterator
@@ -130,7 +131,7 @@ public:
       "ComputeClosestPoints",
       axom::for_all<ExecSpace>(
         nPts,
-        AXOM_LAMBDA(int32 idx) {
+        AXOM_LAMBDA(int32 idx) mutable {
           PointType qpt = queryPts[idx];
 
           MinCandidate curr_min {};
@@ -230,15 +231,10 @@ public:
  *
  * \note In MPI-based configurations, this is a collective call, but only prints on rank 0
  */
+template <int DIM>
 void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 {
-  namespace primal = axom::primal;
-
   int myRank = 0;
-#ifdef AXOM_USE_MPI
-  MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-#endif
-
   int numElements = mesh->GetNE();
 
   mfem::Vector mins, maxs;
@@ -258,25 +254,13 @@ void printMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 
   if(myRank == 0)
   {
-    switch(mesh->Dimension())
-    {
-    case 2:
-      SLIC_INFO(axom::fmt::format(
-        "{} mesh has {} elements and (approximate) bounding box {}",
-        prefixMessage,
-        numElements,
-        primal::BoundingBox<double, 2>(primal::Point<double, 2>(mins.GetData()),
-                                       primal::Point<double, 2>(maxs.GetData()))));
-      break;
-    case 3:
-      SLIC_INFO(axom::fmt::format(
-        "{} mesh has {} elements and (approximate) bounding box {}",
-        prefixMessage,
-        numElements,
-        primal::BoundingBox<double, 3>(primal::Point<double, 3>(mins.GetData()),
-                                       primal::Point<double, 3>(maxs.GetData()))));
-      break;
-    }
+    SLIC_INFO(axom::fmt::format(
+      "{} mesh has {} elements and (approximate) bounding box {}",
+      prefixMessage,
+      numElements,
+      primal::BoundingBox<double, DIM>(
+        primal::Point<double, DIM>(mins.GetData()),
+        primal::Point<double, DIM>(maxs.GetData()))));
   }
 
   slic::flushStreams();
@@ -332,14 +316,12 @@ int main(int argc, char** argv)
     axom::fmt::format("Loading '{}' mesh", params.getDCMeshName())));
 
   const bool dc_owns_data = true;
-  mfem::Mesh* originalMesh = nullptr;
   sidre::MFEMSidreDataCollection originalMeshDC(params.getDCMeshName(),
-                                                originalMesh,
+                                                nullptr,
                                                 dc_owns_data);
   {
     originalMeshDC.SetComm(MPI_COMM_WORLD);
-    std::string protocol = "sidre_hdf5";
-    originalMeshDC.Load(params.meshFile, protocol);
+    originalMeshDC.Load(params.meshFile, "sidre_hdf5");
   }
   SLIC_ASSERT_MSG(originalMeshDC.GetMesh()->Dimension() == DIM,
                   "This application currently only supports 2D meshes");
@@ -357,7 +339,7 @@ int main(int argc, char** argv)
                                 : new mfem::Mesh(*originalMeshDC.GetMesh());
     closestPointDC.SetMesh(cpMesh);
   }
-  printMeshInfo(closestPointDC.GetMesh(), "After loading");
+  printMeshInfo<DIM>(closestPointDC.GetMesh(), "After loading");
 
   //---------------------------------------------------------------------------
   // Initialize spatial index
@@ -371,6 +353,7 @@ int main(int argc, char** argv)
   using ExecSpace = axom::SEQ_EXEC;
   using ClosestPointQueryType = ClosestPointQuery<2, ExecSpace>;
   using PointArray = ClosestPointQueryType::PointArray;
+  using IndexSet = slam::PositionSet<>;
   ClosestPointQueryType query;
 
   query.generatePoints(params.circleRadius, params.circlePoints);
@@ -379,7 +362,7 @@ int main(int argc, char** argv)
   {
     SLIC_INFO("Points on object:");
     const auto& arr = query.points();
-    for(auto i : slam::PositionSet<>(arr.size()))
+    for(auto i : IndexSet(arr.size()))
     {
       const double mag = sqrt(arr[i][0] * arr[i][0] + arr[i][1] * arr[i][1]);
       SLIC_INFO(axom::fmt::format("\t{}: {} -- {}", i, arr[i], mag));
@@ -398,8 +381,9 @@ int main(int argc, char** argv)
     "{:=^80}",
     axom::fmt::format("Computing closest points for {} query points", nQueryPts)));
 
+  // Copy mesh nodes into qpts array
   PointArray qPts(nQueryPts);
-  for(auto i : slam::PositionSet<>(nQueryPts))
+  for(auto i : IndexSet(nQueryPts))
   {
     cpMesh->GetNode(i, qPts[i].data());
   }
@@ -411,6 +395,13 @@ int main(int argc, char** argv)
   mfem::GridFunction* distances = new mfem::GridFunction(fes);
   distances->MakeOwner(fec);
   closestPointDC.RegisterField("distance", distances);
+
+  auto* vfec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
+  mfem::FiniteElementSpace* vfes =
+    new mfem::FiniteElementSpace(cpMesh, vfec, DIM);
+  mfem::GridFunction* directions = new mfem::GridFunction(vfes);
+  directions->MakeOwner(vfec);
+  closestPointDC.RegisterField("direction", directions);
 
   using IndexArray = axom::Array<axom::IndexType>;
   IndexArray cpIndices;
@@ -427,11 +418,19 @@ int main(int argc, char** argv)
 
   SLIC_INFO(axom::fmt::format(" distance size: {}", distances->Size()));
 
+  // Transform closest points to distances and directions
   using primal::squared_distance;
   const auto& objectPts = query.points();
-  for(auto i : slam::PositionSet<>(nQueryPts))
+
+  mfem::Array<int> dofs;
+  for(auto i : IndexSet(nQueryPts))
   {
-    (*distances)[i] = sqrt(squared_distance(qPts[i], objectPts[cpIndices[i]]));
+    const auto& cp = objectPts[cpIndices[i]];
+    (*distances)(i) = sqrt(squared_distance(qPts[i], cp));
+
+    primal::Vector<double, DIM> dir(qPts[i], cp);
+    directions->FESpace()->GetVertexVDofs(i, dofs);
+    directions->SetSubVector(dofs, dir.data());
   }
 
   //---------------------------------------------------------------------------
