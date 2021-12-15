@@ -597,7 +597,8 @@ TEST(sidre_group, string_list)
   str_vec.push_back("format");
 
   // my_strings is a Group in list format.
-  Group* my_strings = root->createGroup("my_strings", true);
+  const bool use_list_collection = true;
+  Group* my_strings = root->createGroup("my_strings", use_list_collection);
 
   // Put strings into the Group.
   for(auto itr = str_vec.begin(); itr != str_vec.end(); ++itr)
