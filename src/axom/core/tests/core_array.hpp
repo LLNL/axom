@@ -1450,7 +1450,7 @@ TEST(core_array, check_multidimensional)
 
   for(int i = 0; i < v_double.size(); i++)
   {
-    // For a multidim array, op[] is a "flat" index into the raw data
+    // For a multidim array, flatIdx(i) is a "flat" index into the raw data
     EXPECT_EQ(v_double.flatIdx(i), v_double_flat[i]);
   }
 
@@ -1533,7 +1533,7 @@ TEST(core_array, check_multidimensional_view)
 
   for(int i = 0; i < v_double_view.size(); i++)
   {
-    // For a multidim array, op[] is a "flat" index into the raw data
+    // For a multidim array, flatIdx(i) is a "flat" index into the raw data
     EXPECT_EQ(v_double_view.flatIdx(i), v_double_flat_view[i]);
   }
 

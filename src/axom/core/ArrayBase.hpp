@@ -170,7 +170,7 @@ public:
    * \note equivalent to *(array.data() + idx).
    *
    * \pre sizeof...(Args) <= DIM
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, sizeof...(Args))
    */
   template <typename... Args>
   AXOM_HOST_DEVICE SliceType<sizeof...(Args)> operator()(Args... args)
