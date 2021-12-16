@@ -23,9 +23,6 @@ template <typename T, int DIM, MemorySpace SPACE>
 struct ArrayTraits<ArrayView<T, DIM, SPACE>>
 {
   constexpr static bool is_view = true;
-
-  template <int SliceDim>
-  using Slice = ArrayView<T, DIM - SliceDim, SPACE>;
 };
 
 }  // namespace detail

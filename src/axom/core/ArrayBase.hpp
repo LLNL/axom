@@ -114,16 +114,16 @@ public:
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
   template <int SliceDim>
-  using SliceType = typename std::conditional<
-    SliceDim == DIM,
-    T&,
-    const typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
+  using SliceType =
+    typename std::conditional<SliceDim == DIM,
+                              T&,
+                              detail::ArrayViewProxy<T, DIM - SliceDim>>::type;
 
   template <int SliceDim>
-  using ConstSliceType = typename std::conditional<
-    SliceDim == DIM,
-    RealConstT&,
-    const typename detail::ArrayTraits<ArrayType>::template Slice<SliceDim>>::type;
+  using ConstSliceType =
+    typename std::conditional<SliceDim == DIM,
+                              RealConstT&,
+                              detail::ArrayViewProxy<T, DIM - SliceDim>>::type;
 
   AXOM_HOST_DEVICE ArrayBase() : m_dims {} { updateStrides(); }
 
@@ -379,10 +379,9 @@ private:
     {
       new_inds[i] = m_dims[UDim + i];
     }
-    detail::ArrayViewProxy<T, DIM - UDim> viewProxy(asDerived().data() + baseIdx,
-                                                    asDerived().getAllocatorID(),
-                                                    new_inds);
-    return SliceType<UDim>(viewProxy);
+    return SliceType<UDim>(asDerived().data() + baseIdx,
+                           asDerived().getAllocatorID(),
+                           new_inds);
   }
 
   /// \overload
@@ -398,10 +397,9 @@ private:
     {
       new_inds[i] = m_dims[UDim + i];
     }
-    detail::ArrayViewProxy<T, DIM - UDim> viewProxy(asDerived().data() + baseIdx,
-                                                    asDerived().getAllocatorID(),
-                                                    new_inds);
-    return ConstSliceType<UDim>(viewProxy);
+    return ConstSliceType<UDim>(asDerived().data() + baseIdx,
+                                asDerived().getAllocatorID(),
+                                new_inds);
   }
 
   /*! \brief Returns a scalar reference given a full set of indices */
@@ -743,9 +741,6 @@ template <typename T, int DIM>
 struct ArrayTraits<ArrayViewProxy<T, DIM>>
 {
   constexpr static bool is_view = true;
-
-  template <int SliceDim>
-  using Slice = ArrayViewProxy<T, DIM - SliceDim>;
 };
 
 /*!
