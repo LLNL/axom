@@ -13,6 +13,8 @@
 #ifndef SLAM_DYNAMIC_SET_H_
 #define SLAM_DYNAMIC_SET_H_
 
+#include "axom/config.hpp"
+#include "axom/core/IteratorBase.hpp"
 #include "axom/slam/OrderedSet.hpp"
 
 namespace axom
@@ -60,13 +62,24 @@ public:
   using ElementType = PosType;
   using SetVectorType = std::vector<ElementType>;
   using SizePolicyType = SizePolicy;
+  using OffsetPolicyType = OffsetPolicy;
+  using StridePolicyType = StridePolicy;
 
-  enum
-  {
-    INVALID_ENTRY = ~0  ///< value to mark indices of deleted elements
-  };
+  /// value to mark indices of deleted elements
+  static constexpr int INVALID_ENTRY = ~0;
 
+  // predeclare SetBuilder  struct
   struct SetBuilder;
+
+  // types for OrderedSet iterator
+  template <typename T, bool C>
+  class DynamicSetIterator;
+
+  using const_iterator = DynamicSetIterator<ElementType, true>;
+  using const_iterator_pair = std::pair<const_iterator, const_iterator>;
+
+  using iterator = DynamicSetIterator<ElementType, false>;
+  using iterator_pair = std::pair<iterator, iterator>;
 
 public:
   /**
@@ -132,6 +145,171 @@ public:
     StridePolicy m_stride;
   };
 
+  /**
+   * \class DynamicSetIterator
+   * \brief An stl-compliant random iterator type for a DynamicSet
+   *
+   * Uses the set's policies for efficient iteration
+   * \tparam T The result type of the iteration
+   * \tparam Const Boolean to indicate if this is a const iterator
+   *
+   * \note Most operators are implemented via the \a IteratorBase class
+   *
+   * \note Use of a const template parameter with conditional member and pointer
+   * operations based on ideas from https://stackoverflow.com/a/49425072
+   */
+  template <typename T, bool Const>
+  class DynamicSetIterator
+    : public IteratorBase<DynamicSetIterator<T, Const>, PositionType>
+  {
+  public:
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = T;
+    using difference_type = PositionType;
+    using reference = typename std::conditional<Const, const T&, T&>::type;
+    using pointer = typename std::conditional<Const, const T*, T*>::type;
+    using DynamicSetType =
+      typename std::conditional<Const, const DynamicSet, DynamicSet>::type;
+    using IterBase = IteratorBase<DynamicSetIterator<T, Const>, PositionType>;
+    using IterBase::m_pos;
+
+  public:
+    /// \name Constructors, copying and assignment
+    /// \{
+    DynamicSetIterator() = default;
+
+    DynamicSetIterator(PositionType pos, DynamicSetType& dSet)
+      : IterBase(pos)
+      , m_dynamicSet(&dSet)
+    { }
+
+    DynamicSetIterator(const DynamicSetIterator& it) = default;
+
+    DynamicSetIterator& operator=(const DynamicSetIterator& it)
+    {
+      this->m_pos = it.m_pos;
+      this->m_dynamicSet = const_cast<DynamicSet*>(it.m_dynamicSet);
+      return *this;
+    }
+    /// \}
+
+    /// \name Member and pointer operators
+    /// \note We use the \a enable_if construct to implement both
+    /// const and non-const iterators in the same implementation.
+    /// \{
+
+    /// Indirection operator for non-const iterator
+    template <bool _Const = Const>
+    typename std::enable_if<!_Const, reference>::type operator*()
+    {
+      return (*m_dynamicSet)[m_pos];
+    }
+
+    /// Indirection operator for const iterator
+    template <bool _Const = Const>
+    typename std::enable_if<_Const, reference>::type operator*() const
+    {
+      return (*m_dynamicSet)[m_pos];
+    }
+
+    /// Structure dereference operator for non-const iterator
+    template <bool _Const = Const>
+    typename std::enable_if<!_Const, pointer>::type operator->()
+    {
+      return &((*m_dynamicSet)[m_pos]);
+    }
+
+    /// Structure dereference operator for const iterator
+    template <bool _Const = Const>
+    typename std::enable_if<_Const, pointer>::type operator->() const
+    {
+      return &((*m_dynamicSet)[m_pos]);
+    }
+
+    /// Subscript operator for non-const iterator
+    template <bool _Const = Const>
+    typename std::enable_if<!_Const, reference>::type operator[](PositionType n)
+    {
+      return *(*this + n);
+    }
+
+    /// Subscript operator for const iterator
+    template <bool _Const = Const>
+    typename std::enable_if<_Const, reference>::type operator[](PositionType n) const
+    {
+      return *(*this + n);
+    }
+
+    /// \}
+
+    /// \name Conversion operators
+    /// \{
+
+    /// Convert from iterator type to const_iterator type
+    template <typename U>
+    operator DynamicSetIterator<U, true>() const
+    {
+      return DynamicSetIterator<U, true>(this->m_pos, *this->m_dynamicSet);
+    }
+    /// \}
+
+    PositionType index() const { return m_pos; }
+
+    bool isValidEntry() const { return m_dynamicSet->isValidEntry(m_pos); };
+
+  protected:
+    /** Implementation of advance() as required by IteratorBase */
+    void advance(PositionType n) { m_pos += n * stride(); }
+
+  private:
+    inline const PositionType stride() const
+    {
+      return m_dynamicSet->StridePolicyType::stride();
+    }
+
+    inline const PositionType size() const
+    {
+      return m_dynamicSet->SizePolicyType::size();
+    }
+
+  private:
+    DynamicSetType* m_dynamicSet {nullptr};
+  };
+
+public:  // Functions related to iteration
+  iterator begin() { return iterator(OffsetPolicyType::offset(), *this); }
+
+  const_iterator begin() const
+  {
+    return const_iterator(OffsetPolicyType::offset(), *this);
+  }
+
+  const_iterator cbegin() const
+  {
+    return const_iterator(OffsetPolicyType::offset(), *this);
+  }
+
+  iterator end()
+  {
+    return iterator(SizePolicyType::size() * StridePolicyType::stride() +
+                      OffsetPolicyType::offset(),
+                    *this);
+  }
+
+  const_iterator end() const
+  {
+    return const_iterator(SizePolicyType::size() * StridePolicyType::stride() +
+                            OffsetPolicyType::offset(),
+                          *this);
+  }
+
+  const_iterator cend() const
+  {
+    return const_iterator(SizePolicyType::size() * StridePolicyType::stride() +
+                            OffsetPolicyType::offset(),
+                          *this);
+  }
+
 public:
   /// \name DynamicSet element access functions
   /// @{
@@ -148,7 +326,7 @@ public:
    *
    * \pre pos must be between 0 and size()
    */
-  ElementType operator[](IndexType pos) const
+  const ElementType& operator[](IndexType pos) const
   {
     verifyPosition(pos);
     return m_data[pos];
@@ -178,9 +356,10 @@ public:
    * if none can be found.
    * \note This is an O(n) operation
    */
-  IndexType findIndex(ElementType e)
+  IndexType findIndex(ElementType e) const
   {
-    for(unsigned int i = 0; i < m_data.size(); ++i)
+    const int sz = size();
+    for(int i = 0; i < sz; ++i)
     {
       if(m_data[i] == e) return i;
     }
@@ -211,14 +390,14 @@ public:
   /**
    * \brief Return the number of valid entries in the set.
    *
-   * \detail This is an O(n) operation, because the class makes no assumption
+   * \details This is an O(n) operation, because the class makes no assumption
    * that data was not changed by the user
    */
   PositionType numberOfValidEntries() const
   {
     PositionType nvalid = 0;
 
-    const int sz = static_cast<int>(m_data.size());
+    const int sz = size();
     for(int i = 0; i < sz; ++i)
     {
       nvalid += (m_data[i] != INVALID_ENTRY) ? 1 : 0;
@@ -329,4 +508,4 @@ private:
 }  // end namespace slam
 }  // end namespace axom
 
-#endif
+#endif  // SLAM_DYNAMIC_SET_H_
