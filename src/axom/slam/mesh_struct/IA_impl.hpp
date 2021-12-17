@@ -12,6 +12,11 @@
  * \brief Contains the implementation of the IAMesh class and helper functions
  */
 
+#include "axom/slam/policies/SizePolicies.hpp"
+#include "axom/slam/ModularInt.hpp"
+
+#include "axom/fmt.hpp"
+
 #include <vector>
 #include <map>
 
@@ -29,9 +34,13 @@ namespace /*anonymous*/
 template <typename T>
 bool is_subset(T v, const std::vector<T>& s)
 {
-  for(unsigned int i = 0; i < s.size(); i++)
+  const int SZ = s.size();
+  for(int i = 0; i < SZ; ++i)
   {
-    if(s[i] == v) return true;
+    if(s[i] == v)
+    {
+      return true;
+    }
   }
   return false;
 }
@@ -68,103 +77,95 @@ IAMesh<TDIM, SDIM, P>::ElemNbrFinder(V2EMapType& vertpair_to_elem_map,
 template <unsigned int TDIM, unsigned int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::print_all() const
 {
-  std::stringstream sstr;
-  sstr << "IA mesh (" << (TDIM == 2 ? "triangle" : "tetrahedral") << " mesh in "
-       << SDIM << "d)\n"
-       << "  sizes: "
-       << "{ vertex_set:" << vertex_set.size()
-       << ", element_set:" << element_set.size() << ", ev:" << ev_rel.size()
-       << ", ve:" << ve_rel.size() << ", ee:" << ee_rel.size()
-       << ", coords:" << vcoord_map.size() << "}\n";
-
-  sstr << "  num valid elems: "
-       << "{ vertex_set:" << vertex_set.numberOfValidEntries()
-       << ", element_set:" << element_set.numberOfValidEntries()
-       << ", ev:" << ev_rel.numberOfValidEntries()
-       << ", ve:" << ve_rel.numberOfValidEntries()
-       << ", ee:" << ee_rel.numberOfValidEntries()
-       << ", coords:" << vcoord_map.numberOfValidEntries() << "}\n";
+  axom::fmt::memory_buffer out;
+  axom::fmt::format_to(out,
+                       "IA mesh: {} mesh in {}d with {} valid vertices (of {}) "
+                       "and {} valid elements (of {})\n",
+                       (TDIM == 2 ? "triangle" : "tetrahedral"),
+                       SDIM,
+                       vertex_set.numberOfValidEntries(),
+                       vertex_set.size(),
+                       element_set.numberOfValidEntries(),
+                       element_set.size());
 
   //print out the sets, relation, and map
+  axom::fmt::format_to(out,
+                       "  element_set ({}/{}): [{}]\n",
+                       element_set.numberOfValidEntries(),
+                       element_set.size(),
+                       axom::fmt::join(element_set, ", "));
+
+  axom::fmt::format_to(out,
+                       "  vertex_set ({}/{}): [{}]\n",
+                       vertex_set.numberOfValidEntries(),
+                       vertex_set.size(),
+                       axom::fmt::join(vertex_set, ", "));
+
   {
-    int sz = element_set.size();
-    sstr << "  element_set (" << element_set.numberOfValidEntries() << "/" << sz
-         << ") {";
-    for(int i = 0; i < sz; i++)
+    const int sz = ev_rel.size();
+    std::vector<std::string> strs(sz);
+    for(auto pos : element_set.positions())
     {
-      sstr << i << ":" << element_set[i] << (i == sz - 1 ? "}\n" : ", ");
+      strs[pos] = element_set.isValidEntry(pos)
+        ? axom::fmt::format("{}: {}", pos, ev_rel[pos])
+        : axom::fmt::format("{}: {{}}", pos);
     }
+    axom::fmt::format_to(out,
+                         "  ev_rel ({}/{}): [{}]\n",
+                         ev_rel.numberOfValidEntries(),
+                         sz,
+                         axom::fmt::join(strs, "; "));
   }
 
   {
-    int sz = vertex_set.size();
-    sstr << "  vertex_set (" << vertex_set.numberOfValidEntries() << "/" << sz
-         << ") {";
-    for(int i = 0; i < sz; i++)
+    const int sz = ve_rel.size();
+    std::vector<std::string> strs(sz);
+    for(auto pos : vertex_set.positions())
     {
-      sstr << i << ":" << vertex_set[i] << (i == sz - 1 ? "}\n" : ", ");
+      strs[pos] = vertex_set.isValidEntry(pos)
+        ? axom::fmt::format("{}: {}", pos, ve_rel[pos])
+        : axom::fmt::format("{}: {{}}", pos);
     }
+    axom::fmt::format_to(out,
+                         "  ve_rel ({}/{}): [{}]\n",
+                         ve_rel.numberOfValidEntries(),
+                         sz,
+                         axom::fmt::join(strs, "; "));
   }
 
   {
-    int sz = ev_rel.size();
-    sstr << "  ev_rel (" << ev_rel.numberOfValidEntries() << "/" << sz << ") {";
-    for(int i = 0; i < sz; i++)
+    const int sz = ee_rel.size();
+    std::vector<std::string> strs(sz);
+    for(auto pos : element_set.positions())
     {
-      sstr << i << ":{";
-      for(int j = 0; j < ev_rel[i].size(); j++)
-      {
-        sstr << ev_rel[i][j] << (j == VERTS_PER_ELEM - 1 ? "}" : ",");
-      }
-      sstr << (i == sz - 1 ? "}\n" : ", ");
+      strs[pos] = element_set.isValidEntry(pos)
+        ? axom::fmt::format("{}: {}", pos, ee_rel[pos])
+        : axom::fmt::format("{}: {{}}", pos);
     }
+    axom::fmt::format_to(out,
+                         "  ee_rel ({}/{}): [{}]\n",
+                         ee_rel.numberOfValidEntries(),
+                         sz,
+                         axom::fmt::join(strs, "; "));
   }
 
   {
-    int sz = ve_rel.size();
-    sstr << "  ve_rel (" << ve_rel.numberOfValidEntries() << "/" << sz << ") {";
-    for(int i = 0; i < ve_rel.size(); i++)
+    const int sz = vcoord_map.size();
+    std::vector<std::string> strs(sz);
+    for(auto pos : vertex_set.positions())
     {
-      sstr << i << ":" << ve_rel[i][0] << (i == sz - 1 ? "}\n" : ", ");
+      strs[pos] = vcoord_map.isValidEntry(pos)
+        ? axom::fmt::format("{}: {}", pos, vcoord_map[pos])
+        : axom::fmt::format("{}: --", pos);
     }
+    axom::fmt::format_to(out,
+                         "  vertex coord ({}/{}): [{}]\n",
+                         vcoord_map.numberOfValidEntries(),
+                         sz,
+                         axom::fmt::join(strs, "; "));
   }
 
-  {
-    int sz = ee_rel.size();
-    sstr << "  ee_rel (" << ee_rel.numberOfValidEntries() << "/" << sz << ") {";
-    for(int i = 0; i < sz; i++)
-    {
-      sstr << i << ":{";
-      for(int j = 0; j < ee_rel[i].size(); j++)
-      {
-        sstr << ee_rel[i][j] << (j == VERTS_PER_ELEM - 1 ? "}" : ",");
-      }
-      sstr << (i == sz - 1 ? "}\n" : ", ");
-    }
-  }
-
-  {
-    int sz = vcoord_map.size();
-    sstr << "  vertex coord (" << vcoord_map.numberOfValidEntries() << "/" << sz
-         << ") {";
-
-    for(int i = 0; i < sz; i++)
-    {
-      sstr << i << ":{";
-      if(!vcoord_map.isValidEntry(i))
-      {
-        sstr << "---} ";
-        continue;
-      }
-      for(int j = 0; j < COORDS_PER_VERT; j++)
-      {
-        sstr << vcoord_map[i][j] << (j == COORDS_PER_VERT - 1 ? "}" : ",");
-      }
-      sstr << (i == sz - 1 ? "}\n" : ", ");
-    }
-  }
-
-  SLIC_INFO(sstr.str());
+  SLIC_INFO(axom::fmt::to_string(out));
 }
 
 /*********************************************************************************/
@@ -400,6 +401,9 @@ typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace
   IndexType element_idx,
   IndexType face_idx) const
 {
+  using CTSize = slam::policies::CompileTimeSize<IndexType, VERTS_PER_ELEM>;
+  slam::ModularInt<CTSize> mod_face(face_idx);
+
   IndexArray ret;
 
   if(!element_set.isValidEntry(element_idx))
@@ -415,9 +419,9 @@ typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace
 
   SLIC_ASSERT(ev_rel[element_idx].size() == VERTS_PER_ELEM);
 
-  for(int i = 0; i < (int)ev_rel[element_idx].size() - 1; i++)
+  for(int i = 0; i < VERTS_PER_ELEM - 1; i++)
   {
-    ret.push_back(ev_rel[element_idx][(face_idx + i) % VERTS_PER_ELEM]);
+    ret.push_back(ev_rel[element_idx][mod_face + i]);
   }
 
   return ret;
@@ -663,7 +667,8 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   using FaceVertPairType = std::pair<IndexArray, IndexPairType>;
   FaceVertMapType vert_map;
 
-  for(unsigned int i = 0; i < new_elements.size(); i++)
+  const int SZ = new_elements.size();
+  for(int i = 0; i < SZ; i++)
   {
     IndexType el = new_elements[i];
 

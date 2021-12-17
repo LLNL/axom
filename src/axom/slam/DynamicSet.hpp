@@ -16,6 +16,7 @@
 #include "axom/config.hpp"
 #include "axom/core/IteratorBase.hpp"
 #include "axom/slam/OrderedSet.hpp"
+#include "axom/slam/RangeSet.hpp"
 
 namespace axom
 {
@@ -71,7 +72,7 @@ public:
   // predeclare SetBuilder  struct
   struct SetBuilder;
 
-  // types for OrderedSet iterator
+  // types for DynamicSet iterator
   template <typename T, bool C>
   class DynamicSetIterator;
 
@@ -384,8 +385,14 @@ public:
     return static_cast<PositionType>(m_data.size());
   };
 
-  /** \brief Uses \a SizePolicy::empty() to determine if the set is empty */
+  /// \brief Uses \a SizePolicy::empty() to determine if the set is empty
   bool empty() const { return SizePolicy::empty(); };
+
+  /// \brief Returns a positionset over the set elements
+  PositionSet<PositionType> positions() const
+  {
+    return PositionSet<PositionType>(size());
+  }
 
   /**
    * \brief Return the number of valid entries in the set.

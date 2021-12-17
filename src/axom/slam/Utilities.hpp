@@ -13,6 +13,7 @@
 #include "axom/core.hpp"
 
 #include <string>
+#include <iostream>
 
 namespace axom
 {
@@ -63,7 +64,7 @@ struct Point3
   Point3(const DataType* d) : m_x(d[0]), m_y(d[1]), m_z(d[2]) { }
   Point3() : m_x(DataType()), m_y(DataType()), m_z(DataType()) { }
 
-  /** Distance from origin */
+  /// Distance from origin
   DataType radius() const
   {
     return std::sqrt(m_x * m_x + m_y * m_y + m_z * m_z);
@@ -99,7 +100,7 @@ struct Point3
     return operator*=(1. / sc);
   }
 
-  //access the xyz values
+  /// access the xyz values
   DataType operator[](unsigned int i) const
   {
     DataType vals[] = {m_x, m_y, m_z};
@@ -109,6 +110,11 @@ struct Point3
   bool operator==(const Point3& pt) const
   {
     return pt.m_x == m_x && pt.m_y == m_y && pt.m_z == m_z;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Point3& pt)
+  {
+    return os << "(" << pt.m_x << "," << pt.m_y << "," << pt.m_z << ")";
   }
 
   DataType m_x, m_y, m_z;
