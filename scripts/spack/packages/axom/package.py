@@ -36,9 +36,12 @@ class Axom(CachedCMakePackage, CudaPackage):
 
     homepage = "https://github.com/LLNL/axom"
     git      = "https://github.com/LLNL/axom.git"
+    tags     = ['radiuss']
 
     version('main', branch='main', submodules=True)
     version('develop', branch='develop', submodules=True)
+    version('0.6.1', tag='v0.6.1', submodules=True)
+    version('0.6.0', tag='v0.6.0', submodules=True)
     version('0.5.0', tag='v0.5.0', submodules=True)
     version('0.4.0', tag='v0.4.0', submodules=True)
     version('0.3.3', tag='v0.3.3', submodules=True)
@@ -109,9 +112,11 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("raja+openmp", when="+raja+openmp")
     depends_on("raja+cuda", when="+raja+cuda")
 
-    depends_on("umpire~openmp", when="+umpire~openmp")
-    depends_on("umpire+openmp", when="+umpire+openmp")
-    depends_on("umpire+cuda", when="+umpire+cuda")
+    with when('+umpire'):
+        depends_on('umpire@6.0.0:', when='@0.6.0:')
+        depends_on('umpire@5:5.0.1', when='@:0.5.0')
+        depends_on('umpire +openmp', when='+openmp')
+        depends_on('umpire +cuda', when='+cuda')
 
     for sm_ in CudaPackage.cuda_arch_values:
         depends_on('raja cuda_arch={0}'.format(sm_),
