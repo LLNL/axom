@@ -45,6 +45,23 @@ bool is_subset(T v, const std::vector<T>& s)
   return false;
 }
 
+// Formatted output of a relation or map to an array of strings
+// helper function for IAMesh::print_all
+template <typename RelOrMap, typename SetType>
+std::vector<std::string> entries_as_vec(const RelOrMap& outer, const SetType& s)
+{
+  const int sz = outer.size();
+  std::vector<std::string> strs(sz);
+  for(auto pos : s.positions())
+  {
+    strs[pos] = s.isValidEntry(pos)
+      ? axom::fmt::format("{}: {}", pos, outer[pos])
+      : axom::fmt::format("{}: {{}}", pos);
+  }
+
+  return strs;
+}
+
 }  //end anonymous namespace
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
@@ -101,69 +118,33 @@ void IAMesh<TDIM, SDIM, P>::print_all() const
                        vertex_set.size(),
                        axom::fmt::join(vertex_set, ", "));
 
-  {
-    const int sz = ev_rel.size();
-    std::vector<std::string> strs(sz);
-    for(auto pos : element_set.positions())
-    {
-      strs[pos] = element_set.isValidEntry(pos)
-        ? axom::fmt::format("{}: {}", pos, ev_rel[pos])
-        : axom::fmt::format("{}: {{}}", pos);
-    }
-    axom::fmt::format_to(out,
-                         "  ev_rel ({}/{}): [{}]\n",
-                         ev_rel.numberOfValidEntries(),
-                         sz,
-                         axom::fmt::join(strs, "; "));
-  }
+  axom::fmt::format_to(
+    out,
+    "  ev_rel ({}/{}): [{}]\n",
+    ev_rel.numberOfValidEntries(),
+    ev_rel.size(),
+    axom::fmt::join(entries_as_vec(ev_rel, element_set), "; "));
 
-  {
-    const int sz = ve_rel.size();
-    std::vector<std::string> strs(sz);
-    for(auto pos : vertex_set.positions())
-    {
-      strs[pos] = vertex_set.isValidEntry(pos)
-        ? axom::fmt::format("{}: {}", pos, ve_rel[pos])
-        : axom::fmt::format("{}: {{}}", pos);
-    }
-    axom::fmt::format_to(out,
-                         "  ve_rel ({}/{}): [{}]\n",
-                         ve_rel.numberOfValidEntries(),
-                         sz,
-                         axom::fmt::join(strs, "; "));
-  }
+  axom::fmt::format_to(
+    out,
+    "  ve_rel ({}/{}): [{}]\n",
+    ve_rel.numberOfValidEntries(),
+    ve_rel.size(),
+    axom::fmt::join(entries_as_vec(ve_rel, vertex_set), "; "));
 
-  {
-    const int sz = ee_rel.size();
-    std::vector<std::string> strs(sz);
-    for(auto pos : element_set.positions())
-    {
-      strs[pos] = element_set.isValidEntry(pos)
-        ? axom::fmt::format("{}: {}", pos, ee_rel[pos])
-        : axom::fmt::format("{}: {{}}", pos);
-    }
-    axom::fmt::format_to(out,
-                         "  ee_rel ({}/{}): [{}]\n",
-                         ee_rel.numberOfValidEntries(),
-                         sz,
-                         axom::fmt::join(strs, "; "));
-  }
+  axom::fmt::format_to(
+    out,
+    "  ee_rel ({}/{}): [{}]\n",
+    ee_rel.numberOfValidEntries(),
+    ee_rel.size(),
+    axom::fmt::join(entries_as_vec(ee_rel, element_set), "; "));
 
-  {
-    const int sz = vcoord_map.size();
-    std::vector<std::string> strs(sz);
-    for(auto pos : vertex_set.positions())
-    {
-      strs[pos] = vcoord_map.isValidEntry(pos)
-        ? axom::fmt::format("{}: {}", pos, vcoord_map[pos])
-        : axom::fmt::format("{}: --", pos);
-    }
-    axom::fmt::format_to(out,
-                         "  vertex coord ({}/{}): [{}]\n",
-                         vcoord_map.numberOfValidEntries(),
-                         sz,
-                         axom::fmt::join(strs, "; "));
-  }
+  axom::fmt::format_to(
+    out,
+    "  vertex coord ({}/{}): [{}]\n",
+    vcoord_map.numberOfValidEntries(),
+    vcoord_map.size(),
+    axom::fmt::join(entries_as_vec(vcoord_map, vertex_set), "; "));
 
   SLIC_INFO(axom::fmt::to_string(out));
 }
