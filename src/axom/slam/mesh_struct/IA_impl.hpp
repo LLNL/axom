@@ -105,7 +105,7 @@ void IAMesh<TDIM, SDIM, P>::print_all() const
                        element_set.numberOfValidEntries(),
                        element_set.size());
 
-  //print out the sets, relation, and map
+  //print out the element and vertex sets
   axom::fmt::format_to(out,
                        "  element_set ({}/{}): [{}]\n",
                        element_set.numberOfValidEntries(),
@@ -118,6 +118,7 @@ void IAMesh<TDIM, SDIM, P>::print_all() const
                        vertex_set.size(),
                        axom::fmt::join(vertex_set, ", "));
 
+  //print out the relations on the sets (ev, ve and ee)
   axom::fmt::format_to(
     out,
     "  ev_rel ({}/{}): [{}]\n",
@@ -139,6 +140,7 @@ void IAMesh<TDIM, SDIM, P>::print_all() const
     ee_rel.size(),
     axom::fmt::join(entries_as_vec(ee_rel, element_set), "; "));
 
+  //print out the coordinate map (i.e the positions)
   axom::fmt::format_to(
     out,
     "  vertex coord ({}/{}): [{}]\n",
@@ -769,8 +771,8 @@ void IAMesh<TDIM, SDIM, P>::compact()
   vcoord_map.resize(v_count);
 
   //update the sets
-  vertex_set = VertexSet(v_count);
-  element_set = ElementSet(e_count);
+  vertex_set.reset(v_count);
+  element_set.reset(e_count);
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
