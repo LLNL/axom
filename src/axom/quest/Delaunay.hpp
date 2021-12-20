@@ -197,21 +197,17 @@ public:
    */
   void writeToVTKFile(const std::string& filename)
   {
-    using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
     const auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
+    mint::UnstructuredMesh<mint::SINGLE_SHAPE> mint_mesh(DIM, CELL_TYPE);
 
     this->compactMesh();
 
-    UMesh mint_mesh(DIM, CELL_TYPE);
-
-    const int NV = m_mesh.vertex_set.size();
-    for(int i = 0; i < NV; ++i)
+    for(auto i : m_mesh.vertex_set.positions())
     {
       mint_mesh.appendNodes(m_mesh.getVertexPoint(i).data(), 1);
     }
 
-    const int NE = m_mesh.ev_rel.size();
-    for(int i = 0; i < NE; ++i)
+    for(auto i : m_mesh.element_set.positions())
     {
       mint_mesh.appendCell(&(m_mesh.ev_rel[i][0]), CELL_TYPE);
     }
@@ -492,23 +488,20 @@ private:
       m_cavity_element_list.push_back(element_idx);
 
       //check for each faces; m_checked_element_set ensures we only check each element once
-      IndexArray neighbors = m_mesh.getElementNeighbors(element_idx);
-      SLIC_ASSERT(neighbors.size() == VERT_PER_ELEMENT);
-
-      for(int face_i = 0; face_i < VERT_PER_ELEMENT; ++face_i)
+      for(auto nbr = m_mesh.ee_rel.begin(element_idx);
+          nbr != m_mesh.ee_rel.end(element_idx);
+          ++nbr)
       {
-        IndexType nbr = neighbors[face_i];
-
         //The latter case is a checked element that is not a cavity element
-        if(!m_mesh.isValidElementEntry(nbr) ||
-           (m_checked_element_set.insert(nbr).second
-              ? findCavityElementsRec(query_pt, nbr)
-              : !axom::slam::is_subset(nbr, m_cavity_element_list)))
+        if(!m_mesh.isValidElementEntry(*nbr) ||
+           (m_checked_element_set.insert(*nbr).second
+              ? findCavityElementsRec(query_pt, *nbr)
+              : !axom::slam::is_subset(*nbr, m_cavity_element_list)))
         {
-          IndexArray vlist = m_mesh.getElementFace(element_idx, face_i);
+          IndexArray vlist = m_mesh.getElementFace(element_idx, nbr.index());
 
           //For tetrahedron, if the element face is odd, reverse vertex order
-          if(DIM == 3 && face_i % 2 == 1)
+          if(DIM == 3 && nbr.index() % 2 == 1)
           {
             axom::utilities::swap(vlist[1], vlist[2]);
           }
