@@ -66,32 +66,6 @@ TEST(slam_set_dynamicset, construct_set_builder)
   SetType s(builder);
   EXPECT_TRUE(s.isValid());
   EXPECT_EQ(MAX_SET_SIZE, s.size());
-
-  // Construct a set using size, offset and stride
-  {
-    const int ZERO_OFFSET = 0;
-    const int DEFAULT_STRIDE = 1;
-    SetBuilder ok_builder = SetBuilder()  //
-                              .size(MAX_SET_SIZE)
-                              .offset(ZERO_OFFSET)
-                              .stride(DEFAULT_STRIDE);
-    SetType s2(ok_builder);
-    EXPECT_TRUE(s2.isValid());
-    EXPECT_EQ(MAX_SET_SIZE, s2.size());
-
-    // The two sets should be equal
-    EXPECT_EQ(s, s2);
-  }
-
-#ifdef AXOM_DEBUG
-  // Using inappropriate SetBuilder features generates an assert failure
-  SLIC_INFO("Cannot construct a DynamicSet with an invalid SetBuilder");
-  const int NON_ZERO_OFFSET = 3;
-  EXPECT_DEATH_IF_SUPPORTED(SetType(SetBuilder()  //
-                                      .size(MAX_SET_SIZE)
-                                      .offset(NON_ZERO_OFFSET)),
-                            "");
-#endif
 }
 
 TEST(slam_set_dynamicset, construct_runtime)
