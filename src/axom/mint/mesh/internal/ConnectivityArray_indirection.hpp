@@ -10,7 +10,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/MCArray.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
@@ -18,6 +18,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 #include <cstring>
@@ -72,15 +73,17 @@ public:
                     IndexType value_capacity = USE_DEFAULT)
     : m_cell_type(cell_type)
     , m_values(nullptr)
-    , m_offsets(new MCArray<IndexType>(
-        axom::internal::ZERO,
+    , m_offsets(new axom::deprecated::MCArray<IndexType>(
+        axom::deprecated::internal::ZERO,
         1,
         (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1))
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
     m_values =
-      new MCArray<IndexType>(axom::internal::ZERO, 1, new_value_capacity);
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               1,
+                                               new_value_capacity);
 
     m_offsets->append(0);
   }
@@ -130,7 +133,7 @@ public:
   {
     SLIC_ERROR_IF(n_IDs < 0,
                   "Number of IDs must be positive, not " << n_IDs << ".");
-    m_offsets = new MCArray<IndexType>(
+    m_offsets = new axom::deprecated::MCArray<IndexType>(
       offsets,
       n_IDs + 1,
       1,
@@ -145,7 +148,8 @@ public:
                     << "Expected item 0 to be 0 not " << (*m_offsets)[0] << ".");
 
     IndexType n_values = (*m_offsets)[n_IDs];
-    m_values = new MCArray<IndexType>(values, n_values, 1, value_capacity);
+    m_values =
+      new axom::deprecated::MCArray<IndexType>(values, n_values, 1, value_capacity);
   }
 
   /// @}
@@ -215,7 +219,7 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* offsets_view = elems_group->getView("offsets");
-    m_offsets = new sidre::Array<IndexType>(
+    m_offsets = new sidre::deprecated::MCArray<IndexType>(
       offsets_view,
       0,
       1,
@@ -226,7 +230,10 @@ public:
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values = new sidre::Array<IndexType>(connec_view, 0, 1, new_value_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         1,
+                                                         new_value_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -402,7 +409,7 @@ public:
       return nullptr;
     }
 
-    return static_cast<sidre::Array<IndexType>*>(m_values)
+    return static_cast<sidre::deprecated::MCArray<IndexType>*>(m_values)
       ->getView()
       ->getOwningGroup()
       ->getParent();
@@ -430,7 +437,7 @@ public:
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  CellType getIDType(IndexType AXOM_NOT_USED(id) = 0) const
+  CellType getIDType(IndexType AXOM_UNUSED_PARAM(id) = 0) const
   {
     return m_cell_type;
   }
@@ -511,7 +518,7 @@ public:
    */
   void append(const IndexType* values,
               IndexType n_values,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     SLIC_ASSERT(values != nullptr);
     m_values->append(values, n_values);
@@ -537,7 +544,7 @@ public:
   void appendM(const IndexType* values,
                IndexType n_IDs,
                const IndexType* offsets,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     internal::append(n_IDs, values, offsets, m_values, m_offsets);
   }
@@ -593,7 +600,7 @@ public:
   void insert(const IndexType* values,
               IndexType start_ID,
               IndexType n_values,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     IndexType offsets[2];
     offsets[0] = 0;
@@ -623,7 +630,7 @@ public:
                IndexType start_ID,
                IndexType n_IDs,
                const IndexType* offsets,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     internal::insert(start_ID, n_IDs, values, offsets, m_values, m_offsets);
   }
@@ -632,8 +639,8 @@ public:
 
 private:
   CellType m_cell_type;
-  MCArray<IndexType>* m_values;
-  MCArray<IndexType>* m_offsets;
+  axom::deprecated::MCArray<IndexType>* m_values;
+  axom::deprecated::MCArray<IndexType>* m_offsets;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

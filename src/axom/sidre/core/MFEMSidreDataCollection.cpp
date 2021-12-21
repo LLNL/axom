@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
+#include "axom/core.hpp"
 
 #ifdef AXOM_USE_MFEM
 
@@ -13,7 +14,7 @@
   #include <type_traits>  // for checking layout
 
   #include "conduit_blueprint.hpp"
-  #include "fmt/fmt.hpp"
+  #include "axom/fmt.hpp"
 
   #include "MFEMSidreDataCollection.hpp"
 
@@ -53,7 +54,7 @@ mfem::QuadratureSpace* NewQuadratureSpace(const std::string& name,
                                           Mesh* mesh,
                                           int& vdim)
 {
-  const auto tokens = utilities::string::splitLastNTokens(name, 4, '_');
+  const auto tokens = utilities::string::rsplitN(name, 4, '_');
   // Uses raw pointers for consistency with MFEM
   mfem::QuadratureSpace* qspace = nullptr;
   if((tokens.size() == 4) && (tokens[0] == "QF"))
@@ -237,8 +238,8 @@ std::string MFEMSidreDataCollection::get_file_path(const std::string& filename) 
 {
   std::stringstream fNameSstr;
 
-  // Note: If non-empty, prefix_path has a separator ('/') at the end
-  fNameSstr << prefix_path << filename;
+  namespace fs = axom::utilities::filesystem;
+  fNameSstr << fs::joinPath(prefix_path, filename);
 
   if(GetCycle() >= 0)
   {
@@ -867,7 +868,48 @@ void MFEMSidreDataCollection::Load(const std::string& path,
     std::string suffixedPath = endsWith(path, ".root") ? path : path + ".root";
 
     IOManager reader(m_comm);
-    reader.read(m_bp_grp->getDataStore()->getRoot(), suffixedPath);
+
+    // Get the paths in which the global and domain groups are stored
+    // This allows for a datastore structure other than the one used when this
+    // class owns the DataStore
+    SLIC_ERROR_IF(!m_bp_index_grp || !m_bp_grp,
+                  "Blueprint pointers must not be null");
+    Group* global_grp = m_bp_index_grp->getParent()->getParent();
+    Group* domain_grp = m_bp_grp->getParent();
+    const std::string global_path = global_grp->getPath();
+    const std::string domain_path = domain_grp->getPath();
+
+    // Create a temporary group to read the data into
+    // This is done instead of creating a temp DataStore so the buffers are intact
+    Group* temp_root =
+      m_bp_grp->getDataStore()->getRoot()->createGroup("_sidre_tmp_load");
+    reader.read(temp_root, suffixedPath);
+
+    // First transfer the global group from the temp group to its correct location
+    Group* datastore_root = m_bp_grp->getDataStore()->getRoot();
+    Group* new_global_group = temp_root->getGroup(global_grp->getPathName());
+    Group* global_group_parent = datastore_root;
+    if(!global_path.empty())
+    {
+      global_group_parent = datastore_root->getGroup(global_path);
+    }
+
+    // The group may already exist, but we're going to overwrite it
+    global_group_parent->destroyGroup(new_global_group->getName());
+    global_group_parent->moveGroup(new_global_group);
+
+    // Then transfer the domain group in the same way
+    Group* new_domain_group = temp_root->getGroup(domain_grp->getPathName());
+    Group* domain_group_parent = datastore_root;
+    if(!domain_path.empty())
+    {
+      domain_group_parent = datastore_root->getGroup(domain_path);
+    }
+    domain_group_parent->destroyGroup(new_domain_group->getName());
+    domain_group_parent->moveGroup(new_domain_group);
+
+    // Now that the data has been transferred, we can delete the temporary group
+    temp_root->getParent()->destroyGroup("_sidre_tmp_load");
 
     // Get some data in support of error checks below
     numInputRanks = reader.getNumGroupsFromRoot(suffixedPath);
@@ -900,19 +942,6 @@ void MFEMSidreDataCollection::Load(const std::string& path,
 
     UpdateStateFromDS();
     UpdateMeshAndFieldsFromDS();
-  }
-
-  // Set the mesh nodal grid function when present
-  const std::string gfPath =
-    fmt::format("topologies/{}/grid_function", s_mesh_topology_name);
-  if(GetBPGroup()->hasView(gfPath))
-  {
-    const std::string nodalGFName = GetBPGroup()->getView(gfPath)->getString();
-    if(this->HasField(nodalGFName))
-    {
-      this->SetMeshNodesName(nodalGFName);
-      mesh->NewNodes(*this->GetField(nodalGFName), false);
-    }
   }
 }
 
@@ -955,6 +984,40 @@ void MFEMSidreDataCollection::UpdateStateToDS()
   }
 }
 
+void MFEMSidreDataCollection::UpdateMeshAndFieldsFromDS()
+{
+  // 1. Start by constructing the mesh
+  reconstructMesh();
+
+  // 2. Set the mesh nodal grid function when present
+  // QUESTION: Does this logic only apply when we own the datastore (i.e., when we know where things are)
+  // or should we unconditionally run this logic whenever we Load()?
+  const std::string gfPath =
+    fmt::format("topologies/{}/grid_function", s_mesh_topology_name);
+  if(GetBPGroup()->hasView(gfPath))
+  {
+    const std::string nodalGFName = GetBPGroup()->getView(gfPath)->getString();
+    Group* fields_grp = m_bp_grp->getGroup("fields");
+    if(fields_grp->hasGroup(nodalGFName))
+    {
+      reconstructField(fields_grp->getGroup(nodalGFName));
+      if(this->HasField(nodalGFName))
+      {
+        this->SetMeshNodesName(nodalGFName);
+        mesh->NewNodes(*this->GetField(nodalGFName), false);
+      }
+    }
+  }
+
+  // 3. Now we can finalize the mesh
+  const bool fix_orientation = false;
+  const bool refine = false;
+  mesh->Finalize(refine, fix_orientation);
+
+  // 4. And then finally reconstruct the remaining fields
+  reconstructFields();
+}
+
 void MFEMSidreDataCollection::PrepareToSave()
 {
   verifyMeshBlueprint();
@@ -974,17 +1037,52 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
 {
   PrepareToSave();
 
-  create_directory(prefix_path, mesh, myid);
-
   std::string file_path = get_file_path(filename);
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  create_directory(file_path, mesh, myid);
+  #else
+  create_directory(prefix_path, mesh, myid);
+  #endif
 
   sidre::Group* blueprint_indicies_grp = m_bp_index_grp->getParent();
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if(m_comm != MPI_COMM_NULL)
   {
     IOManager writer(m_comm);
-    sidre::DataStore* datastore = m_bp_grp->getDataStore();
-    writer.write(datastore->getRoot(), num_procs, file_path, protocol);
+
+    // Create a shallow mirror of the DataStore structure that only includes
+    // the data relevant to the calling DataCollection
+    SLIC_ERROR_IF(!m_bp_index_grp || !m_bp_grp,
+                  "Blueprint pointers must not be null");
+    Group* global_grp = m_bp_index_grp->getParent()->getParent();
+    Group* domain_grp = m_bp_grp->getParent();
+    const std::string global_path = global_grp->getPath();
+    const std::string domain_path = domain_grp->getPath();
+    Group* temp_root =
+      m_bp_grp->getDataStore()->getRoot()->createGroup("_sidre_tmp_save");
+
+    // First shallow copy the global group into the temporary group
+    Group* temp_global_grp = temp_root;
+    // We wouldn't need an extra conditional if hasGroup("") returned true
+    if(!global_path.empty())
+    {
+      temp_global_grp = alloc_group(temp_root, global_path);
+    }
+    temp_global_grp->copyGroup(global_grp);
+
+    // Then shallow copy the domain group in the same way
+    Group* temp_domain_grp = temp_root;
+    if(!domain_path.empty())
+    {
+      temp_domain_grp = alloc_group(temp_root, domain_path);
+    }
+    temp_domain_grp->copyGroup(domain_grp);
+
+    writer.write(temp_root, num_procs, file_path, protocol);
+
+    // Now that we've written the data, we can delete the temporary group
+    temp_root->getParent()->destroyGroup("_sidre_tmp_save");
+
     if(myid == 0)
     {
       if(protocol == "sidre_hdf5")
@@ -1633,7 +1731,7 @@ View* MFEMSidreDataCollection::getFieldValuesView(const std::string& field_name)
 
 void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 {
-  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  const auto tokens = utilities::string::rsplitN(field_name, 2, '_');
   // Expecting [base_field_name, material_id]
   if(tokens.size() != 2)
   {
@@ -1659,7 +1757,7 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 
 void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 {
-  const auto tokens = utilities::string::splitLastNTokens(field_name, 3, '_');
+  const auto tokens = utilities::string::rsplitN(field_name, 3, '_');
   // Expecting [base_field_name, material_id, component]
   if(tokens.size() != 3)
   {
@@ -1687,7 +1785,7 @@ void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)
 void MFEMSidreDataCollection::checkForMaterialDependentField(
   const std::string& field_name)
 {
-  const auto tokens = utilities::string::splitLastNTokens(field_name, 2, '_');
+  const auto tokens = utilities::string::rsplitN(field_name, 2, '_');
   // Expecting [base_field_name, material_id]
   if(tokens.size() != 2)
   {
@@ -1784,7 +1882,7 @@ namespace detail
 /**
  * @brief Wrapper class to enable the reconstruction of a ParMesh from a
  * Conduit blueprint
- * 
+ *
  * @note This is only needed because mfem::ParMesh doesn't provide a
  * constructor that allows us to set all the required information.
  */
@@ -1794,11 +1892,11 @@ public:
   /**
    * @brief Constructs a new parallel mesh, intended to be assigned
    * to an mfem::ParMesh*
-   * 
+   *
    * @param [in] bp_grp The root group of the Conduit Blueprint structure
    * @param [in] comm The MPI communicator to use with the new mesh
    * @param [in] mesh_topo_name The name of the mesh topology in the Blueprint structure
-   * 
+   *
    * The remaining parameters are used to construct the mfem::Mesh base subobject
    */
   SidreParMeshWrapper(Group* bp_grp,
@@ -1973,19 +2071,17 @@ public:
       }
     }
 
-    const bool fix_orientation = false;
-    const bool refine = false;
-    Finalize(refine, fix_orientation);
+    // Delay the finalization of the mesh until we can set the nodal GridFunction
   }
 
 private:
   /**
    * @brief Clone of mfem::Mesh constructor that allows data fields
    * to be set directly
-   * 
+   *
    * Needed because the mfem::Mesh base subobject cannot be constructed
    * directly, so we need to set the data fields "manually"
-   * 
+   *
    * @see mfem::Mesh::Mesh(double, int, int*, ...)
    */
   void ConstructMeshSubObject(double* _vertices,
@@ -2049,7 +2145,7 @@ private:
    * @brief A span over a list of vectors arranged contiguously (not interleaved)
    * Allows for convenient iteration over the list without having to manage
    * sizes and offsets in multiple places
-   * 
+   *
    * \note This is a convenience wrapper over Sidre's "stride" data attribute,
    * perhaps this would be useful as a user-facing utility??
    */
@@ -2186,10 +2282,10 @@ private:
   /**
    * @brief Retrieves the shared geometry information from the mesh topology
    * adjacency set group
-   * 
+   *
    * @param [in] mesh_adjset_groups The blueprint group corresponding to the
    * adjacency sets, i.e. <blueprint_root>/adjsets/<mesh_topology>/groups
-   * 
+   *
    * @return The set of SharedGeometries, one for each communication group
    */
   std::vector<SharedGeometries> GetSharedGeometries(const Group* mesh_adjset_groups)
@@ -2399,6 +2495,123 @@ void MFEMSidreDataCollection::reconstructMesh()
   mesh = m_owned_mesh.get();
 }
 
+void MFEMSidreDataCollection::reconstructField(Group* field_grp)
+{
+  // Filter out the non-user-registered attribute fields
+  if(!field_grp->hasView("association"))
+  {
+    int vdim = 1;  // The default
+    // GridFunction vs QuadratureFunction
+    bool is_gridfunc = true;
+    // FiniteElementCollection/QuadratureSpace construction
+    const std::string basis_name = field_grp->getView("basis")->getString();
+    // Check if it's a QuadratureFunction
+    if(basis_name.find("QF") == 0 && (m_quadspaces.count(basis_name) == 0))
+    {
+      // The vdim is being overwritten here with the value in the basis string so we
+      // can correctly construct the QuadratureFunction
+      m_quadspaces[basis_name] = std::unique_ptr<mfem::QuadratureSpace>(
+        detail::NewQuadratureSpace(basis_name, mesh, vdim));
+      is_gridfunc = false;
+    }
+    // Only need to create a new FEColl if one doesn't already exist
+    else if(m_fecolls.count(basis_name) == 0)
+    {
+      m_fecolls[basis_name] = std::unique_ptr<mfem::FiniteElementCollection>(
+        mfem::FiniteElementCollection::New(basis_name.c_str()));
+    }
+
+    View* value_view = nullptr;
+    auto ordering = mfem::Ordering::byNODES;  // The default
+    // Scalar grid function
+    if(field_grp->hasView("values"))
+    {
+      value_view = field_grp->getView("values");
+    }
+
+    // Vector grid function
+    else if(field_grp->hasGroup("values"))
+    {
+      // Sufficient to use address of first component as data is interleaved
+      value_view = field_grp->getGroup("values")->getView("x0");
+      vdim = field_grp->getGroup("values")->getNumViews();
+      if(value_view->getStride() == static_cast<axom::sidre::IndexType>(vdim))
+      {
+        ordering = mfem::Ordering::byVDIM;
+      }
+    }
+    else
+    {
+      SLIC_ERROR("Cannot reconstruct grid function - field values not found");
+    }
+
+    // We cache the FESpaces to avoid reconstructing them when not needed
+    // An FESpace is uniquely identified by the basis of its FEColl and its ordering
+    const std::string fespace_id =
+      axom::fmt::format("{0}_{1}",
+                        basis_name,
+                        (ordering == mfem::Ordering::byVDIM) ? "nodes" : "vdim");
+
+    // Only need to create a new FESpace if one doesn't already exist
+    if(is_gridfunc && (m_fespaces.count(fespace_id) == 0))
+    {
+      // FiniteElementSpace - mesh ptr and FEColl ptr
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+      auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+      if(parmesh)
+      {
+        m_fespaces[fespace_id] = std::unique_ptr<mfem::ParFiniteElementSpace>(
+          new mfem::ParFiniteElementSpace(parmesh,
+                                          m_fecolls.at(basis_name).get(),
+                                          vdim,
+                                          ordering));
+      }
+      else
+  #endif
+      {
+        m_fespaces[fespace_id] = std::unique_ptr<mfem::FiniteElementSpace>(
+          new mfem::FiniteElementSpace(mesh,
+                                       m_fecolls.at(basis_name).get(),
+                                       vdim,
+                                       ordering));
+      }
+    }
+
+    double* values = value_view->getData();
+
+    if(is_gridfunc)
+    {
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+      auto parfes = dynamic_cast<mfem::ParFiniteElementSpace*>(
+        m_fespaces.at(fespace_id).get());
+      if(parfes)
+      {
+        m_owned_gridfuncs.emplace_back(new mfem::ParGridFunction(parfes, values));
+      }
+      else
+  #endif
+      {
+        m_owned_gridfuncs.emplace_back(
+          new mfem::GridFunction(m_fespaces.at(fespace_id).get(), values));
+      }
+
+      // Register a non-owning pointer with the base subobject
+      DataCollection::RegisterField(field_grp->getName(),
+                                    m_owned_gridfuncs.back().get());
+    }
+    else
+    {
+      m_owned_quadfuncs.emplace_back(
+        new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
+                                     values,
+                                     vdim));
+      // Register a non-owning pointer with the base subobject
+      DataCollection::RegisterQField(field_grp->getName(),
+                                     m_owned_quadfuncs.back().get());
+    }
+  }
+}
+
 void MFEMSidreDataCollection::reconstructFields()
 {
   sidre::Group* f = m_bp_grp->getGroup("fields");
@@ -2406,114 +2619,10 @@ void MFEMSidreDataCollection::reconstructFields()
       idx = f->getNextValidGroupIndex(idx))
   {
     Group* field_grp = f->getGroup(idx);
-    // Filter out the non-user-registered attribute fields
-    if(!field_grp->hasView("association"))
+    // The nodal grid function will already have been reconstructed
+    if(field_grp->getName() != m_meshNodesGFName)
     {
-      int vdim = 1;  // The default
-      // GridFunction vs QuadratureFunction
-      bool is_gridfunc = true;
-      // FiniteElementCollection/QuadratureSpace construction
-      const std::string basis_name = field_grp->getView("basis")->getString();
-      // Check if it's a QuadratureFunction
-      if(basis_name.find("QF") == 0 && (m_quadspaces.count(basis_name) == 0))
-      {
-        // The vdim is being overwritten here with the value in the basis string so we
-        // can correctly construct the QuadratureFunction
-        m_quadspaces.emplace(basis_name,
-                             detail::NewQuadratureSpace(basis_name, mesh, vdim));
-        is_gridfunc = false;
-      }
-      // Only need to create a new FEColl if one doesn't already exist
-      else if(m_fecolls.count(basis_name) == 0)
-      {
-        m_fecolls.emplace(basis_name,
-                          mfem::FiniteElementCollection::New(basis_name.c_str()));
-      }
-
-      View* value_view = nullptr;
-      auto ordering = mfem::Ordering::byNODES;  // The default
-      // Scalar grid function
-      if(field_grp->hasView("values"))
-      {
-        value_view = field_grp->getView("values");
-      }
-
-      // Vector grid function
-      else if(field_grp->hasGroup("values"))
-      {
-        // Sufficient to use address of first component as data is interleaved
-        value_view = field_grp->getGroup("values")->getView("x0");
-        vdim = field_grp->getGroup("values")->getNumViews();
-        if(value_view->getStride() == static_cast<axom::sidre::IndexType>(vdim))
-        {
-          ordering = mfem::Ordering::byVDIM;
-        }
-      }
-      else
-      {
-        SLIC_ERROR("Cannot reconstruct grid function - field values not found");
-      }
-
-      // Only need to create a new FESpace if one doesn't already exist
-      if(is_gridfunc && (m_fespaces.count(basis_name) == 0))
-      {
-        // FiniteElementSpace - mesh ptr and FEColl ptr
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-        auto parmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-        if(parmesh)
-        {
-          m_fespaces.emplace(
-            basis_name,
-            new mfem::ParFiniteElementSpace(parmesh,
-                                            m_fecolls.at(basis_name).get(),
-                                            vdim,
-                                            ordering));
-        }
-        else
-  #endif
-        {
-          m_fespaces.emplace(
-            basis_name,
-            new mfem::FiniteElementSpace(mesh,
-                                         m_fecolls.at(basis_name).get(),
-                                         vdim,
-                                         ordering));
-        }
-      }
-
-      double* values = value_view->getData();
-
-      if(is_gridfunc)
-      {
-  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-        auto parfes = dynamic_cast<mfem::ParFiniteElementSpace*>(
-          m_fespaces.at(basis_name).get());
-        if(parfes)
-        {
-          m_owned_gridfuncs.emplace_back(
-            new mfem::ParGridFunction(parfes, values));
-        }
-        else
-  #endif
-        {
-          m_owned_gridfuncs.emplace_back(
-            new mfem::GridFunction(m_fespaces.at(basis_name).get(), values));
-        }
-
-        // Register a non-owning pointer with the base subobject
-        DataCollection::RegisterField(field_grp->getName(),
-                                      m_owned_gridfuncs.back().get());
-      }
-      else
-      {
-        m_owned_quadfuncs.emplace_back(
-          new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
-                                       values,
-                                       vdim));
-        // Register a non-owning pointer with the base subobject
-        DataCollection::RegisterQField(field_grp->getName(),
-                                       m_owned_quadfuncs.back().get());
-      }
+      reconstructField(field_grp);
     }
   }
 }

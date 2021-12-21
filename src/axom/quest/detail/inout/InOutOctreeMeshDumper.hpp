@@ -21,7 +21,7 @@
 #include "BlockData.hpp"
 #include "MeshWrapper.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {

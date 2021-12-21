@@ -34,6 +34,7 @@ template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const Triangle<T, NDIMS>& tri);
 
 /*!
+ * \accelerated
  * \class Triangle
  *
  * \brief Represents a triangular geometric shape defined by three points.
@@ -283,6 +284,7 @@ public:
    * \return alpha the incidence angle in the range [0, pi].
    * \pre idx >= 0 && idx < NUM_TRI_VERTS
    */
+  AXOM_HOST_DEVICE
   double angle(int idx) const;
 
   /*!

@@ -29,7 +29,9 @@ set( primal_headers
      geometry/Ray.hpp
      geometry/Segment.hpp
      geometry/Sphere.hpp
+     geometry/Polyhedron.hpp
      geometry/Tetrahedron.hpp
+     geometry/Octahedron.hpp
      geometry/Triangle.hpp
      geometry/Vector.hpp
 
@@ -41,12 +43,20 @@ set( primal_headers
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
      operators/in_sphere.hpp
+     operators/split.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_bezier_impl.hpp
      operators/detail/intersect_ray_impl.hpp
      operators/detail/intersect_bounding_box_impl.hpp
      operators/detail/intersect_impl.hpp
+
+     ## utils
+     utils/ZipIndexable.hpp
+     utils/ZipBoundingBox.hpp
+     utils/ZipPoint.hpp
+     utils/ZipRay.hpp
+     utils/ZipVector.hpp
    )
 
 set( primal_sources

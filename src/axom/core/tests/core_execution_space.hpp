@@ -106,7 +106,7 @@ TEST(core_execution_space, check_valid)
   check_valid<axom::OMP_EXEC>();
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   check_valid<axom::CUDA_EXEC<256>>();
   check_valid<axom::CUDA_EXEC<256, axom::ASYNC>>();
 #endif

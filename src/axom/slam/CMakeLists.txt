@@ -35,6 +35,7 @@ set(slam_headers
     policies/StridePolicies.hpp
     policies/IndirectionPolicies.hpp
     policies/SubsettingPolicies.hpp
+    policies/StoragePolicies.hpp
     policies/PolicyTraits.hpp
 
     # SRM Set headers
@@ -47,7 +48,6 @@ set(slam_headers
     Set.hpp
     BivariateSet.hpp
     BitSet.hpp
-    internal/BitTwiddle.hpp
     RelationSet.hpp
 
     # SRM Relation headers

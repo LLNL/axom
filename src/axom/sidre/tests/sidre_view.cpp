@@ -150,8 +150,9 @@ static bool checkViewValues(View* view,
   {
     // Fill with data to help the print function
     int* data_ptr = view->getData();
+    int nelem = view->getNumElements();
 
-    for(int i = 0; i < len; i++)
+    for(int i = 0; i < nelem; i++)
     {
       data_ptr[i] = i * i;
     }
@@ -1200,8 +1201,8 @@ TEST(sidre_view, view_offset_and_stride)
   axom::float64 f64 = 8.8;
 
   views.push_back(othersGroup->createView("key_empty"));
-  views.push_back(othersGroup->createView("key_opaque", data_ptr));  // not
-    // described
+  // key_opaque is not described.
+  views.push_back(othersGroup->createView("key_opaque", data_ptr));
   views.push_back(othersGroup->createViewString("key_string", "string_value"));
 
   views.push_back(othersGroup->createViewScalar("key_uint8", ui8));
@@ -1721,6 +1722,108 @@ TEST(sidre_view, import_array_node)
   v4->importArrayNode(n_ints);
   EXPECT_TRUE(v4->isString());
 }
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view, clear_view)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  // Create an empty view.
+  {
+    View* view = root->createView("v_empty");
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+  }
+
+  // Describe an empty view.
+  {
+    View* view = root->createView("v_described", INT_ID, BLEN);
+    EXPECT_TRUE(checkViewValues(view, EMPTY, true, false, false, BLEN));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+  }
+
+  // scalar view.
+  {
+    View* view = root->createViewScalar("v_scalar", 1);
+    EXPECT_TRUE(checkViewValues(view, SCALAR, true, true, true, 1));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+  }
+
+  // string view.
+  {
+    View* view = root->createViewString("v_string", "string-test");
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+  }
+
+  // Allocated view, Buffer will be released.
+  {
+    int nbuf = ds->getNumBuffers();
+    View* view = root->createViewAndAllocate("v_allocated", INT_ID, BLEN);
+    EXPECT_TRUE(checkViewValues(view, BUFFER, true, true, true, BLEN));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+    EXPECT_EQ(ds->getNumBuffers(), nbuf);
+  }
+
+  // Undescribed Buffer.
+  {
+    int nbuf = ds->getNumBuffers();
+    Buffer* dbuff = ds->createBuffer();
+    View* view = root->createView("v_undescribed_buffer", dbuff);
+    EXPECT_TRUE(checkViewValues(view, BUFFER, false, false, false, 0));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+    EXPECT_EQ(ds->getNumBuffers(), nbuf);
+  }
+
+  // Explicit Buffer attached to two views.
+  // Buffer will not be released.
+  {
+    Buffer* dbuff = ds->createBuffer()->allocate(INT_ID, BLEN);
+    int nbuf = ds->getNumBuffers();
+    EXPECT_EQ(dbuff->getNumViews(), 0);
+
+    View* vother = root->createView("v_other", INT_ID, BLEN);
+    View* view = root->createView("v_buffer", INT_ID, BLEN);
+    vother->attachBuffer(dbuff);
+    EXPECT_EQ(dbuff->getNumViews(), 1);
+    view->attachBuffer(dbuff);
+    EXPECT_EQ(dbuff->getNumViews(), 2);
+
+    EXPECT_TRUE(checkViewValues(view, BUFFER, true, true, true, BLEN));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+
+    EXPECT_EQ(ds->getNumBuffers(), nbuf);
+    EXPECT_EQ(dbuff->getNumViews(), 1);
+  }
+
+  // External view.
+  {
+    int extdata[BLEN];
+    View* view = root->createView("v_external", INT_ID, BLEN, &extdata);
+    EXPECT_TRUE(checkViewValues(view, EXTERNAL, true, true, true, BLEN));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+  }
+
+  // Opaque view.
+  {
+    int extdata[BLEN];
+    View* view = root->createView("v_opaque", &extdata);
+    EXPECT_TRUE(checkViewValues(view, EXTERNAL, false, true, false, 0));
+    view->clear();
+    EXPECT_TRUE(checkViewValues(view, EMPTY, false, false, false, 0));
+  }
+}
+
+//------------------------------------------------------------------------------
 
 #ifdef AXOM_USE_UMPIRE
 

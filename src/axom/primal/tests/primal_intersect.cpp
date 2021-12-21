@@ -5,10 +5,13 @@
 
 #include "gtest/gtest.h"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/config.hpp"
 #include "axom/slic/interface/slic.hpp"
+
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/memory_management.hpp"
 
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -364,9 +367,9 @@ TEST(primal_intersect, triangle_aabb_intersection)
   EXPECT_FALSE(primal::intersect(unitTri, negBB));
 
   // Test new triangle whose edge crosses the BB
-  double t2_0[3] = {10., 0., 0.};
-  double t2_1[3] = {-10., 0., 0.};
-  double t2_2[3] = {0., 100., 0};
+  PointType t2_0 {10., 0., 0.};
+  PointType t2_1 {-10., 0., 0.};
+  PointType t2_2 {0., 100., 0};
 
   TriangleType xyTri(t2_0, t2_1, t2_2);
   BoundingBoxType bbOrigin(PointType::zero());
@@ -2184,6 +2187,342 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
   obbox7.shift(100. * shift3);
   EXPECT_FALSE(axom::primal::intersect(obbox1, obbox7));
 }
+
+//------------------------------------------------------------------------------
+TEST(primal_intersect, plane_bb_test_intersection)
+{
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+
+  // Bounding Box containing (0,0,0) and (1,1,1)
+  BoundingBoxType unitBB(PointType::zero(), PointType::ones());
+
+  // bottom face
+  VectorType normal1 {0.0, 1.0, 0.0};
+  double offset1 = 0.0;
+  PlaneType p1(normal1, offset1);
+
+  // top face
+  VectorType normal2 {0.0, -1.0, 0.0};
+  double offset2 = -1.0;
+  PlaneType p2(normal2, offset2);
+
+  // center
+  VectorType normal3 {1.0, 1.0, 1.0};
+  double offset3 = 0.5;
+  PlaneType p3(normal3, offset3);
+
+  // non-intersect
+  VectorType normal4 {1.0, 1.0, 1.0};
+  double offset4 = -0.5;
+  PlaneType p4(normal4, offset4);
+
+  EXPECT_TRUE(axom::primal::intersect(p1, unitBB));
+  p1.flip();
+  EXPECT_TRUE(axom::primal::intersect(p1, unitBB));
+
+  EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
+  p2.flip();
+  EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
+
+  EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
+  p3.flip();
+  EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
+
+  EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
+  p4.flip();
+  EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_intersect, plane_seg_test_intersection)
+{
+  double t1, t2, t3;
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+
+  // Line segment goes from (0,0,0) to (1,1,1)
+  PointType A(0.0, 3);
+  PointType B(1.0, 3);
+  SegmentType s(A, B);
+
+  // Line segment parallel to plane (non-intersect)
+  PointType A_p({-1, -1, 0});
+  PointType B_p({1, -1, 0});
+  SegmentType s_p(A_p, B_p);
+
+  // intersect A
+  VectorType normal1 {0.0, 1.0, 0.0};
+  double offset1 = 0.0;
+  PlaneType p1(normal1, offset1);
+
+  // intersect midpoint
+  VectorType normal2 {0.0, 1.0, 0.0};
+  double offset2 = 0.5;
+  PlaneType p2(normal2, offset2);
+
+  // intersect B
+  VectorType normal3 {0.0, 1.0, 0.0};
+  double offset3 = 1.0;
+  PlaneType p3(normal3, offset3);
+
+  EXPECT_TRUE(axom::primal::intersect(p1, s, t1));
+  EXPECT_EQ(s.at(t1), PointType({0.0, 0.0, 0.0}));
+
+  EXPECT_TRUE(axom::primal::intersect(p2, s, t2));
+  EXPECT_EQ(s.at(t2), PointType({0.5, 0.5, 0.5}));
+
+  EXPECT_TRUE(axom::primal::intersect(p3, s, t3));
+  EXPECT_EQ(s.at(t3), PointType({1.0, 1.0, 1.0}));
+
+  EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
+}
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+
+template <typename ExecSpace>
+void check_plane_bb_intersect()
+{
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Determine new allocator (for CUDA policy, set to device)
+  umpire::Allocator allocator =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? rm.getAllocator(umpire::resource::Device)
+       : rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID()));
+
+  // Set new default to device
+  axom::setDefaultAllocator(allocator.getId());
+
+  // Initialize bounding box and planes on device,
+  // intersection results in unified memory to check results on host.
+  BoundingBoxType* unitBB = axom::allocate<BoundingBoxType>(1);
+  PlaneType* planes = axom::allocate<PlaneType>(4);
+  bool* res =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? axom::allocate<bool>(4,
+                              rm.getAllocator(umpire::resource::Unified).getId())
+       : axom::allocate<bool>(4));
+
+  for_all<ExecSpace>(
+    4,
+    AXOM_LAMBDA(int i) {
+      unitBB[0] = BoundingBoxType(PointType::zero(), PointType::ones());
+      VectorType normal;
+      double offset;
+
+      // bottom face
+      if(i == 0)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 0.0;
+      }
+
+      // top face
+      if(i == 1)
+      {
+        normal[0] = 0.0;
+        normal[1] = -1.0;
+        normal[2] = 0.0;
+        offset = -1.0;
+      }
+
+      // center
+      if(i == 2)
+      {
+        normal[0] = 1.0;
+        normal[1] = 1.0;
+        normal[2] = 1.0;
+        offset = 0.5;
+      }
+
+      // non-intersect
+      if(i == 3)
+      {
+        normal[0] = 1.0;
+        normal[1] = 1.0;
+        normal[2] = 1.0;
+        offset = -0.5;
+      }
+
+      planes[i] = PlaneType(normal, offset);
+      res[i] = axom::primal::intersect(planes[i], unitBB[0]);
+    });
+
+  EXPECT_TRUE(res[0]);
+  EXPECT_TRUE(res[1]);
+  EXPECT_TRUE(res[2]);
+  EXPECT_FALSE(res[3]);
+
+  axom::deallocate(unitBB);
+  axom::deallocate(planes);
+  axom::deallocate(res);
+  axom::setDefaultAllocator(current_allocator);
+}
+
+template <typename ExecSpace>
+void check_plane_seg_intersect()
+{
+  const int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using PlaneType = primal::Plane<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Determine new allocator (for CUDA policy, set to device)
+  umpire::Allocator allocator =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? rm.getAllocator(umpire::resource::Device)
+       : rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID()));
+
+  // Set new default to device
+  axom::setDefaultAllocator(allocator.getId());
+
+  // Initialize planes and segments on device,
+  // intersection results in unified memory to check results on host.
+  PlaneType* planes = axom::allocate<PlaneType>(4);
+  SegmentType* segments = axom::allocate<SegmentType>(1);
+  double* lerp_val = (axom::execution_space<ExecSpace>::onDevice()
+                        ? axom::allocate<double>(
+                            4,
+                            rm.getAllocator(umpire::resource::Unified).getId())
+                        : axom::allocate<double>(4));
+  bool* res =
+    (axom::execution_space<ExecSpace>::onDevice()
+       ? axom::allocate<bool>(4,
+                              rm.getAllocator(umpire::resource::Unified).getId())
+       : axom::allocate<bool>(4));
+
+  for_all<ExecSpace>(
+    4,
+    AXOM_LAMBDA(int i) {
+      VectorType normal;
+      double offset;
+      PointType A(0.0, 3);
+      PointType B(1.0, 3);
+      segments[0] = SegmentType(A, B);
+
+      // intersect A
+      if(i == 0)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 0.0;
+      }
+
+      // intersect midpoint
+      if(i == 1)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 0.5;
+      }
+
+      // intersect B
+      if(i == 2)
+      {
+        normal[0] = 0.0;
+        normal[1] = 1.0;
+        normal[2] = 0.0;
+        offset = 1.0;
+      }
+
+      // non-intersect
+      if(i == 3)
+      {
+        normal[0] = 1.0;
+        normal[1] = 1.0;
+        normal[2] = 1.0;
+        offset = -0.5;
+      }
+
+      planes[i] = PlaneType(normal, offset);
+      res[i] = axom::primal::intersect(planes[i], segments[0], lerp_val[i]);
+    });
+
+  EXPECT_TRUE(res[0]);
+  EXPECT_TRUE(res[1]);
+  EXPECT_TRUE(res[2]);
+  EXPECT_FALSE(res[3]);
+
+  EXPECT_EQ(lerp_val[0], 0.0);
+  EXPECT_EQ(lerp_val[1], 0.5);
+  EXPECT_EQ(lerp_val[2], 1.0);
+  EXPECT_LT(lerp_val[3], 0.0);
+
+  axom::deallocate(planes);
+  axom::deallocate(segments);
+  axom::deallocate(lerp_val);
+  axom::deallocate(res);
+  axom::setDefaultAllocator(current_allocator);
+}
+
+TEST(primal_intersect, plane_bb_test_intersection_sequential)
+{
+  check_plane_bb_intersect<axom::SEQ_EXEC>();
+}
+
+TEST(primal_intersect, plane_seg_test_intersection_sequential)
+{
+  check_plane_seg_intersect<axom::SEQ_EXEC>();
+}
+
+  #ifdef AXOM_USE_OPENMP
+TEST(primal_intersect, plane_bb_test_intersection_omp)
+{
+  check_plane_bb_intersect<axom::OMP_EXEC>();
+}
+
+TEST(primal_intersect, plane_seg_test_intersection_omp)
+{
+  check_plane_seg_intersect<axom::OMP_EXEC>();
+}
+  #endif /* AXOM_USE_OPENMP */
+
+  #ifdef AXOM_USE_CUDA
+AXOM_CUDA_TEST(primal_intersect, plane_bb_test_intersection_cuda)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+
+  check_plane_bb_intersect<exec>();
+}
+
+AXOM_CUDA_TEST(primal_intersect, plane_seg_test_intersection_cuda)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+
+  check_plane_seg_intersect<exec>();
+}
+  #endif /* AXOM_USE_CUDA */
+
+#endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

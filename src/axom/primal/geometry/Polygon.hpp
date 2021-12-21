@@ -44,12 +44,12 @@ template <typename T, int NDIMS>
 class Polygon
 {
 public:
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
-  typedef NumericArray<T, NDIMS> NumArrayType;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+  using NumArrayType = NumericArray<T, NDIMS>;
 
 private:
-  typedef std::vector<PointType> Coords;
+  using Coords = std::vector<PointType>;
 
 public:
   /*! Default constructor for an empty polygon   */
@@ -63,7 +63,7 @@ public:
    * \pre numExpectedVerts is not negative
    *
    */
-  Polygon(int numExpectedVerts)
+  explicit Polygon(int numExpectedVerts)
   {
     SLIC_ASSERT(numExpectedVerts >= 0);
     m_vertices.reserve(numExpectedVerts);
@@ -103,7 +103,7 @@ public:
     }
     sum /= numVertices();
 
-    return sum;
+    return PointType(sum);
   }
 
   /*!

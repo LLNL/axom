@@ -29,7 +29,8 @@ class Point;
  * \brief Equality comparison operator for points
  */
 template <typename T, int NDIMS>
-bool operator==(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator==(const Point<T, NDIMS>& lhs,
+                                 const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for points
@@ -46,6 +47,7 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt);
 ///@}
 
 /*!
+ * \accelerated
  * \class Point
  *
  * \brief The point class represents a point, \f$ p \in \mathcal{R}^d \f$ . It
@@ -83,7 +85,7 @@ public:
    * \param [in] arr The numeric array to copy from
    */
   AXOM_HOST_DEVICE
-  Point(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
+  explicit Point(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a point from the first sz values of the input array.
@@ -92,7 +94,7 @@ public:
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    */
   AXOM_HOST_DEVICE
-  Point(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
+  explicit Point(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
 
   /*!
    * \brief Creates a point from an initializer list
@@ -156,11 +158,13 @@ public:
    * \pre The user needs to make sure that the array has been allocated
    * and has sufficient space for NDIMS coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const { m_components.to_array(arr); }
 
   /*!
    * \brief Equality comparison operator for points
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator==(const Point& lhs, const Point& rhs)
   {
     return lhs.m_components == rhs.m_components;
@@ -220,11 +224,13 @@ public:
    * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
    * \post The return point, P, and the user-supplied points A, B are collinear.
    */
+  AXOM_HOST_DEVICE
   static Point lerp(const Point& A, const Point& B, T alpha);
 
   /*!
    * \brief Helper function to return a point whose coordinates are all 0
    */
+  AXOM_HOST_DEVICE
   static Point zero() { return Point(); }
 
   /*!
@@ -233,6 +239,7 @@ public:
    * (with the appropriate casting) and is only valid for Points with
    * a numerical type (i.e. where static_cast<T>(1) is valid.
    */
+  AXOM_HOST_DEVICE
   static Point ones() { return Point(static_cast<T>(1)); }
 
 private:

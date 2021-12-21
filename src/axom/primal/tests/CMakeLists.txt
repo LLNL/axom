@@ -21,19 +21,25 @@ set( primal_tests
     primal_orientedboundingbox.cpp
     primal_plane.cpp
     primal_point.cpp
+    primal_polygon.cpp
+    primal_polyhedron.cpp
     primal_ray_intersect.cpp
     primal_bounding_box_intersect.cpp
     primal_segment.cpp
     primal_sphere.cpp
+    primal_split.cpp
     primal_squared_distance.cpp
     primal_tetrahedron.cpp
+    primal_octahedron.cpp
     primal_triangle.cpp
     primal_vector.cpp
+    primal_zip.cpp
    )
 
 set(primal_test_depends axom fmt gtest)
 
-blt_list_append( TO primal_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO primal_test_depends ELEMENTS cuda IF ENABLE_CUDA )
+blt_list_append( TO primal_test_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 foreach ( test ${primal_tests} )
 

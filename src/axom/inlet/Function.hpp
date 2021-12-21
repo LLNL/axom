@@ -19,7 +19,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/sidre.hpp"
 
@@ -521,11 +521,9 @@ class Function : public Verifiable<Function>
 public:
   Function(axom::sidre::Group* sidreGroup,
            axom::sidre::Group* root,
-           FunctionVariant&& func,
-           bool docEnabled = true)
+           FunctionVariant&& func)
     : m_sidreGroup(sidreGroup)
     , m_sidreRootGroup(root)
-    , m_docEnabled(docEnabled)
     , m_func(std::move(func))
   {
     m_func.setName(name());
@@ -589,7 +587,6 @@ private:
   // This function's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
-  bool m_docEnabled;
   Verifier m_verifier;
   FunctionVariant m_func;
 };

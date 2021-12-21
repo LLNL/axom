@@ -20,8 +20,9 @@
 
 #include "axom/spin/MortonIndex.hpp"
 
-#include "axom/core/utilities/Utilities.hpp"  // for isNearlyEqual()
-#include "axom/slic/interface/slic.hpp"       // for slic
+#include "axom/core/utilities/Utilities.hpp"     // for isNearlyEqual()
+#include "axom/core/utilities/BitUtilities.hpp"  // for leadingZeros()
+#include "axom/slic/interface/slic.hpp"          // for slic
 
 #if defined(AXOM_USE_RAJA)
   // RAJA includes
@@ -30,7 +31,7 @@
 
 #include <atomic>  // For std::atomic_thread_fence
 
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
   // NOTE: uses the cub installation that is  bundled with RAJA
   #include "cub/device/device_radix_sort.cuh"
 #endif
@@ -85,8 +86,8 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
   return convertPointToMorton<int64>(integer_pt);
 }
 
-template <typename ExecSpace, typename FloatType, int NDIMS>
-void transform_boxes(const primal::BoundingBox<FloatType, NDIMS>* boxes,
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void transform_boxes(const BoxIndexable boxes,
                      primal::BoundingBox<FloatType, NDIMS>* aabbs,
                      int32 size,
                      FloatType scale_factor)
@@ -161,9 +162,9 @@ void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
 
   primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
-  extent = bounds.getMax();
-  extent -= bounds.getMin();
-  min_coord = bounds.getMin();
+  extent = primal::Vector<FloatType, NDIMS>(bounds.getMax());
+  extent -= primal::Vector<FloatType, NDIMS>(bounds.getMin());
+  min_coord = primal::Vector<FloatType, NDIMS>(bounds.getMin());
 
   for(int i = 0; i < NDIMS; ++i)
   {
@@ -178,8 +179,9 @@ void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
       const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
-      primal::Vector<FloatType, NDIMS> centroid = aabb.getCentroid();
-      centroid = (centroid - min_coord).array() * inv_extent.array();
+      primal::Vector<FloatType, NDIMS> centroid(aabb.getCentroid());
+      centroid = primal::Vector<FloatType, NDIMS>(
+        (centroid - min_coord).array() * inv_extent.array());
       mcodes[i] = morton32_encode(centroid);
     });
 }
@@ -238,7 +240,8 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
   AXOM_PERF_MARK_SECTION(
     "raja_stable_sort",
     using EXEC_POL = typename axom::execution_space<ExecSpace>::loop_policy;
-    RAJA::stable_sort_pairs<EXEC_POL>(mcodes, mcodes + size, iter););
+    RAJA::stable_sort_pairs<EXEC_POL>(RAJA::make_span(mcodes, size),
+                                      RAJA::make_span(iter, size)););
 }
 
 #else
@@ -267,43 +270,6 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
 #endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
-//
-// count leading zeros
-//
-inline AXOM_HOST_DEVICE axom::int32 clz(axom::int32 x)
-{
-  axom::int32 y;
-  axom::int32 n = 32;
-  y = x >> 16;
-  if(y != 0)
-  {
-    n = n - 16;
-    x = y;
-  }
-  y = x >> 8;
-  if(y != 0)
-  {
-    n = n - 8;
-    x = y;
-  }
-  y = x >> 4;
-  if(y != 0)
-  {
-    n = n - 4;
-    x = y;
-  }
-  y = x >> 2;
-  if(y != 0)
-  {
-    n = n - 2;
-    x = y;
-  }
-  y = x >> 1;
-  if(y != 0) return axom::int32(n - 2);
-  return axom::int32(n - x);
-}
-
-//------------------------------------------------------------------------------
 template <typename IntType, typename MCType>
 AXOM_HOST_DEVICE IntType delta(const IntType& a,
                                const IntType& b,
@@ -321,7 +287,7 @@ AXOM_HOST_DEVICE IntType delta(const IntType& a,
   tie = (exor == 0);
   //break the tie, a and b must always differ
   exor = tie ? uint32(a) ^ uint32(bb) : exor;
-  int32 count = clz(exor);
+  int32 count = axom::utilities::leadingZeros(exor);
   if(tie) count += 32;
   count = (out_of_range) ? -1 : count;
   return count;
@@ -511,7 +477,7 @@ template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
                                                const BBoxType& value)
 {
-#ifdef __CUDA_ARCH__
+#if defined(__CUDA_ARCH__) && defined(AXOM_USE_RAJA)
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   using FloatType = typename BBoxType::CoordType;
@@ -629,8 +595,8 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 }
 
 //------------------------------------------------------------------------------
-template <typename ExecSpace, typename FloatType, int NDIMS>
-void build_radix_tree(const primal::BoundingBox<FloatType, NDIMS>* boxes,
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void build_radix_tree(const BoxIndexable boxes,
                       int size,
                       primal::BoundingBox<FloatType, NDIMS>& bounds,
                       RadixTree<FloatType, NDIMS>& radix_tree,
@@ -640,7 +606,6 @@ void build_radix_tree(const primal::BoundingBox<FloatType, NDIMS>* boxes,
   AXOM_PERF_MARK_FUNCTION("build_radix_tree");
 
   // sanity checks
-  SLIC_ASSERT(boxes != nullptr);
   SLIC_ASSERT(size > 0);
 
   radix_tree.allocate(size, allocatorID);

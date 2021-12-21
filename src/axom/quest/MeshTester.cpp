@@ -285,7 +285,7 @@ void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
 
     // Set up the lattice for quantizing points to an integer lattice
     detail::Point3 origin(meshBB.getMin().array() - detail::Point3(*it).array());
-    Lattice3 lattice(origin, detail::Point3(eps));
+    Lattice3 lattice(origin, Lattice3::SpaceVector(detail::Point3(eps)));
 
     // First, find unique indices for the welded vertices
     const int numVerts = oldMesh->getNumberOfNodes();

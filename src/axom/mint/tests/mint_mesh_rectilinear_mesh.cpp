@@ -145,13 +145,13 @@ TEST(mint_mesh_rectilinear_mesh, native_constructor)
       m = new RectilinearMesh(N[0], N[1], N[2]);
     }
 
-    internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
     EXPECT_FALSE(m->isExternal());
     EXPECT_FALSE(m->hasSidreGroup());
     m->setExtent(idim, extent);
-    internal::check_node_extent(m, extent);
+    axom::mint::internal::check_node_extent(m, extent);
     check_fill_coords(m);
-    internal::check_create_fields(m);
+    axom::mint::internal::check_create_fields(m);
 
     delete m;
   }  // END for all dimensions
@@ -209,11 +209,11 @@ TEST(mint_mesh_rectilinear_mesh, external_costructor)
     }  // END switch
 
     EXPECT_TRUE(m != nullptr);
-    internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
     EXPECT_FALSE(m->hasSidreGroup());
     EXPECT_TRUE(m->isExternal());
     m->setExtent(idim, extent);
-    internal::check_node_extent(m, extent);
+    axom::mint::internal::check_node_extent(m, extent);
 
     // deallocate
     delete m;
@@ -276,21 +276,21 @@ TEST(mint_mesh_rectilinear_mesh, sidre_constructor)
                               N[K_DIRECTION]);
     }  // END switch
 
-    internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
     EXPECT_TRUE(m->hasSidreGroup());
     EXPECT_FALSE(m->isExternal());
-    internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
     m->setExtent(idim, extent);
-    internal::check_node_extent(m, extent);
+    axom::mint::internal::check_node_extent(m, extent);
     check_fill_coords(m);
-    internal::check_create_fields(m);
+    axom::mint::internal::check_create_fields(m);
 
     delete m;
     m = nullptr;
 
     // STEP 2: pull the mesh from sidre and check correctness
     m = new RectilinearMesh(meshGroup);
-    internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_RECTILINEAR_MESH, idim, N);
     EXPECT_TRUE(m->hasSidreGroup());
     EXPECT_FALSE(m->isExternal());
 
@@ -301,7 +301,7 @@ TEST(mint_mesh_rectilinear_mesh, sidre_constructor)
                        m->getNodeResolution(ii));
     }
 
-    internal::check_fields(m, true);
+    axom::mint::internal::check_fields(m, true);
     delete m;
 
     // STEP 3: ensure data is persistent in Sidre
@@ -327,7 +327,7 @@ TEST(mint_mesh_rectilinear_mesh, get_node)
   exponential_distribution(0.0, 5, z);
 
   RectilinearMesh m(N[0], x, N[1], y, N[2], z);
-  internal::check_constructor(&m, STRUCTURED_RECTILINEAR_MESH, 3, N);
+  axom::mint::internal::check_constructor(&m, STRUCTURED_RECTILINEAR_MESH, 3, N);
 
   const IndexType kp = m.nodeKp();
   const IndexType jp = m.nodeJp();

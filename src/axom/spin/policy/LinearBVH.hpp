@@ -36,6 +36,45 @@ namespace policy
 {
 namespace lbvh = internal::linear_bvh;
 
+template <typename FloatType, int NDIMS>
+class LinearBVHTraverser
+{
+public:
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+  using PointType = primal::Point<FloatType, NDIMS>;
+
+  LinearBVHTraverser(BoxType* bboxes, int32* inner_node_children, int32* leaf_nodes)
+    : m_inner_nodes(bboxes)
+    , m_inner_node_children(inner_node_children)
+    , m_leaf_nodes(leaf_nodes)
+  { }
+
+  template <typename LeafAction, typename Predicate>
+  AXOM_HOST_DEVICE void traverse_tree(const PointType& p,
+                                      LeafAction&& lf,
+                                      Predicate&& predicate) const
+  {
+    auto traversePref = [](const BoxType& l, const BoxType& r, const PointType& p) {
+      double sqDistL = primal::squared_distance(p, l.getCentroid());
+      double sqDistR = primal::squared_distance(p, r.getCentroid());
+      return sqDistL > sqDistR;
+    };
+
+    lbvh::bvh_traverse(m_inner_nodes,
+                       m_inner_node_children,
+                       m_leaf_nodes,
+                       p,
+                       predicate,
+                       lf,
+                       traversePref);
+  }
+
+private:
+  BoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
+  int32* m_inner_node_children {nullptr};
+  int32* m_leaf_nodes {nullptr};  // leaf data
+};
+
 /*!
  * \brief LinearBVH provides a policy for a BVH implementation which supports
  *  parallel linear construction on both CPU and GPU.
@@ -50,6 +89,7 @@ template <typename FloatType, int NDIMS, typename ExecSpace>
 class LinearBVH
 {
 public:
+  using TraverserType = LinearBVHTraverser<FloatType, NDIMS>;
   using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   LinearBVH() = default;
@@ -62,7 +102,8 @@ public:
    * \param [in] numBoxes the number of bounding boxes
    * \param [in] scaleFactor scale factor applied to each bounding box before insertion into the BVH
    */
-  void buildImpl(const BoundingBoxType* boxes,
+  template <typename BoxIndexable>
+  void buildImpl(const BoxIndexable boxes,
                  IndexType numBoxes,
                  FloatType scaleFactor,
                  int allocatorID);
@@ -92,6 +133,11 @@ public:
 
   BoundingBoxType getBoundsImpl() const { return m_bounds; }
 
+  TraverserType getTraverserImpl() const
+  {
+    return TraverserType(m_inner_nodes, m_inner_node_children, m_leaf_nodes);
+  }
+
 private:
   void allocate(int32 size, int allocID)
   {
@@ -116,7 +162,8 @@ private:
 };
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
-void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoundingBoxType* boxes,
+template <typename BoxIndexable>
+void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                                                        IndexType numBoxes,
                                                        FloatType scaleFactor,
                                                        int allocatorID)
@@ -219,8 +266,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   AXOM_PERF_MARK_FUNCTION("LinearBVH::findCandidatesImpl");
 
   SLIC_ERROR_IF(offsets == nullptr, "supplied null pointer for offsets!");
-  SLIC_ERROR_IF(counts == nullptr, "supplied null pointer for counts!");
-  SLIC_ERROR_IF(objs == nullptr, "supplied null pointer for test primitives!");
+  SLIC_ERROR_IF(counts == nullptr, "supplied null value for counts!");
 
   const BoundingBoxType* inner_nodes = m_inner_nodes;
   const int32* inner_node_children = m_inner_node_children;
@@ -228,6 +274,12 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   SLIC_ASSERT(inner_nodes != nullptr);
   SLIC_ASSERT(inner_node_children != nullptr);
   SLIC_ASSERT(leaf_nodes != nullptr);
+
+  auto noTraversePref = [] AXOM_HOST_DEVICE(const BoundingBoxType&,
+                                            const BoundingBoxType&,
+                                            const PrimitiveType&) {
+    return false;
+  };
 
 #if defined(AXOM_USE_RAJA)
   // STEP 1: count number of candidates for each query point
@@ -242,8 +294,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
         int32 count = 0;
         PrimitiveType primitive {objs[i]};
 
-        auto leafAction = [&count](int32 AXOM_NOT_USED(current_node),
-                                   const int32* AXOM_NOT_USED(leaf_nodes)) {
+        auto leafAction = [&count](int32 AXOM_UNUSED_PARAM(current_node),
+                                   const int32* AXOM_UNUSED_PARAM(leaf_nodes)) {
           count++;
         };
 
@@ -252,7 +304,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                            leaf_nodes,
                            primitive,
                            predicate,
-                           leafAction);
+                           leafAction,
+                           noTraversePref);
 
         counts[i] = count;
         total_count_reduce += count;
@@ -262,9 +315,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   AXOM_PERF_MARK_SECTION(
     "exclusive_scan",
-    RAJA::exclusive_scan<exec_policy>(counts,
-                                      counts + numObjs,
-                                      offsets,
+    RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts, numObjs),
+                                      RAJA::make_span(offsets, numObjs),
                                       RAJA::operators::plus<IndexType> {}););
 
   int total_count = total_count_reduce.get();
@@ -295,7 +347,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                                 leaf_nodes,
                                                 obj,
                                                 predicate,
-                                                leafAction);
+                                                leafAction,
+                                                noTraversePref);
                            }););
 #else  // CPU-only and no RAJA: do single traversal
 
@@ -320,7 +373,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                          leaf_nodes,
                          obj,
                          predicate,
-                         leafAction);
+                         leafAction,
+                         noTraversePref);
       counts[i] = matching_leaves;
     }););
 

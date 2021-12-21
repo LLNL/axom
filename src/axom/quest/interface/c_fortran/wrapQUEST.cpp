@@ -248,18 +248,11 @@ void QUEST_signed_distance_set_compute_signs(bool computeSign)
   // splicer end function.signed_distance_set_compute_signs
 }
 
-void QUEST_signed_distance_set_max_levels(int maxLevels)
+void QUEST_signed_distance_set_allocator(int allocatorID)
 {
-  // splicer begin function.signed_distance_set_max_levels
-  axom::quest::signed_distance_set_max_levels(maxLevels);
-  // splicer end function.signed_distance_set_max_levels
-}
-
-void QUEST_signed_distance_set_max_occupancy(int maxOccupancy)
-{
-  // splicer begin function.signed_distance_set_max_occupancy
-  axom::quest::signed_distance_set_max_occupancy(maxOccupancy);
-  // splicer end function.signed_distance_set_max_occupancy
+  // splicer begin function.signed_distance_set_allocator
+  axom::quest::signed_distance_set_allocator(allocatorID);
+  // splicer end function.signed_distance_set_allocator
 }
 
 void QUEST_signed_distance_set_verbose(bool status)
@@ -274,6 +267,15 @@ void QUEST_signed_distance_use_shared_memory(bool status)
   // splicer begin function.signed_distance_use_shared_memory
   axom::quest::signed_distance_use_shared_memory(status);
   // splicer end function.signed_distance_use_shared_memory
+}
+
+void QUEST_signed_distance_set_execution_space(int execSpace)
+{
+  // splicer begin function.signed_distance_set_execution_space
+  axom::quest::SignedDistExec SHCXX_execSpace =
+    static_cast<axom::quest::SignedDistExec>(execSpace);
+  axom::quest::signed_distance_set_execution_space(SHCXX_execSpace);
+  // splicer end function.signed_distance_set_execution_space
 }
 
 double QUEST_signed_distance_evaluate(double x, double y, double z)

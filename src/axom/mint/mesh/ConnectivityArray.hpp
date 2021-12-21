@@ -9,7 +9,7 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/MCArray.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -21,6 +21,7 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
+  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 namespace axom
@@ -154,7 +155,9 @@ public:
 
     m_stride = getCellInfo(cell_type).num_nodes;
     m_values =
-      new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               m_stride,
+                                               ID_capacity);
   }
 
   /*!
@@ -175,7 +178,9 @@ public:
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
     m_values =
-      new MCArray<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+      new axom::deprecated::MCArray<IndexType>(axom::deprecated::internal::ZERO,
+                                               m_stride,
+                                               ID_capacity);
   }
 
   /// @}
@@ -216,7 +221,10 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new MCArray<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new axom::deprecated::MCArray<IndexType>(values,
+                                                        n_IDs,
+                                                        m_stride,
+                                                        ID_capacity);
   }
 
   /*!
@@ -246,7 +254,10 @@ public:
     , m_stride(stride)
     , m_values(nullptr)
   {
-    m_values = new MCArray<IndexType>(values, n_IDs, m_stride, ID_capacity);
+    m_values = new axom::deprecated::MCArray<IndexType>(values,
+                                                        n_IDs,
+                                                        m_stride,
+                                                        ID_capacity);
   }
 
   /// @}
@@ -324,7 +335,10 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values = new sidre::Array<IndexType>(connec_view, 0, m_stride, ID_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         m_stride,
+                                                         ID_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -362,7 +376,10 @@ public:
     SLIC_ASSERT(elems_group != nullptr);
 
     sidre::View* connec_view = elems_group->getView("connectivity");
-    m_values = new sidre::Array<IndexType>(connec_view, 0, m_stride, ID_capacity);
+    m_values = new sidre::deprecated::MCArray<IndexType>(connec_view,
+                                                         0,
+                                                         m_stride,
+                                                         ID_capacity);
     SLIC_ASSERT(m_values != nullptr);
   }
 
@@ -413,7 +430,8 @@ public:
    *
    * \post getIDCapacity() >= n_IDs
    */
-  void reserve(IndexType ID_capacity, IndexType AXOM_NOT_USED(value_capacity) = 0)
+  void reserve(IndexType ID_capacity,
+               IndexType AXOM_UNUSED_PARAM(value_capacity) = 0)
   {
     SLIC_ERROR_IF(isExternal() && ID_capacity > m_values->capacity(),
                   "cannot exceed initial capacity of external buffer!");
@@ -429,7 +447,7 @@ public:
    *
    * \post getNumberOfIDs() == newIDSize
    */
-  void resize(IndexType ID_size, IndexType AXOM_NOT_USED(value_size) = 0)
+  void resize(IndexType ID_size, IndexType AXOM_UNUSED_PARAM(value_size) = 0)
   {
     m_values->resize(ID_size);
   }
@@ -489,7 +507,7 @@ public:
       return nullptr;
     }
 
-    return static_cast<sidre::Array<IndexType>*>(m_values)
+    return static_cast<sidre::deprecated::MCArray<IndexType>*>(m_values)
       ->getView()
       ->getOwningGroup()
       ->getParent();
@@ -506,7 +524,7 @@ public:
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  IndexType getNumberOfValuesForID(IndexType AXOM_NOT_USED(ID) = 0) const
+  IndexType getNumberOfValuesForID(IndexType AXOM_UNUSED_PARAM(ID) = 0) const
   {
     return m_stride;
   }
@@ -516,7 +534,7 @@ public:
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  CellType getIDType(IndexType AXOM_NOT_USED(ID) = 0) const
+  CellType getIDType(IndexType AXOM_UNUSED_PARAM(ID) = 0) const
   {
     return m_cell_type;
   }
@@ -597,8 +615,8 @@ public:
    * \pre values != nullptr
    */
   void append(const IndexType* values,
-              IndexType AXOM_NOT_USED(n_values) = 0,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              IndexType AXOM_UNUSED_PARAM(n_values) = 0,
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     appendM(values, 1);
   }
@@ -617,8 +635,8 @@ public:
    */
   void appendM(const IndexType* values,
                IndexType n_IDs,
-               const IndexType* AXOM_NOT_USED(offsets) = nullptr,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const IndexType* AXOM_UNUSED_PARAM(offsets) = nullptr,
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     SLIC_ASSERT(values != nullptr);
     SLIC_ASSERT(n_IDs >= 0);
@@ -676,8 +694,8 @@ public:
    */
   void insert(const IndexType* values,
               IndexType start_ID,
-              IndexType AXOM_NOT_USED(n_values) = 0,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              IndexType AXOM_UNUSED_PARAM(n_values) = 0,
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     insertM(values, start_ID, 1);
   }
@@ -699,8 +717,8 @@ public:
   void insertM(const IndexType* values,
                IndexType start_ID,
                IndexType n_IDs,
-               const IndexType* AXOM_NOT_USED(offsets) = nullptr,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const IndexType* AXOM_UNUSED_PARAM(offsets) = nullptr,
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     SLIC_ASSERT(start_ID >= 0);
     SLIC_ASSERT(start_ID <= getNumberOfIDs());
@@ -713,7 +731,7 @@ public:
 private:
   CellType m_cell_type;
   IndexType m_stride;
-  MCArray<IndexType>* m_values;
+  axom::deprecated::MCArray<IndexType>* m_values;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

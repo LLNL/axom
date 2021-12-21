@@ -79,6 +79,7 @@ Matrix<T> upper_triangular(const Matrix<T>& A, bool unit_diagonal = true);
 /// @}
 
 /*!
+ * \accelerated
  * \class Matrix
  *
  * \brief The Matrix class is used to represent \f$ M \times N \f$ matrices. It
@@ -96,7 +97,7 @@ Matrix<T> upper_triangular(const Matrix<T>& A, bool unit_diagonal = true);
  *   Matrix< double > A(5,5);
  *
  *   const int nrows = A.getNumRows(); // nrows=5
- *   const int ncols = A.getNumColumnds(); // ncols=5
+ *   const int ncols = A.getNumColumns(); // ncols=5
  *
  *   // loop over the elements of the matrix, row by row
  *   for ( IndexType i=0; i < nrows; ++i ) {

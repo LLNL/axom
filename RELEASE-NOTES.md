@@ -17,13 +17,72 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased] - Release date yyyy-mm-dd
+
+###  Added
+- Adds a `view()` method to `axom::Array` class to simplify creation of a corresponding `axom::ArrayView`
+- Adds GPU/OpenMP support to `spin::ImplicitGrid`.
+  The following functions run with the user-specified execution space (specified as a template argument
+  on `ImplicitGrid`):
+  - `ImplicitGrid::insert(nelems, bboxes)`: insert a batch of bounding boxes into the implicit grid
+  - `ImplicitGrid::getCandidatesAsArray(nquery, queryObjs, ...)`: query the implicit grid for a batch of
+    query objects, and generate a CSR-format array for the candidates.
+  In addition, `ImplicitGrid::getQueryObject()` returns an object that may be used within a GPU kernel
+  to query the implicit grid.
+- Added initial implementation of GPU/OpenMP-accelerated point-in-cell queries
+- Added an alternative surface mesh tester function to Quest, based on `ImplicitGrid`
+- Add `const` versions of `begin()` and `end()` for `Array` and `ArrayView`
+
+###  Changed
+- Moved bit-twiddling functions to core component
+- `axom::Array` now default-initializes its data by default. To leave data uninitialized, pass 
+  an `axom::ArrayOptions::Uninitialized` as the first constructor argument
+- `axom::ArrayView<const T>` can now be created from a `const Array<T>`
+- Added new `ExecSpace` template parameter to `spin::ImplicitGrid`.
+  `ExecSpace` is now the second template parameter (out of three) and defaults to `axom::SEQ_EXEC`.
+- Instead of saving the entire `DataStore`, `MFEMSidreDataCollection` will now save only
+  its domain and global groups
+- When an `inlet::Field` fails a range or valid value constraint, the provided value and
+  corresponding range/set of valid values are now included in the error message
+- IOManager::write now allows the calling code to pass in the full name of
+  the root file that it will produce.
+###  Fixed
+- Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
+- Fixed over-eager caching of restored `mfem::FiniteElementSpaces` in `sidre::MFEMSidreDataCollection`
+- Fixed a bug in which Inlet verification bails out on the first failure, which resulted in
+  incomplete error lists
+
+## [Version 0.6.1] - Release date 2021-11-17
+
+###  Added
+- Added a config variable, `AXOM_DEBUG_DEFINE` to control whether the `AXOM_DEBUG` compiler define is enabled.
+  By `DEFAULT`, it is enabled for `Debug` and `RelWithDebInfo` configurations, but this can be overriden
+  by setting `AXOM_DEBUG_DEFINE` to `ON` or `OFF`.
+- `axom::Array` is now GPU-compatible, in particular via a memory space template parameter and via
+  extensions to `axom::ArrayView` that allow for copying into kernels and transfers between memory spaces.
+- Adds some utility arithmetic operators for adding and subracting `primal::Point`s and `primal::Vector`s
+
+###  Changed
+- Renamed `AXOM_NOT_USED` macro to `AXOM_UNUSED_PARAM` for better consistency with other Axom macros
+- Added `explicit` to `axom::Inlet::InletVector` constructors and added a constructor that accepts a `double*`
+- `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` configuration option is now `ON` by default (rather than `OFF`).
+  This option should be disabled if `mfem` was configured with `MFEM_USE_SIDRE`.
+
+###  Fixed
+- The `AXOM_DEBUG` compiler define is now properly exported via the `axom` CMake target when it is enabled
+- Added tolerance parameter `EPS` to `primal::closest_point()` operator. This effectively snaps
+  closest points to the triangle boundaries vertices and edges when they are within `EPS`,
+  improving consistency when, e.g., querying multiple triangles from the same mesh.
+- Fixed regression in `SignedDistance` queries for query points closest to edges or vertices
+  of the input triangle mesh
+
+
+## [Version 0.6.0] - Release date 2021-11-04
 
 ### Added
 - Added new CMake option to allow users to turn off Axom created tools: `AXOM_ENABLE_TOOLS`
-- Inlet can now log verification errors to a user-processable list instead of using SLIC
-- SPIO: Added new mapping arrays to the automatically-generated Blueprint
+- Inlet can now log verification errors to a user-processable list instead of using Slic
+- Sidre parallel I/O: Added new mapping arrays to the automatically-generated Blueprint
   index to support new schema for multi-domain parallel meshes.
 - Added support for optional third-party `c2c` ("contours to codes") library for parsing 2D spline data.
   `c2c` is currently only available for Axom configurations on LLNL platforms.
@@ -42,6 +101,25 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added a `data_collection_util` tool to generate Mesh Blueprint compliant high order distributed meshes from
   an mfem mesh or over a Cartesian domain
 - Added utility functions `axom::utilities::getHostName()` and `axom::utilities::getUserName()`.
+- Added new `axom::primal::ZipIterable<T>` type to convert structure-of-arrays data to a given
+  Primal geometric primitive.
+- Quest: Added a `computeDistances()` function to `SignedDistance` class for batched
+  signed-distance queries.
+- Spin: Added a `getTraverser()` function to `BVH`, enabling the customized traversal of a
+  BVH from within a device kernel.
+- Primal: Adds an `Octahedron` primitive
+- Primal: Adds a `Polyhedron` primitive for representing convex polyhedra bounded by planar polygons in 3D
+- Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and an `Octahedron` as a `Polyhedron`
+- Klee: Adds a new component, `klee`, for specifying non-conformal shape overlays for materials onto simulation meshes.
+  This component defines a schema for defining, transforming and overlaying 2D and 3D shapes
+  and validates klee input files. See the [klee documentation](https://axom.readthedocs.io/en/latest/axom/klee/docs/sphinx) for more information.
+- Quest: Adds a new query for sampling-based "shaping" onto low- or high-order computational meshes
+- Quest: Adds a new query for intersection-based "shaping" of revolved contours onto 3D hexahedral meshes.
+  This capability uses a RAJA policy operate on various execution spaces (host, openmp, device).
+- Quest: Adds a "shaping" example for embedding a klee specification onto an MFEM mesh
+- Added Sidre function `View::clear()`.
+- Core now provides an `axom::ArrayView` that provides view/indexing semantics over a raw pointer.
+  This replaces the external buffer logic previously provided by `axom::Array`.
 
 ### Changed
 - `MFEMSidreDataCollection` now reuses FESpace/QSpace objects with the same basis
@@ -65,6 +143,42 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Spin: Removed hard dependency on RAJA and Umpire from `BVH`.
 - Moved `slam::IteratorBase` to `axom::IteratorBase`.
 - `sidre::Array` now derives from `axom::MCArray`.
+- `axom::Array` is now multidimensional; it intends to behave like `std::vector` in the 1D case
+  and `numpy.ndarray` in the multidimensional case
+- Quest: `SignedDistance` has been modified to use `spin::BVH` instead of `BVHTree`. This
+  enables signed-distance queries to run on the GPU, as specified via a new template
+  parameter.
+- Spin: Removed `BVHTree` class in favor of `BVH`.
+- Quest's `signed_distance` C API: Removed functions related to old `BVHTree` class 
+  and added functions related to `BVH` class
+    * Removed: `void signed_distance_set_max_levels( int maxLevels )`
+    * Removed: `void signed_distance_set_max_occupancy( int maxOccupancy )`
+    * Added: `void signed_distance_set_allocator( int allocatorID )`
+    * Added: `void signed_distance_set_execution_space( SignedDistExec execSpace )`
+- All built-in third-party libraries (`fmt`, `cli11`, `sol`, and `sparsehash`) have been guarded to allow downstream users to
+  have their own versions. This includes moving their headers under `include/axom` instead of `include/` and 
+  moving their C++ namespace under `axom` (eg. `fmt` to `axom::fmt`).  If you don't use our built-n TPLs this has no
+  affect on you, but if you do these are some the changes you will need to make:
+
+    | Library    | Namespace changes                 | Header include changes                                          |
+    | -----------| --------------------------------- | ----------------------------------------------------------------|
+    | fmt        | `fmt::` &rarr; `axom::fmt::`      | `#include "fmt/fmt.hpp"` &rarr; `#include "axom/fmt.hpp"`       |
+    | sol        | `sol::` &rarr; `axom::sol::`      | `#include "sol/sol.hpp"` &rarr; `#include "axom/sol.hpp"`       |
+    | sparsehash | `google::` &rarr; `axom::google::`| `#include "sparsehash` &rarr; `#include "axom/sparsehash`       |
+    | cli11      | `CLI::` &rarr; `axom::CLI::`      | `#include "CLI11/CLI11.hpp"` &rarr; `#include "axom/CLI11.hpp"` |
+    
+- Moved `axom::MCArray` and the `sidre::Array` it was based on into `mint`
+  as `axom::deprecated::MCArray` and `sidre::deprecated::MCArray`, respectively.
+  `sidre::Array` is now based on `axom::Array`.
+- `utilities::string::split` now returns a vector instead of using an out-parameter,
+  Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
+- `axom::Array`-related classes have been moved into individual files.
+- RAJA dependency updated to 0.14.0
+- Umpire dependency updated to 0.6.0. Support for versions prior to v2.1.0 was removed. 
+- Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021). This was required because Spack
+  is now using `HDF5`'s CMake build system.
+- Internal BLT dependency updated to 0.4.1
+
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
@@ -72,7 +186,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   The latter are now only added in MSVC configurations.
 - Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
 - Improved loading of data collections in `MFEMSidreDataCollection`
-
+- Added workaround to `MFEMSidreDataCollection` for `C++14` standard library feature that was not available in `gcc@4.9.3`
+- Delayed finalizing reloaded mesh in `MFEMSidreDataCollection` until after setting
+  the nodal `GridFunction` (when applicable)
+- Transposed `R` and `Z` coordinates when linearizing NURBS curves in `c2c` reader
+- Fixed user-reported in/out ambiguity within some `InOutOctree` cases with grazing triangles
 
 ## [Version 0.5.0] - Release date 2021-05-14
 
@@ -80,7 +198,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added the MFEMSidreDataCollection class for describing [MFEM] meshes and associated fields.  This
   class was adapted from MFEM's SidreDataCollection and is enabled when Axom is built with MFEM
   *and* the `AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION` CMake option is enabled.
-- Added `slic::setAbortFunction` to configure a custom callback when SLIC aborts.
+- Added `slic::setAbortFunction` to configure a custom callback when Slic aborts.
 - Added a `batched` option to quest's `InOutOctree` containment query example application.
   This uses a kernel to test for containment on an array of points.
   The query uses OpenMP threading, when available.
@@ -110,11 +228,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: The internal hierarchy of an `Inlet` object can be reconstructed from a Sidre group,
   excluding callback functions
 - Added new overloaded version of method
-  sidre::DataStore::generateBlueprintIndex to incorporate new MPI
+  `sidre::DataStore::generateBlueprintIndex` to incorporate new MPI
   features in conduit and allow for generation of a blueprint index on
   an under-decomposed parallel mesh
-- Added new method sidre::View::importArrayNode to import a
-  conduit::Node holding array data directly into a sidre::View
+- Added new method `sidre::View::importArrayNode` to import a
+  `conduit::Node` holding array data directly into a `sidre::View`
 - Added support for registering material and species sets in
   `MFEMSidreDataCollection`.  These correspond to
   [`matset`](https://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html#material-sets)s
@@ -124,7 +242,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Changed
 - Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
-- The Sidre Datastore no longer rewires Conduit's error handlers to SLIC by default. 
+- The Sidre Datastore no longer rewires Conduit's error handlers to Slic by default. 
   It can be  explicitly rewired using the static
   `DataStore::setConduitSLICMessageHandlers()` method.
 - Inlet: Changed `SchemaCreator` to an abstract class and added missing functions
@@ -236,8 +354,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   to `std::stable_sort` with older versions of RAJA and when the code is built
   without RAJA.
 
-### Deprecated
-
 ### Changed
 - Updated Axom to support RAJA-v0.12.1 and Umpire-v4.01, but the code remains
   backwards compatible with previous versions of RAJA and Umpire.
@@ -315,10 +431,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   loops.
 - Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
 
-### Removed
-  
-### Deprecated
-
 ### Changed
 - Updated Conduit to v0.5.1
 - Updated RAJA to v0.11.0
@@ -336,27 +448,21 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a bug in ``convert_sidre_protocol`` example. Data truncation functionality now
   works properly when multiple Views point to the same data.
 
-### Known Bugs
-
 
 ## [Version 0.3.2] - Release date 2019-09-22
 
 ### Added
 - Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
   This includes support for both single and mixed cell type topology unstructured mesh types.
-- Added a new option to enable/disable use of CUB, AXOM_USE_CUB, which is disabled by default. This
+- Added a new option to enable/disable use of CUB, `AXOM_USE_CUB`, which is disabled by default. This
   allows to disable CUB to circumvent issues encountered with the device linker.
 - Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to
   compute the intersection points between a pair of Bezier curves of arbitrary order.
 
-### Removed
-
-### Deprecated
-
 ### Changed
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
-- AXOM_USE_OPENMP is now being set at configure time accordingly instead of
+- `AXOM_USE_OPENMP` is now being set at configure time accordingly instead of
   auto-detected based on whether `_OPENMP` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled.
@@ -368,7 +474,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   not hold. This version corrects this by explicitly querying the ID of the predefined
   allocator for a particular resource and using that subsequently in the code.
 
-### Known Bugs
 
 ## [Version 0.3.1] - Release date 2019-07-22
 
@@ -402,14 +507,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   queries.
 
 ### Removed
-- Moved mint::Array to axom::Array with sidre storage in sidre::Array;
-  also moved mint::IndexType to axom::IndexType.
-- Replaced sidre::SidreLength with sidre::IndexType.
-- Replaced usage of std::size_t in sidre with sidre::IndexType.
-- Added AXOM_ENABLE_EXPORTS which enables CMAKE_ENABLE_EXPORTS to allow demangled
+- Moved `mint::Array` to `axom::Array` with sidre storage in `sidre::Array`;
+  also moved `mint::IndexType` to `axom::IndexType`.
+- Replaced `sidre::SidreLength` with `sidre::IndexType`.
+- Replaced usage of std::size_t in sidre with `sidre::IndexType`.
+- Added `AXOM_ENABLE_EXPORTS` which enables `CMAKE_ENABLE_EXPORTS` to allow demangled
   axom function names in stack traces. This option is ON by default in debug builds.
 
-### Deprecated
 
 ### Changed
 - Updated conduit TPL to v0.4.0
@@ -418,10 +522,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Its Map classes are now parametrized by a SetType.
 - Updated the fmt tpl.
 - Replaced old quest C-style interface with a new quest inout API.
-  Functions related to the inout point containment query are prefixed with "inout_".
+  Functions related to the inout point containment query are prefixed with `inout_`.
   The new API has an option to set the verbosity of the inout initialization and query.
-- Changed sidre::IndexType to be a 64bit signed integer.
-- Changed slic::stack_trace to slic::internal::stack_trace which now attempts to
+- Changed `sidre::IndexType` to be a 64bit signed integer.
+- Changed `slic::stack_trace` to `slic::internal::stack_trace` which now attempts to
   output a demangled stack trace.
 
 ### Fixed
@@ -429,8 +533,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest's vertex welding now works with small welding threshold values (e.g. 1E-20).
   Welding was previously broken when this value was smaller than 1E-8.
   This fix also resolved an issue with small grid spacing values in primal's RectangularLattice.
-
-### Known Bugs
 
 
 ## [Version 0.3.0] - Release date 2018-08-02
@@ -459,9 +561,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added new interface for the signed distance query along with corresponding tests
   and examples.
 - Updated to [fmt version 5.1.0](https://github.com/fmtlib/fmt/releases/tag/5.1.0)
-- Added AXOM_ENABLE_TESTS which is a CMake dependent option of ENABLE_TESTS
-- Added AXOM_ENABLE_DOCS which is a CMake dependent option of ENABLE_DOCS
-- Added AXOM_ENABLE_EXAMPLES which is a CMake dependent option of ENABLE_EXAMPLES
+- Added `AXOM_ENABLE_TESTS` which is a CMake dependent option of ENABLE_TESTS
+- Added `AXOM_ENABLE_DOCS` which is a CMake dependent option of ENABLE_DOCS
+- Added `AXOM_ENABLE_EXAMPLES` which is a CMake dependent option of ENABLE_EXAMPLES
 - Added jacobi_eigensolve() method for computing the eigenvalues and eigenvectors
   of real, symmetric matrices.
 - Added matrix_norm() operator for computing matrix norms. The implementations
@@ -487,15 +589,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Removed
 - Axom no longer depends on the Boost library.
-- Removed ENABLE_PYTHON CMake option. Python was only used by Shroud so restricted Python
+- Removed `ENABLE_PYTHON` CMake option. Python was only used by Shroud so restricted Python
   checks to when Shroud generation is enabled
 - Removed Lua as a dependency of Axom.
-- Removed signed distance query functions from the quest.hpp interface. The
+- Removed signed distance query functions from the `quest.hpp` interface. The
   signed distance query is supported in its own exclusive interface.
-- Removed AXOM_NULLPTR. Use nullptr instead.
-
-### Deprecated
--
+- Removed `AXOM_NULLPTR`. Use `nullptr` instead.
 
 ### Changed
 - Simplified the external constructors for the Mint UnstructuredMesh. Specifically,
@@ -508,11 +607,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The root CMake file for Axom is now located in ``<axom>/src``'s root directory,
   rather than in ``<axom>``
 - Prefixed all Axom CMake options with AXOM_ to avoid conflicts
-- ENABLE_SPARSEHASE -> AXOM_ENABLE_SPARSEHASH
-- ENABLE_ALL_COMPONENTS -> AXOM_ENABLE_COMPONENTS
-- ENABLE_<component name> -> AXOM_ENABLE_<component name>
-- MINT_USE_64BIT_INDEXTYPE -> AXOM_MINT_USE_64BIT_INDEXTYPE
-- MINT_USE_SIDRE -> AXOM_MINT_USE_SIDRE
+- `ENABLE_SPARSEHASH` -> `AXOM_ENABLE_SPARSEHASH`
+- `ENABLE_ALL_COMPONENTS` -> `AXOM_ENABLE_COMPONENTS`
+- `ENABLE_<component name>` -> `AXOM_ENABLE_<component name>`
+- `MINT_USE_64BIT_INDEXTYPE` -> `AXOM_MINT_USE_64BIT_INDEXTYPE`
+- `MINT_USE_SIDRE` -> `AXOM_MINT_USE_SIDRE`
 - CMake minimum is now 3.8 for non-CUDA builds and 3.9 for CUDA builds
 - Axom now requires a C++11 compiler.
 - Refactored Axom's Matrix/Vector operators and consolidated them in one file.
@@ -528,10 +627,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Fixed
 - Fixed minor memory leak in quest fortran example
-- Bugfix for "multiply-defined" linker error in slam::Bitset and quest::PointInCellTraits
-
-### Known Bugs
--
+- Bugfix for "multiply-defined" linker error in `slam::Bitset` and `quest::PointInCellTraits`
 
 
 ## [Version 0.2.9] - Release date 2018-03-08
@@ -558,12 +654,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added cross-product and linspace operators to the vector utilities in
 ``numerics``
 
-### Removed
--
-
-### Deprecated
--
-
 ### Changed
 - The root cmake file for Axom is now located in ``<axom>``'s root directory,
   rather than in ``<axom>/src``
@@ -577,10 +667,28 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   elements that are in higher-dimensional ambient space, e.g., surface elements,
   a Triangle or Quad in 3D.
 
-### Known Bugs
--
+## Legend for sections
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.5.0...develop
+###  Added
+- Use this section for new features
+###  Changed
+- Use this section for changes in existing functionality
+
+###  Deprecated
+- Use this section for soon-to-be removed features
+
+###  Removed
+- Use this section for now removed features
+
+###  Fixed
+- Use this section for any bug fixes
+
+###  Security
+- Use this section in case of vulnerabilities
+
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.6.1...develop
+[Version 0.6.1]: https://github.com/LLNL/axom/compare/v0.6.0...v0.6.1
+[Version 0.6.0]: https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0
 [Version 0.5.0]: https://github.com/LLNL/axom/compare/v0.4.0...v0.5.0
 [Version 0.4.0]: https://github.com/LLNL/axom/compare/v0.3.3...v0.4.0
 [Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3

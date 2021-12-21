@@ -50,8 +50,14 @@ packages:
   netlib-lapack:
     buildable: false
     externals:
-    - spec: netlib-lapack@3.6.1
-      prefix: /usr
+    - spec: netlib-lapack@3.8.0 %clang@8.0.1_nvcc_xlf
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    - spec: netlib-lapack@3.8.0 %clang@9.0.0_upstream_xlf
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    - spec: netlib-lapack@3.8.0 %xl@16.1.1_coral
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    - spec: netlib-lapack@3.8.0 %xl@16.1.1_nvcc
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
 
 # System level packages to not build
   autoconf:
@@ -112,12 +118,21 @@ packages:
 
 # Globally lock version of third party libraries
   conduit:
-    version: [0.7.2]
-    variants: ~shared
+    version: [0.7.2axom]
+    variants: ~shared~test
+  hdf5:
+    variants: ~shared~mpi
+  hypre:
+    version: [2.20.0]
   mfem:
-    variants: ~mpi~metis~zlib
-  umpire:
+    version: [4.2.0]
+  raja:
+    variants: ~shared~examples~exercises
+  scr:
+    version: [develop]
     variants: ~shared
+  umpire:
+    variants: ~shared~examples
 
 # Globally lock in versions of Devtools
   cppcheck:

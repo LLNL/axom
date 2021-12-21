@@ -57,7 +57,8 @@ Container::Container(const std::string& name,
       if(group->isUsingMap() && group->hasView("InletType"))
       {
         const std::string inletType = group->getView("InletType")->getString();
-        const std::string childName = appendPrefix(m_name, group->getName());
+        const std::string childName =
+          utilities::string::appendPrefix(m_name, group->getName());
 
         if(inletType == "Container")
         {
@@ -202,8 +203,9 @@ template <typename Key>
 Container& Container::addStructCollection(const std::string& name,
                                           const std::string& description)
 {
-  auto& container =
-    addContainer(appendPrefix(name, detail::COLLECTION_GROUP_NAME), description);
+  auto& container = addContainer(
+    utilities::string::appendPrefix(name, detail::COLLECTION_GROUP_NAME),
+    description);
 
   transformFromNestedElements(
     std::back_inserter(container.m_nested_aggregates),
@@ -220,8 +222,10 @@ Container& Container::addStructCollection(const std::string& name,
   else
   {
     std::vector<Key> indices;
-    std::string fullName = appendPrefix(m_name, name);
-    fullName = removeAllInstances(fullName, detail::COLLECTION_GROUP_NAME + "/");
+    std::string fullName = utilities::string::appendPrefix(m_name, name);
+    fullName =
+      utilities::string::removeAllInstances(fullName,
+                                            detail::COLLECTION_GROUP_NAME + "/");
     detail::updateUnexpectedNames(fullName, m_unexpectedNames);
     const auto result = m_reader.getIndices(fullName, indices);
     if(result == ReaderResult::Success)
@@ -332,8 +336,7 @@ Function& Container::addFunctionInternal(axom::sidre::Group* sidreGroup,
     fullName,
     cpp11_compat::make_unique<Function>(sidreGroup,
                                         m_sidreRootGroup,
-                                        std::move(func),
-                                        m_docEnabled));
+                                        std::move(func)));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }
@@ -370,7 +373,7 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
   else
   {
     // Otherwise actually add a Field
-    std::string fullName = appendPrefix(m_name, name);
+    std::string fullName = utilities::string::appendPrefix(m_name, name);
     // First check if the field already exists
     auto iter = m_fieldChildren.find(fullName);
     if(iter != m_fieldChildren.end())
@@ -385,7 +388,8 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
-      removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+      utilities::string::removeAllInstances(lookupPath,
+                                            detail::COLLECTION_GROUP_NAME + "/");
     detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto typeId = addPrimitiveHelper(sidreGroup, lookupPath, forArray, val);
     return addField(sidreGroup, typeId, fullName, name);
@@ -673,7 +677,7 @@ std::vector<VariantKey> collectionIndices(const Container& container,
         if(trimAbsolute)
         {
           // If the index is full/absolute, we only care about the last segment of it
-          string_idx = removeBeforeDelimiter(string_idx);
+          string_idx = utilities::string::removeBeforeDelimiter(string_idx);
           // The basename might be an integer, so check and convert accordingly
           if(conduit::utils::string_is_integer(string_idx))
           {
@@ -716,15 +720,14 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(
 void updateUnexpectedNames(const std::string& accessedName,
                            std::vector<std::string>& unexpectedNames)
 {
-  std::vector<std::string> accessed_tokens;
-  axom::utilities::string::split(accessed_tokens, accessedName, '/');
-  std::vector<std::string> unexpected_tokens;
+  std::vector<std::string> accessed_tokens =
+    axom::utilities::string::split(accessedName, '/');
   for(auto iter = unexpectedNames.begin(); iter != unexpectedNames.end();)
   {
     // Check if the possibly unexpected name is an "ancestor" of the accessed name,
     // if it is, then it gets marked as expected via removal
-    unexpected_tokens.clear();
-    axom::utilities::string::split(unexpected_tokens, *iter, '/');
+    std::vector<std::string> unexpected_tokens =
+      axom::utilities::string::split(*iter, '/');
     // If it's bigger, it can't be an ancestor so we can bail out early
     if(unexpected_tokens.size() > accessed_tokens.size())
     {
@@ -760,20 +763,19 @@ std::vector<std::string> filterUnexpectedNames(
   const std::vector<std::string>& unexpectedNames)
 {
   const std::string callerName = group->getPathName();
-  std::vector<std::string> callerTokens;
-  axom::utilities::string::split(callerTokens, callerName, '/');
+  std::vector<std::string> callerTokens =
+    axom::utilities::string::split(callerName, '/');
   callerTokens.erase(std::remove(callerTokens.begin(),
                                  callerTokens.end(),
                                  detail::COLLECTION_GROUP_NAME),
                      callerTokens.end());
-  std::vector<std::string> unexpectedTokens;
   // The items of unexpected items below/within the Container corresponding
   // to the "group" argument
   std::vector<std::string> unexpectedNamesWithinGroup;
   for(const auto& name : unexpectedNames)
   {
-    unexpectedTokens.clear();
-    axom::utilities::string::split(unexpectedTokens, name, '/');
+    std::vector<std::string> unexpectedTokens =
+      axom::utilities::string::split(name, '/');
     // If it's smaller it can't be a descendant
     if(unexpectedTokens.size() >= callerTokens.size())
     {
@@ -805,13 +807,16 @@ void Container::addIndicesGroup(const std::vector<Key>& indices,
   for(const auto& idx : indices)
   {
     const std::string string_idx =
-      removeBeforeDelimiter(detail::indexToString(idx));
+      utilities::string::removeBeforeDelimiter(detail::indexToString(idx));
     if(add_containers)
     {
       addContainer(string_idx, description);
     }
-    std::string absolute = appendPrefix(m_name, detail::indexToString(idx));
-    absolute = removeAllInstances(absolute, detail::COLLECTION_GROUP_NAME + "/");
+    std::string absolute =
+      utilities::string::appendPrefix(m_name, detail::indexToString(idx));
+    absolute =
+      utilities::string::removeAllInstances(absolute,
+                                            detail::COLLECTION_GROUP_NAME + "/");
     detail::addIndexViewToGroup(*indices_group, absolute);
   }
 }
@@ -843,13 +848,14 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
   else
   {
     // "base case", create a container for the field and fill it in with the helper
-    auto& container =
-      addContainer(appendPrefix(name, detail::COLLECTION_GROUP_NAME),
-                   description);
-    const std::string& fullName = appendPrefix(m_name, name);
+    auto& container = addContainer(
+      utilities::string::appendPrefix(name, detail::COLLECTION_GROUP_NAME),
+      description);
+    const std::string& fullName = utilities::string::appendPrefix(m_name, name);
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
-      removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+      utilities::string::removeAllInstances(lookupPath,
+                                            detail::COLLECTION_GROUP_NAME + "/");
     detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     std::vector<VariantKey> indices;
     if(isDict)
@@ -927,7 +933,7 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
   else
   {
     // Otherwise actually add a Function
-    std::string fullName = appendPrefix(m_name, name);
+    std::string fullName = utilities::string::appendPrefix(m_name, name);
     // First check if the function already exists
     auto iter = m_functionChildren.find(fullName);
     if(iter != m_functionChildren.end())
@@ -943,7 +949,8 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     // are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
-      removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
+      utilities::string::removeAllInstances(lookupPath,
+                                            detail::COLLECTION_GROUP_NAME + "/");
     detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
     return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
@@ -1103,18 +1110,27 @@ bool Container::verify(std::vector<VerificationError>* errors) const
     // Verify the child Fields of this Container
     for(const auto& field : m_fieldChildren)
     {
-      verified = verified && field.second->verify(errors);
+      if(!field.second->verify(errors))
+      {
+        verified = false;
+      }
     }
     // Verify the child Containers of this Container
     for(const auto& container : m_containerChildren)
     {
-      verified = verified && container.second->verify(errors);
+      if(!container.second->verify(errors))
+      {
+        verified = false;
+      }
     }
 
     // Verify the child Functions of this Container
     for(const auto& function : m_functionChildren)
     {
-      verified = verified && function.second->verify(errors);
+      if(!function.second->verify(errors))
+      {
+        verified = false;
+      }
     }
   }
   // If this has a collection group, it always needs to be verified, as annotations
@@ -1153,7 +1169,8 @@ template <typename T>
 bool Container::hasChild(const std::string& childName) const
 {
   const auto& children = this->*getChildren<T>();
-  return children.find(appendPrefix(m_name, childName)) != children.end();
+  return children.find(utilities::string::appendPrefix(m_name, childName)) !=
+    children.end();
 }
 
 template <typename T>

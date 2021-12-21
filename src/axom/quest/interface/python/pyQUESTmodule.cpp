@@ -414,46 +414,25 @@ static PyObject *PY_signed_distance_set_compute_signs(PyObject *SHROUD_UNUSED(se
   // splicer end function.signed_distance_set_compute_signs
 }
 
-static char PY_signed_distance_set_max_levels__doc__[] = "documentation";
+static char PY_signed_distance_set_allocator__doc__[] = "documentation";
 
-static PyObject *PY_signed_distance_set_max_levels(PyObject *SHROUD_UNUSED(self),
-                                                   PyObject *args,
-                                                   PyObject *kwds)
+static PyObject *PY_signed_distance_set_allocator(PyObject *SHROUD_UNUSED(self),
+                                                  PyObject *args,
+                                                  PyObject *kwds)
 {
-  // splicer begin function.signed_distance_set_max_levels
-  int maxLevels;
-  const char *SHT_kwlist[] = {"maxLevels", nullptr};
+  // splicer begin function.signed_distance_set_allocator
+  int allocatorID;
+  const char *SHT_kwlist[] = {"allocatorID", nullptr};
 
   if(!PyArg_ParseTupleAndKeywords(args,
                                   kwds,
-                                  "i:signed_distance_set_max_levels",
+                                  "i:signed_distance_set_allocator",
                                   const_cast<char **>(SHT_kwlist),
-                                  &maxLevels))
+                                  &allocatorID))
     return nullptr;
-  axom::quest::signed_distance_set_max_levels(maxLevels);
+  axom::quest::signed_distance_set_allocator(allocatorID);
   Py_RETURN_NONE;
-  // splicer end function.signed_distance_set_max_levels
-}
-
-static char PY_signed_distance_set_max_occupancy__doc__[] = "documentation";
-
-static PyObject *PY_signed_distance_set_max_occupancy(PyObject *SHROUD_UNUSED(self),
-                                                      PyObject *args,
-                                                      PyObject *kwds)
-{
-  // splicer begin function.signed_distance_set_max_occupancy
-  int maxOccupancy;
-  const char *SHT_kwlist[] = {"maxOccupancy", nullptr};
-
-  if(!PyArg_ParseTupleAndKeywords(args,
-                                  kwds,
-                                  "i:signed_distance_set_max_occupancy",
-                                  const_cast<char **>(SHT_kwlist),
-                                  &maxOccupancy))
-    return nullptr;
-  axom::quest::signed_distance_set_max_occupancy(maxOccupancy);
-  Py_RETURN_NONE;
-  // splicer end function.signed_distance_set_max_occupancy
+  // splicer end function.signed_distance_set_allocator
 }
 
 static char PY_signed_distance_set_verbose__doc__[] = "documentation";
@@ -502,6 +481,29 @@ static PyObject *PY_signed_distance_use_shared_memory(PyObject *SHROUD_UNUSED(se
   axom::quest::signed_distance_use_shared_memory(status);
   Py_RETURN_NONE;
   // splicer end function.signed_distance_use_shared_memory
+}
+
+static char PY_signed_distance_set_execution_space__doc__[] = "documentation";
+
+static PyObject *PY_signed_distance_set_execution_space(PyObject *SHROUD_UNUSED(self),
+                                                        PyObject *args,
+                                                        PyObject *kwds)
+{
+  // splicer begin function.signed_distance_set_execution_space
+  int execSpace;
+  const char *SHT_kwlist[] = {"execSpace", nullptr};
+
+  if(!PyArg_ParseTupleAndKeywords(args,
+                                  kwds,
+                                  "i:signed_distance_set_execution_space",
+                                  const_cast<char **>(SHT_kwlist),
+                                  &execSpace))
+    return nullptr;
+  axom::quest::SignedDistExec SH_execSpace =
+    static_cast<axom::quest::SignedDistExec>(execSpace);
+  axom::quest::signed_distance_set_execution_space(SH_execSpace);
+  Py_RETURN_NONE;
+  // splicer end function.signed_distance_set_execution_space
 }
 
 static char PY_signed_distance_evaluate__doc__[] = "documentation";
@@ -681,14 +683,10 @@ static PyMethodDef PY_methods[] = {
    (PyCFunction)PY_signed_distance_set_compute_signs,
    METH_VARARGS | METH_KEYWORDS,
    PY_signed_distance_set_compute_signs__doc__},
-  {"signed_distance_set_max_levels",
-   (PyCFunction)PY_signed_distance_set_max_levels,
+  {"signed_distance_set_allocator",
+   (PyCFunction)PY_signed_distance_set_allocator,
    METH_VARARGS | METH_KEYWORDS,
-   PY_signed_distance_set_max_levels__doc__},
-  {"signed_distance_set_max_occupancy",
-   (PyCFunction)PY_signed_distance_set_max_occupancy,
-   METH_VARARGS | METH_KEYWORDS,
-   PY_signed_distance_set_max_occupancy__doc__},
+   PY_signed_distance_set_allocator__doc__},
   {"signed_distance_set_verbose",
    (PyCFunction)PY_signed_distance_set_verbose,
    METH_VARARGS | METH_KEYWORDS,
@@ -697,6 +695,10 @@ static PyMethodDef PY_methods[] = {
    (PyCFunction)PY_signed_distance_use_shared_memory,
    METH_VARARGS | METH_KEYWORDS,
    PY_signed_distance_use_shared_memory__doc__},
+  {"signed_distance_set_execution_space",
+   (PyCFunction)PY_signed_distance_set_execution_space,
+   METH_VARARGS | METH_KEYWORDS,
+   PY_signed_distance_set_execution_space__doc__},
   {"signed_distance_evaluate",
    (PyCFunction)PY_signed_distance_evaluate,
    METH_VARARGS | METH_KEYWORDS,
@@ -791,6 +793,11 @@ initquest(void)
 #endif
   if(m == nullptr) return RETVAL;
   struct module_state *st = GETSTATE(m);
+
+  // enum axom::quest::SignedDistExec
+  PyModule_AddIntConstant(m, "CPU", axom::quest::CPU);
+  PyModule_AddIntConstant(m, "OpenMP", axom::quest::OpenMP);
+  PyModule_AddIntConstant(m, "GPU", axom::quest::GPU);
 
   PY_error_obj = PyErr_NewException((char *)error_name, nullptr, nullptr);
   if(PY_error_obj == nullptr) return RETVAL;

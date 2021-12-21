@@ -13,7 +13,7 @@
 #include "axom/slic.hpp"
 #include "axom/mint.hpp"
 #include "axom/primal.hpp"
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -59,9 +59,9 @@ void writeSquare(const std::string& filename)
 {
   std::ofstream c2cFile(filename, std::ios::out);
   c2cFile << "point = start" << std::endl;
-  c2cFile << "piece = line(start=(0cm, 0cm), end=(1cm, 0cm))" << std::endl;
+  c2cFile << "piece = line(start=(0cm, 0cm), end=(0cm, 1cm))" << std::endl;
   c2cFile << "piece = line()" << std::endl;
-  c2cFile << "piece = line(start=(1cm, 1cm), end=(0cm, 1cm))" << std::endl;
+  c2cFile << "piece = line(start=(1cm, 1cm), end=(1cm, 0cm))" << std::endl;
   c2cFile << "piece = line(end=start)" << std::endl;
 }
 
@@ -77,24 +77,25 @@ void writeSpline(const std::string& filename)
   const int NPTS = 2 * freq;
   for(int i = 0; i <= NPTS; ++i)
   {
-    double x = 2 * M_PI * static_cast<double>(i) / NPTS;
-    double y = offset + amplitude * cos(freq * x);
-    pts.emplace_back(fmt::format("{} {}", x, y));
+    double y = 2 * M_PI * static_cast<double>(i) / NPTS;
+    double x = offset + amplitude * cos(freq * y);
+    pts.emplace_back(axom::fmt::format("{} {}", x, y));
   }
 
   std::ofstream c2cFile(filename, std::ios::out);
   // output sine wave spline
   c2cFile << "point = spline_start" << std::endl;
-  c2cFile << fmt::format(
-               "piece = rz(units=cm, spline=cubic, beginTan=-90deg, "
-               "endTan=-90deg, rz={})",
-               fmt::join(pts.rbegin(), pts.rend(), "\n\t\t"))
+  c2cFile << axom::fmt::format(
+               "piece = rz(units=cm, spline=cubic, beginTan=-180deg, "
+               "endTan=-180deg, rz={})",
+               axom::fmt::join(pts.rbegin(), pts.rend(), "\n\t\t"))
           << std::endl;
   c2cFile << "point = spline_end" << std::endl;
 
   // add straight edges within first quadrant
   c2cFile << "piece = line(end=(0cm,0cm))" << std::endl;
-  c2cFile << fmt::format("piece = line(end=({}cm,0cm))", 2 * M_PI) << std::endl;
+  c2cFile << axom::fmt::format("piece = line(end=(0cm,{}cm))", 2 * M_PI)
+          << std::endl;
   c2cFile << "piece = line(end=spline_start)" << std::endl;
 }
 
@@ -129,9 +130,9 @@ TEST(quest_c2c_reader, interpolate_circle)
   reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
   // The circle is defined by a single NURBS curve with four spans
-  SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
-                        mesh->getNumberOfNodes(),
-                        mesh->getNumberOfCells()));
+  SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
+                              mesh->getNumberOfNodes(),
+                              mesh->getNumberOfCells()));
   const int numSpans = 4;
   const int expVerts = numSpans * (segmentsPerKnotSpan + 1);
   EXPECT_EQ(expVerts, mesh->getNumberOfNodes());
@@ -173,9 +174,9 @@ TEST(quest_c2c_reader, interpolate_square)
   int segmentsPerKnotSpan = 10;
   reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
-  SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
-                        mesh->getNumberOfNodes(),
-                        mesh->getNumberOfCells()));
+  SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
+                              mesh->getNumberOfNodes(),
+                              mesh->getNumberOfCells()));
 
   const int numPieces = 4;
   const int spansPerPiece = 1;
@@ -207,9 +208,9 @@ TEST(quest_c2c_reader, interpolate_spline)
   int segmentsPerKnotSpan = 20;
   reader.getLinearMesh(mesh, segmentsPerKnotSpan);
 
-  SLIC_INFO(fmt::format("Mesh has {} nodes and {} cells",
-                        mesh->getNumberOfNodes(),
-                        mesh->getNumberOfCells()));
+  SLIC_INFO(axom::fmt::format("Mesh has {} nodes and {} cells",
+                              mesh->getNumberOfNodes(),
+                              mesh->getNumberOfCells()));
 
   const int numSpans = 6 + 1 + 1 + 1;
   const int expVerts = numSpans * (segmentsPerKnotSpan + 1);

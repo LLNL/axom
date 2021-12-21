@@ -11,6 +11,7 @@
 #include "axom/config.hpp"
 
 #include "axom/core/Macros.hpp"  // for AXOM_HOST__DEVICE
+#include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -33,8 +34,8 @@ class BoundingBox;
  * Two bounding boxes are equal when they have the same bounds
  */
 template <typename T, int NDIMS>
-bool operator==(const BoundingBox<T, NDIMS>& lhs,
-                const BoundingBox<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator==(const BoundingBox<T, NDIMS>& lhs,
+                                 const BoundingBox<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for bounding boxes.
@@ -53,6 +54,7 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox<T, NDIMS>& bb);
 ///@}
 
 /*!
+ * \accelerated
  * \class
  *
  * \brief BoundingBox represents and axis-aligned bounding box defined by
@@ -87,7 +89,7 @@ public:
    * \brief Constructor. Creates a bounding box containing a single point
    */
   AXOM_HOST_DEVICE
-  BoundingBox(const PointType& pt) : m_min(pt), m_max(pt) { }
+  explicit BoundingBox(const PointType& pt) : m_min(pt), m_max(pt) { }
 
   /*!
    * \brief Constructor. Creates a bounding box containing the collection of
@@ -95,6 +97,7 @@ public:
    * \pre pt must point to at least n valid point
    * \note If n <= 0, defaults to default constructor values
    */
+  AXOM_HOST_DEVICE
   BoundingBox(const PointType* pts, int n);
 
   /*!
@@ -164,6 +167,7 @@ public:
    * \return d the dimension of this bounding box instance.
    * \post d >= 1.
    */
+  AXOM_HOST_DEVICE
   int dimension() const { return NDIMS; };
 
   /*!
@@ -174,6 +178,7 @@ public:
    *  with the same length, the code picks the first dimension as the longest
    *  dimension.
    */
+  AXOM_HOST_DEVICE
   int getLongestDimension() const;
 
   /*!
@@ -192,6 +197,7 @@ public:
    * \note If expansionAmount is negative, the bounding box will contract
    * \return A reference to the bounding box after it has been expanded
    */
+  AXOM_HOST_DEVICE
   BoundingBox& expand(T expansionAmount);
 
   /*!
@@ -211,6 +217,7 @@ public:
    * \param [in] displacement the amount with which to move the bounding box
    * \return A reference to the bounding box after it has been shifted
    */
+  AXOM_HOST_DEVICE
   BoundingBox& shift(const VectorType& displacement);
 
   /*!
@@ -253,6 +260,7 @@ public:
    *  than or equal to zero.
    * \return status true if point inside the box, else false.
    */
+  AXOM_HOST_DEVICE
   bool isValid() const;
 
   /*!
@@ -481,7 +489,7 @@ int BoundingBox<T, NDIMS>::getLongestDimension() const
   SLIC_ASSERT(this->isValid());
 
   int maxDim = 0;
-  T max = std::numeric_limits<T>::min();
+  T max = axom::numerics::floating_point_limits<T>::min();
   for(int i = 0; i < NDIMS; ++i)
   {
     T dx = m_max[i] - m_min[i];
@@ -498,7 +506,7 @@ int BoundingBox<T, NDIMS>::getLongestDimension() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansionAmount)
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansionAmount)
 {
   for(int dim = 0; dim < NDIMS; ++dim)
   {

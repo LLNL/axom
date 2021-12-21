@@ -10,6 +10,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/numerics/matvecops.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 // Primal includes
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -26,6 +27,9 @@ namespace primal
 template <typename T, int NDIMS>
 class Vector;
 
+template <typename T, int NDIMS>
+class Point;
+
 /// \name Forward Declared Overloaded Operators
 /// @{
 
@@ -36,7 +40,28 @@ class Vector;
  * \return C resulting vector, \f$ C_i = A_i + B_i \forall i \f$
  */
 template <typename T, int NDIMS>
-Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A, const Vector<T, NDIMS>& B);
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A,
+                                            const Vector<T, NDIMS>& B);
+
+/*!
+ * \brief Adds vector \a V to point \a P and stores the result into a new point
+ * \param [in] P point on the left-hand side.
+ * \param [in] V vector on the right-hand side.
+ * \return resulting point, \f$ p'_i = p_i + v_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V);
+
+/*!
+ * \brief Adds vector \a V to point \a P and stores the result into a new point
+ * \param [in] V vector on the left-hand side.
+ * \param [in] P point on the right-hand side.
+ * \return resulting point, \f$ p'_i = v_i + p_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
+                                           const Point<T, NDIMS>& P);
 
 /*!
  * \brief Subtracts vectors A, B and stores the result into a new vector C
@@ -47,6 +72,16 @@ Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& A, const Vector<T, NDIMS>& B)
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& A,
                                             const Vector<T, NDIMS>& B);
+
+/*!
+ * \brief Subtracts Point \a t from Point \a h, yielding a vector
+ * \param [in] h the head of the resulting vector
+ * \param [in] t the tail of the resulting vector
+ * \return resulting vector, \f$ V_i = h_i - t_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
+                                            const Point<T, NDIMS>& t);
 
 /*!
  * \brief Unary negation of a vector instance.
@@ -97,6 +132,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec);
 /// @}
 
 /*!
+ * \accelerated
  * \class Vector
  *
  * \brief Represents a vector, \f$ v \in \mathcal{R}^d \f$. It provides access
@@ -114,6 +150,7 @@ class Vector
 {
 public:
   using PointType = Point<T, NDIMS>;
+  using CoordType = T;
 
 public:
   /*!
@@ -131,7 +168,7 @@ public:
    * \param [in] arr The numeric array to copy from
    */
   AXOM_HOST_DEVICE
-  Vector(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
+  explicit Vector(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a vector from the first sz values of the input array.
@@ -141,7 +178,7 @@ public:
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    */
   AXOM_HOST_DEVICE
-  Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
+  explicit Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) { }
 
   /*!
    * \brief Constructor to create vector from a Point
@@ -149,7 +186,7 @@ public:
    * \note Equivalent to Vector( Point::zero(), pt)
    */
   AXOM_HOST_DEVICE
-  Vector(const Point<T, NDIMS>& pt) : m_components(pt.array()) { }
+  explicit Vector(const Point<T, NDIMS>& pt) : m_components(pt.array()) { }
 
   /*!
    * \brief Constructs a vector from point A to point B.
@@ -214,6 +251,7 @@ public:
   /*!
    * \brief Equality comparison operator for vectors.
    */
+  AXOM_HOST_DEVICE
   friend bool operator==(const Vector& lhs, const Vector& rhs)
   {
     return lhs.m_components == rhs.m_components;
@@ -232,6 +270,7 @@ public:
    * \param [in] v the vector to add.
    * \return A reference to the Vector instance after vector addition.
    */
+  AXOM_HOST_DEVICE
   Vector<T, NDIMS>& operator+=(const Vector<T, NDIMS>& v);
 
   /*!
@@ -260,6 +299,13 @@ public:
   Vector<T, NDIMS>& operator/=(T scalar);
 
   /*!
+   * \brief Check if this is a zero vector
+   * \return whether this vector consists of all zeros
+   */
+  AXOM_HOST_DEVICE
+  bool is_zero() const;
+
+  /*!
    * \brief Dot product of the Vector instance with another vector v
    * \param [in] v the other vector in the dot product
    * \return The dot product of the two vectors.
@@ -285,6 +331,7 @@ public:
   /*!
    * \brief Component-wise negation of the vector.
    */
+  AXOM_HOST_DEVICE
   void negate();
 
   /*!
@@ -442,6 +489,20 @@ inline void Vector<T, NDIMS>::negate()
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+inline bool Vector<T, NDIMS>::is_zero() const
+{
+  for(int i = 0; i < NDIMS; ++i)
+  {
+    if(!utilities::isNearlyEqual(m_components[i], 0.0))
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
 inline T Vector<T, NDIMS>::dot(const Vector<T, NDIMS>& vec) const
 {
   return dot_product(*this, vec);
@@ -524,6 +585,23 @@ inline Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& vec1,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V)
+{
+  Point<T, NDIMS> result(P);
+  result.array() += V.array();
+  return result;
+}
+
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
+                                           const Point<T, NDIMS>& P)
+{
+  return P + V;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
 inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar)
 {
   Vector<T, NDIMS> result(vec);
@@ -539,6 +617,14 @@ inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1,
   Vector<T, NDIMS> result(vec1);
   result -= vec2;
   return result;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Vector<T, NDIMS> operator-(const Point<T, NDIMS>& h,
+                                            const Point<T, NDIMS>& t)
+{
+  return Vector<T, NDIMS>(t, h);
 }
 
 //------------------------------------------------------------------------------

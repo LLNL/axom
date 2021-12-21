@@ -26,6 +26,7 @@
 #include "axom/core/IteratorBase.hpp"
 
 #include "axom/slam/policies/StridePolicies.hpp"
+#include "axom/slam/policies/StoragePolicies.hpp"
 
 namespace axom
 {
@@ -58,11 +59,14 @@ namespace slam
 
 template <typename SetType,
           typename DataType,
-          typename StridePolicy = policies::StrideOne<typename SetType::PositionType>>
-class Map : public MapBase<typename SetType::PositionType>, public StridePolicy
+          typename StridePolicy = policies::StrideOne<typename SetType::PositionType>,
+          typename StoragePolicy = policies::STLVectorStorage<DataType>>
+class Map : public MapBase<typename SetType::PositionType>,
+            public StridePolicy,
+            StoragePolicy
 {
 public:
-  using OrderedMap = std::vector<DataType>;
+  using OrderedMap = typename StoragePolicy::StorageType;
   using StridePolicyType = StridePolicy;
 
   using SetPosition = typename SetType::PositionType;
@@ -94,22 +98,13 @@ public:
 
   Map(const SetType* theSet = &s_nullSet,
       DataType defaultValue = DataType(),
-      SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+      int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    m_data.resize(m_set->size() * StridePolicy::stride(), defaultValue);
-  }
-
-  /**
-   * Copy constructor from another map
-   */
-  Map(const Map& otherMap)
-    : StridePolicyType(otherMap.StridePolicyType::stride())
-    , m_set(otherMap.m_set)
-  {
-    m_data.resize(otherMap.m_data.size());
-    copy(otherMap);
+    int elems = m_set->size() * StridePolicy::stride();
+    m_data = StoragePolicy::create(elems, defaultValue, allocatorID);
   }
 
   /**
@@ -127,22 +122,6 @@ public:
       }
     }
   }
-
-  /**
-   * \brief Assignment operator for Map
-   */
-  Map& operator=(const Map& otherMap)
-  {
-    if(this != &otherMap)
-    {
-      m_set = otherMap.m_set;
-      m_data = otherMap.m_data;
-      StridePolicy::operator=(otherMap);
-    }
-    return *this;
-  }
-
-  //~Map(){}
 
   /**
    * \brief Returns a pointer to the map's underlying set
@@ -394,7 +373,7 @@ private:
 
   // setStride function should not be called after constructor is called.
   // This (should) override the StridePolicy setStride(s) function.
-  void setStride(SetPosition AXOM_NOT_USED(str))
+  void setStride(SetPosition AXOM_UNUSED_PARAM(str))
   {
     SLIC_ASSERT_MSG(false,
                     "Stride should not be changed after construction of map.");
@@ -410,12 +389,13 @@ private:
  * \note Should this be a singleton or a global object?  Should the scope be
  * public?
  */
-template <typename SetType, typename DataType, typename StridePolicy>
+template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
 NullSet<typename SetType::PositionType, typename SetType::ElementType> const
-  Map<SetType, DataType, StridePolicy>::s_nullSet;
+  Map<SetType, DataType, StridePolicy, StoragePolicy>::s_nullSet;
 
-template <typename SetType, typename DataType, typename StridePolicy>
-bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
+template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
+bool Map<SetType, DataType, StridePolicy, StoragePolicy>::isValid(
+  bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -473,8 +453,8 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
   return bValid;
 }
 
-template <typename SetType, typename DataType, typename StridePolicy>
-void Map<SetType, DataType, StridePolicy>::print() const
+template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
+void Map<SetType, DataType, StridePolicy, StoragePolicy>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;

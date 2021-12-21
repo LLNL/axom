@@ -41,10 +41,16 @@ struct execution_space<OMP_EXEC>
   using atomic_policy = RAJA::omp_atomic;
   using sync_policy = RAJA::omp_synchronize;
 
-  static constexpr bool async() noexcept { return false; };
-  static constexpr bool valid() noexcept { return true; };
-  static constexpr bool onDevice() noexcept { return false; };
-  static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; };
+#ifdef AXOM_USE_UMPIRE
+  static constexpr MemorySpace memory_space = MemorySpace::Host;
+#else
+  static constexpr MemorySpace memory_space = MemorySpace::Dynamic;
+#endif
+
+  static constexpr bool async() noexcept { return false; }
+  static constexpr bool valid() noexcept { return true; }
+  static constexpr bool onDevice() noexcept { return false; }
+  static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; }
 
   static int allocatorID() noexcept
   {
@@ -53,9 +59,9 @@ struct execution_space<OMP_EXEC>
 #else
     return axom::getDefaultAllocatorID();
 #endif
-  };
+  }
 };
 
-} /* namespace axom */
+}  // namespace axom
 
-#endif /* AXOM_OMP_EXEC_HPP_ */
+#endif  // AXOM_OMP_EXEC_HPP_

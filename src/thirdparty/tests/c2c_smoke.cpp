@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/config.hpp"
 #include "gtest/gtest.h"  // for gtest
 
 #include "c2c/config.hpp"

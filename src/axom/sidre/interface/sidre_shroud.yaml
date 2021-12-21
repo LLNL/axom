@@ -27,6 +27,11 @@ format:
 #  F_string_result_as_arg: name
   F_filename_suffix: F
 
+typemap:
+- type: MPI_Comm
+  fields:
+    cpp_if: ifdef AXOM_USE_MPI
+
 declarations:
 - decl: typedef int64_t IndexType
   fields:
@@ -104,11 +109,17 @@ declarations:
     - decl: (int64_t id)
       function_suffix: _int64_t
 
-  # Method for generateing Blueprint
+  # Method for generating Blueprint
   - decl: bool generateBlueprintIndex( const std::string& domain_path,
                                        const std::string& mesh_name,
                                        const std::string& index_path,
                                        int num_domains )
+
+  - decl: bool generateBlueprintIndex( MPI_Comm comm,
+                                       const std::string& domain_path,
+                                       const std::string& mesh_name,
+                                       const std::string& index_path);
+    cpp_if: ifdef AXOM_USE_MPI
 
   # Methods for iterating over Buffers in DataStore
 #  - decl: IndexType getFirstValidBufferIndex() const
@@ -591,6 +602,8 @@ declarations:
       function_suffix: _shape
 
 #  - decl: Buffer * detachBuffer()
+
+  - decl: void clear()
 
   - decl: View* apply()
     return_this: True

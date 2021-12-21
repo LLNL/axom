@@ -7,11 +7,44 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
+#include "axom/core/execution/for_all.hpp"          // for_all()
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
 using namespace axom;
 
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+void check_bb_policy()
+{
+  const int DIM = 3;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
+  using PointType = primal::Point<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+
+  BoundingBoxType* box = axom::allocate<BoundingBoxType>(
+    1,
+    axom::execution_space<ExecSpace>::allocatorID());
+
+  axom::for_all<ExecSpace>(
+    1,
+    AXOM_LAMBDA(int i) {
+      box[i] = BoundingBoxType(PointType::zero(), PointType::ones());
+      box[i].expand(4.5);
+      box[i].dimension();
+      box[i].getLongestDimension();
+      box[i].shift(VectorType(4.5));
+      box[i].isValid();
+    });
+
+  EXPECT_EQ(box[0], BoundingBoxType(PointType(0.0), PointType(10.0)));
+
+  axom::deallocate(box);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_boundingBox, bb_default_constructor)
 {
   static const int DIM = 2;
@@ -596,6 +629,29 @@ TEST(primal_boundingBox, bb_get_centroid)
   PointType centroid = bbox.getCentroid();
   EXPECT_DOUBLE_EQ(0.5, centroid[0]);
   EXPECT_DOUBLE_EQ(0.5, centroid[1]);
+}
+
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST(primal_boundingBox, bb_check_policies)
+{
+  using seq_exec = axom::SEQ_EXEC;
+  check_bb_policy<seq_exec>();
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
+  defined(RAJA_ENABLE_OPENMP)
+
+  using omp_exec = axom::OMP_EXEC;
+  check_bb_policy<omp_exec>();
+
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
+
+  using cuda_exec = axom::CUDA_EXEC<512>;
+
+  check_bb_policy<cuda_exec>();
+#endif
 }
 
 //------------------------------------------------------------------------------

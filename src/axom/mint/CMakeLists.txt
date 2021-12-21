@@ -8,6 +8,8 @@
 
 #------------------------------------------------------------------------------
 # Check necessary dependencies
+#
+# Note: Mint also optionally depends on Sidre when AXOM_MINT_USE_SIDRE=ON
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Mint
                         COMPONENTS SLIC)
@@ -27,6 +29,9 @@ configure_file ( core/config.hpp.in
                  ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp )
 
 set( mint_headers
+
+    ## Deprecated containers
+    deprecated/MCArray.hpp
 
     ## exec
     execution/xargs.hpp
@@ -84,6 +89,8 @@ set( mint_headers
     utils/vtk_utils.hpp
     utils/su2_utils.hpp
    )
+
+blt_list_append(TO mint_headers ELEMENTS deprecated/SidreMCArray.hpp IF AXOM_MINT_USE_SIDRE)
 
 set( mint_sources
 

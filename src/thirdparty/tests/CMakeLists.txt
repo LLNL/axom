@@ -48,6 +48,10 @@ if ( RAJA_FOUND )
                       DEPENDS_ON ${raja_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
 
+  target_include_directories(raja_smoke_test PUBLIC 
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+      $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
+
   axom_add_test( NAME    raja_smoke
                  COMMAND raja_smoke_test )
 
@@ -58,7 +62,8 @@ endif()
 #------------------------------------------------------------------------------
 if( HDF5_FOUND)
 
-    set( hdf5_smoke_dependencies hdf5 gtest )
+    # we rely on conduit for hdf5 functionality
+    set( hdf5_smoke_dependencies conduit::conduit gtest )
 
     blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 
@@ -68,8 +73,12 @@ if( HDF5_FOUND)
                        DEPENDS_ON ${hdf5_smoke_dependencies}
                        FOLDER axom/thirdparty/tests )
 
+    target_include_directories(hdf5_smoke_test PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
+
     axom_add_test(NAME hdf5_smoke
-                 COMMAND hdf5_smoke_test)
+                  COMMAND hdf5_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------

@@ -10,7 +10,7 @@
 #include "axom/core/memory_management.hpp"
 
 /*!
- * \file
+ * \file execution_space.hpp
  *
  * \brief Defines the list of available execution spaces for axom.
  *
@@ -79,14 +79,16 @@ struct execution_space
   using atomic_policy = void;
   using sync_policy = void;
 
-  static constexpr bool async() noexcept { return false; };
-  static constexpr bool valid() noexcept { return false; };
-  static constexpr bool onDevice() noexcept { return false; };
-  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; };
-  static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; };
+  static constexpr MemorySpace memory_space = MemorySpace::Dynamic;
+
+  static constexpr bool async() noexcept { return false; }
+  static constexpr bool valid() noexcept { return false; }
+  static constexpr bool onDevice() noexcept { return false; }
+  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; }
+  static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; }
 };
 
-} /* namespace axom */
+}  // namespace axom
 
 // execution_space traits specialization
 #include "axom/core/execution/internal/seq_exec.hpp"
@@ -100,4 +102,4 @@ struct execution_space
   #include "axom/core/execution/internal/cuda_exec.hpp"
 #endif
 
-#endif /* AXOM_SPIN_EXECUTIONSPACE_HPP_ */
+#endif  // AXOM_EXECUTIONSPACE_HPP_

@@ -139,6 +139,7 @@ public:
   const SpaceVector& spacing() const { return m_spacing; }
 
   /*! Returns the lattice cell associated with the given space point pt */
+  AXOM_HOST_DEVICE
   GridCell gridCell(const SpacePoint& pt) const
   {
     GridCell cell;
@@ -148,7 +149,7 @@ public:
       // Note: Always round down to negative infinity
       // uses inverted spacing, which handles zero-sized spacings
       cell[i] = static_cast<CellCoordType>(
-        std::floor((pt[i] - m_origin[i]) * m_invSpacing[i]));
+        axom::utilities::floor((pt[i] - m_origin[i]) * m_invSpacing[i]));
     }
 
     return cell;
@@ -173,8 +174,9 @@ public:
    */
   SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
-    return SpatialBoundingBox(spacePoint(cell),
-                              spacePoint(cell.array() + GridCell(1).array()));
+    return SpatialBoundingBox(
+      spacePoint(cell),
+      spacePoint(GridCell(cell.array() + GridCell(1).array())));
   }
 
   /*! Simple formatted print of a rectangular lattice */

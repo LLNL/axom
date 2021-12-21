@@ -24,21 +24,13 @@
 #include "detail/inout/InOutOctreeValidator.hpp"
 #include "detail/inout/InOutOctreeStats.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #include <vector>
 #include <iterator>
 #include <limits>
 #include <sstream>
 #include <unordered_map>
-
-#define DEBUG_VERT_IDX -2  // 1160
-#define DEBUG_TRI_IDX -2   // 1654
-
-#define DEBUG_BLOCK_2 BlockIndex::invalid_index()
-//                     BlockIndex(GridPt::make_point(0,0), 1)
-#define DEBUG_BLOCK_1 BlockIndex::invalid_index()
-//                     BlockIndex(GridPt::make_point(0,1), 1)
 
 #ifndef DUMP_VTK_MESH
 //  #define DUMP_VTK_MESH
@@ -59,6 +51,16 @@
   #define QUEST_OCTREE_DEBUG_LOG_IF(_cond, _msg) ((void)0)
 #endif
 
+// The following four variables are used in the QUEST_OCTREE_DEBUG_LOG_IF macro
+// and are only active when DEBUG_OCTREE_ACTIVE is defined
+#define DEBUG_VERT_IDX -2  // 1160
+#define DEBUG_TRI_IDX -2   // 187820
+
+#define DEBUG_BLOCK_1 BlockIndex::invalid_index()
+//                     BlockIndex( {1346,1972,1691}, 12)
+#define DEBUG_BLOCK_2 BlockIndex::invalid_index()
+//                     BlockIndex( {336,493,423}, 10)
+
 namespace axom
 {
 namespace quest
@@ -75,8 +77,7 @@ class InOutOctreeMeshDumperBase;
 
 /**
  * \class
- * \brief Handles generation of a point containment spatial index over a surface
- * mesh
+ * \brief Handles generation of a point containment spatial index over a surface mesh
  *
  * The point containment queries determine whether a given arbitrary point in
  * space lies inside or outside of the surface.  This class depends on a
@@ -192,7 +193,7 @@ public:
   }
 
   /**
-   * \brief Generate the spatial index over the surface mesh 
+   * \brief Generate the spatial index over the surface mesh
    */
   void generateIndex();
 
@@ -1113,7 +1114,7 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
       // produces an empty polygon.  To resolve this, clip against a
       // slightly expanded bounding box
       GeometricBoundingBox expandedBB = blockBB;
-      expandedBB.scale(m_boundingBoxScaleFactor);
+      expandedBB.scale(10 * m_boundingBoxScaleFactor);
 
       poly = primal::clip(tri, expandedBB);
 

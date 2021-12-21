@@ -11,8 +11,8 @@ namespace inlet
 {
 std::string Function::name() const
 {
-  return removePrefix(m_sidreRootGroup->getPathName(),
-                      m_sidreGroup->getPathName());
+  return utilities::string::removePrefix(m_sidreRootGroup->getPathName(),
+                                         m_sidreGroup->getPathName());
 }
 
 Function& Function::required(bool isRequired)

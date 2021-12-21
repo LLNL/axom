@@ -5,7 +5,7 @@
 #ifndef MINT_MESH_HELPERS_HPP_
 #define MINT_MESH_HELPERS_HPP_
 
-#include "axom/core/Macros.hpp"          // for AXOM_NOT_USED
+#include "axom/core/Macros.hpp"          // for AXOM_UNUSED_PARAM
 #include "axom/core/Types.hpp"           // for nullptr
 #include "axom/mint/config.hpp"          // for mint compile-time type
 #include "axom/mint/mesh/CellTypes.hpp"  // for CellType
@@ -20,7 +20,7 @@ class Mesh;  // forward declaration
 
 namespace internal
 {
-inline int dim(const double* AXOM_NOT_USED(x), const double* y, const double* z)
+inline int dim(const double* AXOM_UNUSED_PARAM(x), const double* y, const double* z)
 {
   return ((z != nullptr) ? 3 : ((y != nullptr) ? 2 : 1));
 }

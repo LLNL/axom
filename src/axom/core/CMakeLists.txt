@@ -13,6 +13,7 @@ set(core_headers
 
     ## utilities
     utilities/AnnotationMacros.hpp
+    utilities/BitUtilities.hpp
     utilities/FileUtilities.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp
@@ -40,10 +41,12 @@ set(core_headers
 
     ## core
     Array.hpp
+    ArrayBase.hpp
+    ArrayIteratorBase.hpp
+    ArrayView.hpp
     IteratorBase.hpp
     Macros.hpp
     Map.hpp
-    MCArray.hpp
     Path.hpp
     StackArray.hpp
     Types.hpp
@@ -81,11 +84,17 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
-blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ${ENABLE_CUDA} )
-blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
-blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
+blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
+blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
+
+# TODO: remove this when we figure out why RAJA::cub is not getting inherited from RAJA
+if (TARGET RAJA::cub AND RAJA_FOUND)
+  list(APPEND core_depends RAJA::cub)
+endif()
+
+blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ENABLE_CUDA )
+blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
 
 #------------------------------------------------------------------------------
 # Make/Install the library
@@ -98,6 +107,19 @@ blt_add_library( NAME        core
                  FOLDER      axom/core
                  OBJECT      TRUE
                  )
+
+# Basic includes that should be inherited to all Axom targets
+target_include_directories(core PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    )
+
+# Add the AXOM_DEBUG compile definition, if non-empty
+if(AXOM_DEBUG_DEFINE_STRING)
+  blt_add_target_definitions(TO core SCOPE PUBLIC TARGET_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")
+endif()
+
 
 axom_write_unified_header( NAME    core
                            HEADERS ${core_headers}

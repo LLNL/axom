@@ -15,6 +15,8 @@
   #include "umpire/config.hpp"
   #include "umpire/ResourceManager.hpp"
   #include "umpire/op/MemoryOperationRegistry.hpp"
+  #include "umpire/resource/MemoryResourceTypes.hpp"
+  #include "umpire/strategy/QuickPool.hpp"
 #else
   #include <cstring>  // for std::memcpy
   #include <cstdlib>  // for std::malloc, std::realloc, std::free
@@ -23,6 +25,25 @@
 namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
+
+/*! 
+ * \brief Memory spaces supported by Array-like types
+ *
+ * This abstraction is not implemented using Umpire's MemoryResourceType enum
+ * in order to also include a "Dynamic" option as a default template parameter
+ * for Array-like types
+ */
+enum class MemorySpace
+{
+  Dynamic,
+#ifdef AXOM_USE_UMPIRE
+  Host,
+  Device,
+  Unified,
+  Pinned,
+  Constant
+#endif
+};
 
 /// \name Memory Management Routines
 /// @{
@@ -187,44 +208,8 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
 {
   const std::size_t numbytes = n * sizeof(T);
 
-#if defined(AXOM_USE_UMPIRE) && !defined(UMPIRE_VERSION_MAJOR)
+#if defined(AXOM_USE_UMPIRE)
 
-  // Workaround for bug in Umpire's handling on reallocate(0)
-  // Fixed in Umpire PR #292 (after v1.1.0)
-
-  // NOTE: The UMPIRE_VERSION_MAJOR macro was added in umpire-v2.0.0. If the
-  // macro is not defined, we assume that the Umpire version is less than 2.0.0
-  // and that the workaround is needed.
-  if(n == 0)
-  {
-    axom::deallocate<T>(pointer);
-    pointer = axom::allocate<T>(0, allocID);
-    return pointer;
-  }
-
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-
-  // Workaround for bug in Umpire's handling of reallocate
-  // called on a zero-sized allocation
-  // Fixed in Umpire PR #292 (after v1.1.0)
-  if(pointer != nullptr)
-  {
-    auto* allocRecord = rm.findAllocationRecord(pointer);
-    if(allocRecord && allocRecord->size == 0)
-    {
-      axom::deallocate<T>(pointer);
-      pointer = axom::allocate<T>(n, allocID);
-      return pointer;
-    }
-  }
-
-  pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
-
-#elif defined(AXOM_USE_UMPIRE) &&                                   \
-    ((UMPIRE_VERSION_MAJOR == 2) && (UMPIRE_VERSION_MINOR >= 1)) || \
-  (UMPIRE_VERSION_MAJOR > 2)
-
-  // Umpire 2.1.0 and above handles reallocate(0) natively
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   if(pointer == nullptr)
   {
@@ -245,6 +230,7 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
     pointer = axom::allocate<T>(0);
   }
 
+  AXOM_UNUSED_VAR(allocID);
 #endif
 
   return pointer;
@@ -284,6 +270,59 @@ inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept
   std::memcpy(dst, src, numbytes);
 #endif
 }
+
+namespace detail
+{
+/// \brief Translates between the MemorySpace enum and Umpire allocator IDs
+template <MemorySpace SPACE>
+inline int getAllocatorID();
+
+template <>
+inline int getAllocatorID<MemorySpace::Dynamic>()
+{
+  return axom::getDefaultAllocatorID();
+}
+
+#ifdef AXOM_USE_UMPIRE
+
+template <>
+inline int getAllocatorID<MemorySpace::Host>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Host);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Device>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Device);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Unified>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Unified);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Pinned>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Pinned);
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Constant>()
+{
+  return axom::getUmpireResourceAllocatorID(
+    umpire::resource::MemoryResourceType::Constant);
+}
+
+#endif
+
+}  // namespace detail
 
 }  // namespace axom
 

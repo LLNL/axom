@@ -6,7 +6,7 @@
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/inlet_utils.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 #include "axom/slic.hpp"
 
 namespace axom
@@ -445,25 +445,15 @@ bool Field::verify(std::vector<VerificationError>* errors) const
   }
   // Verify the provided value
   if(m_sidreGroup->hasView("value") &&
-     !verifyValue(*m_sidreGroup->getView("value")))
+     !verifyValue(*m_sidreGroup->getView("value"), errors))
   {
-    std::string msg = fmt::format(
-      "[Inlet] Value did not meet range/valid "
-      "value(s) constraints: {0}",
-      m_sidreGroup->getPathName());
-    INLET_VERIFICATION_WARNING(m_sidreGroup->getPathName(), msg, errors);
     return false;
   }
 
   // Verify the default value
   if(m_sidreGroup->hasView("defaultValue") &&
-     !verifyValue(*m_sidreGroup->getView("defaultValue")))
+     !verifyValue(*m_sidreGroup->getView("defaultValue"), errors))
   {
-    std::string msg = fmt::format(
-      "[Inlet] Default value did not meet range/valid "
-      "value(s) constraints: {0}",
-      m_sidreGroup->getPathName());
-    INLET_VERIFICATION_WARNING(m_sidreGroup->getPathName(), msg, errors);
     return false;
   }
 
@@ -479,78 +469,119 @@ bool Field::verify(std::vector<VerificationError>* errors) const
   return true;
 }
 
-bool Field::verifyValue(const axom::sidre::View& view) const
+bool Field::verifyValue(const axom::sidre::View& view,
+                        std::vector<VerificationError>* errors) const
 {
   const auto type = view.getTypeID();
   if(m_sidreGroup->hasView("validValues"))
   {
     if(type == axom::sidre::INT_ID)
     {
-      return searchValidValues<int>(view);
+      return searchValidValues<int>(view, errors);
     }
     else
     {
-      return searchValidValues<double>(view);
+      return searchValidValues<double>(view, errors);
     }
   }
   else if(m_sidreGroup->hasView("range"))
   {
     if(type == axom::sidre::INT_ID)
     {
-      return checkRange<int>(view);
+      return checkRange<int>(view, errors);
     }
     else
     {
-      return checkRange<double>(view);
+      return checkRange<double>(view, errors);
     }
   }
   else if(m_sidreGroup->hasGroup("validStringValues"))
   {
-    return searchValidValues<std::string>(view);
+    return searchValidValues<std::string>(view, errors);
   }
   return true;
 }
 
 template <typename T>
-bool Field::checkRange(const axom::sidre::View& view) const
+bool Field::checkRange(const axom::sidre::View& view,
+                       std::vector<VerificationError>* errors) const
 {
   const T val = view.getScalar();
   const T* range = m_sidreGroup->getView("range")->getArray();
-  return range[0] <= val && val <= range[1];
+  const bool in_range = range[0] <= val && val <= range[1];
+  if(!in_range)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Given value '{0}' for '{1}' did not meet range "
+      " constraints: [{2}, {3}]",
+      val,
+      view.getPath(),
+      range[0],
+      range[1]);
+    INLET_VERIFICATION_WARNING(view.getPath(), msg, errors);
+  }
+  return in_range;
 }
 
 template <typename T>
-bool Field::searchValidValues(const axom::sidre::View& view) const
+bool Field::searchValidValues(const axom::sidre::View& view,
+                              std::vector<VerificationError>* errors) const
 {
   const T target = view.getScalar();
   const auto valid_vals = m_sidreGroup->getView("validValues");
   const T* valuesArray = valid_vals->getArray();
   const size_t size = valid_vals->getBuffer()->getNumElements();
   const T* result = std::find(valuesArray, valuesArray + size, target);
-  return result != valuesArray + size;
+  const bool is_valid = result != valuesArray + size;
+  if(!is_valid)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Given value '{0}' for '{1}' did not meet valid value(s) "
+      " constraints: {2}",
+      target,
+      view.getPath(),
+      fmt::join(valuesArray, valuesArray + size, ","));
+    INLET_VERIFICATION_WARNING(view.getPath(), msg, errors);
+  }
+  return is_valid;
 }
 
 template <>
-bool Field::searchValidValues<std::string>(const axom::sidre::View& view) const
+bool Field::searchValidValues<std::string>(const axom::sidre::View& view,
+                                           std::vector<VerificationError>* errors) const
 {
   const auto string_group = m_sidreGroup->getGroup("validStringValues");
   const std::string value = view.getString();
   auto idx = string_group->getFirstValidViewIndex();
+  bool is_valid = false;
+  std::vector<std::string> valid_values;
   while(axom::sidre::indexIsValid(idx))
   {
-    if(string_group->getView(idx)->getString() == value)
+    // Store the valid values so we can print them in the error message
+    valid_values.push_back(string_group->getView(idx)->getString());
+    if(valid_values.back() == value)
     {
-      return true;
+      is_valid = true;
     }
     idx = string_group->getNextValidViewIndex(idx);
   }
-  return false;
+  if(!is_valid)
+  {
+    std::string msg = fmt::format(
+      "[Inlet] Given value '{0}' for '{1}' did not meet valid value(s) "
+      " constraints: {2}",
+      value,
+      view.getPath(),
+      fmt::join(valid_values, ","));
+    INLET_VERIFICATION_WARNING(view.getPath(), msg, errors);
+  }
+  return is_valid;
 }
 
 std::string Field::name() const
 {
-  return removePrefix(m_sidreRootGroup->getPathName(),
-                      m_sidreGroup->getPathName());
+  return utilities::string::removePrefix(m_sidreRootGroup->getPathName(),
+                                         m_sidreGroup->getPathName());
 }
 
 bool AggregateField::verify(std::vector<VerificationError>* errors) const

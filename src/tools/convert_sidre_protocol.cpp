@@ -24,13 +24,13 @@
  */
 
 #include "axom/config.hpp"
-#include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/slam.hpp"
 
 #include "mpi.h"
-#include "CLI11/CLI11.hpp"
+#include "axom/fmt.hpp"
+#include "axom/CLI11.hpp"
 
 #include <limits>   // for numeric_limits<int>
 #include <cstdlib>  // for atoi
@@ -68,7 +68,7 @@ struct CommandLineArguments
     , m_numStripElts(-1)
   { }
 
-  void parse(int argc, char** argv, CLI::App& app);
+  void parse(int argc, char** argv, axom::CLI::App& app);
 
   bool shouldStripData() const { return m_numStripElts >= 0; }
 
@@ -97,14 +97,14 @@ void quitProgram(int exitCode = 0)
 }
 
 /** Parse the command line arguments */
-void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
+void CommandLineArguments::parse(int argc, char** argv, axom::CLI::App& app)
 {
   app
     .add_option("-i,--input",
                 m_inputName,
                 "Filename of input sidre-hdf5 datastore")
     ->required()
-    ->check(CLI::ExistingFile);
+    ->check(axom::CLI::ExistingFile);
 
   app
     .add_option("-o,--output",
@@ -117,14 +117,14 @@ void CommandLineArguments::parse(int argc, char** argv, CLI::App& app)
                 m_protocol,
                 "Desired protocol for output datastore")
     ->capture_default_str()
-    ->check(CLI::IsMember {CommandLineArguments::s_validProtocols});
+    ->check(axom::CLI::IsMember {CommandLineArguments::s_validProtocols});
 
   app
     .add_option(
       "-s,--strip",
       m_numStripElts,
       "If provided, output arrays will be stripped to first N entries")
-    ->check(CLI::PositiveNumber);
+    ->check(axom::CLI::PositiveNumber);
 
   bool verboseOutput = false;
   app.add_flag("-v,--verbose", verboseOutput, "Sets output to verbose")
@@ -208,16 +208,16 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
 
 #ifdef AXOM_DEBUG
   {
-    fmt::memory_buffer out;
+    axom::fmt::memory_buffer out;
     for(auto i : viewInds.positions())
     {
-      fmt::format_to(out,
-                     "\n\ti: {0}; index: {1}; arr[{1}] = {2}",
-                     i,
-                     viewInds[i],
-                     arr[viewInds[i]]);
+      axom::fmt::format_to(out,
+                           "\n\ti: {0}; index: {1}; arr[{1}] = {2}",
+                           i,
+                           viewInds[i],
+                           arr[viewInds[i]]);
     }
-    SLIC_DEBUG("Before truncation" << fmt::to_string(out));
+    SLIC_DEBUG("Before truncation" << axom::fmt::to_string(out));
   }
 #endif
 
@@ -244,12 +244,12 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
 
 #ifdef AXOM_DEBUG
   {
-    fmt::memory_buffer out;
+    axom::fmt::memory_buffer out;
     for(auto i : ViewSet(newSz).positions())
     {
-      fmt::format_to(out, "\n\ti: {0}; arr[{0}] = {1}", i, newArr[i]);
+      axom::fmt::format_to(out, "\n\ti: {0}; arr[{0}] = {1}", i, newArr[i]);
     }
-    SLIC_DEBUG("After truncation" << fmt::to_string(out));
+    SLIC_DEBUG("After truncation" << axom::fmt::to_string(out));
   }
 #endif
 }
@@ -406,13 +406,13 @@ int main(int argc, char* argv[])
 
   // parse the command line arguments
   CommandLineArguments args;
-  CLI::App app {"Sidre protocol converter"};
+  axom::CLI::App app {"Sidre protocol converter"};
 
   try
   {
     args.parse(argc, argv, app);
   }
-  catch(const CLI::ParseError& e)
+  catch(const axom::CLI::ParseError& e)
   {
     int retval = -1;
     if(my_rank == 0)

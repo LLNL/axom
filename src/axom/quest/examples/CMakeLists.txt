@@ -19,6 +19,28 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
+if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI 
+              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION 
+              AND AXOM_ENABLE_KLEE)
+    blt_add_executable(
+        NAME        quest_shaping_driver_ex
+        SOURCES     shaping_driver.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} mfem mpi
+        FOLDER      axom/quest/examples
+        )
+endif()
+
+if(MFEM_FOUND)
+    blt_add_executable(
+        NAME        quest_point_in_cell_benchmark_ex
+        SOURCES     point_in_cell_benchmark.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} mfem
+        FOLDER      axom/quest/examples
+        )
+endif()
+
 ## Quest interface examples
 
 blt_add_executable(
@@ -70,11 +92,13 @@ endif()
 
 if (ENABLE_FORTRAN)
 
+    blt_list_append(TO quest_example_fortran_depends ELEMENTS mpi IF ENABLE_MPI)
+
     blt_add_executable(
         NAME       quest_signed_distance_interface_F_ex
         SOURCES    quest_signed_distance_interface.F
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_example_depends}
+        DEPENDS_ON ${quest_example_depends} ${quest_example_fortran_depends}
         FOLDER     axom/quest/examples
         )
 
@@ -82,7 +106,7 @@ if (ENABLE_FORTRAN)
         NAME        quest_inout_interface_F_ex
         SOURCES     quest_inout_interface.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends}
+        DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
         FOLDER      axom/quest/examples
         )
 

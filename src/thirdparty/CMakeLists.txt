@@ -13,7 +13,7 @@
 
 if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
   blt_add_library(NAME    sol
-                  HEADERS sol/sol.hpp)
+                  HEADERS axom/sol.hpp)
 
   target_include_directories(sol SYSTEM INTERFACE
               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -21,8 +21,8 @@ if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11"))
   install(TARGETS              sol
           EXPORT               axom-targets
           INCLUDES DESTINATION include)
-  install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sol
-          DESTINATION include )
+  install(FILES        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol.hpp
+          DESTINATION include/axom )
   install(EXPORT axom-targets DESTINATION lib/cmake)
 
   set(SOL_FOUND TRUE CACHE INTERNAL "")
@@ -37,8 +37,8 @@ message(STATUS "SOL Enabled: ${SOL_FOUND}")
 # Register the built-in CLI11 library for command line option parsing
 #------------------------------------------------------------------------------
 
-blt_add_library(NAME cli11
-                HEADERS CLI11/CLI11.hpp)
+blt_add_library(NAME    cli11
+                HEADERS axom/CLI11.hpp)
 
 target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -46,8 +46,8 @@ target_include_directories(cli11 SYSTEM INTERFACE
 install(TARGETS              cli11
         EXPORT               axom-targets
         INCLUDES DESTINATION include)
-install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/CLI11
-        DESTINATION include )
+install(FILES       ${PROJECT_SOURCE_DIR}/thirdparty/axom/CLI11.hpp
+        DESTINATION include/axom )
 install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
@@ -57,28 +57,35 @@ mark_as_advanced(CLI11_FOUND)
 # Register the built-in fmt library for string formatting
 #------------------------------------------------------------------------------
 
+# Headers that Axom adds to fmt
+set(axom_fmt_headers
+    axom/fmt.hpp
+    )
+
+# Headers that come from fmt
 set(fmt_headers
-    fmt/fmt.hpp
-    fmt/args.h
-    fmt/compile.h
-    fmt/core.h
-    fmt/format.h
-    fmt/format-inl.h
-    fmt/os.h
-    fmt/ostream.h
-    fmt/posix.h
-    fmt/printf.h
-    fmt/ranges.h
-    fmt/chrono.h
-    fmt/color.h
-    fmt/locale.h
+    axom/fmt/args.h
+    axom/fmt/chrono.h
+    axom/fmt/color.h
+    axom/fmt/compile.h
+    axom/fmt/core.h
+    axom/fmt/format-inl.h
+    axom/fmt/format.h
+    axom/fmt/locale.h
+    axom/fmt/os.h
+    axom/fmt/ostream.h
+    axom/fmt/printf.h
+    axom/fmt/ranges.h
     )
 
 blt_add_library(NAME    fmt
-                HEADERS ${fmt_headers})
+                HEADERS ${fmt_headers} ${axom_fmt_headers})
 
 target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+target_include_directories(fmt INTERFACE 
+            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
 
 # Setup some variables for fmt in Axom's config.hpp
 set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
@@ -87,8 +94,13 @@ set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 install(TARGETS              fmt
         EXPORT               axom-targets
         INCLUDES DESTINATION include)
-install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
-        DESTINATION include
+# Install our helper header to axom
+install(FILES   ${axom_fmt_headers}
+        DESTINATION include/axom
+        )
+# Install fmt's headers to axom/fmt
+install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/fmt
+        DESTINATION include/axom
         )
 install(EXPORT axom-targets DESTINATION lib/cmake)
 
@@ -138,22 +150,22 @@ if (AXOM_ENABLE_SPARSEHASH)
     # Explicitly list sparsehash files for copy-headers,
     # Separate into two lists to maintain sparsehash's hierarchy
     set(sparsehash_headers
-      sparsehash/README
-      sparsehash/dense_hash_map
-      sparsehash/dense_hash_set
-      sparsehash/sparse_hash_map
-      sparsehash/sparse_hash_set
-      sparsehash/sparsetable
-      sparsehash/template_util.h
-      sparsehash/type_traits.h     
+      axom/sparsehash/README
+      axom/sparsehash/dense_hash_map
+      axom/sparsehash/dense_hash_set
+      axom/sparsehash/sparse_hash_map
+      axom/sparsehash/sparse_hash_set
+      axom/sparsehash/sparsetable
+      axom/sparsehash/template_util.h
+      axom/sparsehash/type_traits.h     
      )
 
     set(sparsehash_headers_internal
-      sparsehash/internal/densehashtable.h
-      sparsehash/internal/hashtable-common.h
-      sparsehash/internal/libc_allocator_with_realloc.h
-      sparsehash/internal/sparseconfig.h
-      sparsehash/internal/sparsehashtable.h
+      axom/sparsehash/internal/densehashtable.h
+      axom/sparsehash/internal/hashtable-common.h
+      axom/sparsehash/internal/libc_allocator_with_realloc.h
+      axom/sparsehash/internal/sparseconfig.h
+      axom/sparsehash/internal/sparsehashtable.h
      )
      
     blt_add_library(NAME sparsehash
@@ -161,6 +173,9 @@ if (AXOM_ENABLE_SPARSEHASH)
      
     target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+    target_include_directories(sparsehash INTERFACE 
+                $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
 
     # Disable warning introduced in gcc@8.1+ related to how sparsehash casts memory
     # The double guarding for compiler family helps when compiling libraries with GNU
@@ -175,8 +190,8 @@ if (AXOM_ENABLE_SPARSEHASH)
             EXPORT               axom-targets
             INCLUDES DESTINATION include)
 
-    install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sparsehash
-            DESTINATION include)
+    install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/sparsehash
+            DESTINATION include/axom)
 
     install(EXPORT axom-targets DESTINATION lib/cmake)
 

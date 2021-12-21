@@ -6,10 +6,11 @@
 #include "axom/inlet.hpp"
 
 #include "axom/core.hpp"
+#include "axom/primal.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 #include "mfem.hpp"
 
-#include "CLI11/CLI11.hpp"
+#include "axom/CLI11.hpp"
 
 #include <unordered_map>
 #include <iostream>
@@ -99,7 +100,7 @@ struct BoundaryCondition
 
 inlet::InletVector toInletVector(const mfem::Vector& vec)
 {
-  return {vec.GetData(), vec.Size()};
+  return inlet::InletVector {vec.GetData(), vec.Size()};
 }
 
 // Uses out-params to match MFEM semantics
@@ -177,11 +178,12 @@ int main(int argc, char** argv)
   // Inlet requires a SLIC logger to be initialized to output runtime information
   axom::slic::SimpleLogger logger;
 
-  CLI::App app {"Example of Axom's Inlet component with user-defined types"};
+  axom::CLI::App app {
+    "Example of Axom's Inlet component with user-defined types"};
   // Intended to be used with mfem_coef.lua
   std::string inputFileName;
   auto opt = app.add_option("--file", inputFileName, "Path to input file");
-  opt->check(CLI::ExistingFile);
+  opt->check(axom::CLI::ExistingFile);
 
   bool docsEnabled {false};
   app.add_flag("--docs", docsEnabled, "Enables documentation generation");
@@ -220,16 +222,18 @@ int main(int argc, char** argv)
     if(info.second.scalar_func)
     {
       const double result = info.second.scalar_func(input_vec, t);
-      SLIC_INFO(fmt::format("Calling scalar function with {0} returned: {1}",
-                            toInletVector(input_vec),
-                            result));
+      SLIC_INFO(
+        axom::fmt::format("Calling scalar function with {0} returned: {1}",
+                          toInletVector(input_vec),
+                          result));
     }
     else if(info.second.vec_func)
     {
       info.second.vec_func(input_vec, t, output_vec);
-      SLIC_INFO(fmt::format("Calling vector function with {0} returned: {1}",
-                            toInletVector(input_vec),
-                            toInletVector(output_vec)));
+      SLIC_INFO(
+        axom::fmt::format("Calling vector function with {0} returned: {1}",
+                          toInletVector(input_vec),
+                          toInletVector(output_vec)));
     }
     bcs.emplace(info.first, BoundaryCondition {std::move(info.second), dim});
   }

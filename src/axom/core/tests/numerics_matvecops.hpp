@@ -471,4 +471,7 @@ TEST(numerics_matvecops, vector_normalize)
 
   // normalize should fail
   EXPECT_FALSE(axom::numerics::normalize<double>(u, dim));
+
+  delete[] u;
+  delete[] v;
 }

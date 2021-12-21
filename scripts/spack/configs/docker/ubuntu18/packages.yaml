@@ -96,10 +96,23 @@ packages:
 
   # Globally lock version of third party libraries
   conduit:
-    version: [0.7.2]
-    variants: ~shared
+    version: [0.7.2axom]
+    variants: ~shared~test
+  hdf5:
+    variants: ~shared~mpi
+  hypre:
+    version: [2.20.0]
+  # do shared mfem to allow PIC flag in mfem
   mfem:
-    variants: +shared~static~mpi~metis~zlib
+    version: [4.2.0]
+    variants: +shared~static
+  raja:
+    variants: ~shared~examples~exercises
+  scr:
+    version: [develop]
+    variants: ~shared
+  umpire:
+    variants: ~shared~examples
 
   # Globally lock in version of devtools
   cmake:
