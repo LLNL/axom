@@ -68,7 +68,7 @@ axom_install_component( NAME    klee
 #------------------------------------------------------------------------------
 # Add tests
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS AND ENABLE_GMOCK)
   add_subdirectory(tests)
 endif()
 
