@@ -83,6 +83,8 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
         set(ENABLE_TESTS OFF CACHE BOOL "")
     endif()
 
+    # If either AXOM_ENABLE_TESTS or ENABLE_TEST are explicitly turned off by the user,
+    # turn off GMock, otherwise turn it on
     if((DEFINED AXOM_ENABLE_TESTS AND NOT AXOM_ENABLE_TESTS) OR
        (DEFINED ENABLE_TESTS AND NOT ENABLE_TESTS))
         set(ENABLE_GMOCK OFF CACHE BOOL "")
