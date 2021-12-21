@@ -57,22 +57,6 @@ private:
   using ModularFaceIndex = axom::slam::ModularInt<
     axom::slam::policies::CompileTimeSize<IndexType, VERT_PER_ELEMENT>>;
 
-  /// Helper struct for storing the facet indices of each simplex
-  template <int TOP_DIM>
-  struct ElementFacePair
-  {
-    IndexType element_idx;
-    IndexType face_vidx[TOP_DIM];
-    ElementFacePair(IndexType el, IndexType* vlist)
-    {
-      element_idx = el;
-      for(int i = 0; i < TOP_DIM; i++)
-      {
-        face_vidx[i] = vlist[i];
-      }
-    }
-  };
-
 private:
   IAMeshType m_mesh;
   BoundingBox m_bounding_box;
@@ -447,7 +431,14 @@ private:
   struct InsertionHelper
   {
   public:
-    InsertionHelper(IAMeshType& mesh) : m_mesh(mesh) { }
+    InsertionHelper(IAMeshType& mesh)
+      : m_mesh(mesh)
+      , facet_set(0)
+      , fv_rel(&facet_set, &m_mesh.vertex_set)
+      , fc_rel(&facet_set, &m_mesh.element_set)
+      , cavity_elems(0)
+      , inserted_elems(0)
+    { }
 
     /**
    * \brief Find the list of elements whose circumspheres contain the query point
@@ -464,9 +455,9 @@ private:
       m_checked_element_set.insert(element_i);
       findCavityElementsRec(query_pt, element_i);
 
-      SLIC_ASSERT_MSG(!m_cavity_element_list.empty(),
+      SLIC_ASSERT_MSG(!cavity_elems.empty(),
                       "Error: New point is not contained in the mesh");
-      SLIC_ASSERT(!m_cavity_face_list.empty());
+      SLIC_ASSERT(!facet_set.empty());
     }
 
     /**
@@ -485,7 +476,7 @@ private:
       }
 
       // Recursive case: Add element to list and check its neighbors
-      m_cavity_element_list.push_back(element_idx);
+      cavity_elems.insert(element_idx);
 
       //check for each faces; m_checked_element_set ensures we only check each element once
       for(auto nbr = m_mesh.ee_rel.begin(element_idx);
@@ -496,7 +487,7 @@ private:
         if(!m_mesh.isValidElementEntry(*nbr) ||
            (m_checked_element_set.insert(*nbr).second
               ? findCavityElementsRec(query_pt, *nbr)
-              : !axom::slam::is_subset(*nbr, m_cavity_element_list)))
+              : cavity_elems.findIndex(*nbr) == ElementSet::INVALID_ENTRY))
         {
           IndexArray vlist = m_mesh.getElementFace(element_idx, nbr.index());
 
@@ -506,8 +497,13 @@ private:
             axom::utilities::swap(vlist[1], vlist[2]);
           }
 
-          m_cavity_face_list.push_back(
-            ElementFacePair<DIM>(element_idx, vlist.data()));
+          auto fIdx = facet_set.insert();
+          for(int i = 0; i < VERTS_PER_FACET; i++)
+          {
+            fv_rel.insert(fIdx, vlist[i]);
+          }
+
+          fc_rel.insert(fIdx, *nbr);
         }
       }
       return false;
@@ -518,48 +514,76 @@ private:
     */
     void createCavity()
     {
-      const int NE = m_cavity_element_list.size();
-      for(int i = 0; i < NE; ++i)
+      for(auto elem : cavity_elems)
       {
-        m_mesh.removeElement(m_cavity_element_list[i]);
+        m_mesh.removeElement(elem);
       }
     }
 
     /// \brief Fill in the Delaunay cavity with new elements containing the insertion point
     void delaunayBall(IndexType new_pt_i)
     {
-      const int numFaces = m_cavity_face_list.size();
-      m_new_elements.reserve(numFaces);
+      const int numFaces = facet_set.size();
 
       for(int i = 0; i < numFaces; ++i)
       {
         // Create a new element from the face and the inserted point
         IndexType vlist[VERT_PER_ELEMENT];
-        for(int d = 0; d < VERT_PER_ELEMENT - 1; ++d)
+        for(int d = 0; d < VERTS_PER_FACET; ++d)
         {
-          vlist[d] = m_cavity_face_list[i].face_vidx[d];
+          vlist[d] = fv_rel[i][d];
         }
-        vlist[VERT_PER_ELEMENT - 1] = new_pt_i;
+        vlist[VERTS_PER_FACET] = new_pt_i;
 
-        IndexType new_el = m_mesh.addElement(vlist);
-        m_new_elements.push_back(new_el);
+        // set all neighbors to nID; they'll be fixed in the fixVertexNeighborhood function below
+        IndexType neighbors[VERT_PER_ELEMENT];
+        const auto nID = fc_rel[i][0];
+        for(int d = 0; d < VERTS_PER_FACET; ++d)
+        {
+          neighbors[d] = nID;
+        }
+
+        IndexType new_el = m_mesh.addElement(vlist, neighbors);
+        inserted_elems.insert(new_el);
       }
 
       // Fix neighborhood around the new point
-      m_mesh.fixVertexNeighborhood(new_pt_i, m_new_elements);
+      m_mesh.fixVertexNeighborhood(new_pt_i, inserted_elems.data());
     }
 
     /// \brief Returns the number of elements removed during this insertion
-    int numRemovedElements() const { return m_cavity_element_list.size(); }
+    int numRemovedElements() const { return cavity_elems.size(); }
 
     /// \brief Helper function returns true if the query point is in the sphere formed by the element vertices
     bool isPointInSphere(const PointType& query_pt, IndexType element_idx);
 
   public:
+    // we create a surface mesh
+    // sets: vertex, facet
+    using PositionType = typename IAMeshType::PositionType;
+    using ElementType = typename IAMeshType::ElementType;
+
+    using ElementSet = typename IAMeshType::ElementSet;
+    using VertexSet = typename IAMeshType::VertexSet;
+    using FacetSet = slam::DynamicSet<PositionType, ElementType>;
+
+    // relations: facet->vertex, facet->cell
+    static constexpr int VERTS_PER_FACET = IAMeshType::VERTS_PER_ELEM - 1;
+    using FacetBoundaryRelation =
+      typename IAMeshType::template IADynamicConstantRelation<VERTS_PER_FACET>;
+    using FacetCoboundaryRelation =
+      typename IAMeshType::template IADynamicConstantRelation<1>;
+
+  public:
     IAMeshType& m_mesh;
-    std::vector<ElementFacePair<DIM>> m_cavity_face_list;
-    IndexArray m_cavity_element_list;
-    IndexArray m_new_elements;
+
+    FacetSet facet_set;
+    FacetBoundaryRelation fv_rel;
+    FacetCoboundaryRelation fc_rel;
+
+    ElementSet cavity_elems;
+    ElementSet inserted_elems;
+
     std::set<IndexType> m_checked_element_set;
   };
 };

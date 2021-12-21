@@ -80,31 +80,22 @@ public:
   static constexpr int INVALID_ELEMENT_INDEX = ElementSet::INVALID_ENTRY;
 
   /// types for Relations
-  using STLIndirection =
-    slam::policies::STLVectorIndirection<PositionType, ElementType>;
-  using VariableCardinality =
-    slam::policies::VariableCardinality<PositionType, STLIndirection>;
 
-  using EVStride =
-    slam::policies::CompileTimeStride<PositionType, VERTS_PER_ELEM>;
-  using EEStride = slam::policies::CompileTimeStride<PositionType, 1>;
-  using ConstantCardinalityZ =
-    slam::policies::ConstantCardinality<PositionType, EVStride>;
-  using ConstantCardinality1 =
-    slam::policies::ConstantCardinality<PositionType, EEStride>;
+  // A templated type alias to help with defining relations
+  template <int SIZE>
+  using IADynamicConstantRelation = slam::DynamicConstantRelation<
+    PositionType,
+    ElementType,
+    slam::policies::ConstantCardinality<
+      PositionType,
+      slam::policies::CompileTimeStride<PositionType, SIZE>>>;
 
-  using ElementBoundaryRelation =
-    slam::DynamicConstantRelation<PositionType, ElementType, ConstantCardinalityZ>;
-  using VertexCoboundaryRelation =
-    slam::DynamicConstantRelation<PositionType, ElementType, ConstantCardinality1>;
-  using ElementAdjacencyRelation =
-    slam::DynamicConstantRelation<PositionType, ElementType, ConstantCardinalityZ>;
+  using ElementBoundaryRelation = IADynamicConstantRelation<VERTS_PER_ELEM>;
+  using VertexCoboundaryRelation = IADynamicConstantRelation<1>;
+  using ElementAdjacencyRelation = IADynamicConstantRelation<VERTS_PER_ELEM>;
 
   /// types for Maps
   using PositionMap = DynamicMap<VertexSet, Point>;
-
-  //using VertexField = slam::Map< SetBase, DataType >;
-  //using ElementField = slam::Map< SetBase, DataType >;
 
   using IndexBuf = slam::FieldRegistry<SetBase, IndexType>;
   IndexBuf index_buffer;
@@ -281,23 +272,33 @@ public:
    * This is a convenience function that only uses the first VERTS_PER_ELEM
    * vertex identifiers.
    *
-   * \param n0 - first vertex id of the element
-   * \param n1 - second vertex id of the element
-   * \param n2 - third vertex id of the element
-   * \param n3 - fourth vertex id of the element
+   * \param v0 - first vertex id of the element
+   * \param v1 - second vertex id of the element
+   * \param v2 - third vertex id of the element
+   * \param v3 - fourth vertex id of the element
    */
-  IndexType addElement(IndexType n0,
-                       IndexType n1,
-                       IndexType n2 = INVALID_VERTEX_INDEX,
-                       IndexType n3 = INVALID_VERTEX_INDEX);
+  IndexType addElement(IndexType v0,
+                       IndexType v1,
+                       IndexType v2 = INVALID_VERTEX_INDEX,
+                       IndexType v3 = INVALID_VERTEX_INDEX);
 
   /**
    * \brief Add an element to the mesh.
    *
-   * \param nlist - A pointer to the vertex indices of the new element.
+   * \param vlist - A pointer to the vertex indices of the new element.
    * The array size should be at least VERTS_PER_ELEM
    */
-  IndexType addElement(const IndexType* nlist);
+  IndexType addElement(const IndexType* vlist);
+
+  /**
+   * \brief Add an element to the mesh. Overload to also set neighbors
+   *
+   * \param vlist - A pointer to the vertex indices of the new element.
+   * The array size should be at least VERTS_PER_ELEM
+   * \param neighbors - A pointer to the neighbor indices of the new element.
+   * The array size should be at least VERTS_PER_ELEM
+   */
+  IndexType addElement(const IndexType* vlist, const IndexType* neighbors);
 
   /**
    * \brief Removes an element from the mesh

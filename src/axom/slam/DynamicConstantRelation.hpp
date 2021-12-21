@@ -94,9 +94,7 @@ public:
   DynamicConstantRelation()
     : m_fromSet(EmptySetTraits<FromSetType>::emptySet())
     , m_toSet(EmptySetTraits<ToSetType>::emptySet())
-  {
-    m_relationCardinality = CardinalityPolicy::size(0);
-  }
+  { }
 
   /**
    * \brief Construct a DynamicConstantRelation from the given \a fromSet
@@ -108,8 +106,7 @@ public:
     , m_fromSet(fromSet)
     , m_toSet(toSet)
   {
-    m_relationCardinality = CardinalityPolicy::size(0);
-    m_relationsVec.resize(m_relationCardinality * fromSet->size(), INVALID_INDEX);
+    m_relationsVec.resize(relationCardinality() * fromSet->size(), INVALID_INDEX);
   };
 
   ~DynamicConstantRelation() {};
@@ -235,10 +232,9 @@ public:
     verifyPosition(fromSetIndex);
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
-      //.size( CardinalityPolicy::size(fromSetIndex) )
-      .size(m_relationCardinality)
+      .size(relationCardinality())
       //.offset( CardinalityPolicy::offset( fromSetIndex) )
-      .offset(fromSetIndex * m_relationCardinality)
+      .offset(fromSetIndex * relationCardinality())
       .data(const_cast<RelationVec*>(&m_relationsVec));
   }
 
@@ -247,10 +243,9 @@ public:
     verifyPosition(fromSetIndex);
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
-      //.size( CardinalityPolicy::size(fromSetIndex) )
-      .size(m_relationCardinality)
+      .size(relationCardinality())
       //.offset( CardinalityPolicy::offset( fromSetIndex) )
-      .offset(fromSetIndex * m_relationCardinality)
+      .offset(fromSetIndex * relationCardinality())
       .data(&m_relationsVec);
   }
 
@@ -262,7 +257,7 @@ public:
   SetPosition size(SetPosition fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
-    return m_relationCardinality;
+    return relationCardinality();
   }
 
   /// @}
@@ -272,7 +267,7 @@ public:
    */
   SetPosition size() const
   {
-    return m_relationsVec.size() / m_relationCardinality;
+    return m_relationsVec.size() / relationCardinality();
   }
 
 public:
@@ -305,11 +300,11 @@ public:
    */
   bool isValidEntry(SetPosition idx) const
   {
-    if(idx >= 0 && idx < (int)m_relationsVec.size() / m_relationCardinality)
+    if(idx >= 0 && idx < (int)m_relationsVec.size() / relationCardinality())
     {
-      for(int i = 0; i < m_relationCardinality; ++i)
+      for(int i = 0; i < relationCardinality(); ++i)
       {
-        if(m_relationsVec[idx * m_relationCardinality + i] != INVALID_INDEX)
+        if(m_relationsVec[idx * relationCardinality() + i] != INVALID_INDEX)
           return true;
       }
     }
@@ -342,9 +337,9 @@ public:
     verifyPosition(fromSetIndex);
 
     //find the first invalid place to put it
-    for(int i = 0; i < m_relationCardinality; ++i)
+    for(int i = 0; i < relationCardinality(); ++i)
     {
-      SetPosition idx = m_relationCardinality * fromSetIndex + i;
+      SetPosition idx = relationCardinality() * fromSetIndex + i;
       if(m_relationsVec[idx] == INVALID_INDEX)
       {
         m_relationsVec[idx] = toSetIndex;
@@ -372,7 +367,7 @@ public:
   void modify(SetPosition fromSetIndex, SetPosition offset, SetPosition toSetIndex)
   {
     expandSizeIfNeeded(fromSetIndex + 1);
-    m_relationsVec[m_relationCardinality * fromSetIndex + offset] = toSetIndex;
+    m_relationsVec[relationCardinality() * fromSetIndex + offset] = toSetIndex;
   }
 
   /**
@@ -382,9 +377,9 @@ public:
   {
     if(!isValidEntry(fromSetIndex)) return;
 
-    for(int i = 0; i < m_relationCardinality; ++i)
+    for(int i = 0; i < relationCardinality(); ++i)
     {
-      m_relationsVec[m_relationCardinality * fromSetIndex + i] = INVALID_INDEX;
+      m_relationsVec[relationCardinality() * fromSetIndex + i] = INVALID_INDEX;
     }
   }
 
@@ -398,15 +393,20 @@ public:
   const RelationVec& data() const { return m_relationsVec; }
 
 private:
+  inline constexpr SetPosition relationCardinality() const
+  {
+    return CardinalityPolicy::size(SetPosition());
+  }
+
   /**
    * \brief Helper function to expand the relation data storage
    * \param s The requested size
    */
   void expandSizeIfNeeded(SetPosition s)
   {
-    if(s > (int)m_relationsVec.size() / m_relationCardinality)
+    if(s > (int)m_relationsVec.size() / relationCardinality())
     {
-      m_relationsVec.resize(s * m_relationCardinality, INVALID_INDEX);
+      m_relationsVec.resize(s * relationCardinality(), INVALID_INDEX);
     }
   }
 
@@ -426,7 +426,6 @@ private:
   FromSetType* m_fromSet;
   ToSetType* m_toSet;
 
-  int m_relationCardinality;
   RelationVec m_relationsVec;
 };
 
@@ -461,7 +460,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
   // Check the sizes of fromSet matches relationVec
   if(setsAreValid)
   {
-    if(m_fromSet->size() * m_relationCardinality != (int)m_relationsVec.size())
+    if(m_fromSet->size() * relationCardinality() != (int)m_relationsVec.size())
     {
       if(verboseOutput)
       {
@@ -502,8 +501,8 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
         if(verboseOutput)
         {
           errSstr << "\n\t* Relation index out of range or invalid."
-                  << "\n\t-- position " << pos / m_relationCardinality << "-"
-                  << pos % m_relationCardinality
+                  << "\n\t-- position " << pos / relationCardinality() << "-"
+                  << pos % relationCardinality()
                   << " with value: " << m_relationsVec[pos]
                   << " needs to be in range [0," << m_toSet->size()
                   << ") and index a valid entry.";

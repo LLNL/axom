@@ -384,10 +384,13 @@ typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace
   IndexType element_idx,
   IndexType face_idx) const
 {
+  constexpr int VERTS_PER_FACET = VERTS_PER_ELEM - 1;
+
   using CTSize = slam::policies::CompileTimeSize<IndexType, VERTS_PER_ELEM>;
   slam::ModularInt<CTSize> mod_face(face_idx);
 
   IndexArray ret;
+  ret.reserve(VERTS_PER_FACET);
 
   if(!element_set.isValidEntry(element_idx))
   {
@@ -400,11 +403,10 @@ typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace
   SLIC_ASSERT_MSG(0 <= face_idx && face_idx < VERTS_PER_ELEM,
                   "Face index is invalid.");
 
-  SLIC_ASSERT(ev_rel[element_idx].size() == VERTS_PER_ELEM);
-
-  for(int i = 0; i < VERTS_PER_ELEM - 1; i++)
+  auto ev = ev_rel[element_idx];
+  for(int i = 0; i < VERTS_PER_FACET; ++i)
   {
-    ret.push_back(ev_rel[element_idx][mod_face + i]);
+    ret.push_back(ev[mod_face + i]);
   }
 
   return ret;
@@ -423,7 +425,7 @@ IAMesh<TDIM, SDIM, P>::getElementNeighbors(IndexType element_idx) const
     return ret;
   }
 
-  typename ElementBoundaryRelation::RelationSubset rvec = ee_rel[element_idx];
+  auto rvec = ee_rel[element_idx];
   ret.resize(rvec.size());
   for(int i = 0; i < rvec.size(); i++)
   {
@@ -540,19 +542,19 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addVertex(
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
-  IndexType n0,
-  IndexType n1,
-  IndexType n2,
-  IndexType n3)
+  IndexType v0,
+  IndexType v1,
+  IndexType v2,
+  IndexType v3)
 {
   SLIC_ASSERT(VERTS_PER_ELEM <= 4);
-  IndexType nlist[] = {n0, n1, n2, n3};
-  return addElement(nlist);
+  IndexType vlist[] = {v0, v1, v2, v3};
+  return addElement(vlist);
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
-  const IndexType* nlist)
+  const IndexType* vlist)
 {
   // Implementation note:
   //   This function reconstructs the vertex-element relation
@@ -561,14 +563,17 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
 
   for(int i = 0; i < VERTS_PER_ELEM; i++)
   {
-    if(!vertex_set.isValidEntry(nlist[i]))
+    if(!vertex_set.isValidEntry(vlist[i]))
       SLIC_WARNING(
-        "Trying to add an element with invalid vertex index:" << nlist[i]);
+        "Trying to add an element with invalid vertex index:" << vlist[i]);
   }
 
   IndexType element_idx = element_set.insert();
 
-  for(int i = 0; i < VERTS_PER_ELEM; i++) ev_rel.insert(element_idx, nlist[i]);
+  for(int i = 0; i < VERTS_PER_ELEM; ++i)
+  {
+    ev_rel.insert(element_idx, vlist[i]);
+  }
 
   //make sure the space is allocated in ee_rel
   ee_rel.insert(element_idx, ElementAdjacencyRelation::INVALID_INDEX);
@@ -576,7 +581,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   V2EMapType vertpair_to_elem_map;
 
   //First add each face of this new element into the map
-  for(int side_i = 0; side_i < VERTS_PER_ELEM; side_i++)
+  for(int side_i = 0; side_i < VERTS_PER_ELEM; ++side_i)
   {
     ElementAndFaceIdxType zs_pair =
       ElemNbrFinder(vertpair_to_elem_map, element_idx, side_i);
@@ -585,10 +590,10 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
 
   //Make a list of elements that shares at least 1 vertex of the new element
   std::set<IndexType> elem_list;
-  for(int n = 0; n < VERTS_PER_ELEM; n++)
+  for(int n = 0; n < VERTS_PER_ELEM; ++n)
   {
-    IndexArray ele_list_short = getElementsWithVertex(nlist[n]);
-    for(unsigned int i = 0; i < ele_list_short.size(); i++)
+    IndexArray ele_list_short = getElementsWithVertex(vlist[n]);
+    for(unsigned int i = 0; i < ele_list_short.size(); ++i)
     {
       elem_list.insert(ele_list_short[i]);
     }
@@ -596,8 +601,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
 
   //Check if any of the elements share a face with the new element.
   // If so, modify ee_rel to reflect that.
-  for(std::set<IndexType>::iterator it = elem_list.begin(); it != elem_list.end();
-      it++)
+  for(auto it = elem_list.begin(); it != elem_list.end(); ++it)
   {
     IndexType otherElementIdx = *it;
     if(otherElementIdx < 0 || otherElementIdx == element_idx) continue;
@@ -631,9 +635,52 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   //update ve_rel
   for(int i = 0; i < VERTS_PER_ELEM; i++)
   {
-    if(!ve_rel.isValidEntry(nlist[i]))
+    if(!ve_rel.isValidEntry(vlist[i]))
     {
-      ve_rel.modify(nlist[i], 0, element_idx);
+      ve_rel.modify(vlist[i], 0, element_idx);
+    }
+  }
+
+  return element_idx;
+}
+
+template <unsigned int TDIM, unsigned int SDIM, typename P>
+typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
+  const IndexType* vlist,
+  const IndexType* neighbors)
+{
+  for(int i = 0; i < VERTS_PER_ELEM; ++i)
+  {
+    if(!vertex_set.isValidEntry(vlist[i]))
+    {
+      SLIC_WARNING(
+        "Trying to add an element with invalid vertex index:" << vlist[i]);
+    }
+  }
+
+  IndexType element_idx = element_set.insert();
+
+  // set the vertices in this element's ev relation
+  for(int i = 0; i < VERTS_PER_ELEM; ++i)
+  {
+    ev_rel.modify(element_idx, i, vlist[i]);
+  }
+
+  // set the neighbor elements in this element's ee relation
+  for(int i = 0; i < VERTS_PER_ELEM; ++i)
+  {
+    ee_rel.modify(element_idx, i, neighbors[i]);
+  }
+
+  // update ve relation of this element's vertices, if necessary
+  for(int i = 0; i < VERTS_PER_ELEM; ++i)
+  {
+    const IndexType v = vlist[i];
+    const IndexType e = ve_rel[v][0];
+
+    if(!element_set.isValidEntry(e))
+    {
+      ve_rel[v][0] = element_idx;
     }
   }
 
@@ -648,38 +695,54 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   using IndexPairType = std::pair<IndexType, IndexType>;
   using FaceVertMapType = std::map<IndexArray, IndexPairType>;
   using FaceVertPairType = std::pair<IndexArray, IndexPairType>;
-  FaceVertMapType vert_map;
+  FaceVertMapType fv_map;
 
-  const int SZ = new_elements.size();
-  for(int i = 0; i < SZ; i++)
+  for(auto el : new_elements)
   {
-    IndexType el = new_elements[i];
-
-    for(int face_i = 0; face_i < VERTS_PER_ELEM; face_i++)
+    for(int face_i = 0; face_i < VERTS_PER_ELEM; ++face_i)
     {
       IndexArray fv_list = getElementFace(el, face_i);
-
-      //only concerned with faces that contain the vertex in question
-      if(!is_subset(vertex_idx, fv_list)) continue;
 
       //sort vertices on this face
       std::sort(fv_list.begin(), fv_list.end());
 
-      std::pair<FaceVertMapType::iterator, bool> ret =
-        vert_map.insert(FaceVertPairType(fv_list, IndexPairType(el, face_i)));
-
-      if(!ret.second)  //found a matching face
+      if(!is_subset(vertex_idx, fv_list))  // Update boundary facet of star
       {
-        IndexType nbr_elem = ret.first->second.first;
-        IndexType nbr_face_i = ret.first->second.second;
+        // update neighbor along this facet to point to current element
+        const IndexType nbr = ee_rel[el][face_i];
 
-        ee_rel.modify(el, face_i, nbr_elem);
-        //ee_rel[el][face_i] = nbr_elem;
+        if(element_set.isValidEntry(nbr))
+        {
+          // figure out which face this is on the neighbor
+          // TODO: Make this more efficient
+          auto nbr_ee = ee_rel[nbr];
+          for(int face_j = 0; face_j < VERTS_PER_ELEM; ++face_j)
+          {
+            if(!element_set.isValidEntry(nbr_ee[face_j]))
+            {
+              IndexArray nbr_facet_verts = getElementFace(nbr, face_j);
+              std::sort(nbr_facet_verts.begin(), nbr_facet_verts.end());
+              if(nbr_facet_verts == fv_list)
+              {
+                ee_rel.modify(nbr, face_j, el);
+              }
+            }
+          }
+        }
+      }
+      else  // update internal facet of star
+      {
+        std::pair<FaceVertMapType::iterator, bool> ret =
+          fv_map.insert(FaceVertPairType(fv_list, IndexPairType(el, face_i)));
 
-        ee_rel.modify(nbr_elem, nbr_face_i, el);
-        //ee_rel[nbr_elem][nbr_face_i] = el;
+        if(!ret.second)  //found a matching face
+        {
+          const IndexType nbr_elem = ret.first->second.first;
+          const IndexType nbr_face_i = ret.first->second.second;
 
-        vert_map.erase(ret.first);
+          ee_rel.modify(el, face_i, nbr_elem);
+          ee_rel.modify(nbr_elem, nbr_face_i, el);
+        }
       }
     }
   }
