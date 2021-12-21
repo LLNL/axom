@@ -132,6 +132,8 @@ void run_delaunay(const Input& params)
   BoundingBox bbox {PointType(params.boundsMin.data()),
                     PointType(params.boundsMax.data())};
 
+  axom::utilities::Timer timer(true);
+
   // Create initial Delaunay triangulation over bounding box
   Delaunay dt;
   dt.initializeBoundary(bbox);
@@ -159,6 +161,8 @@ void run_delaunay(const Input& params)
   //Remove the starting rectangular box
   dt.removeBoundary();
 
+  timer.stop();
+
   // Check that the mesh is valid
   SLIC_ASSERT(dt.getMeshData()->isValid(true));
   SLIC_ASSERT(dt.isValid(true));
@@ -168,6 +172,15 @@ void run_delaunay(const Input& params)
     std::string fname = axom::fmt::format("{}.vtk", outputVTKFile);
     dt.writeToVTKFile(fname);
   }
+
+  SLIC_INFO(axom::fmt::format(
+    "It took {} seconds to create a Delaunay complex with {} "
+    "points. Mesh has {} {}. Insertion rate of {:.1f} points per second.",
+    timer.elapsedTimeInSec(),
+    numPoints,
+    dt.getMeshData()->getNumberOfElements(),
+    DIM == 2 ? "triangles" : "tetrahedra",
+    numPoints / timer.elapsedTimeInSec()));
 
   SLIC_INFO("Done!");
 }
