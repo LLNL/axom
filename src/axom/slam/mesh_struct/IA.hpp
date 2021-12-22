@@ -44,10 +44,10 @@ namespace slam
  * \tparam PointType A point type for the mesh position data
  *
  * \details The IAMesh class is an adjacency-based topological mesh data
- * structure for simplicial complexes. It encodes the boundary relation
- * from elements to their vertices, the partial coboundary relation from
- * vertices to one incident element and the adjacency relation between
- * elements along their facets (faces of dimension TDIM-1).
+ * structure for simplicial complexes. It encodes:
+ * - the boundary relation from elements to their vertices
+ * - the partial coboundary relation from vertices to one incident element, and
+ * - the adjacency relation between elements along their facets (faces of dimension TDIM-1).
  *
  * PointType is required to have the following interface:
  * TODO: FILL THIS IN

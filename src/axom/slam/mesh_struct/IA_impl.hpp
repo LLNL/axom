@@ -231,18 +231,12 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
 
   //Before making element to element relation, construct the data.
   // For every cell, find the union of triangles for each pair of vertices
-  IndexBuf::BufferType element_element_vec =
-    index_buffer.addBuffer("element_element_vector",
-                           element_set.size() * VERTS_PER_ELEM);
-  for(unsigned int i = 0; i < element_element_vec.size(); i++)
-  {
-    //initialize to no neighbor element
-    element_element_vec[i] = ElementBoundaryRelation::INVALID_INDEX;
-  }
+  IndexArray element_element_vec(element_set.size() * VERTS_PER_ELEM,
+                                 ElementBoundaryRelation::INVALID_INDEX);
 
   V2EMapType vertpair_to_elem_map;
 
-  for(IndexType element_i = 0; element_i < element_set.size(); element_i++)
+  for(IndexType element_i : element_set)
   {
     for(IndexType side_i = 0; side_i < VERTS_PER_ELEM; side_i++)
     {
@@ -252,18 +246,19 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
       IndexType other_element_idx = nst.first;
       IndexType other_side_idx = nst.second;
 
-      if(!element_set.isValidEntry(other_element_idx)) continue;
+      if(element_set.isValidEntry(other_element_idx))
+      {
+        int idx0 = element_i * VERTS_PER_ELEM + side_i;
+        element_element_vec[idx0] = other_element_idx;
 
-      int idx0 = element_i * VERTS_PER_ELEM + side_i;
-      element_element_vec[idx0] = other_element_idx;
-
-      int idx1 = other_element_idx * VERTS_PER_ELEM + other_side_idx;
-      element_element_vec[idx1] = element_i;
+        int idx1 = other_element_idx * VERTS_PER_ELEM + other_side_idx;
+        element_element_vec[idx1] = element_i;
+      }
     }
   }
 
   //Element adjacency relation along facets
-  for(int i = 0; i < element_set.size(); i++)
+  for(IndexType i : element_set)
   {
     for(int j = 0; j < VERTS_PER_ELEM; j++)
     {

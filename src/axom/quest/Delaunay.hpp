@@ -378,20 +378,27 @@ private:
       BaryCoordType bary_coord = getBaryCoords(element_i, query_pt);
 
       //Find the index of the most negative barycentric coord
-      ModularFaceIndex idx(bary_coord.array().argMin());
+      //Use modular index since it could wrap around to 0
+      ModularFaceIndex modular_idx(bary_coord.array().argMin());
 
-      if(bary_coord[idx] >= 0)  // inside if smallest bary coord positive
+      if(bary_coord[modular_idx] >= 0)  // inside if smallest bary coord positive
       {
         return element_i;
       }
 
       // else, move to that neighbor
-      IndexArray zlist = m_mesh.getElementNeighbors(element_i);
-      element_i = zlist[idx + 1];
+      element_i = m_mesh.ee_rel[element_i][modular_idx + 1];
 
       // Either there is a hole in the m_mesh, or the point is outside of the m_mesh.
       // Logically, this should never happen.
-      SLIC_ASSERT(m_mesh.isValidElementEntry(element_i));
+      if(!m_mesh.isValidElementEntry(element_i))
+      {
+        SLIC_WARNING(axom::fmt::format(
+          "Entered invalid element in "
+          "Delaunay::findContainingElement(). Underlying mesh {} valid",
+          m_mesh.isValid() ? "is" : "is not"));
+        return INVALID_INDEX;
+      }
     }
   }
 
