@@ -76,8 +76,7 @@ std::string Path::dirName() const { return static_cast<std::string>(parent()); }
 
 std::pair<std::string, std::string> Path::split() const
 {
-  Path result(*this);
-  return std::make_pair(result.dirName(), result.baseName());
+  return std::make_pair(dirName(), baseName());
 }
 
 bool operator==(const Path& lhs, const Path& rhs)
