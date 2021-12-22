@@ -173,3 +173,57 @@ TEST(core_Path, parts_multipart_empty)
   EXPECT_EQ(parts[1], "bar");
   EXPECT_EQ(parts[2], "baz");
 }
+
+TEST(core_Path, basic_split)
+{
+  axom::Path path("foo/bar/baz");
+  auto pair = path.split();
+
+  EXPECT_EQ(pair.first, "foo/bar");
+  EXPECT_EQ(pair.second, "baz");
+}
+
+TEST(core_Path, basic_split_dirname_basename)
+{
+  axom::Path path("foo/bar/baz");
+  auto pair = path.split();
+
+  EXPECT_EQ(pair.first, path.dirName());
+  EXPECT_EQ(pair.second, path.baseName());
+}
+
+TEST(core_Path, no_split)
+{
+  axom::Path path("foo");
+  auto pair = path.split();
+
+  EXPECT_EQ(pair.first, "");
+  EXPECT_EQ(pair.second, "foo");
+}
+
+TEST(core_Path, split_empty_basename)
+{
+  axom::Path path("foo/");
+  auto pair = path.split();
+
+  EXPECT_EQ(pair.first, "");
+  EXPECT_EQ(pair.second, "foo");
+}
+
+TEST(core_Path, split_empty_dirname)
+{
+  axom::Path path("/foo");
+  auto pair = path.split();
+
+  EXPECT_EQ(pair.first, "");
+  EXPECT_EQ(pair.second, "foo");
+}
+
+TEST(core_Path, split_empty)
+{
+  axom::Path path("");
+  auto pair = path.split();
+
+  EXPECT_EQ(pair.first, "");
+  EXPECT_EQ(pair.second, "");
+}
