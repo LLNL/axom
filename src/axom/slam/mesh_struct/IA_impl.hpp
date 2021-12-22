@@ -12,6 +12,7 @@
  * \brief Contains the implementation of the IAMesh class and helper functions
  */
 
+#include "axom/core/Macros.hpp"
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
@@ -34,10 +35,9 @@ namespace /*anonymous*/
 template <typename T>
 bool is_subset(T v, const std::vector<T>& s)
 {
-  const int SZ = s.size();
-  for(int i = 0; i < SZ; ++i)
+  for(auto item : s)
   {
-    if(s[i] == v)
+    if(item == v)
     {
       return true;
     }
@@ -151,7 +151,7 @@ void IAMesh<TDIM, SDIM, P>::print_all() const
   SLIC_INFO(axom::fmt::to_string(out));
 }
 
-/*********************************************************************************/
+//-----------------------------------------------------------------------------
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
 IAMesh<TDIM, SDIM, P>::IAMesh()
@@ -449,10 +449,9 @@ void IAMesh<TDIM, SDIM, P>::removeVertex(IndexType vertex_idx)
   }
 
   //check if any element uses this vertex. If so, remove them too.
-  IndexArray attached_elements = getElementsWithVertex(vertex_idx);
-  for(int i = 0; i < (int)attached_elements.size(); i++)
+  for(auto attached_element : getElementsWithVertex(vertex_idx))
   {
-    removeElement(attached_elements[i]);
+    removeElement(attached_element);
   }
 
   vertex_set.remove(vertex_idx);
@@ -471,29 +470,25 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
   }
 
   //check if ve_rel needs to be updated for the vertices of the removed cell
-  for(int i = 0; i < ev_rel[element_idx].size(); i++)
+  for(auto vertex_i : ev_rel[element_idx])
   {
-    IndexType vertex_i = ev_rel[element_idx][i];
-
-    IndexArray element_with_this_vertex = getElementsWithVertex(vertex_i);
-
-    if(element_with_this_vertex.size() == 1)
-    {  //the element being removed is the last element using this vertex
-      ve_rel.modify(vertex_i, 0, VertexCoboundaryRelation::INVALID_INDEX);
-    }
-    else
+    if(ve_rel[vertex_i][0] == element_idx)
     {
-      //there are other elements using this vertex.
-      // update ve_rel to not use the removed element
-      if(ve_rel[vertex_i][0] == element_idx)
+      IndexArray element_with_this_vertex = getElementsWithVertex(vertex_i);
+
+      if(element_with_this_vertex.size() == 1)
+      {  //the element being removed is the last element using this vertex
+        ve_rel.modify(vertex_i, 0, VertexCoboundaryRelation::INVALID_INDEX);
+      }
+      else
       {
+        //there are other elements using this vertex.
         bool modified = false;
-        for(unsigned int j = 0; j < element_with_this_vertex.size(); j++)
+        for(auto other_elt : element_with_this_vertex)
         {
-          if(element_with_this_vertex[j] != element_idx &&
-             element_set.isValidEntry(element_with_this_vertex[j]))
+          if(other_elt != element_idx && element_set.isValidEntry(other_elt))
           {
-            ve_rel.modify(vertex_i, 0, element_with_this_vertex[j]);
+            ve_rel.modify(vertex_i, 0, other_elt);
             modified = true;
             break;
           }
@@ -581,6 +576,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
     ElementAndFaceIdxType zs_pair =
       ElemNbrFinder(vertpair_to_elem_map, element_idx, side_i);
     SLIC_ASSERT(zs_pair.first == -1);
+    AXOM_UNUSED_VAR(zs_pair);
   }
 
   //Make a list of elements that shares at least 1 vertex of the new element
