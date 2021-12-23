@@ -433,49 +433,39 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
     return;
   }
 
-  //check if ve_rel needs to be updated for the vertices of the removed cell
+  // update vertex coboundary relation for vertices of the removed cell (when necessary)
   for(auto vertex_i : ev_rel[element_idx])
   {
+    // update VE relation for vertex_i when it points to deleted element
     if(ve_rel[vertex_i][0] == element_idx)
     {
-      IndexArray element_with_this_vertex = getElementsWithVertex(vertex_i);
-
-      if(element_with_this_vertex.size() == 1)
-      {  //the element being removed is the last element using this vertex
-        ve_rel.modify(vertex_i, 0, VertexCoboundaryRelation::INVALID_INDEX);
-      }
-      else
+      IndexType new_elem = ElementSet::INVALID_ENTRY;
+      for(auto nbr : ee_rel[element_idx])
       {
-        //there are other elements using this vertex.
-        bool modified = false;
-        for(auto other_elt : element_with_this_vertex)
+        // update to a valid neighbor that is incident in vertex_i
+        if(element_set.isValidEntry(nbr) && is_subset(vertex_i, ev_rel[nbr]))
         {
-          if(other_elt != element_idx && element_set.isValidEntry(other_elt))
-          {
-            ve_rel.modify(vertex_i, 0, other_elt);
-            modified = true;
-            break;
-          }
+          new_elem = nbr;
+          break;
         }
-        SLIC_ASSERT(modified);
       }
+      ve_rel.modify(vertex_i, 0, new_elem);
     }
   }
 
-  //erase this element's data
+  //erase this element and it boundary relation
   element_set.remove(element_idx);
   ev_rel.remove(element_idx);
 
-  //erase neighbor element's data
-  for(int zi = 0; zi < ee_rel[element_idx].size(); zi++)
+  //erase neighbor element's adjacency data pointing to deleted element
+  for(auto nbr : ee_rel[element_idx])
   {
-    IndexType nbr_element_idx = ee_rel[element_idx][zi];
-    if(nbr_element_idx < 0) continue;
-    for(int i = 0; i < ee_rel[nbr_element_idx].size(); i++)
+    if(!element_set.isValidEntry(nbr)) continue;
+    for(auto it = ee_rel[nbr].begin(); it != ee_rel[nbr].end(); ++it)
     {
-      if(ee_rel[nbr_element_idx][i] == element_idx)
+      if(*it == element_idx)
       {
-        ee_rel.modify(nbr_element_idx, i, ElementBoundaryRelation::INVALID_INDEX);
+        ee_rel.modify(nbr, it.index(), ElementBoundaryRelation::INVALID_INDEX);
         break;
       }
     }
