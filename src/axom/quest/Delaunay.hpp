@@ -186,14 +186,14 @@ public:
 
     this->compactMesh();
 
-    for(auto i : m_mesh.vertex_set.positions())
+    for(auto v : m_mesh.vertex_set.positions())
     {
-      mint_mesh.appendNodes(m_mesh.getVertexPoint(i).data(), 1);
+      mint_mesh.appendNodes(m_mesh.getVertexPoint(v).data(), 1);
     }
 
-    for(auto i : m_mesh.element_set.positions())
+    for(auto e : m_mesh.element_set.positions())
     {
-      mint_mesh.appendCell(&(m_mesh.ev_rel[i][0]), CELL_TYPE);
+      mint_mesh.appendCell(&(m_mesh.ev_rel[e][0]), CELL_TYPE);
     }
 
     mint::write_vtk(&mint_mesh, filename);
@@ -215,22 +215,24 @@ public:
       //Collect a list of elements to remove first, because
       //the list may be incomplete if generated during the removal.
       IndexArray elements_to_remove;
-      for(int i = 0; i < num_boundary_pts; ++i)
+      for(int v = 0; v < num_boundary_pts; ++v)
       {
-        IndexArray elist = m_mesh.getElementsWithVertex(i);
+        IndexArray elems = m_mesh.getElementsWithVertex(v);
         elements_to_remove.insert(elements_to_remove.end(),
-                                  elist.begin(),
-                                  elist.end());
+                                  elems.begin(),
+                                  elems.end());
       }
-      for(unsigned int i = 0; i < elements_to_remove.size(); ++i)
+      for(auto e : elements_to_remove)
       {
-        if(m_mesh.isValidElementEntry(elements_to_remove[i]))
-          m_mesh.removeElement(elements_to_remove[i]);
+        if(m_mesh.isValidElementEntry(e))
+        {
+          m_mesh.removeElement(e);
+        }
       }
 
-      for(int i = 0; i < num_boundary_pts; ++i)
+      for(int v = 0; v < num_boundary_pts; ++v)
       {
-        m_mesh.removeVertex(i);
+        m_mesh.removeVertex(v);
       }
 
       this->compactMesh();
@@ -260,11 +262,10 @@ public:
 
     std::vector<std::pair<IndexType, IndexType>> invalidEntries;
 
-    const int NE = m_mesh.getNumberOfElements();
-    ImplicitGridType grid(m_bounding_box, nullptr, NE);
+    ImplicitGridType grid(m_bounding_box, nullptr, m_mesh.element_set.size());
 
     // Add (bounding boxes of) element circumspheres to implicit grid
-    for(int element_idx = 0; element_idx < NE; ++element_idx)
+    for(auto element_idx : m_mesh.element_set)
     {
       if(m_mesh.isValidElementEntry(element_idx))
       {
@@ -281,8 +282,7 @@ public:
     }
 
     // for each vertex -- check in_sphere condition for candidate element
-    const int NV = m_mesh.getNumberOfVertices();
-    for(int vertex_idx = 0; vertex_idx < NV; ++vertex_idx)
+    for(auto vertex_idx : m_mesh.vertex_set)
     {
       const auto& vertex = m_mesh.getVertexPoint(vertex_idx);
 
@@ -329,16 +329,23 @@ public:
         axom::fmt::memory_buffer out;
         for(const auto& pr : invalidEntries)
         {
-          auto vertex_idx = pr.first;
-          auto element_idx = pr.second;
-          axom::fmt::format_to(
-            out,
-            "\n\tVertex {} @ {}; Element {}: {} w/ circumsphere: {}",
-            vertex_idx,
-            m_mesh.getVertexPoint(vertex_idx),
-            element_idx,
-            this->getElement(element_idx),
-            this->getElement(element_idx).circumsphere());
+          const auto vertex_idx = pr.first;
+          const auto element_idx = pr.second;
+          const auto& pos = m_mesh.getVertexPoint(vertex_idx);
+          const auto element = this->getElement(element_idx);
+          const auto circumsphere = element.circumsphere();
+          axom::fmt::format_to(out,
+                               "\n\tVertex {} @ {}"
+                               "\n\tElement {}: {} w/ circumsphere: {}",
+                               "\n\tDistance to circumcenter: {}",
+                               vertex_idx,
+                               pos,
+                               element_idx,
+                               element,
+                               circumsphere,
+                               std::sqrt(primal::squared_distance(
+                                 pos,
+                                 PointType(circumsphere.getCenter()))));
         }
 
         SLIC_INFO(
@@ -661,15 +668,12 @@ template <>
 Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
 {
-  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
-
+  const auto verts = m_mesh.ev_rel[element_idx];
   Triangle2D tri(m_mesh.getVertexPoint(verts[0]),
                  m_mesh.getVertexPoint(verts[1]),
                  m_mesh.getVertexPoint(verts[2]));
 
-  BaryCoordType bary_co = tri.physToBarycentric(query_pt);
-
-  return bary_co;
+  return tri.physToBarycentric(query_pt);
 }
 
 // 3D specialization for getBaryCoords(...)
@@ -677,16 +681,13 @@ template <>
 Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
 {
-  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
-
+  const auto verts = m_mesh.ev_rel[element_idx];
   Tetrahedron3D tet(m_mesh.getVertexPoint(verts[0]),
                     m_mesh.getVertexPoint(verts[1]),
                     m_mesh.getVertexPoint(verts[2]),
                     m_mesh.getVertexPoint(verts[3]));
 
-  BaryCoordType bary_co = tet.physToBarycentric(query_pt);
-
-  return bary_co;
+  return tet.physToBarycentric(query_pt);
 }
 
 // 2D specialization for isPointInSphere(...)
@@ -694,7 +695,7 @@ template <>
 bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
                                                    IndexType element_idx)
 {
-  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
+  const auto verts = m_mesh.ev_rel[element_idx];
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
@@ -706,7 +707,7 @@ template <>
 bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
                                                    IndexType element_idx)
 {
-  IndexArray verts = m_mesh.getVerticesInElement(element_idx);
+  const auto verts = m_mesh.ev_rel[element_idx];
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);

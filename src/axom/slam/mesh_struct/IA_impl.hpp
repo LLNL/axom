@@ -236,7 +236,7 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
 
   V2EMapType vertpair_to_elem_map;
 
-  for(IndexType element_i : element_set)
+  for(auto element_i : element_set)
   {
     for(IndexType side_i = 0; side_i < VERTS_PER_ELEM; side_i++)
     {
@@ -281,7 +281,7 @@ IAMesh<TDIM, SDIM, P>::getVerticesInElement(IndexType element_idx) const
     return ret;
   }
 
-  typename ElementBoundaryRelation::RelationSubset rvec = ev_rel[element_idx];
+  const auto rvec = ev_rel[element_idx];
   ret.resize(rvec.size());
   for(int i = 0; i < rvec.size(); i++)
   {
