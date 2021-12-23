@@ -31,11 +31,11 @@ namespace slam
 
 namespace /*anonymous*/
 {
-// Checks if v is in the list s
-template <typename T>
-bool is_subset(T v, const std::vector<T>& s)
+// Checks if \a v is in the list \a s
+template <typename T, typename IterableT>
+bool is_subset(T v, const IterableT& iterable)
 {
-  for(auto item : s)
+  for(auto item : iterable)
   {
     if(item == v)
     {
@@ -295,7 +295,11 @@ template <unsigned int TDIM, unsigned int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexArray
 IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
 {
+  // reasonable expected size of vertex star in triangle and tet meshes
+  constexpr int EXP_SZ = (TDIM == 2) ? 8 : 32;
+
   IndexArray ret;
+  ret.reserve(EXP_SZ);
 
   if(!ve_rel.isValidEntry(vertex_idx))
   {
@@ -312,64 +316,24 @@ IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
   IndexArray element_traverse_queue;
   element_traverse_queue.push_back(starting_element_idx);
 
-  while(element_traverse_queue.size() > 0)
+  while(!element_traverse_queue.empty())
   {
     IndexType element_i = element_traverse_queue.back();
     element_traverse_queue.pop_back();
 
-    typename ElementAdjacencyRelation::RelationSubset surrounded_elements =
-      ee_rel[element_i];
-
-    for(int i = 0; i < surrounded_elements.size(); i++)
+    for(auto nbr : ee_rel[element_i])
     {
-      IndexType ele_i = surrounded_elements[i];
-
-      if(ele_i == ElementAdjacencyRelation::INVALID_INDEX ||
-         is_subset(ele_i, ret))
-        continue;
-
-      // If this element contains the vertex in question, add it to
-      // the return vector and enqueue to check neighbors.
-      for(int j = 0; j < ev_rel[ele_i].size(); j++)
+      // If nbr is valid, has not already been found and contains the vertex in question,
+      // add it and enqueue to check neighbors.
+      if(element_set.isValidEntry(nbr)  //
+         && !is_subset(nbr, ret)        //
+         && is_subset(vertex_idx, ev_rel[nbr]))
       {
-        IndexType vert_i = ev_rel[ele_i][j];
-        if(vert_i == vertex_idx)
-        {
-          ret.push_back(ele_i);
-          element_traverse_queue.push_back(ele_i);
-          break;
-        }
+        ret.push_back(nbr);
+        element_traverse_queue.push_back(nbr);
       }
     }
   }
-
-  /*
-     //This code is for confirmation purpose, since it's a known issue that if
-     // the mesh is non-manifold, this list may be incomplete.
-     // This code traverses the whole relation list to find the complete
-     // list of elements in the star of this vertex.
-     std::vector<IndexType> elem_list;
-     for(int elem_i=0; elem_i<(int)ev_rel.size(); elem_i++){
-     for(int j=0; j<ev_rel[elem_i].size(); j++){
-      if( ev_rel[elem_i][j] == vertex_idx ){
-        elem_list.push_back(elem_i);
-        break;
-      }
-     }
-     }
-
-     //check if the neighbor-walk list is missing elements from complete list
-     for(int i=0; i<(int)elem_list.size(); i++){
-       IndexType elem = elem_list[i];
-       if( !is_subset(elem, ret) && ee_rel.isValidEntry(elem)){
-        SLIC_INFO(
-          "!!!! Element "<< elem
-          << " is missing from nbr list of vertex "<<vertex_idx);
-       }
-     }
-     //*/
-
-  //return elem_list; //complete list
 
   return ret;
 }
