@@ -104,6 +104,9 @@ struct BasicTetMeshData
     : points(point_arr, point_arr + 24)
     , elem(tet_arr, tet_arr + 24)
   { }
+
+  static int numVertices() { return 8; }
+  static int numTetrahedra() { return 6; }
 };
 
 // clang-format off
@@ -394,7 +397,7 @@ TEST(slam_IA, dynamically_build_tri_mesh)
   }
 }
 
-TEST(slam_IA, tri_mesh_remove_verts_and_elemss)
+TEST(slam_IA, tri_mesh_remove_verts_and_elems)
 {
   SLIC_INFO("Testing removing elements and vertices from a triangle mesh...");
 
@@ -480,6 +483,58 @@ TEST(slam_IA, tri_mesh_remove_verts_and_elemss)
     }
     EXPECT_EQ(ia_mesh.isValidElementEntry(i), !bDeleted && i <= 7);
   }
+}
+
+TEST(slam_IA, tri_mesh_remove_elem_and_compact)
+{
+  SLIC_INFO("Testing removing an element and compacting a triangle mesh...");
+
+  const int TDIM = 2;
+  const int SDIM = 3;
+  using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
+
+  BasicTriMeshData basic_mesh_data;
+  IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
+
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTriangles(), ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+
+  ia_mesh.removeElement(4);
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTriangles() - 1, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+
+  ia_mesh.compact();
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTriangles() - 1, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+}
+
+TEST(slam_IA, tri_mesh_remove_vert_and_compact)
+{
+  SLIC_INFO("Testing removing a vertex and compacting a triangle mesh...");
+
+  const int TDIM = 2;
+  const int SDIM = 3;
+  using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
+
+  BasicTriMeshData basic_mesh_data;
+  IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
+
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTriangles(), ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+
+  ia_mesh.removeVertex(3);
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTriangles() - 4, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices() - 1, ia_mesh.getNumberOfVertices());
+
+  ia_mesh.compact();
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTriangles() - 4, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices() - 1, ia_mesh.getNumberOfVertices());
 }
 
 TEST(slam_IA, basic_tet_mesh)
@@ -703,6 +758,58 @@ TEST(slam_IA, compact_mesh)
 
   EXPECT_EQ(v_before, v_after);
   EXPECT_EQ(e_before, e_after);
+}
+
+TEST(slam_IA, tet_mesh_remove_elem_and_compact)
+{
+  SLIC_INFO("Testing removing an element and compacting a tetrahedral mesh...");
+
+  const int TDIM = 3;
+  const int SDIM = 3;
+  using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
+
+  BasicTetMeshData basic_mesh_data;
+  IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
+
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTetrahedra(), ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+
+  ia_mesh.removeElement(4);
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTetrahedra() - 1, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+
+  ia_mesh.compact();
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTetrahedra() - 1, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+}
+
+TEST(slam_IA, tet_mesh_remove_vert_and_compact)
+{
+  SLIC_INFO("Testing removing a vertex and compacting a tetrahedral mesh...");
+
+  const int TDIM = 3;
+  const int SDIM = 3;
+  using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
+
+  BasicTetMeshData basic_mesh_data;
+  IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
+
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTetrahedra(), ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
+
+  ia_mesh.removeVertex(2);
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTetrahedra() - 2, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices() - 1, ia_mesh.getNumberOfVertices());
+
+  ia_mesh.compact();
+  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_EQ(basic_mesh_data.numTetrahedra() - 2, ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices() - 1, ia_mesh.getNumberOfVertices());
 }
 
 //----------------------------------------------------------------------

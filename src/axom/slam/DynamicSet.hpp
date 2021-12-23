@@ -55,12 +55,12 @@ class DynamicSet : public Set<PosType, ElemType>, SizePolicy
 {
 public:
   using PositionType = PosType;
-  using ElementType = PosType;
+  using ElementType = ElemType;
   using SetVectorType = std::vector<ElementType>;
   using SizePolicyType = SizePolicy;
 
   /// value to mark indices of deleted elements
-  static constexpr int INVALID_ENTRY = ~0;
+  static constexpr ElementType INVALID_ENTRY = ~0;
 
   // predeclare SetBuilder  struct
   struct SetBuilder;
@@ -454,6 +454,10 @@ private:
 private:
   SetVectorType m_data;
 };
+
+template <typename P, typename E, typename S>
+constexpr
+  typename DynamicSet<P, E, S>::ElementType DynamicSet<P, E, S>::INVALID_ENTRY;
 
 }  // end namespace slam
 }  // end namespace axom

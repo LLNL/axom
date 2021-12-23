@@ -697,84 +697,89 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
 template <unsigned int TDIM, unsigned int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::compact()
 {
+  constexpr IndexType INVALID_VERTEX = VertexSet::INVALID_ENTRY;
+  constexpr IndexType INVALID_ELEMENT = ElementSet::INVALID_ENTRY;
+
   //Construct an array that maps original set indices to new compacted indices
-  IndexArray vertex_set_map(vertex_set.size(), -1);
-  IndexArray element_set_map(element_set.size(), -1);
+  IndexArray vertex_set_map(vertex_set.size(), INVALID_VERTEX);
+  IndexArray element_set_map(element_set.size(), INVALID_ELEMENT);
 
   int v_count = 0;
-  for(auto i = 0; i < vertex_set.size(); ++i)
+  for(auto v : vertex_set.positions())
   {
-    if(vertex_set.isValidEntry(i))
+    if(vertex_set.isValidEntry(v))
     {
-      vertex_set_map[i] = v_count++;
+      vertex_set_map[v] = v_count++;
     }
   }
 
   int e_count = 0;
-  for(auto i = 0; i < element_set.size(); ++i)
+  for(auto e : element_set.positions())
   {
-    if(element_set.isValidEntry(i))
+    if(element_set.isValidEntry(e))
     {
-      element_set_map[i] = e_count++;
+      element_set_map[e] = e_count++;
     }
   }
 
-  //update the relations
-  typename ElementBoundaryRelation::RelationVec& ev_rel_data = ev_rel.data();
-  for(auto i = 0; i < ev_rel.size(); ++i)
+  //update the EV boundary relation
+  for(auto e : element_set.positions())
   {
-    int new_entry_index = element_set_map[i];
-    if(new_entry_index < 0) continue;
-    for(auto j = 0; j < ev_rel[i].size(); ++j)
+    const auto new_e = element_set_map[e];
+    if(new_e != INVALID_ELEMENT)
     {
-      int val = ev_rel_data[i * ev_rel[i].size() + j];
-      if(val != ElementBoundaryRelation::INVALID_INDEX)
+      const auto ev_old = ev_rel[e];
+      auto ev_new = ev_rel[new_e];
+      for(auto i : ev_new.positions())
       {
-        val = vertex_set_map[val];
+        const auto old = ev_old[i];
+        ev_new[i] =
+          (old != INVALID_VERTEX) ? vertex_set_map[old] : INVALID_VERTEX;
       }
-      ev_rel_data[new_entry_index * ev_rel[i].size() + j] = val;
     }
   }
-  ev_rel_data.resize(e_count * VERTS_PER_ELEM);
+  ev_rel.data().resize(e_count * VERTS_PER_ELEM);
 
-  typename ElementBoundaryRelation::RelationVec& ve_rel_data = ve_rel.data();
-  for(int i = 0; i < (int)ve_rel.size(); i++)
+  //update the VE coboundary relation
+  for(auto v : vertex_set.positions())
   {
-    int new_entry_index = vertex_set_map[i];
-    if(new_entry_index < 0) continue;
-
-    int val = ve_rel_data[i];
-    if(val != VertexCoboundaryRelation::INVALID_INDEX)
+    const auto new_v = vertex_set_map[v];
+    if(new_v != INVALID_VERTEX)
     {
-      val = element_set_map[val];
+      // cardinality of VE relation is 1
+      const auto old = ve_rel[v][0];
+      ve_rel[new_v][0] =
+        (old != INVALID_ELEMENT) ? element_set_map[old] : INVALID_ELEMENT;
     }
-    ve_rel_data[new_entry_index] = val;
   }
-  ve_rel_data.resize(v_count);
+  ve_rel.data().resize(v_count);
 
-  typename ElementBoundaryRelation::RelationVec& ee_rel_data = ee_rel.data();
-  for(int i = 0; i < (int)ee_rel.size(); i++)
+  //update the EE adjacency relation
+  for(auto e : element_set.positions())
   {
-    int new_entry_index = element_set_map[i];
-    if(new_entry_index < 0) continue;
-    for(int j = 0; j < (int)ee_rel[i].size(); j++)
+    int new_e = element_set_map[e];
+    if(new_e != INVALID_ELEMENT)
     {
-      int val = ee_rel_data[i * ee_rel[i].size() + j];
-      if(val != ElementAdjacencyRelation::INVALID_INDEX)
+      const auto ee_old = ee_rel[e];
+      auto ee_new = ee_rel[new_e];
+      for(auto i : ee_new.positions())
       {
-        val = element_set_map[val];
+        const auto old = ee_old[i];
+        ee_new[i] =
+          (old != INVALID_ELEMENT) ? element_set_map[old] : INVALID_ELEMENT;
       }
-      ee_rel_data[new_entry_index * ee_rel[i].size() + j] = val;
     }
   }
-  ee_rel_data.resize(e_count * VERTS_PER_ELEM);
+  ee_rel.data().resize(e_count * VERTS_PER_ELEM);
 
-  //Update the map
-  for(int i = 0; i < (int)vertex_set_map.size(); i++)
+  //Update the coordinate positions map
+  for(auto v : vertex_set.positions())
   {
-    int new_entry_index = vertex_set_map[i];
-    if(new_entry_index < 0) continue;
-    vcoord_map[new_entry_index] = vcoord_map[i];
+    int new_entry_index = vertex_set_map[v];
+    if(new_entry_index != INVALID_VERTEX)
+    {
+      vcoord_map[new_entry_index] = vcoord_map[v];
+    }
   }
   vcoord_map.resize(v_count);
 

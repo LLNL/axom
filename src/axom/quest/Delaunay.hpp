@@ -407,8 +407,8 @@ private:
   {
     // Note: This auto-compacting feature is hard coded.
     // It may be good to let user have control of this option in the future.
-    return m_num_removed_elements_since_last_compact > 64 &&
-      m_num_removed_elements_since_last_compact > (m_mesh.element_set.size() / 2);
+    return m_num_removed_elements_since_last_compact > 512 &&
+      (m_num_removed_elements_since_last_compact > .2 * m_mesh.element_set.size());
   }
 
   /// \brief Compacts the underlying mesh
