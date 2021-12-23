@@ -34,19 +34,18 @@ public:
                          "The template parameter DIM can only be 2 or 3. ");
 
   using DataType = double;
+
   using PointType = primal::Point<DataType, DIM>;
-  using IAMeshType = slam::IAMesh<DIM, DIM, PointType>;
-
-  using Indextype = typename IAMeshType::IndexType;
-  using IndexArray = typename IAMeshType::IndexArray;
-
+  using ElementType =
+    typename std::conditional<DIM == 2,
+                              primal::Triangle<DataType, 2>,
+                              primal::Tetrahedron<DataType, 3>>::type;
   using BaryCoordType = primal::Point<DataType, DIM + 1>;
-  using Point2DType = primal::Point<DataType, 2>;
-  using Point3DType = primal::Point<DataType, 3>;
-  using Point4DType = primal::Point<DataType, 4>;
-  using Triangle2D = axom::primal::Triangle<DataType, 2>;
-  using Tetrahedron3D = axom::primal::Tetrahedron<DataType, 3>;
-  using BoundingBox = axom::primal::BoundingBox<DataType, DIM>;
+  using BoundingBox = primal::BoundingBox<DataType, DIM>;
+
+  using IAMeshType = slam::IAMesh<DIM, DIM, PointType>;
+  using IndexType = typename IAMeshType::IndexType;
+  using IndexArray = typename IAMeshType::IndexArray;
 
   using IndexPairType = std::pair<IndexType, IndexType>;
 
@@ -54,8 +53,8 @@ public:
   static constexpr IndexType INVALID_INDEX = -1;
 
 private:
-  using ModularFaceIndex = axom::slam::ModularInt<
-    axom::slam::policies::CompileTimeSize<IndexType, VERT_PER_ELEMENT>>;
+  using ModularFaceIndex =
+    slam::ModularInt<slam::policies::CompileTimeSize<IndexType, VERT_PER_ELEMENT>>;
 
 private:
   IAMeshType m_mesh;
@@ -115,10 +114,10 @@ public:
 
     if(element_i == INVALID_INDEX)
     {
-      SLIC_WARNING(axom::fmt::format(
-        "Could not insert point {} into Delaunay triangulation: "
-        "Element containing that point was not found",
-        new_pt));
+      SLIC_WARNING(
+        fmt::format("Could not insert point {} into Delaunay triangulation: "
+                    "Element containing that point was not found",
+                    new_pt));
       return;
     }
 
@@ -141,30 +140,28 @@ public:
   }
 
   template <int TDIM = DIM>
-  typename std::enable_if<TDIM == 2, Triangle2D>::type getElement(
+  typename std::enable_if<TDIM == 2, ElementType>::type getElement(
     int element_index) const
   {
-    IndexArray verts = m_mesh.getVerticesInElement(element_index);
-
+    const auto verts = m_mesh.ev_rel[element_index];
     const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
     const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
     const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
 
-    return Triangle2D(p0, p1, p2);
+    return ElementType(p0, p1, p2);
   }
 
   template <int TDIM = DIM>
-  typename std::enable_if<TDIM == 3, Tetrahedron3D>::type getElement(
+  typename std::enable_if<TDIM == 3, ElementType>::type getElement(
     int element_index) const
   {
-    IndexArray verts = m_mesh.getVerticesInElement(element_index);
-
+    const auto verts = m_mesh.ev_rel[element_index];
     const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
     const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
     const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
     const PointType& p3 = m_mesh.getVertexPoint(verts[3]);
 
-    return Tetrahedron3D(p0, p1, p2, p3);
+    return ElementType(p0, p1, p2, p3);
   }
 
   /**
@@ -298,9 +295,8 @@ public:
         }
 
         // also skip if this is a vertex of the element
-        if(axom::slam::is_subset<IndexType>(
-             vertex_idx,
-             m_mesh.getVerticesInElement(element_idx)))
+        if(slam::is_subset<IndexType>(vertex_idx,
+                                      m_mesh.getVerticesInElement(element_idx)))
         {
           continue;
         }
@@ -326,7 +322,7 @@ public:
       }
       else
       {
-        axom::fmt::memory_buffer out;
+        fmt::memory_buffer out;
         for(const auto& pr : invalidEntries)
         {
           const auto vertex_idx = pr.first;
@@ -334,25 +330,25 @@ public:
           const auto& pos = m_mesh.getVertexPoint(vertex_idx);
           const auto element = this->getElement(element_idx);
           const auto circumsphere = element.circumsphere();
-          axom::fmt::format_to(out,
-                               "\n\tVertex {} @ {}"
-                               "\n\tElement {}: {} w/ circumsphere: {}",
-                               "\n\tDistance to circumcenter: {}",
-                               vertex_idx,
-                               pos,
-                               element_idx,
-                               element,
-                               circumsphere,
-                               std::sqrt(primal::squared_distance(
-                                 pos,
-                                 PointType(circumsphere.getCenter()))));
+          fmt::format_to(out,
+                         "\n\tVertex {} @ {}"
+                         "\n\tElement {}: {} w/ circumsphere: {}"
+                         "\n\tDistance to circumcenter: {}",
+                         vertex_idx,
+                         pos,
+                         element_idx,
+                         element,
+                         circumsphere,
+                         std::sqrt(primal::squared_distance(
+                           pos,
+                           PointType(circumsphere.getCenter()))));
         }
 
         SLIC_INFO(
-          axom::fmt::format("Delaunay complex was NOT valid. There were {} "
-                            "vertices in the circumsphere of an element. {}",
-                            invalidEntries.size(),
-                            axom::fmt::to_string(out)));
+          fmt::format("Delaunay complex was NOT valid. There were {} "
+                      "vertices in the circumsphere of an element. {}",
+                      invalidEntries.size(),
+                      fmt::to_string(out)));
       }
     }
 
@@ -400,7 +396,7 @@ private:
       // Logically, this should never happen.
       if(!m_mesh.isValidElementEntry(element_i))
       {
-        SLIC_WARNING(axom::fmt::format(
+        SLIC_WARNING(fmt::format(
           "Entered invalid element in "
           "Delaunay::findContainingElement(). Underlying mesh {} valid",
           m_mesh.isValid() ? "is" : "is not"));
@@ -669,9 +665,9 @@ Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
 {
   const auto verts = m_mesh.ev_rel[element_idx];
-  Triangle2D tri(m_mesh.getVertexPoint(verts[0]),
-                 m_mesh.getVertexPoint(verts[1]),
-                 m_mesh.getVertexPoint(verts[2]));
+  ElementType tri(m_mesh.getVertexPoint(verts[0]),
+                  m_mesh.getVertexPoint(verts[1]),
+                  m_mesh.getVertexPoint(verts[2]));
 
   return tri.physToBarycentric(query_pt);
 }
@@ -682,10 +678,10 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt)
 {
   const auto verts = m_mesh.ev_rel[element_idx];
-  Tetrahedron3D tet(m_mesh.getVertexPoint(verts[0]),
-                    m_mesh.getVertexPoint(verts[1]),
-                    m_mesh.getVertexPoint(verts[2]),
-                    m_mesh.getVertexPoint(verts[3]));
+  ElementType tet(m_mesh.getVertexPoint(verts[0]),
+                  m_mesh.getVertexPoint(verts[1]),
+                  m_mesh.getVertexPoint(verts[2]),
+                  m_mesh.getVertexPoint(verts[3]));
 
   return tet.physToBarycentric(query_pt);
 }
@@ -699,7 +695,7 @@ bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
-  return axom::primal::in_sphere(query_pt, p0, p1, p2);
+  return primal::in_sphere(query_pt, p0, p1, p2);
 }
 
 // 3D specialization for isPointInSphere(...)
@@ -712,7 +708,7 @@ bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
   const PointType& p3 = m_mesh.getVertexPoint(verts[3]);
-  return axom::primal::in_sphere(query_pt, p0, p1, p2, p3);
+  return primal::in_sphere(query_pt, p0, p1, p2, p3);
 }
 
 }  // end namespace quest

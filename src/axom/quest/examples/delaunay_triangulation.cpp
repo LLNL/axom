@@ -189,6 +189,7 @@ int main(int argc, char** argv)
 {
   // Initialize the SLIC logger
   axom::slic::SimpleLogger logger;
+  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   // Initialize default parameters and update with command line arguments:
   Input params;

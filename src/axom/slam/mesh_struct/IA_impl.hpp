@@ -54,9 +54,8 @@ std::vector<std::string> entries_as_vec(const RelOrMap& outer, const SetType& s)
   std::vector<std::string> strs(sz);
   for(auto pos : s.positions())
   {
-    strs[pos] = s.isValidEntry(pos)
-      ? axom::fmt::format("{}: {}", pos, outer[pos])
-      : axom::fmt::format("{}: {{}}", pos);
+    strs[pos] = s.isValidEntry(pos) ? fmt::format("{}: {}", pos, outer[pos])
+                                    : fmt::format("{}: {{}}", pos);
   }
 
   return strs;
@@ -94,61 +93,57 @@ IAMesh<TDIM, SDIM, P>::ElemNbrFinder(V2EMapType& vertpair_to_elem_map,
 template <unsigned int TDIM, unsigned int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::print_all() const
 {
-  axom::fmt::memory_buffer out;
-  axom::fmt::format_to(out,
-                       "IA mesh: {} mesh in {}d with {} valid vertices (of {}) "
-                       "and {} valid elements (of {})\n",
-                       (TDIM == 2 ? "triangle" : "tetrahedral"),
-                       SDIM,
-                       vertex_set.numberOfValidEntries(),
-                       vertex_set.size(),
-                       element_set.numberOfValidEntries(),
-                       element_set.size());
+  fmt::memory_buffer out;
+  fmt::format_to(out,
+                 "IA mesh: {} mesh in {}d with {} valid vertices (of {}) "
+                 "and {} valid elements (of {})\n",
+                 (TDIM == 2 ? "triangle" : "tetrahedral"),
+                 SDIM,
+                 vertex_set.numberOfValidEntries(),
+                 vertex_set.size(),
+                 element_set.numberOfValidEntries(),
+                 element_set.size());
 
   //print out the element and vertex sets
-  axom::fmt::format_to(out,
-                       "  element_set ({}/{}): [{}]\n",
-                       element_set.numberOfValidEntries(),
-                       element_set.size(),
-                       axom::fmt::join(element_set, ", "));
+  fmt::format_to(out,
+                 "  element_set ({}/{}): [{}]\n",
+                 element_set.numberOfValidEntries(),
+                 element_set.size(),
+                 fmt::join(element_set, ", "));
 
-  axom::fmt::format_to(out,
-                       "  vertex_set ({}/{}): [{}]\n",
-                       vertex_set.numberOfValidEntries(),
-                       vertex_set.size(),
-                       axom::fmt::join(vertex_set, ", "));
+  fmt::format_to(out,
+                 "  vertex_set ({}/{}): [{}]\n",
+                 vertex_set.numberOfValidEntries(),
+                 vertex_set.size(),
+                 fmt::join(vertex_set, ", "));
 
   //print out the relations on the sets (ev, ve and ee)
-  axom::fmt::format_to(
-    out,
-    "  ev_rel ({}/{}): [{}]\n",
-    ev_rel.numberOfValidEntries(),
-    ev_rel.size(),
-    axom::fmt::join(entries_as_vec(ev_rel, element_set), "; "));
+  fmt::format_to(out,
+                 "  ev_rel ({}/{}): [{}]\n",
+                 ev_rel.numberOfValidEntries(),
+                 ev_rel.size(),
+                 fmt::join(entries_as_vec(ev_rel, element_set), "; "));
 
-  axom::fmt::format_to(
-    out,
-    "  ve_rel ({}/{}): [{}]\n",
-    ve_rel.numberOfValidEntries(),
-    ve_rel.size(),
-    axom::fmt::join(entries_as_vec(ve_rel, vertex_set), "; "));
+  fmt::format_to(out,
+                 "  ve_rel ({}/{}): [{}]\n",
+                 ve_rel.numberOfValidEntries(),
+                 ve_rel.size(),
+                 fmt::join(entries_as_vec(ve_rel, vertex_set), "; "));
 
-  axom::fmt::format_to(
-    out,
-    "  ee_rel ({}/{}): [{}]\n",
-    ee_rel.numberOfValidEntries(),
-    ee_rel.size(),
-    axom::fmt::join(entries_as_vec(ee_rel, element_set), "; "));
+  fmt::format_to(out,
+                 "  ee_rel ({}/{}): [{}]\n",
+                 ee_rel.numberOfValidEntries(),
+                 ee_rel.size(),
+                 fmt::join(entries_as_vec(ee_rel, element_set), "; "));
 
   //print out the coordinate map (i.e the positions)
-  axom::fmt::format_to(
-    out,
-    "  vertex coord ({}/{}): [{}]\n",
-    vcoord_map.numberOfValidEntries(),
-    vcoord_map.size(),
-    axom::fmt::join(entries_as_vec(vcoord_map, vertex_set), "; "));
+  fmt::format_to(out,
+                 "  vertex coord ({}/{}): [{}]\n",
+                 vcoord_map.numberOfValidEntries(),
+                 vcoord_map.size(),
+                 fmt::join(entries_as_vec(vcoord_map, vertex_set), "; "));
 
-  SLIC_INFO(axom::fmt::to_string(out));
+  SLIC_INFO(fmt::to_string(out));
 }
 
 //-----------------------------------------------------------------------------

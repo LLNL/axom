@@ -55,12 +55,8 @@ public:
               const PointType& B,
               const PointType& C,
               const PointType& D)
-  {
-    m_points[0] = A;
-    m_points[1] = B;
-    m_points[2] = C;
-    m_points[3] = D;
-  }
+    : m_points {A, B, C, D}
+  { }
 
   /*!
    * \brief Index operator to get the i^th vertex
