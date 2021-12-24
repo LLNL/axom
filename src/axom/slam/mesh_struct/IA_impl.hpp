@@ -794,46 +794,6 @@ bool IAMesh<TDIM, SDIM, P>::isEmpty() const
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>
-bool IAMesh<TDIM, SDIM, P>::isManifold(bool verboseOutput) const
-{
-  /* TODO check that...
-   * - Each valid non-boundary entry in the ee_rel should have a counterpart
-   *   that points to it.
-   * - [More expensive] That we can reconstruct the star of every vertex and
-   *   that that the star is either a ball or a half-ball
-   * (alternatively, that the link is a sphere or a disk)
-   * - Other things that ensures the mesh is manifold?
-   */
-
-  std::stringstream errSstr;
-
-  bool bValid = true;
-
-  if(!isValid(verboseOutput)) return false;
-
-  // Each valid vertex should have a valid entry in ve_rel.
-  for(IndexType i = 0; i < vertex_set.size(); ++i)
-  {
-    if(vertex_set.isValidEntry(i) && !ve_rel.isValidEntry(i))
-    {
-      if(verboseOutput)
-      {
-        errSstr << "\n\t vertex " << i
-                << " is not connected to any elements.\n\t";
-      }
-      bValid = false;
-    }
-  }
-
-  if(verboseOutput && !bValid)
-  {
-    SLIC_DEBUG(errSstr.str());
-  }
-
-  return bValid;
-}
-
-template <unsigned int TDIM, unsigned int SDIM, typename P>
 bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
 {
   std::stringstream errSstr;

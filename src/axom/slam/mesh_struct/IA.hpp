@@ -135,24 +135,6 @@ public:
   bool isValid(bool verboseOutput = false) const;
 
   /**
-   * \brief return true if the encoded mesh is a pure pseudo-manifold
-   * simplicial complexes (with boundary)
-   *
-   * The D-dimensional mesh is *pure* when all top elements (those not
-   * on the boundary of other elements) are D-dimensional.
-   * A D-dimensional mesh is pseudo-manifold when
-   * (a) each facet (i.e. face of dimension D-1) is incident in one or
-   * two D-dimensional elements, and (b) the mesh is D-connected,
-   * i.e. that you can traverse from any element of the mesh to any other
-   * element through the element facets.
-   * It is manifold when the link of every vertex is a (combinatorial)
-   * sphere or a disk.
-   *
-   * \warning This function is only partly implemented
-   */
-  bool isManifold(bool verboseOutput = false) const;
-
-  /**
    * \brief Given an element index, return a list incident vertices.
    *
    * \note If the index is invalid or out of bounds,

@@ -291,8 +291,6 @@ TEST(slam_IA, basic_tri_mesh)
     }
   }
 
-  EXPECT_TRUE(ia_mesh.isManifold(true));
-
   ia_mesh.print_all();
 
   SLIC_INFO("Done");
@@ -590,8 +588,6 @@ TEST(slam_IA, basic_tet_mesh)
   }
 
   ia_mesh.print_all();
-
-  EXPECT_TRUE(ia_mesh.isManifold(true));
 
   SLIC_INFO("Done");
 }
