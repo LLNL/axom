@@ -196,28 +196,32 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
   , vcoord_map(&vertex_set)
 {
   // Relation, element to vertex boundary relation
-  for(IndexType idx = 0; idx < element_set.size() * VERTS_PER_ELEM; ++idx)
+  for(auto e : element_set)
   {
-    ev_rel.insert(idx / VERTS_PER_ELEM, tri[idx]);
+    const int offset = VERTS_PER_ELEM * e;
+    for(int idx = 0; idx < VERTS_PER_ELEM; ++idx)
+    {
+      ev_rel.insert(e, tri[offset + idx]);
+    }
   }
   SLIC_ASSERT_MSG(
     ev_rel.isValid(),
     "Error creating (dynamic) relation from elements to vertices!");
 
   // The map, vertex to coordinates
-  for(IndexType idx = 0; idx < vertex_set.size(); ++idx)
+  for(auto v : vertex_set)
   {
-    vcoord_map[idx] = Point(&(points[idx * COORDS_PER_VERT]));
+    vcoord_map[v] = Point(&(points[v * COORDS_PER_VERT]));
   }
   SLIC_ASSERT_MSG(vcoord_map.isValid(true),
                   "Error creating map from vertex to coords!");
 
   //Vertex element relation. 1->1 mapping only 1 element per vertex.
-  for(IndexType zIdx = 0; zIdx < element_set.size(); ++zIdx)
+  for(auto e : element_set)
   {
-    for(IndexType idx = 0; idx < (int)ev_rel[zIdx].size(); ++idx)
+    for(auto v : ev_rel[e])
     {
-      ve_rel.modify(ev_rel[zIdx][idx], 0, zIdx);
+      ve_rel.modify(v, 0, e);
     }
   }
   SLIC_ASSERT_MSG(
@@ -233,7 +237,7 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
 
   for(auto element_i : element_set)
   {
-    for(IndexType side_i = 0; side_i < VERTS_PER_ELEM; side_i++)
+    for(IndexType side_i = 0; side_i < VERTS_PER_ELEM; ++side_i)
     {
       ElementAndFaceIdxType nst =
         ElemNbrFinder(vertpair_to_elem_map, element_i, side_i);
@@ -253,7 +257,7 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
   }
 
   //Element adjacency relation along facets
-  for(IndexType i : element_set)
+  for(auto i : element_set)
   {
     for(int j = 0; j < VERTS_PER_ELEM; j++)
     {

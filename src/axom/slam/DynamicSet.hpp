@@ -366,7 +366,7 @@ public:
    * The entry is valid when 0 <= i < size() and the value at index
    * \a i is not marked as \a INVALID_ENTRY
    */
-  bool isValidEntry(IndexType i) const
+  inline bool isValidEntry(IndexType i) const
   {
     return i >= 0 && i < size() && m_data[i] != INVALID_ENTRY;
   };

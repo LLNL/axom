@@ -219,7 +219,7 @@ public:
    *
    * An element index is valid when the element is not deleted.
    */
-  bool isValidElementEntry(IndexType element_idx) const
+  inline bool isValidElementEntry(IndexType element_idx) const
   {
     return element_set.isValidEntry(element_idx);
   }
@@ -229,7 +229,7 @@ public:
    *
    * An vertex index is valid when the vertex is not deleted.
    */
-  bool isValidVertexEntry(IndexType vertex_idx) const
+  inline bool isValidVertexEntry(IndexType vertex_idx) const
   {
     return vertex_set.isValidEntry(vertex_idx);
   }
