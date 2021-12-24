@@ -7,7 +7,7 @@
  * \file in_sphere.hpp
  *
  * \brief Consists of methods that test whether a given query point is
- * inside the unique sphere circumscribing a 2D triangle or a 3D tetrahehdron.
+ * inside the unique sphere circumscribing a 2D triangle or a 3D tetrahedron.
  *
  * This is a well known computational geometry primitive.  For reference,
  * see Section 3.1.6.4 in "Real-time collision detection" by C. Ericson.
@@ -16,10 +16,10 @@
 #ifndef AXOM_PRIMAL_IN_SPHERE_H_
 #define AXOM_PRIMAL_IN_SPHERE_H_
 
+#include "axom/core.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
-#include "axom/primal/geometry/OrientationResult.hpp"
 
 namespace axom
 {
@@ -46,7 +46,18 @@ inline bool in_sphere(const Point<T, 2>& q,
                       const Point<T, 2>& p2,
                       double EPS = 1e-8)
 {
-  return in_sphere(q, Triangle<T, 2>(p0, p1, p2), EPS);
+  const Point<T, 2> a(p0.array() - q.array());
+  const Point<T, 2> b(p1.array() - q.array());
+  const Point<T, 2> c(p2.array() - q.array());
+
+  // clang-format off
+  const double det = axom::numerics::determinant(
+    a[0], a[1], (a[0]*a[0] + a[1]*a[1]),
+    b[0], b[1], (b[0]*b[0] + b[1]*b[1]),
+    c[0], c[1], (c[0]*c[0] + c[1]*c[1]));
+  // clang-format on
+
+  return axom::utilities::isNearlyEqual(det, 0., EPS) ? false : (det > 0);
 }
 
 /*!
@@ -62,8 +73,7 @@ inline bool in_sphere(const Point<T, 2>& q,
                       const Triangle<T, 2>& tri,
                       double EPS = 1e-8)
 {
-  const auto sphere = tri.circumsphere();
-  return sphere.getOrientation(q.data(), EPS) == ON_NEGATIVE_SIDE;
+  return in_sphere(q, tri[0], tri[1], tri[2], EPS);
 }
 
 /*!
@@ -90,7 +100,20 @@ inline bool in_sphere(const Point<T, 3>& q,
                       const Point<T, 3>& p3,
                       double EPS = 1e-8)
 {
-  return in_sphere(q, Tetrahedron<T, 3>(p0, p1, p2, p3), EPS);
+  const Point<T, 3> a(p0.array() - q.array());
+  const Point<T, 3> b(p1.array() - q.array());
+  const Point<T, 3> c(p2.array() - q.array());
+  const Point<T, 3> d(p3.array() - q.array());
+
+  // clang-format off
+  const double det = axom::numerics::determinant(
+    a[0], a[1], a[2], (a[0]*a[0] + a[1]*a[1] + a[2]*a[2]),
+    b[0], b[1], b[2], (b[0]*b[0] + b[1]*b[1] + b[2]*b[2]),
+    c[0], c[1], c[2], (c[0]*c[0] + c[1]*c[1] + c[2]*c[2]),
+    d[0], d[1], d[2], (d[0]*d[0] + d[1]*d[1] + d[2]*d[2]));
+  // clang-format on
+
+  return axom::utilities::isNearlyEqual(det, 0., EPS) ? false : (det < 0);
 }
 
 /*!
@@ -106,8 +129,7 @@ inline bool in_sphere(const Point<T, 3>& q,
                       const Tetrahedron<T, 3>& tet,
                       double EPS = 1e-8)
 {
-  const auto sphere = tet.circumsphere();
-  return sphere.getOrientation(q.data(), EPS) == ON_NEGATIVE_SIDE;
+  return in_sphere(q, tet[0], tet[1], tet[2], tet[3], EPS);
 }
 
 }  // namespace primal
