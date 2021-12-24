@@ -378,7 +378,7 @@ private:
 
     while(1)
     {
-      BaryCoordType bary_coord = getBaryCoords(element_i, query_pt);
+      const BaryCoordType bary_coord = getBaryCoords(element_i, query_pt);
 
       //Find the index of the most negative barycentric coord
       //Use modular index since it could wrap around to 0
@@ -432,7 +432,7 @@ private:
   /**
    * \brief helper function to retrieve the barycentric coordinate of the query point in the element
    */
-  BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt);
+  BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt) const;
 
 private:
   /**
@@ -565,7 +565,7 @@ private:
     int numRemovedElements() const { return cavity_elems.size(); }
 
     /// \brief Helper function returns true if the query point is in the sphere formed by the element vertices
-    bool isPointInSphere(const PointType& query_pt, IndexType element_idx);
+    bool isPointInSphere(const PointType& query_pt, IndexType element_idx) const;
 
   public:
     // we create a surface mesh
@@ -662,12 +662,12 @@ void Delaunay<3>::generateInitialMesh(std::vector<DataType>& points,
 // 2D specialization for getBaryCoords(...)
 template <>
 Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
-                                                      const PointType& query_pt)
+                                                      const PointType& query_pt) const
 {
   const auto verts = m_mesh.ev_rel[element_idx];
-  ElementType tri(m_mesh.getVertexPoint(verts[0]),
-                  m_mesh.getVertexPoint(verts[1]),
-                  m_mesh.getVertexPoint(verts[2]));
+  const ElementType tri(m_mesh.getVertexPoint(verts[0]),
+                        m_mesh.getVertexPoint(verts[1]),
+                        m_mesh.getVertexPoint(verts[2]));
 
   return tri.physToBarycentric(query_pt);
 }
@@ -675,13 +675,13 @@ Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
 // 3D specialization for getBaryCoords(...)
 template <>
 Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
-                                                      const PointType& query_pt)
+                                                      const PointType& query_pt) const
 {
   const auto verts = m_mesh.ev_rel[element_idx];
-  ElementType tet(m_mesh.getVertexPoint(verts[0]),
-                  m_mesh.getVertexPoint(verts[1]),
-                  m_mesh.getVertexPoint(verts[2]),
-                  m_mesh.getVertexPoint(verts[3]));
+  const ElementType tet(m_mesh.getVertexPoint(verts[0]),
+                        m_mesh.getVertexPoint(verts[1]),
+                        m_mesh.getVertexPoint(verts[2]),
+                        m_mesh.getVertexPoint(verts[3]));
 
   return tet.physToBarycentric(query_pt);
 }
@@ -689,26 +689,26 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
 // 2D specialization for isPointInSphere(...)
 template <>
 bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
-                                                   IndexType element_idx)
+                                                   IndexType element_idx) const
 {
   const auto verts = m_mesh.ev_rel[element_idx];
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
-  return primal::in_sphere(query_pt, p0, p1, p2);
+  return primal::in_sphere(query_pt, p0, p1, p2, 0.);
 }
 
 // 3D specialization for isPointInSphere(...)
 template <>
 bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
-                                                   IndexType element_idx)
+                                                   IndexType element_idx) const
 {
   const auto verts = m_mesh.ev_rel[element_idx];
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
   const PointType& p3 = m_mesh.getVertexPoint(verts[3]);
-  return primal::in_sphere(query_pt, p0, p1, p2, p3);
+  return primal::in_sphere(query_pt, p0, p1, p2, p3, 0.);
 }
 
 }  // end namespace quest
