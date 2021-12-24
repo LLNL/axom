@@ -63,7 +63,7 @@ std::vector<std::string> entries_as_vec(const RelOrMap& outer, const SetType& s)
 
 }  //end anonymous namespace
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::ElementAndFaceIdxType
 IAMesh<TDIM, SDIM, P>::ElemNbrFinder(V2EMapType& vertpair_to_elem_map,
                                      IndexType element_i,
@@ -90,7 +90,7 @@ IAMesh<TDIM, SDIM, P>::ElemNbrFinder(V2EMapType& vertpair_to_elem_map,
   return ElementAndFaceIdxType(-1, -1);
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::print_all() const
 {
   fmt::memory_buffer out;
@@ -148,7 +148,7 @@ void IAMesh<TDIM, SDIM, P>::print_all() const
 
 //-----------------------------------------------------------------------------
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 IAMesh<TDIM, SDIM, P>::IAMesh()
   : vertex_set(0)
   , element_set(0)
@@ -158,13 +158,13 @@ IAMesh<TDIM, SDIM, P>::IAMesh()
   , vcoord_map(&vertex_set)
 { }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 IAMesh<TDIM, SDIM, P>::IAMesh(const IAMesh& m)
 {
   operator=(m);
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 IAMesh<TDIM, SDIM, P>& IAMesh<TDIM, SDIM, P>::operator=(const IAMesh& m)
 {
   if(&m != this)
@@ -185,7 +185,7 @@ IAMesh<TDIM, SDIM, P>& IAMesh<TDIM, SDIM, P>::operator=(const IAMesh& m)
   return *this;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
                               std::vector<IndexType>& tri)
   : vertex_set(points.size() / COORDS_PER_VERT)
@@ -269,7 +269,7 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
     "Error creating (dynamic) relation from elements to elements!");
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexArray
 IAMesh<TDIM, SDIM, P>::getVerticesInElement(IndexType element_idx) const
 {
@@ -290,7 +290,7 @@ IAMesh<TDIM, SDIM, P>::getVerticesInElement(IndexType element_idx) const
   return ret;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexArray
 IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
 {
@@ -337,7 +337,7 @@ IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
   return ret;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace(
   IndexType element_idx,
   IndexType face_idx) const
@@ -370,7 +370,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace
   return ret;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexArray
 IAMesh<TDIM, SDIM, P>::getElementNeighbors(IndexType element_idx) const
 {
@@ -393,7 +393,7 @@ IAMesh<TDIM, SDIM, P>::getElementNeighbors(IndexType element_idx) const
   return ret;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 const typename IAMesh<TDIM, SDIM, P>::Point& IAMesh<TDIM, SDIM, P>::getVertexPoint(
   IndexType vertex_idx) const
 {
@@ -402,7 +402,7 @@ const typename IAMesh<TDIM, SDIM, P>::Point& IAMesh<TDIM, SDIM, P>::getVertexPoi
   return vcoord_map[vertex_idx];
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::removeVertex(IndexType vertex_idx)
 {
   if(!vertex_set.isValidEntry(vertex_idx))
@@ -423,7 +423,7 @@ void IAMesh<TDIM, SDIM, P>::removeVertex(IndexType vertex_idx)
   // map entry is assumed to be invalid
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
 {
   if(!element_set.isValidEntry(element_idx))
@@ -472,7 +472,7 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
   ee_rel.remove(element_idx);
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addVertex(
   const Point& p)
 {
@@ -483,7 +483,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addVertex(
   return vertex_idx;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   IndexType v0,
   IndexType v1,
@@ -495,7 +495,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   return addElement(vlist);
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   const IndexType* vlist)
 {
@@ -506,9 +506,9 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
 
   for(int i = 0; i < VERTS_PER_ELEM; i++)
   {
-    if(!vertex_set.isValidEntry(vlist[i]))
-      SLIC_WARNING(
-        "Trying to add an element with invalid vertex index:" << vlist[i]);
+    SLIC_WARNING_IF(
+      !vertex_set.isValidEntry(vlist[i]),
+      "Trying to add an element with invalid vertex index:" << vlist[i]);
   }
 
   IndexType element_idx = element_set.insert();
@@ -545,9 +545,8 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
 
   //Check if any of the elements share a face with the new element.
   // If so, modify ee_rel to reflect that.
-  for(auto it = elem_list.begin(); it != elem_list.end(); ++it)
+  for(auto otherElementIdx : elem_list)
   {
-    IndexType otherElementIdx = *it;
     if(otherElementIdx < 0 || otherElementIdx == element_idx) continue;
     for(IndexType s = 0; s < VERTS_PER_ELEM; s++)
     {
@@ -588,18 +587,16 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   return element_idx;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   const IndexType* vlist,
   const IndexType* neighbors)
 {
   for(int i = 0; i < VERTS_PER_ELEM; ++i)
   {
-    if(!vertex_set.isValidEntry(vlist[i]))
-    {
-      SLIC_WARNING(
-        "Trying to add an element with invalid vertex index:" << vlist[i]);
-    }
+    SLIC_WARNING_IF(
+      !vertex_set.isValidEntry(vlist[i]),
+      "Trying to add an element with invalid vertex index:" << vlist[i]);
   }
 
   IndexType element_idx = element_set.insert();
@@ -616,22 +613,22 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
     ee_rel.modify(element_idx, i, neighbors[i]);
   }
 
-  // update ve relation of this element's vertices, if necessary
+  // update coboundary relation of this element's vertices, if necessary
   for(int i = 0; i < VERTS_PER_ELEM; ++i)
   {
     const IndexType v = vlist[i];
-    const IndexType e = ve_rel[v][0];
+    IndexType& e = coboundaryElement(v);
 
     if(!element_set.isValidEntry(e))
     {
-      ve_rel[v][0] = element_idx;
+      e = element_idx;
     }
   }
 
   return element_idx;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   IndexType vertex_idx,
   const std::vector<IndexType>& new_elements)
@@ -692,8 +689,8 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   }
 }
 
-/* Remove all the invalid entries in the IA structure*/
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+// Remove all the invalid entries in the IA structure
+template <int TDIM, int SDIM, typename P>
 void IAMesh<TDIM, SDIM, P>::compact()
 {
   constexpr IndexType INVALID_VERTEX = VertexSet::INVALID_ENTRY;
@@ -787,13 +784,13 @@ void IAMesh<TDIM, SDIM, P>::compact()
   element_set.reset(e_count);
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 bool IAMesh<TDIM, SDIM, P>::isEmpty() const
 {
   return vertex_set.size() == 0;
 }
 
-template <unsigned int TDIM, unsigned int SDIM, typename P>
+template <int TDIM, int SDIM, typename P>
 bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
 {
   std::stringstream errSstr;

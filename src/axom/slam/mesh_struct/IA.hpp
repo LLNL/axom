@@ -50,12 +50,13 @@ namespace slam
  * - the adjacency relation between elements along their facets (faces of dimension TDIM-1).
  *
  * PointType is required to have the following interface:
- * TODO: FILL THIS IN
+ * - .ctor(T*)          -- constructor from an array of T
+ * - operator[](index)  -- subscript operator to access the coordinates
+ * - data() -> T*       -- direct access to the data
+ * - operator==()       -- equality operator
  */
 
-template <unsigned int TDIM = 2,
-          unsigned int SDIM = 3,
-          typename PointType = axom::slam::util::Point3<double>>
+template <int TDIM = 2, int SDIM = 3, typename PointType = axom::slam::util::Point3<double>>
 class IAMesh
 {
 public:
@@ -94,19 +95,13 @@ public:
   using VertexCoboundaryRelation = IADynamicConstantRelation<1>;
   using ElementAdjacencyRelation = IADynamicConstantRelation<VERTS_PER_ELEM>;
 
+  using BoundarySubset = typename ElementBoundaryRelation::RelationSubset;
+  using AdjacencySubset = typename ElementAdjacencyRelation::RelationSubset;
+
   /// types for Maps
   using PositionMap = DynamicMap<VertexSet, Point>;
 
   using IndexBuf = slam::FieldRegistry<SetBase, IndexType>;
-  IndexBuf index_buffer;
-
-  VertexSet vertex_set;    //Set of vertices
-  ElementSet element_set;  //Set of elements
-
-  ElementBoundaryRelation ev_rel;   //Element to vertex relation.
-  VertexCoboundaryRelation ve_rel;  //Vertex to one element partial relation.
-  ElementAdjacencyRelation ee_rel;  //Element to neighboring element relation
-  PositionMap vcoord_map;           //map of coordinates per vertex.
 
 public:
   /**
@@ -133,6 +128,65 @@ public:
    * \note Valid meshes are not necessarily manifold.
    */
   bool isValid(bool verboseOutput = false) const;
+
+  /// \name Accessors for encoded Sets
+  /// @{
+
+  /// \brief Returns the set of vertices in the mesh
+  VertexSet& vertices() { return vertex_set; }
+
+  /// \brief Returns the set of vertices in the mesh
+  const VertexSet& vertices() const { return vertex_set; }
+
+  /// \brief Returns the set of elements in the mesh
+  ElementSet& elements() { return element_set; }
+
+  /// \brief Returns the set of elements in the mesh
+  const ElementSet& elements() const { return element_set; }
+
+  /** 
+   * \brief Returns the set of vertices in the boundary of element \a element_index
+   * \pre Assumes \a element_index is a valid index in the set, i.e. 0 <= element_index < elements().size(),
+   *      but does not require that the elemetn is in the mesh
+   */
+  BoundarySubset boundaryVertices(IndexType element_index)
+  {
+    return ev_rel[element_index];
+  }
+  const BoundarySubset boundaryVertices(IndexType element_index) const
+  {
+    return ev_rel[element_index];
+  }
+
+  /** 
+   * \brief Returns an element in the coboundary (star) of vertex \a vertex_index
+   * \pre Assumes \a vertex_index is a valid index in the set, i.e. 0 <= vertex_index < vertices().size(),
+   *      but does not require that the vertex is in the mesh
+   */
+  IndexType& coboundaryElement(IndexType vertex_index)
+  {
+    return ve_rel[vertex_index][0];
+  }
+  const IndexType& coboundaryElement(IndexType vertex_index) const
+  {
+    return ve_rel[vertex_index][0];
+  }
+
+  /** 
+   * \brief Returns the set of elements adjacent to element \a element_index
+   * \pre Assumes \a element_index is a valid index in the set, i.e. 0 <= element_index < elements().size(),
+   *      but does not require that the element is in the mesh
+   */
+  AdjacencySubset adjacentElements(IndexType element_index)
+  {
+    return ee_rel[element_index];
+  }
+  const AdjacencySubset adjacentElements(IndexType element_index) const
+  {
+    return ee_rel[element_index];
+  }
+
+  /// @}
 
   /**
    * \brief Given an element index, return a list incident vertices.
@@ -232,13 +286,14 @@ public:
    */
   IndexType getValidElementIndex() const
   {
-    for(int i = element_set.size() - 1; true; --i)
+    for(int i = element_set.size() - 1; i >= 0; --i)
     {
       if(isValidElementEntry(i))
       {
         return i;
       }
     }
+    return INVALID_ELEMENT_INDEX;
   }
 
   /**
@@ -334,7 +389,20 @@ private:
                                       IndexType element_i,
                                       IndexType side_i);
 
-};  //end class IAMesh
+private:
+  VertexSet vertex_set;             //Set of vertices
+  ElementSet element_set;           //Set of elements
+  ElementBoundaryRelation ev_rel;   //Element to vertex relation.
+  VertexCoboundaryRelation ve_rel;  //Vertex to one element partial relation.
+  ElementAdjacencyRelation ee_rel;  //Element to neighboring element relation
+  PositionMap vcoord_map;           //map of coordinates per vertex.
+};
+
+template <int TDIM, int SDIM, typename P>
+constexpr int IAMesh<TDIM, SDIM, P>::COORDS_PER_VERT;
+
+template <int TDIM, int SDIM, typename P>
+constexpr int IAMesh<TDIM, SDIM, P>::VERTS_PER_ELEM;
 
 }  // end namespace slam
 }  // end namespace axom

@@ -297,7 +297,7 @@ public:
    *
    * \return The index of the first element with value \a e, or INVALID_ENTRY
    * if none can be found.
-   * \note This is an O(n) operation
+   * \note This is an O(n) operation in the size of the set
    */
   IndexType findIndex(ElementType e) const
   {
@@ -307,6 +307,22 @@ public:
       if(m_data[i] == e) return i;
     }
     return INVALID_ENTRY;
+  };
+
+  /**
+   * \brief Given a value, find the index of the first entry containing it
+   *
+   * \return \a true if the set contains element with value \a e, false otherwise
+   * \note This is an O(n) operation in the size of the set
+   */
+  bool contains(ElementType e) const
+  {
+    const int sz = size();
+    for(int i = 0; i < sz; ++i)
+    {
+      if(m_data[i] == e) return true;
+    }
+    return false;
   };
 
   /// @}

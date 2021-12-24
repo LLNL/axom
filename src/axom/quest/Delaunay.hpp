@@ -143,7 +143,7 @@ public:
   typename std::enable_if<TDIM == 2, ElementType>::type getElement(
     int element_index) const
   {
-    const auto verts = m_mesh.ev_rel[element_index];
+    const auto verts = m_mesh.boundaryVertices(element_index);
     const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
     const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
     const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
@@ -155,7 +155,7 @@ public:
   typename std::enable_if<TDIM == 3, ElementType>::type getElement(
     int element_index) const
   {
-    const auto verts = m_mesh.ev_rel[element_index];
+    const auto verts = m_mesh.boundaryVertices(element_index);
     const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
     const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
     const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
@@ -183,14 +183,14 @@ public:
 
     this->compactMesh();
 
-    for(auto v : m_mesh.vertex_set.positions())
+    for(auto v : m_mesh.vertices().positions())
     {
       mint_mesh.appendNodes(m_mesh.getVertexPoint(v).data(), 1);
     }
 
-    for(auto e : m_mesh.element_set.positions())
+    for(auto e : m_mesh.elements().positions())
     {
-      mint_mesh.appendCell(&(m_mesh.ev_rel[e][0]), CELL_TYPE);
+      mint_mesh.appendCell(&(m_mesh.boundaryVertices(e)[0]), CELL_TYPE);
     }
 
     mint::write_vtk(&mint_mesh, filename);
@@ -259,10 +259,10 @@ public:
 
     std::vector<std::pair<IndexType, IndexType>> invalidEntries;
 
-    ImplicitGridType grid(m_bounding_box, nullptr, m_mesh.element_set.size());
+    ImplicitGridType grid(m_bounding_box, nullptr, m_mesh.elements().size());
 
     // Add (bounding boxes of) element circumspheres to implicit grid
-    for(auto element_idx : m_mesh.element_set)
+    for(auto element_idx : m_mesh.elements().positions())
     {
       if(m_mesh.isValidElementEntry(element_idx))
       {
@@ -279,7 +279,7 @@ public:
     }
 
     // for each vertex -- check in_sphere condition for candidate element
-    for(auto vertex_idx : m_mesh.vertex_set)
+    for(auto vertex_idx : m_mesh.vertices().positions())
     {
       const auto& vertex = m_mesh.getVertexPoint(vertex_idx);
 
@@ -390,7 +390,7 @@ private:
       }
 
       // else, move to that neighbor
-      element_i = m_mesh.ee_rel[element_i][modular_idx + 1];
+      element_i = m_mesh.adjacentElements(element_i)[modular_idx + 1];
 
       // Either there is a hole in the m_mesh, or the point is outside of the m_mesh.
       // Logically, this should never happen.
@@ -411,7 +411,7 @@ private:
     // Note: This auto-compacting feature is hard coded.
     // It may be good to let user have control of this option in the future.
     return m_num_removed_elements_since_last_compact > 512 &&
-      (m_num_removed_elements_since_last_compact > .2 * m_mesh.element_set.size());
+      (m_num_removed_elements_since_last_compact > .2 * m_mesh.elements().size());
   }
 
   /// \brief Compacts the underlying mesh
@@ -444,8 +444,8 @@ private:
     InsertionHelper(IAMeshType& mesh)
       : m_mesh(mesh)
       , facet_set(0)
-      , fv_rel(&facet_set, &m_mesh.vertex_set)
-      , fc_rel(&facet_set, &m_mesh.element_set)
+      , fv_rel(&facet_set, &m_mesh.vertices())
+      , fc_rel(&facet_set, &m_mesh.elements())
       , cavity_elems(0)
       , inserted_elems(0)
     { }
@@ -489,9 +489,8 @@ private:
       cavity_elems.insert(element_idx);
 
       //check for each faces; m_checked_element_set ensures we only check each element once
-      for(auto nbr = m_mesh.ee_rel.begin(element_idx);
-          nbr != m_mesh.ee_rel.end(element_idx);
-          ++nbr)
+      const auto neighbors = m_mesh.adjacentElements(element_idx);
+      for(auto nbr = neighbors.begin(); nbr != neighbors.end(); ++nbr)
       {
         //The latter case is a checked element that is not a cavity element
         if(!m_mesh.isValidElementEntry(*nbr) ||
@@ -664,7 +663,7 @@ template <>
 Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt) const
 {
-  const auto verts = m_mesh.ev_rel[element_idx];
+  const auto verts = m_mesh.boundaryVertices(element_idx);
   const ElementType tri(m_mesh.getVertexPoint(verts[0]),
                         m_mesh.getVertexPoint(verts[1]),
                         m_mesh.getVertexPoint(verts[2]));
@@ -677,7 +676,7 @@ template <>
 Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt) const
 {
-  const auto verts = m_mesh.ev_rel[element_idx];
+  const auto verts = m_mesh.boundaryVertices(element_idx);
   const ElementType tet(m_mesh.getVertexPoint(verts[0]),
                         m_mesh.getVertexPoint(verts[1]),
                         m_mesh.getVertexPoint(verts[2]),
@@ -691,7 +690,7 @@ template <>
 bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
                                                    IndexType element_idx) const
 {
-  const auto verts = m_mesh.ev_rel[element_idx];
+  const auto verts = m_mesh.boundaryVertices(element_idx);
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
@@ -703,7 +702,7 @@ template <>
 bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
                                                    IndexType element_idx) const
 {
-  const auto verts = m_mesh.ev_rel[element_idx];
+  const auto verts = m_mesh.boundaryVertices(element_idx);
   const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
   const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
   const PointType& p2 = m_mesh.getVertexPoint(verts[2]);

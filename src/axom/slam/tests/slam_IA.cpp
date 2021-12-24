@@ -147,16 +147,10 @@ const IndexType BasicTetMeshData::el_nbr_rel [] = {
 template <typename IAMeshType>
 bool isInBoundary(const IAMeshType& ia_mesh, IndexType vert_id, IndexType elem_id)
 {
-  typename IAMeshType::IndexArray ev = ia_mesh.getVerticesInElement(elem_id);
-  const int sz = ev.size();
-  for(int j = 0; j < sz; ++j)
+  for(auto bdry : ia_mesh.boundaryVertices(elem_id))
   {
-    if(ev[j] == vert_id)
-    {
-      return true;
-    }
+    if(bdry == vert_id) return true;
   }
-
   return false;
 }
 
@@ -166,16 +160,10 @@ bool isInBoundary(const IAMeshType& ia_mesh, IndexType vert_id, IndexType elem_i
 template <typename IAMeshType>
 bool isAdjacent(const IAMeshType& ia_mesh, IndexType el_1, IndexType el_2)
 {
-  typename IAMeshType::IndexArray ee = ia_mesh.getElementNeighbors(el_2);
-  const int sz = ee.size();
-  for(int j = 0; j < sz; ++j)
+  for(auto adj : ia_mesh.adjacentElements(el_1))
   {
-    if(ee[j] == el_1)
-    {
-      return true;
-    }
+    if(adj == el_2) return true;
   }
-
   return false;
 }
 
@@ -223,24 +211,22 @@ TEST(slam_IA, basic_tri_mesh)
 {
   SLIC_INFO("Testing constructing basic triangle mesh...");
 
-  const int TDIM = 2;
-  const int SDIM = 3;
+  constexpr int TDIM = 2;
+  constexpr int SDIM = 3;
   using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
-
   using IndexArray = IAMeshType::IndexArray;
 
-  const int vert_per_elem = IAMeshType::VERTS_PER_ELEM;
-  EXPECT_EQ(3, vert_per_elem);
+  constexpr int vert_per_elem = IAMeshType::VERTS_PER_ELEM;
+  constexpr int coord_per_vert = IAMeshType::COORDS_PER_VERT;
+  constexpr int numAdjacentElems = vert_per_elem;
 
-  const int coord_per_vert = IAMeshType::COORDS_PER_VERT;
-  EXPECT_EQ(3, coord_per_vert);
-
-  const int numAdjacentElems = vert_per_elem;
+  EXPECT_EQ(TDIM + 1, vert_per_elem);
+  EXPECT_EQ(SDIM, coord_per_vert);
 
   BasicTriMeshData basic_mesh_data;
   IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
 
-  EXPECT_TRUE(ia_mesh.isValid(true));
+  EXPECT_TRUE(ia_mesh.isValid());
   EXPECT_FALSE(ia_mesh.isEmpty());
 
   const int numVerts = ia_mesh.getNumberOfVertices();
@@ -250,44 +236,40 @@ TEST(slam_IA, basic_tri_mesh)
   EXPECT_EQ(basic_mesh_data.numTriangles(), numElems);
 
   // Test Element boundary relation
-  for(int e_i = 0; e_i < numElems; ++e_i)
+  for(auto e : ia_mesh.elements())
   {
-    IndexArray r = ia_mesh.getVerticesInElement(e_i);
-    const int numEV = r.size();
-    EXPECT_EQ(vert_per_elem, numEV);
-    for(int i = 0; i < numEV; i++)
+    auto bdry = ia_mesh.boundaryVertices(e);
+    EXPECT_EQ(vert_per_elem, bdry.size());
+    for(auto it = bdry.begin(); it != bdry.end(); ++it)
     {
-      EXPECT_EQ(basic_mesh_data.elem[e_i * vert_per_elem + i], r[i]);
+      EXPECT_EQ(basic_mesh_data.elem[e * vert_per_elem + it.index()], *it);
     }
   }
 
   // Test Vertex co-boundary relation
-  for(int v_i = 0; v_i < numVerts; ++v_i)
+  for(auto v : ia_mesh.vertices())
   {
-    IndexArray r = ia_mesh.getElementsWithVertex(v_i);
-    const int numVE = r.size();
-    EXPECT_EQ(basic_mesh_data.vert_to_el_num[v_i], numVE);
-    for(int i = 0; i < numVE; i++)
+    IndexArray star = ia_mesh.getElementsWithVertex(v);
+    EXPECT_EQ(basic_mesh_data.vert_to_el_num[v], star.size());
+
+    for(auto el : star)
     {
-      int el = r[i];
-      EXPECT_TRUE(isInBoundary(ia_mesh, v_i, el))
-        << "Vertex co-boundary relation indicates that " << v_i
+      EXPECT_TRUE(isInBoundary(ia_mesh, v, el))
+        << "Vertex co-boundary relation indicates that " << v
         << " should be in boundary of element " << el << " but it is not";
     }
   }
 
   // Test Element adjacency relation
-  for(int e_i = 0; e_i < numElems; ++e_i)
+  for(auto e : ia_mesh.elements())
   {
-    IndexArray r = ia_mesh.getElementNeighbors(e_i);
-    const int numEE = r.size();
-    EXPECT_EQ(numAdjacentElems, numEE);
-    for(int i = 0; i < numEE; ++i)
+    auto neighbors = ia_mesh.adjacentElements(e);
+    EXPECT_EQ(numAdjacentElems, neighbors.size());
+    for(auto nbr : neighbors)
     {
-      int e_adj = r[i];
-      EXPECT_TRUE(isAdjacent(ia_mesh, e_adj, e_i))
-        << "Element adjacency relation indicates that " << e_adj
-        << " should be adjacent to element " << e_i << " but it is not";
+      EXPECT_TRUE(isAdjacent(ia_mesh, nbr, e))
+        << "Element adjacency relation indicates that " << nbr
+        << " should be adjacent to element " << e << " but it is not";
     }
   }
 
@@ -316,7 +298,7 @@ TEST(slam_IA, dynamically_build_tri_mesh)
 
   // Build the mesh from nothing
   IAMeshType ia_mesh;  //empty mesh
-  EXPECT_TRUE(ia_mesh.isValid(true));
+  EXPECT_TRUE(ia_mesh.isValid());
   EXPECT_TRUE(ia_mesh.isEmpty());
 
   // Add the vertices
@@ -326,7 +308,7 @@ TEST(slam_IA, dynamically_build_tri_mesh)
 
     PointType pt(&basic_mesh_data.points[v_i * coord_per_vert]);
     ia_mesh.addVertex(pt);
-    EXPECT_TRUE(ia_mesh.isValid(true));
+    EXPECT_TRUE(ia_mesh.isValid());
   }
 
   const int numVerts = ia_mesh.getNumberOfVertices();
@@ -343,54 +325,44 @@ TEST(slam_IA, dynamically_build_tri_mesh)
                        basic_mesh_data.elem[startIdx + 1],
                        basic_mesh_data.elem[startIdx + 2]);
 
-    EXPECT_TRUE(ia_mesh.isValid(true));
+    EXPECT_TRUE(ia_mesh.isValid());
   }
   const int numTris = ia_mesh.getNumberOfElements();
   EXPECT_EQ(basic_mesh_data.numTriangles(), numTris);
   EXPECT_FALSE(ia_mesh.isEmpty());
 
   // Check that the element boundary relation is correct
-  for(int e_i = 0; e_i < numTris; ++e_i)
+  for(auto e : ia_mesh.elements())
   {
-    IndexArray r = ia_mesh.getVerticesInElement(e_i);
-    const int sz = r.size();
-    EXPECT_EQ(vert_per_elem, sz);
+    auto bdry = ia_mesh.boundaryVertices(e);
+    EXPECT_EQ(vert_per_elem, bdry.size());
 
-    for(int j = 0; j < sz; ++j)
+    for(auto idx : bdry.positions())
     {
-      const int expVert = basic_mesh_data.elem[e_i * vert_per_elem + j];
-      EXPECT_EQ(expVert, r[j]);
+      const int expVert = basic_mesh_data.elem[e * vert_per_elem + idx];
+      EXPECT_EQ(expVert, bdry[idx]);
     }
   }
 
   // Check that the vertex co-boundary relation is correct
-  for(int v_i = 0; v_i < numVerts; ++v_i)
+  for(auto v : ia_mesh.vertices())
   {
-    IndexArray r = ia_mesh.getElementsWithVertex(v_i);
-    const int numVE = r.size();
-    EXPECT_EQ(basic_mesh_data.vert_to_el_num[v_i], numVE);
-
-    for(int i = 0; i < numVE; i++)
-    {
-      int el = r[i];
-      EXPECT_TRUE(isInBoundary(ia_mesh, v_i, el))
-        << "Vertex co-boundary relation indicates that " << v_i
-        << " should be in boundary of element " << el << " but it is not";
-    }
+    IndexType el = ia_mesh.coboundaryElement(v);
+    EXPECT_TRUE(isInBoundary(ia_mesh, v, el))
+      << "Vertex co-boundary relation indicates that " << v
+      << " should be in boundary of element " << el << " but it is not";
   }
 
   // Check the element adjacencies are correct
-  for(int e_i = 0; e_i < numTris; ++e_i)
+  for(auto e : ia_mesh.elements())
   {
-    IndexArray r = ia_mesh.getElementNeighbors(e_i);
-    const int numEE = r.size();
-    EXPECT_EQ(numAdjacentElems, numEE);
-    for(int i = 0; i < numEE; ++i)
+    auto neighbors = ia_mesh.adjacentElements(e);
+    EXPECT_EQ(numAdjacentElems, neighbors.size());
+    for(auto nbr : neighbors)
     {
-      int el_adj = r[i];
-      EXPECT_TRUE(isAdjacent(ia_mesh, el_adj, e_i))
-        << "Element adjacency relation indicates that " << el_adj
-        << " should be adjacent to element " << e_i << " but it is not";
+      EXPECT_TRUE(isAdjacent(ia_mesh, nbr, e))
+        << "Element adjacency relation indicates that " << nbr
+        << " should be adjacent to element " << e << " but it is not";
     }
   }
 }
@@ -399,19 +371,17 @@ TEST(slam_IA, tri_mesh_remove_verts_and_elems)
 {
   SLIC_INFO("Testing removing elements and vertices from a triangle mesh...");
 
-  const int TDIM = 2;
-  const int SDIM = 3;
+  constexpr int TDIM = 2;
+  constexpr int SDIM = 3;
   using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
-
-  const int vert_per_elem = IAMeshType::VERTS_PER_ELEM;
+  constexpr int vert_per_elem = IAMeshType::VERTS_PER_ELEM;
 
   BasicTriMeshData basic_mesh_data;
   IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
 
   // Check that we begin with the correct number of verts and tris
-  EXPECT_TRUE(ia_mesh.isValid(true));
+  EXPECT_TRUE(ia_mesh.isValid());
   EXPECT_EQ(basic_mesh_data.numTriangles(), ia_mesh.getNumberOfElements());
-
   EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
 
   //removing elements bigger than 7
@@ -422,64 +392,62 @@ TEST(slam_IA, tri_mesh_remove_verts_and_elems)
 
   EXPECT_FALSE(ia_mesh.isEmpty());
 
-  EXPECT_TRUE(ia_mesh.isValid(true));
+  EXPECT_TRUE(ia_mesh.isValid());
   EXPECT_EQ(basic_mesh_data.numTriangles() - 4, ia_mesh.getNumberOfElements());
 
   //removing vertex 1, which the removed elements contain
   ia_mesh.removeVertex(1);
 
-  EXPECT_TRUE(ia_mesh.isValid(true));
+  EXPECT_TRUE(ia_mesh.isValid());
   EXPECT_FALSE(ia_mesh.isEmpty());
 
   EXPECT_EQ(basic_mesh_data.numTriangles() - 4, ia_mesh.getNumberOfElements());
-
   EXPECT_EQ(basic_mesh_data.numVertices() - 1, ia_mesh.getNumberOfVertices());
 
   // Check the validity of the set entries
-  for(int v_i = 0; v_i < ia_mesh.getNumberOfVertices(); ++v_i)
+  for(auto v_i : ia_mesh.vertices().positions())
   {
     EXPECT_EQ(ia_mesh.isValidVertexEntry(v_i), v_i != 1);
   }
 
-  for(int e_i = 0; e_i < ia_mesh.getNumberOfElements(); ++e_i)
+  for(auto e_i : ia_mesh.elements().positions())
   {
     EXPECT_EQ(ia_mesh.isValidElementEntry(e_i), e_i < 8);
   }
 
   // Check incidence and adjacency relations
-  // TODO: This should not use private relation data
-  for(int el_i = 0; el_i < ia_mesh.ee_rel.size(); el_i++)
+  for(auto e_idx : ia_mesh.elements().positions())
   {
-    EXPECT_EQ(ia_mesh.ee_rel[el_i].size(), vert_per_elem);
-    for(int j = 0; j < ia_mesh.ee_rel[el_i].size(); j++)
+    auto neighbors = ia_mesh.adjacentElements(e_idx);
+    EXPECT_EQ(vert_per_elem, neighbors.size());
+    for(int n_idx : neighbors.positions())
     {
-      int orig_nbr = basic_mesh_data.el_nbr_rel[el_i * vert_per_elem + j];
-      if(orig_nbr > 7 || el_i > 7)
+      int orig_nbr = basic_mesh_data.el_nbr_rel[e_idx * vert_per_elem + n_idx];
+      if(orig_nbr > 7 || e_idx > 7)
       {
-        EXPECT_EQ(ia_mesh.ee_rel[el_i][j],
-                  (int)IAMeshType::ElementAdjacencyRelation::INVALID_INDEX);
+        EXPECT_EQ(neighbors[n_idx],
+                  IAMeshType::ElementAdjacencyRelation::INVALID_INDEX);
       }
       else
       {
-        EXPECT_EQ(ia_mesh.ee_rel[el_i][j], orig_nbr);
+        EXPECT_EQ(neighbors[n_idx], orig_nbr);
       }
     }
   }
 
   //removing vertex 0
   ia_mesh.removeVertex(0);
-
-  ia_mesh.isValid(true);
+  EXPECT_TRUE(ia_mesh.isValid());
 
   //check that the elements with the removed vertices 0 are also removed.
-  for(int i = 0; i < (int)basic_mesh_data.elem.size() / vert_per_elem; i++)
+  for(auto e_idx : ia_mesh.elements().positions())
   {
     bool bDeleted = false;
     for(int j = 0; j < vert_per_elem; j++)
     {
-      bDeleted |= basic_mesh_data.elem[i * vert_per_elem + j] == 0;
+      bDeleted |= basic_mesh_data.elem[e_idx * vert_per_elem + j] == 0;
     }
-    EXPECT_EQ(ia_mesh.isValidElementEntry(i), !bDeleted && i <= 7);
+    EXPECT_EQ(ia_mesh.isValidElementEntry(e_idx), !bDeleted && e_idx <= 7);
   }
 }
 
@@ -539,45 +507,44 @@ TEST(slam_IA, basic_tet_mesh)
 {
   SLIC_INFO("Testing constructing basic tetrahedral mesh...");
 
-  const int vert_per_elem = 4;
-  const int coord_per_vert = 3;
+  constexpr int vert_per_elem = 4;
+  constexpr int coord_per_vert = 3;
   using IAMeshType = slam::IAMesh<vert_per_elem - 1, coord_per_vert, PointType>;
   using IndexArray = IAMeshType::IndexArray;
 
   BasicTetMeshData basic_mesh_data;
   IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);
 
-  EXPECT_EQ((int)ia_mesh.VERTS_PER_ELEM, vert_per_elem);
-  EXPECT_EQ((int)ia_mesh.COORDS_PER_VERT, coord_per_vert);
+  EXPECT_EQ(ia_mesh.VERTS_PER_ELEM, vert_per_elem);
+  EXPECT_EQ(ia_mesh.COORDS_PER_VERT, coord_per_vert);
 
-  EXPECT_TRUE(ia_mesh.isValid(true));
+  EXPECT_TRUE(ia_mesh.isValid());
 
-  EXPECT_EQ((int)basic_mesh_data.elem.size() / vert_per_elem,
-            ia_mesh.getNumberOfElements());
-  EXPECT_EQ((int)basic_mesh_data.points.size() / coord_per_vert,
-            ia_mesh.getNumberOfVertices());
+  EXPECT_EQ(basic_mesh_data.numTetrahedra(), ia_mesh.getNumberOfElements());
+  EXPECT_EQ(basic_mesh_data.numVertices(), ia_mesh.getNumberOfVertices());
 
-  for(int el_i = 0; el_i < ia_mesh.getNumberOfElements(); el_i++)
+  // check EV relation
+  for(auto el_i : ia_mesh.elements().positions())
   {
-    IndexArray r = ia_mesh.getVerticesInElement(el_i);
-    EXPECT_EQ((int)r.size(), vert_per_elem);
-    for(int i = 0; i < (int)r.size(); i++)
+    auto bdry = ia_mesh.boundaryVertices(el_i);
+    EXPECT_EQ(vert_per_elem, bdry.size());
+    for(auto idx : bdry.positions())
     {
-      EXPECT_EQ(r[i], basic_mesh_data.elem[el_i * vert_per_elem + i]);
+      EXPECT_EQ(bdry[idx], basic_mesh_data.elem[el_i * vert_per_elem + idx]);
     }
   }
 
-  for(int vert_i = 0; vert_i < ia_mesh.getNumberOfVertices(); vert_i++)
+  // check VE relation -- expanding to full star of each vertex
+  for(auto vert_i : ia_mesh.vertices().positions())
   {
-    IndexArray r = ia_mesh.getElementsWithVertex(vert_i);
-    EXPECT_EQ((int)r.size(), basic_mesh_data.vert_to_el_num[vert_i]);
-    for(int i = 0; i < (int)r.size(); i++)
+    IndexArray star = ia_mesh.getElementsWithVertex(vert_i);
+    EXPECT_EQ(basic_mesh_data.vert_to_el_num[vert_i], star.size());
+    for(auto el_i : star)
     {
-      int el = r[i];
       bool bContains = false;
       for(int j = 0; j < vert_per_elem; j++)
       {
-        if(basic_mesh_data.elem[el * vert_per_elem + j] == vert_i)
+        if(basic_mesh_data.elem[el_i * vert_per_elem + j] == vert_i)
         {
           bContains = true;
           break;
@@ -603,7 +570,7 @@ TEST(slam_IA, dynamically_build_tet_mesh)
   using IAMeshType = slam::IAMesh<vert_per_elem - 1, coord_per_vert, PointType>;
   IAMeshType ia_mesh;  //empty mesh
 
-  EXPECT_TRUE(ia_mesh.isValid(true));
+  EXPECT_TRUE(ia_mesh.isValid());
 
   //build the mesh from nothing
 
@@ -613,7 +580,7 @@ TEST(slam_IA, dynamically_build_tet_mesh)
   {
     PointType pt(&basic_mesh_data.points[vert_i]);
     ia_mesh.addVertex(pt);
-    EXPECT_TRUE(ia_mesh.isValid(true));
+    EXPECT_TRUE(ia_mesh.isValid());
   }
 
   //adding the elements
@@ -625,41 +592,42 @@ TEST(slam_IA, dynamically_build_tet_mesh)
                        basic_mesh_data.elem[elem_i + 2],
                        basic_mesh_data.elem[elem_i + 3]);
 
-    EXPECT_TRUE(ia_mesh.isValid(true));
+    EXPECT_TRUE(ia_mesh.isValid());
   }
 
-  //check the ev_rel entries are correct
-  for(int i = 0; i < ia_mesh.ev_rel.size(); i++)
+  //check that the Element-Vertex boundary entries are correct
+  for(auto e : ia_mesh.elements())
   {
-    EXPECT_EQ(ia_mesh.ev_rel[i].size(), vert_per_elem);
-    for(int j = 0; j < ia_mesh.ev_rel[i].size(); j++)
+    auto e_verts = ia_mesh.boundaryVertices(e);
+    EXPECT_EQ(e_verts.size(), vert_per_elem);
+
+    for(auto idx : e_verts.positions())
     {
-      EXPECT_EQ(ia_mesh.ev_rel[i][j],
-                basic_mesh_data.elem[i * vert_per_elem + j]);
+      EXPECT_EQ(e_verts[idx], basic_mesh_data.elem[e * vert_per_elem + idx]);
     }
   }
 
-  //check the ve_rel entries are correct
-  for(int v_i = 0; v_i < ia_mesh.ve_rel.size(); v_i++)
+  // Check that the Vertex-Element coboundary entries are correct
+  for(auto v : ia_mesh.vertices())
   {
-    EXPECT_EQ(ia_mesh.ve_rel[v_i].size(), 1);
-    int e_i = ia_mesh.ve_rel[v_i][0];
+    auto e_i = ia_mesh.coboundaryElement(v);
     bool bContains = false;
-    for(int j = 0; j < vert_per_elem; j++)
+    for(int j = 0; j < vert_per_elem; ++j)
     {
       bContains |= basic_mesh_data.elem[e_i * vert_per_elem + j];
     }
     EXPECT_TRUE(bContains);
   }
 
-  //check the ee_rel entries are correct
-  for(int i = 0; i < ia_mesh.ee_rel.size(); i++)
+  //check that the Element-Element adjacency entries are correct
+  for(auto e : ia_mesh.elements())
   {
-    EXPECT_EQ(ia_mesh.ee_rel[i].size(), vert_per_elem);
-    for(int j = 0; j < ia_mesh.ee_rel[i].size(); j++)
+    auto neighbors = ia_mesh.adjacentElements(e);
+    EXPECT_EQ(vert_per_elem, neighbors.size());
+    for(auto idx : neighbors.positions())
     {
-      EXPECT_EQ(ia_mesh.ee_rel[i][j],
-                basic_mesh_data.el_nbr_rel[i * vert_per_elem + j]);
+      EXPECT_EQ(neighbors[idx],
+                basic_mesh_data.el_nbr_rel[e * vert_per_elem + idx]);
     }
   }
 
@@ -670,35 +638,34 @@ TEST(slam_IA, dynamically_build_tet_mesh)
   //removing vertex 1, which only the removed elements contain
   ia_mesh.removeVertex(5);
 
-  ia_mesh.isValid(true);
+  ia_mesh.isValid();
 
-  EXPECT_EQ(ia_mesh.getNumberOfElements(),
-            (int)basic_mesh_data.elem.size() / vert_per_elem - 2);
+  EXPECT_EQ(basic_mesh_data.numTetrahedra() - 2, ia_mesh.getNumberOfElements());
 
-  EXPECT_EQ(ia_mesh.getNumberOfVertices(),
-            (int)basic_mesh_data.points.size() / coord_per_vert - 1);
+  EXPECT_EQ(basic_mesh_data.numVertices() - 1, ia_mesh.getNumberOfVertices());
 
   //check the validity of the set entries
-  for(int i = 0; i < ia_mesh.getNumberOfElements(); i++)
+  for(auto idx : ia_mesh.elements().positions())
   {
-    EXPECT_EQ(ia_mesh.isValidElementEntry(i), i < 4);
+    EXPECT_EQ(ia_mesh.isValidElementEntry(idx), idx < 4);
   }
 
   //check the ee_rel entries are correct after removing the elements
-  for(int el_i = 0; el_i < ia_mesh.ee_rel.size(); el_i++)
+  for(auto idx : ia_mesh.elements().positions())
   {
-    EXPECT_EQ(ia_mesh.ee_rel[el_i].size(), vert_per_elem);
-    for(int j = 0; j < ia_mesh.ee_rel[el_i].size(); j++)
+    auto neighbors = ia_mesh.adjacentElements(idx);
+    EXPECT_EQ(vert_per_elem, neighbors.size());
+    for(auto n_idx : neighbors.positions())
     {
-      int orig_nbr = basic_mesh_data.el_nbr_rel[el_i * vert_per_elem + j];
-      if(orig_nbr < 4 && el_i < 4)
+      int orig_nbr = basic_mesh_data.el_nbr_rel[idx * vert_per_elem + n_idx];
+      if(orig_nbr < 4 && idx < 4)
       {
-        EXPECT_EQ(ia_mesh.ee_rel[el_i][j], orig_nbr);
+        EXPECT_EQ(neighbors[n_idx], orig_nbr);
       }
       else
       {
-        EXPECT_EQ(ia_mesh.ee_rel[el_i][j],
-                  (int)IAMeshType::ElementAdjacencyRelation::INVALID_INDEX);
+        EXPECT_EQ(neighbors[n_idx],
+                  IAMeshType::ElementAdjacencyRelation::INVALID_INDEX);
       }
     }
   }
@@ -707,10 +674,10 @@ TEST(slam_IA, dynamically_build_tet_mesh)
   ia_mesh.removeVertex(6);
 
   //check that the elements with the removed vertices are also removed.
-  for(int i = 0; i < (int)basic_mesh_data.elem.size() / vert_per_elem; i++)
+  for(int i = 0; i < basic_mesh_data.numTetrahedra(); ++i)
   {
     bool bDeleted = false;
-    for(int j = 0; j < vert_per_elem; j++)
+    for(int j = 0; j < vert_per_elem; ++j)
     {
       bDeleted |= basic_mesh_data.elem[i * vert_per_elem + j] == 6;
     }
@@ -738,7 +705,7 @@ TEST(slam_IA, compact_mesh)
 
   mesh.removeVertex(0);
 
-  EXPECT_TRUE(mesh.isValid(true));
+  EXPECT_TRUE(mesh.isValid());
 
   auto v_before = mesh.getNumberOfVertices();
   auto e_before = mesh.getNumberOfElements();
@@ -750,7 +717,7 @@ TEST(slam_IA, compact_mesh)
   auto v_after = mesh.getNumberOfVertices();
   auto e_after = mesh.getNumberOfElements();
 
-  EXPECT_TRUE(mesh.isValid(true));
+  EXPECT_TRUE(mesh.isValid());
 
   EXPECT_EQ(v_before, v_after);
   EXPECT_EQ(e_before, e_after);
