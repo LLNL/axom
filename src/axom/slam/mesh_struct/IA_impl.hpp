@@ -37,16 +37,13 @@ bool is_subset(T v, const IterableT& iterable)
 {
   for(auto item : iterable)
   {
-    if(item == v)
-    {
-      return true;
-    }
+    if(item == v) return true;
   }
   return false;
 }
 
 // Formatted output of a relation or map to an array of strings
-// helper function for IAMesh::print_all
+// helper function for IAMesh::print_all()
 template <typename RelOrMap, typename SetType>
 std::vector<std::string> entries_as_vec(const RelOrMap& outer, const SetType& s)
 {
@@ -270,29 +267,8 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points,
 }
 
 template <int TDIM, int SDIM, typename P>
-typename IAMesh<TDIM, SDIM, P>::IndexArray
-IAMesh<TDIM, SDIM, P>::getVerticesInElement(IndexType element_idx) const
-{
-  IndexArray ret;
-  if(!ev_rel.isValidEntry(element_idx))
-  {
-    SLIC_WARNING("Attempting to retrieve data with an invalid element");
-    return ret;
-  }
-
-  const auto rvec = ev_rel[element_idx];
-  ret.resize(rvec.size());
-  for(int i = 0; i < rvec.size(); i++)
-  {
-    ret[i] = rvec[i];
-  }
-
-  return ret;
-}
-
-template <int TDIM, int SDIM, typename P>
-typename IAMesh<TDIM, SDIM, P>::IndexArray
-IAMesh<TDIM, SDIM, P>::getElementsWithVertex(IndexType vertex_idx) const
+typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::vertexStar(
+  IndexType vertex_idx) const
 {
   // reasonable expected size of vertex star in triangle and tet meshes
   constexpr int EXP_SZ = (TDIM == 2) ? 8 : 32;
@@ -371,33 +347,10 @@ typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace
 }
 
 template <int TDIM, int SDIM, typename P>
-typename IAMesh<TDIM, SDIM, P>::IndexArray
-IAMesh<TDIM, SDIM, P>::getElementNeighbors(IndexType element_idx) const
+const typename IAMesh<TDIM, SDIM, P>::Point&
+IAMesh<TDIM, SDIM, P>::getVertexPosition(IndexType vertex_idx) const
 {
-  IndexArray ret;
-
-  if(!ee_rel.isValidEntry(element_idx))
-  {
-    //this element is invalid
-    SLIC_WARNING("Attempting to retrieve data with an invalid element.");
-    return ret;
-  }
-
-  auto rvec = ee_rel[element_idx];
-  ret.resize(rvec.size());
-  for(int i = 0; i < rvec.size(); i++)
-  {
-    ret[i] = rvec[i];
-  }
-
-  return ret;
-}
-
-template <int TDIM, int SDIM, typename P>
-const typename IAMesh<TDIM, SDIM, P>::Point& IAMesh<TDIM, SDIM, P>::getVertexPoint(
-  IndexType vertex_idx) const
-{
-  SLIC_ASSERT(isValidVertexEntry(vertex_idx));
+  SLIC_ASSERT(isValidVertex(vertex_idx));
 
   return vcoord_map[vertex_idx];
 }
@@ -412,9 +365,9 @@ void IAMesh<TDIM, SDIM, P>::removeVertex(IndexType vertex_idx)
   }
 
   //check if any element uses this vertex. If so, remove them too.
-  for(auto attached_element : getElementsWithVertex(vertex_idx))
+  for(auto incident_element : vertexStar(vertex_idx))
   {
-    removeElement(attached_element);
+    removeElement(incident_element);
   }
 
   vertex_set.remove(vertex_idx);
@@ -536,10 +489,9 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   std::set<IndexType> elem_list;
   for(int n = 0; n < VERTS_PER_ELEM; ++n)
   {
-    IndexArray ele_list_short = getElementsWithVertex(vlist[n]);
-    for(unsigned int i = 0; i < ele_list_short.size(); ++i)
+    for(auto elem : vertexStar(vlist[n]))
     {
-      elem_list.insert(ele_list_short[i]);
+      elem_list.insert(elem);
     }
   }
 

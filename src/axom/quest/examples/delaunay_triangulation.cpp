@@ -177,8 +177,8 @@ void run_delaunay(const Input& params)
     "It took {} seconds to create a Delaunay complex with {} "
     "points. Mesh has {} {}. Insertion rate of {:.1f} points per second.",
     timer.elapsedTimeInSec(),
-    numPoints,
-    dt.getMeshData()->getNumberOfElements(),
+    dt.getMeshData()->getNumberOfValidVertices(),
+    dt.getMeshData()->getNumberOfValidElements(),
     DIM == 2 ? "triangles" : "tetrahedra",
     numPoints / timer.elapsedTimeInSec()));
 

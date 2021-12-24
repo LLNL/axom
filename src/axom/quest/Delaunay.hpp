@@ -144,9 +144,9 @@ public:
     int element_index) const
   {
     const auto verts = m_mesh.boundaryVertices(element_index);
-    const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
-    const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
-    const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
+    const PointType& p0 = m_mesh.getVertexPosition(verts[0]);
+    const PointType& p1 = m_mesh.getVertexPosition(verts[1]);
+    const PointType& p2 = m_mesh.getVertexPosition(verts[2]);
 
     return ElementType(p0, p1, p2);
   }
@@ -156,10 +156,10 @@ public:
     int element_index) const
   {
     const auto verts = m_mesh.boundaryVertices(element_index);
-    const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
-    const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
-    const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
-    const PointType& p3 = m_mesh.getVertexPoint(verts[3]);
+    const PointType& p0 = m_mesh.getVertexPosition(verts[0]);
+    const PointType& p1 = m_mesh.getVertexPosition(verts[1]);
+    const PointType& p2 = m_mesh.getVertexPosition(verts[2]);
+    const PointType& p3 = m_mesh.getVertexPosition(verts[3]);
 
     return ElementType(p0, p1, p2, p3);
   }
@@ -185,7 +185,7 @@ public:
 
     for(auto v : m_mesh.vertices().positions())
     {
-      mint_mesh.appendNodes(m_mesh.getVertexPoint(v).data(), 1);
+      mint_mesh.appendNodes(m_mesh.getVertexPosition(v).data(), 1);
     }
 
     for(auto e : m_mesh.elements().positions())
@@ -214,14 +214,14 @@ public:
       IndexArray elements_to_remove;
       for(int v = 0; v < num_boundary_pts; ++v)
       {
-        IndexArray elems = m_mesh.getElementsWithVertex(v);
+        IndexArray elems = m_mesh.vertexStar(v);
         elements_to_remove.insert(elements_to_remove.end(),
                                   elems.begin(),
                                   elems.end());
       }
       for(auto e : elements_to_remove)
       {
-        if(m_mesh.isValidElementEntry(e))
+        if(m_mesh.isValidElement(e))
         {
           m_mesh.removeElement(e);
         }
@@ -264,7 +264,7 @@ public:
     // Add (bounding boxes of) element circumspheres to implicit grid
     for(auto element_idx : m_mesh.elements().positions())
     {
-      if(m_mesh.isValidElementEntry(element_idx))
+      if(m_mesh.isValidElement(element_idx))
       {
         const auto sphere = this->getElement(element_idx).circumsphere();
         const auto center = NumericArrayType(sphere.getCenter());
@@ -281,7 +281,7 @@ public:
     // for each vertex -- check in_sphere condition for candidate element
     for(auto vertex_idx : m_mesh.vertices().positions())
     {
-      const auto& vertex = m_mesh.getVertexPoint(vertex_idx);
+      const auto& vertex = m_mesh.getVertexPosition(vertex_idx);
 
       auto candidates = grid.getCandidates(vertex);
       for(auto element_idx = candidates.find_first();  //
@@ -289,14 +289,13 @@ public:
           element_idx = candidates.find_next(element_idx))
       {
         // skip if element at this index is not valid
-        if(!m_mesh.isValidElementEntry(element_idx))
+        if(!m_mesh.isValidElement(element_idx))
         {
           continue;
         }
 
         // also skip if this is a vertex of the element
-        if(slam::is_subset<IndexType>(vertex_idx,
-                                      m_mesh.getVerticesInElement(element_idx)))
+        if(slam::is_subset(vertex_idx, m_mesh.boundaryVertices(element_idx)))
         {
           continue;
         }
@@ -327,7 +326,7 @@ public:
         {
           const auto vertex_idx = pr.first;
           const auto element_idx = pr.second;
-          const auto& pos = m_mesh.getVertexPoint(vertex_idx);
+          const auto& pos = m_mesh.getVertexPosition(vertex_idx);
           const auto element = this->getElement(element_idx);
           const auto circumsphere = element.circumsphere();
           fmt::format_to(out,
@@ -339,9 +338,7 @@ public:
                          element_idx,
                          element,
                          circumsphere,
-                         std::sqrt(primal::squared_distance(
-                           pos,
-                           PointType(circumsphere.getCenter()))));
+                         circumsphere.computeSignedDistance(pos.data()));
         }
 
         SLIC_INFO(
@@ -394,7 +391,7 @@ private:
 
       // Either there is a hole in the m_mesh, or the point is outside of the m_mesh.
       // Logically, this should never happen.
-      if(!m_mesh.isValidElementEntry(element_i))
+      if(!m_mesh.isValidElement(element_i))
       {
         SLIC_WARNING(fmt::format(
           "Entered invalid element in "
@@ -493,7 +490,7 @@ private:
       for(auto nbr = neighbors.begin(); nbr != neighbors.end(); ++nbr)
       {
         //The latter case is a checked element that is not a cavity element
-        if(!m_mesh.isValidElementEntry(*nbr) ||
+        if(!m_mesh.isValidElement(*nbr) ||
            (m_checked_element_set.insert(*nbr).second
               ? findCavityElementsRec(query_pt, *nbr)
               : cavity_elems.findIndex(*nbr) == ElementSet::INVALID_ENTRY))
@@ -664,9 +661,9 @@ Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
-  const ElementType tri(m_mesh.getVertexPoint(verts[0]),
-                        m_mesh.getVertexPoint(verts[1]),
-                        m_mesh.getVertexPoint(verts[2]));
+  const ElementType tri(m_mesh.getVertexPosition(verts[0]),
+                        m_mesh.getVertexPosition(verts[1]),
+                        m_mesh.getVertexPosition(verts[2]));
 
   return tri.physToBarycentric(query_pt);
 }
@@ -677,10 +674,10 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
                                                       const PointType& query_pt) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
-  const ElementType tet(m_mesh.getVertexPoint(verts[0]),
-                        m_mesh.getVertexPoint(verts[1]),
-                        m_mesh.getVertexPoint(verts[2]),
-                        m_mesh.getVertexPoint(verts[3]));
+  const ElementType tet(m_mesh.getVertexPosition(verts[0]),
+                        m_mesh.getVertexPosition(verts[1]),
+                        m_mesh.getVertexPosition(verts[2]),
+                        m_mesh.getVertexPosition(verts[3]));
 
   return tet.physToBarycentric(query_pt);
 }
@@ -691,9 +688,9 @@ bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
                                                    IndexType element_idx) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
-  const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
-  const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
-  const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
+  const PointType& p0 = m_mesh.getVertexPosition(verts[0]);
+  const PointType& p1 = m_mesh.getVertexPosition(verts[1]);
+  const PointType& p2 = m_mesh.getVertexPosition(verts[2]);
   return primal::in_sphere(query_pt, p0, p1, p2, 0.);
 }
 
@@ -703,10 +700,10 @@ bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
                                                    IndexType element_idx) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
-  const PointType& p0 = m_mesh.getVertexPoint(verts[0]);
-  const PointType& p1 = m_mesh.getVertexPoint(verts[1]);
-  const PointType& p2 = m_mesh.getVertexPoint(verts[2]);
-  const PointType& p3 = m_mesh.getVertexPoint(verts[3]);
+  const PointType& p0 = m_mesh.getVertexPosition(verts[0]);
+  const PointType& p1 = m_mesh.getVertexPosition(verts[1]);
+  const PointType& p2 = m_mesh.getVertexPosition(verts[2]);
+  const PointType& p3 = m_mesh.getVertexPosition(verts[3]);
   return primal::in_sphere(query_pt, p0, p1, p2, p3, 0.);
 }
 

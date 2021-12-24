@@ -104,20 +104,13 @@ public:
   using IndexBuf = slam::FieldRegistry<SetBase, IndexType>;
 
 public:
-  /**
-   * \brief Default Constructor for an empty mesh
-   */
+  /// \brief Default Constructor for an empty mesh
   IAMesh();
 
-  /**
-   * \brief Construct an IA mesh with the given point coordinate and vertex
-   * indices for each elements
-   */
+  /// \brief Construct an IA mesh with the given point coordinate and vertex indices for each elements
   IAMesh(std::vector<double>& points, std::vector<IndexType>& ev_vec);
 
-  /**
-   * \brief Copy constructor
-   */
+  /// \brief Copy constructor
   IAMesh(const IAMesh&);
 
   IAMesh& operator=(const IAMesh&);
@@ -129,7 +122,7 @@ public:
    */
   bool isValid(bool verboseOutput = false) const;
 
-  /// \name Accessors for encoded Sets
+  /// \name Accessors for encoded Sets, Relations and Maps
   /// @{
 
   /// \brief Returns the set of vertices in the mesh
@@ -147,7 +140,8 @@ public:
   /** 
    * \brief Returns the set of vertices in the boundary of element \a element_index
    * \pre Assumes \a element_index is a valid index in the set, i.e. 0 <= element_index < elements().size(),
-   *      but does not require that the elemetn is in the mesh
+   *      but does not require that the element is in the mesh.
+   *      To check if the element is valid, call \a this->isValidElement(element_index)
    */
   BoundarySubset boundaryVertices(IndexType element_index)
   {
@@ -161,7 +155,9 @@ public:
   /** 
    * \brief Returns an element in the coboundary (star) of vertex \a vertex_index
    * \pre Assumes \a vertex_index is a valid index in the set, i.e. 0 <= vertex_index < vertices().size(),
-   *      but does not require that the vertex is in the mesh
+   *      but does not require that the vertex is in the mesh.
+   *      To check if the vertex is valid, call \a this->isValidVertex(vertex_index)
+   * \note To return all elements in the coboundary, call \a this->vertexStar(vertex_index)
    */
   IndexType& coboundaryElement(IndexType vertex_index)
   {
@@ -175,7 +171,8 @@ public:
   /** 
    * \brief Returns the set of elements adjacent to element \a element_index
    * \pre Assumes \a element_index is a valid index in the set, i.e. 0 <= element_index < elements().size(),
-   *      but does not require that the element is in the mesh
+   *      but does not require that the element is in the mesh.
+   *      To check if the element is valid, call \a this->isValidElement(element_index)
    */
   AdjacencySubset adjacentElements(IndexType element_index)
   {
@@ -186,24 +183,23 @@ public:
     return ee_rel[element_index];
   }
 
+  /**
+   * \brief Given a vertex index, return its Point coordinate.
+   */
+  const Point& getVertexPosition(IndexType vertex_idx) const;
+
   /// @}
 
   /**
-   * \brief Given an element index, return a list incident vertices.
-   *
-   * \note If the index is invalid or out of bounds,
-   * an empty list is returned.
-   */
-  IndexArray getVerticesInElement(IndexType element_idx) const;
-
-  /**
-   * \brief Given a vertex index, return a list of incident elements
+   * \brief Given a vertex index, return a list of incident elements, i.e. the star of the vertex
    *
    * \note If the index is invalid or out of bounds,
    * an empty list is returned. This function may return incorrect/partial
    * results if the mesh is not a manifold mesh.
+   * \note This function performs a search of the local neighborhood
+   * in the vicinity of the vertex using the element adjacency relation
    */
-  IndexArray getElementsWithVertex(IndexType vertex_idx) const;
+  IndexArray vertexStar(IndexType vertex_idx) const;
 
   /**
    * \brief Given an element index, and a face index i,
@@ -215,57 +211,46 @@ public:
   IndexArray getElementFace(IndexType element_idx, IndexType face_idx) const;
 
   /**
-   * \brief Given an element index, return a list of adjacent elements
-   *
-   * \details If the index is invalid or out of bounds,
-   * an empty list is returned.
-   *
-   * TODO: Add what happens when neighbor elements are invalid
-   */
-  IndexArray getElementNeighbors(IndexType element_idx) const;
-
-  /**
-   * \brief Given a vertex index, return its Point coordinate.
-   */
-  const Point& getVertexPoint(IndexType vertex_idx) const;
-
-  /**
    * \brief Return true if the mesh has no vertex or element
    */
   bool isEmpty() const;
 
   /**
    * \brief Returns the number of elements in the mesh.
+   * \note To get the total number of elements, including invalid and deleted elements, 
+   * call \a this->elements().size()
    */
-  IndexType getNumberOfElements() const
+  IndexType getNumberOfValidElements() const
   {
     return element_set.numberOfValidEntries();
   }
 
   /**
-   * \brief Returns the number of vertices in the mesh.
+   * \brief Returns the number of vertices in the mesh
+   * \note To get the total number of vertices, including invalid and deleted vertices, 
+   * call \a this->vertices().size()
    */
-  IndexType getNumberOfVertices() const
+  IndexType getNumberOfValidVertices() const
   {
     return vertex_set.numberOfValidEntries();
   }
 
   /**
-   * \brief Returns true if the element indexed is a valid element.
+   * \brief Returns true if \a element_idx is a valid element index in the mesh
    *
    * An element index is valid when the element is not deleted.
    */
-  inline bool isValidElementEntry(IndexType element_idx) const
+  inline bool isValidElement(IndexType element_idx) const
   {
     return element_set.isValidEntry(element_idx);
   }
 
   /**
-   * \brief Returns true if the vertex indexed is a valid vertex.
+   * \brief Returns true if \a vertex_idx is a valid vertex index in the mesh
    *
-   * An vertex index is valid when the vertex is not deleted.
+   * A vertex index is valid when the vertex is not deleted.
    */
-  inline bool isValidVertexEntry(IndexType vertex_idx) const
+  inline bool isValidVertex(IndexType vertex_idx) const
   {
     return vertex_set.isValidEntry(vertex_idx);
   }
@@ -288,7 +273,7 @@ public:
   {
     for(int i = element_set.size() - 1; i >= 0; --i)
     {
-      if(isValidElementEntry(i))
+      if(isValidElement(i))
       {
         return i;
       }
