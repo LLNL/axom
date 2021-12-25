@@ -271,7 +271,7 @@ public:
    */
   const ElementType& operator[](IndexType pos) const
   {
-    verifyPosition(pos);
+    verifyPositionImpl(pos);
     return m_data[pos];
   };
 
@@ -282,7 +282,7 @@ public:
    */
   ElementType& operator[](IndexType pos)
   {
-    verifyPosition(pos);
+    verifyPositionImpl(pos);
     return m_data[pos];
   };
 
@@ -428,7 +428,7 @@ public:
    */
   void remove(IndexType idx)
   {
-    verifyPosition(idx);
+    verifyPositionImpl(idx);
     m_data[idx] = INVALID_ENTRY;
   };
 
@@ -446,8 +446,14 @@ public:
   /// @}
 
 private:
+  /// \brief Debug check that the index \a pos is not out-of-range
+  inline void verifyPosition(PositionType pos) const
+  {
+    verifyPositionImpl(pos);
+  };
+
   /** \brief Debug check that the index \a pos is not out-of-range */
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const
+  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos)) const
   {
     SLIC_ASSERT_MSG(
       (pos >= 0) && (pos < size()),

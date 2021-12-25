@@ -421,7 +421,10 @@ public:
    * An index pos is valid when \f$ 0 \le pos < size() \f$
    * \return true if the position is valid, false otherwise
    */
-  bool isValidIndex(PositionType pos) const { return pos >= 0 && pos < size(); }
+  inline bool isValidIndex(PositionType pos) const
+  {
+    return pos >= 0 && pos < size();
+  }
 
   /**
    * \brief returns a PositionSet over the set's positions

@@ -370,10 +370,9 @@ void IAMesh<TDIM, SDIM, P>::removeVertex(IndexType vertex_idx)
     removeElement(incident_element);
   }
 
-  vertex_set.remove(vertex_idx);
   ve_rel.remove(vertex_idx);
-  //Note: once the set entry is removed, its corresponding
-  // map entry is assumed to be invalid
+  vertex_set.remove(vertex_idx);
+  //Note: after set entry is removed, its corresponding map entry will be invalid
 }
 
 template <int TDIM, int SDIM, typename P>
@@ -406,7 +405,6 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
   }
 
   //erase this element and it boundary relation
-  element_set.remove(element_idx);
   ev_rel.remove(element_idx);
 
   //erase neighbor element's adjacency data pointing to deleted element
@@ -423,6 +421,8 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
     }
   }
   ee_rel.remove(element_idx);
+
+  element_set.remove(element_idx);
 }
 
 template <int TDIM, int SDIM, typename P>
@@ -465,10 +465,13 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   }
 
   IndexType element_idx = element_set.insert();
+  ev_rel.updateSizes();
+  ee_rel.updateSizes();
 
+  auto bdry = ev_rel[element_idx];
   for(int i = 0; i < VERTS_PER_ELEM; ++i)
   {
-    ev_rel.insert(element_idx, vlist[i]);
+    bdry[i] = vlist[i];
   }
 
   //make sure the space is allocated in ee_rel
@@ -552,17 +555,21 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   }
 
   IndexType element_idx = element_set.insert();
+  ev_rel.updateSizes();
+  ee_rel.updateSizes();
 
   // set the vertices in this element's ev relation
+  auto bdry = ev_rel[element_idx];
   for(int i = 0; i < VERTS_PER_ELEM; ++i)
   {
-    ev_rel.modify(element_idx, i, vlist[i]);
+    bdry[i] = vlist[i];
   }
 
   // set the neighbor elements in this element's ee relation
+  auto adj = ee_rel[element_idx];
   for(int i = 0; i < VERTS_PER_ELEM; ++i)
   {
-    ee_rel.modify(element_idx, i, neighbors[i]);
+    adj[i] = neighbors[i];
   }
 
   // update coboundary relation of this element's vertices, if necessary
@@ -686,7 +693,6 @@ void IAMesh<TDIM, SDIM, P>::compact()
       }
     }
   }
-  ev_rel.data().resize(e_count * VERTS_PER_ELEM);
 
   //update the VE coboundary relation
   for(auto v : vertex_set.positions())
@@ -700,7 +706,6 @@ void IAMesh<TDIM, SDIM, P>::compact()
         (old != INVALID_ELEMENT) ? element_set_map[old] : INVALID_ELEMENT;
     }
   }
-  ve_rel.data().resize(v_count);
 
   //update the EE adjacency relation
   for(auto e : element_set.positions())
@@ -718,7 +723,6 @@ void IAMesh<TDIM, SDIM, P>::compact()
       }
     }
   }
-  ee_rel.data().resize(e_count * VERTS_PER_ELEM);
 
   //Update the coordinate positions map
   for(auto v : vertex_set.positions())
@@ -729,11 +733,15 @@ void IAMesh<TDIM, SDIM, P>::compact()
       vcoord_map[new_entry_index] = vcoord_map[v];
     }
   }
-  vcoord_map.resize(v_count);
 
   //update the sets
   vertex_set.reset(v_count);
   element_set.reset(e_count);
+
+  ev_rel.updateSizes();
+  ve_rel.updateSizes();
+  ee_rel.updateSizes();
+  vcoord_map.resize(v_count);
 }
 
 template <int TDIM, int SDIM, typename P>

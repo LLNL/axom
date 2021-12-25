@@ -383,7 +383,7 @@ TEST(slam_IA, tri_mesh_remove_verts_and_elems)
 
   EXPECT_FALSE(ia_mesh.isEmpty());
 
-  EXPECT_TRUE(ia_mesh.isValid());
+  EXPECT_TRUE(ia_mesh.isValid(true));
   EXPECT_EQ(basic_mesh_data.numTriangles() - 4,
             ia_mesh.getNumberOfValidElements());
 
@@ -719,7 +719,7 @@ TEST(slam_IA, compact_mesh)
   auto v_after = mesh.getNumberOfValidVertices();
   auto e_after = mesh.getNumberOfValidElements();
 
-  EXPECT_TRUE(mesh.isValid());
+  EXPECT_TRUE(mesh.isValid(true));
 
   EXPECT_EQ(v_before, v_after);
   EXPECT_EQ(e_before, e_after);
