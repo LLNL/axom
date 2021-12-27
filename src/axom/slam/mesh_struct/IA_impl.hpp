@@ -593,9 +593,9 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   const std::vector<IndexType>& new_elements)
 {
   using IndexPairType = std::pair<IndexType, IndexType>;
-  using FaceVertMapType = std::map<IndexArray, IndexPairType>;
-  using FaceVertPairType = std::pair<IndexArray, IndexPairType>;
-  FaceVertMapType fv_map;
+
+  using FaceLinkVerts = axom::StackArray<IndexType, TDIM - 1>;
+  std::map<FaceLinkVerts, IndexPairType> fv_map;
 
   for(auto el : new_elements)
   {
@@ -632,13 +632,22 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
       }
       else  // update internal facet of star
       {
-        std::pair<FaceVertMapType::iterator, bool> ret =
-          fv_map.insert(FaceVertPairType(fv_list, IndexPairType(el, face_i)));
-
-        if(!ret.second)  //found a matching face
+        FaceLinkVerts verts;
+        for(int i = 0, idx = 0; i < TDIM; ++i)
         {
-          const IndexType nbr_elem = ret.first->second.first;
-          const IndexType nbr_face_i = ret.first->second.second;
+          if(fv_list[i] != vertex_idx)
+          {
+            verts[idx++] = fv_list[i];
+          }
+        }
+
+        auto ret =
+          fv_map.insert(std::make_pair(verts, IndexPairType(el, face_i)));
+
+        if(!ret.second)  // second is false when key is already present
+        {
+          const IndexType& nbr_elem = ret.first->second.first;
+          const IndexType& nbr_face_i = ret.first->second.second;
 
           ee_rel.modify(el, face_i, nbr_elem);
           ee_rel.modify(nbr_elem, nbr_face_i, el);
