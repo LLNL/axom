@@ -15,6 +15,7 @@
 #include <vector>
 #include <set>
 #include <cstdlib>
+#include <cmath>
 
 namespace axom
 {
@@ -57,10 +58,14 @@ private:
     slam::ModularInt<slam::policies::CompileTimeSize<IndexType, VERT_PER_ELEMENT>>;
 
 private:
+  struct ElementFinder;
+
   IAMeshType m_mesh;
   BoundingBox m_bounding_box;
   bool m_has_boundary;
   int m_num_removed_elements_since_last_compact;
+
+  ElementFinder m_element_finder;
 
 public:
   /**
@@ -84,6 +89,7 @@ public:
     generateInitialMesh(points, elem, bb);
 
     m_mesh = IAMeshType(points, elem);
+    m_element_finder.recomputeGrid(m_mesh, bb);
 
     m_bounding_box = bb;
     m_has_boundary = true;
@@ -129,6 +135,7 @@ public:
     IndexType new_pt_i = m_mesh.addVertex(new_pt);
     insertionHelper.delaunayBall(new_pt_i);
 
+    m_element_finder.updateBin(new_pt, new_pt_i);
     m_num_removed_elements_since_last_compact +=
       insertionHelper.numRemovedElements();
 
@@ -370,8 +377,23 @@ private:
       return INVALID_INDEX;
     }
 
-    //find the last valid element to use as starting element
-    IndexType element_i = m_mesh.getValidElementIndex();
+    // Find a starting element using ElementFinder helper class
+    IndexType element_i = INVALID_INDEX;
+    {
+      const auto vertex_i = m_element_finder.getNearbyVertex(query_pt);
+      if(m_mesh.isValidVertex(vertex_i))
+      {
+        element_i = m_mesh.coboundaryElement(vertex_i);
+      }
+
+      // Fallback -- start from last valid element that was inserted
+      if(!m_mesh.isValidElement(element_i))
+      {
+        element_i = m_mesh.getValidElementIndex();
+      }
+
+      SLIC_ASSERT(m_mesh.isValidElement(element_i));
+    }
 
     while(1)
     {
@@ -416,6 +438,7 @@ private:
   {
     m_mesh.compact();
     m_num_removed_elements_since_last_compact = 0;
+    m_element_finder.recomputeGrid(m_mesh, m_bounding_box);
   }
 
   /**
@@ -432,9 +455,103 @@ private:
   BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt) const;
 
 private:
-  /**
-   * \brief Helper class to locally insert a new point into a Delaunay complex while keeping the mesh Delaunay
-   */
+  /// Helper struct to find the first element near a point to be inserted
+  struct ElementFinder
+  {
+    using NumericArrayType = primal::NumericArray<IndexType, DIM>;
+    using LatticeType = spin::RectangularLattice<DIM, double, IndexType>;
+
+    explicit ElementFinder() = default;
+
+    /**
+     * \brief Resizes the grid and reinserts vertices
+     *
+     * Resizes using a heuristic based on the number of vertices in the mesh.
+     */
+    void recomputeGrid(const IAMeshType& mesh, const BoundingBox& bb)
+    {
+      const auto& verts = mesh.vertices();
+
+      // Use heuristic for resolution in each dimension to minimize storage
+      // Use 2*square root of nth root (n==DIM)
+      // e.g. for 1,000,000 verts in 2D, sqrt root is 1000, leading to ~ 60^2 grid w/ ~250 verts per bin
+      // e.g. for 1,000,000 verts in 3D, cube root is 100, leading to a 20^3 grid w/ ~125 verts per bin
+      const double res_root = std::pow(verts.size(), 1.0 / DIM);
+      const IndexType res =
+        axom::utilities::max(2, 2 * static_cast<int>(std::sqrt(res_root)));
+
+      auto expandedBB = BoundingBox(bb).scale(1.05);
+
+      // regenerate lattice
+      m_lattice =
+        spin::rectangular_lattice_from_bounding_box(expandedBB,
+                                                    NumericArrayType(res));
+
+      // resize m_bins
+      resizeArray<DIM>(res);
+      m_bins.fill(INVALID_INDEX);
+
+      // insert vertices into lattice
+      for(auto idx : verts.positions())
+      {
+        if(!mesh.isValidVertex(idx))
+        {
+          continue;
+        }
+
+        const auto& pos = mesh.getVertexPosition(idx);
+        const auto cell = m_lattice.gridCell(pos);
+        m_bins[flatIndex(cell)] = idx;
+      }
+    }
+
+    /**
+     * \brief Returns the index of the vertex in the bin containing point \a pt
+     *
+     * \param pt The position in space of the vertex that we're checking
+     * \note Some bins might not point to a vertex, so users should check
+     * that the returned index is a valid vertex, e.g. using \a mesh.isValidVertex(vertex_id)
+     */
+    inline IndexType getNearbyVertex(const PointType& pt)
+    {
+      const auto cell = m_lattice.gridCell(pt);
+      return m_bins[flatIndex(cell)];
+    }
+
+    /// \brief Updates the cached value of the bin containing point \a pt to \a vertex_id
+    inline void updateBin(const PointType& pt, IndexType vertex_id)
+    {
+      const auto cell = m_lattice.gridCell(pt);
+      m_bins[flatIndex(cell)] = vertex_id;
+    }
+
+  private:
+    /// Returns the 1D index in the array for the ND point with grid index \a cell
+    inline IndexType flatIndex(const typename LatticeType::GridCell& cell)
+    {
+      return numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
+    }
+
+    /// Dimension-specific helper for resizing the ND array in 2D
+    template <int TDIM>
+    typename std::enable_if<TDIM == 2, void>::type resizeArray(IndexType res)
+    {
+      m_bins.resize(res, res);
+    }
+
+    /// Dimension-specific helper for resizing the ND array in 3D
+    template <int TDIM>
+    typename std::enable_if<TDIM == 3, void>::type resizeArray(IndexType res)
+    {
+      m_bins.resize(res, res, res);
+    }
+
+  private:
+    axom::Array<IndexType, DIM> m_bins;
+    LatticeType m_lattice;
+  };
+
+  /// Helper struct to locally insert a new point into a Delaunay complex while keeping the mesh Delaunay
   struct InsertionHelper
   {
   public:
@@ -593,6 +710,9 @@ private:
     std::set<IndexType> m_checked_element_set;
   };
 };
+
+template <int DIM>
+constexpr typename Delaunay<DIM>::IndexType Delaunay<DIM>::INVALID_INDEX;
 
 //--------------------------------------------------------------------------------
 // Below are 2D and 3D specializations for methods in the Delaunay class
