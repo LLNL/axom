@@ -255,88 +255,45 @@ public:
    */
   bool isValid(bool verboseOutput = false) const
   {
-    // We use a BVH tree to find the candidate elements
+    // We use an ImplicitGrid spatial index to find the candidate elements
     // whose circumsphere might contain the vertices of the mesh
 
-    using BVHTreeType = spin::BVH<DIM>;
+    using ImplicitGridType = spin::ImplicitGrid<DIM>;
     using NumericArrayType = primal::NumericArray<DataType, DIM>;
-
-    using ArrayIndirection =
-      slam::policies::ArrayIndirection<IndexType, IndexType>;
-
-    using QueryResultRelation =
-      slam::StaticRelation<IndexType,
-                           IndexType,
-                           slam::policies::VariableCardinality<IndexType, ArrayIndirection>,
-                           ArrayIndirection,
-                           const typename IAMeshType::VertexSet,
-                           const typename IAMeshType::ElementSet>;
+    using BitsetType = typename ImplicitGridType::BitsetType;
 
     bool valid = true;
 
     std::vector<std::pair<IndexType, IndexType>> invalidEntries;
 
-    // Initialize BVH tree over bounding boxes of element circumspheres
-    BVHTreeType tree;
+    ImplicitGridType grid(m_bounding_box, nullptr, m_mesh.elements().size());
+
+    // Add (bounding boxes of) element circumspheres to implicit grid
+    for(auto element_idx : m_mesh.elements().positions())
     {
-      const int totalElements = m_mesh.elements().size();
-      axom::Array<BoundingBox> boxes(totalElements);
-
-      for(auto element_idx : m_mesh.elements().positions())
+      if(m_mesh.isValidElement(element_idx))
       {
-        if(m_mesh.isValidElement(element_idx))
-        {
-          const auto sphere = this->getElement(element_idx).circumsphere();
-          const auto center = NumericArrayType(sphere.getCenter());
-          const auto offset = NumericArrayType(sphere.getRadius());
+        const auto sphere = this->getElement(element_idx).circumsphere();
+        const auto center = NumericArrayType(sphere.getCenter());
+        const auto offset = NumericArrayType(sphere.getRadius());
 
-          boxes[element_idx] =
-            BoundingBox(PointType(center - offset), PointType(center + offset));
-        }
+        BoundingBox bb;
+        bb.addPoint(PointType(center - offset));
+        bb.addPoint(PointType(center + offset));
+
+        grid.insert(bb, element_idx);  // insert valid entries into grid
       }
-      tree.initialize(boxes, totalElements);
     }
-
-    // Query the tree to get candidates
-    const int totalVerts = m_mesh.vertices().size();
-    axom::Array<IndexType> offsets(totalVerts + 1);
-    axom::Array<IndexType> counts(totalVerts);
-    axom::IndexType* candidates {nullptr};
-    {
-      axom::Array<PointType> pts(totalVerts);
-      for(auto vertex_idx : m_mesh.vertices().positions())
-      {
-        pts[vertex_idx] = m_mesh.getVertexPosition(vertex_idx);
-      }
-
-      tree.findPoints(offsets.data(), counts.data(), candidates, totalVerts, pts);
-    }
-
-    const IndexType totalCandidates =
-      offsets[totalVerts - 1] + counts[totalVerts - 1];
-    offsets[totalVerts] = totalCandidates;
-
-    // generate a relation over this data!
-    using Builder = typename QueryResultRelation::RelationBuilder;
-    QueryResultRelation candidatesRelation(
-      Builder()
-        .fromSet(&m_mesh.vertices())
-        .toSet(&m_mesh.elements())
-        .begins(
-          typename Builder::BeginsSetBuilder().size(totalVerts).data(offsets.data()))
-        .indices(typename Builder::IndicesSetBuilder()
-                   .size(totalCandidates)
-                   .data(candidates)));
 
     // for each vertex -- check in_sphere condition for candidate element
     for(auto vertex_idx : m_mesh.vertices().positions())
     {
-      if(!m_mesh.isValidVertex(vertex_idx))
-      {
-        continue;
-      }
+      const auto& vertex = m_mesh.getVertexPosition(vertex_idx);
 
-      for(auto element_idx : candidatesRelation[vertex_idx])
+      auto candidates = grid.getCandidates(vertex);
+      for(auto element_idx = candidates.find_first();  //
+          element_idx != BitsetType::npos;
+          element_idx = candidates.find_next(element_idx))
       {
         // skip if element at this index is not valid
         if(!m_mesh.isValidElement(element_idx))
@@ -351,8 +308,7 @@ public:
         }
 
         // check insphere condition
-        if(primal::in_sphere(m_mesh.getVertexPosition(vertex_idx),
-                             getElement(element_idx)))
+        if(primal::in_sphere(vertex, getElement(element_idx)))
         {
           valid = false;
 
@@ -363,8 +319,6 @@ public:
         }
       }
     }
-
-    axom::deallocate(candidates);  // when done
 
     if(verboseOutput)
     {
