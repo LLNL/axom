@@ -124,10 +124,8 @@ public:
     axom::utilities::BitTraits<Word>::BITS_PER_WORD;
 
 private:
-  enum
-  {
-    LG_BITS_PER_WORD = axom::utilities::BitTraits<Word>::LG_BITS_PER_WORD
-  };
+  static constexpr int LG_BITS_PER_WORD =
+    axom::utilities::BitTraits<Word>::LG_BITS_PER_WORD;
 
 public:
   /**
@@ -149,7 +147,10 @@ public:
     axom::IndexType numWords =
       (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
 
-    m_data = ArrayType(numWords, numWords, allocatorID);
+    m_data = ArrayType(axom::ArrayOptions::Uninitialized {},
+                       numWords,
+                       numWords,
+                       allocatorID);
     m_data.fill(0);
   }
 
