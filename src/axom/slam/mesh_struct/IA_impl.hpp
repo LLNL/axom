@@ -605,49 +605,66 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   std::vector<FaceLinkMapping> mapping;
   mapping.reserve(TDIM * new_elements.size());
 
+  // helper lambda for determining if a face on one element (given by boundary verts nbr_verts)
+  // is shared with another element (given by boundary verts elem_verts)
+  auto isSharedFace = [](const BoundarySubset& nbr_verts,
+                         IndexType face_idx,
+                         const BoundarySubset& elem_verts) {
+    // v_skip is not a vertex in this face
+    const auto v_skip = (face_idx == 0) ? VERTS_PER_ELEM - 1 : face_idx - 1;
+    for(int v_idx = 0; v_idx < VERTS_PER_ELEM; ++v_idx)
+    {
+      if(v_idx != v_skip &&  // v_idx is a vertex in this face
+         !is_subset(nbr_verts[v_idx], elem_verts))  //and is not in other elem
+      {
+        return false;
+      }
+    }
+    return true;
+  };
+
   for(auto el : new_elements)
   {
+    const auto bdry = ev_rel[el];
     for(int face_i = 0; face_i < VERTS_PER_ELEM; ++face_i)
     {
-      IndexArray fv_list = getElementFace(el, face_i);
-
-      if(!is_subset(vertex_idx, fv_list))  // Update boundary facet of star
+      // This face is either a boundary facet of the star...
+      const auto vert_i = (face_i == 0) ? VERTS_PER_ELEM - 1 : face_i - 1;
+      if(bdry[vert_i] == vertex_idx)
       {
-        // update neighbor along this facet to point to current element
+        // figure out which face this is on the neighbor
+        // and update neighbor's adjacency to point to current element
         const IndexType nbr = ee_rel[el][face_i];
-
         if(element_set.isValidEntry(nbr))
         {
-          //sort vertices on this face
-          std::sort(fv_list.begin(), fv_list.end());
-
-          // figure out which face this is on the neighbor
-          // TODO: Make this more efficient
+          const auto nbr_ev = ev_rel[nbr];
           auto nbr_ee = ee_rel[nbr];
-          for(int face_j = 0; face_j < VERTS_PER_ELEM; ++face_j)
+
+          for(auto face_j : nbr_ev.positions())
           {
-            if(!element_set.isValidEntry(nbr_ee[face_j]))
+            if(!element_set.isValidEntry(nbr_ee[face_j]) &&
+               isSharedFace(nbr_ev, face_j, bdry))
             {
-              IndexArray nbr_facet_verts = getElementFace(nbr, face_j);
-              std::sort(nbr_facet_verts.begin(), nbr_facet_verts.end());
-              if(nbr_facet_verts == fv_list)
-              {
-                ee_rel.modify(nbr, face_j, el);
-              }
+              nbr_ee[face_j] = el;
+              break;
             }
           }
         }
       }
-      else  // add face mapping to the array
+      // ... or it is incident in the common vertex: vertex_idx
+      else
       {
+        // Add all element-face associations to an array; we'll update below
         FaceLinkMapping m;
         for(int i = 0, idx = 0; i < TDIM; ++i)
         {
-          if(fv_list[i] != vertex_idx)
+          if(i != vert_i &&          // i is a vertex in face_i
+             bdry[i] != vertex_idx)  // and not the common vertex
           {
-            m.face_link_verts[idx++] = fv_list[i];
+            m.face_link_verts[idx++] = bdry[i];
           }
         }
+
         // sort face link vertices in 3D; (there's only one vertex in 2D)
         if(TDIM == 3 && (m.face_link_verts[0] > m.face_link_verts[1]))
         {
