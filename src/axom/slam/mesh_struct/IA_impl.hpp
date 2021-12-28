@@ -592,19 +592,24 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   IndexType vertex_idx,
   const std::vector<IndexType>& new_elements)
 {
-  using IndexPairType = std::pair<IndexType, IndexType>;
-
   using FaceLinkVerts = axom::StackArray<IndexType, TDIM - 1>;
-  std::map<FaceLinkVerts, IndexPairType> fv_map;
+
+  // Struct used to associate a collection of vertex indices with a face of the mesh
+  struct FaceLinkMapping
+  {
+    FaceLinkVerts face_link_verts;
+    IndexType element_idx;
+    IndexType face_idx;
+  };
+
+  std::vector<FaceLinkMapping> mapping;
+  mapping.reserve(TDIM * new_elements.size());
 
   for(auto el : new_elements)
   {
     for(int face_i = 0; face_i < VERTS_PER_ELEM; ++face_i)
     {
       IndexArray fv_list = getElementFace(el, face_i);
-
-      //sort vertices on this face
-      std::sort(fv_list.begin(), fv_list.end());
 
       if(!is_subset(vertex_idx, fv_list))  // Update boundary facet of star
       {
@@ -613,6 +618,9 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
 
         if(element_set.isValidEntry(nbr))
         {
+          //sort vertices on this face
+          std::sort(fv_list.begin(), fv_list.end());
+
           // figure out which face this is on the neighbor
           // TODO: Make this more efficient
           auto nbr_ee = ee_rel[nbr];
@@ -630,30 +638,46 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
           }
         }
       }
-      else  // update internal facet of star
+      else  // add face mapping to the array
       {
-        FaceLinkVerts verts;
+        FaceLinkMapping m;
         for(int i = 0, idx = 0; i < TDIM; ++i)
         {
           if(fv_list[i] != vertex_idx)
           {
-            verts[idx++] = fv_list[i];
+            m.face_link_verts[idx++] = fv_list[i];
           }
         }
-
-        auto ret =
-          fv_map.insert(std::make_pair(verts, IndexPairType(el, face_i)));
-
-        if(!ret.second)  // second is false when key is already present
+        // sort face link vertices in 3D; (there's only one vertex in 2D)
+        if(TDIM == 3 && (m.face_link_verts[0] > m.face_link_verts[1]))
         {
-          const IndexType& nbr_elem = ret.first->second.first;
-          const IndexType& nbr_face_i = ret.first->second.second;
-
-          ee_rel.modify(el, face_i, nbr_elem);
-          ee_rel.modify(nbr_elem, nbr_face_i, el);
+          axom::utilities::swap(m.face_link_verts[0], m.face_link_verts[1]);
         }
+
+        m.element_idx = el;
+        m.face_idx = face_i;
+        mapping.emplace_back(m);
       }
     }
+  }
+
+  SLIC_ASSERT(mapping.size() == new_elements.size() * TDIM);
+
+  // Sort by face vertices
+  std::sort(mapping.begin(),
+            mapping.end(),
+            [](const FaceLinkMapping& lhs, const FaceLinkMapping& rhs) {
+              return lhs.face_link_verts < rhs.face_link_verts;
+            });
+
+  // Apply neighbor data from matching face pairs
+  const int SZ = mapping.size();
+  for(int idx = 1; idx < SZ; idx += 2)
+  {
+    const auto& left = mapping[idx - 1];
+    const auto& right = mapping[idx];
+    ee_rel.modify(left.element_idx, left.face_idx, right.element_idx);
+    ee_rel.modify(right.element_idx, right.face_idx, left.element_idx);
   }
 }
 
