@@ -564,7 +564,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
 
   if(verboseOutput && !bValid)
   {
-    SLIC_DEBUG(fmt::to_string(out));
+    SLIC_INFO(fmt::to_string(out));
   }
 
   return bValid;

@@ -762,26 +762,21 @@ bool IAMesh<TDIM, SDIM, P>::isEmpty() const
 template <int TDIM, int SDIM, typename P>
 bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
 {
-  std::stringstream errSstr;
+  fmt::memory_buffer out;
 
   bool bValid = true;
-
-  bValid &= vertex_set.isValid(verboseOutput);
-  bValid &= element_set.isValid(verboseOutput);
-  bValid &= ev_rel.isValid(verboseOutput);
-  bValid &= ve_rel.isValid(verboseOutput);
-  bValid &= ee_rel.isValid(verboseOutput);
-  bValid &= vcoord_map.isValid(verboseOutput);
 
   //Check that sizes for vertices match
   if(vertex_set.size() != ve_rel.size() || vertex_set.size() != vcoord_map.size())
   {
     if(verboseOutput)
     {
-      errSstr << "\n\t vertex set and relation size don't match.\n\t";
-      errSstr << "vertex size: " << vertex_set.size() << "\n\t"
-              << "ve_rel size: " << ve_rel.size() << "\n\t"
-              << "vcoord size: " << vcoord_map.size();
+      fmt::format_to(out,
+                     "\n\t vertex set and relation size(s) don't match.\n\t"
+                     "vertex size: {}, ve_rel size: {}, vcoord size: {}",
+                     vertex_set.size(),
+                     ve_rel.size(),
+                     vcoord_map.size());
     }
     bValid = false;
   }
@@ -791,54 +786,58 @@ bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
   {
     if(verboseOutput)
     {
-      errSstr << "\n\t element set and relation size don't match.";
-      errSstr << "element_set size: " << element_set.size() << "\n\t"
-              << "ev_rel size: " << ev_rel.size() << "\n\t"
-              << "ee_rel size: " << ee_rel.size();
+      fmt::format_to(out,
+                     "\n\t element set and relation size(s) don't match.\n\t"
+                     "element_set size: {}, ev_rel size: {}, ee_rel size: {}",
+                     element_set.size(),
+                     ev_rel.size(),
+                     ee_rel.size());
     }
     bValid = false;
   }
 
-  //Check that all ev_rel are valid if the element_set is valid.
-  for(IndexType pos = 0; pos < element_set.size(); ++pos)
+  // Check sets, relations and maps for validity
+  if(!vertex_set.isValid(verboseOutput))
   {
-    if(element_set.isValidEntry(pos))
-    {
-      for(IndexType rpos = 0; rpos < ev_rel[pos].size(); rpos++)
-      {
-        if(ev_rel[pos][rpos] == ElementBoundaryRelation::INVALID_INDEX)
-        {
-          if(verboseOutput)
-          {
-            errSstr
-              << "\n\t* Element->Vertex relation contains an invalid entry"
-              << " for a valid element \n\t pos: " << pos << ", entry: " << rpos
-              << ".";
-          }
-          bValid = false;
-        }
-      }
-    }
+    if(verboseOutput) fmt::format_to(out, "\n\t Vertex set invalid");
+    bValid = false;
+  }
+  if(!element_set.isValid(verboseOutput))
+  {
+    if(verboseOutput) fmt::format_to(out, "\n\t Element set invalid");
+    bValid = false;
+  }
+  if(!ev_rel.isValid(verboseOutput))
+  {
+    if(verboseOutput) fmt::format_to(out, "\n\t Boundary relation invalid");
+    bValid = false;
+  }
+  if(!ve_rel.isValid(verboseOutput))
+  {
+    if(verboseOutput) fmt::format_to(out, "\n\t Coboundary relation invalid");
+    bValid = false;
+  }
+  if(!ee_rel.isValid(verboseOutput))
+  {
+    if(verboseOutput) fmt::format_to(out, "\n\t Adjacency relation invalid");
+    bValid = false;
+  }
+  if(!vcoord_map.isValid(verboseOutput))
+  {
+    if(verboseOutput) fmt::format_to(out, "\n\t Coordinate map is invalid");
+    bValid = false;
   }
 
-  //Check that valid entries in relation/map map to valid entries in set
-  for(IndexType pos = 0; pos < vertex_set.size(); ++pos)
+  if(verboseOutput)
   {
-    if(ve_rel.isValidEntry(pos) && !vertex_set.isValidEntry(pos))
+    if(bValid)
     {
-      if(verboseOutput)
-      {
-        errSstr
-          << "\n\t * Relation contains a valid entry with an invalid set entry"
-          << " at pos " << pos << ".";
-      }
-      bValid = false;
+      SLIC_INFO("IA mesh was valid");
     }
-  }
-
-  if(verboseOutput && !bValid)
-  {
-    SLIC_DEBUG(errSstr.str());
+    else
+    {
+      SLIC_INFO("IA mesh was not valid.\n Summary: " << fmt::to_string(out));
+    }
   }
 
   return bValid;

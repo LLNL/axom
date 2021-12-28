@@ -171,14 +171,26 @@ void run_delaunay(const Input& params)
     dt.getMeshData()->getNumberOfValidElements(),
     DIM == 2 ? "triangles" : "tetrahedra",
     numPoints / timer.elapsedTimeInSec()));
+  axom::slic::flushStreams();
 
-  // Check that the mesh is valid
-  SLIC_ASSERT(dt.getMeshData()->isValid(true));
-  SLIC_ASSERT(dt.isValid(true));
+  // Check that the Delaunay complex is valid
+  SLIC_INFO("Checking validity of Delaunay complex and underlying mesh...");
+  {
+    timer.start();
+    dt.getMeshData()->isValid(true);
+    dt.isValid(true);
+    timer.stop();
+    SLIC_INFO(axom::fmt::format("Validation took {} seconds",
+                                timer.elapsedTimeInSec()));
+  }
+
+  axom::slic::flushStreams();
 
   // Write the final mesh to a vtk file
   {
     std::string fname = axom::fmt::format("{}.vtk", outputVTKFile);
+    SLIC_INFO(
+      axom::fmt::format("Writing out final Delaunay complex to file '{}'", fname));
     dt.writeToVTKFile(fname);
   }
 
