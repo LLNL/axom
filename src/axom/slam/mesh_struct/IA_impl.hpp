@@ -388,7 +388,8 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
   for(auto vertex_i : ev_rel[element_idx])
   {
     // update VE relation for vertex_i when it points to deleted element
-    if(ve_rel[vertex_i][0] == element_idx)
+    IndexType& cbdry = coboundaryElement(vertex_i);
+    if(cbdry == element_idx)
     {
       IndexType new_elem = ElementSet::INVALID_ENTRY;
       for(auto nbr : ee_rel[element_idx])
@@ -400,7 +401,7 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
           break;
         }
       }
-      ve_rel.modify(vertex_i, 0, new_elem);
+      cbdry = new_elem;
     }
   }
 
@@ -410,13 +411,16 @@ void IAMesh<TDIM, SDIM, P>::removeElement(IndexType element_idx)
   //erase neighbor element's adjacency data pointing to deleted element
   for(auto nbr : ee_rel[element_idx])
   {
-    if(!element_set.isValidEntry(nbr)) continue;
-    for(auto it = ee_rel[nbr].begin(); it != ee_rel[nbr].end(); ++it)
+    if(isValidElement(nbr))
     {
-      if(*it == element_idx)
+      auto nbr_ee = ee_rel[nbr];
+      for(auto idx : nbr_ee.positions())
       {
-        ee_rel.modify(nbr, it.index(), ElementBoundaryRelation::INVALID_INDEX);
-        break;
+        if(nbr_ee[idx] == element_idx)
+        {
+          nbr_ee[idx] = ElementBoundaryRelation::INVALID_INDEX;
+          break;
+        }
       }
     }
   }
@@ -549,8 +553,8 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
 {
   for(int i = 0; i < VERTS_PER_ELEM; ++i)
   {
-    SLIC_WARNING_IF(
-      !vertex_set.isValidEntry(vlist[i]),
+    SLIC_ASSERT_MSG(
+      vertex_set.isValidEntry(vlist[i]),
       "Trying to add an element with invalid vertex index:" << vlist[i]);
   }
 
@@ -576,11 +580,11 @@ typename IAMesh<TDIM, SDIM, P>::IndexType IAMesh<TDIM, SDIM, P>::addElement(
   for(int i = 0; i < VERTS_PER_ELEM; ++i)
   {
     const IndexType v = vlist[i];
-    IndexType& e = coboundaryElement(v);
+    IndexType& cbdry = coboundaryElement(v);
 
-    if(!element_set.isValidEntry(e))
+    if(!element_set.isValidEntry(cbdry))
     {
-      e = element_idx;
+      cbdry = element_idx;
     }
   }
 
