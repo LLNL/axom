@@ -7,6 +7,8 @@
 #define AXOM_SPIN_UNIFORMGRID_HPP_
 
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/execution/for_all.hpp"
+#include "axom/core/Array.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
@@ -87,8 +89,8 @@ public:
    */
   UniformGrid(const BoxType& bbox, const int* res);
 
-  /*! \brief Destructor: present for symmetry with constructor */
-  ~UniformGrid();
+  void initialize(axom::ArrayView<const BoxType> bboxes,
+                  axom::ArrayView<const T> objs);
 
   /*!
    * \brief Returns the index of the bin containing the specified point.
@@ -220,7 +222,7 @@ private:
   LatticeType m_lattice;
 
   int m_resolution[NDIMS];
-  int m_strides[NDIMS];
+  primal::NumericArray<int, NDIMS> m_strides;
 
   struct Bin
   {
@@ -293,6 +295,7 @@ UniformGrid<T, NDIMS>::UniformGrid(const BoxType& bbox, const int* res)
     primal::NumericArray<int, NDIMS>(m_resolution));
 }
 
+//------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 void UniformGrid<T, NDIMS>::initialize(const int* res, int default_res)
 {
@@ -314,9 +317,99 @@ void UniformGrid<T, NDIMS>::initialize(const int* res, int default_res)
   m_boundingBox.scale(1. + EPS);
 }
 
+//------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-UniformGrid<T, NDIMS>::~UniformGrid()
-{ }
+void UniformGrid<T, NDIMS>::initialize(axom::ArrayView<const BoxType> bboxes,
+                                       axom::ArrayView<const T> objs)
+{
+  SLIC_ASSERT(bboxes.size() == objs.size());
+  // get the global bounding box of all the objects
+  BoxType global_box;
+  axom::for_all<axom::SEQ_EXEC>(bboxes.size(), [=, &global_box](IndexType idx) {
+    global_box.addBox(bboxes[idx]);
+  });
+  m_boundingBox = global_box;
+
+  // scale the bounding box by a little to account for boundaries
+  const double EPS = 1e-12;
+  m_boundingBox.scale(1. + EPS);
+
+  // set up the bounding box and lattice for point conversions
+  m_lattice = rectangular_lattice_from_bounding_box(
+    m_boundingBox,
+    primal::NumericArray<int, NDIMS>(m_resolution));
+
+  // 1. Get number of elements to insert into each bin
+  axom::Array<IndexType> binCounts(m_bins.size());
+  // TODO: There's an error on operator[] if this isn't const and it only
+  // happens for GCC 8.1.0
+  const axom::ArrayView<IndexType> binCountsView = binCounts;
+
+  primal::NumericArray<int, NDIMS> strides = m_strides;
+  axom::for_all<axom::SEQ_EXEC>(
+    bboxes.size(),
+    AXOM_LAMBDA(IndexType idx) {
+      const BoxType bbox = bboxes[idx];
+      const GridCell lowerCell = getClampedGridCell(bbox.getMin());
+      const GridCell upperCell = getClampedGridCell(bbox.getMax());
+      const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
+      const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
+      const int kStride = (NDIMS == 2) ? 1 : strides[2];
+
+      for(IndexType k = kLower; k <= kUpper; ++k)
+      {
+        const IndexType kOffset = k * kStride;
+        for(IndexType j = lowerCell[1]; j <= upperCell[1]; ++j)
+        {
+          const IndexType jOffset = j * strides[1] + kOffset;
+          for(IndexType i = lowerCell[0]; i <= upperCell[0]; ++i)
+          {
+            // TODO: needs to be atomic in CUDA case
+            const IndexType ibin = i + jOffset;
+            binCountsView[ibin]++;
+          }
+        }
+      }
+    });
+
+  // 2. Resize bins with counts
+  for(int ibin = 0; ibin < m_bins.size(); ibin++)
+  {
+    m_bins[ibin].ObjectArray.resize(binCounts[ibin]);
+  }
+
+  // 3. Reset bin-specific counters
+  binCounts.fill(0);
+
+  // 3. Add elements to bins using a counting sort
+  axom::for_all<axom::SEQ_EXEC>(
+    bboxes.size(),
+    AXOM_LAMBDA(IndexType idx) {
+      const BoxType bbox = bboxes[idx];
+      const GridCell lowerCell = getClampedGridCell(bbox.getMin());
+      const GridCell upperCell = getClampedGridCell(bbox.getMax());
+      const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
+      const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
+      const int kStride = (NDIMS == 2) ? 1 : strides[2];
+
+      for(int k = kLower; k <= kUpper; ++k)
+      {
+        const int kOffset = k * kStride;
+        for(int j = lowerCell[1]; j <= upperCell[1]; ++j)
+        {
+          const int jOffset = j * strides[1] + kOffset;
+          for(int i = lowerCell[0]; i <= upperCell[0]; ++i)
+          {
+            const IndexType binIndex = i + jOffset;
+            IndexType binCurrOffset = binCountsView[binIndex];
+            m_bins[binIndex].ObjectArray[binCurrOffset] = objs[idx];
+            // TODO: needs to be atomic in CUDA case
+            binCountsView[binIndex]++;
+          }
+        }
+      }
+    });
+}
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>

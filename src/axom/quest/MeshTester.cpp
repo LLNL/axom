@@ -81,6 +81,8 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   std::vector<int> nondegenerateIndices;
   nondegenerateIndices.reserve(ncells);
 
+  axom::Array<int> triIdxs(ncells);
+  axom::Array<detail::SpatialBoundingBox> triBboxes(ncells);
   for(int i = 0; i < ncells; i++)
   {
     t1 = detail::getMeshTriangle(i, surface_mesh);
@@ -93,10 +95,11 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     {
       nondegenerateIndices.push_back(i);
 
-      detail::SpatialBoundingBox triBB = compute_bounding_box(t1);
-      ugrid.insert(triBB, i);
+      triIdxs[i] = i;
+      triBboxes[i] = compute_bounding_box(t1);
     }
   }
+  ugrid.initialize(triBboxes, triIdxs);
 
   // Iterate through triangle indices *idx.
   // Check against each other triangle with index greater than the index *idx
