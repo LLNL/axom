@@ -597,11 +597,12 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   // Struct used to associate a collection of vertex indices with a face of the mesh
   struct FaceLinkMapping
   {
-    FaceLinkVerts face_link_verts;
-    IndexType element_idx;
-    IndexType face_idx;
+    IndexType boundary_hash;  // unique identifier for collection of face link verts
+    IndexType element_idx;  // the element containing this face
+    IndexType face_idx;     // the index of the face w.r.t. the element
   };
 
+  const IndexType totalVerts = elements().size();
   std::vector<FaceLinkMapping> mapping;
   mapping.reserve(TDIM * new_elements.size());
 
@@ -654,21 +655,29 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
       // ... or it is incident in the common vertex: vertex_idx
       else
       {
-        // Add all element-face associations to an array; we'll update below
-        FaceLinkMapping m;
+        // Add all element-face associations to an array;
+        // we'll update the adjacencies outside this loop
+        FaceLinkVerts face_link_verts;
         for(int i = 0, idx = 0; i < TDIM; ++i)
         {
           if(i != vert_i &&          // i is a vertex in face_i
              bdry[i] != vertex_idx)  // and not the common vertex
           {
-            m.face_link_verts[idx++] = bdry[i];
+            face_link_verts[idx++] = bdry[i];
           }
         }
 
-        // sort face link vertices in 3D; (there's only one vertex in 2D)
-        if(TDIM == 3 && (m.face_link_verts[0] > m.face_link_verts[1]))
+        FaceLinkMapping m;
+        if(TDIM == 2)
         {
-          axom::utilities::swap(m.face_link_verts[0], m.face_link_verts[1]);
+          m.boundary_hash = face_link_verts[0];
+        }
+        else  // TDIM == 3
+        {
+          // compute unique identifier based on sorted face link vertices
+          m.boundary_hash = (face_link_verts[0] < face_link_verts[1])
+            ? face_link_verts[0] * totalVerts + face_link_verts[1]
+            : face_link_verts[1] * totalVerts + face_link_verts[0];
         }
 
         m.element_idx = el;
@@ -684,7 +693,7 @@ void IAMesh<TDIM, SDIM, P>::fixVertexNeighborhood(
   std::sort(mapping.begin(),
             mapping.end(),
             [](const FaceLinkMapping& lhs, const FaceLinkMapping& rhs) {
-              return lhs.face_link_verts < rhs.face_link_verts;
+              return lhs.boundary_hash < rhs.boundary_hash;
             });
 
   // Apply neighbor data from matching face pairs
