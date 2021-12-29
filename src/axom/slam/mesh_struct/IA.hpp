@@ -103,6 +103,11 @@ public:
 
   using IndexBuf = slam::FieldRegistry<SetBase, IndexType>;
 
+  using ModularVertexIndex =
+    slam::ModularInt<slam::policies::CompileTimeSize<IndexType, VERTS_PER_ELEM>>;
+  using ModularFacetIndex =
+    slam::ModularInt<slam::policies::CompileTimeSize<IndexType, VERTS_PER_ELEM>>;
+
 public:
   /// \brief Default Constructor for an empty mesh
   IAMesh();

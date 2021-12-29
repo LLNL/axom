@@ -320,8 +320,7 @@ typename IAMesh<TDIM, SDIM, P>::IndexArray IAMesh<TDIM, SDIM, P>::getElementFace
 {
   constexpr int VERTS_PER_FACET = VERTS_PER_ELEM - 1;
 
-  using CTSize = slam::policies::CompileTimeSize<IndexType, VERTS_PER_ELEM>;
-  slam::ModularInt<CTSize> mod_face(face_idx);
+  ModularVertexIndex mod_face(face_idx);
 
   IndexArray ret;
   ret.reserve(VERTS_PER_FACET);

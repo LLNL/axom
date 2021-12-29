@@ -565,71 +565,92 @@ private:
     { }
 
     /**
-   * \brief Find the list of elements whose circumspheres contain the query point
+   * \brief Find the Delaunay cavity: the elements whose circumspheres contain the query point
    *
-   * \details This function starts from an element \a element_i, and searches through
+   * \details This function starts from an element \a element_i and searches through
    * neighboring elements for a list of element indices whose circumspheres contains the query point.
-   * It uses a recursive helper function \a findCavityElementsRec()
+   * It also finds the faces on the boundaries of the cavity to help with filling the cavity
+   * in the \a delaunayBall function.  
    *
    * \param query_pt the query point
    * \param element_i the element to start the search at
    */
     void findCavityElements(const PointType& query_pt, IndexType element_i)
     {
-      m_checked_element_set.insert(element_i);
-      findCavityElementsRec(query_pt, element_i);
+      constexpr int reserveSize = (DIM == 2) ? 16 : 64;
+
+      IndexArray stack;
+      stack.reserve(reserveSize);
+
+      // add first element (if valid and point is in its circumsphere)
+      if(m_mesh.isValidElement(element_i) && isPointInSphere(query_pt, element_i))
+      {
+        m_checked_element_set.insert(element_i);
+        cavity_elems.insert(element_i);
+        stack.push_back(element_i);
+      }
+
+      while(!stack.empty())
+      {
+        IndexType element_idx = stack.back();
+        stack.pop_back();
+
+        // Invariant: this element is valid, was checked and is in the cavity
+        // Each neighbor is either in the cavity or the shared face is on the cavity boundary
+        const auto neighbors = m_mesh.adjacentElements(element_idx);
+        for(auto n_idx : neighbors.positions())
+        {
+          const IndexType nbr = neighbors[n_idx];
+
+          // invalid neighbor means face is on domain boundary, and thus on cavity boundary
+          if(m_mesh.isValidElement(nbr))
+          {
+            // neighbor is valid; check circumsphere (if necesary), and add to cavity as appropriate
+            if(m_checked_element_set.insert(nbr).second)
+            {
+              if(isPointInSphere(query_pt, nbr))
+              {
+                cavity_elems.insert(nbr);
+                stack.push_back(nbr);
+                continue;  // face is internal to cavity, nothing left to do for this face
+              }
+            }
+            // check if neighbor is already in the cavity
+            else if(cavity_elems.findIndex(nbr) != ElementSet::INVALID_ENTRY)
+            {
+              continue;  // both elem and neighbor along face are in cavity
+            }
+          }
+
+          // if we got here, the face is on the boundary of the Delaunay cavity
+          // add it to facet sets and associated relations
+          {
+            auto fIdx = facet_set.insert();
+            fv_rel.updateSizes();
+            fc_rel.updateSizes();
+
+            const auto bdry = m_mesh.boundaryVertices(element_idx);
+
+            auto faceVerts = fv_rel[fIdx];
+            typename IAMeshType::ModularVertexIndex mod_idx(n_idx);
+            for(int i = 0; i < VERTS_PER_FACET; i++)
+            {
+              faceVerts[i] = bdry[mod_idx++];
+            }
+            //For tetrahedron, if the element face is odd, reverse vertex order
+            if(DIM == 3 && n_idx % 2 == 1)
+            {
+              axom::utilities::swap(faceVerts[1], faceVerts[2]);
+            }
+
+            fc_rel.insert(fIdx, nbr);
+          }
+        }
+      }
 
       SLIC_ASSERT_MSG(!cavity_elems.empty(),
                       "Error: New point is not contained in the mesh");
       SLIC_ASSERT(!facet_set.empty());
-    }
-
-    /**
-   * \brief recursive function to find cavity elements given a point to be added
-   * \details Check if the point is in the circumsphere element, if so,
-   * recursively call the neighboring elements.
-   */
-    bool findCavityElementsRec(const PointType& query_pt, IndexType element_idx)
-    {
-      const bool is_in_circle = isPointInSphere(query_pt, element_idx);
-
-      // Base case: Element element_idx was valid (i.e. query_pt is outside its circumcircle)
-      if(!is_in_circle)
-      {
-        return true;
-      }
-
-      // Recursive case: Add element to list and check its neighbors
-      cavity_elems.insert(element_idx);
-
-      //check for each faces; m_checked_element_set ensures we only check each element once
-      const auto neighbors = m_mesh.adjacentElements(element_idx);
-      for(auto nbr = neighbors.begin(); nbr != neighbors.end(); ++nbr)
-      {
-        //The latter case is a checked element that is not a cavity element
-        if(!m_mesh.isValidElement(*nbr) ||
-           (m_checked_element_set.insert(*nbr).second
-              ? findCavityElementsRec(query_pt, *nbr)
-              : cavity_elems.findIndex(*nbr) == ElementSet::INVALID_ENTRY))
-        {
-          IndexArray vlist = m_mesh.getElementFace(element_idx, nbr.index());
-
-          //For tetrahedron, if the element face is odd, reverse vertex order
-          if(DIM == 3 && nbr.index() % 2 == 1)
-          {
-            axom::utilities::swap(vlist[1], vlist[2]);
-          }
-
-          auto fIdx = facet_set.insert();
-          for(int i = 0; i < VERTS_PER_FACET; i++)
-          {
-            fv_rel.insert(fIdx, vlist[i]);
-          }
-
-          fc_rel.insert(fIdx, *nbr);
-        }
-      }
-      return false;
     }
 
     /**
