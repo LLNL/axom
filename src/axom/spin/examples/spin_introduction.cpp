@@ -332,8 +332,8 @@ void findNeighborCandidates(TriangleType& t1,
   // greater than i into a vector.
   for(size_t curb = 0; curb < checkcount; ++curb)
   {
-    std::vector<int> ntlist = ugrid->getBinContents(bToCheck[curb]);
-    for(size_t j = 0; j < ntlist.size(); ++j)
+    axom::ArrayView<int> ntlist = ugrid->getBinContents(bToCheck[curb]);
+    for(axom::IndexType j = 0; j < ntlist.size(); ++j)
     {
       if(ntlist[j] > i)
       {

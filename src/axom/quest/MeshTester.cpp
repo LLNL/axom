@@ -121,13 +121,12 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     size_t checkcount = binsToCheck.size();
     for(size_t curbin = 0; curbin < checkcount; ++curbin)
     {
-      std::vector<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
-      std::vector<int>::iterator ntlit = ntlist.begin(), ntlend = ntlist.end();
-      for(; ntlit != ntlend; ++ntlit)
+      axom::ArrayView<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
+      for(const int nbr : ntlist)
       {
-        if(*ntlit > *idx)
+        if(nbr > *idx)
         {
-          neighborTriangles.push_back(*ntlit);
+          neighborTriangles.push_back(nbr);
         }
       }
     }

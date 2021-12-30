@@ -37,6 +37,7 @@ set( spin_headers
 
      ## policy
      policy/LinearBVH.hpp
+     policy/UniformGridStorage.hpp
    )
 
 set( spin_sources

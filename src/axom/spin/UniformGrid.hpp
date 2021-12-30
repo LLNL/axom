@@ -17,6 +17,8 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/spin/RectangularLattice.hpp"
 
+#include "axom/spin/policy/UniformGridStorage.hpp"
+
 // C/C++ includes
 #include <algorithm>
 #include <cmath>
@@ -52,8 +54,8 @@ namespace spin
  * object into some of the bins.  The user may retrieve the bin index of any
  * point, then retrieve any objects associated with the bin at that index.
  */
-template <typename T, int NDIMS>
-class UniformGrid
+template <typename T, int NDIMS, typename StoragePolicy = policy::DynamicGridStorage<T>>
+class UniformGrid : StoragePolicy
 {
 public:
   /*! \brief The type used for specifying spatial extent of the contents */
@@ -61,6 +63,9 @@ public:
 
   /*! \brief The type used to query the index */
   using PointType = primal::Point<double, NDIMS>;
+
+  using BinType = typename StoragePolicy::BinType;
+  using ConstBinType = typename StoragePolicy::ConstBinType;
 
 private:
   /*! \brief The type used for mapping points in space to grid cells */
@@ -106,7 +111,7 @@ public:
   int getBinIndex(const PointType& pt) const;
 
   /*! \brief Returns the number of bins in this UniformGrid. */
-  int getNumBins() const;
+  using StoragePolicy::getNumBins;
 
   /*!
    * \brief Returns whether the bin specified by index is empty.
@@ -122,7 +127,7 @@ public:
    * It is an error if index is invalid.
    * \param [in] index The index of the bin to retrieve.
    */
-  std::vector<T>& getBinContents(int index);
+  BinType getBinContents(int index);
 
   /*!
    * \brief Returns the contents of the bin indicated by index.
@@ -130,7 +135,7 @@ public:
    * It is an error if index is invalid.  This is the const version.
    * \param [in] index The index of the bin to retrieve.
    */
-  const std::vector<T>& getBinContents(int index) const;
+  ConstBinType getBinContents(int index) const;
 
   /*!
    * \brief Returns true if index is valid; that is, refers to a valid bin.
@@ -224,13 +229,6 @@ private:
   int m_resolution[NDIMS];
   primal::NumericArray<int, NDIMS> m_strides;
 
-  struct Bin
-  {
-    std::vector<T> ObjectArray;
-    //other stuff
-  };
-  std::vector<Bin> m_bins;
-
   DISABLE_COPY_AND_ASSIGNMENT(UniformGrid);
   DISABLE_MOVE_AND_ASSIGNMENT(UniformGrid);
 
@@ -247,8 +245,8 @@ namespace axom
 namespace spin
 {
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-UniformGrid<T, NDIMS>::UniformGrid()
+template <typename T, int NDIMS, typename StoragePolicy>
+UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid()
   : m_boundingBox(PointType::zero(), PointType(100))
   , m_lattice(PointType::zero(), PointType(1))
 {
@@ -259,10 +257,10 @@ UniformGrid<T, NDIMS>::UniformGrid()
   initialize(nullptr, DEFAULT_RES);
 }
 
-template <typename T, int NDIMS>
-UniformGrid<T, NDIMS>::UniformGrid(const double* lower_bound,
-                                   const double* upper_bound,
-                                   const int* res)
+template <typename T, int NDIMS, typename StoragePolicy>
+UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid(const double* lower_bound,
+                                                  const double* upper_bound,
+                                                  const int* res)
 {
   SLIC_ASSERT(lower_bound != nullptr);
   SLIC_ASSERT(upper_bound != nullptr);
@@ -280,8 +278,9 @@ UniformGrid<T, NDIMS>::UniformGrid(const double* lower_bound,
     primal::NumericArray<int, NDIMS>(m_resolution));
 }
 
-template <typename T, int NDIMS>
-UniformGrid<T, NDIMS>::UniformGrid(const BoxType& bbox, const int* res)
+template <typename T, int NDIMS, typename StoragePolicy>
+UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid(const BoxType& bbox,
+                                                  const int* res)
   : m_boundingBox(bbox)
 {
   SLIC_ASSERT(res != nullptr);
@@ -296,8 +295,9 @@ UniformGrid<T, NDIMS>::UniformGrid(const BoxType& bbox, const int* res)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-void UniformGrid<T, NDIMS>::initialize(const int* res, int default_res)
+template <typename T, int NDIMS, typename StoragePolicy>
+void UniformGrid<T, NDIMS, StoragePolicy>::initialize(const int* res,
+                                                      int default_res)
 {
   // set up the grid resolution and (row-major) strides
   m_resolution[0] = (res ? res[0] : default_res);
@@ -310,7 +310,7 @@ void UniformGrid<T, NDIMS>::initialize(const int* res, int default_res)
 
   // initialize space for the bins
   const int numBins = m_strides[NDIMS - 1] * m_resolution[NDIMS - 1];
-  m_bins.resize(numBins);
+  StoragePolicy::setNumBins(numBins);
 
   // scale the bounding box by a little to account for boundaries
   const double EPS = 1e-12;
@@ -318,9 +318,10 @@ void UniformGrid<T, NDIMS>::initialize(const int* res, int default_res)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-void UniformGrid<T, NDIMS>::initialize(axom::ArrayView<const BoxType> bboxes,
-                                       axom::ArrayView<const T> objs)
+template <typename T, int NDIMS, typename StoragePolicy>
+void UniformGrid<T, NDIMS, StoragePolicy>::initialize(
+  axom::ArrayView<const BoxType> bboxes,
+  axom::ArrayView<const T> objs)
 {
   SLIC_ASSERT(bboxes.size() == objs.size());
   // get the global bounding box of all the objects
@@ -339,8 +340,9 @@ void UniformGrid<T, NDIMS>::initialize(axom::ArrayView<const BoxType> bboxes,
     m_boundingBox,
     primal::NumericArray<int, NDIMS>(m_resolution));
 
+  const IndexType numBins = getNumBins();
   // 1. Get number of elements to insert into each bin
-  axom::Array<IndexType> binCounts(m_bins.size());
+  axom::Array<IndexType> binCounts(numBins);
   // TODO: There's an error on operator[] if this isn't const and it only
   // happens for GCC 8.1.0
   const axom::ArrayView<IndexType> binCountsView = binCounts;
@@ -373,10 +375,7 @@ void UniformGrid<T, NDIMS>::initialize(axom::ArrayView<const BoxType> bboxes,
     });
 
   // 2. Resize bins with counts
-  for(int ibin = 0; ibin < m_bins.size(); ibin++)
-  {
-    m_bins[ibin].ObjectArray.resize(binCounts[ibin]);
-  }
+  StoragePolicy::initialize(binCounts);
 
   // 3. Reset bin-specific counters
   binCounts.fill(0);
@@ -402,7 +401,7 @@ void UniformGrid<T, NDIMS>::initialize(axom::ArrayView<const BoxType> bboxes,
           {
             const IndexType binIndex = i + jOffset;
             IndexType binCurrOffset = binCountsView[binIndex];
-            m_bins[binIndex].ObjectArray[binCurrOffset] = objs[idx];
+            StoragePolicy::get(binIndex, binCurrOffset) = objs[idx];
             // TODO: needs to be atomic in CUDA case
             binCountsView[binIndex]++;
           }
@@ -412,8 +411,8 @@ void UniformGrid<T, NDIMS>::initialize(axom::ArrayView<const BoxType> bboxes,
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-int UniformGrid<T, NDIMS>::getBinIndex(const PointType& pt) const
+template <typename T, int NDIMS, typename StoragePolicy>
+int UniformGrid<T, NDIMS, StoragePolicy>::getBinIndex(const PointType& pt) const
 {
   // Index is only valid when the point is within the bounding box
   if(!m_boundingBox.contains(pt))
@@ -434,48 +433,45 @@ int UniformGrid<T, NDIMS>::getBinIndex(const PointType& pt) const
   return res;
 }
 
-template <typename T, int NDIMS>
-bool UniformGrid<T, NDIMS>::isValidIndex(int index) const
+template <typename T, int NDIMS, typename StoragePolicy>
+bool UniformGrid<T, NDIMS, StoragePolicy>::isValidIndex(int index) const
 {
-  return index >= 0 && index < static_cast<int>(m_bins.size());
+  return index >= 0 && index < static_cast<int>(getNumBins());
 }
 
-template <typename T, int NDIMS>
-int UniformGrid<T, NDIMS>::getNumBins() const
-{
-  return static_cast<int>(m_bins.size());
-}
-
-template <typename T, int NDIMS>
-bool UniformGrid<T, NDIMS>::isBinEmpty(int index) const
+template <typename T, int NDIMS, typename StoragePolicy>
+bool UniformGrid<T, NDIMS, StoragePolicy>::isBinEmpty(int index) const
 {
   if(!isValidIndex(index))
   {
     return true;
   }
 
-  return m_bins[index].ObjectArray.empty();
+  return StoragePolicy::getBin(index).size() == 0;
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-std::vector<T>& UniformGrid<T, NDIMS>::getBinContents(int index)
+template <typename T, int NDIMS, typename StoragePolicy>
+typename UniformGrid<T, NDIMS, StoragePolicy>::BinType
+UniformGrid<T, NDIMS, StoragePolicy>::getBinContents(int index)
 {
   SLIC_ASSERT(isValidIndex(index));
 
-  return m_bins[index].ObjectArray;
+  return StoragePolicy::getBin(index);
 }
 
-template <typename T, int NDIMS>
-const std::vector<T>& UniformGrid<T, NDIMS>::getBinContents(int index) const
+template <typename T, int NDIMS, typename StoragePolicy>
+typename UniformGrid<T, NDIMS, StoragePolicy>::ConstBinType
+UniformGrid<T, NDIMS, StoragePolicy>::getBinContents(int index) const
 {
   SLIC_ASSERT(isValidIndex(index));
 
-  return m_bins[index].ObjectArray;
+  return StoragePolicy::getBin(index);
 }
 
-template <typename T, int NDIMS>
-const std::vector<int> UniformGrid<T, NDIMS>::getBinsForBbox(const BoxType& BB) const
+template <typename T, int NDIMS, typename StoragePolicy>
+const std::vector<int> UniformGrid<T, NDIMS, StoragePolicy>::getBinsForBbox(
+  const BoxType& BB) const
 {
   std::vector<int> retval;
 
@@ -509,30 +505,30 @@ const std::vector<int> UniformGrid<T, NDIMS>::getBinsForBbox(const BoxType& BB) 
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-void UniformGrid<T, NDIMS>::clear(int index)
+template <typename T, int NDIMS, typename StoragePolicy>
+void UniformGrid<T, NDIMS, StoragePolicy>::clear(int index)
 {
   if(isValidIndex(index))
   {
-    m_bins[index].ObjectArray.clear();
+    StoragePolicy::clear(index);
   }
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-void UniformGrid<T, NDIMS>::addObj(const T& obj, int index)
+template <typename T, int NDIMS, typename StoragePolicy>
+void UniformGrid<T, NDIMS, StoragePolicy>::addObj(const T& obj, int index)
 {
   SLIC_CHECK(isValidIndex(index));
 
   if(isValidIndex(index))
   {
-    m_bins[index].ObjectArray.push_back(obj);
+    StoragePolicy::insert(index, obj);
   }
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-void UniformGrid<T, NDIMS>::insert(const BoxType& BB, const T& obj)
+template <typename T, int NDIMS, typename StoragePolicy>
+void UniformGrid<T, NDIMS, StoragePolicy>::insert(const BoxType& BB, const T& obj)
 {
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
@@ -546,9 +542,9 @@ void UniformGrid<T, NDIMS>::insert(const BoxType& BB, const T& obj)
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-typename UniformGrid<T, NDIMS>::GridCell UniformGrid<T, NDIMS>::getClampedGridCell(
-  const PointType& pt) const
+template <typename T, int NDIMS, typename StoragePolicy>
+typename UniformGrid<T, NDIMS, StoragePolicy>::GridCell
+UniformGrid<T, NDIMS, StoragePolicy>::getClampedGridCell(const PointType& pt) const
 {
   GridCell cell = m_lattice.gridCell(pt);
 
