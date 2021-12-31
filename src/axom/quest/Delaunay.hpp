@@ -255,53 +255,78 @@ public:
    */
   bool isValid(bool verboseOutput = false) const
   {
-    // We use an ImplicitGrid spatial index to find the candidate elements
+    // Implementation note: We use an UniformGrid spatial index to find the candidate elements
     // whose circumsphere might contain the vertices of the mesh
+    // To build this faster, we bootstrap the UniformGrid with an ImplicitGrid
 
     using ImplicitGridType = spin::ImplicitGrid<DIM>;
+    using UniformGridType = spin::UniformGrid<IndexType, DIM>;
     using NumericArrayType = primal::NumericArray<DataType, DIM>;
-    using BitsetType = typename ImplicitGridType::BitsetType;
+    using axom::numerics::dot_product;
 
     bool valid = true;
 
     std::vector<std::pair<IndexType, IndexType>> invalidEntries;
 
-    ImplicitGridType grid(m_bounding_box, nullptr, m_mesh.elements().size());
+    const IndexType totalVertices = m_mesh.vertices().size();
+    const IndexType totalElements = m_mesh.elements().size();
+    const int res =
+      axom::utilities::ceil(0.33 * std::pow(totalVertices, 1. / DIM));
+    UniformGridType grid(m_bounding_box,
+                         primal::NumericArray<int, DIM>(res).data());
 
-    // Add (bounding boxes of) element circumspheres to implicit grid
-    for(auto element_idx : m_mesh.elements().positions())
+    // bootstrap the uniform grid using an implicit grid
     {
-      if(m_mesh.isValidElement(element_idx))
+      using GridCell = typename ImplicitGridType::GridCell;
+
+      // Add (bounding boxes of) element circumspheres to temporary implicit grid
+      const auto resCell = GridCell(res);
+      ImplicitGridType implicitGrid(m_bounding_box, &resCell, totalElements);
+      for(auto element_idx : m_mesh.elements().positions())
       {
-        const auto sphere = this->getElement(element_idx).circumsphere();
-        const auto center = NumericArrayType(sphere.getCenter());
-        const auto offset = NumericArrayType(sphere.getRadius());
+        if(m_mesh.isValidElement(element_idx))
+        {
+          const auto sphere = this->getElement(element_idx).circumsphere();
+          const auto center = NumericArrayType(sphere.getCenter());
+          const auto offset = NumericArrayType(sphere.getRadius());
 
-        BoundingBox bb;
-        bb.addPoint(PointType(center - offset));
-        bb.addPoint(PointType(center + offset));
+          BoundingBox bb;
+          bb.addPoint(PointType(center - offset));
+          bb.addPoint(PointType(center + offset));
 
-        grid.insert(bb, element_idx);  // insert valid entries into grid
+          implicitGrid.insert(bb, element_idx);  // insert valid entries into grid
+        }
       }
+
+      // copy candidates from implicit grid directly into uniform grid
+      const int kUpper = (DIM == 2) ? 0 : res;
+      const int stride[3] = {1, res, (DIM == 2) ? 0 : res * res};
+      for(int k = 0; k < kUpper; ++k)
+        for(int j = 0; j < res; ++j)
+          for(int i = 0; i < res; ++i)
+          {
+            const int vals[3] = {i, j, k};
+            const GridCell cell(vals);
+            const auto idx = dot_product(cell.data(), stride, DIM);
+            grid.getBinContents(idx) = implicitGrid.getCandidatesAsArray(cell);
+          }
     }
 
     // for each vertex -- check in_sphere condition for candidate element
     for(auto vertex_idx : m_mesh.vertices().positions())
     {
-      const auto& vertex = m_mesh.getVertexPosition(vertex_idx);
-
-      auto candidates = grid.getCandidates(vertex);
-      for(auto element_idx = candidates.find_first();  //
-          element_idx != BitsetType::npos;
-          element_idx = candidates.find_next(element_idx))
+      // skip if vertex at this index is not valid
+      if(!m_mesh.isValidVertex(vertex_idx))
       {
-        // skip if element at this index is not valid
-        if(!m_mesh.isValidElement(element_idx))
-        {
-          continue;
-        }
+        continue;
+      }
 
-        // also skip if this is a vertex of the element
+      const auto& vertex = m_mesh.getVertexPosition(vertex_idx);
+      for(const auto element_idx : grid.getBinContents(grid.getBinIndex(vertex)))
+      {
+        // no need to check for invalid elements -- only valid elements were added to grid
+
+        // skip if this is a vertex of the element
         if(slam::is_subset(vertex_idx, m_mesh.boundaryVertices(element_idx)))
         {
           continue;
