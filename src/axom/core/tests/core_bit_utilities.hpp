@@ -14,6 +14,8 @@
 
 namespace
 {
+constexpr int NRAND_SAMPLES = 1000;
+
 // Returns a random integer value between 0 and the max value
 template <typename T>
 T random_int()
@@ -58,7 +60,7 @@ TEST(core_bit_utilities, trailingZeroes)
   }
 
   // Test trailing zeros on some random numbers
-  for(int n = 0; n < 1000; ++n)
+  for(int n = 0; n < NRAND_SAMPLES; ++n)
   {
     axom::uint64 rand_val = ::random_int<axom::uint64>();
 
@@ -118,7 +120,7 @@ TEST(core_bit_utilities, popCount)
   }
 
   // Test pop count on some random numbers
-  for(int n = 0; n < 1000; ++n)
+  for(int n = 0; n < NRAND_SAMPLES; ++n)
   {
     auto val = ::random_int<axom::uint64>();
 
@@ -156,7 +158,7 @@ TEST(core_bit_utilities, leadingZeros)
   }
 
   // Test leading zeros on some random numbers
-  for(int n = 0; n < 1000; ++n)
+  for(int n = 0; n < NRAND_SAMPLES; ++n)
   {
     axom::int32 rand_val = ::random_int<axom::int32>();
 
