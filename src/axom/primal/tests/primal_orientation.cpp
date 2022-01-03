@@ -95,6 +95,25 @@ TEST(primal_orientation, orient3D)
         EXPECT_EQ(primal::ON_NEGATIVE_SIDE,
                   primal::orientation(phys + normal, flipped_triangle));
       }
+
+      // check overload with explicit tolerances
+      {
+        const double TOL = 1e-2;
+        const double smallOff = 1e-5;
+        const double largeOff = 1e-1;
+        const auto unitNormal = normal.unitVector();
+
+        EXPECT_EQ(primal::ON_BOUNDARY,
+                  primal::orientation(phys - smallOff * unitNormal, tri, TOL));
+        EXPECT_EQ(primal::ON_NEGATIVE_SIDE,
+                  primal::orientation(phys - largeOff * unitNormal, tri, TOL));
+
+        EXPECT_EQ(primal::ON_BOUNDARY,
+                  primal::orientation(phys + smallOff * unitNormal, tri, TOL));
+
+        EXPECT_EQ(primal::ON_POSITIVE_SIDE,
+                  primal::orientation(phys + largeOff * unitNormal, tri, TOL));
+      }
     }
   }
 }
@@ -173,6 +192,24 @@ TEST(primal_orientation, orient2D)
                   primal::orientation(phys - normal, flipped_segment));
         EXPECT_EQ(primal::ON_NEGATIVE_SIDE,
                   primal::orientation(phys + normal, flipped_segment));
+      }
+
+      // check overload with explicit tolerances
+      {
+        const double TOL = 1e-2;
+        const double smallOff = 1e-5;
+        const double largeOff = 1e-1;
+        const auto unitNormal = normal.unitVector();
+
+        EXPECT_EQ(primal::ON_BOUNDARY,
+                  primal::orientation(phys - smallOff * unitNormal, seg, TOL));
+        EXPECT_EQ(primal::ON_NEGATIVE_SIDE,
+                  primal::orientation(phys - largeOff * unitNormal, seg, TOL));
+
+        EXPECT_EQ(primal::ON_BOUNDARY,
+                  primal::orientation(phys + smallOff * unitNormal, seg, TOL));
+        EXPECT_EQ(primal::ON_POSITIVE_SIDE,
+                  primal::orientation(phys + largeOff * unitNormal, seg, TOL));
       }
     }
   }

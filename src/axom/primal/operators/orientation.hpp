@@ -34,20 +34,23 @@ namespace primal
  *  oriented triangle \a tri
  * \param [in] p the query point
  * \param [in] tri an oriented triangle
+ * \param [in] EPS a tolerance for determining if \a p and \a tri are coplanar
  * \return The orientation of \a p with respect to \a tri
  * \note The triangle lies in a plane that divides space into the positive
  * half-space and the negative half-space. The triangle's normal vector
  * points in the positive half-space.
  * The return value of this routine can be one of the following:
  * <ul>
- *  <li> ON_BOUNDARY, when \a p is coplanar with \a tri </li>
+ *  <li> ON_BOUNDARY, when \a p is coplanar with \a tri (within tolerance \a EPS)</li>
  *  <li> ON_POSITIVE_SIDE, when \a p lies in the positive half-space </li>
  *  <li> ON_NEGATIVE_SIDE, when \a p lies in the negative half-space </li>
  * </ul>
  * \sa OrientationResult
  */
 template <typename T>
-inline int orientation(const Point<T, 3>& p, const Triangle<T, 3>& tri)
+inline int orientation(const Point<T, 3>& p,
+                       const Triangle<T, 3>& tri,
+                       double EPS = 1e-9)
 {
   const Vector<T, 3> A(p, tri[0]);
   const Vector<T, 3> B(p, tri[1]);
@@ -59,7 +62,7 @@ inline int orientation(const Point<T, 3>& p, const Triangle<T, 3>& tri)
                                       C[0], C[1], C[2]);
   // clang-format on
 
-  if(axom::utilities::isNearlyEqual(det, 0.0, 1.0e-9))
+  if(axom::utilities::isNearlyEqual(det, 0., EPS))
   {
     return primal::ON_BOUNDARY;
   }
@@ -72,20 +75,23 @@ inline int orientation(const Point<T, 3>& p, const Triangle<T, 3>& tri)
  *  oriented segment
  * \param [in] p the query point
  * \param [in] seg an oriented segment
+ * \param [in] EPS a tolerance for determining if \a p and \a seg are coplanar
  * \return The orientation of \a p with respect to \a seg
  * \note The segment lies in a plane that divides space into the positive
  * half-space and the negative half-space. The segment's normal vector
  * points in the positive half-space.
  * The return value can be one of the following:
  * <ul>
- *  <li> ON_BOUNDARY, when \a p is coplanar with \a seg </li>
+ *  <li> ON_BOUNDARY, when \a p is coplanar with \a seg (within tolerance \a EPS)</li>
  *  <li> ON_POSITIVE_SIDE, when \a p lies in the positive half-space </li>
  *  <li> ON_NEGATIVE_SIDE, when \a p lies in the negative half-space </li>
  * </ul>
  * \sa OrientationResult
  */
 template <typename T>
-inline int orientation(const Point<T, 2>& p, const Segment<T, 2>& seg)
+inline int orientation(const Point<T, 2>& p,
+                       const Segment<T, 2>& seg,
+                       double EPS = 1e-9)
 {
   const Vector<T, 2> A(p, seg[0]);
   const Vector<T, 2> B(p, seg[1]);
@@ -95,7 +101,7 @@ inline int orientation(const Point<T, 2>& p, const Segment<T, 2>& seg)
                                       B[0], B[1]);
   // clang-format on
 
-  if(axom::utilities::isNearlyEqual(det, 0.0))
+  if(axom::utilities::isNearlyEqual(det, 0., EPS))
   {
     return primal::ON_BOUNDARY;
   }
