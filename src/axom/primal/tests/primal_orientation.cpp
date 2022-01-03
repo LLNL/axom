@@ -11,6 +11,7 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Plane.hpp"
 #include "axom/primal/operators/orientation.hpp"
 
 TEST(primal_orientation, orient3D)
@@ -18,8 +19,10 @@ TEST(primal_orientation, orient3D)
   namespace primal = axom::primal;
 
   using Point3 = primal::Point<double, 3>;
+  using Vector3 = primal::Vector<double, 3>;
   using BaryPoint = primal::Point<double, 3>;
   using Tri = primal::Triangle<double, 3>;
+  using Plane3 = primal::Plane<double, 3>;
 
   // Test a few triangles
   for(const auto& tri :
@@ -30,7 +33,7 @@ TEST(primal_orientation, orient3D)
   {
     // Specify test points relative to triangle via barycentric coordinates
     for(const auto& baryPoint : {BaryPoint {1, 0, 0},
-                                 BaryPoint {1, 0, 0},
+                                 BaryPoint {0, 1, 0},
                                  BaryPoint {0, 0, 1},
                                  BaryPoint {.5, .5, 0},
                                  BaryPoint {.5, 0, .5},
@@ -61,6 +64,27 @@ TEST(primal_orientation, orient3D)
       EXPECT_EQ(primal::ON_POSITIVE_SIDE,
                 primal::orientation(phys + 0.25 * normal, tri));
 
+      // check that orientation is equivalent to half-space definition
+      {
+        EXPECT_LT(normal.dot(Vector3(phys, phys - normal)), 0.);
+        EXPECT_LT(normal.dot(Vector3(phys, phys - 0.25 * normal)), 0.);
+        EXPECT_GT(normal.dot(Vector3(phys, phys + normal)), 0.);
+        EXPECT_GT(normal.dot(Vector3(phys, phys + 0.25 * normal)), 0.);
+      }
+
+      // check equivalence to Plane orientation
+      {
+        const auto plane = Plane3(normal, tri[0]);
+        for(const auto& pt : {phys,
+                              phys - normal,
+                              phys - 2.5 * normal,
+                              phys + normal,
+                              phys + 0.25 * normal})
+        {
+          EXPECT_EQ(plane.getOrientation(pt), primal::orientation(pt, tri));
+        }
+      }
+
       // Orientation on flipped triangle should be flipped
       {
         const auto flipped_triangle = Tri(tri[0], tri[2], tri[1]);
@@ -81,7 +105,9 @@ TEST(primal_orientation, orient2D)
   namespace primal = axom::primal;
 
   using Point2 = primal::Point<double, 2>;
+  using Vector2 = primal::Vector<double, 2>;
   using Segment = primal::Segment<double, 2>;
+  using Plane2 = primal::Plane<double, 2>;
 
   // Test a few segments
   for(const auto& seg : {Segment(Point2 {0, 0}, Point2 {1, 1}),
@@ -92,37 +118,61 @@ TEST(primal_orientation, orient2D)
                          Segment(Point2 {-2, -3}, Point2 {3, 4})})
   {
     // Specify test points on segment
-    for(const auto& pt : {seg.at(0.),
-                          seg.at(1.),
-                          seg.at(0.5),
-                          seg.at(0.33),
-                          seg.at(-2.53),
-                          seg.at(3.14)})
+    for(const auto& phys : {seg.at(0.),
+                            seg.at(1.),
+                            seg.at(0.5),
+                            seg.at(0.33),
+                            seg.at(-2.53),
+                            seg.at(3.14)})
     {
       auto normal = seg.normal();
 
       // check orientation of a few offset points
       // Without offset, the point should be on the same plane
-      EXPECT_EQ(primal::ON_BOUNDARY, primal::orientation(pt, seg));
+      EXPECT_EQ(primal::ON_BOUNDARY, primal::orientation(phys, seg));
 
       // Offset along negative normal should have negative orientation
-      EXPECT_EQ(primal::ON_NEGATIVE_SIDE, primal::orientation(pt - normal, seg));
       EXPECT_EQ(primal::ON_NEGATIVE_SIDE,
-                primal::orientation(pt - 0.25 * normal, seg));
+                primal::orientation(phys - normal, seg));
+      EXPECT_EQ(primal::ON_NEGATIVE_SIDE,
+                primal::orientation(phys - 0.25 * normal, seg));
 
       // Offset along positive normal should have positive orientation
-      EXPECT_EQ(primal::ON_POSITIVE_SIDE, primal::orientation(pt + normal, seg));
       EXPECT_EQ(primal::ON_POSITIVE_SIDE,
-                primal::orientation(pt + 0.25 * normal, seg));
+                primal::orientation(phys + normal, seg));
+      EXPECT_EQ(primal::ON_POSITIVE_SIDE,
+                primal::orientation(phys + 0.25 * normal, seg));
+
+      // check that orientation is equivalent to half-space definition
+      {
+        EXPECT_LT(normal.dot(Vector2(phys, phys - normal)), 0.);
+        EXPECT_LT(normal.dot(Vector2(phys, phys - 0.25 * normal)), 0.);
+        EXPECT_GT(normal.dot(Vector2(phys, phys + normal)), 0.);
+        EXPECT_GT(normal.dot(Vector2(phys, phys + 0.25 * normal)), 0.);
+      }
+
+      // check equivalence to Plane orientation
+      {
+        const auto plane = Plane2(normal, seg[0]);
+        for(const auto& pt : {phys,
+                              phys - normal,
+                              phys - 2.5 * normal,
+                              phys + normal,
+                              phys + 0.25 * normal})
+        {
+          EXPECT_EQ(plane.getOrientation(pt), primal::orientation(pt, seg));
+        }
+      }
 
       // Orientation on flipped triangle should be flipped
       {
         const auto flipped_segment = Segment(seg[1], seg[0]);
-        EXPECT_EQ(primal::ON_BOUNDARY, primal::orientation(pt, flipped_segment));
+        EXPECT_EQ(primal::ON_BOUNDARY,
+                  primal::orientation(phys, flipped_segment));
         EXPECT_EQ(primal::ON_POSITIVE_SIDE,
-                  primal::orientation(pt - normal, flipped_segment));
+                  primal::orientation(phys - normal, flipped_segment));
         EXPECT_EQ(primal::ON_NEGATIVE_SIDE,
-                  primal::orientation(pt + normal, flipped_segment));
+                  primal::orientation(phys + normal, flipped_segment));
       }
     }
   }
