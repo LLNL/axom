@@ -342,7 +342,7 @@ public:
                             double segmentParameter,
                             const CellIndexSet& otherCells) const
   {
-    SpaceVector vec = this->cellPositions(cidx).template normal<2>();
+    SpaceVector vec = this->cellPositions(cidx).normal();
 
     // Check if the point is at the first vertex of the segment
     if(axom::utilities::isNearlyEqual(segmentParameter, 0.))
@@ -353,7 +353,7 @@ public:
         auto vidx = cellVertexIndices(cidx)[0];
         if(idx != cidx && incidentInVertex(cellVertexIndices(idx), vidx))
         {
-          vec += this->cellPositions(idx).template normal<2>().unitVector();
+          vec += this->cellPositions(idx).normal().unitVector();
         }
       }
     }
@@ -366,7 +366,7 @@ public:
         auto vidx = cellVertexIndices(cidx)[1];
         if(idx != cidx && incidentInVertex(cellVertexIndices(idx), vidx))
         {
-          vec += this->cellPositions(idx).template normal<2>().unitVector();
+          vec += this->cellPositions(idx).normal().unitVector();
         }
       }
     }
