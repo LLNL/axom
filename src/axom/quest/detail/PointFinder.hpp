@@ -314,6 +314,7 @@ public:
     {
       SpacePoint pt = pts[i];
       SpacePoint isopar;
+      outCellIds[i] = PointInCellTraits<mesh_tag>::NO_CELL;
       gridQuery.visitCandidates(pt, [&](int candidateIdx) -> bool {
         if(m_cellBBoxes[candidateIdx].contains(pts[i]))
         {
