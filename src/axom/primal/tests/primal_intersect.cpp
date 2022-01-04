@@ -5,10 +5,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/fmt.hpp"
-
 #include "axom/config.hpp"
-#include "axom/slic/interface/slic.hpp"
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/memory_management.hpp"
@@ -23,31 +20,22 @@
 
 #include "axom/primal/operators/intersect.hpp"
 
-#include <cmath>  // for sqrt
+#include "axom/slic.hpp"
+#include "axom/fmt.hpp"
 
-using namespace axom;
+#include <cmath>
+
+namespace primal = axom::primal;
 
 namespace
 {
-double randomDouble(double beg = 0., double end = 1.)
-{
-  double range = end - beg;
-
-  if(range == 0)
-  {
-    range = 1.;
-  }
-
-  return beg + (rand() / (RAND_MAX / range));
-}
-
 template <int NDIMS>
 primal::Point<double, NDIMS> randomPt(double beg, double end)
 {
   primal::Point<double, NDIMS> pt;
   for(int i = 0; i < NDIMS; ++i)
   {
-    pt[i] = randomDouble(beg, end);
+    pt[i] = axom::utilities::random_real(beg, end);
   }
 
   return pt;
@@ -301,9 +289,9 @@ TEST(primal_intersect, more_ray_segment_intersection)
 TEST(primal_intersect, triangle_aabb_intersection)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
 
   double xArr[3] = {1., 0., 0.};
   double yArr[3] = {0., 1., 0.};
@@ -381,7 +369,7 @@ TEST(primal_intersect, triangle_aabb_intersection)
 
   BoundingBoxType bbOrigin2(PointType::zero());
   bbOrigin.addPoint(PointType(-1.));
-  bbOrigin.addPoint(PointType::make_point(-1., 1., 1.));
+  bbOrigin.addPoint(PointType {-1., 1., 1.});
   SLIC_INFO("Testing bounding box: "
             << bbOrigin2 << " against triangle " << xyTri
             << ".  Note -- BB should not intersect triangle");
@@ -403,14 +391,14 @@ TEST(primal_intersect, triangle_aabb_intersection)
   EXPECT_FALSE(primal::intersect(xyTri, bbBelow));
 
   BoundingBoxType bbPoint_OnTri;
-  bbPoint_OnTri.addPoint(PointType::make_point(0., 1., 0.));
+  bbPoint_OnTri.addPoint(PointType {0., 1., 0.});
   SLIC_INFO("Testing point bounding box: "
             << bbPoint_OnTri << " against triangle " << xyTri
             << ".  Note -- BB is a point on triangle");
   EXPECT_TRUE(primal::intersect(xyTri, bbPoint_OnTri));
 
   BoundingBoxType bbPoint_OutsideTri;
-  bbPoint_OutsideTri.addPoint(PointType::make_point(1., 1., 1.));
+  bbPoint_OutsideTri.addPoint(PointType {1., 1., 1.});
   SLIC_INFO("Testing point bounding box: "
             << bbPoint_OutsideTri << " against triangle " << xyTri
             << ".  Note -- BB is a point outside triangle");
@@ -426,33 +414,33 @@ TEST(primal_intersect, triangle_aabb_intersection)
 TEST(primal_intersect, triangle_aabb_intersection_fromData)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
 
-  PointType v0 = PointType::make_point(-31.015, 63.7756, 55.0043);
-  PointType v1 = PointType::make_point(-29.0086, 59.2982, 58.0078);
-  PointType v2 = PointType::make_point(-29.2009, 70.1039, 61.3229);
+  PointType v0 {-31.015, 63.7756, 55.0043};
+  PointType v1 {-29.0086, 59.2982, 58.0078};
+  PointType v2 {-29.2009, 70.1039, 61.3229};
 
   TriangleType tri(v0, v1, v2);
 
-  BoundingBoxType box0(PointType::make_point(-39.2793, 46.3735, 53.3791),
-                       PointType::make_point(-26.1692, 60.1549, 57.0148));
+  BoundingBoxType box0(PointType {-39.2793, 46.3735, 53.3791},
+                       PointType {-26.1692, 60.1549, 57.0148});
 
-  BoundingBoxType box1(PointType::make_point(-39.2793, 60.1549, 53.3791),
-                       PointType::make_point(-26.1692, 73.9362, 57.0148));
+  BoundingBoxType box1(PointType {-39.2793, 60.1549, 53.3791},
+                       PointType {-26.1692, 73.9362, 57.0148});
 
-  BoundingBoxType box2(PointType::make_point(-39.2793, 46.3735, 57.0148),
-                       PointType::make_point(-26.1692, 60.1549, 60.6506));
+  BoundingBoxType box2(PointType {-39.2793, 46.3735, 57.0148},
+                       PointType {-26.1692, 60.1549, 60.6506});
 
-  BoundingBoxType box3(PointType::make_point(-39.2793, 60.1549, 57.0148),
-                       PointType::make_point(-26.1692, 73.9362, 60.6506));
+  BoundingBoxType box3(PointType {-39.2793, 60.1549, 57.0148},
+                       PointType {-26.1692, 73.9362, 60.6506});
 
-  BoundingBoxType box4(PointType::make_point(-39.2793, 46.3735, 60.6506),
-                       PointType::make_point(-26.1692, 60.1549, 64.2863));
+  BoundingBoxType box4(PointType {-39.2793, 46.3735, 60.6506},
+                       PointType {-26.1692, 60.1549, 64.2863});
 
-  BoundingBoxType box5(PointType::make_point(-39.2793, 60.1549, 60.6506),
-                       PointType::make_point(-26.1692, 73.9362, 64.2863));
+  BoundingBoxType box5(PointType {-39.2793, 60.1549, 60.6506},
+                       PointType {-26.1692, 73.9362, 64.2863});
 
   SLIC_INFO("Testing point bounding box: " << box0 << " against triangle "
                                            << tri);
@@ -487,34 +475,30 @@ TEST(primal_intersect, triangle_aabb_intersection_fromData)
 TEST(primal_intersect, triangle_aabb_intersection_fromData2)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
 
   // Triangle 569
-  TriangleType tri(PointType::make_point(0, 5, 0),
-                   PointType::make_point(-0.665356, 4.93844, -0.411212),
-                   PointType::make_point(-0.665356, 4.93844, 0.411212));
+  TriangleType tri(PointType {0, 5, 0},
+                   PointType {-0.665356, 4.93844, -0.411212},
+                   PointType {-0.665356, 4.93844, 0.411212});
 
   // {pt: (8,15,8); level: 4}
-  BoundingBoxType box0(PointType::make_point(0, 4.375, 0),
-                       PointType::make_point(0.625, 5, 0.625));
+  BoundingBoxType box0(PointType {0, 4.375, 0}, PointType {0.625, 5, 0.625});
 
   // {pt: (6,15,7); level: 4}
-  BoundingBoxType box1(PointType::make_point(-1.25, 4.375, -0.625),
-                       PointType::make_point(-0.625, 5, 0));
+  BoundingBoxType box1(PointType {-1.25, 4.375, -0.625},
+                       PointType {-0.625, 5, 0});
 
   // {pt: (6,15,8); level: 4}
-  BoundingBoxType box2(PointType::make_point(-1.25, 4.375, 0),
-                       PointType::make_point(-0.625, 5, 0.625));
+  BoundingBoxType box2(PointType {-1.25, 4.375, 0}, PointType {-0.625, 5, 0.625});
 
   // Block index {pt: (16,31,16); level: 5}
-  BoundingBoxType box3(PointType::make_point(0, 4.6875, 0),
-                       PointType::make_point(0.3125, 5, 0.3125));
+  BoundingBoxType box3(PointType {0, 4.6875, 0}, PointType {0.3125, 5, 0.3125});
 
   // Block index {pt: (8,15,8); level: 4}
-  BoundingBoxType box4(PointType::make_point(0, 4.375, 0),
-                       PointType::make_point(0.625, 5, 0.625));
+  BoundingBoxType box4(PointType {0, 4.375, 0}, PointType {0.625, 5, 0.625});
 
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
@@ -553,12 +537,10 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection_barycentric)
   // All cases are expected to intersect since one point is inside the triangle
   const bool expectIntersect = true;
 
-  Triangle2 triA(Point2::make_point(0, 0),
-                 Point2::make_point(1, 0),
-                 Point2::make_point(1, 1));
+  Triangle2 triA(Point2 {0, 0}, Point2 {1, 0}, Point2 {1, 1});
 
   // Set first point to center of triA
-  Point2 p0 = triA.baryToPhysical(Bary::make_point(1. / 3., 1. / 3., 1. / 3.));
+  Point2 p0 = triA.baryToPhysical(Bary {1. / 3., 1. / 3., 1. / 3.});
 
   // Create some points based on barycentric coords
   std::vector<Bary> bary;
@@ -568,12 +550,12 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection_barycentric)
   {
     for(int j = -6; j <= 6; ++j)
     {
-      Bary b;
-      b[0] = x;
-      b[1] = (1. - j / 3.) - x / 2.;
-      b[2] = j / 3. - x / 2.;
+      Bary b {x,                       //
+              (1. - j / 3.) - x / 2.,  //
+              j / 3. - x / 2.};
 
-      EXPECT_NEAR(1., b[0] + b[1] + b[2], 1E-8);  // check that they sum to one
+      // check that they sum to one
+      EXPECT_NEAR(1., b[0] + b[1] + b[2], 1E-8);
       bary.push_back(b);
     }
   }
@@ -592,9 +574,9 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection_barycentric)
       if(!triB.degenerate())
       {
         std::string str =
-          fmt::format("Tri2D-Tri2D from barycenters. b1:{}, b2:{}",
-                      bary[i],
-                      bary[j]);
+          axom::fmt::format("Tri2D-Tri2D from barycenters. b1:{}, b2:{}",
+                            bary[i],
+                            bary[j]);
         permuteCornersTest(triA, triB, str, !includeBdry, expectIntersect);
         permuteCornersTest(triA, triB, str, includeBdry, expectIntersect);
       }
@@ -606,17 +588,13 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection_barycentric)
 
 TEST(primal_intersect, 2D_triangle_triangle_intersection)
 {
-  typedef primal::Triangle<double, 2> Triangle2;
-  typedef primal::Point<double, 2> Point2;
+  using Triangle2 = primal::Triangle<double, 2>;
+  using Point2 = primal::Point<double, 2>;
 
   // Triangle 569
-  Triangle2 triA(Point2::make_point(0.0, 5.0),
-                 Point2::make_point(5.0, 5.0),
-                 Point2::make_point(0.0, 0.0));
+  Triangle2 triA(Point2 {0.0, 5.0}, Point2 {5.0, 5.0}, Point2 {0.0, 0.0});
 
-  Triangle2 triB(Point2::make_point(0.0, 5.0),
-                 Point2::make_point(5.0, 5.0),
-                 Point2::make_point(0.0, 0.0));
+  Triangle2 triB(Point2 {0.0, 5.0}, Point2 {5.0, 5.0}, Point2 {0.0, 0.0});
 
   // axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
@@ -625,20 +603,14 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
   permuteCornersTest(triA, triB, "identical 2D triangles", true, true);
   permuteCornersTest(triA, triB, "identical 2D triangles", false, true);
 
-  Triangle2 triC(Point2::make_point(-1.0, -1.0),
-                 Point2::make_point(-5.0, -5.0),
-                 Point2::make_point(-7.0, -8.0));
+  Triangle2 triC(Point2 {-1.0, -1.0}, Point2 {-5.0, -5.0}, Point2 {-7.0, -8.0});
 
   permuteCornersTest(triA, triC, "non-intersecting 2D triangles", true, false);
   permuteCornersTest(triA, triC, "non-intersecting 2D triangles", false, false);
 
-  triA = Triangle2(Point2::make_point(4.3, 4.05),
-                   Point2::make_point(-1.0, -0.06),
-                   Point2::make_point(7.3, -1.3));
+  triA = Triangle2(Point2 {4.3, 4.05}, Point2 {-1.0, -0.06}, Point2 {7.3, -1.3});
 
-  triB = Triangle2(Point2::make_point(1.0, 0.0),
-                   Point2::make_point(6.0, 0.5),
-                   Point2::make_point(4.2, 2.1));
+  triB = Triangle2(Point2 {1.0, 0.0}, Point2 {6.0, 0.5}, Point2 {4.2, 2.1});
 
   permuteCornersTest(triA,
                      triB,
@@ -651,9 +623,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      true);
 
-  triB = Triangle2(Point2::make_point(1.9, -2),
-                   Point2::make_point(6.9, 2.1),
-                   Point2::make_point(0.8, 5.1));
+  triB = Triangle2(Point2 {1.9, -2}, Point2 {6.9, 2.1}, Point2 {0.8, 5.1});
 
   permuteCornersTest(triA,
                      triB,
@@ -666,9 +636,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      true);
 
-  triB = Triangle2(Point2::make_point(2.9, 1.6),
-                   Point2::make_point(-1.5, 1.5),
-                   Point2::make_point(0.8, 5.1));
+  triB = Triangle2(Point2 {2.9, 1.6}, Point2 {-1.5, 1.5}, Point2 {0.8, 5.1});
 
   permuteCornersTest(triA,
                      triB,
@@ -681,9 +649,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      true);
 
-  triB = Triangle2(Point2::make_point(2.9, 0),
-                   Point2::make_point(2.1, 0.1),
-                   Point2::make_point(0.8, 5.1));
+  triB = Triangle2(Point2 {2.9, 0}, Point2 {2.1, 0.1}, Point2 {0.8, 5.1});
 
   permuteCornersTest(triA,
                      triB,
@@ -696,9 +662,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      true);
 
-  triB = Triangle2(Point2::make_point(2, -1),
-                   Point2::make_point(-1.0, -0.06),
-                   Point2::make_point(7.3, -1.3));
+  triB = Triangle2(Point2 {2, -1}, Point2 {-1.0, -0.06}, Point2 {7.3, -1.3});
 
   permuteCornersTest(triA,
                      triB,
@@ -711,13 +675,9 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      false);
 
-  Triangle2 triD(Point2::make_point(0, 0),
-                 Point2::make_point(1, 0),
-                 Point2::make_point(1, 1));
+  Triangle2 triD(Point2 {0, 0}, Point2 {1, 0}, Point2 {1, 1});
 
-  Triangle2 triE(Point2::make_point(0, 0),
-                 Point2::make_point(0.5, 0),
-                 Point2::make_point(-1, -1));
+  Triangle2 triE(Point2 {0, 0}, Point2 {0.5, 0}, Point2 {-1, -1});
 
   permuteCornersTest(triD,
                      triE,
@@ -732,9 +692,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      false);
 
-  triE = Triangle2(Point2::make_point(0.5, 0),
-                   Point2::make_point(1, 0),
-                   Point2::make_point(-1, -1));
+  triE = Triangle2(Point2 {0.5, 0}, Point2 {1, 0}, Point2 {-1, -1});
 
   permuteCornersTest(triD,
                      triE,
@@ -749,9 +707,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      false);
 
-  triE = Triangle2(Point2::make_point(0.5, 0),
-                   Point2::make_point(1.5, 0),
-                   Point2::make_point(-1, -1));
+  triE = Triangle2(Point2 {0.5, 0}, Point2 {1.5, 0}, Point2 {-1, -1});
 
   permuteCornersTest(triD,
                      triE,
@@ -764,9 +720,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      false);
 
-  triE = Triangle2(Point2::make_point(-0.5, 0),
-                   Point2::make_point(0.5, 0),
-                   Point2::make_point(-1, -1));
+  triE = Triangle2(Point2 {-0.5, 0}, Point2 {0.5, 0}, Point2 {-1, -1});
 
   permuteCornersTest(
     triD,
@@ -781,9 +735,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
     false,
     false);
 
-  triE = Triangle2(Point2::make_point(-1, 0.5),
-                   Point2::make_point(-1, -1),
-                   Point2::make_point(2, -1));
+  triE = Triangle2(Point2 {-1, 0.5}, Point2 {-1, -1}, Point2 {2, -1});
 
   permuteCornersTest(triD,
                      triE,
@@ -796,9 +748,7 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
                      false,
                      false);
 
-  triE = Triangle2(Point2::make_point(0, 0),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {0, 0}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD,
                      triE,
@@ -813,107 +763,77 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
 
   // Several non-intersection cases (and a few intersection)
 
-  triE = Triangle2(Point2::make_point(0.2, -1e-3),
-                   Point2::make_point(1, -1),
-                   Point2::make_point(1.2, -1e-3));
+  triE = Triangle2(Point2 {0.2, -1e-3}, Point2 {1, -1}, Point2 {1.2, -1e-3});
 
   permuteCornersTest(triD, triE, "2D disjunct, close parallel sides", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, close parallel sides", false, false);
 
-  triE = Triangle2(Point2::make_point(0.2, -1e-3),
-                   Point2::make_point(1, -1),
-                   Point2::make_point(1, -1e-4));
+  triE = Triangle2(Point2 {0.2, -1e-3}, Point2 {1, -1}, Point2 {1, -1e-4});
 
   permuteCornersTest(triD, triE, "2D disjunct, close converging sides", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, close converging sides", false, false);
 
-  triE = Triangle2(Point2::make_point(10, 1),
-                   Point2::make_point(2, 0),
-                   Point2::make_point(11, -0.3));
+  triE = Triangle2(Point2 {10, 1}, Point2 {2, 0}, Point2 {11, -0.3});
 
   permuteCornersTest(triD, triE, "2D disjunct, fairly far-separated", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, fairly far-separated", false, false);
 
-  triE = Triangle2(Point2::make_point(0, 0.1),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {0, 0.1}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D disjunct, point comes close", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, point comes close", false, false);
 
-  triE = Triangle2(Point2::make_point(-0.001, 0),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {-0.001, 0}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 2", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 2", false, false);
 
-  triE = Triangle2(Point2::make_point(-0.5, 0),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {-0.5, 0}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 3", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 3", false, false);
 
-  triE = Triangle2(Point2::make_point(-1.7, 0),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {-1.7, 0}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 4", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 4", false, false);
 
-  triE = Triangle2(Point2::make_point(-5.1, 0),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {-5.1, 0}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 5", true, false);
   permuteCornersTest(triD, triE, "2D disjunct, point comes close 5", false, false);
 
-  triE = Triangle2(Point2::make_point(0.5, 0.5),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {0.5, 0.5}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D point lands on side 2", true, true);
   permuteCornersTest(triD, triE, "2D point lands on side 2", false, false);
 
-  triE = Triangle2(Point2::make_point(0.49999, 0.5),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {0.49999, 0.5}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D point comes close to side", true, false);
   permuteCornersTest(triD, triE, "2D point comes close to side", false, false);
 
-  triE = Triangle2(Point2::make_point(0.49, 0.5),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {0.49, 0.5}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D point comes close to side 2", true, false);
   permuteCornersTest(triD, triE, "2D point comes close to side 2", false, false);
 
-  triE = Triangle2(Point2::make_point(0.4, 0.5),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {0.4, 0.5}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D point comes close to side 3", true, false);
   permuteCornersTest(triD, triE, "2D point comes close to side 3", false, false);
 
-  triE = Triangle2(Point2::make_point(-0.1, 0.5),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {-0.1, 0.5}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D point comes close to side 4", true, false);
   permuteCornersTest(triD, triE, "2D point comes close to side 4", false, false);
 
-  triE = Triangle2(Point2::make_point(-2.6, 2.5),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {-2.6, 2.5}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D point comes close to side 5", true, false);
   permuteCornersTest(triD, triE, "2D point comes close to side 5", false, false);
 
-  triE = Triangle2(Point2::make_point(-6, 5),
-                   Point2::make_point(-40, -0.7),
-                   Point2::make_point(-23, 1.3));
+  triE = Triangle2(Point2 {-6, 5}, Point2 {-40, -0.7}, Point2 {-23, 1.3});
 
   permuteCornersTest(triD, triE, "2D point comes close to side 6", true, false);
   permuteCornersTest(triD, triE, "2D point comes close to side 6", false, false);
@@ -922,9 +842,10 @@ TEST(primal_intersect, 2D_triangle_triangle_intersection)
 bool makeTwoRandomIntersecting3DTriangles(primal::Triangle<double, 3>& l,
                                           primal::Triangle<double, 3>& r)
 {
-  typedef primal::Triangle<double, 3> Triangle3;
-  typedef primal::Point<double, 3> Point3;
-  typedef primal::Vector<double, 3> Vector3;
+  using Triangle3 = primal::Triangle<double, 3>;
+  using Point3 = primal::Point<double, 3>;
+  using Vector3 = primal::Vector<double, 3>;
+  using axom::utilities::random_real;
 
   //Step 1: Construct a random triangle
   Point3 A = randomPt<3>(0., 1.);
@@ -936,9 +857,9 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle<double, 3>& l,
   Point3 P;
   Point3 Q;
 
-  double a1 = randomDouble();
-  double a2 = randomDouble();
-  double a3 = randomDouble();
+  double a1 = random_real(0., 1.);
+  double a2 = random_real(0., 1.);
+  double a3 = random_real(0., 1.);
 
   double n1 = (a1 / (a1 + a2 + a3));
   double n2 = (a2 / (a1 + a2 + a3));
@@ -947,11 +868,11 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle<double, 3>& l,
   double P_x = n1 * A[0] + n2 * B[0] + n3 * C[0];
   double P_y = n1 * A[1] + n2 * B[1] + n3 * C[1];
   double P_z = n1 * A[2] + n2 * B[2] + n3 * C[2];
-  P = Point3::make_point(P_x, P_y, P_z);
+  P = Point3 {P_x, P_y, P_z};
 
-  a1 = randomDouble();
-  a2 = randomDouble();
-  a3 = randomDouble();
+  a1 = random_real(0., 1.);
+  a2 = random_real(0., 1.);
+  a3 = random_real(0., 1.);
 
   n1 = (a1 / (a1 + a2 + a3));
   n2 = (a2 / (a1 + a2 + a3));
@@ -961,7 +882,7 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle<double, 3>& l,
   double Q_y = n1 * A[1] + n2 * B[1] + n3 * C[1];
   double Q_z = n1 * A[2] + n2 * B[2] + n3 * C[2];
 
-  Q = Point3::make_point(Q_x, Q_y, Q_z);
+  Q = Point3 {Q_x, Q_y, Q_z};
 
   /*PQ is so random segment on the triangle.  We create a vertex called vertex1
      and use it to create the triangle formed by P', Q' and vertex1. */
@@ -977,14 +898,13 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle<double, 3>& l,
   Vector3 vertex3Direction = Vector3(P, vertex1);
 
   //construct the other two vertices of the triangle
-  Point3 vertex2 = Point3::make_point(vertex1[0] - 2 * vertex2Direction[0],
-                                      vertex1[1] - 2 * vertex2Direction[1],
-                                      vertex1[2] - 2 * vertex2Direction[2]);
-  Point3 vertex3 = Point3::make_point(vertex1[0] - 2 * vertex3Direction[0],
-                                      vertex1[1] - 2 * vertex3Direction[1],
-                                      vertex1[2] - 2 * vertex3Direction[2]);
+  Point3 vertex2 = Point3 {vertex1[0] - 2 * vertex2Direction[0],
+                           vertex1[1] - 2 * vertex2Direction[1],
+                           vertex1[2] - 2 * vertex2Direction[2]};
+  Point3 vertex3 = Point3 {vertex1[0] - 2 * vertex3Direction[0],
+                           vertex1[1] - 2 * vertex3Direction[1],
+                           vertex1[2] - 2 * vertex3Direction[2]};
 
-  Triangle3 before = Triangle3(vertex1, Q, P);
   r = Triangle3(vertex1, vertex2, vertex3);
 
   return !l.degenerate() && !r.degenerate();
@@ -992,62 +912,50 @@ bool makeTwoRandomIntersecting3DTriangles(primal::Triangle<double, 3>& l,
 
 TEST(primal_intersect, 3D_triangle_triangle_intersection)
 {
-  typedef primal::Triangle<double, 3> Triangle3;
-  typedef primal::Point<double, 3> Point3;
+  using Triangle3 = primal::Triangle<double, 3>;
+  using Point3 = primal::Point<double, 3>;
 
-  Triangle3 tri3d_1(Point3::make_point(-1.0, -1.0, -1.0),
-                    Point3::make_point(-2.0, -5.0, -5.0),
-                    Point3::make_point(-4.0, -8.0, -8.0));
+  Triangle3 tri3d_1(Point3 {-1.0, -1.0, -1.0},
+                    Point3 {-2.0, -5.0, -5.0},
+                    Point3 {-4.0, -8.0, -8.0});
 
-  Triangle3 tri3d_2(Point3::make_point(-1.0, -1.0, -1.0),
-                    Point3::make_point(-2.0, -5.0, -5.0),
-                    Point3::make_point(-4.0, -8.0, -8.0));
+  Triangle3 tri3d_2(Point3 {-1.0, -1.0, -1.0},
+                    Point3 {-2.0, -5.0, -5.0},
+                    Point3 {-4.0, -8.0, -8.0});
 
   permuteCornersTest(tri3d_1, tri3d_2, "3D identical triangles", true, true);
   permuteCornersTest(tri3d_1, tri3d_2, "3D identical triangles", false, true);
 
-  Triangle3 tri3d_3(Point3::make_point(1.0, 1.0, 1.0),
-                    Point3::make_point(5.0, 5.0, 5.0),
-                    Point3::make_point(8.0, 7.0, 92.0));
+  Triangle3 tri3d_3(Point3 {1.0, 1.0, 1.0},
+                    Point3 {5.0, 5.0, 5.0},
+                    Point3 {8.0, 7.0, 92.0});
 
   permuteCornersTest(tri3d_1, tri3d_3, "3D disjunct triangles", true, false);
   permuteCornersTest(tri3d_1, tri3d_3, "3D disjunct triangles", false, false);
 
-  Triangle3 tri3A(Point3::make_point(0, 0, 0),
-                  Point3::make_point(1, 0, 0),
-                  Point3::make_point(0, 1.7, 2.3));
+  Triangle3 tri3A(Point3 {0, 0, 0}, Point3 {1, 0, 0}, Point3 {0, 1.7, 2.3});
 
-  Triangle3 tri3B(Point3::make_point(0, 0, 0),
-                  Point3::make_point(1, 0, 0),
-                  Point3::make_point(0, -2, 1.2));
+  Triangle3 tri3B(Point3 {0, 0, 0}, Point3 {1, 0, 0}, Point3 {0, -2, 1.2});
 
   permuteCornersTest(tri3A, tri3B, "3D tris sharing a segment", true, true);
   permuteCornersTest(tri3A, tri3B, "3D tris sharing a segment", false, false);
 
-  tri3B = Triangle3(Point3::make_point(-0.2, 0, 0),
-                    Point3::make_point(0.7, 0, 0),
-                    Point3::make_point(0, -2, 1.2));
+  tri3B = Triangle3(Point3 {-0.2, 0, 0}, Point3 {0.7, 0, 0}, Point3 {0, -2, 1.2});
 
   permuteCornersTest(tri3A, tri3B, "3D tris sharing part of a segment", true, true);
   permuteCornersTest(tri3A, tri3B, "3D tris sharing part of a segment", false, false);
 
-  tri3B = Triangle3(Point3::make_point(-1, 0, 0),
-                    Point3::make_point(0, 4.3, 6),
-                    Point3::make_point(0, 1.7, 2.3));
+  tri3B = Triangle3(Point3 {-1, 0, 0}, Point3 {0, 4.3, 6}, Point3 {0, 1.7, 2.3});
 
   permuteCornersTest(tri3A, tri3B, "3D tris sharing a vertex", true, true);
   permuteCornersTest(tri3A, tri3B, "3D tris sharing a vertex", false, false);
 
-  tri3B = Triangle3(Point3::make_point(0, -1, 0),
-                    Point3::make_point(1, 1, 0),
-                    Point3::make_point(0, 1.7, -2.3));
+  tri3B = Triangle3(Point3 {0, -1, 0}, Point3 {1, 1, 0}, Point3 {0, 1.7, -2.3});
 
   permuteCornersTest(tri3A, tri3B, "3D tris, edges cross", true, true);
   permuteCornersTest(tri3A, tri3B, "3D tris, edges cross", false, false);
 
-  tri3B = Triangle3(Point3::make_point(0, -1, -1),
-                    Point3::make_point(0.5, 0, 0),
-                    Point3::make_point(1, 1, -1));
+  tri3B = Triangle3(Point3 {0, -1, -1}, Point3 {0.5, 0, 0}, Point3 {1, 1, -1});
 
   permuteCornersTest(tri3A, tri3B, "3D tris, B vertex lands on A's edge", true, true);
   permuteCornersTest(tri3A,
@@ -1056,9 +964,8 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection)
                      false,
                      false);
 
-  tri3B = Triangle3(Point3::make_point(0.5, -1, 0.1),
-                    Point3::make_point(0.5, 1, 0.1),
-                    Point3::make_point(1, 1, -1));
+  tri3B =
+    Triangle3(Point3 {0.5, -1, 0.1}, Point3 {0.5, 1, 0.1}, Point3 {1, 1, -1});
 
   permuteCornersTest(tri3A,
                      tri3B,
@@ -1071,23 +978,17 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection)
                      false,
                      true);
 
-  tri3B = Triangle3(Point3::make_point(-1, -1, 1),
-                    Point3::make_point(0, 2, 1),
-                    Point3::make_point(5, 0, 1));
+  tri3B = Triangle3(Point3 {-1, -1, 1}, Point3 {0, 2, 1}, Point3 {5, 0, 1});
 
   permuteCornersTest(tri3A, tri3B, "3D tri A pokes through B", true, true);
   permuteCornersTest(tri3A, tri3B, "3D tri A pokes through B", false, true);
 
-  tri3B = Triangle3(Point3::make_point(1, -1, 1),
-                    Point3::make_point(1, 2, 1),
-                    Point3::make_point(1, 0, -1));
+  tri3B = Triangle3(Point3 {1, -1, 1}, Point3 {1, 2, 1}, Point3 {1, 0, -1});
 
   permuteCornersTest(tri3A, tri3B, "3D tri A vertex tangent on B", true, true);
   permuteCornersTest(tri3A, tri3B, "3D tri A vertex tangent on B", false, false);
 
-  tri3B = Triangle3(Point3::make_point(1.00001, -1, 1),
-                    Point3::make_point(1, 2, 1),
-                    Point3::make_point(1, 0, -1));
+  tri3B = Triangle3(Point3 {1.00001, -1, 1}, Point3 {1, 2, 1}, Point3 {1, 0, -1});
 
   permuteCornersTest(tri3A,
                      tri3B,
@@ -1105,7 +1006,7 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection)
   //future work: test triangle triangle with a bunch of random test cases
 
   srand(1);  // we want same random number sequence everytime to make sure our
-             // tests don't differ on a case to case basis
+  // tests don't differ on a case to case basis
 
   //Randomly generate a bunch of intersecting triangles (whose intersections
   // form segments) and test them How many tests are we actually performing
@@ -1138,15 +1039,15 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
   SLIC_INFO("Triangle intersection regression tests for discovered problems");
 
-  typedef primal::Triangle<double, 3> Triangle3;
-  typedef primal::Point<double, 3> Point3;
+  using Triangle3 = primal::Triangle<double, 3>;
+  using Point3 = primal::Point<double, 3>;
 
   {
     std::string msg = "Adjacent coplanar triangles with obtuse angles";
-    Point3 vdata[4] = {Point3::make_point(-1.83697e-14, 62.5, 300),
-                       Point3::make_point(16.17619, 60.37037, 300),
-                       Point3::make_point(-5.790149e-16, 11.26926, 9.456031),
-                       Point3::make_point(2.916699, 10.88527, 9.456031)};
+    Point3 vdata[4] = {Point3 {-1.83697e-14, 62.5, 300},
+                       Point3 {16.17619, 60.37037, 300},
+                       Point3 {-5.790149e-16, 11.26926, 9.456031},
+                       Point3 {2.916699, 10.88527, 9.456031}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[2], vdata[1], vdata[3]);
@@ -1158,11 +1059,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
   {
     std::string msg = "Vertex-adjacent triangles";
     /* clang-format off */
-    Point3 vdata[] = { Point3::make_point(-138.02488708496094,    -14398.0908203125, 111881.2421875),
-                       Point3::make_point(   0.067092768847942352,-14407.21875,      111891.078125),
-                       Point3::make_point(-136.77900695800781,    -14416.4912109375, 111891.078125),
-                       Point3::make_point(   1.1611454486846924,  -14423.3466796875, 111904.359375),
-                       Point3::make_point( 136.91319274902344,    -14397.947265625,  111891.078125)};
+    Point3 vdata[] = { Point3{-138.02488708496094,    -14398.0908203125, 111881.2421875},
+                       Point3{   0.067092768847942352,-14407.21875,      111891.078125},
+                       Point3{-136.77900695800781,    -14416.4912109375, 111891.078125},
+                       Point3{   1.1611454486846924,  -14423.3466796875, 111904.359375},
+                       Point3{ 136.91319274902344,    -14397.947265625,  111891.078125}};
     /* clang-format on */
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
@@ -1174,11 +1075,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
 
   {
     std::string msg = "Vertex-adjacent triangles (simplified)";
-    Point3 vdata[] = {Point3::make_point(-1, -1, -1),
-                      Point3::make_point(0, 0, -0.005),
-                      Point3::make_point(-1, 0, 0),
-                      Point3::make_point(0, 1, -1),
-                      Point3::make_point(1, 0, 0)};
+    Point3 vdata[] = {Point3 {-1, -1, -1},
+                      Point3 {0, 0, -0.005},
+                      Point3 {-1, 0, 0},
+                      Point3 {0, 1, -1},
+                      Point3 {1, 0, 0}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[1], vdata[4]);
@@ -1190,11 +1091,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
   {
     // https://github.com/LLNL/axom/issues/152
     std::string msg = "From Axom github issue #152";
-    Point3 vdata[] = {Point3::make_point(76.648, 54.6752, 15.0012),
-                      Point3::make_point(76.648, 54.6752, 14.5542),
-                      Point3::make_point(76.582, 54.6752, 14.7879),
-                      Point3::make_point(76.6252, 54.6752, 14.892),
-                      Point3::make_point(76.5617, 54.6752, 14.7929)};
+    Point3 vdata[] = {Point3 {76.648, 54.6752, 15.0012},
+                      Point3 {76.648, 54.6752, 14.5542},
+                      Point3 {76.582, 54.6752, 14.7879},
+                      Point3 {76.6252, 54.6752, 14.892},
+                      Point3 {76.5617, 54.6752, 14.7929}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
@@ -1230,11 +1131,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
   {
     // https://github.com/LLNL/axom/issues/152
     std::string msg = "From Axom github issue #152 (simplified)";
-    Point3 vdata[] = {Point3::make_point(0.066, 0, 0.2133),
-                      Point3::make_point(0.066, 0, -0.2337),
-                      Point3::make_point(0, 0, 0),
-                      Point3::make_point(0.0432, 0, 0.1041),
-                      Point3::make_point(-0.0203, 0, 0.005)};
+    Point3 vdata[] = {Point3 {0.066, 0, 0.2133},
+                      Point3 {0.066, 0, -0.2337},
+                      Point3 {0, 0, 0},
+                      Point3 {0.0432, 0, 0.1041},
+                      Point3 {-0.0203, 0, 0.005}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
@@ -1249,11 +1150,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
     std::string msg =
       "From Axom github issue #152 (simplified 2) -- one point inside other "
       "triangle";
-    Point3 vdata[] = {Point3::make_point(1, 0, 0.5),
-                      Point3::make_point(1, 0, -0.5),
-                      Point3::make_point(0, 0, 0),
-                      Point3::make_point(0.5, 0, 0.1),
-                      Point3::make_point(-0.1, 0, -0.2)};
+    Point3 vdata[] = {Point3 {1, 0, 0.5},
+                      Point3 {1, 0, -0.5},
+                      Point3 {0, 0, 0},
+                      Point3 {0.5, 0, 0.1},
+                      Point3 {-0.1, 0, -0.2}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
@@ -1267,11 +1168,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
     std::string msg =
       "From Axom github issue #152 (simplified 3) -- one point inside other "
       "triangle";
-    Point3 vdata[] = {Point3::make_point(1, 0, 0.5),
-                      Point3::make_point(1, 0, -0.5),
-                      Point3::make_point(0, 0, 0),
-                      Point3::make_point(0.5, 0, 0.1),
-                      Point3::make_point(-0.1, 0, 0.05)};
+    Point3 vdata[] = {Point3 {1, 0, 0.5},
+                      Point3 {1, 0, -0.5},
+                      Point3 {0, 0, 0},
+                      Point3 {0.5, 0, 0.1},
+                      Point3 {-0.1, 0, 0.05}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
@@ -1285,11 +1186,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
     std::string msg =
       "From Axom github issue #152 (simplified 4) -- one point inside other "
       "triangle";
-    Point3 vdata[] = {Point3::make_point(1, 0, 0.5),
-                      Point3::make_point(1, 0, -0.5),
-                      Point3::make_point(0, 0, 0),
-                      Point3::make_point(0.5, 0, 0.1),
-                      Point3::make_point(-0.1, 0, 0.06)};
+    Point3 vdata[] = {Point3 {1, 0, 0.5},
+                      Point3 {1, 0, -0.5},
+                      Point3 {0, 0, 0},
+                      Point3 {0.5, 0, 0.1},
+                      Point3 {-0.1, 0, 0.06}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
@@ -1303,11 +1204,11 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
     std::string msg =
       "From Axom github issue #152 (simplified 5) -- one point inside other "
       "triangle";
-    Point3 vdata[] = {Point3::make_point(1, 0, 0.5),
-                      Point3::make_point(1, 0, -0.5),
-                      Point3::make_point(0, 0, 0),
-                      Point3::make_point(0.5, 0, 0.1),
-                      Point3::make_point(-0.1, 0, 0.04)};
+    Point3 vdata[] = {Point3 {1, 0, 0.5},
+                      Point3 {1, 0, -0.5},
+                      Point3 {0, 0, 0},
+                      Point3 {0.5, 0, 0.1},
+                      Point3 {-0.1, 0, 0.04}};
 
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
@@ -1323,19 +1224,15 @@ TEST(primal_intersect, 3D_triangle_triangle_intersection_regression)
 TEST(primal_intersect, triangle_aabb_intersection_boundaryFace)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
 
-  TriangleType tri(PointType::make_point(0, 5, 0),
-                   PointType::make_point(0, 5, 5),
-                   PointType::make_point(0, 5, 5));
+  TriangleType tri(PointType {0, 5, 0}, PointType {0, 5, 5}, PointType {0, 5, 5});
 
-  BoundingBoxType box0(PointType::make_point(-10, -10, -10),
-                       PointType::make_point(0, 10, 10));
+  BoundingBoxType box0(PointType {-10, -10, -10}, PointType {0, 10, 10});
 
-  BoundingBoxType box1(PointType::make_point(0, -10, -10),
-                       PointType::make_point(10, 10, 10));
+  BoundingBoxType box1(PointType {0, -10, -10}, PointType {10, 10, 10});
 
   axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
 
@@ -1350,13 +1247,13 @@ TEST(primal_intersect, triangle_aabb_intersection_boundaryFace)
   // ---
 
   // Airfoil triangle 206
-  TriangleType tri2(PointType::make_point(0.0340691, -1, 0.0236411),
-                    PointType::make_point(0.028589, -1, 0.0221062),
-                    PointType::make_point(0.0207793, -1, -0.0295674));
+  TriangleType tri2(PointType {0.0340691, -1, 0.0236411},
+                    PointType {0.028589, -1, 0.0221062},
+                    PointType {0.0207793, -1, -0.0295674});
 
   // Block: (134,128,310) @ level 9
-  BoundingBoxType box2(PointType::make_point(0.0230077, -1, -0.0208459),
-                       PointType::make_point(0.0268708, -0.992188, -0.0201394));
+  BoundingBoxType box2(PointType {0.0230077, -1, -0.0208459},
+                       PointType {0.0268708, -0.992188, -0.0201394});
 
   SLIC_INFO("Testing point bounding box: "
             << box2 << " against triangle " << tri2 << "\n\t -- intersects? "
@@ -1372,24 +1269,20 @@ TEST(primal_intersect, triangle_aabb_intersection_boundaryFace)
 TEST(primal_intersect, ray_aabb_intersection_general3D)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Ray<double, DIM> RayType;
-  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
-  typedef primal::Vector<double, DIM> VectorType;
+  using PointType = primal::Point<double, DIM>;
+  using RayType = primal::Ray<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
 
   // STEP 1: construct ray
-  PointType origin = PointType::make_point(0.0, 0.0, 0.0);
-  VectorType direction;
-  direction[0] = 1.0;
-  direction[1] = 1.0;
-  direction[2] = 1.0;
+  PointType origin {0.0, 0.0, 0.0};
+  VectorType direction {1.0, 1.0, 1.0};
   RayType R(origin, direction);
 
-  BoundingBoxType box0(PointType::make_point(5.0, 5.0, 5.0),
-                       PointType::make_point(10.0, 10.0, 10.0));
+  BoundingBoxType box0(PointType {5.0, 5.0, 5.0}, PointType {10.0, 10.0, 10.0});
 
-  BoundingBoxType box1(PointType::make_point(-5.0, -5.0, -5.0),
-                       PointType::make_point(-1.0, -1.0, -1.0));
+  BoundingBoxType box1(PointType {-5.0, -5.0, -5.0},
+                       PointType {-1.0, -1.0, -1.0});
 
   axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
   PointType ip;
@@ -1410,24 +1303,20 @@ TEST(primal_intersect, ray_aabb_intersection_general3D)
 TEST(primal_intersect, ray_aabb_intersection_tinyDirectionVector3D)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Ray<double, DIM> RayType;
-  typedef primal::BoundingBox<double, DIM> BoundingBoxType;
-  typedef primal::Vector<double, DIM> VectorType;
+  using PointType = primal::Point<double, DIM>;
+  using RayType = primal::Ray<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
 
   // STEP 1: construct ray
-  PointType origin = PointType::make_point(11.0, 11.0, 11.0);
-  VectorType direction;
-  direction[0] = 0.0;
-  direction[1] = 0.0;
-  direction[2] = 0.0;
+  PointType origin = PointType {11.0, 11.0, 11.0};
+  VectorType direction {0.0, 0.0, 0.0};
   RayType R(origin, direction);
 
-  BoundingBoxType box0(PointType::make_point(5.0, 5.0, 5.0),
-                       PointType::make_point(10.0, 10.0, 10.0));
+  BoundingBoxType box0(PointType {5.0, 5.0, 5.0}, PointType {10.0, 10.0, 10.0});
 
-  BoundingBoxType box1(PointType::make_point(-5.0, -5.0, -5.0),
-                       PointType::make_point(-1.0, -1.0, -1.0));
+  BoundingBoxType box1(PointType {-5.0, -5.0, -5.0},
+                       PointType {-1.0, -1.0, -1.0});
 
   axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
   PointType ip;
@@ -1484,7 +1373,7 @@ void testRayIntersection(const primal::Triangle<double, DIM>& tri,
 {
   SCOPED_TRACE(whattest);
 
-  typedef primal::Point<double, DIM> PointType;
+  using PointType = primal::Point<double, DIM>;
 
   PointType tip;
   double t = 0.;
@@ -1513,8 +1402,8 @@ void testTriSegBothEnds(const primal::Triangle<double, DIM>& tri,
 {
   SCOPED_TRACE(whattest);
 
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Segment<double, DIM> SegmentType;
+  using PointType = primal::Point<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
 
   PointType tip;
   double t = 0.;
@@ -1763,9 +1652,9 @@ TEST(primal_intersect, segment_aabb_3d_intersection)
 TEST(primal_intersect, triangle_segment_intersection)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::Segment<double, DIM> SegmentType;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
 
   double xArr[3] = {1., 0., 0.};
   double yArr[3] = {0., 1., 0.};
@@ -1776,8 +1665,8 @@ TEST(primal_intersect, triangle_segment_intersection)
   PointType ptY(yArr);
   PointType ptZ(zArr);
   PointType ptM(mArr);
-  PointType r0 = PointType::make_point(5., 5., 5.);
-  PointType testp = PointType::make_point(6., 5., 5.);
+  PointType r0 {5., 5., 5.};
+  PointType testp {6., 5., 5.};
 
   TriangleType tri(ptX, ptY, ptZ);
   SegmentType testSeg(r0, ptX);
@@ -1788,43 +1677,43 @@ TEST(primal_intersect, triangle_segment_intersection)
   // Succession of misses
   // Copied from ray test, and testing both orders for segment (AB and BA)
   testTriSegBothEnds(tri, r0, testp, "miss 1", false);
-  testp = PointType::make_point(0., .5, .6);
+  testp = PointType {0., .5, .6};
   testTriSegBothEnds(tri, r0, testp, "miss 2", false);
-  testp = PointType::make_point(0., .85, .16);
+  testp = PointType {0., .85, .16};
   testTriSegBothEnds(tri, r0, testp, "miss 3", false);
-  testp = PointType::make_point(.4, 1.2, 0);
+  testp = PointType {.4, 1.2, 0};
   testTriSegBothEnds(tri, r0, testp, "miss 4", false);
-  testp = PointType::make_point(1., 0.000001, 0);
+  testp = PointType {1., 0.000001, 0};
   testTriSegBothEnds(tri, r0, testp, "miss 5", false);
-  testp = PointType::make_point(0.4, 0, 0.7);
+  testp = PointType {0.4, 0, 0.7};
   testTriSegBothEnds(tri, r0, testp, "miss 6", false);
-  testp = PointType::make_point(0.3, 0.4, 0.5);
+  testp = PointType {0.3, 0.4, 0.5};
   testTriSegBothEnds(tri, r0, testp, "miss 7", false);
-  testp = PointType::make_point(0.4, 0.4, 0.4);
+  testp = PointType {0.4, 0.4, 0.4};
   testTriSegBothEnds(tri, r0, testp, "miss 8", false);
 
   // Some hits
-  testp = PointType::make_point(0.78, -0.2, -0.2);
+  testp = PointType {0.78, -0.2, -0.2};
   testTriSegBothEnds(tri, r0, testp, "hit 1", true);
-  testp = PointType::make_point(0.4, 0.3, 0.2);
+  testp = PointType {0.4, 0.3, 0.2};
   testTriSegBothEnds(tri, r0, testp, "hit 2", true);
-  testp = PointType::make_point(0.2, 0.2, 0.2);
+  testp = PointType {0.2, 0.2, 0.2};
   testTriSegBothEnds(tri, r0, testp, "hit 3", true);
 
   // End points, triangle boundaries
-  PointType testp2 = PointType::make_point(1., 1., 1.);
-  testp = PointType::make_point(1., .1, .1);
+  PointType testp2 {1., 1., 1};
+  testp = PointType {1., .1, .1};
   testTriSegBothEnds(tri, testp, testp2, "shy of corner", false);
-  testp = PointType::make_point(1., -.1, -.1);
+  testp = PointType {1., -.1, -.1};
   testTriSegBothEnds(tri, testp, testp2, "beyond corner", true);
   testTriSegBothEnds(tri, testp, ptX, "beyond corner 2", true);
 
-  testp2 = PointType::make_point(0, 1, 1);
-  testp = PointType::make_point(0, .4, .7);
+  testp2 = PointType {0, 1, 1};
+  testp = PointType {0, .4, .7};
   testTriSegBothEnds(tri, testp, testp2, "shy of edge", false);
-  testp = PointType::make_point(0, .6, .3);
+  testp = PointType {0, .6, .3};
   testTriSegBothEnds(tri, testp, testp2, "beyond edge", true);
-  testp = PointType::make_point(0, .7, .3);
+  testp = PointType {0, .7, .3};
   testTriSegBothEnds(tri, testp2, ptM, "segment endpoint 1", true);
   testTriSegBothEnds(tri, ptM, r0, "segment endpoint 2", true);
 }
@@ -1832,10 +1721,10 @@ TEST(primal_intersect, triangle_segment_intersection)
 TEST(primal_intersect, triangle_ray_intersection)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::Ray<double, DIM> RayType;
-  typedef primal::Segment<double, DIM> SegmentType;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using RayType = primal::Ray<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
 
   double xArr[3] = {1., 0., 0.};
   double yArr[3] = {0., 1., 0.};
@@ -1853,31 +1742,31 @@ TEST(primal_intersect, triangle_ray_intersection)
   PointType ptnY(nyArr);
   PointType ptnZ(nzArr);
   PointType ptM(mArr);
-  PointType r0 = PointType::make_point(5., 5., 5.);
-  PointType o = PointType::make_point(0, 0, 0);
-  PointType ox = PointType::make_point(1, 0, 0);
-  PointType oy = PointType::make_point(0, 1, 0);
+  PointType r0 {5., 5., 5.};
+  PointType o {0, 0, 0};
+  PointType ox {1, 0, 0};
+  PointType oy {0, 1, 0};
 
   TriangleType tri(ptX, ptY, ptZ);
   TriangleType tri2(o, ox, oy);
   RayType testRay(SegmentType(ptX, ptY));
 
   // Clear miss
-  testRay = RayType(SegmentType(r0, PointType::make_point(6., 5., 5.)));
+  testRay = RayType(SegmentType(r0, PointType {6., 5., 5.}));
   testRayIntersection(tri, testRay, "clear miss", false);
 
   // More misses
-  testRay = RayType(SegmentType(r0, PointType::make_point(0., 1., .6)));
+  testRay = RayType(SegmentType(r0, PointType {0., 1., .6}));
   testRayIntersection(tri, testRay, "miss 1", false);
-  testRay = RayType(SegmentType(r0, PointType::make_point(0., .5, .6)));
+  testRay = RayType(SegmentType(r0, PointType {0., .5, .6}));
   testRayIntersection(tri, testRay, "miss 2", false);
-  testRay = RayType(SegmentType(r0, PointType::make_point(0., .85, .16)));
+  testRay = RayType(SegmentType(r0, PointType {0., .85, .16}));
   testRayIntersection(tri, testRay, "miss 3", false);
-  testRay = RayType(SegmentType(r0, PointType::make_point(.4, 1.2, 0)));
+  testRay = RayType(SegmentType(r0, PointType {.4, 1.2, 0}));
   testRayIntersection(tri, testRay, "miss 4", false);
-  testRay = RayType(SegmentType(r0, PointType::make_point(1., 0.000001, 0)));
+  testRay = RayType(SegmentType(r0, PointType {1., 0.000001, 0}));
   testRayIntersection(tri, testRay, "miss 5", false);
-  testRay = RayType(SegmentType(r0, PointType::make_point(0.4, 0, 0.7)));
+  testRay = RayType(SegmentType(r0, PointType {0.4, 0, 0.7}));
   testRayIntersection(tri, testRay, "miss 6", false);
 
   // Edge intersections should be reported as hits
@@ -1888,36 +1777,35 @@ TEST(primal_intersect, triangle_ray_intersection)
   testRayIntersection(tri, testRay, "edge hit 2", true);
   testRay = RayType(SegmentType(r0, ptZ));
   testRayIntersection(tri, testRay, "edge hit 3", true);
-  testRay = RayType(SegmentType(r0, PointType::make_point(0., 0.7, 0.3)));
+  testRay = RayType(SegmentType(r0, PointType {0., 0.7, 0.3}));
   testRayIntersection(tri, testRay, "edge hit 4", true);
-  testRay = RayType(SegmentType(r0, PointType::make_point(0.7, 0.3, 0.)));
+  testRay = RayType(SegmentType(r0, PointType {0.7, 0.3, 0.}));
   testRayIntersection(tri, testRay, "edge hit 5", true);
-  testRay = RayType(SegmentType(o, PointType::make_point(0.2, 0., 0.8)));
+  testRay = RayType(SegmentType(o, PointType {0.2, 0., 0.8}));
   testRayIntersection(tri, testRay, "edge hit 6", true);
 
   // Hits
-  testRay = RayType(SegmentType(r0, PointType::make_point(0.2, 0., 0.2)));
+  testRay = RayType(SegmentType(r0, PointType {0.2, 0., 0.2}));
   testRayIntersection(tri, testRay, "hit 1", true);
-  testRay = RayType(SegmentType(r0, PointType::make_point(0., 0., 0.)));
+  testRay = RayType(SegmentType(r0, PointType {0., 0., 0.}));
   testRayIntersection(tri, testRay, "hit 2", true);
-  testRay = RayType(SegmentType(r0, PointType::make_point(0.1, 0.6, 0.)));
+  testRay = RayType(SegmentType(r0, PointType {0.1, 0.6, 0.}));
   testRayIntersection(tri, testRay, "hit 3", true);
 
   // Coplanar miss
-  testRay = RayType(SegmentType(PointType::make_point(-0.1, 1.1, 0.),
-                                PointType::make_point(-0.1, 0., 1.1)));
+  testRay =
+    RayType(SegmentType(PointType {-0.1, 1.1, 0.}, PointType {-0.1, 0., 1.1}));
   testRayIntersection(tri, testRay, "coplanar miss", false);
 
   // Coplanar intersection (reported as miss by function)
-  testRay = RayType(SegmentType(PointType::make_point(1, 0.5, 0),
-                                PointType::make_point(-1, 0.5, 0)));
+  testRay = RayType(SegmentType(PointType {1, 0.5, 0}, PointType {-1, 0.5, 0}));
   testRayIntersection(tri2,
                       testRay,
                       "coplanar intersection, reported as miss by design",
                       false);
 
   // Coplanar, interior ray origin (reported as miss by function)
-  testRay = RayType(SegmentType(ptM, PointType::make_point(0.5, 0., 0.5)));
+  testRay = RayType(SegmentType(ptM, PointType {0.5, 0., 0.5}));
   testRayIntersection(
     tri,
     testRay,
@@ -1925,8 +1813,8 @@ TEST(primal_intersect, triangle_ray_intersection)
     false);
 
   // Not coplanar, interior ray origin (reported as miss by function)
-  testRay = RayType(SegmentType(PointType::make_point(0.2, 0.18, 0),
-                                PointType::make_point(0., 0., 0.5)));
+  testRay =
+    RayType(SegmentType(PointType {0.2, 0.18, 0}, PointType {0., 0., 0.5}));
   testRayIntersection(
     tri2,
     testRay,
@@ -1937,26 +1825,24 @@ TEST(primal_intersect, triangle_ray_intersection)
 TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Vector<double, DIM> VectorType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::Ray<double, DIM> RayType;
+  using PointType = primal::Point<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using RayType = primal::Ray<double, DIM>;
 
   PointType o = PointType::zero();
-  VectorType v = VectorType::make_vector(0, 0, 1);
+  VectorType v {0, 0, 1};
   RayType r(o, v);
 
-  TriangleType t(PointType::make_point(2, 2, 2),
-                 PointType::make_point(2, 4, 2),
-                 PointType::make_point(3, 3, 2));
+  TriangleType t(PointType {2, 2, 2}, PointType {2, 4, 2}, PointType {3, 3, 2});
 
   EXPECT_FALSE(axom::primal::intersect(t, r));
 
   PointType intBary;
   double intersectionParam = 0.;
-  TriangleType t2(PointType::make_point(-1, -1, 2),
-                  PointType::make_point(-1, 1, 2),
-                  PointType::make_point(2, 0, 2));
+  TriangleType t2(PointType {-1, -1, 2},
+                  PointType {-1, 1, 2},
+                  PointType {2, 0, 2});
   EXPECT_TRUE(axom::primal::intersect(t2, r, intersectionParam, intBary));
 
   // Here, intersectionParam is the distance along the ray, with the source
@@ -1975,10 +1861,10 @@ TEST(primal_intersect, triangle_ray_intersection_unit_ray)
 TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Vector<double, DIM> VectorType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::Ray<double, DIM> RayType;
+  using PointType = primal::Point<double, DIM>;
+  using VectorType = primal::Vector<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using RayType = primal::Ray<double, DIM>;
 
   // This regression test triggers a division by zero in
   // a previous implementation of primal::intersect()
@@ -1988,12 +1874,9 @@ TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
   PointType bary;
 
   double val = std::sqrt(2) / 2;
-  RayType ray(PointType::make_point(-0.1, 1.1, 0.),
-              VectorType::make_vector(0, -val, val));
+  RayType ray(PointType {-0.1, 1.1, 0.}, VectorType {0, -val, val});
 
-  TriangleType tri(PointType::make_point(1, 0, 0),
-                   PointType::make_point(0, 1, 0),
-                   PointType::make_point(0, 0, 1));
+  TriangleType tri(PointType {1, 0, 0}, PointType {0, 1, 0}, PointType {0, 0, 1});
 
   EXPECT_FALSE(axom::primal::intersect(tri, ray, t, bary));
 }
@@ -2001,17 +1884,15 @@ TEST(primal_intersect, triangle_ray_intersection_fpe_regression)
 TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 {
   const int DIM = 3;
-  typedef primal::Point<double, DIM> PointType;
-  typedef primal::Triangle<double, DIM> TriangleType;
-  typedef primal::Segment<double, DIM> SegmentType;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using SegmentType = primal::Segment<double, DIM>;
 
   PointType o = PointType::zero();
-  PointType d = PointType::make_point(0, 0, 4);
+  PointType d = PointType {0, 0, 4};
   SegmentType s(o, d);
 
-  TriangleType t(PointType::make_point(-1, -1, 2),
-                 PointType::make_point(-1, 1, 2),
-                 PointType::make_point(2, 0, 2));
+  TriangleType t(PointType {-1, -1, 2}, PointType {-1, 1, 2}, PointType {2, 0, 2});
 
   PointType intBary;
   double intersectionParam = 0.;
@@ -2036,10 +1917,10 @@ TEST(primal_intersect, triangle_ray_intersection_unit_seg)
 TEST(primal_intersect, obb_obb_test_intersection2D)
 {
   const int DIM = 2;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVector;
-  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVector = primal::Vector<CoordType, DIM>;
+  using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
   QPoint pt1;       // origin
   QVector u1[DIM];  // make standard axes
@@ -2091,10 +1972,10 @@ TEST(primal_intersect, obb_obb_test_intersection2D)
 TEST(primal_intersect, obb_obb_test_intersection3D)
 {
   const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVector;
-  typedef primal::OrientedBoundingBox<CoordType, DIM> QOBBox;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVector = primal::Vector<CoordType, DIM>;
+  using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
   QPoint pt1;       // origin
   QVector u1[DIM];  // make standard axes
@@ -2248,13 +2129,13 @@ TEST(primal_intersect, plane_seg_test_intersection)
   using VectorType = primal::Vector<double, DIM>;
 
   // Line segment goes from (0,0,0) to (1,1,1)
-  PointType A(0.0, 3);
-  PointType B(1.0, 3);
+  PointType A(0.);
+  PointType B(1.);
   SegmentType s(A, B);
 
   // Line segment parallel to plane (non-intersect)
-  PointType A_p({-1, -1, 0});
-  PointType B_p({1, -1, 0});
+  PointType A_p {-1, -1, 0};
+  PointType B_p {1, -1, 0};
   SegmentType s_p(A_p, B_p);
 
   // intersect A
@@ -2283,7 +2164,6 @@ TEST(primal_intersect, plane_seg_test_intersection)
 
   EXPECT_FALSE(axom::primal::intersect(p1, s_p, t1));
 }
-
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
@@ -2320,7 +2200,7 @@ void check_plane_bb_intersect()
                               rm.getAllocator(umpire::resource::Unified).getId())
        : axom::allocate<bool>(4));
 
-  for_all<ExecSpace>(
+  axom::for_all<ExecSpace>(
     4,
     AXOM_LAMBDA(int i) {
       unitBB[0] = BoundingBoxType(PointType::zero(), PointType::ones());
@@ -2330,36 +2210,28 @@ void check_plane_bb_intersect()
       // bottom face
       if(i == 0)
       {
-        normal[0] = 0.0;
-        normal[1] = 1.0;
-        normal[2] = 0.0;
+        normal = VectorType {0.0, 1.0, 0.0};
         offset = 0.0;
       }
 
       // top face
       if(i == 1)
       {
-        normal[0] = 0.0;
-        normal[1] = -1.0;
-        normal[2] = 0.0;
+        normal = VectorType {0.0, -1.0, 0.0};
         offset = -1.0;
       }
 
       // center
       if(i == 2)
       {
-        normal[0] = 1.0;
-        normal[1] = 1.0;
-        normal[2] = 1.0;
+        normal = VectorType {1.0, 1.0, 1.0};
         offset = 0.5;
       }
 
       // non-intersect
       if(i == 3)
       {
-        normal[0] = 1.0;
-        normal[1] = 1.0;
-        normal[2] = 1.0;
+        normal = VectorType {1.0, 1.0, 1.0};
         offset = -0.5;
       }
 
@@ -2416,7 +2288,7 @@ void check_plane_seg_intersect()
                               rm.getAllocator(umpire::resource::Unified).getId())
        : axom::allocate<bool>(4));
 
-  for_all<ExecSpace>(
+  axom::for_all<ExecSpace>(
     4,
     AXOM_LAMBDA(int i) {
       VectorType normal;
@@ -2428,36 +2300,28 @@ void check_plane_seg_intersect()
       // intersect A
       if(i == 0)
       {
-        normal[0] = 0.0;
-        normal[1] = 1.0;
-        normal[2] = 0.0;
+        normal = VectorType {0.0, 1.0, 0.0};
         offset = 0.0;
       }
 
       // intersect midpoint
       if(i == 1)
       {
-        normal[0] = 0.0;
-        normal[1] = 1.0;
-        normal[2] = 0.0;
+        normal = VectorType {0.0, 1.0, 0.0};
         offset = 0.5;
       }
 
       // intersect B
       if(i == 2)
       {
-        normal[0] = 0.0;
-        normal[1] = 1.0;
-        normal[2] = 0.0;
+        normal = VectorType {0.0, 1.0, 0.0};
         offset = 1.0;
       }
 
       // non-intersect
       if(i == 3)
       {
-        normal[0] = 1.0;
-        normal[1] = 1.0;
-        normal[2] = 1.0;
+        normal = VectorType {1.0, 1.0, 1.0};
         offset = -0.5;
       }
 
@@ -2526,14 +2390,12 @@ AXOM_CUDA_TEST(primal_intersect, plane_seg_test_intersection_cuda)
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
   axom::slic::setLoggingMsgLevel(axom::slic::message::Warning);
 
   int result = RUN_ALL_TESTS();
