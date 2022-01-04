@@ -28,21 +28,32 @@ TEST(primal_triangle, triangle_area_2D)
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
 
-  QPoint pt[3] = {QPoint {0, 0},  //
-                  QPoint {0, 1},
-                  QPoint {1, 0}};
+  // Test some triangle defined by half of a scaled unit square
+  for(CoordType scale : {.333, 1., 2.5, 3.})
+  {
+    QPoint pt[3] = {QPoint {0, 0},  //
+                    QPoint {0, scale},
+                    QPoint {scale, 0}};
 
-  QTri tri(pt[0], pt[1], pt[2]);
-  EXPECT_NEAR(tri.area(), 0.5, EPS);
+    const CoordType exp_area = scale * scale / 2;
 
-  tri = QTri(pt[1], pt[2], pt[0]);
-  EXPECT_NEAR(tri.area(), 0.5, EPS);
+    QTri tri(pt[0], pt[1], pt[2]);
+    EXPECT_NEAR(exp_area, tri.area(), EPS);
+    EXPECT_NEAR(tri.area(), tri.signedArea(), EPS);
 
-  tri = QTri(pt[2], pt[1], pt[0]);
-  EXPECT_NEAR(tri.area(), 0.5, EPS);
+    tri = QTri(pt[1], pt[2], pt[0]);
+    EXPECT_NEAR(exp_area, tri.area(), EPS);
+    EXPECT_NEAR(tri.area(), tri.signedArea(), EPS);
 
-  tri = QTri(pt[0], pt[2], pt[1]);
-  EXPECT_NEAR(tri.area(), 0.5, EPS);
+    // The next two permutations reverse the orientation
+    tri = QTri(pt[2], pt[1], pt[0]);
+    EXPECT_NEAR(exp_area, tri.area(), EPS);
+    EXPECT_NEAR(-tri.area(), tri.signedArea(), EPS);
+
+    tri = QTri(pt[0], pt[2], pt[1]);
+    EXPECT_NEAR(exp_area, tri.area(), EPS);
+    EXPECT_NEAR(-tri.area(), tri.signedArea(), EPS);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -54,22 +65,28 @@ TEST(primal_triangle, triangle_area_3D)
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
 
-  QPoint pt[4] = {QPoint {0, 0, 0},  //
-                  QPoint {1, 0, 0},
-                  QPoint {0, 1, 0},
-                  QPoint {0, 0, 1}};
+  // Test some triangle defined by scaled unit triangle
+  for(CoordType scale : {.333, 1., 2.5, 3.})
+  {
+    QPoint pt[4] = {QPoint {0, 0, 0},  //
+                    QPoint {scale, 0, 0},
+                    QPoint {0, scale, 0},
+                    QPoint {0, 0, scale}};
 
-  QTri tri(pt[0], pt[1], pt[2]);
-  EXPECT_NEAR(tri.area(), 0.5, EPS);
+    const double exp_face_area = scale * scale / 2;
 
-  tri = QTri(pt[0], pt[2], pt[3]);
-  EXPECT_NEAR(tri.area(), 0.5, EPS);
+    QTri tri(pt[0], pt[1], pt[2]);
+    EXPECT_NEAR(exp_face_area, tri.area(), EPS);
 
-  tri = QTri(pt[0], pt[1], pt[3]);
-  EXPECT_NEAR(tri.area(), 0.5, EPS);
+    tri = QTri(pt[0], pt[2], pt[3]);
+    EXPECT_NEAR(exp_face_area, tri.area(), EPS);
 
-  tri = QTri(pt[1], pt[2], pt[3]);
-  EXPECT_NEAR(tri.area(), std::sqrt(3.) / 2., EPS);
+    tri = QTri(pt[0], pt[1], pt[3]);
+    EXPECT_NEAR(exp_face_area, tri.area(), EPS);
+
+    tri = QTri(pt[1], pt[2], pt[3]);
+    EXPECT_NEAR(exp_face_area * std::sqrt(3.), tri.area(), EPS);
+  }
 }
 
 //------------------------------------------------------------------------------
