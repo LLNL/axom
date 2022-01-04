@@ -34,6 +34,7 @@ class Tetrahedron
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
+  using SphereType = Sphere<T, NDIMS>;
 
   static constexpr int NUM_TET_VERTS = 4;
 
@@ -41,7 +42,7 @@ public:
   /*!
    * \brief Default constructor. Creates a degenerate tetrahedron.
    */
-  AXOM_HOST_DEVICE Tetrahedron() { }
+  AXOM_HOST_DEVICE Tetrahedron() = default;
 
   /*!
    * \brief Custom Constructor. Creates a tetrahedron from the 4 points A,B,C,D.
@@ -187,7 +188,7 @@ public:
    */
   double signedVolume() const
   {
-    const double scale = 1. / 6.;
+    constexpr double scale = 1. / 6.;
     return scale * ppedVolume();
   }
 
@@ -204,13 +205,12 @@ public:
    * \note This function is only available for 3D tetrahedra in 3D
    */
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 3, primal::Sphere<T, 3>>::type circumsphere() const
+  typename std::enable_if<TDIM == 3, SphereType>::type circumsphere() const
   {
     using axom::numerics::determinant;
     using axom::numerics::dot_product;
     using axom::utilities::abs;
     using NumericArrayType = primal::NumericArray<T, NDIMS>;
-    using SphereType = primal::Sphere<T, NDIMS>;
 
     const PointType& p0 = m_points[0];
     const PointType& p1 = m_points[1];
@@ -272,24 +272,21 @@ private:
     }
     else
     {
-      const PointType& p0 = m_points[0];
-      const PointType& p1 = m_points[1];
-      const PointType& p2 = m_points[2];
-      const PointType& p3 = m_points[3];
+      const VectorType A(m_points[0], m_points[1]);
+      const VectorType B(m_points[0], m_points[2]);
+      const VectorType C(m_points[0], m_points[3]);
 
       // clang-format off
-      return axom::numerics::determinant<double>(
-        1.0, p0[0], p0[1], p0[2],
-        1.0, p1[0], p1[1], p1[2],
-        1.0, p2[0], p2[1], p2[2],
-        1.0, p3[0], p3[1], p3[2]);
+      return axom::numerics::determinant<double>(A[0], A[1], A[2],
+                                                 B[0], B[1], B[2],
+                                                 C[0], C[1], C[2]);
       // clang-format on
     }
   }
 
 private:
   PointType m_points[4];
-};
+};  // namespace primal
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Tetrahedron's operators

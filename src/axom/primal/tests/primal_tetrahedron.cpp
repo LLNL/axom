@@ -9,10 +9,13 @@
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientationResult.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
+#include "axom/primal/operators/orientation.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -29,6 +32,8 @@ public:
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTet = primal::Tetrahedron<CoordType, DIM>;
+  using QTri = primal::Triangle<CoordType, DIM>;
+  using QSeg = primal::Segment<CoordType, DIM>;
 
 protected:
   virtual void SetUp()
@@ -54,23 +59,45 @@ protected:
     }
 
     // Define coordinates for third tetrahedron
-    const double sc2 = .1;
-    qData2[0] = QPoint {sc2 * std::cos(angles[0]), sc2 * std::sin(angles[0]), 0};
-    qData2[1] = QPoint {sc2 * std::cos(angles[1]), sc2 * std::sin(angles[1]), 0};
-    qData2[2] = QPoint {sc2 * std::cos(angles[2]), sc2 * std::sin(angles[2]), 0};
-    qData2[3] = QPoint {0, 0, 100.};
+    {
+      const double sc2 = .1;
+      qData2[0] =
+        QPoint {sc2 * std::cos(angles[0]), sc2 * std::sin(angles[0]), 0};
+      qData2[1] =
+        QPoint {sc2 * std::cos(angles[1]), sc2 * std::sin(angles[1]), 0};
+      qData2[2] =
+        QPoint {sc2 * std::cos(angles[2]), sc2 * std::sin(angles[2]), 0};
+      qData2[3] = QPoint {0, 0, 100.};
+    }
 
     // Define coordinates for fourth tetrahedron
-    const double sc3 = 100.;
-    qData3[0] = QPoint {sc3 * std::cos(angles[0]), sc3 * std::sin(angles[0]), 0};
-    qData3[1] = QPoint {sc3 * std::cos(angles[1]), sc3 * std::sin(angles[1]), 0};
-    qData3[2] = QPoint {sc3 * std::cos(angles[2]), sc3 * std::sin(angles[2]), 0};
-    qData3[3] = QPoint {0, 0, .1};
+    {
+      const double sc3 = 100.;
+      qData3[0] =
+        QPoint {sc3 * std::cos(angles[0]), sc3 * std::sin(angles[0]), 0};
+      qData3[1] =
+        QPoint {sc3 * std::cos(angles[1]), sc3 * std::sin(angles[1]), 0};
+      qData3[2] =
+        QPoint {sc3 * std::cos(angles[2]), sc3 * std::sin(angles[2]), 0};
+      qData3[3] = QPoint {0, 0, .1};
+    }
+
+    // A regular tetrahedron centered at the origin
+    {
+      // define some constants for regular tetrahedron
+      const double c[3] = {std::sqrt(2) / 3, std::sqrt(6) / 3, 1. / 3};
+      qData4[0] = QPoint {0, 0, 1};
+      qData4[1] = QPoint {2 * c[0], 0, -c[2]};
+      qData4[2] = QPoint {-c[0], -c[1], -c[2]};
+      qData4[3] = QPoint {-c[0], c[1], -c[2]};
+    }
   }
+
+  int numTetrahedra() const { return 5; }
 
   QTet getTet(int idx)
   {
-    EXPECT_TRUE(idx >= 0 && idx < 4);
+    EXPECT_TRUE(idx >= 0 && idx < numTetrahedra());
 
     QTet tet;
 
@@ -88,6 +115,9 @@ protected:
     case 3:
       tet = QTet(qData3[0], qData3[1], qData3[2], qData3[3]);
       break;
+    case 4:
+      tet = QTet(qData4[0], qData4[1], qData4[2], qData4[3]);
+      break;
     }
 
     return tet;
@@ -97,6 +127,7 @@ protected:
   QPoint qData1[4];
   QPoint qData2[4];
   QPoint qData3[4];
+  QPoint qData4[4];
   double EPS;
 };
 
@@ -245,7 +276,8 @@ TEST_F(TetrahedronTest, tetrahedron_roundtrip_bary_to_physical)
   std::vector<QTet> tets = {this->getTet(0),
                             this->getTet(1),
                             this->getTet(2),
-                            this->getTet(3)};
+                            this->getTet(3),
+                            this->getTet(4)};
 
   // Compute circumsphere of test triangles and test some points
   for(const auto& tet : tets)
@@ -421,6 +453,55 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
                   circumsphere.getOrientation(qpt[j].data(), EPS));
       }
     }
+  }
+}
+
+TEST_F(TetrahedronTest, regularTetrahedron)
+{
+  using QSeg = TetrahedronTest::QSeg;
+  using QTri = TetrahedronTest::QTri;
+
+  // get the regular tetrahedron
+  auto tet = this->getTet(4);
+  SLIC_INFO("Regular tetrahedron: " << tet);
+
+  const double exp_edge_len = 2. * std::sqrt(6) / 3;
+  const double exp_vol = 8 * sqrt(3) / 27;
+
+  // check that all edge lengths are as expected
+  for(const auto& seg : {QSeg {tet[0], tet[1]},
+                         QSeg {tet[0], tet[2]},
+                         QSeg {tet[0], tet[3]},
+                         QSeg {tet[1], tet[2]},
+                         QSeg {tet[1], tet[3]},
+                         QSeg {tet[2], tet[3]}})
+  {
+    const double edgeLength = seg.length();
+    EXPECT_NEAR(exp_edge_len, edgeLength, this->EPS);
+  }
+
+  // check that signed volume is as expected
+  EXPECT_NEAR(exp_vol, tet.signedVolume(), this->EPS);
+
+  // check that all face orientations are as expected
+  for(int i = 0; i < 4; ++i)
+  {
+    const auto pt = tet[i];
+    QTri tri;
+    // clang-format off
+    switch(i)
+    {
+    case 0: tri = QTri {tet[1], tet[2], tet[3]}; break;
+    case 1: tri = QTri {tet[0], tet[3], tet[2]}; break; // note: swap since odd
+    case 2: tri = QTri {tet[0], tet[1], tet[3]}; break;
+    case 3: tri = QTri {tet[0], tet[2], tet[1]}; break; // note: swap since odd
+    }
+    // clang-format on
+    EXPECT_EQ(primal::ON_NEGATIVE_SIDE, primal::orientation(pt, tri));
+
+    // check that orientation changes if we permute a pair of triangle vertices
+    axom::utilities::swap(tri[0], tri[1]);
+    EXPECT_EQ(primal::ON_POSITIVE_SIDE, primal::orientation(pt, tri));
   }
 }
 //----------------------------------------------------------------------
