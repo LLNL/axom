@@ -159,16 +159,16 @@ TEST(primal_in_sphere, compare_to_sphere_orientation)
                         sphere,
                         tet,
                         tet.signedVolume(),
-                        sphere.computeSignedDistance(query.data())));
+                        sphere.computeSignedDistance(query)));
 
     // check that each vertex is on the sphere boundary
     for(int i = 0; i <= DIM; ++i)
     {
-      EXPECT_TRUE(sphere.getOrientation(tet[i].data()) == primal::ON_BOUNDARY);
+      EXPECT_TRUE(sphere.getOrientation(tet[i]) == primal::ON_BOUNDARY);
     }
 
     // check that the orientation matches expectations
-    auto res = sphere.getOrientation(query.data());
+    auto res = sphere.getOrientation(query);
     EXPECT_EQ(exp_orient, res);
 
     // check that primal::in_sphere() matches sphere.getOrientation()

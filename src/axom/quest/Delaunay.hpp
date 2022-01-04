@@ -292,7 +292,7 @@ public:
           circumspheres[element_idx] =
             this->getElement(element_idx).circumsphere();
           const auto& sphere = circumspheres[element_idx];
-          const auto center = NumericArrayType(sphere.getCenter());
+          const auto& center = sphere.getCenter().array();
           const auto offset = NumericArrayType(sphere.getRadius());
 
           BoundingBox bb;
@@ -338,7 +338,7 @@ public:
         }
 
         // check insphere condition
-        if(circumspheres[element_idx].getOrientation(vertex.data()) ==
+        if(circumspheres[element_idx].getOrientation(vertex) ==
            primal::ON_NEGATIVE_SIDE)
         {
           valid = false;
@@ -376,7 +376,7 @@ public:
                          element_idx,
                          element,
                          circumsphere,
-                         circumsphere.computeSignedDistance(pos.data()));
+                         circumsphere.computeSignedDistance(pos));
         }
 
         SLIC_INFO(

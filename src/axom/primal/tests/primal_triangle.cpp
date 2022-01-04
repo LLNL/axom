@@ -3,10 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
-
 #include "axom/config.hpp"
-#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
@@ -14,7 +11,10 @@
 #include "axom/primal/geometry/OrientationResult.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
+#include "axom/slic.hpp"
 #include "axom/fmt.hpp"
+
+#include "gtest/gtest.h"
 
 #include <cmath>
 
@@ -423,38 +423,36 @@ TEST(primal_triangle, triangle_2D_circumsphere)
     for(int i = 0; i < 3; i++)
     {
       QPoint qpt = tri[i];
-      EXPECT_EQ(ON_BOUNDARY, circumsphere.getOrientation(qpt.data(), EPS));
+      EXPECT_EQ(ON_BOUNDARY, circumsphere.getOrientation(qpt, EPS));
     }
 
     for(int i = 0; i < 3; i++)
     {
       QPoint qpt = QPoint::midpoint(tri[i], tri[(i + 1) % 3]);
-      EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt.data(), EPS));
+      EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt, EPS));
     }
 
     // test barycenter of triangle
     {
       QPoint qpt = tri.baryToPhysical(BaryPoint {1 / 3., 1 / 3., 1 / 3.});
-      EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt.data(), EPS));
+      EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt, EPS));
     }
 
     // test point that should be far outside triangle
     {
       QPoint qpt = tri.baryToPhysical(BaryPoint {-1, 3, -1});
-      EXPECT_EQ(ON_POSITIVE_SIDE, circumsphere.getOrientation(qpt.data(), EPS));
+      EXPECT_EQ(ON_POSITIVE_SIDE, circumsphere.getOrientation(qpt, EPS));
     }
   }
 }
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();

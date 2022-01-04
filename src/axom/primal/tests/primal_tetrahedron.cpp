@@ -402,7 +402,7 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
     for(int i = 0; i < 4; ++i)
     {
       QPoint qpt = tet[i];
-      EXPECT_EQ(ON_BOUNDARY, circumsphere.getOrientation(qpt.data(), EPS));
+      EXPECT_EQ(ON_BOUNDARY, circumsphere.getOrientation(qpt, EPS));
     }
 
     // test edge centers
@@ -415,8 +415,7 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
                        QPoint::midpoint(tet[2], tet[3])};
       for(int j = 0; j < 6; ++j)
       {
-        EXPECT_EQ(ON_NEGATIVE_SIDE,
-                  circumsphere.getOrientation(qpt[j].data(), EPS));
+        EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt[j], EPS));
       }
     }
 
@@ -430,15 +429,14 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
                        tet.baryToPhysical(RPoint {zero, third, third, third})};
       for(int j = 0; j < 4; ++j)
       {
-        EXPECT_EQ(ON_NEGATIVE_SIDE,
-                  circumsphere.getOrientation(qpt[j].data(), EPS));
+        EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt[j], EPS));
       }
     }
 
     // test tet center
     {
       QPoint qpt = tet.baryToPhysical(RPoint {.25, .25, .25, .25});
-      EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt.data(), EPS));
+      EXPECT_EQ(ON_NEGATIVE_SIDE, circumsphere.getOrientation(qpt, EPS));
     }
 
     // test points that should be far outside tet
@@ -449,8 +447,7 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
                        tet.baryToPhysical(RPoint {3, -1, -1, 0})};
       for(int j = 0; j < 4; ++j)
       {
-        EXPECT_EQ(ON_POSITIVE_SIDE,
-                  circumsphere.getOrientation(qpt[j].data(), EPS));
+        EXPECT_EQ(ON_POSITIVE_SIDE, circumsphere.getOrientation(qpt[j], EPS));
       }
     }
   }

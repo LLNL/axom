@@ -321,9 +321,7 @@ Plane<T, 2> make_plane(const Point<T, 2>& x1, const Point<T, 2>& x2)
   normal[1] = x2[0] - x1[0];  //  dx
 
   // check for degenerate line or triangle
-  bool degenerate = normal.is_zero();
-
-  SLIC_CHECK_MSG(!degenerate, "Supplied points form a degenerate line");
+  SLIC_CHECK_MSG(!normal.is_zero(), "Supplied points form a degenerate line");
 
   return Plane<T, 2>(normal, x1);
 }
@@ -340,9 +338,8 @@ Plane<T, 3> make_plane(const Point<T, 3>& x1,
   Vector<T, 3> normal = Vector<T, 3>::cross_product(r1, r2);
 
   // check for degenerate line or triangle
-  bool degenerate = normal.is_zero();
-
-  SLIC_CHECK_MSG(!degenerate, "Supplied points form a degenerate triangle");
+  SLIC_CHECK_MSG(!normal.is_zero(),
+                 "Supplied points form a degenerate triangle");
 
   return Plane<T, 3>(normal, x1);
 }
