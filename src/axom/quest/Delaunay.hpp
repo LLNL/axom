@@ -275,6 +275,9 @@ public:
     UniformGridType grid(m_bounding_box,
                          primal::NumericArray<int, DIM>(res).data());
 
+    // An array to cache the circumspheres associated with each element
+    axom::Array<typename ElementType::SphereType> circumspheres(totalElements);
+
     // bootstrap the uniform grid using an implicit grid
     {
       using GridCell = typename ImplicitGridType::GridCell;
@@ -286,7 +289,9 @@ public:
       {
         if(m_mesh.isValidElement(element_idx))
         {
-          const auto sphere = this->getElement(element_idx).circumsphere();
+          circumspheres[element_idx] =
+            this->getElement(element_idx).circumsphere();
+          const auto& sphere = circumspheres[element_idx];
           const auto center = NumericArrayType(sphere.getCenter());
           const auto offset = NumericArrayType(sphere.getRadius());
 
@@ -333,7 +338,8 @@ public:
         }
 
         // check insphere condition
-        if(primal::in_sphere(vertex, getElement(element_idx)))
+        if(circumspheres[element_idx].getOrientation(vertex.data()) ==
+           primal::ON_NEGATIVE_SIDE)
         {
           valid = false;
 
