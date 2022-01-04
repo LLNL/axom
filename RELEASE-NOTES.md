@@ -51,6 +51,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed over-eager caching of restored `mfem::FiniteElementSpaces` in `sidre::MFEMSidreDataCollection`
 - Fixed a bug in which Inlet verification bails out on the first failure, which resulted in
   incomplete error lists
+- Fixed a bug in `quest::PointInCell` when not using RAJA
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
