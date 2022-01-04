@@ -161,7 +161,7 @@ AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 word)
   return __clz(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
-  return _BitScanReverse(&cnt, word) ? cnt : 32;
+  return _BitScanReverse(&cnt, word) ? 31 - cnt : 32;
 #elif defined(_AXOM_CORE_USE_INTRINSICS_GCC) || defined(_AXOM_CORE_USE_INTRINSICS_PPC)
   return word != axom::int32(0) ? __builtin_clz(word) : 32;
 #else
