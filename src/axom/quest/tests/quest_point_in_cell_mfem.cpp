@@ -476,7 +476,7 @@ public:
 
   int getAllocatorId() const { return m_allocatorID; }
 
-  double getTolerance() const { return m_EPS;}
+  double getTolerance() const { return m_EPS; }
 
 protected:
   std::string m_meshDescriptorStr;
