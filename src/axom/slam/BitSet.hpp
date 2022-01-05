@@ -117,7 +117,7 @@ public:
   using Word = axom::uint64;
 
   // TODO: update using a policy
-  using ArrayType = axom::Array<Word>;
+  using ArrayType = axom::Array<Word, 1>;
 
   static constexpr Index npos = -2;
   static constexpr int BitsPerWord =
@@ -146,7 +146,8 @@ public:
       "slam::BitSet must be initialized with a non-zero number of bits");
 
     m_numBits = axom::utilities::max(numBits, 0);
-    Index numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
+    axom::IndexType numWords =
+      (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
 
     m_data = ArrayType(numWords, numWords, allocatorID);
     m_data.fill(0);
