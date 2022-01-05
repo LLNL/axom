@@ -277,7 +277,6 @@ TEST(slam_IA, dynamically_build_tri_mesh)
   const int TDIM = 2;
   const int SDIM = 3;
   using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
-  using IndexArray = IAMeshType::IndexArray;
 
   const int vert_per_elem = IAMeshType::VERTS_PER_ELEM;
   EXPECT_EQ(3, vert_per_elem);
@@ -510,7 +509,6 @@ TEST(slam_IA, basic_tet_mesh)
   constexpr int vert_per_elem = 4;
   constexpr int coord_per_vert = 3;
   using IAMeshType = slam::IAMesh<vert_per_elem - 1, coord_per_vert, PointType>;
-  using IndexArray = IAMeshType::IndexArray;
 
   BasicTetMeshData basic_mesh_data;
   IAMeshType ia_mesh(basic_mesh_data.points, basic_mesh_data.elem);

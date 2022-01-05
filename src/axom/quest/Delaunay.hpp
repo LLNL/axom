@@ -259,7 +259,7 @@ public:
     // whose circumsphere might contain the vertices of the mesh
     // To build this faster, we bootstrap the UniformGrid with an ImplicitGrid
 
-    using ImplicitGridType = spin::ImplicitGrid<DIM>;
+    using ImplicitGridType = spin::ImplicitGrid<DIM, axom::SEQ_EXEC, IndexType>;
     using UniformGridType = spin::UniformGrid<IndexType, DIM>;
     using NumericArrayType = primal::NumericArray<DataType, DIM>;
     using axom::numerics::dot_product;
@@ -270,7 +270,7 @@ public:
 
     const IndexType totalVertices = m_mesh.vertices().size();
     const IndexType totalElements = m_mesh.elements().size();
-    const int res =
+    const IndexType res =
       axom::utilities::ceil(0.33 * std::pow(totalVertices, 1. / DIM));
     UniformGridType grid(m_bounding_box,
                          primal::NumericArray<int, DIM>(res).data());
@@ -305,12 +305,12 @@ public:
 
       // copy candidates from implicit grid directly into uniform grid
       const int kUpper = (DIM == 2) ? 0 : res;
-      const int stride[3] = {1, res, (DIM == 2) ? 0 : res * res};
-      for(int k = 0; k < kUpper; ++k)
-        for(int j = 0; j < res; ++j)
-          for(int i = 0; i < res; ++i)
+      const IndexType stride[3] = {1, res, (DIM == 2) ? 0 : res * res};
+      for(IndexType k = 0; k < kUpper; ++k)
+        for(IndexType j = 0; j < res; ++j)
+          for(IndexType i = 0; i < res; ++i)
           {
-            const int vals[3] = {i, j, k};
+            const IndexType vals[3] = {i, j, k};
             const GridCell cell(vals);
             const auto idx = dot_product(cell.data(), stride, DIM);
             grid.getBinContents(idx) = implicitGrid.getCandidatesAsArray(cell);
