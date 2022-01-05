@@ -127,15 +127,7 @@ public:
    * It is an error if index is invalid.
    * \param [in] index The index of the bin to retrieve.
    */
-  BinType getBinContents(int index);
-
-  /*!
-   * \brief Returns the contents of the bin indicated by index.
-   *
-   * It is an error if index is invalid.  This is the const version.
-   * \param [in] index The index of the bin to retrieve.
-   */
-  ConstBinType getBinContents(int index) const;
+  using StoragePolicy::getBinContents;
 
   /*!
    * \brief Returns true if index is valid; that is, refers to a valid bin.
@@ -146,7 +138,7 @@ public:
    * method will return true.  Otherwise, the integer does not refer to any
    * bin and this method will return false.
    */
-  bool isValidIndex(int index) const;
+  using StoragePolicy::isValidIndex;
 
   /*!
    * \brief Returns the indices of the bins for a given bounding box.
@@ -163,7 +155,7 @@ public:
    * No-op if index is invalid.
    * \param [in] index The index of the bin to clear.
    */
-  void clear(int index);
+  using StoragePolicy::clear;
 
   /*!
    * \brief Inserts obj into each bin overlapped by BB.
@@ -434,12 +426,6 @@ int UniformGrid<T, NDIMS, StoragePolicy>::getBinIndex(const PointType& pt) const
 }
 
 template <typename T, int NDIMS, typename StoragePolicy>
-bool UniformGrid<T, NDIMS, StoragePolicy>::isValidIndex(int index) const
-{
-  return index >= 0 && index < static_cast<int>(getNumBins());
-}
-
-template <typename T, int NDIMS, typename StoragePolicy>
 bool UniformGrid<T, NDIMS, StoragePolicy>::isBinEmpty(int index) const
 {
   if(!isValidIndex(index))
@@ -447,27 +433,10 @@ bool UniformGrid<T, NDIMS, StoragePolicy>::isBinEmpty(int index) const
     return true;
   }
 
-  return StoragePolicy::getBin(index).size() == 0;
+  return StoragePolicy::getBinContents(index).size() == 0;
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS, typename StoragePolicy>
-typename UniformGrid<T, NDIMS, StoragePolicy>::BinType
-UniformGrid<T, NDIMS, StoragePolicy>::getBinContents(int index)
-{
-  SLIC_ASSERT(isValidIndex(index));
-
-  return StoragePolicy::getBin(index);
-}
-
-template <typename T, int NDIMS, typename StoragePolicy>
-typename UniformGrid<T, NDIMS, StoragePolicy>::ConstBinType
-UniformGrid<T, NDIMS, StoragePolicy>::getBinContents(int index) const
-{
-  SLIC_ASSERT(isValidIndex(index));
-
-  return StoragePolicy::getBin(index);
-}
 
 template <typename T, int NDIMS, typename StoragePolicy>
 const std::vector<int> UniformGrid<T, NDIMS, StoragePolicy>::getBinsForBbox(
@@ -502,16 +471,6 @@ const std::vector<int> UniformGrid<T, NDIMS, StoragePolicy>::getBinsForBbox(
   }
 
   return retval;
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS, typename StoragePolicy>
-void UniformGrid<T, NDIMS, StoragePolicy>::clear(int index)
-{
-  if(isValidIndex(index))
-  {
-    StoragePolicy::clear(index);
-  }
 }
 
 //------------------------------------------------------------------------------

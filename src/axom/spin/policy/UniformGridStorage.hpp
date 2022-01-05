@@ -24,8 +24,14 @@ struct DynamicGridStorage
 {
   using BinType = axom::ArrayView<T>;
   using ConstBinType = axom::ArrayView<const T>;
+
   void setNumBins(IndexType nbins) { m_bins.resize(nbins); }
   IndexType getNumBins() const { return m_bins.size(); }
+
+  bool isValidIndex(IndexType index) const
+  {
+    return index >= 0 && index < getNumBins();
+  }
 
   void initialize(axom::ArrayView<const IndexType> binSizes)
   {
@@ -40,19 +46,35 @@ struct DynamicGridStorage
     m_bins[gridIdx].push_back(elem);
   }
 
-  void clear(IndexType gridIdx) { m_bins[gridIdx].clear(); }
+  void clear(IndexType gridIdx)
+  {
+    if(isValidIndex(gridIdx))
+    {
+      m_bins[gridIdx].clear();
+    }
+  }
 
   // getters
-  BinType getBin(IndexType gridIdx) { return m_bins[gridIdx]; }
-  ConstBinType getBin(IndexType gridIdx) const { return m_bins[gridIdx]; }
+  BinType getBinContents(IndexType gridIdx)
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    return m_bins[gridIdx];
+  }
+  ConstBinType getBinContents(IndexType gridIdx) const
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    return m_bins[gridIdx];
+  }
 
   T& get(IndexType gridIdx, IndexType binIdx)
   {
+    SLIC_ASSERT(isValidIndex(gridIdx));
     return m_bins[gridIdx][binIdx];
   }
 
   const T& get(IndexType gridIdx, IndexType binIdx) const
   {
+    SLIC_ASSERT(isValidIndex(gridIdx));
     return m_bins[gridIdx][binIdx];
   }
 
