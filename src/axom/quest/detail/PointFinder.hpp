@@ -42,13 +42,13 @@ template <int NDIMS, typename mesh_tag, typename ExecSpace>
 class PointFinder
 {
 public:
-  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace>;
+  using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
+  using IndexType = typename MeshWrapperType::IndexType;
+
+  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace, IndexType>;
 
   using SpacePoint = typename GridType::SpacePoint;
   using SpatialBoundingBox = typename GridType::SpatialBoundingBox;
-
-  using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
-  using IndexType = typename MeshWrapperType::IndexType;
 
 private:
   constexpr static bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();

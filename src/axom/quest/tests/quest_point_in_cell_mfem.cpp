@@ -13,16 +13,10 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
-#include "axom/core/utilities/Timer.hpp"
-
-#include "axom/mint/mesh/CurvilinearMesh.hpp"
-#include "axom/mint/mesh/FieldVariable.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
-
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/BoundingBox.hpp"
-
-#include "axom/spin/ImplicitGrid.hpp"
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/primal.hpp"
+#include "axom/spin.hpp"
 // _quest_pic_include_start
 #include "axom/quest/PointInCell.hpp"
 
@@ -108,15 +102,15 @@ public:
   using BBox = axom::primal::BoundingBox<double, DIM>;
   using SpacePt = axom::primal::Point<double, DIM>;
   using SpaceVec = axom::primal::Vector<double, DIM>;
+
   // _quest_pic_typedef_start
-  using GridCell = axom::primal::Point<int, DIM>;
-
   using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
-  using MeshTraits = axom::quest::PointInCellTraits<mesh_tag>;
-
   using PointInCellType = axom::quest::PointInCell<mesh_tag, ExecSpace>;
+  using MeshTraits = typename PointInCellType::MeshTraits;
   using IndexType = typename PointInCellType::IndexType;
   // _quest_pic_typedef_end
+
+  using GridCell = axom::primal::Point<IndexType, DIM>;
 
 public:
   PointInCellTest()
@@ -272,15 +266,18 @@ public:
     axom::Array<SpacePt> pts;
 
     const int k_max = (DIM == 3) ? res : 0;
+    const int sz = (res + 1) * (res + 1) * (k_max + 1);
+    pts.reserve(sz);
+
     for(int i = 0; i <= res; ++i)
       for(int j = 0; j <= res; ++j)
         for(int k = 0; k <= k_max; ++k)
         {
           // Get the corresponding isoparametric value
           // Note: point constructor ignores coordinates higher than point's DIM
-          pts.emplace_back(SpacePt {static_cast<double>(i) / res,
-                                    static_cast<double>(j) / res,
-                                    static_cast<double>(k) / res});
+          pts.push_back(SpacePt {static_cast<double>(i) / res,
+                                 static_cast<double>(j) / res,
+                                 static_cast<double>(k) / res});
         }
 
     return pts;
