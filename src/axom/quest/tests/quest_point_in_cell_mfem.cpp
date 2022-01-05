@@ -310,19 +310,16 @@ public:
     axom::Array<SpacePt> outIsopar(pts.size(), pts.size(), m_allocatorID);
 
     axom::utilities::Timer queryTimer(true);
+    // Locate the points (using EXEC_SPACE)
+    // _quest_pic_locate_start
     spatialIndex.locatePoints(pts, outCellIds.data(), outIsopar.data());
+    // _quest_pic_locate_end
 
     axom::Array<SpacePt> qptHost = pts;
     axom::Array<IndexType> cellIdsHost = outCellIds;
     axom::Array<SpacePt> isoparHost = outIsopar;
     for(int i = 0; i < pts.size(); i++)
     {
-      // Try to find the point
-      /*
-      // _quest_pic_locate_start
-      int idx = spatialIndex.locatePoint(queryPoint.data(), isoPar.data());
-      // _quest_pic_locate_end
-      */
       const SpacePt& queryPoint = qptHost[i];
       IndexType idx = cellIdsHost[i];
       SpacePt isoPar = isoparHost[i];
@@ -348,9 +345,9 @@ public:
         spatialIndex.reconstructPoint(idx, isoPar.data(), untransformPt.data());
         // _quest_pic_reconstruct_end
 
-        for(int i = 0; i < DIM; ++i)
+        for(int d = 0; d < DIM; ++d)
         {
-          EXPECT_NEAR(queryPoint[i], untransformPt[i], m_EPS);
+          EXPECT_NEAR(queryPoint[d], untransformPt[d], m_EPS);
         }
       }
     }
@@ -390,29 +387,47 @@ public:
 
     // Test that a fixed set of isoparametric coords on each cell
     // maps to the correct place.
-    axom::Array<SpacePt> pts = generateIsoParTestPoints(::TEST_GRID_RES);
+    axom::Array<SpacePt> isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
+
+    const auto SZ = isoPts.size();
+    axom::Array<SpacePt> spacePts(SZ, SZ);
+    axom::Array<SpacePt> foundIso(SZ, SZ);
+    axom::Array<IndexType> foundIDs(SZ, SZ);
+
     axom::utilities::Timer queryTimer2(true);
     SpacePt foundIsoPar;
     for(int eltId = 0; eltId < m_mesh->GetNE(); ++eltId)
     {
-      for(const SpacePt& isoparCenter : pts)
+      // Reconstruct points in space from isoparametric coords on an element
+      for(int idx = 0; idx < SZ; ++idx)
       {
+        spatialIndex.reconstructPoint(eltId,
+                                      isoPts[idx].data(),
+                                      spacePts[idx].data());
+      }
+
+      // locate the reconstructed points (using EXEC space)
+      spatialIndex.locatePoints(spacePts.view(), foundIDs.data(), foundIso.data());
+
+      // check results
+      for(int idx = 0; idx < SZ; ++idx)
+      {
+        const SpacePt& isoparCenter = isoPts[idx];
+
         // Check if isoparCenter is on element boundary
         bool isBdry = false;
-        for(int i = 0; i < DIM; ++i)
+        for(int d = 0; d < DIM; ++d)
         {
-          if(axom::utilities::isNearlyEqual(isoparCenter[i], 0.) ||
-             axom::utilities::isNearlyEqual(isoparCenter[i], 1.))
+          if(axom::utilities::isNearlyEqual(isoparCenter[d], 0.) ||
+             axom::utilities::isNearlyEqual(isoparCenter[d], 1.))
           {
             isBdry = true;
           }
         }
 
-        SpacePt spacePt;
-        spatialIndex.reconstructPoint(eltId, isoparCenter.data(), spacePt.data());
-
-        int foundCellId =
-          spatialIndex.locatePoint(spacePt.data(), foundIsoPar.data());
+        const auto& spacePt = spacePts[idx];
+        const auto& foundCellId = foundIDs[idx];
+        const auto& foundIsoPar = foundIso[idx];
 
         // Check that we found a cell
         EXPECT_NE(MeshTraits::NO_CELL, foundCellId)
@@ -434,10 +449,10 @@ public:
         // If we found the same cell, check that isoparametric coords agree
         if(eltId == foundCellId)
         {
-          for(int i = 0; i < DIM; ++i)
+          for(int d = 0; d < DIM; ++d)
           {
-            EXPECT_NEAR(isoparCenter[i], foundIsoPar[i], m_EPS)
-              << "For element " << eltId << " coord " << i
+            EXPECT_NEAR(isoparCenter[d], foundIsoPar[d], m_EPS)
+              << "For element " << eltId << " coord " << d
               << "\tisoparCenter is" << isoparCenter << "\tfoundIsoPar is "
               << foundIsoPar << "\tpoint in space " << spacePt;
           }
@@ -451,9 +466,9 @@ public:
                                         foundIsoPar.data(),
                                         transformedPt.data());
 
-          for(int i = 0; i < DIM; ++i)
+          for(int d = 0; d < DIM; ++d)
           {
-            EXPECT_NEAR(spacePt[i], transformedPt[i], m_EPS);
+            EXPECT_NEAR(spacePt[d], transformedPt[d], m_EPS);
           }
         }
       }
@@ -461,10 +476,10 @@ public:
 
     SLIC_INFO(axom::fmt::format(
       "Verifying {} pts on {} quad mesh took {} s -- rate: {} q/s",
-      pts.size() * m_mesh->GetNE(),
+      SZ * m_mesh->GetNE(),
       meshTypeStr,
       queryTimer2.elapsed(),
-      pts.size() * m_mesh->GetNE() / queryTimer2.elapsed()));
+      SZ * m_mesh->GetNE() / queryTimer2.elapsed()));
   }
 
   mfem::Mesh* getMesh() { return m_mesh; }
@@ -950,9 +965,9 @@ private:
     switch(METRIC)
     {
     case L_1_METRIC:
-      for(int i = 0; i < DIM; ++i)
+      for(int d = 0; d < DIM; ++d)
       {
-        ret += axom::utilities::abs(pt[i]);
+        ret += axom::utilities::abs(pt[d]);
       }
       break;
     case L_2_METRIC:
@@ -1233,9 +1248,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
       }
 
       // Transformed point should match query point
-      for(int i = 0; i < DIM; ++i)
+      for(int d = 0; d < DIM; ++d)
       {
-        EXPECT_NEAR(queryPoint[i], untransformPt[i], this->getTolerance());
+        EXPECT_NEAR(queryPoint[d], untransformPt[d], this->getTolerance());
       }
     }
 
@@ -1252,9 +1267,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
       }
 
       // Transformed point should match query point
-      for(int i = 0; i < DIM; ++i)
+      for(int d = 0; d < DIM; ++d)
       {
-        EXPECT_NEAR(queryPoint[i], untransformPt[i], this->getTolerance());
+        EXPECT_NEAR(queryPoint[d], untransformPt[d], this->getTolerance());
       }
     }
   }
@@ -1293,9 +1308,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
       << " Failed to reverse the transformation.";
 
     // Check that the isoparametric coordinates agree
-    for(int i = 0; i < DIM; ++i)
+    for(int d = 0; d < DIM; ++d)
     {
-      EXPECT_NEAR(isoparCenter[i], foundIsoPar1[i], this->getTolerance());
+      EXPECT_NEAR(isoparCenter[d], foundIsoPar1[d], this->getTolerance());
     }
 
     // Check that we can find this point in mesh2
