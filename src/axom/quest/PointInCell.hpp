@@ -89,15 +89,14 @@ template <typename mesh_tag, typename ExecSpace = axom::SEQ_EXEC>
 class PointInCell
 {
 public:
+  using Point2DType = primal::Point<double, 2>;
+  using Point3DType = primal::Point<double, 3>;
+
   using MeshTraits = PointInCellTraits<mesh_tag>;
   using MeshType = typename MeshTraits::MeshType;
   using IndexType = typename MeshTraits::IndexType;
 
-  using Point2DType = primal::Point<double, 2>;
-  using Point3DType = primal::Point<double, 3>;
-
   using MeshWrapperType = detail::PointInCellMeshWrapper<mesh_tag>;
-
   using PointFinder2D = detail::PointFinder<2, mesh_tag, ExecSpace>;
   using PointFinder3D = detail::PointFinder<3, mesh_tag, ExecSpace>;
 

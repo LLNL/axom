@@ -460,8 +460,6 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
             << axom::execution_space<typename TestFixture::ExecSpace>::name()
             << " execution space for points in " << DIM << "D");
 
-  using IndexType = typename GridT::IndexType;
-
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
   GridCell res(10);
@@ -734,8 +732,6 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
   SLIC_INFO("Test ImplicitGrid getCandidatesAsArray() with "
             << axom::execution_space<typename TestFixture::ExecSpace>::name()
             << " execution space for boxes in " << DIM << "D");
-
-  using IndexType = typename GridT::IndexType;
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
