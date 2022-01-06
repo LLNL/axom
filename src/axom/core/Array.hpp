@@ -837,6 +837,7 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
 template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::~Array()
 {
+  clear();
   if(m_data != nullptr)
   {
     axom::deallocate(m_data);
@@ -870,11 +871,7 @@ inline void Array<T, DIM, SPACE>::set(const T* elements, IndexType n, IndexType 
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::clear()
 {
-  // This most likely needs to be a call to erase() instead.
-  for(IndexType i = 0; i < m_num_elements; ++i)
-  {
-    m_data[i].~T();
-  }
+  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
 
   updateNumElements(0);
 }

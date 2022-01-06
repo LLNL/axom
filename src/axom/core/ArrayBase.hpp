@@ -581,30 +581,39 @@ template <typename T>
 void initializeInPlace(T*, const IndexType, const IndexType, const int, std::false_type)
 { }
 
-/*!
- * \brief Fills an array using a host or device side kernel. For a device
- *  lambda, the object must be trivially-copyable.
- */
 template <bool UseMemcpy>
-struct DispatchFill
+struct DispatchOps
 {
+  /*!
+   * \brief Fills an array using a host or device side kernel. For a device
+   *  lambda, the object must be trivially-copyable.
+   */
   template <typename T, typename ExecSpace>
-  static void exec(T* array, IndexType n, const T& value)
+  static void fill(T* array, IndexType n, const T& value)
   {
     for_all<ExecSpace>(
       n,
       AXOM_LAMBDA(IndexType i) { array[i] = value; });
   }
+
+  template <typename T, typename ExecSpace>
+  static void destroy(T* array, IndexType begin, IndexType end)
+  {
+    if(!std::is_trivial<T>::value)
+    {
+      for_all<ExecSpace>(
+        begin,
+        end,
+        AXOM_LAMBDA(IndexType i) { array[i].~T(); });
+    }
+  }
 };
 
-/*!
- * \brief Fills an array using a memcpy from a host-side temporary buffer.
- */
 template <>
-struct DispatchFill<true>
+struct DispatchOps<true>
 {
   template <typename T, typename ExecSpace>
-  static void exec(T* array, IndexType n, const T& value)
+  static void fill(T* array, IndexType n, const T& value)
   {
     void* buffer = ::operator new(sizeof(T) * n);
     T* typed_buffer = new(buffer) T[n];
@@ -612,7 +621,21 @@ struct DispatchFill<true>
     {
       typed_buffer[i] = value;
     }
+    axom::copy(array, typed_buffer, sizeof(T) * n);
+    ::operator delete(buffer);
+  }
+
+  template <typename T, typename ExecSpace>
+  static void destroy(T* array, IndexType begin, IndexType end)
+  {
+    IndexType n = end - begin;
+    void* buffer = ::operator new(sizeof(T) * n);
+    T* typed_buffer = new(buffer) T[n];
     axom::copy(typed_buffer, array, sizeof(T) * n);
+    for(int i = begin; i < end; i++)
+    {
+      typed_buffer[i].~T();
+    }
     ::operator delete(buffer);
   }
 };
@@ -628,30 +651,23 @@ void fillImpl(T* array, IndexType n, const T& value)
   // We use a memcpy if our memory needs to be initialized on device, but the
   // objects are non-trivially copyable - may indicate creation of resources
   // on the host side (also non-trivial copy ctors are usually host-only)
-  DispatchFill<IsDevice && NonTrivialCopy>::template exec<T, ExecSpace>(array,
-                                                                        n,
-                                                                        value);
+  DispatchOps<IsDevice && NonTrivialCopy>::template fill<T, ExecSpace>(array,
+                                                                       n,
+                                                                       value);
 }
 
-/*!
- * \brief Version of fillKernel which uses the allocator ID to determine the
- *  correct memory space to execute the fill operation in at runtime.
- */
-template <typename T>
-void fillKernelDynamic(T* array, IndexType n, int alloc_id, const T& value)
+template <typename T, typename ExecSpace>
+void destroyImpl(T* array, IndexType begin, IndexType end)
 {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
-  MemorySpace space = getAllocatorSpace(alloc_id);
+  constexpr bool IsDevice = axom::execution_space<ExecSpace>::onDevice();
+  // TODO: this should be is_trivially_destructible - currently unsupported on
+  // gcc 4.9.3
+  constexpr bool NonTrivialDestroy = !std::is_trivial<T>::value;
 
-  if(space == MemorySpace::Device)
-  {
-    fillImpl<T, axom::CUDA_EXEC<256>>(array, n, value);
-    return;
-  }
-#else
-  AXOM_UNUSED_VAR(alloc_id);
-#endif
-  fillImpl<T, axom::SEQ_EXEC>(array, n, value);
+  DispatchOps<IsDevice && NonTrivialDestroy>::template destroy<T, ExecSpace>(
+    array,
+    begin,
+    end);
 }
 
 template <typename T, MemorySpace SPACE>
@@ -661,6 +677,12 @@ struct ArrayOps
   {
     AXOM_UNUSED_VAR(allocId);
     fillImpl<T, axom::SEQ_EXEC>(array, n, value);
+  }
+
+  static void destroy(T* array, IndexType begin, IndexType end, int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    destroyImpl<T, axom::SEQ_EXEC>(array, begin, end);
   }
 };
 
@@ -673,6 +695,12 @@ struct ArrayOps<T, MemorySpace::Device>
     AXOM_UNUSED_VAR(allocId);
     fillImpl<T, axom::CUDA_EXEC<256>>(array, n, value);
   }
+
+  static void destroy(T* array, IndexType begin, IndexType end, int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    destroyImpl<T, axom::CUDA_EXEC<256>>(array, begin, end);
+  }
 };
 #endif
 
@@ -681,7 +709,38 @@ struct ArrayOps<T, MemorySpace::Dynamic>
 {
   static void fill(T* array, IndexType n, int allocId, const T& value)
   {
-    fillKernelDynamic(array, n, allocId, value);
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      fillImpl<T, axom::CUDA_EXEC<256>>(array, n, value);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    fillImpl<T, axom::SEQ_EXEC>(array, n, value);
+  }
+
+  static void destroy(T* array, IndexType begin, IndexType end, int allocId)
+  {
+    if(!array || end <= begin)
+    {
+      return;
+    }
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      destroyImpl<T, axom::CUDA_EXEC<256>>(array, begin, end);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    destroyImpl<T, axom::SEQ_EXEC>(array, begin, end);
   }
 };
 
