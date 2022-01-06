@@ -39,10 +39,10 @@ public:
   static constexpr int NUM_TET_VERTS = 4;
 
 public:
-  /*!
-   * \brief Default constructor. Creates a degenerate tetrahedron.
-   */
-  AXOM_HOST_DEVICE Tetrahedron() = default;
+  /// \brief Default constructor. Creates a degenerate tetrahedron.
+  AXOM_HOST_DEVICE Tetrahedron()
+    : m_points {PointType(), PointType(), PointType(), PointType()}
+  { }
 
   /*!
    * \brief Custom Constructor. Creates a tetrahedron from the 4 points A,B,C,D.
@@ -85,6 +85,7 @@ public:
    * \brief Returns whether the tetrahedron is degenerate
    * \return true iff the tetrahedron is degenerate (has near zero volume)
    */
+  AXOM_HOST_DEVICE
   bool degenerate(double eps = 1.0e-12) const
   {
     return axom::utilities::isNearlyEqual(ppedVolume(), 0.0, eps);
@@ -186,6 +187,7 @@ public:
    * \brief Returns the signed volume of the tetrahedron
    * \sa volume()
    */
+  AXOM_HOST_DEVICE
   double signedVolume() const
   {
     constexpr double scale = 1. / 6.;
@@ -196,6 +198,7 @@ public:
    * \brief Returns the absolute (unsigned) volume of the tetrahedron
    * \sa signedVolume()
    */
+  AXOM_HOST_DEVICE
   double volume() const { return axom::utilities::abs(signedVolume()); }
 
   /**

@@ -65,10 +65,6 @@ public:
     : m_points {A, B, C}
   { }
 
-  /// \brief Destructor
-  AXOM_HOST_DEVICE
-  ~Triangle() = default;
-
   /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
@@ -98,9 +94,8 @@ public:
    * \pre This function is only valid when NDIMS = 3
    * \return n triangle normal when NDIMS=3, zero vector otherwise
    */
-  AXOM_HOST_DEVICE
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 3, VectorType>::type normal() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, VectorType>::type normal() const
   {
     return VectorType::cross_product(VectorType(m_points[0], m_points[1]),
                                      VectorType(m_points[0], m_points[2]));
@@ -109,9 +104,8 @@ public:
   /*!
    * \brief Returns the area of the triangle (3D specialization)
    */
-  AXOM_HOST_DEVICE
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 3, double>::type area() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, double>::type area() const
   {
     return 0.5 *
       VectorType::cross_product(VectorType(m_points[0], m_points[1]),
@@ -122,9 +116,8 @@ public:
   /*!
    * \brief Returns the area of the triangle (2D specialization)
    */
-  AXOM_HOST_DEVICE
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 2, double>::type area() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type area() const
   {
     return axom::utilities::abs(signedArea());
   }
@@ -136,9 +129,8 @@ public:
    * \note This function is only available for triangles in 2D since signed
    * areas don't make sense for 3D triangles
    */
-  AXOM_HOST_DEVICE
   template <int TDIM = NDIMS>
-  typename std::enable_if<TDIM == 2, double>::type signedArea() const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedArea() const
   {
     using axom::numerics::determinant;
     const PointType& A = m_points[0];

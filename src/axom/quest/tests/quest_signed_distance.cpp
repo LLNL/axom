@@ -385,8 +385,7 @@ AXOM_CUDA_TEST(quest_signed_distance, sphere_vec_cuda_custom_alloc)
 
   for(int inode = 0; inode < nnodes; ++inode)
   {
-    phi_expected[inode] =
-      analytic_sphere.computeSignedDistance(queryPts[inode].data());
+    phi_expected[inode] = analytic_sphere.computeSignedDistance(queryPts[inode]);
     EXPECT_NEAR(phi_computed[inode], phi_expected[inode], 1.e-2);
 
     // compute error
