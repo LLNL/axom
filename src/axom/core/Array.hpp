@@ -133,18 +133,10 @@ public:
    */
   template <IndexType SFINAE_DIM = DIM,
             MemorySpace SFINAE_SPACE = SPACE,
-            typename std::enable_if<SFINAE_DIM == 1 &&
-                                    SFINAE_SPACE == MemorySpace::Dynamic>::type* = nullptr>
+            typename std::enable_if<SFINAE_DIM == 1>::type* = nullptr>
   Array(IndexType num_elements,
         IndexType capacity = 0,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
-
-  /// \overload
-  template <IndexType SFINAE_DIM = DIM,
-            MemorySpace SFINAE_SPACE = SPACE,
-            typename std::enable_if<SFINAE_DIM == 1 &&
-                                    SFINAE_SPACE != MemorySpace::Dynamic>::type* = nullptr>
-  Array(IndexType num_elements, IndexType capacity = 0);
 
   /*!
    * \brief Generic constructor for an Array of arbitrary dimension
@@ -732,25 +724,23 @@ Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
 template <typename T, int DIM, MemorySpace SPACE>
 template <IndexType SFINAE_DIM,
           MemorySpace SFINAE_SPACE,
-          typename std::enable_if<SFINAE_DIM == 1 &&
-                                  SFINAE_SPACE == MemorySpace::Dynamic>::type*>
+          typename std::enable_if<SFINAE_DIM == 1>::type*>
 Array<T, DIM, SPACE>::Array(IndexType num_elements,
                             IndexType capacity,
                             int allocator_id)
   : m_allocator_id(allocator_id)
 {
-  initialize(num_elements, capacity);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, int DIM, MemorySpace SPACE>
-template <IndexType SFINAE_DIM,
-          MemorySpace SFINAE_SPACE,
-          typename std::enable_if<SFINAE_DIM == 1 &&
-                                  SFINAE_SPACE != MemorySpace::Dynamic>::type*>
-Array<T, DIM, SPACE>::Array(IndexType num_elements, IndexType capacity)
-  : m_allocator_id(axom::detail::getAllocatorID<SPACE>())
-{
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
+  if(SPACE != MemorySpace::Dynamic &&
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
+  {
+#ifdef AXOM_DEBUG
+    std::cerr << "Incorrect allocator ID was provided for an Array object with "
+                 "explicit memory space - using default for space\n";
+#endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
   initialize(num_elements, capacity);
 }
 
@@ -759,21 +749,19 @@ template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array(const Array& other, int allocator_id)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
-  , m_allocator_id(SPACE == MemorySpace::Dynamic
-                     ? allocator_id
-                     : axom::detail::getAllocatorID<SPACE>())
+  , m_allocator_id(allocator_id)
 {
-// We can't template/SFINAE away the allocator_id parameter since this is a copy
-// constructor, so we just ignore the allocator ID if the memory space isn't Dynamic.
-// We can warn the user that their input is being ignored, though.
-#ifdef AXOM_DEBUG
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
   if(SPACE != MemorySpace::Dynamic &&
-     allocator_id != axom::detail::getAllocatorID<SPACE>())
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
   {
+#ifdef AXOM_DEBUG
     std::cerr << "Incorrect allocator ID was provided for an Array object with "
-                 "explicit memory space\n";
-  }
+                 "explicit memory space - using default for space\n";
 #endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
   initialize(other.size(), other.capacity());
   axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
 }

@@ -283,10 +283,9 @@ inline int getAllocatorID<MemorySpace::Dynamic>()
   return axom::getDefaultAllocatorID();
 }
 
-#ifdef AXOM_USE_UMPIRE
-
 inline MemorySpace getAllocatorSpace(int allocatorId)
 {
+#ifdef AXOM_USE_UMPIRE
   using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -308,7 +307,12 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
   default:
     return MemorySpace::Dynamic;
   }
+#else
+  return MemorySpace::Dynamic;
+#endif
 }
+
+#ifdef AXOM_USE_UMPIRE
 
 template <>
 inline int getAllocatorID<MemorySpace::Host>()
