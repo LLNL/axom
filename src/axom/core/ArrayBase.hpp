@@ -582,14 +582,55 @@ void initializeInPlace(T*, const IndexType, const IndexType, const int, std::fal
 { }
 
 /*!
- * \brief Fills an array with copies of a given value.
+ * \brief Fills an array using a host or device side kernel. For a device
+ *  lambda, the object must be trivially-copyable.
  */
-template <typename T, typename ExecSpace>
-void fillKernel(T* array, IndexType n, const T& value)
+template <bool UseMemcpy>
+struct DispatchFill
 {
-  for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(IndexType i) { array[i] = value; });
+  template <typename T, typename ExecSpace>
+  static void exec(T* array, IndexType n, const T& value)
+  {
+    for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(IndexType i) { array[i] = value; });
+  }
+};
+
+/*!
+ * \brief Fills an array using a memcpy from a host-side temporary buffer.
+ */
+template <>
+struct DispatchFill<true>
+{
+  template <typename T, typename ExecSpace>
+  static void exec(T* array, IndexType n, const T& value)
+  {
+    void* buffer = ::operator new(sizeof(T) * n);
+    T* typed_buffer = new(buffer) T[n];
+    for(int i = 0; i < n; i++)
+    {
+      typed_buffer[i] = value;
+    }
+    axom::copy(typed_buffer, array, sizeof(T) * n);
+    ::operator delete(buffer);
+  }
+};
+
+template <typename T, typename ExecSpace>
+void fillImpl(T* array, IndexType n, const T& value)
+{
+  constexpr bool IsDevice = axom::execution_space<ExecSpace>::onDevice();
+  // TODO: this should be is_trivially_copyable - currently unsupported on
+  // gcc 4.9.3
+  constexpr bool NonTrivialCopy = !std::is_trivial<T>::value;
+
+  // We use a memcpy if our memory needs to be initialized on device, but the
+  // objects are non-trivially copyable - may indicate creation of resources
+  // on the host side (also non-trivial copy ctors are usually host-only)
+  DispatchFill<IsDevice && NonTrivialCopy>::template exec<T, ExecSpace>(array,
+                                                                        n,
+                                                                        value);
 }
 
 /*!
@@ -604,13 +645,13 @@ void fillKernelDynamic(T* array, IndexType n, int alloc_id, const T& value)
 
   if(space == MemorySpace::Device)
   {
-    fillKernel<T, axom::CUDA_EXEC<256>>(array, n, value);
+    fillImpl<T, axom::CUDA_EXEC<256>>(array, n, value);
     return;
   }
 #else
   AXOM_UNUSED_VAR(alloc_id);
 #endif
-  fillKernel<T, axom::SEQ_EXEC>(array, n, value);
+  fillImpl<T, axom::SEQ_EXEC>(array, n, value);
 }
 
 template <typename T, MemorySpace SPACE>
@@ -619,7 +660,7 @@ struct ArrayOps
   static void fill(T* array, IndexType n, int allocId, const T& value)
   {
     AXOM_UNUSED_VAR(allocId);
-    fillKernel<T, axom::SEQ_EXEC>(array, n, value);
+    fillImpl<T, axom::SEQ_EXEC>(array, n, value);
   }
 };
 
@@ -630,7 +671,7 @@ struct ArrayOps<T, MemorySpace::Device>
   static void fill(T* array, IndexType n, int allocId, const T& value)
   {
     AXOM_UNUSED_VAR(allocId);
-    fillKernel<T, axom::CUDA_EXEC<256>>(array, n, value);
+    fillImpl<T, axom::CUDA_EXEC<256>>(array, n, value);
   }
 };
 #endif
