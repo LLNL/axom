@@ -13,6 +13,7 @@
 #include "axom/core/Types.hpp"                // for IndexType definition
 #include "axom/core/StackArray.hpp"
 #include "axom/core/numerics/matvecops.hpp"  // for dot_product
+#include "axom/core/execution/for_all.hpp"   // for for_all, *_EXEC
 
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
@@ -579,6 +580,69 @@ void initializeInPlace(T* data,
 template <typename T>
 void initializeInPlace(T*, const IndexType, const IndexType, const int, std::false_type)
 { }
+
+/*!
+ * \brief Fills an array with copies of a given value.
+ */
+template <typename T, typename ExecSpace>
+void fillKernel(T* array, IndexType n, const T& value)
+{
+  for_all<ExecSpace>(
+    n,
+    AXOM_LAMBDA(IndexType i) { array[i] = value; });
+}
+
+/*!
+ * \brief Version of fillKernel which uses the allocator ID to determine the
+ *  correct memory space to execute the fill operation in at runtime.
+ */
+template <typename T>
+void fillKernelDynamic(T* array, IndexType n, int alloc_id, const T& value)
+{
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+  MemorySpace space = getAllocatorSpace(alloc_id);
+
+  if(space == MemorySpace::Device)
+  {
+    fillKernel<T, axom::CUDA_EXEC<256>>(array, n, value);
+    return;
+  }
+#else
+  AXOM_UNUSED_VAR(alloc_id);
+#endif
+  fillKernel<T, axom::SEQ_EXEC>(array, n, value);
+}
+
+template <typename T, MemorySpace SPACE>
+struct ArrayOps
+{
+  static void fill(T* array, IndexType n, int allocId, const T& value)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    fillKernel<T, axom::SEQ_EXEC>(array, n, value);
+  }
+};
+
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+template <typename T>
+struct ArrayOps<T, MemorySpace::Device>
+{
+  static void fill(T* array, IndexType n, int allocId, const T& value)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    fillKernel<T, axom::CUDA_EXEC<256>>(array, n, value);
+  }
+};
+#endif
+
+template <typename T>
+struct ArrayOps<T, MemorySpace::Dynamic>
+{
+  static void fill(T* array, IndexType n, int allocId, const T& value)
+  {
+    fillKernelDynamic(array, n, allocId, value);
+  }
+};
 
 }  // namespace detail
 

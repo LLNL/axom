@@ -98,6 +98,9 @@ public:
   using ArrayViewType = ArrayView<T, DIM, SPACE>;
   using ConstArrayViewType = ArrayView<const T, DIM, SPACE>;
 
+private:
+  using OpHelper = detail::ArrayOps<T, SPACE>;
+
 public:
   /// \name Native Storage Array Constructors
   /// @{
@@ -846,10 +849,7 @@ Array<T, DIM, SPACE>::~Array()
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::fill(const T& value)
 {
-  for(IndexType i = 0; i < m_num_elements; i++)
-  {
-    m_data[i] = value;
-  }
+  OpHelper::fill(m_data, m_num_elements, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------

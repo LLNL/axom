@@ -285,6 +285,31 @@ inline int getAllocatorID<MemorySpace::Dynamic>()
 
 #ifdef AXOM_USE_UMPIRE
 
+inline MemorySpace getAllocatorSpace(int allocatorId)
+{
+  using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  auto umpResType =
+    rm.getAllocator(allocatorId).getAllocationStrategy()->getTraits().resource;
+  switch(umpResType)
+  {
+  case ump_res_type::host:
+    return MemorySpace::Host;
+  case ump_res_type::device:
+    return MemorySpace::Device;
+  case ump_res_type::device_const:
+    return MemorySpace::Constant;
+  case ump_res_type::pinned:
+    return MemorySpace::Pinned;
+  case ump_res_type::um:
+    return MemorySpace::Unified;
+  default:
+    return MemorySpace::Dynamic;
+  }
+}
+
 template <>
 inline int getAllocatorID<MemorySpace::Host>()
 {

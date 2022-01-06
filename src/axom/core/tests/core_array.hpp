@@ -119,8 +119,8 @@ void check_storage(Array<T>& v)
  * \brief Check that the fill method is working properly.
  * \param [in] v the Array to check.
  */
-template <typename T>
-void check_fill(Array<T>& v)
+template <typename T, int DIM, MemorySpace SPACE>
+void check_fill(Array<T, DIM, SPACE>& v)
 {
   constexpr T MAGIC_NUM_0 = 55;
   constexpr T MAGIC_NUM_1 = 6834;
@@ -138,10 +138,13 @@ void check_fill(Array<T>& v)
   EXPECT_EQ(ratio, v.getResizeRatio());
   EXPECT_EQ(data_ptr, v.data());
 
+  // To check entries, we copy data to a dynamic array
+  Array<T, DIM> v_host = v;
+
   /* Check that the entries are all MAGIC_NUM_0. */
   for(IndexType i = 0; i < size; ++i)
   {
-    EXPECT_EQ(v[i], MAGIC_NUM_0);
+    EXPECT_EQ(v_host[i], MAGIC_NUM_0);
   }
 
   /* Fill the Array with MAGIC_NUM_1. */
@@ -153,10 +156,12 @@ void check_fill(Array<T>& v)
   EXPECT_EQ(ratio, v.getResizeRatio());
   EXPECT_EQ(data_ptr, v.data());
 
+  v_host = v;
+
   /* Check that the entries are all MAGIC_NUM_1. */
   for(IndexType i = 0; i < size; ++i)
   {
-    EXPECT_EQ(v[i], MAGIC_NUM_1);
+    EXPECT_EQ(v_host[i], MAGIC_NUM_1);
   }
 }
 
@@ -946,6 +951,22 @@ TEST(core_array, checkFill)
     internal::check_fill(v_double);
   }
 }
+
+//------------------------------------------------------------------------------
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+TEST(core_array, checkFillDevice)
+{
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    IndexType size = capacity / 2;
+    Array<int, 1, MemorySpace::Device> v_int(size, capacity);
+    internal::check_fill(v_int);
+
+    Array<double, 1, MemorySpace::Device> v_double(size, capacity);
+    internal::check_fill(v_double);
+  }
+}
+#endif
 
 //------------------------------------------------------------------------------
 TEST(core_array, checkSet)
