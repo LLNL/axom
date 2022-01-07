@@ -204,21 +204,19 @@ public:
     for(int i = 0; i < NDIMS; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType {}, 1, allocatorID);
+      m_binData[i] =
+        BinBitMap(&m_bins[i], BitsetType(numElts, allocatorID), 1, allocatorID);
 
       axom::IndexType gridResDim = m_gridRes[i];
       m_minBlockBin[i] =
         axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
       m_maxBlockBin[i] =
         axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
-      for(int ibin = 0; ibin < m_bins[i].size(); ibin++)
-      {
-        m_binData[i][ibin] = BitsetType(numElts, allocatorID);
-        // We set initial min/max word indices to dummy values. These will be
-        // set correctly on the first call to ImplicitGrid::insert().
-        m_minBlockBin[i][ibin] = numElts;
-        m_maxBlockBin[i][ibin] = 0;
-      }
+
+      // We set initial min/max word indices to dummy values. These will be
+      // set correctly on the first call to ImplicitGrid::insert().
+      m_minBlockBin[i].fill(numElts);
+      m_maxBlockBin[i].fill(0);
     }
 
     // Set the expansion factor for each element to a small fraction of the
