@@ -541,7 +541,7 @@ struct OpInitBase
   static void init(T* data, IndexType begin, IndexType end);
 };
 
-template <bool is_trivially_copyable>
+template <bool fill_on_host>
 struct OpFillBase
 {
   template <typename T, typename ExecSpace>
@@ -620,7 +620,7 @@ void OpInitBase<false>::init(T*, const IndexType, const IndexType)
  */
 template <>
 template <typename T, typename ExecSpace>
-void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
+void OpFillBase<false>::fill(T* array, IndexType n, const T& value)
 {
   for_all<ExecSpace>(
     n,
@@ -637,7 +637,7 @@ void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
  */
 template <>
 template <typename T, typename ExecSpace>
-void OpFillBase<false>::fill(T* array, IndexType n, const T& value)
+void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
 {
   void* buffer = ::operator new(sizeof(T) * n);
   T* typed_buffer = new(buffer) T[n];
@@ -749,7 +749,7 @@ void OpMemmoveBase<true>::move(T* array,
 template <typename T, MemorySpace SPACE>
 struct ArrayOps
   : OpInitBase<std::is_default_constructible<T>::value>,
-    OpFillBase<std::is_trivial<T>::value>,
+    OpFillBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>,
     OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>,
     OpMemmoveBase<SPACE == MemorySpace::Device>
 {
@@ -763,7 +763,8 @@ private:
 #endif
 
   using InitBase = OpInitBase<std::is_default_constructible<T>::value>;
-  using FillBase = OpFillBase<std::is_trivial<T>::value>;
+  using FillBase =
+    OpFillBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>;
   using DestroyBase =
     OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>;
   using MoveBase = OpMemmoveBase<SPACE == MemorySpace::Device>;
@@ -808,7 +809,7 @@ public:
 template <typename T>
 struct ArrayOps<T, MemorySpace::Dynamic>
   : OpInitBase<std::is_default_constructible<T>::value>,
-    OpFillBase<std::is_trivial<T>::value>,
+    OpFillBase<false>,
     OpDestroyBase<false>,
     OpMemmoveBase<false>
 {
