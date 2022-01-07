@@ -609,6 +609,15 @@ template <typename T, typename ExecSpace>
 void OpInitBase<false>::init(T*, const IndexType, const IndexType)
 { }
 
+/*!
+ * \brief Fills an array with objects of type T. This specialization is used
+ *  for trivially-copyable objects, as well as non-trivially-copyable objects
+ *  when the array is host-accessible.
+ *
+ * \param [inout] array the array to fill
+ * \param [in] n the number of elements to fill the array with
+ * \param [in] value the value to set each array element to
+ */
 template <>
 template <typename T, typename ExecSpace>
 void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
@@ -618,12 +627,23 @@ void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
     AXOM_LAMBDA(IndexType i) { array[i] = value; });
 }
 
+/*!
+ * \brief Fills an array with objects of type T. This specialization is used
+ *  for device memory when the type is not trivially-copyable.
+ *
+ * \param [inout] array the array to fill
+ * \param [in] n the number of elements to fill the array with
+ * \param [in] value the value to set each array element to
+ */
 template <>
 template <typename T, typename ExecSpace>
 void OpFillBase<false>::fill(T* array, IndexType n, const T& value)
 {
   void* buffer = ::operator new(sizeof(T) * n);
   T* typed_buffer = new(buffer) T[n];
+  // If we instantiated a fill kernel here it would require
+  // that T's copy ctor is device-annotated which is too
+  // strict of a requirement, so we copy a buffer instead.
   for(int i = 0; i < n; i++)
   {
     typed_buffer[i] = value;
@@ -632,6 +652,15 @@ void OpFillBase<false>::fill(T* array, IndexType n, const T& value)
   ::operator delete(buffer);
 }
 
+/*!
+ * \brief Calls the destructor on a range of typed elements in the array. This
+ *  specialization is used for trivial objects, or non-trivially-destructible
+ *  objects when the array is host-accessible.
+ *
+ * \param [inout] array the array with elements to destroy
+ * \param [in] begin the start index of the range of elements to destroy
+ * \param [in] value one past the end index of the range of elements to destroy
+ */
 template <>
 template <typename T, typename ExecSpace>
 void OpDestroyBase<false>::destroy(T* array, IndexType begin, IndexType end)
@@ -645,6 +674,15 @@ void OpDestroyBase<false>::destroy(T* array, IndexType begin, IndexType end)
   }
 }
 
+/*!
+ * \brief Calls the destructor on a range of typed elements in the array. This
+ *  specialization is used for non-trivially-destructible objects when the
+ *  array is in device space.
+ *
+ * \param [inout] array the array with elements to destroy
+ * \param [in] begin the start index of the range of elements to destroy
+ * \param [in] value one past the end index of the range of elements to destroy
+ */
 template <>
 template <typename T, typename ExecSpace>
 void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
@@ -660,6 +698,15 @@ void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
   ::operator delete(buffer);
 }
 
+/*!
+ * \brief Moves a range of data in the array. This is called on host-accessible
+ *  memory.
+ *
+ * \param [inout] array the array with elements to move
+ * \param [in] src_begin the start index of the source range
+ * \param [in] src_end the end index of the source range, exclusive
+ * \param [in] dst the destination index of the range of elements
+ */
 template <>
 template <typename T>
 void OpMemmoveBase<false>::move(T* array,
@@ -672,6 +719,16 @@ void OpMemmoveBase<false>::move(T* array,
   std::memmove(array + dst, array + src_begin, (src_end - src_begin) * sizeof(T));
 }
 
+/*!
+ * \brief Moves a range of data in the array. This is called on device-only
+ *  memory.
+ *
+ * \param [inout] array the array with elements to move
+ * \param [in] src_begin the start index of the source range
+ * \param [in] src_end the end index of the source range, exclusive
+ * \param [in] dst the destination index of the range of elements
+ * \param [in] allocId the allocator ID of the array
+ */
 template <>
 template <typename T>
 void OpMemmoveBase<true>::move(T* array,
