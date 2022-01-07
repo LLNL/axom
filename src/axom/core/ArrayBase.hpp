@@ -751,10 +751,14 @@ struct ArrayOps
 {
 private:
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
-  using ExecSpace = typename std::conditional<SPACE == MemorySpace::Device,
-                                              axom::CUDA_EXEC<256>,
-                                              axom::SEQ_EXEC>::type;
+  constexpr static bool IsDevice = (SPACE == MemorySpace::Device);
+
+  using ExecSpace =
+    typename std::conditional<IsDevice, axom::CUDA_EXEC<256>, axom::SEQ_EXEC>::type;
+
 #else
+  constexpr static bool IsDevice = false;
+
   using ExecSpace = axom::SEQ_EXEC;
 #endif
 
@@ -762,11 +766,9 @@ private:
   // TODO: the below should be std::is_trivially_copyable and
   // std::is_trivially_destructible; however these aren't available
   // in gcc 4.9.3
-  using FillBase =
-    OpFillBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>;
-  using DestroyBase =
-    OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>;
-  using MoveBase = OpMemmoveBase<SPACE == MemorySpace::Device>;
+  using FillBase = OpFillBase<!std::is_trivial<T>::value && IsDevice>;
+  using DestroyBase = OpDestroyBase<!std::is_trivial<T>::value && IsDevice>;
+  using MoveBase = OpMemmoveBase<IsDevice>;
 
 public:
   static void init(T* array, IndexType begin, IndexType end, int allocId)
