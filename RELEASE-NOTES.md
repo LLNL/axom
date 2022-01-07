@@ -32,6 +32,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added initial implementation of GPU/OpenMP-accelerated point-in-cell queries
 - Added an alternative surface mesh tester function to Quest, based on `ImplicitGrid`
 - Add `const` versions of `begin()` and `end()` for `Array` and `ArrayView`
+- Add support for passing compatible custom allocator IDs to `axom::Array` with explicitly specifed
+  memory space
 
 ###  Changed
 - Moved bit-twiddling functions to core component
@@ -52,6 +54,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a bug in which Inlet verification bails out on the first failure, which resulted in
   incomplete error lists
 - Fixed a bug in `quest::PointInCell` when not using RAJA
+- Fixed `axom::Array<T>::clear()`, `axom::Array<T>::fill()`, and `axom::Array<T>::erase()` when the
+  underlying memory is in device space
+- Fixed a potential memory leak in `axom::Array<T>` for non-trivial types `T` which allocate memory
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
