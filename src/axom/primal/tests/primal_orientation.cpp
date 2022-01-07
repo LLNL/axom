@@ -98,9 +98,9 @@ TEST(primal_orientation, orient3D)
 
       // check overload with explicit tolerances
       {
-        const double TOL = 1e-2;
-        const double smallOff = 1e-5;
-        const double largeOff = 1e-1;
+        constexpr double TOL = 1e-2;
+        constexpr double smallOff = 1e-5;
+        constexpr double largeOff = 1e-1;
         const auto unitNormal = normal.unitVector();
 
         EXPECT_EQ(primal::ON_BOUNDARY,
@@ -196,9 +196,9 @@ TEST(primal_orientation, orient2D)
 
       // check overload with explicit tolerances
       {
-        const double TOL = 1e-2;
-        const double smallOff = 1e-5;
-        const double largeOff = 1e-1;
+        constexpr double TOL = 1e-2;
+        constexpr double smallOff = 1e-5;
+        constexpr double largeOff = 1e-1;
         const auto unitNormal = normal.unitVector();
 
         EXPECT_EQ(primal::ON_BOUNDARY,
