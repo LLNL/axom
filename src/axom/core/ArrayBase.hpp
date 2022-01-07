@@ -555,6 +555,17 @@ struct OpDestroyBase
   static void destroy(T* array, IndexType begin, IndexType end);
 };
 
+template <bool device>
+struct OpMemmoveBase
+{
+  template <typename T>
+  static void move(T* array,
+                   IndexType src_begin,
+                   IndexType src_end,
+                   IndexType dst,
+                   int allocId);
+};
+
 /*!
  * \brief Default-initializes the "new" segment of an array
  *
@@ -649,11 +660,41 @@ void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
   ::operator delete(buffer);
 }
 
+template <>
+template <typename T>
+void OpMemmoveBase<false>::move(T* array,
+                                IndexType src_begin,
+                                IndexType src_end,
+                                IndexType dst,
+                                int allocId)
+{
+  AXOM_UNUSED_VAR(allocId);
+  std::memmove(array + dst, array + src_begin, (src_end - src_begin) * sizeof(T));
+}
+
+template <>
+template <typename T>
+void OpMemmoveBase<true>::move(T* array,
+                               IndexType src_begin,
+                               IndexType src_end,
+                               IndexType dst,
+                               int allocId)
+{
+  // Since this memory is on the device-side, we copy it to a temporary buffer
+  // first.
+  IndexType nelems = src_end - src_begin;
+  T* tmp_buf = axom::allocate<T>(nelems, allocId);
+  axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
+  axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
+  axom::deallocate(tmp_buf);
+}
+
 template <typename T, MemorySpace SPACE>
 struct ArrayOps
   : OpInitBase<std::is_default_constructible<T>::value>,
     OpFillBase<std::is_trivial<T>::value>,
-    OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>
+    OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>,
+    OpMemmoveBase<SPACE == MemorySpace::Device>
 {
 private:
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
@@ -668,6 +709,7 @@ private:
   using FillBase = OpFillBase<std::is_trivial<T>::value>;
   using DestroyBase =
     OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>;
+  using MoveBase = OpMemmoveBase<SPACE == MemorySpace::Device>;
 
 public:
   static void init(T* array, IndexType begin, IndexType end, int allocId)
@@ -687,18 +729,33 @@ public:
     AXOM_UNUSED_VAR(allocId);
     DestroyBase::template destroy<T, ExecSpace>(array, begin, end);
   }
+
+  static void move(T* array,
+                   IndexType src_begin,
+                   IndexType src_end,
+                   IndexType dst,
+                   int allocId)
+  {
+    if(src_begin >= src_end)
+    {
+      return;
+    }
+    MoveBase::template move<T>(array, src_begin, src_end, dst, allocId);
+  }
 };
 
 template <typename T>
 struct ArrayOps<T, MemorySpace::Dynamic>
   : OpInitBase<std::is_default_constructible<T>::value>,
     OpFillBase<std::is_trivial<T>::value>,
-    OpDestroyBase<false>
+    OpDestroyBase<false>,
+    OpMemmoveBase<false>
 {
 private:
   using InitBase = OpInitBase<std::is_default_constructible<T>::value>;
   using FillBase = OpFillBase<std::is_trivial<T>::value>;
   using DestroyBase = OpDestroyBase<false>;
+  using MoveBase = OpMemmoveBase<false>;
 
 public:
   static void init(T* array, IndexType begin, IndexType end, int allocId)
@@ -751,6 +808,28 @@ public:
     AXOM_UNUSED_VAR(allocId);
 #endif
     DestroyBase::template destroy<T, axom::SEQ_EXEC>(array, begin, end);
+  }
+
+  static void move(T* array,
+                   IndexType src_begin,
+                   IndexType src_end,
+                   IndexType dst,
+                   int allocId)
+  {
+    if(src_begin >= src_end)
+    {
+      return;
+    }
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      ArrayOps<T, MemorySpace::Device>::move(array, src_begin, src_end, dst, allocId);
+      return;
+    }
+#endif
+    MoveBase::template move<T>(array, src_begin, src_end, dst, allocId);
   }
 };
 

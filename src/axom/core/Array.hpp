@@ -941,18 +941,15 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
   Array<T, DIM, SPACE>::ArrayIterator pos)
 {
   assert(pos >= begin() && pos < end());
-  int counter = 0;
 
-  while(pos < end() - 1)
-  {
-    *pos = *(pos + 1);
-    pos += 1;
-    counter += 1;
-  }
-  (*pos).~T();
+  IndexType posIdx = pos - begin();
 
+  // Destroy element at posIdx and shift elements over by 1
+  OpHelper::destroy(m_data, posIdx, posIdx + 1, m_allocator_id);
+  OpHelper::move(m_data, posIdx + 1, m_num_elements, posIdx, m_allocator_id);
   updateNumElements(m_num_elements - 1);
-  return pos - counter;
+
+  return ArrayIterator(posIdx, this);
 }
 
 //------------------------------------------------------------------------------
@@ -970,30 +967,17 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
     return last;
   }
 
-  int count = 0;
-
   // Erase [first,last) elements
-  while(first < last)
-  {
-    (*first).~T();
-    first++;
-    count++;
-  }
-
-  first -= count;
-  int shifted = 0;
+  IndexType firstIdx = first - begin();
+  IndexType lastIdx = last - begin();
+  OpHelper::destroy(m_data, firstIdx, lastIdx, m_allocator_id);
 
   // Shift [last, end) elements over
-  while(last < end())
-  {
-    *first = *last;
-    first++;
-    last++;
-    shifted++;
-  }
+  OpHelper::move(m_data, lastIdx, m_num_elements, firstIdx, m_allocator_id);
 
+  IndexType count = lastIdx - firstIdx;
   updateNumElements(m_num_elements - count);
-  return first - shifted;
+  return ArrayIterator(firstIdx, this);
 }
 
 //------------------------------------------------------------------------------
