@@ -246,12 +246,6 @@ public:
    */
   bool locatePointInCell(IndexType cellIdx, const double* pos, double* isopar) const
   {
-    // Early return if point is not within cell's bounding box
-    if(!withinBoundingBox(cellIdx, pos))
-    {
-      return false;
-    }
-
     return m_meshWrapper.locatePointInCell(cellIdx, pos, isopar);
   }
 
@@ -270,29 +264,6 @@ public:
 
   /*! Returns the dimension of the mesh */
   int meshDimension() const { return m_meshWrapper.meshDimension(); }
-
-private:
-  /*!
-   * Utility function to check the given point against an element's bounding box
-   * \param [in] cellIdx Index of the cell within the mesh
-   * \param [in] pos Position of the point in space
-   *
-   * \return True if the point is contained in the cell's bounding box
-   */
-  bool withinBoundingBox(IndexType cellIdx, const double* pos) const
-  {
-    typedef axom::primal::Point<double, 2> Point2D;
-    typedef axom::primal::Point<double, 3> Point3D;
-
-    switch(meshDimension())
-    {
-    case 2:
-      return m_pointFinder2D->cellBoundingBox(cellIdx).contains(Point2D(pos));
-    case 3:
-      return m_pointFinder3D->cellBoundingBox(cellIdx).contains(Point3D(pos));
-    }
-    return false;
-  }
 
 private:
   MeshWrapperType m_meshWrapper;
