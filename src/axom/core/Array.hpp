@@ -1066,11 +1066,7 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
 
   if(m_default_construct)
   {
-    detail::initializeInPlace(m_data,
-                              prev_num_elements,
-                              new_num_elements - prev_num_elements,
-                              m_allocator_id,
-                              std::is_default_constructible<T> {});
+    OpHelper::init(m_data, prev_num_elements, new_num_elements, m_allocator_id);
   }
 
   updateNumElements(new_num_elements);
@@ -1108,11 +1104,7 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
   setCapacity(capacity);
   if(m_default_construct)
   {
-    detail::initializeInPlace(m_data,
-                              0,
-                              num_elements,
-                              m_allocator_id,
-                              std::is_default_constructible<T> {});
+    OpHelper::init(m_data, 0, num_elements, m_allocator_id);
   }
   updateNumElements(num_elements);
 
@@ -1152,11 +1144,7 @@ inline T* Array<T, DIM, SPACE>::reserveForInsert(IndexType n, IndexType pos)
   // Initialize the subset of the array that was just allocated
   if(m_default_construct)
   {
-    detail::initializeInPlace(m_data,
-                              pos,
-                              n,
-                              m_allocator_id,
-                              std::is_default_constructible<T> {});
+    OpHelper::init(m_data, pos, pos + n, m_allocator_id);
   }
 
   updateNumElements(new_size);
