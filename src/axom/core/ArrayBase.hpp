@@ -749,6 +749,9 @@ void OpMemmoveBase<true>::move(T* array,
 template <typename T, MemorySpace SPACE>
 struct ArrayOps
   : OpInitBase<std::is_default_constructible<T>::value>,
+    // TODO: the below should be std::is_trivially_copyable and
+    // std::is_trivially_destructible; however these aren't available
+    // in gcc 4.9.3
     OpFillBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>,
     OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>,
     OpMemmoveBase<SPACE == MemorySpace::Device>
