@@ -727,6 +727,10 @@ public:
   static void destroy(T* array, IndexType begin, IndexType end, int allocId)
   {
     AXOM_UNUSED_VAR(allocId);
+    if(!array || end <= begin)
+    {
+      return;
+    }
     DestroyBase::template destroy<T, ExecSpace>(array, begin, end);
   }
 
