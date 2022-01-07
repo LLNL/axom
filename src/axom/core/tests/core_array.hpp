@@ -1286,7 +1286,6 @@ void checkIteratorDeviceImpl()
   }
   v_int = v_int_host;
 
-  axom::Array<int, 1, axom::MemorySpace::Host> v_int_host = v_int;
   EXPECT_EQ(*v_int_host.begin(), 0);
   EXPECT_EQ(*(v_int_host.end() - 1), SIZE - 1);
   EXPECT_EQ(v_int.size(), SIZE);
