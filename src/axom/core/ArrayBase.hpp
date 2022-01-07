@@ -748,13 +748,6 @@ void OpMemmoveBase<true>::move(T* array,
 
 template <typename T, MemorySpace SPACE>
 struct ArrayOps
-  : OpInitBase<std::is_default_constructible<T>::value>,
-    // TODO: the below should be std::is_trivially_copyable and
-    // std::is_trivially_destructible; however these aren't available
-    // in gcc 4.9.3
-    OpFillBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>,
-    OpDestroyBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>,
-    OpMemmoveBase<SPACE == MemorySpace::Device>
 {
 private:
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
@@ -766,6 +759,9 @@ private:
 #endif
 
   using InitBase = OpInitBase<std::is_default_constructible<T>::value>;
+  // TODO: the below should be std::is_trivially_copyable and
+  // std::is_trivially_destructible; however these aren't available
+  // in gcc 4.9.3
   using FillBase =
     OpFillBase<!std::is_trivial<T>::value && SPACE == MemorySpace::Device>;
   using DestroyBase =
@@ -811,14 +807,10 @@ public:
 
 template <typename T>
 struct ArrayOps<T, MemorySpace::Dynamic>
-  : OpInitBase<std::is_default_constructible<T>::value>,
-    OpFillBase<false>,
-    OpDestroyBase<false>,
-    OpMemmoveBase<false>
 {
 private:
   using InitBase = OpInitBase<std::is_default_constructible<T>::value>;
-  using FillBase = OpFillBase<std::is_trivial<T>::value>;
+  using FillBase = OpFillBase<false>;
   using DestroyBase = OpDestroyBase<false>;
   using MoveBase = OpMemmoveBase<false>;
 
