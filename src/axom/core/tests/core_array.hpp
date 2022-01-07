@@ -1269,6 +1269,65 @@ TEST(core_array, checkIterator)
 }
 
 //------------------------------------------------------------------------------
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+void checkIteratorDeviceImpl()
+{
+  using DeviceEx = axom::CUDA_EXEC<256>;
+  constexpr int SIZE = 1000;
+  axom::Array<int, 1, axom::MemorySpace::Host> v_int_host(SIZE);
+  axom::Array<int, 1, axom::MemorySpace::Device> v_int(SIZE);
+
+  auto v_int_view = v_int.view();
+
+  /* Push 0...999 elements */
+  for(int i = 0; i < SIZE; i++)
+  {
+    v_int_host[i] = i;
+  }
+  v_int = v_int_host;
+
+  axom::Array<int, 1, axom::MemorySpace::Host> v_int_host = v_int;
+  EXPECT_EQ(*v_int_host.begin(), 0);
+  EXPECT_EQ(*(v_int_host.end() - 1), SIZE - 1);
+  EXPECT_EQ(v_int.size(), SIZE);
+
+  /* Erase nothing */
+  auto ret1 = v_int.erase(v_int.begin() + SIZE / 2, v_int.begin() + SIZE / 2);
+
+  EXPECT_EQ(ret1, v_int.begin() + SIZE / 2);
+  EXPECT_EQ(v_int.size(), SIZE);
+
+  /* Erase half the elements */
+  auto ret2 = v_int.erase(v_int.begin(), v_int.begin() + SIZE / 2);
+
+  EXPECT_EQ(ret2, v_int.begin());
+  EXPECT_EQ(v_int.size(), SIZE / 2);
+  v_int_host = v_int;
+  EXPECT_EQ(*v_int_host.begin(), SIZE / 2);
+  EXPECT_EQ(*(v_int_host.end() - 1), SIZE - 1);
+
+  /* Erase first, last elements */
+  auto ret3 = v_int.erase(v_int.begin());
+
+  EXPECT_EQ(ret3, v_int.begin());
+  v_int_host = v_int;
+  EXPECT_EQ(*v_int_host.begin(), SIZE / 2 + 1);
+
+  auto ret4 = v_int.erase(v_int.end() - 1);
+
+  EXPECT_EQ(ret4, v_int.end());
+  v_int_host = v_int;
+  EXPECT_EQ(*(v_int_host.end() - 1), SIZE - 2);
+
+  /* Clear the rest of the array */
+  v_int.clear();
+  EXPECT_EQ(v_int.size(), 0);
+}
+
+TEST(core_array, checkIteratorDevice) { checkIteratorDeviceImpl(); }
+#endif
+
+//------------------------------------------------------------------------------
 TEST(core_array, check_move_copy)
 {
   constexpr int MAGIC_INT = 255;
