@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef QUEST_DELAUNAY_H_
 #define QUEST_DELAUNAY_H_
