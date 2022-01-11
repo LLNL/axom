@@ -36,6 +36,10 @@ public:
     axom::execution_space<ExecSpace>::memory_space;
 
   // Define some Array type aliases
+  template <typename T>
+  using HostTArray = axom::Array<T, 1, host_memory>;
+  template <typename T>
+  using DynamicTArray = axom::Array<T, 1, axom::MemorySpace::Dynamic>;
   using HostArray = axom::Array<int, 1, host_memory>;
   using DynamicArray = axom::Array<int, 1, axom::MemorySpace::Dynamic>;
   using KernelArray = axom::Array<int, 1, exec_space_memory>;
@@ -220,6 +224,183 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
   for(int i = 0; i < N; ++i)
   {
     EXPECT_EQ(localArr[i], N - i);
+  }
+}
+
+//------------------------------------------------------------------------------
+struct NonTrivialCtor
+{
+  NonTrivialCtor(int val) : m_val(val) { }
+
+  int m_val;
+};
+
+AXOM_TYPED_TEST(core_array_for_all, nontrivial_ctor_obj)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray =
+    typename TestFixture::template DynamicTArray<NonTrivialCtor>;
+  using HostArray = typename TestFixture::template HostTArray<NonTrivialCtor>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+
+  const int MAGIC_PREFILL = 111;
+  const int MAGIC_FILL = 555;
+  // Fill with placeholder value
+  auto arr_view = arr.view();
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_view[idx].m_val = MAGIC_PREFILL; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Fill with instance of copy-constructed type
+  arr.fill(NonTrivialCtor {MAGIC_FILL});
+
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Check array contents on host
+  HostArray localArr(arr, hostAllocID);
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i].m_val, MAGIC_FILL);
+  }
+}
+
+//------------------------------------------------------------------------------
+struct NonTrivialDtor
+{
+  constexpr static int MAGIC_DTOR {555};
+
+  ~NonTrivialDtor()
+  {
+    m_val = MAGIC_DTOR;
+    NonTrivialDtor::dtor_calls++;
+  }
+
+  int m_val {0};
+
+  static int dtor_calls;
+};
+
+constexpr int NonTrivialDtor::MAGIC_DTOR;
+int NonTrivialDtor::dtor_calls {0};
+
+AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray =
+    typename TestFixture::template DynamicTArray<NonTrivialDtor>;
+  using HostArray = typename TestFixture::template HostTArray<NonTrivialDtor>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  NonTrivialDtor::dtor_calls = 0;
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+  // Initialization should not invoke the destructor
+  EXPECT_EQ(NonTrivialDtor::dtor_calls, 0);
+
+  // construct a view of the array before we invoke the destructor
+  auto arr_v = arr.view();
+
+  // Array::clear should invoke the destructor N times
+  NonTrivialDtor::dtor_calls = 0;
+  arr.clear();
+  EXPECT_EQ(NonTrivialDtor::dtor_calls, N);
+
+  // Copy post-destructor array
+  DynamicArray arr_after_dtor(N, N, kernelAllocID);
+  auto arr_after_dtor_v = arr_after_dtor.view();
+  axom::for_all<ExecSpace>(N,
+    AXOM_LAMBDA(axom::IndexType i) { arr_after_dtor_v[i] = arr_v[i];});
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Check array contents on host
+  HostArray localArr(arr_after_dtor_v, hostAllocID);
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i].m_val, NonTrivialDtor::MAGIC_DTOR);
+  }
+}
+
+//------------------------------------------------------------------------------
+struct NonTrivialCopyCtor
+{
+  constexpr static int MAGIC_COPY_CTOR {333};
+
+  NonTrivialCopyCtor() { }
+  NonTrivialCopyCtor(const NonTrivialCopyCtor&) { m_val *= MAGIC_COPY_CTOR; }
+
+  int m_val {1};
+};
+
+constexpr int NonTrivialCopyCtor::MAGIC_COPY_CTOR;
+
+AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray =
+    typename TestFixture::template DynamicTArray<NonTrivialCopyCtor>;
+  using HostArray = typename TestFixture::template HostTArray<NonTrivialCopyCtor>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+
+  // Fill with instance of copy-constructed type
+  arr.fill(NonTrivialCopyCtor {});
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Check array contents on host
+  HostArray localArr(arr, hostAllocID);
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i].m_val, NonTrivialCopyCtor::MAGIC_COPY_CTOR);
+  }
+
+  // Second fill should be idempotent - i.e. isn't affected by the data already
+  // present in the array
+  arr.fill(NonTrivialCopyCtor {});
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Check array contents on host
+  localArr = HostArray(arr, hostAllocID);
+  for(int i = 0; i < N; ++i)
+  {
+    EXPECT_EQ(localArr[i].m_val, NonTrivialCopyCtor::MAGIC_COPY_CTOR);
   }
 }
 
