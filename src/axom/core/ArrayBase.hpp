@@ -584,9 +584,16 @@ void OpInitBase<true>::init(T* data, IndexType begin, IndexType end)
     // If we instantiated a fill kernel here it would require
     // that T's default ctor is device-annotated which is too
     // strict of a requirement, so we copy a buffer instead.
-    T* tmp_buffer = new T[len]();
+    void* tmp_buffer = ::operator new(sizeof(T) * len);
+    T* typed_buffer = static_cast<T*>(tmp_buffer);
+    for(IndexType i = 0; i < len; i++)
+    {
+      // We use placement-new to avoid calling destructors in the delete
+      // statement below.
+      T* inst = new(typed_buffer + i) T {};
+    }
     axom::copy(data + begin, tmp_buffer, len * sizeof(T));
-    delete[] tmp_buffer;
+    ::operator delete(tmp_buffer);
     return;
   }
 #endif
