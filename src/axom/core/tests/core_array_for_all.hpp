@@ -243,6 +243,13 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_ctor_obj)
   using HostArray = typename TestFixture::template HostTArray<NonTrivialCtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Create an array of N items using default MemorySpace for ExecSpace
@@ -306,6 +313,13 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   using HostArray = typename TestFixture::template HostTArray<NonTrivialDtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   NonTrivialDtor::dtor_calls = 0;
@@ -326,8 +340,9 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   // Copy post-destructor array
   DynamicArray arr_after_dtor(N, N, kernelAllocID);
   auto arr_after_dtor_v = arr_after_dtor.view();
-  axom::for_all<ExecSpace>(N,
-    AXOM_LAMBDA(axom::IndexType i) { arr_after_dtor_v[i] = arr_v[i];});
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType i) { arr_after_dtor_v[i] = arr_v[i]; });
 
   // handles synchronization, if necessary
   if(axom::execution_space<ExecSpace>::async())
@@ -364,6 +379,13 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   using HostArray = typename TestFixture::template HostTArray<NonTrivialCopyCtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Create an array of N items using default MemorySpace for ExecSpace
