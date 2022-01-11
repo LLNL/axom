@@ -699,6 +699,7 @@ void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
   {
     typed_buffer[i].~T();
   }
+  axom::copy(array, typed_buffer, sizeof(T) * n);
   ::operator delete(buffer);
 }
 
