@@ -838,6 +838,7 @@ Array<T, DIM, SPACE>::~Array()
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::fill(const T& value)
 {
+  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
   OpHelper::fill(m_data, m_num_elements, m_allocator_id, value);
 }
 

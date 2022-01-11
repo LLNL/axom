@@ -640,14 +640,11 @@ template <typename T, typename ExecSpace>
 void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
 {
   void* buffer = ::operator new(sizeof(T) * n);
-  T* typed_buffer = new(buffer) T[n];
+  T* typed_buffer = static_cast<T*>(buffer);
   // If we instantiated a fill kernel here it would require
   // that T's copy ctor is device-annotated which is too
   // strict of a requirement, so we copy a buffer instead.
-  for(int i = 0; i < n; i++)
-  {
-    typed_buffer[i] = value;
-  }
+  std::uninitialized_fill_n(typed_buffer, n, value);
   axom::copy(array, typed_buffer, sizeof(T) * n);
   ::operator delete(buffer);
 }
@@ -689,7 +686,7 @@ void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
 {
   IndexType n = end - begin;
   void* buffer = ::operator new(sizeof(T) * n);
-  T* typed_buffer = new(buffer) T[n];
+  T* typed_buffer = static_cast<T*>(buffer);
   axom::copy(typed_buffer, array, sizeof(T) * n);
   for(int i = begin; i < end; i++)
   {
