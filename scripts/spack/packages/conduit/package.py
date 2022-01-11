@@ -100,7 +100,7 @@ class Conduit(CMakePackage):
     #######################
     # AXOM EDIT START
     # Update blt to get access to BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE variable
-    depends_on('blt@0.4.1:', type='build', when='@0.7.2axom')
+    #depends_on('blt@0.4.1:', type='build', when='@0.7.2axom')
     # AXOM EDIT START
 
     # cmake 3.14.1 or newer
@@ -374,7 +374,10 @@ class Conduit(CMakePackage):
         fflags = ' '.join(spec.compiler_flags['fflags'])
 
         # AXOM EDIT START
-        cfg.write(cmake_cache_entry("BLT_SOURCE_DIR", spec['blt'].prefix))
+        #cfg.write(cmake_cache_entry("BLT_SOURCE_DIR", spec['blt'].prefix))
+
+        cfg.write(cmake_cache_entry("conduit_blt_mpi_deps", "mpi"))
+        cfg.write(cmake_cache_entry("CONDUIT_USE_CMAKE_MPI_TARGETS", "OFF"))
 
         if self.spec.satisfies('%cce') or ("crayftn" in f_compiler):
             fflags += " -ef"
@@ -382,10 +385,12 @@ class Conduit(CMakePackage):
             # Fix for working around CMake adding implicit link directories
             # returned by the Cray crayftn compiler to link executables with
             # non-system default stdlib
-            if on_toss4:
-                cfg.write(cmake_cache_entry(
-                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
-                    "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
+            #if on_toss4:
+            #    cfg.write(cmake_cache_entry(
+            #        "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+            #        "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
+            cfg.write(cmake_cache_entry("ENABLE_EXAMPLES", "OFF"))
+            cfg.write(cmake_cache_entry("ENABLE_UTILS", "OFF"))
         # AXOM EDIT END
         if fflags:
             cfg.write(cmake_cache_entry("CMAKE_Fortran_FLAGS", fflags))
