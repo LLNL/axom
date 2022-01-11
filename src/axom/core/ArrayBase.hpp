@@ -586,7 +586,7 @@ void OpInitBase<true>::init(T* data, IndexType begin, IndexType end)
     // strict of a requirement, so we copy a buffer instead.
     void* tmp_buffer = ::operator new(sizeof(T) * len);
     T* typed_buffer = static_cast<T*>(tmp_buffer);
-    for(IndexType i = 0; i < len; i++)
+    for(IndexType i = 0; i < len; ++i)
     {
       // We use placement-new to avoid calling destructors in the delete
       // statement below.
@@ -597,7 +597,7 @@ void OpInitBase<true>::init(T* data, IndexType begin, IndexType end)
     return;
   }
 #endif
-  for(int ielem = begin; ielem < end; ielem++)
+  for(int ielem = begin; ielem < end; ++ielem)
   {
     new(&data[ielem]) T {};
   }
@@ -695,7 +695,7 @@ void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
   void* buffer = ::operator new(sizeof(T) * n);
   T* typed_buffer = static_cast<T*>(buffer);
   axom::copy(typed_buffer, array, sizeof(T) * n);
-  for(int i = begin; i < end; i++)
+  for(int i = begin; i < end; ++i)
   {
     typed_buffer[i].~T();
   }
