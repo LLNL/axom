@@ -112,8 +112,6 @@ public:
     updateSizes();
   };
 
-  ~DynamicConstantRelation() = default;
-
 public:
   /// \name DynamicConstantRelation iterator interface
   /// @{

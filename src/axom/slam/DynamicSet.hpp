@@ -158,14 +158,6 @@ public:
       , m_dynamicSet(&dSet)
     { }
 
-    DynamicSetIterator(const DynamicSetIterator& it) = default;
-
-    DynamicSetIterator& operator=(const DynamicSetIterator& it)
-    {
-      this->m_pos = it.m_pos;
-      this->m_dynamicSet = const_cast<DynamicSet*>(it.m_dynamicSet);
-      return *this;
-    }
     /// \}
 
     /// \name Member and pointer operators
@@ -310,7 +302,7 @@ public:
   };
 
   /**
-   * \brief Given a value, find the index of the first entry containing it
+   * \brief Checks whether an element exists within the DynamicSet
    *
    * \return \a true if the set contains element with value \a e, false otherwise
    * \note This is an O(n) operation in the size of the set
