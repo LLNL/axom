@@ -32,7 +32,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added initial implementation of GPU/OpenMP-accelerated point-in-cell queries
 - Added an alternative surface mesh tester function to Quest, based on `ImplicitGrid`
 - Add `const` versions of `begin()` and `end()` for `Array` and `ArrayView`
-- Add support for passing compatible custom allocator IDs to `axom::Array` with explicitly specifed
+- Add support for passing compatible custom allocator IDs to `axom::Array` with explicitly specified
   memory space
 
 ###  Changed
