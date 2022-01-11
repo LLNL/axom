@@ -577,7 +577,6 @@ template <>
 template <typename T, typename ExecSpace>
 void OpInitBase<true>::init(T* data, IndexType begin, IndexType end)
 {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     IndexType len = end - begin;
@@ -590,22 +589,19 @@ void OpInitBase<true>::init(T* data, IndexType begin, IndexType end)
     {
       // We use placement-new to avoid calling destructors in the delete
       // statement below.
-      T* inst = new(typed_buffer + i) T {};
+      new(typed_buffer + i) T();
     }
     axom::copy(data + begin, tmp_buffer, len * sizeof(T));
     ::operator delete(tmp_buffer);
-    return;
   }
-#endif
-  for(int ielem = begin; ielem < end; ++ielem)
+  else
   {
-    new(&data[ielem]) T {};
+    for(int ielem = begin; ielem < end; ++ielem)
+    {
+      // NOTE: XL apparently will zero-initialize with (), but not with {}
+      new(data + ielem) T();
+    }
   }
-  // XL deviates from the standard in the above line, so we initialize directly
-#ifdef __ibmxl__
-  IndexType len = end - begin;
-  std::fill_n(data + begin, len, T {});
-#endif
 }
 
 /*!
