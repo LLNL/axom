@@ -1711,7 +1711,18 @@ TEST(core_array, checkDefaultInitializationDevice)
   constexpr int MAGIC_INT = 255;
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
-    // Allocate an explicitly Device array
+    // Allocate an explicitly Device array of ints (zero-initialized)
+    Array<int, 1, axom::MemorySpace::Device> v_int(capacity);
+
+    // Then copy it to the host
+    Array<int, 1, axom::MemorySpace::Host> v_int_host(v_int);
+
+    for(const auto ele : v_int_host)
+    {
+      EXPECT_EQ(ele, 0);
+    }
+
+    // Allocate an explicitly Device array of a default-constructible type
     Array<HasDefault, 1, axom::MemorySpace::Device> v_has_default_device(capacity);
 
     // Then copy it to the host
