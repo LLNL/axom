@@ -291,7 +291,7 @@ public:
     // Generate a PointInCell structure over the mesh
     axom::utilities::Timer constructTimer(true);
     // _quest_pic_init_start
-    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS);
+    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS, m_allocatorID);
     // _quest_pic_init_end
     SLIC_INFO(axom::fmt::format(
       "Constructing index over {} quad mesh with {} elems took {} s",
@@ -378,7 +378,7 @@ public:
 
     // Add mesh to the grid
     axom::utilities::Timer constructTimer(true);
-    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS);
+    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS, m_allocatorID);
     SLIC_INFO(axom::fmt::format(
       "Constructing index over {} quad mesh with {} elems took {} s",
       meshTypeStr,
@@ -1194,14 +1194,20 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
 
   // Create PointInCell structures over mesh1 and mesh2
   axom::utilities::Timer constructTimer(true);
-  PointInCellType spatialIndex1(&mesh1, GridCell(10).data(), this->getTolerance());
+  PointInCellType spatialIndex1(&mesh1,
+                                GridCell(10).data(),
+                                this->getTolerance(),
+                                this->getAllocatorId());
   SLIC_INFO(axom::fmt::format(
     "Constructing index over curved quad mesh1 with {} elems took {} s",
     mesh1.GetNE(),
     constructTimer.elapsed()));
 
   axom::utilities::Timer constructTimer2(true);
-  PointInCellType spatialIndex2(&mesh2, GridCell(10).data(), this->getTolerance());
+  PointInCellType spatialIndex2(&mesh2,
+                                GridCell(10).data(),
+                                this->getTolerance(),
+                                this->getAllocatorId());
   SLIC_INFO(axom::fmt::format(
     "Constructing index over curved quad mesh2 with {} elems took {} s",
     mesh2.GetNE(),
@@ -1346,7 +1352,10 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   // mesh1 contains a single C-shaped quadratic quad element
   mfem::Mesh& mesh1 = *this->getMesh();
 
-  PointInCellType spatialIndex1(&mesh1, GridCell(5).data(), this->getTolerance());
+  PointInCellType spatialIndex1(&mesh1,
+                                GridCell(5).data(),
+                                this->getTolerance(),
+                                this->getAllocatorId());
 
   /// spatialIndex1.enableDebugMeshGeneration();
 
