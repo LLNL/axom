@@ -60,15 +60,15 @@ int main(int argc, char* argv[])
   // group has one view and the datastore has one buffer (holding the
   // view's data).
   //
-  // Initialize the elements of the integer array.  
-  // 
-  // Then, deallocate the view. The view and its description of the data 
+  // Initialize the elements of the integer array.
+  //
+  // Then, deallocate the view. The view and its description of the data
   // remains, but the buffer holding the array is deallocted since there
   // is only one view referencing its data.
-  // 
+  //
   // When the view is allocated again, the associated buffer is re-allocated
   // using the same data description as before
-  // 
+  //
   // Lastly, we destroy the view and data with a single method call.
   //
 
@@ -230,13 +230,13 @@ int main(int argc, char* argv[])
   // Example 3: One-to-many Buffer to View relationships (view copy)
   // -----------------------------------------------------------------------
   //
-  // Create a copy of a view in one group in another group. Verify that the 
+  // Create a copy of a view in one group in another group. Verify that the
   // views are the same as well the fact that they share the same data.
   //
-  // Then, destroy one of the groups and verify that the data is still 
+  // Then, destroy one of the groups and verify that the data is still
   // accessible via the view in the other group.
-  // 
-  // Lastly, destroy the remaining group without explicitly destroying its 
+  //
+  // Lastly, destroy the remaining group without explicitly destroying its
   // data. We see that the data buffer remains intact and allocated.
   //
   std::cout << "\nExample 3: One-to-many Buffer to View (view copy)\n";
