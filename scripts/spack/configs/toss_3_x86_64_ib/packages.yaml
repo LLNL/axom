@@ -114,11 +114,9 @@ packages:
     - spec: bzip2
       prefix: /usr
   cmake:
-    version: [3.14.5, 3.20.2]
+    version: [3.20.2]
     buildable: false
     externals:
-    - spec: cmake@3.14.5
-      prefix: /usr/tce/packages/cmake/cmake-3.14.5
     - spec: cmake@3.20.2
       prefix: /usr/tce/packages/cmake/cmake-3.20.2
   gettext:
