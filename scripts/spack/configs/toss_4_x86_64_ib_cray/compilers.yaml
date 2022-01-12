@@ -2,7 +2,8 @@ compilers:
 - compiler:
     environment: {}
     extra_rpaths: []
-    flags: {}
+    flags:
+      fflags: -ef
     modules: []
     operating_system: rhel8
     paths:
