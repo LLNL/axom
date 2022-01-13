@@ -46,15 +46,27 @@ inline AXOM_HOST_DEVICE T abs(const T& x)
 }
 
 /*!
- * \brief Returns the largest integer less than x.
+ * \brief Returns the largest integer less than or equal to x.
  * \accelerated
  * \param [in] x value whose floor value is computed.
- * \return floor(x) the largest integer less than x.
+ * \return floor(x) the largest integer less than or equal to x.
  */
 template <typename T>
 inline AXOM_HOST_DEVICE T floor(const T& x)
 {
   return ::floor(x);
+}
+
+/*!
+ * \brief Returns the smallest integer greater than or equal to x.
+ * \accelerated
+ * \param [in] x value whose ceil value is computed.
+ * \return ceil(x) the smallest integer greater than or equal to x.
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T ceil(const T& x)
+{
+  return ::ceil(x);
 }
 
 /*!

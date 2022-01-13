@@ -180,14 +180,14 @@ TEST(primal_segment, normal_2d)
     SegmentType s(a, b);
 
     VectorType normal {2, -3};
-    EXPECT_NEAR(normal[0], s.normal<2>()[0], EPS);
-    EXPECT_NEAR(normal[1], s.normal<2>()[1], EPS);
+    EXPECT_NEAR(normal[0], s.normal()[0], EPS);
+    EXPECT_NEAR(normal[1], s.normal()[1], EPS);
 
     SegmentType reverse(b, a);
 
     VectorType reverse_normal {-2, 3};
-    EXPECT_NEAR(reverse_normal[0], reverse.normal<2>()[0], EPS);
-    EXPECT_NEAR(reverse_normal[1], reverse.normal<2>()[1], EPS);
+    EXPECT_NEAR(reverse_normal[0], reverse.normal()[0], EPS);
+    EXPECT_NEAR(reverse_normal[1], reverse.normal()[1], EPS);
   }
 
   {
@@ -198,8 +198,8 @@ TEST(primal_segment, normal_2d)
     SegmentType s(a, b);
 
     VectorType normal {0, -1};
-    EXPECT_NEAR(normal[0], s.normal<2>()[0], EPS);
-    EXPECT_NEAR(normal[1], s.normal<2>()[1], EPS);
+    EXPECT_NEAR(normal[0], s.normal()[0], EPS);
+    EXPECT_NEAR(normal[1], s.normal()[1], EPS);
   }
 
   {
@@ -210,8 +210,8 @@ TEST(primal_segment, normal_2d)
     SegmentType s(a, b);
 
     VectorType normal {0, 1};
-    EXPECT_NEAR(normal[0], s.normal<2>()[0], EPS);
-    EXPECT_NEAR(normal[1], s.normal<2>()[1], EPS);
+    EXPECT_NEAR(normal[0], s.normal()[0], EPS);
+    EXPECT_NEAR(normal[1], s.normal()[1], EPS);
   }
 
   {
@@ -222,8 +222,8 @@ TEST(primal_segment, normal_2d)
     SegmentType s(a, b);
 
     VectorType normal {1, 0};
-    EXPECT_NEAR(normal[0], s.normal<2>()[0], EPS);
-    EXPECT_NEAR(normal[1], s.normal<2>()[1], EPS);
+    EXPECT_NEAR(normal[0], s.normal()[0], EPS);
+    EXPECT_NEAR(normal[1], s.normal()[1], EPS);
   }
 
   {
@@ -234,8 +234,8 @@ TEST(primal_segment, normal_2d)
     SegmentType s(a, b);
 
     VectorType normal {-1, 0};
-    EXPECT_NEAR(normal[0], s.normal<2>()[0], EPS);
-    EXPECT_NEAR(normal[1], s.normal<2>()[1], EPS);
+    EXPECT_NEAR(normal[0], s.normal()[0], EPS);
+    EXPECT_NEAR(normal[1], s.normal()[1], EPS);
   }
 }
 
@@ -294,7 +294,7 @@ TEST(primal_segment, circle_normal_2d)
     SegmentType seg(pts[i], pts[i + 1]);
 
     VectorType expectedNormal = getSegmentNormalByRotation(seg);
-    VectorType actualNormal = seg.normal<2>();
+    VectorType actualNormal = seg.normal();
 
     EXPECT_NEAR(expectedNormal[0], actualNormal[0], EPS);
     EXPECT_NEAR(expectedNormal[1], actualNormal[1], EPS);

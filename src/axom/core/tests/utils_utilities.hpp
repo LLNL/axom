@@ -36,7 +36,7 @@ void check_random_real(int offset)
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
-TEST(utils_Utilities, log2)
+TEST(utils_utilities, log2)
 {
   std::cout << "Testing log2 functions." << std::endl;
 
@@ -70,7 +70,7 @@ TEST(utils_Utilities, log2)
 }
 
 //------------------------------------------------------------------------------
-TEST(utils_Utilities, random_real)
+TEST(utils_utilities, random_real)
 {
   std::cout << "Testing random_real functions (non-deterministic)." << std::endl;
 
@@ -83,7 +83,7 @@ TEST(utils_Utilities, random_real)
 }
 
 //------------------------------------------------------------------------------
-TEST(utils_Utilities, random_real_with_seed)
+TEST(utils_utilities, random_real_with_seed)
 {
   std::cout << "Testing random_real functions (deterministic)." << std::endl;
   constexpr unsigned int seed = 123456789;
@@ -100,7 +100,7 @@ TEST(utils_Utilities, random_real_with_seed)
 }
 
 //------------------------------------------------------------------------------
-TEST(utils_Utilities, minmax)
+TEST(utils_utilities, minmax)
 {
   std::cout << "Testing min and max functions." << std::endl;
 
@@ -126,5 +126,35 @@ TEST(utils_Utilities, minmax)
 
     EXPECT_EQ(b, temp_min);
     EXPECT_EQ(a, temp_max);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(utils_utilities, floor_ceil)
+{
+  std::cout << "Testing floor and ceil functions." << std::endl;
+
+  {
+    double val = 5.2;
+    EXPECT_EQ(5.0, axom::utilities::floor(val));
+    EXPECT_EQ(6.0, axom::utilities::ceil(val));
+  }
+
+  {
+    double val = -5.2;
+    EXPECT_EQ(-6.0, axom::utilities::floor(val));
+    EXPECT_EQ(-5.0, axom::utilities::ceil(val));
+  }
+
+  {
+    double val = 5.0;
+    EXPECT_EQ(5.0, axom::utilities::floor(val));
+    EXPECT_EQ(5.0, axom::utilities::ceil(val));
+  }
+
+  {
+    double val = -5.0;
+    EXPECT_EQ(-5.0, axom::utilities::floor(val));
+    EXPECT_EQ(-5.0, axom::utilities::ceil(val));
   }
 }

@@ -73,6 +73,12 @@ TEST_P(SlamBitSet, checkInitEmpty)
   {
     EXPECT_FALSE(bitset.test(i));
   }
+
+  // It is always ok to test bits outside the size
+  {
+    EXPECT_FALSE(bitset.test(-1));
+    EXPECT_FALSE(bitset.test(bitset.size() + 1));
+  }
 }
 
 TEST_P(SlamBitSet, setClearFlipAllBits)

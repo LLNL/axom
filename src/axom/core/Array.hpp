@@ -124,6 +124,10 @@ public:
    * \note a capacity is specified for the number of elements to store in the
    *  array and does not correspond to the actual bytesize.
    * \note The option to select a capacity is only available for 1-dimensional Arrays
+   * 
+   * \note Some overloads have an `ArrayOptions::Uninitialized` first parameter.
+   * These are intended for cases where the array data should not be initialized
+   * when memory is allocated, e.g. if the code is known to initialize the data
    *
    * \pre num_elements >= 0
    *
@@ -135,6 +139,15 @@ public:
             MemorySpace SFINAE_SPACE = SPACE,
             typename std::enable_if<SFINAE_DIM == 1>::type* = nullptr>
   Array(IndexType num_elements,
+        IndexType capacity = 0,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
+  /// \overload
+  template <IndexType SFINAE_DIM = DIM,
+            MemorySpace SFINAE_SPACE = SPACE,
+            typename std::enable_if<SFINAE_DIM == 1>::type* = nullptr>
+  Array(ArrayOptions::Uninitialized,
+        IndexType num_elements,
         IndexType capacity = 0,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
@@ -208,6 +221,7 @@ public:
     {
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
       m_resize_ratio = other.m_resize_ratio;
+      m_default_construct = other.m_default_construct;
       initialize(other.size(), other.capacity());
       axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
     }
@@ -746,10 +760,37 @@ Array<T, DIM, SPACE>::Array(IndexType num_elements,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
+template <IndexType SFINAE_DIM,
+          MemorySpace SFINAE_SPACE,
+          typename std::enable_if<SFINAE_DIM == 1>::type*>
+Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized,
+                            IndexType num_elements,
+                            IndexType capacity,
+                            int allocator_id)
+  : m_allocator_id(allocator_id)
+  , m_default_construct(false)
+{
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
+  if(SPACE != MemorySpace::Dynamic &&
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
+  {
+#ifdef AXOM_DEBUG
+    std::cerr << "Incorrect allocator ID was provided for an Array object with "
+                 "explicit memory space - using default for space\n";
+#endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
+  initialize(num_elements, capacity);
+}  // namespace axom
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array(const Array& other, int allocator_id)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
   , m_allocator_id(allocator_id)
+  , m_default_construct(other.m_default_construct)
 {
   // If a memory space has been explicitly set for the Array object, check that
   // the space of the user-provided allocator matches the explicit space.

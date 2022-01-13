@@ -1664,6 +1664,11 @@ TEST(core_array, checkDevice2D)
 struct HasDefault
 {
   int member = 255;
+
+  bool operator==(const HasDefault& other) const
+  {
+    return (member == other.member);
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -1738,16 +1743,110 @@ TEST(core_array, checkDefaultInitializationDevice)
 }
 
 //------------------------------------------------------------------------------
+
+/**
+ * A struct that fails if the default constructor is called.
+ * It is in support of the checkUninitialized test for axom::Array
+ */
+struct FailsOnConstruction
+{
+  int member = 255;
+
+  FailsOnConstruction() { EXPECT_TRUE(false); }
+
+  bool operator==(const FailsOnConstruction& other) const
+  {
+    return member == other.member;
+  }
+};
+
 TEST(core_array, checkUninitialized)
 {
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
-    // There's not really a way of checking if memory has *not* been initialized
-    // But we can at least make sure the following statements compile
-    Array<HasDefault> v_has_default(ArrayOptions::Uninitialized {}, capacity);
-    Array<HasDefault, 2> v_has_default_2d(ArrayOptions::Uninitialized {},
-                                          capacity,
-                                          capacity);
+    // Test uninitialized functionality with 1D Array using FailsOnConstruction type
+    {
+      Array<FailsOnConstruction> arr(ArrayOptions::Uninitialized {}, capacity);
+
+      EXPECT_LE(capacity, arr.capacity());
+      EXPECT_EQ(capacity, arr.size());
+
+      Array<FailsOnConstruction> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<FailsOnConstruction> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
+
+    // Test default 1D Array with trivially copyable HasDefault type
+    // Note: this test will not fail if HasDefault is copied, but will at least
+    // check that the code compiles and that we can copy and assign these arrays
+    {
+      Array<HasDefault> arr(ArrayOptions::Uninitialized {}, capacity);
+
+      EXPECT_LE(capacity, arr.capacity());
+      EXPECT_EQ(capacity, arr.size());
+
+      Array<HasDefault> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<HasDefault> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
+
+    // Tests uninitialized with 2D Array
+    {
+      Array<FailsOnConstruction, 2> arr(ArrayOptions::Uninitialized {},
+                                        capacity,
+                                        capacity);
+
+      EXPECT_LE(capacity * capacity, arr.capacity());
+      EXPECT_EQ(capacity * capacity, arr.size());
+
+      Array<FailsOnConstruction, 2> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<FailsOnConstruction, 2> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
+
+    // Tests uninitialized with 1D Array with user-supplied allocator
+    {
+      Array<FailsOnConstruction> arr(ArrayOptions::Uninitialized {},
+                                     capacity,
+                                     capacity,
+                                     axom::getDefaultAllocatorID());
+
+      EXPECT_EQ(capacity, arr.capacity());
+      EXPECT_EQ(capacity, arr.size());
+      EXPECT_EQ(axom::getDefaultAllocatorID(), arr.getAllocatorID());
+
+      Array<FailsOnConstruction> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<FailsOnConstruction> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
   }
 }
 

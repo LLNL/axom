@@ -72,7 +72,7 @@ template <typename IntType>
 const IntType RuntimeSize<IntType>::DEFAULT_VALUE = IntType {};
 
 /**
- * \brief A policy class for the size of a set whose size can change at runtime.
+ * \brief A policy class for the size of a set that can be modified at runtime
  */
 template <typename IntType>
 struct DynamicRuntimeSize : public RuntimeSize<IntType>

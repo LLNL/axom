@@ -24,6 +24,8 @@
 #include "axom/slam/Set.hpp"
 #include "axom/slam/RangeSet.hpp"
 
+#include "axom/fmt.hpp"
+
 namespace
 {
 using SetType = axom::slam::RangeSet<>;
@@ -405,6 +407,81 @@ TEST(slam_generic_range_set, concrete_parent_set)
   //-- it does not differentiate based on whether a set is a subset of another
   // set
   EXPECT_EQ(childSet, nonChildSet);
+}
+
+TEST(slam_generic_range_set, strided_range_set)
+{
+  namespace policies = axom::slam::policies;
+
+  using GenericRangeSet =
+    axom::slam::GenericRangeSet<SetPosition,
+                                SetElement,
+                                policies::RuntimeStride<SetPosition>>;
+  using SetBuilder = GenericRangeSet::SetBuilder;
+
+  for(SetPosition strideVal = -14; strideVal <= 14; ++strideVal)
+  {
+    const SetPosition localLower = strideVal > 0 ? lowerIndex : upperIndex;
+    const SetPosition localUpper = strideVal > 0 ? upperIndex : lowerIndex;
+
+    SLIC_INFO(axom::fmt::format(
+      "testing strided_range_set with: lower: {}, upper: {}, stride: {}",
+      localLower,
+      localUpper,
+      strideVal));
+
+    GenericRangeSet stridedSet(SetBuilder()  //
+                                 .range(localLower, localUpper)
+                                 .stride(strideVal));
+
+    // stride of zero is not valid; check and then continue to next case
+    if(strideVal == 0)
+    {
+      EXPECT_FALSE(stridedSet.isValid());
+      continue;
+    }
+
+    SLIC_INFO(axom::fmt::format(
+      "strided_range_set: "
+      "size: {}, stride: {}, offset: {}, first index: {}, last index: {}",
+      stridedSet.size(),
+      stridedSet.stride(),
+      stridedSet.offset(),
+      stridedSet[0],
+      stridedSet[stridedSet.size() - 1]));
+
+    EXPECT_EQ(localLower, stridedSet.offset());
+    EXPECT_EQ(strideVal, stridedSet.stride());
+    if(axom::utilities::abs(localLower - localUpper) >
+       axom::utilities::abs(strideVal))
+    {
+      EXPECT_GT(stridedSet.size(), 1);
+    }
+    EXPECT_GT(stridedSet.size(), 0);
+
+    SetPosition idx = 0;
+    for(auto it = stridedSet.begin(); it != stridedSet.end(); ++it, ++idx)
+    {
+      SLIC_INFO(axom::fmt::format("\tindex: {}, val: {}", it.index(), *it));
+
+      EXPECT_EQ(idx, it.index());
+      EXPECT_EQ(stridedSet[idx], stridedSet[it.index()]);
+
+      const auto expVal = localLower + idx * strideVal;
+      EXPECT_EQ(expVal, *it);
+
+      if(strideVal > 0)
+      {
+        EXPECT_GE(*it, localLower);
+        EXPECT_LE(*it, localUpper);
+      }
+      else
+      {
+        EXPECT_LE(*it, localLower);
+        EXPECT_GE(*it, localUpper);
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------

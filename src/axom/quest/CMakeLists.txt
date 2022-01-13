@@ -19,6 +19,7 @@ axom_component_requires(NAME       QUEST
 #------------------------------------------------------------------------------
 set( quest_headers
 
+    Delaunay.hpp
     SignedDistance.hpp
 
     ## All-nearest-neighbors query
