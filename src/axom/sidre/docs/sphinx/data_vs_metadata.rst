@@ -26,7 +26,7 @@ built and run to experiment with if you wish.
 
 The starting point for the first three examples is a simple Sidre datastore 
 group hierarchy in which the root group has two child groups named "A" and "B". 
-This generation of this structure is shown in the following code along with
+The generation of this structure is shown in the following code along with
 some print statements to verify the state is what we expect.
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
@@ -34,7 +34,7 @@ some print statements to verify the state is what we expect.
    :end-before: _ex_datastore_initial_end
    :language: C++
 
-As expected, the datastore has zero buffers and the groups have no views,
+As expected, the datastore has no buffers and the groups have no views,
 which we can see from the output of the code::
 
   Datastore start state....
@@ -47,10 +47,10 @@ Example 1: One View, One Buffer
 --------------------------------
 
 The first example shows a common Sidre usage pattern in which a view is created in a group and the data associated with the view is managed via the view. This 
-case represents a one-to-one relationship between a view and buffer.
+case represents a one-to-one relationship between a view and a buffer.
 
-We begin by creating a view "aview" in group "A" describing an integer array 
-of length 10 and allocating the array, all in one method call. This creates a 
+We begin by creating a view named "aview" in group "A" describing an integer 
+array of length 10 and allocate it, all in one method call. This creates a 
 buffer in the datastore which holds the array data. Then, we get a pointer to 
 the start of the array from the view and initialize the array values. To give 
 some insight into how Sidre works, we access and print various pieces of 
@@ -198,7 +198,7 @@ original view. In particular, the data in the new view *is the same data*
 associated with the original view. Recall that Sidre copy operations for 
 groups and views are **shallow copy operations**. This means that a copy of 
 a group or view is made in the destination group, but the data associated
-with the copy is the same as in the original. We verify this, by printing 
+with the copy is the same as in the original. We verify this by printing 
 the values of the array associated with each view and also the base address 
 of the array for each view.
 
@@ -206,13 +206,13 @@ Next, we destroy the "A" group which owned the original view. We verify that
 the view copy remains in the "B" group and its data is still intact. When
 we destroyed the "A" group, its view is also destroyed. So we can no longer 
 access it with the usual method calls. If we maintained a handle (e.g., pointer)
-to it, it would no longer no longer be valid. 
+to it, it would no longer be valid. 
 
 Lastly, we destroy the "B" group. Similar to the destruction of the "A" group,
 the view in the "B" group is destroyed. However, since we did not explicitly
 delete (i.e., destroy) the data, we see from the code output below that the
 buffer still exists in the datastore and is allocated. However, it has no 
-attached views. Here is the complete example source code described here.
+attached views. Here is the complete example source code.
 
 .. literalinclude:: ../../examples/sidre_data_vs_metadata.cpp
    :start-after: _ex3_twoviews_onebuffer_copy_start 
@@ -250,12 +250,17 @@ The output of the code is::
   
 The last operation in this example is intended to emphasize the explicit 
 nature of Sidre methods. In particular, when a group is destroyed, its views 
-are also destroyed, but their *data may remain intact*. As shown earlier, 
-there are methods provided to destroy views and their deallocate their 
-associated data. Some of this may seem unexpected, but these were early
-design choices for Sidre to yield maximum flexibility in defining and 
-manipulating data hierarchies while keeping internal bookkeeping implementations
-reasonably simple. The example following this one continues on this point.
+are also destroyed, but their *data may remain intact*. At first, this may
+seem unexpected. Such behavior was a design choice for Sidre to provide 
+maximum flexibility in defining and manipulating views and data independently
+(e.g., describing data and allocating it in separate phases of code execution)
+while keeping Sidre's internal bookkeeping implementations reasonably simple.
+The example following this one continues on this point.
+
+.. note:: Object and data creation and destruction is very explicit in Sidre
+          to allow maximum flexibility to compose complex operations from
+          simpler ones. **Specific methods must be called to destroy views
+          and deallocate their data.** 
 
 -------------------------------------
 Example 4: More Basic Mechanics
@@ -272,9 +277,11 @@ code below shows that everything is working as expected.
 
 We destroy the view and we see that the view is gone from the group, but
 that the buffer is still in the datastore and allocated. This is so because
-we did not explicitly destroy or deallocate the data.
+we did not explicitly destroy or deallocate the data. This is in contrast to 
+the first example, where we destroyed the view and its data with a single 
+method call designed for this purpose.
 
-Next, we create the view again and attach the buffer to it. Then,i we apply the
+Next, we create the view again and attach the buffer to it. Then, we apply the
 data description. This restores the state of everything before we destroyed 
 the view.
 

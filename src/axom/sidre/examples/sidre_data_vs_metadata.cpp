@@ -63,8 +63,8 @@ int main(int argc, char* argv[])
   // Initialize the elements of the integer array.
   //
   // Then, deallocate the view. The view and its description of the data
-  // remains, but the buffer holding the array is deallocted since there
-  // is only one view referencing its data.
+  // remains, but the buffer holding the array is deallocated since there
+  // was only one view referencing its data.
   //
   // When the view is allocated again, the associated buffer is re-allocated
   // using the same data description as before
@@ -230,8 +230,9 @@ int main(int argc, char* argv[])
   // Example 3: One-to-many Buffer to View relationships (view copy)
   // -----------------------------------------------------------------------
   //
-  // Create a copy of a view in one group in another group. Verify that the
-  // views are the same as well the fact that they share the same data.
+  // Create a copy of a group's view in a different group. Verify that the
+  // views share the same data (i.e., they have the same base address, length,
+  // offset, and stride).
   //
   // Then, destroy one of the groups and verify that the data is still
   // accessible via the view in the other group.
@@ -332,14 +333,14 @@ int main(int argc, char* argv[])
   // Then, we create and allocate a view in that group, and grab a pointer to
   // the associated buffer.
   //
-  // When we destoy the view (but not its data as we did in the first example),
+  // When we destroy the view (but not its data as we did in the first example),
   // we verify that the buffer is still in the datastore, described and
   // allocated.
   //
   // We recreate the view, attach the buffer to it, and describe the view
   // data as before. We verify that the view is allocated since its buffer is.
   //
-  // When we dealocate the buffer, we see that it remains in the datastore
+  // When we deallocate the buffer, we see that it remains in the datastore
   // and that the view and buffer are deallocated, but their descriptions
   // remain.
   //
