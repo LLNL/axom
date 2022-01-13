@@ -9,7 +9,7 @@
 Data vs. Metadata Concepts
 ===========================
 
-This section describes includes examples that illustrate some common Sidre 
+This section includes examples that illustrate some common Sidre 
 usage patterns involving buffers, groups, and views. In particular, it shows
 how data associated with a view is related to a buffer, how the lifetimes
 of data associated with a view and the buffer owning the data are related,
