@@ -9,15 +9,15 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 #include "axom/slam/DynamicSet.hpp"
 
 using SetType = axom::slam::DynamicSet<>;
 using SetPosition = SetType::PositionType;
 using SetElement = SetType::ElementType;
 
-static const SetPosition MAX_SET_SIZE = 10;
-static const SetPosition ADDITIONAL_ADD_SIZE = 5;
+const SetPosition MAX_SET_SIZE = 10;
+const SetPosition ADDITIONAL_ADD_SIZE = 5;
 
 TEST(slam_set_dynamicset, construct)
 {
@@ -66,32 +66,6 @@ TEST(slam_set_dynamicset, construct_set_builder)
   SetType s(builder);
   EXPECT_TRUE(s.isValid());
   EXPECT_EQ(MAX_SET_SIZE, s.size());
-
-  // Construct a set using size, offset and stride
-  {
-    const int ZERO_OFFSET = 0;
-    const int DEFAULT_STRIDE = 1;
-    SetBuilder ok_builder = SetBuilder()            //
-                              .size(MAX_SET_SIZE)   //
-                              .offset(ZERO_OFFSET)  //
-                              .stride(DEFAULT_STRIDE);
-    SetType s2(ok_builder);
-    EXPECT_TRUE(s2.isValid());
-    EXPECT_EQ(MAX_SET_SIZE, s2.size());
-
-    // The two sets should be equal
-    EXPECT_EQ(s, s2);
-  }
-
-#ifdef AXOM_DEBUG
-  // Using inappropriate SetBuilder features generates an assert failure
-  SLIC_INFO("Cannot construct a DynamicSet with an invalid SetBuilder");
-  const int NON_ZERO_OFFSET = 3;
-  EXPECT_DEATH_IF_SUPPORTED(SetType(SetBuilder()           //
-                                      .size(MAX_SET_SIZE)  //
-                                      .offset(NON_ZERO_OFFSET)),
-                            "");
-#endif
 }
 
 TEST(slam_set_dynamicset, construct_runtime)
@@ -270,11 +244,100 @@ TEST(slam_set_dynamicset, find_index)
   }
 }
 
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
+TEST(slam_set_dynamicset, iterator)
+{
+  SetType s(MAX_SET_SIZE);
 
+  // Set values using iterator
+  for(auto it = s.begin(); it != s.end(); ++it)
+  {
+    *it = s.size() - it.index();
+  }
+
+  const SetPosition removedIndex = 3;
+  // mark element 3 as invalid
+  s.remove(removedIndex);
+
+  // check isValidEntry() function
+  {
+    auto it = s.begin() + removedIndex;
+    EXPECT_FALSE(it.isValidEntry());
+  }
+
+  // check values using iterators and const_iterators
+  {
+    // Check values using (non-const) iterator
+    for(auto it = s.begin(); it != s.end(); ++it)
+    {
+      if(!it.isValidEntry())
+      {
+        continue;
+      }
+
+      const auto exp = s.size() - it.index();
+      EXPECT_EQ(exp, *it) << "Problem at index " << it.index();
+    }
+
+    // Check values using const iterator
+    for(auto it = s.cbegin(); it != s.cend(); ++it)
+    {
+      if(!it.isValidEntry())
+      {
+        continue;
+      }
+
+      const auto exp = s.size() - it.index();
+      EXPECT_EQ(exp, *it) << "Problem at index " << it.index();
+    }
+
+    // test range-for functionality
+    SLIC_INFO("Printing items in 's':");
+    for(auto item : s)
+    {
+      SLIC_INFO("\titem: " << item);
+    }
+    SLIC_INFO("---");
+  }
+
+  // Create a const copy and iterate over it
+  const SetType s_cp = s;
+
+  // check isValidEntry() function
+  {
+    EXPECT_EQ(MAX_SET_SIZE - 1, s_cp.numberOfValidEntries());
+    auto it = s_cp.begin() + removedIndex;
+    EXPECT_FALSE(it.isValidEntry());
+  }
+
+  for(auto it = s_cp.begin(); it != s_cp.end(); ++it)
+  {
+    if(it.isValidEntry())
+    {
+      auto exp = s[it.index()];
+      EXPECT_EQ(exp, *it) << "Problem at index " << it.index();
+    }
+  }
+
+  for(auto it = s_cp.cbegin(); it != s_cp.cend(); ++it)
+  {
+    if(it.isValidEntry())
+    {
+      auto exp = s[it.index()];
+      EXPECT_EQ(exp, *it) << "Problem at index " << it.index();
+    }
+  }
+
+  // test range-for functionality
+  SLIC_INFO("Printing items in 's_cp':");
+  for(auto item : s_cp)
+  {
+    SLIC_INFO("\titem: " << item);
+  }
+  SLIC_INFO("---");
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
@@ -285,7 +348,7 @@ int main(int argc, char* argv[])
 #endif
 
   // create & initialize test logger. finalized when exiting main scope
-  SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
 

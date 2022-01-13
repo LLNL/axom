@@ -6,8 +6,7 @@
 /**
  * \file
  *
- * \brief Simple example that uses Slam for generating and processing a simple
- *  3D mesh.
+ * \brief Example that uses Slam for generating and processing a simple 3D mesh
  *
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone
  *  relation and does simple mesh processing.
@@ -34,76 +33,7 @@ namespace slam = axom::slam;
 namespace slamUnstructuredHex
 {
 using DataType = double;
-
-/** Simple point class for this example */
-struct Point
-{
-  Point(const DataType& x, const DataType& y, const DataType& z)
-    : m_x(x)
-    , m_y(y)
-    , m_z(z)
-  { }
-  Point() : m_x(DataType()), m_y(DataType()), m_z(DataType()) { }
-
-  DataType radius() const
-  {
-    return std::sqrt(m_x * m_x + m_y * m_y + m_z * m_z);
-  }
-
-  Point& operator+=(const Point& pt)
-  {
-    m_x += pt.m_x;
-    m_y += pt.m_y;
-    m_z += pt.m_z;
-    return *this;
-  }
-
-  Point& operator*=(const DataType& sc)
-  {
-    m_x *= sc;
-    m_y *= sc;
-    m_z *= sc;
-    return *this;
-  }
-
-  template <typename T>
-  Point& operator/=(const T& sc)
-  {
-    return operator*=(1. / sc);
-  }
-
-  DataType m_x, m_y, m_z;
-};
-
-/// Some operations on Points
-Point operator+(const Point& pt1, const Point& pt2)
-{
-  Point pt(pt1);
-  pt += pt2;
-  return pt;
-}
-
-Point operator*(const Point& pt1, const DataType& sc)
-{
-  Point pt(pt1);
-  pt *= sc;
-  return pt;
-}
-
-Point operator*(const DataType& sc, const Point& pt1)
-{
-  Point pt(pt1);
-  pt *= sc;
-  return pt;
-}
-
-template <typename T>
-Point operator/(const Point& pt1, const T& sc)
-{
-  Point pt(pt1);
-  pt *= (1. / sc);
-  return pt;
-}
+using Point3 = slam::util::Point3<DataType>;
 
 /**
  * \brief Simple hex mesh for this example.
@@ -145,8 +75,8 @@ public:
 
   /// types for maps
   using BaseSet = axom::slam::Set<PositionType, ElementType>;
-  using NodalPositions = slam::Map<BaseSet, Point>;
-  using ZonalPositions = slam::Map<BaseSet, Point>;
+  using NodalPositions = slam::Map<BaseSet, Point3>;
+  using ZonalPositions = slam::Map<BaseSet, Point3>;
   using NodeField = slam::Map<BaseSet, DataType>;
   using ZoneField = slam::Map<BaseSet, DataType>;
 
@@ -317,7 +247,7 @@ void readHexMesh(std::string fileName, HexMesh* mesh)
     Repository::realsRegistry.getBuffer("node_positions").begin();
   for(PositionType idx = 0; idx < mesh->numNodes(); ++idx)
   {
-    mesh->nodePosition[idx] = Point(*ptIt++, *ptIt++, *ptIt++);
+    mesh->nodePosition[idx] = Point3(*ptIt++, *ptIt++, *ptIt++);
   }
 
   /// Create the topological incidence relation from zones to nodes
@@ -414,7 +344,7 @@ void computeZoneBarycenters(HexMesh* mesh)
   // Outer loop over each zone in the mesh
   for(PositionType zIdx = 0; zIdx < mesh->numZones(); ++zIdx)
   {
-    Point zonePos;
+    Point3 zonePos;
 
     // Inner loop over each node of the zone
     const NodeSet& nodeSet = mesh->zoneToNodeRelation[zIdx];

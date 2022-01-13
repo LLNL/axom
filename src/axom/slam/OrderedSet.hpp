@@ -130,19 +130,33 @@ public:
 
     SetBuilder& size(PositionType sz)
     {
+      SLIC_ASSERT_MSG(
+        !m_hasRange,
+        "Cannot call both SetBuilder::size() and SetBuilder::range()");
+
       m_size = SizePolicyType(sz);
       return *this;
     }
 
     SetBuilder& offset(PositionType off)
     {
+      SLIC_ASSERT(!m_hasRange || off == m_offset.offset());
+
       m_offset = OffsetPolicyType(off);
+
       return *this;
     }
 
     SetBuilder& stride(PositionType str)
     {
       m_stride = StridePolicyType(str);
+
+      // Need to recompute size if range() function was used
+      if(m_hasRange)
+      {
+        m_size = SizePolicyType(recomputeSize());
+      }
+
       return *this;
     }
 
@@ -162,11 +176,36 @@ public:
     SetBuilder& range(PositionType lower, PositionType upper)
     {
       // Set by range rather than size and offset.
-      // Question: Should we ensure that only one of these options is called
-      //   (e.g. size [+offset] or range, but not both)?
       m_offset = OffsetPolicyType(lower);
-      m_size = SizePolicyType(upper - lower);
+
+      m_hasRange = true;
+      m_rangeLower = lower;
+      m_rangeUpper = upper;
+
+      // set size, account for a stride that has not yet been set
+      m_size = SizePolicyType(recomputeSize());
       return *this;
+    }
+
+  private:
+    /// Recomputes the size based on upper and lower range as well as stride
+    PositionType recomputeSize() const
+    {
+      using axom::utilities::abs;
+      using axom::utilities::ceil;
+
+      if(m_hasRange)
+      {
+        const double str = m_stride.stride();
+        const auto diff = (m_rangeUpper - m_rangeLower);
+
+        // size is 0 if upper==lower, or signs of diff and stride differ
+        return (diff == 0 || ((diff > 0) != (str > 0))) ? 0 : ceil(diff / str);
+      }
+      else
+      {
+        return m_size.size();
+      }
     }
 
   private:
@@ -175,6 +214,11 @@ public:
     StridePolicyType m_stride;
     IndirectionPolicyType m_data;
     SubsettingPolicyType m_parent;
+
+    // Some additional params to account for range() convenience function
+    bool m_hasRange {false};
+    PositionType m_rangeLower {0};  // only used when m_hasRange == true
+    PositionType m_rangeUpper {0};  // only used when m_hasRange == true
   };
 
   /**
@@ -212,6 +256,7 @@ public:
 
     using IndirectionType = typename OrderedSet::IndirectionPolicyType;
     using StrideType = typename OrderedSet::StridePolicyType;
+    using OffsetType = typename OrderedSet::OffsetPolicyType;
 
     using IterBase::m_pos;
 
@@ -295,7 +340,7 @@ public:
     }
     /// \}
 
-    PositionType index() const { return m_pos; }
+    PositionType index() const { return (m_pos - offset()) / stride(); }
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
@@ -305,6 +350,11 @@ public:
     inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
+    }
+
+    inline const PositionType offset() const
+    {
+      return m_orderedSet.OffsetType::offset();
     }
 
   private:
@@ -371,7 +421,10 @@ public:
    * An index pos is valid when \f$ 0 \le pos < size() \f$
    * \return true if the position is valid, false otherwise
    */
-  bool isValidIndex(PositionType pos) const { return pos >= 0 && pos < size(); }
+  inline bool isValidIndex(PositionType pos) const
+  {
+    return pos >= 0 && pos < size();
+  }
 
   /**
    * \brief returns a PositionSet over the set's positions

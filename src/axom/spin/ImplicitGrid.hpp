@@ -345,6 +345,35 @@ public:
   }
 
   /*!
+   * Finds the candidate elements in the given \a gridCell of the grid
+   *
+   * \param [in] gridCell The cell of the grid
+   * \return A bitset whose bits correspond to the elements of the IndexSet.
+   * The bits are set if their corresponding element bounding boxes overlap \a gridCell
+   */
+  BitsetType getCandidates(const GridCell& gridCell) const
+  {
+    // Perform some validity checks
+    if(!m_initialized) return BitsetType(0);
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      if(gridCell[i] < 0 || gridCell[i] > highestBin(i))
+      {
+        return BitsetType(0);
+      }
+    }
+
+    // Note: Due to above checks, gridCell[i] is always valid
+    BitsetType res = m_binData[0][gridCell[0]];
+    for(int i = 1; i < NDIMS; ++i)
+    {
+      res &= m_binData[i][gridCell[i]];
+    }
+
+    return res;
+  }
+
+  /*!
    * Finds the candidate elements in the vicinity of query box \a box
    *
    * \param [in] box The query box

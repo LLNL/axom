@@ -493,8 +493,8 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   axom::IndexType nnodes = umesh->getNumberOfNodes();
   for(axom::IndexType inode = 0; inode < nnodes; ++inode)
   {
-    double pt[NDIMS];
-    umesh->getNode(inode, pt);
+    primal::Point<double, NDIMS> pt;
+    umesh->getNode(inode, pt.data());
 
     phi_computed[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
     phi_expected[inode] = analytic_sphere.computeSignedDistance(pt);
