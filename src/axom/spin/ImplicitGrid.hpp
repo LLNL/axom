@@ -348,9 +348,8 @@ public:
    * Finds the candidate elements in the given \a gridCell of the grid
    *
    * \param [in] gridCell The cell of the grid
-   * \return A bitset \a bSet whose bits correspond to the elements of the IndexSet.
-   * The bits of \a bSet are set if their corresponding element bounding boxes
-   * overlap \a gridCell
+   * \return A bitset whose bits correspond to the elements of the IndexSet.
+   * The bits are set if their corresponding element bounding boxes overlap \a gridCell
    */
   BitsetType getCandidates(const GridCell& gridCell) const
   {

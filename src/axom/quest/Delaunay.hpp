@@ -74,7 +74,7 @@ private:
 public:
   /**
    * \brief Default constructor
-   * \note User need to call initializeBoundary(BoundingBox) before adding points.
+   * \note User must to call initializeBoundary(BoundingBox) before adding points.
    */
   Delaunay()
     : m_has_boundary(false)

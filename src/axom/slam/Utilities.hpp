@@ -51,6 +51,8 @@ struct TypeToString<double>
 /**
  * \brief A simple 3D point class similar to primal's point class,
  * with some basic Point/Vector functionalities
+ * 
+ * \note This is needed for internal testing in slam (which does not depend on primal)
  */
 template <typename DataType = double>
 struct Point3

@@ -44,7 +44,8 @@ namespace slam
  * \tparam PointType A point type for the mesh position data
  *
  * \details The IAMesh class is an adjacency-based topological mesh data
- * structure for simplicial complexes. It encodes:
+ * structure for simplicial complexes.
+ * It encodes:
  * - the boundary relation from elements to their vertices
  * - the partial coboundary relation from vertices to one incident element, and
  * - the adjacency relation between elements along their facets (faces of dimension TDIM-1).
@@ -54,8 +55,16 @@ namespace slam
  * - operator[](index)  -- subscript operator to access the coordinates
  * - data() -> T*       -- direct access to the data
  * - operator==()       -- equality operator
+ *
+ * The basic form of this data structure was introduced in:
+ *   - A. Paoluzzi, F. Bernardini, C. Cattani, and V. Ferrucci. Dimension-independent modeling with simplicial complexes.
+ *     ACM Trans. Graph. 12, 1 (Jan. 1993), 56-102. DOI: https://doi.org/10.1145/169728.169719A. 
+ *   - G. M. Nielson. Tools for Triangulations and Tetrahedrizations.
+ *     Scientific Visualization: Overviews, Methodologies , Techniques, CS Press, pp.429-525, 1994.
+ * We're using the extended formulation that includes a partial vertex coboundary relation as described in:
+ *   - De Floriani L, Hui A. Data Structures for Simplicial Complexes: An Analysis And A Comparison. 
+ *     Symposium on Geometry Processing 2005 Jul 5 (pp. 119-128). DOI: https://doi.org/10.2312/SGP/SGP05/119-128
  */
-
 template <int TDIM = 2, int SDIM = 3, typename PointType = axom::slam::util::Point3<double>>
 class IAMesh
 {
@@ -112,7 +121,7 @@ public:
   /// \brief Default Constructor for an empty mesh
   IAMesh();
 
-  /// \brief Construct an IA mesh with the given point coordinate and vertex indices for each elements
+  /// \brief Constructs an IA mesh with the given point coordinates and vertex indices for each element
   IAMesh(std::vector<double>& points, std::vector<IndexType>& ev_vec);
 
   /// \brief Copy constructor

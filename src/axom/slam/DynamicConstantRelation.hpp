@@ -369,7 +369,7 @@ public:
     m_relationsVec[relationCardinality() * fromSetIndex + offset] = toSetIndex;
   }
 
-  // \brief Mark all values in entry \a fromSetIndex as invalid.
+  /// \brief Mark all values in entry \a fromSetIndex as invalid.
   void remove(SetPosition fromSetIndex)
   {
     if(!isValidEntry(fromSetIndex)) return;
