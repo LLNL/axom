@@ -7,6 +7,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/slic.hpp"
 #include "axom/sidre/core/sidre.hpp"
 
 #include "conduit_blueprint.hpp"
@@ -656,18 +657,12 @@ TEST(sidre_native_layout, basic_demo_compare)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger, finalized when
-                        // exiting main scope
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Debug);
+  axom::slic::SimpleLogger logger(axom::slic::message::Debug);
 
   result = RUN_ALL_TESTS();
 

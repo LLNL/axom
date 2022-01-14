@@ -7,10 +7,9 @@
 
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
 
 /*!
- * \file
+ * \file slic_asserts.cpp
  *
  * The tests in this file check that SLIC macros properly output their message
  * and exit (when appropriate) when run from constructors and destructors.
@@ -184,9 +183,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-                        // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   result = RUN_ALL_TESTS();

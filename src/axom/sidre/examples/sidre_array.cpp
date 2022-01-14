@@ -18,7 +18,6 @@
 
 // aliases
 namespace sidre = axom::sidre;
-namespace slic = axom::slic;
 
 int main(int argc, char** argv)
 {
@@ -30,7 +29,7 @@ int main(int argc, char** argv)
   MPI_Comm_rank(problem_comm, &myrank);
   MPI_Comm_size(problem_comm, &nranks);
 
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
 
   // STEP 0: create the data store
   sidre::DataStore* dataStore1 = new sidre::DataStore();

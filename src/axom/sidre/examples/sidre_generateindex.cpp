@@ -22,6 +22,7 @@
 
 // Axom headers
 #include "axom/core.hpp"
+#include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
 // Conduit headers
@@ -40,29 +41,31 @@
 #include <cstring>
 
 // "using" directives to simplify code
-using namespace axom;
-using namespace sidre;
+namespace sidre = axom::sidre;
 
 static int cart_nx = 5;  // nodal domain x size for cartesian mesh example
 static int cart_ny = 5;  // nodal domain y size for cartesian mesh example
 
-DataStore* create_tiny_datastore()
+sidre::DataStore* create_tiny_datastore()
 {
-  DataStore* ds = new DataStore();
+  sidre::DataStore* ds = new sidre::DataStore();
 
   int nodecount = 12;
   int elementcount = 2;
 
   // Create views and buffers to hold node positions and field values
-  Group* nodes = ds->getRoot()->createGroup("nodes");
-  View* xs = nodes->createViewAndAllocate("xs", sidre::DOUBLE_ID, nodecount);
-  View* ys = nodes->createViewAndAllocate("ys", sidre::DOUBLE_ID, nodecount);
-  View* zs = nodes->createViewAndAllocate("zs", sidre::DOUBLE_ID, nodecount);
+  sidre::Group* nodes = ds->getRoot()->createGroup("nodes");
+  sidre::View* xs =
+    nodes->createViewAndAllocate("xs", sidre::DOUBLE_ID, nodecount);
+  sidre::View* ys =
+    nodes->createViewAndAllocate("ys", sidre::DOUBLE_ID, nodecount);
+  sidre::View* zs =
+    nodes->createViewAndAllocate("zs", sidre::DOUBLE_ID, nodecount);
 
-  Group* fields = ds->getRoot()->createGroup("fields");
-  View* nodefield =
+  sidre::Group* fields = ds->getRoot()->createGroup("fields");
+  sidre::View* nodefield =
     fields->createViewAndAllocate("nodefield", sidre::INT_ID, nodecount);
-  View* eltfield =
+  sidre::View* eltfield =
     fields->createViewAndAllocate("eltfield", sidre::DOUBLE_ID, elementcount);
 
   // Set node position for two adjacent hexahedrons
@@ -91,13 +94,13 @@ DataStore* create_tiny_datastore()
   return ds;
 }
 
-void setup_blueprint_coords(DataStore* ds, Group* coords)
+void setup_blueprint_coords(sidre::DataStore* ds, sidre::Group* coords)
 {
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
   // We use prior knowledge of the layout of the original datastore
-  View* origv = ds->getRoot()->getView("nodes/xs");
-  Group* conduitval = coords->createGroup("values");
+  sidre::View* origv = ds->getRoot()->getView("nodes/xs");
+  sidre::Group* conduitval = coords->createGroup("values");
   conduitval->createView("x",
                          sidre::DOUBLE_ID,
                          origv->getNumElements(),
@@ -114,7 +117,7 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
                          origv->getBuffer());
 }
 
-void setup_cartesian_coords(Group* coords, int domain_id)
+void setup_cartesian_coords(sidre::Group* coords, int domain_id)
 {
   // Set up uniform cartesian coordinates
   coords->createViewString("type", "uniform");
@@ -133,17 +136,17 @@ void setup_cartesian_coords(Group* coords, int domain_id)
   coords->createViewScalar("spacing/dy", dy);
 }
 
-void setup_blueprint_topos(DataStore* ds, Group* topos)
+void setup_blueprint_topos(sidre::DataStore* ds, sidre::Group* topos)
 {
   // Sew the nodes together into the two hexahedra, using prior knowledge.
-  Group* connmesh = topos->createGroup("mesh");
+  sidre::Group* connmesh = topos->createGroup("mesh");
   connmesh->createViewString("type", "unstructured");
   connmesh->createViewString("coordset", "coords");
-  Group* elts = connmesh->createGroup("elements");
+  sidre::Group* elts = connmesh->createGroup("elements");
   elts->createViewString("shape", "hex");
 
   // We have two eight-node hex elements, so we need 2 * 8 = 16 ints.
-  View* connectivity =
+  sidre::View* connectivity =
     elts->createViewAndAllocate("connectivity", sidre::INT_ID, 16);
 
   // The Mesh Blueprint connectivity array for a hexahedron lists four nodes on
@@ -180,21 +183,21 @@ void setup_blueprint_topos(DataStore* ds, Group* topos)
   AXOM_UNUSED_VAR(ds);
 }
 
-void setup_cartesian_topos(Group* topos)
+void setup_cartesian_topos(sidre::Group* topos)
 {
-  Group* structmesh = topos->createGroup("cartesian");
+  sidre::Group* structmesh = topos->createGroup("cartesian");
   structmesh->createViewString("type", "structured");
   structmesh->createViewString("coordset", "coords");
   structmesh->createViewScalar("elements/dims/i", cart_nx - 1);
   structmesh->createViewScalar("elements/dims/j", cart_ny - 1);
 }
 
-void setup_blueprint_fields(DataStore* ds, Group* fields)
+void setup_blueprint_fields(sidre::DataStore* ds, sidre::Group* fields)
 {
   // Set up the node-centered field
   // Get the original data
-  View* origv = ds->getRoot()->getView("fields/nodefield");
-  Group* nodefield = fields->createGroup("nodefield");
+  sidre::View* origv = ds->getRoot()->getView("fields/nodefield");
+  sidre::Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
   nodefield->createViewString("topology", "mesh");
@@ -206,7 +209,7 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
   // Set up the element-centered field
   // Get the original data
   origv = ds->getRoot()->getView("fields/eltfield");
-  Group* eltfield = fields->createGroup("eltfield");
+  sidre::Group* eltfield = fields->createGroup("eltfield");
   eltfield->createViewString("association", "element");
   eltfield->createViewString("type", "scalar");
   eltfield->createViewString("topology", "mesh");
@@ -216,7 +219,7 @@ void setup_blueprint_fields(DataStore* ds, Group* fields)
                        origv->getBuffer());
 }
 
-void setup_cartesian_fields(Group* fields)
+void setup_cartesian_fields(sidre::Group* fields)
 {
   // Match known values from setup_cartesian_coords
   int ex = cart_nx - 1;
@@ -225,11 +228,11 @@ void setup_cartesian_fields(Group* fields)
   int nodecount = cart_nx * cart_ny;
 
   // Create a node-centered field and an element-centered field
-  Group* nodefield = fields->createGroup("nodefield");
+  sidre::Group* nodefield = fields->createGroup("nodefield");
   nodefield->createViewString("association", "vertex");
   nodefield->createViewString("type", "scalar");
   nodefield->createViewString("topology", "cartesian");
-  View* nodes =
+  sidre::View* nodes =
     nodefield->createViewAndAllocate("values", sidre::DOUBLE_ID, nodecount);
 
   double* nptr = nodes->getArray();
@@ -242,11 +245,11 @@ void setup_cartesian_fields(Group* fields)
     }
   }
 
-  Group* eltfield = fields->createGroup("eltfield");
+  sidre::Group* eltfield = fields->createGroup("eltfield");
   eltfield->createViewString("association", "element");
   eltfield->createViewString("type", "scalar");
   eltfield->createViewString("topology", "cartesian");
-  View* elts =
+  sidre::View* elts =
     eltfield->createViewAndAllocate("values", sidre::DOUBLE_ID, eltcount);
 
   double* eptr = elts->getArray();
@@ -261,7 +264,7 @@ void setup_cartesian_fields(Group* fields)
 }
 
 #ifdef AXOM_USE_MPI
-void generate_spio_blueprint(DataStore* ds, bool dense)
+void generate_spio_blueprint(sidre::DataStore* ds, bool dense)
 {
   int my_rank;
   int comm_size;
@@ -273,18 +276,18 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   std::string domain_location = holder_name + "/" + domain_name;
   std::string mesh_name = "mesh";
 
-  Group* holder = ds->getRoot()->createGroup(holder_name);
+  sidre::Group* holder = ds->getRoot()->createGroup(holder_name);
 
   // dense places domains on all ranks when true. When not true, it
   // leaves off rank zero to show that the index can still be generated
   // with some ranks empty.
   if(dense || my_rank > 0 || comm_size == 1)
   {
-    Group* mroot = holder->createGroup(domain_name);
-    Group* coords = mroot->createGroup("coordsets/coords");
-    Group* topos = mroot->createGroup("topologies");
+    sidre::Group* mroot = holder->createGroup(domain_name);
+    sidre::Group* coords = mroot->createGroup("coordsets/coords");
+    sidre::Group* topos = mroot->createGroup("topologies");
     // no material sets in this example
-    Group* fields = mroot->createGroup("fields");
+    sidre::Group* fields = mroot->createGroup("fields");
     // no adjacency sets in this (single-domain) example
 
     setup_blueprint_coords(ds, coords);
@@ -294,7 +297,7 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
     setup_blueprint_fields(ds, fields);
   }
 
-  IOManager writer(MPI_COMM_WORLD);
+  sidre::IOManager writer(MPI_COMM_WORLD);
 
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
@@ -336,7 +339,7 @@ void generate_spio_blueprint(DataStore* ds, bool dense)
   }
 }
 
-void generate_multidomain_blueprint(DataStore* ds,
+void generate_multidomain_blueprint(sidre::DataStore* ds,
                                     const std::string& filename,
                                     int num_files)
 {
@@ -351,20 +354,20 @@ void generate_multidomain_blueprint(DataStore* ds,
 
   std::string holder_name = "domain_data";
   std::string mesh_name = "mesh";
-  Group* holder = ds->getRoot()->createGroup(holder_name);
+  sidre::Group* holder = ds->getRoot()->createGroup(holder_name);
 
   std::string domain_pattern = "domain_{domain:06d}";
   ds->getRoot()->createViewString("domain_pattern", domain_pattern);
 
   for(int64_t i = domain_begin; i < domain_end; ++i)
   {
-    std::string domain_name = fmt::format("domain_{:06d}", i);
+    std::string domain_name = axom::fmt::format("domain_{:06d}", i);
 
-    Group* mroot = holder->createGroup(domain_name);
-    Group* coords = mroot->createGroup("coordsets/coords");
-    Group* topos = mroot->createGroup("topologies");
+    sidre::Group* mroot = holder->createGroup(domain_name);
+    sidre::Group* coords = mroot->createGroup("coordsets/coords");
+    sidre::Group* topos = mroot->createGroup("topologies");
     // no material sets in this example
-    Group* fields = mroot->createGroup("fields");
+    sidre::Group* fields = mroot->createGroup("fields");
     // no adjacency sets in this example
     mroot->createViewScalar("state/domain_id", i);
 
@@ -375,7 +378,7 @@ void generate_multidomain_blueprint(DataStore* ds,
     setup_blueprint_fields(ds, fields);
   }
 
-  IOManager writer(MPI_COMM_WORLD);
+  sidre::IOManager writer(MPI_COMM_WORLD);
 
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
@@ -409,7 +412,7 @@ void generate_multidomain_blueprint(DataStore* ds,
   }
 }
 
-void generate_cartesian_blueprint(DataStore* ds,
+void generate_cartesian_blueprint(sidre::DataStore* ds,
                                   const std::string& filename,
                                   int num_files)
 {
@@ -432,20 +435,20 @@ void generate_cartesian_blueprint(DataStore* ds,
 
   std::string holder_name = "domain_data";
   std::string mesh_name = "";
-  Group* holder = ds->getRoot()->createGroup(holder_name);
+  sidre::Group* holder = ds->getRoot()->createGroup(holder_name);
 
   std::string domain_pattern = "domain_{domain:06d}";
   ds->getRoot()->createViewString("domain_pattern", domain_pattern);
 
   for(int64_t i = domain_begin; i < domain_end; ++i)
   {
-    std::string domain_name = fmt::format("domain_{:06d}", i);
+    std::string domain_name = axom::fmt::format("domain_{:06d}", i);
 
-    Group* mroot = holder->createGroup(domain_name);
-    Group* coords = mroot->createGroup("coordsets/coords");
-    Group* topos = mroot->createGroup("topologies");
+    sidre::Group* mroot = holder->createGroup(domain_name);
+    sidre::Group* coords = mroot->createGroup("coordsets/coords");
+    sidre::Group* topos = mroot->createGroup("topologies");
     // no material sets in this example
-    Group* fields = mroot->createGroup("fields");
+    sidre::Group* fields = mroot->createGroup("fields");
     // no adjacency sets in this example
     mroot->createViewScalar("state/domain_id", i);
 
@@ -456,7 +459,7 @@ void generate_cartesian_blueprint(DataStore* ds,
     setup_cartesian_fields(fields);
   }
 
-  IOManager writer(MPI_COMM_WORLD);
+  sidre::IOManager writer(MPI_COMM_WORLD);
 
   conduit::Node info, mesh_node, root_node;
   ds->getRoot()->createNativeLayout(mesh_node);
@@ -498,13 +501,13 @@ int main(int argc, char** argv)
 #ifdef AXOM_USE_MPI
   int num_ranks = 1;
 
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  DataStore* sds = create_tiny_datastore();
-  DataStore* spds = create_tiny_datastore();
+  sidre::DataStore* sds = create_tiny_datastore();
+  sidre::DataStore* spds = create_tiny_datastore();
   generate_spio_blueprint(sds, true);    //dense
   generate_spio_blueprint(spds, false);  //sparse
   spds->getRoot()->destroyGroups();

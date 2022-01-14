@@ -10,7 +10,7 @@
 #include "axom/mint/mesh/FieldVariable.hpp"  // for mint::FieldVariable
 #include "axom/mint/fem/FEBasis.hpp"         // for FEBasisTypes
 
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
+#include "axom/slic.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -115,18 +115,12 @@ TEST(mint_mesh_field, get_dataptr)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

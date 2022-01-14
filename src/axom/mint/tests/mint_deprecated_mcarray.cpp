@@ -3,13 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/mint/deprecated/MCArray.hpp" /* for axom::deprecated::MCArray */
-#include "axom/core/memory_management.hpp"  /* for alloc() and free() */
+#include "axom/slic.hpp"
+#include "axom/core/memory_management.hpp"
+#include "axom/mint/deprecated/MCArray.hpp"
 
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"
 
 // C/C++ includes
-#include <algorithm> /* for std::fill_n */
+#include <algorithm>
 
 namespace axom
 {
@@ -1047,18 +1048,12 @@ TEST(core_mcarray_DeathTest, checkExternal)
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

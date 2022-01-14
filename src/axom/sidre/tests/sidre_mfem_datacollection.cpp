@@ -1066,7 +1066,6 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
 #ifdef AXOM_USE_MPI

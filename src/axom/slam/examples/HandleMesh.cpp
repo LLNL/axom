@@ -16,7 +16,6 @@
 #include <ostream>
 
 namespace slam = axom::slam;
-namespace slic = axom::slic;
 
 namespace
 {
@@ -59,7 +58,7 @@ std::ostream& operator<<(std::ostream& os, const Handle<T>& h)
 
 int main(int, char**)
 {
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
 
   using PosType = slam::DefaultPositionType;
   using HandleType = Handle<PosType>;

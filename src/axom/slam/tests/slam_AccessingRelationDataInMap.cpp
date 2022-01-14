@@ -146,15 +146,11 @@ TEST(slam_set_relation_map, access_pattern)
 }
 
 //----------------------------------------------------------------------
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();

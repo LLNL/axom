@@ -529,7 +529,6 @@ int main(int argc, char* argv[])
   std::srand(std::time(NULL));
 
   ::benchmark::Initialize(&argc, argv);
-
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
   ::benchmark::RunSpecifiedBenchmarks();

@@ -6,7 +6,6 @@
 #include "benchmark/benchmark_api.h"
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
 
 /*!
  * \file

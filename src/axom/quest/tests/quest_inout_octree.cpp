@@ -245,9 +245,7 @@ TEST(quest_inout_octree, tetrahedron_mesh)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  namespace slic = axom::slic;
-  slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
 
 #ifdef INOUT_OCTREE_TESTER_SHOULD_SEED
   std::srand(std::time(0));

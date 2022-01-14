@@ -4,14 +4,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom/slic/interface/slic.hpp"  // for slic macros
-#include "axom/mint/mesh/CellTypes.hpp"  // for CellTypes
+#include "axom/slic.hpp"
+#include "axom/mint/mesh/CellTypes.hpp"
 
 // gtest includes
-#include "gtest/gtest.h"  // for gtest macros
+#include "gtest/gtest.h"
 
 // C/C++ includes
-#include <cstring>  // for strlen()
+#include <cstring>
 
 // namespace aliases
 namespace mint = axom::mint;
@@ -200,18 +200,12 @@ TEST(mint_mesh_cell_types, check_cell_types)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

@@ -125,9 +125,7 @@ TEST_F(OctahedronTest, equals)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  axom::slic::SimpleLogger logger;
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
   return result;

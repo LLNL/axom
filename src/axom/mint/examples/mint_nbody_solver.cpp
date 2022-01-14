@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file
+ * \file mint_nbody_solver.cpp
  *
  * \brief A simple, naive, N-Body solver to illustrate the use of the
  *  ParticleMesh class. The N-Body solver simulates a collection of N particles
@@ -19,7 +19,6 @@
 
 // Axom namespace aliases
 namespace mint = axom::mint;
-namespace slic = axom::slic;
 namespace utilities = axom::utilities;
 
 // C/C++ includes
@@ -52,7 +51,7 @@ void apply_forces(mint::ParticleMesh& particles, double dt);
 int main(int argc, char** argv)
 {
   // STEP 0: initialize logger & parse arguments
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
   parse_arguments(argc, argv);
 
   // STEP 1: construct particle mesh
