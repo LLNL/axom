@@ -659,7 +659,7 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
 

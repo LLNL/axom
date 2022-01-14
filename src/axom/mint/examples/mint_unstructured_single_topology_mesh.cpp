@@ -20,7 +20,7 @@ using namespace axom;
 //------------------------------------------------------------------------------
 int main(int AXOM_UNUSED_PARAM(argc), char** AXOM_UNUSED_PARAM(argv))
 {
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
 
   constexpr int DIMENSION = 2;
   constexpr axom::IndexType X_EXTENT = 11;
