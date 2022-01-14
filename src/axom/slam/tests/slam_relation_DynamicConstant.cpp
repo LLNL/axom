@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -141,18 +141,22 @@ TEST(slam_relation_dynamic_constant, iterators)
     for(int i = 0; i < fromSize; ++i)
     {
       ElementType val = i;
+      PositionType idx = 0;
       for(RelationType::RelationIterator it = rel.begin(i), itEnd = rel.end(i);
           it != itEnd;
-          ++it)
+          ++it, ++idx)
       {
         EXPECT_EQ(val, *it);
+        EXPECT_EQ(idx, it.index());
       }
 
+      idx = 0;
       for(RelationType::RelationIteratorPair itPair = rel.range(i);
           itPair.first != itPair.second;
-          ++itPair.first)
+          ++itPair.first, ++idx)
       {
         EXPECT_EQ(val, *itPair.first);
+        EXPECT_EQ(idx, itPair.first.index());
       }
     }
   }
@@ -173,19 +177,23 @@ TEST(slam_relation_dynamic_constant, const_iterators)
     for(int i = 0; i < fromSize; ++i)
     {
       const ElementType val = i;
+      PositionType idx = 0;
       for(RelationType::RelationConstIterator it = rel.begin(i),
                                               itEnd = rel.end(i);
           it != itEnd;
-          ++it)
+          ++it, ++idx)
       {
         EXPECT_EQ(val, *it);
+        EXPECT_EQ(idx, it.index());
       }
 
+      idx = 0;
       for(RelationType::RelationConstIteratorPair itPair = rel.range(i);
           itPair.first != itPair.second;
-          ++itPair.first)
+          ++itPair.first, ++idx)
       {
         EXPECT_EQ(val, *itPair.first);
+        EXPECT_EQ(idx, itPair.first.index());
       }
     }
   }
@@ -230,10 +238,7 @@ TEST(slam_relation_dynamic_constant, remove)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  // create & initialize test logger. finalized when exiting main scope
-  axom::slic::SimpleLogger logger;
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
 

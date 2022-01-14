@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file
+ * \file spin_implicit_grid.cpp
  * \brief Unit tests for spin's ImplicitGrid class
  *
  * Uses gtest's TYPED_TESTS to test ImplicitGrid in 1,2 and 3 dimensions.
@@ -18,7 +18,7 @@
 
 #include <vector>
 #include <unordered_set>
-#include <algorithm>  // for std::find
+#include <algorithm>
 
 /*!
  * Templated test fixture for ImplicitGrid tests
@@ -195,41 +195,41 @@ TYPED_TEST(ImplicitGridTest, insert_contains)
 
   {
     // setup test data
-    // Note: make_point() ignores coordinates higher than its dimension
+    // Note: initializer list constructor ignores coordinates higher than its dimension
     SpacePt pts[] = {// Object 1 -- completely inside grid
-                     SpacePt::make_point(.15, .25, .05),
-                     SpacePt::make_point(.45, .25, .35),
+                     SpacePt {.15, .25, .05},
+                     SpacePt {.45, .25, .35},
 
                      // Object 2 -- extends past upper grid boundaries
-                     SpacePt::make_point(.85, .85, .85),
-                     SpacePt::make_point(1.25, 1.25, 1.25),
+                     SpacePt {.85, .85, .85},
+                     SpacePt {1.25, 1.25, 1.25},
 
                      // Object 3 -- single point at center of a grid cell
-                     SpacePt::make_point(.25, .35, .15),
+                     SpacePt {.25, .35, .15},
 
                      // Object 4 -- single point on grid lines
-                     SpacePt::make_point(.7, .7, .7),
+                     SpacePt {.7, .7, .7},
 
                      // Object 5 -- completely outside grid
-                     SpacePt::make_point(1.85, 1.85, 1.85),
-                     SpacePt::make_point(2.25, 2.25, 2.25),
+                     SpacePt {1.85, 1.85, 1.85},
+                     SpacePt {2.25, 2.25, 2.25},
 
                      // Object 6 -- overlaps entire grid
-                     SpacePt::make_point(-1.85, -1.85, -1.85),
-                     SpacePt::make_point(2.25, 2.25, 2.25)};
+                     SpacePt {-1.85, -1.85, -1.85},
+                     SpacePt {2.25, 2.25, 2.25}};
 
     // Explicitly define expected ranges of cells
     // where we expect objects to be indexed
-    GridCell rangePts[] = {GridCell::make_point(1, 2, 0),  // obj1
-                           GridCell::make_point(4, 2, 3),
+    GridCell rangePts[] = {GridCell {1, 2, 0},  // obj1
+                           GridCell {4, 2, 3},
 
-                           GridCell::make_point(8, 8, 8),  // obj2
-                           GridCell::make_point(9, 9, 9),
+                           GridCell {8, 8, 8},  // obj2
+                           GridCell {9, 9, 9},
 
-                           GridCell::make_point(2, 3, 1),  // obj3
+                           GridCell {2, 3, 1},  // obj3
 
-                           GridCell::make_point(6, 6, 6),  // obj4
-                           GridCell::make_point(7, 7, 7)};
+                           GridCell {6, 6, 6},  // obj4
+                           GridCell {7, 7, 7}};
 
     objBox[0] = BBox();  // unused
     objBox[1] = BBox(pts[0], pts[1]);
@@ -262,12 +262,13 @@ TYPED_TEST(ImplicitGridTest, insert_contains)
     {
       for(int k = 0; k < k_max; ++k)
       {
-        GridCell gridCell = GridCell::make_point(i, j, k);
+        GridCell gridCell {i, j, k};
 
         // Item 0 -- was not inserted, so is never in grid
         {
           int idx = 0;
-          ASSERT_FALSE(grid.contains(gridCell, idx));
+          EXPECT_FALSE(grid.contains(gridCell, idx));
+          EXPECT_FALSE(grid.getCandidates(gridCell).test(idx));
         }
 
         // Objects 1,2,3 and 4 are expected to be in grid
@@ -276,7 +277,8 @@ TYPED_TEST(ImplicitGridTest, insert_contains)
           for(int idx = 1; idx < 5; ++idx)
           {
             bool exp = ranges[idx].contains(gridCell);
-            ASSERT_EQ(exp, grid.contains(gridCell, idx));
+            EXPECT_EQ(exp, grid.contains(gridCell, idx));
+            EXPECT_EQ(exp, grid.getCandidates(gridCell).test(idx));
           }
         }
 
@@ -284,18 +286,21 @@ TYPED_TEST(ImplicitGridTest, insert_contains)
         {
           int idx = 5;
           EXPECT_FALSE(grid.contains(gridCell, idx));
+          EXPECT_FALSE(grid.getCandidates(gridCell).test(idx));
         }
 
         // Object 6 is always inside grid
         {
           int idx = 6;
           EXPECT_TRUE(grid.contains(gridCell, idx));
+          EXPECT_TRUE(grid.getCandidates(gridCell).test(idx));
         }
 
         // Test an index that is out of range
         {
           int idx = maxElts + 1;
-          ASSERT_FALSE(grid.contains(gridCell, idx));
+          EXPECT_FALSE(grid.contains(gridCell, idx));
+          EXPECT_FALSE(grid.getCandidates(gridCell).test(idx));
         }
       }
     }
@@ -324,8 +329,7 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt)
 
   GridT grid(bbox, &res, maxElts);
 
-  BBox objBox1(SpacePt::make_point(.15, .25, .05),
-               SpacePt::make_point(.45, .25, .35));
+  BBox objBox1(SpacePt {.15, .25, .05}, SpacePt {.45, .25, .35});
   grid.insert(objBox1, 1);
 
   {
@@ -336,14 +340,14 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt)
       objBox1.getCentroid(),
 
       // Next two points are not in obj1, but in same grid cells
-      SpacePt::make_point(0.11, 0.21, 0.01),
-      SpacePt::make_point(0.49, 0.29, 0.39),
+      SpacePt {0.11, 0.21, 0.01},
+      SpacePt {0.49, 0.29, 0.39},
 
       // Next four points are not in obj1 or any of same cells
       SpacePt(0.55),
-      SpacePt::make_point(.99, 0.25, 0.25),  // outside coord 0
-      SpacePt::make_point(.35, 0.99, 0.25),  // outside coord 1
-      SpacePt::make_point(.35, 0.25, 0.99),  // outside coord 2
+      SpacePt {.99, 0.25, 0.25},  // outside coord 0
+      SpacePt {.35, 0.99, 0.25},  // outside coord 1
+      SpacePt {.35, 0.25, 0.99},  // outside coord 2
     };
 
     // Test some points that are expected to match
@@ -382,16 +386,16 @@ TYPED_TEST(ImplicitGridTest, get_candidates_pt)
     }
   }
 
-  BBox objBox2(SpacePt::make_point(.75, .85, .85), SpacePt(.85));
+  BBox objBox2(SpacePt {.75, .85, .85}, SpacePt(.85));
   grid.insert(objBox2, 2);
 
-  BBox objBox3(SpacePt::make_point(.85, .85, .75), SpacePt(.95));
+  BBox objBox3(SpacePt {.85, .85, .75}, SpacePt(.95));
   grid.insert(objBox3, 3);
 
   // test a point that should contain only obj2
   {
     const std::size_t expSize = 1;
-    SpacePt queryPt = SpacePt::make_point(.75, .85, .85);
+    SpacePt queryPt = SpacePt {.75, .85, .85};
 
     CandidateBitset candidateBits = grid.getCandidates(queryPt);
     EXPECT_EQ(expSize, candidateBits.count());
@@ -460,8 +464,6 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
             << axom::execution_space<typename TestFixture::ExecSpace>::name()
             << " execution space for points in " << DIM << "D");
 
-  using IndexType = typename GridT::IndexType;
-
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
   GridCell res(10);
@@ -470,8 +472,7 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
 
   GridT grid(bbox, &res, maxElts);
 
-  BBox objBox1(SpacePt::make_point(.15, .25, .05),
-               SpacePt::make_point(.45, .25, .35));
+  BBox objBox1(SpacePt {.15, .25, .05}, SpacePt {.45, .25, .35});
   grid.insert(objBox1, 1);
 
   {
@@ -482,14 +483,14 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
       objBox1.getCentroid(),
 
       // Next two points are not in obj1, but in same grid cells
-      SpacePt::make_point(0.11, 0.21, 0.01),
-      SpacePt::make_point(0.49, 0.29, 0.39),
+      SpacePt {0.11, 0.21, 0.01},
+      SpacePt {0.49, 0.29, 0.39},
 
       // Next four points are not in obj1 or any of same cells
       SpacePt(0.55),
-      SpacePt::make_point(.99, 0.25, 0.25),  // outside coord 0
-      SpacePt::make_point(.35, 0.99, 0.25),  // outside coord 1
-      SpacePt::make_point(.35, 0.25, 0.99),  // outside coord 2
+      SpacePt {.99, 0.25, 0.25},  // outside coord 0
+      SpacePt {.35, 0.99, 0.25},  // outside coord 1
+      SpacePt {.35, 0.25, 0.99},  // outside coord 2
     };
 
     axom::Array<int> count, offset, candidates;
@@ -512,19 +513,19 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
     }
   }
 
-  BBox objBox2(SpacePt::make_point(.75, .85, .85), SpacePt(.85));
+  BBox objBox2(SpacePt {.75, .85, .85}, SpacePt(.85));
   grid.insert(objBox2, 2);
 
-  BBox objBox3(SpacePt::make_point(.85, .85, .75), SpacePt(.95));
+  BBox objBox3(SpacePt {.85, .85, .75}, SpacePt(.95));
   grid.insert(objBox3, 3);
 
   {
     SpacePt queryPts[] = {// Should only be inside obj2
-                          SpacePt::make_point(.75, .85, .85),
+                          SpacePt {.75, .85, .85},
                           // Should only be inside obj3
                           SpacePt(.91),
                           // Should be inside obj2 and obj3, but not obj1
-                          SpacePt::make_point(.85, .85, .85)};
+                          SpacePt {.85, .85, .85}};
 
     axom::Array<int> count, offset, candidates;
 
@@ -577,8 +578,8 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box)
 
     for(int i = 0; i < res[0]; ++i)
     {
-      grid.insert(BBox(SpacePt::make_point(0.025 + 0.1 * i, .05, .05),
-                       SpacePt::make_point(0.075 + 0.1 * i, .95, .95)),
+      grid.insert(BBox(SpacePt {0.025 + 0.1 * i, .05, .05},
+                       SpacePt {0.075 + 0.1 * i, .95, .95}),
                   i);
     }
 
@@ -586,8 +587,8 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box)
     {
       for(int i = 0; i < res[1]; ++i)
       {
-        grid.insert(BBox(SpacePt::make_point(0.05, 0.025 + 0.1 * i, .05),
-                         SpacePt::make_point(0.95, 0.075 + 0.1 * i, .95)),
+        grid.insert(BBox(SpacePt {0.05, 0.025 + 0.1 * i, .05},
+                         SpacePt {0.95, 0.075 + 0.1 * i, .95}),
                     10 + i);
       }
     }
@@ -596,8 +597,8 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box)
     {
       for(int i = 0; i < res[2]; ++i)
       {
-        grid.insert(BBox(SpacePt::make_point(0.05, 0.05, 0.025 + 0.1 * i),
-                         SpacePt::make_point(0.95, 0.95, 0.075 + 0.1 * i)),
+        grid.insert(BBox(SpacePt {0.05, 0.05, 0.025 + 0.1 * i},
+                         SpacePt {0.95, 0.95, 0.075 + 0.1 * i}),
                     20 + i);
       }
     }
@@ -609,9 +610,7 @@ TYPED_TEST(ImplicitGridTest, get_candidates_box)
       {
         for(int k = 0; k < k_max; ++k)
         {
-          double pos[3] = {i * .1 + .05, j * .1 + .05, k * .1 + .05};
-          SpacePt queryPt = SpacePt::make_point(pos[0], pos[1], pos[2]);
-
+          SpacePt queryPt {i * .1 + .05, j * .1 + .05, k * .1 + .05};
           EXPECT_EQ(DIM, grid.getCandidates(queryPt).count());
         }
       }
@@ -735,8 +734,6 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
             << axom::execution_space<typename TestFixture::ExecSpace>::name()
             << " execution space for boxes in " << DIM << "D");
 
-  using IndexType = typename GridT::IndexType;
-
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
   GridCell res(10);
@@ -759,8 +756,8 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
 
     for(int i = 0; i < res[0]; ++i)
     {
-      grid.insert(BBox(SpacePt::make_point(0.025 + 0.1 * i, .05, .05),
-                       SpacePt::make_point(0.075 + 0.1 * i, .95, .95)),
+      grid.insert(BBox(SpacePt {0.025 + 0.1 * i, .05, .05},
+                       SpacePt {0.075 + 0.1 * i, .95, .95}),
                   i);
     }
 
@@ -768,8 +765,8 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
     {
       for(int i = 0; i < res[1]; ++i)
       {
-        grid.insert(BBox(SpacePt::make_point(0.05, 0.025 + 0.1 * i, .05),
-                         SpacePt::make_point(0.95, 0.075 + 0.1 * i, .95)),
+        grid.insert(BBox(SpacePt {0.05, 0.025 + 0.1 * i, .05},
+                         SpacePt {0.95, 0.075 + 0.1 * i, .95}),
                     10 + i);
       }
     }
@@ -778,8 +775,8 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
     {
       for(int i = 0; i < res[2]; ++i)
       {
-        grid.insert(BBox(SpacePt::make_point(0.05, 0.05, 0.025 + 0.1 * i),
-                         SpacePt::make_point(0.95, 0.95, 0.075 + 0.1 * i)),
+        grid.insert(BBox(SpacePt {0.05, 0.05, 0.025 + 0.1 * i},
+                         SpacePt {0.95, 0.95, 0.075 + 0.1 * i}),
                     20 + i);
       }
     }
@@ -791,9 +788,7 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
       {
         for(int k = 0; k < k_max; ++k)
         {
-          double pos[3] = {i * .1 + .05, j * .1 + .05, k * .1 + .05};
-          SpacePt queryPt = SpacePt::make_point(pos[0], pos[1], pos[2]);
-
+          SpacePt queryPt {i * .1 + .05, j * .1 + .05, k * .1 + .05};
           EXPECT_EQ(DIM, grid.getCandidates(queryPt).count());
         }
       }
@@ -802,21 +797,21 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
 
   //// Run some queries
   BBox queryBoxes[] = {// Empty box -- covers no objects
-                       {},
+                       BBox {},
                        // Box covers entire domain -- covers all objects
                        bbox,
                        // Box is larger than domain -- covers all objects
-                       {SpacePt(-1.), SpacePt(2.)},
+                       BBox {SpacePt(-1.), SpacePt(2.)},
                        // Box only covers first quadrant/octant of domain
-                       {SpacePt(-1.), SpacePt(0.45)},
+                       BBox {SpacePt(-1.), SpacePt(0.45)},
                        // Box covers a single cell
-                       {SpacePt(0.525), SpacePt(0.575)},
+                       BBox {SpacePt(0.525), SpacePt(0.575)},
                        // Box only covers last quadrant/octant of domain
-                       {SpacePt(0.55), SpacePt(2.)},
+                       BBox {SpacePt(0.55), SpacePt(2.)},
                        // Box covers middle of domain
-                       {SpacePt(0.25), SpacePt(0.75)},
+                       BBox {SpacePt(0.25), SpacePt(0.75)},
                        // Box is inverted -- BoundingBox constructor fixes this
-                       {SpacePt(2.), SpacePt(-1)}};
+                       BBox {SpacePt(2.), SpacePt(-1)}};
 
   constexpr int N_QUERIES = 8;
 
@@ -855,9 +850,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   result = RUN_ALL_TESTS();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,8 +7,10 @@
 
 #include "axom/config.hpp"  // for compile-time definitions
 
+#include "core_about.hpp"
 #include "core_array.hpp"
 #include "core_array_for_all.hpp"
+#include "core_bit_utilities.hpp"
 #include "core_execution_for_all.hpp"
 #include "core_execution_space.hpp"
 #include "core_map.hpp"
@@ -31,7 +33,6 @@
 #include "numerics_matvecops.hpp"
 #include "numerics_polynomial_solvers.hpp"
 
-#include "utils_about.hpp"
 #include "utils_endianness.hpp"
 #include "utils_fileUtilities.hpp"
 #include "utils_nvtx_settings.hpp"

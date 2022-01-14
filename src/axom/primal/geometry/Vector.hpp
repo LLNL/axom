@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -62,6 +62,16 @@ AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Point<T, NDIMS>& P,
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
                                            const Point<T, NDIMS>& P);
+
+/*!
+ * \brief Subtracts vector \a V from point \a P and stores the result into a new point
+ * \param [in] P point on the left-hand side.
+ * \param [in] V vector on the right-hand side.
+ * \return resulting point, \f$ p'_i = p_i + v_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator-(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V);
 
 /*!
  * \brief Subtracts vectors A, B and stores the result into a new vector C
@@ -598,6 +608,15 @@ AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
                                            const Point<T, NDIMS>& P)
 {
   return P + V;
+}
+
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator-(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V)
+{
+  Point<T, NDIMS> result(P);
+  result.array() -= V.array();
+  return result;
 }
 
 //------------------------------------------------------------------------------

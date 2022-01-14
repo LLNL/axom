@@ -1,25 +1,23 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 #include "axom/mint/config.hpp"                /* for mint defintions */
 #include "axom/mint/mesh/UnstructuredMesh.hpp" /* for mint::Array */
 
-#include "axom/core/utilities/Utilities.hpp" /* for utilities::max */
-
-#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
-#include "axom/slic/interface/slic.hpp"    /* for slic macros */
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/slic.hpp"
 
 #include "mint_test_utilities.hpp" /* for create_mesh() */
 
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
 #endif
 
 // C/C++ includes
-#include <algorithm> /* for std::fill_n */
+#include <algorithm>
 #include <string>
 #include <sstream>
 #include <unordered_map>
@@ -3369,15 +3367,10 @@ TEST(mint_mesh_unstructured_mesh, check_face_connectivity)
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   return RUN_ALL_TESTS();
 }

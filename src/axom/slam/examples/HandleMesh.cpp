@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,6 @@
 #include <ostream>
 
 namespace slam = axom::slam;
-namespace slic = axom::slic;
 
 namespace
 {
@@ -59,7 +58,7 @@ std::ostream& operator<<(std::ostream& os, const Handle<T>& h)
 
 int main(int, char**)
 {
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
 
   using PosType = slam::DefaultPositionType;
   using HandleType = Handle<PosType>;

@@ -1,15 +1,15 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom/slic/interface/slic.hpp"         // for slic macros
+#include "axom/slic.hpp"
 #include "axom/mint/mesh/FieldData.hpp"         // for mint::FieldData
 #include "axom/mint/mesh/FieldAssociation.hpp"  // for FieldAssociation enum
 
 // gtest includes
-#include "gtest/gtest.h"  // for gtest macros
+#include "gtest/gtest.h"
 
 // C/C++ includes
 #include <algorithm>  // for std::fill()
@@ -726,18 +726,12 @@ TEST(mint_mesh_field_data, shrink)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

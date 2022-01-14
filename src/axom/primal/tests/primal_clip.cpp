@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,9 +6,10 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/core/Types.hpp"
-#include "axom/core/execution/for_all.hpp"  // for for_all, execution policies
+#include "axom/core/execution/for_all.hpp"
 #include "axom/core/memory_management.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
@@ -655,14 +656,10 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
 

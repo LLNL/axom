@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,13 +42,13 @@ template <int NDIMS, typename mesh_tag, typename ExecSpace>
 class PointFinder
 {
 public:
-  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace>;
+  using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
+  using IndexType = typename MeshWrapperType::IndexType;
+
+  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace, IndexType>;
 
   using SpacePoint = typename GridType::SpacePoint;
   using SpatialBoundingBox = typename GridType::SpatialBoundingBox;
-
-  using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
-  using IndexType = typename MeshWrapperType::IndexType;
 
 private:
   constexpr static bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
@@ -314,6 +314,7 @@ public:
     {
       SpacePoint pt = pts[i];
       SpacePoint isopar;
+      outCellIds[i] = PointInCellTraits<mesh_tag>::NO_CELL;
       gridQuery.visitCandidates(pt, [&](int candidateIdx) -> bool {
         if(m_cellBBoxes[candidateIdx].contains(pts[i]))
         {

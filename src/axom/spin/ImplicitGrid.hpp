@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -204,21 +204,19 @@ public:
     for(int i = 0; i < NDIMS; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType {}, 1, allocatorID);
+      m_binData[i] =
+        BinBitMap(&m_bins[i], BitsetType(numElts, allocatorID), 1, allocatorID);
 
       axom::IndexType gridResDim = m_gridRes[i];
       m_minBlockBin[i] =
         axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
       m_maxBlockBin[i] =
         axom::Array<IndexType>(gridResDim, gridResDim, allocatorID);
-      for(int ibin = 0; ibin < m_bins[i].size(); ibin++)
-      {
-        m_binData[i][ibin] = BitsetType(numElts, allocatorID);
-        // We set initial min/max word indices to dummy values. These will be
-        // set correctly on the first call to ImplicitGrid::insert().
-        m_minBlockBin[i][ibin] = numElts;
-        m_maxBlockBin[i][ibin] = 0;
-      }
+
+      // We set initial min/max word indices to dummy values. These will be
+      // set correctly on the first call to ImplicitGrid::insert().
+      m_minBlockBin[i].fill(numElts);
+      m_maxBlockBin[i].fill(0);
     }
 
     // Set the expansion factor for each element to a small fraction of the
@@ -341,6 +339,35 @@ public:
     {
       idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
       res &= m_binData[i][idx];
+    }
+
+    return res;
+  }
+
+  /*!
+   * Finds the candidate elements in the given \a gridCell of the grid
+   *
+   * \param [in] gridCell The cell of the grid
+   * \return A bitset whose bits correspond to the elements of the IndexSet.
+   * The bits are set if their corresponding element bounding boxes overlap \a gridCell
+   */
+  BitsetType getCandidates(const GridCell& gridCell) const
+  {
+    // Perform some validity checks
+    if(!m_initialized) return BitsetType(0);
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      if(gridCell[i] < 0 || gridCell[i] > highestBin(i))
+      {
+        return BitsetType(0);
+      }
+    }
+
+    // Note: Due to above checks, gridCell[i] is always valid
+    BitsetType res = m_binData[0][gridCell[0]];
+    for(int i = 1; i < NDIMS; ++i)
+    {
+      res &= m_binData[i][gridCell[i]];
     }
 
     return res;

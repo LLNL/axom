@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2021, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2022, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -32,6 +32,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added initial implementation of GPU/OpenMP-accelerated point-in-cell queries
 - Added an alternative surface mesh tester function to Quest, based on `ImplicitGrid`
 - Add `const` versions of `begin()` and `end()` for `Array` and `ArrayView`
+- Add support for passing compatible custom allocator IDs to `axom::Array` with explicitly specified
+  memory space
+- Adds constructor overloads to `axom::Array` that uses both uninitialized data (`ArrayOptions::Uninitialized`) 
+  and custom allocators
+- Adds a comparison operator (`operator<()`) to `StackArray`. This allows it to be used as a key for `std::map`
+- Use compiler intrinsics for axom's bit utility functions: `popCount()`, `trailingZeros()` and `leadingZeros()`
+- Adds a random-access iterator to `slam::DynamicSet`
+- Adds an overload to `ImpicitGrid::getCandidates()` from a grid cell of the lattice. 
+  This makes it easier to iterate over the bins of the spatial index.
 
 ###  Changed
 - Moved bit-twiddling functions to core component
@@ -45,12 +54,26 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - When an `inlet::Field` fails a range or valid value constraint, the provided value and
   corresponding range/set of valid values are now included in the error message
 - IOManager::write now allows the calling code to pass in the full name of
-  the root file that it will produce.
+  the root file that it will produce
+- Improved consistency of orientation operations in `primal::Plane`, `primal::Sphere`, `primal::orientation()` 
+  and `primal::in_sphere()`
+- Improved efficiency for `primal::in_sphere()` -- the computations are now based on `(D+1)x(D+1)` determinants 
+  instead of `(D+2)x(D+2)` determinants for `D`-dimensional spheres 
+- Improved efficiency for (signed) area/volume functions of `primal::Segment`, `primal::Triangle` and `primal::Tetrahedron`
+- Updates interface for `primal::Sphere` to use more of `primal`, e.g. uses `primal::Point` instead of `T*` to represent points
+- Adds `circumsphere()` functions to `primal::Triangle` and `primal::Tetrahedron` to return the `Sphere` 
+  that circumscribes the triangle/tetrahedron's vertices
+- Adds operator overloads to subtract a `primal::Vector` from a `primal::Point` to yield a new `primal::Point`
+
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
 - Fixed over-eager caching of restored `mfem::FiniteElementSpaces` in `sidre::MFEMSidreDataCollection`
 - Fixed a bug in which Inlet verification bails out on the first failure, which resulted in
   incomplete error lists
+- Fixed a bug in `quest::PointInCell` when not using RAJA
+- Fixed `axom::Array<T>::clear()`, `axom::Array<T>::fill()`, and `axom::Array<T>::erase()` when the
+  underlying memory is in device space
+- Fixed a potential memory leak in `axom::Array<T>` for non-trivial types `T` which allocate memory
 
 ## [Version 0.6.1] - Release date 2021-11-17
 

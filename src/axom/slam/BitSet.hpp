@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -108,7 +108,7 @@ BitSet operator-(const BitSet& lhs, const BitSet& rhs);
  * BitSet uses the same interface as boost::dynamic_bitset to enumerate the
  * set bits. Specifically, find_first() returns the index of the first set bit.
  * and find_next(idx) returns the next bit that is set after bit index idx.
- * BitSet::npos is used as a sentinal to indicate no more set bits.
+ * BitSet::npos is used as a sentinel to indicate no more set bits.
  */
 class BitSet
 {
@@ -116,18 +116,16 @@ public:
   using Index = int;
   using Word = axom::uint64;
 
-  // Use vector for initial implementation -- TODO: update using a policy
-  using ArrayType = axom::Array<Word>;
+  // TODO: update using a policy
+  using ArrayType = axom::Array<Word, 1>;
 
   static constexpr Index npos = -2;
   static constexpr int BitsPerWord =
     axom::utilities::BitTraits<Word>::BITS_PER_WORD;
 
 private:
-  enum
-  {
-    LG_BITS_PER_WORD = axom::utilities::BitTraits<Word>::LG_BITS_PER_WORD
-  };
+  static constexpr int LG_BITS_PER_WORD =
+    axom::utilities::BitTraits<Word>::LG_BITS_PER_WORD;
 
 public:
   /**
@@ -146,9 +144,13 @@ public:
       "slam::BitSet must be initialized with a non-zero number of bits");
 
     m_numBits = axom::utilities::max(numBits, 0);
-    IndexType numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
+    axom::IndexType numWords =
+      (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
 
-    m_data = ArrayType(numWords, numWords, allocatorID);
+    m_data = ArrayType(axom::ArrayOptions::Uninitialized {},
+                       numWords,
+                       numWords,
+                       allocatorID);
     m_data.fill(0);
   }
 
@@ -301,11 +303,13 @@ public:
 
   /**
    * \brief Tests the bit at index \a idx
-   *
-   * \return True if bit \idx is set, false otherwise
-   * \pre \a idx must be between 0 and bitset.size()
+   * \return True if \a idx is valid and its bit is set, false otherwise
    */
-  bool test(Index idx) const { return (getWord(idx) & mask(idx)) != Word(0); }
+  bool test(Index idx) const
+  {
+    return (idx >= 0 && idx < m_numBits) &&   // idx is in range
+      (getWord(idx) & mask(idx)) != Word(0);  // and its bit is set
+  }
 
   /// @}
 

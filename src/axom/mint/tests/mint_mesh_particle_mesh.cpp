@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,7 +7,7 @@
 #include "axom/mint/mesh/blueprint.hpp"     // for mint::blueprint() functions
 #include "axom/mint/mesh/ParticleMesh.hpp"  // for ParticleMesh definition
 
-#include "axom/slic/interface/slic.hpp"  // for slic macros
+#include "axom/slic.hpp"
 
 // Sidre includes
 #ifdef AXOM_MINT_USE_SIDRE
@@ -15,7 +15,7 @@
 namespace sidre = axom::sidre;
 #endif
 
-#include "gtest/gtest.h"  // for gtest macros
+#include "gtest/gtest.h"
 
 // namespace aliases
 namespace mint = axom::mint;
@@ -549,18 +549,12 @@ TEST(mint_mesh_particle_mesh, shrink)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

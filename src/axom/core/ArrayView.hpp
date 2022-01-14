@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -193,7 +193,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.
   if(SPACE != MemorySpace::Dynamic &&
-     m_allocator_id != axom::detail::getAllocatorID<SPACE>())
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
   {
     std::cerr << "Input argument allocator does not match the explicitly "
                  "provided memory space\n";
@@ -219,7 +219,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.
   if(SPACE != MemorySpace::Dynamic &&
-     m_allocator_id != axom::detail::getAllocatorID<SPACE>())
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
   {
     std::cerr << "Input argument allocator does not match the explicitly "
                  "provided memory space\n";

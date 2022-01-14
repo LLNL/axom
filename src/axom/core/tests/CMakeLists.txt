@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,8 +15,10 @@
 #------------------------------------------------------------------------------
 
 set(core_serial_tests
+    core_about.hpp
     core_array.hpp
     core_array_for_all.hpp
+    core_bit_utilities.hpp
     core_execution_for_all.hpp
     core_execution_space.hpp
     core_map.hpp
@@ -35,7 +37,6 @@ set(core_serial_tests
     numerics_matvecops.hpp
     numerics_polynomial_solvers.hpp
 
-    utils_about.hpp
     utils_endianness.hpp
     utils_fileUtilities.hpp
     utils_nvtx_settings.hpp

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,7 +7,7 @@
 #define AXOM_QUEST_POINT_IN_CELL_MFEM_IMPL_HPP_
 
 /*!
- * \file
+ * \file PointInCellMeshWrapper_mfem.hpp
  *
  * This file contains implementation classes for an mfem-based
  * specialization of quest's PointInCell query on meshes or
@@ -57,8 +57,8 @@ template <>
 struct PointInCellTraits<quest_point_in_cell_mfem_tag>
 {
 public:
-  typedef mfem::Mesh MeshType;
-  typedef int IndexType;
+  using MeshType = mfem::Mesh;
+  using IndexType = int;
 
   /*!  Special value to indicate an unsuccessful query */
   enum Values : IndexType
@@ -86,8 +86,8 @@ template <>
 class PointInCellMeshWrapper<quest_point_in_cell_mfem_tag>
 {
 public:
-  typedef int IndexType;
-  typedef PointInCellMeshWrapper<quest_point_in_cell_mfem_tag> MeshWrapper;
+  using IndexType = int;
+  using MeshWrapper = PointInCellMeshWrapper<quest_point_in_cell_mfem_tag>;
 
   PointInCellMeshWrapper(mfem::Mesh* mesh) : m_mesh(mesh)
   {
@@ -287,8 +287,8 @@ private:
     axom::primal::BoundingBox<double, NDIMS>* eltBBoxes,
     axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
-    typedef axom::primal::Point<double, NDIMS> SpacePoint;
-    typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
+    using SpacePoint = axom::primal::Point<double, NDIMS>;
+    using SpatialBoundingBox = axom::primal::BoundingBox<double, NDIMS>;
 
     // Sanity checks
     SLIC_ASSERT(m_isHighOrder);
@@ -402,8 +402,8 @@ private:
     axom::primal::BoundingBox<double, NDIMS>* eltBBoxes,
     axom::primal::BoundingBox<double, NDIMS>& meshBBox) const
   {
-    typedef axom::primal::Point<double, NDIMS> SpacePoint;
-    typedef axom::primal::BoundingBox<double, NDIMS> SpatialBoundingBox;
+    using SpacePoint = axom::primal::Point<double, NDIMS>;
+    using SpatialBoundingBox = axom::primal::BoundingBox<double, NDIMS>;
 
     SLIC_ASSERT(!m_isHighOrder);
     SLIC_ASSERT(bboxScaleFactor >= 1.);
