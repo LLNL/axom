@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -108,7 +108,7 @@ public:
       }
     }
 
-    m_points = PointArray(pts, m_allocatorID); // copy to ExecSpace
+    m_points = PointArray(pts, m_allocatorID);  // copy to ExecSpace
   }
 
   bool generateBVHTree()
@@ -513,6 +513,9 @@ int main(int argc, char** argv)
     "{:=^80}",
     axom::fmt::format("Computing closest points for {} query points", nQueryPts));
 
+  axom::utilities::Timer initTimer(false);
+  axom::utilities::Timer queryTimer(false);
+
   switch(params.policy)
   {
   case RuntimePolicy::seq:
@@ -522,10 +525,14 @@ int main(int argc, char** argv)
     query.generatePoints(params.circleRadius, params.circlePoints);
 
     SLIC_INFO(init_str);
+    initTimer.start();
     query.generateBVHTree();
+    initTimer.stop();
 
     SLIC_INFO(query_str);
+    queryTimer.start();
     query.computeClosestPoints(qPts, cpIndices);
+    queryTimer.stop();
     objectPts = query.points();
   }
   break;
@@ -538,10 +545,15 @@ int main(int argc, char** argv)
     query.generatePoints(params.circleRadius, params.circlePoints);
 
     SLIC_INFO(init_str);
+    initTimer.start();
     query.generateBVHTree();
+    initTimer.stop();
 
     SLIC_INFO(query_str);
+    queryTimer.start();
     query.computeClosestPoints(qPts, cpIndices);
+    queryTimer.stop();
+
     objectPts = query.points();
   }
 #endif
@@ -554,10 +566,15 @@ int main(int argc, char** argv)
     query.generatePoints(params.circleRadius, params.circlePoints);
 
     SLIC_INFO(init_str);
+    initTimer.start();
     query.generateBVHTree();
+    initTimer.stop();
 
     SLIC_INFO(query_str);
+    queryTimer.start();
     query.computeClosestPoints(qPts, cpIndices);
+    queryTimer.stop();
+
     objectPts = query.points();
   }
 #endif
@@ -572,6 +589,13 @@ int main(int argc, char** argv)
       SLIC_INFO(axom::fmt::format("\t{}: {}", i, cpIndices[i]));
     }
   }
+
+  SLIC_INFO(axom::fmt::format("Initialization with policy {} took {} seconds",
+                              params.policy,
+                              initTimer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format("Query with policy {} took {} seconds",
+                              params.policy,
+                              queryTimer.elapsedTimeInSec()));
 
   //---------------------------------------------------------------------------
   // Transform closest points to distances and directions
