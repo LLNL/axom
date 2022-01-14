@@ -6,8 +6,9 @@
 #include "gtest/gtest.h"
 
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
-#include "axom/core/execution/for_all.hpp"          // for_all()
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
+#include "axom/slic.hpp"
 
 using namespace axom;
 
@@ -395,18 +396,12 @@ AXOM_CUDA_TEST(primal_point, point_check_policies)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

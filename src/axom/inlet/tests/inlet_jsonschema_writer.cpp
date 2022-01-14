@@ -3,19 +3,20 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/slic.hpp"
+
+#include "axom/inlet/Inlet.hpp"
+#include "axom/inlet/JSONSchemaWriter.hpp"
+#include "axom/inlet/tests/inlet_test_utils.hpp"
+
 #include "gtest/gtest.h"
 
 #include <cstdlib>
-
 #include <string>
 #include <vector>
 #include <memory>
 #include <fstream>
 #include <streambuf>
-
-#include "axom/inlet/Inlet.hpp"
-#include "axom/inlet/JSONSchemaWriter.hpp"
-#include "axom/inlet/tests/inlet_test_utils.hpp"
 
 using axom::inlet::Inlet;
 using axom::inlet::JSONSchemaWriter;
@@ -224,18 +225,12 @@ TYPED_TEST(inlet_jsonschema_writer, top_level_strings_valid_set_fail)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

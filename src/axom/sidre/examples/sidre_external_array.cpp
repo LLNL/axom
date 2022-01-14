@@ -18,7 +18,6 @@
 
 // aliases
 namespace sidre = axom::sidre;
-namespace slic = axom::slic;
 
 #if defined(AXOM_USE_HDF5)
 //------------------------------------------------------------------------------
@@ -114,7 +113,7 @@ int main(int argc, char** argv)
 #if defined(AXOM_USE_HDF5)
   MPI_Comm problem_comm = MPI_COMM_WORLD;
 
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
 
   // STEP 0: create some data
   constexpr axom::IndexType NUM_NODES = 10;

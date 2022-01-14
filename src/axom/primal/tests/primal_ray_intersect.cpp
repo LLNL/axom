@@ -6,8 +6,9 @@
 #include "axom/config.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
-#include "axom/core/numerics/Matrix.hpp"     // for numerics::Matrix
-#include "axom/core/numerics/matvecops.hpp"  // for matrix-vector operators
+#include "axom/core/numerics/Matrix.hpp"
+#include "axom/core/numerics/matvecops.hpp"
+#include "axom/slic.hpp"
 
 #include "gtest/gtest.h"
 
@@ -385,18 +386,12 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

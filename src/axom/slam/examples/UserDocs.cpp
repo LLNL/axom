@@ -389,9 +389,8 @@ void quadMeshExample()
   quadMesh.outputVTKMesh();
 }
 
-int main(int /* argc */, char** /* argv */)
+int main()
 {
   axom::slic::SimpleLogger logger;
-
   quadMeshExample();
 }

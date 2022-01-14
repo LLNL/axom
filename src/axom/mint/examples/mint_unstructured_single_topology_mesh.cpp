@@ -16,12 +16,11 @@
 #include "axom/slic.hpp"
 
 using namespace axom;
-using axom::slic::SimpleLogger;
 
 //------------------------------------------------------------------------------
 int main(int AXOM_UNUSED_PARAM(argc), char** AXOM_UNUSED_PARAM(argv))
 {
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
   constexpr int DIMENSION = 2;
   constexpr axom::IndexType X_EXTENT = 11;

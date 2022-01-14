@@ -158,16 +158,11 @@ void tinyHydroSod1D_2part()
 }
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main()
 {
   int result = 0;
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
+  
   tinyHydroSod1D_2part();
 
   return result;

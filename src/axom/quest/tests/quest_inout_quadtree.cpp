@@ -202,7 +202,6 @@ TEST(quest_inout_quadtree, circle_mesh)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
 #ifdef INOUT_OCTREE_TESTER_SHOULD_SEED

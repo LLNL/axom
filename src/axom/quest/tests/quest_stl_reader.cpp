@@ -5,6 +5,7 @@
 
 #include "axom/quest/readers/STLReader.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/slic.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -205,15 +206,10 @@ TEST(quest_stl_reader, read_stl_external)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   return RUN_ALL_TESTS();
 }

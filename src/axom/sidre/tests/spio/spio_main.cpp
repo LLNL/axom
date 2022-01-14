@@ -7,7 +7,8 @@
 
 #include "mpi.h"
 
-#include "axom/config.hpp"  // for compile-time definitions
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 namespace
 {
@@ -23,16 +24,12 @@ const std::string ROOT_EXT = ".root";
 #include "spio_parallel.hpp"
 #include "spio_serial.hpp"
 
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
   MPI_Init(&argc, &argv);
   result = RUN_ALL_TESTS();

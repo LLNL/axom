@@ -353,8 +353,6 @@ TEST(quest_all_nearnbr, file_query)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
@@ -362,6 +360,7 @@ int main(int argc, char* argv[])
   outfname = nullptr;
 
   ::testing::InitGoogleTest(&argc, argv);
+  axom::slic::SimpleLogger logger;
 
   if(argc > 1)
   {
@@ -371,10 +370,6 @@ int main(int argc, char* argv[])
       outfname = argv[2];
     }
   }
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
 
   result = RUN_ALL_TESTS();
 

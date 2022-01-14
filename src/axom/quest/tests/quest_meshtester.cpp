@@ -527,10 +527,7 @@ TEST(quest_mesh_tester, surfacemesh_watertight_ondisk)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  namespace slic = axom::slic;
-  slic::SimpleLogger logger;  // create & initialize test logger,
-  slic::setLoggingMsgLevel(slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
   return result;

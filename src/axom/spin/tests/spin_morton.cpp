@@ -8,8 +8,7 @@
 #include "axom/spin/MortonIndex.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
+#include "axom/slic.hpp"
 
 #include <cstdlib>
 #include <limits>
@@ -290,10 +289,7 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
 #ifdef MORTON_TESTER_SHOULD_SEED
   std::srand(std::time(0));

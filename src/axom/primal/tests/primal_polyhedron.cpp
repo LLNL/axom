@@ -399,10 +399,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  namespace slic = axom::slic;
-  slic::SimpleLogger logger;
-  slic::setLoggingMsgLevel(slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   result = RUN_ALL_TESTS();
 

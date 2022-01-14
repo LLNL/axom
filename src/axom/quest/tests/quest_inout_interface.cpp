@@ -290,7 +290,6 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
 #endif
   ::testing::InitGoogleTest(&argc, argv);
-
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
   int result = RUN_ALL_TESTS();

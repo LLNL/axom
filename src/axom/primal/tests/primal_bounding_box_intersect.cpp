@@ -5,6 +5,7 @@
 
 #include "axom/primal/operators/detail/intersect_bounding_box_impl.hpp"
 
+#include "axom/slic.hpp"
 #include "gtest/gtest.h"
 
 //------------------------------------------------------------------------------
@@ -118,18 +119,12 @@ TEST(primal_bounding_box_intersect, aabb_aabb_non_intersecting)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

@@ -3,19 +3,19 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/slic.hpp"
+#include "axom/sidre.hpp"
+
+#include "axom/inlet/LuaReader.hpp"
+#include "axom/inlet/Inlet.hpp"
+
 #include "gtest/gtest.h"
 
 #include <array>
 #include <string>
 #include <vector>
 #include <unordered_map>
-
 #include <iostream>
-
-#include "axom/sidre.hpp"
-
-#include "axom/inlet/LuaReader.hpp"
-#include "axom/inlet/Inlet.hpp"
 
 using axom::inlet::FunctionTag;
 using axom::inlet::FunctionType;
@@ -743,18 +743,12 @@ TEST(inlet_function_usertype, lua_usertype_named_access)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

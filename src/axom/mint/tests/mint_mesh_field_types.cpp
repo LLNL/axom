@@ -6,7 +6,9 @@
 #include "axom/mint/mesh/FieldTypes.hpp"
 
 #include "axom/core/Types.hpp"
-#include "gtest/gtest.h"  // for gtest macros
+#include "axom/slic.hpp"
+
+#include "gtest/gtest.h"
 
 // namespace aliases
 namespace mint = axom::mint;
@@ -28,18 +30,12 @@ TEST(mint_mesh_fieldtypes, field_traits)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 
