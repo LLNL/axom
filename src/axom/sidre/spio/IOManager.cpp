@@ -8,6 +8,7 @@
 
 // Other axom headers
 #include "axom/core/Macros.hpp"
+#include "axom/core/Path.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
 
@@ -488,7 +489,9 @@ std::string IOManager::createRootFile(const std::string& root_base,
       {
         std::string next;
         std::string slash = "/";
-        conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
+        axom::Path axom_file_path(file_base);
+        local_file_base = axom_file_path.baseName();
+
         n["file_pattern"] =
           local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
       }
@@ -793,14 +796,18 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
 
   //If the root file was given as a path,
   //find the directory and add it to file_name
-  std::string curr;
-  std::string root_dir;
-  std::string slash = "/";
-  conduit::utils::rsplit_string(root_name, slash, curr, root_dir);
+  std::string delimiter = "/";
+  axom::Path root_path(root_name);
+  std::string root_dir = root_path.dirName();
+
+  if (!root_name.empty() && root_name[0] == delimiter[0])
+  {
+    root_dir = delimiter + root_dir;
+  }
 
   if(!root_dir.empty())
   {
-    file_name = root_dir + slash + file_name;
+    file_name = root_dir + delimiter + file_name;
   }
 
   return file_name;
@@ -1071,15 +1078,14 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   AXOM_UNUSED_VAR(root_file_id);
   SLIC_ASSERT(root_file_id >= 0);
 
-  std::string blueprint_name;
-  std::string path_to_mesh;
   std::string delimiter(1, datastore->getRoot()->getPathDelimiter());
 
   //The final name in mesh_path will be used as the name of the
   //blueprint index.
-  conduit::utils::rsplit_string(mesh_path, delimiter, blueprint_name, path_to_mesh);
+  axom::Path axom_mesh_path(mesh_path, delimiter[0]);
+  std::string blueprint_name = axom_mesh_path.baseName();
 
-  std::string bp_index("blueprint_index/" + blueprint_name);
+  std::string bp_index = "blueprint_index" + delimiter + blueprint_name;
 
   bool multi_domain = false;
   if(m_comm_size > 1)
