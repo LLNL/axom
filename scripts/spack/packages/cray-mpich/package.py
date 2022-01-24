@@ -30,7 +30,9 @@ class CrayMpich(Package):
     version('7.7.14')
     version('7.7.13')
 
+    # AXOM EDIT START
     variant("slurm", default=True, description="Added to get MPIEXEC_NUMPROC_FLAG right")
+    # AXOM EDIT END
 
     provides('mpi@3')
 

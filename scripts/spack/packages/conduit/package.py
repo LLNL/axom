@@ -98,11 +98,6 @@ class Conduit(CMakePackage):
     #######################
     # CMake
     #######################
-    # AXOM EDIT START
-    # Update blt to get access to BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE variable
-    #depends_on('blt@0.4.1:', type='build', when='@0.7.2axom')
-    # AXOM EDIT START
-
     # cmake 3.14.1 or newer
     depends_on("cmake@3.14.1:", type='build')
 
@@ -310,9 +305,6 @@ class Conduit(CMakePackage):
 
         # are we on a specific machine
         on_blueos = 'blueos' in sys_type
-        # AXOM EDIT START
-        on_toss4 = 'toss_4' in sys_type
-        # AXOM EDIT END
 
         ##############################################
         # Find and record what CMake is used
