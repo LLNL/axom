@@ -34,20 +34,6 @@ compilers:
 - compiler:
     environment: {}
     extra_rpaths: []
-    flags:
-      fflags: -Mfreeform
-    modules: []
-    operating_system: rhel7
-    paths:
-      cc: /opt/rocm-4.3.0/bin/amdclang
-      cxx: /opt/rocm-4.3.0/bin/hipcc
-      f77: /opt/rocm-4.3.0/bin/amdflang
-      fc: /opt/rocm-4.3.0/bin/amdflang
-    spec: clang@13.0.0_hip
-    target: x86_64
-- compiler:
-    environment: {}
-    extra_rpaths: []
     flags: {}
     modules: []
     operating_system: rhel7
