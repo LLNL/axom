@@ -369,7 +369,7 @@ class Conduit(CMakePackage):
         cfg.write(cmake_cache_entry("conduit_blt_mpi_deps", "mpi"))
         cfg.write(cmake_cache_entry("CONDUIT_USE_CMAKE_MPI_TARGETS", "OFF"))
 
-        if self.spec.satisfies('%cce') or ("crayftn" in f_compiler):
+        if self.spec.satisfies('%cce') or (f_compiler is not None and ("crayftn" in f_compiler)):
             fflags += " -ef"
             cfg.write(cmake_cache_entry("ENABLE_EXAMPLES", "OFF"))
             cfg.write(cmake_cache_entry("ENABLE_UTILS", "OFF"))
