@@ -269,7 +269,7 @@ def uberenv_create_mirror(prefix, spec, project_file, mirror_path):
     Calls uberenv to create a spack mirror.
     """
     assertUberenvExists()
-    cmd  = "python {0} --create-mirror -k ".format(get_uberenv_path())
+    cmd  = "python3 {0} --create-mirror -k ".format(get_uberenv_path())
     cmd += "--prefix=\"{0}\" --mirror=\"{1}\" ".format(prefix, mirror_path)
     cmd += "--spec=\"{0}\" ".format(spec)
     if project_file:
@@ -291,7 +291,7 @@ def uberenv_build(prefix, spec, project_file, mirror_path):
     Calls uberenv to install tpls for a given spec to given prefix.
     """
     assertUberenvExists()
-    cmd  = "python {0} -k ".format(get_uberenv_path())
+    cmd  = "python3 {0} -k ".format(get_uberenv_path())
     cmd += "--prefix=\"{0}\" --spec=\"{1}\" ".format(prefix, spec)
     cmd += "--mirror=\"{0}\" ".format(mirror_path)
     if project_file:
@@ -338,7 +338,7 @@ def build_and_test_host_config(test_root, host_config,
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print("[starting configure of %s]" % host_config)
     print("[log file: %s]" % cfg_output_file)
-    res = sexe("python config-build.py -bp %s -ip %s -bt %s -hc %s %s" % (build_dir, install_dir, build_type, host_config, extra_cmake_options),
+    res = sexe("python3 config-build.py -bp %s -ip %s -bt %s -hc %s %s" % (build_dir, install_dir, build_type, host_config, extra_cmake_options),
                output_file = cfg_output_file,
                echo=True)
 
