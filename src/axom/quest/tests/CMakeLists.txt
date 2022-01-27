@@ -32,7 +32,7 @@ set(quest_tests_depends
    )
 
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
-blt_list_append( TO quest_tests_depends ELEMENTS hip IF ENABLE_HIP )
+blt_list_append( TO quest_tests_depends ELEMENTS blt::hip IF ENABLE_HIP )
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )

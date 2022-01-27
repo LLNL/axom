@@ -23,7 +23,7 @@ if (AXOM_ENABLE_LUMBERJACK)
 endif()
 
 set( slic_examples_depends axom )
-blt_list_append( TO slic_examples_depends ELEMENTS hip IF ${ENABLE_HIP} )
+blt_list_append( TO slic_examples_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 foreach( example_source ${example_sources} )
     get_filename_component( example_name ${example_source} NAME_WE )

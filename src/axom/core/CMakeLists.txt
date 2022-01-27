@@ -93,7 +93,7 @@ if (TARGET RAJA::cub AND RAJA_FOUND)
 endif()
 
 blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ENABLE_CUDA )
-blt_list_append( TO core_depends ELEMENTS hip_runtime IF ENABLE_HIP)
+blt_list_append( TO core_depends ELEMENTS blt::hip_runtime IF ENABLE_HIP)
 blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
 
