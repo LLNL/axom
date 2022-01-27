@@ -75,7 +75,7 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
 
 # C2C not built
 
-# MFEM not built
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
