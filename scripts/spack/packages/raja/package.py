@@ -122,8 +122,6 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
                 arch_str = ",".join(archs)
                 entries.append(cmake_cache_string(
                     "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
-                # entries.append(cmake_cache_string("HIP_HIPCC_FLAGS",
-                #                             '--amdgpu-target=gfx906'))
             entries.append(cmake_cache_string("HIP_CLANG_PATH",
                                         rocm_root + '/llvm/bin'))
             entries.append(cmake_cache_string("HIP_RUNTIME_INCLUDE_DIRS",
