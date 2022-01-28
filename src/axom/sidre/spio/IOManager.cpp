@@ -488,12 +488,12 @@ std::string IOManager::createRootFile(const std::string& root_base,
       if(protocol == "sidre_hdf5")
       {
         std::string next;
-        std::string slash = "/";
+        std::string delimiter = "/";
         axom::Path axom_file_path(file_base);
         local_file_base = axom_file_path.baseName();
 
         n["file_pattern"] =
-          local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
+          local_file_base + delimiter + local_file_base + "_" + "%07d.hdf5";
       }
       else
       {
