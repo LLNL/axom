@@ -366,11 +366,13 @@ class Conduit(CMakePackage):
         fflags = ' '.join(spec.compiler_flags['fflags'])
 
         # AXOM EDIT START
+        # Hack to fix -lmpi error for TOSS4 installed examples
         cfg.write(cmake_cache_entry("conduit_blt_mpi_deps", "mpi"))
         cfg.write(cmake_cache_entry("CONDUIT_USE_CMAKE_MPI_TARGETS", "OFF"))
 
         if self.spec.satisfies('%cce') or (f_compiler is not None and ("crayftn" in f_compiler)):
             fflags += " -ef"
+            # Disable executables that fail during link with TOSS4 MPI
             cfg.write(cmake_cache_entry("ENABLE_EXAMPLES", "OFF"))
             cfg.write(cmake_cache_entry("ENABLE_UTILS", "OFF"))
         # AXOM EDIT END
