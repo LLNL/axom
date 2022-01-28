@@ -776,9 +776,9 @@ constexpr typename Delaunay<DIM>::IndexType Delaunay<DIM>::INVALID_INDEX;
 
 // 2D specialization for generateInitialMesh(...)
 template <>
-void Delaunay<2>::generateInitialMesh(std::vector<DataType>& points,
-                                      std::vector<IndexType>& elem,
-                                      const BoundingBox& bb)
+inline void Delaunay<2>::generateInitialMesh(std::vector<DataType>& points,
+                                             std::vector<IndexType>& elem,
+                                             const BoundingBox& bb)
 {
   //Set up the initial IA mesh of 2 triangles forming a rectangle
 
@@ -801,9 +801,9 @@ void Delaunay<2>::generateInitialMesh(std::vector<DataType>& points,
 
 // 3D specialization for generateInitialMesh(...)
 template <>
-void Delaunay<3>::generateInitialMesh(std::vector<DataType>& points,
-                                      std::vector<IndexType>& elem,
-                                      const BoundingBox& bb)
+inline void Delaunay<3>::generateInitialMesh(std::vector<DataType>& points,
+                                             std::vector<IndexType>& elem,
+                                             const BoundingBox& bb)
 {
   //Set up the initial IA mesh of 6 tetrahedrons forming a cube
   const PointType& mins = bb.getMin();
@@ -833,8 +833,9 @@ void Delaunay<3>::generateInitialMesh(std::vector<DataType>& points,
 
 // 2D specialization for getBaryCoords(...)
 template <>
-Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
-                                                      const PointType& query_pt) const
+inline Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(
+  IndexType element_idx,
+  const PointType& query_pt) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
   const ElementType tri(m_mesh.getVertexPosition(verts[0]),
@@ -846,8 +847,9 @@ Delaunay<2>::BaryCoordType Delaunay<2>::getBaryCoords(IndexType element_idx,
 
 // 3D specialization for getBaryCoords(...)
 template <>
-Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
-                                                      const PointType& query_pt) const
+inline Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(
+  IndexType element_idx,
+  const PointType& query_pt) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
   const ElementType tet(m_mesh.getVertexPosition(verts[0]),
@@ -860,8 +862,8 @@ Delaunay<3>::BaryCoordType Delaunay<3>::getBaryCoords(IndexType element_idx,
 
 // 2D specialization for isPointInSphere(...)
 template <>
-bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
-                                                   IndexType element_idx) const
+inline bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
+                                                          IndexType element_idx) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
   const PointType& p0 = m_mesh.getVertexPosition(verts[0]);
@@ -872,8 +874,8 @@ bool Delaunay<2>::InsertionHelper::isPointInSphere(const PointType& query_pt,
 
 // 3D specialization for isPointInSphere(...)
 template <>
-bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
-                                                   IndexType element_idx) const
+inline bool Delaunay<3>::InsertionHelper::isPointInSphere(const PointType& query_pt,
+                                                          IndexType element_idx) const
 {
   const auto verts = m_mesh.boundaryVertices(element_idx);
   const PointType& p0 = m_mesh.getVertexPosition(verts[0]);
