@@ -94,6 +94,8 @@ private:
 
   // The delimiter character
   char m_delim = '/';
+
+  bool m_leading_delim = false;
 };
 
 /*!
