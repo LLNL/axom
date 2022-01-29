@@ -74,6 +74,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed `axom::Array<T>::clear()`, `axom::Array<T>::fill()`, and `axom::Array<T>::erase()` when the
   underlying memory is in device space
 - Fixed a potential memory leak in `axom::Array<T>` for non-trivial types `T` which allocate memory
+- Added a guard in `axom::ArrayList` for axom configurations without Umpire to fix a compiler error (XL compiler)
+- Inlined some fully specialized functions in `quest::Delaunay` to avoid "multiply-defined" linker errors
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
