@@ -59,35 +59,21 @@ public:  // Query properties
   void setVerbosity(bool isVerbose) { m_isVerbose = isVerbose; }
 
 public:
-  /// Utility function to generate an array of 2D points
-  void generatePoints(double radius, int numPoints)
+  /// Utility function to set the array of 2D points
+  void setObjectPoints(const PointArray& pts)
   {
-    using axom::utilities::random_real;
-
-    // Generate in host because random_real is not yet ported to the device
-    PointArray pts;
-    pts.reserve(numPoints);
-    for(int i = 0; i < numPoints; ++i)
-    {
-      const double angleInRadians = random_real(0., 2 * M_PI);
-      const double rsinT = radius * std::sin(angleInRadians);
-      const double rcosT = radius * std::cos(angleInRadians);
-
-      pts.emplace_back(PointType {rcosT, rsinT});
-    }
-
+    // Optionally, output some diagnostic information about the input puts
     if(m_isVerbose)
     {
       SLIC_INFO("Points on object:");
-      const auto& arr = m_points;
-      for(auto i : slam::PositionSet<int>(arr.size()))
+      for(auto i : slam::PositionSet<int>(pts.size()))
       {
-        const double mag = sqrt(arr[i][0] * arr[i][0] + arr[i][1] * arr[i][1]);
-        SLIC_INFO(axom::fmt::format("\t{}: {} -- {}", i, arr[i], mag));
+        const double mag = sqrt(pts[i][0] * pts[i][0] + pts[i][1] * pts[i][1]);
+        SLIC_INFO(axom::fmt::format("\t{}: {} -- {}", i, pts[i], mag));
       }
     }
 
-    m_points = PointArray(pts, m_allocatorID);  // copy to ExecSpace
+    m_points = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
   }
 
   bool generateBVHTree()

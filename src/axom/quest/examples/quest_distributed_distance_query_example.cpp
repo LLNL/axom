@@ -49,6 +49,32 @@ namespace spin = axom::spin;
 namespace primal = axom::primal;
 namespace numerics = axom::numerics;
 
+template <int NDIMS = 2>
+axom::Array<primal::Point<double, NDIMS>> generatePoints(double radius,
+                                                         int numPoints)
+{
+  // TODO: generalize to 3D
+  static_assert(NDIMS == 2, "Point generator only currently supports 2D");
+
+  using axom::utilities::random_real;
+  using PointType = primal::Point<double, NDIMS>;
+  using PointArray = axom::Array<PointType>;
+
+  // Generate in host because random_real is not yet ported to the device
+  PointArray pts;
+  pts.reserve(numPoints);
+  for(int i = 0; i < numPoints; ++i)
+  {
+    const double angleInRadians = random_real(0., 2 * M_PI);
+    const double rsinT = radius * std::sin(angleInRadians);
+    const double rcosT = radius * std::cos(angleInRadians);
+
+    pts.emplace_back(PointType {rcosT, rsinT});
+  }
+
+  return pts;
+}
+
 class MeshWrapper
 {
 public:
@@ -379,7 +405,9 @@ int main(int argc, char** argv)
   {
     SeqClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.generatePoints(params.circleRadius, params.circlePoints);
+    const auto pts =
+      generatePoints<DIM>(params.circleRadius, params.circlePoints);
+    query.setObjectPoints(pts);
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -399,7 +427,9 @@ int main(int argc, char** argv)
   {
     OmpClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.generatePoints(params.circleRadius, params.circlePoints);
+    const auto pts =
+      generatePoints<DIM>(params.circleRadius, params.circlePoints);
+    query.setObjectPoints(pts);
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -420,7 +450,9 @@ int main(int argc, char** argv)
   {
     CudaClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.generatePoints(params.circleRadius, params.circlePoints);
+    const auto pts =
+      generatePoints<DIM>(params.circleRadius, params.circlePoints);
+    query.setObjectPoints(pts);
 
     SLIC_INFO(init_str);
     initTimer.start();
