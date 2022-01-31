@@ -800,15 +800,14 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
   axom::Path root_path(root_name);
   std::string root_dir = root_path.dirName();
 
-  if(!root_name.empty() && root_name[0] == delimiter[0])
+  if(!root_name.empty() &&
+     axom::utilities::string::startsWith(root_name, delimiter[0]))
   {
     root_dir = delimiter + root_dir;
   }
 
-  if(!root_dir.empty())
-  {
-    file_name = root_dir + delimiter + file_name;
-  }
+  file_name =
+    axom::utilities::string::appendPrefix(root_dir, file_name, delimiter[0]);
 
   return file_name;
 }
