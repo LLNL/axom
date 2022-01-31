@@ -19,12 +19,22 @@
   #include "axom/mint/execution/internal/structured_exec.hpp"
 #endif
 
+// Acceleration data structure includes
+#include "axom/spin/BVH.hpp"
+
 namespace axom
 {
 namespace quest
 {
 namespace detail
 {
+enum class AccelType
+{
+  BVH
+};
+
+template <AccelType accel, typename ExecSpace, typename FloatType>
+struct CandidateFinder;
 
 template <typename ExecSpace, typename FloatType>
 struct CandidateFinderBase;
@@ -223,6 +233,56 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
     }
   }
 }
+
+template <typename ExecSpace, typename FloatType>
+struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
+  : public CandidateFinderBase<ExecSpace, FloatType>
+{
+  using BaseClass = CandidateFinderBase<ExecSpace, FloatType>;
+  using BaseClass::CandidateFinderBase;
+  using BaseClass::HostSpace;
+  using BaseClass::Space;
+
+  virtual void getCandidates(axom::Array<IndexType, 1, Space>& offsets,
+                             axom::Array<IndexType, 1, Space>& counts,
+                             axom::Array<IndexType, 1, Space>& candidates) override
+  {
+    int allocatorId = axom::detail::getAllocatorID<Space>();
+    spin::BVH<3, ExecSpace, FloatType> bvh;
+    bvh.setAllocatorID(allocatorId);
+    bvh.initialize(this->m_aabbs.view(), this->m_aabbs.size());
+
+    offsets.resize(this->m_aabbs.size());
+    counts.resize(this->m_aabbs.size());
+
+    // Search for intersecting bounding boxes of triangles
+    IndexType* candidatesData = nullptr;
+    bvh.findBoundingBoxes(offsets.data(),
+                          counts.data(),
+                          candidatesData,
+                          this->m_aabbs.size(),
+                          this->m_aabbs.view());
+
+    IndexType ncandidates;
+    {
+      axom::Array<IndexType, 1, Space> ncandidates_buf(1);
+      axom::ArrayView<IndexType, 1, Space> p_ncandidates = ncandidates_buf;
+      axom::ArrayView<IndexType, 1, Space> p_offsets = offsets;
+      axom::ArrayView<IndexType, 1, Space> p_counts = counts;
+      IndexType lastIdx = offsets.size() - 1;
+      for_all<ExecSpace>(
+        1,
+        AXOM_LAMBDA(IndexType) {
+          p_ncandidates[0] = p_offsets[lastIdx] + p_counts[lastIdx];
+        });
+      axom::copy(&ncandidates, ncandidates_buf.data(), sizeof(IndexType));
+    }
+    axom::ArrayView<IndexType, 1, Space> candidateBuf(candidatesData,
+                                                      ncandidates);
+    candidates = candidateBuf;
+    axom::deallocate(candidatesData);
+  }
+};
 
 }  // namespace detail
 }  // namespace quest
