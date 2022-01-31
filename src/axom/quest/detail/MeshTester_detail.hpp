@@ -32,17 +32,29 @@ struct CandidateFinderBase;
 template <typename ExecSpace, typename FloatType>
 struct CandidateFinderBase
 {
+  using BoxType = typename primal::BoundingBox<FloatType, 3>;
+  using PointType = typename primal::Point<FloatType, 3>;
 #ifdef AXOM_USE_UMPIRE
   static constexpr bool ExecOnDevice =
     axom::execution_space<ExecSpace>::onDevice();
   static constexpr MemorySpace Space =
     ExecOnDevice ? axom::MemorySpace::Device : axom::MemorySpace::Host;
+  static constexpr MemorySpace HostSpace = axom::MemorySpace::Host;
 #else
   static constexpr MemorySpace Space = axom::MemorySpace::Dynamic;
+  static constexpr MemorySpace HostSpace = axom::MemorySpace::Dynamic;
 #endif
 
   CandidateFinderBase(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
                       double intersectionThreshold);
+
+  void findTriMeshIntersections(axom::Array<IndexType>& firstIndex,
+                                axom::Array<IndexType>& secondIndex,
+                                axom::Array<IndexType>& degenerateIndices);
+
+  virtual void getCandidates(axom::Array<IndexType, 1, Space>& offsets,
+                             axom::Array<IndexType, 1, Space>& counts,
+                             axom::Array<IndexType, 1, Space>& candidates) = 0;
 
   mint::UnstructuredMesh<mint::SINGLE_SHAPE>* m_surfaceMesh;
   double m_intersectionThreshold;
@@ -97,6 +109,119 @@ CandidateFinderBase<ExecSpace, FloatType>::CandidateFinderBase(
 
       p_aabbs[cellIdx] = compute_bounding_box(tri);
     });
+}
+
+template <typename ExecSpace, typename FloatType>
+void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
+  axom::Array<IndexType>& firstIndex,
+  axom::Array<IndexType>& secondIndex,
+  axom::Array<IndexType>& degenerateIndices)
+{
+  const int ncells = m_surfaceMesh->getNumberOfCells();
+
+  using IndexArray = axom::Array<IndexType, 1, Space>;
+  using IndexView = axom::ArrayView<IndexType, 1, Space>;
+
+  using HostIndexArray = axom::Array<IndexType, 1, HostSpace>;
+#ifdef AXOM_USE_RAJA
+  using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
+#endif
+
+  // Get CSR arrays for candidate data
+  IndexArray offsets, counts, candidates;
+  getCandidates(offsets, counts, candidates);
+
+  IndexArray indices(candidates.size());
+  IndexArray validCandidates(candidates.size());
+
+  IndexView p_indices = indices;
+  IndexView p_validCandidates = validCandidates;
+
+  IndexType numCandidates;
+  {
+    IndexArray numValidCandidates(1);
+    numValidCandidates.fill(0);
+    IndexView p_numValidCandidates = numValidCandidates;
+
+    IndexView p_offsets = offsets;
+    IndexView p_counts = counts;
+    IndexView p_candidates = candidates;
+
+    // Initialize triangle indices and valid candidates
+    for_all<ExecSpace>(
+      ncells,
+      AXOM_LAMBDA(IndexType i) {
+        for(int j = 0; j < p_counts[i]; j++)
+        {
+          if(i < p_candidates[p_offsets[i] + j])
+          {
+#ifdef AXOM_USE_RAJA
+            auto idx = RAJA::atomicAdd<atomic_pol>(&p_numValidCandidates[0], 1);
+#else
+            auto idx = p_numValidCandidates[0]++;
+#endif
+            p_indices[idx] = i;
+            p_validCandidates[idx] = p_candidates[p_offsets[i] + j];
+          }
+        }
+      });
+
+    axom::copy(&numCandidates, numValidCandidates.data(), sizeof(IndexType));
+  }
+
+  IndexArray firstIsectPair(candidates.size());
+  IndexArray secondIsectPair(candidates.size());
+  IndexType isectCounter;
+  {
+    IndexArray numIsectPairs(1);
+    IndexView p_numIsectPairs = numIsectPairs;
+
+    IndexView p_firstIsectPair = firstIsectPair;
+    IndexView p_secondIsectPair = secondIsectPair;
+    axom::ArrayView<detail::Triangle3, 1, Space> p_tris = m_tris;
+
+    double intersectionThreshold = m_intersectionThreshold;
+
+    // Perform triangle-triangle tests
+    for_all<ExecSpace>(
+      numCandidates,
+      AXOM_LAMBDA(IndexType i) {
+        int index = p_indices[i];
+        int candidate = p_validCandidates[i];
+        if(primal::intersect(p_tris[index],
+                             p_tris[candidate],
+                             false,
+                             intersectionThreshold))
+        {
+#ifdef AXOM_USE_RAJA
+          auto idx = RAJA::atomicAdd<atomic_pol>(&p_numIsectPairs[0], 1);
+#else
+          auto idx = p_numIsectPairs[0];
+          p_numIsectPairs[0]++;
+#endif
+          p_firstIsectPair[idx] = index;
+          p_secondIsectPair[idx] = candidate;
+        }
+      });
+    axom::copy(&isectCounter, numIsectPairs.data(), sizeof(IndexType));
+  }
+
+  firstIsectPair.resize(isectCounter);
+  secondIsectPair.resize(isectCounter);
+
+  {
+    // copy results to output
+    firstIndex = firstIsectPair;
+    secondIndex = secondIsectPair;
+    HostIndexArray host_degenerate = m_degenerate;
+    for(int i = 0; i < host_degenerate.size(); i++)
+    {
+      if(host_degenerate[i] == 1)
+      {
+        degenerateIndices.push_back(i);
+      }
+    }
+  }
 }
 
 }  // namespace detail
