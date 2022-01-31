@@ -47,15 +47,6 @@ namespace axom
 {
 namespace quest
 {
-namespace detail
-{
-using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
-using Triangle3 = primal::Triangle<double, 3>;
-using SpatialBoundingBox = primal::BoundingBox<double, 3>;
-using UniformGrid3 = spin::UniformGrid<int, 3>;
-using Point3 = primal::Point<double, 3>;
-}  // namespace detail
-
 /*! Enumeration indicating mesh watertightness */
 enum class WatertightStatus : signed char
 {
@@ -63,30 +54,6 @@ enum class WatertightStatus : signed char
   NOT_WATERTIGHT,  ///< Each edge is incident in one or two cells
   CHECK_FAILED     ///< Calculation failed (possibly a non-manifold mesh)
 };
-
-inline detail::Triangle3 getMeshTriangle(axom::IndexType i,
-                                         detail::UMesh* surface_mesh)
-{
-  SLIC_ASSERT(surface_mesh->getNumberOfCellNodes(i) == 3);
-
-  detail::Triangle3 tri;
-
-  const axom::IndexType* triCell = surface_mesh->getCellNodeIDs(i);
-
-  const double* x = surface_mesh->getCoordinateArray(mint::X_COORDINATE);
-  const double* y = surface_mesh->getCoordinateArray(mint::Y_COORDINATE);
-  const double* z = surface_mesh->getCoordinateArray(mint::Z_COORDINATE);
-
-  for(int n = 0; n < 3; ++n)
-  {
-    const axom::IndexType nodeIdx = triCell[n];
-    tri[n][0] = x[nodeIdx];
-    tri[n][1] = y[nodeIdx];
-    tri[n][2] = z[nodeIdx];
-  }
-
-  return tri;
-}
 
 /// \name Mesh test and repair
 /// @{

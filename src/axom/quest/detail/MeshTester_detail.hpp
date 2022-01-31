@@ -29,6 +29,35 @@ namespace quest
 {
 namespace detail
 {
+using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+using Triangle3 = primal::Triangle<double, 3>;
+using SpatialBoundingBox = primal::BoundingBox<double, 3>;
+using UniformGrid3 = spin::UniformGrid<int, 3>;
+using Point3 = primal::Point<double, 3>;
+
+inline detail::Triangle3 getMeshTriangle(axom::IndexType i,
+                                         detail::UMesh* surface_mesh)
+{
+  SLIC_ASSERT(surface_mesh->getNumberOfCellNodes(i) == 3);
+
+  detail::Triangle3 tri;
+
+  const axom::IndexType* triCell = surface_mesh->getCellNodeIDs(i);
+
+  const double* x = surface_mesh->getCoordinateArray(mint::X_COORDINATE);
+  const double* y = surface_mesh->getCoordinateArray(mint::Y_COORDINATE);
+  const double* z = surface_mesh->getCoordinateArray(mint::Z_COORDINATE);
+
+  for(int n = 0; n < 3; ++n)
+  {
+    const axom::IndexType nodeIdx = triCell[n];
+    tri[n][0] = x[nodeIdx];
+    tri[n][1] = y[nodeIdx];
+    tri[n][2] = z[nodeIdx];
+  }
+
+  return tri;
+}
 enum class AccelType
 {
   ImplicitGrid,

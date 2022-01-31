@@ -83,7 +83,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
 
   for(int i = 0; i < ncells; i++)
   {
-    t1 = getMeshTriangle(i, surface_mesh);
+    t1 = detail::getMeshTriangle(i, surface_mesh);
 
     if(t1.degenerate())
     {
@@ -108,7 +108,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   for(; idx != ndgend; ++idx)
   {
     // Retrieve the triangle at *idx and construct a bounding box around it
-    t1 = getMeshTriangle(*idx, surface_mesh);
+    t1 = detail::getMeshTriangle(*idx, surface_mesh);
     detail::SpatialBoundingBox triBB2 = compute_bounding_box(t1);
 
     // Get a list of all triangles in bins this triangle will touch,
@@ -137,7 +137,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     // test any remaining neighbor tris for intersection
     while(nit != nend)
     {
-      t2 = getMeshTriangle(*nit, surface_mesh);
+      t2 = detail::getMeshTriangle(*nit, surface_mesh);
       if(primal::intersect(t1, t2, false, intersectionThreshold))
       {
         intersections.push_back(std::make_pair(*idx, *nit));
