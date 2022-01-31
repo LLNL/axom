@@ -9,8 +9,8 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
+#include "axom/sidre.hpp"
 #include "axom/primal.hpp"
-#include "axom/mint.hpp"
 #include "axom/spin.hpp"
 
 #include "axom/fmt.hpp"
@@ -59,10 +59,48 @@ public:  // Query properties
   void setVerbosity(bool isVerbose) { m_isVerbose = isVerbose; }
 
 public:
-  /// Utility function to set the array of 2D points
-  void setObjectPoints(const PointArray& pts)
+  /** 
+   * Utility function to set the array of points
+   *
+   * \param [in] meshGroup The root group of a mesh blueprint
+   * \note This function currently supports mesh blueprints with the "point" topology
+   */
+  void setObjectMesh(const sidre::Group* meshGroup)
   {
-    // Optionally, output some diagnostic information about the input puts
+    // Perform some simple error checking
+    SLIC_ASSERT(meshGroup != nullptr);
+    SLIC_ASSERT(meshGroup->hasGroup("coordsets/coords/values"));
+    SLIC_ASSERT(meshGroup->hasView("coordsets/coords/values/x"));
+
+    // Extract the dimension and number of points
+    const auto* valuesGroup = meshGroup->getGroup("coordsets/coords/values");
+    const int dim =
+      valuesGroup->hasView("z") ? 3 : (valuesGroup->hasChildView("y") ? 2 : 1);
+    const int N = valuesGroup->getView("x")->getNumElements();
+    SLIC_ASSERT(dim == NDIMS);
+
+    // Extract pointers to the coordinate data
+    // Note: The following assumes that the coordinate arrays have stride 1
+    // TODO: Generalize to support other strides
+    primal::ZipIndexable<PointType> zipPts {
+      {valuesGroup->hasView("x")
+         ? static_cast<const double*>(valuesGroup->getView("x")->getVoidPtr())
+         : nullptr,
+       valuesGroup->hasView("y")
+         ? static_cast<const double*>(valuesGroup->getView("y")->getVoidPtr())
+         : nullptr,
+       valuesGroup->hasView("z")
+         ? static_cast<const double*>(valuesGroup->getView("z")->getVoidPtr())
+         : nullptr}};
+
+    // Copy the data into an array of primal points
+    PointArray pts(0, N);
+    for(int i = 0; i < N; ++i)
+    {
+      pts.push_back(zipPts[i]);
+    }
+
+    // Optionally, output some diagnostic information about the input points
     if(m_isVerbose)
     {
       SLIC_INFO("Points on object:");

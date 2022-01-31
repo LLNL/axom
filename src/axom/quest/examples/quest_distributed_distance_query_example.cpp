@@ -47,38 +47,108 @@ namespace sidre = axom::sidre;
 namespace slam = axom::slam;
 namespace spin = axom::spin;
 namespace primal = axom::primal;
+namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-template <int NDIMS = 2>
-axom::Array<primal::Point<double, NDIMS>> generatePoints(double radius,
-                                                         int numPoints)
-{
-  // TODO: generalize to 3D
-  static_assert(NDIMS == 2, "Point generator only currently supports 2D");
-
-  using axom::utilities::random_real;
-  using PointType = primal::Point<double, NDIMS>;
-  using PointArray = axom::Array<PointType>;
-
-  // Generate in host because random_real is not yet ported to the device
-  PointArray pts;
-  pts.reserve(numPoints);
-  for(int i = 0; i < numPoints; ++i)
-  {
-    const double angleInRadians = random_real(0., 2 * M_PI);
-    const double rsinT = radius * std::sin(angleInRadians);
-    const double rcosT = radius * std::cos(angleInRadians);
-
-    pts.emplace_back(PointType {rcosT, rsinT});
-  }
-
-  return pts;
-}
-
-class MeshWrapper
+/** 
+ * Helper class to generate a mesh blueprint-conforming particle mesh for the input object.
+ * The mesh is represented using a Sidre hierarchy
+ */
+class ObjectMeshWrapper
 {
 public:
-  MeshWrapper() : m_dc("closest_point", nullptr, true) { }
+  ObjectMeshWrapper(sidre::Group* group) : m_group(group), m_mesh(nullptr)
+  {
+#ifdef AXOM_USE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+#else
+    m_rank = 0;
+    m_nranks = 1;
+#endif
+
+    SLIC_ASSERT(m_group != nullptr);
+  }
+
+  ~ObjectMeshWrapper() { delete m_mesh; }
+
+  /// Get a pointer to the root group for this mesh
+  sidre::Group* getBlueprintGroup() const { return m_group; }
+
+  /** 
+   * Generates a collection of \a numPoints points along a circle
+   * of radius \a radius centered at the origin
+   */
+  void generateCircleMesh(double radius, int numPoints)
+  {
+    using axom::utilities::random_real;
+
+    // Check that we're starting with a valid group
+    SLIC_ASSERT(m_group != nullptr);
+    SLIC_ASSERT(m_group->getNumGroups() == 0);
+
+    constexpr int DIM = 2;
+    m_mesh = new mint::ParticleMesh(DIM, 0, m_group, "mesh", "coords", numPoints);
+
+    for(int i = 0; i < numPoints; ++i)
+    {
+      const double angleInRadians = random_real(0., 2 * M_PI);
+      const double rsinT = radius * std::sin(angleInRadians);
+      const double rcosT = radius * std::cos(angleInRadians);
+
+      m_mesh->append(rcosT, rsinT);
+    }
+  }
+
+  /// Outputs the object mesh to disk
+  void saveMesh(const std::string& outputMesh = "object_mesh")
+  {
+    SLIC_INFO(axom::fmt::format(
+      "{:=^80}",
+      axom::fmt::format("Saving particle mesh '{}' to disk", outputMesh)));
+
+    const bool use_blueprint_writer = false;
+    if(use_blueprint_writer)
+    {
+      // Note: I encountered the following problem with the Visit blueprint plugin
+      // when using the implicit point topology:
+      //    Encountered unknown topology type, "points"
+      //    Skipping this mesh for now
+      // It is either not yet supported, or I'm writing this out incorrectly
+
+      auto* ds = m_group->getDataStore();
+      sidre::IOManager writer(MPI_COMM_WORLD);
+      writer.write(ds->getRoot(), 1, outputMesh, "sidre_hdf5");
+
+      MPI_Barrier(MPI_COMM_WORLD);
+
+      // Add the bp index to the root file
+      writer.writeBlueprintIndexToRootFile(m_group->getDataStore(),
+                                           m_group->getPathName(),
+                                           outputMesh + ".root",
+                                           m_group->getName());
+    }
+    else  // use mint's vtk writer
+    {
+      auto filename = m_nranks > 1
+        ? axom::fmt::format("{}_{:04}.vtk", outputMesh, m_rank)
+        : axom::fmt::format("{}.vtk", outputMesh);
+
+      mint::write_vtk(m_mesh, filename);
+    }
+  }
+
+private:
+  sidre::Group* m_group;
+  mint::ParticleMesh* m_mesh;
+  int m_rank;
+  int m_nranks;
+};
+
+class QueryMeshWrapper
+{
+public:
+  QueryMeshWrapper() : m_dc("closest_point", nullptr, true) { }
 
   // Returns a pointer to the MFEMSidreDataCollection
   sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
@@ -104,9 +174,10 @@ public:
   void saveMesh()
   {
 #ifdef MFEM_USE_MPI
-    SLIC_INFO(axom::fmt::format(
-      "{:=^80}",
-      axom::fmt::format("Saving mesh '{}' to disk", m_dc.GetCollectionName())));
+    SLIC_INFO(
+      axom::fmt::format("{:=^80}",
+                        axom::fmt::format("Saving query mesh '{}' to disk",
+                                          m_dc.GetCollectionName())));
 
     m_dc.Save();
 #endif
@@ -365,16 +436,27 @@ int main(int argc, char** argv)
   using IndexArray = axom::Array<axom::IndexType>;
 
   //---------------------------------------------------------------------------
+  // Load/generate object mesh
+  //---------------------------------------------------------------------------
+  sidre::DataStore objectDS;
+  ObjectMeshWrapper object_mesh_wrapper(
+    objectDS.getRoot()->createGroup("object_mesh"));
+
+  object_mesh_wrapper.generateCircleMesh(params.circleRadius,
+                                         params.circlePoints);
+  object_mesh_wrapper.saveMesh();
+
+  //---------------------------------------------------------------------------
   // Load mesh and get vertex positions
   //---------------------------------------------------------------------------
 
-  MeshWrapper mesh_wrapper;
+  QueryMeshWrapper query_mesh_wrapper;
 
-  mesh_wrapper.setupMesh(params.getDCMeshName(), params.meshFile);
-  mesh_wrapper.printMeshInfo();
+  query_mesh_wrapper.setupMesh(params.getDCMeshName(), params.meshFile);
+  query_mesh_wrapper.printMeshInfo();
 
   // Copy mesh nodes into qpts array
-  auto qPts = mesh_wrapper.getVertexPositions<PointArray>();
+  auto qPts = query_mesh_wrapper.getVertexPositions<PointArray>();
   const int nQueryPts = qPts.size();
 
   // Create an array for the indices of the closest points
@@ -405,9 +487,7 @@ int main(int argc, char** argv)
   {
     SeqClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    const auto pts =
-      generatePoints<DIM>(params.circleRadius, params.circlePoints);
-    query.setObjectPoints(pts);
+    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -427,9 +507,7 @@ int main(int argc, char** argv)
   {
     OmpClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    const auto pts =
-      generatePoints<DIM>(params.circleRadius, params.circlePoints);
-    query.setObjectPoints(pts);
+    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -450,9 +528,7 @@ int main(int argc, char** argv)
   {
     CudaClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    const auto pts =
-      generatePoints<DIM>(params.circleRadius, params.circlePoints);
-    query.setObjectPoints(pts);
+    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -491,8 +567,8 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   using primal::squared_distance;
 
-  auto* distances = mesh_wrapper.getDC()->GetField("distance");
-  auto* directions = mesh_wrapper.getDC()->GetField("direction");
+  auto* distances = query_mesh_wrapper.getDC()->GetField("distance");
+  auto* directions = query_mesh_wrapper.getDC()->GetField("direction");
   SLIC_INFO(axom::fmt::format(" distance size: {}", distances->Size()));
   mfem::Array<int> dofs;
   for(auto i : IndexSet(nQueryPts))
@@ -508,7 +584,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Cleanup, save mesh/fields and exit
   //---------------------------------------------------------------------------
-  mesh_wrapper.saveMesh();
+  query_mesh_wrapper.saveMesh();
 
 #ifdef AXOM_USE_MPI
   MPI_Finalize();
