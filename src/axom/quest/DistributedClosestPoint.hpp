@@ -65,51 +65,32 @@ public:
    * \param [in] meshGroup The root group of a mesh blueprint
    * \note This function currently supports mesh blueprints with the "point" topology
    */
-  void setObjectMesh(const sidre::Group* meshGroup)
+  void setObjectMesh(sidre::Group* meshGroup, const std::string& coordset)
   {
     // Perform some simple error checking
     SLIC_ASSERT(meshGroup != nullptr);
-    SLIC_ASSERT(meshGroup->hasGroup("coordsets/coords/values"));
-    SLIC_ASSERT(meshGroup->hasView("coordsets/coords/values/x"));
+    SLIC_ASSERT(
+      meshGroup->hasGroup(axom::fmt::format("coordsets/{}/values", coordset)));
+    auto* valuesGroup =
+      meshGroup->getGroup(axom::fmt::format("coordsets/{}/values", coordset));
 
-    // Extract the dimension and number of points
-    const auto* valuesGroup = meshGroup->getGroup("coordsets/coords/values");
+    // Extract the dimension and number of points; must be at least 1D
+    SLIC_ASSERT(valuesGroup->hasView("x"));
     const int dim =
       valuesGroup->hasView("z") ? 3 : (valuesGroup->hasChildView("y") ? 2 : 1);
     const int N = valuesGroup->getView("x")->getNumElements();
     SLIC_ASSERT(dim == NDIMS);
 
     // Extract pointers to the coordinate data
-    // Note: The following assumes that the coordinate arrays have stride 1
+    // Note: The following assumes the coordinates are contiguous with stride NDIMS
     // TODO: Generalize to support other strides
-    primal::ZipIndexable<PointType> zipPts {
-      {valuesGroup->hasView("x")
-         ? static_cast<const double*>(valuesGroup->getView("x")->getVoidPtr())
-         : nullptr,
-       valuesGroup->hasView("y")
-         ? static_cast<const double*>(valuesGroup->getView("y")->getVoidPtr())
-         : nullptr,
-       valuesGroup->hasView("z")
-         ? static_cast<const double*>(valuesGroup->getView("z")->getVoidPtr())
-         : nullptr}};
 
-    // Copy the data into an array of primal points
-    PointArray pts(0, N);
-    for(int i = 0; i < N; ++i)
-    {
-      pts.push_back(zipPts[i]);
-    }
-
-    // Optionally, output some diagnostic information about the input points
-    if(m_isVerbose)
-    {
-      SLIC_INFO("Points on object:");
-      for(auto i : slam::PositionSet<int>(pts.size()))
-      {
-        const double mag = sqrt(pts[i][0] * pts[i][0] + pts[i][1] * pts[i][1]);
-        SLIC_INFO(axom::fmt::format("\t{}: {} -- {}", i, pts[i], mag));
-      }
-    }
+    // Copy the data into the point array of primal points
+    PointArray pts(N, N);
+    const std::size_t nbytes = sizeof(double) * dim * N;
+    axom::copy(pts.data(),
+               valuesGroup->getView("x")->getBuffer()->getVoidPtr(),
+               nbytes);
 
     m_points = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
   }

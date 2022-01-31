@@ -17,6 +17,9 @@
 #include "axom/quest.hpp"
 #include "axom/slam.hpp"
 
+#include "conduit_blueprint.hpp"
+#include "conduit_blueprint_mpi.hpp"
+
 #include "axom/quest/DistributedClosestPoint.hpp"
 
 #include "axom/fmt.hpp"
@@ -27,9 +30,10 @@
 #endif
 #include "mfem.hpp"
 
-#ifdef AXOM_USE_MPI
-  #include "mpi.h"
+#ifndef AXOM_USE_MPI
+  #error This example requires Axom to be configured with MPI
 #endif
+#include "mpi.h"
 
 // RAJA
 #ifdef AXOM_USE_RAJA
@@ -50,247 +54,7 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-/** 
- * Helper class to generate a mesh blueprint-conforming particle mesh for the input object.
- * The mesh is represented using a Sidre hierarchy
- */
-class ObjectMeshWrapper
-{
-public:
-  ObjectMeshWrapper(sidre::Group* group) : m_group(group), m_mesh(nullptr)
-  {
-#ifdef AXOM_USE_MPI
-    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
-#else
-    m_rank = 0;
-    m_nranks = 1;
-#endif
-
-    SLIC_ASSERT(m_group != nullptr);
-  }
-
-  ~ObjectMeshWrapper() { delete m_mesh; }
-
-  /// Get a pointer to the root group for this mesh
-  sidre::Group* getBlueprintGroup() const { return m_group; }
-
-  /** 
-   * Generates a collection of \a numPoints points along a circle
-   * of radius \a radius centered at the origin
-   */
-  void generateCircleMesh(double radius, int numPoints)
-  {
-    using axom::utilities::random_real;
-
-    // Check that we're starting with a valid group
-    SLIC_ASSERT(m_group != nullptr);
-    SLIC_ASSERT(m_group->getNumGroups() == 0);
-
-    constexpr int DIM = 2;
-    m_mesh = new mint::ParticleMesh(DIM, 0, m_group, "mesh", "coords", numPoints);
-
-    for(int i = 0; i < numPoints; ++i)
-    {
-      const double angleInRadians = random_real(0., 2 * M_PI);
-      const double rsinT = radius * std::sin(angleInRadians);
-      const double rcosT = radius * std::cos(angleInRadians);
-
-      m_mesh->append(rcosT, rsinT);
-    }
-  }
-
-  /// Outputs the object mesh to disk
-  void saveMesh(const std::string& outputMesh = "object_mesh")
-  {
-    SLIC_INFO(axom::fmt::format(
-      "{:=^80}",
-      axom::fmt::format("Saving particle mesh '{}' to disk", outputMesh)));
-
-    const bool use_blueprint_writer = false;
-    if(use_blueprint_writer)
-    {
-      // Note: I encountered the following problem with the Visit blueprint plugin
-      // when using the implicit point topology:
-      //    Encountered unknown topology type, "points"
-      //    Skipping this mesh for now
-      // It is either not yet supported, or I'm writing this out incorrectly
-
-      auto* ds = m_group->getDataStore();
-      sidre::IOManager writer(MPI_COMM_WORLD);
-      writer.write(ds->getRoot(), 1, outputMesh, "sidre_hdf5");
-
-      MPI_Barrier(MPI_COMM_WORLD);
-
-      // Add the bp index to the root file
-      writer.writeBlueprintIndexToRootFile(m_group->getDataStore(),
-                                           m_group->getPathName(),
-                                           outputMesh + ".root",
-                                           m_group->getName());
-    }
-    else  // use mint's vtk writer
-    {
-      auto filename = m_nranks > 1
-        ? axom::fmt::format("{}_{:04}.vtk", outputMesh, m_rank)
-        : axom::fmt::format("{}.vtk", outputMesh);
-
-      mint::write_vtk(m_mesh, filename);
-    }
-  }
-
-private:
-  sidre::Group* m_group;
-  mint::ParticleMesh* m_mesh;
-  int m_rank;
-  int m_nranks;
-};
-
-class QueryMeshWrapper
-{
-public:
-  QueryMeshWrapper() : m_dc("closest_point", nullptr, true) { }
-
-  // Returns a pointer to the MFEMSidreDataCollection
-  sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
-  const sidre::MFEMSidreDataCollection* getDC() const { return &m_dc; }
-
-  /// Returns an array containing the positions of the mesh vertices
-  template <typename PointArray>
-  PointArray getVertexPositions()
-  {
-    auto* mesh = m_dc.GetMesh();
-    const int NV = mesh->GetNV();
-    PointArray arr(NV);
-
-    for(auto i : slam::PositionSet<int>(NV))
-    {
-      mesh->GetNode(i, arr[i].data());
-    }
-
-    return arr;
-  }
-
-  /// Saves the data collection to disk
-  void saveMesh()
-  {
-#ifdef MFEM_USE_MPI
-    SLIC_INFO(
-      axom::fmt::format("{:=^80}",
-                        axom::fmt::format("Saving query mesh '{}' to disk",
-                                          m_dc.GetCollectionName())));
-
-    m_dc.Save();
-#endif
-  }
-
-  /**
-   * Loads the mesh as an MFEMSidreDataCollection with 
-   * the following fields: "positions", "distances", "directions"
-   */
-  void setupMesh(const std::string& fileName, const std::string meshFile)
-  {
-    SLIC_INFO(axom::fmt::format("{:=^80}",
-                                axom::fmt::format("Loading '{}' mesh", fileName)));
-
-    sidre::MFEMSidreDataCollection originalMeshDC(fileName, nullptr, false);
-    {
-      originalMeshDC.SetComm(MPI_COMM_WORLD);
-      originalMeshDC.Load(meshFile, "sidre_hdf5");
-    }
-    SLIC_ASSERT_MSG(originalMeshDC.GetMesh()->Dimension() == 2,
-                    "This application currently only supports 2D meshes");
-    // TODO: Check order and apply LOR, if necessary
-
-    const int DIM = originalMeshDC.GetMesh()->Dimension();
-
-    // Create the data collection
-    mfem::Mesh* cpMesh = nullptr;
-    {
-      m_dc.SetMeshNodesName("positions");
-
-      auto* pmesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC.GetMesh());
-      cpMesh = (pmesh != nullptr) ? new mfem::ParMesh(*pmesh)
-                                  : new mfem::Mesh(*originalMeshDC.GetMesh());
-      m_dc.SetMesh(cpMesh);
-    }
-
-    // Register the distance and direction grid function
-    constexpr int order = 1;
-    auto* fec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
-    mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(cpMesh, fec);
-    mfem::GridFunction* distances = new mfem::GridFunction(fes);
-    distances->MakeOwner(fec);
-    m_dc.RegisterField("distance", distances);
-
-    auto* vfec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
-    mfem::FiniteElementSpace* vfes =
-      new mfem::FiniteElementSpace(cpMesh, vfec, DIM);
-    mfem::GridFunction* directions = new mfem::GridFunction(vfes);
-    directions->MakeOwner(vfec);
-    m_dc.RegisterField("direction", directions);
-  }
-
-  /// Prints some info about the mesh
-  void printMeshInfo()
-  {
-    switch(m_dc.GetMesh()->Dimension())
-    {
-    case 2:
-      printMeshInfo<2>();
-      break;
-    case 3:
-      printMeshInfo<3>();
-      break;
-    }
-  }
-
-private:
-  /**
-  * \brief Print some info about the mesh
-  *
-  * \note In MPI-based configurations, this is a collective call, but only prints on rank 0
-  */
-  template <int DIM>
-  void printMeshInfo()
-  {
-    mfem::Mesh* mesh = m_dc.GetMesh();
-
-    int myRank = 0;
-    int numElements = mesh->GetNE();
-
-    mfem::Vector mins, maxs;
-#ifdef MFEM_USE_MPI
-    auto* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-    if(pmesh != nullptr)
-    {
-      pmesh->GetBoundingBox(mins, maxs);
-      numElements = pmesh->ReduceInt(numElements);
-      myRank = pmesh->GetMyRank();
-    }
-    else
-#endif
-    {
-      mesh->GetBoundingBox(mins, maxs);
-    }
-
-    if(myRank == 0)
-    {
-      SLIC_INFO(axom::fmt::format(
-        "Mesh has {} elements and (approximate) bounding box {}",
-        numElements,
-        primal::BoundingBox<double, DIM>(
-          primal::Point<double, DIM>(mins.GetData()),
-          primal::Point<double, DIM>(maxs.GetData()))));
-    }
-
-    slic::flushStreams();
-  }
-
-private:
-  sidre::MFEMSidreDataCollection m_dc;
-};
-
-/// Choose runtime policy for RAJA
+/// Enum for RAJA runtime policy
 enum class RuntimePolicy
 {
   seq = 0,
@@ -374,18 +138,365 @@ public:
   }
 };
 
+/**
+ *  \brief Simple wrapper to a blueprint particle mesh
+ * 
+ *  Given a sidre Group, creates the stubs for a mesh blueptint particle mesh
+ */
+struct BlueprintParticleMesh
+{
+public:
+  explicit BlueprintParticleMesh(sidre::Group* group = nullptr,
+                                 const std::string& coordset = "coords",
+                                 const std::string& topology = "mesh")
+    : m_group(group)
+  {
+    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+
+    setBlueprintGroup(m_group, coordset, topology);
+  }
+
+  /// Gets the parent group for the blueprint coordinate set
+  sidre::Group* coordsGroup() const { return m_coordsGroup; }
+  /// Gets the parent group for the blueprint mesh topology
+  sidre::Group* topoGroup() const { return m_topoGroup; }
+
+  /// Gets the MPI rank for this mesh
+  int getRank() const { return m_rank; }
+  /// Gets the number of ranks in the problem
+  int getNumRanks() const { return m_nranks; }
+
+  /** 
+   * Sets the parent group for the entire mesh and sets up the blueprint stubs
+   * for the "coordset", "topologies", "fields" and "state"
+   */
+  void setBlueprintGroup(sidre::Group* group,
+                         const std::string& coordset = "coords",
+                         const std::string& topology = "mesh")
+  {
+    // TODO: Ensure that we delete previous hierarchy if it existed
+
+    m_group = group;
+
+    if(m_group != nullptr)
+    {
+      createBlueprintStubs(coordset, topology);
+    }
+  }
+
+  /// Set the coordinate data from an array of primal Points, templated on the dimension
+  template <int NDIMS>
+  void setPoints(const axom::Array<primal::Point<double, NDIMS>>& pts)
+  {
+    SLIC_ASSERT_MSG(m_group != nullptr,
+                    "Must set blueprint group before setPoints()");
+
+    const int SZ = pts.size();
+
+    // create views into a shared buffer for the coordinates, with stride NDIMS
+    auto* buf =
+      m_group->getDataStore()->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)->allocate();
+    switch(NDIMS)
+    {
+    case 3:
+      m_coordsGroup->createView("values/z")->attachBuffer(buf)->apply(SZ, 2, NDIMS);
+    case 2:  // intentional fallthrough
+      m_coordsGroup->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, NDIMS);
+    default:  // intentional fallthrough
+      m_coordsGroup->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, NDIMS);
+    }
+
+    // copy coordinate data into the buffer
+    const std::size_t nbytes = sizeof(double) * SZ * NDIMS;
+    axom::copy(buf->getVoidPtr(), pts.data(), nbytes);
+
+    // set the default connectivity
+    sidre::Array<int> arr(m_topoGroup->createView("elements/connectivity"), SZ, SZ);
+    for(int i = 0; i < SZ; ++i)
+    {
+      arr[i] = i;
+    }
+  }
+
+  /// Checks whether the blueprint is valid and prints diagnostics
+  bool isValid() const
+  {
+    conduit::Node mesh_node;
+    m_group->createNativeLayout(mesh_node);
+
+    bool success = true;
+    conduit::Node info;
+    if(!conduit::blueprint::mpi::verify("mesh", mesh_node, info, MPI_COMM_WORLD))
+    {
+      SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
+      success = false;
+    }
+
+    return success;
+  }
+
+  /// Outputs the object mesh to disk
+  void saveMesh(const std::string& outputMesh)
+  {
+    auto* ds = m_group->getDataStore();
+    sidre::IOManager writer(MPI_COMM_WORLD);
+    writer.write(ds->getRoot(), 1, outputMesh, "sidre_hdf5");
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Add the bp index to the root file
+    writer.writeBlueprintIndexToRootFile(m_group->getDataStore(),
+                                         m_group->getPathName(),
+                                         outputMesh + ".root",
+                                         m_group->getName());
+  }
+
+private:
+  /// Creates blueprint stubs for this mesh
+  void createBlueprintStubs(const std::string& coords, const std::string& topo)
+  {
+    SLIC_ASSERT(m_group != nullptr);
+
+    m_coordsGroup = m_group->createGroup("coordsets")->createGroup(coords);
+    m_coordsGroup->createViewString("type", "explicit");
+    m_coordsGroup->createGroup("values");
+
+    m_topoGroup = m_group->createGroup("topologies")->createGroup(topo);
+    m_topoGroup->createViewString("coordset", coords);
+    m_topoGroup->createViewString("type", "unstructured");
+    m_topoGroup->createViewString("elements/shape", "point");
+
+    m_fieldsGroup = m_group->createGroup("fields");
+
+    m_group->createViewScalar<axom::int32>("state/domain_id", m_rank);
+  }
+
+private:
+  sidre::Group* m_group;
+
+  sidre::Group* m_coordsGroup;
+  sidre::Group* m_topoGroup;
+  sidre::Group* m_fieldsGroup;
+
+  int m_rank;
+  int m_nranks;
+};
+
+/** 
+ * Helper class to generate a mesh blueprint-conforming particle mesh for the input object.
+ * The mesh is represented using a Sidre hierarchy
+ */
+class ObjectMeshWrapper
+{
+public:
+  ObjectMeshWrapper(sidre::Group* group) : m_group(group), m_mesh(m_group)
+  {
+    SLIC_ASSERT(m_group != nullptr);
+  }
+
+  /// Get a pointer to the root group for this mesh
+  sidre::Group* getBlueprintGroup() const { return m_group; }
+
+  std::string getCoordsetName() const
+  {
+    return m_mesh.coordsGroup()->getName();
+  }
+
+  /** 
+   * Generates a collection of \a numPoints points along a circle
+   * of radius \a radius centered at the origin
+   */
+  void generateCircleMesh(double radius, int numPoints)
+  {
+    using axom::utilities::random_real;
+
+    // Check that we're starting with a valid group
+    SLIC_ASSERT(m_group != nullptr);
+
+    constexpr int DIM = 2;
+    using PointType = primal::Point<double, DIM>;
+    using PointArray = axom::Array<PointType>;
+
+    PointArray pts(0, numPoints);
+    for(int i = 0; i < numPoints; ++i)
+    {
+      const double angleInRadians = random_real(0., 2 * M_PI);
+      const double rsinT = radius * std::sin(angleInRadians);
+      const double rcosT = radius * std::cos(angleInRadians);
+
+      pts.push_back(PointType {rcosT, rsinT});
+    }
+
+    m_mesh.setPoints(pts);
+
+    SLIC_ASSERT(m_mesh.isValid());
+  }
+
+  /// Outputs the object mesh to disk
+  void saveMesh(const std::string& outputMesh = "object_mesh")
+  {
+    SLIC_INFO(axom::fmt::format(
+      "{:=^80}",
+      axom::fmt::format("Saving particle mesh '{}' to disk", outputMesh)));
+
+    m_mesh.saveMesh(outputMesh);
+  }
+
+private:
+  sidre::Group* m_group;
+  BlueprintParticleMesh m_mesh;
+};
+
+class QueryMeshWrapper
+{
+public:
+  QueryMeshWrapper() : m_dc("closest_point", nullptr, true) { }
+
+  // Returns a pointer to the MFEMSidreDataCollection
+  sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
+  const sidre::MFEMSidreDataCollection* getDC() const { return &m_dc; }
+
+  /// Returns an array containing the positions of the mesh vertices
+  template <typename PointArray>
+  PointArray getVertexPositions()
+  {
+    auto* mesh = m_dc.GetMesh();
+    const int NV = mesh->GetNV();
+    PointArray arr(NV);
+
+    for(auto i : slam::PositionSet<int>(NV))
+    {
+      mesh->GetNode(i, arr[i].data());
+    }
+
+    return arr;
+  }
+
+  /// Saves the data collection to disk
+  void saveMesh()
+  {
+    SLIC_INFO(
+      axom::fmt::format("{:=^80}",
+                        axom::fmt::format("Saving query mesh '{}' to disk",
+                                          m_dc.GetCollectionName())));
+
+    m_dc.Save();
+  }
+
+  /**
+   * Loads the mesh as an MFEMSidreDataCollection with 
+   * the following fields: "positions", "distances", "directions"
+   */
+  void setupMesh(const std::string& fileName, const std::string meshFile)
+  {
+    SLIC_INFO(axom::fmt::format("{:=^80}",
+                                axom::fmt::format("Loading '{}' mesh", fileName)));
+
+    sidre::MFEMSidreDataCollection originalMeshDC(fileName, nullptr, false);
+    {
+      originalMeshDC.SetComm(MPI_COMM_WORLD);
+      originalMeshDC.Load(meshFile, "sidre_hdf5");
+    }
+    SLIC_ASSERT_MSG(originalMeshDC.GetMesh()->Dimension() == 2,
+                    "This application currently only supports 2D meshes");
+    // TODO: Check order and apply LOR, if necessary
+
+    const int DIM = originalMeshDC.GetMesh()->Dimension();
+
+    // Create the data collection
+    mfem::Mesh* cpMesh = nullptr;
+    {
+      m_dc.SetMeshNodesName("positions");
+
+      auto* pmesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC.GetMesh());
+      cpMesh = (pmesh != nullptr) ? new mfem::ParMesh(*pmesh)
+                                  : new mfem::Mesh(*originalMeshDC.GetMesh());
+      m_dc.SetMesh(cpMesh);
+    }
+
+    // Register the distance and direction grid function
+    constexpr int order = 1;
+    auto* fec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
+    mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(cpMesh, fec);
+    mfem::GridFunction* distances = new mfem::GridFunction(fes);
+    distances->MakeOwner(fec);
+    m_dc.RegisterField("distance", distances);
+
+    auto* vfec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
+    mfem::FiniteElementSpace* vfes =
+      new mfem::FiniteElementSpace(cpMesh, vfec, DIM);
+    mfem::GridFunction* directions = new mfem::GridFunction(vfes);
+    directions->MakeOwner(vfec);
+    m_dc.RegisterField("direction", directions);
+  }
+
+  /// Prints some info about the mesh
+  void printMeshInfo()
+  {
+    switch(m_dc.GetMesh()->Dimension())
+    {
+    case 2:
+      printMeshInfo<2>();
+      break;
+    case 3:
+      printMeshInfo<3>();
+      break;
+    }
+  }
+
+private:
+  /**
+  * \brief Print some info about the mesh
+  *
+  * \note In MPI-based configurations, this is a collective call, but only prints on rank 0
+  */
+  template <int DIM>
+  void printMeshInfo()
+  {
+    mfem::Mesh* mesh = m_dc.GetMesh();
+
+    int myRank = 0;
+    int numElements = mesh->GetNE();
+
+    mfem::Vector mins, maxs;
+
+    auto* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
+    if(pmesh != nullptr)
+    {
+      pmesh->GetBoundingBox(mins, maxs);
+      numElements = pmesh->ReduceInt(numElements);
+      myRank = pmesh->GetMyRank();
+    }
+    else
+    {
+      mesh->GetBoundingBox(mins, maxs);
+    }
+
+    if(myRank == 0)
+    {
+      SLIC_INFO(axom::fmt::format(
+        "Mesh has {} elements and (approximate) bounding box {}",
+        numElements,
+        primal::BoundingBox<double, DIM>(
+          primal::Point<double, DIM>(mins.GetData()),
+          primal::Point<double, DIM>(maxs.GetData()))));
+    }
+
+    slic::flushStreams();
+  }
+
+private:
+  sidre::MFEMSidreDataCollection m_dc;
+};
+
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-#ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
   int my_rank, num_ranks;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
-#else
-  int my_rank = 0;
-  int num_ranks = 1;
-#endif
 
   slic::SimpleLogger logger;
 
@@ -407,10 +518,9 @@ int main(int argc, char** argv)
       retval = app.exit(e);
     }
 
-#ifdef AXOM_USE_MPI
     MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Finalize();
-#endif
+
     exit(retval);
   }
 
@@ -487,7 +597,9 @@ int main(int argc, char** argv)
   {
     SeqClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup());
+    SLIC_INFO(init_str);
+    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup(),
+                        object_mesh_wrapper.getCoordsetName());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -507,7 +619,8 @@ int main(int argc, char** argv)
   {
     OmpClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup());
+    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup(),
+                        object_mesh_wrapper.getCoordsetName());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -528,7 +641,8 @@ int main(int argc, char** argv)
   {
     CudaClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup());
+    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup(),
+                        object_mesh_wrapper.getCoordsetName());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -586,9 +700,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   query_mesh_wrapper.saveMesh();
 
-#ifdef AXOM_USE_MPI
   MPI_Finalize();
-#endif
 
   return 0;
 }
