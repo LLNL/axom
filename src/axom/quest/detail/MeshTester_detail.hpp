@@ -21,6 +21,7 @@
 
 // Acceleration data structure includes
 #include "axom/spin/BVH.hpp"
+#include "axom/spin/ImplicitGrid.hpp"
 
 namespace axom
 {
@@ -30,6 +31,7 @@ namespace detail
 {
 enum class AccelType
 {
+  ImplicitGrid,
   BVH
 };
 
@@ -282,6 +284,93 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
     candidates = candidateBuf;
     axom::deallocate(candidatesData);
   }
+};
+
+template <typename ExecSpace, typename FloatType>
+struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
+  : public CandidateFinderBase<ExecSpace, FloatType>
+{
+  using BaseClass = CandidateFinderBase<ExecSpace, FloatType>;
+  using BaseClass::HostSpace;
+  using BaseClass::Space;
+  using typename BaseClass::BoxType;
+  using typename BaseClass::PointType;
+
+  CandidateFinder(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
+                  int spatialIndexResolution,
+                  double intersectionThreshold)
+    : BaseClass(surface_mesh, intersectionThreshold)
+  {
+#ifdef AXOM_USE_RAJA
+    using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+    RAJA::ReduceMin<reduce_pol, double> xmin(DBL_MAX), ymin(DBL_MAX),
+      zmin(DBL_MAX);
+    RAJA::ReduceMax<reduce_pol, double> xmax(DBL_MIN), ymax(DBL_MIN),
+      zmax(DBL_MIN);
+
+    // Get the global bounding box.
+    mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
+      this->m_surfaceMesh,
+      AXOM_LAMBDA(IndexType, double x, double y, double z) {
+        xmin.min(x);
+        xmax.max(x);
+        ymin.min(y);
+        ymax.max(y);
+        zmin.min(z);
+        zmax.max(z);
+      });
+
+    m_globalBox = BoxType(PointType {xmin.get(), ymin.get(), zmin.get()},
+                          PointType {xmax.get(), ymax.get(), zmax.get()});
+#else
+    BoxType global_box;
+
+    // Get the global bounding box.
+    mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
+      surface_mesh,
+      [=, &global_box](IndexType, double x, double y, double z) {
+        global_box.addPoint(PointType {x, y, z});
+      });
+
+    // Slightly scale the box
+    global_box.scale(1.0001);
+    m_globalBox = global_box;
+#endif
+
+    // find the specified resolution.  If we're passed a number less than one,
+    // use the cube root of the number of triangles.
+    if(spatialIndexResolution < 1)
+    {
+      spatialIndexResolution = (int)(1 + std::pow(this->m_aabbs.size(), 1 / 3.));
+    }
+    m_resolutions = axom::primal::Point<int, 3>(spatialIndexResolution);
+  }
+
+  virtual void getCandidates(axom::Array<IndexType, 1, Space>& offsets,
+                             axom::Array<IndexType, 1, Space>& counts,
+                             axom::Array<IndexType, 1, Space>& candidates) override
+  {
+    int allocatorId = axom::detail::getAllocatorID<Space>();
+    axom::spin::ImplicitGrid<3, ExecSpace, IndexType> gridIndex(
+      m_globalBox,
+      &m_resolutions,
+      this->m_aabbs.size(),
+      allocatorId);
+    gridIndex.insert(this->m_aabbs.size(), this->m_aabbs.data());
+    axom::Array<IndexType> offsetsTmp, countsTmp, candidatesTmp;
+    gridIndex.getCandidatesAsArray(this->m_aabbs.size(),
+                                   this->m_aabbs.data(),
+                                   offsetsTmp,
+                                   countsTmp,
+                                   candidatesTmp);
+
+    offsets = offsetsTmp;
+    counts = countsTmp;
+    candidates = candidatesTmp;
+  }
+
+  BoxType m_globalBox;
+  axom::primal::Point<int, 3> m_resolutions;
 };
 
 }  // namespace detail
