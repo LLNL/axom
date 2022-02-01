@@ -625,9 +625,16 @@ template <>
 template <typename T, typename ExecSpace>
 void OpFillBase<false>::fill(T* array, IndexType n, const T& value)
 {
-  for_all<ExecSpace>(
-    n,
-    AXOM_LAMBDA(IndexType i) { array[i] = value; });
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(IndexType i) { array[i] = value; });
+  }
+  else
+  {
+    std::uninitialized_fill_n(array, n, value);
+  }
 }
 
 /*!
