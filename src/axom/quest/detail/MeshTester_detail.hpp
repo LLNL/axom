@@ -327,26 +327,12 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
 
     // Search for intersecting bounding boxes of triangles
     IndexType* candidatesData = nullptr;
-    bvh.findBoundingBoxes(offsets.data(),
-                          counts.data(),
-                          candidatesData,
-                          this->m_aabbs.size(),
-                          this->m_aabbs.view());
+    IndexType ncandidates = bvh.findBoundingBoxes(offsets.data(),
+                                                  counts.data(),
+                                                  candidatesData,
+                                                  this->m_aabbs.size(),
+                                                  this->m_aabbs.view());
 
-    IndexType ncandidates;
-    {
-      axom::Array<IndexType, 1, Space> ncandidates_buf(1);
-      axom::ArrayView<IndexType, 1, Space> p_ncandidates = ncandidates_buf;
-      axom::ArrayView<IndexType, 1, Space> p_offsets = offsets;
-      axom::ArrayView<IndexType, 1, Space> p_counts = counts;
-      IndexType lastIdx = offsets.size() - 1;
-      for_all<ExecSpace>(
-        1,
-        AXOM_LAMBDA(IndexType) {
-          p_ncandidates[0] = p_offsets[lastIdx] + p_counts[lastIdx];
-        });
-      axom::copy(&ncandidates, ncandidates_buf.data(), sizeof(IndexType));
-    }
     m_currCandidates.reset(candidatesData);
     return axom::ArrayView<IndexType, 1, Space>(candidatesData, ncandidates);
   }
