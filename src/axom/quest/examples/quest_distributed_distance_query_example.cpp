@@ -156,7 +156,8 @@ public:
 
     setBlueprintGroup(m_group, coordset, topology);
   }
-
+  /// Gets the root group for this mesh blueprint
+  sidre::Group* rootGroup() const { return m_group; }
   /// Gets the parent group for the blueprint coordinate set
   sidre::Group* coordsGroup() const { return m_coordsGroup; }
   /// Gets the parent group for the blueprint mesh topology
@@ -166,6 +167,29 @@ public:
   int getRank() const { return m_rank; }
   /// Gets the number of ranks in the problem
   int getNumRanks() const { return m_nranks; }
+
+  /// Returns true if points have been added to the particle mesh
+  bool hasPoints() const
+  {
+    return m_coordsGroup != nullptr && m_coordsGroup->hasGroup("values");
+  }
+
+  /// Returns the number of points in the particle mesh
+  int numPoints() const
+  {
+    return hasPoints() ? m_coordsGroup->getView("values/x")->getNumElements() : 0;
+  }
+
+  int dimension() const
+  {
+    if(hasPoints())
+    {
+      return m_coordsGroup->hasView("values/z")
+        ? 3
+        : (m_coordsGroup->hasView("values/y") ? 2 : 1);
+    }
+    return 0;
+  }
 
   /** 
    * Sets the parent group for the entire mesh and sets up the blueprint stubs
@@ -217,6 +241,71 @@ public:
     {
       arr[i] = i;
     }
+  }
+
+  template <typename T>
+  void registerNodalScalarField(const std::string& fieldName)
+  {
+    SLIC_ASSERT_MSG(hasPoints(),
+                    "Cannot register a field with the BlueprintParticleMesh "
+                    "before adding points");
+
+    auto* fld = m_fieldsGroup->createGroup(fieldName);
+    fld->createViewString("association", "vertex");
+    fld->createViewString("topology", m_topoGroup->getName());
+    fld->createViewAndAllocate("values",
+                               sidre::detail::SidreTT<T>::id,
+                               numPoints());
+  }
+
+  template <typename T>
+  void registerNodalVectorField(const std::string& fieldName)
+  {
+    SLIC_ASSERT_MSG(hasPoints(),
+                    "Cannot register a field with the BlueprintParticleMesh "
+                    "before adding points");
+
+    const int SZ = numPoints();
+    const int DIM = dimension();
+
+    auto* fld = m_fieldsGroup->createGroup(fieldName);
+    fld->createViewString("association", "vertex");
+    fld->createViewString("topology", m_topoGroup->getName());
+
+    // create views into a shared buffer for the coordinates, with stride NDIMS
+    auto* buf = m_group->getDataStore()
+                  ->createBuffer(sidre::detail::SidreTT<T>::id, DIM * SZ)
+                  ->allocate();
+    switch(DIM)
+    {
+    case 3:
+      fld->createView("values/z")->attachBuffer(buf)->apply(SZ, 2, DIM);
+    case 2:  // intentional fallthrough
+      fld->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, DIM);
+    default:  // intentional fallthrough
+      fld->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, DIM);
+    }
+  }
+
+  bool hasField(const std::string& fieldName) const
+  {
+    return m_fieldsGroup->hasGroup(fieldName);
+  }
+
+  template <typename T>
+  axom::ArrayView<T> getNodalScalarField(const std::string& fieldName) const
+  {
+    SLIC_ASSERT_MSG(hasPoints(),
+                    "Cannot extract a field from the BlueprintParticleMesh "
+                    "before adding points");
+
+    T* data = hasField(fieldName)
+      ? static_cast<T*>(
+          m_fieldsGroup->getView(axom::fmt::format("{}/values", fieldName))
+            ->getVoidPtr())
+      : nullptr;
+
+    return axom::ArrayView<T>(data, numPoints());
   }
 
   /// Checks whether the blueprint is valid and prints diagnostics
@@ -357,6 +446,15 @@ public:
   sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
   const sidre::MFEMSidreDataCollection* getDC() const { return &m_dc; }
 
+  const BlueprintParticleMesh& getParticleMesh() const { return m_queryMesh; }
+
+  sidre::Group* getBlueprintGroup() const { return m_queryMesh.rootGroup(); }
+
+  std::string getCoordsetName() const
+  {
+    return m_queryMesh.coordsGroup()->getName();
+  }
+
   /// Returns an array containing the positions of the mesh vertices
   template <typename PointArray>
   PointArray getVertexPositions()
@@ -382,6 +480,34 @@ public:
                                           m_dc.GetCollectionName())));
 
     m_dc.Save();
+  }
+
+  void setupParticleMesh()
+  {
+    using PointArray2D = axom::Array<primal::Point<double, 2>>;
+    using PointArray3D = axom::Array<primal::Point<double, 3>>;
+
+    auto* dsRoot = m_dc.GetBPGroup()->getDataStore()->getRoot();
+    m_queryMesh = BlueprintParticleMesh(dsRoot->createGroup("query_mesh"));
+
+    const int DIM = m_dc.GetMesh()->Dimension();
+
+    switch(DIM)
+    {
+    case 2:
+      m_queryMesh.setPoints<2>(getVertexPositions<PointArray2D>());
+      break;
+    case 3:
+      m_queryMesh.setPoints<3>(getVertexPositions<PointArray3D>());
+      break;
+    }
+
+    m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_rank");
+    m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_index");
+    m_queryMesh.registerNodalScalarField<double>("min_distance");
+    m_queryMesh.registerNodalVectorField<double>("closest_point");
+
+    SLIC_ASSERT(m_queryMesh.isValid());
   }
 
   /**
@@ -488,6 +614,7 @@ private:
 
 private:
   sidre::MFEMSidreDataCollection m_dc;
+  BlueprintParticleMesh m_queryMesh;
 };
 
 //------------------------------------------------------------------------------
@@ -499,6 +626,7 @@ int main(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
   slic::SimpleLogger logger;
+  //slic::setAbortOnWarning(true);
 
   //---------------------------------------------------------------------------
   // Set up and parse command line arguments
@@ -543,7 +671,6 @@ int main(int argc, char** argv)
 
   using PointArray = SeqClosestPointQueryType::PointArray;
   using IndexSet = slam::PositionSet<>;
-  using IndexArray = axom::Array<axom::IndexType>;
 
   //---------------------------------------------------------------------------
   // Load/generate object mesh
@@ -557,20 +684,18 @@ int main(int argc, char** argv)
   object_mesh_wrapper.saveMesh();
 
   //---------------------------------------------------------------------------
-  // Load mesh and get vertex positions
+  // Load computational mesh and generate a particle mesh over its nodes
+  // These will be used to query the closest points on the object mesh(es)
   //---------------------------------------------------------------------------
-
   QueryMeshWrapper query_mesh_wrapper;
 
   query_mesh_wrapper.setupMesh(params.getDCMeshName(), params.meshFile);
   query_mesh_wrapper.printMeshInfo();
+  query_mesh_wrapper.setupParticleMesh();
 
   // Copy mesh nodes into qpts array
   auto qPts = query_mesh_wrapper.getVertexPositions<PointArray>();
   const int nQueryPts = qPts.size();
-
-  // Create an array for the indices of the closest points
-  IndexArray cpIndices;
 
   // Create an array to hold the object points
   PointArray objectPts;
@@ -608,7 +733,8 @@ int main(int argc, char** argv)
 
     SLIC_INFO(query_str);
     queryTimer.start();
-    query.computeClosestPoints(qPts, cpIndices);
+    query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
+                               query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
     objectPts = query.points();
   }
@@ -629,7 +755,8 @@ int main(int argc, char** argv)
 
     SLIC_INFO(query_str);
     queryTimer.start();
-    query.computeClosestPoints(qPts, cpIndices);
+    query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
+                               query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
 
     objectPts = query.points();
@@ -651,7 +778,8 @@ int main(int argc, char** argv)
 
     SLIC_INFO(query_str);
     queryTimer.start();
-    query.computeClosestPoints(qPts, cpIndices);
+    query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
+                               query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
 
     objectPts = query.points();
@@ -659,6 +787,10 @@ int main(int argc, char** argv)
 #endif
   break;
   }
+
+  auto cpIndices =
+    query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
+      "cp_index");
 
   if(params.isVerbose())
   {

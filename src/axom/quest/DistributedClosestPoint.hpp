@@ -15,6 +15,9 @@
 
 #include "axom/fmt.hpp"
 
+#include "conduit_blueprint.hpp"
+#include "conduit_blueprint_mpi.hpp"
+
 #include <list>
 #include <vector>
 #include <set>
@@ -68,17 +71,14 @@ public:
   void setObjectMesh(sidre::Group* meshGroup, const std::string& coordset)
   {
     // Perform some simple error checking
-    SLIC_ASSERT(meshGroup != nullptr);
-    SLIC_ASSERT(
-      meshGroup->hasGroup(axom::fmt::format("coordsets/{}/values", coordset)));
-    auto* valuesGroup =
-      meshGroup->getGroup(axom::fmt::format("coordsets/{}/values", coordset));
+    SLIC_ASSERT(this->isValidBlueprint(meshGroup));
 
-    // Extract the dimension and number of points; must be at least 1D
-    SLIC_ASSERT(valuesGroup->hasView("x"));
-    const int dim =
-      valuesGroup->hasView("z") ? 3 : (valuesGroup->hasChildView("y") ? 2 : 1);
-    const int N = valuesGroup->getView("x")->getNumElements();
+    // Extract the dimension and number of points from the coordinate values group
+    auto valuesPath = axom::fmt::format("coordsets/{}/values", coordset);
+    SLIC_ASSERT(meshGroup->hasGroup(valuesPath));
+    auto* valuesGroup = meshGroup->getGroup(valuesPath);
+    const int dim = extractDimension(valuesGroup);
+    const int N = extractSize(valuesGroup);
     SLIC_ASSERT(dim == NDIMS);
 
     // Extract pointers to the coordinate data
@@ -111,14 +111,33 @@ public:
     return (result == spin::BVH_BUILD_OK);
   }
 
-  void computeClosestPoints(const PointArray& queryPts,
-                            axom::Array<axom::IndexType>& cpIndexes) const
+  void computeClosestPoints(sidre::Group* meshGroup,
+                            const std::string& coordset) const
   {
-    SLIC_ASSERT(!queryPts.empty());
+    // Perform some simple error checking
+    SLIC_ASSERT(this->isValidBlueprint(meshGroup));
 
-    const int nPts = queryPts.size();
+    // Extract the dimension and number of points from the coordinate values group
+    auto valuesPath = axom::fmt::format("coordsets/{}/values", coordset);
+    SLIC_ASSERT(meshGroup->hasGroup(valuesPath));
+    auto* valuesGroup = meshGroup->getGroup(valuesPath);
+    const int dim = extractDimension(valuesGroup);
+    const int nPts = extractSize(valuesGroup);
+    SLIC_ASSERT(dim == NDIMS);
 
-    /// Create an ArrayView in ExecSpace that is compatible with cpIndexes
+    // Extract the points array
+    auto* data = static_cast<PointType*>(valuesGroup->getView("x")->getVoidPtr());
+    axom::ArrayView<PointType> queryPts(data, nPts);
+
+    // Extract the cp_index array
+    std::string cp_index_path = "fields/cp_index/values";
+    SLIC_ASSERT_MSG(
+      meshGroup->hasView(cp_index_path),
+      "Input to `computeClosestPoint()` must have a field names `cp_index`");
+    sidre::Array<axom::IndexType> cpIndexes(meshGroup->getView(cp_index_path));
+
+    // Create an ArrayView in ExecSpace that is compatible with cpIndexes
+    // TODO: Avoid copying (here and at the end) if both are on the host
     axom::Array<axom::IndexType> cp_idx(nPts, nPts, m_allocatorID);
     auto query_inds = cp_idx.view();
 
@@ -165,10 +184,53 @@ public:
           query_inds[idx] = curr_min.minElem;
         }););
 
-    cpIndexes = query_inds;
+    axom::copy(cpIndexes.data(),
+               query_inds.data(),
+               cpIndexes.size() * sizeof(axom::IndexType));
   }
 
   const PointArray& points() const { return m_points; }
+
+private:
+  // Check validity of blueprint group
+  bool isValidBlueprint(const sidre::Group* bpGroup) const
+  {
+    if(bpGroup == nullptr)
+    {
+      return false;
+    }
+
+    conduit::Node mesh_node;
+    bpGroup->createNativeLayout(mesh_node);
+
+    bool success = true;
+    conduit::Node info;
+    if(!conduit::blueprint::mpi::verify("mesh", mesh_node, info, MPI_COMM_WORLD))
+    {
+      SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
+      success = false;
+    }
+    // else
+    // {
+    //   SLIC_INFO("Valid blueprint for particle mesh: \n" << info.to_yaml());
+    // }
+
+    return success;
+  }
+
+  /// Helper function to extract the dimension from the coordinate values group
+  int extractDimension(sidre::Group* valuesGroup) const
+  {
+    SLIC_ASSERT(valuesGroup->hasView("x"));
+    return valuesGroup->hasView("z") ? 3 : (valuesGroup->hasView("y") ? 2 : 1);
+  }
+
+  /// Helper function to extract the number of points from the coordinate values group
+  int extractSize(sidre::Group* valuesGroup) const
+  {
+    SLIC_ASSERT(valuesGroup->hasView("x"));
+    return valuesGroup->getView("x")->getNumElements();
+  }
 
 private:
   PointArray m_points;
