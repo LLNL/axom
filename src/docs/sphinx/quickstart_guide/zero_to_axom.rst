@@ -33,7 +33,7 @@ Axom.
   Here is an example command: ``salloc -ppdebug -N1-1 python3 scripts/uberenv/uberenv.py``
 
 Unless otherwise specified, Spack will default to a compiler.  This is generally not a good idea when
-developing large codes. To specify which compiler to use add the compiler specification to the ``--spec`` Uberenv
+developing large codes. To specify which compiler to use, add the compiler specification to the ``--spec`` Uberenv
 command line option. Supported compiler specs can be found in the Spack compiler files in our repository:
 ``scripts/spack/configs/<platform>/compilers.yaml``.
 
