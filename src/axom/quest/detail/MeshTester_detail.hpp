@@ -93,9 +93,9 @@ struct CandidateFinderBase
                                 axom::Array<IndexType>& secondIndex,
                                 axom::Array<IndexType>& degenerateIndices);
 
-  virtual void getCandidates(axom::Array<IndexType, 1, Space>& offsets,
-                             axom::Array<IndexType, 1, Space>& counts,
-                             axom::Array<IndexType, 1, Space>& candidates) = 0;
+  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+    axom::Array<IndexType, 1, Space>& offsets,
+    axom::Array<IndexType, 1, Space>& counts) = 0;
 
   mint::UnstructuredMesh<mint::SINGLE_SHAPE>* m_surfaceMesh;
   double m_intersectionThreshold;
@@ -169,8 +169,8 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
 #endif
 
   // Get CSR arrays for candidate data
-  IndexArray offsets, counts, candidates;
-  getCandidates(offsets, counts, candidates);
+  IndexArray offsets, counts;
+  IndexView candidates = getCandidates(offsets, counts);
 
   IndexArray indices(candidates.size());
   IndexArray validCandidates(candidates.size());
@@ -186,7 +186,6 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
 
     IndexView p_offsets = offsets;
     IndexView p_counts = counts;
-    IndexView p_candidates = candidates;
 
     // Initialize triangle indices and valid candidates
     for_all<ExecSpace>(
@@ -194,7 +193,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
       AXOM_LAMBDA(IndexType i) {
         for(int j = 0; j < p_counts[i]; j++)
         {
-          if(i < p_candidates[p_offsets[i] + j])
+          if(i < candidates[p_offsets[i] + j])
           {
 #ifdef AXOM_USE_RAJA
             auto idx = RAJA::atomicAdd<atomic_pol>(&p_numValidCandidates[0], 1);
@@ -202,7 +201,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
             auto idx = p_numValidCandidates[0]++;
 #endif
             p_indices[idx] = i;
-            p_validCandidates[idx] = p_candidates[p_offsets[i] + j];
+            p_validCandidates[idx] = candidates[p_offsets[i] + j];
           }
         }
       });
@@ -274,9 +273,9 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
   using BaseClass::HostSpace;
   using BaseClass::Space;
 
-  virtual void getCandidates(axom::Array<IndexType, 1, Space>& offsets,
-                             axom::Array<IndexType, 1, Space>& counts,
-                             axom::Array<IndexType, 1, Space>& candidates) override
+  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+    axom::Array<IndexType, 1, Space>& offsets,
+    axom::Array<IndexType, 1, Space>& counts) override
   {
     int allocatorId = axom::detail::getAllocatorID<Space>();
     spin::BVH<3, ExecSpace, FloatType> bvh;
@@ -308,11 +307,20 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
         });
       axom::copy(&ncandidates, ncandidates_buf.data(), sizeof(IndexType));
     }
-    axom::ArrayView<IndexType, 1, Space> candidateBuf(candidatesData,
-                                                      ncandidates);
-    candidates = candidateBuf;
-    axom::deallocate(candidatesData);
+    m_currCandidates.reset(candidatesData);
+    return axom::ArrayView<IndexType, 1, Space>(candidatesData, ncandidates);
   }
+
+  // Helper functor used by unique_ptr for deleting the result array returned
+  // from the BVH query
+  struct CandidateDeleter
+  {
+    void operator()(IndexType* ptr) const { axom::deallocate(ptr); }
+  };
+
+  std::unique_ptr<IndexType, CandidateDeleter> m_currCandidates {
+    nullptr,
+    CandidateDeleter {}};
 };
 
 template <typename ExecSpace, typename FloatType>
@@ -375,9 +383,9 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
     m_resolutions = axom::primal::Point<int, 3>(spatialIndexResolution);
   }
 
-  virtual void getCandidates(axom::Array<IndexType, 1, Space>& offsets,
-                             axom::Array<IndexType, 1, Space>& counts,
-                             axom::Array<IndexType, 1, Space>& candidates) override
+  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+    axom::Array<IndexType, 1, Space>& offsets,
+    axom::Array<IndexType, 1, Space>& counts) override
   {
     int allocatorId = axom::detail::getAllocatorID<Space>();
     axom::spin::ImplicitGrid<3, ExecSpace, IndexType> gridIndex(
@@ -386,20 +394,21 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
       this->m_aabbs.size(),
       allocatorId);
     gridIndex.insert(this->m_aabbs.size(), this->m_aabbs.data());
-    axom::Array<IndexType> offsetsTmp, countsTmp, candidatesTmp;
+    axom::Array<IndexType> offsetsTmp, countsTmp;
     gridIndex.getCandidatesAsArray(this->m_aabbs.size(),
                                    this->m_aabbs.data(),
                                    offsetsTmp,
                                    countsTmp,
-                                   candidatesTmp);
+                                   m_currCandidates);
 
     offsets = offsetsTmp;
     counts = countsTmp;
-    candidates = candidatesTmp;
+    return m_currCandidates;
   }
 
   BoxType m_globalBox;
   axom::primal::Point<int, 3> m_resolutions;
+  axom::Array<IndexType> m_currCandidates;
 };
 
 }  // namespace detail
