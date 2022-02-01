@@ -70,6 +70,11 @@ struct CandidateFinder;
 template <typename ExecSpace, typename FloatType>
 struct CandidateFinderBase;
 
+/*!
+ * \class CandidateFinderBase
+ *
+ * \brief Base class to handle common operations for mesh testing.
+ */
 template <typename ExecSpace, typename FloatType>
 struct CandidateFinderBase
 {
@@ -86,13 +91,44 @@ struct CandidateFinderBase
   static constexpr MemorySpace HostSpace = axom::MemorySpace::Dynamic;
 #endif
 
+  /*!
+   * \brief Initializes the CandidateFinder query object with a surface mesh.
+   *
+   * \param [in] surface_mesh The triangular surface mesh to query.
+   * \param [in] intersectionThreshold The tolerance threshold to use for
+   *  triangle intersection tests.
+   */
   CandidateFinderBase(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
                       double intersectionThreshold);
 
+  /*!
+   * \brief Runs a query to find pairs of triangle cell indices intersecting
+   *  in the surface mesh, as well as degenerate triangles in the mesh.
+   *
+   * \param [in] firstIndex The first indices of intersecting pairs
+   * \param [in] secondIndex The second indices of intersecting pairs
+   * \param [in] degenerateIndices Indices of degenerate mesh triangles
+   */
   void findTriMeshIntersections(axom::Array<IndexType>& firstIndex,
                                 axom::Array<IndexType>& secondIndex,
                                 axom::Array<IndexType>& degenerateIndices);
 
+protected:
+  /*!
+   * \brief Returns the candidate intersection pairs by using a spatial query
+   *  data structure.
+   *
+   * \param [out] offsets Offsets into the candidates array for each mesh cell
+   * \param [out] counts  The number of candidates for each mesh cell
+   * \return candidates The flat array of candidate indices
+   *
+   * \note Upon completion, the triangular mesh element at index i has:
+   *  * counts[ i ] candidates
+   *  * Candidate intersections with indices stored in the range:
+   *    [offsets[i], offsets[i] + counts[i])
+   * \note This should be implemented in derived CandidateFinder template
+   *  specializations for each supported acceleration data structure.
+   */
   virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
     axom::Array<IndexType, 1, Space>& offsets,
     axom::Array<IndexType, 1, Space>& counts) = 0;
@@ -264,6 +300,10 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
   }
 }
 
+/*!
+ * \brief Specialization of CandidateFinder using a Bounding Volume Hierarchy
+ *  (BVH) to perform broad-phase collision detection.
+ */
 template <typename ExecSpace, typename FloatType>
 struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
   : public CandidateFinderBase<ExecSpace, FloatType>
@@ -323,6 +363,10 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
     CandidateDeleter {}};
 };
 
+/*!
+ * \brief Specialization of CandidateFinder using an Implicit Grid data
+ *  structure to perform broad-phase collision detection.
+ */
 template <typename ExecSpace, typename FloatType>
 struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
   : public CandidateFinderBase<ExecSpace, FloatType>
