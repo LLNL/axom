@@ -50,6 +50,8 @@ private:
     double minSqDist {numerics::floating_point_limits<double>::max()};
     /// Index within mesh of closest element
     int minElem;
+    /// Position of closest point
+    PointType closestPoint;
   };
 
 public:
@@ -111,6 +113,22 @@ public:
     return (result == spin::BVH_BUILD_OK);
   }
 
+  /**
+   * \brief Computes the closest point within the objects for each query point
+   * in the provided particle mesh, provided in the mesh blueprint rooted at \a meshGroup
+   * 
+   * \param meshGroup The root of a mesh blueprint for the query points
+   * \param coordset The coordinate set for the query points
+   * 
+   * Uses the \a coordset coordinate set of the provided blueprint mesh
+   * 
+   * The particle mesh must contain the following fields:
+   *   - cp_index: Will hold the index of the object point containing the closest point
+   *   - closest_point: Will hold the position of the closest point
+   * 
+   * \note The current implementation assumes that the coordinates and closest_points and contiguous
+   * with stride NDIMS. We intend to loosen this restriction in the future
+   */
   void computeClosestPoints(sidre::Group* meshGroup,
                             const std::string& coordset) const
   {
@@ -118,7 +136,7 @@ public:
     SLIC_ASSERT(this->isValidBlueprint(meshGroup));
 
     // Extract the dimension and number of points from the coordinate values group
-    auto valuesPath = axom::fmt::format("coordsets/{}/values", coordset);
+    const auto valuesPath = axom::fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(meshGroup->hasGroup(valuesPath));
     auto* valuesGroup = meshGroup->getGroup(valuesPath);
     const int dim = extractDimension(valuesGroup);
@@ -126,20 +144,35 @@ public:
     SLIC_ASSERT(dim == NDIMS);
 
     // Extract the points array
-    auto* data = static_cast<PointType*>(valuesGroup->getView("x")->getVoidPtr());
-    axom::ArrayView<PointType> queryPts(data, nPts);
+    auto* pos_data =
+      static_cast<PointType*>(valuesGroup->getView("x")->getVoidPtr());
+    axom::ArrayView<PointType> queryPts(pos_data, nPts);
 
     // Extract the cp_index array
-    std::string cp_index_path = "fields/cp_index/values";
+    const std::string cp_index_path = "fields/cp_index/values";
     SLIC_ASSERT_MSG(
       meshGroup->hasView(cp_index_path),
-      "Input to `computeClosestPoint()` must have a field names `cp_index`");
+      "Input to `computeClosestPoint()` must have a field named `cp_index`");
     sidre::Array<axom::IndexType> cpIndexes(meshGroup->getView(cp_index_path));
+
+    // Extract the closest points array
+    const std::string cp_start_path = "fields/closest_point/values/x";
+    SLIC_ASSERT_MSG(meshGroup->hasView(cp_start_path),
+                    "Input to `computeClosestPoint()` must have a field named "
+                    "`closest_point`");
+    auto* cp_data =
+      static_cast<PointType*>(meshGroup->getView(cp_start_path)->getVoidPtr());
+    axom::ArrayView<PointType> closestPts(cp_data, nPts);
 
     // Create an ArrayView in ExecSpace that is compatible with cpIndexes
     // TODO: Avoid copying (here and at the end) if both are on the host
     axom::Array<axom::IndexType> cp_idx(nPts, nPts, m_allocatorID);
     auto query_inds = cp_idx.view();
+
+    // Create an ArrayView in ExecSpace that is compatible with cpIndexes
+    // TODO: Avoid copying (here and at the end) if both are on the host
+    axom::Array<PointType> cp_pos(nPts, nPts, m_allocatorID);
+    auto query_pos = cp_pos.view();
 
     /// Create an ArrayView in ExecSpace that is compatible with queryPts
     PointArray execPoints(nPts, nPts, m_allocatorID);
@@ -170,6 +203,7 @@ public:
             {
               curr_min.minSqDist = sq_dist;
               curr_min.minElem = candidate_idx;
+              curr_min.closestPoint = candidate_pt;
             }
           };
 
@@ -182,14 +216,21 @@ public:
           it.traverse_tree(qpt, searchMinDist, traversePredicate);
 
           query_inds[idx] = curr_min.minElem;
+          query_pos[idx] = curr_min.closestPoint;
         }););
 
     axom::copy(cpIndexes.data(),
                query_inds.data(),
                cpIndexes.size() * sizeof(axom::IndexType));
-  }
+    axom::copy(closestPts.data(),
+               query_pos.data(),
+               closestPts.size() * sizeof(PointType));
 
-  const PointArray& points() const { return m_points; }
+    // std::cout << fmt::format("After: closest points ({}): {}",
+    //                          fmt::ptr(closestPts.data()),
+    //                          closestPts)
+    //           << std::endl;
+  }
 
 private:
   // Check validity of blueprint group

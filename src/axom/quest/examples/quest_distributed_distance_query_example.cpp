@@ -308,6 +308,22 @@ public:
     return axom::ArrayView<T>(data, numPoints());
   }
 
+  template <typename T>
+  axom::ArrayView<T> getNodalVectorField(const std::string& fieldName) const
+  {
+    SLIC_ASSERT_MSG(hasPoints(),
+                    "Cannot extract a field from the BlueprintParticleMesh "
+                    "before adding points");
+
+    T* data = hasField(fieldName)
+      ? static_cast<T*>(
+          m_fieldsGroup->getView(axom::fmt::format("{}/values/x", fieldName))
+            ->getVoidPtr())
+      : nullptr;
+
+    return axom::ArrayView<T>(data, numPoints());
+  }
+
   /// Checks whether the blueprint is valid and prints diagnostics
   bool isValid() const
   {
@@ -670,6 +686,7 @@ int main(int argc, char** argv)
 #endif
 
   using PointArray = SeqClosestPointQueryType::PointArray;
+  using PointType = SeqClosestPointQueryType::PointType;
   using IndexSet = slam::PositionSet<>;
 
   //---------------------------------------------------------------------------
@@ -696,9 +713,6 @@ int main(int argc, char** argv)
   // Copy mesh nodes into qpts array
   auto qPts = query_mesh_wrapper.getVertexPositions<PointArray>();
   const int nQueryPts = qPts.size();
-
-  // Create an array to hold the object points
-  PointArray objectPts;
 
   //---------------------------------------------------------------------------
   // Initialize spatial index for querying points, and run query
@@ -736,7 +750,6 @@ int main(int argc, char** argv)
     query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
                                query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
-    objectPts = query.points();
   }
   break;
   case RuntimePolicy::omp:
@@ -758,8 +771,6 @@ int main(int argc, char** argv)
     query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
                                query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
-
-    objectPts = query.points();
   }
 #endif
   break;
@@ -781,8 +792,6 @@ int main(int argc, char** argv)
     query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
                                query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
-
-    objectPts = query.points();
   }
 #endif
   break;
@@ -791,6 +800,10 @@ int main(int argc, char** argv)
   auto cpIndices =
     query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
       "cp_index");
+
+  auto cpPositions =
+    query_mesh_wrapper.getParticleMesh().getNodalVectorField<PointType>(
+      "closest_point");
 
   if(params.isVerbose())
   {
@@ -819,7 +832,7 @@ int main(int argc, char** argv)
   mfem::Array<int> dofs;
   for(auto i : IndexSet(nQueryPts))
   {
-    const auto& cp = objectPts[cpIndices[i]];
+    const auto& cp = cpPositions[i];
     (*distances)(i) = sqrt(squared_distance(qPts[i], cp));
 
     primal::Vector<double, DIM> dir(qPts[i], cp);
