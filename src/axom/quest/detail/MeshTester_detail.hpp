@@ -99,7 +99,12 @@ struct CandidateFinderBase
    *  triangle intersection tests.
    */
   CandidateFinderBase(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
-                      double intersectionThreshold);
+                      double intersectionThreshold)
+    : m_surfaceMesh(surface_mesh)
+    , m_intersectionThreshold(intersectionThreshold)
+  { }
+
+  void initialize();
 
   /*!
    * \brief Runs a query to find pairs of triangle cell indices intersecting
@@ -142,11 +147,7 @@ protected:
 };
 
 template <typename ExecSpace, typename FloatType>
-CandidateFinderBase<ExecSpace, FloatType>::CandidateFinderBase(
-  mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
-  double intersectionThreshold)
-  : m_surfaceMesh(surface_mesh)
-  , m_intersectionThreshold(intersectionThreshold)
+void CandidateFinderBase<ExecSpace, FloatType>::initialize()
 {
   const int ncells = m_surfaceMesh->getNumberOfCells();
 
@@ -164,7 +165,7 @@ CandidateFinderBase<ExecSpace, FloatType>::CandidateFinderBase(
   // Initialize the bounding box for each Triangle and marks
   // if the Triangle is degenerate.
   mint::for_all_cells<ExecSpace, mint::xargs::coords>(
-    surface_mesh,
+    m_surfaceMesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
                 const IndexType* nodeIds) {
@@ -358,16 +359,15 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
   : public CandidateFinderBase<ExecSpace, FloatType>
 {
   using BaseClass = CandidateFinderBase<ExecSpace, FloatType>;
+  using BaseClass::CandidateFinderBase;
   using BaseClass::HostSpace;
   using BaseClass::Space;
   using typename BaseClass::BoxType;
   using typename BaseClass::PointType;
 
-  CandidateFinder(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
-                  int spatialIndexResolution,
-                  double intersectionThreshold)
-    : BaseClass(surface_mesh, intersectionThreshold)
+  void initialize(int spatialIndexResolution)
   {
+    BaseClass::initialize();
 #ifdef AXOM_USE_RAJA
     using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
     RAJA::ReduceMin<reduce_pol, double> xmin(DBL_MAX), ymin(DBL_MAX),

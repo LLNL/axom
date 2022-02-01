@@ -79,6 +79,7 @@ void findTriMeshIntersectionsBVH(
   constexpr detail::AccelType UseBVH = detail::AccelType::BVH;
   using CandidateFinder = detail::CandidateFinder<UseBVH, ExecSpace, FloatType>;
   CandidateFinder impl(surface_mesh, intersectionThreshold);
+  impl.initialize();
   axom::Array<IndexType> intersectFirst, intersectSecond, degenerate;
   impl.findTriMeshIntersections(intersectFirst, intersectSecond, degenerate);
   // Copy results to output vectors
@@ -130,7 +131,8 @@ void findTriMeshIntersectionsImplicitGrid(
   constexpr detail::AccelType UseImplicit = detail::AccelType::ImplicitGrid;
   using CandidateFinder =
     detail::CandidateFinder<UseImplicit, ExecSpace, FloatType>;
-  CandidateFinder impl(surface_mesh, spatialIndexResolution, intersectionThreshold);
+  CandidateFinder impl(surface_mesh, intersectionThreshold);
+  impl.initialize(spatialIndexResolution);
   axom::Array<IndexType> intersectFirst, intersectSecond, degenerate;
   impl.findTriMeshIntersections(intersectFirst, intersectSecond, degenerate);
   // Copy results to output vectors
