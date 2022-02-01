@@ -796,19 +796,12 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
 
   //If the root file was given as a path,
   //find the directory and add it to file_name
-  std::string delimiter = "/";
+  char delimiter = '/';
   axom::Path root_path(root_name);
   std::string root_dir = root_path.dirName();
-/*
-  if (!root_name.empty() && root_name[0] == delimiter[0])
-  {
-    root_dir = delimiter + root_dir;
-  }
-*/
-  if(!root_dir.empty())
-  {
-    file_name = root_dir + delimiter + file_name;
-  }
+
+  file_name =
+    axom::utilities::string::appendPrefix(root_dir, file_name, delimiter);
 
   return file_name;
 }
