@@ -346,7 +346,7 @@ public:
   {
     auto* ds = m_group->getDataStore();
     sidre::IOManager writer(MPI_COMM_WORLD);
-    writer.write(ds->getRoot(), 1, outputMesh, "sidre_hdf5");
+    writer.write(ds->getRoot(), m_nranks, outputMesh, "sidre_hdf5");
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -374,7 +374,7 @@ private:
 
     m_fieldsGroup = m_group->createGroup("fields");
 
-    m_group->createViewScalar<axom::int32>("state/domain_id", m_rank);
+    m_group->createViewScalar<axom::int64>("state/domain_id", m_rank);
   }
 
 private:
@@ -424,9 +424,12 @@ public:
     using PointArray = axom::Array<PointType>;
 
     PointArray pts(0, numPoints);
+    const double thetaScale = 2. * M_PI / m_mesh.getNumRanks();
+    const double thetaStart = m_mesh.getRank() * thetaScale;
+    const double thetaEnd = (m_mesh.getRank() + 1) * thetaScale;
     for(int i = 0; i < numPoints; ++i)
     {
-      const double angleInRadians = random_real(0., 2 * M_PI);
+      const double angleInRadians = random_real(thetaStart, thetaEnd);
       const double rsinT = radius * std::sin(angleInRadians);
       const double rcosT = radius * std::cos(angleInRadians);
 
