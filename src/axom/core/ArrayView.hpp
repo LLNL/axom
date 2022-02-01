@@ -94,7 +94,6 @@ public:
    */
   ArrayViewIterator begin() const
   {
-    assert(m_data != nullptr);
     return ArrayViewIterator(0, this);
   }
 
@@ -104,7 +103,6 @@ public:
    */
   ArrayViewIterator end() const
   {
-    assert(m_data != nullptr);
     return ArrayViewIterator(size(), this);
   }
 

@@ -537,14 +537,12 @@ public:
    */
   ArrayIterator begin()
   {
-    assert(m_data != nullptr);
     return ArrayIterator(0, this);
   }
 
   /// \overload
   ConstArrayIterator begin() const
   {
-    assert(m_data != nullptr);
     return ConstArrayIterator(0, this);
   }
 
@@ -554,14 +552,12 @@ public:
    */
   ArrayIterator end()
   {
-    assert(m_data != nullptr);
     return ArrayIterator(size(), this);
   }
 
   /// \overload
   ConstArrayIterator end() const
   {
-    assert(m_data != nullptr);
     return ConstArrayIterator(size(), this);
   }
 
