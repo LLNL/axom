@@ -40,7 +40,7 @@ command line option. Supported compiler specs can be found in the Spack compiler
 We currently regularly test the following Spack configuration files:
 
 * Linux Ubuntu 20.04 (via Windows WSL 2)
-* TOSS 3 (On Quartz at LC)
+* TOSS 3 (On ruby at LC)
 * BlueOS (On Lassen at LC)
 
 To install Axom on a new platform, it is a good idea to start with a known Spack configuration directory
