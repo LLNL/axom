@@ -329,6 +329,13 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   // Initialization should not invoke the destructor
   EXPECT_EQ(NonTrivialDtor::dtor_calls, 0);
 
+  NonTrivialDtor::dtor_calls = 0;
+  // Array::resize(N-100) should invoke the destructor on 100 elements
+  arr.resize(N - 100);
+  EXPECT_EQ(NonTrivialDtor::dtor_calls, 100);
+
+  // Resize to original size
+  arr.resize(N);
   // construct a view of the array before we invoke the destructor
   auto arr_v = arr.view();
 

@@ -1092,7 +1092,16 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
 
   if(m_default_construct)
   {
-    OpHelper::init(m_data, prev_num_elements, new_num_elements, m_allocator_id);
+    if(prev_num_elements < new_num_elements)
+    {
+      // Default-initialize the new elements
+      OpHelper::init(m_data, prev_num_elements, new_num_elements, m_allocator_id);
+    }
+    else if(prev_num_elements > new_num_elements)
+    {
+      // Destroy any elements above new_num_elements
+      OpHelper::destroy(m_data, new_num_elements, prev_num_elements, m_allocator_id);
+    }
   }
 
   updateNumElements(new_num_elements);
