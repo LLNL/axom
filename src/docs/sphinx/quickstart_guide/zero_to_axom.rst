@@ -57,6 +57,8 @@ Some helpful uberenv options include :
 * ``--spack-config-dir=<Path to spack configuration directory>`` (use specific Spack configuration files)
 * ``--prefix=<Path>`` (required, build and install the dependencies in a particular location)
 
+There is more thorough `uberenv documentation here <https://uberenv.readthedocs.io/en/latest/>`_.
+
 The modifiers to the Spack specification ``spec`` can be chained together, e.g. ``--spec=%clang@10.0.0+debug+devtools``.
 
 If you already have a Spack instance from another project that you would like to reuse,
