@@ -90,7 +90,7 @@ struct CandidateFinderBase
 #endif
 
   /*!
-   * \brief Initializes the CandidateFinder query object with a surface mesh.
+   * \brief Creates the CandidateFinder query object over a surface mesh.
    *
    * \param [in] surface_mesh The triangular surface mesh to query.
    * \param [in] intersectionThreshold The tolerance threshold to use for
@@ -102,6 +102,10 @@ struct CandidateFinderBase
     , m_intersectionThreshold(intersectionThreshold)
   { }
 
+  /*!
+   * \brief Initializes data necessary to run the triangle mesh intersection
+   *  query, such as bounding boxes and degeneracy data.
+   */
   void initialize();
 
   /*!
