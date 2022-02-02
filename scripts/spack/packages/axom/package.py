@@ -90,7 +90,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     # -----------------------------------------------------------------------
     # Basics
     depends_on("cmake@3.8.2:", type='build')
-    depends_on("cmake@3.8.2:3.14.5", type='build', when="+cuda")
     depends_on("cmake@3.16.8:", type='build', when="+rocm")
 
 
@@ -137,8 +136,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("mfem~mpi", when="+mfem~mpi")
 
     # Disable fortran, causing "cannot compile a simple Fortran program"
-    # with rocm
-    depends_on("hypre~fortran", when="+mfem+rocm")
+    # with crayftn
+    if spack.compiler.fc is not None and ("crayftn" in spack.compiler.fc):
+        depends_on("hypre~fortran", when="+mfem+rocm")
 
     depends_on("python", when="+python")
 
@@ -293,20 +293,21 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # These flags are already part of the wrapped compilers on TOSS4 systems
             #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
 
-            # Flags for crayftn
-            if "crayftn" in self.compiler.fc:
-                # Fix for working around CMake adding implicit link directories
-                # returned by the Cray crayftn compiler to link executables with
-                # non-system default stdlib
-                entries.append(cmake_cache_string(
-                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
-                    "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
+            if self.compiler.fc is not None:
+                # Flags for crayftn
+                if "crayftn" in self.compiler.fc:
+                    # Fix for working around CMake adding implicit link directories
+                    # returned by the Cray crayftn compiler to link executables with
+                    # non-system default stdlib
+                    entries.append(cmake_cache_string(
+                        "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                        "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
 
-                hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.0/cce/x86_64/lib:/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
+                    hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.0/cce/x86_64/lib:/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
 
-            # Flags for amdflang
-            if "amdflang" in self.compiler.fc:
-                hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -L{0}/lib -Wl,-rpath,{0}/../llvm/lib:{0}/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64".format(hip_root)
+                # Flags for amdflang
+                if "amdflang" in self.compiler.fc:
+                    hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -L{0}/lib -Wl,-rpath,{0}/../llvm/lib:{0}/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64".format(hip_root)
 
             # Additional libraries for TOSS4
             if "gfx908" in archs:
