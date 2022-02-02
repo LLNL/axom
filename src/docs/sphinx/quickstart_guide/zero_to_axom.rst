@@ -12,7 +12,7 @@ This has been encapsulated using `Uberenv <https://github.com/LLNL/uberenv>`_. U
 doing the following:
 
 * Pulls a blessed version of Spack locally
-* If you are on a known operating system (like TOSS3), we have defined Spack configuration files
+* If you are on a known operating system, such as the clusters on Livermore Computing (LC), or our provided docker images, we have defined Spack configuration files
   to keep Spack from building the world
 * Installs our Spack packages into the local Spack
 * Simplifies whole dependency build into one command
