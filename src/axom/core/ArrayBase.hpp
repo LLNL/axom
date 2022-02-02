@@ -697,12 +697,12 @@ void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
   IndexType n = end - begin;
   void* buffer = ::operator new(sizeof(T) * n);
   T* typed_buffer = static_cast<T*>(buffer);
-  axom::copy(typed_buffer, array, sizeof(T) * n);
-  for(int i = begin; i < end; ++i)
+  axom::copy(typed_buffer, array + begin, sizeof(T) * n);
+  for(int i = 0; i < n; ++i)
   {
     typed_buffer[i].~T();
   }
-  axom::copy(array, typed_buffer, sizeof(T) * n);
+  axom::copy(array + begin, typed_buffer, sizeof(T) * n);
   ::operator delete(buffer);
 }
 
