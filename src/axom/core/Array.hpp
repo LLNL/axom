@@ -535,31 +535,19 @@ public:
   /*!
    * \brief Returns an ArrayIterator to the first element of the Array
    */
-  ArrayIterator begin()
-  {
-    return ArrayIterator(0, this);
-  }
+  ArrayIterator begin() { return ArrayIterator(0, this); }
 
   /// \overload
-  ConstArrayIterator begin() const
-  {
-    return ConstArrayIterator(0, this);
-  }
+  ConstArrayIterator begin() const { return ConstArrayIterator(0, this); }
 
   /*!
    * \brief Returns an ArrayIterator to the element following the last
    *  element of the Array.
    */
-  ArrayIterator end()
-  {
-    return ArrayIterator(size(), this);
-  }
+  ArrayIterator end() { return ArrayIterator(size(), this); }
 
   /// \overload
-  ConstArrayIterator end() const
-  {
-    return ConstArrayIterator(size(), this);
-  }
+  ConstArrayIterator end() const { return ConstArrayIterator(size(), this); }
 
   /*!
    * \brief Shrink the capacity to be equal to the size.

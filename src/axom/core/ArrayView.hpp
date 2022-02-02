@@ -92,19 +92,13 @@ public:
   /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
    */
-  ArrayViewIterator begin() const
-  {
-    return ArrayViewIterator(0, this);
-  }
+  ArrayViewIterator begin() const { return ArrayViewIterator(0, this); }
 
   /*!
    * \brief Returns an ArrayViewIterator to the element following the last
    *  element of the Array.
    */
-  ArrayViewIterator end() const
-  {
-    return ArrayViewIterator(size(), this);
-  }
+  ArrayViewIterator end() const { return ArrayViewIterator(size(), this); }
 
   /*!
    * \brief Return a pointer to the array of data.
