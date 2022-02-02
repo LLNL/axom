@@ -143,7 +143,7 @@ protected:
   int m_ncells;
   axom::Array<detail::Triangle3, 1, Space> m_tris;
   axom::Array<BoxType, 1, Space> m_aabbs;
-  axom::Array<int, 1, Space> m_degenerate;
+  axom::Array<IndexType, 1, Space> m_degenerate;
 };
 
 template <typename ExecSpace, typename FloatType>
@@ -156,7 +156,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::initialize()
 
   // Marks each cell/triangle as degenerate (1) or not (0)
   m_degenerate.resize(ncells);
-  axom::ArrayView<int, 1, Space> p_degenerate = m_degenerate;
+  axom::ArrayView<IndexType, 1, Space> p_degenerate = m_degenerate;
 
   // Each access-aligned bounding box represented by 2 (x,y,z) points
   m_aabbs.resize(ncells);
@@ -233,7 +233,8 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
           if(i < candidates[p_offsets[i] + j])
           {
 #ifdef AXOM_USE_RAJA
-            auto idx = RAJA::atomicAdd<atomic_pol>(&p_numValidCandidates[0], 1);
+            auto idx = RAJA::atomicAdd<atomic_pol>(&p_numValidCandidates[0],
+                                                   IndexType {1});
 #else
             auto idx = p_numValidCandidates[0]++;
 #endif
@@ -271,7 +272,8 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
                              intersectionThreshold))
         {
 #ifdef AXOM_USE_RAJA
-          auto idx = RAJA::atomicAdd<atomic_pol>(&p_numIsectPairs[0], 1);
+          auto idx =
+            RAJA::atomicAdd<atomic_pol>(&p_numIsectPairs[0], IndexType {1});
 #else
           auto idx = p_numIsectPairs[0];
           p_numIsectPairs[0]++;
@@ -394,7 +396,7 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
 
     // Get the global bounding box.
     mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
-      surface_mesh,
+      this->m_surfaceMesh,
       [=, &global_box](IndexType, double x, double y, double z) {
         global_box.addPoint(PointType {x, y, z});
       });
@@ -408,9 +410,10 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
     // use the cube root of the number of triangles.
     if(spatialIndexResolution < 1)
     {
-      spatialIndexResolution = (int)(1 + std::pow(this->m_aabbs.size(), 1 / 3.));
+      spatialIndexResolution =
+        static_cast<IndexType>(1 + std::pow(this->m_aabbs.size(), 1 / 3.));
     }
-    m_resolutions = axom::primal::Point<int, 3>(spatialIndexResolution);
+    m_resolutions = axom::primal::Point<IndexType, 3>(spatialIndexResolution);
   }
 
   virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
@@ -437,7 +440,7 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
   }
 
   BoxType m_globalBox;
-  axom::primal::Point<int, 3> m_resolutions;
+  axom::primal::Point<IndexType, 3> m_resolutions;
   axom::Array<IndexType> m_currCandidates;
 };
 
