@@ -51,9 +51,7 @@ inline detail::Triangle3 getMeshTriangle(axom::IndexType i,
   for(int n = 0; n < 3; ++n)
   {
     const axom::IndexType nodeIdx = triCell[n];
-    tri[n][0] = x[nodeIdx];
-    tri[n][1] = y[nodeIdx];
-    tri[n][2] = z[nodeIdx];
+    tri[n] = Point3 {x[nodeIdx], y[nodeIdx], z[nodeIdx]};
   }
 
   return tri;
@@ -152,15 +150,15 @@ void CandidateFinderBase<ExecSpace, FloatType>::initialize()
   const int ncells = m_surfaceMesh->getNumberOfCells();
 
   m_tris.resize(ncells);
-  axom::ArrayView<detail::Triangle3, 1, Space> p_tris = m_tris;
+  auto v_tris = m_tris.view();
 
   // Marks each cell/triangle as degenerate (1) or not (0)
   m_degenerate.resize(ncells);
-  axom::ArrayView<IndexType, 1, Space> p_degenerate = m_degenerate;
+  auto v_degenerate = m_degenerate.view();
 
   // Each access-aligned bounding box represented by 2 (x,y,z) points
   m_aabbs.resize(ncells);
-  axom::ArrayView<BoxType, 1, Space> p_aabbs = m_aabbs;
+  auto v_aabbs = m_aabbs.view();
 
   // Initialize the bounding box for each Triangle and marks
   // if the Triangle is degenerate.
@@ -176,16 +174,16 @@ void CandidateFinderBase<ExecSpace, FloatType>::initialize()
       for(IndexType inode = 0; inode < 3; ++inode)
       {
         const double* node = coords.getColumn(inode);
-        tri[inode][0] = node[mint::X_COORDINATE];
-        tri[inode][1] = node[mint::Y_COORDINATE];
-        tri[inode][2] = node[mint::Z_COORDINATE];
+        tri[inode] = PointType {node[mint::X_COORDINATE],
+                                node[mint::Y_COORDINATE],
+                                node[mint::Z_COORDINATE]};
       }  // END for all cells nodes
 
-      p_degenerate[cellIdx] = (tri.degenerate() ? 1 : 0);
+      v_degenerate[cellIdx] = (tri.degenerate() ? 1 : 0);
 
-      p_tris[cellIdx] = tri;
+      v_tris[cellIdx] = tri;
 
-      p_aabbs[cellIdx] = compute_bounding_box(tri);
+      v_aabbs[cellIdx] = compute_bounding_box(tri);
     });
 }
 
@@ -212,34 +210,34 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
   IndexArray indices(candidates.size());
   IndexArray validCandidates(candidates.size());
 
-  IndexView p_indices = indices;
-  IndexView p_validCandidates = validCandidates;
+  auto v_indices = indices.view();
+  auto v_validCandidates = validCandidates.view();
 
   IndexType numCandidates;
   {
     IndexArray numValidCandidates(1);
     numValidCandidates.fill(0);
-    IndexView p_numValidCandidates = numValidCandidates;
+    auto v_numValidCandidates = numValidCandidates.view();
 
-    IndexView p_offsets = offsets;
-    IndexView p_counts = counts;
+    auto v_offsets = offsets.view();
+    auto v_counts = counts.view();
 
     // Initialize triangle indices and valid candidates
     for_all<ExecSpace>(
       ncells,
       AXOM_LAMBDA(IndexType i) {
-        for(int j = 0; j < p_counts[i]; j++)
+        for(int j = 0; j < v_counts[i]; j++)
         {
-          if(i < candidates[p_offsets[i] + j])
+          if(i < candidates[v_offsets[i] + j])
           {
 #ifdef AXOM_USE_RAJA
-            auto idx = RAJA::atomicAdd<atomic_pol>(&p_numValidCandidates[0],
+            auto idx = RAJA::atomicAdd<atomic_pol>(&v_numValidCandidates[0],
                                                    IndexType {1});
 #else
-            auto idx = p_numValidCandidates[0]++;
+            auto idx = v_numValidCandidates[0]++;
 #endif
-            p_indices[idx] = i;
-            p_validCandidates[idx] = candidates[p_offsets[i] + j];
+            v_indices[idx] = i;
+            v_validCandidates[idx] = candidates[v_offsets[i] + j];
           }
         }
       });
@@ -252,11 +250,11 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
   IndexType isectCounter;
   {
     IndexArray numIsectPairs(1);
-    IndexView p_numIsectPairs = numIsectPairs;
+    auto v_numIsectPairs = numIsectPairs.view();
 
-    IndexView p_firstIsectPair = firstIsectPair;
-    IndexView p_secondIsectPair = secondIsectPair;
-    axom::ArrayView<detail::Triangle3, 1, Space> p_tris = m_tris;
+    auto v_firstIsectPair = firstIsectPair.view();
+    auto v_secondIsectPair = secondIsectPair.view();
+    auto v_tris = m_tris.view();
 
     double intersectionThreshold = m_intersectionThreshold;
 
@@ -264,22 +262,22 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
     for_all<ExecSpace>(
       numCandidates,
       AXOM_LAMBDA(IndexType i) {
-        int index = p_indices[i];
-        int candidate = p_validCandidates[i];
-        if(primal::intersect(p_tris[index],
-                             p_tris[candidate],
+        int index = v_indices[i];
+        int candidate = v_validCandidates[i];
+        if(primal::intersect(v_tris[index],
+                             v_tris[candidate],
                              false,
                              intersectionThreshold))
         {
 #ifdef AXOM_USE_RAJA
           auto idx =
-            RAJA::atomicAdd<atomic_pol>(&p_numIsectPairs[0], IndexType {1});
+            RAJA::atomicAdd<atomic_pol>(&v_numIsectPairs[0], IndexType {1});
 #else
-          auto idx = p_numIsectPairs[0];
-          p_numIsectPairs[0]++;
+          auto idx = v_numIsectPairs[0];
+          v_numIsectPairs[0]++;
 #endif
-          p_firstIsectPair[idx] = index;
-          p_secondIsectPair[idx] = candidate;
+          v_firstIsectPair[idx] = index;
+          v_secondIsectPair[idx] = candidate;
         }
       });
     axom::copy(&isectCounter, numIsectPairs.data(), sizeof(IndexType));
