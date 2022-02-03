@@ -49,16 +49,19 @@ private:
     /// Squared distance to query point
     double minSqDist {numerics::floating_point_limits<double>::max()};
     /// Index within mesh of closest element
-    int minElem;
-    /// Position of closest point
-    PointType closestPoint;
+    int minElem {-1};
+    /// MPI rank of closest element
+    int minRank {-1};
   };
 
 public:
   DistributedClosestPoint(
     int allocatorID = axom::execution_space<ExecSpace>::allocatorID())
     : m_allocatorID(allocatorID)
-  { }
+  {
+    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+  }
 
 public:  // Query properties
   void setVerbosity(bool isVerbose) { m_isVerbose = isVerbose; }
@@ -155,6 +158,13 @@ public:
       "Input to `computeClosestPoint()` must have a field named `cp_index`");
     sidre::Array<axom::IndexType> cpIndexes(meshGroup->getView(cp_index_path));
 
+    // Extract the cp_index array
+    const std::string cp_rank_path = "fields/cp_rank/values";
+    SLIC_ASSERT_MSG(
+      meshGroup->hasView(cp_rank_path),
+      "Input to `computeClosestPoint()` must have a field named `cp_rank`");
+    sidre::Array<axom::IndexType> cpRanks(meshGroup->getView(cp_rank_path));
+
     // Extract the closest points array
     const std::string cp_start_path = "fields/closest_point/values/x";
     SLIC_ASSERT_MSG(meshGroup->hasView(cp_start_path),
@@ -168,6 +178,9 @@ public:
     // TODO: Avoid copying (here and at the end) if both are on the host
     axom::Array<axom::IndexType> cp_idx(nPts, nPts, m_allocatorID);
     auto query_inds = cp_idx.view();
+
+    axom::Array<axom::IndexType> cp_ranks(nPts, nPts, m_allocatorID);
+    auto query_ranks = cp_ranks.view();
 
     // Create an ArrayView in ExecSpace that is compatible with cpIndexes
     // TODO: Avoid copying (here and at the end) if both are on the host
@@ -185,6 +198,8 @@ public:
     using axom::primal::squared_distance;
     using int32 = axom::int32;
 
+    const int rank = m_rank;
+
     AXOM_PERF_MARK_SECTION(
       "ComputeClosestPoints",
       axom::for_all<ExecSpace>(
@@ -193,6 +208,10 @@ public:
           PointType qpt = query_pts[idx];
 
           MinCandidate curr_min {};
+          if(query_ranks[idx] >= 0)  // i.e. we've already found a candidate closest
+          {
+            curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
+          }
 
           auto searchMinDist = [&](int32 current_node, const int32* leaf_nodes) {
             const int candidate_idx = leaf_nodes[current_node];
@@ -203,7 +222,7 @@ public:
             {
               curr_min.minSqDist = sq_dist;
               curr_min.minElem = candidate_idx;
-              curr_min.closestPoint = candidate_pt;
+              curr_min.minRank = rank;
             }
           };
 
@@ -215,13 +234,21 @@ public:
           // Traverse the tree, searching for the point with minimum distance.
           it.traverse_tree(qpt, searchMinDist, traversePredicate);
 
-          query_inds[idx] = curr_min.minElem;
-          query_pos[idx] = curr_min.closestPoint;
+          // If modified, update the fields that changed
+          if(curr_min.minRank == rank)
+          {
+            query_inds[idx] = curr_min.minElem;
+            query_ranks[idx] = curr_min.minRank;
+            query_pos[idx] = m_points[curr_min.minElem];
+          }
         }););
 
     axom::copy(cpIndexes.data(),
                query_inds.data(),
                cpIndexes.size() * sizeof(axom::IndexType));
+    axom::copy(cpRanks.data(),
+               query_ranks.data(),
+               cpRanks.size() * sizeof(axom::IndexType));
     axom::copy(closestPts.data(),
                query_pos.data(),
                closestPts.size() * sizeof(PointType));
@@ -280,6 +307,9 @@ private:
 
   int m_allocatorID;
   bool m_isVerbose {false};
+
+  int m_rank;
+  int m_nranks;
 };
 
 }  // end namespace quest
