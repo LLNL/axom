@@ -685,9 +685,16 @@ int main(int argc, char** argv)
       switch(params.policy)
       {
       case seq:
-        collisions = naiveIntersectionAlgorithm(surface_mesh,
-                                                degenerate,
-                                                params.intersectionThreshold);
+#ifdef AXOM_USE_RAJA
+        SLIC_INFO(
+          "BVH was compiled with RAJA - seq and raja_seq execution "
+          "will be equivalent");
+#endif
+        quest::findTriMeshIntersectionsBVH<seq_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.intersectionThreshold);
         break;
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       case raja_seq:
