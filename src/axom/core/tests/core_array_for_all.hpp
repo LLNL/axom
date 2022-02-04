@@ -709,20 +709,26 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
   // Emplace some elements
   // emplace of xvalue - should bind to rvalue emplace
   arr.emplace_back(NonTrivialCopyCtor {});
+  constexpr int MAGIC_MOVE_EXPLICIT = 222;
   // emplace of explicitly-moved object - should bind to rvalue emplace
   {
     NonTrivialCopyCtor explicitMove;
+    explicitMove.m_val = MAGIC_MOVE_EXPLICIT;
     arr.emplace_back(std::move(explicitMove));
+  }
+  {
+    NonTrivialCopyCtor lvalue;
     // emplace of object as lvalue - should bind to copying emplace
-    arr.emplace_back(explicitMove);
+    arr.emplace_back(lvalue);
   }
   EXPECT_EQ(arr.size(), N + 3);
   {
     HostArray localArr(arr, hostAllocID);
-    for(int i = 0; i < N + 2; ++i)
+    for(int i = 0; i < N + 1; ++i)
     {
       EXPECT_EQ(localArr[i].m_val, 1);
     }
+    EXPECT_EQ(localArr[N + 1].m_val, MAGIC_MOVE_EXPLICIT);
     // our one copied element should be set to the copy ctor value
     EXPECT_EQ(localArr[N + 2].m_val, MAGIC_COPY_CTOR);
   }
@@ -730,21 +736,28 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
   // Emplace some elements in the front
   // emplace of xvalue - should bind to rvalue emplace
   arr.emplace(arr.begin(), NonTrivialCopyCtor {});
+  // emplace of explicitly-moved object - should bind to rvalue emplace
   {
-    // emplace of explicitly-moved object - should bind to rvalue emplace
     NonTrivialCopyCtor explicitMove;
+    explicitMove.m_val = MAGIC_MOVE_EXPLICIT;
     arr.emplace(arr.begin(), std::move(explicitMove));
+  }
+  {
+    NonTrivialCopyCtor lvalue;
     // emplace of object as lvalue - should bind to copying emplace
-    arr.emplace(arr.begin(), explicitMove);
+    arr.emplace(arr.begin(), lvalue);
   }
 
   EXPECT_EQ(arr.size(), N + 6);
   {
     HostArray localArr(arr, hostAllocID);
-    for(int i = 1; i < N + 5; ++i)
+    for(int i = 2; i < N + 4; ++i)
     {
       EXPECT_EQ(localArr[i].m_val, 1);
     }
+    // check our explicitly-moved values
+    EXPECT_EQ(localArr[1].m_val, MAGIC_MOVE_EXPLICIT);
+    EXPECT_EQ(localArr[N + 4].m_val, MAGIC_MOVE_EXPLICIT);
     // copied objects should be at the beginning and end
     EXPECT_EQ(localArr[0].m_val, MAGIC_COPY_CTOR);
     EXPECT_EQ(localArr[N + 5].m_val, MAGIC_COPY_CTOR);
