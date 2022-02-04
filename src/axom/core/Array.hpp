@@ -896,7 +896,8 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, const T& value)
 {
   static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(1, pos);
-  m_data[pos] = value;
+
+  OpHelper::emplace(m_data, pos, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -942,10 +943,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T& va
 {
   static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(n, pos);
-  for(IndexType i = 0; i < n; ++i)
-  {
-    m_data[pos + i] = value;
-  }
+  OpHelper::fill(m_data + pos, n, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -1012,7 +1010,7 @@ template <typename... Args>
 inline void Array<T, DIM, SPACE>::emplace(IndexType pos, Args&&... args)
 {
   reserveForInsert(1, pos);
-  m_data[pos] = std::move(T(std::forward<Args>(args)...));
+  OpHelper::emplace(m_data, pos, m_allocator_id, std::forward<Args>(args)...);
 }
 
 //------------------------------------------------------------------------------
@@ -1023,7 +1021,7 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::emplac
   Args&&... args)
 {
   assert(pos >= begin() && pos <= end());
-  emplace(pos - begin(), args...);
+  emplace(pos - begin(), std::forward<Args>(args)...);
   return pos;
 }
 
@@ -1049,7 +1047,7 @@ template <typename... Args>
 inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 {
   static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
-  emplace(size(), args...);
+  emplace(size(), std::forward<Args>(args)...);
 }
 
 //------------------------------------------------------------------------------

@@ -543,6 +543,9 @@ struct OpFillBase
 {
   template <typename T, typename ExecSpace>
   static void fill(T* array, IndexType n, const T& value);
+
+  template <typename T, typename ExecSpace, typename... Args>
+  static void emplace(T* array, IndexType i, Args&&... args);
 };
 
 template <bool destroy_on_host>
@@ -634,6 +637,22 @@ void OpFillBase<false>::fill(T* array, IndexType n, const T& value)
   }
 }
 
+template <>
+template <typename T, typename ExecSpace, typename... Args>
+void OpFillBase<false>::emplace(T* array, IndexType i, Args&&... args)
+{
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    // T should be trivially-copyable in this codepath
+    T host_val(std::forward<Args>(args)...);
+    axom::copy(array + i, &host_val, sizeof(T));
+  }
+  else
+  {
+    new(array + i) T(std::forward<Args>(args)...);
+  }
+}
+
 /*!
  * \brief Fills an array with objects of type T. This specialization is used
  *  for device memory when the type is not trivially-copyable.
@@ -654,6 +673,17 @@ void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
   std::uninitialized_fill_n(typed_buffer, n, value);
   axom::copy(array, typed_buffer, sizeof(T) * n);
   ::operator delete(buffer);
+}
+
+template <>
+template <typename T, typename ExecSpace, typename... Args>
+void OpFillBase<true>::emplace(T* array, IndexType i, Args&&... args)
+{
+  // Similar to fill(), except we can allocate stack memory and placement-new
+  // the object with a move constructor.
+  std::aligned_storage<sizeof(T), alignof(T)> host_buf;
+  T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
+  axom::copy(array + i, host_obj, sizeof(T));
 }
 
 /*!
@@ -822,6 +852,15 @@ public:
     }
     MoveBase::template move<T>(array, src_begin, src_end, dst, allocId);
   }
+
+  template <typename... Args>
+  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    FillBase::template emplace<T, ExecSpace>(array,
+                                             dst,
+                                             std::forward<Args>(args)...);
+  }
 };
 
 template <typename T>
@@ -906,6 +945,28 @@ public:
     }
 #endif
     MoveBase::template move<T>(array, src_begin, src_end, dst, allocId);
+  }
+
+  template <typename... Args>
+  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      ArrayOps<T, MemorySpace::Device>::emplace(array,
+                                                dst,
+                                                allocId,
+                                                std::forward<Args>(args)...);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    FillBase::template emplace<T, axom::SEQ_EXEC>(array,
+                                                  dst,
+                                                  std::forward<Args>(args)...);
   }
 };
 
