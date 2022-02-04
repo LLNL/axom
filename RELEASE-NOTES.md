@@ -43,6 +43,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   This makes it easier to iterate over the bins of the spatial index.
 - Defines iterator traits on `axom::Array<T>`/`ArrayView<T>` iterators, to allow passing iterator
   pairs to standard library functions
+- Adds full support for calling methods on `axom::Array<T>` allocated in device-only memory.
 
 ###  Changed
 - Moved bit-twiddling functions to core component
@@ -69,6 +70,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Consolidates `quest::findTriMeshIntersections*()` implementations for `BVH` and `ImplicitGrid`
 - `BVH::find*()` batch functions now return the total number of candidate intersections found
 - Enables empty `axom::Array<T>` to be iterated over with `begin()/end()`
+- Use more specific type trait checks in `ArrayOps`, to avoid generating unnecessary copies in
+  fill/destroy operations on otherwise trivially-copyable/destructible types.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
@@ -76,8 +79,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a bug in which Inlet verification bails out on the first failure, which resulted in
   incomplete error lists
 - Fixed a bug in `quest::PointInCell` when not using RAJA
-- Fixed `axom::Array<T>::clear()`, `axom::Array<T>::fill()`, and `axom::Array<T>::erase()` when the
-  underlying memory is in device space
 - Fixed a potential memory leak in `axom::Array<T>` for non-trivial types `T` which allocate memory
 - Added a guard in `axom::ArrayList` for axom configurations without Umpire to fix a compiler error (XL compiler)
 - Inlined some fully specialized functions in `quest::Delaunay` to avoid "multiply-defined" linker errors
