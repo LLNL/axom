@@ -887,6 +887,9 @@ struct ArrayOps<T, MemorySpace::Dynamic>
 {
 private:
   using Base = ArrayOpsBase<T, false>;
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+  using BaseDevice = ArrayOpsBase<T, true>;
+#endif
 
 public:
   static void init(T* array, IndexType begin, IndexType nelems, int allocId)
@@ -896,7 +899,7 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::init(array, begin, nelems, allocId);
+      BaseDevice::init(array, begin, nelems);
       return;
     }
 #else
@@ -916,7 +919,7 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::fill(array, begin, nelems, allocId, value);
+      BaseDevice::fill(array, begin, nelems, value);
       return;
     }
 #else
@@ -936,11 +939,7 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::fill_range(array,
-                                                   begin,
-                                                   nelems,
-                                                   allocId,
-                                                   values);
+      BaseDevice::fill_range(array, begin, nelems, values);
       return;
     }
 #else
@@ -961,7 +960,7 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::destroy(array, begin, nelems, allocId);
+      BaseDevice::destroy(array, begin, nelems);
       return;
     }
 #else
@@ -985,7 +984,7 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::move(array, src_begin, src_end, dst, allocId);
+      BaseDevice::move(array, src_begin, src_end, dst);
       return;
     }
 #else
@@ -1002,10 +1001,7 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::emplace(array,
-                                                dst,
-                                                allocId,
-                                                std::forward<Args>(args)...);
+      BaseDevice::emplace(array, dst, std::forward<Args>(args)...);
       return;
     }
 #else
