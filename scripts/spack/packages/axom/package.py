@@ -137,8 +137,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     # Disable fortran, causing "cannot compile a simple Fortran program"
     # with crayftn
-    if spack.compiler.fc is not None and ("crayftn" in spack.compiler.fc):
-        depends_on("hypre~fortran", when="+mfem+rocm")
+    depends_on("hypre~fortran", when="+mfem+rocm")
 
     depends_on("python", when="+python")
 
@@ -299,9 +298,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     # Fix for working around CMake adding implicit link directories
                     # returned by the Cray crayftn compiler to link executables with
                     # non-system default stdlib
-                    entries.append(cmake_cache_string(
-                        "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
-                        "/opt/cray/pe/gcc/8.1.0/snos/lib64"))
+                    cray_exclude_path="/opt/cray/pe/gcc/8.1.0/snos/lib64"
+                    if os.path.isdir(cray_exclude_path):
+                        entries.append(cmake_cache_string(
+                            "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                            cray_exclude_path))
 
                     hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.0/cce/x86_64/lib:/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
 
