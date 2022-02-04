@@ -602,17 +602,22 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
 }
 
 //------------------------------------------------------------------------------
+constexpr static int MAGIC_COPY_CTOR {333};
 struct NonTrivialCopyCtor
 {
-  constexpr static int MAGIC_COPY_CTOR {333};
-
   NonTrivialCopyCtor() { }
   NonTrivialCopyCtor(const NonTrivialCopyCtor&) { m_val *= MAGIC_COPY_CTOR; }
+  NonTrivialCopyCtor& operator=(const NonTrivialCopyCtor&)
+  {
+    m_val *= MAGIC_COPY_CTOR;
+    return *this;
+  }
+  NonTrivialCopyCtor(NonTrivialCopyCtor&& other) = default;
+  NonTrivialCopyCtor& operator=(NonTrivialCopyCtor&& other) = default;
+  ~NonTrivialCopyCtor() = default;
 
   int m_val {1};
 };
-
-constexpr int NonTrivialCopyCtor::MAGIC_COPY_CTOR;
 
 AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
 {
@@ -648,7 +653,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   HostArray localArr(arr, hostAllocID);
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(localArr[i].m_val, NonTrivialCopyCtor::MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[i].m_val, MAGIC_COPY_CTOR);
   }
 
   // Second fill should be idempotent - i.e. isn't affected by the data already
@@ -665,7 +670,84 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   localArr = HostArray(arr, hostAllocID);
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(localArr[i].m_val, NonTrivialCopyCtor::MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[i].m_val, MAGIC_COPY_CTOR);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray =
+    typename TestFixture::template DynamicTArray<NonTrivialCopyCtor>;
+  using HostArray = typename TestFixture::template HostTArray<NonTrivialCopyCtor>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr axom::IndexType N = 10;
+  DynamicArray arr(N, N, kernelAllocID);
+
+  // Check default-constructed array contents on host
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, 1);
+    }
+  }
+
+  // Emplace some elements
+  // emplace of xvalue - should bind to rvalue emplace
+  arr.emplace_back(NonTrivialCopyCtor {});
+  // emplace of explicitly-moved object - should bind to rvalue emplace
+  {
+    NonTrivialCopyCtor explicitMove;
+    arr.emplace_back(std::move(explicitMove));
+    // emplace of object as lvalue - should bind to copying emplace
+    arr.emplace_back(explicitMove);
+  }
+  EXPECT_EQ(arr.size(), N + 3);
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N + 2; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, 1);
+    }
+    // our one copied element should be set to the copy ctor value
+    EXPECT_EQ(localArr[N + 2].m_val, MAGIC_COPY_CTOR);
+  }
+
+  // Emplace some elements in the front
+  // emplace of xvalue - should bind to rvalue emplace
+  arr.emplace(arr.begin(), NonTrivialCopyCtor {});
+  {
+    // emplace of explicitly-moved object - should bind to rvalue emplace
+    NonTrivialCopyCtor explicitMove;
+    arr.emplace(arr.begin(), std::move(explicitMove));
+    // emplace of object as lvalue - should bind to copying emplace
+    arr.emplace(arr.begin(), explicitMove);
+  }
+
+  EXPECT_EQ(arr.size(), N + 6);
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 1; i < N + 5; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, 1);
+    }
+    // copied objects should be at the beginning and end
+    EXPECT_EQ(localArr[0].m_val, MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[N + 5].m_val, MAGIC_COPY_CTOR);
   }
 }
 
