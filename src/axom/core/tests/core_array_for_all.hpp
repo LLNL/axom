@@ -228,6 +228,212 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
 }
 
 //------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_insert)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+  auto arr_v = arr.view();
+
+  // Set some elements
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_v[idx] = idx - 5 * idx + 7; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  const axom::IndexType N_insert = 10;
+  // Let's push back some elements
+  for(axom::IndexType i = 0; i < N_insert; i++)
+  {
+    arr.push_back(100 + i);
+  }
+  EXPECT_EQ(arr.size(), N + N_insert);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_insert; i++)
+    {
+      EXPECT_EQ(host_arr[i + N], 100 + i);
+    }
+  }
+
+  // Do the same, but with an iterator at the beginning
+  for(axom::IndexType i = 0; i < N_insert; i++)
+  {
+    arr.insert(arr.begin(), 200 + i);
+  }
+  EXPECT_EQ(arr.size(), N + N_insert * 2);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i + N_insert], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_insert; i++)
+    {
+      EXPECT_EQ(host_arr[i + N + N_insert], 100 + i);
+      // elements pushed at beginning are pushed in reverse order
+      EXPECT_EQ(host_arr[i], 200 + N_insert - i - 1);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_insert)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+  auto arr_v = arr.view();
+
+  // Set some elements
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_v[idx] = idx - 5 * idx + 7; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Create a host range to set
+  const axom::IndexType N_range = 100;
+  HostArray range_vals(N_range);
+
+  for(axom::IndexType i = 0; i < N_range; i++)
+  {
+    range_vals[i] = 100 + i;
+  }
+  // Insert range at the end
+  arr.insert(arr.end(), range_vals.size(), range_vals.data());
+  EXPECT_EQ(arr.size(), N + N_range);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_range; i++)
+    {
+      EXPECT_EQ(host_arr[i + N], 100 + i);
+    }
+  }
+
+  // Insert range at beginning
+  arr.insert(arr.begin(), range_vals.size(), range_vals.data());
+  EXPECT_EQ(arr.size(), N + N_range * 2);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i + N_range], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_range; i++)
+    {
+      EXPECT_EQ(host_arr[i + N + N_range], 100 + i);
+      // elements pushed at beginning are pushed in reverse order
+      EXPECT_EQ(host_arr[i], 100 + i);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_set)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+  auto arr_v = arr.view();
+
+  // Set some elements
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_v[idx] = idx - 5 * idx + 7; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Create a host range to set
+  const axom::IndexType N_range = 100;
+  HostArray range_vals(N_range);
+
+  for(axom::IndexType i = 0; i < N_range; i++)
+  {
+    range_vals[i] = 100 + i;
+  }
+  // Overwrite first N_range elements in beginning of range
+  arr.set(range_vals.data(), N_range, 0);
+  EXPECT_EQ(arr.size(), N);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = N_range; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_range; i++)
+    {
+      EXPECT_EQ(host_arr[i], 100 + i);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 struct NonTrivialCtor
 {
   NonTrivialCtor(int val) : m_val(val) { }
