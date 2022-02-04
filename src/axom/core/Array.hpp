@@ -1149,22 +1149,10 @@ inline T* Array<T, DIM, SPACE>::reserveForInsert(IndexType n, IndexType pos)
     dynamicRealloc(new_size);
   }
 
-  // FIXME: Won't this fail if m_data is in device memory?
-  T* const insert_pos = m_data + pos;
-  T* cur_pos = m_data + m_num_elements - 1;
-  for(; cur_pos >= insert_pos; --cur_pos)
-  {
-    *(cur_pos + n) = *cur_pos;
-  }
-
-  // Initialize the subset of the array that was just allocated
-  if(m_default_construct)
-  {
-    OpHelper::init(m_data, pos, pos + n, m_allocator_id);
-  }
+  OpHelper::move(m_data, pos, m_num_elements, pos + n, m_allocator_id);
 
   updateNumElements(new_size);
-  return insert_pos;
+  return m_data + pos;
 }
 
 //------------------------------------------------------------------------------
