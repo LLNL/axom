@@ -5,6 +5,7 @@
 
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 
+#include "axom/core.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // Quest includes
