@@ -875,10 +875,8 @@ inline void Array<T, DIM, SPACE>::set(const T* elements, IndexType n, IndexType 
   assert(pos >= 0);
   assert(pos + n <= m_num_elements);
 
-  for(IndexType i = 0; i < n; ++i)
-  {
-    m_data[pos + i] = elements[i];
-  }
+  OpHelper::destroy(m_data, pos, pos + n, m_allocator_id);
+  OpHelper::fill_range(m_data, pos, pos + n, m_allocator_id, elements);
 }
 
 //------------------------------------------------------------------------------
@@ -918,10 +916,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T* va
 {
   assert(values != nullptr);
   reserveForInsert(n, pos);
-  for(IndexType i = 0; i < n; ++i)
-  {
-    m_data[pos + i] = values[i];
-  }
+  OpHelper::fill_range(m_data, pos, pos + n, m_allocator_id, values);
 }
 
 //------------------------------------------------------------------------------

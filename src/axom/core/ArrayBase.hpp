@@ -589,6 +589,19 @@ struct ArrayOpsBase<T, false>
     std::uninitialized_fill_n(array, n, value);
   }
 
+  /*!
+   * \brief Fills an uninitialized array with a range of objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index at which to begin placing elements
+   * \param [in] end the end index of the range to place elements in
+   * \param [in] values the values to set each array element to
+   */
+  static void fill_range(T* array, IndexType begin, IndexType end, const T* values)
+  {
+    std::uninitialized_copy(values, values + (end - begin), array + begin);
+  }
+
   template <typename... Args>
   static void emplace(T* array, IndexType i, Args&&... args)
   {
@@ -713,6 +726,19 @@ struct ArrayOpsBase<T, true>
       AXOM_LAMBDA(IndexType i) { array[i] = value; });
   }
 
+  /*!
+   * \brief Fills an uninitialized array with a range of objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index at which to begin placing elements
+   * \param [in] end the end index of the range to place elements in
+   * \param [in] values the values to set each array element to
+   */
+  static void fill_range(T* array, IndexType begin, IndexType end, const T* values)
+  {
+    IndexType nelems = end - begin;
+    axom::copy(array + begin, values, sizeof(T) * nelems);
+  }
 
   template <typename... Args>
   static void emplace(T* array, IndexType i, Args&&... args)
@@ -795,6 +821,16 @@ public:
     Base::fill(array, n, value);
   }
 
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType end,
+                         int allocId,
+                         const T* values)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    Base::fill_range(array, begin, end, values);
+  }
+
   static void destroy(T* array, IndexType begin, IndexType end, int allocId)
   {
     AXOM_UNUSED_VAR(allocId);
@@ -864,6 +900,31 @@ public:
     AXOM_UNUSED_VAR(allocId);
 #endif
     Base::fill(array, n, value);
+  }
+
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType end,
+                         int allocId,
+                         const T* values)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      ArrayOps<T, MemorySpace::Device>::fill_range(array,
+                                                   begin,
+                                                   end,
+                                                   allocId,
+                                                   values);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    AXOM_UNUSED_VAR(allocId);
+    Base::fill_range(array, begin, end, values);
   }
 
   static void destroy(T* array, IndexType begin, IndexType end, int allocId)
