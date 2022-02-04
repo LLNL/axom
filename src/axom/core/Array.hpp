@@ -807,6 +807,7 @@ Array<T, DIM, SPACE>::Array(Array&& other)
   m_default_construct = other.m_default_construct;
 
   other.m_data = nullptr;
+  other.m_num_elements = 0;
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
@@ -864,7 +865,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::fill(const T& value)
 {
   OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
-  OpHelper::fill(m_data, m_num_elements, m_allocator_id, value);
+  OpHelper::fill(m_data, 0, m_num_elements, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -875,8 +876,8 @@ inline void Array<T, DIM, SPACE>::set(const T* elements, IndexType n, IndexType 
   assert(pos >= 0);
   assert(pos + n <= m_num_elements);
 
-  OpHelper::destroy(m_data, pos, pos + n, m_allocator_id);
-  OpHelper::fill_range(m_data, pos, pos + n, m_allocator_id, elements);
+  OpHelper::destroy(m_data, pos, n, m_allocator_id);
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, elements);
 }
 
 //------------------------------------------------------------------------------
@@ -916,7 +917,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T* va
 {
   assert(values != nullptr);
   reserveForInsert(n, pos);
-  OpHelper::fill_range(m_data, pos, pos + n, m_allocator_id, values);
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, values);
 }
 
 //------------------------------------------------------------------------------
@@ -938,7 +939,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T& va
 {
   static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(n, pos);
-  OpHelper::fill(m_data + pos, n, m_allocator_id, value);
+  OpHelper::fill(m_data, pos, n, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -964,7 +965,7 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
   IndexType posIdx = pos - begin();
 
   // Destroy element at posIdx and shift elements over by 1
-  OpHelper::destroy(m_data, posIdx, posIdx + 1, m_allocator_id);
+  OpHelper::destroy(m_data, posIdx, 1, m_allocator_id);
   OpHelper::move(m_data, posIdx + 1, m_num_elements, posIdx, m_allocator_id);
   updateNumElements(m_num_elements - 1);
 
@@ -989,7 +990,8 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
   // Erase [first,last) elements
   IndexType firstIdx = first - begin();
   IndexType lastIdx = last - begin();
-  OpHelper::destroy(m_data, firstIdx, lastIdx, m_allocator_id);
+  IndexType nelems = last - first;
+  OpHelper::destroy(m_data, firstIdx, nelems, m_allocator_id);
 
   // Shift [last, end) elements over
   OpHelper::move(m_data, lastIdx, m_num_elements, firstIdx, m_allocator_id);
@@ -1070,12 +1072,18 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
   if(prev_num_elements < new_num_elements && m_default_construct)
   {
     // Default-initialize the new elements
-    OpHelper::init(m_data, prev_num_elements, new_num_elements, m_allocator_id);
+    OpHelper::init(m_data,
+                   prev_num_elements,
+                   new_num_elements - prev_num_elements,
+                   m_allocator_id);
   }
   else if(prev_num_elements > new_num_elements)
   {
     // Destroy any elements above new_num_elements
-    OpHelper::destroy(m_data, new_num_elements, prev_num_elements, m_allocator_id);
+    OpHelper::destroy(m_data,
+                      new_num_elements,
+                      prev_num_elements - new_num_elements,
+                      m_allocator_id);
   }
 
   updateNumElements(new_num_elements);
