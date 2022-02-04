@@ -18,9 +18,6 @@
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
-#ifdef __ibmxl__
-  #include <algorithm>  // for std::fill_n due to XL bug
-#endif
 
 namespace axom
 {
@@ -754,6 +751,17 @@ void OpMemmoveBase<true>::move(T* array,
   axom::deallocate(tmp_buf);
 }
 
+#if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
+// Some type traits we need aren't fully-implemented in libstdc++ for GCC <5.
+// We thus check for the macro _GLIBCXX_USE_CXX11_ABI, which should only be
+// defined for GCC 5+; if not defined, we'll use the below fallbacks.
+template <typename T>
+using HasTrivialCopyCtor = ::std::has_trivial_copy_constructor<T>;
+#else
+template <typename T>
+using HasTrivialCopyCtor = ::std::is_trivially_copy_constructible<T>;
+#endif
+
 template <typename T, MemorySpace SPACE>
 struct ArrayOps
 {
@@ -774,8 +782,9 @@ private:
   // TODO: the below should be std::is_trivially_copyable and
   // std::is_trivially_destructible; however these aren't available
   // in gcc 4.9.3
-  using FillBase = OpFillBase<!std::is_trivial<T>::value && IsDevice>;
-  using DestroyBase = OpDestroyBase<!std::is_trivial<T>::value && IsDevice>;
+  using FillBase = OpFillBase<!HasTrivialCopyCtor<T>::value && IsDevice>;
+  using DestroyBase =
+    OpDestroyBase<!std::is_trivially_destructible<T>::value && IsDevice>;
   using MoveBase = OpMemmoveBase<IsDevice>;
 
 public:
