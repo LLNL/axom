@@ -602,6 +602,13 @@ struct ArrayOpsBase<T, false>
     std::uninitialized_copy(values, values + (end - begin), array + begin);
   }
 
+  /*!
+   * \brief Constructs a new element in uninitialized memory.
+   *
+   * \param [inout] array the array to construct in
+   * \param [in] i the array index in which to construct the new object
+   * \param [in] args the arguments to forward to constructor of the element.
+   */
   template <typename... Args>
   static void emplace(T* array, IndexType i, Args&&... args)
   {
@@ -740,6 +747,13 @@ struct ArrayOpsBase<T, true>
     axom::copy(array + begin, values, sizeof(T) * nelems);
   }
 
+  /*!
+   * \brief Constructs a new element in uninitialized memory.
+   *
+   * \param [inout] array the array to construct in
+   * \param [in] i the array index in which to construct the new object
+   * \param [in] args the arguments to forward to constructor of the element.
+   */
   template <typename... Args>
   static void emplace(T* array, IndexType i, Args&&... args)
   {
