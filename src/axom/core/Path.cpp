@@ -16,7 +16,7 @@ namespace axom
 {
 Path::Path(const std::string& path, const char delim) : m_delim(delim)
 {
-  size_t first_position = 0; // position of first non-delimiter char in path
+  size_t first_position = 0;  // position of first non-delimiter char in path
   if(!path.empty() && path[0] == m_delim)
   {
     m_leading_delim = true;
@@ -37,9 +37,9 @@ Path::Path(const std::string& path, const char delim) : m_delim(delim)
   }
   else if(!path.empty())
   {
-    if (m_leading_delim)
+    if(m_leading_delim)
     {
-      if (path.size() > 1)
+      if(path.size() > 1)
       {
         m_components.push_back(path.substr(1));
       }
@@ -63,7 +63,7 @@ Path Path::join(std::initializer_list<Path> paths, const char delim)
               std::back_inserter(result.m_components));
   }
 
-  if (paths.size() != 0 && (*paths.begin()).m_leading_delim)
+  if(paths.size() != 0 && (*paths.begin()).m_leading_delim)
   {
     result.m_leading_delim = true;
   }
@@ -78,9 +78,9 @@ Path Path::join(std::initializer_list<Path> paths, const char delim)
 Path::operator std::string() const
 {
   std::string result;
-  if (m_leading_delim && !m_components.empty())
+  if(m_leading_delim)
   {
-    result = "/"; 
+    result = "/";
   }
 
   result += fmt::format("{0}", fmt::join(m_components, std::string(1, m_delim)));
