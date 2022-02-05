@@ -535,35 +535,19 @@ public:
   /*!
    * \brief Returns an ArrayIterator to the first element of the Array
    */
-  ArrayIterator begin()
-  {
-    assert(m_data != nullptr);
-    return ArrayIterator(0, this);
-  }
+  ArrayIterator begin() { return ArrayIterator(0, this); }
 
   /// \overload
-  ConstArrayIterator begin() const
-  {
-    assert(m_data != nullptr);
-    return ConstArrayIterator(0, this);
-  }
+  ConstArrayIterator begin() const { return ConstArrayIterator(0, this); }
 
   /*!
    * \brief Returns an ArrayIterator to the element following the last
    *  element of the Array.
    */
-  ArrayIterator end()
-  {
-    assert(m_data != nullptr);
-    return ArrayIterator(size(), this);
-  }
+  ArrayIterator end() { return ArrayIterator(size(), this); }
 
   /// \overload
-  ConstArrayIterator end() const
-  {
-    assert(m_data != nullptr);
-    return ConstArrayIterator(size(), this);
-  }
+  ConstArrayIterator end() const { return ConstArrayIterator(size(), this); }
 
   /*!
    * \brief Shrink the capacity to be equal to the size.
@@ -1090,9 +1074,15 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
     dynamicRealloc(new_num_elements);
   }
 
-  if(m_default_construct)
+  if(prev_num_elements < new_num_elements && m_default_construct)
   {
+    // Default-initialize the new elements
     OpHelper::init(m_data, prev_num_elements, new_num_elements, m_allocator_id);
+  }
+  else if(prev_num_elements > new_num_elements)
+  {
+    // Destroy any elements above new_num_elements
+    OpHelper::destroy(m_data, new_num_elements, prev_num_elements, m_allocator_id);
   }
 
   updateNumElements(new_num_elements);

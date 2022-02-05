@@ -40,6 +40,7 @@ set( quest_headers
 
     # Mesh tester
     MeshTester.hpp
+    detail/MeshTester_detail.hpp
 
     # PointInCell
     PointInCell.hpp

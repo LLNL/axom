@@ -325,24 +325,13 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   NonTrivialDtor::dtor_calls = 0;
   // Create an array of N items using default MemorySpace for ExecSpace
   constexpr axom::IndexType N = 374;
-  DynamicArray arr(N, N, kernelAllocID);
-  // Initialization should not invoke the destructor
-  EXPECT_EQ(NonTrivialDtor::dtor_calls, 0);
+  DynamicArray arr(axom::ArrayOptions::Uninitialized {}, N, N, kernelAllocID);
 
-  // construct a view of the array before we invoke the destructor
+  // Manually construct objects in uninitialized memory
   auto arr_v = arr.view();
-
-  // Array::clear should invoke the destructor N times
-  NonTrivialDtor::dtor_calls = 0;
-  arr.clear();
-  EXPECT_EQ(NonTrivialDtor::dtor_calls, N);
-
-  // Copy post-destructor array
-  DynamicArray arr_after_dtor(N, N, kernelAllocID);
-  auto arr_after_dtor_v = arr_after_dtor.view();
   axom::for_all<ExecSpace>(
     N,
-    AXOM_LAMBDA(axom::IndexType i) { arr_after_dtor_v[i] = arr_v[i]; });
+    AXOM_LAMBDA(axom::IndexType i) { new(&arr_v[i]) NonTrivialDtor; });
 
   // handles synchronization, if necessary
   if(axom::execution_space<ExecSpace>::async())
@@ -350,11 +339,59 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
     axom::synchronize<ExecSpace>();
   }
 
+  // Initialization should not invoke the destructor
+  EXPECT_EQ(NonTrivialDtor::dtor_calls, 0);
+
+  NonTrivialDtor::dtor_calls = 0;
+  // Array::resize(N-100) should invoke the destructor on 100 elements
+  arr.resize(N - 100);
+  EXPECT_EQ(NonTrivialDtor::dtor_calls, 100);
+
+  // Resize to original size - this should leave destructed memory uninitialized
+  arr.resize(N);
+
   // Check array contents on host
-  HostArray localArr(arr_after_dtor_v, hostAllocID);
-  for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(localArr[i].m_val, NonTrivialDtor::MAGIC_DTOR);
+    HostArray localArr(arr, hostAllocID);
+    // Non-destructed elements should be in original state
+    for(int i = 0; i < N - 100; i++)
+    {
+      EXPECT_EQ(localArr[i].m_val, 0);
+    }
+    // Destroyed elements should be set to magic flag value
+    for(int i = N - 100; i < N; i++)
+    {
+      EXPECT_EQ(localArr[i].m_val, NonTrivialDtor::MAGIC_DTOR);
+    }
+  }
+
+  // Reset objects in array
+  arr_v = arr.view();
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType i) { new(&arr_v[i]) NonTrivialDtor; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Array::clear should invoke the destructor N times
+  NonTrivialDtor::dtor_calls = 0;
+  arr.clear();
+  EXPECT_EQ(NonTrivialDtor::dtor_calls, N);
+
+  // Resize to original size - this should leave destructed memory uninitialized
+  arr.resize(N);
+
+  // All elements should be in the destructed state
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, NonTrivialDtor::MAGIC_DTOR);
+    }
   }
 }
 

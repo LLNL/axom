@@ -41,6 +41,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds a random-access iterator to `slam::DynamicSet`
 - Adds an overload to `ImpicitGrid::getCandidates()` from a grid cell of the lattice. 
   This makes it easier to iterate over the bins of the spatial index.
+- Defines iterator traits on `axom::Array<T>`/`ArrayView<T>` iterators, to allow passing iterator
+  pairs to standard library functions
 
 ###  Changed
 - Moved bit-twiddling functions to core component
@@ -64,6 +66,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds `circumsphere()` functions to `primal::Triangle` and `primal::Tetrahedron` to return the `Sphere` 
   that circumscribes the triangle/tetrahedron's vertices
 - Adds operator overloads to subtract a `primal::Vector` from a `primal::Point` to yield a new `primal::Point`
+- Consolidates `quest::findTriMeshIntersections*()` implementations for `BVH` and `ImplicitGrid`
+- `BVH::find*()` batch functions now return the total number of candidate intersections found
+- Enables empty `axom::Array<T>` to be iterated over with `begin()/end()`
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
@@ -76,6 +81,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed a potential memory leak in `axom::Array<T>` for non-trivial types `T` which allocate memory
 - Added a guard in `axom::ArrayList` for axom configurations without Umpire to fix a compiler error (XL compiler)
 - Inlined some fully specialized functions in `quest::Delaunay` to avoid "multiply-defined" linker errors
+- Fixed `axom::Array<T>` fill operations on uninitialized memory
+- Fixed behavior of `axom::Array<T>::resize(new_size)` with `new_size < curr_size`
 
 ## [Version 0.6.1] - Release date 2021-11-17
 

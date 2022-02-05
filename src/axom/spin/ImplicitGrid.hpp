@@ -916,7 +916,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::countCandidates(
   {
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
-    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], 0);
+    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], IndexType {0});
     upperCell[idim] =
       axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
   }
@@ -1030,7 +1030,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   {
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
-    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], 0);
+    lowerCell[idim] = axom::utilities::clampLower(lowerCell[idim], IndexType {0});
     upperCell[idim] =
       axom::utilities::clampUpper(upperCell[idim], m_highestBins[idim]);
   }
