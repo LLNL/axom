@@ -85,6 +85,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed behavior of `axom::Array<T>::resize(new_size)` with `new_size < curr_size`
 - Fixed computation of signs in `quest::SignedDistance` when closest point is along an edge
   with a sharp dihedral angle and the adjacent triangles have significantly different areas
+- Fixed bug in axom::Path that ignored the leading delimiter character if one was present
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
