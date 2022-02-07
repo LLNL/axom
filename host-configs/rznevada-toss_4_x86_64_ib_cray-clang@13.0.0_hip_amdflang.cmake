@@ -62,13 +62,7 @@ set(ENABLE_HIP ON CACHE BOOL "")
 
 set(HIP_ROOT_DIR "/opt/rocm-4.3.1/hip" CACHE STRING "")
 
-set(HIP_CLANG_PATH "/opt/rocm-4.3.1/hip/../llvm/bin" CACHE STRING "")
-
-set(HIP_HIPCC_FLAGS "--amdgpu-target=gfx908" CACHE STRING "")
-
 set(CMAKE_HIP_ARCHITECTURES "gfx908" CACHE STRING "")
-
-set(HIP_RUNTIME_INCLUDE_DIRS "/opt/rocm-4.3.1/hip/include;/opt/rocm-4.3.1/hip/../hsa/include" CACHE STRING "")
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-4.3.1/hip/../llvm/lib -L/opt/rocm-4.3.1/hip/lib -Wl,-rpath,/opt/rocm-4.3.1/hip/../llvm/lib:/opt/rocm-4.3.1/hip/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64 -L/opt/rocm-4.3.1/hip/../lib64 -Wl,-rpath,/opt/rocm-4.3.1/hip/../lib64 -lhsakmt -lamd_comgr" CACHE STRING "")
 

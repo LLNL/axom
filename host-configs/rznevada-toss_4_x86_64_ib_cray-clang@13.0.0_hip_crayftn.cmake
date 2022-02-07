@@ -62,13 +62,7 @@ set(ENABLE_HIP ON CACHE BOOL "")
 
 set(HIP_ROOT_DIR "/opt/rocm-4.3.1/hip" CACHE STRING "")
 
-set(HIP_CLANG_PATH "/opt/rocm-4.3.1/hip/../llvm/bin" CACHE STRING "")
-
-set(HIP_HIPCC_FLAGS "--amdgpu-target=gfx908" CACHE STRING "")
-
 set(CMAKE_HIP_ARCHITECTURES "gfx908" CACHE STRING "")
-
-set(HIP_RUNTIME_INCLUDE_DIRS "/opt/rocm-4.3.1/hip/include;/opt/rocm-4.3.1/hip/../hsa/include" CACHE STRING "")
 
 set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/opt/cray/pe/gcc/8.1.0/snos/lib64" CACHE STRING "")
 
