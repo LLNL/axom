@@ -83,6 +83,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlined some fully specialized functions in `quest::Delaunay` to avoid "multiply-defined" linker errors
 - Fixed `axom::Array<T>` fill operations on uninitialized memory
 - Fixed behavior of `axom::Array<T>::resize(new_size)` with `new_size < curr_size`
+- Fixed computation of signs in `quest::SignedDistance` when closest point is along an edge
+  with a sharp dihedral angle and the adjacent triangles have significantly different areas
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
