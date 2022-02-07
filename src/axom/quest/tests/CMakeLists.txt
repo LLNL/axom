@@ -195,6 +195,9 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
                         boxedSphere:40
                         cap:16
                         cap:32
+                        fin0:32
+                        fin1:32
+                        fin2:32
                         naca0012:16
                         naca0012:32
                         plane_binary:16
