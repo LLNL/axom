@@ -50,7 +50,7 @@ if ( RAJA_FOUND )
 
   target_include_directories(raja_smoke_test PUBLIC 
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-      $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
   axom_add_test( NAME    raja_smoke
                  COMMAND raja_smoke_test )
@@ -75,7 +75,7 @@ if( HDF5_FOUND)
 
     target_include_directories(hdf5_smoke_test PUBLIC 
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
 
     axom_add_test(NAME hdf5_smoke
                   COMMAND hdf5_smoke_test)

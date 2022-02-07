@@ -53,7 +53,7 @@ install(EXPORT axom-targets DESTINATION lib/cmake)
 # Generate export symbols
 #------------------------------------------------------------------------------
 include(GenerateExportHeader)
-set(_export_header ${CMAKE_BINARY_DIR}/axom_export_symbols)
+set(_export_header ${PROJECT_BINARY_DIR}/axom_export_symbols)
 generate_export_header(axom  EXPORT_FILE_NAME ${_export_header})
 
 #------------------------------------------------------------------------------

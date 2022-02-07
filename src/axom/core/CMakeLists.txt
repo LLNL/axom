@@ -111,7 +111,7 @@ blt_add_library( NAME        core
 # Basic includes that should be inherited to all Axom targets
 target_include_directories(core PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
     )
 

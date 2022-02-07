@@ -46,10 +46,10 @@ foreach(option ${OPTIONS})
 endforeach()
 
 convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
-convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
+convert_to_native_escaped_file_path(${PROJECT_BINARY_DIR} AXOM_BIN_DIR)
 
 # Read axom_exports_symbols into a variable that will be inlined in the config file
-file(READ ${CMAKE_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
+file(READ ${PROJECT_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
 
 #------------------------------------------------------------------------------
 # Compiler and language related configuration variables
@@ -98,10 +98,10 @@ endif()
 # Generate the configuration header file
 axom_configure_file(
     ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
-    ${CMAKE_BINARY_DIR}/include/axom/config.hpp
+    ${PROJECT_BINARY_DIR}/include/axom/config.hpp
 )
 
-install(FILES ${CMAKE_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)
+install(FILES ${PROJECT_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)
 
 #------------------------------------------------------------------------------
 # Generate axom-config.cmake for importing Axom into other CMake packages
