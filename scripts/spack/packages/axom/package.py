@@ -276,17 +276,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             entries.append(cmake_cache_string("HIP_ROOT_DIR",
                                         hip_root))
-            entries.append(cmake_cache_string("HIP_CLANG_PATH",
-                                        rocm_root + '/llvm/bin'))
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':
                 arch_str = ",".join(archs)
                 entries.append(cmake_cache_string(
-                    "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
-                entries.append(cmake_cache_string(
                     "CMAKE_HIP_ARCHITECTURES", arch_str))
-            entries.append(cmake_cache_string("HIP_RUNTIME_INCLUDE_DIRS",
-                                        "{0}/include;{0}/../hsa/include".format(hip_root)))
 
             # Fixes for mpi for rocm until wrapper paths are fixed
             # These flags are already part of the wrapped compilers on TOSS4 systems
@@ -314,23 +308,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             if "gfx908" in archs:
                 hip_link_flags += " -L{0}/../lib64 -Wl,-rpath,{0}/../lib64 -lhsakmt -lamd_comgr".format(hip_root)
 
-            gcc_toolchain_regex = re.compile("--gcc-toolchain=(.*)")
-            gcc_name_regex = re.compile(".*gcc-name.*")
-            using_toolchain = list(filter(gcc_toolchain_regex.match, spec.compiler_flags['cxxflags']))
-            if(using_toolchain):
-              gcc_toolchain_path = gcc_toolchain_regex.match(using_toolchain[0])
-            if ('%gcc' in spec) or (using_toolchain):
-                if ('%gcc' in spec):
-                    gcc_bin = os.path.dirname(self.compiler.cxx)
-                    gcc_prefix = join_path(gcc_bin, '..')
-                else:
-                    gcc_prefix = gcc_toolchain_path.group(1)
-                entries.append(cmake_cache_string("HIP_CLANG_FLAGS",
-                "--gcc-toolchain={0}".format(gcc_prefix)))
-                entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS",
-                hip_link_flags + " -Wl,-rpath {}/lib64".format(gcc_prefix)))
-            else:
-                entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
+            entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
         entries.append("#------------------{0}".format("-" * 30))
         entries.append("# Hardware Specifics")
