@@ -17,7 +17,8 @@ namespace axom
 Path::Path(const std::string& path, const char delim) : m_delim(delim)
 {
   size_t first_position = 0;  // position of first non-delimiter char in path
-  if(!path.empty() && path[0] == m_delim)
+
+  if(axom::utilities::string::startsWith(path, m_delim))
   {
     m_leading_delim = true;
     first_position = 1;
@@ -77,14 +78,9 @@ Path Path::join(std::initializer_list<Path> paths, const char delim)
 
 Path::operator std::string() const
 {
-  std::string result;
-  if(m_leading_delim)
-  {
-    result = "/";
-  }
-
-  result += fmt::format("{0}", fmt::join(m_components, std::string(1, m_delim)));
-  return result;
+  return fmt::format("{0}{1}",
+                     m_leading_delim ? std::string(1, m_delim) : "",
+                     fmt::join(m_components, std::string(1, m_delim)));
 }
 
 Path Path::parent() const

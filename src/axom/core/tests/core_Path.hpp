@@ -42,6 +42,13 @@ TEST(core_Path, two_component_construct_lead_delim)
   EXPECT_EQ(static_cast<std::string>(path), path_str);
 }
 
+TEST(core_Path, two_component_construct_alt_lead_delim)
+{
+  const std::string path_str = ":foo:bar";
+  axom::Path path(path_str, ':');
+  EXPECT_EQ(static_cast<std::string>(path), path_str);
+}
+
 TEST(core_Path, no_component_construct_root_delim)
 {
   const std::string path_str = "/";
@@ -73,6 +80,14 @@ TEST(core_Path, join_trivial_lead_delim)
   EXPECT_EQ(static_cast<std::string>(joined), "/foo/bar");
 }
 
+TEST(core_Path, join_trivial_alt_lead_delim)
+{
+  axom::Path first(":foo", ':');
+  axom::Path second(":bar", ':');
+  auto joined = axom::Path::join({first, second}, ':');
+  EXPECT_EQ(static_cast<std::string>(joined), ":foo:bar");
+}
+
 TEST(core_Path, join_multi_component)
 {
   axom::Path first("foo/bar");
@@ -97,6 +112,14 @@ TEST(core_Path, join_multi_component_lead_delim)
   EXPECT_EQ(static_cast<std::string>(joined), "/foo/bar/baz/quux");
 }
 
+TEST(core_Path, join_multi_component_alt_lead_delim)
+{
+  axom::Path first(":foo:bar", ':');
+  axom::Path second(":baz:quux", ':');
+  auto joined = axom::Path::join({first, second}, ':');
+  EXPECT_EQ(static_cast<std::string>(joined), ":foo:bar:baz:quux");
+}
+
 TEST(core_Path, parent_basic)
 {
   axom::Path path("foo/bar");
@@ -116,6 +139,13 @@ TEST(core_Path, parent_basic_lead_delim)
   axom::Path path("/foo/bar");
   auto parent = path.parent();
   EXPECT_EQ(static_cast<std::string>(parent), "/foo");
+}
+
+TEST(core_Path, parent_basic_alt_lead_delim)
+{
+  axom::Path path(":foo:bar", ':');
+  auto parent = path.parent();
+  EXPECT_EQ(static_cast<std::string>(parent), ":foo");
 }
 
 TEST(core_Path, parent_basic_root_lead_delim)
@@ -146,6 +176,13 @@ TEST(core_Path, parent_multi_component_lead_delim)
   EXPECT_EQ(static_cast<std::string>(parent), "/foo/bar");
 }
 
+TEST(core_Path, parent_multi_component_alt_lead_delim)
+{
+  axom::Path path("|foo|bar|baz", '|');
+  auto parent = path.parent();
+  EXPECT_EQ(static_cast<std::string>(parent), "|foo|bar");
+}
+
 TEST(core_Path, dirname_basename_basic)
 {
   axom::Path path("foo/bar");
@@ -164,6 +201,13 @@ TEST(core_Path, dirname_basename_basic_lead_delim)
 {
   axom::Path path("/foo/bar");
   EXPECT_EQ(path.dirName(), "/foo");
+  EXPECT_EQ(path.baseName(), "bar");
+}
+
+TEST(core_Path, dirname_basename_basic_alt_lead_delim)
+{
+  axom::Path path("+foo+bar", '+');
+  EXPECT_EQ(path.dirName(), "+foo");
   EXPECT_EQ(path.baseName(), "bar");
 }
 
@@ -195,18 +239,29 @@ TEST(core_Path, dirname_basename_multi_component_lead_delim)
   EXPECT_EQ(path.baseName(), "baz");
 }
 
+TEST(core_Path, dirname_basename_multi_component_alt_lead_delim)
+{
+  axom::Path path("|foo|bar|baz", '|');
+  EXPECT_EQ(path.dirName(), "|foo|bar");
+  EXPECT_EQ(path.baseName(), "baz");
+}
+
 TEST(core_Path, basic_equals)
 {
   axom::Path first("foo/bar/baz");
   axom::Path second("foo/bar/baz");
   axom::Path third("foo:bar:baz", ':');
   axom::Path fourth("/foo/bar/baz");
+  axom::Path fifth(":foo:bar:baz", ':');
   EXPECT_TRUE(first == second);
   EXPECT_FALSE(first != second);
   EXPECT_FALSE(first == third);
   EXPECT_TRUE(first != third);
   EXPECT_FALSE(first == fourth);
   EXPECT_TRUE(first != fourth);
+  EXPECT_FALSE(first == fifth);
+  EXPECT_FALSE(third == fifth);
+  EXPECT_TRUE(third != fifth);
 }
 
 TEST(core_Path, parts_empty)
