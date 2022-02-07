@@ -77,6 +77,8 @@ endif()
 #------------------------------------------------------------------------------
 # Conduit
 #------------------------------------------------------------------------------
+# Find Conduit first, then find HDF5 to fix "Could NOT find HDF5" issue with
+# newer CMake versions
 if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
 
