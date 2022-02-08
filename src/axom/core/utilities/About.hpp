@@ -3,17 +3,21 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_UTILS_ABOUT_H_
-#define AXOM_UTILS_ABOUT_H_
+#ifndef AXOM_UTILITIES_ABOUT_H_
+#define AXOM_UTILITIES_ABOUT_H_
 
-#include <ostream>  // for std::ostream
-#include <string>   // for std::string
+#include <ostream>
+#include <string>
 
 namespace axom
 {
 /*!
+ * \brief Returns the Git SHA if Axom was built in Git repository, empty if not
+ */
+std::string gitSHA();
+
+/*!
  * \brief Prints info about how Axom was configured and built to stdout
- *
  */
 void about();
 
@@ -27,11 +31,10 @@ void about(std::ostream &oss);
 /*!
  * \brief Returns a string consisting of the Axom version.
  *
- * \return str string corresponding to the Axom version
- * \post str != ""
+ * \return string corresponding to the Axom version
  */
 std::string getVersion();
 
 }  // end namespace axom
 
-#endif  //  AXOM_UTILS_ABOUT_H_
+#endif  //  AXOM_UTILITIES_ABOUT_H_

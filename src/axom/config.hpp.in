@@ -21,7 +21,10 @@
 #define AXOM_VERSION_MINOR @AXOM_VERSION_MINOR@
 #define AXOM_VERSION_PATCH @AXOM_VERSION_PATCH@
 #define AXOM_VERSION_FULL  "@AXOM_VERSION_FULL@"
-#cmakedefine AXOM_VERSION_EXTRA "@AXOM_VERSION_EXTRA@"
+/*NOTE: Do not add AXOM_VERSION_EXTRA here.  This will force
+ * full rebuild on all local changes. It is added in axom::getVersion(),
+ * axom::about(), and axom::gitSha().
+ */
 
 
 /*

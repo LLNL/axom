@@ -6,21 +6,23 @@
 #include "axom/config.hpp"
 #include "axom/core/utilities/About.hpp"
 
-#include <algorithm>  // copy
-#include <iostream>   // for cout
-#include <sstream>    // for stringstream
-#include <string>     // for C++ string
-#include <vector>     // for STL vector
-#include <iterator>   // for ostream_iterator
+#include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <iterator>
 
 namespace axom
 {
-//-----------------------------------------------------------------------------
+
+std::string gitSHA()
+{
+  return "@AXOM_GIT_SHA@";
+}
+
 void about() { about(std::cout); }
 
-//-----------------------------------------------------------------------------
-// The guts of this were taken from the utils_config unit test.
-//-----------------------------------------------------------------------------
 void about(std::ostream &oss)
 {
   oss << "Axom information:" << std::endl << std::endl;
@@ -29,10 +31,7 @@ void about(std::ostream &oss)
   oss << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
   oss << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
   oss << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
-
-#ifdef AXOM_VERSION_EXTRA
-  oss << "AXOM_VERSION_EXTRA: " << AXOM_VERSION_EXTRA << std::endl;
-#endif
+  oss << "AXOM_VERSION_EXTRA: " << gitSHA() << std::endl;
 
   oss << "Compiler Settings: " << std::endl
       << "   C++ Standard: " << AXOM_CXX_STD << std::endl
@@ -54,12 +53,16 @@ void about(std::ostream &oss)
   comps.push_back("inlet");
 #endif
 
-#ifdef AXOM_USE_MINT
-  comps.push_back("mint");
+#ifdef AXOM_USE_KLEE
+  comps.push_back("klee");
 #endif
 
 #ifdef AXOM_USE_LUMBERJACK
   comps.push_back("lumberjack");
+#endif
+
+#ifdef AXOM_USE_MINT
+  comps.push_back("mint");
 #endif
 
 #ifdef AXOM_USE_PRIMAL
@@ -80,6 +83,10 @@ void about(std::ostream &oss)
 
 #ifdef AXOM_USE_SLIC
   comps.push_back("slic");
+#endif
+
+#ifdef AXOM_USE_SPIN
+  comps.push_back("spin");
 #endif
 
   std::stringstream sstr;
@@ -153,9 +160,13 @@ std::string getVersion()
 {
   std::ostringstream oss;
   oss << AXOM_VERSION_FULL;
-#ifdef AXOM_VERSION_EXTRA
-  oss << "-" << AXOM_VERSION_EXTRA;
-#endif
+
+  // Add git sha to version if not empty
+  std::string sha = gitSHA();
+  if (!sha.empty()) {
+    oss << "-" << sha;
+  }
+
   return oss.str();
 }
 
