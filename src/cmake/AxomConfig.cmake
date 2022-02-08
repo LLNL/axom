@@ -148,3 +148,25 @@ install(
   DESTINATION 
     ${AXOM_INSTALL_CMAKE_MODULE_DIR}
 )
+
+
+#------------------------------------------------------------------------------
+# Create a list of exported targets so that other projects that include Axom
+# can add it to their CMake export list
+#------------------------------------------------------------------------------
+
+# Add it to a temporary list before creating the cache variable to use list(APPEND)
+set(_axom_exported_targets axom)
+
+blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF ENABLE_HIP)
+
+set(_optional_targets cli11 fmt hdf5 lua openmp sol sparsehash)
+foreach(_tar ${_optional_targets})
+    string(TOUPPER ${_tar} _upper_tar)
+    if(ENABLE_${_upper_tar} OR ${_upper_tar}_FOUND)
+        list(APPEND _axom_exported_targets ${_tar})
+    endif()
+endforeach()
+
+set(axom_exported_targets ${_axom_exported_targets} CACHE INTERNAL "")
