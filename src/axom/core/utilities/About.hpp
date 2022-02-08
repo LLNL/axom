@@ -13,6 +13,8 @@ namespace axom
 {
 /*!
  * \brief Returns the Git SHA if Axom was built in Git repository, empty if not
+ *
+ * Note: This will not update unless you re-run CMake between commits.
  */
 std::string gitSHA();
 
