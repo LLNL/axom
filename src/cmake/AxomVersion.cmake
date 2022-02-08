@@ -65,7 +65,7 @@ if (Git_FOUND)
       message( FATAL_ERROR "blt_git_hashcode failed!" )
     endif()
 
-    set(AXOM_VERSION_EXTRA ${sha1})
+    set(AXOM_GIT_SHA ${sha1})
 
   endif()
 

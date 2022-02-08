@@ -85,7 +85,7 @@ target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
 target_include_directories(fmt INTERFACE 
-            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
 
 # Setup some variables for fmt in Axom's config.hpp
 set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
@@ -169,13 +169,13 @@ if (AXOM_ENABLE_SPARSEHASH)
      )
      
     blt_add_library(NAME sparsehash
-            HEADERS ${sparsehash_headers})
+                    HEADERS ${sparsehash_headers})
      
     target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
     target_include_directories(sparsehash INTERFACE 
-                $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include> )
+                $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
 
     # Disable warning introduced in gcc@8.1+ related to how sparsehash casts memory
     # The double guarding for compiler family helps when compiling libraries with GNU

@@ -15,11 +15,11 @@
   #include "mfem.hpp"
 #endif
 
-#include <algorithm>  // copy
-#include <iostream>   // for cout
-#include <sstream>    // for stringstream
-#include <string>     // for C++ string
-#include <vector>     // for STL vector
+#include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 TEST(utils_config, axom_version)
 {
@@ -37,122 +37,6 @@ TEST(utils_config, axom_version)
   std::cout << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
   std::cout << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
   std::cout << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
-
-#ifdef AXOM_VERSION_EXTRA
-  const std::string AXOM_EXTRA = AXOM_VERSION_EXTRA;
-  EXPECT_FALSE(AXOM_EXTRA.empty());
-
-  std::cout << "AXOM_VERSION_EXTRA: " << AXOM_VERSION_EXTRA << std::endl;
-#endif
-}
-
-TEST(utils_config, config_libraries)
-{
-  // This test checks which libraries are available in the configuration
-
-  std::cout << "Available libraries: " << std::endl;
-
-  std::vector<std::string> libs;
-
-#ifdef AXOM_USE_C2C
-  libs.push_back("c2c");
-#endif
-
-#ifdef AXOM_USE_CLI11
-  libs.push_back("CLI11");
-#endif
-
-#ifdef AXOM_USE_CONDUIT
-  libs.push_back("conduit");
-#endif
-
-  libs.push_back(AXOM_CXX_STD);
-
-#ifdef AXOM_USE_FMT
-  libs.push_back("fmt");
-#endif
-
-#ifdef AXOM_USE_HDF5
-  libs.push_back("hdf5");
-#endif
-
-#ifdef AXOM_USE_OPENMP
-  libs.push_back("openmp");
-#endif
-
-#ifdef AXOM_USE_MFEM
-  libs.push_back("mfem");
-#endif
-
-#ifdef AXOM_USE_MPI
-  libs.push_back("mpi");
-#endif
-
-#ifdef AXOM_USE_MPIF_HEADERS
-  libs.push_back("mpif headers");
-#endif
-
-#ifdef AXOM_USE_SPARSEHASH
-  libs.push_back("sparsehash");
-#endif
-
-  libs.push_back("std::unordered_map");
-
-  std::stringstream sstr;
-  std::copy(libs.begin(),
-            libs.end(),
-            std::ostream_iterator<std::string>(sstr, "; "));
-  std::cout << "\t{ " << sstr.str() << "}" << std::endl;
-
-  EXPECT_TRUE(true);
-}
-
-TEST(utils_config, config_components)
-{
-  // This test checks which toolkit components are available in the
-  // configuration
-
-  std::cout << "Available components: " << std::endl;
-
-  std::vector<std::string> comps;
-
-  comps.push_back("core");
-
-#ifdef AXOM_USE_MINT
-  comps.push_back("mint");
-#endif
-
-#ifdef AXOM_USE_LUMBERJACK
-  comps.push_back("lumberjack");
-#endif
-
-#ifdef AXOM_USE_PRIMAL
-  comps.push_back("primal");
-#endif
-
-#ifdef AXOM_USE_QUEST
-  comps.push_back("quest");
-#endif
-
-#ifdef AXOM_USE_SIDRE
-  comps.push_back("sidre");
-#endif
-
-#ifdef AXOM_USE_SLAM
-  comps.push_back("slam");
-#endif
-
-#ifdef AXOM_USE_SLIC
-  comps.push_back("slic");
-#endif
-
-  std::stringstream sstr;
-  std::copy(comps.begin(),
-            comps.end(),
-            std::ostream_iterator<std::string>(sstr, "; "));
-  std::cout << "\t{ " << sstr.str() << "}" << std::endl;
-
-  EXPECT_TRUE(true);
 }
 
 TEST(utils_config, config_openmp)

@@ -25,8 +25,8 @@ cmake_dependent_option( AXOM_MINT_USE_SIDRE "Enables Sidre support in Mint" ON
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 ## generate mint config
-configure_file ( core/config.hpp.in
-                 ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp )
+axom_configure_file ( core/config.hpp.in
+                      ${PROJECT_BINARY_DIR}/include/axom/mint/config.hpp )
 
 set( mint_headers
 
@@ -150,7 +150,7 @@ axom_write_unified_header(NAME    mint
 axom_install_component(NAME    mint
                        HEADERS ${mint_headers}
                        )
-install(FILES       ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp
+install(FILES       ${PROJECT_BINARY_DIR}/include/axom/mint/config.hpp
         DESTINATION include/axom/mint
         )
 

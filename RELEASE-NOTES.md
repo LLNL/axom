@@ -69,6 +69,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Consolidates `quest::findTriMeshIntersections*()` implementations for `BVH` and `ImplicitGrid`
 - `BVH::find*()` batch functions now return the total number of candidate intersections found
 - Enables empty `axom::Array<T>` to be iterated over with `begin()/end()`
+- Removed `AXOM_VERSION_EXTRA` in favor of `axom::gitSHA()` and adding the SHA to `axom::getVersion()` and
+  `axom::about()`
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
