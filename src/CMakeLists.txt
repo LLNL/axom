@@ -129,7 +129,9 @@ if(AXOM_ENABLE_TOOLS)
 endif()
 
 # Using Axom install examples
-add_subdirectory(examples)
+if (AXOM_ENABLE_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 if(AXOM_ENABLE_DOCS)
     if(SPHINX_FOUND)

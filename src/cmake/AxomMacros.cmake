@@ -337,7 +337,7 @@ macro(axom_write_unified_header)
 
     string(TOUPPER ${arg_NAME} _ucname)
     string(TOLOWER ${arg_NAME} _lcname)
-    set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
+    set(_header ${PROJECT_BINARY_DIR}/include/axom/${_lcname}.hpp)
     set(_tmp_header ${_header}.tmp)
 
     file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and

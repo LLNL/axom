@@ -214,8 +214,7 @@ public:
    */
   double computeDistance(double x, double y, double z = 0.0)
   {
-    PointType pt = PointType::make_point(x, y, z);
-    return (computeDistance(pt));
+    return computeDistance(PointType {x, y, z});
   }
 
   /*!
@@ -643,23 +642,22 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
 
     if(shouldUpdateNormals)
     {
-      VectorType norm = surface_elems[ei].normal();
       ++currMin.minCount;
 
       switch(cpt_type)
       {
       case detail::ClosestPointLocType::edge:
-        // Candidate closest point is on an edge - add the normal of a
-        // potentially-adjacent face
-        currMin.sumNormals += norm;
+        // Add the (unitized) normal of the (potentially) incident face along this edge
+        // Note: Unitizing is important in cases where the edge is shared
+        // by triangles with different areas and an acute dihedral angle
+        currMin.sumNormals += surface_elems[ei].normal().unitVector();
         break;
       case detail::ClosestPointLocType::vertex:
         if(!surface_elems[ei].degenerate())
         {
-          // Candidate closest point is on a vertex - add the angle-weighted
-          // normal of a face potentially sharing a vertex
-          double alpha = surface_elems[ei].angle(candidate_loc);
-          currMin.sumNormals += (norm.unitVector() * alpha);
+          // Add the angle-weighted normal of the (potentially) incident face along this vertex
+          const double alpha = surface_elems[ei].angle(candidate_loc);
+          currMin.sumNormals += alpha * surface_elems[ei].normal().unitVector();
         }
         break;
       default:

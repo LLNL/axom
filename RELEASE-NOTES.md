@@ -70,6 +70,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Consolidates `quest::findTriMeshIntersections*()` implementations for `BVH` and `ImplicitGrid`
 - `BVH::find*()` batch functions now return the total number of candidate intersections found
 - Enables empty `axom::Array<T>` to be iterated over with `begin()/end()`
+- Removed `AXOM_VERSION_EXTRA` in favor of `axom::gitSHA()` and adding the SHA to `axom::getVersion()` and
+  `axom::about()`
 - Use more specific type trait checks in `ArrayOps`, to avoid generating unnecessary copies in
   fill/destroy operations on otherwise trivially-copyable/destructible types.
 
@@ -84,6 +86,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlined some fully specialized functions in `quest::Delaunay` to avoid "multiply-defined" linker errors
 - Fixed `axom::Array<T>` fill operations on uninitialized memory
 - Fixed behavior of `axom::Array<T>::resize(new_size)` with `new_size < curr_size`
+- Fixed computation of signs in `quest::SignedDistance` when closest point is along an edge
+  with a sharp dihedral angle and the adjacent triangles have significantly different areas
+- Fixed bug in axom::Path that ignored the leading delimiter character if one was present
 
 ## [Version 0.6.1] - Release date 2021-11-17
 

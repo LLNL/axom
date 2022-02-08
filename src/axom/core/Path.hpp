@@ -94,6 +94,9 @@ private:
 
   // The delimiter character
   char m_delim = '/';
+
+  // Indicates whether the path has a leading delimiter character
+  bool m_leading_delim = false;
 };
 
 /*!
