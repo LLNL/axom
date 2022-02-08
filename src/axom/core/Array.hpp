@@ -83,6 +83,11 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  * \pre T must be CopyAssignable and Erasable
  * \see https://en.cppreference.com/w/cpp/named_req
  *
+ * \pre When Array is allocated on the device, T must be relocatable, i.e.
+ *  moving the object to a new index and destroying the original should be
+ *  equivalent to a memcpy.
+ * \see https://github.com/facebook/folly/blob/main/folly/docs/FBVector.md#object-relocation
+ *
  */
 template <typename T, int DIM = 1, MemorySpace SPACE = MemorySpace::Dynamic>
 class Array : public ArrayBase<T, DIM, Array<T, DIM, SPACE>>
