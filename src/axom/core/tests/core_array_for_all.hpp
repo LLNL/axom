@@ -228,6 +228,212 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
 }
 
 //------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_insert)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+  auto arr_v = arr.view();
+
+  // Set some elements
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_v[idx] = idx - 5 * idx + 7; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  const axom::IndexType N_insert = 10;
+  // Let's push back some elements
+  for(axom::IndexType i = 0; i < N_insert; i++)
+  {
+    arr.push_back(100 + i);
+  }
+  EXPECT_EQ(arr.size(), N + N_insert);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_insert; i++)
+    {
+      EXPECT_EQ(host_arr[i + N], 100 + i);
+    }
+  }
+
+  // Do the same, but with an iterator at the beginning
+  for(axom::IndexType i = 0; i < N_insert; i++)
+  {
+    arr.insert(arr.begin(), 200 + i);
+  }
+  EXPECT_EQ(arr.size(), N + N_insert * 2);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i + N_insert], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_insert; i++)
+    {
+      EXPECT_EQ(host_arr[i + N + N_insert], 100 + i);
+      // elements pushed at beginning are pushed in reverse order
+      EXPECT_EQ(host_arr[i], 200 + N_insert - i - 1);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_insert)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+  auto arr_v = arr.view();
+
+  // Set some elements
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_v[idx] = idx - 5 * idx + 7; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Create a host range to set
+  const axom::IndexType N_range = 100;
+  HostArray range_vals(N_range);
+
+  for(axom::IndexType i = 0; i < N_range; i++)
+  {
+    range_vals[i] = 100 + i;
+  }
+  // Insert range at the end
+  arr.insert(arr.end(), range_vals.size(), range_vals.data());
+  EXPECT_EQ(arr.size(), N + N_range);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_range; i++)
+    {
+      EXPECT_EQ(host_arr[i + N], 100 + i);
+    }
+  }
+
+  // Insert range at beginning
+  arr.insert(arr.begin(), range_vals.size(), range_vals.data());
+  EXPECT_EQ(arr.size(), N + N_range * 2);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = 0; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i + N_range], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_range; i++)
+    {
+      EXPECT_EQ(host_arr[i + N + N_range], 100 + i);
+      // elements pushed at beginning are pushed in reverse order
+      EXPECT_EQ(host_arr[i], 100 + i);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_set)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+  auto arr_v = arr.view();
+
+  // Set some elements
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_v[idx] = idx - 5 * idx + 7; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Create a host range to set
+  const axom::IndexType N_range = 100;
+  HostArray range_vals(N_range);
+
+  for(axom::IndexType i = 0; i < N_range; i++)
+  {
+    range_vals[i] = 100 + i;
+  }
+  // Overwrite first N_range elements in beginning of range
+  arr.set(range_vals.data(), N_range, 0);
+  EXPECT_EQ(arr.size(), N);
+  {
+    // Check elements
+    HostArray host_arr = arr;
+    for(axom::IndexType i = N_range; i < N; i++)
+    {
+      EXPECT_EQ(host_arr[i], i - 5 * i + 7);
+    }
+    for(axom::IndexType i = 0; i < N_range; i++)
+    {
+      EXPECT_EQ(host_arr[i], 100 + i);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 struct NonTrivialCtor
 {
   NonTrivialCtor(int val) : m_val(val) { }
@@ -396,17 +602,22 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
 }
 
 //------------------------------------------------------------------------------
+constexpr static int MAGIC_COPY_CTOR {333};
 struct NonTrivialCopyCtor
 {
-  constexpr static int MAGIC_COPY_CTOR {333};
-
   NonTrivialCopyCtor() { }
   NonTrivialCopyCtor(const NonTrivialCopyCtor&) { m_val *= MAGIC_COPY_CTOR; }
+  NonTrivialCopyCtor& operator=(const NonTrivialCopyCtor&)
+  {
+    m_val *= MAGIC_COPY_CTOR;
+    return *this;
+  }
+  NonTrivialCopyCtor(NonTrivialCopyCtor&& other) = default;
+  NonTrivialCopyCtor& operator=(NonTrivialCopyCtor&& other) = default;
+  ~NonTrivialCopyCtor() = default;
 
   int m_val {1};
 };
-
-constexpr int NonTrivialCopyCtor::MAGIC_COPY_CTOR;
 
 AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
 {
@@ -442,7 +653,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   HostArray localArr(arr, hostAllocID);
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(localArr[i].m_val, NonTrivialCopyCtor::MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[i].m_val, MAGIC_COPY_CTOR);
   }
 
   // Second fill should be idempotent - i.e. isn't affected by the data already
@@ -459,7 +670,97 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   localArr = HostArray(arr, hostAllocID);
   for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(localArr[i].m_val, NonTrivialCopyCtor::MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[i].m_val, MAGIC_COPY_CTOR);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray =
+    typename TestFixture::template DynamicTArray<NonTrivialCopyCtor>;
+  using HostArray = typename TestFixture::template HostTArray<NonTrivialCopyCtor>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr axom::IndexType N = 10;
+  DynamicArray arr(N, N, kernelAllocID);
+
+  // Check default-constructed array contents on host
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, 1);
+    }
+  }
+
+  // Emplace some elements
+  // emplace of xvalue - should bind to rvalue emplace
+  arr.emplace_back(NonTrivialCopyCtor {});
+  constexpr int MAGIC_MOVE_EXPLICIT = 222;
+  // emplace of explicitly-moved object - should bind to rvalue emplace
+  {
+    NonTrivialCopyCtor explicitMove;
+    explicitMove.m_val = MAGIC_MOVE_EXPLICIT;
+    arr.emplace_back(std::move(explicitMove));
+  }
+  {
+    NonTrivialCopyCtor lvalue;
+    // emplace of object as lvalue - should bind to copying emplace
+    arr.emplace_back(lvalue);
+  }
+  EXPECT_EQ(arr.size(), N + 3);
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N + 1; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, 1);
+    }
+    EXPECT_EQ(localArr[N + 1].m_val, MAGIC_MOVE_EXPLICIT);
+    // our one copied element should be set to the copy ctor value
+    EXPECT_EQ(localArr[N + 2].m_val, MAGIC_COPY_CTOR);
+  }
+
+  // Emplace some elements in the front
+  // emplace of xvalue - should bind to rvalue emplace
+  arr.emplace(arr.begin(), NonTrivialCopyCtor {});
+  // emplace of explicitly-moved object - should bind to rvalue emplace
+  {
+    NonTrivialCopyCtor explicitMove;
+    explicitMove.m_val = MAGIC_MOVE_EXPLICIT;
+    arr.emplace(arr.begin(), std::move(explicitMove));
+  }
+  {
+    NonTrivialCopyCtor lvalue;
+    // emplace of object as lvalue - should bind to copying emplace
+    arr.emplace(arr.begin(), lvalue);
+  }
+
+  EXPECT_EQ(arr.size(), N + 6);
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 2; i < N + 4; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, 1);
+    }
+    // check our explicitly-moved values
+    EXPECT_EQ(localArr[1].m_val, MAGIC_MOVE_EXPLICIT);
+    EXPECT_EQ(localArr[N + 4].m_val, MAGIC_MOVE_EXPLICIT);
+    // copied objects should be at the beginning and end
+    EXPECT_EQ(localArr[0].m_val, MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[N + 5].m_val, MAGIC_COPY_CTOR);
   }
 }
 

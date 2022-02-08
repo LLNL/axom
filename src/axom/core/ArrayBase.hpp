@@ -18,9 +18,6 @@
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
-#ifdef __ibmxl__
-  #include <algorithm>  // for std::fill_n due to XL bug
-#endif
 
 namespace axom
 {
@@ -534,225 +531,291 @@ struct all_types_are_integral
   static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
 
-template <bool has_default_ctor>
-struct OpInitBase
-{
-  template <typename T, typename ExecSpace>
-  static void init(T* data, IndexType begin, IndexType end);
-};
+#if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
+// Some type traits we need aren't fully-implemented in libstdc++ for GCC <5.
+// We thus check for the macro _GLIBCXX_USE_CXX11_ABI, which should only be
+// defined for GCC 5+; if not defined, we'll use the below fallbacks.
+template <typename T>
+using HasTrivialCopyCtor = ::std::has_trivial_copy_constructor<T>;
+#else
+template <typename T>
+using HasTrivialCopyCtor = ::std::is_trivially_copy_constructible<T>;
+#endif
 
-template <bool fill_on_host>
-struct OpFillBase
-{
-  template <typename T, typename ExecSpace>
-  static void fill(T* array, IndexType n, const T& value);
-};
+template <typename T, bool DeviceOps>
+struct ArrayOpsBase;
 
-template <bool destroy_on_host>
-struct OpDestroyBase
+template <typename T>
+struct ArrayOpsBase<T, false>
 {
-  template <typename T, typename ExecSpace>
-  static void destroy(T* array, IndexType begin, IndexType end);
-};
+  static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
 
-template <bool device>
-struct OpMemmoveBase
-{
-  template <typename T>
-  static void move(T* array,
-                   IndexType src_begin,
-                   IndexType src_end,
-                   IndexType dst,
-                   int allocId);
-};
-
-/*!
- * \brief Default-initializes the "new" segment of an array
- *
- * \param [inout] data The data to initialize
- * \param [in] begin The beginning of the subset of \a data that should be initialized
- * \param [in] end The end index (exclusive) of the subset of \a data that is to be initialized
- */
-template <>
-template <typename T, typename ExecSpace>
-void OpInitBase<true>::init(T* data, IndexType begin, IndexType end)
-{
-  if(axom::execution_space<ExecSpace>::onDevice())
+  /*!
+   * \brief Default-initializes the "new" segment of an array
+   *
+   * \param [inout] data The data to initialize
+   * \param [in] begin The beginning of the subset of \a data that should be initialized
+   * \param [in] end The end index (exclusive) of the subset of \a data that is to be initialized
+   * \note Specialization for when T is default-constructible.
+   */
+  template <bool HasCtor = DefaultCtor>
+  static typename std::enable_if<HasCtor>::type init(T* data,
+                                                     IndexType begin,
+                                                     IndexType nelems)
   {
-    IndexType len = end - begin;
+    for(IndexType i = 0; i < nelems; ++i)
+    {
+      new(data + i + begin) T();
+    }
+  }
+
+  /*!
+   * \overload
+   * \note Specialization for when T is not default-constructible.
+   */
+  template <bool HasCtor = DefaultCtor>
+  static typename std::enable_if<!HasCtor>::type init(T*, IndexType, IndexType)
+  { }
+
+  /*!
+   * \brief Fills an uninitialized array with objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index in the array to begin filling elements at
+   * \param [in] nelems the number of elements to fill the array with
+   * \param [in] value the value to set each array element to
+   */
+  static void fill(T* array, IndexType begin, IndexType nelems, const T& value)
+  {
+    std::uninitialized_fill_n(array + begin, nelems, value);
+  }
+
+  /*!
+   * \brief Fills an uninitialized array with a range of objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index at which to begin placing elements
+   * \param [in] nelems the number of elements in the range to fill the array with
+   * \param [in] values the values to set each array element to
+   */
+  static void fill_range(T* array, IndexType begin, IndexType nelems, const T* values)
+  {
+    std::uninitialized_copy(values, values + nelems, array + begin);
+  }
+
+  /*!
+   * \brief Constructs a new element in uninitialized memory.
+   *
+   * \param [inout] array the array to construct in
+   * \param [in] i the array index in which to construct the new object
+   * \param [in] args the arguments to forward to constructor of the element.
+   */
+  template <typename... Args>
+  static void emplace(T* array, IndexType i, Args&&... args)
+  {
+    new(array + i) T(std::forward<Args>(args)...);
+  }
+
+  /*!
+   * \brief Calls the destructor on a range of typed elements in the array.
+   *
+   * \param [inout] array the array with elements to destroy
+   * \param [in] begin the start index of the range of elements to destroy
+   * \param [in] value one past the end index of the range of elements to destroy
+   */
+  static void destroy(T* array, IndexType begin, IndexType nelems)
+  {
+    if(!std::is_trivially_destructible<T>::value)
+    {
+      for(IndexType i = 0; i < nelems; i++)
+      {
+        array[i + begin].~T();
+      }
+    }
+  }
+
+  /*!
+   * \brief Moves a range of data in the array.
+   *
+   * \param [inout] array the array with elements to move
+   * \param [in] src_begin the start index of the source range
+   * \param [in] src_end the end index of the source range, exclusive
+   * \param [in] dst the destination index of the range of elements
+   */
+  static void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
+  {
+    if(src_begin < dst)
+    {
+      IndexType dst_last = dst + src_end - src_begin;
+      std::move_backward(array + src_begin, array + src_end, array + dst_last);
+    }
+    else if(src_begin > dst)
+    {
+      std::move(array + src_begin, array + src_end, array + dst);
+    }
+  }
+};
+
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+template <typename T>
+struct ArrayOpsBase<T, true>
+{
+  using ExecSpace = axom::CUDA_EXEC<256>;
+
+  static constexpr bool CopyOnHost = !HasTrivialCopyCtor<T>::value;
+  static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
+  static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
+
+  /*!
+   * \brief Default-initializes the "new" segment of an array
+   *
+   * \param [inout] data The data to initialize
+   * \param [in] begin The beginning of the subset of \a data that should be initialized
+   * \param [in] nelems the number of elements to initialize
+   * \note Specialization for when T is default-constructible.
+   */
+  template <bool HasCtor = DefaultCtor>
+  static typename std::enable_if<HasCtor>::type init(T* data,
+                                                     IndexType begin,
+                                                     IndexType nelems)
+  {
     // If we instantiated a fill kernel here it would require
     // that T's default ctor is device-annotated which is too
     // strict of a requirement, so we copy a buffer instead.
-    void* tmp_buffer = ::operator new(sizeof(T) * len);
+    void* tmp_buffer = ::operator new(sizeof(T) * nelems);
     T* typed_buffer = static_cast<T*>(tmp_buffer);
-    for(IndexType i = 0; i < len; ++i)
+    for(IndexType i = 0; i < nelems; ++i)
     {
       // We use placement-new to avoid calling destructors in the delete
       // statement below.
       new(typed_buffer + i) T();
     }
-    axom::copy(data + begin, tmp_buffer, len * sizeof(T));
+    axom::copy(data + begin, tmp_buffer, nelems * sizeof(T));
     ::operator delete(tmp_buffer);
   }
-  else
+
+  /*!
+   * \overload
+   * \note Specialization for when T is not default-constructible.
+   */
+  template <bool HasCtor = DefaultCtor>
+  static typename std::enable_if<!HasCtor>::type init(T*, IndexType, IndexType)
+  { }
+
+  /*!
+   * \brief Fills an uninitialized array with objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index in the array to begin filling elements at
+   * \param [in] nelems the number of elements to fill the array with
+   * \param [in] value the value to set each array element to
+   * \note Specialization for when T is not trivially-copyable.
+   */
+  template <bool HostCopy = CopyOnHost>
+  static typename std::enable_if<HostCopy>::type fill(T* array,
+                                                      IndexType begin,
+                                                      IndexType nelems,
+                                                      const T& value)
   {
-    for(int ielem = begin; ielem < end; ++ielem)
+    void* buffer = ::operator new(sizeof(T) * nelems);
+    T* typed_buffer = static_cast<T*>(buffer);
+    // If we instantiated a fill kernel here it would require
+    // that T's copy ctor is device-annotated which is too
+    // strict of a requirement, so we copy a buffer instead.
+    std::uninitialized_fill_n(typed_buffer, nelems, value);
+    axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
+    ::operator delete(buffer);
+  }
+
+  /*!
+   * \overload
+   * \note Specialization for when T is trivially-copyable.
+   */
+  template <bool HostCopy = CopyOnHost>
+  static typename std::enable_if<!HostCopy>::type fill(T* array,
+                                                       IndexType begin,
+                                                       IndexType nelems,
+                                                       const T& value)
+  {
+    for_all<ExecSpace>(
+      nelems,
+      AXOM_LAMBDA(IndexType i) { array[i + begin] = value; });
+  }
+
+  /*!
+   * \brief Fills an uninitialized array with a range of objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index at which to begin placing elements
+   * \param [in] nelems the number of elements in the range to fill the array with
+   * \param [in] values the values to set each array element to
+   */
+  static void fill_range(T* array, IndexType begin, IndexType nelems, const T* values)
+  {
+    axom::copy(array + begin, values, sizeof(T) * nelems);
+  }
+
+  /*!
+   * \brief Constructs a new element in uninitialized memory.
+   *
+   * \param [inout] array the array to construct in
+   * \param [in] i the array index in which to construct the new object
+   * \param [in] args the arguments to forward to constructor of the element.
+   */
+  template <typename... Args>
+  static void emplace(T* array, IndexType i, Args&&... args)
+  {
+    // Similar to fill(), except we can allocate stack memory and placement-new
+    // the object with a move constructor.
+    std::aligned_storage<sizeof(T), alignof(T)> host_buf;
+    T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
+    axom::copy(array + i, host_obj, sizeof(T));
+  }
+
+  /*!
+   * \brief Calls the destructor on a range of typed elements in the array.
+   *
+   * \param [inout] array the array with elements to destroy
+   * \param [in] begin the start index of the range of elements to destroy
+   * \param [in] nelems the number of elements to destroy
+   */
+  static void destroy(T* array, IndexType begin, IndexType nelems)
+  {
+    if(DestroyOnHost)
     {
-      // NOTE: XL apparently will zero-initialize with (), but not with {}
-      new(data + ielem) T();
+      void* buffer = ::operator new(sizeof(T) * nelems);
+      T* typed_buffer = static_cast<T*>(buffer);
+      axom::copy(typed_buffer, array + begin, sizeof(T) * nelems);
+      for(int i = 0; i < nelems; ++i)
+      {
+        typed_buffer[i].~T();
+      }
+      axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
+      ::operator delete(buffer);
     }
   }
-}
 
-/*!
- * \brief Specialization for types T that aren't default-constructible
- */
-template <>
-template <typename T, typename ExecSpace>
-void OpInitBase<false>::init(T*, const IndexType, const IndexType)
-{ }
-
-/*!
- * \brief Fills an array with objects of type T. This specialization is used
- *  for trivially-copyable objects, as well as non-trivially-copyable objects
- *  when the array is host-accessible.
- *
- * \param [inout] array the array to fill
- * \param [in] n the number of elements to fill the array with
- * \param [in] value the value to set each array element to
- */
-template <>
-template <typename T, typename ExecSpace>
-void OpFillBase<false>::fill(T* array, IndexType n, const T& value)
-{
-  if(axom::execution_space<ExecSpace>::onDevice())
+  /*!
+   * \brief Moves a range of data in the array.
+   *
+   * \param [inout] array the array with elements to move
+   * \param [in] src_begin the start index of the source range
+   * \param [in] src_end the end index of the source range, exclusive
+   * \param [in] dst the destination index of the range of elements
+   */
+  static void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
-    for_all<ExecSpace>(
-      n,
-      AXOM_LAMBDA(IndexType i) { array[i] = value; });
+    // Since this memory is on the device-side, we copy it to a temporary buffer
+    // first.
+    IndexType nelems = src_end - src_begin;
+    T* tmp_buf =
+      axom::allocate<T>(nelems, axom::execution_space<ExecSpace>::allocatorID());
+    axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
+    axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
+    axom::deallocate(tmp_buf);
   }
-  else
-  {
-    std::uninitialized_fill_n(array, n, value);
-  }
-}
-
-/*!
- * \brief Fills an array with objects of type T. This specialization is used
- *  for device memory when the type is not trivially-copyable.
- *
- * \param [inout] array the array to fill
- * \param [in] n the number of elements to fill the array with
- * \param [in] value the value to set each array element to
- */
-template <>
-template <typename T, typename ExecSpace>
-void OpFillBase<true>::fill(T* array, IndexType n, const T& value)
-{
-  void* buffer = ::operator new(sizeof(T) * n);
-  T* typed_buffer = static_cast<T*>(buffer);
-  // If we instantiated a fill kernel here it would require
-  // that T's copy ctor is device-annotated which is too
-  // strict of a requirement, so we copy a buffer instead.
-  std::uninitialized_fill_n(typed_buffer, n, value);
-  axom::copy(array, typed_buffer, sizeof(T) * n);
-  ::operator delete(buffer);
-}
-
-/*!
- * \brief Calls the destructor on a range of typed elements in the array. This
- *  specialization is used for trivial objects, or non-trivially-destructible
- *  objects when the array is host-accessible.
- *
- * \param [inout] array the array with elements to destroy
- * \param [in] begin the start index of the range of elements to destroy
- * \param [in] value one past the end index of the range of elements to destroy
- */
-template <>
-template <typename T, typename ExecSpace>
-void OpDestroyBase<false>::destroy(T* array, IndexType begin, IndexType end)
-{
-  if(!std::is_trivial<T>::value)
-  {
-    for_all<ExecSpace>(
-      begin,
-      end,
-      AXOM_LAMBDA(IndexType i) { array[i].~T(); });
-  }
-}
-
-/*!
- * \brief Calls the destructor on a range of typed elements in the array. This
- *  specialization is used for non-trivially-destructible objects when the
- *  array is in device space.
- *
- * \param [inout] array the array with elements to destroy
- * \param [in] begin the start index of the range of elements to destroy
- * \param [in] value one past the end index of the range of elements to destroy
- */
-template <>
-template <typename T, typename ExecSpace>
-void OpDestroyBase<true>::destroy(T* array, IndexType begin, IndexType end)
-{
-  IndexType n = end - begin;
-  void* buffer = ::operator new(sizeof(T) * n);
-  T* typed_buffer = static_cast<T*>(buffer);
-  axom::copy(typed_buffer, array + begin, sizeof(T) * n);
-  for(int i = 0; i < n; ++i)
-  {
-    typed_buffer[i].~T();
-  }
-  axom::copy(array + begin, typed_buffer, sizeof(T) * n);
-  ::operator delete(buffer);
-}
-
-/*!
- * \brief Moves a range of data in the array. This is called on host-accessible
- *  memory.
- *
- * \param [inout] array the array with elements to move
- * \param [in] src_begin the start index of the source range
- * \param [in] src_end the end index of the source range, exclusive
- * \param [in] dst the destination index of the range of elements
- */
-template <>
-template <typename T>
-void OpMemmoveBase<false>::move(T* array,
-                                IndexType src_begin,
-                                IndexType src_end,
-                                IndexType dst,
-                                int allocId)
-{
-  AXOM_UNUSED_VAR(allocId);
-  std::memmove(array + dst, array + src_begin, (src_end - src_begin) * sizeof(T));
-}
-
-/*!
- * \brief Moves a range of data in the array. This is called on device-only
- *  memory.
- *
- * \param [inout] array the array with elements to move
- * \param [in] src_begin the start index of the source range
- * \param [in] src_end the end index of the source range, exclusive
- * \param [in] dst the destination index of the range of elements
- * \param [in] allocId the allocator ID of the array
- */
-template <>
-template <typename T>
-void OpMemmoveBase<true>::move(T* array,
-                               IndexType src_begin,
-                               IndexType src_end,
-                               IndexType dst,
-                               int allocId)
-{
-  // Since this memory is on the device-side, we copy it to a temporary buffer
-  // first.
-  IndexType nelems = src_end - src_begin;
-  T* tmp_buf = axom::allocate<T>(nelems, allocId);
-  axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
-  axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
-  axom::deallocate(tmp_buf);
-}
+};
+#endif
 
 template <typename T, MemorySpace SPACE>
 struct ArrayOps
@@ -760,45 +823,47 @@ struct ArrayOps
 private:
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
   constexpr static bool IsDevice = (SPACE == MemorySpace::Device);
-
-  using ExecSpace =
-    typename std::conditional<IsDevice, axom::CUDA_EXEC<256>, axom::SEQ_EXEC>::type;
-
 #else
   constexpr static bool IsDevice = false;
-
-  using ExecSpace = axom::SEQ_EXEC;
 #endif
 
-  using InitBase = OpInitBase<std::is_default_constructible<T>::value>;
-  // TODO: the below should be std::is_trivially_copyable and
-  // std::is_trivially_destructible; however these aren't available
-  // in gcc 4.9.3
-  using FillBase = OpFillBase<!std::is_trivial<T>::value && IsDevice>;
-  using DestroyBase = OpDestroyBase<!std::is_trivial<T>::value && IsDevice>;
-  using MoveBase = OpMemmoveBase<IsDevice>;
+  using Base = ArrayOpsBase<T, IsDevice>;
 
 public:
-  static void init(T* array, IndexType begin, IndexType end, int allocId)
+  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
   {
     AXOM_UNUSED_VAR(allocId);
-    InitBase::template init<T, ExecSpace>(array, begin, end);
+    Base::init(array, begin, nelems);
   }
 
-  static void fill(T* array, IndexType n, int allocId, const T& value)
+  static void fill(T* array,
+                   IndexType begin,
+                   IndexType nelems,
+                   int allocId,
+                   const T& value)
   {
     AXOM_UNUSED_VAR(allocId);
-    FillBase::template fill<T, ExecSpace>(array, n, value);
+    Base::fill(array, begin, nelems, value);
   }
 
-  static void destroy(T* array, IndexType begin, IndexType end, int allocId)
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         int allocId,
+                         const T* values)
   {
     AXOM_UNUSED_VAR(allocId);
-    if(!array || end <= begin)
+    Base::fill_range(array, begin, nelems, values);
+  }
+
+  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    if(nelems == 0)
     {
       return;
     }
-    DestroyBase::template destroy<T, ExecSpace>(array, begin, end);
+    Base::destroy(array, begin, nelems);
   }
 
   static void move(T* array,
@@ -807,11 +872,19 @@ public:
                    IndexType dst,
                    int allocId)
   {
+    AXOM_UNUSED_VAR(allocId);
     if(src_begin >= src_end)
     {
       return;
     }
-    MoveBase::template move<T>(array, src_begin, src_end, dst, allocId);
+    Base::move(array, src_begin, src_end, dst);
+  }
+
+  template <typename... Args>
+  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    Base::emplace(array, dst, std::forward<Args>(args)...);
   }
 };
 
@@ -819,47 +892,72 @@ template <typename T>
 struct ArrayOps<T, MemorySpace::Dynamic>
 {
 private:
-  using InitBase = OpInitBase<std::is_default_constructible<T>::value>;
-  using FillBase = OpFillBase<false>;
-  using DestroyBase = OpDestroyBase<false>;
-  using MoveBase = OpMemmoveBase<false>;
+  using Base = ArrayOpsBase<T, false>;
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+  using BaseDevice = ArrayOpsBase<T, true>;
+#endif
 
 public:
-  static void init(T* array, IndexType begin, IndexType end, int allocId)
+  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
   {
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::init(array, begin, end, allocId);
+      BaseDevice::init(array, begin, nelems);
       return;
     }
 #else
     AXOM_UNUSED_VAR(allocId);
 #endif
-    InitBase::template init<T, axom::SEQ_EXEC>(array, begin, end);
+    Base::init(array, begin, nelems);
   }
 
-  static void fill(T* array, IndexType n, int allocId, const T& value)
+  static void fill(T* array,
+                   IndexType begin,
+                   IndexType nelems,
+                   int allocId,
+                   const T& value)
   {
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::fill(array, n, allocId, value);
+      BaseDevice::fill(array, begin, nelems, value);
       return;
     }
 #else
     AXOM_UNUSED_VAR(allocId);
 #endif
-    FillBase::template fill<T, axom::SEQ_EXEC>(array, n, value);
+    Base::fill(array, begin, nelems, value);
   }
 
-  static void destroy(T* array, IndexType begin, IndexType end, int allocId)
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         int allocId,
+                         const T* values)
   {
-    if(!array || end <= begin)
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::fill_range(array, begin, nelems, values);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    AXOM_UNUSED_VAR(allocId);
+    Base::fill_range(array, begin, nelems, values);
+  }
+
+  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  {
+    if(nelems == 0)
     {
       return;
     }
@@ -868,13 +966,13 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::destroy(array, begin, end, allocId);
+      BaseDevice::destroy(array, begin, nelems);
       return;
     }
 #else
     AXOM_UNUSED_VAR(allocId);
 #endif
-    DestroyBase::template destroy<T, axom::SEQ_EXEC>(array, begin, end);
+    Base::destroy(array, begin, nelems);
   }
 
   static void move(T* array,
@@ -892,11 +990,30 @@ public:
 
     if(space == MemorySpace::Device)
     {
-      ArrayOps<T, MemorySpace::Device>::move(array, src_begin, src_end, dst, allocId);
+      BaseDevice::move(array, src_begin, src_end, dst);
       return;
     }
+#else
+    AXOM_UNUSED_VAR(allocId);
 #endif
-    MoveBase::template move<T>(array, src_begin, src_end, dst, allocId);
+    Base::move(array, src_begin, src_end, dst);
+  }
+
+  template <typename... Args>
+  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::emplace(array, dst, std::forward<Args>(args)...);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    Base::emplace(array, dst, std::forward<Args>(args)...);
   }
 };
 
