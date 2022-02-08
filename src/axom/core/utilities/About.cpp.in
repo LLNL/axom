@@ -18,6 +18,10 @@ namespace axom
 
 std::string gitSHA()
 {
+  // Note: This is generated at configure time so that
+  // when the sha changes it doesn't force a full rebuild
+  // of Axom. Do not add it to the config header.
+
   return "@AXOM_GIT_SHA@";
 }
 
@@ -31,7 +35,8 @@ void about(std::ostream &oss)
   oss << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
   oss << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
   oss << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
-  oss << "AXOM_VERSION_EXTRA: " << gitSHA() << std::endl;
+
+  oss << "AXOM_GIT_SHA: " << gitSHA() << std::endl;
 
   oss << "Compiler Settings: " << std::endl
       << "   C++ Standard: " << AXOM_CXX_STD << std::endl

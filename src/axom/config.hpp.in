@@ -21,9 +21,9 @@
 #define AXOM_VERSION_MINOR @AXOM_VERSION_MINOR@
 #define AXOM_VERSION_PATCH @AXOM_VERSION_PATCH@
 #define AXOM_VERSION_FULL  "@AXOM_VERSION_FULL@"
-/*NOTE: Do not add AXOM_VERSION_EXTRA here.  This will force
- * full rebuild on all local changes. It is added in axom::getVersion(),
- * axom::about(), and axom::gitSha().
+/*NOTE: Do not add AXOM_GIT_SHA here.  This will force
+ * full rebuild on all local changes. It is added in axom::getVersion()
+ * and axom::about(), as well as accessible from axom::gitSha().
  */
 
 
