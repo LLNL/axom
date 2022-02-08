@@ -24,5 +24,7 @@ int main()
 
    // Uses installed axom library
    axom::about();
+
+   return 0;
 }
 
