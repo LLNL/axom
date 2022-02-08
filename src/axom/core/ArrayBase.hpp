@@ -644,9 +644,15 @@ struct ArrayOpsBase<T, false>
    */
   static void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
   {
-    std::memmove(array + dst,
-                 array + src_begin,
-                 (src_end - src_begin) * sizeof(T));
+    if(src_begin < dst)
+    {
+      IndexType dst_last = dst + src_end - src_begin;
+      std::move_backward(array + src_begin, array + src_end, array + dst_last);
+    }
+    else if(src_begin > dst)
+    {
+      std::move(array + src_begin, array + src_end, array + dst);
+    }
   }
 };
 
