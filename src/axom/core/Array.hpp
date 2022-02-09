@@ -181,11 +181,8 @@ public:
 
   /*! 
    * \brief Copy constructor for an Array instance 
-   * 
-   * \param [in] allocator_id the ID of the allocator to use (optional)
    */
-  Array(const Array& other,
-        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+  Array(const Array& other);
 
   /*! 
    * \brief Move constructor for an Array instance 
@@ -775,23 +772,12 @@ Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-Array<T, DIM, SPACE>::Array(const Array& other, int allocator_id)
+Array<T, DIM, SPACE>::Array(const Array& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
-  , m_allocator_id(allocator_id)
+  , m_allocator_id(other.m_allocator_id)
   , m_default_construct(other.m_default_construct)
 {
-  // If a memory space has been explicitly set for the Array object, check that
-  // the space of the user-provided allocator matches the explicit space.
-  if(SPACE != MemorySpace::Dynamic &&
-     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
-  {
-#ifdef AXOM_DEBUG
-    std::cerr << "Incorrect allocator ID was provided for an Array object with "
-                 "explicit memory space - using default for space\n";
-#endif
-    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
-  }
   initialize(other.size(), other.capacity());
   axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
 }
