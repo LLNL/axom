@@ -26,6 +26,7 @@
 #include "axom/mint/mesh/Field.hpp"
 #include "axom/mint/mesh/FieldData.hpp"
 #include "axom/mint/mesh/FieldVariable.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
 
 // C/C++ includes
@@ -52,7 +53,18 @@ struct UcdMeshData
   /*!
    * \brief Returns the type of the cell at the given index.
    */
-  AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const;
+  AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const {
+    if(shape_type == mint::SINGLE_SHAPE)
+    {
+      SLIC_ASSERT(single_cell_type != mint::UNDEFINED_CELL);
+      return single_cell_type;
+    }
+    else
+    {
+      SLIC_ASSERT(cell_types != nullptr);
+      return cell_types[cellId];
+    }
+  }
 
   /*!
    * \brief Returns the node IDs of a given cell index.
@@ -62,8 +74,25 @@ struct UcdMeshData
    *
    * \return pointer to the node IDs in the underlying cell node array.
    */
-  AXOM_HOST_DEVICE const IndexType* getCellNodeIDs(IndexType cellId,
-                                                   int& nnodes) const;
+  AXOM_HOST_DEVICE const IndexType* getCellNodeIDs(IndexType cellId, int& nnodes) const
+  {
+    SLIC_ASSERT(cells_to_nodes != nullptr);
+    int cellBegin;
+    if(shape_type == mint::SINGLE_SHAPE)
+    {
+      SLIC_ASSERT(nodes_per_cell != -1);
+      cellBegin = cellId * nodes_per_cell;
+      nnodes = nodes_per_cell;
+    }
+    else
+    {
+      SLIC_ASSERT(cell_node_offsets != nullptr);
+      cellBegin = cell_node_offsets[cellId];
+      nnodes = cell_node_offsets[cellId + 1] - cell_node_offsets[cellId];
+    }
+    return cells_to_nodes + cellBegin;
+  }
+
 };
 
 /*!
