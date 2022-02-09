@@ -210,10 +210,7 @@ public:
   /// @{
 
   /*! 
-   * \brief Copy assignment operator for Array 
-   *
-   * \note The data will be allocated using the allocator ID of the
-   *  copy-assigned Array, not the argument Array.
+   * \brief Copy assignment operator for Array
    * 
    * \pre T must be TriviallyCopyable
    */
@@ -222,6 +219,7 @@ public:
     if(this != &other)
     {
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
+      m_allocator_id = other.m_allocator_id;
       m_resize_ratio = other.m_resize_ratio;
       m_default_construct = other.m_default_construct;
       initialize(other.size(), other.capacity());
