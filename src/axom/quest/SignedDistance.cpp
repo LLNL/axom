@@ -13,9 +13,6 @@ namespace quest
 {
 namespace detail
 {
-
-
-
 bool SD_GetUcdMeshData(const mint::Mesh* surfaceMesh, UcdMeshData& outSurfData)
 {
   using SingleShapeMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;

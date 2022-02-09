@@ -53,7 +53,8 @@ struct UcdMeshData
   /*!
    * \brief Returns the type of the cell at the given index.
    */
-  AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const {
+  AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const
+  {
     if(shape_type == mint::SINGLE_SHAPE)
     {
       SLIC_ASSERT(single_cell_type != mint::UNDEFINED_CELL);
@@ -74,7 +75,8 @@ struct UcdMeshData
    *
    * \return pointer to the node IDs in the underlying cell node array.
    */
-  AXOM_HOST_DEVICE const IndexType* getCellNodeIDs(IndexType cellId, int& nnodes) const
+  AXOM_HOST_DEVICE const IndexType* getCellNodeIDs(IndexType cellId,
+                                                   int& nnodes) const
   {
     SLIC_ASSERT(cells_to_nodes != nullptr);
     int cellBegin;
@@ -92,7 +94,6 @@ struct UcdMeshData
     }
     return cells_to_nodes + cellBegin;
   }
-
 };
 
 /*!
