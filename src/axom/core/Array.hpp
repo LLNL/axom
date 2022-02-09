@@ -810,6 +810,17 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other,
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
+  if(SPACE != MemorySpace::Dynamic &&
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
+  {
+#ifdef AXOM_DEBUG
+    std::cerr << "Incorrect allocator ID was provided for an Array object with "
+                 "explicit memory space - using default for space\n";
+#endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
   initialize(static_cast<const OtherArrayType&>(other).size(),
              static_cast<const OtherArrayType&>(other).size());
   // axom::copy is aware of pointers registered in Umpire, so this will handle
@@ -827,6 +838,17 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
+  if(SPACE != MemorySpace::Dynamic &&
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
+  {
+#ifdef AXOM_DEBUG
+    std::cerr << "Incorrect allocator ID was provided for an Array object with "
+                 "explicit memory space - using default for space\n";
+#endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
   initialize(static_cast<const OtherArrayType&>(other).size(),
              static_cast<const OtherArrayType&>(other).size());
   // axom::copy is aware of pointers registered in Umpire, so this will handle
