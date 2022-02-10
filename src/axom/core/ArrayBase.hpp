@@ -767,7 +767,7 @@ struct ArrayOpsBase<T, true>
   {
     // Similar to fill(), except we can allocate stack memory and placement-new
     // the object with a move constructor.
-    std::aligned_storage<sizeof(T), alignof(T)> host_buf;
+    alignas(T) unsigned char host_buf[sizeof(T)];
     T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
     axom::copy(array + i, host_obj, sizeof(T));
   }
