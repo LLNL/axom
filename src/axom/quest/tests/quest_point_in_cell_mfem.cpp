@@ -315,9 +315,15 @@ public:
     spatialIndex.locatePoints(pts, outCellIds.data(), outIsopar.data());
     // _quest_pic_locate_end
 
-    axom::Array<SpacePt> qptHost = pts;
-    axom::Array<IndexType> cellIdsHost = outCellIds;
-    axom::Array<SpacePt> isoparHost = outIsopar;
+#ifdef AXOM_USE_UMPIRE
+    axom::Array<SpacePt, 1, axom::MemorySpace::Host> qptHost = pts;
+    axom::Array<IndexType, 1, axom::MemorySpace::Host> cellIdsHost = outCellIds;
+    axom::Array<SpacePt, 1, axom::MemorySpace::Host> isoparHost = outIsopar;
+#else
+    auto qptHost = pts.view();
+    auto cellIdsHost = outCellIds.view();
+    auto isoparHost = outIsopar.view();
+#endif
     for(int i = 0; i < pts.size(); i++)
     {
       const SpacePt& queryPoint = qptHost[i];
