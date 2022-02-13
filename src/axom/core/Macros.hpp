@@ -79,10 +79,12 @@
  */
 #ifdef AXOM_USE_CUDA
   #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
+  #define AXOM_MUTABLE_LAMBDA [=] AXOM_HOST_DEVICE
   #define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
   #define AXOM_HOST_LAMBDA [=] AXOM_HOST
 #else
   #define AXOM_LAMBDA [=]
+  #define AXOM_MUTABLE_LAMBDA [&]
   #define AXOM_DEVICE_LAMBDA [=]
   #define AXOM_HOST_LAMBDA [=]
 #endif
