@@ -242,7 +242,6 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_insert)
       umpire::resource::MemoryResourceType::Device);
   }
 #endif
-  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   constexpr axom::IndexType N = 374;
   DynamicArray arr(N, N, kernelAllocID);
@@ -316,7 +315,6 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_insert)
       umpire::resource::MemoryResourceType::Device);
   }
 #endif
-  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   constexpr axom::IndexType N = 374;
   DynamicArray arr(N, N, kernelAllocID);
@@ -391,7 +389,6 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_set)
       umpire::resource::MemoryResourceType::Device);
   }
 #endif
-  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   constexpr axom::IndexType N = 374;
   DynamicArray arr(N, N, kernelAllocID);

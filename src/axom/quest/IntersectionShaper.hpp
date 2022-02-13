@@ -835,6 +835,8 @@ public:
   #endif  // AXOM_USE_CUDA
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     default:
+      AXOM_UNUSED_VAR(shapeDimension);
+      AXOM_UNUSED_VAR(shape);
       SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
       break;
     }
@@ -862,6 +864,7 @@ public:
   #endif  // AXOM_USE_CUDA
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     default:
+      AXOM_UNUSED_VAR(shape);
       SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
       break;
     }
