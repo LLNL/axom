@@ -168,9 +168,9 @@ void CandidateFinderBase<ExecSpace, FloatType>::initialize()
   // if the Triangle is degenerate.
   mint::for_all_cells<ExecSpace, mint::xargs::coords>(
     m_surfaceMesh,
-    [&](IndexType cellIdx,
-        numerics::Matrix<double>& coords,
-        const IndexType* nodeIds) {
+    AXOM_MUTABLE_LAMBDA(IndexType cellIdx,
+                        numerics::Matrix<double> & coords,
+                        const IndexType* nodeIds) {
       AXOM_UNUSED_VAR(nodeIds);
 
       detail::Triangle3 tri;
@@ -227,22 +227,24 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
     auto v_counts = counts.view();
 
     // Initialize triangle indices and valid candidates
-    for_all<ExecSpace>(ncells, [&](IndexType i) {
-      for(int j = 0; j < v_counts[i]; j++)
-      {
-        if(i < candidates[v_offsets[i] + j])
+    for_all<ExecSpace>(
+      ncells,
+      AXOM_MUTABLE_LAMBDA(IndexType i) {
+        for(int j = 0; j < v_counts[i]; j++)
         {
+          if(i < candidates[v_offsets[i] + j])
+          {
 #ifdef AXOM_USE_RAJA
-          auto idx =
-            RAJA::atomicAdd<atomic_pol>(&v_numValidCandidates[0], IndexType {1});
+            auto idx = RAJA::atomicAdd<atomic_pol>(&v_numValidCandidates[0],
+                                                   IndexType {1});
 #else
             auto idx = v_numValidCandidates[0]++;
 #endif
-          v_indices[idx] = i;
-          v_validCandidates[idx] = candidates[v_offsets[i] + j];
+            v_indices[idx] = i;
+            v_validCandidates[idx] = candidates[v_offsets[i] + j];
+          }
         }
-      }
-    });
+      });
 
     axom::copy(&numCandidates, numValidCandidates.data(), sizeof(IndexType));
   }
@@ -261,25 +263,27 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
     double intersectionThreshold = m_intersectionThreshold;
 
     // Perform triangle-triangle tests
-    for_all<ExecSpace>(numCandidates, [&](IndexType i) {
-      int index = v_indices[i];
-      int candidate = v_validCandidates[i];
-      if(primal::intersect(v_tris[index],
-                           v_tris[candidate],
-                           false,
-                           intersectionThreshold))
-      {
+    for_all<ExecSpace>(
+      numCandidates,
+      AXOM_MUTABLE_LAMBDA(IndexType i) {
+        int index = v_indices[i];
+        int candidate = v_validCandidates[i];
+        if(primal::intersect(v_tris[index],
+                             v_tris[candidate],
+                             false,
+                             intersectionThreshold))
+        {
 #ifdef AXOM_USE_RAJA
-        auto idx =
-          RAJA::atomicAdd<atomic_pol>(&v_numIsectPairs[0], IndexType {1});
+          auto idx =
+            RAJA::atomicAdd<atomic_pol>(&v_numIsectPairs[0], IndexType {1});
 #else
           auto idx = v_numIsectPairs[0];
           v_numIsectPairs[0]++;
 #endif
-        v_firstIsectPair[idx] = index;
-        v_secondIsectPair[idx] = candidate;
-      }
-    });
+          v_firstIsectPair[idx] = index;
+          v_secondIsectPair[idx] = candidate;
+        }
+      });
     axom::copy(&isectCounter, numIsectPairs.data(), sizeof(IndexType));
   }
 
