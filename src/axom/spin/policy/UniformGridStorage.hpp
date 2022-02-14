@@ -14,6 +14,11 @@ namespace spin
 {
 namespace policy
 {
+template <typename T>
+struct DynamicGridStorage;
+
+template <typename T>
+struct DynamicGridView;
 
 /*!
  * \brief Policy for storing uniform grid as an array of arrays. Supports
@@ -22,6 +27,9 @@ namespace policy
 template <typename T>
 struct DynamicGridStorage
 {
+  using ViewType = DynamicGridView<T>;
+  using ConstViewType = DynamicGridView<const T>;
+
   using BinType = axom::ArrayView<T>;
   using ConstBinType = axom::ArrayView<const T>;
 
@@ -79,6 +87,54 @@ struct DynamicGridStorage
   }
 
   axom::Array<axom::Array<T>> m_bins;
+};
+
+template <typename T>
+struct DynamicGridView
+{
+  using BaseT = typename std::remove_const<T>::type;
+  using BinType = axom::ArrayView<T>;
+  using ConstBinType = axom::ArrayView<T>;
+
+  using BinStoreType = typename std::conditional<std::is_const<T>::value,
+                                                 const axom::Array<T>,
+                                                 axom::Array<T>>::type;
+
+  DynamicGridView(DynamicGridStorage<BaseT>& in) : m_bins(in.m_bins) { }
+
+  DynamicGridView(const DynamicGridStorage<BaseT>& in) : m_bins(in.m_bins) { }
+
+  AXOM_HOST_DEVICE IndexType getNumBins() const { return m_bins.size(); }
+
+  AXOM_HOST_DEVICE bool isValidIndex(IndexType index) const
+  {
+    return index >= 0 && index < getNumBins();
+  }
+  // getters
+  AXOM_HOST_DEVICE BinType getBinContents(IndexType gridIdx)
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    return m_bins[gridIdx];
+  }
+  AXOM_HOST_DEVICE ConstBinType getBinContents(IndexType gridIdx) const
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    return m_bins[gridIdx];
+  }
+
+  T& get(IndexType gridIdx, IndexType binIdx)
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    return m_bins[gridIdx][binIdx];
+  }
+
+  const T& get(IndexType gridIdx, IndexType binIdx) const
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    return m_bins[gridIdx][binIdx];
+  }
+
+  axom::ArrayView<BinStoreType> m_bins;
 };
 
 }  // namespace policy

@@ -67,6 +67,8 @@ public:
   using BinType = typename StoragePolicy::BinType;
   using ConstBinType = typename StoragePolicy::ConstBinType;
 
+  struct QueryObject;
+
 private:
   /*! \brief The type used for mapping points in space to grid cells */
   using LatticeType = RectangularLattice<NDIMS, double, int>;
@@ -167,6 +169,8 @@ public:
    */
   void insert(const BoxType& BB, const T& obj);
 
+  QueryObject getQueryObject() const;
+
   /*!
    * \brief A special value indicating any location not in the UniformGrid.
    *
@@ -226,6 +230,126 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(UniformGrid);
 
 };  //end class
+
+template <typename T, int NDIMS, typename StoragePolicy>
+struct UniformGrid<T, NDIMS, StoragePolicy>::QueryObject
+  : StoragePolicy::ConstViewType
+{
+public:
+  /*! \brief The type used for specifying spatial extent of the contents */
+  using BoxType = primal::BoundingBox<double, NDIMS>;
+
+  /*! \brief The type used to query the index */
+  using PointType = primal::Point<double, NDIMS>;
+
+  using ConstBinType =
+    typename UniformGrid<T, NDIMS, StoragePolicy>::ConstBinType;
+
+  using LatticeType = RectangularLattice<NDIMS, double, int>;
+  using GridCell = typename LatticeType::GridCell;
+
+  QueryObject(BoxType bbox,
+              LatticeType lattice,
+              const primal::NumericArray<int, NDIMS>& resolution,
+              const primal::NumericArray<int, NDIMS>& strides,
+              const UniformGrid<T, NDIMS, StoragePolicy>& from)
+    : StoragePolicy::ConstViewType(from)
+    , m_boundingBox(bbox)
+    , m_lattice(lattice)
+    , m_resolution(resolution)
+    , m_strides(strides)
+  { }
+
+  /*!
+   * \brief Returns the contents of the bin indicated by index.
+   *
+   * It is an error if index is invalid.
+   * \param [in] index The index of the bin to retrieve.
+   */
+  using StoragePolicy::ConstViewType::getBinContents;
+
+  AXOM_HOST_DEVICE ConstBinType getCandidates(const PointType& pt) const
+  {
+    if(!m_boundingBox.contains(pt))
+    {
+      return {};
+    }
+
+    // Find pt's integer grid cell within the uniform grid
+    GridCell cell = UniformGrid::getClampedGridCell(m_lattice, m_resolution, pt);
+
+    // compute the linear index (row-major) of the cell
+    IndexType res = cell[0];
+    for(int i = 1; i < NDIMS; ++i)
+    {
+      res += m_strides[i] * cell[i];
+    }
+
+    return getBinContents(res);
+  }
+
+  AXOM_HOST_DEVICE IndexType countCandidates(const BoxType& bbox) const
+  {
+    IndexType sumOfBinSizes = 0;
+    auto lambdaCount = [&sumOfBinSizes, this](IndexType ibin) {
+      sumOfBinSizes += getBinContents(ibin);
+    };
+    loopOverBboxes(bbox, lambdaCount);
+    return sumOfBinSizes;
+  }
+
+  template <typename Func>
+  AXOM_HOST_DEVICE void visitCandidates(const BoxType& bbox, Func&& evalFn) const
+  {
+    auto lambdaCandidates = [evalFn, this](IndexType ibin) {
+      auto bin = getBinContents(ibin);
+      for(IndexType ielem = 0; ielem < bin.size(); ielem++)
+      {
+        evalFn(bin[ielem]);
+      }
+    };
+    loopOverBboxes(bbox, lambdaCandidates);
+  }
+
+private:
+  template <typename Func>
+  AXOM_HOST_DEVICE void loopOverBboxes(const BoxType& bbox, Func&& func) const
+  {
+    if(!m_boundingBox.intersectsWith(bbox))
+    {
+      return;
+    }
+
+    const GridCell lowerCell =
+      getClampedGridCell(m_lattice, m_resolution, bbox.getMin());
+    const GridCell upperCell =
+      getClampedGridCell(m_lattice, m_resolution, bbox.getMax());
+
+    // Recall that NDIMS is 2 or 3
+    const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
+    const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
+    const int kStride = (NDIMS == 2) ? 1 : m_strides[2];
+
+    for(int k = kLower; k <= kUpper; ++k)
+    {
+      const int kOffset = k * kStride;
+      for(int j = lowerCell[1]; j <= upperCell[1]; ++j)
+      {
+        const int jOffset = j * m_strides[1] + kOffset;
+        for(int i = lowerCell[0]; i <= upperCell[0]; ++i)
+        {
+          func(i + jOffset);
+        }
+      }
+    }
+  }
+
+  BoxType m_boundingBox;
+  LatticeType m_lattice;
+
+  primal::NumericArray<int, NDIMS> m_resolution;
+  primal::NumericArray<int, NDIMS> m_strides;
+};
 
 }  //end namespace spin
 }  //end namespace axom
