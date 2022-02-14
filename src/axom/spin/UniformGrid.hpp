@@ -182,7 +182,6 @@ public:
 
 private:
   /*!
-   *****************************************************************************
    * \brief Returns the closest UniformGrid cell to the query point pt.
    *
    * When pt lies within an integer valued grid cell, that cell is returned.
@@ -193,9 +192,11 @@ private:
    *
    * \param [in] pt The query point
    * \return The integer valued grid cell closest to pt
-   *****************************************************************************
    */
-  GridCell getClampedGridCell(const PointType& pt) const;
+  static AXOM_HOST_DEVICE GridCell
+  getClampedGridCell(const LatticeType& lattice,
+                     const primal::NumericArray<int, NDIMS>& resolution,
+                     const PointType& pt);
 
   /*! \brief Adds an object obj to the bin at index index */
   void addObj(const T& obj, int index);
@@ -218,7 +219,7 @@ private:
   BoxType m_boundingBox;
   LatticeType m_lattice;
 
-  int m_resolution[NDIMS];
+  primal::NumericArray<int, NDIMS> m_resolution;
   primal::NumericArray<int, NDIMS> m_strides;
 
   DISABLE_COPY_AND_ASSIGNMENT(UniformGrid);
@@ -265,9 +266,7 @@ UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid(const double* lower_bound,
   initialize(res);
 
   // set up the lattice for point conversions
-  m_lattice = rectangular_lattice_from_bounding_box(
-    m_boundingBox,
-    primal::NumericArray<int, NDIMS>(m_resolution));
+  m_lattice = rectangular_lattice_from_bounding_box(m_boundingBox, m_resolution);
 }
 
 template <typename T, int NDIMS, typename StoragePolicy>
@@ -281,9 +280,7 @@ UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid(const BoxType& bbox,
   initialize(res);
 
   // set up the bounding box and lattice for point conversions
-  m_lattice = rectangular_lattice_from_bounding_box(
-    m_boundingBox,
-    primal::NumericArray<int, NDIMS>(m_resolution));
+  m_lattice = rectangular_lattice_from_bounding_box(m_boundingBox, m_resolution);
 }
 
 //------------------------------------------------------------------------------
@@ -344,8 +341,10 @@ void UniformGrid<T, NDIMS, StoragePolicy>::initialize(
     bboxes.size(),
     AXOM_LAMBDA(IndexType idx) {
       const BoxType bbox = bboxes[idx];
-      const GridCell lowerCell = getClampedGridCell(bbox.getMin());
-      const GridCell upperCell = getClampedGridCell(bbox.getMax());
+      const GridCell lowerCell =
+        getClampedGridCell(m_lattice, m_resolution, bbox.getMin());
+      const GridCell upperCell =
+        getClampedGridCell(m_lattice, m_resolution, bbox.getMax());
       const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
       const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
       const int kStride = (NDIMS == 2) ? 1 : strides[2];
@@ -377,8 +376,10 @@ void UniformGrid<T, NDIMS, StoragePolicy>::initialize(
     bboxes.size(),
     AXOM_LAMBDA(IndexType idx) {
       const BoxType bbox = bboxes[idx];
-      const GridCell lowerCell = getClampedGridCell(bbox.getMin());
-      const GridCell upperCell = getClampedGridCell(bbox.getMax());
+      const GridCell lowerCell =
+        getClampedGridCell(m_lattice, m_resolution, bbox.getMin());
+      const GridCell upperCell =
+        getClampedGridCell(m_lattice, m_resolution, bbox.getMax());
       const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
       const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
       const int kStride = (NDIMS == 2) ? 1 : strides[2];
@@ -413,7 +414,7 @@ int UniformGrid<T, NDIMS, StoragePolicy>::getBinIndex(const PointType& pt) const
   }
 
   // Find pt's integer grid cell within the uniform grid
-  GridCell cell = getClampedGridCell(pt);
+  GridCell cell = getClampedGridCell(m_lattice, m_resolution, pt);
 
   // compute the linear index (row-major) of the cell
   int res = cell[0];
@@ -449,8 +450,10 @@ const std::vector<int> UniformGrid<T, NDIMS, StoragePolicy>::getBinsForBbox(
     return retval;
   }
 
-  const GridCell lowerCell = getClampedGridCell(BB.getMin());
-  const GridCell upperCell = getClampedGridCell(BB.getMax());
+  const GridCell lowerCell =
+    getClampedGridCell(m_lattice, m_resolution, BB.getMin());
+  const GridCell upperCell =
+    getClampedGridCell(m_lattice, m_resolution, BB.getMax());
 
   // Recall that NDIMS is 2 or 3
   const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
@@ -499,18 +502,28 @@ void UniformGrid<T, NDIMS, StoragePolicy>::insert(const BoxType& BB, const T& ob
     addObj(obj, bidxs[i]);
   }
 }
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS, typename StoragePolicy>
+typename UniformGrid<T, NDIMS, StoragePolicy>::QueryObject
+UniformGrid<T, NDIMS, StoragePolicy>::getQueryObject() const
+{
+  return QueryObject {m_boundingBox, m_lattice, m_resolution, m_strides, *this};
+}
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename StoragePolicy>
 typename UniformGrid<T, NDIMS, StoragePolicy>::GridCell
-UniformGrid<T, NDIMS, StoragePolicy>::getClampedGridCell(const PointType& pt) const
+UniformGrid<T, NDIMS, StoragePolicy>::getClampedGridCell(
+  const LatticeType& lattice,
+  const primal::NumericArray<int, NDIMS>& resolution,
+  const PointType& pt)
 {
-  GridCell cell = m_lattice.gridCell(pt);
+  GridCell cell = lattice.gridCell(pt);
 
   // clamp the grid coordinates to lie in a cell of the grid
   for(int i = 0; i < NDIMS; ++i)
   {
-    cell[i] = axom::utilities::clampVal(cell[i], 0, m_resolution[i] - 1);
+    cell[i] = axom::utilities::clampVal(cell[i], 0, resolution[i] - 1);
   }
 
   return cell;
