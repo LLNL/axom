@@ -23,6 +23,15 @@
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/ImplicitGrid.hpp"
 
+// HACK: Workaround for known bug in gcc@8.1 which requires
+//       some lambdas in this file to have by-reference lambda capture
+#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && \
+  __GNUC__ == 8 && __GNUC_MINOR__ == 1
+  #define MESH_TESTER_MUTABLE_LAMBDA [&]
+#else
+  #define MESH_TESTER_MUTABLE_LAMBDA AXOM_LAMBDA
+#endif
+
 namespace axom
 {
 namespace quest
@@ -168,9 +177,9 @@ void CandidateFinderBase<ExecSpace, FloatType>::initialize()
   // if the Triangle is degenerate.
   mint::for_all_cells<ExecSpace, mint::xargs::coords>(
     m_surfaceMesh,
-    AXOM_MUTABLE_LAMBDA(IndexType cellIdx,
-                        numerics::Matrix<double> & coords,
-                        const IndexType* nodeIds) {
+    MESH_TESTER_MUTABLE_LAMBDA(IndexType cellIdx,
+                               numerics::Matrix<double> & coords,
+                               const IndexType* nodeIds) {
       AXOM_UNUSED_VAR(nodeIds);
 
       detail::Triangle3 tri;
@@ -229,7 +238,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
     // Initialize triangle indices and valid candidates
     for_all<ExecSpace>(
       ncells,
-      AXOM_MUTABLE_LAMBDA(IndexType i) {
+      MESH_TESTER_MUTABLE_LAMBDA(IndexType i) {
         for(int j = 0; j < v_counts[i]; j++)
         {
           if(i < candidates[v_offsets[i] + j])
@@ -265,7 +274,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
     // Perform triangle-triangle tests
     for_all<ExecSpace>(
       numCandidates,
-      AXOM_MUTABLE_LAMBDA(IndexType i) {
+      MESH_TESTER_MUTABLE_LAMBDA(IndexType i) {
         int index = v_indices[i];
         int candidate = v_validCandidates[i];
         if(primal::intersect(v_tris[index],
@@ -449,4 +458,7 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
 }  // namespace detail
 }  // namespace quest
 }  // namespace axom
-#endif
+
+#undef MESH_TESTER_MUTABLE_LAMBDA
+
+#endif  // AXOM_QUEST_MESH_TESTER_DETAIL_HPP_
