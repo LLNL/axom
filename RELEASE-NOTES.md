@@ -89,6 +89,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed computation of signs in `quest::SignedDistance` when closest point is along an edge
   with a sharp dihedral angle and the adjacent triangles have significantly different areas
 - Fixed bug in axom::Path that ignored the leading delimiter character if one was present
+- Fixed gcc compiler errors in configurations without RAJA or Umpire
 
 ## [Version 0.6.1] - Release date 2021-11-17
 

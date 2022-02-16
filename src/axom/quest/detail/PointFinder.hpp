@@ -154,8 +154,10 @@ public:
                     SpacePoint* outIsoparametricCoords) const
   {
     using IndexArray = axom::Array<IndexType>;
+
+#ifdef AXOM_USE_RAJA
     using IndexView = axom::ArrayView<IndexType>;
-#ifdef AXOM_USE_UMPIRE
+  #ifdef AXOM_USE_UMPIRE
     using HostIndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointArray = axom::Array<SpacePoint, 1, axom::MemorySpace::Host>;
 
@@ -163,14 +165,15 @@ public:
     using HostPointView = axom::ArrayView<SpacePoint, 1, axom::MemorySpace::Host>;
     using ConstHostPointView =
       axom::ArrayView<const SpacePoint, 1, axom::MemorySpace::Host>;
-#else
+  #else
     using HostIndexArray = IndexArray;
     using HostPointArray = axom::Array<SpacePoint>;
 
     using HostIndexView = IndexView;
     using HostPointView = axom::Array<SpacePoint>;
     using ConstHostPointView = axom::ArrayView<const SpacePoint>;
-#endif  // AXOM_USE_UMPIRE
+  #endif  // AXOM_USE_UMPIRE
+#endif    // AXOM_USE_RAJA
 
     auto gridQuery = m_grid.getQueryObject();
 
@@ -309,7 +312,7 @@ public:
                  outIsoparHost.data(),
                  outIsoparHost.size() * sizeof(SpacePoint));
     }
-#else
+#else   // AXOM_USE_RAJA
     for(int i = 0; i < npts; i++)
     {
       SpacePoint pt = pts[i];
@@ -333,7 +336,7 @@ public:
         outIsoparametricCoords[i] = isopar;
       }
     }
-#endif
+#endif  // AXOM_USE_RAJA
   }
 
   /*! Returns a const reference to the given cells's bounding box */

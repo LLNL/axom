@@ -285,7 +285,7 @@ TEST(quest_signed_distance, sphere_vec_test)
 }
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_OPENMP)
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 TEST(quest_signed_distance, sphere_vec_omp_test)
 {
   run_vectorized_sphere_test<axom::OMP_EXEC>();
@@ -293,7 +293,7 @@ TEST(quest_signed_distance, sphere_vec_omp_test)
 #endif  // AXOM_USE_OPENMP
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 AXOM_CUDA_TEST(quest_signed_distance, sphere_vec_cuda_test)
 {
   constexpr int BLOCK_SIZE = 256;
@@ -423,7 +423,7 @@ AXOM_CUDA_TEST(quest_signed_distance, sphere_vec_cuda_custom_alloc)
 
   SLIC_INFO("Done.");
 }
-#endif  // AXOM_USE_CUDA
+#endif  // defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])

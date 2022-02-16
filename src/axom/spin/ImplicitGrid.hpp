@@ -286,7 +286,9 @@ public:
       maxBlkBins[i] = m_maxBlockBin[i].data();
     }
 
+#ifdef AXOM_USE_RAJA
     using AtomicPol = typename axom::execution_space<ExecSpace>::atomic_policy;
+#endif
 
     for_all<ExecSpace>(
       nelems,
