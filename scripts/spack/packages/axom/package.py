@@ -105,8 +105,7 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("lua", when="+lua")
 
     depends_on("scr", when="+scr")
-    depends_on("kvtree@main", when="+scr")
-    depends_on("dtcmp", when="+scr")
+    depends_on("scr~fortran", when="+scr~fortran")
 
     with when('+umpire'):
         depends_on('umpire@6.0.0:', when='@0.6.0:')
@@ -354,12 +353,6 @@ class Axom(CachedCMakePackage, CudaPackage):
         if '+scr' in spec:
             dep_dir = get_spec_path(spec, 'scr', path_replacements)
             entries.append(cmake_cache_path('SCR_DIR', dep_dir))
-
-            # scr's dependencies
-            for dep in ('kvtree', 'dtcmp'):
-                if spec.satisfies('^{0}'.format(dep)):
-                    dep_dir = get_spec_path(spec, dep, path_replacements)
-                    entries.append(cmake_cache_path('%s_DIR' % dep.upper(), dep_dir))
         else:
             entries.append('# scr not built\n')
 
