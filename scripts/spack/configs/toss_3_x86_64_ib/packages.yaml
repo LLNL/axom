@@ -185,6 +185,7 @@ packages:
     - spec: slurm@20
       prefix: /usr
   libyogrt:
+    buildable: false
     externals:
     - spec: libyogrt@1.24 scheduler=lsf
       prefix: /usr
@@ -210,7 +211,9 @@ packages:
     variants: ~shared~examples~exercises
   scr:
     version: [3.0rc2]
-    variants: ~shared~examples~tests
+    # NOTE: Do not put ~shared here because spack's concretizer will favor
+    # version 2.0.0. For reasons.
+    variants: ~examples~tests
   umpire:
     variants: ~shared~examples
 
