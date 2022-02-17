@@ -14,12 +14,12 @@
     "__comment__":"##############################################################################",
 
     "toss_3_x86_64_ib":
-    [ "clang@9.0.0~cpp14+devtools+mfem+c2c",
-      "clang@10.0.0~cpp14+devtools+mfem+c2c",
-      "gcc@8.1.0~cpp14+devtools+mfem+c2c",
-      "gcc@8.1_no_fortran~cpp14~fortran+devtools~mfem+c2c",
-      "intel@18.0.2~cpp14~openmp+devtools+mfem+c2c",
-      "intel@19.0.4~cpp14~openmp+devtools+mfem+c2c" ],
+    [ "clang@9.0.0~cpp14+devtools+mfem+c2c+scr",
+      "clang@10.0.0~cpp14+devtools+mfem+c2c+scr",
+      "gcc@8.1.0~cpp14+devtools+mfem+c2c+scr",
+      "gcc@8.1_no_fortran~cpp14~fortran+devtools~mfem+c2c+scr",
+      "intel@18.0.2~cpp14~openmp+devtools+mfem+c2c+scr",
+      "intel@19.0.4~cpp14~openmp+devtools+mfem+c2c+scr" ],
 
     "blueos_3_ppc64le_ib_p9":
     [ "clang@9.0.0_upstream_xlf~cpp14~openmp+devtools+mfem+c2c",
