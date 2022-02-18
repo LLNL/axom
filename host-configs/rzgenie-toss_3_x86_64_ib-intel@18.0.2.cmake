@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_10_26_21_05_39/spack/lib/spack/env/intel/icc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_17_14_30_09/spack/lib/spack/env/intel/icc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_10_26_21_05_39/spack/lib/spack/env/intel/icpc" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_17_14_30_09/spack/lib/spack/env/intel/icpc" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_10_26_21_05_39/spack/lib/spack/env/intel/ifort" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_17_14_30_09/spack/lib/spack/env/intel/ifort" CACHE PATH "")
 
 else()
 
@@ -63,7 +63,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_10_26_21_05_39/intel-18.0.2" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_17_14_30_09/intel-18.0.2" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
 
@@ -79,7 +79,7 @@ set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
 
 set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0" CACHE PATH "")
 
-# scr not built
+set(SCR_DIR "${TPL_ROOT}/scr-3.0rc2" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # Devtools
