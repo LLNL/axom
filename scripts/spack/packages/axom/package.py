@@ -342,13 +342,26 @@ class Axom(CachedCMakePackage, CudaPackage):
         entries.append(cmake_cache_path("CONDUIT_DIR", conduit_dir))
 
         # optional tpls
-        for dep in ('c2c', 'mfem', 'hdf5', 'lua', 'raja', 'scr', 'umpire'):
+        for dep in ('c2c', 'mfem', 'hdf5', 'lua', 'raja', 'umpire'):
             if '+%s' % dep in spec:
                 dep_dir = get_spec_path(spec, dep, path_replacements)
                 entries.append(cmake_cache_path('%s_DIR' % dep.upper(),
                                                 dep_dir))
             else:
                 entries.append('# %s not built\n' % dep.upper())
+
+        # SCR does not export it's targets so we need to pull in its dependencies
+        if '+scr' in spec:
+            dep_dir = get_spec_path(spec, 'scr', path_replacements)
+            entries.append(cmake_cache_path('SCR_DIR', dep_dir))
+
+            # scr's dependencies
+            for dep in ('kvtree', 'dtcmp'):
+                if spec.satisfies('^{0}'.format(dep)):
+                    dep_dir = get_spec_path(spec, dep, path_replacements)
+                    entries.append(cmake_cache_path('%s_DIR' % dep.upper(), dep_dir))
+        else:
+            entries.append('# scr not built\n')
 
         ##################################
         # Devtools
