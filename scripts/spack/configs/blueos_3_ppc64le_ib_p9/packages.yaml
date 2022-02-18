@@ -36,27 +36,27 @@ packages:
     externals:
     - spec: spectrum-mpi@release%gcc@7.3.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
-    - spec: spectrum-mpi@release%clang@9.0.0_upstream_xlf
+    - spec: spectrum-mpi@release%clang@9.0.0
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
-    - spec: spectrum-mpi@release%clang@8.0.1_nvcc_xlf
+    - spec: spectrum-mpi@release%clang@8.0.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/
-    - spec: spectrum-mpi@release%xl@16.1.1_coral
+    - spec: spectrum-mpi@release%xl@16.1.1.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
-    - spec: spectrum-mpi@release%xl@16.1.1_nvcc
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
+    - spec: spectrum-mpi@release%xl@16.1.1.2
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.12.23/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
   netlib-lapack:
     buildable: false
     externals:
-    - spec: netlib-lapack@3.8.0 %clang@8.0.1_nvcc_xlf
+    - spec: netlib-lapack@3.8.0 %clang@8.0.1
       prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %clang@9.0.0_upstream_xlf
+    - spec: netlib-lapack@3.8.0 %clang@9.0.0
       prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %xl@16.1.1_coral
+    - spec: netlib-lapack@3.8.0 %xl@16.1.1.1
       prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %xl@16.1.1_nvcc
+    - spec: netlib-lapack@3.8.0 %xl@16.1.1.2
       prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
 
 # System level packages to not build
