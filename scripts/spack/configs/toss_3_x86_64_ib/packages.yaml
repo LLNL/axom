@@ -198,6 +198,7 @@ packages:
       prefix: /usr
 
 # Globally lock version of third party libraries
+# TODO: These are preferences not hard requirements. We should move away from them here.
   conduit:
     version: [0.7.2axom]
     variants: ~shared~test
@@ -209,11 +210,6 @@ packages:
     version: [4.2.0]
   raja:
     variants: ~shared~examples~exercises
-  scr:
-    version: [3.0rc2]
-    # NOTE: Do not put ~shared here because spack's concretizer will favor
-    # version 2.0.0. For reasons.
-    variants: ~examples~tests
   umpire:
     variants: ~shared~examples
 
