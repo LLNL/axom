@@ -11,19 +11,19 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_01_28_08_04_25/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_02_18_12_47_37/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_01_28_08_04_25/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_02_18_12_47_37/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_01_28_08_04_25/spack/lib/spack/env/clang/flang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_02_18_12_47_37/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdclang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdclang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/hipcc" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/hipcc" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdflang" CACHE PATH "")
 
 endif()
 
@@ -35,11 +35,11 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 # MPI
 #------------------------------------------------------------------------------
 
-set(MPI_C_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-4.5.2/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-4.5.2/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.9-rocmcc-4.3.1/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-4.5.2/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC_EXECUTABLE "/usr/bin/srun" CACHE PATH "")
 
@@ -60,11 +60,13 @@ set(ENABLE_MPI ON CACHE BOOL "")
 
 set(ENABLE_HIP ON CACHE BOOL "")
 
-set(HIP_ROOT_DIR "/opt/rocm-4.3.1/hip" CACHE STRING "")
+set(HIP_ROOT_DIR "/opt/rocm-4.5.2/hip" CACHE STRING "")
+
+set(HIP_CLANG_PATH "/opt/rocm-4.5.2/hip/../llvm/bin" CACHE STRING "")
 
 set(CMAKE_HIP_ARCHITECTURES "gfx908" CACHE STRING "")
 
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-4.3.1/hip/../llvm/lib -L/opt/rocm-4.3.1/hip/lib -Wl,-rpath,/opt/rocm-4.3.1/hip/../llvm/lib:/opt/rocm-4.3.1/hip/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64 -L/opt/rocm-4.3.1/hip/../lib64 -Wl,-rpath,/opt/rocm-4.3.1/hip/../lib64 -lhsakmt -lamd_comgr" CACHE STRING "")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-4.5.2/hip/../llvm/lib -L/opt/rocm-4.5.2/hip/lib -Wl,-rpath,/opt/rocm-4.5.2/hip/../llvm/lib:/opt/rocm-4.5.2/hip/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64 -L/opt/rocm-4.5.2/hip/../lib64 -Wl,-rpath,/opt/rocm-4.5.2/hip/../lib64 -lhsakmt -lamd_comgr" CACHE STRING "")
 
 #------------------------------------------------
 # Hardware Specifics
@@ -80,7 +82,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_01_28_08_04_25/clang-13.0.0_hip_amdflang" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray_temp_dir/toss_4_x86_64_ib_cray/2022_02_18_12_47_37/clang-13.0.0_hip_amdflang" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
 

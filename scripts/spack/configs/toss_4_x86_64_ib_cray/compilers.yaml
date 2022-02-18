@@ -7,10 +7,10 @@ compilers:
     modules: []
     operating_system: rhel8
     paths:
-      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/amdclang
-      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/hipcc
-      f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/crayftn
-      fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1-cce-13.0.0/bin/crayftn
+      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2-cce-13.0.1/bin/amdclang
+      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2-cce-13.0.1/bin/hipcc
+      f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2-cce-13.0.1/bin/crayftn
+      fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2-cce-13.0.1/bin/crayftn
     spec: clang@13.0.0_hip_crayftn
     target: x86_64
 - compiler:
@@ -21,9 +21,9 @@ compilers:
     modules: []
     operating_system: rhel8
     paths:
-      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdclang
-      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/hipcc
-      f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
-      fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.3.1/bin/amdflang
+      cc:  /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdclang
+      cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/hipcc
+      f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdflang
+      fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdflang
     spec: clang@13.0.0_hip_amdflang
     target: x86_64

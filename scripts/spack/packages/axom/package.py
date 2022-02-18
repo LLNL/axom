@@ -276,6 +276,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             entries.append(cmake_cache_string("HIP_ROOT_DIR",
                                         hip_root))
+            entries.append(cmake_cache_string("HIP_CLANG_PATH",
+                                        rocm_root + '/llvm/bin'))
+
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':
                 arch_str = ",".join(archs)
@@ -298,7 +301,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                             "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
                             cray_exclude_path))
 
-                    hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.0/cce/x86_64/lib:/opt/cray/pe/cce/13.0.0/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
+                    hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.1/cce/x86_64/lib:/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
 
                 # Flags for amdflang
                 if "amdflang" in self.compiler.fc:

@@ -18,6 +18,9 @@ class CrayMpich(Package):
 
     maintainers = ['haampie']
 
+    # AXOM EDIT START
+    version('8.1.13')
+    # AXOM EDIT END
     version('8.1.9')
     version('8.1.7')
     version('8.1.0')
