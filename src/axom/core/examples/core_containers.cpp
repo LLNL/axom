@@ -275,7 +275,7 @@ void demoArrayDevice()
 
   // We can also use a dynamic array, if we specify an allocator ID for host memory in the copy constructor.
   int host_alloc_id = axom::getDefaultAllocatorID();
-  axom::Array<int> C_dynamic (C_device, host_alloc_id);
+  axom::Array<int> C_dynamic(C_device, host_alloc_id);
   std::cout << "Array C_dynamic = " << C_dynamic << std::endl;
   // _cuda_array_call_end
 
