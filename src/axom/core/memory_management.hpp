@@ -308,6 +308,7 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
     return MemorySpace::Dynamic;
   }
 #else
+  AXOM_UNUSED_VAR(allocatorId);
   return MemorySpace::Dynamic;
 #endif
 }
