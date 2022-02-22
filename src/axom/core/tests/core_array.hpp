@@ -781,7 +781,17 @@ void check_device(Array<T, DIM, SPACE>& v)
   // Then assign to it via a raw device pointer
   assign_raw<<<1, 1>>>(v.data(), size);
 
-  // Check the contents by assigning to an explicitly Host array
+  // Check the contents of the array by assigning to a Dynamic array
+  // The Umpire allocator should be Host, so we can access it from the CPU
+  int host_alloc_id = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
+  Array<T, 1> check_raw_array_dynamic(v, host_alloc_id);
+  EXPECT_EQ(check_raw_array_dynamic.size(), size);
+  for(int i = 0; i < check_raw_array_dynamic.size(); i++)
+  {
+    EXPECT_EQ(check_raw_array_dynamic[i], i);
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
   Array<T, 1, axom::MemorySpace::Host> check_raw_array_host = v;
   EXPECT_EQ(check_raw_array_host.size(), size);
   for(int i = 0; i < check_raw_array_host.size(); i++)
@@ -793,7 +803,16 @@ void check_device(Array<T, DIM, SPACE>& v)
   ArrayView<T, DIM, SPACE> view(v);
   assign_view<<<1, 1>>>(view);
 
-  // Check the contents by assigning to an explicitly Host array
+  // Check the contents of the array by assigning to a Dynamic array
+  // The Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 1> check_view_array_dynamic(view, host_alloc_id);
+  EXPECT_EQ(check_view_array_dynamic.size(), size);
+  for(int i = 0; i < check_view_array_dynamic.size(); i++)
+  {
+    EXPECT_EQ(check_view_array_dynamic[i], i * 2);
+  }
+
+  // Then check the contents by assigning to an explicitly Host array
   Array<T, 1, axom::MemorySpace::Host> check_view_array_host = view;
   EXPECT_EQ(check_view_array_host.size(), size);
   for(int i = 0; i < check_view_array_host.size(); i++)
