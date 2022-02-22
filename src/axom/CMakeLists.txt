@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -53,7 +53,7 @@ install(EXPORT axom-targets DESTINATION lib/cmake)
 # Generate export symbols
 #------------------------------------------------------------------------------
 include(GenerateExportHeader)
-set(_export_header ${CMAKE_BINARY_DIR}/axom_export_symbols)
+set(_export_header ${PROJECT_BINARY_DIR}/axom_export_symbols)
 generate_export_header(axom  EXPORT_FILE_NAME ${_export_header})
 
 #------------------------------------------------------------------------------

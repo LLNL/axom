@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+ * Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
  * other Axom Project Developers. See the top-level LICENSE file for details.
  *
  * SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,7 +21,10 @@
 #define AXOM_VERSION_MINOR @AXOM_VERSION_MINOR@
 #define AXOM_VERSION_PATCH @AXOM_VERSION_PATCH@
 #define AXOM_VERSION_FULL  "@AXOM_VERSION_FULL@"
-#cmakedefine AXOM_VERSION_EXTRA "@AXOM_VERSION_EXTRA@"
+/*NOTE: Do not add AXOM_GIT_SHA here.  This will force
+ * full rebuild on all local changes. It is added in axom::getVersion()
+ * and axom::about(), as well as accessible from axom::gitSha().
+ */
 
 
 /*

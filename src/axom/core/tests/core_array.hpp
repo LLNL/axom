@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -119,8 +119,8 @@ void check_storage(Array<T>& v)
  * \brief Check that the fill method is working properly.
  * \param [in] v the Array to check.
  */
-template <typename T>
-void check_fill(Array<T>& v)
+template <typename T, int DIM, MemorySpace SPACE>
+void check_fill(Array<T, DIM, SPACE>& v)
 {
   constexpr T MAGIC_NUM_0 = 55;
   constexpr T MAGIC_NUM_1 = 6834;
@@ -138,10 +138,13 @@ void check_fill(Array<T>& v)
   EXPECT_EQ(ratio, v.getResizeRatio());
   EXPECT_EQ(data_ptr, v.data());
 
+  // To check entries, we copy data to a dynamic array
+  Array<T, DIM> v_host = v;
+
   /* Check that the entries are all MAGIC_NUM_0. */
   for(IndexType i = 0; i < size; ++i)
   {
-    EXPECT_EQ(v[i], MAGIC_NUM_0);
+    EXPECT_EQ(v_host[i], MAGIC_NUM_0);
   }
 
   /* Fill the Array with MAGIC_NUM_1. */
@@ -153,10 +156,12 @@ void check_fill(Array<T>& v)
   EXPECT_EQ(ratio, v.getResizeRatio());
   EXPECT_EQ(data_ptr, v.data());
 
+  v_host = v;
+
   /* Check that the entries are all MAGIC_NUM_1. */
   for(IndexType i = 0; i < size; ++i)
   {
-    EXPECT_EQ(v[i], MAGIC_NUM_1);
+    EXPECT_EQ(v_host[i], MAGIC_NUM_1);
   }
 }
 
@@ -948,6 +953,22 @@ TEST(core_array, checkFill)
 }
 
 //------------------------------------------------------------------------------
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+TEST(core_array, checkFillDevice)
+{
+  for(IndexType capacity = 2; capacity < 512; capacity *= 2)
+  {
+    IndexType size = capacity / 2;
+    Array<int, 1, MemorySpace::Device> v_int(size, capacity);
+    internal::check_fill(v_int);
+
+    Array<double, 1, MemorySpace::Device> v_double(size, capacity);
+    internal::check_fill(v_double);
+  }
+}
+#endif
+
+//------------------------------------------------------------------------------
 TEST(core_array, checkSet)
 {
   for(IndexType size = 2; size < 512; size *= 2)
@@ -1246,6 +1267,64 @@ TEST(core_array, checkIterator)
   v_int.clear();
   EXPECT_EQ(v_int.size(), 0);
 }
+
+//------------------------------------------------------------------------------
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+void checkIteratorDeviceImpl()
+{
+  using DeviceEx = axom::CUDA_EXEC<256>;
+  constexpr int SIZE = 1000;
+  axom::Array<int, 1, axom::MemorySpace::Host> v_int_host(SIZE);
+  axom::Array<int, 1, axom::MemorySpace::Device> v_int(SIZE);
+
+  auto v_int_view = v_int.view();
+
+  /* Push 0...999 elements */
+  for(int i = 0; i < SIZE; i++)
+  {
+    v_int_host[i] = i;
+  }
+  v_int = v_int_host;
+
+  EXPECT_EQ(*v_int_host.begin(), 0);
+  EXPECT_EQ(*(v_int_host.end() - 1), SIZE - 1);
+  EXPECT_EQ(v_int.size(), SIZE);
+
+  /* Erase nothing */
+  auto ret1 = v_int.erase(v_int.begin() + SIZE / 2, v_int.begin() + SIZE / 2);
+
+  EXPECT_EQ(ret1, v_int.begin() + SIZE / 2);
+  EXPECT_EQ(v_int.size(), SIZE);
+
+  /* Erase half the elements */
+  auto ret2 = v_int.erase(v_int.begin(), v_int.begin() + SIZE / 2);
+
+  EXPECT_EQ(ret2, v_int.begin());
+  EXPECT_EQ(v_int.size(), SIZE / 2);
+  v_int_host = v_int;
+  EXPECT_EQ(*v_int_host.begin(), SIZE / 2);
+  EXPECT_EQ(*(v_int_host.end() - 1), SIZE - 1);
+
+  /* Erase first, last elements */
+  auto ret3 = v_int.erase(v_int.begin());
+
+  EXPECT_EQ(ret3, v_int.begin());
+  v_int_host = v_int;
+  EXPECT_EQ(*v_int_host.begin(), SIZE / 2 + 1);
+
+  auto ret4 = v_int.erase(v_int.end() - 1);
+
+  EXPECT_EQ(ret4, v_int.end());
+  v_int_host = v_int;
+  EXPECT_EQ(*(v_int_host.end() - 1), SIZE - 2);
+
+  /* Clear the rest of the array */
+  v_int.clear();
+  EXPECT_EQ(v_int.size(), 0);
+}
+
+TEST(core_array, checkIteratorDevice) { checkIteratorDeviceImpl(); }
+#endif
 
 //------------------------------------------------------------------------------
 TEST(core_array, check_move_copy)
@@ -1615,6 +1694,11 @@ TEST(core_array, checkDevice2D)
 struct HasDefault
 {
   int member = 255;
+
+  bool operator==(const HasDefault& other) const
+  {
+    return (member == other.member);
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -1662,7 +1746,18 @@ TEST(core_array, checkDefaultInitializationDevice)
   constexpr int MAGIC_INT = 255;
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
-    // Allocate an explicitly Device array
+    // Allocate an explicitly Device array of ints (zero-initialized)
+    Array<int, 1, axom::MemorySpace::Device> v_int(capacity);
+
+    // Then copy it to the host
+    Array<int, 1, axom::MemorySpace::Host> v_int_host(v_int);
+
+    for(const auto ele : v_int_host)
+    {
+      EXPECT_EQ(ele, 0);
+    }
+
+    // Allocate an explicitly Device array of a default-constructible type
     Array<HasDefault, 1, axom::MemorySpace::Device> v_has_default_device(capacity);
 
     // Then copy it to the host
@@ -1678,16 +1773,110 @@ TEST(core_array, checkDefaultInitializationDevice)
 }
 
 //------------------------------------------------------------------------------
+
+/**
+ * A struct that fails if the default constructor is called.
+ * It is in support of the checkUninitialized test for axom::Array
+ */
+struct FailsOnConstruction
+{
+  int member = 255;
+
+  FailsOnConstruction() { EXPECT_TRUE(false); }
+
+  bool operator==(const FailsOnConstruction& other) const
+  {
+    return member == other.member;
+  }
+};
+
 TEST(core_array, checkUninitialized)
 {
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
-    // There's not really a way of checking if memory has *not* been initialized
-    // But we can at least make sure the following statements compile
-    Array<HasDefault> v_has_default(ArrayOptions::Uninitialized {}, capacity);
-    Array<HasDefault, 2> v_has_default_2d(ArrayOptions::Uninitialized {},
-                                          capacity,
-                                          capacity);
+    // Test uninitialized functionality with 1D Array using FailsOnConstruction type
+    {
+      Array<FailsOnConstruction> arr(ArrayOptions::Uninitialized {}, capacity);
+
+      EXPECT_LE(capacity, arr.capacity());
+      EXPECT_EQ(capacity, arr.size());
+
+      Array<FailsOnConstruction> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<FailsOnConstruction> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
+
+    // Test default 1D Array with trivially copyable HasDefault type
+    // Note: this test will not fail if HasDefault is copied, but will at least
+    // check that the code compiles and that we can copy and assign these arrays
+    {
+      Array<HasDefault> arr(ArrayOptions::Uninitialized {}, capacity);
+
+      EXPECT_LE(capacity, arr.capacity());
+      EXPECT_EQ(capacity, arr.size());
+
+      Array<HasDefault> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<HasDefault> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
+
+    // Tests uninitialized with 2D Array
+    {
+      Array<FailsOnConstruction, 2> arr(ArrayOptions::Uninitialized {},
+                                        capacity,
+                                        capacity);
+
+      EXPECT_LE(capacity * capacity, arr.capacity());
+      EXPECT_EQ(capacity * capacity, arr.size());
+
+      Array<FailsOnConstruction, 2> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<FailsOnConstruction, 2> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
+
+    // Tests uninitialized with 1D Array with user-supplied allocator
+    {
+      Array<FailsOnConstruction> arr(ArrayOptions::Uninitialized {},
+                                     capacity,
+                                     capacity,
+                                     axom::getDefaultAllocatorID());
+
+      EXPECT_EQ(capacity, arr.capacity());
+      EXPECT_EQ(capacity, arr.size());
+      EXPECT_EQ(axom::getDefaultAllocatorID(), arr.getAllocatorID());
+
+      Array<FailsOnConstruction> copied(arr);
+      EXPECT_LE(arr.capacity(), copied.capacity());
+      EXPECT_EQ(arr.size(), copied.size());
+      EXPECT_EQ(arr, copied);
+
+      Array<FailsOnConstruction> assigned;
+      assigned = arr;
+      EXPECT_LE(arr.capacity(), assigned.capacity());
+      EXPECT_EQ(arr.size(), assigned.size());
+      EXPECT_EQ(arr, assigned);
+    }
   }
 }
 

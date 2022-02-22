@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,8 +23,7 @@
 #include "mint_test_utilities.hpp"             /* for create_mesh */
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"    /* for slic macros */
-#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
+#include "axom/slic.hpp"
 
 // C/C++ includes
 #include <cmath>   /* for std::exp */
@@ -36,7 +35,7 @@
 #include <set>     /* for std::set */
 
 // gtest includes
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"
 
 #ifndef DELETE_VTK_FILES
   #define DELETE_VTK_FILES 1
@@ -937,13 +936,12 @@ TEST(mint_util_write_vtk, ParticleMesh)
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-  SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
+
   result = RUN_ALL_TESTS();
   return result;
 }

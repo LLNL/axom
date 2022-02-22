@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,6 +72,12 @@ TEST_P(SlamBitSet, checkInitEmpty)
   for(int i = 0; i < NBITS; ++i)
   {
     EXPECT_FALSE(bitset.test(i));
+  }
+
+  // It is always ok to test bits outside the size
+  {
+    EXPECT_FALSE(bitset.test(-1));
+    EXPECT_FALSE(bitset.test(bitset.size() + 1));
   }
 }
 
@@ -461,7 +467,6 @@ int main(int argc, char* argv[])
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 #endif
 
-  // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();

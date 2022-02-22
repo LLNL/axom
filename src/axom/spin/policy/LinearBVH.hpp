@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -121,13 +121,13 @@ public:
    * \return total_count the total count of candidates for all query primitives.
    */
   template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
-  void findCandidatesImpl(Predicate&& predicate,
-                          IndexType* offsets,
-                          IndexType* counts,
-                          IndexType*& candidates,
-                          IndexType numObjs,
-                          PrimitiveIndexable objs,
-                          int allocatorID) const;
+  IndexType findCandidatesImpl(Predicate&& predicate,
+                               IndexType* offsets,
+                               IndexType* counts,
+                               IndexType*& candidates,
+                               IndexType numObjs,
+                               PrimitiveIndexable objs,
+                               int allocatorID) const;
 
   void writeVtkFileImpl(const std::string& fileName) const;
 
@@ -253,7 +253,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
 template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
-void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
+IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   Predicate&& predicate,
   IndexType* offsets,
   IndexType* counts,
@@ -319,12 +319,11 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                       RAJA::make_span(offsets, numObjs),
                                       RAJA::operators::plus<IndexType> {}););
 
-  int total_count = total_count_reduce.get();
+  IndexType total_candidates = total_count_reduce.get();
 
   // STEP 3: allocate memory for all candidates
   AXOM_PERF_MARK_SECTION(
     "allocate_candidates",
-    IndexType total_candidates = static_cast<IndexType>(total_count);
     candidates = axom::allocate<IndexType>(total_candidates, allocatorID););
 
   // STEP 4: fill in candidates for each point
@@ -350,6 +349,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                                 leafAction,
                                                 noTraversePref);
                            }););
+  return total_candidates;
 #else  // CPU-only and no RAJA: do single traversal
 
   std::vector<int> search_candidates;
@@ -387,6 +387,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
 
   // STEP 3: copy candiates to destination array
   std::copy(search_candidates.begin(), search_candidates.end(), candidates);
+  return search_candidates.size();
 #endif
 }
 

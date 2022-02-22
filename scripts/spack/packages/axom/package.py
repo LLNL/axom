@@ -36,9 +36,12 @@ class Axom(CachedCMakePackage, CudaPackage):
 
     homepage = "https://github.com/LLNL/axom"
     git      = "https://github.com/LLNL/axom.git"
+    tags     = ['radiuss']
 
     version('main', branch='main', submodules=True)
     version('develop', branch='develop', submodules=True)
+    version('0.6.1', tag='v0.6.1', submodules=True)
+    version('0.6.0', tag='v0.6.0', submodules=True)
     version('0.5.0', tag='v0.5.0', submodules=True)
     version('0.4.0', tag='v0.4.0', submodules=True)
     version('0.3.3', tag='v0.3.3', submodules=True)
@@ -47,6 +50,8 @@ class Axom(CachedCMakePackage, CudaPackage):
     version('0.3.0', tag='v0.3.0', submodules=True)
     version('0.2.9', tag='v0.2.9', submodules=True)
 
+    patch('scr_examples_gtest.patch', when='@0.6.0:0.6.1')
+
     root_cmakelists_dir = 'src'
 
     # -----------------------------------------------------------------------
@@ -54,8 +59,6 @@ class Axom(CachedCMakePackage, CudaPackage):
     # -----------------------------------------------------------------------
     variant('shared',   default=True,
             description='Enable build of shared libraries')
-    variant('debug',    default=False,
-            description='Build debug instead of optimized version')
 
     variant('examples', default=True, description='Build examples')
     variant('tools',    default=True, description='Build tools')
@@ -105,13 +108,18 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("kvtree@main", when="+scr")
     depends_on("dtcmp", when="+scr")
 
-    depends_on("raja~openmp", when="+raja~openmp")
-    depends_on("raja+openmp", when="+raja+openmp")
-    depends_on("raja+cuda", when="+raja+cuda")
+    with when('+umpire'):
+        depends_on('umpire@6.0.0:', when='@0.6.0:')
+        depends_on('umpire@5:5.0.1', when='@:0.5.0')
+        depends_on('umpire +openmp', when='+openmp')
+        depends_on('umpire +cuda', when='+cuda')
 
-    depends_on("umpire~openmp", when="+umpire~openmp")
-    depends_on("umpire+openmp", when="+umpire+openmp")
-    depends_on("umpire+cuda", when="+umpire+cuda")
+    with when('+raja'):
+        depends_on('raja@0.14.0:', when='@0.6.0:')
+        depends_on('raja@:0.13.0', when='@:0.5.0')
+        depends_on("raja~openmp", when="~openmp")
+        depends_on("raja+openmp", when="+openmp")
+        depends_on("raja+cuda", when="+cuda")
 
     for sm_ in CudaPackage.cuda_arch_values:
         depends_on('raja cuda_arch={0}'.format(sm_),

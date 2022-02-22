@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,6 +40,22 @@ if(MFEM_FOUND)
         FOLDER      axom/quest/examples
         )
 endif()
+
+blt_add_executable(
+    NAME        quest_delaunay_triangulation_ex
+    SOURCES     delaunay_triangulation.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${quest_example_depends}
+    FOLDER      axom/quest/examples
+    )
+
+foreach(d 2 3)
+    axom_add_test(
+        NAME quest_delaunay_${d}_test
+        COMMAND quest_delaunay_triangulation_ex -d ${d} -o delaunay_mesh_${d}d -n 100
+        )
+endforeach()
+
 
 ## Quest interface examples
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,8 +7,7 @@
 
 #include "axom/spin/RectangularLattice.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/SimpleLogger.hpp"
+#include "axom/slic.hpp"
 
 // Define some helpful typedefs for 1D rectangular lattices
 namespace lattice_1D
@@ -679,12 +678,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  using axom::slic::SimpleLogger;
-  SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   std::srand(105);
 

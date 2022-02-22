@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,6 +9,15 @@
 #------------------------------------------------------------------------------
 # Specify all headers/sources
 #------------------------------------------------------------------------------
+
+# This file contains metadata that often changes (ie. git sha).
+# Hide these changes in the source file so we do not force
+# a full rebuild.
+axom_configure_file(
+    utilities/About.cpp.in
+    ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
+)
+
 set(core_headers
 
     ## utilities
@@ -68,7 +77,7 @@ set(core_sources
     utilities/StringUtilities.cpp
     utilities/System.cpp
     utilities/Utilities.cpp
-    utilities/About.cpp
+    ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
 
     utilities/nvtx/interface.cpp
     utilities/nvtx/Range.cpp
@@ -111,7 +120,7 @@ blt_add_library( NAME        core
 # Basic includes that should be inherited to all Axom targets
 target_include_directories(core PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
     )
 
@@ -119,7 +128,6 @@ target_include_directories(core PUBLIC
 if(AXOM_DEBUG_DEFINE_STRING)
   blt_add_target_definitions(TO core SCOPE PUBLIC TARGET_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")
 endif()
-
 
 axom_write_unified_header( NAME    core
                            HEADERS ${core_headers}

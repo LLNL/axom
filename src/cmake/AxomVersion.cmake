@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,7 +65,7 @@ if (Git_FOUND)
       message( FATAL_ERROR "blt_git_hashcode failed!" )
     endif()
 
-    set(AXOM_VERSION_EXTRA ${sha1})
+    set(AXOM_GIT_SHA ${sha1})
 
   endif()
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,6 @@ namespace mint = axom::mint;
 namespace primal = axom::primal;
 namespace quest = axom::quest;
 namespace sidre = axom::sidre;
-namespace slic = axom::slic;
 namespace utilities = axom::utilities;
 
 using SpaceBoundingBox = primal::BoundingBox<double, DIM>;
@@ -789,7 +788,7 @@ int main(int argc, char** argv)
   // initialize the problem
   MPI_Init(&argc, &argv);
 
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
   sidre::DataStore ds;
 
   // parse the command arguments

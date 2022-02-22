@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,21 +71,20 @@
 
 // _using_start
 // "using" directives to simplify code
-using namespace axom;
-using namespace primal;
+namespace primal = axom::primal;
 
 // almost all our examples are in 3D
 constexpr int in3D = 3;
 
 // primitives represented by doubles in 3D
-typedef Point<double, in3D> PointType;
-typedef Triangle<double, in3D> TriangleType;
-typedef BoundingBox<double, in3D> BoundingBoxType;
-typedef OrientedBoundingBox<double, in3D> OrientedBoundingBoxType;
-typedef Polygon<double, in3D> PolygonType;
-typedef Ray<double, in3D> RayType;
-typedef Segment<double, in3D> SegmentType;
-typedef Vector<double, in3D> VectorType;
+using PointType = primal::Point<double, in3D>;
+using TriangleType = primal::Triangle<double, in3D>;
+using BoundingBoxType = primal::BoundingBox<double, in3D>;
+using OrientedBoundingBoxType = primal::OrientedBoundingBox<double, in3D>;
+using PolygonType = primal::Polygon<double, in3D>;
+using RayType = primal::Ray<double, in3D>;
+using SegmentType = primal::Segment<double, in3D>;
+using VectorType = primal::Vector<double, in3D>;
 // _using_end
 
 std::string asyheader =
@@ -104,12 +103,12 @@ std::string asyheader =
 
 std::string printPoint(PointType pt)
 {
-  return fmt::format("({},{},{})", pt[0], pt[1], pt[2]);
+  return axom::fmt::format("({},{},{})", pt[0], pt[1], pt[2]);
 }
 
 std::string printPoint(double* pt)
 {
-  return fmt::format("({},{},{})", pt[0], pt[1], pt[2]);
+  return axom::fmt::format("({},{},{})", pt[0], pt[1], pt[2]);
 }
 
 void writeToFile(std::string fname, std::string contents)
@@ -128,12 +127,11 @@ void writeToFile(std::string fname, std::string contents)
 PolygonType showClip()
 {
   // _clip_start
-  TriangleType tri(PointType::make_point(1.2, 0, 0),
-                   PointType::make_point(0, 1.8, 0),
-                   PointType::make_point(0, 0, 1.4));
+  TriangleType tri(PointType {1.2, 0, 0},
+                   PointType {0, 1.8, 0},
+                   PointType {0, 0, 1.4});
 
-  BoundingBoxType bbox(PointType::make_point(0, -0.5, 0),
-                       PointType::make_point(1, 1, 1));
+  BoundingBoxType bbox(PointType {0, -0.5, 0}, PointType {1, 1, 1});
 
   PolygonType poly = clip(tri, bbox);
   // _clip_end
@@ -156,7 +154,7 @@ PolygonType showClip()
   }
   polygon += "cycle";
 
-  std::string contents = fmt::format(
+  std::string contents = axom::fmt::format(
     "{0}"
     "// axes\n"
     "draw(O -- 1.7X, arrow=Arrow3(DefaultHead2), "
@@ -180,7 +178,7 @@ PolygonType showClip()
 
     "// bounding box\n"
     "draw(box({5}, {6}));\n",
-    fmt::format(asyheader, fname, ifname),
+    axom::fmt::format(asyheader, fname, ifname),
     polygon,
     printPoint(tri[0]),
     printPoint(tri[1]),
@@ -196,12 +194,10 @@ PolygonType showClip()
 void showClosestPoint()
 {
   // _closest_point_start
-  TriangleType tri(PointType::make_point(1, 0, 0),
-                   PointType::make_point(0, 1, 0),
-                   PointType::make_point(0, 0, 1));
+  TriangleType tri(PointType {1, 0, 0}, PointType {0, 1, 0}, PointType {0, 0, 1});
 
-  PointType pto = PointType::make_point(0, 0, 0);
-  PointType pta = PointType::make_point(-1, 2, 1);
+  PointType pto = PointType {0, 0, 0};
+  PointType pta = PointType {-1, 2, 1};
 
   // Query point o lies at the origin.  Its closest point lies in the
   // interior of tri.
@@ -221,14 +217,14 @@ void showClosestPoint()
 
   // Now write out an Asymptote file showing what we did.
   // Projected points
-  PointType ppta = PointType::make_point(pta[0], pta[1], 0.);
-  PointType pcpta = PointType::make_point(cpta[0], cpta[1], 0.);
-  PointType pcpto = PointType::make_point(cpto[0], cpto[1], 0.);
+  PointType ppta = PointType {pta[0], pta[1], 0.};
+  PointType pcpta = PointType {cpta[0], cpta[1], 0.};
+  PointType pcpto = PointType {cpto[0], cpto[1], 0.};
   std::string basefname = "showClosestPoint";
   std::string fname = basefname + ".asy";
   std::string ifname = basefname + ".png";
 
-  std::string contents = fmt::format(
+  std::string contents = axom::fmt::format(
     "{0}"
     "// axes\n"
     "draw(-4.5X -- 1.7X, arrow=Arrow3(DefaultHead2), "
@@ -263,7 +259,7 @@ void showClosestPoint()
     "dot(cpta, yellow);\n"
     "label(\"$a'$\", cpta, align=NE);\n"
     "draw(cpta--pcpta, dotted);\n",
-    fmt::format(asyheader, fname, ifname),
+    axom::fmt::format(asyheader, fname, ifname),
     printPoint(tri[0]),
     printPoint(tri[1]),
     printPoint(tri[2]),
@@ -283,13 +279,12 @@ void showBoundingBoxes()
   // _bbox_start
   // An array of Points to include in the bounding boxes
   const int nbr_points = 6;
-  PointType data[nbr_points];
-  data[0] = PointType::make_point(0.6, 1.2, 1.0);
-  data[1] = PointType::make_point(1.3, 1.6, 1.8);
-  data[2] = PointType::make_point(2.9, 2.4, 2.3);
-  data[3] = PointType::make_point(3.2, 3.5, 3.0);
-  data[4] = PointType::make_point(3.6, 3.2, 4.0);
-  data[5] = PointType::make_point(4.3, 4.3, 4.5);
+  PointType data[nbr_points] = {PointType {0.6, 1.2, 1.0},
+                                PointType {1.3, 1.6, 1.8},
+                                PointType {2.9, 2.4, 2.3},
+                                PointType {3.2, 3.5, 3.0},
+                                PointType {3.6, 3.2, 4.0},
+                                PointType {4.3, 4.3, 4.5}};
 
   // A BoundingBox constructor takes an array of Point objects
   BoundingBoxType bbox(data, nbr_points);
@@ -310,21 +305,21 @@ void showBoundingBoxes()
   std::string pointses, dotses;
   for(int i = 0; i < nbr_points; ++i)
   {
-    pointses += fmt::format("points[{0}] = {1};\n", i, printPoint(data[i]));
-    dotses += fmt::format("dot(points[{0}], blue);\n", i);
+    pointses += axom::fmt::format("points[{0}] = {1};\n", i, printPoint(data[i]));
+    dotses += axom::fmt::format("dot(points[{0}], blue);\n", i);
   }
 
   std::vector<PointType> obpts = obbox.vertices();
   std::string obboxpts;
   for(int i = 0; i < 8; ++i)
   {
-    obboxpts += fmt::format("obpts[{0}] = {1};\n", i, printPoint(obpts[i]));
+    obboxpts += axom::fmt::format("obpts[{0}] = {1};\n", i, printPoint(obpts[i]));
   }
 
   std::string basefname = "showBoundingBoxes";
   std::string fname = basefname + ".asy";
   std::string ifname = basefname + ".png";
-  std::string contents = fmt::format(
+  std::string contents = axom::fmt::format(
     "{0}"
     "// projection\n"
     "currentprojection = perspective((4, -1.8, 3), (0.07, 0.07, 1));\n\n"
@@ -361,7 +356,7 @@ void showBoundingBoxes()
     "     ^^ obpts[0]--obpts[4] ^^ obpts[1]--obpts[5]\n"
     "     ^^ obpts[2]--obpts[6] ^^ obpts[3]--obpts[7];\n"
     "draw(obboxpath, orange);\n\n",
-    fmt::format(asyheader, fname, ifname),
+    axom::fmt::format(asyheader, fname, ifname),
     pointses,
     printPoint(bbox.getMin()),
     printPoint(bbox.getMax()),
@@ -377,13 +372,13 @@ void showIntersect()
 
   // _intersect_start
   // Two triangles
-  TriangleType tri1(PointType::make_point(1.2, 0, 0),
-                    PointType::make_point(0, 1.8, 0),
-                    PointType::make_point(0, 0, 1.4));
+  TriangleType tri1(PointType {1.2, 0, 0},
+                    PointType {0, 1.8, 0},
+                    PointType {0, 0, 1.4});
 
-  TriangleType tri2(PointType::make_point(0, 0, 0.5),
-                    PointType::make_point(0.8, 0.1, 1.2),
-                    PointType::make_point(0.8, 1.4, 1.2));
+  TriangleType tri2(PointType {0, 0, 0.5},
+                    PointType {0.8, 0.1, 1.2},
+                    PointType {0.8, 1.4, 1.2});
 
   // tri1 and tri2 should intersect
   if(intersect(tri1, tri2))
@@ -396,8 +391,7 @@ void showIntersect()
   }
 
   // A vertical ray constructed from origin and point
-  RayType ray(SegmentType(PointType::make_point(0.4, 0.4, 0),
-                          PointType::make_point(0.4, 0.4, 1)));
+  RayType ray(SegmentType(PointType {0.4, 0.4, 0}, PointType {0.4, 0.4, 1}));
 
   // t will hold the intersection point between ray and tri1,
   // as parameterized along ray.
@@ -426,8 +420,7 @@ void showIntersect()
   }
 
   // A bounding box
-  BoundingBoxType bbox(PointType::make_point(0.1, -0.23, 0.1),
-                       PointType::make_point(0.8, 0.5, 0.4));
+  BoundingBoxType bbox(PointType {0.1, -0.23, 0.1}, PointType {0.8, 0.5, 0.4});
 
   // The bounding box should intersect tri1 and ray but not tr2.
   PointType bbtr1;
@@ -474,7 +467,7 @@ void showIntersect()
   }
   polygon += "cycle";
 
-  std::string contents = fmt::format(
+  std::string contents = axom::fmt::format(
     "{0}"
     "// axes\n"
     "draw(O -- 1.7X, arrow=Arrow3(DefaultHead2), "
@@ -504,7 +497,7 @@ void showIntersect()
     "  draw(tri1);\n  draw(tri2, blue);\n"
     "draw({15}--{16}, deepblue);\n"
     "draw({17}--{18}, dotted);\n",
-    fmt::format(asyheader, fname, ifname),
+    axom::fmt::format(asyheader, fname, ifname),
     printPoint(tri1[0]),
     printPoint(tri1[1]),
     printPoint(tri1[2]),
@@ -533,23 +526,23 @@ void showOrientation()
 
   // _orient_start
   // A triangle
-  TriangleType tri(PointType::make_point(1.2, 0, 0),
-                   PointType::make_point(0, 1.8, 0),
-                   PointType::make_point(0, 0, 1.4));
+  TriangleType tri(PointType {1.2, 0, 0},
+                   PointType {0, 1.8, 0},
+                   PointType {0, 0, 1.4});
 
   // Three points:
   //    one on the triangle's positive side,
-  PointType pos = PointType::make_point(0.45, 1.5, 1);
+  PointType pos = PointType {0.45, 1.5, 1};
   //    one coplanar to the triangle, the centroid,
   PointType cpl =
     PointType::lerp(PointType::lerp(tri[0], tri[1], 0.5), tri[2], 1. / 3.);
   //    and one on the negative side
-  PointType neg = PointType::make_point(0, 0, 0.7);
+  PointType neg = PointType {0, 0, 0.7};
 
   // Test orientation
-  if(orientation(pos, tri) == ON_POSITIVE_SIDE &&
-     orientation(cpl, tri) == ON_BOUNDARY &&
-     orientation(neg, tri) == ON_NEGATIVE_SIDE)
+  if(orientation(pos, tri) == primal::ON_POSITIVE_SIDE &&
+     orientation(cpl, tri) == primal::ON_BOUNDARY &&
+     orientation(neg, tri) == primal::ON_NEGATIVE_SIDE)
   {
     std::cout << "As expected, point pos is on the positive side," << std::endl
               << "    point cpl is on the boundary (on the triangle),"
@@ -564,7 +557,7 @@ void showOrientation()
 
   // Helper variables
   // Project onto the XY plane
-  PointType ppos = PointType::make_point(pos[0], pos[1], 0.);
+  PointType ppos {pos[0], pos[1], 0.};
   //PointType pcpl = PointType::make_point(cpl[0], cpl[1], 0.);
 
   // Now write out an Asymptote file showing what we did.
@@ -572,7 +565,7 @@ void showOrientation()
   std::string fname = basefname + ".asy";
   std::string ifname = basefname + ".png";
 
-  std::string contents = fmt::format(
+  std::string contents = axom::fmt::format(
     "{0}"
     "// axes\n"
     "draw(O -- 1.7X, arrow=Arrow3(DefaultHead2), "
@@ -594,7 +587,7 @@ void showOrientation()
     "dot({6}, blue);\n"
     "label(\"$P$\", {6}, align=E);\n"
     "draw({6}--{7}, dotted);\n",
-    fmt::format(asyheader, fname, ifname),
+    axom::fmt::format(asyheader, fname, ifname),
     printPoint(tri[0]),
     printPoint(tri[1]),
     printPoint(tri[2]),
@@ -613,14 +606,12 @@ void showDistance()
   PointType q = PointType::make_point(0.75, 1.2, 0.4);
 
   // Find distance to:
-  PointType p = PointType::make_point(0.2, 1.4, 1.1);
-  SegmentType seg(PointType::make_point(1.1, 0.0, 0.2),
-                  PointType::make_point(1.1, 0.5, 0.2));
-  TriangleType tri(PointType::make_point(0.2, -0.3, 0.4),
-                   PointType::make_point(0.25, -0.1, 0.3),
-                   PointType::make_point(0.3, -0.3, 0.35));
-  BoundingBoxType bbox(PointType::make_point(-0.3, -0.2, 0.7),
-                       PointType::make_point(0.4, 0.3, 0.9));
+  PointType p {0.2, 1.4, 1.1};
+  SegmentType seg(PointType {1.1, 0.0, 0.2}, PointType {1.1, 0.5, 0.2});
+  TriangleType tri(PointType {0.2, -0.3, 0.4},
+                   PointType {0.25, -0.1, 0.3},
+                   PointType {0.3, -0.3, 0.35});
+  BoundingBoxType bbox(PointType {-0.3, -0.2, 0.7}, PointType {0.4, 0.3, 0.9});
 
   double dp = squared_distance(q, p);
   double dseg = squared_distance(q, seg);
@@ -638,8 +629,8 @@ void showDistance()
 
   // Helper variables
   // Project q and p onto onto XY plane
-  PointType pq = PointType::make_point(q[0], q[1], 0.);
-  PointType pp = PointType::make_point(p[0], p[1], 0.);
+  PointType pq {q[0], q[1], 0.};
+  PointType pp {p[0], p[1], 0.};
   PointType boxpt = bbox.getMax();
   boxpt[2] = bbox.getMin()[2];
   PointType pboxpt = boxpt;
@@ -653,7 +644,7 @@ void showDistance()
   std::string basefname = "showDistance";
   std::string fname = basefname + ".asy";
   std::string ifname = basefname + ".png";
-  std::string contents = fmt::format(
+  std::string contents = axom::fmt::format(
     "{0}"
     "// axes\n"
     "draw(O -- 1.3X, arrow=Arrow3(DefaultHead2), "
@@ -683,7 +674,7 @@ void showDistance()
     "draw({5}--{17}, dotted);\n"
     "draw({7}--{18}, dotted);\n"
     "draw(boxpt--{19}, dotted);\n",
-    fmt::format(asyheader, fname, ifname),
+    axom::fmt::format(asyheader, fname, ifname),
     printPoint(q),
     printPoint(boxpt),
     printPoint(p),

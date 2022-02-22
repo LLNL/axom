@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,8 +14,21 @@
 #ifndef AXOM_BIT_UTILITIES_HPP
 #define AXOM_BIT_UTILITIES_HPP
 
-#include "axom/core/Macros.hpp"  // for AXOM_DEVICE_CODE
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
+
+// Check for and setup defines for platform-specific intrinsics
+// Note: `__GNUC__` is defined for the gnu, clang and intel compilers
+#if defined(_WIN64) && (_MSC_VER >= 1600)
+  #define _AXOM_CORE_USE_INTRINSICS_MSVC
+  #include <intrin.h>
+#elif defined(__x86_64__) && defined(__GNUC__)
+  #define _AXOM_CORE_USE_INTRINSICS_GCC
+  #include <x86intrin.h>
+#elif defined(__powerpc64__) && (defined(__GNUC__) || defined(__ibmxl__))
+  #define _AXOM_CORE_USE_INTRINSICS_PPC
+#endif
 
 namespace axom
 {
@@ -66,11 +79,16 @@ struct BitTraits<axom::uint8>
  * \return The number of zeros to the right of the first set bit in \word,
  * starting with the least significant bit, or 64 if \a word == 0.
  */
-/* clang-format off */
 AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 {
+  /* clang-format off */
 #ifdef AXOM_DEVICE_CODE
   return word != axom::uint64(0) ? __ffsll(word) - 1 : 64;
+#elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
+  unsigned long cnt;
+  return _BitScanForward64(&cnt, word) ? cnt : 64;
+#elif defined(_AXOM_CORE_USE_INTRINSICS_GCC) || defined(_AXOM_CORE_USE_INTRINSICS_PPC)
+  return word != axom::uint64(0) ? __builtin_ctzll(word) : 64;
 #else
   // Explicit implementation adapted from bit twiddling hacks
   // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
@@ -90,8 +108,8 @@ AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 
   return cnt;
 #endif
+  /* clang-format on */
 }
-/* clang-format on */
 
 /*!
  * \brief Counts the number of set bits in \a word
@@ -100,9 +118,14 @@ AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
  */
 AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 {
+  /* clang-format off */
 #ifdef AXOM_DEVICE_CODE
   // Use CUDA intrinsic for popcount
   return __popcll(word);
+#elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
+  return __popcnt64(word);
+#elif defined(_AXOM_CORE_USE_INTRINSICS_GCC) || defined(_AXOM_CORE_USE_INTRINSICS_PPC)
+  return __builtin_popcountll(word);
 #else
   // 64 bit popcount implementation from:
   // http://chessprogramming.wikispaces.com/Population+Count#SWARPopcount
@@ -122,6 +145,7 @@ AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
   word = (word + (word >> 4)) & masks[2];
   return static_cast<int>((word * masks[3]) >> 56);
 #endif
+  /* clang-format off */
 }
 
 /*!
@@ -132,43 +156,35 @@ AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
  */
 AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 word)
 {
+  /* clang-format off */
 #ifdef AXOM_DEVICE_CODE
   // Use CUDA intrinsic for count leading zeros
   return __clz(word);
+#elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
+  unsigned long cnt;
+  return _BitScanReverse(&cnt, word) ? 31 - cnt : 32;
+#elif defined(_AXOM_CORE_USE_INTRINSICS_GCC) || defined(_AXOM_CORE_USE_INTRINSICS_PPC)
+  return word != axom::int32(0) ? __builtin_clz(word) : 32;
 #else
   axom::int32 y;
   axom::int32 n = 32;
-  y = word >> 16;
-  if(y != 0)
-  {
-    n = n - 16;
-    word = y;
-  }
-  y = word >> 8;
-  if(y != 0)
-  {
-    n = n - 8;
-    word = y;
-  }
-  y = word >> 4;
-  if(y != 0)
-  {
-    n = n - 4;
-    word = y;
-  }
-  y = word >> 2;
-  if(y != 0)
-  {
-    n = n - 2;
-    word = y;
-  }
-  y = word >> 1;
-  if(y != 0) return axom::int32(n - 2);
+  y = word >> 16; if(y != 0) { n -= 16; word = y;}
+  y = word >>  8; if(y != 0) { n -=  8; word = y;}
+  y = word >>  4; if(y != 0) { n -=  4; word = y;}
+  y = word >>  2; if(y != 0) { n -=  2; word = y;}
+  y = word >>  1; if(y != 0) { return axom::int32(n - 2); }
   return axom::int32(n - word);
 #endif
+  /* clang-format off */
 }
 
 }  // namespace utilities
 }  // namespace axom
+
+
+// Undefine intrinsic defines from the top of the file
+#undef _AXOM_CORE_USE_INTRINSICS_MSVC
+#undef _AXOM_CORE_USE_INTRINSICS_GCC
+#undef _AXOM_CORE_USE_INTRINSICS_PPC
 
 #endif  // AXOM_BIT_UTILITIES_HPP

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,9 +26,7 @@
 #include "quest_test_utilities.hpp"                  // test-utility functions
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"     // for SLIC macros
-#include "axom/slic/core/SimpleLogger.hpp"  // for the unit test logger
-using axom::slic::SimpleLogger;
+#include "axom/slic.hpp"
 
 // gtest
 #ifdef AXOM_USE_MPI
@@ -493,8 +491,8 @@ TEST(quest_signed_distance_interface, analytic_sphere)
   axom::IndexType nnodes = umesh->getNumberOfNodes();
   for(axom::IndexType inode = 0; inode < nnodes; ++inode)
   {
-    double pt[NDIMS];
-    umesh->getNode(inode, pt);
+    primal::Point<double, NDIMS> pt;
+    umesh->getNode(inode, pt.data());
 
     phi_computed[inode] = quest::signed_distance_evaluate(pt[0], pt[1], pt[2]);
     phi_expected[inode] = analytic_sphere.computeSignedDistance(pt);
@@ -547,10 +545,7 @@ int main(int argc, char* argv[])
 
   // add this line to avoid a warning in the output about thread safety
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

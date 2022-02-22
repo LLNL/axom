@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -281,6 +281,36 @@ template <>
 inline int getAllocatorID<MemorySpace::Dynamic>()
 {
   return axom::getDefaultAllocatorID();
+}
+
+inline MemorySpace getAllocatorSpace(int allocatorId)
+{
+#ifdef AXOM_USE_UMPIRE
+  using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  auto umpResType =
+    rm.getAllocator(allocatorId).getAllocationStrategy()->getTraits().resource;
+  switch(umpResType)
+  {
+  case ump_res_type::host:
+    return MemorySpace::Host;
+  case ump_res_type::device:
+    return MemorySpace::Device;
+  case ump_res_type::device_const:
+    return MemorySpace::Constant;
+  case ump_res_type::pinned:
+    return MemorySpace::Pinned;
+  case ump_res_type::um:
+    return MemorySpace::Unified;
+  default:
+    return MemorySpace::Dynamic;
+  }
+#else
+  AXOM_UNUSED_VAR(allocatorId);
+  return MemorySpace::Dynamic;
+#endif
 }
 
 #ifdef AXOM_USE_UMPIRE

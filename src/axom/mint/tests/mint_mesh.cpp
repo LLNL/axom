@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,7 +18,8 @@
 namespace sidre = axom::sidre;
 #endif
 
-#include "gtest/gtest.h"  // for gtest macros
+#include "axom/slic.hpp"
+#include "gtest/gtest.h"
 
 // C/C++ includes
 #include <cmath>    // for cosh, etc.
@@ -730,18 +731,12 @@ TEST(mint_mesh, get_mixed_topology_unstructured_from_sidre)
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

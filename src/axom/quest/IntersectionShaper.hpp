@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -835,6 +835,8 @@ public:
   #endif  // AXOM_USE_CUDA
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     default:
+      AXOM_UNUSED_VAR(shapeDimension);
+      AXOM_UNUSED_VAR(shape);
       SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
       break;
     }
@@ -862,6 +864,7 @@ public:
   #endif  // AXOM_USE_CUDA
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     default:
+      AXOM_UNUSED_VAR(shape);
       SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
       break;
     }

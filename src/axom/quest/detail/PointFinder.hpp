@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,13 +42,13 @@ template <int NDIMS, typename mesh_tag, typename ExecSpace>
 class PointFinder
 {
 public:
-  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace>;
+  using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
+  using IndexType = typename MeshWrapperType::IndexType;
+
+  using GridType = spin::ImplicitGrid<NDIMS, ExecSpace, IndexType>;
 
   using SpacePoint = typename GridType::SpacePoint;
   using SpatialBoundingBox = typename GridType::SpatialBoundingBox;
-
-  using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
-  using IndexType = typename MeshWrapperType::IndexType;
 
 private:
   constexpr static bool DeviceExec = axom::execution_space<ExecSpace>::onDevice();
@@ -154,8 +154,10 @@ public:
                     SpacePoint* outIsoparametricCoords) const
   {
     using IndexArray = axom::Array<IndexType>;
+
+#ifdef AXOM_USE_RAJA
     using IndexView = axom::ArrayView<IndexType>;
-#ifdef AXOM_USE_UMPIRE
+  #ifdef AXOM_USE_UMPIRE
     using HostIndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Host>;
     using HostPointArray = axom::Array<SpacePoint, 1, axom::MemorySpace::Host>;
 
@@ -163,14 +165,15 @@ public:
     using HostPointView = axom::ArrayView<SpacePoint, 1, axom::MemorySpace::Host>;
     using ConstHostPointView =
       axom::ArrayView<const SpacePoint, 1, axom::MemorySpace::Host>;
-#else
+  #else
     using HostIndexArray = IndexArray;
     using HostPointArray = axom::Array<SpacePoint>;
 
     using HostIndexView = IndexView;
     using HostPointView = axom::Array<SpacePoint>;
     using ConstHostPointView = axom::ArrayView<const SpacePoint>;
-#endif  // AXOM_USE_UMPIRE
+  #endif  // AXOM_USE_UMPIRE
+#endif    // AXOM_USE_RAJA
 
     auto gridQuery = m_grid.getQueryObject();
 
@@ -309,11 +312,12 @@ public:
                  outIsoparHost.data(),
                  outIsoparHost.size() * sizeof(SpacePoint));
     }
-#else
+#else   // AXOM_USE_RAJA
     for(int i = 0; i < npts; i++)
     {
       SpacePoint pt = pts[i];
       SpacePoint isopar;
+      outCellIds[i] = PointInCellTraits<mesh_tag>::NO_CELL;
       gridQuery.visitCandidates(pt, [&](int candidateIdx) -> bool {
         if(m_cellBBoxes[candidateIdx].contains(pts[i]))
         {
@@ -332,7 +336,7 @@ public:
         outIsoparametricCoords[i] = isopar;
       }
     }
-#endif
+#endif  // AXOM_USE_RAJA
   }
 
   /*! Returns a const reference to the given cells's bounding box */

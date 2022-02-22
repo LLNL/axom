@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,17 +7,15 @@
 #define AXOM_PRIMAL_TRIANGLE_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Macros.hpp"
-#include "axom/core/numerics/Determinants.hpp"
-#include "axom/core/utilities/Utilities.hpp"
-
+#include "axom/core.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
 
-#include <cmath>    // for acos()
-#include <ostream>  // for std::ostream
+#include <cmath>
+#include <ostream>
 
 namespace axom
 {
@@ -47,18 +45,14 @@ class Triangle
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
+  using SphereType = Sphere<T, NDIMS>;
 
-  enum
-  {
-    NUM_TRI_VERTS = 3
-  };
+  static constexpr int NUM_TRI_VERTS = 3;
 
 public:
-  /*!
-   * \brief Default constructor. Creates a degenerate triangle.
-   */
+  /// \brief Default constructor. Creates a degenerate triangle.
   AXOM_HOST_DEVICE
-  Triangle();
+  Triangle() : m_points {PointType(), PointType(), PointType()} { }
 
   /*!
    * \brief Custom Constructor. Creates a triangle from the 3 points A,B,C.
@@ -67,13 +61,9 @@ public:
    * \param [in] C point instance corresponding to vertex C of the triangle.
    */
   AXOM_HOST_DEVICE
-  Triangle(const PointType& A, const PointType& B, const PointType& C);
-
-  /*!
-   * \brief Destructor
-   */
-  AXOM_HOST_DEVICE
-  ~Triangle() { }
+  Triangle(const PointType& A, const PointType& B, const PointType& C)
+    : m_points {A, B, C}
+  { }
 
   /*!
    * \brief Index operator to get the i^th vertex
@@ -104,35 +94,98 @@ public:
    * \pre This function is only valid when NDIMS = 3
    * \return n triangle normal when NDIMS=3, zero vector otherwise
    */
-  AXOM_HOST_DEVICE
-  VectorType normal() const
+  template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, VectorType>::type normal() const
   {
-    SLIC_CHECK_MSG(NDIMS == 3, "Triangle::normal() is only valid in 3D.");
-
-    return (NDIMS == 3)
-      ? VectorType::cross_product(VectorType(m_points[0], m_points[1]),
-                                  VectorType(m_points[0], m_points[2]))
-      : VectorType();
+    return VectorType::cross_product(VectorType(m_points[0], m_points[1]),
+                                     VectorType(m_points[0], m_points[2]));
   }
 
   /*!
-   * \brief Returns the area of the triangle
-   * \pre Only defined when dimension NDIMS is 2 or 3
+   * \brief Returns the area of the triangle (3D specialization)
    */
-  AXOM_HOST_DEVICE
-  double area() const
+  template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, double>::type area() const
   {
-    SLIC_CHECK_MSG(NDIMS == 2 || NDIMS == 3,
-                   "Triangle::area() is only valid in 2D or 3D");
+    return 0.5 *
+      VectorType::cross_product(VectorType(m_points[0], m_points[1]),
+                                VectorType(m_points[0], m_points[2]))
+        .norm();
+  }
 
-    VectorType v(m_points[0], m_points[1]);
-    VectorType w(m_points[0], m_points[2]);
+  /*!
+   * \brief Returns the area of the triangle (2D specialization)
+   */
+  template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type area() const
+  {
+    return axom::utilities::abs(signedArea());
+  }
 
-    // While this code is correct and clear, in the 2D case it may be doing
-    // too much work by taking the square root (norm()) of a just-computed
-    // square (cross_product()).  This should be revisited if this turns out
-    // to be a bottleneck.
-    return 0.5 * VectorType::cross_product(v, w).norm();
+  /**
+   * \brief Returns the signed area of a 2D triangle
+   *
+   * The area is positive when the vertices are oriented counter-clockwise.
+   * \note This function is only available for triangles in 2D since signed
+   * areas don't make sense for 3D triangles
+   */
+  template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedArea() const
+  {
+    using axom::numerics::determinant;
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
+
+    // clang-format off
+    return 0.5 * determinant(C[0]-A[0], C[1]-A[1],
+                             B[0]-A[0], B[1]-A[1]);
+    // clang-format on
+  }
+
+  /**
+   * \brief Returns the circumsphere (circumscribing circle) of the triangle
+   *
+   * Implements formula from https://mathworld.wolfram.com/Circumcircle.html
+   * \note This function is only available for triangles in 2D
+   */
+  template <int TDIM = NDIMS>
+  typename std::enable_if<TDIM == 2, SphereType>::type circumsphere() const
+  {
+    using axom::numerics::determinant;
+    using axom::numerics::dot_product;
+    using axom::utilities::abs;
+    using NumericArrayType = primal::NumericArray<T, NDIMS>;
+
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
+
+    // clang-format off
+    const Point<T, 4> sq { dot_product(A.data(), A.data(), NDIMS),
+                           dot_product(B.data(), B.data(), NDIMS),
+                           dot_product(C.data(), C.data(), NDIMS)};
+
+    const double  a =  determinant(A[0], A[1], 1.,
+                                   B[0], B[1], 1.,
+                                   C[0], C[1], 1.);
+
+    const double bx = -determinant(sq[0], A[1], 1.,
+                                   sq[1], B[1], 1.,
+                                   sq[2], C[1], 1.);
+
+    const double by =  determinant(sq[0], A[0], 1.,
+                                   sq[1], B[0], 1.,
+                                   sq[2], C[0], 1.);
+
+    const double  c = -determinant(sq[0], A[0], A[1],
+                                   sq[1], B[0], B[1],
+                                   sq[2], C[0], C[1]);
+    // clang-format on
+
+    const auto center = NumericArrayType {-bx, -by} / (2 * a);
+    const T radius = sqrt(bx * bx + by * by - 4 * a * c) / (2 * abs(a));
+    return SphereType(center.data(), radius);
   }
 
 private:
@@ -146,11 +199,10 @@ private:
   double ppedVolume(const PointType& p) const
   {
     /* This method returns double (instead of T) and explicitly specializes
-       determinant() on type double to avoid confusion of deduced template
-       types. */
-    const PointType& A = m_points[0];
-    const PointType& B = m_points[1];
-    const PointType& C = m_points[2];
+       determinant() on type double to avoid confusion of deduced template types. */
+    const VectorType A(p, m_points[0]);
+    const VectorType B(p, m_points[1]);
+    const VectorType C(p, m_points[2]);
 
     if(NDIMS < 3)
     {
@@ -159,10 +211,9 @@ private:
     else
     {
       // clang-format off
-      return numerics::determinant< double > ( A[0], A[1], A[2], 1.,
-                                               B[0], B[1], B[2], 1.,
-                                               C[0], C[1], C[2], 1.,
-                                               p[0], p[1], p[2], 1.);
+      return numerics::determinant< double > ( A[0], A[1], A[2],
+                                               B[0], B[1], B[2],
+                                               C[0], C[1], C[2]);
       // clang-format on
     }
   }
@@ -177,6 +228,7 @@ public:
    */
   Point<double, 3> physToBarycentric(const PointType& p) const
   {
+    using axom::numerics::determinant;
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
     Point<double, 3> bary;
@@ -213,17 +265,13 @@ public:
     const PointType& C = m_points[2];
 
     // Compute ood * area of each sub-triangle
-    bary[0] = ood *
-      numerics::determinant(p[c0] - B[c0],
-                            p[c1] - B[c1],
-                            B[c0] - C[c0],
-                            B[c1] - C[c1]);
-    bary[1] = ood *
-      numerics::determinant(p[c0] - C[c0],
-                            p[c1] - C[c1],
-                            C[c0] - A[c0],
-                            C[c1] - A[c1]);
+    // clang-format off
+    bary[0] = ood * determinant(p[c0]-B[c0], p[c1]-B[c1],
+                                B[c0]-C[c0], B[c1]-C[c1]);
+    bary[1] = ood * determinant(p[c0]-C[c0], p[c1]-C[c1],
+                                C[c0]-A[c0], C[c1]-A[c1]);
     bary[2] = 1. - bary[0] - bary[1];
+    // clang-format on
 
     return bary;
   }
@@ -240,10 +288,9 @@ public:
       "Barycentric coordinates must sum to (near) one.");
 
     PointType res;
-    for(int i = 0; i < NDIMS; ++i)
+    for(int i = 0; i < NUM_TRI_VERTS; ++i)
     {
-      res[i] = bary[0] * m_points[0][i] + bary[1] * m_points[1][i] +
-        bary[2] * m_points[2][i];
+      res.array() += bary[i] * m_points[i].array();
     }
 
     return res;
@@ -313,20 +360,6 @@ namespace axom
 {
 namespace primal
 {
-template <typename T, int NDIMS>
-Triangle<T, NDIMS>::Triangle()
-  : m_points {PointType(), PointType(), PointType()}
-{ }
-
-//------------------------------------------------------------------------------
-template <typename T, int NDIMS>
-Triangle<T, NDIMS>::Triangle(const PointType& A,
-                             const PointType& B,
-                             const PointType& C)
-  : m_points {A, B, C}
-{ }
-
-//------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 inline double Triangle<T, NDIMS>::angle(int idx) const
 {

@@ -1,25 +1,25 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom/config.hpp"                          // compile-time definitions
-#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
-#include "axom/core/utilities/Utilities.hpp"        // for alloc() /free()
-#include "axom/core/numerics/Matrix.hpp"            // for Matrix
+#include "axom/config.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/numerics/Matrix.hpp"
 
 // Mint includes
-#include "axom/mint/config.hpp"               // mint compile-time definitions
-#include "axom/mint/execution/interface.hpp"  // for_all()
+#include "axom/mint/config.hpp"
+#include "axom/mint/execution/interface.hpp"
 
 // Slic includes
-#include "axom/slic.hpp"  // for SLIC macros
+#include "axom/slic.hpp"
 
 #include "mint_test_utilities.hpp"
 
 // gtest includes
-#include "gtest/gtest.h"  // for gtest
+#include "gtest/gtest.h"
 
 namespace axom
 {
@@ -604,18 +604,12 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_index)
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

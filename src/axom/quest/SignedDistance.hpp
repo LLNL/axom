@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@
 #include "axom/mint/mesh/Field.hpp"
 #include "axom/mint/mesh/FieldData.hpp"
 #include "axom/mint/mesh/FieldVariable.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
 
 // C/C++ includes
@@ -52,7 +53,19 @@ struct UcdMeshData
   /*!
    * \brief Returns the type of the cell at the given index.
    */
-  AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const;
+  AXOM_HOST_DEVICE mint::CellType getCellType(IndexType cellId) const
+  {
+    if(shape_type == mint::SINGLE_SHAPE)
+    {
+      SLIC_ASSERT(single_cell_type != mint::UNDEFINED_CELL);
+      return single_cell_type;
+    }
+    else
+    {
+      SLIC_ASSERT(cell_types != nullptr);
+      return cell_types[cellId];
+    }
+  }
 
   /*!
    * \brief Returns the node IDs of a given cell index.
@@ -63,7 +76,24 @@ struct UcdMeshData
    * \return pointer to the node IDs in the underlying cell node array.
    */
   AXOM_HOST_DEVICE const IndexType* getCellNodeIDs(IndexType cellId,
-                                                   int& nnodes) const;
+                                                   int& nnodes) const
+  {
+    SLIC_ASSERT(cells_to_nodes != nullptr);
+    int cellBegin;
+    if(shape_type == mint::SINGLE_SHAPE)
+    {
+      SLIC_ASSERT(nodes_per_cell != -1);
+      cellBegin = cellId * nodes_per_cell;
+      nnodes = nodes_per_cell;
+    }
+    else
+    {
+      SLIC_ASSERT(cell_node_offsets != nullptr);
+      cellBegin = cell_node_offsets[cellId];
+      nnodes = cell_node_offsets[cellId + 1] - cell_node_offsets[cellId];
+    }
+    return cells_to_nodes + cellBegin;
+  }
 };
 
 /*!
@@ -214,8 +244,7 @@ public:
    */
   double computeDistance(double x, double y, double z = 0.0)
   {
-    PointType pt = PointType::make_point(x, y, z);
-    return (computeDistance(pt));
+    return computeDistance(PointType {x, y, z});
   }
 
   /*!
@@ -643,23 +672,22 @@ inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
 
     if(shouldUpdateNormals)
     {
-      VectorType norm = surface_elems[ei].normal();
       ++currMin.minCount;
 
       switch(cpt_type)
       {
       case detail::ClosestPointLocType::edge:
-        // Candidate closest point is on an edge - add the normal of a
-        // potentially-adjacent face
-        currMin.sumNormals += norm;
+        // Add the (unitized) normal of the (potentially) incident face along this edge
+        // Note: Unitizing is important in cases where the edge is shared
+        // by triangles with different areas and an acute dihedral angle
+        currMin.sumNormals += surface_elems[ei].normal().unitVector();
         break;
       case detail::ClosestPointLocType::vertex:
         if(!surface_elems[ei].degenerate())
         {
-          // Candidate closest point is on a vertex - add the angle-weighted
-          // normal of a face potentially sharing a vertex
-          double alpha = surface_elems[ei].angle(candidate_loc);
-          currMin.sumNormals += (norm.unitVector() * alpha);
+          // Add the angle-weighted normal of the (potentially) incident face along this vertex
+          const double alpha = surface_elems[ei].angle(candidate_loc);
+          currMin.sumNormals += alpha * surface_elems[ei].normal().unitVector();
         }
         break;
       default:

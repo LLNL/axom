@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,14 +9,22 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_11-11-21_01h-52m'
-  GCC8_IMAGENAME: 'axom/tpls:gcc-8_11-11-21_01h-52m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_01-27-22_04h-29m'
+  GCC8_IMAGENAME: 'axom/tpls:gcc-8_01-27-22_04h-29m'
+  GCC11_IMAGENAME: 'axom/tpls:gcc-11_01-27-22_05h-56m'
 
 jobs:
 - job: Build_and_Test
 
   strategy:
     matrix:
+      linux_gcc11:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(GCC11_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
+        COMPILER: 'g++'
+        TEST_TARGET: 'linux_gcc11'
+        HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-gcc@11.1.0'
       linux_gcc8:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: '$(GCC8_IMAGENAME)'

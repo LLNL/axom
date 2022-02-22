@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,17 +57,5 @@ if (AXOM_ENABLE_MINT)
       COMMAND         spin_bvh_test
       NUM_OMP_THREADS 4
       )
-
-    if ( RAJA_FOUND AND UMPIRE_FOUND )
-
-        # fix for rzmanta of following runtime error:
-        #   CUDAassert: peer access is not supported between these two devices /unimportant/path/raja-0.12.1/include/RAJA/policy/cuda/sort.hpp 341
-        #   unknown file: Failure
-        #   C++ exception with description "CUDAassert" thrown in the test body.
-        set_property(TEST spin_bvh
-                     APPEND
-                     PROPERTY ENVIRONMENT  "CUDA_VISIBLE_DEVICES=0") # Zero based indexed, so only first GPU is visible
-
-    endif()
 
 endif()

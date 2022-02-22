@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +8,9 @@
 
 // Other axom headers
 #include "axom/core/Macros.hpp"
+#include "axom/core/Path.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 // SiDRe project headers
 #include "axom/sidre/core/Buffer.hpp"
@@ -152,7 +154,7 @@ std::string IOManager::correspondingRelayProtocol(const std::string& sidre_proto
  */
 void IOManager::write(sidre::Group* datagroup,
                       int num_files,
-                      const std::string& file_string,
+                      const std::string& file_base,
                       const std::string& protocol,
                       const std::string& tree_pattern)
 {
@@ -173,11 +175,11 @@ void IOManager::write(sidre::Group* datagroup,
   SLIC_ERROR_IF(m_use_scr && num_files != m_comm_size,
                 "SCR requires a file per process");
 
-  std::string root_string = file_string;
-  createRootFile(root_string, num_files, protocol, tree_pattern);
+  std::string output_base =
+    createRootFile(file_base, num_files, protocol, tree_pattern);
   MPI_Barrier(m_mpi_comm);
 
-  std::string root_name = root_string + ".root";
+  std::string root_name = output_base + ".root";
 
   if(protocol == "sidre_hdf5")
   {
@@ -241,7 +243,7 @@ void IOManager::write(sidre::Group* datagroup,
   else
   {
     int set_id = m_baton->wait();
-    std::string file_name = fmt::sprintf("%s_%07d", file_string, set_id);
+    std::string file_name = fmt::sprintf("%s_%07d", file_base, set_id);
 
     std::string obase = file_name + "." + protocol;
     datagroup->save(obase, protocol);
@@ -463,12 +465,14 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
  *
  *************************************************************************
  */
-void IOManager::createRootFile(const std::string& file_base,
-                               int num_files,
-                               const std::string& protocol,
-                               const std::string& tree_pattern)
+std::string IOManager::createRootFile(const std::string& root_base,
+                                      int num_files,
+                                      const std::string& protocol,
+                                      const std::string& tree_pattern)
 {
   conduit::Node n;
+
+  std::string file_base(utilities::string::removeSuffix(root_base, ".root"));
 
   if(m_my_rank == 0)
   {
@@ -484,10 +488,12 @@ void IOManager::createRootFile(const std::string& file_base,
       if(protocol == "sidre_hdf5")
       {
         std::string next;
-        std::string slash = "/";
-        conduit::utils::rsplit_string(file_base, slash, local_file_base, next);
+        std::string delimiter = "/";
+        axom::Path axom_file_path(file_base);
+        local_file_base = axom_file_path.baseName();
+
         n["file_pattern"] =
-          local_file_base + slash + local_file_base + "_" + "%07d.hdf5";
+          local_file_base + delimiter + local_file_base + "_" + "%07d.hdf5";
       }
       else
       {
@@ -523,6 +529,8 @@ void IOManager::createRootFile(const std::string& file_base,
 
     conduit::relay::io::save(n, root_file_name, relay_protocol);
   }
+
+  return file_base;
 }
 
 /*
@@ -788,15 +796,12 @@ std::string IOManager::getFileNameForRank(const std::string& file_pattern,
 
   //If the root file was given as a path,
   //find the directory and add it to file_name
-  std::string curr;
-  std::string root_dir;
-  std::string slash = "/";
-  conduit::utils::rsplit_string(root_name, slash, curr, root_dir);
+  char delimiter = '/';
+  axom::Path root_path(root_name);
+  std::string root_dir = root_path.dirName();
 
-  if(!root_dir.empty())
-  {
-    file_name = root_dir + slash + file_name;
-  }
+  file_name =
+    axom::utilities::string::appendPrefix(root_dir, file_name, delimiter);
 
   return file_name;
 }
@@ -1066,15 +1071,14 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   AXOM_UNUSED_VAR(root_file_id);
   SLIC_ASSERT(root_file_id >= 0);
 
-  std::string blueprint_name;
-  std::string path_to_mesh;
   std::string delimiter(1, datastore->getRoot()->getPathDelimiter());
 
   //The final name in mesh_path will be used as the name of the
   //blueprint index.
-  conduit::utils::rsplit_string(mesh_path, delimiter, blueprint_name, path_to_mesh);
+  axom::Path axom_mesh_path(mesh_path, delimiter[0]);
+  std::string blueprint_name = axom_mesh_path.baseName();
 
-  std::string bp_index("blueprint_index/" + blueprint_name);
+  std::string bp_index = "blueprint_index" + delimiter + blueprint_name;
 
   bool multi_domain = false;
   if(m_comm_size > 1)

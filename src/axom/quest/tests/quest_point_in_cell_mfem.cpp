@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,16 +13,10 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
-#include "axom/core/utilities/Timer.hpp"
-
-#include "axom/mint/mesh/CurvilinearMesh.hpp"
-#include "axom/mint/mesh/FieldVariable.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
-
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/BoundingBox.hpp"
-
-#include "axom/spin/ImplicitGrid.hpp"
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/primal.hpp"
+#include "axom/spin.hpp"
 // _quest_pic_include_start
 #include "axom/quest/PointInCell.hpp"
 
@@ -35,15 +29,13 @@
 
 #include "quest_test_utilities.hpp"
 
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
+#include "axom/slic.hpp"
 #include "axom/fmt.hpp"
 
 #include <fstream>
 #include <vector>
-#include <cmath>    // for pow
-#include <cstdlib>  // for srand
+#include <cmath>
+#include <cstdlib>
 
 namespace
 {
@@ -107,17 +99,18 @@ template <int DIM, typename ExecSpace>
 class PointInCellTest : public ::testing::Test
 {
 public:
-  typedef axom::primal::BoundingBox<double, DIM> BBox;
-  typedef axom::primal::Point<double, DIM> SpacePt;
-  typedef axom::primal::Vector<double, DIM> SpaceVec;
+  using BBox = axom::primal::BoundingBox<double, DIM>;
+  using SpacePt = axom::primal::Point<double, DIM>;
+  using SpaceVec = axom::primal::Vector<double, DIM>;
+
   // _quest_pic_typedef_start
-  typedef axom::primal::Point<int, DIM> GridCell;
-
-  typedef axom::quest::quest_point_in_cell_mfem_tag mesh_tag;
-  typedef axom::quest::PointInCellTraits<mesh_tag> MeshTraits;
-
-  typedef axom::quest::PointInCell<mesh_tag, ExecSpace> PointInCellType;
+  using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
+  using PointInCellType = axom::quest::PointInCell<mesh_tag, ExecSpace>;
+  using MeshTraits = typename PointInCellType::MeshTraits;
+  using IndexType = typename PointInCellType::IndexType;
   // _quest_pic_typedef_end
+
+  using GridCell = axom::primal::Point<IndexType, DIM>;
 
 public:
   PointInCellTest()
@@ -273,17 +266,18 @@ public:
     axom::Array<SpacePt> pts;
 
     const int k_max = (DIM == 3) ? res : 0;
+    const int sz = (res + 1) * (res + 1) * (k_max + 1);
+    pts.reserve(sz);
+
     for(int i = 0; i <= res; ++i)
       for(int j = 0; j <= res; ++j)
         for(int k = 0; k <= k_max; ++k)
         {
           // Get the corresponding isoparametric value
-          // Note: make_point ignores coordinates higher than point's DIM
-          SpacePt pt = SpacePt::make_point(static_cast<double>(i) / res,
-                                           static_cast<double>(j) / res,
-                                           static_cast<double>(k) / res);
-
-          pts.push_back(pt);
+          // Note: point constructor ignores coordinates higher than point's DIM
+          pts.push_back(SpacePt {static_cast<double>(i) / res,
+                                 static_cast<double>(j) / res,
+                                 static_cast<double>(k) / res});
         }
 
     return pts;
@@ -297,7 +291,7 @@ public:
     // Generate a PointInCell structure over the mesh
     axom::utilities::Timer constructTimer(true);
     // _quest_pic_init_start
-    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_allocatorID);
+    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS, m_allocatorID);
     // _quest_pic_init_end
     SLIC_INFO(axom::fmt::format(
       "Constructing index over {} quad mesh with {} elems took {} s",
@@ -306,31 +300,28 @@ public:
       constructTimer.elapsed()));
 
     // Generate a set of points and query the mesh
-    typedef axom::Array<SpacePt> PtVec;
+    using PtVec = axom::Array<SpacePt>;
 
     PtVec pts = generateRandomTestPoints(exp.radius());
     int numCheckedPoints = 0;
     int numInverseXforms = 0;
 
-    axom::Array<int> outCellIds(pts.size(), pts.size(), m_allocatorID);
+    axom::Array<IndexType> outCellIds(pts.size(), pts.size(), m_allocatorID);
     axom::Array<SpacePt> outIsopar(pts.size(), pts.size(), m_allocatorID);
 
     axom::utilities::Timer queryTimer(true);
+    // Locate the points (using EXEC_SPACE)
+    // _quest_pic_locate_start
     spatialIndex.locatePoints(pts, outCellIds.data(), outIsopar.data());
+    // _quest_pic_locate_end
 
     axom::Array<SpacePt> qptHost = pts;
-    axom::Array<int> cellIdsHost = outCellIds;
+    axom::Array<IndexType> cellIdsHost = outCellIds;
     axom::Array<SpacePt> isoparHost = outIsopar;
     for(int i = 0; i < pts.size(); i++)
     {
-      // Try to find the point
-      /*
-      // _quest_pic_locate_start
-      int idx = spatialIndex.locatePoint(queryPoint.data(), isoPar.data());
-      // _quest_pic_locate_end
-      */
       const SpacePt& queryPoint = qptHost[i];
-      int idx = cellIdsHost[i];
+      IndexType idx = cellIdsHost[i];
       SpacePt isoPar = isoparHost[i];
       bool isInMesh = (idx != MeshTraits::NO_CELL);
 
@@ -354,9 +345,9 @@ public:
         spatialIndex.reconstructPoint(idx, isoPar.data(), untransformPt.data());
         // _quest_pic_reconstruct_end
 
-        for(int i = 0; i < DIM; ++i)
+        for(int d = 0; d < DIM; ++d)
         {
-          EXPECT_NEAR(queryPoint[i], untransformPt[i], ::EPS);
+          EXPECT_NEAR(queryPoint[d], untransformPt[d], m_EPS);
         }
       }
     }
@@ -387,7 +378,7 @@ public:
 
     // Add mesh to the grid
     axom::utilities::Timer constructTimer(true);
-    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_allocatorID);
+    PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS, m_allocatorID);
     SLIC_INFO(axom::fmt::format(
       "Constructing index over {} quad mesh with {} elems took {} s",
       meshTypeStr,
@@ -396,29 +387,47 @@ public:
 
     // Test that a fixed set of isoparametric coords on each cell
     // maps to the correct place.
-    axom::Array<SpacePt> pts = generateIsoParTestPoints(::TEST_GRID_RES);
+    axom::Array<SpacePt> isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
+
+    const auto SZ = isoPts.size();
+    axom::Array<SpacePt> spacePts(SZ, SZ);
+    axom::Array<SpacePt> foundIso(SZ, SZ);
+    axom::Array<IndexType> foundIDs(SZ, SZ);
+
     axom::utilities::Timer queryTimer2(true);
     SpacePt foundIsoPar;
     for(int eltId = 0; eltId < m_mesh->GetNE(); ++eltId)
     {
-      for(const SpacePt& isoparCenter : pts)
+      // Reconstruct points in space from isoparametric coords on an element
+      for(int idx = 0; idx < SZ; ++idx)
       {
+        spatialIndex.reconstructPoint(eltId,
+                                      isoPts[idx].data(),
+                                      spacePts[idx].data());
+      }
+
+      // locate the reconstructed points (using EXEC space)
+      spatialIndex.locatePoints(spacePts.view(), foundIDs.data(), foundIso.data());
+
+      // check results
+      for(int idx = 0; idx < SZ; ++idx)
+      {
+        const SpacePt& isoparCenter = isoPts[idx];
+
         // Check if isoparCenter is on element boundary
         bool isBdry = false;
-        for(int i = 0; i < DIM; ++i)
+        for(int d = 0; d < DIM; ++d)
         {
-          if(axom::utilities::isNearlyEqual(isoparCenter[i], 0.) ||
-             axom::utilities::isNearlyEqual(isoparCenter[i], 1.))
+          if(axom::utilities::isNearlyEqual(isoparCenter[d], 0.) ||
+             axom::utilities::isNearlyEqual(isoparCenter[d], 1.))
           {
             isBdry = true;
           }
         }
 
-        SpacePt spacePt;
-        spatialIndex.reconstructPoint(eltId, isoparCenter.data(), spacePt.data());
-
-        int foundCellId =
-          spatialIndex.locatePoint(spacePt.data(), foundIsoPar.data());
+        const auto& spacePt = spacePts[idx];
+        const auto& foundCellId = foundIDs[idx];
+        const auto& foundIsoPar = foundIso[idx];
 
         // Check that we found a cell
         EXPECT_NE(MeshTraits::NO_CELL, foundCellId)
@@ -440,10 +449,10 @@ public:
         // If we found the same cell, check that isoparametric coords agree
         if(eltId == foundCellId)
         {
-          for(int i = 0; i < DIM; ++i)
+          for(int d = 0; d < DIM; ++d)
           {
-            EXPECT_NEAR(isoparCenter[i], foundIsoPar[i], ::EPS)
-              << "For element " << eltId << " coord " << i
+            EXPECT_NEAR(isoparCenter[d], foundIsoPar[d], m_EPS)
+              << "For element " << eltId << " coord " << d
               << "\tisoparCenter is" << isoparCenter << "\tfoundIsoPar is "
               << foundIsoPar << "\tpoint in space " << spacePt;
           }
@@ -457,9 +466,9 @@ public:
                                         foundIsoPar.data(),
                                         transformedPt.data());
 
-          for(int i = 0; i < DIM; ++i)
+          for(int d = 0; d < DIM; ++d)
           {
-            EXPECT_NEAR(spacePt[i], transformedPt[i], ::EPS);
+            EXPECT_NEAR(spacePt[d], transformedPt[d], m_EPS);
           }
         }
       }
@@ -467,10 +476,10 @@ public:
 
     SLIC_INFO(axom::fmt::format(
       "Verifying {} pts on {} quad mesh took {} s -- rate: {} q/s",
-      pts.size() * m_mesh->GetNE(),
+      SZ * m_mesh->GetNE(),
       meshTypeStr,
       queryTimer2.elapsed(),
-      pts.size() * m_mesh->GetNE() / queryTimer2.elapsed()));
+      SZ * m_mesh->GetNE() / queryTimer2.elapsed()));
   }
 
   mfem::Mesh* getMesh() { return m_mesh; }
@@ -479,10 +488,13 @@ public:
 
   int getAllocatorId() const { return m_allocatorID; }
 
+  double getTolerance() const { return m_EPS; }
+
 protected:
   std::string m_meshDescriptorStr;
 
   mfem::Mesh* m_mesh;
+  double m_EPS {::EPS};
   int m_allocatorID;
 };
 
@@ -493,8 +505,8 @@ template <typename ExecSpace>
 class PointInCell2DTest : public PointInCellTest<2, ExecSpace>
 {
 public:
-  static const int DIM = 2;
-  static const int ELT_MULT_FAC = 4;
+  static constexpr int DIM = 2;
+  static constexpr int ELT_MULT_FAC = 4;
 
 protected:
   virtual void SetUp()
@@ -702,8 +714,8 @@ template <typename ExecSpace>
 class PointInCell3DTest : public PointInCellTest<3, ExecSpace>
 {
 public:
-  static const int DIM = 3;
-  static const int ELT_MULT_FAC = 8;
+  static constexpr int DIM = 3;
+  static constexpr int ELT_MULT_FAC = 8;
 
 protected:
   virtual void SetUp()
@@ -921,8 +933,8 @@ template <int DIM, Metric METRIC>
 class ExpectedValue
 {
 public:
-  typedef typename axom::primal::Point<double, DIM> SpacePt;
-  typedef typename axom::primal::Vector<double, DIM> SpaceVec;
+  using SpacePt = typename axom::primal::Point<double, DIM>;
+  using SpaceVec = typename axom::primal::Vector<double, DIM>;
 
   ExpectedValue(double radius) : m_radius(radius) { }
 
@@ -953,9 +965,9 @@ private:
     switch(METRIC)
     {
     case L_1_METRIC:
-      for(int i = 0; i < DIM; ++i)
+      for(int d = 0; d < DIM; ++d)
       {
-        ret += axom::utilities::abs(pt[i]);
+        ret += axom::utilities::abs(pt[d]);
       }
       break;
     case L_2_METRIC:
@@ -1184,6 +1196,7 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
   axom::utilities::Timer constructTimer(true);
   PointInCellType spatialIndex1(&mesh1,
                                 GridCell(10).data(),
+                                this->getTolerance(),
                                 this->getAllocatorId());
   SLIC_INFO(axom::fmt::format(
     "Constructing index over curved quad mesh1 with {} elems took {} s",
@@ -1193,6 +1206,7 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
   axom::utilities::Timer constructTimer2(true);
   PointInCellType spatialIndex2(&mesh2,
                                 GridCell(10).data(),
+                                this->getTolerance(),
                                 this->getAllocatorId());
   SLIC_INFO(axom::fmt::format(
     "Constructing index over curved quad mesh2 with {} elems took {} s",
@@ -1240,9 +1254,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
       }
 
       // Transformed point should match query point
-      for(int i = 0; i < DIM; ++i)
+      for(int d = 0; d < DIM; ++d)
       {
-        EXPECT_NEAR(queryPoint[i], untransformPt[i], ::EPS);
+        EXPECT_NEAR(queryPoint[d], untransformPt[d], this->getTolerance());
       }
     }
 
@@ -1259,9 +1273,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
       }
 
       // Transformed point should match query point
-      for(int i = 0; i < DIM; ++i)
+      for(int d = 0; d < DIM; ++d)
       {
-        EXPECT_NEAR(queryPoint[i], untransformPt[i], ::EPS);
+        EXPECT_NEAR(queryPoint[d], untransformPt[d], this->getTolerance());
       }
     }
   }
@@ -1300,9 +1314,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
       << " Failed to reverse the transformation.";
 
     // Check that the isoparametric coordinates agree
-    for(int i = 0; i < DIM; ++i)
+    for(int d = 0; d < DIM; ++d)
     {
-      EXPECT_NEAR(isoparCenter[i], foundIsoPar1[i], EPS);
+      EXPECT_NEAR(isoparCenter[d], foundIsoPar1[d], this->getTolerance());
     }
 
     // Check that we can find this point in mesh2
@@ -1340,6 +1354,7 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
   PointInCellType spatialIndex1(&mesh1,
                                 GridCell(5).data(),
+                                this->getTolerance(),
                                 this->getAllocatorId());
 
   /// spatialIndex1.enableDebugMeshGeneration();
@@ -1401,7 +1416,7 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
         EXPECT_TRUE(found);
         for(int d = 0; d < DIM; ++d)
         {
-          EXPECT_NEAR(origIsoPt[d], isoPt[d], ::EPS);
+          EXPECT_NEAR(origIsoPt[d], isoPt[d], this->getTolerance());
         }
 
         int idx = cmesh.getCellLinearIndex(i, j);
@@ -1586,9 +1601,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   std::srand(SRAND_SEED);
 

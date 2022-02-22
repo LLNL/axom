@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -83,6 +83,11 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  * \pre T must be CopyAssignable and Erasable
  * \see https://en.cppreference.com/w/cpp/named_req
  *
+ * \pre When Array is allocated on the device, T must be relocatable, i.e.
+ *  moving the object to a new index and destroying the original should be
+ *  equivalent to a memcpy.
+ * \see https://github.com/facebook/folly/blob/main/folly/docs/FBVector.md#object-relocation
+ *
  */
 template <typename T, int DIM = 1, MemorySpace SPACE = MemorySpace::Dynamic>
 class Array : public ArrayBase<T, DIM, Array<T, DIM, SPACE>>
@@ -97,6 +102,9 @@ public:
 
   using ArrayViewType = ArrayView<T, DIM, SPACE>;
   using ConstArrayViewType = ArrayView<const T, DIM, SPACE>;
+
+private:
+  using OpHelper = detail::ArrayOps<T, SPACE>;
 
 public:
   /// \name Native Storage Array Constructors
@@ -121,6 +129,10 @@ public:
    * \note a capacity is specified for the number of elements to store in the
    *  array and does not correspond to the actual bytesize.
    * \note The option to select a capacity is only available for 1-dimensional Arrays
+   * 
+   * \note Some overloads have an `ArrayOptions::Uninitialized` first parameter.
+   * These are intended for cases where the array data should not be initialized
+   * when memory is allocated, e.g. if the code is known to initialize the data
    *
    * \pre num_elements >= 0
    *
@@ -130,8 +142,7 @@ public:
    */
   template <IndexType SFINAE_DIM = DIM,
             MemorySpace SFINAE_SPACE = SPACE,
-            typename std::enable_if<SFINAE_DIM == 1 &&
-                                    SFINAE_SPACE == MemorySpace::Dynamic>::type* = nullptr>
+            typename std::enable_if<SFINAE_DIM == 1>::type* = nullptr>
   Array(IndexType num_elements,
         IndexType capacity = 0,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
@@ -139,9 +150,11 @@ public:
   /// \overload
   template <IndexType SFINAE_DIM = DIM,
             MemorySpace SFINAE_SPACE = SPACE,
-            typename std::enable_if<SFINAE_DIM == 1 &&
-                                    SFINAE_SPACE != MemorySpace::Dynamic>::type* = nullptr>
-  Array(IndexType num_elements, IndexType capacity = 0);
+            typename std::enable_if<SFINAE_DIM == 1>::type* = nullptr>
+  Array(ArrayOptions::Uninitialized,
+        IndexType num_elements,
+        IndexType capacity = 0,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
    * \brief Generic constructor for an Array of arbitrary dimension
@@ -213,6 +226,7 @@ public:
     {
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
       m_resize_ratio = other.m_resize_ratio;
+      m_default_construct = other.m_default_construct;
       initialize(other.size(), other.capacity());
       axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
     }
@@ -526,35 +540,19 @@ public:
   /*!
    * \brief Returns an ArrayIterator to the first element of the Array
    */
-  ArrayIterator begin()
-  {
-    assert(m_data != nullptr);
-    return ArrayIterator(0, this);
-  }
+  ArrayIterator begin() { return ArrayIterator(0, this); }
 
   /// \overload
-  ConstArrayIterator begin() const
-  {
-    assert(m_data != nullptr);
-    return ConstArrayIterator(0, this);
-  }
+  ConstArrayIterator begin() const { return ConstArrayIterator(0, this); }
 
   /*!
    * \brief Returns an ArrayIterator to the element following the last
    *  element of the Array.
    */
-  ArrayIterator end()
-  {
-    assert(m_data != nullptr);
-    return ArrayIterator(size(), this);
-  }
+  ArrayIterator end() { return ArrayIterator(size(), this); }
 
   /// \overload
-  ConstArrayIterator end() const
-  {
-    assert(m_data != nullptr);
-    return ConstArrayIterator(size(), this);
-  }
+  ConstArrayIterator end() const { return ConstArrayIterator(size(), this); }
 
   /*!
    * \brief Shrink the capacity to be equal to the size.
@@ -729,13 +727,23 @@ Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
 template <typename T, int DIM, MemorySpace SPACE>
 template <IndexType SFINAE_DIM,
           MemorySpace SFINAE_SPACE,
-          typename std::enable_if<SFINAE_DIM == 1 &&
-                                  SFINAE_SPACE == MemorySpace::Dynamic>::type*>
+          typename std::enable_if<SFINAE_DIM == 1>::type*>
 Array<T, DIM, SPACE>::Array(IndexType num_elements,
                             IndexType capacity,
                             int allocator_id)
   : m_allocator_id(allocator_id)
 {
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
+  if(SPACE != MemorySpace::Dynamic &&
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
+  {
+#ifdef AXOM_DEBUG
+    std::cerr << "Incorrect allocator ID was provided for an Array object with "
+                 "explicit memory space - using default for space\n";
+#endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
   initialize(num_elements, capacity);
 }
 
@@ -743,34 +751,47 @@ Array<T, DIM, SPACE>::Array(IndexType num_elements,
 template <typename T, int DIM, MemorySpace SPACE>
 template <IndexType SFINAE_DIM,
           MemorySpace SFINAE_SPACE,
-          typename std::enable_if<SFINAE_DIM == 1 &&
-                                  SFINAE_SPACE != MemorySpace::Dynamic>::type*>
-Array<T, DIM, SPACE>::Array(IndexType num_elements, IndexType capacity)
-  : m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+          typename std::enable_if<SFINAE_DIM == 1>::type*>
+Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized,
+                            IndexType num_elements,
+                            IndexType capacity,
+                            int allocator_id)
+  : m_allocator_id(allocator_id)
+  , m_default_construct(false)
 {
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
+  if(SPACE != MemorySpace::Dynamic &&
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
+  {
+#ifdef AXOM_DEBUG
+    std::cerr << "Incorrect allocator ID was provided for an Array object with "
+                 "explicit memory space - using default for space\n";
+#endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
   initialize(num_elements, capacity);
-}
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array(const Array& other, int allocator_id)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
-  , m_allocator_id(SPACE == MemorySpace::Dynamic
-                     ? allocator_id
-                     : axom::detail::getAllocatorID<SPACE>())
+  , m_allocator_id(allocator_id)
+  , m_default_construct(other.m_default_construct)
 {
-// We can't template/SFINAE away the allocator_id parameter since this is a copy
-// constructor, so we just ignore the allocator ID if the memory space isn't Dynamic.
-// We can warn the user that their input is being ignored, though.
-#ifdef AXOM_DEBUG
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
   if(SPACE != MemorySpace::Dynamic &&
-     allocator_id != axom::detail::getAllocatorID<SPACE>())
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
   {
+#ifdef AXOM_DEBUG
     std::cerr << "Incorrect allocator ID was provided for an Array object with "
-                 "explicit memory space\n";
-  }
+                 "explicit memory space - using default for space\n";
 #endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
   initialize(other.size(), other.capacity());
   axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
 }
@@ -791,6 +812,7 @@ Array<T, DIM, SPACE>::Array(Array&& other)
   m_default_construct = other.m_default_construct;
 
   other.m_data = nullptr;
+  other.m_num_elements = 0;
   other.m_capacity = 0;
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
   other.m_allocator_id = INVALID_ALLOCATOR_ID;
@@ -834,6 +856,7 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
 template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::~Array()
 {
+  clear();
   if(m_data != nullptr)
   {
     axom::deallocate(m_data);
@@ -846,10 +869,8 @@ Array<T, DIM, SPACE>::~Array()
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::fill(const T& value)
 {
-  for(IndexType i = 0; i < m_num_elements; i++)
-  {
-    m_data[i] = value;
-  }
+  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
+  OpHelper::fill(m_data, 0, m_num_elements, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -860,21 +881,15 @@ inline void Array<T, DIM, SPACE>::set(const T* elements, IndexType n, IndexType 
   assert(pos >= 0);
   assert(pos + n <= m_num_elements);
 
-  for(IndexType i = 0; i < n; ++i)
-  {
-    m_data[pos + i] = elements[i];
-  }
+  OpHelper::destroy(m_data, pos, n, m_allocator_id);
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, elements);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::clear()
 {
-  // This most likely needs to be a call to erase() instead.
-  for(IndexType i = 0; i < m_num_elements; ++i)
-  {
-    m_data[i].~T();
-  }
+  OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
 
   updateNumElements(0);
 }
@@ -885,7 +900,8 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, const T& value)
 {
   static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(1, pos);
-  m_data[pos] = value;
+
+  OpHelper::emplace(m_data, pos, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -906,10 +922,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T* va
 {
   assert(values != nullptr);
   reserveForInsert(n, pos);
-  for(IndexType i = 0; i < n; ++i)
-  {
-    m_data[pos + i] = values[i];
-  }
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, values);
 }
 
 //------------------------------------------------------------------------------
@@ -931,10 +944,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T& va
 {
   static_assert(DIM == 1, "Insertion not supported for multidimensional Arrays");
   reserveForInsert(n, pos);
-  for(IndexType i = 0; i < n; ++i)
-  {
-    m_data[pos + i] = value;
-  }
+  OpHelper::fill(m_data, pos, n, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -956,18 +966,15 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
   Array<T, DIM, SPACE>::ArrayIterator pos)
 {
   assert(pos >= begin() && pos < end());
-  int counter = 0;
 
-  while(pos < end() - 1)
-  {
-    *pos = *(pos + 1);
-    pos += 1;
-    counter += 1;
-  }
-  (*pos).~T();
+  IndexType posIdx = pos - begin();
 
+  // Destroy element at posIdx and shift elements over by 1
+  OpHelper::destroy(m_data, posIdx, 1, m_allocator_id);
+  OpHelper::move(m_data, posIdx + 1, m_num_elements, posIdx, m_allocator_id);
   updateNumElements(m_num_elements - 1);
-  return pos - counter;
+
+  return ArrayIterator(posIdx, this);
 }
 
 //------------------------------------------------------------------------------
@@ -985,30 +992,18 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::erase(
     return last;
   }
 
-  int count = 0;
-
   // Erase [first,last) elements
-  while(first < last)
-  {
-    (*first).~T();
-    first++;
-    count++;
-  }
-
-  first -= count;
-  int shifted = 0;
+  IndexType firstIdx = first - begin();
+  IndexType lastIdx = last - begin();
+  IndexType nelems = last - first;
+  OpHelper::destroy(m_data, firstIdx, nelems, m_allocator_id);
 
   // Shift [last, end) elements over
-  while(last < end())
-  {
-    *first = *last;
-    first++;
-    last++;
-    shifted++;
-  }
+  OpHelper::move(m_data, lastIdx, m_num_elements, firstIdx, m_allocator_id);
 
+  IndexType count = lastIdx - firstIdx;
   updateNumElements(m_num_elements - count);
-  return first - shifted;
+  return ArrayIterator(firstIdx, this);
 }
 
 //------------------------------------------------------------------------------
@@ -1017,7 +1012,7 @@ template <typename... Args>
 inline void Array<T, DIM, SPACE>::emplace(IndexType pos, Args&&... args)
 {
   reserveForInsert(1, pos);
-  m_data[pos] = std::move(T(std::forward<Args>(args)...));
+  OpHelper::emplace(m_data, pos, m_allocator_id, std::forward<Args>(args)...);
 }
 
 //------------------------------------------------------------------------------
@@ -1028,7 +1023,7 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::emplac
   Args&&... args)
 {
   assert(pos >= begin() && pos <= end());
-  emplace(pos - begin(), args...);
+  emplace(pos - begin(), std::forward<Args>(args)...);
   return pos;
 }
 
@@ -1054,7 +1049,7 @@ template <typename... Args>
 inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 {
   static_assert(DIM == 1, "emplace_back is only supported for 1D arrays");
-  emplace(size(), args...);
+  emplace(size(), std::forward<Args>(args)...);
 }
 
 //------------------------------------------------------------------------------
@@ -1079,13 +1074,21 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
     dynamicRealloc(new_num_elements);
   }
 
-  if(m_default_construct)
+  if(prev_num_elements < new_num_elements && m_default_construct)
   {
-    detail::initializeInPlace(m_data,
-                              prev_num_elements,
-                              new_num_elements - prev_num_elements,
-                              m_allocator_id,
-                              std::is_default_constructible<T> {});
+    // Default-initialize the new elements
+    OpHelper::init(m_data,
+                   prev_num_elements,
+                   new_num_elements - prev_num_elements,
+                   m_allocator_id);
+  }
+  else if(prev_num_elements > new_num_elements)
+  {
+    // Destroy any elements above new_num_elements
+    OpHelper::destroy(m_data,
+                      new_num_elements,
+                      prev_num_elements - new_num_elements,
+                      m_allocator_id);
   }
 
   updateNumElements(new_num_elements);
@@ -1123,11 +1126,7 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
   setCapacity(capacity);
   if(m_default_construct)
   {
-    detail::initializeInPlace(m_data,
-                              0,
-                              num_elements,
-                              m_allocator_id,
-                              std::is_default_constructible<T> {});
+    OpHelper::init(m_data, 0, num_elements, m_allocator_id);
   }
   updateNumElements(num_elements);
 
@@ -1156,26 +1155,10 @@ inline T* Array<T, DIM, SPACE>::reserveForInsert(IndexType n, IndexType pos)
     dynamicRealloc(new_size);
   }
 
-  // FIXME: Won't this fail if m_data is in device memory?
-  T* const insert_pos = m_data + pos;
-  T* cur_pos = m_data + m_num_elements - 1;
-  for(; cur_pos >= insert_pos; --cur_pos)
-  {
-    *(cur_pos + n) = *cur_pos;
-  }
-
-  // Initialize the subset of the array that was just allocated
-  if(m_default_construct)
-  {
-    detail::initializeInPlace(m_data,
-                              pos,
-                              n,
-                              m_allocator_id,
-                              std::is_default_constructible<T> {});
-  }
+  OpHelper::move(m_data, pos, m_num_elements, pos + n, m_allocator_id);
 
   updateNumElements(new_size);
-  return insert_pos;
+  return m_data + pos;
 }
 
 //------------------------------------------------------------------------------

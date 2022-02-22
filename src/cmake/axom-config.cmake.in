@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,8 @@ if(NOT AXOM_FOUND)
   set(AXOM_VERSION_MINOR    "@AXOM_VERSION_MINOR@")
   set(AXOM_VERSION_PATCH    "@AXOM_VERSION_PATCH@")
   
+  set(AXOM_GIT_SHA          "@AXOM_GIT_SHA@")
+
   set(AXOM_INSTALL_PREFIX   "@AXOM_INSTALL_PREFIX@")
   set(AXOM_INCLUDE_DIRS     "${AXOM_INSTALL_PREFIX}/include")
   

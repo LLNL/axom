@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -450,6 +450,9 @@ TEST(sidre_group, get_first_and_next_group_index)
   delete ds;
 }
 
+//------------------------------------------------------------------------------
+// Verify Groups holding items in the list format
+//------------------------------------------------------------------------------
 TEST(sidre_group, child_lists)
 {
   DataStore* ds = new DataStore();
@@ -569,6 +572,58 @@ TEST(sidre_group, child_lists)
   root->destroyGroup("parent");
 
   delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Test Group's list format for holding contents of a vector of strings.
+//------------------------------------------------------------------------------
+TEST(sidre_group, string_list)
+{
+  // Round-trip test from std::vector<std::string> to Group and back.
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  std::vector<std::string> str_vec;
+  str_vec.push_back("This");
+  str_vec.push_back("is");
+  str_vec.push_back("a");
+  str_vec.push_back("vector");
+  str_vec.push_back("to");
+  str_vec.push_back("test");
+  str_vec.push_back("strings");
+  str_vec.push_back("in");
+  str_vec.push_back("sidre::Group's");
+  str_vec.push_back("list");
+  str_vec.push_back("format");
+
+  // my_strings is a Group in list format.
+  const bool use_list_collection = true;
+  Group* my_strings = root->createGroup("my_strings", use_list_collection);
+
+  // Put strings into the Group.
+  for(auto itr = str_vec.begin(); itr != str_vec.end(); ++itr)
+  {
+    // The first parameter will be ignored when creating a View in a Group
+    // that uses list collections, so we use the empty string
+    View* str_view = my_strings->createViewString("", *itr);
+    EXPECT_FALSE(str_view == nullptr);
+    EXPECT_TRUE(str_view->isString());
+  }
+
+  std::vector<std::string> test_vec;
+
+  // Get strings from the Group.
+  for(IndexType idx = my_strings->getFirstValidViewIndex(); indexIsValid(idx);
+      idx = my_strings->getNextValidViewIndex(idx))
+  {
+    View* str_view = my_strings->getView(idx);
+    EXPECT_FALSE(str_view == nullptr);
+    EXPECT_TRUE(str_view->isString());
+    std::string vstr = str_view->getString();
+    test_vec.push_back(vstr);
+  }
+
+  EXPECT_TRUE(str_vec == test_vec);
 }
 
 //------------------------------------------------------------------------------

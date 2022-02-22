@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,8 +40,6 @@ else()
     endif()
 endif()
 
-set(ENABLE_GMOCK ON CACHE STRING "")
-
 if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # Set some default BLT options before loading BLT only if not included in
     # another project
@@ -78,6 +76,21 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     endforeach()
 
     set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
+
+    # If Axom is the top project and AXOM_ENABLE_TESTS is off, force ENABLE_TESTS to off so
+    # gtest doesn't build when it's not needed
+    if(DEFINED AXOM_ENABLE_TESTS AND NOT AXOM_ENABLE_TESTS)
+        set(ENABLE_TESTS OFF CACHE BOOL "")
+    endif()
+
+    # If either AXOM_ENABLE_TESTS or ENABLE_TEST are explicitly turned off by the user,
+    # turn off GMock, otherwise turn it on
+    if((DEFINED AXOM_ENABLE_TESTS AND NOT AXOM_ENABLE_TESTS) OR
+       (DEFINED ENABLE_TESTS AND NOT ENABLE_TESTS))
+        set(ENABLE_GMOCK OFF CACHE BOOL "")
+    else()
+        set(ENABLE_GMOCK ON CACHE BOOL "")
+    endif()
 
     # Mark BLT's built-in third-party targets as EXPORTABLE so they can be added
     # to the axom-targets export set
@@ -116,7 +129,9 @@ if(AXOM_ENABLE_TOOLS)
 endif()
 
 # Using Axom install examples
-add_subdirectory(examples)
+if (AXOM_ENABLE_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 if(AXOM_ENABLE_DOCS)
     if(SPHINX_FOUND)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -98,21 +98,13 @@ public:
   /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
    */
-  ArrayViewIterator begin() const
-  {
-    assert(m_data != nullptr);
-    return ArrayViewIterator(0, this);
-  }
+  ArrayViewIterator begin() const { return ArrayViewIterator(0, this); }
 
   /*!
    * \brief Returns an ArrayViewIterator to the element following the last
    *  element of the Array.
    */
-  ArrayViewIterator end() const
-  {
-    assert(m_data != nullptr);
-    return ArrayViewIterator(size(), this);
-  }
+  ArrayViewIterator end() const { return ArrayViewIterator(size(), this); }
 
   /*!
    * \brief Return a pointer to the array of data.
@@ -165,7 +157,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data,
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 #endif
 {
-#ifdef AXOM_DEVICE_CODE
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
   static_assert((SPACE != MemorySpace::Constant) || std::is_const<T>::value,
                 "T must be const if memory space is Constant memory");
 #endif
@@ -208,7 +200,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.
   if(SPACE != MemorySpace::Dynamic &&
-     m_allocator_id != axom::detail::getAllocatorID<SPACE>())
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
   {
     std::cerr << "Input argument allocator does not match the explicitly "
                  "provided memory space\n";
@@ -234,7 +226,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
   // If it's not dynamic, the allocator ID from the argument array has to match the template param.
   // If that's not the case then things have gone horribly wrong somewhere.
   if(SPACE != MemorySpace::Dynamic &&
-     m_allocator_id != axom::detail::getAllocatorID<SPACE>())
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
   {
     std::cerr << "Input argument allocator does not match the explicitly "
                  "provided memory space\n";

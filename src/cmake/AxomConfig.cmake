@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,10 +46,10 @@ foreach(option ${OPTIONS})
 endforeach()
 
 convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
-convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
+convert_to_native_escaped_file_path(${PROJECT_BINARY_DIR} AXOM_BIN_DIR)
 
 # Read axom_exports_symbols into a variable that will be inlined in the config file
-file(READ ${CMAKE_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
+file(READ ${PROJECT_BINARY_DIR}/axom_export_symbols INLINED_AXOM_EXPORTS)
 
 #------------------------------------------------------------------------------
 # Compiler and language related configuration variables
@@ -98,10 +98,10 @@ endif()
 # Generate the configuration header file
 axom_configure_file(
     ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
-    ${CMAKE_BINARY_DIR}/include/axom/config.hpp
+    ${PROJECT_BINARY_DIR}/include/axom/config.hpp
 )
 
-install(FILES ${CMAKE_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)
+install(FILES ${PROJECT_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)
 
 #------------------------------------------------------------------------------
 # Generate axom-config.cmake for importing Axom into other CMake packages
@@ -148,3 +148,25 @@ install(
   DESTINATION 
     ${AXOM_INSTALL_CMAKE_MODULE_DIR}
 )
+
+
+#------------------------------------------------------------------------------
+# Create a list of exported targets so that other projects that include Axom
+# can add it to their CMake export list
+#------------------------------------------------------------------------------
+
+# Add it to a temporary list before creating the cache variable to use list(APPEND)
+set(_axom_exported_targets axom)
+
+blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF ENABLE_HIP)
+
+set(_optional_targets cli11 fmt hdf5 lua openmp sol sparsehash)
+foreach(_tar ${_optional_targets})
+    string(TOUPPER ${_tar} _upper_tar)
+    if(ENABLE_${_upper_tar} OR ${_upper_tar}_FOUND)
+        list(APPEND _axom_exported_targets ${_tar})
+    endif()
+endforeach()
+
+set(axom_exported_targets ${_axom_exported_targets} CACHE INTERNAL "")

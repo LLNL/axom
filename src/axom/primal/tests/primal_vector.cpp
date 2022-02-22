@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,8 +9,8 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
-#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
-#include "axom/core/execution/for_all.hpp"          // for_all()
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
 
 using namespace axom;
 
@@ -40,9 +40,9 @@ void check_vector_policy()
 TEST(primal_vector, vector_constructors)
 {
   static const int DIM = 5;
-  typedef double CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  using CoordType = double;
+  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
   QVec vec1;
   EXPECT_EQ(vec1.dimension(), DIM);
@@ -125,9 +125,9 @@ TEST(primal_vector, vector_constructors)
 TEST(primal_vector, vector_from_points_constructor)
 {
   static const int DIM = 5;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
   const double aVal = 12;
   const double bVal = 5;
@@ -160,14 +160,14 @@ TEST(primal_vector, vector_from_points_constructor)
 TEST(primal_vector, vector_normalize)
 {
   static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
   EXPECT_DOUBLE_EQ(QVec().unitVector().norm(), 1.0);
 
   // Find the norm of an arbitrary point
-  QPoint p = QPoint::make_point(543.5435, 1566.423532, -432.4);
+  QPoint p {543.5435, 1566.423532, -432.4};
   QVec vec2(QPoint(), p);
   EXPECT_DOUBLE_EQ(vec2.unitVector().norm(), 1.0);
 
@@ -183,12 +183,12 @@ TEST(primal_vector, vector_normalize)
 TEST(primal_vector, vector_norm)
 {
   static const int DIM = 2;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0);
-  QPoint p2 = QPoint::make_point(0, 4);
+  QPoint p1 {3, 0};
+  QPoint p2 {0, 4};
   QVec vec(p1, p2);
   EXPECT_DOUBLE_EQ(vec.norm(), 5.0);
 }
@@ -197,17 +197,17 @@ TEST(primal_vector, vector_norm)
 TEST(primal_vector, vector_arithmetic)
 {
   static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0, 1.2);
-  QPoint p2 = QPoint::make_point(0, 4, 1.2);
-  QPoint pSum = QPoint::make_point(3, 4, 2.4);
-  QPoint pDiff = QPoint::make_point(-3, 4, 0);
+  QPoint p1 {3, 0, 1.2};
+  QPoint p2 {0, 4, 1.2};
+  QPoint pSum {3, 4, 2.4};
+  QPoint pDiff {-3, 4, 0};
 
   CoordType scalar = 5.3;
-  QPoint pScalar = QPoint::make_point(scalar * 3, scalar * 4, scalar * 2.4);
+  QPoint pScalar {scalar * 3, scalar * 4, scalar * 2.4};
 
   QVec v1(p1);
   QVec v2(p2);
@@ -239,12 +239,12 @@ TEST(primal_vector, vector_arithmetic)
 TEST(primal_vector, vector_inner_product)
 {
   static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0, 1.2);
-  QPoint p2 = QPoint::make_point(0, 4, 1.2);
+  QPoint p1 {3, 0, 1.2};
+  QPoint p2 {0, 4, 1.2};
 
   CoordType expDot = 1.2 * 1.2;
 
@@ -263,12 +263,12 @@ TEST(primal_vector, vector_inner_product)
 TEST(primal_vector, vector_outer_product)
 {
   static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0);
-  QPoint p2 = QPoint::make_point(0, 4);
+  QPoint p1 {3, 0};
+  QPoint p2 {0, 4};
 
   QVec v1(p1);
   QVec v2(p2);
@@ -285,7 +285,8 @@ TEST(primal_vector, vector_outer_product)
 TEST(primal_vector, vector_zero)
 {
   constexpr int DIM = 5;
-  typedef primal::Vector<double, DIM> QVec;
+  using QVec = primal::Vector<double, DIM>;
+
   QVec zero {0.0};
   EXPECT_TRUE(zero.is_zero());
 
@@ -344,6 +345,8 @@ TEST(primal_vector, subtract_points)
 
     EXPECT_EQ(oneVec, onePt - zeroPt);
     EXPECT_EQ(-oneVec, zeroPt - onePt);
+
+    EXPECT_EQ(onePt - oneVec, zeroPt);
   }
 
   {
@@ -358,6 +361,7 @@ TEST(primal_vector, subtract_points)
     {
       EXPECT_DOUBLE_EQ(exp[i], diff[i]);
       EXPECT_DOUBLE_EQ(ctor[i], diff[i]);
+      EXPECT_DOUBLE_EQ((head - diff)[i], tail[i]);
     }
   }
 }

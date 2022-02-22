@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,12 +31,20 @@ private:
     !std::is_const<typename ArrayType::RealConstT>::value;
 
 public:
+  // Iterator traits required to satisfy LegacyRandomAccessIterator concept
+  // before C++20
+  // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
+  using difference_type = IndexType;
+  using value_type = typename std::remove_cv<ValueType>::type;
+  using reference = ValueType&;
+  using pointer = ValueType*;
+  using iterator_category = std::random_access_iterator_tag;
+
+public:
   using ArrayPointerType =
     typename std::conditional<ReturnConstRef || FromArrayView,
                               const ArrayType*,
                               ArrayType*>::type;
-  // FIXME: Define the iterator_traits types (or possibly in IteratorBase)
-  // https://en.cppreference.com/w/cpp/iterator/iterator_traits
 
   ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
     : IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>(pos)
