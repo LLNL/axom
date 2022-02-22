@@ -786,7 +786,6 @@ Array<T, DIM, SPACE>::Array(Array&& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
-  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
