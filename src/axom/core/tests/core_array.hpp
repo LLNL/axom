@@ -139,7 +139,7 @@ void check_fill(Array<T, DIM, SPACE>& v)
   EXPECT_EQ(data_ptr, v.data());
 
   // To check entries, we copy data to a dynamic array
-  int host_alloc_id = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
+  int host_alloc_id = axom::getDefaultAllocatorID();
   Array<T, DIM> v_host(v, host_alloc_id);
 
   /* Check that the entries are all MAGIC_NUM_0. */
@@ -783,7 +783,7 @@ void check_device(Array<T, DIM, SPACE>& v)
 
   // Check the contents of the array by assigning to a Dynamic array
   // The Umpire allocator should be Host, so we can access it from the CPU
-  int host_alloc_id = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
+  int host_alloc_id = axom::getDefaultAllocatorID();
   Array<T, 1> check_raw_array_dynamic(v, host_alloc_id);
   EXPECT_EQ(check_raw_array_dynamic.size(), size);
   for(int i = 0; i < check_raw_array_dynamic.size(); i++)
@@ -860,7 +860,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
 
   // Check the contents of the array by assigning to a Dynamic array
   // The Umpire allocator should be Host, so we can access it from the CPU
-  int host_alloc_id = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
+  int host_alloc_id = axom::getDefaultAllocatorID();
   Array<T, 2> check_raw_array_dynamic(v, host_alloc_id);
   EXPECT_EQ(check_raw_array_dynamic.size(), size);
   EXPECT_EQ(check_raw_array_dynamic.shape(), v.shape());
