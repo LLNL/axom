@@ -1110,6 +1110,7 @@ inline void Array<T, DIM, SPACE>::swap(Array<T, DIM, SPACE>& other)
   axom::utilities::swap(m_capacity, other.m_capacity);
   axom::utilities::swap(m_resize_ratio, other.m_resize_ratio);
   axom::utilities::swap(m_default_construct, other.m_default_construct);
+  axom::utilities::swap(m_allocator_id, other.m_allocator_id);
 }
 
 //------------------------------------------------------------------------------
