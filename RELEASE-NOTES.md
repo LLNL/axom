@@ -74,6 +74,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `axom::about()`
 - Use more specific type trait checks in `ArrayOps`, to avoid generating unnecessary copies in
   fill/destroy operations on otherwise trivially-copyable/destructible types.
+- `axom::Array` now consistently propagates the allocator ID on copy, move, and swap operations when possible.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
