@@ -360,7 +360,9 @@ class Axom(CachedCMakePackage, CudaPackage):
             entries.append(cmake_cache_path('SCR_DIR', dep_dir))
 
             # scr's dependencies
-            for dep in ('kvtree', 'dtcmp'):
+            scr_deps = ('kvtree', 'dtcmp', 'spath', 'axl', 'lwgrp', 'er', 'rankstr',
+                        'redset', 'shuffile', 'yogrt')
+            for dep in scr_deps:
                 if spec.satisfies('^{0}'.format(dep)):
                     dep_dir = get_spec_path(spec, dep, path_replacements)
                     entries.append(cmake_cache_path('%s_DIR' % dep.upper(), dep_dir))

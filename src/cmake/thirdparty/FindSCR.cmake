@@ -18,7 +18,7 @@ if(NOT SCR_DIR)
 endif()
 
 #find includes
-find_path( SCR_INCLUDE_DIRS scr.h
+find_path( SCR_INCLUDE_DIR scr.h
            PATHS  ${SCR_DIR}/include/
            NO_DEFAULT_PATH
            NO_CMAKE_ENVIRONMENT_PATH
@@ -26,11 +26,106 @@ find_path( SCR_INCLUDE_DIRS scr.h
            NO_SYSTEM_ENVIRONMENT_PATH
            NO_CMAKE_SYSTEM_PATH)
 
+# Add SCR's dependency's include
+find_path( KVTREE_INCLUDE_DIR kvtree.h
+           PATHS  ${KVTREE_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( DTCMP_INCLUDE_DIR dtcmp.h
+           PATHS  ${DTCMP_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( SPATH_INCLUDE_DIR spath.h
+           PATHS  ${SPATH_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( AXL_INCLUDE_DIR axl.h
+           PATHS  ${AXL_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( LWGRP_INCLUDE_DIR lwgrp.h
+           PATHS  ${LWGRP_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( ER_INCLUDE_DIR er.h
+           PATHS  ${ER_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( RANKSTR_INCLUDE_DIR rankstr_mpi.h
+           PATHS  ${RANKSTR_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( REDSET_INCLUDE_DIR redset.h
+           PATHS  ${REDSET_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( SHUFFILE_INCLUDE_DIR shuffile.h
+           PATHS  ${SHUFFILE_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+find_path( YOGRT_INCLUDE_DIR yogrt.h
+           PATHS  ${YOGRT_DIR}/include/
+           NO_DEFAULT_PATH
+           NO_CMAKE_ENVIRONMENT_PATH
+           NO_CMAKE_PATH
+           NO_SYSTEM_ENVIRONMENT_PATH
+           NO_CMAKE_SYSTEM_PATH)
+
+set(SCR_INCLUDE_DIRS
+    ${SCR_INCLUDE_DIR}
+    ${KVTREE_INCLUDE_DIR}
+    ${DTCMP_INCLUDE_DIR}
+    ${SPATH_INCLUDE_DIR}
+    ${AXL_INCLUDE_DIR}
+    ${LWGRP_INCLUDE_DIR}
+    ${ER_INCLUDE_DIR}
+    ${RANKSTR_INCLUDE_DIR}
+    ${REDSET_INCLUDE_DIR}
+    ${SHUFFILE_INCLUDE_DIR}
+    ${YOGRT_INCLUDE_DIR}
+    )
+
 blt_find_libraries(
         FOUND_LIBS SCR_LIBRARIES
-        NAMES      scr kvtree dtcmp
+        NAMES      scr kvtree dtcmp spath axl lwgrp er rankstr redset redset_base shuffile yogrt
         REQUIRED   TRUE
-        PATHS      ${SCR_DIR}/lib ${KVTREE_DIR}/lib ${DTCMP_DIR}/lib )
+        PATHS      ${SCR_DIR}/lib ${KVTREE_DIR}/lib ${DTCMP_DIR}/lib ${SPATH_DIR}/lib ${AXL_DIR}/lib ${LWGRP_DIR}/lib ${ER_DIR}/lib ${RANKSTR_DIR}/lib ${REDSET_DIR}/lib ${SHUFFILE_DIR}/lib  ${YOGRT_DIR}/lib)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set SCR_FOUND to TRUE
