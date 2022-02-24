@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: gcc@8.1.0
+# Compiler Spec: gcc@8.3.1
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
@@ -15,27 +15,29 @@ if(DEFINED ENV{SPACK_CC})
 
   set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_23_17_05_24/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  # No Fortran compiler defined in spec
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_23_17_05_24/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-8.3.1/bin/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-8.3.1/bin/g++" CACHE PATH "")
 
-  # No Fortran compiler defined in spec
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran" CACHE PATH "")
+
 endif()
 
-set(ENABLE_FORTRAN OFF CACHE BOOL "")
+set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 #------------------------------------------------------------------------------
 # MPI
 #------------------------------------------------------------------------------
 
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.3.1/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.3.1/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.3.1/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC_EXECUTABLE "/usr/bin/srun" CACHE PATH "")
 
@@ -61,13 +63,13 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_23_17_05_24/gcc-8.1.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_02_23_17_05_24/gcc-8.3.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
-# MFEM not built
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
