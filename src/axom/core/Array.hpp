@@ -193,7 +193,11 @@ public:
    * \brief Constructor for transferring between memory spaces
    * 
    * \param [in] other The array in a different memory space to copy from
-   * \param [in] allocator_id the ID of the allocator to use (optional)
+   * \param [in] allocator_id the ID of the allocator to use (optional).
+   *     Default value of -1 causes the new Array to use the allocator
+   *     of \a other.  If the allocator_id is specified, it should match the
+   *     memory space of \a other: otherwise, the new Array will use
+   *     the default allocator.
    */
   template <typename OtherArrayType>
   Array(const ArrayBase<T, DIM, OtherArrayType>& other, int allocator_id = -1);
