@@ -566,7 +566,7 @@ private:
     {
       IndexType idx =
         numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
-      return m_bins.flatIdx(idx);
+      return m_bins.flatIndex(idx);
     }
 
     /// Dimension-specific helper for resizing the ND array in 2D

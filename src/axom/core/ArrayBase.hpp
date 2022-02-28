@@ -253,13 +253,13 @@ public:
    *
    * \pre 0 <= idx < m_num_elements
    */
-  AXOM_HOST_DEVICE T& flatIdx(const IndexType idx)
+  AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE RealConstT& flatIdx(const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -499,13 +499,13 @@ public:
    *
    * \pre 0 <= idx < m_num_elements
    */
-  AXOM_HOST_DEVICE T& flatIdx(const IndexType idx)
+  AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE RealConstT& flatIdx(const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -625,7 +625,7 @@ bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
 
   for(int i = 0; i < static_cast<const LArrayType&>(lhs).size(); i++)
   {
-    if(!(lhs.flatIdx(i) == rhs.flatIdx(i)))
+    if(!(lhs.flatIndex(i) == rhs.flatIndex(i)))
     {
       return false;
     }

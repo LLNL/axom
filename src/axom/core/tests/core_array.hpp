@@ -670,8 +670,8 @@ void check_swap(Array<T, DIM>& v)
   /* Push 0...size elements */
   for(int i = 0; i < v.size(); i++)
   {
-    v.flatIdx(i) = i;
-    v_two.flatIdx(i) = -i;
+    v.flatIndex(i) = i;
+    v_two.flatIndex(i) = -i;
   }
 
   /* Create copies */
@@ -1499,8 +1499,8 @@ TEST(core_array, check_multidimensional)
 
   for(int i = 0; i < v_int_flat.size(); i++)
   {
-    // For a multidim array, flatIdx(i) is a "flat" index into the raw data
-    EXPECT_EQ(v_int.flatIdx(i), v_int_flat[i]);
+    // For a multidim array, flatIndex(i) is a "flat" index into the raw data
+    EXPECT_EQ(v_int.flatIndex(i), v_int_flat[i]);
   }
 
   Array<double, 3> v_double(4, 3, 2);
@@ -1529,8 +1529,8 @@ TEST(core_array, check_multidimensional)
 
   for(int i = 0; i < v_double.size(); i++)
   {
-    // For a multidim array, flatIdx(i) is a "flat" index into the raw data
-    EXPECT_EQ(v_double.flatIdx(i), v_double_flat[i]);
+    // For a multidim array, flatIndex(i) is a "flat" index into the raw data
+    EXPECT_EQ(v_double.flatIndex(i), v_double_flat[i]);
   }
 
   for(int i = 0; i < v_double.shape()[0]; i++)
@@ -1580,8 +1580,8 @@ TEST(core_array, check_multidimensional_view)
 
   for(int i = 0; i < v_int_flat_view.size(); i++)
   {
-    // For a multidim array, flatIdx(i) is a "flat" index into the raw data
-    EXPECT_EQ(v_int_view.flatIdx(i), v_int_flat_view[i]);
+    // For a multidim array, flatIndex(i) is a "flat" index into the raw data
+    EXPECT_EQ(v_int_view.flatIndex(i), v_int_flat_view[i]);
   }
 
   double v_double_arr[4 * 3 * 2];
@@ -1612,8 +1612,8 @@ TEST(core_array, check_multidimensional_view)
 
   for(int i = 0; i < v_double_view.size(); i++)
   {
-    // For a multidim array, flatIdx(i) is a "flat" index into the raw data
-    EXPECT_EQ(v_double_view.flatIdx(i), v_double_flat_view[i]);
+    // For a multidim array, flatIndex(i) is a "flat" index into the raw data
+    EXPECT_EQ(v_double_view.flatIndex(i), v_double_flat_view[i]);
   }
 
   for(int i = 0; i < v_double_view.shape()[0]; i++)
