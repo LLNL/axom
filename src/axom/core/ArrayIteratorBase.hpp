@@ -29,6 +29,8 @@ private:
   constexpr static bool ReturnConstRef = std::is_const<ValueType>::value;
   constexpr static bool FromArrayView =
     !std::is_const<typename ArrayType::RealConstT>::value;
+  using BaseType =
+    IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>;
 
 public:
   // Iterator traits required to satisfy LegacyRandomAccessIterator concept
@@ -47,25 +49,18 @@ public:
                               ArrayType*>::type;
 
   ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
-    : IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>(pos)
+    : BaseType(pos)
     , m_arrayPtr(arr)
   { }
 
   /**
    * \brief Returns the current iterator value
    */
-  ValueType& operator*()
-  {
-    return m_arrayPtr->flatIdx(
-      IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>::m_pos);
-  }
+  ValueType& operator*() { return m_arrayPtr->flatIdx(BaseType::m_pos); }
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
-  void advance(IndexType n)
-  {
-    IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>::m_pos += n;
-  }
+  void advance(IndexType n) { BaseType::m_pos += n; }
 
 protected:
   ArrayPointerType const m_arrayPtr;
