@@ -233,7 +233,7 @@ void demoArrayDevice()
   // _basic_array_device_explicit_end
 
   // _cuda_array_create_start
-  const int allocator_id = axom::getUmpireResourceAllocatorID(
+  const int unified_alloc_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
 
   // The last template parameter specifies a memory space.
@@ -241,7 +241,7 @@ void demoArrayDevice()
   // memory space at runtime with a memory allocator ID.  The
   // third constructor parameter specifies the allocator.
   // If this argument is not provided host memory will be allocated.
-  axom::Array<int> A_dynamic(N, N, allocator_id);
+  axom::Array<int> A_dynamic(N, N, unified_alloc_id);
 
   // We also have the option to "lock down" the memory space to allow for
   // compile-time guarantees against dereferencing pointers in the wrong memory space.
@@ -258,6 +258,39 @@ void demoArrayDevice()
   axom::Array<int, 1, axom::MemorySpace::Device> C_device(N);
 
   // _cuda_array_create_end
+  // _cuda_array_propagate_start
+
+  // For a Dynamic space memory array, copies and moves will use the allocator
+  // from the other array, unless otherwise specified.
+  axom::Array<int> C_device_copy(C_device);
+  axom::Array<int> C_device_copy_assign = C_device;
+  axom::Array<int> C_device_move(std::move(C_device_copy));
+  axom::Array<int> C_device_move_assign = std::move(C_device_copy_assign);
+
+  // An allocator ID may be passed into the copy constructor, which creates an
+  // array in that memory space.
+  const int host_alloc_id = axom::getDefaultAllocatorID();
+  axom::Array<int> C_host_copy(C_device, host_alloc_id);
+
+  // The semantics for Arrays with compile-time specified memory spaces is similar:
+  // when possible, an allocator ID from the other array is used.
+  axom::Array<int, 1, axom::MemorySpace::Device> C_explicit_device_copy(C_device);
+
+  // Just as before, an allocator ID may be specified explicitly.
+  axom::Array<int, 1, axom::MemorySpace::Unified> C_explicit_unified_copy(
+    C_device,
+    unified_alloc_id);
+
+  // Note that if an allocator ID is incompatible with a memory space, the default
+  // allocator ID for that memory space is used. Both of these examples will copy
+  // memory to the host:
+  axom::Array<int, 1, axom::MemorySpace::Host> C_use_host_alloc(C_device);
+  // The below will also print a warning in debug mode:
+  axom::Array<int, 1, axom::MemorySpace::Host> C_use_host_alloc_2(
+    C_device,
+    unified_alloc_id);
+
+  // _cuda_array_propagate_end
   // _cuda_array_call_start
 
   // Passing by reference is not possible for CUDA kernels, so the three arrays
@@ -274,7 +307,6 @@ void demoArrayDevice()
   std::cout << "Array C_host = " << C_host << std::endl;
 
   // We can also use a dynamic array, if we specify an allocator ID for host memory in the copy constructor.
-  int host_alloc_id = axom::getDefaultAllocatorID();
   axom::Array<int> C_dynamic(C_device, host_alloc_id);
   std::cout << "Array C_dynamic = " << C_dynamic << std::endl;
   // _cuda_array_call_end
