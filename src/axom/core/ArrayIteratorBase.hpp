@@ -26,9 +26,6 @@ class ArrayIteratorBase
   : public IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>
 {
 private:
-  constexpr static bool ReturnConstRef = std::is_const<ValueType>::value;
-  constexpr static bool FromArrayView =
-    !std::is_const<typename ArrayType::RealConstT>::value;
   using BaseType =
     IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>;
 
@@ -43,10 +40,7 @@ public:
   using iterator_category = std::random_access_iterator_tag;
 
 public:
-  using ArrayPointerType =
-    typename std::conditional<ReturnConstRef || FromArrayView,
-                              const ArrayType*,
-                              ArrayType*>::type;
+  using ArrayPointerType = ArrayType*;
 
   ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
     : BaseType(pos)

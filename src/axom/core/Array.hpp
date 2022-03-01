@@ -98,7 +98,8 @@ public:
   using value_type = T;
   static constexpr MemorySpace space = SPACE;
   using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>, T>;
-  using ConstArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>, const T>;
+  using ConstArrayIterator =
+    ArrayIteratorBase<const Array<T, DIM, SPACE>, const T>;
 
   using ArrayViewType = ArrayView<T, DIM, SPACE>;
   using ConstArrayViewType = ArrayView<const T, DIM, SPACE>;

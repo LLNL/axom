@@ -48,7 +48,7 @@ public:
   using value_type = T;
   static constexpr int dimension = DIM;
   static constexpr MemorySpace space = SPACE;
-  using ArrayViewIterator = ArrayIteratorBase<ArrayView<T, DIM, SPACE>, T>;
+  using ArrayViewIterator = ArrayIteratorBase<const ArrayView<T, DIM, SPACE>, T>;
 
   /// \brief Default constructor
   AXOM_HOST_DEVICE ArrayView()
