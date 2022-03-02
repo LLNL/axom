@@ -30,8 +30,35 @@ namespace detail
 template <typename ArrayType>
 struct ArrayTraits;
 
-template <typename T, int DIM>
-class ArrayViewProxy;
+template <typename T, int DIM, typename BaseArray>
+class ArraySubslice;
+
+template <typename T, int SliceDim, typename BaseArray>
+struct SubsliceProxy
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+// The below specializations ensure that subslices of subslices refer to the
+// original base array type, e.g.:
+//   Array<int, 3> arr;
+//   auto slice_1 = arr[i]
+//      -> returns ArraySubslice<int, 2, Array<int, 3>>
+//   auto slice_2 = slice_1[j]
+//      -> returns ArraySubslice<int, 1, Array<int,3>> instead of
+//         ArraySubslice<int, 1, ArraySubslice<int, 2, Array<int, 3>>>
+template <typename T, int SliceDim, int OldSliceDim, typename BaseArray>
+struct SubsliceProxy<T, SliceDim, ArraySubslice<T, OldSliceDim, BaseArray>>
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+template <typename T, int SliceDim, int OldSliceDim, typename BaseArray>
+struct SubsliceProxy<T, SliceDim, const ArraySubslice<T, OldSliceDim, BaseArray>>
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
 }  // namespace detail
 
 /// \name Overloaded ArrayBase Operator(s)
@@ -111,17 +138,19 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
-  template <int SliceDim>
-  using SliceType =
-    typename std::conditional<SliceDim == DIM,
-                              T&,
-                              detail::ArrayViewProxy<T, DIM - SliceDim>>::type;
+  template <int IdxDim>
+  using SliceType = typename std::conditional<
+    DIM == IdxDim,
+    T&,
+    typename detail::SubsliceProxy<T, DIM - IdxDim, ArrayType>::type>::type;
 
-  template <int SliceDim>
-  using ConstSliceType =
-    typename std::conditional<SliceDim == DIM,
-                              RealConstT&,
-                              detail::ArrayViewProxy<T, DIM - SliceDim>>::type;
+  template <int IdxDim>
+  using ConstSliceType = typename std::conditional<
+    DIM == IdxDim,
+    RealConstT&,
+    typename detail::SubsliceProxy<T, DIM - IdxDim, const ArrayType>::type>::type;
+
+  constexpr static int Dims = DIM;
 
   AXOM_HOST_DEVICE ArrayBase() : m_dims {} { updateStrides(); }
 
@@ -228,7 +257,7 @@ public:
   {
     static_assert(UDim <= DIM,
                   "Index dimensions cannot be larger than array dimensions");
-    return sliceImpl(idx);
+    return asDerived().sliceImpl(idx);
   }
 
   /// \overload
@@ -238,7 +267,7 @@ public:
   {
     static_assert(UDim <= DIM,
                   "Index dimensions cannot be larger than array dimensions");
-    return sliceImpl(idx);
+    return asDerived().sliceImpl(idx);
   }
 
   /// @{
@@ -369,17 +398,7 @@ private:
   template <int UDim>
   AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(const StackArray<IndexType, UDim>& idx)
   {
-    const IndexType baseIdx =
-      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
-    assert(inBounds(baseIdx));
-    StackArray<IndexType, DIM - UDim> new_inds;
-    for(int i = 0; i < DIM - UDim; i++)
-    {
-      new_inds[i] = m_dims[UDim + i];
-    }
-    return SliceType<UDim>(asDerived().data() + baseIdx,
-                           asDerived().getAllocatorID(),
-                           new_inds);
+    return SliceType<UDim>(&asDerived(), idx);
   }
 
   /// \overload
@@ -387,17 +406,7 @@ private:
   AXOM_HOST_DEVICE ConstSliceType<UDim> sliceImpl(
     const StackArray<IndexType, UDim>& idx) const
   {
-    const IndexType baseIdx =
-      numerics::dot_product((const IndexType*)idx, m_strides.begin(), UDim);
-    assert(inBounds(baseIdx));
-    StackArray<IndexType, DIM - UDim> new_inds;
-    for(int i = 0; i < DIM - UDim; i++)
-    {
-      new_inds[i] = m_dims[UDim + i];
-    }
-    return ConstSliceType<UDim>(asDerived().data() + baseIdx,
-                                asDerived().getAllocatorID(),
-                                new_inds);
+    return ConstSliceType<UDim>(&asDerived(), idx);
   }
 
   /*! \brief Returns a scalar reference given a full set of indices */
@@ -667,6 +676,20 @@ bool allNonNegative(const T (&arr)[N])
     }
   }
   return true;
+}
+
+/// \brief Takes the last N elements from an array.
+template <int N, typename T, int DIM>
+AXOM_HOST_DEVICE StackArray<T, N> takeLastElems(const StackArray<T, DIM>& arr)
+{
+  static_assert(N <= DIM,
+                "Attempting to take more elements than the array holds");
+  StackArray<T, N> ret;
+  for(int i = 0; i < N; i++)
+  {
+    ret[i] = arr[i + DIM - N];
+  }
+  return ret;
 }
 
 /// \brief Indirection needed to dodge an MSVC compiler bug
@@ -1174,8 +1197,8 @@ public:
   }
 };
 
-template <typename T, int DIM>
-struct ArrayTraits<ArrayViewProxy<T, DIM>>
+template <typename T, int SliceDim, typename BaseArray>
+struct ArrayTraits<ArraySubslice<T, SliceDim, BaseArray>>
 {
   constexpr static bool is_view = true;
 };
@@ -1185,42 +1208,87 @@ struct ArrayTraits<ArrayViewProxy<T, DIM>>
  *  the generic ArrayBase constructor in ArrayView. This avoids the cost of
  *  looking up the correct allocator ID from the other ArrayView constructors.
  */
-template <typename T, int DIM>
-class ArrayViewProxy : public ArrayBase<T, DIM, ArrayViewProxy<T, DIM>>
+template <typename T, int SliceDim, typename BaseArray>
+class ArraySubslice
+  : public ArrayBase<T, SliceDim, ArraySubslice<T, SliceDim, BaseArray>>
 {
+  using BaseClass = ArrayBase<T, SliceDim, ArraySubslice<T, SliceDim, BaseArray>>;
+  using RefType = typename std::conditional<std::is_const<BaseArray>::value,
+                                            typename BaseClass::RealConstT&,
+                                            T&>::type;
+
+  constexpr static int OrigDims = BaseArray::Dims;
+  constexpr static int NumIndices = OrigDims - SliceDim;
+
+  template <int UDim>
+  using SliceType =
+    typename std::conditional<UDim == SliceDim,
+                              RefType,
+                              ArraySubslice<T, SliceDim - UDim, BaseArray>>::type;
 public:
-  AXOM_HOST_DEVICE ArrayViewProxy(T* data,
-                                  int allocatorID,
-                                  const StackArray<IndexType, DIM>& shape)
-    : ArrayBase<T, DIM, ArrayViewProxy<T, DIM>>(shape)
-    , m_data(data)
-    , m_allocatorID(allocatorID)
-    , m_size(packProduct(shape.m_data))
+
+  AXOM_HOST_DEVICE ArraySubslice(BaseArray* array,
+                                 const StackArray<IndexType, NumIndices>& idxs)
+    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()))
+    , m_array(array)
+    , m_inds(idxs)
   { }
 
   /*!
    * \brief Return the number of elements stored in the data array.
    */
-  inline AXOM_HOST_DEVICE IndexType size() const { return m_size; }
+  inline AXOM_HOST_DEVICE IndexType size() const
+  {
+    IndexType size = 1;
+    for(int idx = NumIndices; idx < OrigDims; idx++)
+    {
+      size *= m_array->shape()[idx];
+    }
+    return size;
+  }
 
   /*!
    * \brief Return a pointer to the array of data.
    */
   /// @{
 
-  AXOM_HOST_DEVICE inline T* data() const { return m_data; }
+  AXOM_HOST_DEVICE inline T* data() const
+  {
+    IndexType offset = numerics::dot_product(m_inds.begin(),
+                                             m_array->strides().begin(),
+                                             NumIndices);
+    return m_array->data() + offset;
+  }
 
   /// @}
 
   /*!
    * \brief Get the ID for the umpire allocator
    */
-  int getAllocatorID() const { return m_allocatorID; }
+  int getAllocatorID() const { return m_array->getAllocatorID(); }
+
+protected:
+  friend BaseClass;
+
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    StackArray<IndexType, UDim + NumIndices> full_inds;
+    for(int i = 0; i < NumIndices; i++)
+    {
+      full_inds[i] = m_inds[i];
+    }
+    for(int i = 0; i < UDim; i++)
+    {
+      full_inds[i + NumIndices] = idx[i];
+    }
+    return (*m_array)[full_inds];
+  }
 
 private:
-  T* const m_data;
-  const int m_allocatorID;
-  const IndexType m_size;
+  BaseArray* const m_array;
+  const StackArray<IndexType, NumIndices> m_inds;
 };
 
 }  // namespace detail
