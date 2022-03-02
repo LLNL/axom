@@ -44,6 +44,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Defines iterator traits on `axom::Array<T>`/`ArrayView<T>` iterators, to allow passing iterator
   pairs to standard library functions
 - Adds full support for calling methods on `axom::Array<T>` allocated in device-only memory.
+- Adds ability to index into subarrays of a multidimensional `axom::Array<T>` using
+  `operator[]` and `operator()`
 
 ###  Changed
 - Moved bit-twiddling functions to core component

@@ -98,7 +98,8 @@ public:
   using value_type = T;
   static constexpr MemorySpace space = SPACE;
   using ArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>, T>;
-  using ConstArrayIterator = ArrayIteratorBase<Array<T, DIM, SPACE>, const T>;
+  using ConstArrayIterator =
+    ArrayIteratorBase<const Array<T, DIM, SPACE>, const T>;
 
   using ArrayViewType = ArrayView<T, DIM, SPACE>;
   using ConstArrayViewType = ArrayView<const T, DIM, SPACE>;
@@ -695,7 +696,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args,
           typename std::enable_if<detail::all_types_are_integral<Args...>::value>::type*>
 Array<T, DIM, SPACE>::Array(Args... args)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(args...)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -711,7 +712,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args,
           typename std::enable_if<detail::all_types_are_integral<Args...>::value>::type*>
 Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(args...)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
   , m_default_construct(false)
 {
@@ -1060,12 +1061,12 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  const IndexType tmp_args[] = {args...};
+  const IndexType tmp_args[] = {static_cast<IndexType>(args)...};
   assert(detail::allNonNegative(tmp_args));
   const auto new_num_elements = detail::packProduct(tmp_args);
 
   static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) =
-    ArrayBase<T, DIM, Array<T, DIM, SPACE>> {static_cast<IndexType>(args)...};
+    ArrayBase<T, DIM, Array<T, DIM, SPACE>> {{static_cast<IndexType>(args)...}};
 
   const IndexType prev_num_elements = m_num_elements;
 

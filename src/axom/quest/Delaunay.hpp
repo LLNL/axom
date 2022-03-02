@@ -536,7 +536,7 @@ private:
 
         const auto& pos = mesh.getVertexPosition(idx);
         const auto cell = m_lattice.gridCell(pos);
-        m_bins[flatIndex(cell)] = idx;
+        flatIndex(cell) = idx;
       }
     }
 
@@ -550,21 +550,23 @@ private:
     inline IndexType getNearbyVertex(const PointType& pt)
     {
       const auto cell = m_lattice.gridCell(pt);
-      return m_bins[flatIndex(cell)];
+      return flatIndex(cell);
     }
 
     /// \brief Updates the cached value of the bin containing point \a pt to \a vertex_id
     inline void updateBin(const PointType& pt, IndexType vertex_id)
     {
       const auto cell = m_lattice.gridCell(pt);
-      m_bins[flatIndex(cell)] = vertex_id;
+      flatIndex(cell) = vertex_id;
     }
 
   private:
-    /// Returns the 1D index in the array for the ND point with grid index \a cell
-    inline IndexType flatIndex(const typename LatticeType::GridCell& cell)
+    /// Returns a reference to the index in the array for the ND point with grid index \a cell
+    inline IndexType& flatIndex(const typename LatticeType::GridCell& cell)
     {
-      return numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
+      IndexType idx =
+        numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
+      return m_bins.flatIndex(idx);
     }
 
     /// Dimension-specific helper for resizing the ND array in 2D

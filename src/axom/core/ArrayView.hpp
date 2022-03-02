@@ -48,10 +48,14 @@ public:
   using value_type = T;
   static constexpr int dimension = DIM;
   static constexpr MemorySpace space = SPACE;
-  using ArrayViewIterator = ArrayIteratorBase<ArrayView<T, DIM, SPACE>, T>;
+  using ArrayViewIterator = ArrayIteratorBase<const ArrayView<T, DIM, SPACE>, T>;
 
   /// \brief Default constructor
-  ArrayView() : m_allocator_id(axom::detail::getAllocatorID<SPACE>()) { }
+  AXOM_HOST_DEVICE ArrayView()
+#ifndef AXOM_DEVICE_CODE
+    : m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+#endif
+  { }
 
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
@@ -65,6 +69,8 @@ public:
    */
   template <typename... Args>
   ArrayView(T* data, Args... args);
+
+  AXOM_HOST_DEVICE ArrayView(T* data, const StackArray<IndexType, DIM>& shape);
 
   /*! 
    * \brief Constructor for transferring between memory spaces
@@ -135,21 +141,30 @@ using MCArrayView = ArrayView<T, 2>;
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
-  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(args...)
-  , m_data(data)
-  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+  : ArrayView(data, {args...})
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+ArrayView<T, DIM, SPACE>::ArrayView(T* data,
+                                    const StackArray<IndexType, DIM>& shape)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape)
+  , m_data(data)
+#ifndef AXOM_DEVICE_CODE
+  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+#endif
+{
 #if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
   static_assert((SPACE != MemorySpace::Constant) || std::is_const<T>::value,
                 "T must be const if memory space is Constant memory");
 #endif
   // Intel hits internal compiler error when casting as part of function call
-  IndexType tmp_args[] = {args...};
-  m_num_elements = detail::packProduct(tmp_args);
+  m_num_elements = detail::packProduct(shape.m_data);
 
-#ifdef AXOM_USE_UMPIRE
+#if !defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
   // If we have Umpire, we can try and see what space the pointer is allocated in
   // Probably not worth checking this if SPACE != Dynamic, we *could* error out
   // if e.g., the user gives a host pointer to ArrayView<T, DIM, Device>, but even
