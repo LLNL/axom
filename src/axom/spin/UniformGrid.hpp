@@ -58,6 +58,9 @@ template <typename T, int NDIMS, typename StoragePolicy = policy::DynamicGridSto
 class UniformGrid : StoragePolicy
 {
 public:
+  static_assert((NDIMS == 3) || (NDIMS == 2),
+                "Uniform grid dimensions must be 2 or 3.");
+
   /*! \brief The type used for specifying spatial extent of the contents */
   using BoxType = primal::BoundingBox<double, NDIMS>;
 
@@ -96,6 +99,17 @@ public:
    */
   UniformGrid(const BoxType& bbox, const int* res);
 
+  /*!
+   * \brief Constructor specifying objects to initialize the UniformGrid with.
+   */
+  UniformGrid(const primal::NumericArray<int, NDIMS>& res,
+              axom::ArrayView<const BoxType> bboxes,
+              axom::ArrayView<const T> objs);
+
+  /*!
+   * \brief Reinitializes a UniformGrid with an array of objects and associated
+   *  bounding boxes.
+   */
   void initialize(axom::ArrayView<const BoxType> bboxes,
                   axom::ArrayView<const T> objs);
 
@@ -206,18 +220,11 @@ private:
   void addObj(const T& obj, int index);
 
   /*!
-   *****************************************************************************
-   * \brief Common constructor code (until we can use delegating ctors)
-   *
-   * res specifies the resolution in each dimension.  If nullptr,
-   * default_res is used in each dimension.
-   *****************************************************************************
+   * \brief Common constructor code for constructing rectangular lattice and
+   *  bins in the uniform grid. Called after bounding box, resolution, and
+   *  strides are set.
    */
-  void initialize(const int* res, int default_res = 1);
-
-protected:
-  /*! \brief The default constructor should not be used, so it is protected. */
-  UniformGrid();
+  void initialize_grid();
 
 private:
   BoxType m_boundingBox;
@@ -363,61 +370,46 @@ namespace spin
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename StoragePolicy>
-UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid()
-  : m_boundingBox(PointType::zero(), PointType(100))
-  , m_lattice(PointType::zero(), PointType(1))
-{
-  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
-
-  const int DEFAULT_RES = 100;
-
-  initialize(nullptr, DEFAULT_RES);
-}
-
-template <typename T, int NDIMS, typename StoragePolicy>
 UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid(const double* lower_bound,
                                                   const double* upper_bound,
                                                   const int* res)
-{
-  SLIC_ASSERT(lower_bound != nullptr);
-  SLIC_ASSERT(upper_bound != nullptr);
-  SLIC_ASSERT(res != nullptr);
-  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
+  : UniformGrid(BoxType {PointType {lower_bound}, PointType {upper_bound}}, res)
+{ }
 
-  // set up the bounding box for point conversions
-  m_boundingBox = BoxType(PointType(lower_bound), PointType(upper_bound));
-
-  initialize(res);
-
-  // set up the lattice for point conversions
-  m_lattice = rectangular_lattice_from_bounding_box(m_boundingBox, m_resolution);
-}
-
+//------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename StoragePolicy>
 UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid(const BoxType& bbox,
                                                   const int* res)
   : m_boundingBox(bbox)
+  , m_resolution(-1)
 {
   SLIC_ASSERT(res != nullptr);
-  SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
-  initialize(res);
+  // set up the grid resolution
+  m_resolution = primal::NumericArray<int, NDIMS>(res);
 
-  // set up the bounding box and lattice for point conversions
-  m_lattice = rectangular_lattice_from_bounding_box(m_boundingBox, m_resolution);
+  initialize_grid();
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename StoragePolicy>
-void UniformGrid<T, NDIMS, StoragePolicy>::initialize(const int* res,
-                                                      int default_res)
+UniformGrid<T, NDIMS, StoragePolicy>::UniformGrid(
+  const primal::NumericArray<int, NDIMS>& res,
+  axom::ArrayView<const BoxType> bboxes,
+  axom::ArrayView<const T> objs)
+  : m_resolution(res)
 {
-  // set up the grid resolution and (row-major) strides
-  m_resolution[0] = (res ? res[0] : default_res);
+  initialize(bboxes, objs);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS, typename StoragePolicy>
+void UniformGrid<T, NDIMS, StoragePolicy>::initialize_grid()
+{
+  // set up the row-major strides
   m_strides[0] = 1;
   for(int i = 1; i < NDIMS; ++i)
   {
-    m_resolution[i] = (res ? res[i] : default_res);
     m_strides[i] = m_strides[i - 1] * m_resolution[i - 1];
   }
 
@@ -428,6 +420,9 @@ void UniformGrid<T, NDIMS, StoragePolicy>::initialize(const int* res,
   // scale the bounding box by a little to account for boundaries
   const double EPS = 1e-12;
   m_boundingBox.scale(1. + EPS);
+
+  // set up the bounding box and lattice for point conversions
+  m_lattice = rectangular_lattice_from_bounding_box(m_boundingBox, m_resolution);
 }
 
 //------------------------------------------------------------------------------
@@ -444,14 +439,9 @@ void UniformGrid<T, NDIMS, StoragePolicy>::initialize(
   });
   m_boundingBox = global_box;
 
-  // scale the bounding box by a little to account for boundaries
-  const double EPS = 1e-12;
-  m_boundingBox.scale(1. + EPS);
-
-  // set up the bounding box and lattice for point conversions
-  m_lattice = rectangular_lattice_from_bounding_box(
-    m_boundingBox,
-    primal::NumericArray<int, NDIMS>(m_resolution));
+  // Now that we have the bounding box and resolution, initialize the
+  // rectangular lattice and uniform grid storage.
+  initialize_grid();
 
   const IndexType numBins = getNumBins();
   // 1. Get number of elements to insert into each bin

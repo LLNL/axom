@@ -59,11 +59,6 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   detail::Triangle3 t2 {};
   SLIC_INFO("Running mesh_tester with UniformGrid index");
 
-  // Create a bounding box around mesh to find the minimum point
-  detail::SpatialBoundingBox meshBB = compute_bounds(surface_mesh);
-  const detail::Point3& minBBPt = meshBB.getMin();
-  const detail::Point3& maxBBPt = meshBB.getMax();
-
   const int ncells = surface_mesh->getNumberOfCells();
 
   // find the specified resolution.  If we're passed a number less than one,
@@ -72,12 +67,9 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   {
     spatialIndexResolution = (int)(1 + std::pow(ncells, 1 / 3.));
   }
-  int resolutions[3] = {spatialIndexResolution,
-                        spatialIndexResolution,
-                        spatialIndexResolution};
+  primal::NumericArray<int, 3> resolutions(spatialIndexResolution);
 
   SLIC_INFO("Building UniformGrid index...");
-  detail::UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
   std::vector<int> nondegenerateIndices;
   nondegenerateIndices.reserve(ncells);
 
@@ -99,7 +91,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
       triBboxes[i] = compute_bounding_box(t1);
     }
   }
-  ugrid.initialize(triBboxes, triIdxs);
+  detail::UniformGrid3 ugrid(resolutions, triBboxes, triIdxs);
 
   // Iterate through triangle indices *idx.
   // Check against each other triangle with index greater than the index *idx
