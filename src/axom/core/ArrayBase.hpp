@@ -29,7 +29,37 @@ namespace detail
 {
 template <typename ArrayType>
 struct ArrayTraits;
-}
+
+template <typename T, int DIM, typename BaseArray>
+class ArraySubslice;
+
+template <typename T, int SliceDim, typename BaseArray>
+struct SubsliceProxy
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+// The below specializations ensure that subslices of subslices refer to the
+// original base array type, e.g.:
+//   Array<int, 3> arr;
+//   auto slice_1 = arr[i]
+//      -> returns ArraySubslice<int, 2, Array<int, 3>>
+//   auto slice_2 = slice_1[j]
+//      -> returns ArraySubslice<int, 1, Array<int,3>> instead of
+//         ArraySubslice<int, 1, ArraySubslice<int, 2, Array<int, 3>>>
+template <typename T, int SliceDim, int OldSliceDim, typename BaseArray>
+struct SubsliceProxy<T, SliceDim, ArraySubslice<T, OldSliceDim, BaseArray>>
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+template <typename T, int SliceDim, int OldSliceDim, typename BaseArray>
+struct SubsliceProxy<T, SliceDim, const ArraySubslice<T, OldSliceDim, BaseArray>>
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+}  // namespace detail
 
 /// \name Overloaded ArrayBase Operator(s)
 /// @{
@@ -108,13 +138,29 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
+  template <int IdxDim>
+  using SliceType = typename std::conditional<
+    DIM == IdxDim,
+    T&,
+    typename detail::SubsliceProxy<T, DIM - IdxDim, ArrayType>::type>::type;
+
+  template <int IdxDim>
+  using ConstSliceType = typename std::conditional<
+    DIM == IdxDim,
+    RealConstT&,
+    typename detail::SubsliceProxy<T, DIM - IdxDim, const ArrayType>::type>::type;
+
+  constexpr static int Dims = DIM;
+
+  AXOM_HOST_DEVICE ArrayBase() : m_dims {} { updateStrides(); }
+
   /*!
    * \brief Parameterized constructor that sets up the default strides
    *
    * \param [in] args the parameter pack of sizes in each dimension.
    */
-  template <typename... Args>
-  ArrayBase(Args... args) : m_dims {static_cast<IndexType>(args)...}
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& args)
+    : m_dims {args}
   {
     updateStrides();
   }
@@ -142,33 +188,86 @@ public:
   { }
 
   /*!
-   * \brief Dimension-aware accessor, returns a reference to the given value.
+   * \brief Dimension-aware accessor; with N=DIM indices, returns a reference
+   *  to the given value at that index. Otherwise, returns a sub-array pointed
+   *  to by the given sub-index.
    *
    * \param [in] args the parameter pack of indices in each dimension.
    *
    * \note equivalent to *(array.data() + idx).
    *
-   * \pre sizeof...(Args) == DIM
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
+   * \pre sizeof...(Args) <= DIM
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, sizeof...(Args))
    */
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  AXOM_HOST_DEVICE T& operator()(Args... args)
+  template <typename... Args>
+  AXOM_HOST_DEVICE SliceType<sizeof...(Args)> operator()(Args... args)
   {
-    const IndexType indices[] = {static_cast<IndexType>(args)...};
-    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    static_assert(sizeof...(Args) <= DIM,
+                  "Index dimensions different from array dimensions");
+    constexpr int UDim = sizeof...(Args);
+    const StackArray<IndexType, UDim> indices {static_cast<IndexType>(args)...};
+    return (*this)[indices];
   }
   /// \overload
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  AXOM_HOST_DEVICE RealConstT& operator()(Args... args) const
+  template <typename... Args>
+  AXOM_HOST_DEVICE ConstSliceType<sizeof...(Args)> operator()(Args... args) const
   {
-    const IndexType indices[] = {static_cast<IndexType>(args)...};
-    const IndexType idx = numerics::dot_product(indices, m_strides.begin(), DIM);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    static_assert(sizeof...(Args) <= DIM,
+                  "Index dimensions different from array dimensions");
+    constexpr int UDim = sizeof...(Args);
+    const StackArray<IndexType, UDim> indices {static_cast<IndexType>(args)...};
+    return (*this)[indices];
+  }
+
+  /*!
+   * \brief Scalar accessor; returns a sub-array referenced by the given sub-
+   *  index, beginning at array(idx, 0...)
+   *
+   * \param [in] idx the index of the first dimension.
+   *
+   * \pre 0 <= idx < m_dims[0]
+   */
+  AXOM_HOST_DEVICE SliceType<1> operator[](const IndexType idx)
+  {
+    const StackArray<IndexType, 1> slice {idx};
+    return (*this)[slice];
+  }
+
+  /// \overload
+  AXOM_HOST_DEVICE ConstSliceType<1> operator[](const IndexType idx) const
+  {
+    const StackArray<IndexType, 1> slice {idx};
+    return (*this)[slice];
+  }
+
+  /*!
+   * \brief Dimension-aware accessor; with UDim=DIM indices, returns a reference
+   *  to the given value at that index. Otherwise, returns a sub-array pointed
+   *  to by the given sub-index.
+   *
+   * \param [in] args a stack array of indices in each dimension.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre UDim <= DIM
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, UDim)
+   */
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> operator[](const StackArray<IndexType, UDim>& idx)
+  {
+    static_assert(UDim <= DIM,
+                  "Index dimensions cannot be larger than array dimensions");
+    return asDerived().sliceImpl(idx);
+  }
+
+  /// \overload
+  template <int UDim>
+  AXOM_HOST_DEVICE ConstSliceType<UDim> operator[](
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    static_assert(UDim <= DIM,
+                  "Index dimensions cannot be larger than array dimensions");
+    return asDerived().sliceImpl(idx);
   }
 
   /// @{
@@ -183,13 +282,13 @@ public:
    *
    * \pre 0 <= idx < m_num_elements
    */
-  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -260,7 +359,7 @@ protected:
    * In the future, this class will support different striding schemes (e.g., column-major)
    * and/or user-provided striding
    */
-  void updateStrides()
+  AXOM_HOST_DEVICE void updateStrides()
   {
     // Row-major
     m_strides[DIM - 1] = 1;
@@ -292,6 +391,44 @@ private:
   }
   /// @}
 
+  /// \name Internal subarray slicing methods
+  /// @{
+
+  /*! \brief Returns a subarray given UDim indices */
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(const StackArray<IndexType, UDim>& idx)
+  {
+    return SliceType<UDim>(&asDerived(), idx);
+  }
+
+  /// \overload
+  template <int UDim>
+  AXOM_HOST_DEVICE ConstSliceType<UDim> sliceImpl(
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    return ConstSliceType<UDim>(&asDerived(), idx);
+  }
+
+  /*! \brief Returns a scalar reference given a full set of indices */
+  AXOM_HOST_DEVICE SliceType<DIM> sliceImpl(const StackArray<IndexType, DIM>& idx)
+  {
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
+    assert(inBounds(baseIdx));
+    return asDerived().data()[baseIdx];
+  }
+
+  /// \overload
+  AXOM_HOST_DEVICE ConstSliceType<DIM> sliceImpl(
+    const StackArray<IndexType, DIM>& idx) const
+  {
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
+    assert(inBounds(baseIdx));
+    return asDerived().data()[baseIdx];
+  }
+  /// @}
+
 protected:
   /// \brief The sizes (extents?) in each dimension
   StackArray<IndexType, DIM> m_dims;
@@ -316,7 +453,9 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
-  ArrayBase(IndexType = 0) { }
+  AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { }
+
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&) { }
 
   // Empy implementation because no member data
   template <typename OtherArrayType>
@@ -354,6 +493,28 @@ public:
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+
+  /*!
+   * \brief Accessor, returns a reference to the given value.
+   * For multidimensional arrays, indexes into the (flat) raw data.
+   *
+   * \param [in] idx the position of the value to return.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre 0 <= idx < m_num_elements
+   */
+  AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// \overload
+  AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -473,7 +634,7 @@ bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
 
   for(int i = 0; i < static_cast<const LArrayType&>(lhs).size(); i++)
   {
-    if(!(lhs[i] == rhs[i]))
+    if(!(lhs.flatIndex(i) == rhs.flatIndex(i)))
     {
       return false;
     }
@@ -494,9 +655,14 @@ namespace detail
 {
 // Takes the product of a parameter pack of T
 template <typename T, int N>
-T packProduct(const T (&arr)[N])
+AXOM_HOST_DEVICE T packProduct(const T (&arr)[N])
 {
-  return std::accumulate(arr, arr + N, 1, std::multiplies<T> {});
+  T prod = 1;
+  for(int idx = 0; idx < N; idx++)
+  {
+    prod *= arr[idx];
+  }
+  return prod;
 }
 
 template <typename T, int N>
@@ -510,6 +676,20 @@ bool allNonNegative(const T (&arr)[N])
     }
   }
   return true;
+}
+
+/// \brief Takes the last N elements from an array.
+template <int N, typename T, int DIM>
+AXOM_HOST_DEVICE StackArray<T, N> takeLastElems(const StackArray<T, DIM>& arr)
+{
+  static_assert(N <= DIM,
+                "Attempting to take more elements than the array holds");
+  StackArray<T, N> ret;
+  for(int i = 0; i < N; i++)
+  {
+    ret[i] = arr[i + DIM - N];
+  }
+  return ret;
 }
 
 /// \brief Indirection needed to dodge an MSVC compiler bug
@@ -1015,6 +1195,100 @@ public:
 #endif
     Base::emplace(array, dst, std::forward<Args>(args)...);
   }
+};
+
+template <typename T, int SliceDim, typename BaseArray>
+struct ArrayTraits<ArraySubslice<T, SliceDim, BaseArray>>
+{
+  constexpr static bool is_view = true;
+};
+
+/*!
+ * \brief Proxy class for efficiently constructing slice ArrayViews by using
+ *  the generic ArrayBase constructor in ArrayView. This avoids the cost of
+ *  looking up the correct allocator ID from the other ArrayView constructors.
+ */
+template <typename T, int SliceDim, typename BaseArray>
+class ArraySubslice
+  : public ArrayBase<T, SliceDim, ArraySubslice<T, SliceDim, BaseArray>>
+{
+  using BaseClass = ArrayBase<T, SliceDim, ArraySubslice<T, SliceDim, BaseArray>>;
+  using RefType = typename std::conditional<std::is_const<BaseArray>::value,
+                                            typename BaseClass::RealConstT&,
+                                            T&>::type;
+
+  constexpr static int OrigDims = BaseArray::Dims;
+  constexpr static int NumIndices = OrigDims - SliceDim;
+
+  template <int UDim>
+  using SliceType =
+    typename std::conditional<UDim == SliceDim,
+                              RefType,
+                              ArraySubslice<T, SliceDim - UDim, BaseArray>>::type;
+
+public:
+  AXOM_HOST_DEVICE ArraySubslice(BaseArray* array,
+                                 const StackArray<IndexType, NumIndices>& idxs)
+    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()))
+    , m_array(array)
+    , m_inds(idxs)
+  { }
+
+  /*!
+   * \brief Return the number of elements stored in the data array.
+   */
+  inline AXOM_HOST_DEVICE IndexType size() const
+  {
+    IndexType size = 1;
+    for(int idx = NumIndices; idx < OrigDims; idx++)
+    {
+      size *= m_array->shape()[idx];
+    }
+    return size;
+  }
+
+  /*!
+   * \brief Return a pointer to the array of data.
+   */
+  /// @{
+
+  AXOM_HOST_DEVICE inline T* data() const
+  {
+    IndexType offset = numerics::dot_product(m_inds.begin(),
+                                             m_array->strides().begin(),
+                                             NumIndices);
+    return m_array->data() + offset;
+  }
+
+  /// @}
+
+  /*!
+   * \brief Get the ID for the umpire allocator
+   */
+  int getAllocatorID() const { return m_array->getAllocatorID(); }
+
+protected:
+  friend BaseClass;
+
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    StackArray<IndexType, UDim + NumIndices> full_inds;
+    for(int i = 0; i < NumIndices; i++)
+    {
+      full_inds[i] = m_inds[i];
+    }
+    for(int i = 0; i < UDim; i++)
+    {
+      full_inds[i + NumIndices] = idx[i];
+    }
+    return (*m_array)[full_inds];
+  }
+
+private:
+  BaseArray* const m_array;
+  const StackArray<IndexType, NumIndices> m_inds;
 };
 
 }  // namespace detail
