@@ -1225,8 +1225,8 @@ class ArraySubslice
     typename std::conditional<UDim == SliceDim,
                               RefType,
                               ArraySubslice<T, SliceDim - UDim, BaseArray>>::type;
-public:
 
+public:
   AXOM_HOST_DEVICE ArraySubslice(BaseArray* array,
                                  const StackArray<IndexType, NumIndices>& idxs)
     : BaseClass(detail::takeLastElems<SliceDim>(array->shape()))
