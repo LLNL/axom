@@ -19,6 +19,11 @@
 
 #include "axom/spin/policy/UniformGridStorage.hpp"
 
+#if defined(AXOM_USE_RAJA)
+  // RAJA includes
+  #include "RAJA/RAJA.hpp"
+#endif
+
 // C/C++ includes
 #include <algorithm>
 #include <cmath>
@@ -439,10 +444,39 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
   SLIC_ASSERT(bboxes.size() == objs.size());
   // get the global bounding box of all the objects
   BoxType global_box;
+#ifdef AXOM_USE_RAJA
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  double infinity = std::numeric_limits<double>::max();
+  double neg_infinity = std::numeric_limits<double>::lowest();
+  RAJA::ReduceMin<reduce_pol, double> min_coord[NDIMS];
+  RAJA::ReduceMax<reduce_pol, double> max_coord[NDIMS];
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    min_coord[dim].reset(infinity);
+    max_coord[dim].reset(neg_infinity);
+  }
+  axom::for_all<ExecSpace>(
+    bboxes.size(),
+    AXOM_LAMBDA(IndexType idx) {
+      for(int dim = 0; dim < NDIMS; dim++)
+      {
+        min_coord[dim].min(bboxes[idx].getMin()[dim]);
+        max_coord[dim].max(bboxes[idx].getMax()[dim]);
+      }
+    });
+  primal::Point<double, NDIMS> min_pt, max_pt;
+  for(int dim = 0; dim < NDIMS; dim++)
+  {
+    min_pt[dim] = min_coord[dim].get();
+    max_pt[dim] = max_coord[dim].get();
+  }
+  global_box = BoxType {min_pt, max_pt};
+#else
   axom::for_all<ExecSpace>(bboxes.size(), [=, &global_box](IndexType idx) {
     global_box.addBox(bboxes[idx]);
   });
   m_boundingBox = global_box;
+#endif
 
   // Now that we have the bounding box and resolution, initialize the
   // rectangular lattice and uniform grid storage.
@@ -454,6 +488,10 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
   // TODO: There's an error on operator[] if this isn't const and it only
   // happens for GCC 8.1.0
   const axom::ArrayView<IndexType> binCountsView = binCounts;
+
+#ifdef AXOM_USE_RAJA
+  using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
+#endif
 
   primal::NumericArray<int, NDIMS> strides = m_strides;
   axom::for_all<ExecSpace>(
@@ -476,9 +514,12 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
           const IndexType jOffset = j * strides[1] + kOffset;
           for(IndexType i = lowerCell[0]; i <= upperCell[0]; ++i)
           {
-            // TODO: needs to be atomic in CUDA case
             const IndexType ibin = i + jOffset;
+#ifdef AXOM_USE_RAJA
+            RAJA::atomicAdd<atomic_pol>(&binCountsView[ibin], 1);
+#else
             binCountsView[ibin]++;
+#endif
           }
         }
       }
@@ -514,8 +555,11 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
             const IndexType binIndex = i + jOffset;
             IndexType binCurrOffset = binCountsView[binIndex];
             StoragePolicy::get(binIndex, binCurrOffset) = objs[idx];
-            // TODO: needs to be atomic in CUDA case
+#ifdef AXOM_USE_RAJA
+            RAJA::atomicAdd<atomic_pol>(&binCountsView[binIndex], 1);
+#else
             binCountsView[binIndex]++;
+#endif
           }
         }
       }
