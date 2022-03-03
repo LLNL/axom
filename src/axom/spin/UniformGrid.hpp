@@ -76,9 +76,6 @@ public:
   /*! \brief The type used to query the index */
   using PointType = primal::Point<double, NDIMS>;
 
-  using BinType = typename StoragePolicy::BinType;
-  using ConstBinType = typename StoragePolicy::ConstBinType;
-
   struct QueryObject;
 
 private:
@@ -101,19 +98,25 @@ public:
    * defines an index extending from 0 up to 2 divided into two bins in the
    * x-dimension and from 0 up to 4 divided into four bins in the y dimension.
    */
-  UniformGrid(const double* lower_bound, const double* upper_bound, const int* res);
+  UniformGrid(const double* lower_bound,
+              const double* upper_bound,
+              const int* res,
+              int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
 
   /*!
    * \brief Constructor specifying bounding box and number of bins.
    */
-  UniformGrid(const BoxType& bbox, const int* res);
+  UniformGrid(const BoxType& bbox,
+              const int* res,
+              int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
 
   /*!
    * \brief Constructor specifying objects to initialize the UniformGrid with.
    */
   UniformGrid(const primal::NumericArray<int, NDIMS>& res,
               axom::ArrayView<const BoxType> bboxes,
-              axom::ArrayView<const T> objs);
+              axom::ArrayView<const T> objs,
+              int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
 
   /*!
    * \brief Reinitializes a UniformGrid with an array of objects and associated
@@ -382,15 +385,20 @@ template <typename T, int NDIMS, typename ExecSpace, typename StoragePolicy>
 UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::UniformGrid(
   const double* lower_bound,
   const double* upper_bound,
-  const int* res)
-  : UniformGrid(BoxType {PointType {lower_bound}, PointType {upper_bound}}, res)
+  const int* res,
+  int allocatorID)
+  : UniformGrid(BoxType {PointType {lower_bound}, PointType {upper_bound}},
+                res,
+                allocatorID)
 { }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename ExecSpace, typename StoragePolicy>
 UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::UniformGrid(const BoxType& bbox,
-                                                             const int* res)
-  : m_boundingBox(bbox)
+                                                             const int* res,
+                                                             int allocatorID)
+  : StoragePolicy(allocatorID)
+  , m_boundingBox(bbox)
   , m_resolution(-1)
 {
   SLIC_ASSERT(res != nullptr);
@@ -406,8 +414,10 @@ template <typename T, int NDIMS, typename ExecSpace, typename StoragePolicy>
 UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::UniformGrid(
   const primal::NumericArray<int, NDIMS>& res,
   axom::ArrayView<const BoxType> bboxes,
-  axom::ArrayView<const T> objs)
-  : m_resolution(res)
+  axom::ArrayView<const T> objs,
+  int allocatorID)
+  : StoragePolicy(allocatorID)
+  , m_resolution(res)
 {
   initialize(bboxes, objs);
 }

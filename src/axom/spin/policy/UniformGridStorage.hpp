@@ -30,8 +30,18 @@ struct DynamicGridStorage
   using ViewType = DynamicGridView<T>;
   using ConstViewType = DynamicGridView<const T>;
 
-  using BinType = axom::ArrayView<T>;
-  using ConstBinType = axom::ArrayView<const T>;
+  using BinType = axom::Array<T>;
+  using ConstBinType = const axom::Array<T>;
+
+  using BinRef = axom::ArrayView<T>;
+  using ConstBinRef = axom::ArrayView<const T>;
+
+  DynamicGridStorage(int allocID)
+    : m_bins(0, 0, allocID)
+    , m_allocatorID(allocID)
+  { }
+
+  int getAllocatorID() const { return m_allocatorID; }
 
   void setNumBins(IndexType nbins) { m_bins.resize(nbins); }
   IndexType getNumBins() const { return m_bins.size(); }
@@ -43,10 +53,15 @@ struct DynamicGridStorage
 
   void initialize(axom::ArrayView<const IndexType> binSizes)
   {
+    axom::Array<BinType> host_bins;
     for(int i = 0; i < binSizes.size(); i++)
     {
-      m_bins[i].resize(binSizes[i]);
+      host_bins.emplace_back(ArrayOptions::Uninitialized {},
+                             binSizes[i],
+                             binSizes[i],
+                             m_allocatorID);
     }
+    m_bins = axom::Array<BinType>(std::move(host_bins), m_allocatorID);
   };
 
   void insert(IndexType gridIdx, const T& elem)
@@ -63,12 +78,12 @@ struct DynamicGridStorage
   }
 
   // getters
-  BinType getBinContents(IndexType gridIdx)
+  BinRef getBinContents(IndexType gridIdx)
   {
     SLIC_ASSERT(isValidIndex(gridIdx));
     return m_bins[gridIdx];
   }
-  ConstBinType getBinContents(IndexType gridIdx) const
+  ConstBinRef getBinContents(IndexType gridIdx) const
   {
     SLIC_ASSERT(isValidIndex(gridIdx));
     return m_bins[gridIdx];
@@ -87,6 +102,7 @@ struct DynamicGridStorage
   }
 
   axom::Array<axom::Array<T>> m_bins;
+  int m_allocatorID;
 };
 
 template <typename T>
