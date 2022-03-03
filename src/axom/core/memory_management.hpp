@@ -72,13 +72,9 @@ inline int getUmpireResourceAllocatorID(
  */
 inline void setDefaultAllocator(umpire::resource::MemoryResourceType resource_type)
 {
-#ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator allocator = rm.getAllocator(resource_type);
   rm.setDefaultAllocator(allocator);
-#else
-  AXOM_UNUSED_VAR(allocId);
-#endif
 }
 
 #endif
@@ -111,13 +107,15 @@ inline int getDefaultAllocatorID()
   //return umpire::ResourceManager::getInstance().getAllocator("HOST").getId();
   auto names = umpire::ResourceManager::getInstance().getAllocatorNames();
   std::cout << "~~~~~~~~~~~~ NAMES ~~~~~~~~~~~" << std::endl;
-  for(auto& name : names) {
+  for(auto& name : names)
+  {
     std::cout << name << std::endl;
   }
 
   auto ids = umpire::ResourceManager::getInstance().getAllocatorIds();
   std::cout << "~~~~~~~~~~~~ IDs ~~~~~~~~~~~" << std::endl;
-  for(int id : ids) {
+  for(int id : ids)
+  {
     std::cout << std::to_string(id) << std::endl;
   }
 
