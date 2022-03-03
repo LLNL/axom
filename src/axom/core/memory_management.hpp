@@ -22,6 +22,9 @@
   #include <cstdlib>  // for std::malloc, std::realloc, std::free
 #endif
 
+#include <string>
+#include <vector>
+
 namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
@@ -63,22 +66,37 @@ inline int getUmpireResourceAllocatorID(
   return alloc.getId();
 }
 
+/*!
+ * \brief Sets the default memory allocator to use.
+ * \param [in] resource_type the Umpire resource type
+ */
+inline void setDefaultAllocator(umpire::resource::MemoryResourceType resource_type)
+{
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator(resource_type);
+  rm.setDefaultAllocator(allocator);
+#else
+  AXOM_UNUSED_VAR(allocId);
+#endif
+}
+
 #endif
 
 /*!
  * \brief Sets the default memory allocator to use.
- * \param [in] allocatorID ID of the Umpire allocator to use.
+ * \param [in] allocId the Umpire allocator id
  * 
  * \note This function has no effect when Axom is not compiled with Umpire.
  */
-inline void setDefaultAllocator(int allocatorID)
+inline void setDefaultAllocator(int allocId)
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator(allocatorID);
+  umpire::Allocator allocator = rm.getAllocator(allocId);
   rm.setDefaultAllocator(allocator);
 #else
-  AXOM_UNUSED_VAR(allocatorID);
+  AXOM_UNUSED_VAR(allocId);
 #endif
 }
 
@@ -90,6 +108,19 @@ inline void setDefaultAllocator(int allocatorID)
 inline int getDefaultAllocatorID()
 {
 #ifdef AXOM_USE_UMPIRE
+  //return umpire::ResourceManager::getInstance().getAllocator("HOST").getId();
+  auto names = umpire::ResourceManager::getInstance().getAllocatorNames();
+  std::cout << "~~~~~~~~~~~~ NAMES ~~~~~~~~~~~" << std::endl;
+  for(auto& name : names) {
+    std::cout << name << std::endl;
+  }
+
+  auto ids = umpire::ResourceManager::getInstance().getAllocatorIds();
+  std::cout << "~~~~~~~~~~~~ IDs ~~~~~~~~~~~" << std::endl;
+  for(int id : ids) {
+    std::cout << std::to_string(id) << std::endl;
+  }
+
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
   return 0;
