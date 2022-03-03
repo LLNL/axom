@@ -33,8 +33,8 @@ struct DynamicGridStorage
   using BinType = axom::Array<T>;
   using ConstBinType = const axom::Array<T>;
 
-  using BinRef = axom::ArrayView<T>;
-  using ConstBinRef = axom::ArrayView<const T>;
+  using BinRef = axom::Array<T>&;
+  using ConstBinRef = const axom::Array<T>&;
 
   DynamicGridStorage(int allocID)
     : m_bins(0, 0, allocID)
