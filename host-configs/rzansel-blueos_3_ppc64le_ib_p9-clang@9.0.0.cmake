@@ -7,21 +7,21 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: xl@16.1.1_coral
+# Compiler Spec: clang@9.0.0
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_11_10_13_32_32/spack/lib/spack/env/xl/xlc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_11_10_13_32_32/spack/lib/spack/env/xl/xlc++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_11_10_13_32_32/spack/lib/spack/env/xl/xlf90" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlC" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang++" CACHE PATH "")
 
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACHE PATH "")
 
@@ -33,13 +33,13 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 # MPI
 #------------------------------------------------------------------------------
 
-set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlC" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlf" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpirun" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE STRING "")
 
@@ -73,7 +73,7 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2021_11_10_13_32_32/xl-16.1.1_coral" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/clang-9.0.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
 
@@ -87,7 +87,7 @@ set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0axom" CACHE PATH "")
 
 # scr not built
 
