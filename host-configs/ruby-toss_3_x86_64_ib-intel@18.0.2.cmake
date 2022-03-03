@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.14.5/bin/cmake
+# CMake executable path: /usr/tce/packages/cmake/cmake-3.16.8/bin/cmake
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_11_10_20_53_55/spack/lib/spack/env/intel/icc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/spack/lib/spack/env/intel/icc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_11_10_20_53_55/spack/lib/spack/env/intel/icpc" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/spack/lib/spack/env/intel/icpc" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_11_10_20_53_55/spack/lib/spack/env/intel/ifort" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/spack/lib/spack/env/intel/ifort" CACHE PATH "")
 
 else()
 
@@ -63,7 +63,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2021_11_10_20_53_55/intel-18.0.2" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/intel-18.0.2" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
 
@@ -77,7 +77,7 @@ set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0axom" CACHE PATH "")
 
 # scr not built
 
