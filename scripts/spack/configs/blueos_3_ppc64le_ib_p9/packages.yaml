@@ -201,8 +201,6 @@ packages:
     externals:
     - spec: cmake@3.14.5
       prefix: /usr/tce/packages/cmake/cmake-3.14.5
-    - spec: cmake@3.16.8
-      prefix: /usr/tce/packages/cmake/cmake-3.16.8
   cppcheck:
     version: [1.87]
     buildable: false
