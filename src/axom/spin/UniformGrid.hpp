@@ -453,13 +453,16 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
 {
   SLIC_ASSERT(bboxes.size() == objs.size());
   // get the global bounding box of all the objects
-  BoxType global_box;
 #ifdef AXOM_USE_RAJA
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   double infinity = std::numeric_limits<double>::max();
   double neg_infinity = std::numeric_limits<double>::lowest();
-  RAJA::ReduceMin<reduce_pol, double> min_coord[NDIMS];
-  RAJA::ReduceMax<reduce_pol, double> max_coord[NDIMS];
+
+  using ReduceMin = RAJA::ReduceMin<reduce_pol, double>;
+  using ReduceMax = RAJA::ReduceMax<reduce_pol, double>;
+
+  StackArray<ReduceMin, NDIMS> min_coord;
+  StackArray<ReduceMax, NDIMS> max_coord;
   for(int dim = 0; dim < NDIMS; dim++)
   {
     min_coord[dim].reset(infinity);
@@ -480,12 +483,11 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
     min_pt[dim] = min_coord[dim].get();
     max_pt[dim] = max_coord[dim].get();
   }
-  global_box = BoxType {min_pt, max_pt};
+  m_boundingBox = BoxType {min_pt, max_pt};
 #else
-  axom::for_all<ExecSpace>(bboxes.size(), [=, &global_box](IndexType idx) {
-    global_box.addBox(bboxes[idx]);
-  });
-  m_boundingBox = global_box;
+  axom::for_all<ExecSpace>(
+    bboxes.size(),
+    AXOM_HOST_LAMBDA(IndexType idx) { m_boundingBox.addBox(bboxes[idx]); });
 #endif
 
   // Now that we have the bounding box and resolution, initialize the
@@ -541,6 +543,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
   // 3. Reset bin-specific counters
   binCounts.fill(0);
 
+  typename StoragePolicy::ViewType binView(*this);
   // 4. Add elements to bins using a counting sort
   axom::for_all<ExecSpace>(
     bboxes.size(),
@@ -563,13 +566,15 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
           for(int i = lowerCell[0]; i <= upperCell[0]; ++i)
           {
             const IndexType binIndex = i + jOffset;
-            IndexType binCurrOffset = binCountsView[binIndex];
-            StoragePolicy::get(binIndex, binCurrOffset) = objs[idx];
+            IndexType binCurrOffset;
 #ifdef AXOM_USE_RAJA
-            RAJA::atomicAdd<atomic_pol>(&binCountsView[binIndex], 1);
+            binCurrOffset =
+              RAJA::atomicAdd<atomic_pol>(&binCountsView[binIndex], 1);
 #else
+            binCurrOffset = binCountsView[binIndex];
             binCountsView[binIndex]++;
 #endif
+            binView.get(binIndex, binCurrOffset) = objs[idx];
           }
         }
       }
