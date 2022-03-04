@@ -311,7 +311,7 @@ public:
   {
     IndexType sumOfBinSizes = 0;
     auto lambdaCount = [&sumOfBinSizes, this](IndexType ibin) {
-      sumOfBinSizes += getBinContents(ibin);
+      sumOfBinSizes += getBinContents(ibin).size();
     };
     loopOverBboxes(bbox, lambdaCount);
     return sumOfBinSizes;
@@ -321,7 +321,7 @@ public:
   AXOM_HOST_DEVICE void visitCandidates(const BoxType& bbox, Func&& evalFn) const
   {
     auto lambdaCandidates = [evalFn, this](IndexType ibin) {
-      auto bin = getBinContents(ibin);
+      const auto& bin = getBinContents(ibin);
       for(IndexType ielem = 0; ielem < bin.size(); ielem++)
       {
         evalFn(bin[ielem]);
