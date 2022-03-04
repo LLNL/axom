@@ -109,16 +109,16 @@ template <typename T>
 struct DynamicGridView
 {
   using BaseT = typename std::remove_const<T>::type;
-  using BinType = axom::ArrayView<T>;
-  using ConstBinType = axom::ArrayView<T>;
 
   using BinStoreType = typename std::conditional<std::is_const<T>::value,
-                                                 const axom::Array<T>,
-                                                 axom::Array<T>>::type;
+                                                 const axom::Array<BaseT>,
+                                                 axom::Array<BaseT>>::type;
 
-  DynamicGridView(DynamicGridStorage<BaseT>& in) : m_bins(in.m_bins) { }
+  DynamicGridView(DynamicGridStorage<BaseT>& in) : m_bins(in.m_bins.view()) { }
 
-  DynamicGridView(const DynamicGridStorage<BaseT>& in) : m_bins(in.m_bins) { }
+  DynamicGridView(const DynamicGridStorage<BaseT>& in)
+    : m_bins(in.m_bins.view())
+  { }
 
   AXOM_HOST_DEVICE IndexType getNumBins() const { return m_bins.size(); }
 
@@ -127,24 +127,13 @@ struct DynamicGridView
     return index >= 0 && index < getNumBins();
   }
   // getters
-  AXOM_HOST_DEVICE BinType getBinContents(IndexType gridIdx)
-  {
-    SLIC_ASSERT(isValidIndex(gridIdx));
-    return m_bins[gridIdx];
-  }
-  AXOM_HOST_DEVICE ConstBinType getBinContents(IndexType gridIdx) const
+  AXOM_HOST_DEVICE BinStoreType& getBinContents(IndexType gridIdx) const
   {
     SLIC_ASSERT(isValidIndex(gridIdx));
     return m_bins[gridIdx];
   }
 
-  T& get(IndexType gridIdx, IndexType binIdx)
-  {
-    SLIC_ASSERT(isValidIndex(gridIdx));
-    return m_bins[gridIdx][binIdx];
-  }
-
-  const T& get(IndexType gridIdx, IndexType binIdx) const
+  AXOM_HOST_DEVICE T& get(IndexType gridIdx, IndexType binIdx) const
   {
     SLIC_ASSERT(isValidIndex(gridIdx));
     return m_bins[gridIdx][binIdx];
