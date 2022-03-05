@@ -120,6 +120,32 @@ public:
    */
   int getAllocatorID() const { return m_allocator_id; }
 
+  /*!
+   * \brief Returns an ArrayView that is a subspan of the original range of
+   *  elements.
+   *
+   * \param [in] offset The index where the subspan should begin.
+   * \param [in] count The number of elements to include in the subspan, or -1
+   *  to take all elements after offset (default).
+   *
+   * \return A subspan ArrayView that spans the indices [offsets, offsets + count),
+   *  or [offsets, num_elements) if count == -1.
+   *
+   * \pre offset + count <= m_num_elements if count != -1
+   */
+  template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
+  AXOM_HOST_DEVICE ArrayView subspan(IndexType offset, IndexType count = -1) const
+  {
+    assert(offset + count <= m_num_elements);
+    ArrayView slice = *this;
+    slice.m_data += offset;
+    if(count != -1)
+    {
+      slice.m_num_elements = count;
+    }
+    return slice;
+  }
+
 private:
   T* m_data = nullptr;
   /// \brief The full number of elements in the array
