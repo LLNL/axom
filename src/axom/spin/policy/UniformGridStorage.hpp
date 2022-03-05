@@ -7,6 +7,7 @@
 #define AXOM_SPIN_POLICY_UGRID_STORAGE_HPP
 
 #include "axom/core/Array.hpp"
+#include "axom/core/execution/for_all.hpp"
 
 namespace axom
 {
@@ -19,6 +20,12 @@ struct DynamicGridStorage;
 
 template <typename T>
 struct DynamicGridView;
+
+template <typename T>
+struct FlatGridStorage;
+
+template <typename T>
+struct FlatGridView;
 
 /*!
  * \brief Policy for storing uniform grid as an array of arrays. Supports
@@ -140,6 +147,178 @@ struct DynamicGridView
   }
 
   axom::ArrayView<BinStoreType> m_bins;
+};
+
+/*!
+ * \brief Policy for storing uniform grid as a flat array of type T. Bins are
+ *  represented as slices of this flat array.
+ */
+template <typename T>
+struct FlatGridStorage
+{
+  using BinType = axom::ArrayView<T>;
+  using ConstBinType = axom::ArrayView<const T>;
+
+  using ViewType = FlatGridView<T>;
+  using ConstViewType = FlatGridView<const T>;
+
+  FlatGridStorage(int allocID)
+    : m_binData(0, 0, allocID)
+    , m_binOffsets(0, 0, allocID)
+    , m_allocatorID(allocID)
+    , m_executeOnDevice(false)
+  {
+#ifdef AXOM_USE_UMPIRE
+    m_executeOnDevice =
+      (axom::detail::getAllocatorSpace(allocID) == axom::MemorySpace::Device);
+#endif
+  }
+
+  int getAllocatorID() const { return m_allocatorID; }
+
+  void setNumBins(IndexType nbins) { m_binOffsets.resize(nbins); }
+  IndexType getNumBins() const { return m_binOffsets.size(); }
+
+  bool isValidIndex(IndexType index) const
+  {
+    return index >= 0 && index < getNumBins();
+  }
+
+  void initialize(axom::ArrayView<const IndexType> binSizes)
+  {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
+    if(m_executeOnDevice)
+    {
+      using exec_pol =
+        typename axom::execution_space<CUDA_EXEC<256>>::loop_policy;
+      using reduce_pol =
+        typename axom::execution_space<CUDA_EXEC<256>>::reduce_policy;
+      RAJA::exclusive_scan<exec_pol>(
+        RAJA::make_span(binSizes.data(), binSizes.size()),
+        RAJA::make_span(m_binOffsets.data(), binSizes.size()),
+        RAJA::operators::plus<IndexType> {});
+      RAJA::ReduceSum<reduce_pol, IndexType> total_elems(0);
+      for_all<CUDA_EXEC<256>>(
+        binSizes.size(),
+        AXOM_LAMBDA(IndexType idx) { total_elems += binSizes[idx]; });
+      m_binData.resize(total_elems.get());
+      return;
+    }
+#else
+    IndexType total_elems = binSizes[0];
+    m_binOffsets[0] = 0;
+    for(int i = 1; i < binSizes.size(); i++)
+    {
+      m_binOffsets[i] = m_binOffsets[i - 1] + binSizes[i - 1];
+      total_elems += binSizes[i];
+    }
+    m_binData.resize(total_elems);
+#endif
+  };
+
+  void insert(IndexType gridIdx, T elem)
+  {
+    if(gridIdx + 1 < m_binOffsets.size())
+    {
+      IndexType flatOffset = m_binOffsets[gridIdx + 1];
+      m_binData.insert(flatOffset, elem);
+      // Increment offsets of following bins to account for insertion
+      for(int i = gridIdx + 1; i < m_binOffsets.size(); i++)
+      {
+        m_binOffsets[i]++;
+      }
+    }
+    else
+    {
+      // bin is at the end, just do a push_back
+      m_binData.push_back(elem);
+    }
+  }
+
+  void clear(IndexType gridIdx)
+  {
+    IndexType offset = m_binOffsets[gridIdx];
+    IndexType end = (gridIdx + 1 < m_binOffsets.size())
+      ? m_binOffsets[gridIdx + 1]
+      : m_binData.size();
+    m_binData.erase(m_binData.begin() + offset, m_binData.begin() + end);
+  }
+
+  // getters
+  BinType getBinContents(IndexType gridIdx)
+  {
+    IndexType offset = m_binOffsets[gridIdx];
+    IndexType end = (gridIdx + 1 < m_binOffsets.size())
+      ? m_binOffsets[gridIdx + 1]
+      : m_binData.size();
+    return m_binData.view().subspan(offset, end - offset);
+  }
+  ConstBinType getBinContents(IndexType gridIdx) const
+  {
+    IndexType offset = m_binOffsets[gridIdx];
+    IndexType end = (gridIdx + 1 < m_binOffsets.size())
+      ? m_binOffsets[gridIdx + 1]
+      : m_binData.size();
+    return m_binData.view().subspan(offset, end - offset);
+  }
+
+  T& get(IndexType gridIdx, IndexType binIdx)
+  {
+    return m_binData[m_binOffsets[gridIdx] + binIdx];
+  }
+
+  const T& get(IndexType gridIdx, IndexType binIdx) const
+  {
+    return m_binData[m_binOffsets[gridIdx] + binIdx];
+  }
+
+  axom::Array<T> m_binData;
+  axom::Array<IndexType> m_binOffsets;
+  int m_allocatorID;
+  bool m_executeOnDevice;
+};
+
+template <typename T>
+struct FlatGridView
+{
+  using BaseT = typename std::remove_const<T>::type;
+  using BinType = axom::ArrayView<T>;
+
+  FlatGridView(FlatGridStorage<BaseT>& in)
+    : m_binData(in.m_binData.view())
+    , m_binOffsets(in.m_binOffsets.view())
+  { }
+
+  FlatGridView(const FlatGridStorage<BaseT>& in)
+    : m_binData(in.m_binData.view())
+    , m_binOffsets(in.m_binOffsets.view())
+  { }
+
+  AXOM_HOST_DEVICE IndexType getNumBins() const { return m_binOffsets.size(); }
+
+  AXOM_HOST_DEVICE bool isValidIndex(IndexType index) const
+  {
+    return index >= 0 && index < getNumBins();
+  }
+  // getters
+  AXOM_HOST_DEVICE BinType getBinContents(IndexType gridIdx) const
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    IndexType offset = m_binOffsets[gridIdx];
+    IndexType end = (gridIdx + 1 < m_binOffsets.size())
+      ? m_binOffsets[gridIdx + 1]
+      : m_binData.size();
+    return m_binData.subspan(offset, end - offset);
+  }
+
+  AXOM_HOST_DEVICE T& get(IndexType gridIdx, IndexType binIdx) const
+  {
+    SLIC_ASSERT(isValidIndex(gridIdx));
+    return m_binData[m_binOffsets[gridIdx] + binIdx];
+  }
+
+  axom::ArrayView<T> m_binData;
+  axom::ArrayView<const IndexType> m_binOffsets;
 };
 
 }  // namespace policy
