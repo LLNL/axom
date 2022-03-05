@@ -178,6 +178,29 @@ public:
   const std::vector<int> getBinsForBbox(const BoxType& BB) const;
 
   /*!
+   * \brief Returns a list of candidates in the vicinity of a set of query
+   *  bounding boxes.
+   *
+   * \param [in] queryObjs The array of query objects
+   * \param [out] outOffsets Offsets into the candidates array for each query
+   *  object
+   * \param [out] outCounts The number of candidates for each query object
+   * \param [out] candidates The candidate IDs for each query object
+   *
+   * \note The output candidate array is allocated inside the function, using
+   *  the given allocator ID passed in during implicit grid initialization.
+   *
+   * \note Upon completion, the ith query point has:
+   *  * counts[ i ] candidates
+   *  * Stored in the candidates array in the following range:
+   *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
+   */
+  void getCandidatesAsArray(axom::ArrayView<const BoxType> queryObjs,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const;
+
+  /*!
    * \brief Clears the bin indicated by index.
    *
    * No-op if index is invalid.
@@ -689,6 +712,192 @@ typename UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::QueryObject
 UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getQueryObject() const
 {
   return QueryObject {m_boundingBox, m_lattice, m_resolution, m_strides, *this};
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS, typename ExecSpace, typename StoragePolicy>
+void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
+  axom::ArrayView<const BoxType> queryObjs,
+  axom::ArrayView<IndexType> outOffsets,
+  axom::ArrayView<IndexType> outCounts,
+  axom::Array<IndexType>& outCandidates) const
+{
+  IndexType qsize = queryObjs.size();
+  SLIC_ASSERT(qsize > 0);
+  SLIC_ASSERT(qsize == outOffsets.size());
+  SLIC_ASSERT(qsize == outCounts.size());
+
+  auto gridQuery = getQueryObject();
+
+  // TODO: There's an error on operator[] if these aren't const and it only
+  // happens for GCC 8.1.0
+  const auto offsets_view = outOffsets;
+  const auto counts_view = outCounts;
+#ifdef AXOM_USE_RAJA
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
+  // Step 1: count number of candidate intersections for each point
+  for_all<ExecSpace>(
+    qsize,
+    AXOM_LAMBDA(IndexType i) {
+      counts_view[i] = gridQuery.countCandidates(queryObjs[i]);
+      totalCountReduce += counts_view[i];
+    });
+
+  // Step 2: exclusive scan for offsets in candidate array
+  using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(outCounts.data(), qsize),
+                                    RAJA::make_span(outOffsets.data(), qsize),
+                                    RAJA::operators::plus<IndexType> {});
+
+  axom::IndexType totalCount = totalCountReduce.get();
+
+  // Step 3: allocate memory for all candidates
+  axom::Array<IndexType> queryIndex(totalCount,
+                                    totalCount,
+                                    this->getAllocatorID());
+  outCandidates =
+    axom::Array<IndexType>(totalCount, totalCount, this->getAllocatorID());
+  const auto query_idx_view = queryIndex.view();
+  const auto candidates_view = outCandidates.view();
+
+  // Step 4: fill candidate array for each query box
+  for_all<ExecSpace>(
+    qsize,
+    AXOM_LAMBDA(IndexType i) {
+      int startIdx = offsets_view[i];
+      int currCount = 0;
+      auto onCandidate = [&](int candidateIdx) -> bool {
+        candidates_view[startIdx] = candidateIdx;
+        query_idx_view[startIdx] = i;
+        currCount++;
+        startIdx++;
+        return currCount >= counts_view[i];
+      };
+      gridQuery.visitCandidates(queryObjs[i], onCandidate);
+    });
+
+  // Step 5: Sort our resulting candidates for each query object.
+  // This brings non-unique candidate intersections together.
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    // On the GPU, we first sort pairs by candidate index, then stable sort by
+    // the query index.
+    RAJA::sort_pairs<exec_policy>(
+      RAJA::make_span(outCandidates.data(), totalCount),
+      RAJA::make_span(queryIndex.data(), totalCount));
+    RAJA::stable_sort_pairs<exec_policy>(
+      RAJA::make_span(queryIndex.data(), totalCount),
+      RAJA::make_span(outCandidates.data(), totalCount));
+  }
+  else
+  {
+    // On the CPU, just sort each subrange for each query object.
+    for_all<ExecSpace>(
+      qsize,
+      AXOM_LAMBDA(IndexType i) {
+        int startIdx = offsets_view[i];
+        int count = counts_view[i];
+        if(count > 0)
+        {
+  #ifndef __CUDA_ARCH__
+          std::sort(candidates_view.begin() + startIdx,
+                    candidates_view.begin() + startIdx + count);
+  #endif
+        }
+      });
+  }
+
+  // Step 6: Count and flag unique intersection pairs, in order to map them
+  // to a deduplicated candidate intersection array.
+  RAJA::ReduceSum<reduce_pol, IndexType> dedupCountReduce(0);
+  axom::Array<IndexType> dedupTgtIdx(totalCount,
+                                     totalCount,
+                                     this->getAllocatorID());
+  const auto dedup_idx_view = dedupTgtIdx.view();
+  for_all<ExecSpace>(
+    totalCount,
+    AXOM_LAMBDA(IndexType i) {
+      bool duplicate = false;
+      if(i > 0)
+      {
+        // If the previous candidate pair is the same as the current pair,
+        // skip counting the current pair.
+        const bool sameQueryIdx = (query_idx_view[i - 1] == query_idx_view[i]);
+        const bool sameCandidateIdx =
+          (candidates_view[i - 1] == candidates_view[i]);
+        duplicate = (sameQueryIdx && sameCandidateIdx);
+      }
+      if(!duplicate)
+      {
+        dedupCountReduce += 1;
+        dedup_idx_view[i] = 1;
+      }
+    });
+
+  // Exclusive scan over the flag array gives us the final index of unique
+  // pairs in the deduplicated array.
+  RAJA::exclusive_scan_inplace<exec_policy>(
+    RAJA::make_span(dedupTgtIdx.data(), totalCount),
+    RAJA::operators::plus<IndexType> {});
+
+  // Step 7: Fill the array of deduplicated candidates based on the index
+  // mapping generated previously.
+  axom::IndexType dedupSize = dedupCountReduce.get();
+  axom::Array<IndexType> dedupedCandidates(dedupSize,
+                                           dedupSize,
+                                           this->getAllocatorID());
+  const auto dedup_cand_view = dedupedCandidates.view();
+
+  using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
+  // Reset counts counter for counting unique candidates per query box.
+  for_all<ExecSpace>(
+    qsize,
+    AXOM_LAMBDA(IndexType i) { counts_view[i] = 0; });
+
+  // Store unique candidates in the deduplicated array, and count the number of
+  // unique candidates for each query.
+  for_all<ExecSpace>(
+    totalCount,
+    AXOM_LAMBDA(IndexType i) {
+      bool duplicate = false;
+      if(i > 0)
+      {
+        const bool sameQueryIdx = (query_idx_view[i - 1] == query_idx_view[i]);
+        const bool sameCandidateIdx =
+          (candidates_view[i - 1] == candidates_view[i]);
+        duplicate = (sameQueryIdx && sameCandidateIdx);
+      }
+      if(!duplicate)
+      {
+        IndexType qidx = query_idx_view[i];
+        IndexType tgt_idx = dedup_idx_view[i];
+        RAJA::atomicAdd<atomic_pol>(&counts_view[qidx], 1);
+        dedup_cand_view[tgt_idx] = candidates_view[i];
+      }
+    });
+
+  // Regenerate offsets for the new candidates array.
+  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(outCounts.data(), qsize),
+                                    RAJA::make_span(outOffsets.data(), qsize),
+                                    RAJA::operators::plus<IndexType> {});
+  outCandidates = std::move(dedupedCandidates);
+
+#else
+  outOffsets[0] = 0;
+  for(int i = 0; i < qsize; i++)
+  {
+    outCounts[i] = 0;
+    gridQuery.visitCandidates(queryObjs[i], [&](int candidateIdx) {
+      outCounts[i]++;
+      outCandidates.push_back(candidateIdx);
+    });
+    if(i + 1 < qsize)
+    {
+      outOffsets[i + 1] = outOffsets[i] + outCounts[i];
+    }
+  }
+#endif
 }
 
 //------------------------------------------------------------------------------
