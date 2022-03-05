@@ -26,11 +26,7 @@
 
 // C/C++ includes
 #include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <limits>
 #include <vector>
-#include <stdio.h>
 
 namespace axom
 {
