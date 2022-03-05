@@ -146,6 +146,59 @@ void findTriMeshIntersectionsImplicitGrid(
 
 /*!
  * \brief Find self-intersections and degenerate triangles in a surface mesh
+ *  utilizing an uniform grid spatial index.
+ *
+ * \param [in] surface_mesh A triangle mesh in three dimensions
+ * \param [out] intersection Pairs of indices of intersecting mesh triangles
+ * \param [out] degenerateIndices indices of degenerate mesh triangles
+ * \param [in] spatialIndexResolution The grid resolution for the index
+ * structure (default: 0)
+ * \param [in] intersectionThreshold Tolerance threshold for triangle
+ * intersection tests (default: 1E-8)
+ * After running this function over a surface mesh, intersection will be filled
+ * with pairs of indices of intersecting triangles and degenerateIndices will
+ * be filled with the indices of the degenerate triangles in the mesh.
+ * Triangles that share vertex pairs (adjacent triangles in a watertight
+ * surface mesh) are not reported as intersecting.  Degenerate triangles
+ * are not reported as intersecting other triangles.
+ *
+ * This function uses a quest::UniformGrid spatial index.  Input
+ * spatialIndexResolution specifies the bin size for the UniformGrid.  The
+ * default value of 0 causes this routine to calculate a heuristic bin size
+ * based on the cube root of the number of cells in the mesh.
+ */
+template <typename ExecSpace, typename FloatType>
+void findTriMeshIntersectionsUniformGrid(
+  mint::UnstructuredMesh<mint::SINGLE_SHAPE>* surface_mesh,
+  std::vector<std::pair<int, int>>& intersections,
+  std::vector<int>& degenerateIndices,
+  int spatialIndexResolution = 0,
+  double intersectionThreshold = 1E-8)
+{
+  AXOM_PERF_MARK_FUNCTION("findTriMeshIntersectionsUniformGrid");
+
+  SLIC_INFO("Running UniformGrid intersection algorithm "
+            << " in execution Space: "
+            << axom::execution_space<ExecSpace>::name());
+
+  constexpr detail::AccelType UseUniform = detail::AccelType::UniformGrid;
+  using CandidateFinder =
+    detail::CandidateFinder<UseUniform, ExecSpace, FloatType>;
+  CandidateFinder impl(surface_mesh, intersectionThreshold);
+  impl.initialize(spatialIndexResolution);
+  axom::Array<IndexType> intersectFirst, intersectSecond, degenerate;
+  impl.findTriMeshIntersections(intersectFirst, intersectSecond, degenerate);
+  // Copy results to output vectors
+  intersections.resize(intersectFirst.size());
+  for(IndexType ipair = 0; ipair < intersectFirst.size(); ipair++)
+  {
+    intersections[ipair] = {intersectFirst[ipair], intersectSecond[ipair]};
+  }
+  degenerateIndices = std::vector<int>(degenerate.begin(), degenerate.end());
+}
+
+/*!
+ * \brief Find self-intersections and degenerate triangles in a surface mesh
  *  utilizing a Uniform Grid.
  *
  * \param [in] surface_mesh A triangle mesh in three dimensions
