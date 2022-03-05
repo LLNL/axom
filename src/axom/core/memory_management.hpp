@@ -22,9 +22,6 @@
   #include <cstdlib>  // for std::malloc, std::realloc, std::free
 #endif
 
-#include <string>
-#include <vector>
-
 namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
@@ -104,21 +101,6 @@ inline void setDefaultAllocator(int allocId)
 inline int getDefaultAllocatorID()
 {
 #ifdef AXOM_USE_UMPIRE
-  //return umpire::ResourceManager::getInstance().getAllocator("HOST").getId();
-  auto names = umpire::ResourceManager::getInstance().getAllocatorNames();
-  std::cout << "~~~~~~~~~~~~ NAMES ~~~~~~~~~~~" << std::endl;
-  for(auto& name : names)
-  {
-    std::cout << name << std::endl;
-  }
-
-  auto ids = umpire::ResourceManager::getInstance().getAllocatorIds();
-  std::cout << "~~~~~~~~~~~~ IDs ~~~~~~~~~~~" << std::endl;
-  for(int id : ids)
-  {
-    std::cout << std::to_string(id) << std::endl;
-  }
-
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
   return 0;
