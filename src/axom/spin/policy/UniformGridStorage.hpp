@@ -60,15 +60,14 @@ struct DynamicGridStorage
 
   void initialize(axom::ArrayView<const IndexType> binSizes)
   {
-    axom::Array<BinType> host_bins;
+    m_bins.clear();
     for(int i = 0; i < binSizes.size(); i++)
     {
-      host_bins.emplace_back(ArrayOptions::Uninitialized {},
-                             binSizes[i],
-                             binSizes[i],
-                             m_allocatorID);
+      m_bins.emplace_back(ArrayOptions::Uninitialized {},
+                          binSizes[i],
+                          binSizes[i],
+                          m_allocatorID);
     }
-    m_bins = axom::Array<BinType>(std::move(host_bins), m_allocatorID);
   };
 
   void insert(IndexType gridIdx, const T& elem)
