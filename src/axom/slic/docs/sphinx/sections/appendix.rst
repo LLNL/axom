@@ -52,6 +52,63 @@ logging within an application.
   functionality in application specific macros to better suit the requirements
   of the application.
 
+.. _CollectiveSlicMacros:
+
+Collective Slic Macros
+^^^^^^^^^^^^^^^^^^^^^^^^^
+A subset of SLIC macros are collective operations when used with
+MPI-aware :ref:`logStream` instances such as ``SynchronizedStream`` or ``LumberjackStream``.
+
+Additionally, macros such as ``SLIC_WARNING`` and ``SLIC_CHECK`` become collective
+operations when certain flags are toggled on.
+
+The table below details which SLIC macros are collective:
+
+.. list-table:: Title
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - Macro
+     - Collective
+     - Notes
+   * - ``SLIC_INFO``
+     - No
+     - 
+   * - ``SLIC_INFO_IF``
+     - No
+     - 
+   * - ``SLIC_ERROR``
+     - Yes
+     - 
+   * - ``SLIC_ERROR_IF``
+     - Yes
+     - 
+   * - ``SLIC_WARNING``
+     - Yes (see Note)
+     - 
+   * - ``SLIC_WARNING_IF``
+     - Yes (see Note)
+     - 
+   * - ``SLIC_DEBUG``
+     - No
+     - 
+   * - ``SLIC_DEBUG_IF``
+     - No
+     - 
+   * - ``SLIC_ASSERT``
+     - Yes
+     - 
+   * - ``SLIC_ASSERT_MSG``
+     - Yes
+     - 
+   * - ``SLIC_CHECK``
+     - Yes (see Note)
+     - 
+   * - ``SLIC_CHECK_MSG``
+     - Yes (see Note)
+     - 
+
+
 .. _SLIC_INFO:
 
 SLIC_INFO
