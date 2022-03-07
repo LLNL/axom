@@ -547,7 +547,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
           {
             const IndexType ibin = i + jOffset;
 #ifdef AXOM_USE_RAJA
-            RAJA::atomicAdd<atomic_pol>(&binCountsView[ibin], 1);
+            RAJA::atomicAdd<atomic_pol>(&binCountsView[ibin], IndexType {1});
 #else
             binCountsView[ibin]++;
 #endif
@@ -587,8 +587,8 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
             const IndexType binIndex = i + jOffset;
             IndexType binCurrOffset;
 #ifdef AXOM_USE_RAJA
-            binCurrOffset =
-              RAJA::atomicAdd<atomic_pol>(&binCountsView[binIndex], 1);
+            binCurrOffset = RAJA::atomicAdd<atomic_pol>(&binCountsView[binIndex],
+                                                        IndexType {1});
 #else
             binCurrOffset = binCountsView[binIndex];
             binCountsView[binIndex]++;
@@ -868,7 +868,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
       {
         IndexType qidx = query_idx_view[i];
         IndexType tgt_idx = dedup_idx_view[i];
-        RAJA::atomicAdd<atomic_pol>(&counts_view[qidx], 1);
+        RAJA::atomicAdd<atomic_pol>(&counts_view[qidx], IndexType {1});
         dedup_cand_view[tgt_idx] = candidates_view[i];
       }
     });
