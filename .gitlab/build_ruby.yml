@@ -86,7 +86,7 @@ ruby-gcc_8_3_1-src:
 ruby-gcc_8_1_0_no_fortran-src:
   variables:
     COMPILER: "gcc@8.1.0"
-    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}_nofortran.cmake"
   extends: .src_build_on_ruby
 
 # disabled due to time limit
