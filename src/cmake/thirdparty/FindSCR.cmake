@@ -121,11 +121,40 @@ set(SCR_INCLUDE_DIRS
     ${YOGRT_INCLUDE_DIR}
     )
 
+set(_library_names
+    scr
+    kvtree
+    dtcmp
+    spath
+    axl
+    lwgrp
+    er
+    rankstr
+    redset
+    redset_base
+    shuffile
+    yogrt
+    )
+
+set(_library_paths
+   ${SCR_DIR}/lib
+   ${KVTREE_DIR}/lib
+   ${DTCMP_DIR}/lib
+   ${SPATH_DIR}/lib
+   ${AXL_DIR}/lib
+   ${LWGRP_DIR}/lib
+   ${ER_DIR}/lib
+   ${RANKSTR_DIR}/lib
+   ${REDSET_DIR}/lib
+   ${SHUFFILE_DIR}/lib
+   ${YOGRT_DIR}/lib
+   )
+
 blt_find_libraries(
         FOUND_LIBS SCR_LIBRARIES
-        NAMES      scr kvtree dtcmp spath axl lwgrp er rankstr redset redset_base shuffile yogrt
+        NAMES      ${_library_names}
         REQUIRED   TRUE
-        PATHS      ${SCR_DIR}/lib ${KVTREE_DIR}/lib ${DTCMP_DIR}/lib ${SPATH_DIR}/lib ${AXL_DIR}/lib ${LWGRP_DIR}/lib ${ER_DIR}/lib ${RANKSTR_DIR}/lib ${REDSET_DIR}/lib ${SHUFFILE_DIR}/lib  ${YOGRT_DIR}/lib)
+        PATHS      ${_library_paths})
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set SCR_FOUND to TRUE
