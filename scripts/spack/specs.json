@@ -15,18 +15,18 @@
 
     "toss_3_x86_64_ib":
     [ "clang@9.0.0~cpp14+devtools+mfem+c2c",
-      "clang@10.0.0~cpp14+devtools+mfem+c2c",
-      "gcc@8.1.0~cpp14+devtools+mfem+c2c",
-      "gcc@8.1_no_fortran~cpp14~fortran+devtools~mfem+c2c",
+      "clang@10.0.0~cpp14+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
+      "gcc@8.3.1~cpp14+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
+      "gcc@8.1.0~cpp14~fortran+devtools~mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
       "intel@18.0.2~cpp14~openmp+devtools+mfem+c2c",
       "intel@19.0.4~cpp14~openmp+devtools+mfem+c2c" ],
 
     "blueos_3_ppc64le_ib_p9":
-    [ "clang@9.0.0_upstream_xlf~cpp14~openmp+devtools+mfem+c2c",
-      "clang@8.0.1_nvcc_xlf~cpp14~openmp+devtools+mfem+cuda+c2c cuda_arch=70",
+    [ "clang@9.0.0~cpp14~openmp+devtools+mfem+c2c",
+      "clang@8.0.1~cpp14~openmp+devtools+mfem+cuda+c2c cuda_arch=70",
       "gcc@7.3.1~cpp14+devtools~mfem+c2c",
-      "xl@16.1.1_coral~cpp14~openmp+devtools+mfem+c2c",
-      "xl@16.1.1_nvcc~cpp14~openmp+devtools+mfem+cuda+c2c cuda_arch=70" ],
+      "xl@16.1.1.1~cpp14~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
+      "xl@16.1.1.2~cpp14~openmp+devtools+mfem+c2c" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0~cpp14+devtools+mfem" ]

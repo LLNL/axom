@@ -63,22 +63,33 @@ inline int getUmpireResourceAllocatorID(
   return alloc.getId();
 }
 
+/*!
+ * \brief Sets the default memory allocator to use.
+ * \param [in] resource_type the Umpire resource type
+ */
+inline void setDefaultAllocator(umpire::resource::MemoryResourceType resource_type)
+{
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator(resource_type);
+  rm.setDefaultAllocator(allocator);
+}
+
 #endif
 
 /*!
  * \brief Sets the default memory allocator to use.
- * \param [in] allocatorID ID of the Umpire allocator to use.
+ * \param [in] allocId the Umpire allocator id
  * 
  * \note This function has no effect when Axom is not compiled with Umpire.
  */
-inline void setDefaultAllocator(int allocatorID)
+inline void setDefaultAllocator(int allocId)
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator(allocatorID);
+  umpire::Allocator allocator = rm.getAllocator(allocId);
   rm.setDefaultAllocator(allocator);
 #else
-  AXOM_UNUSED_VAR(allocatorID);
+  AXOM_UNUSED_VAR(allocId);
 #endif
 }
 
