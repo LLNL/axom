@@ -91,7 +91,7 @@ lassen-gcc_7_3_1-full:
     SPEC: "%${COMPILER}+mfem"
   extends: [.full_build_on_lassen]
 
-lassen-xl_16_1_1_cuda-full:
+lassen-xl_16_1_1_1_cuda-full:
   variables:
     COMPILER: "xl@16.1.1.1"
     SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
