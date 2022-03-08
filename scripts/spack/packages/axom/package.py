@@ -308,8 +308,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -L{0}/lib -Wl,-rpath,{0}/../llvm/lib:{0}/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64".format(hip_root)
 
             # Additional libraries for TOSS4
-            if "gfx908" in archs:
-                hip_link_flags += " -L{0}/../lib64 -Wl,-rpath,{0}/../lib64 -lhsakmt -lamd_comgr".format(hip_root)
+            hip_link_flags += " -L{0}/../lib64 -Wl,-rpath,{0}/../lib64 -lhsakmt -lamd_comgr".format(hip_root)
 
             entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
