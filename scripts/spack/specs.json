@@ -22,7 +22,7 @@
       "intel@19.0.4~cpp14~openmp+devtools+mfem+c2c" ],
 
     "toss_4_x86_64_ib":
-    [ "clang@13.0.0_hip~cpp14~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
+    [ "clang@13.0.0~cpp14~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
     "toss_4_x86_64_ib_cray":
     [ "clang@13.0.0_hip_crayftn~cpp14~openmp+rocm+devtools+mfem+c2c amdgpu_target=gfx908 ^raja~openmp+rocm ^umpire~openmp+rocm",

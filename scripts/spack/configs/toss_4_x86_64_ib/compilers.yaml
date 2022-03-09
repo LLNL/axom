@@ -11,5 +11,5 @@ compilers::
       cxx: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/hipcc
       f77: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdflang
       fc: /usr/tce/packages/rocmcc-tce/rocmcc-4.5.2/bin/amdflang
-    spec: clang@13.0.0_hip
+    spec: clang@13.0.0
     target: x86_64 
