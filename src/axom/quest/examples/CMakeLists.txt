@@ -120,7 +120,7 @@ if (ENABLE_FORTRAN)
         )
 
     # This target fails to compile with hipcc/amdflang on debugs
-    if(NOT ${CMAKE_Fortran_COMPILER} MATCHES "amdflang$" OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         blt_add_executable(
             NAME        quest_inout_interface_F_ex
             SOURCES     quest_inout_interface.F
@@ -153,7 +153,7 @@ if (ENABLE_FORTRAN)
     endif()
 
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
-        if(NOT ${CMAKE_Fortran_COMPILER} MATCHES "amdflang$" OR NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
             if (ENABLE_MPI)
                 axom_add_test(
                     NAME quest_inout_interface_mpi_F_test
