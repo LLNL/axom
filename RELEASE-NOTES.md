@@ -46,7 +46,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds full support for calling methods on `axom::Array<T>` allocated in device-only memory.
 - Adds ability to index into subarrays of a multidimensional `axom::Array<T>` using
   `operator[]` and `operator()`
-- Adds new host-configs for HIP on LLNL platform
+- Adds new host-configs for HIP on LLNL platforms
 
 ###  Changed
 - Moved bit-twiddling functions to core component
