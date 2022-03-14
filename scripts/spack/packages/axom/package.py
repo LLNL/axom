@@ -190,7 +190,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         if "~fortran" in self.spec:
             special_case += "_nofortran"
         if "+rocm" in self.spec:
-            special_case += "_rocm"
+            special_case += "_hip"
         return "{0}-{1}-{2}@{3}{4}.cmake".format(
             hostname,
             self._get_sys_type(self.spec),
