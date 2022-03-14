@@ -105,8 +105,7 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("lua", when="+lua")
 
     depends_on("scr", when="+scr")
-    depends_on("kvtree@main", when="+scr")
-    depends_on("dtcmp", when="+scr")
+    depends_on("scr~fortran", when="+scr~fortran")
 
     with when('+umpire'):
         depends_on('umpire@6.0.0:', when='@0.6.0:')
@@ -170,11 +169,19 @@ class Axom(CachedCMakePackage, CudaPackage):
         if "SYS_TYPE" in env:
             # Are we on a LLNL system then strip node number
             hostname = hostname.rstrip('1234567890')
-        return "{0}-{1}-{2}@{3}.cmake".format(
+        special_case = ""
+        if "+cuda" in self.spec:
+            special_case += "_cuda"
+        if "~fortran" in self.spec:
+            special_case += "_nofortran"
+        if "+rocm" in self.spec:
+            special_case += "_rocm"
+        return "{0}-{1}-{2}@{3}{4}.cmake".format(
             hostname,
             self._get_sys_type(self.spec),
             self.spec.compiler.name,
-            self.spec.compiler.version
+            self.spec.compiler.version,
+            special_case
         )
 
     def initconfig_compiler_entries(self):
@@ -351,12 +358,15 @@ class Axom(CachedCMakePackage, CudaPackage):
             else:
                 entries.append('# %s not built\n' % dep.upper())
 
+        # SCR does not export it's targets so we need to pull in its dependencies
         if '+scr' in spec:
             dep_dir = get_spec_path(spec, 'scr', path_replacements)
             entries.append(cmake_cache_path('SCR_DIR', dep_dir))
 
             # scr's dependencies
-            for dep in ('kvtree', 'dtcmp'):
+            scr_deps = ('kvtree', 'dtcmp', 'spath', 'axl', 'lwgrp', 'er', 'rankstr',
+                        'redset', 'shuffile', 'yogrt')
+            for dep in scr_deps:
                 if spec.satisfies('^{0}'.format(dep)):
                     dep_dir = get_spec_path(spec, dep, path_replacements)
                     entries.append(cmake_cache_path('%s_DIR' % dep.upper(), dep_dir))

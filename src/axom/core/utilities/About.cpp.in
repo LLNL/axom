@@ -136,6 +136,10 @@ void about(std::ostream &oss)
   libs.push_back("mpi");
 #endif
 
+#ifdef AXOM_USE_SCR
+  libs.push_back("scr");
+#endif
+
 #ifdef AXOM_USE_SOL
   libs.push_back("sol");
 #endif

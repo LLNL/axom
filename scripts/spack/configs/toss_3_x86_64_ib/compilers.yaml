@@ -38,19 +38,6 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/gcc/gcc-8.1.0/bin/gcc
-      cxx: /usr/tce/packages/gcc/gcc-8.1.0/bin/g++
-      f77: /usr/tce/packages/gcc/gcc-8.1.0/bin/gfortran
-      fc:  /usr/tce/packages/gcc/gcc-8.1.0/bin/gfortran
-    spec: gcc@8.1.0
-    target: x86_64
-- compiler:
-    environment: {}
-    extra_rpaths: []
-    flags: {}
-    modules: []
-    operating_system: rhel7
-    paths:
       cc:  /usr/tce/packages/gcc/gcc-8.3.1/bin/gcc
       cxx: /usr/tce/packages/gcc/gcc-8.3.1/bin/g++
       f77: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
@@ -68,9 +55,9 @@ compilers:
       cxx: /usr/tce/packages/gcc/gcc-8.1.0/bin/g++
       f77:
       fc:
-    # Note: naming this gcc@8.1.0_no_fortran causes the gcc@8.1.0 spec to lose its
-    #       fortran compiler. See: https://github.com/spack/spack/issues/19332
-    spec: gcc@8.1_no_fortran
+    # Note: Spack keeps having problems with specs with non-numerical compiler specs.
+    # This is a special compiler spec to test out not defining a fortran compiler.
+    spec: gcc@8.1.0
     target: x86_64
 - compiler:
     environment: {}

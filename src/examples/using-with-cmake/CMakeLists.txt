@@ -31,6 +31,11 @@ if(NOT DEFINED AXOM_DIR OR NOT EXISTS ${AXOM_DIR}/lib/cmake/axom-config.cmake)
     message(FATAL_ERROR "Missing required 'AXOM_DIR' variable pointing to an installed axom")
 endif()
 
+# Required to create Conduit's MPI dependencies
+if (ENABLE_MPI)
+    find_package(MPI REQUIRED)
+endif()
+
 find_package(axom REQUIRED
              NO_DEFAULT_PATH 
              PATHS ${AXOM_DIR}/lib/cmake)

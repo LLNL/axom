@@ -21,6 +21,10 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     maintainers = ['davidbeckingsale']
 
+    # BEGIN AXOM EDIT
+    version('6.0.0axom', commit='5f474c7501daf365d6015a2141821d83bd799ffa', submodules="True")
+    # END AXOM EDIT
+
     version('develop', branch='develop', submodules=True)
     version('main', branch='main', submodules=True)
     version('6.0.0', tag='v6.0.0', submodules=True)
@@ -54,6 +58,9 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
     patch('camp_target_umpire_3.0.0.patch', when='@3.0.0')
     patch('cmake_version_check.patch', when='@4.1')
     patch('missing_header_for_numeric_limits.patch', when='@4.1:5.0.1')
+    # BEGIN AXOM EDIT
+    patch('cmake_devicealloc_option_6.0.0.patch', when='@6.0.0axom')
+    # END AXOM EDIT
 
     # export targets when building pre-6.0.0 release with BLT 0.4.0+
     patch('https://github.com/LLNL/Umpire/commit/5773ce9af88952c8d23f9bcdcb2e503ceda40763.patch',
@@ -70,6 +77,9 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant('examples', default=True, description='Build Umpire Examples')
     variant('tests', default='none', values=('none', 'basic', 'benchmarks'),
             multi=False, description='Tests to run')
+    # BEGIN AXOM EDIT
+    variant('device_alloc', default=True, description='Build Umpire Device Allocator')
+    # END AXOM EDIT
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
@@ -198,6 +208,8 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries.append(cmake_cache_option("ENABLE_DOCS", False))
         entries.append(cmake_cache_option("BUILD_SHARED_LIBS", '+shared' in spec))
         entries.append(cmake_cache_option("ENABLE_TESTS", 'tests=none' not in spec))
+        entries.append(cmake_cache_option(
+            "UMPIRE_ENABLE_DEVICE_ALLOCATOR", '+device_alloc' in spec))
 
         return entries
 
