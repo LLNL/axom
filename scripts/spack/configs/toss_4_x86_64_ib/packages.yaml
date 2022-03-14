@@ -94,6 +94,17 @@ packages:
     externals:
     - spec: bzip2@1.0.6
       prefix: /usr
+  cmake:
+    version: [3.21.1]
+    buildable: false
+    externals:
+    - spec: cmake@3.21.1
+      prefix: /usr/tce/packages/cmake/cmake-3.21.1
+  curl:
+    buildable: false
+    externals:
+    - spec: curl@7.61.1
+      prefix: /usr
   diffutils:
     buildable: false
     externals:
@@ -184,11 +195,6 @@ packages:
     externals:
     - spec: zlib@1.2.7
       prefix: /usr
-  curl:
-    buildable: false
-    externals:
-    - spec: curl@7.61.1
-      prefix: /usr
 
 # External dependencies for SCR
   lsf:
@@ -228,53 +234,3 @@ packages:
   umpire:
     version: [6.0.0axom]
     variants: ~shared~examples
-
-# Globally lock in versions of Devtools
-  cmake:
-    version: [3.21.1]
-    buildable: false
-    externals:
-    - spec: cmake@3.21.1
-      prefix: /usr/tce/packages/cmake/cmake-3.21.1
-  cppcheck:
-    version: [1.87]
-    buildable: false
-    externals:
-    - spec: cppcheck@1.87
-      prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/cppcheck-1.87
-  doxygen:
-    version: [1.8.14]
-    buildable: false
-    externals:
-    - spec: doxygen@1.8.14
-      prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/doxygen-1.8.14
-  graphviz:
-    version: [2.42.2]
-    buildable: false
-    externals:
-    - spec: graphviz@2.42.2
-      prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/graphviz-2.42.2
-  llvm:
-    version: [10.0.0]
-    buildable: false
-    externals:
-    - spec: llvm@10.0.0+clang
-      prefix: /usr/tce/packages/clang/clang-10.0.0
-  python:
-    version: [3.7.7]
-    buildable: false
-    externals:
-    - spec: python@3.7.7
-      prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
-  py-shroud:
-    version: [0.12.2]
-    buildable: false
-    externals:
-    - spec: py-shroud@0.12.2
-      prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
-  py-sphinx:
-    version: [2.2.0]
-    buildable: false
-    externals:
-    - spec: py-sphinx@2.2.0
-      prefix: /collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.7
