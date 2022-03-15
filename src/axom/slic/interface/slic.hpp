@@ -41,6 +41,15 @@ void initialize();
 bool isInitialized();
 
 /*!
+ * \brief Ensures the SLIC logging environment is initialized.
+ *
+ * If SLIC is not initialized when this method is called, initialize SLIC
+ * to print all messages to std::cout and log a warning that prompts
+ * developers to properly call slic::initialize() and slic::finalize().
+ */
+void ensureInitialized();
+
+/*!
  * \brief Creates a new logger associated with the given name.
  * \param [in] name the name to associate with the new logger.
  * \param [in] imask inheritance mask, indicates the log level streams that
@@ -199,7 +208,7 @@ void logMessage(message::Level level,
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied tag associated with the message.
- * \param [in] fileName the name of the file this message is logged form.
+ * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file this message is logged.
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
@@ -251,7 +260,7 @@ void finalize();
 
 /*!
  * \brief Uses glibc's backtrace() functionality to return a stacktrace
- * \return s a string corresponding to the stacktrace.
+ * \returns a string corresponding to the stacktrace.
  */
 std::string stacktrace();
 
