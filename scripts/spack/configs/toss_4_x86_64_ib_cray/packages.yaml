@@ -19,45 +19,59 @@ packages:
     providers:
       blas: [netlib-lapack]
       lapack: [netlib-lapack]
-      mpi: [spectrum-mpi]
+      mpi: [cray-mpich]
 
-# LLNL blueos CUDA
-  cuda:
+  hip:
+    version: [4.5.2]
     buildable: false
     externals:
-    - spec: cuda@10.1.243
-      prefix: /usr/tce/packages/cuda/cuda-10.1.243
+    - spec: hip@4.5.2
+      prefix: /opt/rocm-4.5.2/hip
 
-# LLNL blueos mpi
+  llvm-amdgpu:
+    version: [4.5.2]
+    buildable: false
+    externals:
+    - spec: llvm-amdgpu@4.5.2
+      prefix: /opt/rocm-4.5.2/llvm
+
+  hsa-rocr-dev:
+    version: [4.5.2]
+    buildable: false
+    externals:
+    - spec: hsa-rocr-dev@4.5.2
+      prefix: /opt/rocm-4.5.2/
+
+  rocminfo:
+    version: [4.5.2]
+    buildable: false
+    externals:
+    - spec: rocminfo@4.5.2
+      prefix: /opt/rocm-4.5.2/
+
+  rocm-device-libs:
+    version: [4.5.2]
+    buildable: false
+    externals:
+    - spec: rocm-device-libs@4.5.2
+      prefix: /opt/rocm-4.5.2/
+
+# Lock down which MPI we are using
   mpi:
     buildable: false
-  spectrum-mpi:
+  cray-mpich:
     buildable: false
     externals:
-    - spec: spectrum-mpi@release%gcc@7.3.1
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
-    - spec: spectrum-mpi@release%clang@9.0.0
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
-    - spec: spectrum-mpi@release%clang@8.0.1
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/
-    - spec: spectrum-mpi@release%xl@16.1.1.1
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
-    - spec: spectrum-mpi@release%xl@16.1.1.2
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.12.23/
+    - spec: cray-mpich@8.1.13%clang@13.0.0+slurm
+      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-4.5.2-cce-13.0.1/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
   netlib-lapack:
     buildable: false
     externals:
-    - spec: netlib-lapack@3.8.0 %clang@8.0.1
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %clang@9.0.0
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %xl@16.1.1.1
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %xl@16.1.1.2
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    - spec: netlib-lapack@3.6.1
+      prefix: /usr
 
 # System level packages to not build
   autoconf:
@@ -80,6 +94,12 @@ packages:
     externals:
     - spec: bzip2@1.0.6
       prefix: /usr
+  cmake:
+    version: [3.21.1]
+    buildable: false
+    externals:
+    - spec: cmake@3.21.1
+      prefix: /usr/tce/packages/cmake/cmake-3.21.1
   diffutils:
     buildable: false
     externals:
@@ -93,7 +113,7 @@ packages:
   epoxy:
     buildable: false
     externals:
-    - spec: epoxy@0.0.0
+    - spec: epoxy@1.5.2
       prefix: /usr
   findutils:
     buildable: false
@@ -115,6 +135,11 @@ packages:
     externals:
     - spec: groff@1.22.2
       prefix: /usr
+  graphviz:
+    buildable: false
+    externals:
+    - spec: graphviz@2.30.1
+      prefix: /usr
   libtool:
     buildable: false
     externals:
@@ -125,10 +150,11 @@ packages:
     externals:
     - spec: libunwind@8.0.1
       prefix: /usr
-  # ncurses has a bug in their 6.2 that says that getopt is not present
-  # see: https://github.com/spack/spack/issues/16269
-  ncurses:
-    version: [6.1]
+  libx11:
+    buildable: false
+    externals:
+    - spec: libx11@1.20.4
+      prefix: /usr
   m4:
     buildable: false
     externals:
@@ -150,10 +176,25 @@ packages:
     - spec: readline@6.2
       prefix: /usr
   tar:
+    buildable: false
     externals:
     - spec: tar@1.26
       prefix: /usr
+  unzip:
     buildable: false
+    externals:
+    - spec: unzip@6.0
+      prefix: /usr
+  zlib:
+    buildable: false
+    externals:
+    - spec: zlib@1.2.7
+      prefix: /usr
+  curl:
+    buildable: false
+    externals:
+    - spec: curl@7.61.1
+      prefix: /usr
 
 # External dependencies for SCR
   lsf:
@@ -167,11 +208,10 @@ packages:
     - spec: slurm@20
       prefix: /usr
   libyogrt:
-    buildable: false
     externals:
-    - spec: libyogrt@1.0.0 scheduler=lsf
+    - spec: libyogrt@1.24 scheduler=lsf
       prefix: /usr
-    - spec: libyogrt@1.0.0 scheduler=slurm
+    - spec: libyogrt@1.24 scheduler=slurm
       prefix: /usr
   pdsh:
     buildable: false
@@ -192,54 +232,5 @@ packages:
   raja:
     variants: ~shared~examples~exercises
   umpire:
+    version: [6.0.0axom]
     variants: ~shared~examples
-
-# Globally lock in versions of Devtools
-  cmake:
-    version: [3.14.5]
-    buildable: false
-    externals:
-    - spec: cmake@3.14.5
-      prefix: /usr/tce/packages/cmake/cmake-3.14.5
-  cppcheck:
-    version: [1.87]
-    buildable: false
-    externals:
-    - spec: cppcheck@1.87
-      prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cppcheck-1.87
-  doxygen:
-    version: [1.8.14]
-    buildable: false
-    externals:
-    - spec: doxygen@1.8.14
-      prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.8.14
-  graphviz:
-    version: [2.42.2]
-    buildable: false
-    externals:
-    - spec: graphviz@2.42.2
-      prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/graphviz-2.42.2
-  llvm:
-    version: [10.0.0]
-    buildable: false
-    externals:
-    - spec: llvm@10.0.0+clang
-      prefix: /usr/tce/packages/clang/clang-10.0.0
-  python:
-    version: [3.7.7]
-    buildable: false
-    externals:
-    - spec: python@3.7.7
-      prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.7
-  py-shroud:
-    version: [0.12.2]
-    buildable: false
-    externals:
-    - spec: py-shroud@0.12.2
-      prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.7
-  py-sphinx:
-    version: [2.2.0]
-    buildable: false
-    externals:
-    - spec: py-sphinx@2.2.0
-      prefix: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.7
