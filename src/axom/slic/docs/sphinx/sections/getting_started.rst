@@ -55,6 +55,14 @@ an application must first specify an output destination and optionally,
 prescribe the format of the log messages. These steps are demonstrated in
 the following sections.
 
+.. warning::
+
+   If you forget to initialize Slic, Slic will call ``slic::initialize()``,
+   setup a minimal configuration (perform Steps 2 through 5), and issue a warning
+   message. It is recommended that you call ``slic::initialize()`` to get rid
+   of the warning and perform your own configuration.
+
+
 .. _slicExampleStep3:
 
 Step 3: Set the Message Format
@@ -112,6 +120,11 @@ This indicates that all log messages that are *debug* or higher
 are captured otherwise, the messages are ignored. Since *debug* is the lowest
 severity level, all messages will be captured in this case.
 
+.. warning::
+
+   No messages will be logged if you forget to call ``slic::setLoggingMsgLevel()``.
+   All messages will be ignored.
+
 .. _slicExampleStep5:
 
 Step 5: Register a Log Stream
@@ -155,7 +168,7 @@ The :ref:`GenericOutputStream`,  takes two arguments in its constructor:
    Slic maintains ownership of all registered :ref:`logStream` instances and
    will deallocate them when ``slic::finalize()`` is called.
 
-Step 5: Log Messages
+Step 6: Log Messages
 ^^^^^^^^^^^^^^^^^^^^^
 
 Once the output destination of messages is specified, messages can be logged
@@ -177,7 +190,14 @@ below.
    registered with ``slic::setAbortFunction()``. See the `Slic Doxygen API Documentation`_
    for more details.
 
-Step 6: Finalize Slic
+.. note::
+
+   A subset of SLIC macros are collective operations when used with
+   MPI-aware :ref:`logStream` instances such as :ref:`SynchronizedOutputStream`
+   or :ref:`LumberjackStream`. Consult :ref:`CollectiveSlicMacros`
+   for a list of collective Axom macros.
+
+Step 7: Finalize Slic
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Before the application terminates, the Slic Logging Environment must be
@@ -192,7 +212,7 @@ finalized, as follows:
 Calling ``slic::finalize()`` will properly deallocate the registered
 :ref:`logStream` objects and terminate the Slic Logging Environment.
 
-Step 7: Run the Example
+Step 8: Run the Example
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 After building the `Axom Toolkit`_ the :ref:`SlicApplicationCodeExample` may be

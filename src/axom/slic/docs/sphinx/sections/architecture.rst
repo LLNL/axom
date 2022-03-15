@@ -88,6 +88,11 @@ This indicates that all messages with a level of severity of ``WARNING`` and
 higher will be captured, namely ``WARNING`` and ``ERROR`` messages. Thereby,
 enable the application to filter out messages with lower severity.
 
+.. warning::
+
+   No messages will be logged if you forget to call ``slic::setLoggingMsgLevel()``.
+   All messages will be ignored.
+
 .. _logStream:
 
 Log Stream

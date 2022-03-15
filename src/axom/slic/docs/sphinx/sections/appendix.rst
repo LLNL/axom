@@ -57,15 +57,18 @@ logging within an application.
 Collective Slic Macros
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 A subset of SLIC macros are collective operations when used with
-MPI-aware :ref:`logStream` instances such as ``SynchronizedStream`` or ``LumberjackStream``.
+MPI-aware :ref:`logStream` instances such as :ref:`SynchronizedOutputStream`
+or :ref:`LumberjackStream`.
 
 Additionally, macros such as ``SLIC_WARNING`` and ``SLIC_CHECK`` become collective
-operations when certain flags are toggled on.
+operations when certain flags are toggled on or functions are called. Other macros
+such as ``SLIC_ERROR`` and ``SLIC_ASSERT`` can be made not collective when certain
+functions are called.
 
 The table below details which SLIC macros are collective:
 
 .. list-table:: Title
-   :widths: 25 25 50
+   :widths: 20 20 60
    :header-rows: 1
 
    * - Macro
@@ -79,16 +82,16 @@ The table below details which SLIC macros are collective:
      - 
    * - ``SLIC_ERROR``
      - Yes
-     - 
+     - Not collective when ``slic::disableAbortOnError()`` is called
    * - ``SLIC_ERROR_IF``
      - Yes
-     - 
+     - Not collective when ``slic::disableAbortOnError()`` is called
    * - ``SLIC_WARNING``
      - Yes (see Note)
-     - 
+     - Collective when ``slic::enableAbortOnWarning()`` is called
    * - ``SLIC_WARNING_IF``
      - Yes (see Note)
-     - 
+     - Collective when ``slic::enableAbortOnWarning()`` is called
    * - ``SLIC_DEBUG``
      - No
      - 
@@ -97,16 +100,16 @@ The table below details which SLIC macros are collective:
      - 
    * - ``SLIC_ASSERT``
      - Yes
-     - 
+     - Not collective when ``slic::disableAbortOnError()`` is called
    * - ``SLIC_ASSERT_MSG``
      - Yes
-     - 
+     - Not collective when ``slic::disableAbortOnError()`` is called
    * - ``SLIC_CHECK``
      - Yes (see Note)
-     - 
+     - Collective when ``slic::debug::checksAreErrors`` is set to true
    * - ``SLIC_CHECK_MSG``
      - Yes (see Note)
-     - 
+     - Collective when ``slic::debug::checksAreErrors`` is set to true
 
 
 .. _SLIC_INFO:
