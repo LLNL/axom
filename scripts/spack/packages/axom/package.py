@@ -9,6 +9,7 @@ from os.path import join as pjoin
 
 from spack import *
 
+import re
 
 def get_spec_path(spec, package_name, path_replacements={}, use_bin=False):
     """Extracts the prefix path for the given spack package
@@ -28,7 +29,7 @@ def get_spec_path(spec, package_name, path_replacements={}, use_bin=False):
     return path
 
 
-class Axom(CachedCMakePackage, CudaPackage):
+class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     """Axom provides a robust, flexible software infrastructure for the development
        of multi-physics applications and computational tools."""
 
@@ -89,6 +90,9 @@ class Axom(CachedCMakePackage, CudaPackage):
     # -----------------------------------------------------------------------
     # Basics
     depends_on("cmake@3.8.2:", type='build')
+    depends_on("cmake@3.16.8:", type='build', when="+rocm")
+
+
     depends_on("mpi", when="+mpi")
 
     # Libraries
@@ -131,6 +135,10 @@ class Axom(CachedCMakePackage, CudaPackage):
     depends_on("mfem", when="+mfem")
     depends_on("mfem~mpi", when="+mfem~mpi")
 
+    # Disable fortran, causing "cannot compile a simple Fortran program"
+    # with crayftn
+    depends_on("hypre~fortran", when="+mfem+rocm")
+
     depends_on("python", when="+python")
 
     # Devtools
@@ -147,6 +155,13 @@ class Axom(CachedCMakePackage, CudaPackage):
 
     # Sidre requires conduit_blueprint_mpi.hpp
     conflicts("^conduit@:0.6.0", when="@0.5.0:")
+
+    conflicts('+openmp', when='+rocm')
+    conflicts('+cuda', when='+rocm')
+
+    for val in ROCmPackage.amdgpu_targets:
+        depends_on('raja amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
+        depends_on('umpire amdgpu_target=%s' % val, when='amdgpu_target=%s' % val)
 
     def flag_handler(self, name, flags):
         if self.spec.satisfies('%cce') and name == 'fflags':
@@ -175,7 +190,7 @@ class Axom(CachedCMakePackage, CudaPackage):
         if "~fortran" in self.spec:
             special_case += "_nofortran"
         if "+rocm" in self.spec:
-            special_case += "_rocm"
+            special_case += "_hip"
         return "{0}-{1}-{2}@{3}{4}.cmake".format(
             hostname,
             self._get_sys_type(self.spec),
@@ -248,6 +263,54 @@ class Axom(CachedCMakePackage, CudaPackage):
                 "# nvcc does not like gtest's 'pthreads' flag\n")
             entries.append(
                 cmake_cache_option("gtest_disable_pthreads", True))
+
+        if "+rocm" in spec:
+            entries.append("#------------------{0}\n".format("-" * 60))
+            entries.append("# HIP\n")
+            entries.append("#------------------{0}\n\n".format("-" * 60))
+
+            entries.append(cmake_cache_option("ENABLE_HIP", True))
+
+            hip_root = spec['hip'].prefix
+            rocm_root = hip_root + "/.."
+
+            entries.append(cmake_cache_string("HIP_ROOT_DIR",
+                                        hip_root))
+            entries.append(cmake_cache_string("HIP_CLANG_PATH",
+                                        rocm_root + '/llvm/bin'))
+
+            archs = self.spec.variants['amdgpu_target'].value
+            if archs != 'none':
+                arch_str = ",".join(archs)
+                entries.append(cmake_cache_string(
+                    "CMAKE_HIP_ARCHITECTURES", arch_str))
+
+            # Fixes for mpi for rocm until wrapper paths are fixed
+            # These flags are already part of the wrapped compilers on TOSS4 systems
+            #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
+
+            if self.compiler.fc is not None:
+                # Flags for crayftn
+                if "crayftn" in self.compiler.fc:
+                    # Fix for working around CMake adding implicit link directories
+                    # returned by the Cray crayftn compiler to link executables with
+                    # non-system default stdlib
+                    cray_exclude_path="/opt/cray/pe/gcc/8.1.0/snos/lib64"
+                    if os.path.isdir(cray_exclude_path):
+                        entries.append(cmake_cache_string(
+                            "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                            cray_exclude_path))
+
+                    hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.1/cce/x86_64/lib:/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
+
+                # Flags for amdflang
+                if "amdflang" in self.compiler.fc:
+                    hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -L{0}/lib -Wl,-rpath,{0}/../llvm/lib:{0}/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64".format(hip_root)
+
+            # Additional libraries for TOSS4
+            hip_link_flags += " -L{0}/../lib64 -Wl,-rpath,{0}/../lib64 -lhsakmt -lamd_comgr".format(hip_root)
+
+            entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
         entries.append("#------------------{0}".format("-" * 30))
         entries.append("# Hardware Specifics")
@@ -392,7 +455,8 @@ class Axom(CachedCMakePackage, CudaPackage):
                 "# Root directory for generated developer tools\n")
             entries.append(cmake_cache_path("DEVTOOLS_ROOT", devtools_root))
 
-            # Only turn on clangformat support if devtools is on
+        if "+devtools" in spec and 'toss_4' not in os.environ["SYS_TYPE"]:
+            # Only turn on clangformat support if devtools is on and not TOSS4
             clang_fmt_path = spec['llvm'].prefix.bin.join('clang-format')
             entries.append(cmake_cache_path(
                 "CLANGFORMAT_EXECUTABLE", clang_fmt_path))

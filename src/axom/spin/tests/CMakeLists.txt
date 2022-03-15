@@ -22,6 +22,8 @@ set(spin_tests_depends
     )
 
 blt_list_append( TO spin_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO spin_tests_depends ELEMENTS hip IF ${ENABLE_HIP} )
+
 
 foreach ( test ${spin_tests} )
 

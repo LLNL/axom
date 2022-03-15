@@ -46,6 +46,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds full support for calling methods on `axom::Array<T>` allocated in device-only memory.
 - Adds ability to index into subarrays of a multidimensional `axom::Array<T>` using
   `operator[]` and `operator()`
+- Adds ability to build axom using the `hip` compiler. Support for running device
+  kernels with hip will be added in the future.
+- Adds new host-configs for HIP on LLNL platforms
 - Adds GPU/OpenMP support to `spin::UniformGrid`.
   The following functions run with a user-specified execution space (specified as a template argument
   on `UniformGrid`):

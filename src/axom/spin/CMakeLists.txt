@@ -55,6 +55,7 @@ blt_list_append( TO spin_depends_on ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO spin_depends_on ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO spin_depends_on ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO spin_depends_on ELEMENTS hip_runtime IF ${ENABLE_HIP} )
 
 #------------------------------------------------------------------------------
 # Make/Install the library
