@@ -25,6 +25,9 @@ set( mint_example_dependencies axom )
 blt_list_append( TO mint_example_dependencies ELEMENTS cuda
                  IF ${ENABLE_CUDA} )
 
+blt_list_append( TO mint_example_dependencies ELEMENTS hip
+                 IF ${ENABLE_HIP} )
+
 foreach( example ${mint_examples} )
 
    get_filename_component( example_name ${example} NAME_WE )

@@ -22,6 +22,7 @@ set(example_sources
     )
 
 set(slam_tests_extra_depends)
+blt_list_append( TO slam_tests_extra_depends ELEMENTS hip IF ${ENABLE_HIP} )
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)

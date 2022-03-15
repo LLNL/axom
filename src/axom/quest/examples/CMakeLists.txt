@@ -9,6 +9,7 @@
 set(quest_example_depends axom fmt cli11)
 
 blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
+blt_list_append(TO quest_example_depends ELEMENTS hip IF ENABLE_HIP)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 blt_add_executable(
@@ -118,13 +119,26 @@ if (ENABLE_FORTRAN)
         FOLDER     axom/quest/examples
         )
 
-    blt_add_executable(
-        NAME        quest_inout_interface_F_ex
-        SOURCES     quest_inout_interface.F
-        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
-        FOLDER      axom/quest/examples
-        )
+    # This target fails to compile with hipcc/amdflang on debugs
+    if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        blt_add_executable(
+            NAME        quest_inout_interface_F_ex
+            SOURCES     quest_inout_interface.F
+            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
+            FOLDER      axom/quest/examples
+            )
+
+        if (NOT ENABLE_CUDA)
+            if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+                set_target_properties(quest_inout_interface_F_ex
+                                      PROPERTIES LINKER_LANGUAGE Fortran)
+            else()
+                set_target_properties(quest_inout_interface_F_ex
+                                      PROPERTIES LINKER_LANGUAGE CXX)
+            endif()
+        endif()
+    endif()
 
     # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
     if (NOT ENABLE_CUDA)
@@ -132,30 +146,26 @@ if (ENABLE_FORTRAN)
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
             set_target_properties( quest_signed_distance_interface_F_ex
                                    PROPERTIES LINKER_LANGUAGE Fortran)
-
-            set_target_properties(quest_inout_interface_F_ex
-                                  PROPERTIES LINKER_LANGUAGE Fortran)
         else()
             set_target_properties( quest_signed_distance_interface_F_ex
                                    PROPERTIES LINKER_LANGUAGE CXX)
-
-            set_target_properties(quest_inout_interface_F_ex
-                                  PROPERTIES LINKER_LANGUAGE CXX)
         endif()
     endif()
 
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
-        if (ENABLE_MPI)
-            axom_add_test(
-                NAME quest_inout_interface_mpi_F_test
-                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                NUM_MPI_TASKS 2
-                )
-        else()
-            axom_add_test(
-                NAME quest_inout_interface_F_test
-                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                )
+        if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+            if (ENABLE_MPI)
+                axom_add_test(
+                    NAME quest_inout_interface_mpi_F_test
+                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                    NUM_MPI_TASKS 2
+                    )
+            else()
+                axom_add_test(
+                    NAME quest_inout_interface_F_test
+                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                    )
+            endif()
         endif()
     endif()
 endif()
