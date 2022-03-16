@@ -57,7 +57,7 @@ logging within an application.
 Collective Slic Macros
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 A subset of SLIC macros are collective operations when used with
-MPI-aware :ref:`logStream` instances such as :ref:`SynchronizedOutputStream`
+MPI-aware :ref:`logStream` instances such as :ref:`SynchronizedStream`
 or :ref:`LumberjackStream`.
 
 Additionally, macros such as ``SLIC_WARNING`` and ``SLIC_CHECK`` become collective

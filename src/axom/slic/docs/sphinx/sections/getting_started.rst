@@ -193,7 +193,7 @@ below.
 .. note::
 
    A subset of SLIC macros are collective operations when used with
-   MPI-aware :ref:`logStream` instances such as :ref:`SynchronizedOutputStream`
+   MPI-aware :ref:`logStream` instances such as :ref:`SynchronizedStream`
    or :ref:`LumberjackStream`. Consult :ref:`CollectiveSlicMacros`
    for a list of collective Axom macros.
 

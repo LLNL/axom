@@ -155,7 +155,7 @@ The list of keywords is summarized in the table below.
 | **<RANK>**          | The MPI rank that emmitted the message. Only applicable|
 |                     | when the `Axom Toolkit`_ is compiled with MPI enabled  |
 |                     | and with MPI-aware :ref:`logStream` instances, such as,|
-|                     | the :ref:`SynchronizedOutputStream` and                |
+|                     | the :ref:`SynchronizedStream` and                |
 |                     | :ref:`LumberjackStream`.                               |
 +---------------------+--------------------------------------------------------+
 
@@ -208,7 +208,7 @@ table, followed by a brief description for each.
 | :ref:`GenericOutputStream`      | Always available. Used in serial applications, |
 |                                 | or, for logging on rank zero.                  |
 +---------------------------------+------------------------------------------------+
-| :ref:`SynchronizedOutputStream` | Requires MPI. Used with MPI applications.      |
+| :ref:`SynchronizedStream`       | Requires MPI. Used with MPI applications.      |
 +---------------------------------+------------------------------------------------+
 | :ref:`LumberjackStream`         | Requires MPI. Used with MPI applications.      |
 +---------------------------------+------------------------------------------------+
@@ -246,18 +246,18 @@ object that is bound to a file.
     slic::addStreamToAllMsgLevels(
       new slic::GenericOutputStream( &log_file, format ) );
 
-.. _SynchronizedOutputStream:
+.. _SynchronizedStream:
 
-Synchronized Output Stream
+Synchronized Stream
 """""""""""""""""""""""""""
 
-The :ref:`SynchronizedOutputStream` is intended to be used with parallel MPI
-applications, primarily for debugging. The :ref:`SynchronizedOutputStream`
+The :ref:`SynchronizedStream` is intended to be used with parallel MPI
+applications, primarily for debugging. The :ref:`SynchronizedStream`
 provides similar functionality to the :ref:`GenericOutputStream`, however, the
 log messages are synchronized across the MPI ranks of the specified
 communicator.
 
-Similar to the :ref:`GenericOutputStream` the :ref:`SynchronizedOutputStream`
+Similar to the :ref:`GenericOutputStream` the :ref:`SynchronizedStream`
 is constructed by specifying:
 
 #. A C++ ``std::ostream`` object instance, e.g., ``std::cout`, ``std::cerr`` for
@@ -268,18 +268,18 @@ is constructed by specifying:
 #. Optionally, a string that specifies the :ref:`logMessageFormat`.
 
 The following code snippet illustrates how to register a
-:ref:`SynchronizedOutputStream` object with Slic to log messages to
+:ref:`SynchronizedStream` object with Slic to log messages to
 ``std::cout``.
 
 .. code-block:: c++
 
     slic::addStreamToAllMsgLevels(
-       new slic::SynchronizedOutputStream( &std::cout, mpi_comm, format ) );
+       new slic::SynchronizedStream( &std::cout, mpi_comm, format ) );
 
 
 .. note::
 
-   Since, the :ref:`SynchronizedOutputStream` works across MPI ranks, logging
+   Since, the :ref:`SynchronizedStream` works across MPI ranks, logging
    messages using the :ref:`SlicMacros` or the static API directly
    only logs the messages locally. To send the messages to the output destination
    the application must call ``slic::flushStreams()`` explicitly, which, in
@@ -291,7 +291,7 @@ Lumberjack Stream
 """""""""""""""""
 
 The :ref:`LumberjackStream`, is intended to be used with parallel MPI
-applications. In contrast to the :ref:`SynchronizedOutputStream`, which logs
+applications. In contrast to the :ref:`SynchronizedStream`, which logs
 messages from all ranks, the :ref:`LumberjackStream` uses `Lumberjack`_
 internally to filter out duplicate messages that are emitted from multiple
 ranks.
