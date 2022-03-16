@@ -155,7 +155,7 @@ The list of keywords is summarized in the table below.
 | **<RANK>**          | The MPI rank that emmitted the message. Only applicable|
 |                     | when the `Axom Toolkit`_ is compiled with MPI enabled  |
 |                     | and with MPI-aware :ref:`logStream` instances, such as,|
-|                     | the :ref:`SynchronizedStream` and                |
+|                     | the :ref:`SynchronizedStream` and                      |
 |                     | :ref:`LumberjackStream`.                               |
 +---------------------+--------------------------------------------------------+
 
