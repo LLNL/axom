@@ -173,6 +173,13 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   * \note When used within an MPI distributed environment, and:
+   *  - Level of the given message is Error and abort on error messages
+   *    is enabled (default is enabled)
+   *  - Level of the given message is Warning and abort on warning messages
+   *    is enabled (default is disabled)
+   * \note this method is a collective operation. All ranks in the user-supplied
+   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -186,6 +193,13 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   * \note When used within an MPI distributed environment, and:
+   *  - Level of the given message is Error and abort on error messages
+   *    is enabled (default is enabled)
+   *  - Level of the given message is Warning and abort on warning messages
+   *    is enabled (default is disabled)
+   * \note this method is a collective operation. All ranks in the user-supplied
+   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -201,6 +215,13 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   * \note When used within an MPI distributed environment, and:
+   *  - Level of the given message is Error and abort on error messages
+   *    is enabled (default is enabled)
+   *  - Level of the given message is Warning and abort on warning messages
+   *    is enabled (default is disabled)
+   * \note this method is a collective operation. All ranks in the user-supplied
+   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -218,6 +239,13 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   * \note When used within an MPI distributed environment, and:
+   *  - Level of the given message is Error and abort on error messages
+   *    is enabled (default is enabled)
+   *  - Level of the given message is Warning and abort on warning messages
+   *    is enabled (default is disabled)
+   * \note this method is a collective operation. All ranks in the user-supplied
+   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,

@@ -74,6 +74,8 @@ public:
 
   /*!
    * \brief Dumps the messages to the console in rank-order.
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
    */
   virtual void flush();
 
