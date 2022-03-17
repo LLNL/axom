@@ -54,7 +54,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   on `UniformGrid`):
   - `UniformGrid::initialize()`: creates/re-creates a uniform grid with an array of objects and their
     corresponding bounding boxes
-  - `UniformGrid::getCandidatesAsArray()`: query the uniform grid with for objects that share a grid
+  - `UniformGrid::getCandidatesAsArray()`: query the uniform grid for objects that share a grid
     cell with the query bounding box
   In addition, `UniformGrid::getQueryObject()` returns an object that may be used within a GPU kernel
   to query the uniform grid.
