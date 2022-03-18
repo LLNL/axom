@@ -161,6 +161,19 @@ void addStreamToMsgLevel(LogStream* ls, message::Level level);
  */
 void addStreamToAllMsgLevels(LogStream* ls);
 
+///@{
+//! \name Collective Methods
+//!
+//! \attention These methods are collective operations.
+//! All ranks in the user-supplied communicator must call the method
+//! when used within an MPI distributed environment.
+//! Additionally, for logMessage:
+//!  - Level of the given message is Error and abort on error messages
+//!    is enabled for the current active logger (default is enabled for loggers)
+//!  - Level of the given message is Warning and abort on warning messages
+//!    is enabled for the current active logger (default is disabled for loggers)
+//!
+
 /*!
  * \brief Logs the given message to all registered streams.
  * \param [in] level the level of the message being logged.
@@ -168,13 +181,6 @@ void addStreamToAllMsgLevels(LogStream* ls);
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \note When used within an MPI distributed environment, and:
- *  - Level of the given message is Error and abort on error messages
- *    is enabled for the current active logger (default is enabled for loggers)
- *  - Level of the given message is Warning and abort on warning messages
- *    is enabled for the current active logger (default is disabled for loggers)
- * \note this method is a collective operation. All ranks in the user-supplied
- * communicator must call this method.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -188,13 +194,6 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \note When used within an MPI distributed environment, and:
- *  - Level of the given message is Error and abort on error messages
- *    is enabled for the current active logger (default is enabled for loggers)
- *  - Level of the given message is Warning and abort on warning messages
- *    is enabled for the current active logger (default is disabled for loggers)
- * \note this method is a collective operation. All ranks in the user-supplied
- * communicator must call this method.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -210,13 +209,6 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \note When used within an MPI distributed environment, and:
- *  - Level of the given message is Error and abort on error messages
- *    is enabled for the current active logger (default is enabled for loggers)
- *  - Level of the given message is Warning and abort on warning messages
- *    is enabled for the current active logger (default is disabled for loggers)
- * \note this method is a collective operation. All ranks in the user-supplied
- * communicator must call this method.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -234,13 +226,6 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \note When used within an MPI distributed environment, and:
- *  - Level of the given message is Error and abort on error messages
- *    is enabled for the current active logger (default is enabled for loggers)
- *  - Level of the given message is Warning and abort on warning messages
- *    is enabled for the current active logger (default is disabled for loggers)
- * \note this method is a collective operation. All ranks in the user-supplied
- * communicator must call this method.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -254,10 +239,6 @@ void logMessage(message::Level level,
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
- * \note When used within an MPI distributed environment, and abort on error
- * messages is enabled for the current active logger (default is enabled
- * for loggers), this method is a collective operation. All ranks in the
- * user-supplied communicator must call this method.
  */
 void logErrorMessage(const std::string& message,
                      const std::string& fileName,
@@ -268,10 +249,6 @@ void logErrorMessage(const std::string& message,
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
- * \note When used within an MPI distributed environment, and abort on warning
- * messages is enabled for the current active logger (default is disabled
- * for loggers), this method is a collective operation. All ranks in the
- * user-supplied communicator must call this method.
  */
 void logWarningMessage(const std::string& message,
                        const std::string& fileName,
@@ -294,6 +271,8 @@ void flushStreams();
  *  call this method.
  */
 void pushStreams();
+
+///@}
 
 /*!
  * \brief Finalizes the slic logging environment.

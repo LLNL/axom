@@ -166,6 +166,19 @@ public:
    */
   LogStream* getStream(message::Level level, int i);
 
+  ///@{
+  //! \name Collective Methods
+  //!
+  //! \attention These methods are collective operations.
+  //! All ranks in the user-supplied communicator must call the method
+  //! when used within an MPI distributed environment.
+  //! Additionally, for logMessage:
+  //!  - Level of the given message is Error and abort on error messages
+  //!    is enabled (default is enabled)
+  //!  - Level of the given message is Warning and abort on warning messages
+  //!    is enabled (default is disabled)
+  //!
+
   /*!
    * \brief Logs the given message to all registered streams.
    * \param [in] level the level of the given message.
@@ -173,13 +186,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   * \note When used within an MPI distributed environment, and:
-   *  - Level of the given message is Error and abort on error messages
-   *    is enabled (default is enabled)
-   *  - Level of the given message is Warning and abort on warning messages
-   *    is enabled (default is disabled)
-   * \note this method is a collective operation. All ranks in the user-supplied
-   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -193,13 +199,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   * \note When used within an MPI distributed environment, and:
-   *  - Level of the given message is Error and abort on error messages
-   *    is enabled (default is enabled)
-   *  - Level of the given message is Warning and abort on warning messages
-   *    is enabled (default is disabled)
-   * \note this method is a collective operation. All ranks in the user-supplied
-   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -215,13 +214,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   * \note When used within an MPI distributed environment, and:
-   *  - Level of the given message is Error and abort on error messages
-   *    is enabled (default is enabled)
-   *  - Level of the given message is Warning and abort on warning messages
-   *    is enabled (default is disabled)
-   * \note this method is a collective operation. All ranks in the user-supplied
-   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -239,13 +231,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   * \note When used within an MPI distributed environment, and:
-   *  - Level of the given message is Error and abort on error messages
-   *    is enabled (default is enabled)
-   *  - Level of the given message is Warning and abort on warning messages
-   *    is enabled (default is disabled)
-   * \note this method is a collective operation. All ranks in the user-supplied
-   * communicator must call this method.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -256,19 +241,15 @@ public:
 
   /*!
    * \brief Flushes all streams.
-   * \note When used within an MPI distributed environment, flushStreams is
-   *  a collective operation. All ranks in the user-supplied communicator must
-   *  call this method.
    */
   void flushStreams();
 
   /*!
    * \brief Pushes messages incrementally up all streams.
-   * \note When used within an MPI distributed environment, pushStreams is
-   *  a collective operation. All ranks in the user-supplied communicator must
-   *  call this method.
    */
   void pushStreams();
+
+  ///@}
 
   /// \name Static Methods
   ///@{

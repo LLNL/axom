@@ -13,8 +13,15 @@
  * \file slic_macros.hpp
  */
 
-/// \name ERROR MACROS
-/// @{
+///@{
+//! \name ERROR MACROS
+//!
+//! \attention These error macros are collective operations.
+//! All ranks in the user-supplied communicator must call the macro
+//! when used within an MPI distributed environment, and abort on error
+//! messages is enabled for the current active logger (default is enabled
+//! for loggers)
+//!
 
 /*!
  * \def SLIC_ERROR( msg )
@@ -22,10 +29,6 @@
  * \param [in] msg user-supplied message
  * \warning This macro calls processAbort().
  * \note The SLIC_ERROR macro is always active.
- * \warning When used within an MPI distributed environment, and abort on error
- * messages is enabled for the current active logger (default is enabled
- * for loggers), this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  *
  * Usage:
  * \code
@@ -48,10 +51,6 @@
  * \param [in] msg user-supplied message.
  * \warning This macro calls processAbort() if EXP is true.
  * \note The SLIC_ERROR_IF macro is always active.
- * \warning When used within an MPI distributed environment, and abort on error
- * messages is enabled for the current active logger (default is enabled
- * for loggers), this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  *
  * Usage:
  * \code
@@ -70,20 +69,23 @@
     }                                                               \
   } while(axom::slic::detail::false_value)
 
-/// @}
+///@}
 
-/// \name WARNING MACROS
-/// @{
+///@{
+//! \name WARNING MACROS
+//!
+//! \attention These warning macros are collective operations.
+//! All ranks in the user-supplied communicator must call the macro
+//! when used within an MPI distributed environment, and abort on warning
+//! messages is enabled for the current active logger (default is disabled
+//! for loggers)
+//!
 
 /*!
  * \def SLIC_WARNING( msg )
  * \brief Logs a warning message.
  * \param [in] msg user-supplied message
  * \note The SLIC_WARNING macro is always active.
- * \warning When used within an MPI distributed environment, and abort on warning
- * messages is enabled for the current active logger (default is disabled
- * for loggers), this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  *
  * Usage:
  * \code
@@ -105,10 +107,6 @@
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message.
  * \note The SLIC_WARNING_IF macro is always active.
- * \warning When used within an MPI distributed environment, and abort on warning
- * messages is enabled for the current active logger (default is disabled
- * for loggers), this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  *
  * Usage:
  * \code
@@ -127,14 +125,21 @@
     }                                                                 \
   } while(axom::slic::detail::false_value)
 
-/// @}
+///@}
 
 // Use complete debug macros when not on device
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
 
   //-----------------------------------------------------------------------------
-  /// \name ASSERT MACROS
   /// @{
+  //! \name ASSERT MACROS
+  //!
+  //! \attention These assert macros are collective operations.
+  //! All ranks in the user-supplied communicator must call the macro
+  //! when used within an MPI distributed environment, and abort on error
+  //! messages is enabled for the current active logger (default is enabled
+  //! for loggers)
+  //!
 
   /*!
  * \def SLIC_ASSERT( EXP )
@@ -143,10 +148,6 @@
  * \param [in] EXP user-supplied boolean expression.
  * \warning This macro calls processAbort() if EXP is false.
  * \note This macro is only active when AXOM_DEBUG is defined.
- * \warning When used within an MPI distributed environment, and abort on error
- * messages is enabled for the current active logger (default is enabled
- * for loggers), this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  *
  * Usage:
  * \code
@@ -172,10 +173,6 @@
  * \param [in] msg user-supplied message
  * \warning This macro calls processAbort() if EXP is false.
  * \note This macro is only active when AXOM_DEBUG is defined.
- * \warning When used within an MPI distributed environment, and abort on error
- * messages is enabled for the current active logger (default is enabled
- * for loggers), this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  * \see SLIC_ASSERT( EXP )
  *
  * Usage:
@@ -195,11 +192,22 @@
       }                                                                      \
     } while(axom::slic::detail::false_value)
 
-  /// @}
+  ///@}
 
   //-----------------------------------------------------------------------------
-  /// \name DEBUG MACROS
   /// @{
+  //! \name CHECK MACROS
+  //!
+  //! \attention These check macros are collective operations.
+  //! All ranks in the user-supplied communicator must call the macro
+  //! when used within an MPI distributed environment, and and either:
+  //! - slic::debug::checksAreErrors is set to true (default is false) and abort
+  //! on error messages is enabled for the current active logger (default is
+  //! enabled for loggers)
+  //! - slic::debug::checksAreErrors is set to false (default is false) and abort
+  //! on warning messages is enabled for the current active logger (default is
+  //! disabled for loggers)
+  //!
 
   /*!
  * \def SLIC_CHECK( EXP )
@@ -208,15 +216,6 @@
  *  application is not aborted.
  * \param [in] EXP user-supplied boolean expression.
  * \note This macro is only active when AXOM_DEBUG is defined.
- * \warning When used within an MPI distributed environment, and either:
- * - slic::debug::checksAreErrors is set to true (default is false) and abort
- * on error messages is enabled for the current active logger (default is enabled
- * for loggers)
- * - slic::debug::checksAreErrors is set to false (default is false) and abort
- * on warning messages is enabled for the current active logger (default is disabled
- * for loggers)
- * \warning this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  *
  * Usage:
  * \code
@@ -248,15 +247,6 @@
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message
  * \note This macro is only active when AXOM_DEBUG is defined.
- * \warning When used within an MPI distributed environment, and either:
- * - slic::debug::checksAreErrors is set to true (default is false) and abort
- * on error messages is enabled for the current active logger (default is enabled
- * for loggers)
- * - slic::debug::checksAreErrors is set to false (default is false) and abort
- * on warning messages is enabled for the current active logger (default is disabled
- * for loggers)
- * \warning this macro is a collective operation. All ranks in the
- * user-supplied communicator must call this macro.
  * \see SLIC_DEBUG( EXP )
  *
  * Usage:
