@@ -57,7 +57,7 @@ the following sections.
 
 .. warning::
 
-   If you forget to initialize Slic, Slic will call ``slic::initialize()``,
+   If you do not initialize Slic, Slic will call ``slic::initialize()``,
    setup a minimal configuration (perform Steps 2 through 5), and issue a warning
    message. It is recommended that you call ``slic::initialize()`` to get rid
    of the warning and perform your own configuration.
@@ -122,7 +122,7 @@ severity level, all messages will be captured in this case.
 
 .. warning::
 
-   No messages will be logged if you forget to call ``slic::setLoggingMsgLevel()``.
+   No messages will be logged if you do not call ``slic::setLoggingMsgLevel()``.
    All messages will be ignored.
 
 .. _slicExampleStep5:

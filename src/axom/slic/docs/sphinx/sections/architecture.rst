@@ -145,14 +145,14 @@ The list of keywords is summarized in the table below.
 +---------------------+--------------------------------------------------------+
 | **<MESSAGE>**       | The supplied message that is being logged.             |
 +---------------------+--------------------------------------------------------+
-| **<FILE>**          | The file from where the message was emmitted.          |
+| **<FILE>**          | The file from where the message was emitted.           |
 +---------------------+--------------------------------------------------------+
-| **<LINE>**          | The line location where the message was emmitted.      |
+| **<LINE>**          | The line location where the message was emitted.       |
 +---------------------+--------------------------------------------------------+
 | **<TAG>**           | A string tag associated with a given message, e.g., for|
 |                     | filtering during post-processing, etc.                 |
 +---------------------+--------------------------------------------------------+
-| **<RANK>**          | The MPI rank that emmitted the message. Only applicable|
+| **<RANK>**          | The MPI rank that emitted the message. Only applicable |
 |                     | when the `Axom Toolkit`_ is compiled with MPI enabled  |
 |                     | and with MPI-aware :ref:`logStream` instances, such as,|
 |                     | the :ref:`SynchronizedStream` and                      |
