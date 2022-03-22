@@ -131,7 +131,7 @@ Step 5: Register a Log Stream
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Log messages can have one or more output destination. The output destination
-is specified by registering a corresponding :ref:`logStream` object to each
+is specified by registering a corresponding :ref:`LogStream` object to each
 :ref:`logMessageLevel`.
 
 The following code snippet uses the :ref:`GenericOutputStream` object,
@@ -148,7 +148,7 @@ as the output destination for messages at each :ref:`logMessageLevel`.
 
    Instead of calling ``slic::addStreamToAllMsgLevels()`` an application
    may use ``slic::addStreamToMsgLevel()`` that allows more fine grain
-   control of how to bind :ref:`logStream` objects to each
+   control of how to bind :ref:`LogStream` objects to each
    :ref:`logMessageLevel`. Consult the `Slic Doxygen API Documentation`_
    for more information.
 
@@ -165,7 +165,7 @@ The :ref:`GenericOutputStream`,  takes two arguments in its constructor:
 
 .. note::
 
-   Slic maintains ownership of all registered :ref:`logStream` instances and
+   Slic maintains ownership of all registered :ref:`LogStream` instances and
    will deallocate them when ``slic::finalize()`` is called.
 
 Step 6: Log Messages
@@ -193,7 +193,7 @@ below.
 .. note::
 
    A subset of SLIC macros are collective operations when used with
-   MPI-aware :ref:`logStream` instances such as :ref:`SynchronizedStream`
+   MPI-aware :ref:`LogStream` instances such as :ref:`SynchronizedStream`
    or :ref:`LumberjackStream`. Consult :ref:`CollectiveSlicMacros`
    for a list of collective Axom macros.
 
@@ -210,7 +210,7 @@ finalized, as follows:
    :linenos:
 
 Calling ``slic::finalize()`` will properly deallocate the registered
-:ref:`logStream` objects and terminate the Slic Logging Environment.
+:ref:`LogStream` objects and terminate the Slic Logging Environment.
 
 Step 8: Run the Example
 ^^^^^^^^^^^^^^^^^^^^^^^^

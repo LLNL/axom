@@ -74,11 +74,13 @@
 ///@{
 //! \name WARNING MACROS
 //!
-//! \attention These warning macros are collective operations.
-//! All ranks in the user-supplied communicator must call the macro
-//! when used within an MPI distributed environment, and abort on warning
+//! \attention These warning macros can be set as collective operations.
+//! These warning macros are collective if abort on warning
 //! messages is enabled for the current active logger (default is disabled
-//! for loggers)
+//! for loggers).
+//! These warning macros must then be called by all ranks in the
+//! user-supplied communicator when used within an MPI distributed
+//! environment.
 //!
 
 /*!
@@ -198,15 +200,18 @@
   /// @{
   //! \name CHECK MACROS
   //!
-  //! \attention These check macros are collective operations.
-  //! All ranks in the user-supplied communicator must call the macro
-  //! when used within an MPI distributed environment, and and either:
+  //! \attention These check macros can be set as collective operations.
+  //! These check macros are collective if either:
   //! - slic::debug::checksAreErrors is set to true (default is false) and abort
   //! on error messages is enabled for the current active logger (default is
   //! enabled for loggers)
   //! - slic::debug::checksAreErrors is set to false (default is false) and abort
   //! on warning messages is enabled for the current active logger (default is
   //! disabled for loggers)
+  //!
+  //! These check macros must then be called by all ranks in the
+  //! user-supplied communicator when used within an MPI distributed
+  //! environment.
   //!
 
   /*!

@@ -172,7 +172,7 @@ public:
   //! \attention These methods are collective operations.
   //! All ranks in the user-supplied communicator must call the method
   //! when used within an MPI distributed environment.
-  //! Additionally, for logMessage:
+  //! The logMessage method is collective if:
   //!  - Level of the given message is Error and abort on error messages
   //!    is enabled (default is enabled)
   //!  - Level of the given message is Warning and abort on warning messages
