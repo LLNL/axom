@@ -63,8 +63,7 @@ struct DynamicGridStorage
     m_bins.clear();
     for(int i = 0; i < binSizes.size(); i++)
     {
-      m_bins.emplace_back(ArrayOptions::Uninitialized {},
-                          binSizes[i],
+      m_bins.emplace_back(binSizes[i],
                           binSizes[i],
                           m_allocatorID);
     }
