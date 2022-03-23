@@ -172,11 +172,16 @@ public:
   //! \attention These methods are collective operations.
   //! All ranks in the user-supplied communicator must call the method
   //! when used within an MPI distributed environment.
-  //! The logMessage method is collective if:
-  //!  - Level of the given message is Error and abort on error messages
-  //!    is enabled (default is enabled)
-  //!  - Level of the given message is Warning and abort on warning messages
-  //!    is enabled (default is disabled)
+  //! The logMessage method is collective if either:
+  //!  - Level of the given message is Error and slic::enableAbortOnError() is
+  //!    called (default is enabled)
+  //!  - Level of the given message is Warning and slic::enableAbortOnWarning()
+  //!    is called (default is disabled)
+  //!
+  //! \sa axom::slic::Logger::isAbortOnErrorsEnabled()
+  //! \sa axom::slic::Logger::setAbortOnError(bool status)
+  //! \sa axom::slic::Logger::isAbortOnWarningsEnabled()
+  //! \sa axom::slic::Logger::setAbortOnWarning(bool status)
   //!
 
   /*!

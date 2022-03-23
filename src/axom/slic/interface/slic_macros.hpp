@@ -19,9 +19,11 @@
 //! \collective
 //! \attention These error macros are collective operations.
 //! All ranks in the user-supplied communicator must call the macro
-//! when used within an MPI distributed environment, and abort on error
-//! messages is enabled for the current active logger (default is enabled
+//! when used within an MPI distributed environment, and slic::enableAbortOnError()
+//! is called for the current active logger (default is enabled
 //! for loggers)
+//! \sa axom::slic::isAbortOnErrorsEnabled()
+//! \sa axom::slic::setAbortOnError(bool status)
 //!
 
 /*!
@@ -77,12 +79,14 @@
 //!
 //! \collective
 //! \attention These warning macros can be set as collective operations.
-//! These warning macros are collective if abort on warning
-//! messages is enabled for the current active logger (default is disabled
+//! These warning macros are collective if slic::enableAbortOnWarning()
+//! is called for the current active logger (default is disabled
 //! for loggers).
 //! These warning macros must then be called by all ranks in the
 //! user-supplied communicator when used within an MPI distributed
 //! environment.
+//! \sa axom::slic::isAbortOnWarningsEnabled()
+//! \sa axom::slic::setAbortOnWarning(bool status)
 //!
 
 /*!
@@ -141,9 +145,11 @@
   //! \collective
   //! \attention These assert macros are collective operations.
   //! All ranks in the user-supplied communicator must call the macro
-  //! when used within an MPI distributed environment, and abort on error
-  //! messages is enabled for the current active logger (default is enabled
+  //! when used within an MPI distributed environment, and slic::enableAbortOnError()
+  //! is called for the current active logger (default is enabled
   //! for loggers)
+  //! \sa axom::slic::isAbortOnErrorsEnabled()
+  //! \sa axom::slic::setAbortOnError(bool status)
   //!
 
   /*!
@@ -206,16 +212,21 @@
   //! \collective
   //! \attention These check macros can be set as collective operations.
   //! These check macros are collective if either:
-  //! - slic::debug::checksAreErrors is set to true (default is false) and abort
-  //! on error messages is enabled for the current active logger (default is
+  //! - slic::debug::checksAreErrors is set to true (default is false) and
+  //! slic::enableAbortOnError() is called for the current active logger (default is
   //! enabled for loggers)
-  //! - slic::debug::checksAreErrors is set to false (default is false) and abort
-  //! on warning messages is enabled for the current active logger (default is
+  //! - slic::debug::checksAreErrors is set to false (default is false) and
+  //! slic::enableAbortOnWarning() is called for the current active logger (default is
   //! disabled for loggers)
   //!
   //! These check macros must then be called by all ranks in the
   //! user-supplied communicator when used within an MPI distributed
   //! environment.
+  //!
+  //! \sa axom::slic::isAbortOnErrorsEnabled()
+  //! \sa axom::slic::setAbortOnError(bool status)
+  //! \sa axom::slic::isAbortOnWarningsEnabled()
+  //! \sa axom::slic::setAbortOnWarning(bool status)
   //!
 
   /*!
