@@ -14,8 +14,9 @@
  */
 
 ///@{
-//! \name ERROR MACROS
+//! \name SLIC_ERROR MACROS
 //!
+//! \collective
 //! \attention These error macros are collective operations.
 //! All ranks in the user-supplied communicator must call the macro
 //! when used within an MPI distributed environment, and abort on error
@@ -72,8 +73,9 @@
 ///@}
 
 ///@{
-//! \name WARNING MACROS
+//! \name SLIC_WARNING MACROS
 //!
+//! \collective
 //! \attention These warning macros can be set as collective operations.
 //! These warning macros are collective if abort on warning
 //! messages is enabled for the current active logger (default is disabled
@@ -134,8 +136,9 @@
 
   //-----------------------------------------------------------------------------
   /// @{
-  //! \name ASSERT MACROS
+  //! \name SLIC_ASSERT MACROS
   //!
+  //! \collective
   //! \attention These assert macros are collective operations.
   //! All ranks in the user-supplied communicator must call the macro
   //! when used within an MPI distributed environment, and abort on error
@@ -198,8 +201,9 @@
 
   //-----------------------------------------------------------------------------
   /// @{
-  //! \name CHECK MACROS
+  //! \name SLIC_CHECK MACROS
   //!
+  //! \collective
   //! \attention These check macros can be set as collective operations.
   //! These check macros are collective if either:
   //! - slic::debug::checksAreErrors is set to true (default is false) and abort

@@ -181,6 +181,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] filter_duplicates optional parameter that indicates whether
@@ -193,6 +194,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
@@ -207,6 +209,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] fileName name of the file this call is made from.
@@ -223,6 +226,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
@@ -241,11 +245,13 @@ public:
 
   /*!
    * \brief Flushes all streams.
+   * \collective
    */
   void flushStreams();
 
   /*!
    * \brief Pushes messages incrementally up all streams.
+   * \collective
    */
   void pushStreams();
 
@@ -282,6 +288,7 @@ public:
 
   /*!
    * \brief Finalizes the logging environment.
+   * \collective
    * \post Logger::getActiveLogger() == NULL.
    * \attention This method is a collective operation.
    * All ranks in the user-supplied communicator must call the method

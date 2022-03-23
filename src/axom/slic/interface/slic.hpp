@@ -176,6 +176,7 @@ void addStreamToAllMsgLevels(LogStream* ls);
 
 /*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] filter_duplicates optional parameter that indicates whether
@@ -188,6 +189,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied associated with this message.
@@ -202,6 +204,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
@@ -218,6 +221,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied tag associated with the message.
@@ -236,6 +240,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Convenience method to log an error message.
+ * \collective
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
@@ -246,6 +251,7 @@ void logErrorMessage(const std::string& message,
 
 /*!
  * \brief Convenience method to log warning messages.
+ * \collective
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
@@ -256,6 +262,7 @@ void logWarningMessage(const std::string& message,
 
 /*!
  * \brief Flushes all streams.
+ * \collective
  * \see Logger::flushStreams.
  * \note When used within an MPI distributed environment, flushStreams is
  *  a collective operation. All ranks in the user-supplied communicator must
@@ -265,6 +272,7 @@ void flushStreams();
 
 /*!
  * \brief Pushes all streams.
+ * \collective
  * \see Logger::pushStreams.
  * \note When used within an MPI distributed environment, pushStreams is
  *  a collective operation. All ranks in the user-supplied communicator must
@@ -274,6 +282,7 @@ void pushStreams();
 
 /*!
  * \brief Finalizes the slic logging environment.
+ * \collective
  */
 void finalize();
 
