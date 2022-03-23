@@ -68,7 +68,6 @@ These macros can then be used in the application code as follows:
    pass the ``__FILE__`` and ``__LINE__`` to the ``logMessage()`` function
    each time.
 
-.. warning::
    Macros that use ``slic::logMessage()`` with a :ref:`logMessageLevel` of
    ``WARNING`` or ``ERROR`` are collective operations when used with
    MPI-aware :ref:`LogStream` instances. Consult :ref:`CollectiveSlicMacros`

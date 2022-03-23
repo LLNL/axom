@@ -122,8 +122,7 @@ severity level, all messages will be captured in this case.
 
 .. warning::
 
-   No messages will be logged if you do not call ``slic::setLoggingMsgLevel()``.
-   All messages will be ignored.
+   All messages will be ignored until the first call to ``slic::setLoggingMsgLevel()``.
 
 .. _slicExampleStep5:
 

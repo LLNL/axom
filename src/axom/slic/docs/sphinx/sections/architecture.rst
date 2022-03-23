@@ -90,8 +90,7 @@ enable the application to filter out messages with lower severity.
 
 .. warning::
 
-   No messages will be logged if you forget to call ``slic::setLoggingMsgLevel()``.
-   All messages will be ignored.
+   All messages will be ignored until the first call to ``slic::setLoggingMsgLevel()``.
 
 .. _LogStream:
 
