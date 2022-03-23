@@ -283,6 +283,9 @@ public:
   /*!
    * \brief Finalizes the logging environment.
    * \post Logger::getActiveLogger() == NULL.
+   * \attention This method is a collective operation.
+   * All ranks in the user-supplied communicator must call the method
+   * when used within an MPI distributed environment.
    */
   static void finalize();
 

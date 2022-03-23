@@ -272,12 +272,12 @@ void flushStreams();
  */
 void pushStreams();
 
-///@}
-
 /*!
  * \brief Finalizes the slic logging environment.
  */
 void finalize();
+
+///@}
 
 /*!
  * \brief Uses glibc's backtrace() functionality to return a stacktrace

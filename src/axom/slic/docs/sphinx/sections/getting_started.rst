@@ -212,6 +212,13 @@ finalized, as follows:
 Calling ``slic::finalize()`` will properly deallocate the registered
 :ref:`LogStream` objects and terminate the Slic Logging Environment.
 
+.. note::
+
+   ``slic::finalize()`` is a collective operation when used with
+   MPI-aware :ref:`LogStream` instances such as :ref:`SynchronizedStream`
+   or :ref:`LumberjackStream`. See the `Slic Doxygen API Documentation`_
+   for more details.
+
 Step 8: Run the Example
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
