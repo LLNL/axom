@@ -11,4 +11,5 @@
 .. _WCI: https://wci.llnl.gov/
 .. _WSC: https://wci.llnl.gov/about-us/weapon-simulation-and-computing
 .. _Slic Doxygen API Documentation: ../../../../../doxygen/html/slictop.html
+.. _Slic Macro Doxygen Reference: ../../../../../doxygen/html/slic__macros_8hpp.html
 

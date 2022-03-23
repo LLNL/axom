@@ -175,6 +175,12 @@ facilitate debugging.
   ``slic::enableAbortOnError()`` and ``slic::disableAbortOnError()`` accordingly.
   See the `Slic Doxygen API Documentation`_ for more information.
 
+.. warning::
+
+   ``SLIC_ERROR`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
+
+
 SLIC_ERROR_IF
 """"""""""""""
 
@@ -198,6 +204,11 @@ expression, ``(jacobian < 0.0 + TOL)`` evaluates to ``true``.
   cleaner and more compact code style by encapsulating the conditional branching
   logic within a macro.
 
+.. warning::
+
+   ``SLIC_ERROR_IF`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
+
 .. _SLIC_WARNING:
 
 SLIC_WARNING
@@ -213,6 +224,11 @@ macro.
 .. code-block:: c++
 
     SLIC_WARNING( "Region [" << ir << "] defined but not used in the problem!" );
+
+.. warning::
+
+   ``SLIC_WARNING`` can set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 SLIC_WARNING_IF
 """"""""""""""""
@@ -239,6 +255,11 @@ expression, ``(val < 1)``, evaluates to `` true``.
   cleaner and more compact code style by encapsulating the conditional branching
   logic within a macro.
 
+.. warning::
+
+   ``SLIC_WARNING_IF`` can be set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
+
 .. _SLIC_DEBUG:
 
 SLIC_DEBUG
@@ -256,8 +277,8 @@ macro
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
 
 SLIC_DEBUG_IF
@@ -286,8 +307,8 @@ expression, ``(value <0)``, evaluates to ``true``.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
 
 .. _SLIC_ASSERT:
@@ -313,9 +334,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_ASSERT`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 SLIC_ASSERT_MSG
 """"""""""""""""
@@ -333,9 +357,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_ASSERT_MSG`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 .. _SLIC_CHECK:
 
@@ -357,9 +384,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_CHECK`` can be set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 SLIC_CHECK_MSG
 """"""""""""""""
@@ -377,9 +407,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_CHECK_MSG`` can be set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 .. #############################################################################
 ..  CITATIONS
