@@ -59,11 +59,6 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   detail::Triangle3 t2 {};
   SLIC_INFO("Running mesh_tester with UniformGrid index");
 
-  // Create a bounding box around mesh to find the minimum point
-  detail::SpatialBoundingBox meshBB = compute_bounds(surface_mesh);
-  const detail::Point3& minBBPt = meshBB.getMin();
-  const detail::Point3& maxBBPt = meshBB.getMax();
-
   const int ncells = surface_mesh->getNumberOfCells();
 
   // find the specified resolution.  If we're passed a number less than one,
@@ -72,15 +67,14 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   {
     spatialIndexResolution = (int)(1 + std::pow(ncells, 1 / 3.));
   }
-  int resolutions[3] = {spatialIndexResolution,
-                        spatialIndexResolution,
-                        spatialIndexResolution};
+  primal::NumericArray<int, 3> resolutions(spatialIndexResolution);
 
   SLIC_INFO("Building UniformGrid index...");
-  detail::UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
   std::vector<int> nondegenerateIndices;
   nondegenerateIndices.reserve(ncells);
 
+  axom::Array<int> triIdxs(ncells);
+  axom::Array<detail::SpatialBoundingBox> triBboxes(ncells);
   for(int i = 0; i < ncells; i++)
   {
     t1 = detail::getMeshTriangle(i, surface_mesh);
@@ -93,10 +87,11 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     {
       nondegenerateIndices.push_back(i);
 
-      detail::SpatialBoundingBox triBB = compute_bounding_box(t1);
-      ugrid.insert(triBB, i);
+      triIdxs[i] = i;
+      triBboxes[i] = compute_bounding_box(t1);
     }
   }
+  detail::UniformGrid3 ugrid(resolutions, triBboxes, triIdxs);
 
   // Iterate through triangle indices *idx.
   // Check against each other triangle with index greater than the index *idx
@@ -118,13 +113,12 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     size_t checkcount = binsToCheck.size();
     for(size_t curbin = 0; curbin < checkcount; ++curbin)
     {
-      std::vector<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
-      std::vector<int>::iterator ntlit = ntlist.begin(), ntlend = ntlist.end();
-      for(; ntlit != ntlend; ++ntlit)
+      axom::ArrayView<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
+      for(const int nbr : ntlist)
       {
-        if(*ntlit > *idx)
+        if(nbr > *idx)
         {
-          neighborTriangles.push_back(*ntlit);
+          neighborTriangles.push_back(nbr);
         }
       }
     }

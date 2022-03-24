@@ -317,7 +317,8 @@ public:
             const IndexType vals[3] = {i, j, k};
             const GridCell cell(vals);
             const auto idx = dot_product(cell.data(), stride, DIM);
-            grid.getBinContents(idx) = implicitGrid.getCandidatesAsArray(cell);
+            const auto binValues = implicitGrid.getCandidatesAsArray(cell);
+            grid.getBinContents(idx).insert(0, binValues.size(), binValues.data());
           }
     }
 
