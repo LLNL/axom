@@ -782,14 +782,52 @@ int main(int argc, char** argv)
     }
     else
     {
-      // _check_repair_intersections_start
-      // Use a uniform grid spatial index
-      quest::findTriMeshIntersections(surface_mesh,
-                                      collisions,
-                                      degenerate,
-                                      params.resolution,
-                                      params.intersectionThreshold);
-      // _check_repair_intersections_end
+      switch(params.policy)
+      {
+      case seq:
+        // _check_repair_intersections_start
+        // Use a uniform grid spatial index
+        quest::findTriMeshIntersections(surface_mesh,
+                                        collisions,
+                                        degenerate,
+                                        params.resolution,
+                                        params.intersectionThreshold);
+        // _check_repair_intersections_end
+        break;
+#ifdef AXOM_USE_RAJA
+      case raja_seq:
+        quest::findTriMeshIntersectionsUniformGrid<seq_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #ifdef AXOM_USE_OPENMP
+      case raja_omp:
+        quest::findTriMeshIntersectionsUniformGrid<omp_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+      case raja_cuda:
+        quest::findTriMeshIntersectionsUniformGrid<cuda_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #endif
+#endif  // AXOM_USE_RAJA
+      default:
+        SLIC_ERROR("Unhandled runtime policy case " << params.policy);
+        break;
+      }
     }
     timer.stop();
     SLIC_INFO("Detecting intersecting triangles took "

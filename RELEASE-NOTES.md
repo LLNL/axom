@@ -49,6 +49,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds ability to build axom using the `hip` compiler. Support for running device
   kernels with hip will be added in the future.
 - Adds new host-configs for HIP on LLNL platforms
+- Adds GPU/OpenMP support to `spin::UniformGrid`.
+  The following functions run with a user-specified execution space (specified as a template argument
+  on `UniformGrid`):
+  - `UniformGrid::initialize()`: creates/re-creates a uniform grid with an array of objects and their
+    corresponding bounding boxes
+  - `UniformGrid::getCandidatesAsArray()`: query the uniform grid for objects that share a grid
+    cell with the query bounding box
+  In addition, `UniformGrid::getQueryObject()` returns an object that may be used within a GPU kernel
+  to query the uniform grid.
+- Adds ability to specify a storage policy in `UniformGrid`. Two policies are provided:
+  - `DynamicGridStorage` stores the bins as an array of arrays (default)
+  - `FlatGridStorage` stores the bins as a flat array of elements, where each bin is a slice of the
+    array
+- Adds a templated uniform grid-based surface mesh tester function to Quest
 
 ###  Changed
 - Moved bit-twiddling functions to core component

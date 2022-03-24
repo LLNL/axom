@@ -57,7 +57,7 @@ protected:
   void advance(IndexType n) { BaseType::m_pos += n; }
 
 protected:
-  ArrayPointerType const m_arrayPtr;
+  ArrayPointerType m_arrayPtr;
 };  // end of ArrayIteratorBase class
 
 /// @}

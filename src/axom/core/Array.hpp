@@ -169,15 +169,17 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  template <typename... Args,
-            typename std::enable_if<
-              detail::all_types_are_integral<Args...>::value>::type* = nullptr>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   Array(Args... args);
 
   /// \overload
-  template <typename... Args,
-            typename std::enable_if<
-              detail::all_types_are_integral<Args...>::value>::type* = nullptr>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   Array(ArrayOptions::Uninitialized, Args... args);
 
   /*! 
@@ -693,8 +695,7 @@ Array<T, DIM, SPACE>::Array()
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args,
-          typename std::enable_if<detail::all_types_are_integral<Args...>::value>::type*>
+template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
@@ -709,8 +710,7 @@ Array<T, DIM, SPACE>::Array(Args... args)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args,
-          typename std::enable_if<detail::all_types_are_integral<Args...>::value>::type*>
+template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())

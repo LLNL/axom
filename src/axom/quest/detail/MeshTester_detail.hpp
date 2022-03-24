@@ -67,6 +67,7 @@ inline detail::Triangle3 getMeshTriangle(axom::IndexType i,
 }
 enum class AccelType
 {
+  UniformGrid,
   ImplicitGrid,
   BVH
 };
@@ -452,6 +453,67 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
 
   BoxType m_globalBox;
   axom::primal::Point<IndexType, 3> m_resolutions;
+  axom::Array<IndexType> m_currCandidates;
+};
+
+/*!
+ * \brief Specialization of CandidateFinder using a Uniform Grid data
+ *  structure to perform broad-phase collision detection.
+ */
+template <typename ExecSpace, typename FloatType>
+struct CandidateFinder<AccelType::UniformGrid, ExecSpace, FloatType>
+  : public CandidateFinderBase<ExecSpace, FloatType>
+{
+  using BaseClass = CandidateFinderBase<ExecSpace, FloatType>;
+  using BaseClass::CandidateFinderBase;
+  using BaseClass::HostSpace;
+  using BaseClass::Space;
+  using typename BaseClass::BoxType;
+  using typename BaseClass::PointType;
+
+  void initialize(int spatialIndexResolution)
+  {
+    BaseClass::initialize();
+
+    // find the specified resolution.  If we're passed a number less than one,
+    // use the cube root of the number of triangles.
+    if(spatialIndexResolution < 1)
+    {
+      spatialIndexResolution =
+        static_cast<IndexType>(1 + std::pow(this->m_aabbs.size(), 1 / 3.));
+    }
+    m_resolutions = axom::primal::NumericArray<int, 3>(spatialIndexResolution);
+  }
+
+  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+    axom::Array<IndexType, 1, Space>& offsets,
+    axom::Array<IndexType, 1, Space>& counts) override
+  {
+    int allocatorId = axom::detail::getAllocatorID<Space>();
+
+    axom::Array<IndexType, 1, Space> indices(this->m_aabbs.size());
+    const auto indices_v = indices.view();
+    for_all<ExecSpace>(
+      this->m_aabbs.size(),
+      AXOM_LAMBDA(IndexType idx) { indices_v[idx] = idx; });
+
+    using FlatStorage = spin::policy::FlatGridStorage<IndexType>;
+
+    spin::UniformGrid<IndexType, 3, ExecSpace, FlatStorage> gridIndex(
+      m_resolutions,
+      this->m_aabbs.view(),
+      indices.view(),
+      allocatorId);
+
+    offsets.resize(this->m_aabbs.size());
+    counts.resize(this->m_aabbs.size());
+
+    gridIndex.getCandidatesAsArray(this->m_aabbs, offsets, counts, m_currCandidates);
+    return m_currCandidates;
+  }
+
+  BoxType m_globalBox;
+  primal::NumericArray<int, 3> m_resolutions;
   axom::Array<IndexType> m_currCandidates;
 };
 
