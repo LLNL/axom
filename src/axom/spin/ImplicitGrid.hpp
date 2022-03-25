@@ -205,19 +205,8 @@ public:
     {
       m_bins[i] = BinSet(m_gridRes[i]);
       m_binData[i] = BinBitMap(&m_bins[i]);
-
-      // Workaround because axom::Array doesn't propagate allocator ID on copy
-      // construction
-      {
-        typename BinBitMap::OrderedMap bitmaps(axom::IndexType {0},
-                                               axom::IndexType {m_gridRes[i]},
-                                               allocatorID);
-        for(int ibin = 0; ibin < m_gridRes[i]; ibin++)
-        {
-          bitmaps.emplace_back(numElts, allocatorID);
-        }
-        m_binData[i].data() = std::move(bitmaps);
-      }
+      m_binData[i] =
+        BinBitMap(&m_bins[i], BitsetType(numElts, allocatorID), 1, allocatorID);
 
       axom::IndexType gridResDim = m_gridRes[i];
       m_minBlockBin[i] =

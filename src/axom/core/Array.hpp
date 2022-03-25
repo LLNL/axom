@@ -184,31 +184,50 @@ public:
 
   /*! 
    * \brief Copy constructor for an Array instance 
-   * 
-   * \param [in] allocator_id the ID of the allocator to use (optional)
    */
-  Array(const Array& other,
-        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+  Array(const Array& other);
 
   /*! 
    * \brief Move constructor for an Array instance 
    */
   Array(Array&& other);
 
-  /*! 
+  /*!
    * \brief Constructor for transferring between memory spaces
-   * 
+   *
    * \param [in] other The array in a different memory space to copy from
-   * \param [in] allocator_id the ID of the allocator to use (optional)
+   *
+   * \note The new Array will be constructed with the allocator ID of the
+   *  copied-from array, if compatible with the memory space of the target
+   *  array. Otherwise, the new Array will be constructed with the default
+   *  allocator for the memory space.
+   *
+   *  An Array specified with the default Dynamic memory space will always
+   *  propagate the allocator ID from the source array.
    */
   template <typename OtherArrayType>
-  Array(const ArrayBase<T, DIM, OtherArrayType>& other,
-        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+  Array(const ArrayBase<T, DIM, OtherArrayType>& other);
 
   /// \overload
   template <typename OtherArrayType>
-  Array(const ArrayBase<const T, DIM, OtherArrayType>& other,
-        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+  Array(const ArrayBase<const T, DIM, OtherArrayType>& other);
+
+  /*!
+   * \brief Constructor for transferring between memory spaces, with a user-
+   *  specified allocator
+   *
+   * \param [in] other The array in a different memory space to copy from
+   * \param [in] allocator_id the ID of the allocator to use
+   *
+   * \note The specified allocator ID must be compatible with the memory space
+   *  of the new Array.
+   */
+  template <typename OtherArrayType>
+  Array(const ArrayBase<T, DIM, OtherArrayType>& other, int allocator_id);
+
+  /// \overload
+  template <typename OtherArrayType>
+  Array(const ArrayBase<const T, DIM, OtherArrayType>& other, int allocator_id);
 
   /// @}
 
@@ -216,10 +235,7 @@ public:
   /// @{
 
   /*! 
-   * \brief Copy assignment operator for Array 
-   *
-   * \note The data will be allocated using the allocator ID of the
-   *  copy-assigned Array, not the argument Array.
+   * \brief Copy assignment operator for Array
    * 
    * \pre T must be TriviallyCopyable
    */
@@ -228,6 +244,7 @@ public:
     if(this != &other)
     {
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
+      m_allocator_id = other.m_allocator_id;
       m_resize_ratio = other.m_resize_ratio;
       m_default_construct = other.m_default_construct;
       initialize(other.size(), other.capacity());
@@ -635,6 +652,20 @@ protected:
   void initialize(IndexType num_elements, IndexType capacity);
 
   /*!
+   * \brief Helper function for initializing an Array instance with an existing
+   *  range of elements.
+   *
+   * \param [in] data pointer to the existing array of elements
+   * \param [in] num_elements the number of elements in the existing array
+   * \param [in] other_allocator_id the allocator ID to create the new array in
+   * \param [in] user_provided_allocator true if the Array's allocator ID was
+   *  provided by the user
+   */
+  void initialize_from_other(const T* data,
+                             IndexType num_elements,
+                             bool user_provided_allocator);
+
+  /*!
    * \brief Make space for a subsequent insertion into the array.
    *
    * \param [in] n the number of elements to insert.
@@ -776,23 +807,12 @@ Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized,
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-Array<T, DIM, SPACE>::Array(const Array& other, int allocator_id)
+Array<T, DIM, SPACE>::Array(const Array& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
-  , m_allocator_id(allocator_id)
+  , m_allocator_id(other.m_allocator_id)
   , m_default_construct(other.m_default_construct)
 {
-  // If a memory space has been explicitly set for the Array object, check that
-  // the space of the user-provided allocator matches the explicit space.
-  if(SPACE != MemorySpace::Dynamic &&
-     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
-  {
-#ifdef AXOM_DEBUG
-    std::cerr << "Incorrect allocator ID was provided for an Array object with "
-                 "explicit memory space - using default for space\n";
-#endif
-    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
-  }
   initialize(other.size(), other.capacity());
   axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
 }
@@ -803,7 +823,6 @@ Array<T, DIM, SPACE>::Array(Array&& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
-  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   m_data = other.m_data;
   m_num_elements = other.m_num_elements;
@@ -822,18 +841,38 @@ Array<T, DIM, SPACE>::Array(Array&& other)
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename OtherArrayType>
+Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
+  , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
+{
+  initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
+                        static_cast<const OtherArrayType&>(other).size(),
+                        false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename OtherArrayType>
+Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
+  , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
+{
+  initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
+                        static_cast<const OtherArrayType&>(other).size(),
+                        false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <typename OtherArrayType>
 Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other,
                             int allocatorId)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
-  initialize(static_cast<const OtherArrayType&>(other).size(),
-             static_cast<const OtherArrayType&>(other).size());
-  // axom::copy is aware of pointers registered in Umpire, so this will handle
-  // the transfer between memory spaces
-  axom::copy(m_data,
-             static_cast<const OtherArrayType&>(other).data(),
-             m_num_elements * sizeof(T));
+  initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
+                        static_cast<const OtherArrayType&>(other).size(),
+                        true);
 }
 
 //------------------------------------------------------------------------------
@@ -844,13 +883,9 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
-  initialize(static_cast<const OtherArrayType&>(other).size(),
-             static_cast<const OtherArrayType&>(other).size());
-  // axom::copy is aware of pointers registered in Umpire, so this will handle
-  // the transfer between memory spaces
-  axom::copy(m_data,
-             static_cast<const OtherArrayType&>(other).data(),
-             m_num_elements * sizeof(T));
+  initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
+                        static_cast<const OtherArrayType&>(other).size(),
+                        true);
 }
 
 //------------------------------------------------------------------------------
@@ -1105,6 +1140,7 @@ inline void Array<T, DIM, SPACE>::swap(Array<T, DIM, SPACE>& other)
   axom::utilities::swap(m_capacity, other.m_capacity);
   axom::utilities::swap(m_resize_ratio, other.m_resize_ratio);
   axom::utilities::swap(m_default_construct, other.m_default_construct);
+  axom::utilities::swap(m_allocator_id, other.m_allocator_id);
 }
 
 //------------------------------------------------------------------------------
@@ -1135,6 +1171,33 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
   assert(m_data != nullptr);
   assert(m_num_elements >= 0);
   assert(m_capacity >= m_num_elements);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+inline void Array<T, DIM, SPACE>::initialize_from_other(
+  const T* other_data,
+  IndexType num_elements,
+  bool AXOM_DEBUG_PARAM(user_provided_allocator))
+{
+  // If a memory space has been explicitly set for the Array object, check that
+  // the space of the user-provided allocator matches the explicit space.
+  if(SPACE != MemorySpace::Dynamic &&
+     SPACE != axom::detail::getAllocatorSpace(m_allocator_id))
+  {
+#ifdef AXOM_DEBUG
+    if(user_provided_allocator)
+    {
+      std::cerr << "Incorrect allocator ID was provided for an Array object "
+                   "with explicit memory space - using default for space\n";
+    }
+#endif
+    m_allocator_id = axom::detail::getAllocatorID<SPACE>();
+  }
+  initialize(num_elements, num_elements);
+  // axom::copy is aware of pointers registered in Umpire, so this will handle
+  // the transfer between memory spaces
+  axom::copy(m_data, other_data, m_num_elements * sizeof(T));
 }
 
 //------------------------------------------------------------------------------
