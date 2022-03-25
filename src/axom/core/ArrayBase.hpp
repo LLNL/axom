@@ -716,8 +716,12 @@ struct all_types_are_integral
 // We thus check for the macro _GLIBCXX_USE_CXX11_ABI, which should only be
 // defined for GCC 5+; if not defined, we'll use the below fallbacks.
 template <typename T>
+using HasTrivialDefaultCtor = ::std::has_trivial_default_constructor<T>;
+template <typename T>
 using HasTrivialCopyCtor = ::std::has_trivial_copy_constructor<T>;
 #else
+template <typename T>
+using HasTrivialCopyCtor = ::std::is_trivially_default_constructible<T>;
 template <typename T>
 using HasTrivialCopyCtor = ::std::is_trivially_copy_constructible<T>;
 #endif
@@ -842,22 +846,31 @@ struct ArrayOpsBase<T, true>
 {
   using ExecSpace = axom::CUDA_EXEC<256>;
 
+  static constexpr bool InitOnDevice = HasTrivialDefaultCtor<T>::value;
   static constexpr bool CopyOnHost = !HasTrivialCopyCtor<T>::value;
   static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
   static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
 
+  struct TrivialDefaultCtorTag
+  { };
+  struct NontrivialDefaultCtorTag
+  { };
+  struct NoDefaultCtorTag
+  { };
+
   /*!
-   * \brief Default-initializes the "new" segment of an array
+   * \brief Helper for default-initialization of a range of elements.
    *
    * \param [inout] data The data to initialize
    * \param [in] begin The beginning of the subset of \a data that should be initialized
    * \param [in] nelems the number of elements to initialize
-   * \note Specialization for when T is default-constructible.
+   * \note Specialization for when T is nontrivially default-constructible.
    */
-  template <bool HasCtor = DefaultCtor>
-  static typename std::enable_if<HasCtor>::type init(T* data,
-                                                     IndexType begin,
-                                                     IndexType nelems)
+  template <typename U = void>
+  static void init_impl(T* data,
+                        IndexType begin,
+                        IndexType nelems,
+                        NontrivialDefaultCtorTag)
   {
     // If we instantiated a fill kernel here it would require
     // that T's default ctor is device-annotated which is too
@@ -876,11 +889,46 @@ struct ArrayOpsBase<T, true>
 
   /*!
    * \overload
+   * \note Specialization for when T is trivially default-constructible.
+   */
+  template <typename U = void>
+  static void init_impl(T* data,
+                        IndexType begin,
+                        IndexType nelems,
+                        TrivialDefaultCtorTag)
+  {
+    for_all<ExecSpace>(
+      begin,
+      begin + nelems,
+      AXOM_LAMBDA(IndexType i) { new(&data[i]) T(); });
+  }
+
+  /*!
+   * \overload
    * \note Specialization for when T is not default-constructible.
    */
-  template <bool HasCtor = DefaultCtor>
-  static typename std::enable_if<!HasCtor>::type init(T*, IndexType, IndexType)
+  template <typename U = void>
+  static void init_impl(T*, IndexType, IndexType, NoDefaultCtorTag)
   { }
+
+  /*!
+   * \brief Default-initializes the "new" segment of an array
+   *
+   * \param [inout] data The data to initialize
+   * \param [in] begin The beginning of the subset of \a data that should be initialized
+   * \param [in] nelems the number of elements to initialize
+   */
+  static void init(T* data, IndexType begin, IndexType nelems)
+  {
+    using InitSelectTag =
+      typename std::conditional<InitOnDevice,
+                                TrivialDefaultCtorTag,
+                                NontrivialDefaultCtorTag>::type;
+    using InitTag =
+      typename std::conditional<DefaultCtor, InitSelectTag, NoDefaultCtorTag>::type;
+
+    init_impl(data, begin, nelems, InitTag {});
+  }
 
   /*!
    * \brief Fills an uninitialized array with objects of type T.
