@@ -68,6 +68,11 @@ These macros can then be used in the application code as follows:
    pass the ``__FILE__`` and ``__LINE__`` to the ``logMessage()`` function
    each time.
 
+   Macros that use ``slic::logMessage()`` with a :ref:`logMessageLevel` of
+   ``WARNING`` or ``ERROR`` are collective operations when used with
+   MPI-aware :ref:`LogStream` instances. Consult :ref:`CollectiveSlicMacros`
+   for a list of collective Axom macros.
+
 The :ref:`SlicMacros` provide a good resource for the type of macros that an
 application may want to adopt and extend. Although these macros are tailored
 for use within the `Axom Toolkit`_, these are also callable by application code.

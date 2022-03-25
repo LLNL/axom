@@ -241,6 +241,14 @@ via a lambda:
    :end-before: _array_w_raja_end
    :language: C++
 
+By default, ``Array`` copies and moves will propagate the allocator ID; this ensures that objects
+with ``Array`` members do not accidentally move their data to the host when copied or moved:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _cuda_array_propagate_start
+   :end-before: _cuda_array_propagate_end
+   :language: C++
+
 ##########
 StackArray
 ##########

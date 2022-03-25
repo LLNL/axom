@@ -139,7 +139,8 @@ void check_fill(Array<T, DIM, SPACE>& v)
   EXPECT_EQ(data_ptr, v.data());
 
   // To check entries, we copy data to a dynamic array
-  Array<T, DIM> v_host = v;
+  int host_alloc_id = axom::getDefaultAllocatorID();
+  Array<T, DIM> v_host(v, host_alloc_id);
 
   /* Check that the entries are all MAGIC_NUM_0. */
   for(IndexType i = 0; i < size; ++i)
@@ -156,7 +157,7 @@ void check_fill(Array<T, DIM, SPACE>& v)
   EXPECT_EQ(ratio, v.getResizeRatio());
   EXPECT_EQ(data_ptr, v.data());
 
-  v_host = v;
+  v_host = Array<T, DIM>(v, host_alloc_id);
 
   /* Check that the entries are all MAGIC_NUM_1. */
   for(IndexType i = 0; i < size; ++i)
@@ -781,8 +782,9 @@ void check_device(Array<T, DIM, SPACE>& v)
   assign_raw<<<1, 1>>>(v.data(), size);
 
   // Check the contents of the array by assigning to a Dynamic array
-  // The default Umpire allocator should be Host, so we can access it from the CPU
-  Array<T, 1> check_raw_array_dynamic = v;
+  // The Umpire allocator should be Host, so we can access it from the CPU
+  int host_alloc_id = axom::getDefaultAllocatorID();
+  Array<T, 1> check_raw_array_dynamic(v, host_alloc_id);
   EXPECT_EQ(check_raw_array_dynamic.size(), size);
   for(int i = 0; i < check_raw_array_dynamic.size(); i++)
   {
@@ -802,8 +804,8 @@ void check_device(Array<T, DIM, SPACE>& v)
   assign_view<<<1, 1>>>(view);
 
   // Check the contents of the array by assigning to a Dynamic array
-  // The default Umpire allocator should be Host, so we can access it from the CPU
-  Array<T, 1> check_view_array_dynamic = view;
+  // The Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 1> check_view_array_dynamic(view, host_alloc_id);
   EXPECT_EQ(check_view_array_dynamic.size(), size);
   for(int i = 0; i < check_view_array_dynamic.size(); i++)
   {
@@ -857,8 +859,9 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   assign_raw_2d<<<1, 1>>>(v.data(), M, N);
 
   // Check the contents of the array by assigning to a Dynamic array
-  // The default Umpire allocator should be Host, so we can access it from the CPU
-  Array<T, 2> check_raw_array_dynamic = v;
+  // The Umpire allocator should be Host, so we can access it from the CPU
+  int host_alloc_id = axom::getDefaultAllocatorID();
+  Array<T, 2> check_raw_array_dynamic(v, host_alloc_id);
   EXPECT_EQ(check_raw_array_dynamic.size(), size);
   EXPECT_EQ(check_raw_array_dynamic.shape(), v.shape());
 
@@ -888,8 +891,8 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   assign_view_2d<<<1, 1>>>(view);
 
   // Check the contents of the array by assigning to a Dynamic array
-  // The default Umpire allocator should be Host, so we can access it from the CPU
-  Array<T, 2> check_view_array_dynamic = view;
+  // The Umpire allocator should be Host, so we can access it from the CPU
+  Array<T, 2> check_view_array_dynamic(view, host_alloc_id);
   EXPECT_EQ(check_view_array_dynamic.size(), size);
   EXPECT_EQ(check_view_array_dynamic.shape(), v.shape());
 

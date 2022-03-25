@@ -301,9 +301,9 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
   secondIsectPair.resize(isectCounter);
 
   {
-    // copy results to output
-    firstIndex = firstIsectPair;
-    secondIndex = secondIsectPair;
+    // copy results to output on host
+    firstIndex = HostIndexArray(firstIsectPair);
+    secondIndex = HostIndexArray(secondIsectPair);
     HostIndexArray host_degenerate = m_degenerate;
     for(int i = 0; i < host_degenerate.size(); i++)
     {

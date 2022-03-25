@@ -1,0 +1,10 @@
+/*! 
+ *  @page collective_list Collective Operations in Slic
+ *  @brief Slic collective operations page
+ * 
+ * A subset of Slic methods and macros that are collective operations.
+ * 
+ * All ranks in the user-supplied communicator must call them
+ * when used within an MPI distributed environment.
+ */
+
