@@ -721,7 +721,7 @@ template <typename T>
 using HasTrivialCopyCtor = ::std::has_trivial_copy_constructor<T>;
 #else
 template <typename T>
-using HasTrivialCopyCtor = ::std::is_trivially_default_constructible<T>;
+using HasTrivialDefaultCtor = ::std::is_trivially_default_constructible<T>;
 template <typename T>
 using HasTrivialCopyCtor = ::std::is_trivially_copy_constructible<T>;
 #endif
