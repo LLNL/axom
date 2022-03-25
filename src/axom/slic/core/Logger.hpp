@@ -166,8 +166,27 @@ public:
    */
   LogStream* getStream(message::Level level, int i);
 
+  ///@{
+  //! \name Collective Methods
+  //!
+  //! \attention These methods are collective operations.
+  //! All ranks in the user-supplied communicator must call the method
+  //! when used within an MPI distributed environment.
+  //! The logMessage method is collective if either:
+  //!  - Level of the given message is Error and slic::enableAbortOnError() is
+  //!    called (default is enabled)
+  //!  - Level of the given message is Warning and slic::enableAbortOnWarning()
+  //!    is called (default is disabled)
+  //!
+  //! \sa axom::slic::Logger::isAbortOnErrorsEnabled()
+  //! \sa axom::slic::Logger::setAbortOnError(bool status)
+  //! \sa axom::slic::Logger::isAbortOnWarningsEnabled()
+  //! \sa axom::slic::Logger::setAbortOnWarning(bool status)
+  //!
+
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] filter_duplicates optional parameter that indicates whether
@@ -180,6 +199,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
@@ -194,6 +214,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] fileName name of the file this call is made from.
@@ -210,6 +231,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   * \collective
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
@@ -228,19 +250,17 @@ public:
 
   /*!
    * \brief Flushes all streams.
-   * \note When used within an MPI distributed environment, flushStreams is
-   *  a collective operation. All ranks in the user-supplied communicator must
-   *  call this method.
+   * \collective
    */
   void flushStreams();
 
   /*!
    * \brief Pushes messages incrementally up all streams.
-   * \note When used within an MPI distributed environment, pushStreams is
-   *  a collective operation. All ranks in the user-supplied communicator must
-   *  call this method.
+   * \collective
    */
   void pushStreams();
+
+  ///@}
 
   /// \name Static Methods
   ///@{
@@ -273,7 +293,11 @@ public:
 
   /*!
    * \brief Finalizes the logging environment.
+   * \collective
    * \post Logger::getActiveLogger() == NULL.
+   * \attention This method is a collective operation.
+   * All ranks in the user-supplied communicator must call the method
+   * when used within an MPI distributed environment.
    */
   static void finalize();
 
