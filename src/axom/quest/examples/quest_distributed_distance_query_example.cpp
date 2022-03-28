@@ -733,6 +733,13 @@ int main(int argc, char** argv)
   axom::utilities::Timer initTimer(false);
   axom::utilities::Timer queryTimer(false);
 
+  // Convert blueprint representation from sidre to conduit
+  conduit::Node object_mesh_node;
+  object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
+
+  conduit::Node query_mesh_node;
+  query_mesh_wrapper.getBlueprintGroup()->createNativeLayout(query_mesh_node);
+
   switch(params.policy)
   {
   case RuntimePolicy::seq:
@@ -740,8 +747,7 @@ int main(int argc, char** argv)
     SeqClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
     SLIC_INFO(init_str);
-    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup(),
-                        object_mesh_wrapper.getCoordsetName());
+    query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -750,7 +756,7 @@ int main(int argc, char** argv)
 
     SLIC_INFO(query_str);
     queryTimer.start();
-    query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
+    query.computeClosestPoints(query_mesh_node,
                                query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
   }
@@ -761,8 +767,7 @@ int main(int argc, char** argv)
   {
     OmpClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup(),
-                        object_mesh_wrapper.getCoordsetName());
+    query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -771,7 +776,7 @@ int main(int argc, char** argv)
 
     SLIC_INFO(query_str);
     queryTimer.start();
-    query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
+    query.computeClosestPoints(query_mesh_node,
                                query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
   }
@@ -782,8 +787,7 @@ int main(int argc, char** argv)
   {
     CudaClosestPointQueryType query;
     query.setVerbosity(params.isVerbose());
-    query.setObjectMesh(object_mesh_wrapper.getBlueprintGroup(),
-                        object_mesh_wrapper.getCoordsetName());
+    query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
 
     SLIC_INFO(init_str);
     initTimer.start();
@@ -792,7 +796,7 @@ int main(int argc, char** argv)
 
     SLIC_INFO(query_str);
     queryTimer.start();
-    query.computeClosestPoints(query_mesh_wrapper.getBlueprintGroup(),
+    query.computeClosestPoints(query_mesh_node,
                                query_mesh_wrapper.getCoordsetName());
     queryTimer.stop();
   }
