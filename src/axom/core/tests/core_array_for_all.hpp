@@ -457,7 +457,8 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_default_ctor_obj)
   using ExecSpace = typename TestFixture::ExecSpace;
   using DynamicArray =
     typename TestFixture::template DynamicTArray<NonTrivialDefaultCtor>;
-  using HostArray = typename TestFixture::template HostTArray<NonTrivialDefaultCtor>;
+  using HostArray =
+    typename TestFixture::template HostTArray<NonTrivialDefaultCtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
