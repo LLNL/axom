@@ -742,7 +742,6 @@ struct ArrayOpsBase<T, false>
    * \param [in] nelems the number of elements to initialize
    * \note Specialization for when T is default-constructible.
    */
-  template <typename U = void>
   static void init_impl(T* data, IndexType begin, IndexType nelems, std::true_type)
   {
     for(IndexType i = 0; i < nelems; ++i)
@@ -874,7 +873,6 @@ struct ArrayOpsBase<T, true>
    * \param [in] nelems the number of elements to initialize
    * \note Specialization for when T is nontrivially default-constructible.
    */
-  template <typename U = void>
   static void init_impl(T* data,
                         IndexType begin,
                         IndexType nelems,
@@ -899,7 +897,6 @@ struct ArrayOpsBase<T, true>
    * \overload
    * \note Specialization for when T is trivially default-constructible.
    */
-  template <typename U = void>
   static void init_impl(T* data,
                         IndexType begin,
                         IndexType nelems,
@@ -915,9 +912,7 @@ struct ArrayOpsBase<T, true>
    * \overload
    * \note Specialization for when T is not default-constructible.
    */
-  template <typename U = void>
-  static void init_impl(T*, IndexType, IndexType, NoDefaultCtorTag)
-  { }
+  static void init_impl(T*, IndexType, IndexType, NoDefaultCtorTag) { }
 
   /*!
    * \brief Default-initializes the "new" segment of an array
@@ -947,7 +942,6 @@ struct ArrayOpsBase<T, true>
    * \param [in] value the value to set each array element to
    * \note Specialization for when T is not trivially-copyable.
    */
-  template <typename U = void>
   static void fill_impl(T* array,
                         IndexType begin,
                         IndexType nelems,
@@ -968,7 +962,6 @@ struct ArrayOpsBase<T, true>
    * \overload
    * \note Specialization for when T is trivially-copyable.
    */
-  template <typename U = void>
   static void fill_impl(T* array,
                         IndexType begin,
                         IndexType nelems,
