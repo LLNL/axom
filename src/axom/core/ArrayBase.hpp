@@ -739,7 +739,7 @@ struct ArrayOpsBase<T, false>
    *
    * \param [inout] data The data to initialize
    * \param [in] begin The beginning of the subset of \a data that should be initialized
-   * \param [in] end The end index (exclusive) of the subset of \a data that is to be initialized
+   * \param [in] nelems the number of elements to initialize
    * \note Specialization for when T is default-constructible.
    */
   template <typename U = void>
@@ -755,16 +755,14 @@ struct ArrayOpsBase<T, false>
    * \overload
    * \note Specialization for when T is not default-constructible.
    */
-  template <typename U = void>
-  static void init_impl(T*, IndexType, IndexType, std::false_type)
-  { }
+  static void init_impl(T*, IndexType, IndexType, std::false_type) { }
 
   /*!
    * \brief Default-initializes the "new" segment of an array
    *
    * \param [inout] data The data to initialize
    * \param [in] begin The beginning of the subset of \a data that should be initialized
-   * \param [in] end The end index (exclusive) of the subset of \a data that is to be initialized
+   * \param [in] nelems the number of elements to initialize
    * \note Specialization for when T is default-constructible.
    */
   static void init(T* data, IndexType begin, IndexType nelems)
