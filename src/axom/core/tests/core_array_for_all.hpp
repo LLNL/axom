@@ -207,6 +207,16 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
   constexpr axom::IndexType N = 374;
   DynamicArray arr(N, N, kernelAllocID);
 
+  // Test that array has been initialized to default values (0 for int)
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      int default_value {0};
+      EXPECT_EQ(localArr[i], default_value);
+    }
+  }
+
   // Modify array using lambda and ArrayView
   auto arr_view = arr.view();
   axom::for_all<ExecSpace>(
@@ -220,10 +230,12 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
   }
 
   // Check array contents on host
-  HostArray localArr(arr, hostAllocID);
-  for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(localArr[i], N - i);
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      EXPECT_EQ(localArr[i], N - i);
+    }
   }
 }
 
