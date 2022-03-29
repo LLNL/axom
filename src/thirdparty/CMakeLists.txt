@@ -57,6 +57,14 @@ mark_as_advanced(CLI11_FOUND)
 # Register the built-in fmt library for string formatting
 #------------------------------------------------------------------------------
 
+# NOTE: When updating fmt you must do the following changes to properly guard
+#  our fmt from other fmt's.
+# 
+# 1) Change the namespace from 'fmt' to 'axom::fmt'.  This is in fmt/core.h:203-204,
+#    as well as, search and replace `fmt::` to `axom::fmt`.
+# 2) Search and replace compiler define's prefix from `FMT_` to `AXOM_FMT_`.
+# 3) Keep fmt's headers installed under axom's include directory.
+
 # Headers that Axom adds to fmt
 set(axom_fmt_headers
     axom/fmt.hpp
