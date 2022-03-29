@@ -207,6 +207,16 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
   constexpr axom::IndexType N = 374;
   DynamicArray arr(N, N, kernelAllocID);
 
+  // Test that array has been initialized to default values (0 for int)
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      int default_value {0};
+      EXPECT_EQ(localArr[i], default_value);
+    }
+  }
+
   // Modify array using lambda and ArrayView
   auto arr_view = arr.view();
   axom::for_all<ExecSpace>(
@@ -220,10 +230,12 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array)
   }
 
   // Check array contents on host
-  HostArray localArr(arr, hostAllocID);
-  for(int i = 0; i < N; ++i)
   {
-    EXPECT_EQ(localArr[i], N - i);
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      EXPECT_EQ(localArr[i], N - i);
+    }
   }
 }
 
@@ -426,6 +438,86 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_set)
     for(axom::IndexType i = 0; i < N_range; i++)
     {
       EXPECT_EQ(host_arr[i], 100 + i);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+constexpr int MAGIC_DEFAULT_CTOR = 222;
+
+struct NonTrivialDefaultCtor
+{
+  NonTrivialDefaultCtor() = default;
+
+  int m_val {MAGIC_DEFAULT_CTOR};
+};
+
+AXOM_TYPED_TEST(core_array_for_all, nontrivial_default_ctor_obj)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray =
+    typename TestFixture::template DynamicTArray<NonTrivialDefaultCtor>;
+  using HostArray =
+    typename TestFixture::template HostTArray<NonTrivialDefaultCtor>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
+  // Create an array of N items using default MemorySpace for ExecSpace
+  constexpr axom::IndexType N = 374;
+  DynamicArray arr(N, N, kernelAllocID);
+
+  // Check array contents on host
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, MAGIC_DEFAULT_CTOR);
+    }
+  }
+
+  const int MAGIC_PREFILL = 111;
+  // Fill with placeholder value
+  auto arr_view = arr.view();
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_view[idx].m_val = MAGIC_PREFILL; });
+
+  // handles synchronization, if necessary
+  if(axom::execution_space<ExecSpace>::async())
+  {
+    axom::synchronize<ExecSpace>();
+  }
+
+  // Fill with instance of copy-constructed type
+  arr.fill(NonTrivialDefaultCtor {});
+
+  // Check array contents on host
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, MAGIC_DEFAULT_CTOR);
+    }
+  }
+
+  // Resize array, adding new default-constructed elements
+  constexpr axom::IndexType N2 = 500;
+  arr.resize(N2);
+
+  // Check array contents on host
+  {
+    HostArray localArr(arr, hostAllocID);
+    for(int i = 0; i < N2; ++i)
+    {
+      EXPECT_EQ(localArr[i].m_val, MAGIC_DEFAULT_CTOR);
     }
   }
 }
