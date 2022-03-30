@@ -136,6 +136,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   improving consistency when, e.g., querying multiple triangles from the same mesh.
 - Fixed regression in `SignedDistance` queries for query points closest to edges or vertices
   of the input triangle mesh
+- Guard fmt's compiler defines from clashing with downstream fmt's.
 
 
 ## [Version 0.6.0] - Release date 2021-11-04

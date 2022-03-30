@@ -115,12 +115,12 @@
 
 /*
  * Compiler defines to configure the built-in fmt library
- * Redefines FMT_DEPRECATED to workaround nvcc compiler error
+ * Redefines AXOM_FMT_DEPRECATED to workaround nvcc compiler error
  */
-#cmakedefine01 FMT_EXCEPTIONS
-#cmakedefine01 FMT_HEADER_ONLY
+#cmakedefine01 AXOM_FMT_EXCEPTIONS
+#cmakedefine01 AXOM_FMT_HEADER_ONLY
 #ifndef WIN32
-#define FMT_DEPRECATED AXOM_DEPRECATED
+#define AXOM_FMT_DEPRECATED AXOM_DEPRECATED
 #endif
 
 /*
