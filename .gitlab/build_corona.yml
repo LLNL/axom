@@ -35,6 +35,7 @@ corona-clang_13_0_0_hip-src:
   variables:
     COMPILER: "clang@13.0.0_hip"
     HOST_CONFIG: "corona-toss_4_x86_64_ib-${COMPILER}.cmake"
+  allow_failure: true
   extends: .src_build_on_corona
 
 ####
