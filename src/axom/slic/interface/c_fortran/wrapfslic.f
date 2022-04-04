@@ -12,7 +12,7 @@
 ! splicer begin file_top
 ! splicer end file_top
 module axom_slic
-    use iso_c_binding, only : C_INT
+    use iso_c_binding, only : C_INT, C_NULL_PTR, C_PTR
     ! splicer begin module_use
     ! splicer end module_use
     implicit none
@@ -27,7 +27,117 @@ module axom_slic
     integer(C_INT), parameter :: message_debug = 3
     integer(C_INT), parameter :: message_num_levels = 4
 
+    type, bind(C) :: SLIC_SHROUD_genericoutputstream_capsule
+        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
+        integer(C_INT) :: idtor = 0       ! index of destructor
+    end type SLIC_SHROUD_genericoutputstream_capsule
+
+    type SlicGenericOutputStream
+        type(SLIC_SHROUD_genericoutputstream_capsule) :: cxxmem
+        ! splicer begin class.GenericOutputStream.component_part
+        ! splicer end class.GenericOutputStream.component_part
+    contains
+        procedure :: delete => slic_genericoutputstream_delete
+        procedure :: get_instance => slic_genericoutputstream_get_instance
+        procedure :: set_instance => slic_genericoutputstream_set_instance
+        procedure :: associated => slic_genericoutputstream_associated
+        ! splicer begin class.GenericOutputStream.type_bound_procedure_part
+        ! splicer end class.GenericOutputStream.type_bound_procedure_part
+    end type SlicGenericOutputStream
+
+    type, bind(C) :: SLIC_SHROUD_logstream_capsule
+        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
+        integer(C_INT) :: idtor = 0       ! index of destructor
+    end type SLIC_SHROUD_logstream_capsule
+
+    type SlicLogStream
+        type(SLIC_SHROUD_logstream_capsule) :: cxxmem
+        ! splicer begin class.LogStream.component_part
+        ! splicer end class.LogStream.component_part
+    contains
+        procedure :: get_instance => slic_logstream_get_instance
+        procedure :: set_instance => slic_logstream_set_instance
+        procedure :: associated => slic_logstream_associated
+        ! splicer begin class.LogStream.type_bound_procedure_part
+        ! splicer end class.LogStream.type_bound_procedure_part
+    end type SlicLogStream
+
+    interface operator (.eq.)
+        module procedure genericoutputstream_eq
+        module procedure logstream_eq
+    end interface
+
+    interface operator (.ne.)
+        module procedure genericoutputstream_ne
+        module procedure logstream_ne
+    end interface
+
     interface
+
+        function c_genericoutputstream_ctor_default(stream, SHT_crv) &
+                result(SHT_rv) &
+                bind(C, name="SLIC_GenericOutputStream_ctor_default")
+            use iso_c_binding, only : C_CHAR, C_PTR
+            import :: SLIC_SHROUD_genericoutputstream_capsule
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: stream(*)
+            type(SLIC_SHROUD_genericoutputstream_capsule), intent(OUT) :: SHT_crv
+            type(C_PTR) SHT_rv
+        end function c_genericoutputstream_ctor_default
+
+        function c_genericoutputstream_ctor_default_bufferify(stream, &
+                Lstream, SHT_crv) &
+                result(SHT_rv) &
+                bind(C, name="SLIC_GenericOutputStream_ctor_default_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
+            import :: SLIC_SHROUD_genericoutputstream_capsule
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: stream(*)
+            integer(C_INT), value, intent(IN) :: Lstream
+            type(SLIC_SHROUD_genericoutputstream_capsule), intent(OUT) :: SHT_crv
+            type(C_PTR) SHT_rv
+        end function c_genericoutputstream_ctor_default_bufferify
+
+        function c_genericoutputstream_ctor_format(stream, format, &
+                SHT_crv) &
+                result(SHT_rv) &
+                bind(C, name="SLIC_GenericOutputStream_ctor_format")
+            use iso_c_binding, only : C_CHAR, C_PTR
+            import :: SLIC_SHROUD_genericoutputstream_capsule
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: stream(*)
+            character(kind=C_CHAR), intent(IN) :: format(*)
+            type(SLIC_SHROUD_genericoutputstream_capsule), intent(OUT) :: SHT_crv
+            type(C_PTR) SHT_rv
+        end function c_genericoutputstream_ctor_format
+
+        function c_genericoutputstream_ctor_format_bufferify(stream, &
+                Lstream, format, Lformat, SHT_crv) &
+                result(SHT_rv) &
+                bind(C, name="SLIC_GenericOutputStream_ctor_format_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT, C_PTR
+            import :: SLIC_SHROUD_genericoutputstream_capsule
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: stream(*)
+            integer(C_INT), value, intent(IN) :: Lstream
+            character(kind=C_CHAR), intent(IN) :: format(*)
+            integer(C_INT), value, intent(IN) :: Lformat
+            type(SLIC_SHROUD_genericoutputstream_capsule), intent(OUT) :: SHT_crv
+            type(C_PTR) SHT_rv
+        end function c_genericoutputstream_ctor_format_bufferify
+
+        subroutine c_genericoutputstream_delete(self) &
+                bind(C, name="SLIC_GenericOutputStream_delete")
+            import :: SLIC_SHROUD_genericoutputstream_capsule
+            implicit none
+            type(SLIC_SHROUD_genericoutputstream_capsule), intent(IN) :: self
+        end subroutine c_genericoutputstream_delete
+
+        ! splicer begin class.GenericOutputStream.additional_interfaces
+        ! splicer end class.GenericOutputStream.additional_interfaces
+
+        ! splicer begin class.LogStream.additional_interfaces
+        ! splicer end class.LogStream.additional_interfaces
 
         subroutine slic_initialize() &
                 bind(C, name="SLIC_initialize")
@@ -100,6 +210,13 @@ module axom_slic
             implicit none
             integer(C_INT), value, intent(IN) :: level
         end subroutine slic_set_logging_msg_level
+
+        subroutine c_add_stream_to_all_msg_levels(ls) &
+                bind(C, name="SLIC_add_stream_to_all_msg_levels")
+            import :: SLIC_SHROUD_logstream_capsule
+            implicit none
+            type(SLIC_SHROUD_logstream_capsule), intent(INOUT) :: ls
+        end subroutine c_add_stream_to_all_msg_levels
 
         subroutine c_set_abort_on_error(status) &
                 bind(C, name="SLIC_set_abort_on_error")
@@ -185,7 +302,97 @@ module axom_slic
         ! splicer end additional_interfaces
     end interface
 
+    interface SlicGenericOutputStream
+        module procedure slic_genericoutputstream_ctor_default
+        module procedure slic_genericoutputstream_ctor_format
+    end interface SlicGenericOutputStream
+
 contains
+
+    function slic_genericoutputstream_ctor_default(stream) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_INT, C_PTR
+        character(len=*), intent(IN) :: stream
+        type(SlicGenericOutputStream) :: SHT_rv
+        ! splicer begin class.GenericOutputStream.method.ctor_default
+        type(C_PTR) :: SHT_prv
+        SHT_prv = c_genericoutputstream_ctor_default_bufferify(stream, &
+            len_trim(stream, kind=C_INT), SHT_rv%cxxmem)
+        ! splicer end class.GenericOutputStream.method.ctor_default
+    end function slic_genericoutputstream_ctor_default
+
+    function slic_genericoutputstream_ctor_format(stream, format) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_INT, C_PTR
+        character(len=*), intent(IN) :: stream
+        character(len=*), intent(IN) :: format
+        type(SlicGenericOutputStream) :: SHT_rv
+        ! splicer begin class.GenericOutputStream.method.ctor_format
+        type(C_PTR) :: SHT_prv
+        SHT_prv = c_genericoutputstream_ctor_format_bufferify(stream, &
+            len_trim(stream, kind=C_INT), format, &
+            len_trim(format, kind=C_INT), SHT_rv%cxxmem)
+        ! splicer end class.GenericOutputStream.method.ctor_format
+    end function slic_genericoutputstream_ctor_format
+
+    subroutine slic_genericoutputstream_delete(obj)
+        class(SlicGenericOutputStream) :: obj
+        ! splicer begin class.GenericOutputStream.method.delete
+        call c_genericoutputstream_delete(obj%cxxmem)
+        ! splicer end class.GenericOutputStream.method.delete
+    end subroutine slic_genericoutputstream_delete
+
+    ! Return pointer to C++ memory.
+    function slic_genericoutputstream_get_instance(obj) result (cxxptr)
+        use iso_c_binding, only: C_PTR
+        class(SlicGenericOutputStream), intent(IN) :: obj
+        type(C_PTR) :: cxxptr
+        cxxptr = obj%cxxmem%addr
+    end function slic_genericoutputstream_get_instance
+
+    subroutine slic_genericoutputstream_set_instance(obj, cxxmem)
+        use iso_c_binding, only: C_PTR
+        class(SlicGenericOutputStream), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: cxxmem
+        obj%cxxmem%addr = cxxmem
+        obj%cxxmem%idtor = 0
+    end subroutine slic_genericoutputstream_set_instance
+
+    function slic_genericoutputstream_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        class(SlicGenericOutputStream), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%cxxmem%addr)
+    end function slic_genericoutputstream_associated
+
+    ! splicer begin class.GenericOutputStream.additional_functions
+    ! splicer end class.GenericOutputStream.additional_functions
+
+    ! Return pointer to C++ memory.
+    function slic_logstream_get_instance(obj) result (cxxptr)
+        use iso_c_binding, only: C_PTR
+        class(SlicLogStream), intent(IN) :: obj
+        type(C_PTR) :: cxxptr
+        cxxptr = obj%cxxmem%addr
+    end function slic_logstream_get_instance
+
+    subroutine slic_logstream_set_instance(obj, cxxmem)
+        use iso_c_binding, only: C_PTR
+        class(SlicLogStream), intent(INOUT) :: obj
+        type(C_PTR), intent(IN) :: cxxmem
+        obj%cxxmem%addr = cxxmem
+        obj%cxxmem%idtor = 0
+    end subroutine slic_logstream_set_instance
+
+    function slic_logstream_associated(obj) result (rv)
+        use iso_c_binding, only: c_associated
+        class(SlicLogStream), intent(IN) :: obj
+        logical rv
+        rv = c_associated(obj%cxxmem%addr)
+    end function slic_logstream_associated
+
+    ! splicer begin class.LogStream.additional_functions
+    ! splicer end class.LogStream.additional_functions
 
     function slic_is_initialized() &
             result(SHT_rv)
@@ -225,6 +432,13 @@ contains
             len(name, kind=C_INT))
         ! splicer end function.get_active_logger_name
     end subroutine slic_get_active_logger_name
+
+    subroutine slic_add_stream_to_all_msg_levels(ls)
+        type(SlicLogStream), intent(INOUT) :: ls
+        ! splicer begin function.add_stream_to_all_msg_levels
+        call c_add_stream_to_all_msg_levels(ls%cxxmem)
+        ! splicer end function.add_stream_to_all_msg_levels
+    end subroutine slic_add_stream_to_all_msg_levels
 
     subroutine slic_set_abort_on_error(status)
         use iso_c_binding, only : C_BOOL
@@ -282,5 +496,49 @@ contains
 
     ! splicer begin additional_functions
     ! splicer end additional_functions
+
+    function genericoutputstream_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        type(SlicGenericOutputStream), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%cxxmem%addr, b%cxxmem%addr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function genericoutputstream_eq
+
+    function genericoutputstream_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        type(SlicGenericOutputStream), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%cxxmem%addr, b%cxxmem%addr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function genericoutputstream_ne
+
+    function logstream_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        type(SlicLogStream), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%cxxmem%addr, b%cxxmem%addr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function logstream_eq
+
+    function logstream_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        type(SlicLogStream), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%cxxmem%addr, b%cxxmem%addr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function logstream_ne
 
 end module axom_slic

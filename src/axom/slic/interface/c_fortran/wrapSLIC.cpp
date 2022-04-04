@@ -9,219 +9,231 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include "axom/slic/core/LogStream.hpp"
 #include "axom/slic/interface/slic.hpp"
 #include "typesSLIC.h"
+
+#include "axom/slic/streams/GenericOutputStream.hpp"
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
 
 extern "C" {
 
+
 // helper ShroudStrCopy
 // Copy src into dest, blank fill to ndest characters
 // Truncate if dest is too short.
 // dest will not be NULL terminated.
-static void ShroudStrCopy(char* dest, int ndest, const char* src, int nsrc)
+static void ShroudStrCopy(char *dest, int ndest, const char *src, int nsrc)
 {
-  if(src == NULL)
-  {
-    std::memset(dest, ' ', ndest);  // convert NULL pointer to blank filled string
-  }
-  else
-  {
-    if(nsrc < 0) nsrc = std::strlen(src);
-    int nm = nsrc < ndest ? nsrc : ndest;
-    std::memcpy(dest, src, nm);
-    if(ndest > nm) std::memset(dest + nm, ' ', ndest - nm);  // blank fill
-  }
+   if (src == NULL) {
+     std::memset(dest,' ',ndest); // convert NULL pointer to blank filled string
+   } else {
+     if (nsrc < 0) nsrc = std::strlen(src);
+     int nm = nsrc < ndest ? nsrc : ndest;
+     std::memcpy(dest,src,nm);
+     if(ndest > nm) std::memset(dest+nm,' ',ndest-nm); // blank fill
+   }
 }
 // splicer begin C_definitions
 // splicer end C_definitions
 
 void SLIC_initialize(void)
 {
-  // splicer begin function.initialize
-  axom::slic::initialize();
-  // splicer end function.initialize
+    // splicer begin function.initialize
+    axom::slic::initialize();
+    // splicer end function.initialize
 }
 
 bool SLIC_is_initialized(void)
 {
-  // splicer begin function.is_initialized
-  bool SHC_rv = axom::slic::isInitialized();
-  return SHC_rv;
-  // splicer end function.is_initialized
+    // splicer begin function.is_initialized
+    bool SHC_rv = axom::slic::isInitialized();
+    return SHC_rv;
+    // splicer end function.is_initialized
 }
 
-void SLIC_create_logger(const char* name, char imask)
+void SLIC_create_logger(const char * name, char imask)
 {
-  // splicer begin function.create_logger
-  const std::string SHCXX_name(name);
-  axom::slic::createLogger(SHCXX_name, imask);
-  // splicer end function.create_logger
+    // splicer begin function.create_logger
+    const std::string SHCXX_name(name);
+    axom::slic::createLogger(SHCXX_name, imask);
+    // splicer end function.create_logger
 }
 
-void SLIC_create_logger_bufferify(const char* name, int Lname, char imask)
+void SLIC_create_logger_bufferify(const char * name, int Lname, char imask)
 {
-  // splicer begin function.create_logger_bufferify
-  const std::string SHCXX_name(name, Lname);
-  axom::slic::createLogger(SHCXX_name, imask);
-  // splicer end function.create_logger_bufferify
+    // splicer begin function.create_logger_bufferify
+    const std::string SHCXX_name(name, Lname);
+    axom::slic::createLogger(SHCXX_name, imask);
+    // splicer end function.create_logger_bufferify
 }
 
-bool SLIC_activate_logger(const char* name)
+bool SLIC_activate_logger(const char * name)
 {
-  // splicer begin function.activate_logger
-  const std::string SHCXX_name(name);
-  bool SHC_rv = axom::slic::activateLogger(SHCXX_name);
-  return SHC_rv;
-  // splicer end function.activate_logger
+    // splicer begin function.activate_logger
+    const std::string SHCXX_name(name);
+    bool SHC_rv = axom::slic::activateLogger(SHCXX_name);
+    return SHC_rv;
+    // splicer end function.activate_logger
 }
 
-bool SLIC_activate_logger_bufferify(const char* name, int Lname)
+bool SLIC_activate_logger_bufferify(const char * name, int Lname)
 {
-  // splicer begin function.activate_logger_bufferify
-  const std::string SHCXX_name(name, Lname);
-  bool SHC_rv = axom::slic::activateLogger(SHCXX_name);
-  return SHC_rv;
-  // splicer end function.activate_logger_bufferify
+    // splicer begin function.activate_logger_bufferify
+    const std::string SHCXX_name(name, Lname);
+    bool SHC_rv = axom::slic::activateLogger(SHCXX_name);
+    return SHC_rv;
+    // splicer end function.activate_logger_bufferify
 }
 
-void SLIC_get_active_logger_name_bufferify(char* name, int Nname)
+void SLIC_get_active_logger_name_bufferify(char * name, int Nname)
 {
-  // splicer begin function.get_active_logger_name_bufferify
-  std::string SHCXX_rv = axom::slic::getActiveLoggerName();
-  if(SHCXX_rv.empty())
-  {
-    ShroudStrCopy(name, Nname, nullptr, 0);
-  }
-  else
-  {
-    ShroudStrCopy(name, Nname, SHCXX_rv.data(), SHCXX_rv.size());
-  }
-  // splicer end function.get_active_logger_name_bufferify
+    // splicer begin function.get_active_logger_name_bufferify
+    std::string SHCXX_rv = axom::slic::getActiveLoggerName();
+    if (SHCXX_rv.empty()) {
+        ShroudStrCopy(name, Nname, nullptr, 0);
+    } else {
+        ShroudStrCopy(name, Nname, SHCXX_rv.data(), SHCXX_rv.size());
+    }
+    // splicer end function.get_active_logger_name_bufferify
 }
 
 int SLIC_get_logging_msg_level(void)
 {
-  // splicer begin function.get_logging_msg_level
-  axom::slic::message::Level SHCXX_rv = axom::slic::getLoggingMsgLevel();
-  int SHC_rv = static_cast<int>(SHCXX_rv);
-  return SHC_rv;
-  // splicer end function.get_logging_msg_level
+    // splicer begin function.get_logging_msg_level
+    axom::slic::message::Level SHCXX_rv = axom::slic::getLoggingMsgLevel();
+    int SHC_rv = static_cast<int>(SHCXX_rv);
+    return SHC_rv;
+    // splicer end function.get_logging_msg_level
 }
 
 void SLIC_set_logging_msg_level(int level)
 {
-  // splicer begin function.set_logging_msg_level
-  axom::slic::message::Level SHCXX_level =
-    static_cast<axom::slic::message::Level>(level);
-  axom::slic::setLoggingMsgLevel(SHCXX_level);
-  // splicer end function.set_logging_msg_level
+    // splicer begin function.set_logging_msg_level
+    axom::slic::message::Level SHCXX_level = static_cast<axom::slic::message::Level>(level);
+    axom::slic::setLoggingMsgLevel(SHCXX_level);
+    // splicer end function.set_logging_msg_level
+}
+
+void SLIC_add_stream_to_all_msg_levels(SLIC_LogStream * ls)
+{
+    // splicer begin function.add_stream_to_all_msg_levels
+    axom::slic::LogStream * SHCXX_ls = static_cast<axom::slic::LogStream *>(ls->addr);
+    axom::slic::addStreamToAllMsgLevels(SHCXX_ls);
+    // splicer end function.add_stream_to_all_msg_levels
 }
 
 void SLIC_set_abort_on_error(bool status)
 {
-  // splicer begin function.set_abort_on_error
-  axom::slic::setAbortOnError(status);
-  // splicer end function.set_abort_on_error
+    // splicer begin function.set_abort_on_error
+    axom::slic::setAbortOnError(status);
+    // splicer end function.set_abort_on_error
 }
 
 void SLIC_enable_abort_on_error(void)
 {
-  // splicer begin function.enable_abort_on_error
-  axom::slic::enableAbortOnError();
-  // splicer end function.enable_abort_on_error
+    // splicer begin function.enable_abort_on_error
+    axom::slic::enableAbortOnError();
+    // splicer end function.enable_abort_on_error
 }
 
 void SLIC_disable_abort_on_error(void)
 {
-  // splicer begin function.disable_abort_on_error
-  axom::slic::disableAbortOnError();
-  // splicer end function.disable_abort_on_error
+    // splicer begin function.disable_abort_on_error
+    axom::slic::disableAbortOnError();
+    // splicer end function.disable_abort_on_error
 }
 
 bool SLIC_is_abort_on_errors_enabled(void)
 {
-  // splicer begin function.is_abort_on_errors_enabled
-  bool SHC_rv = axom::slic::isAbortOnErrorsEnabled();
-  return SHC_rv;
-  // splicer end function.is_abort_on_errors_enabled
+    // splicer begin function.is_abort_on_errors_enabled
+    bool SHC_rv = axom::slic::isAbortOnErrorsEnabled();
+    return SHC_rv;
+    // splicer end function.is_abort_on_errors_enabled
 }
 
 void SLIC_set_abort_on_warning(bool status)
 {
-  // splicer begin function.set_abort_on_warning
-  axom::slic::setAbortOnWarning(status);
-  // splicer end function.set_abort_on_warning
+    // splicer begin function.set_abort_on_warning
+    axom::slic::setAbortOnWarning(status);
+    // splicer end function.set_abort_on_warning
 }
 
 void SLIC_enable_abort_on_warning(void)
 {
-  // splicer begin function.enable_abort_on_warning
-  axom::slic::enableAbortOnWarning();
-  // splicer end function.enable_abort_on_warning
+    // splicer begin function.enable_abort_on_warning
+    axom::slic::enableAbortOnWarning();
+    // splicer end function.enable_abort_on_warning
 }
 
 void SLIC_disable_abort_on_warning(void)
 {
-  // splicer begin function.disable_abort_on_warning
-  axom::slic::disableAbortOnWarning();
-  // splicer end function.disable_abort_on_warning
+    // splicer begin function.disable_abort_on_warning
+    axom::slic::disableAbortOnWarning();
+    // splicer end function.disable_abort_on_warning
 }
 
 bool SLIC_is_abort_on_warnings_enabled(void)
 {
-  // splicer begin function.is_abort_on_warnings_enabled
-  bool SHC_rv = axom::slic::isAbortOnWarningsEnabled();
-  return SHC_rv;
-  // splicer end function.is_abort_on_warnings_enabled
+    // splicer begin function.is_abort_on_warnings_enabled
+    bool SHC_rv = axom::slic::isAbortOnWarningsEnabled();
+    return SHC_rv;
+    // splicer end function.is_abort_on_warnings_enabled
 }
 
-void SLIC_log_message(int level,
-                      const char* message,
-                      const char* fileName,
-                      int line,
-                      bool filter)
+void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter)
 {
-  // splicer begin function.log_message
-  axom::slic::message::Level SHCXX_level =
-    static_cast<axom::slic::message::Level>(level);
-  const std::string SHCXX_message(message);
-  const std::string SHCXX_fileName(fileName);
-  axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line, filter);
-  // splicer end function.log_message
+    // splicer begin function.log_message
+    axom::slic::message::Level SHCXX_level = static_cast<axom::slic::message::Level>(level);
+    const std::string SHCXX_message(message);
+    const std::string SHCXX_fileName(fileName);
+    axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line, filter);
+    // splicer end function.log_message
 }
 
-void SLIC_log_message_bufferify(int level,
-                                const char* message,
-                                int Lmessage,
-                                const char* fileName,
-                                int LfileName,
-                                int line,
-                                bool filter)
+void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter)
 {
-  // splicer begin function.log_message_bufferify
-  axom::slic::message::Level SHCXX_level =
-    static_cast<axom::slic::message::Level>(level);
-  const std::string SHCXX_message(message, Lmessage);
-  const std::string SHCXX_fileName(fileName, LfileName);
-  axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line, filter);
-  // splicer end function.log_message_bufferify
+    // splicer begin function.log_message_bufferify
+    axom::slic::message::Level SHCXX_level = static_cast<axom::slic::message::Level>(level);
+    const std::string SHCXX_message(message, Lmessage);
+    const std::string SHCXX_fileName(fileName, LfileName);
+    axom::slic::logMessage(SHCXX_level, SHCXX_message, SHCXX_fileName, line, filter);
+    // splicer end function.log_message_bufferify
 }
 
 void SLIC_finalize(void)
 {
-  // splicer begin function.finalize
-  axom::slic::finalize();
-  // splicer end function.finalize
+    // splicer begin function.finalize
+    axom::slic::finalize();
+    // splicer end function.finalize
 }
 
 // Release library allocated memory.
-void SLIC_SHROUD_memory_destructor(SLIC_SHROUD_capsule_data* cap)
+void SLIC_SHROUD_memory_destructor(SLIC_SHROUD_capsule_data *cap)
 {
-  cap->addr = nullptr;
-  cap->idtor = 0;  // avoid deleting again
+    void *ptr = cap->addr;
+    switch (cap->idtor) {
+    case 0:   // --none--
+    {
+        // Nothing to delete
+        break;
+    }
+    case 1:   // axom::slic::GenericOutputStream
+    {
+        axom::slic::GenericOutputStream *cxx_ptr = reinterpret_cast<axom::slic::GenericOutputStream *>(ptr);
+        delete cxx_ptr;
+        break;
+    }
+    default:
+    {
+        // Unexpected case in destructor
+        break;
+    }
+    }
+    cap->addr = nullptr;
+    cap->idtor = 0;  // avoid deleting again
 }
 
 }  // extern "C"

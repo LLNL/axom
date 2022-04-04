@@ -9,14 +9,18 @@ program slic_example
   use axom_slic
   implicit none
 
+  type(SlicGenericOutputStream), pointer :: stream
+
   ! initialize slic environment
-  !call slic_initialize()
+  call slic_initialize()
 
   ! set the message level
-  !call slic_set_logging_msg_level( message_debug )
+  call slic_set_logging_msg_level( message_debug )
 
   !call slic_disable_abort_on_error()
   ! register log stream (this doesn't exist???)
+  stream = SlicGenericOutputStream("cout")
+  call slic_add_stream_to_all_msg_levels(stream)
   !call slic_add_stream_to_all_levels( 'console' )
   !call slic_add_stream_to_all_levels( 'file:output.log' )
 

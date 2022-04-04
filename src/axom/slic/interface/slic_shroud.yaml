@@ -44,6 +44,24 @@ declarations:
           Num_Levels
         };
 
+- decl: class GenericOutputStream
+  cxx_header: axom/slic/streams/GenericOutputStream.hpp
+  format:
+    F_derived_name:  SlicGenericOutputStream
+  declarations:
+  - decl: GenericOutputStream(const std::string& stream)
+    format:
+      function_suffix: _default
+  - decl: GenericOutputStream(const std::string& stream, const std::string& format)
+    format:
+      function_suffix: _format
+  - decl: ~GenericOutputStream() +name(delete)
+
+- decl: class LogStream
+  cxx_header: axom/slic/core/LogStream.hpp
+  format:
+    F_derived_name:  SlicLogStream
+
 - decl: void initialize()
 - decl: bool isInitialized()
 
@@ -52,6 +70,7 @@ declarations:
 - decl: std::string getActiveLoggerName()
 - decl: message::Level getLoggingMsgLevel()
 - decl: void setLoggingMsgLevel( message::Level level )
+- decl: void addStreamToAllMsgLevels(LogStream* ls)
 
 - decl: void setAbortOnError( bool status )
 - decl: void enableAbortOnError()
