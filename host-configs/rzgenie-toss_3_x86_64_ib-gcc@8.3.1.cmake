@@ -81,6 +81,8 @@ set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0axom" CACHE PATH "")
 
 set(SCR_DIR "${TPL_ROOT}/scr-3.0rc2" CACHE PATH "")
 
+set(LIBYOGRT_DIR "/usr" CACHE PATH "")
+
 set(KVTREE_DIR "${TPL_ROOT}/kvtree-1.2.0" CACHE PATH "")
 
 set(DTCMP_DIR "${TPL_ROOT}/dtcmp-1.1.4" CACHE PATH "")
