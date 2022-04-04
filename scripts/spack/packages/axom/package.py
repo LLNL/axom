@@ -428,7 +428,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             # scr's dependencies
             scr_deps = ('kvtree', 'dtcmp', 'spath', 'axl', 'lwgrp', 'er', 'rankstr',
-                        'redset', 'shuffile', 'yogrt')
+                        'redset', 'shuffile', 'libyogrt')
             for dep in scr_deps:
                 if spec.satisfies('^{0}'.format(dep)):
                     dep_dir = get_spec_path(spec, dep, path_replacements)

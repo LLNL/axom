@@ -99,8 +99,8 @@ find_path( SHUFFILE_INCLUDE_DIR shuffile.h
            NO_SYSTEM_ENVIRONMENT_PATH
            NO_CMAKE_SYSTEM_PATH)
 
-find_path( YOGRT_INCLUDE_DIR yogrt.h
-           PATHS  ${YOGRT_DIR}/include/
+find_path( LIBYOGRT_INCLUDE_DIR yogrt.h
+           PATHS  ${LIBYOGRT_DIR}/include/
            NO_DEFAULT_PATH
            NO_CMAKE_ENVIRONMENT_PATH
            NO_CMAKE_PATH
@@ -118,7 +118,7 @@ set(SCR_INCLUDE_DIRS
     ${RANKSTR_INCLUDE_DIR}
     ${REDSET_INCLUDE_DIR}
     ${SHUFFILE_INCLUDE_DIR}
-    ${YOGRT_INCLUDE_DIR}
+    ${LIBYOGRT_INCLUDE_DIR}
     )
 
 set(_library_names
@@ -147,7 +147,7 @@ set(_library_paths
    ${RANKSTR_DIR}/lib
    ${REDSET_DIR}/lib
    ${SHUFFILE_DIR}/lib
-   ${YOGRT_DIR}/lib
+   ${LIBYOGRT_DIR}/lib
    )
 
 blt_find_libraries(
