@@ -21,13 +21,3 @@ typemap:
           f_derived_type: SlicGenericOutputStream
           f_capsule_data_type: SLIC_SHROUD_genericoutputstream_capsule
           f_to_c: "{f_var}%cxxmem"
-      - type: LogStream
-        fields:
-          base: shadow
-          wrap_header:
-          - typesSLIC.h
-          c_type: SLIC_LogStream
-          f_module_name: axom_slic
-          f_derived_type: SlicLogStream
-          f_capsule_data_type: SLIC_SHROUD_logstream_capsule
-          f_to_c: "{f_var}%cxxmem"

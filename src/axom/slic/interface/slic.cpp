@@ -5,7 +5,6 @@
 
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/internal/stacktrace.hpp"
-#include "axom/slic/streams/GenericOutputStream.hpp"
 
 #include <sstream>  // for std::ostringstream
 
@@ -141,6 +140,13 @@ void addStreamToMsgLevel(LogStream* ls, message::Level level)
 
 //------------------------------------------------------------------------------
 void addStreamToAllMsgLevels(LogStream* ls)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllMsgLevels(ls);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllMsgLevels(GenericOutputStream* ls)
 {
   ensureInitialized();
   Logger::getActiveLogger()->addStreamToAllMsgLevels(ls);

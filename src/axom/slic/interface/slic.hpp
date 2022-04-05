@@ -13,6 +13,7 @@
 #include "axom/config.hpp"
 #include "axom/slic/core/Logger.hpp"
 #include "axom/slic/core/LogStream.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/core/MessageLevel.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
 
@@ -160,6 +161,13 @@ void addStreamToMsgLevel(LogStream* ls, message::Level level);
  * \pre ls != nullptr.
  */
 void addStreamToAllMsgLevels(LogStream* ls);
+
+/*!
+ * \brief Adds the given GenericOutputStream to all levels.
+ * \param [in] ls pointer to the GenericOutputStream.
+ * \pre ls != nullptr.
+ */
+void addStreamToAllMsgLevels(GenericOutputStream* ls);
 
 ///@{
 //! \name Collective Methods

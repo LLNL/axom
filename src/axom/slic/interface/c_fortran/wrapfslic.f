@@ -45,31 +45,12 @@ module axom_slic
         ! splicer end class.GenericOutputStream.type_bound_procedure_part
     end type SlicGenericOutputStream
 
-    type, bind(C) :: SLIC_SHROUD_logstream_capsule
-        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
-        integer(C_INT) :: idtor = 0       ! index of destructor
-    end type SLIC_SHROUD_logstream_capsule
-
-    type SlicLogStream
-        type(SLIC_SHROUD_logstream_capsule) :: cxxmem
-        ! splicer begin class.LogStream.component_part
-        ! splicer end class.LogStream.component_part
-    contains
-        procedure :: get_instance => slic_logstream_get_instance
-        procedure :: set_instance => slic_logstream_set_instance
-        procedure :: associated => slic_logstream_associated
-        ! splicer begin class.LogStream.type_bound_procedure_part
-        ! splicer end class.LogStream.type_bound_procedure_part
-    end type SlicLogStream
-
     interface operator (.eq.)
         module procedure genericoutputstream_eq
-        module procedure logstream_eq
     end interface
 
     interface operator (.ne.)
         module procedure genericoutputstream_ne
-        module procedure logstream_ne
     end interface
 
     interface
@@ -135,9 +116,6 @@ module axom_slic
 
         ! splicer begin class.GenericOutputStream.additional_interfaces
         ! splicer end class.GenericOutputStream.additional_interfaces
-
-        ! splicer begin class.LogStream.additional_interfaces
-        ! splicer end class.LogStream.additional_interfaces
 
         subroutine slic_initialize() &
                 bind(C, name="SLIC_initialize")
@@ -213,9 +191,9 @@ module axom_slic
 
         subroutine c_add_stream_to_all_msg_levels(ls) &
                 bind(C, name="SLIC_add_stream_to_all_msg_levels")
-            import :: SLIC_SHROUD_logstream_capsule
+            import :: SLIC_SHROUD_genericoutputstream_capsule
             implicit none
-            type(SLIC_SHROUD_logstream_capsule), intent(INOUT) :: ls
+            type(SLIC_SHROUD_genericoutputstream_capsule), intent(INOUT) :: ls
         end subroutine c_add_stream_to_all_msg_levels
 
         subroutine c_set_abort_on_error(status) &
@@ -268,20 +246,46 @@ module axom_slic
             logical(C_BOOL) :: SHT_rv
         end function c_is_abort_on_warnings_enabled
 
-        subroutine c_log_message(level, message, fileName, line, filter) &
-                bind(C, name="SLIC_log_message")
+        subroutine c_log_message_file_line(level, message, fileName, &
+                line) &
+                bind(C, name="SLIC_log_message_file_line")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT), value, intent(IN) :: line
+        end subroutine c_log_message_file_line
+
+        subroutine c_log_message_file_line_bufferify(level, message, &
+                Lmessage, fileName, LfileName, line) &
+                bind(C, name="SLIC_log_message_file_line_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+            integer(C_INT), value, intent(IN) :: Lmessage
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT), value, intent(IN) :: LfileName
+            integer(C_INT), value, intent(IN) :: line
+        end subroutine c_log_message_file_line_bufferify
+
+        subroutine c_log_message_file_line_filter(level, message, &
+                fileName, line, filter_duplicates) &
+                bind(C, name="SLIC_log_message_file_line_filter")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
             integer(C_INT), value, intent(IN) :: level
             character(kind=C_CHAR), intent(IN) :: message(*)
             character(kind=C_CHAR), intent(IN) :: fileName(*)
             integer(C_INT), value, intent(IN) :: line
-            logical(C_BOOL), value, intent(IN) :: filter
-        end subroutine c_log_message
+            logical(C_BOOL), value, intent(IN) :: filter_duplicates
+        end subroutine c_log_message_file_line_filter
 
-        subroutine c_log_message_bufferify(level, message, Lmessage, &
-                fileName, LfileName, line, filter) &
-                bind(C, name="SLIC_log_message_bufferify")
+        subroutine c_log_message_file_line_filter_bufferify(level, &
+                message, Lmessage, fileName, LfileName, line, &
+                filter_duplicates) &
+                bind(C, name="SLIC_log_message_file_line_filter_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
             implicit none
             integer(C_INT), value, intent(IN) :: level
@@ -290,8 +294,46 @@ module axom_slic
             character(kind=C_CHAR), intent(IN) :: fileName(*)
             integer(C_INT), value, intent(IN) :: LfileName
             integer(C_INT), value, intent(IN) :: line
-            logical(C_BOOL), value, intent(IN) :: filter
+            logical(C_BOOL), value, intent(IN) :: filter_duplicates
+        end subroutine c_log_message_file_line_filter_bufferify
+
+        subroutine c_log_message(level, message) &
+                bind(C, name="SLIC_log_message")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+        end subroutine c_log_message
+
+        subroutine c_log_message_bufferify(level, message, Lmessage) &
+                bind(C, name="SLIC_log_message_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+            integer(C_INT), value, intent(IN) :: Lmessage
         end subroutine c_log_message_bufferify
+
+        subroutine c_log_message_filter(level, message, &
+                filter_duplicates) &
+                bind(C, name="SLIC_log_message_filter")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+            logical(C_BOOL), value, intent(IN) :: filter_duplicates
+        end subroutine c_log_message_filter
+
+        subroutine c_log_message_filter_bufferify(level, message, &
+                Lmessage, filter_duplicates) &
+                bind(C, name="SLIC_log_message_filter_bufferify")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+            integer(C_INT), value, intent(IN) :: Lmessage
+            logical(C_BOOL), value, intent(IN) :: filter_duplicates
+        end subroutine c_log_message_filter_bufferify
 
         subroutine slic_finalize() &
                 bind(C, name="SLIC_finalize")
@@ -306,6 +348,13 @@ module axom_slic
         module procedure slic_genericoutputstream_ctor_default
         module procedure slic_genericoutputstream_ctor_format
     end interface SlicGenericOutputStream
+
+    interface log_message
+        module procedure slic_log_message_file_line
+        module procedure slic_log_message_file_line_filter
+        module procedure slic_log_message
+        module procedure slic_log_message_filter
+    end interface log_message
 
 contains
 
@@ -368,32 +417,6 @@ contains
     ! splicer begin class.GenericOutputStream.additional_functions
     ! splicer end class.GenericOutputStream.additional_functions
 
-    ! Return pointer to C++ memory.
-    function slic_logstream_get_instance(obj) result (cxxptr)
-        use iso_c_binding, only: C_PTR
-        class(SlicLogStream), intent(IN) :: obj
-        type(C_PTR) :: cxxptr
-        cxxptr = obj%cxxmem%addr
-    end function slic_logstream_get_instance
-
-    subroutine slic_logstream_set_instance(obj, cxxmem)
-        use iso_c_binding, only: C_PTR
-        class(SlicLogStream), intent(INOUT) :: obj
-        type(C_PTR), intent(IN) :: cxxmem
-        obj%cxxmem%addr = cxxmem
-        obj%cxxmem%idtor = 0
-    end subroutine slic_logstream_set_instance
-
-    function slic_logstream_associated(obj) result (rv)
-        use iso_c_binding, only: c_associated
-        class(SlicLogStream), intent(IN) :: obj
-        logical rv
-        rv = c_associated(obj%cxxmem%addr)
-    end function slic_logstream_associated
-
-    ! splicer begin class.LogStream.additional_functions
-    ! splicer end class.LogStream.additional_functions
-
     function slic_is_initialized() &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL
@@ -434,7 +457,7 @@ contains
     end subroutine slic_get_active_logger_name
 
     subroutine slic_add_stream_to_all_msg_levels(ls)
-        type(SlicLogStream), intent(INOUT) :: ls
+        type(SlicGenericOutputStream), intent(INOUT) :: ls
         ! splicer begin function.add_stream_to_all_msg_levels
         call c_add_stream_to_all_msg_levels(ls%cxxmem)
         ! splicer end function.add_stream_to_all_msg_levels
@@ -478,21 +501,60 @@ contains
         ! splicer end function.is_abort_on_warnings_enabled
     end function slic_is_abort_on_warnings_enabled
 
-    subroutine slic_log_message(level, message, fileName, line, filter)
+    subroutine slic_log_message_file_line(level, message, fileName, &
+            line)
+        use iso_c_binding, only : C_INT
+        integer(C_INT), value, intent(IN) :: level
+        character(len=*), intent(IN) :: message
+        character(len=*), intent(IN) :: fileName
+        integer(C_INT), value, intent(IN) :: line
+        ! splicer begin function.log_message_file_line
+        call c_log_message_file_line_bufferify(level, message, &
+            len_trim(message, kind=C_INT), fileName, &
+            len_trim(fileName, kind=C_INT), line)
+        ! splicer end function.log_message_file_line
+    end subroutine slic_log_message_file_line
+
+    subroutine slic_log_message_file_line_filter(level, message, &
+            fileName, line, filter_duplicates)
         use iso_c_binding, only : C_BOOL, C_INT
         integer(C_INT), value, intent(IN) :: level
         character(len=*), intent(IN) :: message
         character(len=*), intent(IN) :: fileName
         integer(C_INT), value, intent(IN) :: line
-        logical, value, intent(IN) :: filter
-        ! splicer begin function.log_message
-        logical(C_BOOL) SH_filter
-        SH_filter = filter  ! coerce to C_BOOL
-        call c_log_message_bufferify(level, message, &
+        logical, value, intent(IN) :: filter_duplicates
+        ! splicer begin function.log_message_file_line_filter
+        logical(C_BOOL) SH_filter_duplicates
+        SH_filter_duplicates = filter_duplicates  ! coerce to C_BOOL
+        call c_log_message_file_line_filter_bufferify(level, message, &
             len_trim(message, kind=C_INT), fileName, &
-            len_trim(fileName, kind=C_INT), line, SH_filter)
+            len_trim(fileName, kind=C_INT), line, SH_filter_duplicates)
+        ! splicer end function.log_message_file_line_filter
+    end subroutine slic_log_message_file_line_filter
+
+    subroutine slic_log_message(level, message)
+        use iso_c_binding, only : C_INT
+        integer(C_INT), value, intent(IN) :: level
+        character(len=*), intent(IN) :: message
+        ! splicer begin function.log_message
+        call c_log_message_bufferify(level, message, &
+            len_trim(message, kind=C_INT))
         ! splicer end function.log_message
     end subroutine slic_log_message
+
+    subroutine slic_log_message_filter(level, message, &
+            filter_duplicates)
+        use iso_c_binding, only : C_BOOL, C_INT
+        integer(C_INT), value, intent(IN) :: level
+        character(len=*), intent(IN) :: message
+        logical, value, intent(IN) :: filter_duplicates
+        ! splicer begin function.log_message_filter
+        logical(C_BOOL) SH_filter_duplicates
+        SH_filter_duplicates = filter_duplicates  ! coerce to C_BOOL
+        call c_log_message_filter_bufferify(level, message, &
+            len_trim(message, kind=C_INT), SH_filter_duplicates)
+        ! splicer end function.log_message_filter
+    end subroutine slic_log_message_filter
 
     ! splicer begin additional_functions
     ! splicer end additional_functions
@@ -518,27 +580,5 @@ contains
             rv = .false.
         endif
     end function genericoutputstream_ne
-
-    function logstream_eq(a,b) result (rv)
-        use iso_c_binding, only: c_associated
-        type(SlicLogStream), intent(IN) ::a,b
-        logical :: rv
-        if (c_associated(a%cxxmem%addr, b%cxxmem%addr)) then
-            rv = .true.
-        else
-            rv = .false.
-        endif
-    end function logstream_eq
-
-    function logstream_ne(a,b) result (rv)
-        use iso_c_binding, only: c_associated
-        type(SlicLogStream), intent(IN) ::a,b
-        logical :: rv
-        if (.not. c_associated(a%cxxmem%addr, b%cxxmem%addr)) then
-            rv = .true.
-        else
-            rv = .false.
-        endif
-    end function logstream_ne
 
 end module axom_slic

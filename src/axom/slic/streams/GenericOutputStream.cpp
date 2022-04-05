@@ -26,9 +26,7 @@ GenericOutputStream::GenericOutputStream(const std::string& stream)
   }
   else
   {
-    std::ofstream ofs;
-    ofs.open(stream);
-    m_stream = &ofs;
+    m_stream = new std::ofstream(stream);
   }
 }
 

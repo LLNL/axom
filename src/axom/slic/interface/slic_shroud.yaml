@@ -57,11 +57,6 @@ declarations:
       function_suffix: _format
   - decl: ~GenericOutputStream() +name(delete)
 
-- decl: class LogStream
-  cxx_header: axom/slic/core/LogStream.hpp
-  format:
-    F_derived_name:  SlicLogStream
-
 - decl: void initialize()
 - decl: bool isInitialized()
 
@@ -70,7 +65,7 @@ declarations:
 - decl: std::string getActiveLoggerName()
 - decl: message::Level getLoggingMsgLevel()
 - decl: void setLoggingMsgLevel( message::Level level )
-- decl: void addStreamToAllMsgLevels(LogStream* ls)
+- decl: void addStreamToAllMsgLevels(GenericOutputStream* ls)
 
 - decl: void setAbortOnError( bool status )
 - decl: void enableAbortOnError()
@@ -86,6 +81,15 @@ declarations:
                          const std::string& message,
                          const std::string& fileName,
                          int line,
-                         bool filter )
+                         bool filter_duplicates = false )
+  default_arg_suffix:
+  - _file_line
+  - _file_line_filter
+- decl: void logMessage( message::Level level,
+                         const std::string& message,
+                         bool filter_duplicates = false )
+  default_arg_suffix:
+  -
+  - _filter
 - decl: void finalize()
   

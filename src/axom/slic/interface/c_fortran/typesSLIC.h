@@ -22,13 +22,6 @@ struct s_SLIC_GenericOutputStream {
 };
 typedef struct s_SLIC_GenericOutputStream SLIC_GenericOutputStream;
 
-// helper capsule_SLIC_LogStream
-struct s_SLIC_LogStream {
-    void *addr;     /* address of C++ memory */
-    int idtor;      /* index of destructor */
-};
-typedef struct s_SLIC_LogStream SLIC_LogStream;
-
 // helper capsule_data_helper
 struct s_SLIC_SHROUD_capsule_data {
     void *addr;     /* address of C++ memory */
