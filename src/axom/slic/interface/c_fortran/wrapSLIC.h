@@ -90,6 +90,8 @@ void SLIC_log_message_filter(int level, const char * message, bool filter_duplic
 
 void SLIC_log_message_filter_bufferify(int level, const char * message, int Lmessage, bool filter_duplicates);
 
+void SLIC_flush_streams(void);
+
 void SLIC_finalize(void);
 
 #ifdef __cplusplus

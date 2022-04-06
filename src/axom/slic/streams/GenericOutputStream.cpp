@@ -71,6 +71,9 @@ void GenericOutputStream::append(message::Level msgLevel,
                                           line);
 }
 
+//------------------------------------------------------------------------------
+void GenericOutputStream::flush() { m_stream->flush(); }
+
 } /* namespace slic */
 
 } /* namespace axom */

@@ -87,6 +87,11 @@ public:
                       int line,
                       bool filter_duplicates);
 
+  /*!
+   * \brief Flushes the log stream.
+   */
+  virtual void flush();
+
 private:
   std::ostream* m_stream;
 

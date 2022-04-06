@@ -91,5 +91,7 @@ declarations:
   default_arg_suffix:
   -
   - _filter
+
+- decl: void flushStreams()
 - decl: void finalize()
   

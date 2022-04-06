@@ -335,6 +335,11 @@ module axom_slic
             logical(C_BOOL), value, intent(IN) :: filter_duplicates
         end subroutine c_log_message_filter_bufferify
 
+        subroutine slic_flush_streams() &
+                bind(C, name="SLIC_flush_streams")
+            implicit none
+        end subroutine slic_flush_streams
+
         subroutine slic_finalize() &
                 bind(C, name="SLIC_finalize")
             implicit none

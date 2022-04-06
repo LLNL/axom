@@ -257,6 +257,13 @@ void SLIC_log_message_filter_bufferify(int level, const char * message, int Lmes
     // splicer end function.log_message_filter_bufferify
 }
 
+void SLIC_flush_streams(void)
+{
+    // splicer begin function.flush_streams
+    axom::slic::flushStreams();
+    // splicer end function.flush_streams
+}
+
 void SLIC_finalize(void)
 {
     // splicer begin function.finalize
