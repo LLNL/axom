@@ -174,6 +174,20 @@ std::string removeBeforeDelimiter(const std::string& str, const char delim = '/'
 std::string removeAllInstances(const std::string& target,
                                const std::string& substr);
 
+/*!
+*****************************************************************************
+* \brief This function finds all instances of a substring and replaces it
+* with another string for the target string
+*
+* \param [in] target The string to operate on
+* \param [in] findstr The string to find
+* \param [in] replacestr The string to replace with
+*
+* \return The modified string. If @a findstr and @a replacestr are the same
+* or @a findstr is a substring of @a replacestr (recursion), @a target is
+* returned.
+*****************************************************************************
+*/
 std::string replaceAllInstances(const std::string& target,
                                 const std::string& findstr,
                                 const std::string& replacestr);
