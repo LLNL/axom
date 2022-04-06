@@ -713,7 +713,8 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   using ExecSpace = typename TestFixture::ExecSpace;
   using DynamicArray =
     typename TestFixture::template DynamicTArray<NonTrivialCopyCtor>;
-  using HostArray = typename TestFixture::template HostTArray<NonTrivialCopyCtor>;
+  using IntArray = typename TestFixture::DynamicArray;
+  using IntHostArray = typename TestFixture::HostArray;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
@@ -725,41 +726,85 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
 #endif
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
+  // Helper function to check all values in the array for consistency
+  auto check_array_values = [=](const DynamicArray& arr, int expected) -> bool {
+    // Copy device side values into int array
+    IntArray values(arr.size(), arr.size(), kernelAllocID);
+    const auto values_v = values.view();
+    const auto arr_v = arr.view();
+    axom::for_all<ExecSpace>(
+      arr.size(),
+      AXOM_LAMBDA(axom::IndexType i) { values_v[i] = arr_v[i].m_val; });
+
+    // handles synchronization, if necessary
+    if(axom::execution_space<ExecSpace>::async())
+    {
+      axom::synchronize<ExecSpace>();
+    }
+
+    // Check array contents on host
+    IntHostArray values_host(values, hostAllocID);
+    bool allValuesEq = true;
+    for(int i = 0; i < arr.size(); ++i)
+    {
+      allValuesEq = allValuesEq && (values_host[i] == expected);
+    }
+    return allValuesEq;
+  };
+
   // Create an array of N items using default MemorySpace for ExecSpace
   constexpr axom::IndexType N = 374;
   DynamicArray arr(N, N, kernelAllocID);
 
-  // Fill with instance of copy-constructed type
-  arr.fill(NonTrivialCopyCtor {});
-
-  // handles synchronization, if necessary
-  if(axom::execution_space<ExecSpace>::async())
+  // Check some cases where the copy constructor shouldn't be invoked
   {
-    axom::synchronize<ExecSpace>();
+    // Create an array of N items using default MemorySpace for ExecSpace
+    constexpr axom::IndexType N = 374;
+    DynamicArray arr(N, N, kernelAllocID);
+
+    // Array default-construction should not invoke copy constructor
+    EXPECT_TRUE(check_array_values(arr, 1));
+
+    // Array resize should not invoke copy constructor
+    arr.resize(2 * N);
+    EXPECT_TRUE(check_array_values(arr, 1));
+
+    // Array move-construction should not invoke copy constructor
+    DynamicArray arr2(std::move(arr));
+    EXPECT_TRUE(check_array_values(arr2, 1));
+
+    // Array move-assignment should not invoke copy constructor
+    DynamicArray arr3 = std::move(arr2);
+    EXPECT_TRUE(check_array_values(arr3, 1));
   }
 
-  // Check array contents on host
-  HostArray localArr(arr, hostAllocID);
-  for(int i = 0; i < N; ++i)
+  // Check some cases where the copy constructor should be invoked
   {
-    EXPECT_EQ(localArr[i].m_val, MAGIC_COPY_CTOR);
-  }
+    // Create an array of N items using default MemorySpace for ExecSpace
+    constexpr axom::IndexType N = 374;
+    DynamicArray arr(N, N, kernelAllocID);
 
-  // Second fill should be idempotent - i.e. isn't affected by the data already
-  // present in the array
-  arr.fill(NonTrivialCopyCtor {});
+    // Array copy-construction should invoke each element's copy constructor
+    DynamicArray arr2(arr);
+    EXPECT_TRUE(check_array_values(arr2, MAGIC_COPY_CTOR));
 
-  // handles synchronization, if necessary
-  if(axom::execution_space<ExecSpace>::async())
-  {
-    axom::synchronize<ExecSpace>();
-  }
+    // Array copy-assignment should invoke each element's copy constructor
+    DynamicArray arr3(arr);
+    EXPECT_TRUE(check_array_values(arr3, MAGIC_COPY_CTOR));
 
-  // Check array contents on host
-  localArr = HostArray(arr, hostAllocID);
-  for(int i = 0; i < N; ++i)
-  {
-    EXPECT_EQ(localArr[i].m_val, MAGIC_COPY_CTOR);
+    // Transfers between memory spaces should invoke each element's copy constructor
+    DynamicArray arr4(arr, hostAllocID);
+    EXPECT_TRUE(check_array_values(arr4, MAGIC_COPY_CTOR));
+
+    // Fill with instance of copy-constructed type - each element should be
+    // copy-constructed from the argument
+    arr.fill(NonTrivialCopyCtor {});
+    EXPECT_TRUE(check_array_values(arr, MAGIC_COPY_CTOR));
+
+    // Second fill should be idempotent - i.e. isn't affected by the data
+    // already present in the array
+    arr.fill(NonTrivialCopyCtor {});
+    EXPECT_TRUE(check_array_values(arr, MAGIC_COPY_CTOR));
   }
 }
 
