@@ -65,6 +65,7 @@ declarations:
 - decl: std::string getActiveLoggerName()
 - decl: message::Level getLoggingMsgLevel()
 - decl: void setLoggingMsgLevel( message::Level level )
+- decl: void addStreamToMsgLevel(GenericOutputStream* ls, message::Level level)
 - decl: void addStreamToAllMsgLevels(GenericOutputStream* ls)
 
 - decl: void setAbortOnError( bool status )

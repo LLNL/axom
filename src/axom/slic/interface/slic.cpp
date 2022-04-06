@@ -139,6 +139,13 @@ void addStreamToMsgLevel(LogStream* ls, message::Level level)
 }
 
 //------------------------------------------------------------------------------
+void addStreamToMsgLevel(GenericOutputStream* ls, message::Level level)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToMsgLevel(ls, level);
+}
+
+//------------------------------------------------------------------------------
 void addStreamToAllMsgLevels(LogStream* ls)
 {
   ensureInitialized();

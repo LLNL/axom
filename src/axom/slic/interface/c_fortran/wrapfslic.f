@@ -189,6 +189,15 @@ module axom_slic
             integer(C_INT), value, intent(IN) :: level
         end subroutine slic_set_logging_msg_level
 
+        subroutine c_add_stream_to_msg_level(ls, level) &
+                bind(C, name="SLIC_add_stream_to_msg_level")
+            use iso_c_binding, only : C_INT
+            import :: SLIC_SHROUD_genericoutputstream_capsule
+            implicit none
+            type(SLIC_SHROUD_genericoutputstream_capsule), intent(INOUT) :: ls
+            integer(C_INT), value, intent(IN) :: level
+        end subroutine c_add_stream_to_msg_level
+
         subroutine c_add_stream_to_all_msg_levels(ls) &
                 bind(C, name="SLIC_add_stream_to_all_msg_levels")
             import :: SLIC_SHROUD_genericoutputstream_capsule
@@ -460,6 +469,15 @@ contains
             len(name, kind=C_INT))
         ! splicer end function.get_active_logger_name
     end subroutine slic_get_active_logger_name
+
+    subroutine slic_add_stream_to_msg_level(ls, level)
+        use iso_c_binding, only : C_INT
+        type(SlicGenericOutputStream), intent(INOUT) :: ls
+        integer(C_INT), value, intent(IN) :: level
+        ! splicer begin function.add_stream_to_msg_level
+        call c_add_stream_to_msg_level(ls%cxxmem, level)
+        ! splicer end function.add_stream_to_msg_level
+    end subroutine slic_add_stream_to_msg_level
 
     subroutine slic_add_stream_to_all_msg_levels(ls)
         type(SlicGenericOutputStream), intent(INOUT) :: ls

@@ -3,7 +3,7 @@
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
 
-program slic_example
+program slic_logging
   ! Use slic module
   use iso_c_binding
   use axom_slic
@@ -32,4 +32,4 @@ program slic_example
   ! finalize slic environment
   call slic_finalize()
 
-end program slic_example
+end program slic_logging

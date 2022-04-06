@@ -20,6 +20,7 @@ set(mpi_example_sources
 
 set(F_example_sources
     basic/logging_F.f
+    basic/flogger.f
 )
 
 if (AXOM_ENABLE_LUMBERJACK)

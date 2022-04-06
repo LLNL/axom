@@ -121,6 +121,17 @@ void SLIC_set_logging_msg_level(int level)
   // splicer end function.set_logging_msg_level
 }
 
+void SLIC_add_stream_to_msg_level(SLIC_GenericOutputStream *ls, int level)
+{
+  // splicer begin function.add_stream_to_msg_level
+  axom::slic::GenericOutputStream *SHCXX_ls =
+    static_cast<axom::slic::GenericOutputStream *>(ls->addr);
+  axom::slic::message::Level SHCXX_level =
+    static_cast<axom::slic::message::Level>(level);
+  axom::slic::addStreamToMsgLevel(SHCXX_ls, SHCXX_level);
+  // splicer end function.add_stream_to_msg_level
+}
+
 void SLIC_add_stream_to_all_msg_levels(SLIC_GenericOutputStream *ls)
 {
   // splicer begin function.add_stream_to_all_msg_levels

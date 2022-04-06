@@ -57,6 +57,8 @@ int SLIC_get_logging_msg_level(void);
 
 void SLIC_set_logging_msg_level(int level);
 
+void SLIC_add_stream_to_msg_level(SLIC_GenericOutputStream* ls, int level);
+
 void SLIC_add_stream_to_all_msg_levels(SLIC_GenericOutputStream* ls);
 
 void SLIC_set_abort_on_error(bool status);
