@@ -248,7 +248,9 @@ public:
       m_resize_ratio = other.m_resize_ratio;
       m_default_construct = other.m_default_construct;
       initialize(other.size(), other.capacity());
-      axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
+      // Use fill_range to ensure that copy constructors are invoked for each
+      // element.
+      OpHelper::fill_range(m_data, 0, m_num_elements, m_allocator_id, other.data());
     }
 
     return *this;
@@ -814,7 +816,9 @@ Array<T, DIM, SPACE>::Array(const Array& other)
   , m_default_construct(other.m_default_construct)
 {
   initialize(other.size(), other.capacity());
-  axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
+  // Use fill_range to ensure that copy constructors are invoked for each
+  // element.
+  OpHelper::fill_range(m_data, 0, m_num_elements, m_allocator_id, other.data());
 }
 
 //------------------------------------------------------------------------------
@@ -1195,9 +1199,9 @@ inline void Array<T, DIM, SPACE>::initialize_from_other(
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
   initialize(num_elements, num_elements);
-  // axom::copy is aware of pointers registered in Umpire, so this will handle
-  // the transfer between memory spaces
-  axom::copy(m_data, other_data, m_num_elements * sizeof(T));
+  // Use fill_range to ensure that copy constructors are invoked for each
+  // element.
+  OpHelper::fill_range(m_data, 0, m_num_elements, m_allocator_id, other_data);
 }
 
 //------------------------------------------------------------------------------
