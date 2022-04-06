@@ -20,7 +20,7 @@ program slic_example
   call slic_disable_abort_on_error()
 
   ! register log stream
-  stream = SlicGenericOutputStream("cout")
+  stream = SlicGenericOutputStream("cout", "<MESSAGE>\n\t<TIMESTAMP>\n\tLEVEL=<LEVEL>\n\n")
   call slic_add_stream_to_all_msg_levels(stream)
 
   ! log messages

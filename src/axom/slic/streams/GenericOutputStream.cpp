@@ -6,6 +6,7 @@
 #include "axom/slic/streams/GenericOutputStream.hpp"
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 namespace axom
 {
@@ -16,11 +17,11 @@ GenericOutputStream::GenericOutputStream(std::ostream* os) : m_stream(os) { }
 //------------------------------------------------------------------------------
 GenericOutputStream::GenericOutputStream(const std::string& stream)
 {
-  if (stream == "cout")
+  if(stream == "cout")
   {
     m_stream = &std::cout;
   }
-  else if (stream == "cerr")
+  else if(stream == "cerr")
   {
     m_stream = &std::cerr;
   }
@@ -43,7 +44,12 @@ GenericOutputStream::GenericOutputStream(const std::string& stream,
                                          const std::string& format)
   : GenericOutputStream::GenericOutputStream(stream)
 {
-  this->setFormatString(format);
+  // Fix newline and tab characters if needed
+  std::string format_fixed = axom::utilities::string::replaceAllInstances(
+    axom::utilities::string::replaceAllInstances(format, "\\n", "\n"),
+    "\\t",
+    "\t");
+  this->setFormatString(format_fixed);
 }
 
 //------------------------------------------------------------------------------

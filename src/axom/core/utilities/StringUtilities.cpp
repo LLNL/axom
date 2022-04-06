@@ -117,6 +117,24 @@ std::string removeAllInstances(const std::string& target,
   return result;
 }
 
+std::string replaceAllInstances(const std::string& target,
+                                const std::string& findstr,
+                                const std::string& replacestr)
+{
+  if(findstr == replacestr || replacestr.find(findstr) != std::string::npos)
+  {
+    return target;
+  }
+  std::string result = target;
+  auto pos = result.find(findstr);
+  while(pos != std::string::npos)
+  {
+    result.replace(pos, findstr.length(), replacestr);
+    pos = result.find(findstr);
+  }
+  return result;
+}
+
 }  // end namespace string
 }  // end namespace utilities
 }  // end namespace axom

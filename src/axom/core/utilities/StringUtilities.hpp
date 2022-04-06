@@ -174,6 +174,10 @@ std::string removeBeforeDelimiter(const std::string& str, const char delim = '/'
 std::string removeAllInstances(const std::string& target,
                                const std::string& substr);
 
+std::string replaceAllInstances(const std::string& target,
+                                const std::string& findstr,
+                                const std::string& replacestr);
+
 }  // end namespace string
 }  // end namespace utilities
 }  // end namespace axom

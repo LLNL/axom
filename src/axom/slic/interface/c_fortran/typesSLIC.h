@@ -10,22 +10,23 @@
 #ifndef TYPESSLIC_H
 #define TYPESSLIC_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // helper capsule_SLIC_GenericOutputStream
-struct s_SLIC_GenericOutputStream {
-    void *addr;     /* address of C++ memory */
-    int idtor;      /* index of destructor */
+struct s_SLIC_GenericOutputStream
+{
+  void *addr; /* address of C++ memory */
+  int idtor;  /* index of destructor */
 };
 typedef struct s_SLIC_GenericOutputStream SLIC_GenericOutputStream;
 
 // helper capsule_data_helper
-struct s_SLIC_SHROUD_capsule_data {
-    void *addr;     /* address of C++ memory */
-    int idtor;      /* index of destructor */
+struct s_SLIC_SHROUD_capsule_data
+{
+  void *addr; /* address of C++ memory */
+  int idtor;  /* index of destructor */
 };
 typedef struct s_SLIC_SHROUD_capsule_data SLIC_SHROUD_capsule_data;
 

@@ -26,15 +26,28 @@ extern "C" {
 // splicer begin class.GenericOutputStream.C_declarations
 // splicer end class.GenericOutputStream.C_declarations
 
-SLIC_GenericOutputStream * SLIC_GenericOutputStream_ctor_default(const char * stream, SLIC_GenericOutputStream * SHC_rv);
+SLIC_GenericOutputStream* SLIC_GenericOutputStream_ctor_default(
+  const char* stream,
+  SLIC_GenericOutputStream* SHC_rv);
 
-SLIC_GenericOutputStream * SLIC_GenericOutputStream_ctor_default_bufferify(const char * stream, int Lstream, SLIC_GenericOutputStream * SHC_rv);
+SLIC_GenericOutputStream* SLIC_GenericOutputStream_ctor_default_bufferify(
+  const char* stream,
+  int Lstream,
+  SLIC_GenericOutputStream* SHC_rv);
 
-SLIC_GenericOutputStream * SLIC_GenericOutputStream_ctor_format(const char * stream, const char * format, SLIC_GenericOutputStream * SHC_rv);
+SLIC_GenericOutputStream* SLIC_GenericOutputStream_ctor_format(
+  const char* stream,
+  const char* format,
+  SLIC_GenericOutputStream* SHC_rv);
 
-SLIC_GenericOutputStream * SLIC_GenericOutputStream_ctor_format_bufferify(const char * stream, int Lstream, const char * format, int Lformat, SLIC_GenericOutputStream * SHC_rv);
+SLIC_GenericOutputStream* SLIC_GenericOutputStream_ctor_format_bufferify(
+  const char* stream,
+  int Lstream,
+  const char* format,
+  int Lformat,
+  SLIC_GenericOutputStream* SHC_rv);
 
-void SLIC_GenericOutputStream_delete(SLIC_GenericOutputStream * self);
+void SLIC_GenericOutputStream_delete(SLIC_GenericOutputStream* self);
 
 #ifdef __cplusplus
 }

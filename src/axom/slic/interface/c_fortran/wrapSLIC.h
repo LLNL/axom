@@ -16,7 +16,7 @@
 
 #include "typesSLIC.h"
 #ifndef __cplusplus
-#include <stdbool.h>
+  #include <stdbool.h>
 #endif
 
 // splicer begin CXX_declarations
@@ -27,12 +27,13 @@ extern "C" {
 #endif
 
 //  axom::slic::message::Level
-enum SLIC_message_Level {
-    SLIC_message_Error,
-    SLIC_message_Warning,
-    SLIC_message_Info,
-    SLIC_message_Debug,
-    SLIC_message_Num_Levels
+enum SLIC_message_Level
+{
+  SLIC_message_Error,
+  SLIC_message_Warning,
+  SLIC_message_Info,
+  SLIC_message_Debug,
+  SLIC_message_Num_Levels
 };
 
 // splicer begin C_declarations
@@ -42,21 +43,21 @@ void SLIC_initialize(void);
 
 bool SLIC_is_initialized(void);
 
-void SLIC_create_logger(const char * name, char imask);
+void SLIC_create_logger(const char* name, char imask);
 
-void SLIC_create_logger_bufferify(const char * name, int Lname, char imask);
+void SLIC_create_logger_bufferify(const char* name, int Lname, char imask);
 
-bool SLIC_activate_logger(const char * name);
+bool SLIC_activate_logger(const char* name);
 
-bool SLIC_activate_logger_bufferify(const char * name, int Lname);
+bool SLIC_activate_logger_bufferify(const char* name, int Lname);
 
-void SLIC_get_active_logger_name_bufferify(char * name, int Nname);
+void SLIC_get_active_logger_name_bufferify(char* name, int Nname);
 
 int SLIC_get_logging_msg_level(void);
 
 void SLIC_set_logging_msg_level(int level);
 
-void SLIC_add_stream_to_all_msg_levels(SLIC_GenericOutputStream * ls);
+void SLIC_add_stream_to_all_msg_levels(SLIC_GenericOutputStream* ls);
 
 void SLIC_set_abort_on_error(bool status);
 
@@ -74,21 +75,44 @@ void SLIC_disable_abort_on_warning(void);
 
 bool SLIC_is_abort_on_warnings_enabled(void);
 
-void SLIC_log_message_file_line(int level, const char * message, const char * fileName, int line);
+void SLIC_log_message_file_line(int level,
+                                const char* message,
+                                const char* fileName,
+                                int line);
 
-void SLIC_log_message_file_line_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line);
+void SLIC_log_message_file_line_bufferify(int level,
+                                          const char* message,
+                                          int Lmessage,
+                                          const char* fileName,
+                                          int LfileName,
+                                          int line);
 
-void SLIC_log_message_file_line_filter(int level, const char * message, const char * fileName, int line, bool filter_duplicates);
+void SLIC_log_message_file_line_filter(int level,
+                                       const char* message,
+                                       const char* fileName,
+                                       int line,
+                                       bool filter_duplicates);
 
-void SLIC_log_message_file_line_filter_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter_duplicates);
+void SLIC_log_message_file_line_filter_bufferify(int level,
+                                                 const char* message,
+                                                 int Lmessage,
+                                                 const char* fileName,
+                                                 int LfileName,
+                                                 int line,
+                                                 bool filter_duplicates);
 
-void SLIC_log_message(int level, const char * message);
+void SLIC_log_message(int level, const char* message);
 
-void SLIC_log_message_bufferify(int level, const char * message, int Lmessage);
+void SLIC_log_message_bufferify(int level, const char* message, int Lmessage);
 
-void SLIC_log_message_filter(int level, const char * message, bool filter_duplicates);
+void SLIC_log_message_filter(int level,
+                             const char* message,
+                             bool filter_duplicates);
 
-void SLIC_log_message_filter_bufferify(int level, const char * message, int Lmessage, bool filter_duplicates);
+void SLIC_log_message_filter_bufferify(int level,
+                                       const char* message,
+                                       int Lmessage,
+                                       bool filter_duplicates);
 
 void SLIC_flush_streams(void);
 

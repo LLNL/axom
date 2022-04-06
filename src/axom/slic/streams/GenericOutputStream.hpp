@@ -17,7 +17,7 @@
 
 // C/C++ includes
 #include <iostream>  // for ostream
-#include <fstream>  // for ofstream
+#include <fstream>   // for ofstream
 
 namespace axom
 {
