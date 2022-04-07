@@ -630,7 +630,23 @@ public:
    * \note Reallocation is done if the new size will exceed the capacity.
    */
   template <typename... Args>
-  void resize(Args... args);
+  void resize(Args... args)
+  {
+    static_assert(sizeof...(Args) == DIM,
+                  "Array size must match number of dimensions");
+    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    resize(dims, true);
+  }
+
+  /// \overload
+  template <typename... Args>
+  void resize(ArrayOptions::Uninitialized, Args... args)
+  {
+    static_assert(sizeof...(Args) == DIM,
+                  "Array size must match number of dimensions");
+    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    resize(dims, false);
+  }
 
   /*!
    * \brief Exchanges the contents of this Array with the other.
@@ -702,6 +718,15 @@ protected:
                              IndexType num_elements,
                              MemorySpace data_space,
                              bool user_provided_allocator);
+
+  /*!
+   * \brief Updates the number of elements stored in the data array.
+   *
+   * \param [in] dims the number of elements to allocate in each dimension
+   * \param [in] default_construct if true, default-constructs any new elements
+   *  in the array
+   */
+  void resize(const StackArray<IndexType, DIM>& dims, bool default_construct);
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
@@ -1151,18 +1176,14 @@ inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args>
-inline void Array<T, DIM, SPACE>::resize(Args... args)
+inline void Array<T, DIM, SPACE>::resize(const StackArray<IndexType, DIM>& dims,
+                                         bool default_construct)
 {
-  static_assert(sizeof...(Args) == DIM,
-                "Array size must match number of dimensions");
-  // Intel hits internal compiler error when casting as part of function call
-  const IndexType tmp_args[] = {static_cast<IndexType>(args)...};
-  assert(detail::allNonNegative(tmp_args));
-  const auto new_num_elements = detail::packProduct(tmp_args);
+  assert(detail::allNonNegative(dims.m_data));
+  const auto new_num_elements = detail::packProduct(dims.m_data);
 
   static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) =
-    ArrayBase<T, DIM, Array<T, DIM, SPACE>> {{static_cast<IndexType>(args)...}};
+    ArrayBase<T, DIM, Array<T, DIM, SPACE>> {dims};
 
   const IndexType prev_num_elements = m_num_elements;
 
@@ -1171,7 +1192,7 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
     dynamicRealloc(new_num_elements);
   }
 
-  if(prev_num_elements < new_num_elements)
+  if(prev_num_elements < new_num_elements && default_construct)
   {
     // Default-initialize the new elements
     OpHelper::init(m_data,

@@ -1803,6 +1803,11 @@ TEST(core_array, checkUninitialized)
 
       EXPECT_LE(capacity, arr.capacity());
       EXPECT_EQ(capacity, arr.size());
+
+      arr.resize(ArrayOptions::Uninitialized {}, capacity * 2);
+
+      EXPECT_LE(capacity * 2, arr.capacity());
+      EXPECT_EQ(capacity * 2, arr.size());
     }
 
     // Test default 1D Array with trivially copyable HasDefault type
@@ -1834,6 +1839,11 @@ TEST(core_array, checkUninitialized)
 
       EXPECT_LE(capacity * capacity, arr.capacity());
       EXPECT_EQ(capacity * capacity, arr.size());
+
+      arr.resize(ArrayOptions::Uninitialized {}, capacity * 2, capacity * 2);
+
+      EXPECT_LE(capacity * capacity * 4, arr.capacity());
+      EXPECT_EQ(capacity * capacity * 4, arr.size());
     }
 
     // Tests uninitialized with 1D Array with user-supplied allocator
@@ -1845,6 +1855,12 @@ TEST(core_array, checkUninitialized)
 
       EXPECT_EQ(capacity, arr.capacity());
       EXPECT_EQ(capacity, arr.size());
+      EXPECT_EQ(axom::getDefaultAllocatorID(), arr.getAllocatorID());
+
+      arr.resize(ArrayOptions::Uninitialized {}, capacity * 2);
+
+      EXPECT_LE(capacity * 2, arr.capacity());
+      EXPECT_EQ(capacity * 2, arr.size());
       EXPECT_EQ(axom::getDefaultAllocatorID(), arr.getAllocatorID());
     }
   }
