@@ -789,10 +789,41 @@ struct ArrayOpsBase<T, false>
    * \param [in] begin the index at which to begin placing elements
    * \param [in] nelems the number of elements in the range to fill the array with
    * \param [in] values the values to set each array element to
+   * \param [in] space the memory space in which values resides
    */
-  static void fill_range(T* array, IndexType begin, IndexType nelems, const T* values)
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         const T* values,
+                         MemorySpace space)
   {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    if(HasTrivialCopyCtor<T>::value)
+    {
+      axom::copy(array + begin, values, sizeof(T) * nelems);
+    }
+    else
+    {
+      void* values_buf = nullptr;
+      const T* values_host = values;
+      if(space == MemorySpace::Device)
+      {
+        values_buf = ::operator new(sizeof(T) * nelems);
+        // "Relocate" the device-side values into host memory, before copying
+        // into uninitialized memory
+        axom::copy(values_buf, values, sizeof(T) * nelems);
+        values_host = static_cast<T*>(values_buf);
+      }
+      std::uninitialized_copy(values_host, values_host + nelems, array + begin);
+      if(values_buf)
+      {
+        ::operator delete(values_buf);
+      }
+    }
+#else
+    AXOM_UNUSED_VAR(space);
     std::uninitialized_copy(values, values + nelems, array + begin);
+#endif
   }
 
   /*!
@@ -993,10 +1024,41 @@ struct ArrayOpsBase<T, true>
    * \param [in] begin the index at which to begin placing elements
    * \param [in] nelems the number of elements in the range to fill the array with
    * \param [in] values the values to set each array element to
+   * \param [in] space the memory space in which values resides
    */
-  static void fill_range(T* array, IndexType begin, IndexType nelems, const T* values)
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         const T* values,
+                         MemorySpace space)
   {
-    axom::copy(array + begin, values, sizeof(T) * nelems);
+    if(HasTrivialCopyCtor<T>::value)
+    {
+      axom::copy(array + begin, values, sizeof(T) * nelems);
+    }
+    else
+    {
+      void* src_buf = nullptr;
+      const T* src_host = values;
+      if(space == MemorySpace::Device)
+      {
+        src_buf = ::operator new(sizeof(T) * nelems);
+        // "Relocate" the device-side values into host memory, before copying
+        // into uninitialized memory
+        axom::copy(src_buf, values, sizeof(T) * nelems);
+        src_host = static_cast<T*>(src_buf);
+      }
+      void* dst_buf = ::operator new(sizeof(T) * nelems);
+      T* dst_host = static_cast<T*>(dst_buf);
+      std::uninitialized_copy(src_host, src_host + nelems, dst_host);
+      if(src_buf)
+      {
+        ::operator delete(src_buf);
+      }
+      // Relocate our copy-constructed values into the target device array.
+      axom::copy(array + begin, dst_buf, sizeof(T) * nelems);
+      ::operator delete(dst_buf);
+    }
   }
 
   /*!
@@ -1094,10 +1156,11 @@ public:
                          IndexType begin,
                          IndexType nelems,
                          int allocId,
-                         const T* values)
+                         const T* values,
+                         MemorySpace space)
   {
     AXOM_UNUSED_VAR(allocId);
-    Base::fill_range(array, begin, nelems, values);
+    Base::fill_range(array, begin, nelems, values, space);
   }
 
   static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
@@ -1182,21 +1245,22 @@ public:
                          IndexType begin,
                          IndexType nelems,
                          int allocId,
-                         const T* values)
+                         const T* values,
+                         MemorySpace valueSpace)
   {
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
     {
-      BaseDevice::fill_range(array, begin, nelems, values);
+      BaseDevice::fill_range(array, begin, nelems, values, valueSpace);
       return;
     }
 #else
     AXOM_UNUSED_VAR(allocId);
 #endif
     AXOM_UNUSED_VAR(allocId);
-    Base::fill_range(array, begin, nelems, values);
+    Base::fill_range(array, begin, nelems, values, valueSpace);
   }
 
   static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)

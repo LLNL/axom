@@ -250,7 +250,17 @@ public:
       initialize(other.size(), other.capacity());
       // Use fill_range to ensure that copy constructors are invoked for each
       // element.
-      OpHelper::fill_range(m_data, 0, m_num_elements, m_allocator_id, other.data());
+      MemorySpace srcSpace = SPACE;
+      if(srcSpace == MemorySpace::Dynamic)
+      {
+        srcSpace = axom::detail::getAllocatorSpace(other.m_allocator_id);
+      }
+      OpHelper::fill_range(m_data,
+                           0,
+                           m_num_elements,
+                           m_allocator_id,
+                           other.data(),
+                           srcSpace);
     }
 
     return *this;
@@ -659,12 +669,13 @@ protected:
    *
    * \param [in] data pointer to the existing array of elements
    * \param [in] num_elements the number of elements in the existing array
-   * \param [in] other_allocator_id the allocator ID to create the new array in
+   * \param [in] data_space the memory space in which data has been allocated
    * \param [in] user_provided_allocator true if the Array's allocator ID was
    *  provided by the user
    */
   void initialize_from_other(const T* data,
                              IndexType num_elements,
+                             MemorySpace data_space,
                              bool user_provided_allocator);
 
   /*!
@@ -818,7 +829,17 @@ Array<T, DIM, SPACE>::Array(const Array& other)
   initialize(other.size(), other.capacity());
   // Use fill_range to ensure that copy constructors are invoked for each
   // element.
-  OpHelper::fill_range(m_data, 0, m_num_elements, m_allocator_id, other.data());
+  MemorySpace srcSpace = SPACE;
+  if(srcSpace == MemorySpace::Dynamic)
+  {
+    srcSpace = axom::detail::getAllocatorSpace(other.m_allocator_id);
+  }
+  OpHelper::fill_range(m_data,
+                       0,
+                       m_num_elements,
+                       m_allocator_id,
+                       other.data(),
+                       srcSpace);
 }
 
 //------------------------------------------------------------------------------
@@ -851,6 +872,7 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other)
 {
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(m_allocator_id),
                         false);
 }
 
@@ -863,6 +885,7 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
 {
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(m_allocator_id),
                         false);
 }
 
@@ -874,8 +897,11 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other,
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
+  int src_allocator = static_cast<const OtherArrayType&>(other).getAllocatorID();
+
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(src_allocator),
                         true);
 }
 
@@ -887,8 +913,11 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
+  int src_allocator = static_cast<const OtherArrayType&>(other).getAllocatorID();
+
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(src_allocator),
                         true);
 }
 
@@ -922,7 +951,7 @@ inline void Array<T, DIM, SPACE>::set(const T* elements, IndexType n, IndexType 
   assert(pos + n <= m_num_elements);
 
   OpHelper::destroy(m_data, pos, n, m_allocator_id);
-  OpHelper::fill_range(m_data, pos, n, m_allocator_id, elements);
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, elements, MemorySpace::Dynamic);
 }
 
 //------------------------------------------------------------------------------
@@ -962,7 +991,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T* va
 {
   assert(values != nullptr);
   reserveForInsert(n, pos);
-  OpHelper::fill_range(m_data, pos, n, m_allocator_id, values);
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, values, MemorySpace::Dynamic);
 }
 
 //------------------------------------------------------------------------------
@@ -1182,6 +1211,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::initialize_from_other(
   const T* other_data,
   IndexType num_elements,
+  MemorySpace other_data_space,
   bool AXOM_DEBUG_PARAM(user_provided_allocator))
 {
   // If a memory space has been explicitly set for the Array object, check that
@@ -1201,7 +1231,12 @@ inline void Array<T, DIM, SPACE>::initialize_from_other(
   initialize(num_elements, num_elements);
   // Use fill_range to ensure that copy constructors are invoked for each
   // element.
-  OpHelper::fill_range(m_data, 0, m_num_elements, m_allocator_id, other_data);
+  OpHelper::fill_range(m_data,
+                       0,
+                       m_num_elements,
+                       m_allocator_id,
+                       other_data,
+                       other_data_space);
 }
 
 //------------------------------------------------------------------------------
