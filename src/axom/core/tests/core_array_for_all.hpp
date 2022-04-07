@@ -443,6 +443,57 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_set)
 }
 
 //------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_initializer_list)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+
+  // Construct array with an initializer list
+  {
+    DynamicArray arr({1, 2, 3, 4, 5}, kernelAllocID);
+    EXPECT_EQ(arr.size(), 5);
+    EXPECT_EQ(arr.capacity(), 5);
+    EXPECT_EQ(arr.getAllocatorID(), kernelAllocID);
+
+    HostArray arr_host = arr;
+    for(axom::IndexType i = 0; i < 5; i++)
+    {
+      EXPECT_EQ(arr_host[i], i + 1);
+    }
+  }
+
+  // Assign an initializer list to an array
+  {
+    constexpr axom::IndexType N = 10;
+    DynamicArray arr(N, N, kernelAllocID);
+    arr.fill(6);
+
+    EXPECT_EQ(arr.size(), 10);
+
+    arr = {1, 2, 3, 4, 5};
+    // after assignment, array should contain just the initializer list values
+    EXPECT_EQ(arr.size(), 5);
+    EXPECT_EQ(arr.capacity(), 10);
+    EXPECT_EQ(arr.getAllocatorID(), kernelAllocID);
+    HostArray arr_host = arr;
+    for(axom::IndexType i = 0; i < 5; i++)
+    {
+      EXPECT_EQ(arr_host[i], i + 1);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 constexpr int MAGIC_DEFAULT_CTOR = 222;
 
 struct NonTrivialDefaultCtor

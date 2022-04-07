@@ -182,6 +182,16 @@ public:
       sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   Array(ArrayOptions::Uninitialized, Args... args);
 
+  /*!
+   * \brief Initializer list constructor for a one-dimensional Array
+   *
+   * \param [in] elems The elements to initialize the array with
+   * \param [in] allocator_id the ID of the allocator to use (optional)
+   */
+  template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
+  Array(std::initializer_list<T> elems,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
   /*! 
    * \brief Copy constructor for an Array instance 
    */
@@ -294,6 +304,19 @@ public:
       other.m_allocator_id = INVALID_ALLOCATOR_ID;
     }
 
+    return *this;
+  }
+
+  /*!
+   * \brief Initializer list assignment operator for Array.
+   *
+   * \param [in] elems the elements to set the array to.
+   */
+  template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
+  Array& operator=(std::initializer_list<T> elems)
+  {
+    clear();
+    insert(0, elems.size(), elems.begin());
     return *this;
   }
 
@@ -816,7 +839,16 @@ Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized,
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
   initialize(num_elements, capacity);
-}  // namespace axom
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <int UDIM, typename Enable>
+Array<T, DIM, SPACE>::Array(std::initializer_list<T> elems, int allocator_id)
+  : m_allocator_id(allocator_id)
+{
+  initialize_from_other(elems.begin(), elems.size(), MemorySpace::Dynamic, true);
+}
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
