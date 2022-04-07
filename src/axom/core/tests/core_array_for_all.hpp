@@ -671,19 +671,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   NonTrivialDtor::dtor_calls = 0;
   // Create an array of N items using default MemorySpace for ExecSpace
   constexpr axom::IndexType N = 374;
-  DynamicArray arr(axom::ArrayOptions::Uninitialized {}, N, N, kernelAllocID);
-
-  // Manually construct objects in uninitialized memory
-  auto arr_v = arr.view();
-  axom::for_all<ExecSpace>(
-    N,
-    AXOM_LAMBDA(axom::IndexType i) { new(&arr_v[i]) NonTrivialDtor; });
-
-  // handles synchronization, if necessary
-  if(axom::execution_space<ExecSpace>::async())
-  {
-    axom::synchronize<ExecSpace>();
-  }
+  DynamicArray arr(N, N, kernelAllocID);
 
   // Initialization should not invoke the destructor
   EXPECT_EQ(NonTrivialDtor::dtor_calls, 0);
@@ -694,7 +682,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   EXPECT_EQ(NonTrivialDtor::dtor_calls, 100);
 
   // Resize to original size - this should leave destructed memory uninitialized
-  arr.resize(N);
+  arr.resize(axom::ArrayOptions::Uninitialized {}, N);
 
   // Check array contents on host
   {
@@ -712,16 +700,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   }
 
   // Reset objects in array
-  arr_v = arr.view();
-  axom::for_all<ExecSpace>(
-    N,
-    AXOM_LAMBDA(axom::IndexType i) { new(&arr_v[i]) NonTrivialDtor; });
-
-  // handles synchronization, if necessary
-  if(axom::execution_space<ExecSpace>::async())
-  {
-    axom::synchronize<ExecSpace>();
-  }
+  arr.fill(NonTrivialDtor {});
 
   // Array::clear should invoke the destructor N times
   NonTrivialDtor::dtor_calls = 0;
@@ -729,7 +708,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   EXPECT_EQ(NonTrivialDtor::dtor_calls, N);
 
   // Resize to original size - this should leave destructed memory uninitialized
-  arr.resize(N);
+  arr.resize(axom::ArrayOptions::Uninitialized {}, N);
 
   // All elements should be in the destructed state
   {
