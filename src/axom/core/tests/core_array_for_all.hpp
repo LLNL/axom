@@ -809,13 +809,13 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
 }
 
 //------------------------------------------------------------------------------
-
 AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
 {
   using ExecSpace = typename TestFixture::ExecSpace;
   using DynamicArray =
     typename TestFixture::template DynamicTArray<NonTrivialCopyCtor>;
-  using HostArray = typename TestFixture::template HostTArray<NonTrivialCopyCtor>;
+  using IntArray = typename TestFixture::DynamicArray;
+  using HostIntArray = typename TestFixture::HostArray;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
@@ -827,16 +827,34 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
 #endif
   int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
+  // Helper function to copy device values to a host array
+  auto convert_to_host_array = [=](const DynamicArray& arr) -> HostIntArray {
+    IntArray arr_ints(arr.size(), arr.size(), kernelAllocID);
+    const auto arr_v = arr.view();
+    const auto arr_ints_v = arr_ints.view();
+    axom::for_all<ExecSpace>(
+      arr.size(),
+      AXOM_LAMBDA(axom::IndexType i) { arr_ints_v[i] = arr_v[i].m_val; });
+
+    // handles synchronization, if necessary
+    if(axom::execution_space<ExecSpace>::async())
+    {
+      axom::synchronize<ExecSpace>();
+    }
+
+    return arr_ints;
+  };
+
   // Create an array of N items using default MemorySpace for ExecSpace
   constexpr axom::IndexType N = 10;
   DynamicArray arr(N, N, kernelAllocID);
 
   // Check default-constructed array contents on host
   {
-    HostArray localArr(arr, hostAllocID);
+    HostIntArray localArr = convert_to_host_array(arr);
     for(int i = 0; i < N; ++i)
     {
-      EXPECT_EQ(localArr[i].m_val, 1);
+      EXPECT_EQ(localArr[i], 1);
     }
   }
 
@@ -857,14 +875,14 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
   }
   EXPECT_EQ(arr.size(), N + 3);
   {
-    HostArray localArr(arr, hostAllocID);
+    HostIntArray localArr = convert_to_host_array(arr);
     for(int i = 0; i < N + 1; ++i)
     {
-      EXPECT_EQ(localArr[i].m_val, 1);
+      EXPECT_EQ(localArr[i], 1);
     }
-    EXPECT_EQ(localArr[N + 1].m_val, MAGIC_MOVE_EXPLICIT);
+    EXPECT_EQ(localArr[N + 1], MAGIC_MOVE_EXPLICIT);
     // our one copied element should be set to the copy ctor value
-    EXPECT_EQ(localArr[N + 2].m_val, MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[N + 2], MAGIC_COPY_CTOR);
   }
 
   // Emplace some elements in the front
@@ -884,17 +902,17 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
 
   EXPECT_EQ(arr.size(), N + 6);
   {
-    HostArray localArr(arr, hostAllocID);
+    HostIntArray localArr = convert_to_host_array(arr);
     for(int i = 2; i < N + 4; ++i)
     {
-      EXPECT_EQ(localArr[i].m_val, 1);
+      EXPECT_EQ(localArr[i], 1);
     }
     // check our explicitly-moved values
-    EXPECT_EQ(localArr[1].m_val, MAGIC_MOVE_EXPLICIT);
-    EXPECT_EQ(localArr[N + 4].m_val, MAGIC_MOVE_EXPLICIT);
+    EXPECT_EQ(localArr[1], MAGIC_MOVE_EXPLICIT);
+    EXPECT_EQ(localArr[N + 4], MAGIC_MOVE_EXPLICIT);
     // copied objects should be at the beginning and end
-    EXPECT_EQ(localArr[0].m_val, MAGIC_COPY_CTOR);
-    EXPECT_EQ(localArr[N + 5].m_val, MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[0], MAGIC_COPY_CTOR);
+    EXPECT_EQ(localArr[N + 5], MAGIC_COPY_CTOR);
   }
 }
 
