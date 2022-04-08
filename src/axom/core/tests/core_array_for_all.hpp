@@ -819,7 +819,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
     EXPECT_TRUE(check_array_values(arr2, MAGIC_COPY_CTOR));
 
     // Array copy-assignment should invoke each element's copy constructor
-    DynamicArray arr3(arr);
+    DynamicArray arr3 = arr;
     EXPECT_TRUE(check_array_values(arr3, MAGIC_COPY_CTOR));
 
     // Transfers between memory spaces should invoke each element's copy constructor
