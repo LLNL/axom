@@ -63,11 +63,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `FlatGridStorage` stores the bins as a flat array of elements, where each bin is a slice of the
     array
 - Adds a templated uniform grid-based surface mesh tester function to Quest
+- Adds an initializer list constructor and assignment operator to `axom::Array`
+- Adds an overload of `axom::Array::resize(ArrayOptions::Uninitialized, dims)` to support resizes
+  without constructing or initializing new elements
 
 ###  Changed
 - Moved bit-twiddling functions to core component
-- `axom::Array` now default-initializes its data by default. To leave data uninitialized, pass 
-  an `axom::ArrayOptions::Uninitialized` as the first constructor argument
+- `axom::Array` now default-initializes its data by default. To create an Array with uninitialized
+  elements, pass an `axom::ArrayOptions::Uninitialized` as the first constructor argument.
 - `axom::ArrayView<const T>` can now be created from a `const Array<T>`
 - Added new `ExecSpace` template parameter to `spin::ImplicitGrid`.
   `ExecSpace` is now the second template parameter (out of three) and defaults to `axom::SEQ_EXEC`.
@@ -112,6 +115,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   with a sharp dihedral angle and the adjacent triangles have significantly different areas
 - Fixed bug in axom::Path that ignored the leading delimiter character if one was present
 - Fixed gcc compiler errors in configurations without RAJA or Umpire
+- Fixed `axom::Array<T>` behavior on copy-construction when `T` is a non-trivial type
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
