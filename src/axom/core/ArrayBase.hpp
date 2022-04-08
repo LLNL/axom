@@ -18,6 +18,9 @@
 // C/C++ includes
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
+#if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
+  #include <tr1/type_traits>
+#endif
 
 namespace axom
 {
@@ -718,12 +721,15 @@ struct all_types_are_integral
 template <typename T>
 using HasTrivialDefaultCtor = ::std::has_trivial_default_constructor<T>;
 template <typename T>
-using HasTrivialCopyCtor = ::std::has_trivial_copy_constructor<T>;
+using TriviallyCopyable =
+  typename std::conditional<std::tr1::has_trivial_copy<T>::value,
+                            std::true_type,
+                            std::false_type>::type;
 #else
 template <typename T>
 using HasTrivialDefaultCtor = ::std::is_trivially_default_constructible<T>;
 template <typename T>
-using HasTrivialCopyCtor = ::std::is_trivially_copy_constructible<T>;
+using TriviallyCopyable = ::std::is_trivially_copyable<T>;
 #endif
 
 template <typename T, bool DeviceOps>
@@ -798,7 +804,7 @@ struct ArrayOpsBase<T, false>
                          MemorySpace space)
   {
 #if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
-    if(HasTrivialCopyCtor<T>::value)
+    if(TriviallyCopyable<T>::value)
     {
       axom::copy(array + begin, values, sizeof(T) * nelems);
     }
@@ -1001,7 +1007,7 @@ struct ArrayOpsBase<T, true>
   {
     for_all<ExecSpace>(
       nelems,
-      AXOM_LAMBDA(IndexType i) { array[i + begin] = value; });
+      AXOM_LAMBDA(IndexType i) { new(&array[i + begin]) T(value); });
   }
 
   /*!
@@ -1014,7 +1020,7 @@ struct ArrayOpsBase<T, true>
    */
   static void fill(T* array, IndexType begin, IndexType nelems, const T& value)
   {
-    fill_impl(array, begin, nelems, value, HasTrivialCopyCtor<T> {});
+    fill_impl(array, begin, nelems, value, TriviallyCopyable<T> {});
   }
 
   /*!
@@ -1032,7 +1038,7 @@ struct ArrayOpsBase<T, true>
                          const T* values,
                          MemorySpace space)
   {
-    if(HasTrivialCopyCtor<T>::value)
+    if(TriviallyCopyable<T>::value)
     {
       axom::copy(array + begin, values, sizeof(T) * nelems);
     }
