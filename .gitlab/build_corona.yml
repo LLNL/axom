@@ -19,7 +19,7 @@
 .src_build_on_corona:
   stage: build
   variables:
-    ALLOC_COMMAND: "srun -p pbatch -t 25 -N 1 "
+    ALLOC_COMMAND: "srun -p pdebug -t 25 -N 1 "
   extends: [.src_build_script, .on_corona, .src_workflow]
   needs: []
 
