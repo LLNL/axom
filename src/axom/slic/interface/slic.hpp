@@ -148,7 +148,7 @@ bool isAbortOnWarningsEnabled();
 void setAbortFunction(AbortFunctionPtr abort_func);
 
 /*!
- * \brief Adds the given stream to the the given level.
+ * \brief Adds the given stream to the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
  * \pre ls != nullptr
@@ -156,7 +156,7 @@ void setAbortFunction(AbortFunctionPtr abort_func);
 void addStreamToMsgLevel(LogStream* ls, message::Level level);
 
 /*!
- * \brief Adds the given GenericOutputStream to the the given level.
+ * \brief Adds the given GenericOutputStream to the given level.
  * \param [in] ls pointer to the GenericOutputStream.
  * \param [in] level the level to log.
  * \pre ls != nullptr
