@@ -19,6 +19,7 @@
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
 #if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
+  // Workaround for unimplemented C++11 type traits in libstdc++ versions <5
   #include <tr1/type_traits>
 #endif
 

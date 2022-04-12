@@ -686,7 +686,7 @@ protected:
    *
    * \param [in] num_elements the number of elements the Array holds.
    * \param [in] capacity the number of elements to allocate space for.
-   * \param [in] default_construct whether to create default-constructed
+   * \param [in] should_default_construct whether to create default-constructed
    *  objects in the region [0, num_elements). Defaults to true.
    *
    * \note If no capacity or capacity less than num_elements is specified
@@ -702,7 +702,7 @@ protected:
    */
   void initialize(IndexType num_elements,
                   IndexType capacity,
-                  bool default_construct = true);
+                  bool should_default_construct = true);
 
   /*!
    * \brief Helper function for initializing an Array instance with an existing
