@@ -121,7 +121,7 @@ std::string replaceAllInstances(const std::string& target,
                                 const std::string& findstr,
                                 const std::string& replacestr)
 {
-  if(findstr == replacestr || replacestr.find(findstr) != std::string::npos)
+  if(findstr == replacestr || findstr.empty())
   {
     return target;
   }
@@ -130,7 +130,7 @@ std::string replaceAllInstances(const std::string& target,
   while(pos != std::string::npos)
   {
     result.replace(pos, findstr.length(), replacestr);
-    pos = result.find(findstr);
+    pos = result.find(findstr, pos + replacestr.length());
   }
   return result;
 }

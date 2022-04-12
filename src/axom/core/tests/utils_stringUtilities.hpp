@@ -329,7 +329,25 @@ TEST(utils_stringUtilities, replaceAllInstances)
     EXPECT_EQ(expString, results);
   }
 
-  // Test same find and replace string
+  // Test empty replace string
+  {
+    std::string testString = "foo.bar";
+    std::string expString = "foo.";
+    std::string results =
+      axom::utilities::string::replaceAllInstances(testString, "bar", "");
+    EXPECT_EQ(expString, results);
+  }
+
+  // Test empty find and replace string
+  {
+    std::string testString = "foo.bar";
+    std::string expString = "foo.bar";
+    std::string results =
+      axom::utilities::string::replaceAllInstances(testString, "", "");
+    EXPECT_EQ(expString, results);
+  }
+
+  // // Test same find and replace string
   {
     std::string testString = "foo.bar";
     std::string expString = "foo.bar";
@@ -341,9 +359,18 @@ TEST(utils_stringUtilities, replaceAllInstances)
   // Test find string is substring of replace string
   {
     std::string testString = "foo.bar";
-    std::string expString = "foo.bar";
+    std::string expString = "fooStr.bar";
     std::string results =
       axom::utilities::string::replaceAllInstances(testString, "foo", "fooStr");
+    EXPECT_EQ(expString, results);
+  }
+
+  // Test multiple find string is substring of replace string
+  {
+    std::string testString = "foo.foo";
+    std::string expString = "foofoo.foofoo";
+    std::string results =
+      axom::utilities::string::replaceAllInstances(testString, "foo", "foofoo");
     EXPECT_EQ(expString, results);
   }
 

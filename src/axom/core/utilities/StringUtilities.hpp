@@ -183,9 +183,8 @@ std::string removeAllInstances(const std::string& target,
 * \param [in] findstr The string to find
 * \param [in] replacestr The string to replace with
 *
-* \return The modified string. If @a findstr and @a replacestr are the same
-* or @a findstr is a substring of @a replacestr (recursion), @a target is
-* returned.
+* \return The modified string. If @a findstr and @a replacestr are the same or
+* if @a findstr is an empty string, @a target is returned.
 *****************************************************************************
 */
 std::string replaceAllInstances(const std::string& target,
