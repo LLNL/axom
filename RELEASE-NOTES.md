@@ -66,6 +66,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds an initializer list constructor and assignment operator to `axom::Array`
 - Adds an overload of `axom::Array::resize(ArrayOptions::Uninitialized, dims)` to support resizes
   without constructing or initializing new elements
+- Adds examples and tests for using Slic interface in Fortran
 
 ###  Changed
 - Moved bit-twiddling functions to core component
