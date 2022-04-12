@@ -16,7 +16,9 @@ program slic_f_logger
   integer(C_INT) :: random_msg_level
 
   ! STEP 0: Initialize logger
-  call slic_initialize()
+  if (.not. slic_is_initialized()) then
+    call slic_initialize()
+  endif
   call slic_set_logging_msg_level( message_debug )
   call slic_disable_abort_on_error()
 
