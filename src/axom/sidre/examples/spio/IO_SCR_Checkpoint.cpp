@@ -176,9 +176,9 @@ void initializeSimpleData(int my_rank, DataStore* ds)
 }
 
 bool dumpSimpleData(MPI_Comm comm,
-              const std::string& file_base,
-              int num_files,
-              DataStore* ds)
+                    const std::string& file_base,
+                    int num_files,
+                    DataStore* ds)
 {
   // Tell SCR we're starting an output dataset.
   // Each SCR output set should be given a name.
@@ -221,16 +221,14 @@ void simpleTestCheckpoint(DataStore* ds_output, int my_rank, int num_files)
   dumpSimpleData(MPI_COMM_WORLD, "simple_scr", num_files, ds_output);
 }
 
-void simpleTestLoad(MPI_Comm comm,
-                    DataStore* ds_input)
+void simpleTestLoad(MPI_Comm comm, DataStore* ds_input)
 {
   std::string root_file = "simple_scr.root";
   IOManager reader(comm, false);
   reader.read(ds_input->getRoot(), root_file, false);
 }
 
-bool simpleTestCompare(DataStore* ds_output,
-                       DataStore* ds_input)
+bool simpleTestCompare(DataStore* ds_output, DataStore* ds_input)
 {
   int i0_output = ds_output->getRoot()->getView("fields/a/i0")->getScalar();
   int i0_input = ds_input->getRoot()->getView("fields/a/i0")->getScalar();
@@ -240,7 +238,6 @@ bool simpleTestCompare(DataStore* ds_output,
   bool success = (i0_output == i0_input) && (i1_output == i1_input);
   return success;
 }
-
 
 /** Simple structure to hold the parsed command line arguments */
 struct CommandLineArguments
@@ -407,7 +404,7 @@ int main(int argc, char* argv[])
   // checkpoint followed by a load from the paralle file system.
   DataStore* ds_output = new DataStore();
   SLIC_ASSERT(ds_output);
- 
+
   simpleTestCheckpoint(ds_output, my_rank, num_files);
 
   // SCR_Finalize must be called by all processes in MPI_COMM_WORLD,
