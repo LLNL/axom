@@ -14,13 +14,6 @@ set(spio_example_sources
     IOWrite.cpp
     )
 
-if (SCR_FOUND)
-    # TODO: Add these as a headers to a unified example driver and can be run as tests?
-    list(APPEND spio_example_sources IO_SCR_Read.cpp)
-    list(APPEND spio_example_sources IO_SCR_Write.cpp)
-    list(APPEND spio_example_sources IO_SCR_Output.cpp)
-endif() 
-
 set(spio_example_depends axom ${EXTRA_LIBS})
 blt_list_append(TO spio_example_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO spio_example_depends ELEMENTS scr  IF SCR_FOUND)
