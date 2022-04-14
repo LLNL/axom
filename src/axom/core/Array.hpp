@@ -182,6 +182,16 @@ public:
       sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   Array(ArrayOptions::Uninitialized, Args... args);
 
+  /*!
+   * \brief Initializer list constructor for a one-dimensional Array
+   *
+   * \param [in] elems The elements to initialize the array with
+   * \param [in] allocator_id the ID of the allocator to use (optional)
+   */
+  template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
+  Array(std::initializer_list<T> elems,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
   /*! 
    * \brief Copy constructor for an Array instance 
    */
@@ -246,9 +256,20 @@ public:
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) = other;
       m_allocator_id = other.m_allocator_id;
       m_resize_ratio = other.m_resize_ratio;
-      m_default_construct = other.m_default_construct;
       initialize(other.size(), other.capacity());
-      axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
+      // Use fill_range to ensure that copy constructors are invoked for each
+      // element.
+      MemorySpace srcSpace = SPACE;
+      if(srcSpace == MemorySpace::Dynamic)
+      {
+        srcSpace = axom::detail::getAllocatorSpace(other.m_allocator_id);
+      }
+      OpHelper::fill_range(m_data,
+                           0,
+                           m_num_elements,
+                           m_allocator_id,
+                           other.data(),
+                           srcSpace);
     }
 
     return *this;
@@ -273,7 +294,6 @@ public:
       m_capacity = other.m_capacity;
       m_resize_ratio = other.m_resize_ratio;
       m_allocator_id = other.m_allocator_id;
-      m_default_construct = other.m_default_construct;
 
       other.m_data = nullptr;
       other.m_num_elements = 0;
@@ -282,6 +302,19 @@ public:
       other.m_allocator_id = INVALID_ALLOCATOR_ID;
     }
 
+    return *this;
+  }
+
+  /*!
+   * \brief Initializer list assignment operator for Array.
+   *
+   * \param [in] elems the elements to set the array to.
+   */
+  template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
+  Array& operator=(std::initializer_list<T> elems)
+  {
+    clear();
+    insert(0, elems.size(), elems.begin());
     return *this;
   }
 
@@ -597,7 +630,23 @@ public:
    * \note Reallocation is done if the new size will exceed the capacity.
    */
   template <typename... Args>
-  void resize(Args... args);
+  void resize(Args... args)
+  {
+    static_assert(sizeof...(Args) == DIM,
+                  "Array size must match number of dimensions");
+    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    resize(dims, true);
+  }
+
+  /// \overload
+  template <typename... Args>
+  void resize(ArrayOptions::Uninitialized, Args... args)
+  {
+    static_assert(sizeof...(Args) == DIM,
+                  "Array size must match number of dimensions");
+    const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
+    resize(dims, false);
+  }
 
   /*!
    * \brief Exchanges the contents of this Array with the other.
@@ -637,6 +686,8 @@ protected:
    *
    * \param [in] num_elements the number of elements the Array holds.
    * \param [in] capacity the number of elements to allocate space for.
+   * \param [in] should_default_construct whether to create default-constructed
+   *  objects in the region [0, num_elements). Defaults to true.
    *
    * \note If no capacity or capacity less than num_elements is specified
    *  then it will default to at least num_elements * DEFAULT_RESIZE_RATIO.
@@ -649,7 +700,9 @@ protected:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  void initialize(IndexType num_elements, IndexType capacity);
+  void initialize(IndexType num_elements,
+                  IndexType capacity,
+                  bool should_default_construct = true);
 
   /*!
    * \brief Helper function for initializing an Array instance with an existing
@@ -657,13 +710,23 @@ protected:
    *
    * \param [in] data pointer to the existing array of elements
    * \param [in] num_elements the number of elements in the existing array
-   * \param [in] other_allocator_id the allocator ID to create the new array in
+   * \param [in] data_space the memory space in which data has been allocated
    * \param [in] user_provided_allocator true if the Array's allocator ID was
    *  provided by the user
    */
   void initialize_from_other(const T* data,
                              IndexType num_elements,
+                             MemorySpace data_space,
                              bool user_provided_allocator);
+
+  /*!
+   * \brief Updates the number of elements stored in the data array.
+   *
+   * \param [in] dims the number of elements to allocate in each dimension
+   * \param [in] default_construct if true, default-constructs any new elements
+   *  in the array
+   */
+  void resize(const StackArray<IndexType, DIM>& dims, bool default_construct);
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
@@ -706,8 +769,6 @@ protected:
   IndexType m_capacity = 0;
   double m_resize_ratio = DEFAULT_RESIZE_RATIO;
   int m_allocator_id;
-  /// \brief Whether to default-construct elements - only applies if T is DefaultConstructible
-  bool m_default_construct = true;
 };
 
 /// \brief Helper alias for multi-component arrays
@@ -745,14 +806,13 @@ template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
-  , m_default_construct(false)
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
   const IndexType tmp_args[] = {args...};
   assert(detail::allNonNegative(tmp_args));
-  initialize(detail::packProduct(tmp_args), 0);
+  initialize(detail::packProduct(tmp_args), 0, false);
 }
 
 //------------------------------------------------------------------------------
@@ -789,7 +849,6 @@ Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized,
                             IndexType capacity,
                             int allocator_id)
   : m_allocator_id(allocator_id)
-  , m_default_construct(false)
 {
   // If a memory space has been explicitly set for the Array object, check that
   // the space of the user-provided allocator matches the explicit space.
@@ -802,8 +861,17 @@ Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized,
 #endif
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
-  initialize(num_elements, capacity);
-}  // namespace axom
+  initialize(num_elements, capacity, false);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <int UDIM, typename Enable>
+Array<T, DIM, SPACE>::Array(std::initializer_list<T> elems, int allocator_id)
+  : m_allocator_id(allocator_id)
+{
+  initialize_from_other(elems.begin(), elems.size(), MemorySpace::Dynamic, true);
+}
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
@@ -811,10 +879,21 @@ Array<T, DIM, SPACE>::Array(const Array& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
   , m_allocator_id(other.m_allocator_id)
-  , m_default_construct(other.m_default_construct)
 {
   initialize(other.size(), other.capacity());
-  axom::copy(m_data, other.data(), m_num_elements * sizeof(T));
+  // Use fill_range to ensure that copy constructors are invoked for each
+  // element.
+  MemorySpace srcSpace = SPACE;
+  if(srcSpace == MemorySpace::Dynamic)
+  {
+    srcSpace = axom::detail::getAllocatorSpace(other.m_allocator_id);
+  }
+  OpHelper::fill_range(m_data,
+                       0,
+                       m_num_elements,
+                       m_allocator_id,
+                       other.data(),
+                       srcSpace);
 }
 
 //------------------------------------------------------------------------------
@@ -829,7 +908,6 @@ Array<T, DIM, SPACE>::Array(Array&& other)
   m_capacity = other.m_capacity;
   m_resize_ratio = other.m_resize_ratio;
   m_allocator_id = other.m_allocator_id;
-  m_default_construct = other.m_default_construct;
 
   other.m_data = nullptr;
   other.m_num_elements = 0;
@@ -847,6 +925,7 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other)
 {
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(m_allocator_id),
                         false);
 }
 
@@ -859,6 +938,7 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
 {
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(m_allocator_id),
                         false);
 }
 
@@ -870,8 +950,11 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<T, DIM, OtherArrayType>& other,
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
+  int src_allocator = static_cast<const OtherArrayType&>(other).getAllocatorID();
+
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(src_allocator),
                         true);
 }
 
@@ -883,8 +966,11 @@ Array<T, DIM, SPACE>::Array(const ArrayBase<const T, DIM, OtherArrayType>& other
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(other)
   , m_allocator_id(allocatorId)
 {
+  int src_allocator = static_cast<const OtherArrayType&>(other).getAllocatorID();
+
   initialize_from_other(static_cast<const OtherArrayType&>(other).data(),
                         static_cast<const OtherArrayType&>(other).size(),
+                        axom::detail::getAllocatorSpace(src_allocator),
                         true);
 }
 
@@ -918,7 +1004,7 @@ inline void Array<T, DIM, SPACE>::set(const T* elements, IndexType n, IndexType 
   assert(pos + n <= m_num_elements);
 
   OpHelper::destroy(m_data, pos, n, m_allocator_id);
-  OpHelper::fill_range(m_data, pos, n, m_allocator_id, elements);
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, elements, MemorySpace::Dynamic);
 }
 
 //------------------------------------------------------------------------------
@@ -958,7 +1044,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos, IndexType n, const T* va
 {
   assert(values != nullptr);
   reserveForInsert(n, pos);
-  OpHelper::fill_range(m_data, pos, n, m_allocator_id, values);
+  OpHelper::fill_range(m_data, pos, n, m_allocator_id, values, MemorySpace::Dynamic);
 }
 
 //------------------------------------------------------------------------------
@@ -1090,18 +1176,14 @@ inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args>
-inline void Array<T, DIM, SPACE>::resize(Args... args)
+inline void Array<T, DIM, SPACE>::resize(const StackArray<IndexType, DIM>& dims,
+                                         bool default_construct)
 {
-  static_assert(sizeof...(Args) == DIM,
-                "Array size must match number of dimensions");
-  // Intel hits internal compiler error when casting as part of function call
-  const IndexType tmp_args[] = {static_cast<IndexType>(args)...};
-  assert(detail::allNonNegative(tmp_args));
-  const auto new_num_elements = detail::packProduct(tmp_args);
+  assert(detail::allNonNegative(dims.m_data));
+  const auto new_num_elements = detail::packProduct(dims.m_data);
 
   static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(*this) =
-    ArrayBase<T, DIM, Array<T, DIM, SPACE>> {{static_cast<IndexType>(args)...}};
+    ArrayBase<T, DIM, Array<T, DIM, SPACE>> {dims};
 
   const IndexType prev_num_elements = m_num_elements;
 
@@ -1110,7 +1192,7 @@ inline void Array<T, DIM, SPACE>::resize(Args... args)
     dynamicRealloc(new_num_elements);
   }
 
-  if(prev_num_elements < new_num_elements && m_default_construct)
+  if(prev_num_elements < new_num_elements && default_construct)
   {
     // Default-initialize the new elements
     OpHelper::init(m_data,
@@ -1139,14 +1221,14 @@ inline void Array<T, DIM, SPACE>::swap(Array<T, DIM, SPACE>& other)
   axom::utilities::swap(m_num_elements, other.m_num_elements);
   axom::utilities::swap(m_capacity, other.m_capacity);
   axom::utilities::swap(m_resize_ratio, other.m_resize_ratio);
-  axom::utilities::swap(m_default_construct, other.m_default_construct);
   axom::utilities::swap(m_allocator_id, other.m_allocator_id);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
-                                             IndexType capacity)
+                                             IndexType capacity,
+                                             bool default_construct)
 {
   assert(num_elements >= 0);
 
@@ -1161,7 +1243,7 @@ inline void Array<T, DIM, SPACE>::initialize(IndexType num_elements,
                                                      : MIN_DEFAULT_CAPACITY;
   }
   setCapacity(capacity);
-  if(m_default_construct)
+  if(default_construct)
   {
     OpHelper::init(m_data, 0, num_elements, m_allocator_id);
   }
@@ -1178,6 +1260,7 @@ template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::initialize_from_other(
   const T* other_data,
   IndexType num_elements,
+  MemorySpace other_data_space,
   bool AXOM_DEBUG_PARAM(user_provided_allocator))
 {
   // If a memory space has been explicitly set for the Array object, check that
@@ -1195,9 +1278,14 @@ inline void Array<T, DIM, SPACE>::initialize_from_other(
     m_allocator_id = axom::detail::getAllocatorID<SPACE>();
   }
   initialize(num_elements, num_elements);
-  // axom::copy is aware of pointers registered in Umpire, so this will handle
-  // the transfer between memory spaces
-  axom::copy(m_data, other_data, m_num_elements * sizeof(T));
+  // Use fill_range to ensure that copy constructors are invoked for each
+  // element.
+  OpHelper::fill_range(m_data,
+                       0,
+                       m_num_elements,
+                       m_allocator_id,
+                       other_data,
+                       other_data_space);
 }
 
 //------------------------------------------------------------------------------
