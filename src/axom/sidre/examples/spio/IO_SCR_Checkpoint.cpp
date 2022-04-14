@@ -401,7 +401,7 @@ int main(int argc, char* argv[])
   delete ds;
 
   // The "simpleTest" calls below do a separate test of a single simple
-  // checkpoint followed by a load from the paralle file system.
+  // checkpoint followed by a load from the parallel file system.
   DataStore* ds_output = new DataStore();
   SLIC_ASSERT(ds_output);
 
