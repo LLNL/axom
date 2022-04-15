@@ -224,11 +224,17 @@ public:
     switch(NDIMS)
     {
     case 3:
-      m_coordsGroup->createView("values/z")->attachBuffer(buf)->apply(SZ, 2, NDIMS);
-    case 2:  // intentional fallthrough
-      m_coordsGroup->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, NDIMS);
-    default:  // intentional fallthrough
       m_coordsGroup->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, NDIMS);
+      m_coordsGroup->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, NDIMS);
+      m_coordsGroup->createView("values/z")->attachBuffer(buf)->apply(SZ, 2, NDIMS);
+      break;
+    case 2:
+      m_coordsGroup->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, NDIMS);
+      m_coordsGroup->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, NDIMS);
+      break;
+    default:
+      m_coordsGroup->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, NDIMS);
+      break;
     }
 
     // copy coordinate data into the buffer
@@ -279,11 +285,17 @@ public:
     switch(DIM)
     {
     case 3:
-      fld->createView("values/z")->attachBuffer(buf)->apply(SZ, 2, DIM);
-    case 2:  // intentional fallthrough
-      fld->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, DIM);
-    default:  // intentional fallthrough
       fld->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, DIM);
+      fld->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, DIM);
+      fld->createView("values/z")->attachBuffer(buf)->apply(SZ, 2, DIM);
+      break;
+    case 2:
+      fld->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, DIM);
+      fld->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, DIM);
+      break;
+    default:
+      fld->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, DIM);
+      break;
     }
   }
 
@@ -636,6 +648,41 @@ private:
   BlueprintParticleMesh m_queryMesh;
 };
 
+/// Utility function to initialize the logger
+void initializeLogger()
+{
+  // Initialize Logger
+  slic::initialize();
+  slic::setLoggingMsgLevel(slic::message::Info);
+
+  slic::LogStream* logStream;
+
+#ifdef AXOM_USE_MPI
+  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
+  #ifdef AXOM_USE_LUMBERJACK
+  const int RLIMIT = 8;
+  logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
+  #else
+  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
+  #endif
+#else
+  std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
+  logStream = new slic::GenericOutputStream(&std::cout, fmt);
+#endif  // AXOM_USE_MPI
+
+  slic::addStreamToAllMsgLevels(logStream);
+}
+
+/// Utility function to finalize the logger
+void finalizeLogger()
+{
+  if(slic::isInitialized())
+  {
+    slic::flushStreams();
+    slic::finalize();
+  }
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
@@ -644,7 +691,7 @@ int main(int argc, char** argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
-  slic::SimpleLogger logger;
+  initializeLogger();
   //slic::setAbortOnWarning(true);
 
   //---------------------------------------------------------------------------
@@ -804,20 +851,28 @@ int main(int argc, char** argv)
   break;
   }
 
-  auto cpIndices =
-    query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
-      "cp_index");
-
   auto cpPositions =
     query_mesh_wrapper.getParticleMesh().getNodalVectorField<PointType>(
       "closest_point");
 
   if(params.isVerbose())
   {
-    SLIC_INFO(axom::fmt::format("Closest points ({}):", cpIndices.size()));
-    for(auto i : IndexSet(cpIndices.size()))
+    auto cpIndices =
+      query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
+        "cp_index");
+
+    auto cpRank =
+      query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
+        "cp_rank");
+
+    SLIC_INFO(axom::fmt::format("Closest points ({}):", cpPositions.size()));
+    for(auto i : IndexSet(cpPositions.size()))
     {
-      SLIC_INFO(axom::fmt::format("\t{}: {}", i, cpIndices[i]));
+      SLIC_INFO(axom::fmt::format("\t{}: {{rank:{}, index:{}, position:{}}}",
+                                  i,
+                                  cpRank[i],
+                                  cpIndices[i],
+                                  cpPositions[i]));
     }
   }
 
@@ -852,6 +907,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   query_mesh_wrapper.saveMesh();
 
+  finalizeLogger();
   MPI_Finalize();
 
   return 0;
