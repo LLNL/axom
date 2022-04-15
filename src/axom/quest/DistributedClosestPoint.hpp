@@ -75,6 +75,19 @@ axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(conduit::Node& nod
   return axom::ArrayView<PointType>(ptr, sz);
 }
 
+namespace relay
+{
+namespace mpi
+{
+/// Struct to hold state related to the isend_using_schema function
+struct ISendRequest
+{
+  MPI_Request mpi_request;
+  conduit::Schema node_schema;
+  conduit::Schema msg_schema;
+  conduit::Node msg_node;
+};
+
 /**
  * \brief Sends a conduit node along with its schema using MPI_Isend
  * 
@@ -82,53 +95,51 @@ axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(conduit::Node& nod
  * \param [in] dest ID of MPI rank to send to
  * \param [in] tag tag for MPI message
  * \param [in] comm MPI communicator to use
- * \note Adapted from conduit's relay::mpi::send_using_schema to use 
+ * \param [in] request An instance of ISendRequest that holds state for the sent data
+ * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend to use 
  * non-blocking \a MPI_Isend instead of blocking \a MPI_Send
  */
-int isend_using_schema(const conduit::Node& node, int dest, int tag, MPI_Comm comm)
+int isend_using_schema(conduit::Node& node,
+                       int dest,
+                       int tag,
+                       MPI_Comm comm,
+                       ISendRequest* request)
 {
-  conduit::Schema s_data_compact;
-
   // schema will only be valid if compact and contig
   if(node.is_compact() && node.is_contiguous())
   {
-    s_data_compact = node.schema();
+    request->node_schema = node.schema();
   }
   else
   {
-    node.schema().compact_to(s_data_compact);
+    node.schema().compact_to(request->node_schema);
   }
+  const std::string snd_schema_json = request->node_schema.to_json();
 
-  std::string snd_schema_json = s_data_compact.to_json();
-
+  // create a compact schema to use
   conduit::Schema s_msg;
   s_msg["schema_len"].set(conduit::DataType::int64());
   s_msg["schema"].set(conduit::DataType::char8_str(snd_schema_json.size() + 1));
-  s_msg["data"].set(s_data_compact);
+  s_msg["data"].set(request->node_schema);
+  s_msg.compact_to(request->msg_schema);
+  request->msg_node.reset();
+  request->msg_node.set_schema(request->msg_schema);
 
-  // create a compact schema to use
-  conduit::Schema s_msg_compact;
-  s_msg.compact_to(s_msg_compact);
+  // set up the message's node using this schema
+  request->msg_node["schema_len"].set((int64)snd_schema_json.length());
+  request->msg_node["schema"].set(snd_schema_json);
+  request->msg_node["data"].update(node);
 
-  conduit::Node n_msg(s_msg_compact);
-  // these sets won't realloc since schemas are compatible
-  n_msg["schema_len"].set((int64)snd_schema_json.length());
-  n_msg["schema"].set(snd_schema_json);
-  n_msg["data"].update(node);
-
-  auto msg_data_size = n_msg.total_bytes_compact();
-
-  MPI_Request mpiRequest;
-  int mpi_error = MPI_Isend(const_cast<void*>(n_msg.data_ptr()),
+  auto msg_data_size = request->msg_node.total_bytes_compact();
+  int mpi_error = MPI_Isend(const_cast<void*>(request->msg_node.data_ptr()),
                             static_cast<int>(msg_data_size),
                             MPI_BYTE,
                             dest,
                             tag,
                             comm,
-                            &mpiRequest);
+                            &(request->mpi_request));
 
-  MPI_Request_free(&mpiRequest);
-
+  // Error checking -- Note: expansion of CONDUIT_CHECK_MPI_ERROR
   if(static_cast<int>(mpi_error) != MPI_SUCCESS)
   {
     char check_mpi_err_str_buff[MPI_MAX_ERROR_STRING];
@@ -144,6 +155,27 @@ int isend_using_schema(const conduit::Node& node, int dest, int tag, MPI_Comm co
   return mpi_error;
 }
 
+void send_and_recv_node(conduit::Node& send_node,
+                        conduit::Node& recv_node,
+                        int send_rank,
+                        int recv_rank,
+                        int tag,
+                        MPI_Comm comm)
+{
+  ISendRequest req;
+
+  // non-blocking send
+  isend_using_schema(send_node, send_rank, tag, comm, &req);
+
+  // blocking receive
+  conduit::relay::mpi::recv_using_schema(recv_node, recv_rank, tag, comm);
+
+  // sender blocks until receiver is done
+  MPI_Wait(&(req.mpi_request), MPI_STATUS_IGNORE);
+}
+
+}  // namespace mpi
+}  // namespace relay
 }  // namespace internal
 
 template <int NDIMS = 2, typename ExecSpace = axom::SEQ_EXEC>
@@ -325,16 +357,12 @@ public:
 
         // send and receive the query point data
         conduit::Node rec_node;
-        {
-          internal::isend_using_schema(xfer_node,
-                                       dst_rank,
-                                       tag_before,
-                                       MPI_COMM_WORLD);
-          conduit::relay::mpi::recv_using_schema(rec_node,
+        internal::relay::mpi::send_and_recv_node(xfer_node,
+                                                 rec_node,
+                                                 dst_rank,
                                                  rec_rank,
                                                  tag_before,
                                                  MPI_COMM_WORLD);
-        }
 
         const int src_rank = rec_node["src_rank"].value();
         if(m_isVerbose)
@@ -356,16 +384,12 @@ public:
 
         // update results
         conduit::Node proc_node;
-        {
-          internal::isend_using_schema(rec_node,
-                                       src_rank,
-                                       tag_after,
-                                       MPI_COMM_WORLD);
-          conduit::relay::mpi::recv_using_schema(proc_node,
+        internal::relay::mpi::send_and_recv_node(rec_node,
+                                                 proc_node,
+                                                 src_rank,
                                                  dst_rank,
                                                  tag_after,
                                                  MPI_COMM_WORLD);
-        }
 
         if(m_isVerbose)
         {
