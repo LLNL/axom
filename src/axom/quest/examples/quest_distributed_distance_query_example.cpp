@@ -851,6 +851,35 @@ int main(int argc, char** argv)
   break;
   }
 
+  auto getMinMax =
+    [](double inVal, double& minVal, double& maxVal, double& sumVal) {
+      MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    };
+
+  // Output some timing stats
+  {
+    double minInit, maxInit, sumInit;
+    getMinMax(initTimer.elapsedTimeInSec(), minInit, maxInit, sumInit);
+
+    double minQuery, maxQuery, sumQuery;
+    getMinMax(queryTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
+
+    SLIC_INFO(axom::fmt::format(
+      "Initialization with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
+      params.policy,
+      sumInit / num_ranks,
+      minInit,
+      maxInit));
+    SLIC_INFO(axom::fmt::format(
+      "Query with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
+      params.policy,
+      sumQuery / num_ranks,
+      minQuery,
+      maxQuery));
+  }
+
   auto cpPositions =
     query_mesh_wrapper.getParticleMesh().getNodalVectorField<PointType>(
       "closest_point");
@@ -876,13 +905,6 @@ int main(int argc, char** argv)
     }
   }
 
-  SLIC_INFO(axom::fmt::format("Initialization with policy {} took {} seconds",
-                              params.policy,
-                              initTimer.elapsedTimeInSec()));
-  SLIC_INFO(axom::fmt::format("Query with policy {} took {} seconds",
-                              params.policy,
-                              queryTimer.elapsedTimeInSec()));
-
   //---------------------------------------------------------------------------
   // Transform closest points to distances and directions
   //---------------------------------------------------------------------------
@@ -890,7 +912,18 @@ int main(int argc, char** argv)
 
   auto* distances = query_mesh_wrapper.getDC()->GetField("distance");
   auto* directions = query_mesh_wrapper.getDC()->GetField("direction");
-  SLIC_INFO(axom::fmt::format(" distance size: {}", distances->Size()));
+
+  {
+    double minPts, maxPts, sumPts;
+    getMinMax(distances->Size(), minPts, maxPts, sumPts);
+    SLIC_INFO(
+      axom::fmt::format(" Query points: {{total:{}, min:{}, max:{}, avg:{}}}",
+                        sumPts,
+                        minPts,
+                        maxPts,
+                        sumPts / num_ranks));
+  }
+
   mfem::Array<int> dofs;
   for(auto i : IndexSet(nQueryPts))
   {
