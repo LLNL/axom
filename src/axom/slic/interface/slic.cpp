@@ -18,10 +18,19 @@ namespace slic
 //------------------------------------------------------------------------------
 bool debug::checksAreErrors = false;
 
-void initialize() { Logger::initialize(); }
+static bool isRoot = true;
+
+void initialize(bool shouldLogRootMessages)
+{
+  axom::slic::isRoot = shouldLogRootMessages;
+  Logger::initialize();
+}
 
 //------------------------------------------------------------------------------
 bool isInitialized() { return (Logger::getActiveLogger() != nullptr); }
+
+//------------------------------------------------------------------------------
+bool isRoot() { return axom::slic::isRoot; }
 
 //------------------------------------------------------------------------------
 void ensureInitialized()

@@ -72,6 +72,13 @@
     }                                                               \
   } while(axom::slic::detail::false_value)
 
+/*!
+ * @brief Macro that logs given error message only on root.
+ * \note Must call `axom::slic::initialize(shouldLogRootMessages=true)`
+ *   or set via `axom::slic::root(true)`. Otherwise, this not filter based on root.
+ */
+#define SLIC_ERROR_ROOT(msg) SLIC_ERROR_IF(axom::slic::isRoot(), msg)
+
 ///@}
 
 ///@{

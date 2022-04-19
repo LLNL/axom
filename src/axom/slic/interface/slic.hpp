@@ -33,13 +33,20 @@ struct debug
 /*!
  * \brief Initializes the SLIC logging environment.
  */
-void initialize();
+void initialize(bool shouldLogRootMessages = true);
+
 
 /*!
  * \brief Checks if the SLIC logging environment is initialized.
  * \return status true if initialized, else, false.
  */
 bool isInitialized();
+
+/*!
+ * \brief Checks if we are on the root rank. Used for selective logging on root nodes.
+ * \return status true if on root, else, false.
+ */
+bool isRoot();
 
 /*!
  * \brief Ensures the SLIC logging environment is initialized.
