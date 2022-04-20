@@ -67,27 +67,29 @@ functions are called.
 
 The table below details which SLIC macros are collective:
 
-+-----------------------+------------+--------------------------------------------------------------------------+
-| Macro                 | Collective | Notes                                                                    |
-+=======================+============+==========================================================================+
-| | ``SLIC_INFO``       | | No       | |                                                                        |
-| | ``SLIC_INFO_IF``    | |          | |                                                                        |
-|                       |            |                                                                          |
-| | ``SLIC_ERROR``      | | Yes      | | Not collective after ``slic::disableAbortOnError()`` is called         |
-| | ``SLIC_ERROR_IF``   | |          | |                                                                        |
-|                       |            |                                                                          |
-| | ``SLIC_WARNING``    | | Yes      | | Collective after ``slic::enableAbortOnWarning()`` is called            |
-| | ``SLIC_WARNING_IF`` | |          | |                                                                        |
-|                       |            |                                                                          |
-| | ``SLIC_DEBUG``      | | No       | |                                                                        |
-| | ``SLIC_DEBUG_IF``   | |          | |                                                                        |
-|                       |            |                                                                          |
-| | ``SLIC_ASSERT``     | | Yes      | | Not collective after ``slic::disableAbortOnError()`` is called         |
-| | ``SLIC_ASSERT_MSG`` | |          | |                                                                        |
-|                       |            |                                                                          |
-| | ``SLIC_CHECK``      | | Yes      | | Collective after ``slic::debug::checksAreErrors`` is set to true       |
-| | ``SLIC_CHECK_MSG``  | |          | |                                                                        |
-+-----------------------+------------+--------------------------------------------------------------------------+
++---------------------------+------------+--------------------------------------------------------------------------+
+| Macro                     | Collective | Notes                                                                    |
++===========================+============+==========================================================================+
+| | ``SLIC_INFO``          | | No       | |                                                                        |
+| | ``SLIC_INFO_IF``       | |          | |                                                                        |
+|                          |            |                                                                          |
+| | ``SLIC_ERROR``         | | Yes      | | Not collective after ``slic::disableAbortOnError()`` is called         |
+| | ``SLIC_ERROR_IF``      | |          | |                                                                        |
+| | ``SLIC_ERROR_ROOT``    | |          | |                                                                        |
+| | ``SLIC_ERROR_ROOT_IF`` | |          | |                                                                        |
+|                          |            |                                                                          |
+| | ``SLIC_WARNING``       | | Yes      | | Collective after ``slic::enableAbortOnWarning()`` is called            |
+| | ``SLIC_WARNING_IF``    | |          | |                                                                        |
+|                          |            |                                                                          |
+| | ``SLIC_DEBUG``         | | No       | |                                                                        |
+| | ``SLIC_DEBUG_IF``      | |          | |                                                                        |
+|                          |            |                                                                          |
+| | ``SLIC_ASSERT``        | | Yes      | | Not collective after ``slic::disableAbortOnError()`` is called         |
+| | ``SLIC_ASSERT_MSG``    | |          | |                                                                        |
+|                          |            |                                                                          |
+| | ``SLIC_CHECK``         | | Yes      | | Collective after ``slic::debug::checksAreErrors`` is set to true       |
+| | ``SLIC_CHECK_MSG``     | |          | |                                                                        |
++--------------------------+------------+--------------------------------------------------------------------------+
 
 .. _SLIC_INFO:
 
