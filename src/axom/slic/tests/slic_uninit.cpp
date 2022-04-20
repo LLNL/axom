@@ -92,20 +92,20 @@ TEST(slic_uninit, log_methods)
   const int line = 42;
 
   testInit("logMessage_A",
-           []() { axom::slic::logMessage(lvl, "an info message"); });
-  testInit("logMessage_B", []() {
+           [&]() { axom::slic::logMessage(lvl, "an info message"); });
+  testInit("logMessage_B", [&]() {
     axom::slic::logMessage(lvl, "another info message", "tagB");
   });
   testInit("logMessage_C",
-           [fname]() { axom::slic::logMessage(lvl, "info msg", fname, line); });
-  testInit("logMessage_D", [fname]() {
+           [&, fname]() { axom::slic::logMessage(lvl, "info msg", fname, line); });
+  testInit("logMessage_D", [&, fname]() {
     axom::slic::logMessage(lvl, "info msg", "tagD", fname, line);
   });
 
-  testInit("logErrorMessage", [fname]() {
+  testInit("logErrorMessage", [&, fname]() {
     axom::slic::logErrorMessage("an error message", fname, line);
   });
-  testInit("logWarningMessage", [fname]() {
+  testInit("logWarningMessage", [&, fname]() {
     axom::slic::logWarningMessage("a warning message", fname, line);
   });
 }
