@@ -36,7 +36,6 @@ struct debug
  */
 void initialize(bool is_root = true);
 
-
 /*!
  * \brief Checks if the SLIC logging environment is initialized.
  * \return status true if initialized, else, false.

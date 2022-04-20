@@ -84,7 +84,8 @@
  * \note Must call `axom::slic::initialize(is_root=true)`
  *   or set via `axom::slic::setIsRoot(true)`. Otherwise, this not filter based on root.
  */
-#define SLIC_ERROR_ROOT_IF(EXP, msg) SLIC_ERROR_IF((EXP) && axom::slic::isRoot(), msg)
+#define SLIC_ERROR_ROOT_IF(EXP, msg) \
+  SLIC_ERROR_IF((EXP) && axom::slic::isRoot(), msg)
 
 ///@}
 
