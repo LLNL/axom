@@ -75,9 +75,16 @@
 /*!
  * @brief Macro that logs given error message only on root.
  * \note Must call `axom::slic::initialize(shouldLogRootMessages=true)`
- *   or set via `axom::slic::root(true)`. Otherwise, this not filter based on root.
+ *   or set via `axom::slic::setRoot(true)`. Otherwise, this not filter based on root.
  */
 #define SLIC_ERROR_ROOT(msg) SLIC_ERROR_IF(axom::slic::isRoot(), msg)
+
+/*!
+ * @brief Macro that logs given error message only on root if EXP is true.
+ * \note Must call `axom::slic::initialize(shouldLogRootMessages=true)`
+ *   or set via `axom::slic::setRoot(true)`. Otherwise, this not filter based on root.
+ */
+#define SLIC_ERROR_ROOT_IF(EXP, msg) SLIC_ERROR_IF((EXP) && axom::slic::isRoot(), msg)
 
 ///@}
 

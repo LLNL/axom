@@ -18,11 +18,11 @@ namespace slic
 //------------------------------------------------------------------------------
 bool debug::checksAreErrors = false;
 
-static bool isRoot = true;
+static bool root = true;
 
-void initialize(bool shouldLogRootMessages)
+void initialize(bool rootValue)
 {
-  axom::slic::isRoot = shouldLogRootMessages;
+  axom::slic::root = rootValue;
   Logger::initialize();
 }
 
@@ -30,7 +30,10 @@ void initialize(bool shouldLogRootMessages)
 bool isInitialized() { return (Logger::getActiveLogger() != nullptr); }
 
 //------------------------------------------------------------------------------
-bool isRoot() { return axom::slic::isRoot; }
+bool isRoot() { return axom::slic::root; }
+
+//------------------------------------------------------------------------------
+void setRoot(bool rootValue) { axom::slic::root = rootValue; }
 
 //------------------------------------------------------------------------------
 void ensureInitialized()

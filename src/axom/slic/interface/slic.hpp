@@ -32,8 +32,9 @@ struct debug
 
 /*!
  * \brief Initializes the SLIC logging environment.
+ * \param [in] rootValue Enables selective logging macros based on root.
  */
-void initialize(bool shouldLogRootMessages = true);
+void initialize(bool rootValue = true);
 
 
 /*!
@@ -47,6 +48,13 @@ bool isInitialized();
  * \return status true if on root, else, false.
  */
 bool isRoot();
+
+/*!
+ * \brief Marks this node as root and enables the selective root logging filtering
+ * used in the SLIC_*_ROOT_* macros.
+ * \param [in] rootValue Enables selective logging macros based on root.
+ */
+void setRoot(bool rootValue);
 
 /*!
  * \brief Ensures the SLIC logging environment is initialized.

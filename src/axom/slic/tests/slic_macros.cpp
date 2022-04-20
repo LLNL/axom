@@ -122,6 +122,21 @@ TEST(slic_macros, test_error_macros)
   SLIC_ERROR_IF(false, "this message should not be logged!");
   EXPECT_TRUE(slic::internal::is_stream_empty());
 
+  // Check selective filtering based on root == false
+  axom::slic::setRoot(false);
+  SLIC_ERROR_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // Check selective filter based on root == true
+  axom::slic::setRoot(true);
+  SLIC_ERROR_ROOT_IF(true, "this message is logged!");
+  EXPECT_FALSE(slic::internal::is_stream_empty());
+  check_level(slic::internal::test_stream.str(), "ERROR");
+  check_msg(slic::internal::test_stream.str(), "this message is logged!");
+  check_file(slic::internal::test_stream.str());
+  check_line(slic::internal::test_stream.str(), (__LINE__ - 5));
+  slic::internal::clear();
+
   SLIC_ERROR_IF(true, "this message is logged!");
   EXPECT_FALSE(slic::internal::is_stream_empty());
   check_level(slic::internal::test_stream.str(), "ERROR");
