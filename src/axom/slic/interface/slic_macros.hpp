@@ -77,15 +77,43 @@
  * \note Must call `axom::slic::initialize(is_root=true)`
  *   or set via `axom::slic::setIsRoot(true)`. Otherwise, this not filter based on root.
  */
-#define SLIC_ERROR_ROOT(msg) SLIC_ERROR_IF(axom::slic::isRoot(), msg)
+#define SLIC_ERROR_ROOT(msg)                                        \
+  do                                                                \
+  {                                                                 \
+    if(axom::slic::isRoot())                                        \
+    {                                                               \
+      std::ostringstream __oss;                                     \
+      __oss << msg;                                                 \
+      axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
+    }                                                               \
+    else                                                            \
+    {                                                               \
+      axom::slic::abortOrNot(axom::slic::message::Error);           \
+    }                                                               \
+  } while(axom::slic::detail::false_value)
 
 /*!
  * @brief Macro that logs given error message only on root if EXP is true.
  * \note Must call `axom::slic::initialize(is_root=true)`
  *   or set via `axom::slic::setIsRoot(true)`. Otherwise, this not filter based on root.
  */
-#define SLIC_ERROR_ROOT_IF(EXP, msg) \
-  SLIC_ERROR_IF((EXP) && axom::slic::isRoot(), msg)
+#define SLIC_ERROR_ROOT_IF(EXP, msg)                                  \
+  do                                                                  \
+  {                                                                   \
+    if(EXP)                                                           \
+    {                                                                 \
+      if(axom::slic::isRoot())                                        \
+      {                                                               \
+        std::ostringstream __oss;                                     \
+        __oss << msg;                                                 \
+        axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
+      }                                                               \
+      else                                                            \
+      {                                                               \
+        axom::slic::abortOrNot(axom::slic::message::Error);           \
+      }                                                               \
+    }                                                                 \
+  } while(axom::slic::detail::false_value)
 
 ///@}
 

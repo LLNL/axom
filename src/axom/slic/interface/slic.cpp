@@ -89,6 +89,13 @@ message::Level getLoggingMsgLevel()
 }
 
 //------------------------------------------------------------------------------
+void abortOrNot(message::Level level)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->abortOrNot(level);
+}
+
+//------------------------------------------------------------------------------
 void setLoggingMsgLevel(message::Level level)
 {
   ensureInitialized();

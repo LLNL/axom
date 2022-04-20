@@ -97,6 +97,13 @@ void setLoggingMsgLevel(message::Level level);
 message::Level getLoggingMsgLevel();
 
 /*!
+ * \brief Aborts and flushes on warning or error if corresponding AbortOnError
+ * or AbortOnWarningis set to true
+ * \param [in] level the logging level.
+ */
+void Logger::abortOrNot(message::Level level);
+
+/*!
  * \brief Toggles the abort behavior for errors on the current active logger.
  * \param [in] status user-supplied flag.
  */
