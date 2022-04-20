@@ -15,13 +15,11 @@
       when: never
     - when: on_success
 
-
 ####
 # Load required CUDA module
 .with_cuda:
   before_script:
     - module load cuda/11.0.2
-
 
 ####
 # Template
@@ -38,7 +36,6 @@
     ALLOC_COMMAND: "lalloc 1 -W 45 -q pdebug"
   extends: [.full_build_script, .on_lassen, .full_workflow]
   needs: []
-
 
 ####
 # PR Build jobs
