@@ -96,9 +96,8 @@ TEST(slic_uninit, log_methods)
   testInit("logMessage_B", []() {
     axom::slic::logMessage(lvl, "another info message", "tagB");
   });
-  testInit("logMessage_C", [fname]() {
-    axom::slic::logMessage(lvl, "info msg", fname, line);
-  });
+  testInit("logMessage_C",
+           [fname]() { axom::slic::logMessage(lvl, "info msg", fname, line); });
   testInit("logMessage_D", [fname]() {
     axom::slic::logMessage(lvl, "info msg", "tagD", fname, line);
   });

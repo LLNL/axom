@@ -70,7 +70,7 @@ void Logger::abortOrNot(message::Level level)
   {
     this->flushStreams();
     m_abortFunction();
-  }  
+  }
 }
 
 //------------------------------------------------------------------------------
