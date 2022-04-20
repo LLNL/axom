@@ -186,6 +186,7 @@ public:
   using RayType = typename primal::Ray<FloatType, NDIMS>;
 
   using TraverserType = typename ImplType::TraverserType;
+  using ExecSpaceType = ExecSpace;
 
 public:
   /*!
