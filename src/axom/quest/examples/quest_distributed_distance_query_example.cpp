@@ -54,13 +54,7 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-/// Enum for RAJA runtime policy
-enum class RuntimePolicy
-{
-  seq = 0,
-  omp = 1,
-  cuda = 2
-};
+using RuntimePolicy = axom::quest::DistributedClosestPoint::RuntimePolicy;
 
 /// Struct to parse and store the input parameters
 struct Input
@@ -140,7 +134,7 @@ public:
 
 /**
  *  \brief Simple wrapper to a blueprint particle mesh
- * 
+ *
  *  Given a sidre Group, creates the stubs for a mesh blueptint particle mesh
  */
 struct BlueprintParticleMesh
@@ -191,7 +185,7 @@ public:
     return 0;
   }
 
-  /** 
+  /**
    * Sets the parent group for the entire mesh and sets up the blueprint stubs
    * for the "coordset", "topologies", "fields" and "state"
    */
@@ -400,7 +394,7 @@ private:
   int m_nranks;
 };
 
-/** 
+/**
  * Helper class to generate a mesh blueprint-conforming particle mesh for the input object.
  * The mesh is represented using a Sidre hierarchy
  */
@@ -420,7 +414,7 @@ public:
     return m_mesh.coordsGroup()->getName();
   }
 
-  /** 
+  /**
    * Generates a collection of \a numPoints points along a circle
    * of radius \a radius centered at the origin
    */
@@ -542,7 +536,7 @@ public:
   }
 
   /**
-   * Loads the mesh as an MFEMSidreDataCollection with 
+   * Loads the mesh as an MFEMSidreDataCollection with
    * the following fields: "positions", "distances", "directions"
    */
   void setupMesh(const std::string& fileName, const std::string meshFile)
@@ -720,23 +714,8 @@ int main(int argc, char** argv)
 
   constexpr int DIM = 2;
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  using SeqClosestPointQueryType =
-    quest::DistributedClosestPoint<2, axom::SEQ_EXEC>;
-
-  #ifdef AXOM_USE_OPENMP
-  using OmpClosestPointQueryType =
-    quest::DistributedClosestPoint<2, axom::OMP_EXEC>;
-  #endif
-
-  #ifdef AXOM_USE_CUDA
-  using CudaClosestPointQueryType =
-    quest::DistributedClosestPoint<2, axom::CUDA_EXEC<256>>;
-  #endif
-#endif
-
-  using PointArray = SeqClosestPointQueryType::PointArray;
-  using PointType = SeqClosestPointQueryType::PointType;
+  using PointType = primal::Point<double, DIM>;
+  using PointArray = axom::Array<PointType>;
   using IndexSet = slam::PositionSet<>;
 
   //---------------------------------------------------------------------------
@@ -787,78 +766,33 @@ int main(int argc, char** argv)
   conduit::Node query_mesh_node;
   query_mesh_wrapper.getBlueprintGroup()->createNativeLayout(query_mesh_node);
 
-  switch(params.policy)
-  {
-  case RuntimePolicy::seq:
-  {
-    SeqClosestPointQueryType query;
-    query.setVerbosity(params.isVerbose());
-    SLIC_INFO(init_str);
-    query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
+  // Create distributed closest point query object and set some parameters
+  quest::DistributedClosestPoint query;
+  query.setRuntimePolicy(params.policy);
+  query.setDimension(DIM);
+  query.setVerbosity(params.isVerbose());
+  query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
 
-    SLIC_INFO(init_str);
-    initTimer.start();
-    query.generateBVHTree();
-    initTimer.stop();
+  // Build the spatial index over the object on each rank
+  SLIC_INFO(init_str);
+  initTimer.start();
+  query.generateBVHTree();
+  initTimer.stop();
 
-    SLIC_INFO(query_str);
-    queryTimer.start();
-    query.computeClosestPoints(query_mesh_node,
-                               query_mesh_wrapper.getCoordsetName());
-    queryTimer.stop();
-  }
-  break;
-  case RuntimePolicy::omp:
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && \
-  defined(AXOM_USE_OPENMP)
-  {
-    OmpClosestPointQueryType query;
-    query.setVerbosity(params.isVerbose());
-    query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
+  // Run the distributed closest point query over the nodes of the computational mesh
+  SLIC_INFO(query_str);
+  queryTimer.start();
+  query.computeClosestPoints(query_mesh_node,
+                             query_mesh_wrapper.getCoordsetName());
+  queryTimer.stop();
 
-    SLIC_INFO(init_str);
-    initTimer.start();
-    query.generateBVHTree();
-    initTimer.stop();
-
-    SLIC_INFO(query_str);
-    queryTimer.start();
-    query.computeClosestPoints(query_mesh_node,
-                               query_mesh_wrapper.getCoordsetName());
-    queryTimer.stop();
-  }
-#endif
-  break;
-  case RuntimePolicy::cuda:
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
-  {
-    CudaClosestPointQueryType query;
-    query.setVerbosity(params.isVerbose());
-    query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
-
-    SLIC_INFO(init_str);
-    initTimer.start();
-    query.generateBVHTree();
-    initTimer.stop();
-
-    SLIC_INFO(query_str);
-    queryTimer.start();
-    query.computeClosestPoints(query_mesh_node,
-                               query_mesh_wrapper.getCoordsetName());
-    queryTimer.stop();
-  }
-#endif
-  break;
-  }
-
+  // Output some timing stats
   auto getMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
       MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     };
-
-  // Output some timing stats
   {
     double minInit, maxInit, sumInit;
     getMinMax(initTimer.elapsedTimeInSec(), minInit, maxInit, sumInit);
