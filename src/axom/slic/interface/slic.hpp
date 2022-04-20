@@ -34,7 +34,7 @@ struct debug
  * \brief Initializes the SLIC logging environment.
  * \param [in] rootValue Enables selective logging macros based on root.
  */
-void initialize(bool rootValue = true);
+void initialize(bool is_root = true);
 
 
 /*!

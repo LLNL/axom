@@ -18,7 +18,7 @@ namespace slic
 //------------------------------------------------------------------------------
 bool debug::checksAreErrors = false;
 
-static bool root = true;
+static bool s_is_root = true;
 
 void initialize(bool rootValue)
 {
@@ -33,7 +33,7 @@ bool isInitialized() { return (Logger::getActiveLogger() != nullptr); }
 bool isRoot() { return axom::slic::root; }
 
 //------------------------------------------------------------------------------
-void setRoot(bool rootValue) { axom::slic::root = rootValue; }
+void setIsRoot(bool rootValue) { axom::slic::root = rootValue; }
 
 //------------------------------------------------------------------------------
 void ensureInitialized()
