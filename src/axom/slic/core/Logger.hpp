@@ -70,7 +70,7 @@ public:
    * or AbortOnWarningis set to true
    * \param [in] level the logging level.
    */
-  void abortOrNot(message::Level level);
+  void abortIfEnabled(message::Level level);
 
   /*!
    * \brief Toggles the abort behavior for error messages. Default is false.

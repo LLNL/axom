@@ -101,7 +101,7 @@ message::Level getLoggingMsgLevel();
  * or AbortOnWarningis set to true
  * \param [in] level the logging level.
  */
-void abortOrNot(message::Level level);
+void abortIfEnabled(message::Level level);
 
 /*!
  * \brief Toggles the abort behavior for errors on the current active logger.

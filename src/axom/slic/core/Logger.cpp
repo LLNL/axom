@@ -63,7 +63,7 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-void Logger::abortOrNot(message::Level level)
+void Logger::abortIfEnabled(message::Level level)
 {
   if((m_abortOnError && (level == message::Error)) ||
      (m_abortOnWarning && (level == message::Warning)))
