@@ -20,9 +20,9 @@ bool debug::checksAreErrors = false;
 
 static bool s_is_root = true;
 
-void initialize(bool rootValue)
+void initialize(bool is_root)
 {
-  axom::slic::root = rootValue;
+  axom::slic::s_is_root = is_root;
   Logger::initialize();
 }
 
@@ -30,10 +30,10 @@ void initialize(bool rootValue)
 bool isInitialized() { return (Logger::getActiveLogger() != nullptr); }
 
 //------------------------------------------------------------------------------
-bool isRoot() { return axom::slic::root; }
+bool isRoot() { return axom::slic::s_is_root; }
 
 //------------------------------------------------------------------------------
-void setIsRoot(bool rootValue) { axom::slic::root = rootValue; }
+void setIsRoot(bool is_root) { axom::slic::s_is_root = is_root; }
 
 //------------------------------------------------------------------------------
 void ensureInitialized()
