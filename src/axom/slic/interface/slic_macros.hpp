@@ -475,7 +475,8 @@
  * \endcode
  *
  */
-#define SLIC_INFO_ROOT_IF(msg) SLIC_INFO_IF((EXP) && (axom::slic::isRoot()), msg)
+#define SLIC_INFO_ROOT_IF(msg) \
+  SLIC_INFO_IF((EXP) && (axom::slic::isRoot()), msg)
 
 #ifdef AXOM_DEBUG
 
@@ -529,7 +530,7 @@
       }                                                    \
     } while(axom::slic::detail::false_value)
 
-/*!
+  /*!
  * \def SLIC_DEBUG_ROOT( msg )
  * \brief Logs a Debug message if on root
  * \param [in] msg user-supplied message.
@@ -541,9 +542,9 @@
  * \endcode
  *
  */
-#define SLIC_INFO_ROOT(msg) SLIC_DEBUG_IF(axom::slic::isRoot(), msg)
+  #define SLIC_INFO_ROOT(msg) SLIC_DEBUG_IF(axom::slic::isRoot(), msg)
 
-/*!
+  /*!
  * \def SLIC_DEBUG_ROOT_IF( EXP, msg )
  * \brief Logs a Debug message if on root and iff EXP is true
  * \param [in] EXP user-supplied boolean expression.
@@ -556,7 +557,8 @@
  * \endcode
  *
  */
-#define SLIC_DEBUG_ROOT_IF(msg) SLIC_DEBUG_IF((EXP) && (axom::slic::isRoot()), msg)
+  #define SLIC_DEBUG_ROOT_IF(msg) \
+    SLIC_DEBUG_IF((EXP) && (axom::slic::isRoot()), msg)
 
 #else  // turn off debug macros
 
