@@ -223,7 +223,7 @@ void Logger::logMessage(message::Level level,
       ->append(level, message, tagName, fileName, line, filter_duplicates);
   }
 
-  abortOrNot(level);
+  abortIfEnabled(level);
 }
 
 //------------------------------------------------------------------------------
