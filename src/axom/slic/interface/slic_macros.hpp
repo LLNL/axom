@@ -542,7 +542,7 @@
  * \endcode
  *
  */
-  #define SLIC_INFO_ROOT(msg) SLIC_DEBUG_IF(axom::slic::isRoot(), msg)
+  #define SLIC_DEBUG_ROOT(msg) SLIC_DEBUG_IF(axom::slic::isRoot(), msg)
 
   /*!
  * \def SLIC_DEBUG_ROOT_IF( EXP, msg )
