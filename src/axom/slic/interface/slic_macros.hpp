@@ -154,7 +154,7 @@
 
 /*!
  * \def SLIC_WARNING_IF( EXP, msg )
- * \brief Logs an error iff EXP is true and aborts the application.
+ * \brief Logs an warning iff EXP is true and aborts the application.
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message.
  * \note The SLIC_WARNING_IF macro is always active.
@@ -174,6 +174,49 @@
       __oss << msg;                                                   \
       axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
     }                                                                 \
+  } while(axom::slic::detail::false_value)
+
+/*!
+ * @brief Macro that logs given warning message only on root.
+ * \note Must call `axom::slic::initialize(is_root=true)`
+ *   or set via `axom::slic::setIsRoot(true)`. Otherwise, this not filter based on root.
+ */
+#define SLIC_WARNING_ROOT(msg)                                        \
+  do                                                                  \
+  {                                                                   \
+    if(axom::slic::isRoot())                                          \
+    {                                                                 \
+      std::ostringstream __oss;                                       \
+      __oss << msg;                                                   \
+      axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
+    }                                                                 \
+    else                                                              \
+    {                                                                 \
+      axom::slic::abortIfEnabled(axom::slic::message::Error);         \
+    }                                                                 \
+  } while(axom::slic::detail::false_value)
+
+/*!
+ * @brief Macro that logs given warning message only on root if EXP is true.
+ * \note Must call `axom::slic::initialize(is_root=true)`
+ *   or set via `axom::slic::setIsRoot(true)`. Otherwise, this not filter based on root.
+ */
+#define SLIC_WARNING_ROOT_IF(EXP, msg)                                  \
+  do                                                                    \
+  {                                                                     \
+    if(EXP)                                                             \
+    {                                                                   \
+      if(axom::slic::isRoot())                                          \
+      {                                                                 \
+        std::ostringstream __oss;                                       \
+        __oss << msg;                                                   \
+        axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
+        axom::slic::abortIfEnabled(axom::slic::message::Error);         \
+      }                                                                 \
+    }                                                                   \
   } while(axom::slic::detail::false_value)
 
 ///@}
@@ -405,6 +448,35 @@
     }                                                   \
   } while(axom::slic::detail::false_value)
 
+/*!
+ * \def SLIC_INFO_ROOT( msg )
+ * \brief Logs an Info message if on root
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_INFO_ROOT macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_INFO_ROOT( "informative text goes here" );
+ * \endcode
+ *
+ */
+#define SLIC_INFO_ROOT(msg) SLIC_INFO_IF(axom::slic::isRoot(), msg)
+
+/*!
+ * \def SLIC_INFO_ROOT_IF( EXP, msg )
+ * \brief Logs an Info message if on root and iff EXP is true
+ * \param [in] EXP user-supplied boolean expression.
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_INFO_ROOT_IF macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_INFO_ROOT_IF( (val < 0), "my_val should always be positive" );
+ * \endcode
+ *
+ */
+#define SLIC_INFO_ROOT_IF(msg) SLIC_INFO_IF((EXP) && (axom::slic::isRoot()), msg)
+
 #ifdef AXOM_DEBUG
 
   /*!
@@ -457,10 +529,41 @@
       }                                                    \
     } while(axom::slic::detail::false_value)
 
+/*!
+ * \def SLIC_DEBUG_ROOT( msg )
+ * \brief Logs a Debug message if on root
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_DEBUG_ROOT macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_DEBUG_ROOT( "informative text goes here" );
+ * \endcode
+ *
+ */
+#define SLIC_INFO_ROOT(msg) SLIC_DEBUG_IF(axom::slic::isRoot(), msg)
+
+/*!
+ * \def SLIC_DEBUG_ROOT_IF( EXP, msg )
+ * \brief Logs a Debug message if on root and iff EXP is true
+ * \param [in] EXP user-supplied boolean expression.
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_DEBUG_ROOT_IF macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_DEBUG_ROOT_IF( (val < 0), "my_val should always be positive" );
+ * \endcode
+ *
+ */
+#define SLIC_DEBUG_ROOT_IF(msg) SLIC_DEBUG_IF((EXP) && (axom::slic::isRoot()), msg)
+
 #else  // turn off debug macros
 
   #define SLIC_DEBUG(ignore_EXP) ((void)0)
   #define SLIC_DEBUG_IF(ignore_EXP, ignore_msg) ((void)0)
+  #define SLIC_DEBUG_ROOT(ignore_EXP) ((void)0)
+  #define SLIC_DEBUG_ROOT_IF(ignore_EXP, ignore_msg) ((void)0)
 
 #endif
 
