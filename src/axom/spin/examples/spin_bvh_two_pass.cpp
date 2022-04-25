@@ -9,6 +9,7 @@
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
 #include "axom/slic.hpp"
+#include "axom/quest.hpp"
 
 #include "axom/CLI11.hpp"
 #include "axom/fmt.hpp"
@@ -17,8 +18,10 @@ namespace mint = axom::mint;
 namespace primal = axom::primal;
 namespace spin = axom::spin;
 namespace slic = axom::slic;
+namespace quest = axom::quest;
 
 using IndexType = axom::IndexType;
+using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
 enum class ExecPolicy
 {
@@ -147,6 +150,9 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
 
   // Create array for all bounding box collisions
   IndexType ncollisions = total_count_reduce.get();
+
+  SLIC_INFO(axom::fmt::format("Found {} candidate collisions.", ncollisions));
+
   firstPair = axom::Array<IndexType>(ncollisions, ncollisions, allocatorId);
   secondPair = axom::Array<IndexType>(ncollisions, ncollisions, allocatorId);
 
@@ -224,5 +230,60 @@ int main(int argc, char** argv)
     finalize_logger();
     return retval;
   }
+#ifdef AXOM_USE_CUDA
+  if(args.exec_space == ExecPolicy::GPU)
+  {
+    using GPUExec = axom::CUDA_EXEC<256>;
+    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+  }
+#endif
+
+  std::unique_ptr<UMesh> surface_mesh;
+
+  // Read file
+  SLIC_INFO("Reading file: '" << args.file_name << "'...\n");
+  {
+    quest::STLReader reader;
+    reader.setFileName(args.file_name);
+    reader.read();
+
+    // Get surface mesh
+    surface_mesh.reset(new UMesh(3, mint::TRIANGLE));
+    reader.getMesh(surface_mesh.get());
+  }
+
+  SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
+                        << surface_mesh->getNumberOfCells() << " triangles.");
+
+  axom::Array<IndexType> firstPair, secondPair;
+
+  switch(args.exec_space)
+  {
+  case ExecPolicy::CPU:
+    benchmark_point_in_cell<axom::SEQ_EXEC>(surface_mesh.get(),
+                                            firstPair,
+                                            secondPair);
+    break;
+#ifdef AXOM_USE_RAJA
+  #ifdef AXOM_USE_OPENMP
+  case ExecPolicy::OpenMP:
+    benchmark_point_in_cell<axom::OMP_EXEC>(surface_mesh.get(),
+                                            firstPair,
+                                            secondPair);
+    break;
+  #endif
+  #ifdef AXOM_USE_CUDA
+  case ExecPolicy::GPU:
+    benchmark_point_in_cell<axom::CUDA_EXEC<256>>(surface_mesh.get(),
+                                                  firstPair,
+                                                  secondPair);
+    break;
+  #endif
+#endif
+  default:
+    SLIC_ERROR("Unsupported execution space.");
+    return 1;
+  }
+
   finalize_logger();
 }
