@@ -232,5 +232,4 @@ packages:
   raja:
     variants: ~shared~examples~exercises
   umpire:
-    version: [6.0.0axom]
     variants: ~shared~examples

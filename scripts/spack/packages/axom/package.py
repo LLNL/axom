@@ -421,6 +421,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             else:
                 entries.append('# %s not built\n' % dep.upper())
 
+        # Workaround for Umpire not remembering where camp was installed
+        if '+umpire' in spec and spec.satisfies('^camp'):
+            dep_dir = get_spec_path(spec, 'camp', path_replacements)
+            entries.append(cmake_cache_path('CAMP_DIR', dep_dir))
+
         # SCR does not export it's targets so we need to pull in its dependencies
         if '+scr' in spec:
             dep_dir = get_spec_path(spec, 'scr', path_replacements)

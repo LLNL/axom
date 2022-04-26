@@ -27,6 +27,9 @@ if (UMPIRE_DIR)
         message(FATAL_ERROR "Given UMPIRE_DIR is not a directory: ${UMPIRE_DIR}")
     endif()
 
+    # white238 - Workaround to get around umpire's exported camp logic not working
+    set(camp_DIR "${CAMP_DIR}/lib/cmake/camp")
+
     find_package(umpire REQUIRED PATHS ${UMPIRE_DIR} )
 
     message(STATUS "Checking for expected Umpire target 'umpire'")
