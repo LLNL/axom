@@ -64,6 +64,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant('examples', default=True, description='Build examples')
     variant('tools',    default=True, description='Build tools')
 
+    # Hard requirement after Axom 0.6.1
     variant('cpp14',    default=True, description="Build with C++14 support")
 
     variant('fortran',  default=True, description="Build with Fortran support")
@@ -92,6 +93,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("cmake@3.8.2:", type='build')
     depends_on("cmake@3.16.8:", type='build', when="+rocm")
 
+    depends_on('blt', type='build')
+    depends_on('blt@0.5.0:', type='build', when='@0.6.2:')
 
     depends_on("mpi", when="+mpi")
 
@@ -149,6 +152,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-shroud", when="+devtools")
     depends_on("llvm+clang@10.0.0", when="+devtools", type='build')
+
+    # Hard requirement after Axom 0.6.1
+    conflicts("~cpp14", when="@0.6.2:")
 
     # Conduit's cmake config files moved and < 0.4.0 can't find it
     conflicts("^conduit@0.7.2:", when="@:0.4.0")
@@ -222,7 +228,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
                                                   description))
 
-        if "+cpp14" in spec:
+        if "+cpp14" in spec and spec.satisfies("@0.6.2:"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
         return entries
@@ -252,10 +258,12 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(
                     "# cuda_arch could not be determined\n\n")
 
-            if "+cpp14" in spec:
-                cudaflags += " -std=c++14"
-            else:
-                cudaflags += " -std=c++11"
+            if spec.satisfies("^blt@:0.6.1"):
+                # This is handled internally by BLT now
+                if "+cpp14" in spec:
+                    cudaflags += " -std=c++14"
+                else:
+                    cudaflags += " -std=c++11"
             entries.append(
                 cmake_cache_string("CMAKE_CUDA_FLAGS", cudaflags))
 
