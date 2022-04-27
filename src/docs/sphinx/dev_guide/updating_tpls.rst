@@ -87,6 +87,12 @@ instructions on how to update a built-in TPL are as follows:
 #. Follow the normal pull request work flow. More info on :ref:`pullrequest-label`.
 
 
+Important Scripts and Configure Files
+-------------------------------------
+
+describe stuff here
+
+
 .. _local-tpls-label:
 
 Local Third-party Library Installation
