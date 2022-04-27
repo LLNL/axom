@@ -49,7 +49,7 @@ traditional sense. To update one of these packages in Axom, simply go into
 its directory in Axom and check out a new version. If a version is intended
 to be changed in the Axom repo, make the version change on a branch and 
 submit a GitHub pull request as you would do for other software changes.
-More info on :ref:`toolkitbuild-label`.
+More info on :ref:`building-axom-label`.
 
 Built-in TPLs
 -------------
