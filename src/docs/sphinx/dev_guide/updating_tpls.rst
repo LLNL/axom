@@ -48,21 +48,21 @@ Spack also handles system level packages, so you can describe where they are on 
 system instead of building them from scratch.  You will need to describe which compilers
 are available on your system as well.
 
- * `Spack's documentation <https://github.com/spack/spack>`_
- * Platform specific configuration files live under ``scripts/spack/configs/<platform name>``.
-   There are two files per platform:
+* `Spack's documentation <https://github.com/spack/spack>`_
+* Platform specific configuration files live under ``scripts/spack/configs/<platform name>``.
+  There are two files per platform:
 
-    * ``compilers.yaml``: This file contains the compiler specs that describe the location
-      and any other required information about that compiler.  For example, compiler or 
-      linker flags.
-    * ``packages.yaml``: This file describes the system level packages.  For example,
-      where they are located and what version they are. This file is very imporant
-      due to its ability to drastically reduce the level
+   * ``compilers.yaml``: This file contains the compiler specs that describe the location
+     and any other required information about that compiler.  For example, compiler or 
+     linker flags.
+   * ``packages.yaml``: This file describes the system level packages.  For example,
+     where they are located and what version they are. This file is very imporant
+     due to its ability to drastically reduce the amount of packages that Spack builds.
 
-  * Axom specific Spack package files live under ``scripts/spack/packages``. These override
-    the package files that live in Spack's repository.  We try to minimize these but
-    we have have to alter the existing packages to apply fixes before pushing them up
-    to Spack proper or alterations to the recipes that are Axom specific.
+* Axom specific Spack package files live under ``scripts/spack/packages``. These override
+  the package files that live in Spack's repository.  We try to minimize these but
+  we have have to alter the existing packages to apply fixes before pushing them up
+  to Spack proper or alterations to the recipes that are Axom specific.
 
 
 =============
