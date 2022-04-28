@@ -29,41 +29,40 @@ packages:
     buildable: false
   mvapich2:
     externals:
-    - spec: mvapich2@2.3.6%clang@13.0.0~cuda~debug~regcache~wrapperrpath ch3_rank_bits=32
+    - spec: mvapich2@2.3.6%clang@14.0.0~cuda~debug~regcache~wrapperrpath ch3_rank_bits=32
         file_systems=lustre,nfs,ufs process_managers=slurm
       prefix: /usr/tce/packages/mvapich2-tce/mvapich2-2.3.6-rocmcc-4.5.2/
     buildable: false
 
   hip:
-    version: [4.5.2]
+    version: [5.1.0]
     buildable: false
-    externals:
-    - spec: hip@4.5.2
-      prefix: /opt/rocm-4.5.2/hip
+    - spec: hip@5.1.0
+      prefix: /opt/rocm-5.1.0/hip
   llvm-amdgpu:
-    version: [4.5.2]
+    version: [5.1.0]
     buildable: false
     externals:
-    - spec: llvm-amdgpu@4.5.2
-      prefix: /opt/rocm-4.5.2/llvm
+    - spec: llvm-amdgpu@5.1.0
+      prefix: /opt/rocm-5.1.0/llvm
   hsa-rocr-dev:
-    version: [4.5.2]
+    version: [5.1.0]
     buildable: false
     externals:
-    - spec: hsa-rocr-dev@4.5.2
-      prefix: /opt/rocm-4.5.2/
+    - spec: hsa-rocr-dev@5.1.0
+      prefix: /opt/rocm-5.1.0/
   rocminfo:
-    version: [4.5.2]
+    version: [5.1.0]
     buildable: false
     externals:
-    - spec: rocminfo@4.5.2
-      prefix: /opt/rocm-4.5.2/
+    - spec: rocminfo@5.1.0
+      prefix: /opt/rocm-5.1.0/
   rocm-device-libs:
-    version: [4.5.2]
+    version: [5.1.0]
     buildable: false
     externals:
-    - spec: rocm-device-libs@4.5.2
-      prefix: /opt/rocm-4.5.2/
+    - spec: rocm-device-libs@5.1.0
+      prefix: /opt/rocm-5.1.0/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
