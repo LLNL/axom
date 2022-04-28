@@ -25,6 +25,46 @@ these dependencies for Axom.
   * Others?
 
 
+===========================================
+Build Scripts and Their Configuration Files
+===========================================
+
+There are three levels of build scripts or programs that drive TPL builds.
+As you move up the levels, and away from Spack, the scripts require less
+configuration and even build suites of builds at a time.
+
+Here is a brief description of what the levels are handling and what important
+configuration and input files they use, from lowest level to highest.
+
+Spack
+-----
+
+Spack is a multi-platform package manager that builds and installs multiple versions
+and configurations of software. It has recipes on how to build each library (or package)
+with variants on each package to customize them to your needs.  For example, Axom
+has variants for Fortran and MPI, among others.  These recipes handle how to drive
+the individual packages build systems, as well as any packages they depend on.
+Spack also handles system level packages, so you can describe where they are on your
+system instead of building them from scratch.  You will need to describe which compilers
+are available on your system as well.
+
+ * `Spack's documentation <https://github.com/spack/spack>`_
+ * Platform specific configuration files live under `scripts/spack/configs/<platform name>`.
+   There are two files per platform:
+
+    * `compilers.yaml`: This file contains the compiler specs that describe the location
+      and any other required information about that compiler.  For example, compiler or 
+      linker flags.
+    * `packages.yaml`: This file describes the system level packages.  For example,
+      where they are located and what version they are. This file is very imporant
+      due to its ability to drastically reduce the level
+
+  * Axom specific Spack package files live under `scripts/spack/packages`. These override
+   the package files that live in Spack's repository.  We try to minimize these but
+   we have have to alter the existing packages to apply fixes before pushing them up
+   to Spack proper or alterations to the recipes that are Axom specific.
+
+
 =============
 Updating TPLs
 =============
@@ -85,13 +125,6 @@ instructions on how to update a built-in TPL are as follows:
 #. Ensure that the build and tests still pass. More info on :ref:`testing-label`.
 
 #. Follow the normal pull request work flow. More info on :ref:`pullrequest-label`.
-
-
-Important Scripts and Configure Files
--------------------------------------
-
-describe stuff here
-
 
 .. _local-tpls-label:
 
