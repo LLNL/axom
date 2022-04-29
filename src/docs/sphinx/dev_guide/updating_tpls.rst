@@ -40,7 +40,7 @@ Spack
 -----
 
 Spack is a multi-platform package manager that builds and installs multiple versions
-and configurations of software. It has recipes on how to build each library (or package)
+and configurations of software packages. It has recipes on how to build each package
 with variants on each package to customize them to your needs.  For example, Axom
 has variants for Fortran and MPI, among others.  These recipes handle how to drive
 the individual packages build systems, as well as any packages they depend on.
@@ -48,7 +48,6 @@ Spack also handles system level packages, so you can describe where they are on 
 system instead of building them from scratch.  You will need to describe which compilers
 are available on your system as well.
 
-* `Spack's documentation <https://github.com/spack/spack>`_
 * Platform specific configuration files live under ``scripts/spack/configs/<platform name>``.
   There are two files per platform:
 
@@ -60,9 +59,12 @@ are available on your system as well.
      due to its ability to drastically reduce the amount of packages that Spack builds.
 
 * Axom specific Spack package files live under ``scripts/spack/packages``. These override
-  the package files that live in Spack's repository.  We try to minimize these but
-  we have have to alter the existing packages to apply fixes before pushing them up
-  to Spack proper or alterations to the recipes that are Axom specific.
+  the package files that live in Spack's repository here ``var/spack/repos/builtin/packages``.
+  We try to minimize these but we have have to alter the existing packages to apply fixes before
+  pushing them up to Spack proper or alterations to the recipes that are Axom specific.
+  This overriding does not happen at the Spack level, but at the next level, Uberenv.
+* `Spack's Github repo <https://github.com/spack/spack>`_
+* `Spack's documentation <https://spack.readthedocs.io/en/latest/>`_
 
 
 =============
