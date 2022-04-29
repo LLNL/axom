@@ -184,6 +184,14 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
                 arch_str = ",".join(archs)
                 entries.append(cmake_cache_string(
                     "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
+            hip_root = spec['hip'].prefix
+            rocm_root = hip_root + "/.."
+            hip_clang_include_path = rocm_root + "/llvm/lib/clang/14.0.0/include"
+            # entries.append(cmake_cache_path("HIP_CLANG_PATH",
+            #                             rocm_root + '/llvm/bin'))
+            # entries.append(cmake_cache_path("ROCM_PATH", rocm_root))
+            entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+            # entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
         else:
             entries.append(cmake_cache_option("ENABLE_HIP", False))
 

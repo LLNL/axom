@@ -117,6 +117,15 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_HIP", True))
             entries.append(cmake_cache_path(
                 "HIP_ROOT_DIR", '{0}'.format(spec['hip'].prefix)))
+            hip_root = spec['hip'].prefix
+            rocm_root = hip_root + "/.."
+            hip_clang_include_path = rocm_root + "/llvm/lib/clang/14.0.0/include"
+            # entries.append(cmake_cache_path("HIP_CLANG_PATH",
+            #                             rocm_root + '/llvm/bin'))
+            # entries.append(cmake_cache_path("ROCM_PATH", rocm_root))
+            entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+            entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
+
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':
                 arch_str = ",".join(archs)
