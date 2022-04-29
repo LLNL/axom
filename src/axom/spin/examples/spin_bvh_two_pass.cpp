@@ -75,7 +75,7 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
   using exec_pol = typename axom::execution_space<ExecSpace>::loop_policy;
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
 
-  int allocatorId;
+  int allocatorId = axom::execution_space<ExecSpace>::allocatorID();
 
   const int ncells = mesh->getNumberOfCells();
 
@@ -260,23 +260,23 @@ int main(int argc, char** argv)
   switch(args.exec_space)
   {
   case ExecPolicy::CPU:
-    benchmark_point_in_cell<axom::SEQ_EXEC>(surface_mesh.get(),
-                                            firstPair,
-                                            secondPair);
+    find_collisions_broadphase<axom::SEQ_EXEC>(surface_mesh.get(),
+                                               firstPair,
+                                               secondPair);
     break;
 #ifdef AXOM_USE_RAJA
   #ifdef AXOM_USE_OPENMP
   case ExecPolicy::OpenMP:
-    benchmark_point_in_cell<axom::OMP_EXEC>(surface_mesh.get(),
-                                            firstPair,
-                                            secondPair);
+    find_collisions_broadphase<axom::OMP_EXEC>(surface_mesh.get(),
+                                               firstPair,
+                                               secondPair);
     break;
   #endif
   #ifdef AXOM_USE_CUDA
   case ExecPolicy::GPU:
-    benchmark_point_in_cell<axom::CUDA_EXEC<256>>(surface_mesh.get(),
-                                                  firstPair,
-                                                  secondPair);
+    find_collisions_broadphase<axom::CUDA_EXEC<256>>(surface_mesh.get(),
+                                                     firstPair,
+                                                     secondPair);
     break;
   #endif
 #endif
