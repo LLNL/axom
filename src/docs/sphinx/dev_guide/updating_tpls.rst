@@ -36,8 +36,8 @@ configuration and even build suites of builds at a time.
 Here is a brief description of what the levels are handling and what important
 configuration and input files they use, from lowest level to highest.
 
-Spack
------
+Level 1: Spack
+--------------
 
 Spack is a multi-platform package manager that builds and installs multiple versions
 and configurations of software packages. It has recipes on how to build each package
@@ -65,6 +65,46 @@ are available on your system as well.
   This overriding does not happen at the Spack level, but at the next level, Uberenv.
 * `Spack's Github repo <https://github.com/spack/spack>`_
 * `Spack's documentation <https://spack.readthedocs.io/en/latest/>`_
+
+Level 1: Vcpkg
+--------------
+
+Vcpkg is an open-source C++ Library Manager for Windows, Linux, and MacOS by Microsoft.
+Axom only uses it for our Windows TPL builds.
+
+* Project specific package files live under ``develop/scripts/vcpkg_ports``.  There are
+  two different files for each package:
+
+   * ``portfile.cmake``: This file is the recipe on how to build the package. Vcpkg
+     has strict rules about how your project is laid out and you can do the conversion
+     in this file as well.
+   * ``vcpkg.json``: This is the manifest file that describes information about the
+     package.  For example, dependencies, license information, and optional features.
+
+* `Vcpkg's Github repo <https://github.com/microsoft/vcpkg>`_
+* `Vcpkg's documentation <https://github.com/microsoft/vcpkg#table-of-contents>`_
+
+Level 2: Uberenv
+----------------
+
+Uberenv simplifies the use of two level 1 package managers, Spack and Vcpkg.
+We rely on Uberenv for two major points: reducing multiple commands into one
+and adding as much determinism as possible. The basic workflow in Uberenv is
+the following:
+
+# Setup necessary paths and directories like the base directory where the
+  package manager will be installed.
+# Clone the package manager to the specific Git commit.
+# Apply patches to package manager. For example, disabling extra config scopes in Spack.
+# Clean previous temporary information from previous runs that may bleed into this run.
+# Optionally create a package source mirror.
+# Install packages via the selected package manager.
+
+* ``.uberenv_config.json``: This file describes project specific configurations,
+  such as, where to download the package manager, what git commit to use, and
+  the top level package to install.
+* `Uberenv's Github repo <https://github.com/LLNL/uberenv>`_
+* `Uberenv's documentation <https://uberenv.readthedocs.io/en/latest/>`_
 
 
 =============
