@@ -74,7 +74,7 @@ set( primal_dependencies
      )
 
 blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
-blt_list_append( TO primal_dependencies ELEMENTS hip_runtime IF ENABLE_HIP )
+blt_list_append( TO primal_dependencies ELEMENTS blt::hip_runtime IF ENABLE_HIP )
 
 blt_add_library(
     NAME                  primal
