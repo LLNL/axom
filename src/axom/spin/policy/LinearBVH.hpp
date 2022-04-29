@@ -43,7 +43,9 @@ public:
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
-  LinearBVHTraverser(BoxType* bboxes, int32* inner_node_children, int32* leaf_nodes)
+  LinearBVHTraverser(axom::ArrayView<const BoxType> bboxes,
+                     axom::ArrayView<const int32> inner_node_children,
+                     axom::ArrayView<const int32> leaf_nodes)
     : m_inner_nodes(bboxes)
     , m_inner_node_children(inner_node_children)
     , m_leaf_nodes(leaf_nodes)
@@ -60,9 +62,9 @@ public:
       return sqDistL > sqDistR;
     };
 
-    lbvh::bvh_traverse(m_inner_nodes,
-                       m_inner_node_children,
-                       m_leaf_nodes,
+    lbvh::bvh_traverse(m_inner_nodes.data(),
+                       m_inner_node_children.data(),
+                       m_leaf_nodes.data(),
                        p,
                        predicate,
                        lf,
@@ -92,9 +94,9 @@ public:
   }
 
 private:
-  BoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
-  int32* m_inner_node_children {nullptr};
-  int32* m_leaf_nodes {nullptr};  // leaf data
+  axom::ArrayView<const BoxType> m_inner_nodes;  // BVH bins including leafs
+  axom::ArrayView<const int32> m_inner_node_children;
+  axom::ArrayView<const int32> m_leaf_nodes;  // leaf data
 };
 
 /*!
@@ -115,7 +117,6 @@ public:
   using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   LinearBVH() = default;
-  ~LinearBVH() { deallocate(); }
 
   /*!
    * \brief Builds a linear BVH with the given bounding boxes as leaf nodes.
@@ -157,29 +158,27 @@ public:
 
   TraverserType getTraverserImpl() const
   {
-    return TraverserType(m_inner_nodes, m_inner_node_children, m_leaf_nodes);
+    return TraverserType(m_inner_nodes.view(),
+                         m_inner_node_children.view(),
+                         m_leaf_nodes.view());
   }
 
 private:
   void allocate(int32 size, int allocID)
   {
     AXOM_PERF_MARK_FUNCTION("LinearBVH::allocate");
-    m_inner_nodes = axom::allocate<BoundingBoxType>((size - 1) * 2, allocID);
-    m_inner_node_children = axom::allocate<int32>((size - 1) * 2, allocID);
-    m_leaf_nodes = axom::allocate<int32>(size, allocID);
+    IndexType numInnerNodes = (size - 1) * 2;
+    m_inner_nodes =
+      axom::Array<BoundingBoxType>(numInnerNodes, numInnerNodes, allocID);
+    m_inner_node_children =
+      axom::Array<int32>(numInnerNodes, numInnerNodes, allocID);
+    m_leaf_nodes = axom::Array<int32>(size, size, allocID);
   }
 
-  void deallocate()
-  {
-    AXOM_PERF_MARK_FUNCTION("LinearBVH::deallocate");
-    axom::deallocate(m_inner_nodes);
-    axom::deallocate(m_inner_node_children);
-    axom::deallocate(m_leaf_nodes);
-  }
-
-  BoundingBoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
-  int32* m_inner_node_children {nullptr};
-  int32* m_leaf_nodes {nullptr};  // leaf data
+  bool m_initialized {false};
+  axom::Array<BoundingBoxType> m_inner_nodes;  // BVH bins including leafs
+  axom::Array<int32> m_inner_node_children;
+  axom::Array<int32> m_leaf_nodes;  // leaf data
   primal::BoundingBox<FloatType, NDIMS> m_bounds;
 };
 
@@ -218,8 +217,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
   const BoundingBoxType* leaf_aabb_ptr = radix_tree.m_leaf_aabbs;
   const BoundingBoxType* inner_aabb_ptr = radix_tree.m_inner_aabbs;
 
-  primal::BoundingBox<FloatType, NDIMS>* bvh_inner_nodes = m_inner_nodes;
-  int32* bvh_inner_node_children = m_inner_node_children;
+  const auto bvh_inner_nodes = m_inner_nodes.view();
+  const auto bvh_inner_node_children = m_inner_node_children.view();
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
@@ -262,7 +261,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                            }););
 
   int32* radix_tree_leafs = radix_tree.m_leafs;
-  int32* bvh_leafs = m_leaf_nodes;
+  const auto bvh_leafs = m_leaf_nodes.view();
 
   AXOM_PERF_MARK_SECTION(
     "emit_bvh_leafs",
@@ -271,6 +270,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
       AXOM_LAMBDA(int32 i) { bvh_leafs[i] = radix_tree_leafs[i]; }););
 
   radix_tree.deallocate();
+
+  m_initialized = true;
 }
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
@@ -289,13 +290,11 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
 
   SLIC_ERROR_IF(offsets == nullptr, "supplied null pointer for offsets!");
   SLIC_ERROR_IF(counts == nullptr, "supplied null value for counts!");
+  SLIC_ASSERT(m_initialized);
 
-  const BoundingBoxType* inner_nodes = m_inner_nodes;
-  const int32* inner_node_children = m_inner_node_children;
-  const int32* leaf_nodes = m_leaf_nodes;
-  SLIC_ASSERT(inner_nodes != nullptr);
-  SLIC_ASSERT(inner_node_children != nullptr);
-  SLIC_ASSERT(leaf_nodes != nullptr);
+  const auto inner_nodes = m_inner_nodes.view();
+  const auto inner_node_children = m_inner_node_children.view();
+  const auto leaf_nodes = m_leaf_nodes.view();
 
   auto noTraversePref = [] AXOM_HOST_DEVICE(const BoundingBoxType&,
                                             const BoundingBoxType&,
@@ -321,9 +320,9 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
           count++;
         };
 
-        lbvh::bvh_traverse(inner_nodes,
-                           inner_node_children,
-                           leaf_nodes,
+        lbvh::bvh_traverse(inner_nodes.data(),
+                           inner_node_children.data(),
+                           leaf_nodes.data(),
                            primitive,
                            predicate,
                            leafAction,
@@ -363,9 +362,9 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                offset++;
                              };
 
-                             lbvh::bvh_traverse(inner_nodes,
-                                                inner_node_children,
-                                                leaf_nodes,
+                             lbvh::bvh_traverse(inner_nodes.data(),
+                                                inner_node_children.data(),
+                                                leaf_nodes.data(),
                                                 obj,
                                                 predicate,
                                                 leafAction,
@@ -390,9 +389,9 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
         current_offset++;
       };
 
-      lbvh::bvh_traverse(inner_nodes,
-                         inner_node_children,
-                         leaf_nodes,
+      lbvh::bvh_traverse(inner_nodes.data(),
+                         inner_node_children.data(),
+                         leaf_nodes.data(),
                          obj,
                          predicate,
                          leafAction,
@@ -436,8 +435,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::writeVtkFileImpl(
 
   // STEP 2: traverse the BVH and dump each bin
   constexpr int32 ROOT = 0;
-  lbvh::write_recursive<FloatType, NDIMS>(m_inner_nodes,
-                                          m_inner_node_children,
+  lbvh::write_recursive<FloatType, NDIMS>(m_inner_nodes.data(),
+                                          m_inner_node_children.data(),
                                           ROOT,
                                           1,
                                           numPoints,
