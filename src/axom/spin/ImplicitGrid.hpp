@@ -611,9 +611,9 @@ public:
     for(int idim = 0; idim < NDIMS; idim++)
     {
       m_highestBins[idim] = binData[idim].set()->size() - 1;
-      m_binData[idim] = binData[idim].data().data();
-      m_minBlkBin[idim] = minBlkBins[idim].data();
-      m_maxBlkBin[idim] = maxBlkBins[idim].data();
+      m_binData[idim] = binData[idim].data().view();
+      m_minBlkBin[idim] = minBlkBins[idim].view();
+      m_maxBlkBin[idim] = maxBlkBins[idim].view();
     }
   }
 
@@ -772,13 +772,13 @@ private:
   IndexType m_highestBins[NDIMS];
 
   //! The data associated with each bin
-  const BitsetType* m_binData[NDIMS];
+  axom::ArrayView<const BitsetType> m_binData[NDIMS];
 
   //! The lowest word index in each bin with at least one bit set
-  const IndexType* m_minBlkBin[NDIMS];
+  axom::ArrayView<const IndexType> m_minBlkBin[NDIMS];
 
   //! The highest word index in each bin with at least one bit set
-  const IndexType* m_maxBlkBin[NDIMS];
+  axom::ArrayView<const IndexType> m_maxBlkBin[NDIMS];
 };
 
 template <int NDIMS, typename ExecSpace, typename IndexType>
