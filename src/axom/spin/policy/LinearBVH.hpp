@@ -62,9 +62,9 @@ public:
       return sqDistL > sqDistR;
     };
 
-    lbvh::bvh_traverse(m_inner_nodes.data(),
-                       m_inner_node_children.data(),
-                       m_leaf_nodes.data(),
+    lbvh::bvh_traverse(m_inner_nodes,
+                       m_inner_node_children,
+                       m_leaf_nodes,
                        p,
                        predicate,
                        lf,
@@ -325,9 +325,9 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
           count++;
         };
 
-        lbvh::bvh_traverse(inner_nodes.data(),
-                           inner_node_children.data(),
-                           leaf_nodes.data(),
+        lbvh::bvh_traverse(inner_nodes,
+                           inner_node_children,
+                           leaf_nodes,
                            primitive,
                            predicate,
                            leafAction,
@@ -367,9 +367,9 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                offset++;
                              };
 
-                             lbvh::bvh_traverse(inner_nodes.data(),
-                                                inner_node_children.data(),
-                                                leaf_nodes.data(),
+                             lbvh::bvh_traverse(inner_nodes,
+                                                inner_node_children,
+                                                leaf_nodes,
                                                 obj,
                                                 predicate,
                                                 leafAction,
@@ -394,9 +394,9 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
         current_offset++;
       };
 
-      lbvh::bvh_traverse(inner_nodes.data(),
-                         inner_node_children.data(),
-                         leaf_nodes.data(),
+      lbvh::bvh_traverse(inner_nodes,
+                         inner_node_children,
+                         leaf_nodes,
                          obj,
                          predicate,
                          leafAction,
