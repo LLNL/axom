@@ -168,8 +168,13 @@ private:
   {
     AXOM_PERF_MARK_FUNCTION("LinearBVH::allocate");
     IndexType numInnerNodes = (size - 1) * 2;
+    // Need to allocate this uninitialized, since primal::BoundingBox is
+    // considered non-trivially-copyable on GCC 4.9.3
     m_inner_nodes =
-      axom::Array<BoundingBoxType>(numInnerNodes, numInnerNodes, allocID);
+      axom::Array<BoundingBoxType>(axom::ArrayOptions::Uninitialized {},
+                                   numInnerNodes,
+                                   numInnerNodes,
+                                   allocID);
     m_inner_node_children =
       axom::Array<int32>(numInnerNodes, numInnerNodes, allocID);
     m_leaf_nodes = axom::Array<int32>(size, size, allocID);
