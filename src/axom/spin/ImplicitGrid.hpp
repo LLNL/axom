@@ -446,11 +446,12 @@ public:
    * \param [in] queryObjs The array of query objects, of length qsize
    * \param [out] outOffsets Offsets into the candidates array for each query
    *  object
-   * \param [out] out counts The number of candidates for each query object
-   * \param [out] candidates The candidate IDs for each query object
+   * \param [out] outCounts The number of candidates for each query object
+   * \param [out] outCandidates The candidate IDs for each query object
    *
-   * \note The output arrays are allocated inside the function, using the given
-   *  allocator ID passed in during implicit grid initialization.
+   * \note outOffsets and outCounts should point to arrays allocated in a
+   *  memory space accessible from the given execution space, and be of
+   *  length qsize.
    *
    * \note Upon completion, the ith query point has:
    *  * counts[ i ] candidates
@@ -460,8 +461,8 @@ public:
   template <typename QueryGeom>
   void getCandidatesAsArray(axom::IndexType qsize,
                             const QueryGeom* queryObjs,
-                            axom::Array<IndexType>& outOffsets,
-                            axom::Array<IndexType>& outCounts,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
                             axom::Array<IndexType>& outCandidates);
 
   /*!
@@ -797,51 +798,50 @@ template <typename QueryGeom>
 void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
   axom::IndexType qsize,
   const QueryGeom* queryObjs,
-  axom::Array<IndexType>& outOffsets,
-  axom::Array<IndexType>& outCounts,
+  axom::ArrayView<IndexType> outOffsets,
+  axom::ArrayView<IndexType> outCounts,
   axom::Array<IndexType>& outCandidates)
 {
+  SLIC_ERROR_IF(outOffsets.size() < qsize,
+                "outOffsets must have at least qsize elements");
+  SLIC_ERROR_IF(outCounts.size() < qsize,
+                "outCounts must have at least qsize elements");
   auto gridQuery = getQueryObject();
 
-  outCounts = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
-  outOffsets = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
 #ifdef AXOM_USE_RAJA
-  IndexType* countsPtr = outCounts.data();
-  IndexType* offsetsPtr = outOffsets.data();
-
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
   // Step 1: count number of candidate intersections for each point
   for_all<ExecSpace>(
     qsize,
     AXOM_LAMBDA(IndexType i) {
-      countsPtr[i] = gridQuery.countCandidates(queryObjs[i]);
-      totalCountReduce += countsPtr[i];
+      outCounts[i] = gridQuery.countCandidates(queryObjs[i]);
+      totalCountReduce += outCounts[i];
     });
 
   // Step 2: exclusive scan for offsets in candidate array
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(countsPtr, qsize),
-                                    RAJA::make_span(offsetsPtr, qsize),
+  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(outCounts.data(), qsize),
+                                    RAJA::make_span(outOffsets.data(), qsize),
                                     RAJA::operators::plus<IndexType> {});
 
   axom::IndexType totalCount = totalCountReduce.get();
 
   // Step 3: allocate memory for all candidates
   outCandidates = axom::Array<IndexType>(totalCount, totalCount, m_allocatorId);
-  IndexType* candidatesPtr = outCandidates.data();
+  const auto candidates_v = outCandidates.view();
 
   // Step 4: fill candidate array for each query box
   for_all<ExecSpace>(
     qsize,
     AXOM_LAMBDA(IndexType i) {
-      int startIdx = offsetsPtr[i];
+      int startIdx = outOffsets[i];
       int currCount = 0;
       auto onCandidate = [&](int candidateIdx) -> bool {
-        candidatesPtr[startIdx] = candidateIdx;
+        candidates_v[startIdx] = candidateIdx;
         currCount++;
         startIdx++;
-        return currCount >= countsPtr[i];
+        return currCount >= outCounts[i];
       };
       gridQuery.visitCandidates(queryObjs[i], onCandidate);
     });

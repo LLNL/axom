@@ -439,15 +439,16 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
       this->m_aabbs.size(),
       allocatorId);
     gridIndex.insert(this->m_aabbs.size(), this->m_aabbs.data());
-    axom::Array<IndexType> offsetsTmp, countsTmp;
+
+    offsets.resize(this->m_aabbs.size());
+    counts.resize(this->m_aabbs.size());
+
     gridIndex.getCandidatesAsArray(this->m_aabbs.size(),
                                    this->m_aabbs.data(),
-                                   offsetsTmp,
-                                   countsTmp,
+                                   offsets,
+                                   counts,
                                    m_currCandidates);
 
-    offsets = offsetsTmp;
-    counts = countsTmp;
     return m_currCandidates;
   }
 

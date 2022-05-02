@@ -493,7 +493,7 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
       SpacePt {.35, 0.25, 0.99},  // outside coord 2
     };
 
-    axom::Array<int> count, offset, candidates;
+    axom::Array<int> count(9), offset(9), candidates;
 
     // Run query against implicit grid
     grid.getCandidatesAsArray(9, queryPts, offset, count, candidates);
@@ -527,7 +527,7 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
                           // Should be inside obj2 and obj3, but not obj1
                           SpacePt {.85, .85, .85}};
 
-    axom::Array<int> count, offset, candidates;
+    axom::Array<int> count(3), offset(3), candidates;
 
     // Run query against implicit grid
     grid.getCandidatesAsArray(3, queryPts, offset, count, candidates);
@@ -824,7 +824,7 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
                                    DIM * 6,
                                    DIM * 10};
 
-  axom::Array<int> offset, count, candidates;
+  axom::Array<int> offset(N_QUERIES), count(N_QUERIES), candidates;
 
   // Run query against implicit grid
   grid.getCandidatesAsArray(N_QUERIES, queryBoxes, offset, count, candidates);
