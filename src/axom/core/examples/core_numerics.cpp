@@ -198,8 +198,8 @@ void demoMatrix()
                " matrix "
             << std::endl
             << A << std::endl
-            << "and the result code was " << res << " (1 = success)."
-            << std::endl << std::endl;
+            << "and the result code was " << res << " (1 = success)." << std::endl
+            << std::endl;
   if(res > 0)
   {
     for(int i = 0; i < nrows; ++i)
@@ -218,8 +218,8 @@ void demoMatrix()
             << std::endl
             << A << std::endl
             << "and the result code was " << res << " ("
-            << numerics::JACOBI_EIGENSOLVE_SUCCESS << " = success)."
-            << std::endl << std::endl;
+            << numerics::JACOBI_EIGENSOLVE_SUCCESS << " = success)." << std::endl
+            << std::endl;
   if(res == numerics::JACOBI_EIGENSOLVE_SUCCESS)
   {
     for(int i = 0; i < nrows; ++i)
@@ -249,11 +249,11 @@ void demoMatrix()
 
     int rc = numerics::linear_solve(A, b, x);
 
-    std::cout << "Solved for x in the linear system Ax = b, where" 
-              << std::endl << "A = " << std::endl 
-              << A
-              << " and b = [" << b[0] << ", " << b[1] << ", " << b[2]
-              << "]." << std::endl << std::endl
+    std::cout << "Solved for x in the linear system Ax = b, where" << std::endl
+              << "A = " << std::endl
+              << A << " and b = [" << b[0] << ", " << b[1] << ", " << b[2]
+              << "]." << std::endl
+              << std::endl
               << "Result code is " << rc << " (0 = success)" << std::endl;
     if(rc == 0)
     {

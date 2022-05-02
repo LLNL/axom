@@ -48,35 +48,32 @@ void demoMemoryManageBasic()
   //Print array values after initialization
   for(int i = 0; i < len; i++)
   {
-    std::cout << i << " Current value: " 
-                   << dynamic_memory_array[i] << std::endl;
+    std::cout << i << " Current value: " << dynamic_memory_array[i] << std::endl;
   }
 
   dyn_array_dst = axom::allocate<int>(len);
 
-  //Now, a copy operation. It's used exactly like memcpy -- 
+  //Now, a copy operation. It's used exactly like memcpy --
   //destination, source, number of bytes.
   axom::copy(dyn_array_dst, dynamic_memory_array, sizeof(int) * len);
 
-  //Print array values and compare to copy 
+  //Print array values and compare to copy
   for(int i = 0; i < len; i++)
   {
-    std::cout << i << " Current value: " << dyn_array_dst[i] 
-              << std::endl;
+    std::cout << i << " Current value: " << dyn_array_dst[i] << std::endl;
     std::cout << "Matches old value? " << std::boolalpha
-              << (dynamic_memory_array[i] == dyn_array_dst[i]) 
-              << std::endl;
+              << (dynamic_memory_array[i] == dyn_array_dst[i]) << std::endl;
   }
 
-  //Deallocate is exactly like free. Of course, you cannot access the 
+  //Deallocate is exactly like free. Of course, you cannot access the
   //now-deallocated memory after this:
   axom::deallocate(dyn_array_dst);
 
-  //Reallocate is like realloc -- copies existing contents into new 
+  //Reallocate is like realloc -- copies existing contents into new
   //memory allocation.
-  //Slight deviation from realloc() in that second arg is item count, 
+  //Slight deviation from realloc() in that second arg is item count,
   //rather than bytes.
-  dynamic_memory_array = axom::reallocate(dynamic_memory_array, len*2);
+  dynamic_memory_array = axom::reallocate(dynamic_memory_array, len * 2);
   for(int i = 20; i < len * 2; i++)
   {
     dynamic_memory_array[i] = i;
@@ -84,8 +81,7 @@ void demoMemoryManageBasic()
 
   for(int i = 0; i < len * 2; i++)
   {
-    std::cout << i << " Current value: " << dynamic_memory_array[i] 
-              << std::endl;
+    std::cout << i << " Current value: " << dynamic_memory_array[i] << std::endl;
   }
   // _membasic_end
 }
