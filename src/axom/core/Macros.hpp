@@ -19,12 +19,12 @@
  * \def AXOM_DEVICE
  * \def AXOM_HOST_DEVICE
  *
- * \brief CUDA host/device macros for decorating functions/lambdas
+ * \brief CUDA or HIP host/device macros for decorating functions/lambdas
  *
- * \note These will expand to the corresponding CUDA decorations when
- *  compiled with -DAXOM_USE_CUDA
+ * \note These will expand to the corresponding CUDA/HIP decorations when
+ *  compiled with -DAXOM_USE_CUDA or -DAXOM_USE_HIP
  */
-#if defined(__CUDACC__)
+#if defined(__CUDACC__) || defined(__HIPCC__)
   #define AXOM_DEVICE __device__
   #define AXOM_HOST_DEVICE __host__ __device__
   #define AXOM_HOST __host__
@@ -69,15 +69,15 @@
  * \def AXOM_LAMBDA
  *
  * \brief Convenience macro used for lambda capture by value.
- * \note When CUDA is used, the macro always expands to a host/device lambda.
+ * \note When CUDA or HIP is used, the macro always expands to a host/device lambda.
  *
- * \warning When compiling with CUDA, host/device lambdas incur a significant
+ * \warning When compiling with CUDA or HIP, host/device lambdas incur a significant
  *  penalty on the CPU code. The way NVCC implements host/device lambdas
- *  prevents the compiler from proper in-lining them. When CUDA is enabled use
- *  the parallel_gpu execution policy or opt to turn off CUDA if the application
+ *  prevents the compiler from proper in-lining them. When CUDA or HIP is enabled use
+ *  the parallel_gpu execution policy or opt to turn off CUDA or HIP if the application
  *  is making more use of the parallel_cpu and serial execution policies.
  */
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
   #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
   #define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
   #define AXOM_HOST_LAMBDA [=] AXOM_HOST
@@ -102,11 +102,25 @@
 #endif
 
 /*!
+ * \def AXOM_HIP_TEST
+ *
+ * \brief Convenience macro used for a gtest that uses hip.
+ */
+#if defined(AXOM_USE_HIP)
+  #define AXOM_HIP_TEST(X, Y)         \
+    static void hip_test_##X##Y();    \
+    TEST(X, Y) { hip_test_##X##Y(); } \
+    static void hip_test_##X##Y()
+#else
+  #define AXOM_HIP_TEST(X, Y) TEST(X, Y)
+#endif
+
+/*!
  * \def AXOM_DEVICE_CODE
  *
  * \brief Convenience macro used for kernel code
  */
-#if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
   #define AXOM_DEVICE_CODE
 #endif
 

@@ -31,6 +31,7 @@ if(NOT AXOM_FOUND)
   # Language features
   set(AXOM_ENABLE_FORTRAN     "@ENABLE_FORTRAN@")
   set(AXOM_USE_CUDA           "@AXOM_USE_CUDA@")
+  set(AXOM_USE_HIP            "@AXOM_USE_HIP@")
   set(AXOM_USE_MPI            "@AXOM_USE_MPI@")
   set(AXOM_USE_OPENMP         "@AXOM_USE_OPENMP@")
 
