@@ -61,7 +61,10 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on('camp@0.1.0', when='@0.12.0:0.13.0')
     depends_on('camp@2022.03.0:', when='@2022.03.0:')
 
+    # BEGIN AXOM EDIT
+    # Prevents spack spec with CMake 3.21
     #depends_on('cmake@:3.20', when='+rocm', type='build')
+    # END AXOM EDIT
     depends_on('cmake@3.14:', when='@2022.03.0:')
 
     with when('+rocm @0.12.0:'):
@@ -117,14 +120,16 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_HIP", True))
             entries.append(cmake_cache_path(
                 "HIP_ROOT_DIR", '{0}'.format(spec['hip'].prefix)))
+            # BEGIN AXOM EDIT
+            # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
             hip_root = spec['hip'].prefix
             rocm_root = hip_root + "/.."
             hip_clang_include_path = rocm_root + "/llvm/lib/clang/14.0.0/include"
-            # entries.append(cmake_cache_path("HIP_CLANG_PATH",
-            #                             rocm_root + '/llvm/bin'))
-            # entries.append(cmake_cache_path("ROCM_PATH", rocm_root))
             entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+
+            # C++ 14 error fix in camp
             entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
+            # END AXOM EDIT
 
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':

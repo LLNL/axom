@@ -78,7 +78,10 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
+    # BEGIN AXOM EDIT
+    # Prevents spack spec with CMake 3.21
     #depends_on('cmake@:3.20', when='+rocm', type='build')
+    # END AXOM EDIT
     depends_on('cmake@3.14:', when='@2022.03.0:')
 
     depends_on('blt@0.5.0:', type='build', when='@2022.03.0:')
@@ -184,14 +187,13 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
                 arch_str = ",".join(archs)
                 entries.append(cmake_cache_string(
                     "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
+            # BEGIN AXOM EDIT
+            # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
             hip_root = spec['hip'].prefix
             rocm_root = hip_root + "/.."
             hip_clang_include_path = rocm_root + "/llvm/lib/clang/14.0.0/include"
-            # entries.append(cmake_cache_path("HIP_CLANG_PATH",
-            #                             rocm_root + '/llvm/bin'))
-            # entries.append(cmake_cache_path("ROCM_PATH", rocm_root))
             entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
-            # entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
+            # END AXOM EDIT
         else:
             entries.append(cmake_cache_option("ENABLE_HIP", False))
 
