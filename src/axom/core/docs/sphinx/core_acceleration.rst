@@ -38,7 +38,7 @@ enabled, otherwise errors will occur at compilation.
 .. note::
    We refrain from including the output of the example in this section in the 
    documentation since the output is verbose. If you are curious, please 
-   attempt to run the examples yourself.
+   run the examples yourself.
 
 Here is an example of using Axom's memory management tools:
 
