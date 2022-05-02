@@ -251,7 +251,7 @@ void demoMatrix()
 
     std::cout << "Solved for x in the linear system Ax = b, where" 
               << std::endl << "A = " << std::endl 
-              << A <<
+              << A
               << " and b = [" << b[0] << ", " << b[1] << ", " << b[2]
               << "]." << std::endl << std::endl
               << "Result code is " << rc << " (0 = success)" << std::endl;
