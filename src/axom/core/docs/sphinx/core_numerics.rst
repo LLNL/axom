@@ -11,7 +11,7 @@ The ``axom::numerics`` namespace was designed for convenient representation
 and use of matrices and vectors, with accompanying manipulation and solver 
 routines.
 
-The following example show some basic vector operations.
+The following example shows some basic vector operations.
 
 .. literalinclude:: ../../examples/core_numerics.cpp
    :start-after: _vecops_start
