@@ -8,13 +8,12 @@ Core acceleration
 ******************************************************
 
 Axom's `core` component provides several utilities for user applications that 
-support execution on hardware accelerators. Axom lets users control execution 
-space using RAJA and memory space using Umpire. As noted in the 
-`RAJA documentation <https://raja.readthedocs.io/en/main/index.html>`_,
+support execution on hardware accelerators. Axom lets users control the execution 
+space (i.e. *where* code runs) using RAJA and movement between memory spaces using Umpire. 
+As noted in the `RAJA documentation <https://raja.readthedocs.io/en/main/index.html>`_,
 developers of high-performance computing applications have many options for 
 running code: on the CPU, using OpenMP, or on GPU hardware accelerators, and 
-the options are constantly evolving. RAJA controls *where* code runs; Umpire 
-moves data between memory spaces.
+the options are constantly evolving.
 
 .. note::
    * Axom's memory management and execution space APIs have default 
