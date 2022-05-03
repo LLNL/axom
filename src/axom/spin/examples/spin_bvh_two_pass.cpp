@@ -104,33 +104,46 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
       v_aabbs[cellIdx] = aabb;
     });
 
+  // _bvh_traverse_init_start
+  // Initialize BVH
   spin::BVH<3, ExecSpace, double> bvh;
   bvh.setAllocatorID(allocatorId);
   bvh.initialize(v_aabbs, v_aabbs.size());
 
+  // Create a traverser object from the BVH
   const auto bvh_device = bvh.getTraverser();
+  // _bvh_traverse_init_end
 
-  auto bbIsect = [] AXOM_HOST_DEVICE(const BoxType& bb1,
-                                     const BoxType& bb2) -> bool {
-    return bb1.intersectsWith(bb2);
+  // Define a simple intersection predicate for traversing the BVH.
+  // We traverse any nodes whose bounding boxes intersect the query
+  // bounding box.
+  // _bvh_traverse_predicate_start
+  auto bbIsect = [] AXOM_HOST_DEVICE(const BoxType& queryBbox,
+                                     const BoxType& bvhBbox) -> bool {
+    return queryBbox.intersectsWith(bvhBbox);
   };
-
-  axom::Array<IndexType> offsets(ncells, ncells, allocatorId);
-  axom::Array<IndexType> counts(ncells, ncells, allocatorId);
-
-  const auto v_counts = counts.view();
+  // _bvh_traverse_predicate_end
 
   RAJA::ReduceSum<reduce_pol, IndexType> total_count_reduce(0);
 
-  // First pass: get number of bounding box collisions for each cell
+  // _bvh_traverse_first_pass_start
+  // Allocate arrays for offsets and counts
+  axom::Array<IndexType> offsets(ncells, ncells, allocatorId);
+  axom::Array<IndexType> counts(ncells, ncells, allocatorId);
+  const auto v_counts = counts.view();
+  const auto v_offsets = offsets.view();
+
+  // First pass: get number of bounding box collisions for each surface element
   axom::for_all<ExecSpace>(
     ncells,
     AXOM_LAMBDA(IndexType icell) {
       IndexType count = 0;
 
+      // Define a function that is called on every leaf node reached during
+      // traversal. The function below simply counts the number of candidate
+      // collisions with the given query object.
       auto countCollisions = [&](axom::int32 currentNode,
                                  const axom::int32* leafNodes) {
-        AXOM_UNUSED_VAR(currentNode);
         AXOM_UNUSED_VAR(leafNodes);
         if(currentNode > icell)
         {
@@ -138,7 +151,11 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
         }
       };
 
+      // Call traverse_tree() to run the counting query.
       bvh_device.traverse_tree(v_aabbs[icell], countCollisions, bbIsect);
+
+      // Afterwards, we can store the number of collisions for each surface
+      // element, as well as an overall count of intersections.
       v_counts[icell] = count;
       total_count_reduce += count;
     });
@@ -147,16 +164,16 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
   RAJA::exclusive_scan<exec_pol>(RAJA::make_span(counts.data(), ncells),
                                  RAJA::make_span(offsets.data(), ncells),
                                  RAJA::operators::plus<IndexType> {});
+  // _bvh_traverse_first_pass_end
 
-  // Create array for all bounding box collisions
   IndexType ncollisions = total_count_reduce.get();
 
   SLIC_INFO(axom::fmt::format("Found {} candidate collisions.", ncollisions));
 
+  // _bvh_traverse_second_pass_start
+  // Allocate arrays for intersection pairs
   firstPair = axom::Array<IndexType>(ncollisions, ncollisions, allocatorId);
   secondPair = axom::Array<IndexType>(ncollisions, ncollisions, allocatorId);
-
-  const auto v_offsets = offsets.view();
   const auto v_first_pair = firstPair.view();
   const auto v_second_pair = secondPair.view();
 
@@ -166,18 +183,21 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
     AXOM_LAMBDA(IndexType icell) {
       IndexType offset = v_offsets[icell];
 
+      // Define a leaf node function that stores the intersection candidate.
       auto fillCollisions = [&](axom::int32 currentNode,
                                 const axom::int32* leafs) {
         if(currentNode > icell)
         {
-          v_first_pair[offset] = currentNode;
+          v_first_pair[offset] = icell;
           v_second_pair[offset] = leafs[currentNode];
           offset++;
         }
       };
 
+      // Call traverse_tree() a second time to run the counting query.
       bvh_device.traverse_tree(v_aabbs[icell], fillCollisions, bbIsect);
     });
+  // _bvh_traverse_second_pass_end
 }
 
 struct Arguments
