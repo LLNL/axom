@@ -53,10 +53,14 @@ void demoVectorOps()
   double v[] = {1., 2., 3.};
   double w[] = {0., 0., 0.};
 
+  std::cout << std::endl;
+
   std::cout << "Originally, u and v are" << std::endl
             << "u = [" << u[0] << ", " << u[1] << ", " << u[2] << "]" << std::endl
             << "v = [" << v[0] << ", " << v[1] << ", " << v[2] << "]"
             << std::endl;
+
+  std::cout << std::endl;
 
   // Calculate dot and cross products
   double dotprod = numerics::dot_product(u, v, 3);
@@ -66,6 +70,8 @@ void demoVectorOps()
             << std::endl
             << "[" << w[0] << ", " << w[1] << ", " << w[2] << "]" << std::endl;
 
+  std::cout << std::endl;
+
   // Make u orthogonal to v, then normalize v
   numerics::make_orthogonal(u, v, 3);
   numerics::normalize(v, 3);
@@ -74,6 +80,8 @@ void demoVectorOps()
             << "u = [" << u[0] << ", " << u[1] << ", " << u[2] << "]" << std::endl
             << "v = [" << v[0] << ", " << v[1] << ", " << v[2] << "]"
             << std::endl;
+
+  std::cout << std::endl;
 
   // Fill a linear space
   const int lincount = 45;
@@ -134,6 +142,8 @@ void demoMatrix()
   m.fillDiagonal(1.);
   // _matctor_end
 
+  std::cout << std::endl;
+
   // _matops_start
   std::cout << "Originally, the matrix A = " << std::endl << A << std::endl;
 
@@ -152,6 +162,8 @@ void demoMatrix()
   numerics::matrix_vector_multiply(A, x1, b1);
   std::cout << "A * x1 = [" << b1[0] << ", " << b1[1] << ", " << b1[2] << "]"
             << std::endl;
+
+  std::cout << std::endl;
 
   // Calculate determinant
   std::cout << "Determinant of A = " << numerics::determinant(A) << std::endl;
@@ -172,6 +184,8 @@ void demoMatrix()
             << col1[2] << "]" << std::endl;
   // _matops_end
 
+  std::cout << std::endl;
+
   // _eigs_start
   // Solve for eigenvectors and values using the power method
   // The power method calls rand(), so we need to initialize it with srand().
@@ -180,11 +194,11 @@ void demoMatrix()
   double eigval[nrows];
   int res = numerics::eigen_solve(A, nrows, eigvec, eigval);
   std::cout << "Tried to find " << nrows
-            << " eigenvectors and values from"
+            << " eigenvectors and values for"
                " matrix "
             << std::endl
             << A << std::endl
-            << "and the result code was " << res << " (1 = success)."
+            << "and the result code was " << res << " (1 = success)." << std::endl
             << std::endl;
   if(res > 0)
   {
@@ -194,6 +208,8 @@ void demoMatrix()
     }
   }
 
+  std::cout << std::endl;
+
   // Solve for eigenvectors and values using the Jacobi method.
   numerics::Matrix<double> evecs(nrows, ncols);
   res = numerics::jacobi_eigensolve(A, evecs, eigval);
@@ -202,7 +218,7 @@ void demoMatrix()
             << std::endl
             << A << std::endl
             << "and the result code was " << res << " ("
-            << numerics::JACOBI_EIGENSOLVE_SUCCESS << " = success)."
+            << numerics::JACOBI_EIGENSOLVE_SUCCESS << " = success)." << std::endl
             << std::endl;
   if(res == numerics::JACOBI_EIGENSOLVE_SUCCESS)
   {
@@ -212,6 +228,8 @@ void demoMatrix()
     }
   }
   // _eigs_end
+
+  std::cout << std::endl;
 
   // _solve_start
   {
@@ -231,10 +249,11 @@ void demoMatrix()
 
     int rc = numerics::linear_solve(A, b, x);
 
-    std::cout << "Solved for x in the linear system Ax = b," << std::endl
+    std::cout << "Solved for x in the linear system Ax = b, where" << std::endl
               << "A = " << std::endl
               << A << " and b = [" << b[0] << ", " << b[1] << ", " << b[2]
               << "]." << std::endl
+              << std::endl
               << "Result code is " << rc << " (0 = success)" << std::endl;
     if(rc == 0)
     {
@@ -242,6 +261,8 @@ void demoMatrix()
                 << std::endl;
     }
   }
+
+  std::cout << std::endl;
 
   {
     // Solve a linear system Ax = b using LU decomposition and back-substitution

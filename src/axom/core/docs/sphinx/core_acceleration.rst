@@ -7,25 +7,37 @@
 Core acceleration
 ******************************************************
 
-Axom's `core` component provides several utilities for user applications that intend
-to support execution on hardware accelerators.
-Axom lets users control execution space using RAJA and memory space using Umpire.
+Axom's `core` component provides several utilities for user applications that 
+support execution on hardware accelerators. Axom lets users control the execution 
+space (i.e. *where* code runs) using RAJA and movement between memory spaces using Umpire. 
 As noted in the `RAJA documentation <https://raja.readthedocs.io/en/main/index.html>`_,
-developers of high-performance computing applications have many options for running
-code: on the CPU, using OpenMP, or on GPU hardware accelerators, and the options are
-constantly developing.  RAJA controls *where* code runs; Umpire moves data between
-memory spaces.
+developers of high-performance computing applications have many options for 
+running code: on the CPU, using OpenMP, or on GPU hardware accelerators, and 
+the options are constantly evolving.
 
 .. note::
-   Axom's memory management and execution space APIs have default implementations when Axom is not
-   configured with Umpire and RAJA, respectively, and can be used in all Axom configurations.
+   * Axom's memory management and execution space APIs have default 
+     implementations when Axom is not configured with Umpire and RAJA, 
+     and can be used in all Axom configurations.
+   * GPU execution support for Axom features is continually exapanding. 
+     Axom Core offers an interface that uses RAJA and Umpire internally and 
+     provides easy access to for-loop level acceleration via the parallel-for 
+     idiom, which invokes a given lambda function for every index in range.  
 
-The memory management API allows the user to leverage either C++ memory functions or Umpire, 
-depending on the availability of Umpire at compilation. It supports a simple operation set: allocate, deallocate, reallocate, and copy. 
-If Umpire is in use, an allocator can be specified -- see `Umpire documentation <https://readthedocs.org/projects/umpire>`_ 
-for more details. Note that the fall-back to C++ memory functions is automatic, so the same piece of code can handle standard C++ 
-or C++ with Umpire. However, to use advanced features, such as accessing unified memory, Umpire must be enabled, otherwise errors 
-will occur at compilation.
+The memory management API allows users to leverage either C++ memory functions 
+or Umpire, depending on the availability of Umpire at compilation. It supports 
+a simple operation set: allocate, deallocate, reallocate, and copy. If Umpire 
+is used, an allocator can be specified -- 
+see `Umpire documentation <https://readthedocs.org/projects/umpire>`_ 
+for details. Note that the fall-back to C++ memory functions is automatic, 
+so the same piece of code can handle standard C++ or C++ with Umpire. However, 
+to use advanced features, such as accessing unified memory, Umpire must be 
+enabled, otherwise errors will occur at compilation.
+
+.. note::
+   We refrain from including the output of the example in this section in the 
+   documentation since the output is verbose. If you are curious, please 
+   run the examples yourself.
 
 Here is an example of using Axom's memory management tools:
 
@@ -33,10 +45,6 @@ Here is an example of using Axom's memory management tools:
    :start-after: _membasic_start
    :end-before: _membasic_end
    :language: C++
-
-Throughout Axom, acceleration is increasingly supported. Both internally, and to support users, Axom Core offers an 
-interface that, using RAJA and Umpire internally, provides easy access to for-loop level acceleration via the parallel-for idiom, 
-which applies a given lambda function for every index in range.  
 
 Here is an Axom example showing sequential execution:
 
