@@ -52,7 +52,9 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant('tests', default=False, description='Build tests')
 
     depends_on('blt')
-    depends_on('blt@0.5.0:', type='build', when='@0.14.1:')
+    # BEGIN AXOM EDIT
+    depends_on('blt@0.5.1:', type='build', when='@0.14.1:')
+    # END AXOM EDIT
     depends_on('blt@0.4.1', type='build', when='@0.14.0')
     depends_on('blt@0.4.0:', type='build', when='@0.13.0')
     depends_on('blt@0.3.6:', type='build', when='@:0.12.0')
@@ -122,10 +124,12 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
                 "HIP_ROOT_DIR", '{0}'.format(spec['hip'].prefix)))
             # BEGIN AXOM EDIT
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
-            hip_root = spec['hip'].prefix
-            rocm_root = hip_root + "/.."
-            hip_clang_include_path = rocm_root + "/llvm/lib/clang/14.0.0/include"
-            entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+            if self.spec.satisfies('%clang'):
+                hip_root = spec['hip'].prefix
+                rocm_root = hip_root + "/.."
+                clang_version= str(self.compiler.version)
+                hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
+                entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
 
             # C++ 14 error fix in camp
             entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))

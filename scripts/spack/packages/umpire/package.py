@@ -84,7 +84,9 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
     # END AXOM EDIT
     depends_on('cmake@3.14:', when='@2022.03.0:')
 
-    depends_on('blt@0.5.0:', type='build', when='@2022.03.0:')
+    # BEGIN AXOM EDIT
+    depends_on('blt@0.5.1:', type='build', when='@2022.03.0:')
+    # END AXOM EDIT
     depends_on('blt@0.4.1', type='build', when='@6.0.0')
     depends_on('blt@0.4.0:', type='build', when='@4.1.3:5.0.1')
     depends_on('blt@0.3.6:', type='build', when='@:4.1.2')
@@ -189,10 +191,13 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
                     "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
             # BEGIN AXOM EDIT
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
-            hip_root = spec['hip'].prefix
-            rocm_root = hip_root + "/.."
-            hip_clang_include_path = rocm_root + "/llvm/lib/clang/14.0.0/include"
-            entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+            if self.spec.satisfies('%clang'):
+                hip_root = spec['hip'].prefix
+                rocm_root = hip_root + "/.."
+                clang_version= str(self.compiler.version)
+                hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
+                entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+
             # END AXOM EDIT
         else:
             entries.append(cmake_cache_option("ENABLE_HIP", False))
