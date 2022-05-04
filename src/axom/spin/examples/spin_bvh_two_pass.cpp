@@ -3,6 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*! \file spin_bvh_two_pass.cpp
+ *  \brief This example code demonstrates the device kernel query capabilities
+ *   of the BVH class in Axom's spin component.
+ *
+ *  This file shows how to run customized traversal queries on a bounding volume
+ *  hierarchy with a device kernel-copyable object, by demonstrating its use to
+ *  generate a set of candidate mesh self-intersections.
+ */
+
 // Axom includes
 #include "axom/core.hpp"
 #include "axom/mint.hpp"
@@ -65,6 +74,28 @@ void finalize_logger()
   slic::finalize();
 }
 
+/*!
+ * \brief Runs the "broad-phase" part of a collision detection query on a mesh.
+ *
+ *  In most implementations of collision detection, the search is divided into
+ *  two separate phases: a "broad phase" which utilizes a fast-but-conservative
+ *  collision test to quickly prune the search space of potential collisions,
+ *  followed by a "narrow phase" which uses a more accurate collision test on
+ *  the remaining candidate collisions.
+ *
+ *  The below implements the broad-phase query with a bounding volume hierarchy
+ *  of bounding boxes constructed from the input mesh's zones, and returns an
+ *  output of potentially-intersecting mesh elements as pairs of indices.
+ *
+ *  The subsequent narrow-phase implementation can then be run on the returned
+ *  pairs of indices. What constitutes depends on the mesh elements; for
+ *  example, triangle-triangle tests if run on a triangle surface mesh, or
+ *  polyhedral intersection tests for a mesh of arbitrary polyhedral zones.
+ *
+ * \param [in] mesh the input mesh
+ * \param [out] firstPair first index of pairs of potentially colliding zones
+ * \param [out] secondPair second index of pairs of potentially colliding zones
+ */
 template <typename ExecSpace>
 void find_collisions_broadphase(const mint::Mesh* mesh,
                                 axom::Array<IndexType>& firstPair,
@@ -212,7 +243,8 @@ struct Arguments
       ->check(axom::CLI::ExistingFile)
       ->required();
 
-    std::string pol_info = "Sets execution space of the .\n";
+    std::string pol_info =
+      "Sets execution space of the BVH two-pass example.\n";
     pol_info += "Set to \'seq\' to use sequential execution policy.";
 #ifdef AXOM_USE_OPENMP
     pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
