@@ -11,7 +11,8 @@
 # Register the sol library for parsing lua
 #------------------------------------------------------------------------------
 
-if (LUA_FOUND)
+# Error: expression contains unexpanded parameter pack 'Bases' when cuda enabled
+if (LUA_FOUND AND (NOT BLT_CXX_STD STREQUAL "c++11") AND (NOT ENABLE_CUDA))
   blt_add_library(NAME    sol
                   HEADERS axom/sol.hpp)
 
