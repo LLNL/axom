@@ -126,3 +126,6 @@ pairs when we reach a leaf node:
    :end-before: _bvh_traverse_second_pass_end
    :language: C++
 
+The result of the two-pass query is a list of candidate collision pairs. A code
+could then do further operations on these pairs of elements, such as test them
+for actual intersection.
