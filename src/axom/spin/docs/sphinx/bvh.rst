@@ -88,9 +88,11 @@ the current minimum squared distance.
 Example: Broad-phase collision detection
 ========================================
 
-Below is an example of how the device traversal object might be used in a broad-
-phase collision detection problem. First, we initialize the BVH with the bounding
-boxes of all the query objects, and create a traverser object:
+The following example tests each element of a surface mesh for intersection with
+each other element. It provides an example of how the device traversal object
+might be used in a broad-phase collision detection problem. First, we initialize
+the BVH with the bounding boxes of all the query objects (mesh elements), and
+create a traverser object:
 
 .. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
    :start-after: _bvh_traverse_init_start
