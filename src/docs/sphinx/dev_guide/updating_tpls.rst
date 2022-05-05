@@ -110,21 +110,21 @@ the following:
 Level 3: Build Scripts
 ----------------------
 
-There are three "build" scripts that live in `scripts/llnl` that are designed
+There are three "build" scripts that live in ``scripts/llnl`` that are designed
 to handle suites of building TPLs via uberenv and Spack. They automatically
 handle the platform differences and know the full list of compilers and package
 specs required.
 
-* `scripts/spack/specs.json`: This contains a list of all specs required per platform
+* ``scripts/spack/specs.json``: This contains a list of all specs required per platform
   or machine name.
-* `build_tpls.py`: This script starts with building all TPLs listed in `specs.json`.
+* ``build_tpls.py``: This script starts with building all TPLs listed in ``specs.json``.
   It will copy the generated host-configs to the base of the Axom repository.
   After building all of the TPLs, it will test Axom against those built TPLs. As well,
-  as testing the installed `using-with-cmake` example for correctness.
-* `build_src.py`: This scripts takes the existing host-configs, or the specific one you point
-  at, and builds and tests Axom against them. It also tests the `using-with-cmake` examples.
-* `build_devtools.py`: This script builds and installs the developer tools listed in the `axomdevtools`
-  Spack package.  It also uses a different set of Spack configs located in `scripts/spack/devtools_config`,
+  as testing the installed ``using-with-cmake`` example for correctness.
+* ``build_src.py``: This scripts takes the existing host-configs, or the specific one you point
+  at, and builds and tests Axom against them. It also tests the ``using-with-cmake`` examples.
+* ``build_devtools.py``: This script builds and installs the developer tools listed in the ``axomdevtools``
+  Spack package.  It also uses a different set of Spack configs located in ``scripts/spack/devtools_config``,
   so that the regular Spack configs can reuse the seldom and previously built developer tools.
 
 =============
