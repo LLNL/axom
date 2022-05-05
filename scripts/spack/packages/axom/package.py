@@ -99,10 +99,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("mpi", when="+mpi")
 
     # Libraries
-    depends_on("conduit+python", when="+python")
-    depends_on("conduit~python", when="~python")
-    depends_on("conduit+hdf5", when="+hdf5")
-    depends_on("conduit~hdf5", when="~hdf5")
+    # Forward variants to Conduit
+    for _var in ['fortran', 'hdf5', 'mpi', 'python']:
+        depends_on("conduit+{0}".format(_var), when="+{0}".format(_var))
+        depends_on("conduit~{0}".format(_var), when="~{0}".format(_var))
 
     # HDF5 needs to be the same as Conduit's
     # FIXME: remove these hardcoded variants when we move to the new concretizer
