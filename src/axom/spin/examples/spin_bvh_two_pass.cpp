@@ -88,9 +88,10 @@ void finalize_logger()
  *  output of potentially-intersecting mesh elements as pairs of indices.
  *
  *  The subsequent narrow-phase implementation can then be run on the returned
- *  pairs of indices. What constitutes depends on the mesh elements; for
- *  example, triangle-triangle tests if run on a triangle surface mesh, or
- *  polyhedral intersection tests for a mesh of arbitrary polyhedral zones.
+ *  pairs of indices. What that narrow-phase check constitutes depends on the
+ *  mesh elements; for example, triangle-triangle tests if run on a triangle
+ *  surface mesh, or polyhedral intersection tests for a mesh of arbitrary
+ *  polyhedral zones.
  *
  * \param [in] mesh the input mesh
  * \param [out] firstPair first index of pairs of potentially colliding zones
