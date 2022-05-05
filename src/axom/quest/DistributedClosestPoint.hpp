@@ -100,7 +100,7 @@ axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(conduit::Node& nod
 
 /// Helper function to extract the dimension from the coordinate values group
 /// of a mesh blueprint coordset
-int extractDimension(const conduit::Node& values_node)
+inline int extractDimension(const conduit::Node& values_node)
 {
   SLIC_ASSERT(values_node.has_child("x"));
   return values_node.has_child("z") ? 3 : (values_node.has_child("y") ? 2 : 1);
@@ -108,7 +108,7 @@ int extractDimension(const conduit::Node& values_node)
 
 /// Helper function to extract the number of points from the coordinate values group
 /// of a mesh blueprint coordset
-int extractSize(const conduit::Node& values_node)
+inline int extractSize(const conduit::Node& values_node)
 {
   SLIC_ASSERT(values_node.has_child("x"));
   return values_node["x"].dtype().number_of_elements();
@@ -138,11 +138,11 @@ struct ISendRequest
  * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend to use
  * non-blocking \a MPI_Isend instead of blocking \a MPI_Send
  */
-int isend_using_schema(conduit::Node& node,
-                       int dest,
-                       int tag,
-                       MPI_Comm comm,
-                       ISendRequest* request)
+inline int isend_using_schema(conduit::Node& node,
+                              int dest,
+                              int tag,
+                              MPI_Comm comm,
+                              ISendRequest* request)
 {
   // schema will only be valid if compact and contig
   if(node.is_compact() && node.is_contiguous())
@@ -208,12 +208,12 @@ int isend_using_schema(conduit::Node& node,
  * Uses non-blocking send (isend) and blocking receives and ensures that the request
  * objects associated with the send are finalized
  */
-void send_and_recv_node(conduit::Node& send_node,
-                        conduit::Node& recv_node,
-                        int send_rank,
-                        int recv_rank,
-                        int tag,
-                        MPI_Comm comm)
+inline void send_and_recv_node(conduit::Node& send_node,
+                               conduit::Node& recv_node,
+                               int send_rank,
+                               int recv_rank,
+                               int tag,
+                               MPI_Comm comm)
 {
   ISendRequest req;
 
@@ -622,30 +622,6 @@ private:
 #endif
   }
 
-  /// Templated implementation of generateBVHTree function
-  template <typename BVHTreeType>
-  bool generateBVHTreeImpl(BVHTreeType* bvh)
-  {
-    using ExecSpace = typename BVHTreeType::ExecSpaceType;
-
-    SLIC_ASSERT(bvh != nullptr);
-
-    const int npts = m_points.size();
-    axom::Array<BoxType> boxesArray(npts, npts, m_allocatorID);
-    auto boxesView = boxesArray.view();
-
-    /// GOT TO HERE -- fix for templated ExecSpace!
-    axom::for_all<ExecSpace>(
-      npts,
-      AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {m_points[i]}; });
-
-    // Build bounding volume hierarchy
-    bvh->setAllocatorID(m_allocatorID);
-    int result = bvh->initialize(boxesView, npts);
-
-    return (result == spin::BVH_BUILD_OK);
-  }
-
   /**
    * \brief Extracts a field \a fieldName from the mesh blueprint
    *
@@ -670,6 +646,32 @@ private:
         field_name));
 
     return internal::ArrayView_from_Node<T>(mesh_node[path], num_points);
+  }
+
+  // Note: following should be private, but nvcc complains about lambdas in private scope
+public:
+  /// Templated implementation of generateBVHTree function
+  template <typename BVHTreeType>
+  bool generateBVHTreeImpl(BVHTreeType* bvh)
+  {
+    using ExecSpace = typename BVHTreeType::ExecSpaceType;
+
+    SLIC_ASSERT(bvh != nullptr);
+
+    const int npts = m_points.size();
+    axom::Array<BoxType> boxesArray(npts, npts, m_allocatorID);
+    auto boxesView = boxesArray.view();
+
+    /// GOT TO HERE -- fix for templated ExecSpace!
+    axom::for_all<ExecSpace>(
+      npts,
+      AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {m_points[i]}; });
+
+    // Build bounding volume hierarchy
+    bvh->setAllocatorID(m_allocatorID);
+    int result = bvh->initialize(boxesView, npts);
+
+    return (result == spin::BVH_BUILD_OK);
   }
 
   template <typename BVHTreeType>
@@ -909,14 +911,14 @@ public:
   #ifdef AXOM_USE_OPENMP
       return true;
   #else
-      return
+      return false;
   #endif
 
     case RuntimePolicy::cuda:
   #ifdef AXOM_USE_CUDA
       return true;
   #else
-        return false;
+      return false;
   #endif
     }
 #endif
