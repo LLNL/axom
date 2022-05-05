@@ -1,7 +1,7 @@
 {
     "__comment__":"##############################################################################",
     "__comment__":"# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and      ",
-    "__comment__":"# other Axom Project Developers. See the top-level LICENSE file for details.",
+    "__comment__":"# other Axom Project Developers. See the top-level LICENSE file for details.  ",
     "__comment__":"#                                                                             ",
     "__comment__":"# SPDX-License-Identifier: (BSD-3-Clause)                                     ",
     "__comment__":"##############################################################################",
@@ -18,7 +18,6 @@
       "clang@10.0.0+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
       "gcc@8.3.1+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
       "gcc@8.1.0~fortran+devtools~mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
-      "intel@18.0.2~openmp+devtools+mfem",
       "intel@19.0.4~openmp+devtools+mfem+c2c" ],
 
     "toss_4_x86_64_ib":
@@ -29,7 +28,7 @@
 
     "blueos_3_ppc64le_ib_p9":
     [ "clang@9.0.0~openmp+devtools+mfem+c2c",
-      "clang@8.0.1~openmp+devtools+mfem+cuda+c2c cuda_arch=70",
+      "clang@8.0.1~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
       "gcc@7.3.1+devtools~mfem+c2c",
       "xl@16.1.1.1~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
       "xl@16.1.1.2~openmp+devtools+mfem+c2c" ],
