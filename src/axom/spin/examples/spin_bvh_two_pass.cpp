@@ -283,7 +283,7 @@ int main(int argc, char** argv)
     return retval;
   }
 #ifdef AXOM_USE_CUDA
-  if(args.exec_space == ExecPolicy::GPU)
+  if(args.exec_space == ExecPolicy::CUDA)
   {
     using GPUExec = axom::CUDA_EXEC<256>;
     axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
@@ -325,7 +325,7 @@ int main(int argc, char** argv)
     break;
   #endif
   #ifdef AXOM_USE_CUDA
-  case ExecPolicy::GPU:
+  case ExecPolicy::CUDA:
     find_collisions_broadphase<axom::CUDA_EXEC<256>>(surface_mesh.get(),
                                                      firstPair,
                                                      secondPair);
