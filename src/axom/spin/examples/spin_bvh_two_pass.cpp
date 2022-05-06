@@ -232,6 +232,102 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
   // _bvh_traverse_second_pass_end
 }
 
+/*!
+ * \brief Runs the "narrow-phase" part of a collision detection query on a mesh,
+ *  given a set of candidate pairs from the broad-phase search.
+ *
+ *  This assumes a surface mesh of triangular elements.
+ *
+ * \param [in] mesh the input mesh
+ * \param [in] inFirstPair first index of pairs of potentially colliding zones
+ * \param [in] inSecondPair second index of pairs of potentially colliding zones
+ * \param [in] outFirstPair first index of pairs of actual colliding zones
+ * \param [in] outSecondPair second index of pairs of actual colliding zones
+ */
+template <typename ExecSpace>
+void find_collisions_narrowphase(const mint::Mesh* mesh,
+                                 axom::Array<IndexType>& inFirstPair,
+                                 axom::Array<IndexType>& inSecondPair,
+                                 axom::Array<IndexType>& outFirstPair,
+                                 axom::Array<IndexType>& outSecondPair)
+{
+  using PointType = axom::primal::Point<double, 3>;
+  using TriangleType = axom::primal::Triangle<double, 3>;
+  using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
+  using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+  int allocatorId = axom::execution_space<ExecSpace>::allocatorID();
+
+  const int ncells = mesh->getNumberOfCells();
+
+  axom::Array<TriangleType> triangles(ncells, ncells, allocatorId);
+  const auto v_triangles = triangles.view();
+
+  // Create an array with our surface mesh's triangles
+  mint::for_all_cells<ExecSpace, mint::xargs::coords>(
+    mesh,
+    AXOM_LAMBDA(IndexType cellIdx,
+                axom::numerics::Matrix<double> & coords,
+                const IndexType* nodeIds) {
+      AXOM_UNUSED_VAR(nodeIds);
+      TriangleType tri;
+
+      int numNodes = coords.getNumColumns();
+      SLIC_ASSERT(numNodes == 3);
+      for(IndexType inode = 0; inode < numNodes; ++inode)
+      {
+        const double* node = coords.getColumn(inode);
+        PointType vtx {node[mint::X_COORDINATE],
+                       node[mint::Y_COORDINATE],
+                       node[mint::Z_COORDINATE]};
+        tri[inode] = vtx;
+      }  // END for all cells nodes
+
+      v_triangles[cellIdx] = tri;
+    });
+
+  // Allocate our output arrays - we'll set the initial capacity to the number
+  // of candidates.
+  IndexType ncandidates = inFirstPair.size();
+  outFirstPair = axom::Array<IndexType>(ncandidates, ncandidates, allocatorId);
+  outSecondPair = axom::Array<IndexType>(ncandidates, ncandidates, allocatorId);
+
+  axom::Array<IndexType> counter(1, 1, allocatorId);
+
+  RAJA::ReduceSum<reduce_pol, IndexType> total_count_reduce(0);
+
+  const auto v_counter = counter.view();
+  const auto v_inFirstPair = inFirstPair.view();
+  const auto v_inSecondPair = inSecondPair.view();
+  const auto v_outFirstPair = outFirstPair.view();
+  const auto v_outSecondPair = outSecondPair.view();
+
+  // For each candidate pair, we'll run a triangle-triangle intersection check.
+  axom::for_all<ExecSpace>(
+    ncandidates,
+    AXOM_LAMBDA(IndexType idx) {
+      IndexType firstIdx = v_inFirstPair[idx];
+      IndexType secondIdx = v_inSecondPair[idx];
+      if(primal::intersect(v_triangles[firstIdx], v_triangles[secondIdx], false))
+      {
+        auto outIdx = RAJA::atomicAdd<atomic_pol>(&v_counter[0], IndexType {1});
+        // Store actually-intersecting triangle pairs sequentially in output
+        // array.
+        v_outFirstPair[outIdx] = firstIdx;
+        v_outSecondPair[outIdx] = secondIdx;
+        total_count_reduce += 1;
+      }
+    });
+
+  IndexType numValidIsects = total_count_reduce.get();
+
+  SLIC_INFO(axom::fmt::format("Found {} actual collisions.", numValidIsects));
+
+  // Resize to the total number of intersecting triangles.
+  outFirstPair.resize(numValidIsects);
+  outSecondPair.resize(numValidIsects);
+}
+
 struct Arguments
 {
   std::string file_name;
@@ -308,28 +404,44 @@ int main(int argc, char** argv)
   SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
                         << surface_mesh->getNumberOfCells() << " triangles.");
 
+  axom::Array<IndexType> candFirstPair, candSecondPair;
   axom::Array<IndexType> firstPair, secondPair;
 
   switch(args.exec_space)
   {
   case ExecPolicy::CPU:
     find_collisions_broadphase<axom::SEQ_EXEC>(surface_mesh.get(),
-                                               firstPair,
-                                               secondPair);
+                                               candFirstPair,
+                                               candSecondPair);
+    find_collisions_narrowphase<axom::SEQ_EXEC>(surface_mesh.get(),
+                                                candFirstPair,
+                                                candSecondPair,
+                                                firstPair,
+                                                secondPair);
     break;
 #ifdef AXOM_USE_RAJA
   #ifdef AXOM_USE_OPENMP
   case ExecPolicy::OpenMP:
     find_collisions_broadphase<axom::OMP_EXEC>(surface_mesh.get(),
-                                               firstPair,
-                                               secondPair);
+                                               candFirstPair,
+                                               candSecondPair);
+    find_collisions_narrowphase<axom::OMP_EXEC>(surface_mesh.get(),
+                                                candFirstPair,
+                                                candSecondPair,
+                                                firstPair,
+                                                secondPair);
     break;
   #endif
   #ifdef AXOM_USE_CUDA
   case ExecPolicy::CUDA:
     find_collisions_broadphase<axom::CUDA_EXEC<256>>(surface_mesh.get(),
-                                                     firstPair,
-                                                     secondPair);
+                                                     candFirstPair,
+                                                     candSecondPair);
+    find_collisions_narrowphase<axom::CUDA_EXEC<256>>(surface_mesh.get(),
+                                                      candFirstPair,
+                                                      candSecondPair,
+                                                      firstPair,
+                                                      secondPair);
     break;
   #endif
 #endif
