@@ -110,7 +110,8 @@ public:
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    m_data = IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
+    m_data =
+      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
 
   /**

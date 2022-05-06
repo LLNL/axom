@@ -192,8 +192,8 @@ struct STLVectorIndirection
                       bool verboseOutput = false) const;
 
   static IndirectionBufferType create(PositionType size,
-          ConstIndirectionResult value,
-          int allocatorId)
+                                      ConstIndirectionResult value,
+                                      int allocatorId)
   {
     AXOM_UNUSED_VAR(allocatorId);
     return IndirectionBufferType(size, value);
@@ -260,8 +260,8 @@ struct CoreArrayIndirection
                       bool verboseOutput = false) const;
 
   static IndirectionBufferType create(PositionType size,
-                     ConstIndirectionResult value,
-                     int allocatorID)
+                                      ConstIndirectionResult value,
+                                      int allocatorID)
   {
     IndirectionBufferType buf(size, size, allocatorID);
     buf.fill(value);
