@@ -105,11 +105,12 @@ public:
 
   Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
       DataType defaultValue = DataType(),
-      SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+      int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    m_data.resize(size() * numComp(), defaultValue);
+    m_data = IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
 
   /**
