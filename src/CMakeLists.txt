@@ -97,6 +97,10 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
 endif()
 
+if("${BLT_CXX_STD}" STREQUAL "c++98" OR "${BLT_CXX_STD}" STREQUAL "c++11")
+    message(FATAL_ERROR "Axom requires BLT_CXX_STD to be 'c++14' or above.")
+endif()
+
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 #------------------------------------------------------------------------------
