@@ -74,8 +74,8 @@ public:
 
   /// types for maps
   using BaseSet = axom::slam::Set<PositionType, ElementType>;
-  using NodalPositions = slam::Map<Point>;
-  using ZonalPositions = slam::Map<Point>;
+  using NodalPositions = slam::Map<Point3>;
+  using ZonalPositions = slam::Map<Point3>;
   using NodeField = slam::Map<DataType>;
   using ZoneField = slam::Map<DataType>;
 
