@@ -43,6 +43,11 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
           sha256='12bb78c00b6683ad3e7fd4e3f87f9776bae074b722431b79696bc862816735ef',
           when='@:0.13.0 ^blt@0.4:')
 
+    # BEGIN AXOM EDIT
+    # Patch for cuda and hip includes when not running on device
+    patch('arch_impl.patch', when='@2022.03.0:')
+    # END AXOM EDIT
+
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=True, description='Build Shared Libs')
     variant('examples', default=True, description='Build examples.')
