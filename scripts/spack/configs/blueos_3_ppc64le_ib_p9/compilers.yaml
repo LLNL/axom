@@ -45,11 +45,11 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlc
-      cxx: /usr/tce/packages/xl/xl-2019.08.20/bin/xlC
-      f77: /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
-    spec: xl@16.1.1.1
+      cc: /usr/tce/packages/xl/xl-2021.12.22/bin/xlc_r
+      cxx: /usr/tce/packages/xl/xl-2021.12.22/bin/xlC_r
+      fc: /usr/tce/packages/xl/xl-2021.12.22/bin/xlf2003_r
+      f77: /usr/tce/packages/xl/xl-2021.12.22/bin/xlf_r
+    spec: xl@16.1.1.11
     target: ppc64le
 - compiler:
     environment: {}
@@ -58,9 +58,9 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlc
-      cxx: /usr/tce/packages/xl/xl-2019.12.23/bin/xlC
-      f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
-    spec: xl@16.1.1.2
+      cc: /usr/tce/packages/xl/xl-2022.03.10/bin/xlc_r
+      cxx: /usr/tce/packages/xl/xl-2022.03.10/bin/xlC_r
+      fc: /usr/tce/packages/xl/xl-2021.12.22/bin/xlf2003_r
+      f77: /usr/tce/packages/xl/xl-2021.12.22/bin/xlf_r
+    spec: xl@16.1.1.12
     target: ppc64le
