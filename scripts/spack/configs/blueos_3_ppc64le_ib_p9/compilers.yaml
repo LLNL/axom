@@ -45,10 +45,10 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc: /usr/tce/packages/xl/xl-2021.12.22/bin/xlc_r
-      cxx: /usr/tce/packages/xl/xl-2021.12.22/bin/xlC_r
-      fc: /usr/tce/packages/xl/xl-2021.12.22/bin/xlf2003_r
-      f77: /usr/tce/packages/xl/xl-2021.12.22/bin/xlf_r
+      cc: /usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlc_r
+      cxx: /usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlC_r
+      fc: /usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlf2003_r
+      f77: /usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlf_r
     spec: xl@16.1.1.11
     target: ppc64le
 - compiler:

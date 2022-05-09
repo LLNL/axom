@@ -41,7 +41,7 @@ packages:
     - spec: spectrum-mpi@release%clang@8.0.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/
     - spec: spectrum-mpi@release%xl@16.1.1.11
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2021.12.22/
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2020.08.24-cuda-11.0.2/
     - spec: spectrum-mpi@release%xl@16.1.1.12
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.03.10/
 
