@@ -7,39 +7,41 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: xl@16.1.1.1
+# Compiler Spec: xl@16.1.1.11
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/spack/lib/spack/env/xl/xlc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_05_09_20_26_23/spack/lib/spack/env/xl/xlc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/spack/lib/spack/env/xl/xlc++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_05_09_20_26_23/spack/lib/spack/env/xl/xlc++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/spack/lib/spack/env/xl/xlf90" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_05_09_20_26_23/spack/lib/spack/env/xl/xlf90" CACHE PATH "")
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2019.08.20/bin/xlc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlc_r" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2019.08.20/bin/xlC" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlC_r" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlf2003_r" CACHE PATH "")
 
 endif()
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
+set(BLT_CXX_STD "c++14" CACHE STRING "")
+
 #------------------------------------------------------------------------------
 # MPI
 #------------------------------------------------------------------------------
 
-set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2020.08.24-cuda-11.0.2/bin/mpixlc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlC" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2020.08.24-cuda-11.0.2/bin/mpixlC" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpixlf" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2020.08.24-cuda-11.0.2/bin/mpixlf" CACHE PATH "")
 
-set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2020.08.24-cuda-11.0.2/bin/mpirun" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE STRING "")
 
@@ -55,7 +57,7 @@ set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE STRING "")
 # Cuda
 #------------------------------------------------
 
-set(CUDA_TOOLKIT_ROOT_DIR "/usr/tce/packages/cuda/cuda-10.1.243" CACHE PATH "")
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/tce/packages/cuda/cuda-11.0.2" CACHE PATH "")
 
 set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc" CACHE PATH "")
 
@@ -69,7 +71,7 @@ set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
 
 set(CMAKE_CUDA_ARCHITECTURES "70" CACHE STRING "")
 
-set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -arch sm_${CMAKE_CUDA_ARCHITECTURES}  -std=c++11" CACHE STRING "")
+set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -arch sm_${CMAKE_CUDA_ARCHITECTURES} " CACHE STRING "")
 
 # nvcc does not like gtest's 'pthreads' flag
 
@@ -83,9 +85,9 @@ set(ENABLE_OPENMP OFF CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
 
-set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.08.20/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
+set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.08.20/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
 
 set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE STRING "Converts C-style comments to Fortran style in preprocessed files")
 
@@ -97,9 +99,9 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_03_02_21_37_52/xl-16.1.1.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_05_09_20_26_23/xl-16.1.1.11" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
@@ -109,9 +111,11 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
 set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0axom" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1" CACHE PATH "")
+
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
 
 # scr not built
 
