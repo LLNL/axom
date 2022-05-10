@@ -83,10 +83,6 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     with when('+cuda @0.12.0:'):
         depends_on('camp+cuda')
-        # BEGIN AXOM EDIT
-        # Need cub for CUDA 10
-        depends_on('cub')
-        # END AXOM EDIT
         for sm_ in CudaPackage.cuda_arch_values:
             depends_on('camp +cuda cuda_arch={0}'.format(sm_),
                        when='cuda_arch={0}'.format(sm_))
@@ -125,12 +121,6 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(cmake_cache_string(
                     "CMAKE_CUDA_ARCHITECTURES", '{0}'.format(cuda_arch[0])))
 
-            # BEGIN AXOM EDIT
-            # Specify external cub for CUDA 10
-            entries.append(cmake_cache_option("RAJA_ENABLE_EXTERNAL_CUB", True))
-            entries.append(cmake_cache_path(
-                "CUB_DIR", '{0}'.format(spec['cub'].prefix)))
-            # END AXOM EDIT
         else:
             entries.append(cmake_cache_option("ENABLE_CUDA", False))
 

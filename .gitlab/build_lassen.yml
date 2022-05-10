@@ -19,7 +19,7 @@
 # Load required CUDA module
 .with_cuda:
   before_script:
-    - module load cuda/10.1.243
+    - module load cuda/11.0.2
 
 ####
 # Template
@@ -57,9 +57,9 @@ lassen-gcc_7_3_1-src:
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen]
 
-lassen-xl_16_1_1_1_cuda-src:
+lassen-xl_16_1_1_11_cuda-src:
   variables:
-    COMPILER: "xl@16.1.1.1_cuda"
+    COMPILER: "xl@16.1.1.11_cuda"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen]
 
@@ -91,9 +91,9 @@ lassen-gcc_7_3_1-full:
     SPEC: "%${COMPILER}+mfem"
   extends: [.full_build_on_lassen]
 
-lassen-xl_16_1_1_1_cuda-full:
+lassen-xl_16_1_1_11_cuda-full:
   variables:
-    COMPILER: "xl@16.1.1.1"
+    COMPILER: "xl@16.1.1.11"
     SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_lassen, .with_cuda]
