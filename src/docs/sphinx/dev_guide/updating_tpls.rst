@@ -92,14 +92,14 @@ We rely on Uberenv for two major points: reducing multiple commands into one
 and adding as much determinism as possible. The basic workflow in Uberenv is
 the following:
 
-# Setup necessary paths and directories like the base directory where the
-  package manager will be installed.
-# Clone the package manager to the specific Git commit.
-# Apply patches to package manager. For example, disabling extra config scopes in Spack.
-# Copy project specific package recipes over the packages manager's recipes.
-# Clean previous temporary information from previous runs that may bleed into this run.
-# Optionally create a package source mirror.
-# Install packages via the selected package manager.
+#. Setup necessary paths and directories like the base directory where the
+   package manager will be installed.
+#. Clone the package manager to the specific Git commit.
+#. Apply patches to package manager. For example, disabling extra config scopes in Spack.
+#. Copy project specific package recipes over the packages manager's recipes.
+#. Clean previous temporary information from previous runs that may bleed into this run.
+#. Optionally create a package source mirror.
+#. Install packages via the selected package manager.
 
 * ``.uberenv_config.json``: This file describes project specific configurations,
   such as, where to download the package manager, what git commit to use, and
