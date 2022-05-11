@@ -468,7 +468,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 "# Root directory for generated developer tools\n")
             entries.append(cmake_cache_path("DEVTOOLS_ROOT", devtools_root))
 
-        if "+devtools" in spec and 'toss_4' not in os.environ["SYS_TYPE"]:
+        if "+devtools" in spec and 'toss_4' not in self._get_sys_type(spec):
             # Only turn on clangformat support if devtools is on and not TOSS4
             clang_fmt_path = spec['llvm'].prefix.bin.join('clang-format')
             entries.append(cmake_cache_path(
