@@ -24,6 +24,7 @@
     "toss_4_x86_64_ib":
     [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
+    "__comment__":"# Use amdgpu_target=gfx90a for rzvernal                                       ",
     "toss_4_x86_64_ib_cray":
     [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx908 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
