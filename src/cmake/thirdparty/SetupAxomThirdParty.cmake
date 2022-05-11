@@ -16,6 +16,39 @@ endif()
 set(TPL_DEPS)
 
 #------------------------------------------------------------------------------
+# Camp (needed by RAJA and Umpire)
+#------------------------------------------------------------------------------
+if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
+    message(FATAL_ERROR "CAMP_DIR is required if RAJA_DIR or UMPIRE_DIR is provided.")
+endif()
+
+if (CAMP_DIR)
+    if (NOT EXISTS "${CAMP_DIR}")
+        message(FATAL_ERROR "Given CAMP_DIR does not exist: ${CAMP_DIR}")
+    endif()
+
+    if (NOT IS_DIRECTORY "${CAMP_DIR}")
+        message(FATAL_ERROR "Given CAMP_DIR is not a directory: ${CAMP_DIR}")
+    endif()
+
+    find_package(camp REQUIRED PATHS ${CAMP_DIR})
+
+    message(STATUS "Checking for expected Camp target 'camp'")
+    if (NOT TARGET camp)
+        message(FATAL_ERROR "Camp failed to load: ${CAMP_DIR}")
+    else()
+        message(STATUS "Camp loaded: ${CAMP_DIR}")
+        set(CAMP_FOUND TRUE CACHE BOOL "")
+    endif()
+
+    # Note: camp sets a compile feature that is not available on XL
+    set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
+else()
+    message(STATUS "Umpire support is OFF")
+    set(CAMP_FOUND FALSE CACHE BOOL "")
+endif()
+
+#------------------------------------------------------------------------------
 # UMPIRE
 #------------------------------------------------------------------------------
 if (UMPIRE_DIR)
@@ -26,9 +59,6 @@ if (UMPIRE_DIR)
     if (NOT IS_DIRECTORY "${UMPIRE_DIR}")
         message(FATAL_ERROR "Given UMPIRE_DIR is not a directory: ${UMPIRE_DIR}")
     endif()
-
-    # white238 - Workaround to get around umpire's exported camp logic not working
-    set(camp_DIR "${CAMP_DIR}/lib/cmake/camp")
 
     find_package(umpire REQUIRED PATHS ${UMPIRE_DIR} )
 
@@ -69,9 +99,6 @@ if (RAJA_DIR)
         message(STATUS "RAJA loaded: ${RAJA_DIR}")
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
-
-    # Note: camp sets a compile feature that is not available on XL
-    set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
 else()
     message(STATUS "RAJA support is OFF" )
     set(RAJA_FOUND FALSE CACHE BOOL "")
