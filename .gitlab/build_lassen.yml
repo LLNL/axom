@@ -63,9 +63,9 @@ lassen-xl_16_1_1_11_cuda-src:
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen]
 
-lassen-xl_16_1_1_2-src:
+lassen-xl_16_1_1_12-src:
   variables:
-    COMPILER: "xl@16.1.1.2"
+    COMPILER: "xl@16.1.1.12"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen, .with_cuda]
 
@@ -98,8 +98,8 @@ lassen-xl_16_1_1_11_cuda-full:
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_lassen, .with_cuda]
 
-lassen-xl_16_1_1_2-full:
+lassen-xl_16_1_1_12-full:
   variables:
-    COMPILER: "xl@16.1.1.2"
+    COMPILER: "xl@16.1.1.12"
     SPEC: "%${COMPILER}+mfem~openmp~cpp14"
   extends: [.full_build_on_lassen]
