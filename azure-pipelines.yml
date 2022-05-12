@@ -9,9 +9,8 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_01-27-22_04h-29m'
-  GCC8_IMAGENAME: 'axom/tpls:gcc-8_01-27-22_04h-29m'
-  GCC11_IMAGENAME: 'axom/tpls:gcc-11_01-27-22_05h-56m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_05-11-22_22h-18m'
+  GCC11_IMAGENAME: 'axom/tpls:gcc-11_05-11-22_22h-18m'
 
 jobs:
 - job: Build_and_Test
@@ -25,35 +24,21 @@ jobs:
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc11'
         HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-gcc@11.1.0'
-      linux_gcc8:
-        VM_ImageName: 'ubuntu-18.04'
-        Compiler_ImageName: '$(GCC8_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
-        COMPILER: 'g++'
-        TEST_TARGET: 'linux_gcc8'
-        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-gcc@8.4.0'
-      linux_gcc8_64bit:
-        VM_ImageName: 'ubuntu-18.04'
-        Compiler_ImageName: '$(GCC8_IMAGENAME)'
+      linux_gcc11_64bit:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(GCC11_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
         COMPILER: 'g++'
-        TEST_TARGET: 'linux_gcc8_64bit'
-        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-gcc@8.4.0'
+        TEST_TARGET: 'linux_gcc11'
+        HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-gcc@11.1.0'
       linux_clang10:
-        VM_ImageName: 'ubuntu-18.04'
+        VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
         BUILD_TYPE: 'Release'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
-        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
-      linux_clang10_cxx11:
-        VM_ImageName: 'ubuntu-18.04'
-        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DBLT_CXX_STD=c++11'
-        COMPILER: 'clang++'
-        TEST_TARGET: 'linux_clang10'
-        HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+        HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-clang@10.0.0'
       osx_gcc:
         VM_ImageName: 'macos-1015'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
@@ -112,10 +97,10 @@ jobs:
 
 - job: Check_Style
   variables:
-    VM_ImageName: 'ubuntu-18.04'
+    VM_ImageName: 'ubuntu-20.04'
     Compiler_ImageName: '$(CLANG10_IMAGENAME)'
     TEST_TARGET: 'linux_clang10'
-    HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
+    HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-clang@10.0.0'
     CMAKE_EXTRA_FLAGS: '-DENABLE_CLANGFORMAT=ON'
   pool:
       vmImage: $(VM_ImageName)
