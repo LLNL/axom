@@ -321,6 +321,10 @@ public:
                     "Cannot extract a field from the BlueprintParticleMesh "
                     "before adding points");
 
+    // Note: the implementation currently assumes that the field data is
+    // interleaved, so it is safe to get a pointer to the beginning of the
+    // x-coordinate's data. This will be relaxed in the future, and we will
+    // need to modify this implementation accordingly.
     T* data = hasField(fieldName)
       ? static_cast<T*>(
           m_fieldsGroup->getView(axom::fmt::format("{}/values/x", fieldName))
@@ -516,6 +520,10 @@ public:
     m_queryMesh = BlueprintParticleMesh(dsRoot->createGroup("query_mesh"));
 
     const int DIM = m_dc.GetMesh()->Dimension();
+    SLIC_ERROR_IF(DIM != 2 || DIM != 3,
+                  "Only 2D and 3D meshes are supported in setupParticleMesh(). "
+                  "Attempted mesh dimension was "
+                    << DIM);
 
     switch(DIM)
     {
@@ -786,13 +794,14 @@ int main(int argc, char** argv)
                              query_mesh_wrapper.getCoordsetName());
   queryTimer.stop();
 
-  // Output some timing stats
   auto getMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
       MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     };
+
+  // Output some timing stats
   {
     double minInit, maxInit, sumInit;
     getMinMax(initTimer.elapsedTimeInSec(), minInit, maxInit, sumInit);
@@ -847,6 +856,7 @@ int main(int argc, char** argv)
   auto* distances = query_mesh_wrapper.getDC()->GetField("distance");
   auto* directions = query_mesh_wrapper.getDC()->GetField("direction");
 
+  // Output some stats about the per-rank query points
   {
     double minPts, maxPts, sumPts;
     getMinMax(distances->Size(), minPts, maxPts, sumPts);
@@ -859,13 +869,13 @@ int main(int argc, char** argv)
   }
 
   mfem::Array<int> dofs;
-  for(auto i : IndexSet(nQueryPts))
+  for(auto idx : IndexSet(nQueryPts))
   {
-    const auto& cp = cpPositions[i];
-    (*distances)(i) = sqrt(squared_distance(qPts[i], cp));
+    const auto& cp = cpPositions[idx];
+    (*distances)(idx) = sqrt(squared_distance(qPts[idx], cp));
 
-    primal::Vector<double, DIM> dir(qPts[i], cp);
-    directions->FESpace()->GetVertexVDofs(i, dofs);
+    primal::Vector<double, DIM> dir(qPts[idx], cp);
+    directions->FESpace()->GetVertexVDofs(idx, dofs);
     directions->SetSubVector(dofs, dir.data());
   }
 

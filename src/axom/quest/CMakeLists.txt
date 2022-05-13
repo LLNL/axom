@@ -21,7 +21,7 @@ set( quest_headers
 
     Delaunay.hpp
     SignedDistance.hpp
-    
+
     ## All-nearest-neighbors query
     AllNearestNeighbors.hpp
     detail/AllNearestNeighbors_detail.hpp

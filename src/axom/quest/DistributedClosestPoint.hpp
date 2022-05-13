@@ -370,7 +370,7 @@ public:
    * \brief Computes the closest point within the objects for each query point
    * in the provided particle mesh, provided in the mesh blueprint rooted at \a meshGroup
    *
-   * \param meshGroup The root of a mesh blueprint for the query points
+   * \param mesh_node The root node of a mesh blueprint for the query points
    * \param coordset The coordinate set for the query points
    *
    * Uses the \a coordset coordinate set of the provided blueprint mesh
@@ -845,13 +845,25 @@ private:
  * Each of these are distributed over the problem's mpi ranks. This class orchestrates passing
  * the query points to all ranks whose object meshes might contain a closest point.
  *
+ * \note This class assumes that the object mesh and the query mesh are decomposed over the same
+ * number of mpi ranks.
+ * \warning This class will need to support cases where some ranks have zero object points.
+ * This is not currently supported.
+ *
  * \note The class currently supports object meshes that are comprised of a collection of points.
  * In the future, we'd like to consider more general object meshes, e.g. triangle meshes.
+ *
+ * \note The class currently supports object meshes and query meshes with a single domain per MPI rank.
+ * We intend to add support for multiple computational domains on each rank.
  *
  * To use this class, first set some parameters, such as the runtime execution policy,
  * then pass in the object mesh and build a spatial index over this mesh.
  * Finally, compute the closest points in the object mesh to each point in a query mesh 
  * using the \a computeClosestPoint() function.
+ *
+ * \note The implementation currently assumes that the coordinates for the positions and vector field
+ * data are interleaved (i.e. xyzxyzxyz....). We will relax this assumption in the future to support both
+ * interleaved and strided data.
  */
 class DistributedClosestPoint
 {
