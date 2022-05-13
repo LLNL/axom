@@ -390,8 +390,8 @@ public:
    * \note The current implementation assumes that the coordinates and closest_points and contiguous
    * with stride NDIMS. We intend to loosen this restriction in the future
    *
-   * \note We're temporarily also using a min_distance class while debugging this class
-   * and will likely add an option to only use this when a debug flag is presented
+   * \note We're temporarily also using a min_distance field while debugging this class.
+   * The code will use this field if it is present in \a mesh_node.
    */
   void computeClosestPoints(conduit::Node& mesh_node,
                             const std::string& coordset) const
@@ -422,7 +422,11 @@ public:
       xfer_node["cp_index"].set_external(internal::getPointer<axom::IndexType>(mesh_node["fields/cp_index/values"]), npts);
       xfer_node["cp_rank"].set_external(internal::getPointer<axom::IndexType>(mesh_node["fields/cp_rank/values"]), npts);
       xfer_node["closest_point"].set_external(internal::getPointer<double>(mesh_node["fields/closest_point/values/x"]), dim * npts);
-      xfer_node["debug/min_distance"].set_external(internal::getPointer<double>(mesh_node["fields/min_distance/values"]), npts);
+
+      if(mesh_node.has_path("fields_min_distance"))
+      {
+        xfer_node["debug/min_distance"].set_external(internal::getPointer<double>(mesh_node["fields/min_distance/values"]), npts);
+      }
       // clang-format on
     }
 
@@ -691,11 +695,15 @@ public:
                            : axom::Array<PointType>(closestPts, m_allocatorID);
 
     // DEBUG
-    auto minDist =
-      ArrayView_from_Node<double>(xfer_node["debug/min_distance"], npts);
-    auto cp_dist = is_first ? axom::Array<double>(npts, npts, m_allocatorID)
-                            : axom::Array<double>(minDist, m_allocatorID);
-    ;
+    const bool has_min_distance = xfer_node.has_path("debug/min_distance");
+    auto minDist = has_min_distance
+      ? ArrayView_from_Node<double>(xfer_node["debug/min_distance"], npts)
+      : ArrayView<double>();
+
+    auto cp_dist = has_min_distance
+      ? (is_first ? axom::Array<double>(npts, npts, m_allocatorID)
+                  : axom::Array<double>(minDist, m_allocatorID))
+      : axom::Array<double>(0, 0, m_allocatorID);
     auto query_min_dist = cp_dist.view();
     // END DEBUG
 
@@ -777,7 +785,10 @@ public:
             query_pos[idx] = m_points[curr_min.minElem];
 
             //DEBUG
-            query_min_dist[idx] = sqrt(curr_min.minSqDist);
+            if(has_min_distance)
+            {
+              query_min_dist[idx] = sqrt(curr_min.minSqDist);
+            }
           }
           // else
           // {
@@ -807,9 +818,12 @@ public:
                closestPts.size() * sizeof(PointType));
 
     // DEBUG
-    axom::copy(minDist.data(),
-               query_min_dist.data(),
-               minDist.size() * sizeof(double));
+    if(has_min_distance)
+    {
+      axom::copy(minDist.data(),
+                 query_min_dist.data(),
+                 minDist.size() * sizeof(double));
+    }
   }
 
 private:
