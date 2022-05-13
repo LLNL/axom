@@ -727,9 +727,9 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
 
   // TODO: There's an error on operator[] if these aren't const and it only
   // happens for GCC 8.1.0
+#ifdef AXOM_USE_RAJA
   const auto offsets_view = outOffsets;
   const auto counts_view = outCounts;
-#ifdef AXOM_USE_RAJA
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
   // Step 1: count number of candidate intersections for each point
@@ -879,7 +879,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
                                     RAJA::operators::plus<IndexType> {});
   outCandidates = std::move(dedupedCandidates);
 
-#else
+#else   // AXOM_USE_RAJA
   outOffsets[0] = 0;
   for(int i = 0; i < qsize; i++)
   {
@@ -893,7 +893,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
       outOffsets[i + 1] = outOffsets[i] + outCounts[i];
     }
   }
-#endif
+#endif  // AXOM_USE_RAJA
 }
 
 //------------------------------------------------------------------------------

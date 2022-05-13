@@ -20,8 +20,8 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI 
-              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION 
+if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
               AND AXOM_ENABLE_KLEE)
     blt_add_executable(
         NAME        quest_shaping_driver_ex
@@ -30,6 +30,17 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         DEPENDS_ON  ${quest_example_depends} mfem mpi
         FOLDER      axom/quest/examples
         )
+endif()
+
+if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    blt_add_executable(
+            NAME        quest_distributed_distance_query_ex
+            SOURCES     quest_distributed_distance_query_example.cpp
+            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON  ${quest_example_depends} mfem mpi
+            FOLDER      axom/quest/examples
+            )
 endif()
 
 if(MFEM_FOUND)
@@ -84,13 +95,13 @@ if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         axom_add_test(
             NAME quest_inout_interface_3D_mpi_test
             COMMAND quest_inout_interface_ex -i ${quest_data_dir}/sphere_binary.stl
-            NUM_MPI_TASKS 2 
+            NUM_MPI_TASKS 2
             )
         if(C2C_FOUND)
             axom_add_test(
                 NAME quest_inout_interface_2D_mpi_test
                 COMMAND quest_inout_interface_ex -i ${AXOM_DATA_DIR}/contours/unit_circle.contour
-                NUM_MPI_TASKS 2 
+                NUM_MPI_TASKS 2
                 )
         endif()
     else()
