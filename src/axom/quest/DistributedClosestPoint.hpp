@@ -30,11 +30,23 @@
 #endif
 #include "mpi.h"
 
+// Add some helper preprocessor defines for using OPENMP and CUDA policies
+// within the distributed closest point query.
+// These are only used when building with RAJA and Umpire
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #ifdef AXOM_USE_OPENMP
+    #define _AXOM_DCP_USE_OPENMP
+  #endif
+  #ifdef AXOM_USE_CUDA
+    #define _AXOM_DCP_USE_CUDA
+  #endif
+#endif
+
 namespace axom
 {
 namespace quest
 {
-/// Enum for RAJA runtime policy
+/// Enum for runtime execution policy
 enum class DistributedClosestPointRuntimePolicy
 {
   seq = 0,
@@ -245,14 +257,12 @@ public:
   using PointArray = axom::Array<PointType>;
   using BoxArray = axom::Array<BoxType>;
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   using SeqBVHTree = spin::BVH<DIM, axom::SEQ_EXEC>;
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
   using OmpBVHTree = spin::BVH<DIM, axom::OMP_EXEC>;
-  #endif
-  #ifdef AXOM_USE_CUDA
+#endif
+#ifdef _AXOM_DCP_USE_CUDA
   using CudaBVHTree = spin::BVH<DIM, axom::CUDA_EXEC<256>>;
-  #endif
 #endif
 
 private:
@@ -303,26 +313,25 @@ public:
   /// Predicate to check if the BVH tree has been initialized
   bool isBVHTreeInitialized() const
   {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
       return m_bvh_seq.get() != nullptr;
 
     case RuntimePolicy::omp:
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
       return m_bvh_omp.get() != nullptr;
-  #else
+#else
       break;
-  #endif
-    case RuntimePolicy::cuda:
-  #ifdef AXOM_USE_CUDA
-      return m_bvh_cuda.get() != nullptr;
-  #else
-      break;
-  #endif
-    }
 #endif
+
+    case RuntimePolicy::cuda:
+#ifdef _AXOM_DCP_USE_CUDA
+      return m_bvh_cuda.get() != nullptr;
+#else
+      break;
+#endif
+    }
 
     return false;
   }
@@ -335,7 +344,6 @@ public:
 
     SLIC_ASSERT_MSG(!isBVHTreeInitialized(), "BVH tree already initialized");
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
@@ -343,22 +351,21 @@ public:
       return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
 
     case RuntimePolicy::omp:
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
       m_bvh_omp = std::unique_ptr<OmpBVHTree>(new OmpBVHTree);
       return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
-  #else
+#else
       break;
-  #endif
+#endif
 
     case RuntimePolicy::cuda:
-  #ifdef AXOM_USE_CUDA
+#ifdef _AXOM_DCP_USE_CUDA
       m_bvh_cuda = std::unique_ptr<CudaBVHTree>(new CudaBVHTree);
       return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
-  #else
+#else
       break;
-  #endif
-    }
 #endif
+    }
 
     // Fail safe -- we should never reach this line!
     SLIC_ERROR("Failed to initialize the BVH tree");
@@ -425,26 +432,24 @@ public:
     }
 
     // Find initial values on this rank
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
       computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, true);
-
       break;
+
     case RuntimePolicy::omp:
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
       computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, true);
-  #endif
+#endif
       break;
 
     case RuntimePolicy::cuda:
-  #ifdef AXOM_USE_CUDA
+#ifdef _AXOM_DCP_USE_CUDA
       computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, true);
-  #endif
+#endif
       break;
     }
-#endif
 
     if(m_isVerbose)
     {
@@ -497,27 +502,24 @@ public:
         }
 
         // compute the local data
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
           computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), rec_node, false);
-
           break;
 
         case RuntimePolicy::omp:
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
           computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), rec_node, false);
-  #endif
+#endif
           break;
 
         case RuntimePolicy::cuda:
-  #ifdef AXOM_USE_CUDA
+#ifdef _AXOM_DCP_USE_CUDA
           computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), rec_node, false);
-  #endif
+#endif
           break;
         }
-#endif
 
         if(m_isVerbose)
         {
@@ -580,25 +582,23 @@ private:
     // This function uses the default allocator ID for the execution space
     // TODO: Add overload to allow the user to set an allocator ID
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
       m_allocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
       break;
     case RuntimePolicy::omp:
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
       m_allocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-  #endif
+#endif
       break;
 
     case RuntimePolicy::cuda:
-  #ifdef AXOM_USE_CUDA
+#ifdef _AXOM_DCP_USE_CUDA
       m_allocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-  #endif
+#endif
       break;
     }
-#endif
   }
 
   /**
@@ -822,16 +822,14 @@ private:
   PointArray m_points;
   BoxArray m_boxes;
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   std::unique_ptr<SeqBVHTree> m_bvh_seq;
 
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
   std::unique_ptr<OmpBVHTree> m_bvh_omp;
-  #endif
+#endif
 
-  #ifdef AXOM_USE_CUDA
+#ifdef _AXOM_DCP_USE_CUDA
   std::unique_ptr<CudaBVHTree> m_bvh_cuda;
-  #endif
 #endif
 };
 
@@ -883,27 +881,25 @@ public:
   /// Predicate to determine if a given \a RuntimePolicy is valid for this configuration
   bool isValidRuntimePolicy(RuntimePolicy policy) const
   {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     switch(policy)
     {
     case RuntimePolicy::seq:
       return true;
 
     case RuntimePolicy::omp:
-  #ifdef AXOM_USE_OPENMP
+#ifdef _AXOM_DCP_USE_OPENMP
       return true;
-  #else
+#else
       return false;
-  #endif
+#endif
 
     case RuntimePolicy::cuda:
-  #ifdef AXOM_USE_CUDA
+#ifdef _AXOM_DCP_USE_CUDA
       return true;
-  #else
+#else
       return false;
-  #endif
-    }
 #endif
+    }
 
     return false;
   }
@@ -1073,5 +1069,9 @@ private:
 
 }  // end namespace quest
 }  // end namespace axom
+
+// Cleanup local #defines
+#undef _AXOM_DCP_USE_OPENMP
+#undef _AXOM_DCP_USE_CUDA
 
 #endif  //  QUEST_DISTRIBUTED_CLOSEST_POINT_H_

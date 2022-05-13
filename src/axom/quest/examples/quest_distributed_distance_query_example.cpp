@@ -35,11 +35,6 @@
 #endif
 #include "mpi.h"
 
-// RAJA
-#ifdef AXOM_USE_RAJA
-  #include "RAJA/RAJA.hpp"
-#endif
-
 // C/C++ includes
 #include <string>
 #include <map>
@@ -70,16 +65,17 @@ private:
   bool m_verboseOutput {false};
 
   // clang-format off
-  const std::map<std::string, RuntimePolicy> s_validPolicies{
-    #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  const std::map<std::string, RuntimePolicy> s_validPolicies
+  {
       {"seq", RuntimePolicy::seq}
-      #ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #ifdef AXOM_USE_OPENMP
     , {"omp", RuntimePolicy::omp}
-      #endif
-      #ifdef AXOM_USE_CUDA
+  #endif
+  #ifdef AXOM_USE_CUDA
     , {"cuda", RuntimePolicy::cuda}
-      #endif
-    #endif
+  #endif
+#endif
   };
   // clang-format on
 
@@ -520,7 +516,7 @@ public:
     m_queryMesh = BlueprintParticleMesh(dsRoot->createGroup("query_mesh"));
 
     const int DIM = m_dc.GetMesh()->Dimension();
-    SLIC_ERROR_IF(DIM != 2 || DIM != 3,
+    SLIC_ERROR_IF(DIM != 2 && DIM != 3,
                   "Only 2D and 3D meshes are supported in setupParticleMesh(). "
                   "Attempted mesh dimension was "
                     << DIM);
