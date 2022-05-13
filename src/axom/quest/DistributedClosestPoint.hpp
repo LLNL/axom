@@ -21,9 +21,7 @@
 #include "conduit_relay_mpi.hpp"
 #include "conduit_relay_io.hpp"
 
-#include <list>
-#include <vector>
-#include <set>
+#include <memory>
 #include <cstdlib>
 #include <cmath>
 
@@ -279,25 +277,6 @@ public:
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
   }
 
-  ~DistributedClosestPointImpl()
-  {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    delete m_bvh_seq;
-    m_bvh_seq = nullptr;
-
-  #ifdef AXOM_USE_OPENMP
-    delete m_bvh_omp;
-    m_bvh_omp = nullptr;
-  #endif
-
-  #ifdef AXOM_USE_CUDA
-    delete m_bvh_cuda;
-    m_bvh_cuda = nullptr;
-  #endif
-
-#endif
-  }
-
 public:
   /**
    * Utility function to set the array of points
@@ -328,17 +307,17 @@ public:
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
-      return m_bvh_seq != nullptr;
+      return m_bvh_seq.get() != nullptr;
 
     case RuntimePolicy::omp:
   #ifdef AXOM_USE_OPENMP
-      return m_bvh_omp != nullptr;
+      return m_bvh_omp.get() != nullptr;
   #else
       break;
   #endif
     case RuntimePolicy::cuda:
   #ifdef AXOM_USE_CUDA
-      return m_bvh_cuda != nullptr;
+      return m_bvh_cuda.get() != nullptr;
   #else
       break;
   #endif
@@ -360,21 +339,21 @@ public:
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
-      m_bvh_seq = new SeqBVHTree;
-      return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq);
+      m_bvh_seq = std::unique_ptr<SeqBVHTree>(new SeqBVHTree);
+      return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
 
     case RuntimePolicy::omp:
   #ifdef AXOM_USE_OPENMP
-      m_bvh_omp = new OmpBVHTree;
-      return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp);
+      m_bvh_omp = std::unique_ptr<OmpBVHTree>(new OmpBVHTree);
+      return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
   #else
       break;
   #endif
 
     case RuntimePolicy::cuda:
   #ifdef AXOM_USE_CUDA
-      m_bvh_cuda = new CudaBVHTree;
-      return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda);
+      m_bvh_cuda = std::unique_ptr<CudaBVHTree>(new CudaBVHTree);
+      return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
   #else
       break;
   #endif
@@ -450,18 +429,18 @@ public:
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
-      computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq, xfer_node, true);
+      computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, true);
 
       break;
     case RuntimePolicy::omp:
   #ifdef AXOM_USE_OPENMP
-      computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp, xfer_node, true);
+      computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, true);
   #endif
       break;
 
     case RuntimePolicy::cuda:
   #ifdef AXOM_USE_CUDA
-      computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda, xfer_node, true);
+      computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, true);
   #endif
       break;
     }
@@ -522,19 +501,19 @@ public:
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
-          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq, rec_node, false);
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), rec_node, false);
 
           break;
 
         case RuntimePolicy::omp:
   #ifdef AXOM_USE_OPENMP
-          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp, rec_node, false);
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), rec_node, false);
   #endif
           break;
 
         case RuntimePolicy::cuda:
   #ifdef AXOM_USE_CUDA
-          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda, rec_node, false);
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), rec_node, false);
   #endif
           break;
         }
@@ -844,14 +823,14 @@ private:
   BoxArray m_boxes;
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  SeqBVHTree* m_bvh_seq {nullptr};
+  std::unique_ptr<SeqBVHTree> m_bvh_seq;
 
   #ifdef AXOM_USE_OPENMP
-  OmpBVHTree* m_bvh_omp {nullptr};
+  std::unique_ptr<OmpBVHTree> m_bvh_omp;
   #endif
 
   #ifdef AXOM_USE_CUDA
-  CudaBVHTree* m_bvh_cuda {nullptr};
+  std::unique_ptr<CudaBVHTree> m_bvh_cuda;
   #endif
 #endif
 };
@@ -878,15 +857,6 @@ class DistributedClosestPoint
 {
 public:
   using RuntimePolicy = DistributedClosestPointRuntimePolicy;
-
-  ~DistributedClosestPoint()
-  {
-    delete m_dcp_2;
-    m_dcp_2 = nullptr;
-
-    delete m_dcp_3;
-    m_dcp_3 = nullptr;
-  }
 
 public:
   /// Set the runtime execution policy for the query
@@ -1045,13 +1015,15 @@ private:
     switch(m_dimension)
     {
     case 2:
-      m_dcp_2 = new internal::DistributedClosestPointImpl<2>(m_runtimePolicy,
-                                                             m_isVerbose);
+      m_dcp_2 = std::unique_ptr<internal::DistributedClosestPointImpl<2>>(
+        new internal::DistributedClosestPointImpl<2>(m_runtimePolicy,
+                                                     m_isVerbose));
       m_objectMeshCreated = true;
       break;
     case 3:
-      m_dcp_3 = new internal::DistributedClosestPointImpl<3>(m_runtimePolicy,
-                                                             m_isVerbose);
+      m_dcp_3 = std::unique_ptr<internal::DistributedClosestPointImpl<3>>(
+        new internal::DistributedClosestPointImpl<3>(m_runtimePolicy,
+                                                     m_isVerbose));
       m_objectMeshCreated = true;
       break;
     }
@@ -1083,8 +1055,8 @@ private:
   bool m_objectMeshCreated {false};
 
   // One instance per dimension
-  internal::DistributedClosestPointImpl<2>* m_dcp_2 {nullptr};
-  internal::DistributedClosestPointImpl<3>* m_dcp_3 {nullptr};
+  std::unique_ptr<internal::DistributedClosestPointImpl<2>> m_dcp_2;
+  std::unique_ptr<internal::DistributedClosestPointImpl<3>> m_dcp_3;
 };
 
 }  // end namespace quest
