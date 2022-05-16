@@ -130,16 +130,16 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
                 "HIP_ROOT_DIR", '{0}'.format(spec['hip'].prefix)))
             # BEGIN AXOM EDIT
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
-            if self.spec.satisfies('%clang'):
+            if self.spec.satisfies('%clang') and 'toss_4' in self._get_sys_type(spec):
                 hip_root = spec['hip'].prefix
                 rocm_root = hip_root + "/.."
                 clang_version= str(self.compiler.version)
                 hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
                 entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
 
-            # C++ 14 error fix in camp
-            entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
-            # END AXOM EDIT
+                # C++ 14 error fix in camp
+                entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
+                # END AXOM EDIT
 
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':
