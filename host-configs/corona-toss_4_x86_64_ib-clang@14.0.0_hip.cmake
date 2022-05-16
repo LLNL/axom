@@ -31,8 +31,6 @@ set(CMAKE_Fortran_FLAGS "-Mfreeform" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(BLT_CXX_STD "c++14" CACHE STRING "")
-
 #------------------------------------------------------------------------------
 # MPI
 #------------------------------------------------------------------------------
