@@ -19,11 +19,11 @@ if(DEFINED ENV{SPACK_CC})
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2022.03.10/bin/xlc_r" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2022.03.10/bin/xlc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2022.03.10/bin/xlC_r" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2022.03.10/bin/xlC" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2021.12.22/bin/xlf2003_r" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2021.12.22/bin/xlf2003" CACHE PATH "")
 
 endif()
 

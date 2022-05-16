@@ -19,11 +19,11 @@ if(DEFINED ENV{SPACK_CC})
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlc_r" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlC_r" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlC" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlf2003_r" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2020.08.24-cuda-11.0.2/bin/xlf2003" CACHE PATH "")
 
 endif()
 
