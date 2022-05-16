@@ -228,7 +228,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
                                                   description))
 
-        if "+cpp14" in spec and spec.satisfies("@0.6.2:"):
+        if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
         return entries

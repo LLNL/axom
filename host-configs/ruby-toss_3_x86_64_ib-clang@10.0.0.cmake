@@ -35,8 +35,6 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(BLT_EXE_LINKER_FLAGS " -Wl,-rpath,/usr/tce/packages/clang/clang-10.0.0/lib" CACHE STRING "Adds a missing libstdc++ rpath")
 
-set(BLT_CXX_STD "c++14" CACHE STRING "")
-
 #------------------------------------------------------------------------------
 # MPI
 #------------------------------------------------------------------------------

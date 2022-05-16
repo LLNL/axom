@@ -35,8 +35,6 @@ set(CMAKE_Fortran_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-7.3.0/bin/gcc" CACH
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(BLT_CXX_STD "c++14" CACHE STRING "")
-
 #------------------------------------------------------------------------------
 # MPI
 #------------------------------------------------------------------------------
