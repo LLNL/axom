@@ -21,3 +21,15 @@ blt_add_executable(
     DEPENDS_ON  ${spin_example_depends}
     FOLDER      axom/spin/examples
     )
+
+if (RAJA_FOUND AND UMPIRE_FOUND)
+
+    blt_add_executable(
+        NAME        spin_bvh_two_pass_ex
+        SOURCES     spin_bvh_two_pass.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${spin_example_depends}
+        FOLDER      axom/spin/examples
+        )
+
+endif()
