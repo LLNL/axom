@@ -476,6 +476,7 @@ AXOM_HOST_DEVICE bool intersect_tri3D_tri3D(const Triangle<T, 3>& t1,
  *
  * Helper function for T-T intersect.
  */
+AXOM_HOST_DEVICE
 inline bool intersectTwoPermutedTriangles(const Point3& p1,
                                           const Point3& q1,
                                           const Point3& r1,
@@ -559,6 +560,7 @@ inline bool checkVertex(const Point2& p1,
  * \note The result is equal to twice the signed area of a 2D triangle
  * with vertices (A,B,C) (in CCW order).
  */
+AXOM_HOST_DEVICE
 inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 {
   return (((A[0] - C[0]) * (B[1] - C[1]) - (A[1] - C[1]) * (B[0] - C[0])));
@@ -567,6 +569,7 @@ inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 /*!
  * \brief Checks if x > y, within a specified tolerance.
  */
+AXOM_HOST_DEVICE
 inline bool isGt(double x, double y, double EPS)
 {
   return ((x > y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
@@ -575,6 +578,7 @@ inline bool isGt(double x, double y, double EPS)
 /*!
  * \brief Checks if x < y, within a specified tolerance.
  */
+AXOM_HOST_DEVICE
 inline bool isLt(double x, double y, double EPS)
 {
   return ((x < y) && !(axom::utilities::isNearlyEqual(x, y, EPS)));
@@ -583,6 +587,7 @@ inline bool isLt(double x, double y, double EPS)
 /*!
  * \brief Checks if x <= y, within a specified tolerance.
  */
+AXOM_HOST_DEVICE
 inline bool isLeq(double x, double y, double EPS) { return !(isGt(x, y, EPS)); }
 
 /*!
@@ -594,6 +599,7 @@ inline bool isLeq(double x, double y, double EPS) { return !(isGt(x, y, EPS)); }
  *
  * Supports checkEdge and checkVertex
  */
+AXOM_HOST_DEVICE
 inline bool isLpeq(double x, double y, bool includeEqual, double EPS)
 {
   if(includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
@@ -607,6 +613,7 @@ inline bool isLpeq(double x, double y, bool includeEqual, double EPS)
 /*!
  * \brief Checks if x >= y, within a specified tolerance.
  */
+AXOM_HOST_DEVICE
 inline bool isGeq(double x, double y, double EPS) { return !(isLt(x, y, EPS)); }
 
 /*!
@@ -618,6 +625,7 @@ inline bool isGeq(double x, double y, double EPS) { return !(isLt(x, y, EPS)); }
  *
  * Supports checkEdge and checkVertex
  */
+AXOM_HOST_DEVICE
 inline bool isGpeq(double x, double y, bool includeEqual, double EPS)
 {
   if(includeEqual && axom::utilities::isNearlyEqual(x, y, EPS))
@@ -631,6 +639,7 @@ inline bool isGpeq(double x, double y, bool includeEqual, double EPS)
 /*!
  * \brief Check if x, y, and z all have the same sign.
  */
+AXOM_HOST_DEVICE
 inline bool nonzeroSignMatch(double x, double y, double z, double EPS)
 {
   return !(axom::utilities::isNearlyEqual(x, 0., EPS)) &&
@@ -643,6 +652,7 @@ inline bool nonzeroSignMatch(double x, double y, double z, double EPS)
 /*!
  * \brief Check if two of x, y, and z are near zero.
  */
+AXOM_HOST_DEVICE
 inline bool twoZeros(double x, double y, double z, double EPS)
 {
   return countZeros(x, y, z, EPS) == 2;
@@ -651,6 +661,7 @@ inline bool twoZeros(double x, double y, double z, double EPS)
 /*!
  * \brief Check if one of x, y, and z is near zero and the others' signs match.
  */
+AXOM_HOST_DEVICE
 inline bool oneZeroOthersMatch(double x, double y, double z, double EPS)
 {
   namespace util = axom::utilities;
@@ -663,6 +674,7 @@ inline bool oneZeroOthersMatch(double x, double y, double z, double EPS)
 /*!
  * \brief Count the number of arguments near zero.
  */
+AXOM_HOST_DEVICE
 inline int countZeros(double x, double y, double z, double EPS)
 {
   return (int)axom::utilities::isNearlyEqual(x, 0.0, EPS) +

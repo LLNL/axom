@@ -267,6 +267,7 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
                                                    const T& y,
                                                    const T& z)
@@ -277,6 +278,7 @@ inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(const Point<T, NDIMS>& A,
                                                  const Point<T, NDIMS>& B)
 {
@@ -292,6 +294,7 @@ inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(const Point<T, NDIMS>& A,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Point<T, NDIMS> Point<T, NDIMS>::lerp(const Point<T, NDIMS>& A,
                                              const Point<T, NDIMS>& B,
                                              T alpha)

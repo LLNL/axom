@@ -421,6 +421,7 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)
 {
   m_components *= scalar;
@@ -429,6 +430,7 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator/=(T scalar)
 {
   m_components /= scalar;
@@ -437,6 +439,7 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator/=(T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator+=(const Vector<T, NDIMS>& v)
 {
   m_components += v.array();
@@ -445,6 +448,7 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator+=(const Vector<T, NDIMS>& v)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator-=(const Vector<T, NDIMS>& v)
 {
   m_components -= v.array();
@@ -453,6 +457,7 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator-=(const Vector<T, NDIMS>& v)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline double Vector<T, NDIMS>::squared_norm() const
 {
   return dot(*this);
@@ -460,6 +465,7 @@ inline double Vector<T, NDIMS>::squared_norm() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline double Vector<T, NDIMS>::norm() const
 {
   return std::sqrt(squared_norm());
@@ -467,6 +473,7 @@ inline double Vector<T, NDIMS>::norm() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
 {
   constexpr double EPS = 1.0e-50;
@@ -489,6 +496,7 @@ inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline void Vector<T, NDIMS>::negate()
 {
   for(int i = 0; i < NDIMS; ++i)
@@ -499,6 +507,7 @@ inline void Vector<T, NDIMS>::negate()
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline bool Vector<T, NDIMS>::is_zero() const
 {
   for(int i = 0; i < NDIMS; ++i)
@@ -513,6 +522,7 @@ inline bool Vector<T, NDIMS>::is_zero() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline T Vector<T, NDIMS>::dot(const Vector<T, NDIMS>& vec) const
 {
   return dot_product(*this, vec);
@@ -534,6 +544,7 @@ std::ostream& Vector<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline T Vector<T, NDIMS>::dot_product(const Vector<T, NDIMS>& u,
                                        const Vector<T, NDIMS>& v)
 {
@@ -543,6 +554,7 @@ inline T Vector<T, NDIMS>::dot_product(const Vector<T, NDIMS>& u,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, 3> Vector<T, NDIMS>::cross_product(const Vector<T, 2>& u,
                                                     const Vector<T, 2>& v)
 {
@@ -555,6 +567,7 @@ inline Vector<T, 3> Vector<T, NDIMS>::cross_product(const Vector<T, 2>& u,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, 3> Vector<T, NDIMS>::cross_product(const Vector<T, 3>& u,
                                                     const Vector<T, 3>& v)
 {
@@ -567,6 +580,7 @@ inline Vector<T, 3> Vector<T, NDIMS>::cross_product(const Vector<T, 3>& u,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar)
 {
   Vector<T, NDIMS> result(vec);
@@ -576,6 +590,7 @@ inline Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS> operator*(const T scalar, const Vector<T, NDIMS>& vec)
 {
   Vector<T, NDIMS> result(vec);
@@ -585,6 +600,7 @@ inline Vector<T, NDIMS> operator*(const T scalar, const Vector<T, NDIMS>& vec)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& vec1,
                                   const Vector<T, NDIMS>& vec2)
 {
@@ -630,6 +646,7 @@ inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
+AXOM_HOST_DEVICE
 inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1,
                                   const Vector<T, NDIMS>& vec2)
 {
