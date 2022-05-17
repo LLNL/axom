@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
 import socket
+import os
 
 from spack import *
 
@@ -135,7 +136,8 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
                 rocm_root = hip_root + "/.."
                 clang_version= str(self.compiler.version)
                 hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
-                entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+                if os.path.isdir(hip_clang_include_path):
+                    entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
 
                 # C++ 14 error fix in camp
                 entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))

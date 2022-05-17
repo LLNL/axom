@@ -191,12 +191,13 @@ class Umpire(CachedCMakePackage, CudaPackage, ROCmPackage):
                     "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
             # BEGIN AXOM EDIT
             # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
-            if self.spec.satisfies('%clang'):
+            if self.spec.satisfies('%clang') and 'toss_4' in self._get_sys_type(spec):
                 hip_root = spec['hip'].prefix
                 rocm_root = hip_root + "/.."
                 clang_version= str(self.compiler.version)
                 hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
-                entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+                if os.path.isdir(hip_clang_include_path):
+                    entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
 
             # END AXOM EDIT
         else:
