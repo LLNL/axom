@@ -15,7 +15,7 @@ set(example_sources
     core_acceleration.cpp)
 
 set( core_examples_depends axom )
-blt_list_append( TO core_examples_depends ELEMENTS hip IF ${ENABLE_HIP} )
+blt_list_append( TO core_examples_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples

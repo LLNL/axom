@@ -52,7 +52,7 @@ set(core_test_depends
     )
 
 blt_list_append( TO core_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO core_test_depends ELEMENTS hip IF ${ENABLE_HIP} )
+blt_list_append( TO core_test_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 #------------------------------------------------------------------------------
 # Serial GTests

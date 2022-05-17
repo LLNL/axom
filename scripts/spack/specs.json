@@ -22,17 +22,18 @@
       "intel@19.0.4~openmp+devtools+mfem+c2c" ],
 
     "toss_4_x86_64_ib":
-    [ "clang@13.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
+    [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
+    "__comment__":"# Use amdgpu_target=gfx90a for rzvernal                                       ",
     "toss_4_x86_64_ib_cray":
-    [ "clang@13.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx908 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
+    [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx908 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
     "blueos_3_ppc64le_ib_p9":
     [ "clang@9.0.0~openmp+devtools+mfem+c2c",
       "clang@8.0.1~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
       "gcc@7.3.1+devtools~mfem+c2c",
-      "xl@16.1.1.1~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
-      "xl@16.1.1.2~openmp+devtools+mfem+c2c" ],
+      "xl@16.1.1.11~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
+      "xl@16.1.1.12~openmp+devtools+mfem+c2c" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0+devtools+mfem" ]

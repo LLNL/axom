@@ -43,6 +43,11 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
           sha256='12bb78c00b6683ad3e7fd4e3f87f9776bae074b722431b79696bc862816735ef',
           when='@:0.13.0 ^blt@0.4:')
 
+    # BEGIN AXOM EDIT
+    # Patch for cuda and hip includes when not running on device
+    patch('arch_impl.patch', when='@2022.03.0:')
+    # END AXOM EDIT
+
     variant('openmp', default=True, description='Build OpenMP backend')
     variant('shared', default=True, description='Build Shared Libs')
     variant('examples', default=True, description='Build examples.')
@@ -52,7 +57,9 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant('tests', default=False, description='Build tests')
 
     depends_on('blt')
-    depends_on('blt@0.5.0:', type='build', when='@0.14.1:')
+    # BEGIN AXOM EDIT
+    depends_on('blt@0.5.1:', type='build', when='@0.14.1:')
+    # END AXOM EDIT
     depends_on('blt@0.4.1', type='build', when='@0.14.0')
     depends_on('blt@0.4.0:', type='build', when='@0.13.0')
     depends_on('blt@0.3.6:', type='build', when='@:0.12.0')
@@ -61,7 +68,10 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on('camp@0.1.0', when='@0.12.0:0.13.0')
     depends_on('camp@2022.03.0:', when='@2022.03.0:')
 
-    depends_on('cmake@:3.20', when='+rocm', type='build')
+    # BEGIN AXOM EDIT
+    # Prevents spack spec with CMake 3.21
+    #depends_on('cmake@:3.20', when='+rocm', type='build')
+    # END AXOM EDIT
     depends_on('cmake@3.14:', when='@2022.03.0:')
 
     with when('+rocm @0.12.0:'):
@@ -110,6 +120,7 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
                     "CUDA_ARCH", 'sm_{0}'.format(cuda_arch[0])))
                 entries.append(cmake_cache_string(
                     "CMAKE_CUDA_ARCHITECTURES", '{0}'.format(cuda_arch[0])))
+
         else:
             entries.append(cmake_cache_option("ENABLE_CUDA", False))
 
@@ -117,6 +128,19 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_HIP", True))
             entries.append(cmake_cache_path(
                 "HIP_ROOT_DIR", '{0}'.format(spec['hip'].prefix)))
+            # BEGIN AXOM EDIT
+            # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
+            if self.spec.satisfies('%clang') and 'toss_4' in self._get_sys_type(spec):
+                hip_root = spec['hip'].prefix
+                rocm_root = hip_root + "/.."
+                clang_version= str(self.compiler.version)
+                hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
+                entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+
+                # C++ 14 error fix in camp
+                entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
+                # END AXOM EDIT
+
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':
                 arch_str = ",".join(archs)
