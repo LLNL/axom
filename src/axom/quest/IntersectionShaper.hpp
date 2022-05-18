@@ -895,17 +895,18 @@ private:
 
 private:
   ExecPolicy m_execPolicy {seq};
-  double m_vertexWeldThreshold {1.e-10};
   int m_level {7};
-  int m_octcount {0};
   int m_num_elements {0};
+  double* m_hex_volumes {nullptr};
+  double* m_overlap_volumes {nullptr};
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  double m_vertexWeldThreshold {1.e-10};
+  int m_octcount {0};
   OctahedronType* m_octs {nullptr};
   BoundingBoxType* m_aabbs {nullptr};
   PolyhedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};
-  double* m_hex_volumes {nullptr};
-  double* m_overlap_volumes {nullptr};
-
+#endif
   // What do I need here?
   // Probably size of stuff
 };

@@ -69,6 +69,28 @@ public:
                        traversePref);
   }
 
+  template <typename Primitive, typename LeafAction, typename Predicate>
+  AXOM_HOST_DEVICE void traverse_tree(const Primitive& p,
+                                      LeafAction&& lf,
+                                      Predicate&& predicate) const
+  {
+    auto noTraversePref =
+      [](const BoxType& l, const BoxType& r, const Primitive& p) {
+        AXOM_UNUSED_VAR(l);
+        AXOM_UNUSED_VAR(r);
+        AXOM_UNUSED_VAR(p);
+        return false;
+      };
+
+    lbvh::bvh_traverse(m_inner_nodes,
+                       m_inner_node_children,
+                       m_leaf_nodes,
+                       p,
+                       predicate,
+                       lf,
+                       noTraversePref);
+  }
+
 private:
   BoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
   int32* m_inner_node_children {nullptr};

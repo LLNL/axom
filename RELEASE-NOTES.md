@@ -67,6 +67,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds an overload of `axom::Array::resize(ArrayOptions::Uninitialized, dims)` to support resizes
   without constructing or initializing new elements
 - Adds examples and tests for using Slic interface in Fortran
+- Adds examples for using the BVH device traversal API
 
 ###  Changed
 - Moved bit-twiddling functions to core component
@@ -100,6 +101,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `axom::Array` now consistently propagates the allocator ID on copy, move, and swap operations when possible.
   This is a breaking change; copy-construction of a dynamic array from a device array will no longer automatically
   move the array to host memory, and will instead maintain the same allocator ID as the source array.
+- The device traversal method `BVH::TraverserType::traverse_tree()` now supports passing in arbitrary query objects
+  for BVH traversal.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
