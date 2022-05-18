@@ -66,6 +66,11 @@ if(AXOM_ENABLE_QUEST)
     install(TARGETS              mesh_tester
             DESTINATION          bin
             )
+
+    # Add separable compilation flag
+    if (ENABLE_HIP)
+        blt_add_target_compile_flags(TO mesh_tester FLAGS "-fgpu-rdc")
+    endif()
 endif()
 
 #------------------------------------------------------------------------------
