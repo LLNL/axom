@@ -898,6 +898,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename ExecSpace, typename StoragePolicy>
+AXOM_HOST_DEVICE
 typename UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::GridCell
 UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getClampedGridCell(
   const LatticeType& lattice,
