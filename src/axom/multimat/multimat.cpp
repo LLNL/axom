@@ -22,7 +22,8 @@
 using namespace std;
 using namespace axom::multimat;
 
-MultiMat::MultiMat(DataLayout AXOM_NOT_USED(d), SparsityLayout AXOM_NOT_USED(s))
+MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
+                   SparsityLayout AXOM_UNUSED_PARAM(s))
   : m_ncells(0)
   , m_nmats(0)
   , m_cellMatRel(nullptr)
