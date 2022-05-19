@@ -17,6 +17,7 @@
 #include <sstream>
 #include <iostream>
 
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/slam/MapBase.hpp"
@@ -26,7 +27,8 @@
 #include "axom/core/IteratorBase.hpp"
 
 #include "axom/slam/policies/StridePolicies.hpp"
-#include "axom/slam/policies/StoragePolicies.hpp"
+#include "axom/slam/policies/IndirectionPolicies.hpp"
+#include "axom/slam/policies/PolicyTraits.hpp"
 
 namespace axom
 {
@@ -42,8 +44,10 @@ namespace slam
  * \brief   A Map class that associates a constant number of values to every
  *          element in a set.
  *
- * \tparam  DataType The data type of each value
- * \tparam  StridePolicy A policy class that determines how many values to
+ * \tparam  T The data type of each value
+ * \tparam  S The map's set type
+ * \tparam  IndPol The map's indirection policy
+ * \tparam  StrPol A policy class that determines how many values to
  *          associate with each element. There is a fixed \a stride between
  *          the data associated with each element of the set.
  * \details The map class associates a fixed number of values, also referred
@@ -57,17 +61,20 @@ namespace slam
  *
  */
 
-template <typename SetType,
-          typename DataType,
-          typename StridePolicy = policies::StrideOne<typename SetType::PositionType>,
-          typename StoragePolicy = policies::STLVectorStorage<DataType>>
-class Map : public MapBase<typename SetType::PositionType>,
-            public StridePolicy,
-            StoragePolicy
+template <typename T,
+          typename S = Set<>,
+          typename IndPol =
+            policies::STLVectorIndirection<typename S::PositionType, T>,
+          typename StrPol = policies::StrideOne<typename S::PositionType>>
+class Map : public MapBase<typename S::PositionType>, public StrPol
 {
 public:
-  using OrderedMap = typename StoragePolicy::StorageType;
-  using StridePolicyType = StridePolicy;
+  using DataType = T;
+  using SetType = S;
+  using IndirectionPolicy = IndPol;
+  using StridePolicyType = StrPol;
+
+  using OrderedMap = typename IndirectionPolicy::VectorType;
 
   using SetPosition = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;
@@ -96,15 +103,15 @@ public:
    *        \a stride(), when provided.
    */
 
-  Map(const SetType* theSet = &s_nullSet,
+  Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
       DataType defaultValue = DataType(),
       SetPosition stride = StridePolicyType::DEFAULT_VALUE,
       int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    int elems = m_set->size() * StridePolicy::stride();
-    m_data = StoragePolicy::create(elems, defaultValue, allocatorID);
+    m_data =
+      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
 
   /**
@@ -142,13 +149,13 @@ public:
    */
   const DataType& operator[](SetPosition setIndex) const
   {
-    verifyPosition(setIndex);
+    verifyPositionImpl(setIndex);
     return m_data[setIndex];
   }
 
   DataType& operator[](SetPosition setIndex)
   {
-    verifyPosition(setIndex);
+    verifyPositionImpl(setIndex);
     return m_data[setIndex];
   }
 
@@ -161,14 +168,14 @@ public:
    */
   const DataType& operator()(SetPosition setIdx, SetPosition comp = 0) const
   {
-    verifyPosition(setIdx, comp);
+    verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return m_data[setIndex];
   }
 
   DataType& operator()(SetPosition setIdx, SetPosition comp = 0)
   {
-    verifyPosition(setIdx, comp);
+    verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return m_data[setIndex];
   }
@@ -183,7 +190,12 @@ public:
    *
    * The total storage size for the map's values is `size() * numComp()`
    */
-  SetPosition size() const { return SetPosition(m_set->size()); }
+  SetPosition size() const
+  {
+    return !policies::EmptySetTraits<SetType>::isEmpty(m_set)
+      ? static_cast<SetPosition>(m_set->size())
+      : SetPosition(0);
+  }
 
   /*
    * \brief  Gets the number of component values associated with each element.
@@ -242,7 +254,7 @@ public:
   public:
     friend class Map;
 
-    MapBuilder() : m_set(&s_nullSet) { }
+    MapBuilder() : m_set(policies::EmptySetTraits<SetType>::emptySet()) { }
 
     /** \brief Provide the Set to be used by the Map */
     MapBuilder& set(const SetType* set)
@@ -268,7 +280,7 @@ public:
     }
 
   private:
-    const SetType* m_set = &s_nullSet;
+    const SetType* m_set;
     StridePolicyType m_stride;
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();
@@ -323,10 +335,7 @@ public:
     }
 
     /** \brief Returns the first component value after n increments.  */
-    const DataType& operator[](PositionType n) const
-    {
-      return *(this->operator+(n));
-    }
+    const DataType& operator[](PositionType n) const { return *(*this + n); }
 
     DataType& operator[](PositionType n) { return *(*this + n); }
 
@@ -354,15 +363,22 @@ public:
   const OrderedMap& data() const { return m_data; }
 
 private:
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx)) const
+  inline void verifyPosition(SetPosition idx) const { verifyPositionImpl(idx); }
+
+  inline void verifyPosition(SetPosition setIdx, SetPosition compIdx) const
+  {
+    verifyPositionImpl(setIdx, compIdx);
+  }
+
+  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx)) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < SetPosition(m_data.size()),
                     "Attempted to access element "
                       << idx << " but map's data has size " << m_data.size());
   }
 
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIdx),
-                             SetPosition AXOM_DEBUG_PARAM(compIdx)) const
+  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
+                                 SetPosition AXOM_DEBUG_PARAM(compIdx)) const
   {
     SLIC_ASSERT_MSG(
       setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
@@ -384,24 +400,14 @@ private:
   OrderedMap m_data;
 };
 
-/**
- * \brief Definition of static instance of nullSet for all maps
- * \note Should this be a singleton or a global object?  Should the scope be
- * public?
- */
-template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
-NullSet<typename SetType::PositionType, typename SetType::ElementType> const
-  Map<SetType, DataType, StridePolicy, StoragePolicy>::s_nullSet;
-
-template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
-bool Map<SetType, DataType, StridePolicy, StoragePolicy>::isValid(
-  bool verboseOutput) const
+template <typename T, typename S, typename IndPol, typename StrPol>
+bool Map<T, S, IndPol, StrPol>::isValid(bool verboseOutput) const
 {
   bool bValid = true;
 
   std::stringstream errStr;
 
-  if(*m_set == s_nullSet)
+  if(policies::EmptySetTraits<S>::isEmpty(m_set))
   {
     if(!m_data.empty())
     {
@@ -425,7 +431,7 @@ bool Map<SetType, DataType, StridePolicy, StoragePolicy>::isValid(
         errStr << "\n\t* the underlying set and its associated mapped data"
                << " have different sizes"
                << " , underlying set has size " << m_set->size()
-               << " with stride " << StridePolicy::stride()
+               << " with stride " << StridePolicyType::stride()
                << " , data has size " << m_data.size();
       }
 
@@ -453,8 +459,8 @@ bool Map<SetType, DataType, StridePolicy, StoragePolicy>::isValid(
   return bValid;
 }
 
-template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
-void Map<SetType, DataType, StridePolicy, StoragePolicy>::print() const
+template <typename T, typename S, typename IndPol, typename StrPol>
+void Map<T, S, IndPol, StrPol>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;
@@ -468,12 +474,13 @@ void Map<SetType, DataType, StridePolicy, StoragePolicy>::print() const
     else
     {
       sstr << "** underlying set has size " << m_set->size() << ": ";
-      sstr << "\n** the stride of the map is " << StridePolicy::stride() << ": ";
+      sstr << "\n** the stride of the map is " << StridePolicyType::stride()
+           << ": ";
 
       sstr << "\n** Mapped data:";
       for(SetPosition idx = 0; idx < this->size(); ++idx)
       {
-        for(SetPosition idx2 = 0; idx2 < StridePolicy::stride(); ++idx2)
+        for(SetPosition idx2 = 0; idx2 < StridePolicyType::stride(); ++idx2)
         {
           sstr << "\n\telt[" << idx << "," << idx2 << "]:\t"
                << (*this)[idx * StridePolicyType::stride() + idx2];

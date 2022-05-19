@@ -71,10 +71,11 @@ public:
   using BinSet = slam::OrderedSet<IndexType, IndexType, SizePolicy>;
 
   using BitsetType = slam::BitSet;
-  using BinBitMap = slam::Map<slam::Set<IndexType, IndexType>,
-                              BitsetType,
-                              slam::policies::StrideOne<IndexType>,
-                              slam::policies::ArrayStorage<BitsetType>>;
+  using BinBitMap =
+    slam::Map<BitsetType,
+              slam::Set<IndexType, IndexType>,
+              slam::policies::CoreArrayIndirection<IndexType, BitsetType>,
+              slam::policies::StrideOne<IndexType>>;
 
   struct QueryObject;
 
@@ -593,10 +594,11 @@ public:
   using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
 
   using BitsetType = slam::BitSet;
-  using BinBitMap = slam::Map<slam::Set<IndexType, IndexType>,
-                              BitsetType,
-                              slam::policies::StrideOne<IndexType>,
-                              slam::policies::ArrayStorage<BitsetType>>;
+  using BinBitMap =
+    slam::Map<BitsetType,
+              slam::Set<IndexType, IndexType>,
+              slam::policies::CoreArrayIndirection<IndexType, BitsetType>,
+              slam::policies::StrideOne<IndexType>>;
 
   QueryObject(const SpatialBoundingBox& spaceBb,
               const LatticeType& lattice,

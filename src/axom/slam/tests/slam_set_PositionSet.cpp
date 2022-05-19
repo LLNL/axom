@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*
- * \file slam_set_positionset.cpp
+ * \file slam_set_PositionSet.cpp
  *
  * This file tests PositionSets within Slam.  These are OrderedSets with a
  * runtime size, but no offsets, stride or indirection.
