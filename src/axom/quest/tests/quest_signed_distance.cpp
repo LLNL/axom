@@ -1,19 +1,12 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
+#include "axom/slic.hpp"
 
-#include "axom/mint/mesh/CellTypes.hpp"
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/MeshTypes.hpp"
-#include "axom/mint/mesh/UniformMesh.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
+#include "axom/mint.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
@@ -146,7 +139,7 @@ TEST(quest_signed_distance, sphere_test)
     umesh->getNode(inode, pt.data());
 
     phi_computed[inode] = signed_distance.computeDistance(pt);
-    phi_expected[inode] = analytic_sphere.computeSignedDistance(pt.data());
+    phi_expected[inode] = analytic_sphere.computeSignedDistance(pt);
     EXPECT_NEAR(phi_computed[inode], phi_expected[inode], 1.e-2);
 
     // compute error
@@ -246,8 +239,7 @@ void run_vectorized_sphere_test()
 
   for(int inode = 0; inode < nnodes; ++inode)
   {
-    phi_expected[inode] =
-      analytic_sphere.computeSignedDistance(queryPts[inode].data());
+    phi_expected[inode] = analytic_sphere.computeSignedDistance(queryPts[inode]);
     EXPECT_NEAR(phi_computed[inode], phi_expected[inode], 1.e-2);
 
     // compute error
@@ -293,7 +285,7 @@ TEST(quest_signed_distance, sphere_vec_test)
 }
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_OPENMP)
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 TEST(quest_signed_distance, sphere_vec_omp_test)
 {
   run_vectorized_sphere_test<axom::OMP_EXEC>();
@@ -301,7 +293,7 @@ TEST(quest_signed_distance, sphere_vec_omp_test)
 #endif  // AXOM_USE_OPENMP
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 AXOM_CUDA_TEST(quest_signed_distance, sphere_vec_cuda_test)
 {
   constexpr int BLOCK_SIZE = 256;
@@ -393,8 +385,7 @@ AXOM_CUDA_TEST(quest_signed_distance, sphere_vec_cuda_custom_alloc)
 
   for(int inode = 0; inode < nnodes; ++inode)
   {
-    phi_expected[inode] =
-      analytic_sphere.computeSignedDistance(queryPts[inode].data());
+    phi_expected[inode] = analytic_sphere.computeSignedDistance(queryPts[inode]);
     EXPECT_NEAR(phi_computed[inode], phi_expected[inode], 1.e-2);
 
     // compute error
@@ -432,7 +423,7 @@ AXOM_CUDA_TEST(quest_signed_distance, sphere_vec_cuda_custom_alloc)
 
   SLIC_INFO("Done.");
 }
-#endif  // AXOM_USE_CUDA
+#endif  // defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
@@ -440,10 +431,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

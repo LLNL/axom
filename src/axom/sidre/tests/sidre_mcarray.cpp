@@ -1,17 +1,14 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/utilities/Utilities.hpp" /* for utilities::max */
-
-#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
-#include "axom/slic/interface/slic.hpp"    /* for slic macros */
-
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
-
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/ArrayView.hpp"
+#include "axom/slic.hpp"
 #include "axom/sidre/core/sidre.hpp"
+
+#include "gtest/gtest.h"
 
 // C/C++ includes
 #include <algorithm> /* for std::fill_n */
@@ -153,7 +150,7 @@ void check_storage(MCArray<T>& v)
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
       EXPECT_EQ(v(i, j), i * num_components + j);
-      EXPECT_EQ(v[i * num_components + j], i * num_components + j);
+      EXPECT_EQ(v.flatIndex(i * num_components + j), i * num_components + j);
       EXPECT_EQ(data_ptr[i * num_components + j], i * num_components + j);
     }
   }
@@ -173,7 +170,7 @@ void check_storage(MCArray<T>& v)
     for(axom::IndexType j = 0; j < num_components; ++j)
     {
       EXPECT_EQ(v(i, j), i * j - 5 * i + 7 * j);
-      EXPECT_EQ(v[i * num_components + j], i * j - 5 * i + 7 * j);
+      EXPECT_EQ(v.flatIndex(i * num_components + j), i * j - 5 * i + 7 * j);
       EXPECT_EQ(data_ptr[i * num_components + j], i * j - 5 * i + 7 * j);
     }
   }
@@ -1243,18 +1240,12 @@ TEST(sidre_core_mcarray, checkSidrePermanence)
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

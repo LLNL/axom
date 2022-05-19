@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,6 +8,8 @@
 
 #------------------------------------------------------------------------------
 # Check necessary dependencies
+#
+# Note: Quest also optionally depends on Klee, when Klee is enabled
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       QUEST
                         COMPONENTS MINT PRIMAL SLAM SLIC SPIN)
@@ -17,6 +19,7 @@ axom_component_requires(NAME       QUEST
 #------------------------------------------------------------------------------
 set( quest_headers
 
+    Delaunay.hpp
     SignedDistance.hpp
 
     ## All-nearest-neighbors query
@@ -37,6 +40,7 @@ set( quest_headers
 
     # Mesh tester
     MeshTester.hpp
+    detail/MeshTester_detail.hpp
 
     # PointInCell
     PointInCell.hpp
@@ -90,11 +94,19 @@ set( quest_depends_on
     )
 
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
+blt_list_append(TO quest_depends_on IF ENABLE_HIP ELEMENTS hip_runtime)
 blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
 
-if(MFEM_FOUND AND AXOM_USE_KLEE AND AXOM_USE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+if(CONDUIT_FOUND AND ENABLE_MPI)
+    list(APPEND quest_headers DistributedClosestPoint.hpp )
+    list(APPEND quest_depends_on conduit::conduit
+                                 conduit::conduit_mpi)
+endif()
+
+
+if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND quest_headers Shaper.hpp
                               SamplingShaper.hpp
                               IntersectionShaper.hpp

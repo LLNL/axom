@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,7 +19,7 @@ namespace mint = axom::mint;
 namespace utilities = axom::utilities;
 
 //------------------------------------------------------------------------------
-int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
+int main(int AXOM_UNUSED_PARAM(argc), char** AXOM_UNUSED_PARAM(argv))
 {
   using int64 = axom::IndexType;
   const axom::IndexType NUM_PARTICLES = 100;

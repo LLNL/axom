@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,7 +9,7 @@
 #include "axom/core.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/fmt.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
@@ -90,7 +90,7 @@ void Shaper::setSamplesPerKnotSpan(int nSamples)
   using axom::utilities::clampLower;
   SLIC_WARNING_IF(
     nSamples < 1,
-    fmt::format(
+    axom::fmt::format(
       "Samples per knot span must be at least 1. Provided value was {}",
       nSamples));
 
@@ -101,7 +101,7 @@ void Shaper::setVertexWeldThreshold(double threshold)
 {
   SLIC_WARNING_IF(
     threshold <= 0.,
-    fmt::format(
+    axom::fmt::format(
       "Vertex weld threshold should be positive Provided value was {}",
       threshold));
 
@@ -117,12 +117,13 @@ void Shaper::loadShape(const klee::Shape& shape)
 {
   using axom::utilities::string::endsWith;
 
-  SLIC_INFO(fmt::format("{:-^80}",
-                        fmt::format(" Loading shape '{}' ", shape.getName())));
+  SLIC_INFO(axom::fmt::format(
+    "{:-^80}",
+    axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
   SLIC_ASSERT_MSG(this->isValidFormat(shape.getGeometry().getFormat()),
-                  fmt::format("Shape has unsupported format: '{}",
-                              shape.getGeometry().getFormat()));
+                  axom::fmt::format("Shape has unsupported format: '{}",
+                                    shape.getGeometry().getFormat()));
 
   std::string shapePath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
   SLIC_INFO("Reading file: " << shapePath << "...");
@@ -144,9 +145,9 @@ void Shaper::loadShape(const klee::Shape& shape)
   else
   {
     SLIC_ERROR(
-      fmt::format("Unsupported filetype for this Axom configuration. "
-                  "Provided file was '{}'",
-                  shapePath));
+      axom::fmt::format("Unsupported filetype for this Axom configuration. "
+                        "Provided file was '{}'",
+                        shapePath));
   }
 }
 

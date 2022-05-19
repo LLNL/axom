@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -332,8 +332,8 @@ void findNeighborCandidates(TriangleType& t1,
   // greater than i into a vector.
   for(size_t curb = 0; curb < checkcount; ++curb)
   {
-    std::vector<int> ntlist = ugrid->getBinContents(bToCheck[curb]);
-    for(size_t j = 0; j < ntlist.size(); ++j)
+    axom::ArrayView<int> ntlist = ugrid->getBinContents(bToCheck[curb]);
+    for(axom::IndexType j = 0; j < ntlist.size(); ++j)
     {
       if(ntlist[j] > i)
       {

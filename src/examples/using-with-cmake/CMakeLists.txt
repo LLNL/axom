@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,6 +29,11 @@ project(using_with_cmake)
 #------------------------------------------------------------------------------
 if(NOT DEFINED AXOM_DIR OR NOT EXISTS ${AXOM_DIR}/lib/cmake/axom-config.cmake)
     message(FATAL_ERROR "Missing required 'AXOM_DIR' variable pointing to an installed axom")
+endif()
+
+# Required to create Conduit's MPI dependencies
+if (ENABLE_MPI)
+    find_package(MPI REQUIRED)
 endif()
 
 find_package(axom REQUIRED

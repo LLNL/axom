@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,19 +8,62 @@
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
+#include "axom/core/memory_management.hpp"    // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp"  // for processAbort()
 #include "axom/core/Types.hpp"                // for IndexType definition
+#include "axom/core/StackArray.hpp"
+#include "axom/core/numerics/matvecops.hpp"  // for dot_product
+#include "axom/core/execution/for_all.hpp"   // for for_all, *_EXEC
 
 // C/C++ includes
-#include <array>     // for std::array
 #include <iostream>  // for std::cerr and std::ostream
-#include <numeric>   // for std::inner_product
+#include <numeric>   // for std::accumulate
+#if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
+  // Workaround for unimplemented C++11 type traits in libstdc++ versions <5
+  #include <tr1/type_traits>
+#endif
 
 namespace axom
 {
 // Forward declare the templated classes and operator function(s)
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase;
+
+namespace detail
+{
+template <typename ArrayType>
+struct ArrayTraits;
+
+template <typename T, int DIM, typename BaseArray>
+class ArraySubslice;
+
+template <typename T, int SliceDim, typename BaseArray>
+struct SubsliceProxy
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+// The below specializations ensure that subslices of subslices refer to the
+// original base array type, e.g.:
+//   Array<int, 3> arr;
+//   auto slice_1 = arr[i]
+//      -> returns ArraySubslice<int, 2, Array<int, 3>>
+//   auto slice_2 = slice_1[j]
+//      -> returns ArraySubslice<int, 1, Array<int,3>> instead of
+//         ArraySubslice<int, 1, ArraySubslice<int, 2, Array<int, 3>>>
+template <typename T, int SliceDim, int OldSliceDim, typename BaseArray>
+struct SubsliceProxy<T, SliceDim, ArraySubslice<T, OldSliceDim, BaseArray>>
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+template <typename T, int SliceDim, int OldSliceDim, typename BaseArray>
+struct SubsliceProxy<T, SliceDim, const ArraySubslice<T, OldSliceDim, BaseArray>>
+{
+  using type = ArraySubslice<T, SliceDim, BaseArray>;
+};
+
+}  // namespace detail
 
 /// \name Overloaded ArrayBase Operator(s)
 /// @{
@@ -45,9 +88,9 @@ std::ostream& operator<<(std::ostream& os,
  * \return true if the Arrays have the same allocator ID, are of equal shape,
  * and have the same elements.
  */
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs);
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs);
 
 /*!
  * \brief Inequality comparison operator for Arrays
@@ -57,9 +100,9 @@ bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
  * \return true if the Arrays do not have the same allocator ID, are not of
  * equal shape, or do not have the same elements.
  */
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs);
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs);
 
 /// @}
 
@@ -78,52 +121,157 @@ bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
  * const T* data() const;
  * int getAllocatorID() const;
  * \endcode
+ *
+ * \pre A specialization of ArrayTraits for all ArrayTypes must also be provided
+ * with the boolean value IsView, which affects the const-ness of returned
+ * references.
  */
 template <typename T, int DIM, typename ArrayType>
 class ArrayBase
 {
+private:
+  constexpr static bool is_array_view = detail::ArrayTraits<ArrayType>::is_view;
+
 public:
+  /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
+   * std::span; a const ArrayView will still allow for mutating the underlying
+   * pointed-to data.
+   *
+   * If ArrayType is an Array, we use deep-const semantics, akin to std::vector;
+   * a const Array will prevent modifications of the underlying Array data.
+   */
+  using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
+
+  template <int IdxDim>
+  using SliceType = typename std::conditional<
+    DIM == IdxDim,
+    T&,
+    typename detail::SubsliceProxy<T, DIM - IdxDim, ArrayType>::type>::type;
+
+  template <int IdxDim>
+  using ConstSliceType = typename std::conditional<
+    DIM == IdxDim,
+    RealConstT&,
+    typename detail::SubsliceProxy<T, DIM - IdxDim, const ArrayType>::type>::type;
+
+  constexpr static int Dims = DIM;
+
+  AXOM_HOST_DEVICE ArrayBase() : m_dims {} { updateStrides(); }
+
   /*!
    * \brief Parameterized constructor that sets up the default strides
    *
    * \param [in] args the parameter pack of sizes in each dimension.
    */
-  template <typename... Args>
-  ArrayBase(Args... args) : m_dims {static_cast<IndexType>(args)...}
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& args)
+    : m_dims {args}
   {
     updateStrides();
   }
 
   /*!
-   * \brief Dimension-aware accessor, returns a reference to the given value.
+   * \brief Copy constructor for arrays of different type
+   * Because the element type (T) and dimension (DIM) are still locked down,
+   * this function is nominally used for copying ArrayBase metadata from
+   * Array <-> ArrayView and/or Array-like objects whose data are in different
+   * memory spaces
+   */
+  template <typename OtherArrayType>
+  ArrayBase(
+    const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
+    : m_dims(other.shape())
+    , m_strides(other.strides())
+  { }
+
+  /// \overload
+  template <typename OtherArrayType>
+  ArrayBase(
+    const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
+    : m_dims(other.shape())
+    , m_strides(other.strides())
+  { }
+
+  /*!
+   * \brief Dimension-aware accessor; with N=DIM indices, returns a reference
+   *  to the given value at that index. Otherwise, returns a sub-array pointed
+   *  to by the given sub-index.
    *
    * \param [in] args the parameter pack of indices in each dimension.
    *
    * \note equivalent to *(array.data() + idx).
    *
-   * \pre sizeof...(Args) == DIM
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, DIM)
+   * \pre sizeof...(Args) <= DIM
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, sizeof...(Args))
    */
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  T& operator()(Args... args)
+  template <typename... Args>
+  AXOM_HOST_DEVICE SliceType<sizeof...(Args)> operator()(Args... args)
   {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    static_assert(sizeof...(Args) <= DIM,
+                  "Index dimensions different from array dimensions");
+    constexpr int UDim = sizeof...(Args);
+    const StackArray<IndexType, UDim> indices {static_cast<IndexType>(args)...};
+    return (*this)[indices];
   }
   /// \overload
-  template <typename... Args,
-            typename SFINAE = typename std::enable_if<sizeof...(Args) == DIM>::type>
-  const T& operator()(Args... args) const
+  template <typename... Args>
+  AXOM_HOST_DEVICE ConstSliceType<sizeof...(Args)> operator()(Args... args) const
   {
-    IndexType indices[] = {static_cast<IndexType>(args)...};
-    IndexType idx =
-      std::inner_product(indices, indices + DIM, m_strides.begin(), 0);
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    static_assert(sizeof...(Args) <= DIM,
+                  "Index dimensions different from array dimensions");
+    constexpr int UDim = sizeof...(Args);
+    const StackArray<IndexType, UDim> indices {static_cast<IndexType>(args)...};
+    return (*this)[indices];
+  }
+
+  /*!
+   * \brief Scalar accessor; returns a sub-array referenced by the given sub-
+   *  index, beginning at array(idx, 0...)
+   *
+   * \param [in] idx the index of the first dimension.
+   *
+   * \pre 0 <= idx < m_dims[0]
+   */
+  AXOM_HOST_DEVICE SliceType<1> operator[](const IndexType idx)
+  {
+    const StackArray<IndexType, 1> slice {idx};
+    return (*this)[slice];
+  }
+
+  /// \overload
+  AXOM_HOST_DEVICE ConstSliceType<1> operator[](const IndexType idx) const
+  {
+    const StackArray<IndexType, 1> slice {idx};
+    return (*this)[slice];
+  }
+
+  /*!
+   * \brief Dimension-aware accessor; with UDim=DIM indices, returns a reference
+   *  to the given value at that index. Otherwise, returns a sub-array pointed
+   *  to by the given sub-index.
+   *
+   * \param [in] args a stack array of indices in each dimension.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre UDim <= DIM
+   * \pre 0 <= args[i] < m_dims[i] for i in [0, UDim)
+   */
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> operator[](const StackArray<IndexType, UDim>& idx)
+  {
+    static_assert(UDim <= DIM,
+                  "Index dimensions cannot be larger than array dimensions");
+    return asDerived().sliceImpl(idx);
+  }
+
+  /// \overload
+  template <int UDim>
+  AXOM_HOST_DEVICE ConstSliceType<UDim> operator[](
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    static_assert(UDim <= DIM,
+                  "Index dimensions cannot be larger than array dimensions");
+    return asDerived().sliceImpl(idx);
   }
 
   /// @{
@@ -138,13 +286,13 @@ public:
    *
    * \pre 0 <= idx < m_num_elements
    */
-  T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -152,17 +300,23 @@ public:
   /// @}
 
   /// \brief Swaps two ArrayBases
-  friend void swap(ArrayBase& lhs, ArrayBase& rhs)
+  void swap(ArrayBase& other)
   {
-    std::swap(lhs.m_dims, rhs.m_dims);
-    std::swap(lhs.m_strides, rhs.m_strides);
+    std::swap(m_dims, other.m_dims);
+    std::swap(m_strides, other.m_strides);
   }
 
   /// \brief Returns the dimensions of the Array
-  const std::array<IndexType, DIM>& shape() const { return m_dims; }
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& shape() const
+  {
+    return m_dims;
+  }
 
   /// \brief Returns the strides of the Array
-  const std::array<IndexType, DIM>& strides() const { return m_strides; }
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
+  {
+    return m_strides;
+  }
 
   /*!
    * \brief Appends an Array to the end of the calling object
@@ -209,7 +363,7 @@ protected:
    * In the future, this class will support different striding schemes (e.g., column-major)
    * and/or user-provided striding
    */
-  void updateStrides()
+  AXOM_HOST_DEVICE void updateStrides()
   {
     // Row-major
     m_strides[DIM - 1] = 1;
@@ -221,9 +375,12 @@ protected:
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  AXOM_HOST_DEVICE ArrayType& asDerived()
+  {
+    return static_cast<ArrayType&>(*this);
+  }
   /// \overload
-  const ArrayType& asDerived() const
+  AXOM_HOST_DEVICE const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
@@ -232,59 +389,95 @@ private:
   /// @{
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
   /// @}
 
+  /// \name Internal subarray slicing methods
+  /// @{
+
+  /*! \brief Returns a subarray given UDim indices */
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(const StackArray<IndexType, UDim>& idx)
+  {
+    return SliceType<UDim>(&asDerived(), idx);
+  }
+
+  /// \overload
+  template <int UDim>
+  AXOM_HOST_DEVICE ConstSliceType<UDim> sliceImpl(
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    return ConstSliceType<UDim>(&asDerived(), idx);
+  }
+
+  /*! \brief Returns a scalar reference given a full set of indices */
+  AXOM_HOST_DEVICE SliceType<DIM> sliceImpl(const StackArray<IndexType, DIM>& idx)
+  {
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
+    assert(inBounds(baseIdx));
+    return asDerived().data()[baseIdx];
+  }
+
+  /// \overload
+  AXOM_HOST_DEVICE ConstSliceType<DIM> sliceImpl(
+    const StackArray<IndexType, DIM>& idx) const
+  {
+    const IndexType baseIdx =
+      numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
+    assert(inBounds(baseIdx));
+    return asDerived().data()[baseIdx];
+  }
+  /// @}
+
 protected:
   /// \brief The sizes (extents?) in each dimension
-  std::array<IndexType, DIM> m_dims;
+  StackArray<IndexType, DIM> m_dims;
   /// \brief The strides in each dimension
-  std::array<IndexType, DIM> m_strides;
+  StackArray<IndexType, DIM> m_strides;
 };
 
 /// \brief Array implementation specific to 1D Arrays
 template <typename T, typename ArrayType>
 class ArrayBase<T, 1, ArrayType>
 {
+private:
+  constexpr static bool is_array_view = detail::ArrayTraits<ArrayType>::is_view;
+
 public:
-  ArrayBase(IndexType = 0) { }
-
-  /*!
-   * \brief Push a value to the back of the array.
+  /* If ArrayType is an ArrayView, we use shallow-const semantics, akin to
+   * std::span; a const ArrayView will still allow for mutating the underlying
+   * pointed-to data.
    *
-   * \param [in] value the value to be added to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
+   * If ArrayType is an Array, we use deep-const semantics, akin to std::vector;
+   * a const Array will prevent modifications of the underlying Array data.
    */
-  void push_back(const T& value);
+  using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
-  /*!
-   * \brief Push a value to the back of the array.
-   *
-   * \param [in] value the value to move to the back.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  void push_back(T&& value);
+  AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { }
 
-  /*!
-   * \brief Inserts new element at the end of the Array.
-   *
-   * \param [in] args the arguments to forward to constructor of the element.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   * \note The size increases by 1.
-   */
-  template <typename... Args>
-  void emplace_back(Args&&... args);
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&) { }
+
+  // Empy implementation because no member data
+  template <typename OtherArrayType>
+  ArrayBase(const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
+  { }
+
+  // Empy implementation because no member data
+  template <typename OtherArrayType>
+  ArrayBase(
+    const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>&)
+  { }
 
   /// \brief Returns the dimensions of the Array
-  // FIXME: std::array is used for consistency with multidim case, should we just return the scalar?
   // Double curly braces needed for C++11 prior to resolution of CWG issue 1720
-  std::array<IndexType, 1> shape() const { return {{asDerived().size()}}; }
+  AXOM_HOST_DEVICE StackArray<IndexType, 1> shape() const
+  {
+    return {{asDerived().size()}};
+  }
 
   /*!
    * \brief Accessor, returns a reference to the given value.
@@ -297,13 +490,35 @@ public:
    * \pre 0 <= idx < m_num_elements
    */
   /// @{
-  T& operator[](const IndexType idx)
+  AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
   }
   /// \overload
-  const T& operator[](const IndexType idx) const
+  AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+
+  /*!
+   * \brief Accessor, returns a reference to the given value.
+   * For multidimensional arrays, indexes into the (flat) raw data.
+   *
+   * \param [in] idx the position of the value to return.
+   *
+   * \note equivalent to *(array.data() + idx).
+   *
+   * \pre 0 <= idx < m_num_elements
+   */
+  AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
+  {
+    assert(inBounds(idx));
+    return asDerived().data()[idx];
+  }
+  /// \overload
+  AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
     return asDerived().data()[idx];
@@ -337,9 +552,12 @@ protected:
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
-  ArrayType& asDerived() { return static_cast<ArrayType&>(*this); }
+  AXOM_HOST_DEVICE ArrayType& asDerived()
+  {
+    return static_cast<ArrayType&>(*this);
+  }
   /// \overload
-  const ArrayType& asDerived() const
+  AXOM_HOST_DEVICE const ArrayType& asDerived() const
   {
     return static_cast<const ArrayType&>(*this);
   }
@@ -348,7 +566,7 @@ private:
   /// @{
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx) const
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
@@ -368,12 +586,13 @@ template <typename T, int DIM, typename ArrayType>
 inline std::ostream& print(std::ostream& os,
                            const ArrayBase<T, DIM, ArrayType>& array)
 {
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
-  // FIXME: Re-add check for umpire::resource::Constant as well, but this will crash
-  // if there exists no allocator for Constant memory. Is there a more fine-grained
-  // approach we can use to see what allocators are available before trying to get their IDs?
-  if(static_cast<const ArrayType&>(array).getAllocatorID() ==
-     axom::getUmpireResourceAllocatorID(umpire::resource::Device))
+#if defined(AXOM_USE_UMPIRE) && defined(UMPIRE_ENABLE_DEVICE)
+  const int alloc_id = static_cast<const ArrayType&>(array).getAllocatorID();
+  if(alloc_id == axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+  #ifdef UMPIRE_ENABLE_CONST
+     || alloc_id == axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
+  #endif
+  )
   {
     std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
     utilities::processAbort();
@@ -399,10 +618,13 @@ std::ostream& operator<<(std::ostream& os, const ArrayBase<T, DIM, ArrayType>& a
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs)
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator==(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs)
 {
+  static_assert(std::is_same<typename std::remove_const<T1>::type,
+                             typename std::remove_const<T2>::type>::value,
+                "Cannot compare Arrays of incompatible type");
   if(static_cast<const LArrayType&>(lhs).getAllocatorID() !=
      static_cast<const RArrayType&>(rhs).getAllocatorID())
   {
@@ -416,7 +638,7 @@ bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
 
   for(int i = 0; i < static_cast<const LArrayType&>(lhs).size(); i++)
   {
-    if(!(lhs[i] == rhs[i]))
+    if(!(lhs.flatIndex(i) == rhs.flatIndex(i)))
     {
       return false;
     }
@@ -426,42 +648,25 @@ bool operator==(const ArrayBase<T, DIM, LArrayType>& lhs,
 }
 
 //------------------------------------------------------------------------------
-template <typename T, int DIM, typename LArrayType, typename RArrayType>
-bool operator!=(const ArrayBase<T, DIM, LArrayType>& lhs,
-                const ArrayBase<T, DIM, RArrayType>& rhs)
+template <typename T1, typename T2, int DIM, typename LArrayType, typename RArrayType>
+bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
+                const ArrayBase<T2, DIM, RArrayType>& rhs)
 {
   return !(lhs == rhs);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayBase<T, 1, ArrayType>::push_back(const T& value)
-{
-  emplace_back(value);
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-inline void ArrayBase<T, 1, ArrayType>::push_back(T&& value)
-{
-  emplace_back(std::move(value));
-}
-
-//------------------------------------------------------------------------------
-template <typename T, typename ArrayType>
-template <typename... Args>
-inline void ArrayBase<T, 1, ArrayType>::emplace_back(Args&&... args)
-{
-  asDerived().emplace(asDerived().size(), args...);
 }
 
 namespace detail
 {
 // Takes the product of a parameter pack of T
 template <typename T, int N>
-T packProduct(const T (&arr)[N])
+AXOM_HOST_DEVICE T packProduct(const T (&arr)[N])
 {
-  return std::accumulate(arr, arr + N, 1, std::multiplies<T> {});
+  T prod = 1;
+  for(int idx = 0; idx < N; idx++)
+  {
+    prod *= arr[idx];
+  }
+  return prod;
 }
 
 template <typename T, int N>
@@ -476,6 +681,750 @@ bool allNonNegative(const T (&arr)[N])
   }
   return true;
 }
+
+/// \brief Takes the last N elements from an array.
+template <int N, typename T, int DIM>
+AXOM_HOST_DEVICE StackArray<T, N> takeLastElems(const StackArray<T, DIM>& arr)
+{
+  static_assert(N <= DIM,
+                "Attempting to take more elements than the array holds");
+  StackArray<T, N> ret;
+  for(int i = 0; i < N; i++)
+  {
+    ret[i] = arr[i + DIM - N];
+  }
+  return ret;
+}
+
+/// \brief Indirection needed to dodge an MSVC compiler bug
+template <typename... Args>
+struct all_types_are_integral_impl : std::true_type
+{ };
+
+template <typename First, typename... Rest>
+struct all_types_are_integral_impl<First, Rest...>
+{
+  static constexpr bool value = std::is_integral<First>::value &&
+    all_types_are_integral_impl<Rest...>::value;
+};
+
+/// \brief Checks if all types in a parameter pack are integral
+template <typename... Args>
+struct all_types_are_integral
+{
+  static constexpr bool value = all_types_are_integral_impl<Args...>::value;
+};
+
+#if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
+// Some type traits we need aren't fully-implemented in libstdc++ for GCC <5.
+// We thus check for the macro _GLIBCXX_USE_CXX11_ABI, which should only be
+// defined for GCC 5+; if not defined, we'll use the below fallbacks.
+template <typename T>
+using HasTrivialDefaultCtor = ::std::has_trivial_default_constructor<T>;
+template <typename T>
+using TriviallyCopyable =
+  typename std::conditional<std::tr1::has_trivial_copy<T>::value,
+                            std::true_type,
+                            std::false_type>::type;
+#else
+template <typename T>
+using HasTrivialDefaultCtor = ::std::is_trivially_default_constructible<T>;
+template <typename T>
+using TriviallyCopyable = ::std::is_trivially_copyable<T>;
+#endif
+
+template <typename T, bool DeviceOps>
+struct ArrayOpsBase;
+
+template <typename T>
+struct ArrayOpsBase<T, false>
+{
+  using DefaultCtorTag = std::is_default_constructible<T>;
+
+  /*!
+   * \brief Helper for default-initializing the "new" segment of an array
+   *
+   * \param [inout] data The data to initialize
+   * \param [in] begin The beginning of the subset of \a data that should be initialized
+   * \param [in] nelems the number of elements to initialize
+   * \note Specialization for when T is default-constructible.
+   */
+  static void init_impl(T* data, IndexType begin, IndexType nelems, std::true_type)
+  {
+    for(IndexType i = 0; i < nelems; ++i)
+    {
+      new(data + i + begin) T();
+    }
+  }
+
+  /*!
+   * \overload
+   * \note Specialization for when T is not default-constructible.
+   */
+  static void init_impl(T*, IndexType, IndexType, std::false_type) { }
+
+  /*!
+   * \brief Default-initializes the "new" segment of an array
+   *
+   * \param [inout] data The data to initialize
+   * \param [in] begin The beginning of the subset of \a data that should be initialized
+   * \param [in] nelems the number of elements to initialize
+   * \note Specialization for when T is default-constructible.
+   */
+  static void init(T* data, IndexType begin, IndexType nelems)
+  {
+    init_impl(data, begin, nelems, DefaultCtorTag {});
+  }
+
+  /*!
+   * \brief Fills an uninitialized array with objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index in the array to begin filling elements at
+   * \param [in] nelems the number of elements to fill the array with
+   * \param [in] value the value to set each array element to
+   */
+  static void fill(T* array, IndexType begin, IndexType nelems, const T& value)
+  {
+    std::uninitialized_fill_n(array + begin, nelems, value);
+  }
+
+  /*!
+   * \brief Fills an uninitialized array with a range of objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index at which to begin placing elements
+   * \param [in] nelems the number of elements in the range to fill the array with
+   * \param [in] values the values to set each array element to
+   * \param [in] space the memory space in which values resides
+   */
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         const T* values,
+                         MemorySpace space)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    if(TriviallyCopyable<T>::value)
+    {
+      axom::copy(array + begin, values, sizeof(T) * nelems);
+    }
+    else
+    {
+      void* values_buf = nullptr;
+      const T* values_host = values;
+      if(space == MemorySpace::Device)
+      {
+        values_buf = ::operator new(sizeof(T) * nelems);
+        // "Relocate" the device-side values into host memory, before copying
+        // into uninitialized memory
+        axom::copy(values_buf, values, sizeof(T) * nelems);
+        values_host = static_cast<T*>(values_buf);
+      }
+      std::uninitialized_copy(values_host, values_host + nelems, array + begin);
+      if(values_buf)
+      {
+        ::operator delete(values_buf);
+      }
+    }
+#else
+    AXOM_UNUSED_VAR(space);
+    std::uninitialized_copy(values, values + nelems, array + begin);
+#endif
+  }
+
+  /*!
+   * \brief Constructs a new element in uninitialized memory.
+   *
+   * \param [inout] array the array to construct in
+   * \param [in] i the array index in which to construct the new object
+   * \param [in] args the arguments to forward to constructor of the element.
+   */
+  template <typename... Args>
+  static void emplace(T* array, IndexType i, Args&&... args)
+  {
+    new(array + i) T(std::forward<Args>(args)...);
+  }
+
+  /*!
+   * \brief Calls the destructor on a range of typed elements in the array.
+   *
+   * \param [inout] array the array with elements to destroy
+   * \param [in] begin the start index of the range of elements to destroy
+   * \param [in] value one past the end index of the range of elements to destroy
+   */
+  static void destroy(T* array, IndexType begin, IndexType nelems)
+  {
+    if(!std::is_trivially_destructible<T>::value)
+    {
+      for(IndexType i = 0; i < nelems; i++)
+      {
+        array[i + begin].~T();
+      }
+    }
+  }
+
+  /*!
+   * \brief Moves a range of data in the array.
+   *
+   * \param [inout] array the array with elements to move
+   * \param [in] src_begin the start index of the source range
+   * \param [in] src_end the end index of the source range, exclusive
+   * \param [in] dst the destination index of the range of elements
+   */
+  static void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
+  {
+    if(src_begin < dst)
+    {
+      IndexType dst_last = dst + src_end - src_begin;
+      std::move_backward(array + src_begin, array + src_end, array + dst_last);
+    }
+    else if(src_begin > dst)
+    {
+      std::move(array + src_begin, array + src_end, array + dst);
+    }
+  }
+};
+
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+template <typename T>
+struct ArrayOpsBase<T, true>
+{
+  using ExecSpace = axom::CUDA_EXEC<256>;
+
+  static constexpr bool InitOnDevice = HasTrivialDefaultCtor<T>::value;
+  static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
+  static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
+
+  struct TrivialDefaultCtorTag
+  { };
+  struct NontrivialDefaultCtorTag
+  { };
+  struct NoDefaultCtorTag
+  { };
+
+  /*!
+   * \brief Helper for default-initialization of a range of elements.
+   *
+   * \param [inout] data The data to initialize
+   * \param [in] begin The beginning of the subset of \a data that should be initialized
+   * \param [in] nelems the number of elements to initialize
+   * \note Specialization for when T is nontrivially default-constructible.
+   */
+  static void init_impl(T* data,
+                        IndexType begin,
+                        IndexType nelems,
+                        NontrivialDefaultCtorTag)
+  {
+    // If we instantiated a fill kernel here it would require
+    // that T's default ctor is device-annotated which is too
+    // strict of a requirement, so we copy a buffer instead.
+    void* tmp_buffer = ::operator new(sizeof(T) * nelems);
+    T* typed_buffer = static_cast<T*>(tmp_buffer);
+    for(IndexType i = 0; i < nelems; ++i)
+    {
+      // We use placement-new to avoid calling destructors in the delete
+      // statement below.
+      new(typed_buffer + i) T();
+    }
+    axom::copy(data + begin, tmp_buffer, nelems * sizeof(T));
+    ::operator delete(tmp_buffer);
+  }
+
+  /*!
+   * \overload
+   * \note Specialization for when T is trivially default-constructible.
+   */
+  static void init_impl(T* data,
+                        IndexType begin,
+                        IndexType nelems,
+                        TrivialDefaultCtorTag)
+  {
+    for_all<ExecSpace>(
+      begin,
+      begin + nelems,
+      AXOM_LAMBDA(IndexType i) { new(&data[i]) T(); });
+  }
+
+  /*!
+   * \overload
+   * \note Specialization for when T is not default-constructible.
+   */
+  static void init_impl(T*, IndexType, IndexType, NoDefaultCtorTag) { }
+
+  /*!
+   * \brief Default-initializes the "new" segment of an array
+   *
+   * \param [inout] data The data to initialize
+   * \param [in] begin The beginning of the subset of \a data that should be initialized
+   * \param [in] nelems the number of elements to initialize
+   */
+  static void init(T* data, IndexType begin, IndexType nelems)
+  {
+    using InitSelectTag =
+      typename std::conditional<InitOnDevice,
+                                TrivialDefaultCtorTag,
+                                NontrivialDefaultCtorTag>::type;
+    using InitTag =
+      typename std::conditional<DefaultCtor, InitSelectTag, NoDefaultCtorTag>::type;
+
+    init_impl(data, begin, nelems, InitTag {});
+  }
+
+  /*!
+   * \brief Helper for filling an uninitialized array with objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index in the array to begin filling elements at
+   * \param [in] nelems the number of elements to fill the array with
+   * \param [in] value the value to set each array element to
+   * \note Specialization for when T is not trivially-copyable.
+   */
+  static void fill_impl(T* array,
+                        IndexType begin,
+                        IndexType nelems,
+                        const T& value,
+                        std::false_type)
+  {
+    void* buffer = ::operator new(sizeof(T) * nelems);
+    T* typed_buffer = static_cast<T*>(buffer);
+    // If we instantiated a fill kernel here it would require
+    // that T's copy ctor is device-annotated which is too
+    // strict of a requirement, so we copy a buffer instead.
+    std::uninitialized_fill_n(typed_buffer, nelems, value);
+    axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
+    ::operator delete(buffer);
+  }
+
+  /*!
+   * \overload
+   * \note Specialization for when T is trivially-copyable.
+   */
+  static void fill_impl(T* array,
+                        IndexType begin,
+                        IndexType nelems,
+                        const T& value,
+                        std::true_type)
+  {
+    for_all<ExecSpace>(
+      nelems,
+      AXOM_LAMBDA(IndexType i) { new(&array[i + begin]) T(value); });
+  }
+
+  /*!
+   * \brief Fills an uninitialized array with objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index in the array to begin filling elements at
+   * \param [in] nelems the number of elements to fill the array with
+   * \param [in] value the value to set each array element to
+   */
+  static void fill(T* array, IndexType begin, IndexType nelems, const T& value)
+  {
+    fill_impl(array, begin, nelems, value, TriviallyCopyable<T> {});
+  }
+
+  /*!
+   * \brief Fills an uninitialized array with a range of objects of type T.
+   *
+   * \param [inout] array the array to fill
+   * \param [in] begin the index at which to begin placing elements
+   * \param [in] nelems the number of elements in the range to fill the array with
+   * \param [in] values the values to set each array element to
+   * \param [in] space the memory space in which values resides
+   */
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         const T* values,
+                         MemorySpace space)
+  {
+    if(TriviallyCopyable<T>::value)
+    {
+      axom::copy(array + begin, values, sizeof(T) * nelems);
+    }
+    else
+    {
+      void* src_buf = nullptr;
+      const T* src_host = values;
+      if(space == MemorySpace::Device)
+      {
+        src_buf = ::operator new(sizeof(T) * nelems);
+        // "Relocate" the device-side values into host memory, before copying
+        // into uninitialized memory
+        axom::copy(src_buf, values, sizeof(T) * nelems);
+        src_host = static_cast<T*>(src_buf);
+      }
+      void* dst_buf = ::operator new(sizeof(T) * nelems);
+      T* dst_host = static_cast<T*>(dst_buf);
+      std::uninitialized_copy(src_host, src_host + nelems, dst_host);
+      if(src_buf)
+      {
+        ::operator delete(src_buf);
+      }
+      // Relocate our copy-constructed values into the target device array.
+      axom::copy(array + begin, dst_buf, sizeof(T) * nelems);
+      ::operator delete(dst_buf);
+    }
+  }
+
+  /*!
+   * \brief Constructs a new element in uninitialized memory.
+   *
+   * \param [inout] array the array to construct in
+   * \param [in] i the array index in which to construct the new object
+   * \param [in] args the arguments to forward to constructor of the element.
+   */
+  template <typename... Args>
+  static void emplace(T* array, IndexType i, Args&&... args)
+  {
+    // Similar to fill(), except we can allocate stack memory and placement-new
+    // the object with a move constructor.
+    alignas(T) axom::uint8 host_buf[sizeof(T)];
+    T* host_obj = ::new(&host_buf) T(std::forward<Args>(args)...);
+    axom::copy(array + i, host_obj, sizeof(T));
+  }
+
+  /*!
+   * \brief Calls the destructor on a range of typed elements in the array.
+   *
+   * \param [inout] array the array with elements to destroy
+   * \param [in] begin the start index of the range of elements to destroy
+   * \param [in] nelems the number of elements to destroy
+   */
+  static void destroy(T* array, IndexType begin, IndexType nelems)
+  {
+    if(DestroyOnHost)
+    {
+      void* buffer = ::operator new(sizeof(T) * nelems);
+      T* typed_buffer = static_cast<T*>(buffer);
+      axom::copy(typed_buffer, array + begin, sizeof(T) * nelems);
+      for(int i = 0; i < nelems; ++i)
+      {
+        typed_buffer[i].~T();
+      }
+      axom::copy(array + begin, typed_buffer, sizeof(T) * nelems);
+      ::operator delete(buffer);
+    }
+  }
+
+  /*!
+   * \brief Moves a range of data in the array.
+   *
+   * \param [inout] array the array with elements to move
+   * \param [in] src_begin the start index of the source range
+   * \param [in] src_end the end index of the source range, exclusive
+   * \param [in] dst the destination index of the range of elements
+   */
+  static void move(T* array, IndexType src_begin, IndexType src_end, IndexType dst)
+  {
+    // Since this memory is on the device-side, we copy it to a temporary buffer
+    // first.
+    IndexType nelems = src_end - src_begin;
+    T* tmp_buf =
+      axom::allocate<T>(nelems, axom::execution_space<ExecSpace>::allocatorID());
+    axom::copy(tmp_buf, array + src_begin, nelems * sizeof(T));
+    axom::copy(array + dst, tmp_buf, nelems * sizeof(T));
+    axom::deallocate(tmp_buf);
+  }
+};
+#endif
+
+template <typename T, MemorySpace SPACE>
+struct ArrayOps
+{
+private:
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+  constexpr static bool IsDevice = (SPACE == MemorySpace::Device);
+#else
+  constexpr static bool IsDevice = false;
+#endif
+
+  using Base = ArrayOpsBase<T, IsDevice>;
+
+public:
+  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    Base::init(array, begin, nelems);
+  }
+
+  static void fill(T* array,
+                   IndexType begin,
+                   IndexType nelems,
+                   int allocId,
+                   const T& value)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    Base::fill(array, begin, nelems, value);
+  }
+
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         int allocId,
+                         const T* values,
+                         MemorySpace space)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    Base::fill_range(array, begin, nelems, values, space);
+  }
+
+  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    if(nelems == 0)
+    {
+      return;
+    }
+    Base::destroy(array, begin, nelems);
+  }
+
+  static void move(T* array,
+                   IndexType src_begin,
+                   IndexType src_end,
+                   IndexType dst,
+                   int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    if(src_begin >= src_end)
+    {
+      return;
+    }
+    Base::move(array, src_begin, src_end, dst);
+  }
+
+  template <typename... Args>
+  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    Base::emplace(array, dst, std::forward<Args>(args)...);
+  }
+};
+
+template <typename T>
+struct ArrayOps<T, MemorySpace::Dynamic>
+{
+private:
+  using Base = ArrayOpsBase<T, false>;
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+  using BaseDevice = ArrayOpsBase<T, true>;
+#endif
+
+public:
+  static void init(T* array, IndexType begin, IndexType nelems, int allocId)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::init(array, begin, nelems);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    Base::init(array, begin, nelems);
+  }
+
+  static void fill(T* array,
+                   IndexType begin,
+                   IndexType nelems,
+                   int allocId,
+                   const T& value)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::fill(array, begin, nelems, value);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    Base::fill(array, begin, nelems, value);
+  }
+
+  static void fill_range(T* array,
+                         IndexType begin,
+                         IndexType nelems,
+                         int allocId,
+                         const T* values,
+                         MemorySpace valueSpace)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::fill_range(array, begin, nelems, values, valueSpace);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    AXOM_UNUSED_VAR(allocId);
+    Base::fill_range(array, begin, nelems, values, valueSpace);
+  }
+
+  static void destroy(T* array, IndexType begin, IndexType nelems, int allocId)
+  {
+    if(nelems == 0)
+    {
+      return;
+    }
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::destroy(array, begin, nelems);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    Base::destroy(array, begin, nelems);
+  }
+
+  static void move(T* array,
+                   IndexType src_begin,
+                   IndexType src_end,
+                   IndexType dst,
+                   int allocId)
+  {
+    if(src_begin >= src_end)
+    {
+      return;
+    }
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::move(array, src_begin, src_end, dst);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    Base::move(array, src_begin, src_end, dst);
+  }
+
+  template <typename... Args>
+  static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
+  {
+#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+    MemorySpace space = getAllocatorSpace(allocId);
+
+    if(space == MemorySpace::Device)
+    {
+      BaseDevice::emplace(array, dst, std::forward<Args>(args)...);
+      return;
+    }
+#else
+    AXOM_UNUSED_VAR(allocId);
+#endif
+    Base::emplace(array, dst, std::forward<Args>(args)...);
+  }
+};
+
+template <typename T, int SliceDim, typename BaseArray>
+struct ArrayTraits<ArraySubslice<T, SliceDim, BaseArray>>
+{
+  constexpr static bool is_view = true;
+};
+
+/*!
+ * \brief Proxy class for efficiently constructing slice ArrayViews by using
+ *  the generic ArrayBase constructor in ArrayView. This avoids the cost of
+ *  looking up the correct allocator ID from the other ArrayView constructors.
+ */
+template <typename T, int SliceDim, typename BaseArray>
+class ArraySubslice
+  : public ArrayBase<T, SliceDim, ArraySubslice<T, SliceDim, BaseArray>>
+{
+  using BaseClass = ArrayBase<T, SliceDim, ArraySubslice<T, SliceDim, BaseArray>>;
+  using RefType = typename std::conditional<std::is_const<BaseArray>::value,
+                                            typename BaseClass::RealConstT&,
+                                            T&>::type;
+
+  constexpr static int OrigDims = BaseArray::Dims;
+  constexpr static int NumIndices = OrigDims - SliceDim;
+
+  template <int UDim>
+  using SliceType =
+    typename std::conditional<UDim == SliceDim,
+                              RefType,
+                              ArraySubslice<T, SliceDim - UDim, BaseArray>>::type;
+
+public:
+  AXOM_HOST_DEVICE ArraySubslice(BaseArray* array,
+                                 const StackArray<IndexType, NumIndices>& idxs)
+    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()))
+    , m_array(array)
+    , m_inds(idxs)
+  { }
+
+  /*!
+   * \brief Return the number of elements stored in the data array.
+   */
+  inline AXOM_HOST_DEVICE IndexType size() const
+  {
+    IndexType size = 1;
+    for(int idx = NumIndices; idx < OrigDims; idx++)
+    {
+      size *= m_array->shape()[idx];
+    }
+    return size;
+  }
+
+  /*!
+   * \brief Return a pointer to the array of data.
+   */
+  /// @{
+
+  AXOM_HOST_DEVICE inline T* data() const
+  {
+    IndexType offset = numerics::dot_product(m_inds.begin(),
+                                             m_array->strides().begin(),
+                                             NumIndices);
+    return m_array->data() + offset;
+  }
+
+  /// @}
+
+  /*!
+   * \brief Get the ID for the umpire allocator
+   */
+  int getAllocatorID() const { return m_array->getAllocatorID(); }
+
+protected:
+  friend BaseClass;
+
+  template <int UDim>
+  AXOM_HOST_DEVICE SliceType<UDim> sliceImpl(
+    const StackArray<IndexType, UDim>& idx) const
+  {
+    StackArray<IndexType, UDim + NumIndices> full_inds;
+    for(int i = 0; i < NumIndices; i++)
+    {
+      full_inds[i] = m_inds[i];
+    }
+    for(int i = 0; i < UDim; i++)
+    {
+      full_inds[i + NumIndices] = idx[i];
+    }
+    return (*m_array)[full_inds];
+  }
+
+private:
+  BaseArray* const m_array;
+  const StackArray<IndexType, NumIndices> m_inds;
+};
 
 }  // namespace detail
 

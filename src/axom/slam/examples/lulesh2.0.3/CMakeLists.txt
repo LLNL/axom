@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,10 +31,12 @@ set(slam_tests_depends_on core slic slam)
 
 blt_list_append( TO slam_tests_depends_on ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO slam_tests_depends_on ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append( TO slam_tests_depends_on ELEMENTS hip IF ${ENABLE_HIP} )
 
 blt_add_executable(
     NAME        slam_lulesh_ex
-    SOURCES     ${lulesh_sources} ${lulesh_headers}
+    SOURCES     ${lulesh_sources}
+    HEADERS     ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tests_depends_on}
     FOLDER      axom/slam/examples )

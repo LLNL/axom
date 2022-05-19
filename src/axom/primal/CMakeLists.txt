@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,8 +72,9 @@ set( primal_dependencies
      core
      slic
      )
-     
+
 blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
+blt_list_append( TO primal_dependencies ELEMENTS hip_runtime IF ENABLE_HIP )
 
 blt_add_library(
     NAME                  primal

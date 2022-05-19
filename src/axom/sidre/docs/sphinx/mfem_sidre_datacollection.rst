@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -135,7 +135,7 @@ accessed with the ``GetField``, ``GetQField``, and ``GetMesh`` methods.
    (should be set to ``true``), and field data ownership requires that each
    ``GridFunction`` object be unallocated when passed to the 
    ``RegisterField()`` method, which performs the allocation within Sidre-owned
-   memory. After registeration, a ``GridFunction`` object can be used normally.
+   memory. After registration, a ``GridFunction`` object can be used normally.
    The same conditions apply for ``QuadratureFunction`` objects.
 
 A complete demonstration of functionality is provided in the 

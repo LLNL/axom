@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,8 +33,8 @@
 
 #include "mfem.hpp"
 
-#include "fmt/fmt.hpp"
-#include "fmt/locale.h"
+#include "axom/fmt.hpp"
+#include "axom/fmt/locale.h"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
@@ -204,10 +204,11 @@ public:
   void prepareShapeQueryImpl(klee::Dimensions shapeDimension,
                              const klee::Shape& shape)
   {
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      fmt::format("Running intersection-based shaper in execution Space: {}",
-                  axom::execution_space<ExecSpace>::name())));
+      axom::fmt::format(
+        "Running intersection-based shaper in execution Space: {}",
+        axom::execution_space<ExecSpace>::name())));
 
     umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
@@ -225,20 +226,22 @@ public:
     AXOM_UNUSED_VAR(shapeDimension);
     AXOM_UNUSED_VAR(shapeName);
 
-    SLIC_INFO(fmt::format("Current shape is {}", shapeName));
+    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
 
     // Number of points in polyline
     int pointcount = getSurfaceMesh()->getNumberOfNodes();
 
     Point2D* polyline = axom::allocate<Point2D>(pointcount);
 
-    SLIC_INFO(fmt::format("{:-^80}",
-                          fmt::format(" Refinement level set to {} ", m_level)));
-
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      fmt::format(" Checking contour with {} points for degenerate segments ",
-                  pointcount)));
+      axom::fmt::format(" Refinement level set to {} ", m_level)));
+
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format(
+        " Checking contour with {} points for degenerate segments ",
+        pointcount)));
 
     enum
     {
@@ -299,9 +302,9 @@ public:
       }
     }
 
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      fmt::format(" Discretizing contour with {} points ", polyline_size)));
+      axom::fmt::format(" Discretizing contour with {} points ", polyline_size)));
 
     // Flip point order
     if(flip)
@@ -327,8 +330,9 @@ public:
       disc_status,
       "Discretization of contour has failed. Check that contour is valid");
 
-    SLIC_INFO(fmt::format("Contour has been discretized into {} octahedra ",
-                          m_octcount));
+    SLIC_INFO(
+      axom::fmt::format("Contour has been discretized into {} octahedra ",
+                        m_octcount));
 
     if(this->isVerbose())
     {
@@ -338,10 +342,10 @@ public:
       {
         all_oct_bb.addBox(primal::compute_bounding_box(m_octs[i]));
       }
-      SLIC_INFO(
-        fmt::format("DEBUG: Bounding box containing all generated octahedra "
-                    "has dimensions:\n\t{}",
-                    all_oct_bb));
+      SLIC_INFO(axom::fmt::format(
+        "DEBUG: Bounding box containing all generated octahedra "
+        "has dimensions:\n\t{}",
+        all_oct_bb));
 
       // Print out the total volume of all the octahedra
       using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -378,9 +382,9 @@ public:
           total_oct_vol += octVolume;
         });
 
-      SLIC_INFO(
-        fmt::format("DEBUG: Total volume of all generated octahedra is {}",
-                    total_oct_vol.get()));
+      SLIC_INFO(axom::fmt::format(
+        "DEBUG: Total volume of all generated octahedra is {}",
+        total_oct_vol.get()));
 
       // Check if any Octahedron are degenerate with all points {0,0,0}
       RAJA::ReduceSum<REDUCE_POL, int> num_degenerate(0);
@@ -395,8 +399,8 @@ public:
         });
 
       SLIC_INFO(
-        fmt::format("DEBUG: {} Octahedron found with all points (0,0,0)",
-                    num_degenerate.get()));
+        axom::fmt::format("DEBUG: {} Octahedron found with all points (0,0,0)",
+                          num_degenerate.get()));
 
       // Dump discretized octs as a tet mesh
       axom::mint::Mesh* tetmesh;
@@ -441,7 +445,8 @@ public:
     ZERO[0] = 0;
 
     SLIC_INFO(
-      fmt::format("{:-^80}", " Inserting Octahedra bounding boxes into BVH "));
+      axom::fmt::format("{:-^80}",
+                        " Inserting Octahedra bounding boxes into BVH "));
 
     // Generate the BVH tree over the octahedra
     // Access-aligned bounding boxes
@@ -459,7 +464,7 @@ public:
     spin::BVH<3, ExecSpace, double> bvh;
     bvh.initialize(m_aabbs, m_octcount);
 
-    SLIC_INFO(fmt::format("{:-^80}", " Querying the BVH tree "));
+    SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
     mfem::Mesh* mesh = getDC()->GetMesh();
 
@@ -470,10 +475,11 @@ public:
 
     if(this->isVerbose())
     {
-      SLIC_INFO(fmt::format(
+      SLIC_INFO(axom::fmt::format(
         "{:-^80}",
-        fmt::format(" Initializing {} hexahedral elements from given mesh ",
-                    m_num_elements)));
+        axom::fmt::format(
+          " Initializing {} hexahedral elements from given mesh ",
+          m_num_elements)));
     }
 
     if(NE > 0)
@@ -485,7 +491,7 @@ public:
     // Create and register a scalar field for this shape's volume fractions
     // The Degrees of Freedom will be in correspondence with the elements
     auto* volFrac = this->newVolFracGridFunction();
-    auto volFracName = fmt::format("shape_vol_frac_{}", shape.getName());
+    auto volFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
     this->getDC()->RegisterField(volFracName, volFrac);
 
     // Initialize hexahedral elements
@@ -583,7 +589,7 @@ public:
       });
 
     // Find which octahedra bounding boxes intersect hexahedron bounding boxes
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Finding octahedra candidates for each hexahedral element "));
 
@@ -626,7 +632,7 @@ public:
     int* newTotalCandidates = axom::allocate<int>(1);
     axom::copy(newTotalCandidates, ZERO, sizeof(int));
 
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Decomposing each hexahedron element into 24 tetrahedrons "));
 
@@ -643,9 +649,9 @@ public:
                                }
                              }););
 
-    SLIC_INFO(
-      fmt::format("{:-^80}",
-                  " Linearizing each tetrahedron, octahedron candidate pair "));
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      " Linearizing each tetrahedron, octahedron candidate pair "));
 
     AXOM_PERF_MARK_SECTION(
       "init_candidates",
@@ -682,7 +688,8 @@ public:
         m_overlap_volumes[i] = 0;
       });
 
-    SLIC_INFO(fmt::format("{:-^80}", " Calculating hexahedron element volume "));
+    SLIC_INFO(
+      axom::fmt::format("{:-^80}", " Calculating hexahedron element volume "));
 
     AXOM_PERF_MARK_SECTION("hex_volume",
                            axom::for_all<ExecSpace>(
@@ -694,7 +701,7 @@ public:
                                  tet_volume);
                              }););
 
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each tet-oct pair "));
 
@@ -731,10 +738,10 @@ public:
         totalHex += m_hex_volumes[i];
       });
 
-    SLIC_INFO(fmt::format("Total overlap volume with shape is {}",
-                          this->allReduceSum(totalOverlap)));
-    SLIC_INFO(
-      fmt::format("Total mesh volume is {}", this->allReduceSum(totalHex)));
+    SLIC_INFO(axom::fmt::format("Total overlap volume with shape is {}",
+                                this->allReduceSum(totalOverlap)));
+    SLIC_INFO(axom::fmt::format("Total mesh volume is {}",
+                                this->allReduceSum(totalHex)));
 
     // Deallocate no longer needed variables
     axom::deallocate(ZERO);
@@ -758,14 +765,15 @@ public:
   {
     const auto& shapeName = shape.getName();
     const auto& materialName = shape.getMaterial();
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      fmt::format("Applying replacement rules for shape '{}' of material {}",
-                  shapeName,
-                  materialName)));
+      axom::fmt::format(
+        "Applying replacement rules for shape '{}' of material {}",
+        shapeName,
+        materialName)));
 
-    auto shapeVolFracName = fmt::format("shape_vol_frac_{}", shapeName);
-    auto materialVolFracName = fmt::format("vol_frac_{}", materialName);
+    auto shapeVolFracName = axom::fmt::format("shape_vol_frac_{}", shapeName);
+    auto materialVolFracName = axom::fmt::format("vol_frac_{}", materialName);
 
     auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
     SLIC_ASSERT(shapeVolFrac != nullptr);
@@ -827,6 +835,8 @@ public:
   #endif  // AXOM_USE_CUDA
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     default:
+      AXOM_UNUSED_VAR(shapeDimension);
+      AXOM_UNUSED_VAR(shape);
       SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
       break;
     }
@@ -854,6 +864,7 @@ public:
   #endif  // AXOM_USE_CUDA
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     default:
+      AXOM_UNUSED_VAR(shape);
       SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
       break;
     }
@@ -884,17 +895,18 @@ private:
 
 private:
   ExecPolicy m_execPolicy {seq};
-  double m_vertexWeldThreshold {1.e-10};
   int m_level {7};
-  int m_octcount {0};
   int m_num_elements {0};
+  double* m_hex_volumes {nullptr};
+  double* m_overlap_volumes {nullptr};
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  double m_vertexWeldThreshold {1.e-10};
+  int m_octcount {0};
   OctahedronType* m_octs {nullptr};
   BoundingBoxType* m_aabbs {nullptr};
   PolyhedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};
-  double* m_hex_volumes {nullptr};
-  double* m_overlap_volumes {nullptr};
-
+#endif
   // What do I need here?
   // Probably size of stuff
 };

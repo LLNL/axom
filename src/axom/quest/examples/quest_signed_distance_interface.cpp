@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,13 +21,15 @@ using MPI_Comm = int;
 #endif
 
 // C/C++ includes
-#include <cstring>  // for strcmp()
+#include <cstring>
 
 /*!
- * \file
+ * \file quest_signed_distance_interfaces.cpp
  *
- * \brief Simple example that illustrates the use of Quest's C-style Signed
- *  Distance interface from within a C++ application.
+ * Example that illustrates the use of Quest's C-style Signed Distance 
+ * interface from within a C++ application. Supports sequential execution ("seq")
+ * as well as accelerated execution via RAJA using openmp on the host ("omp") 
+ * and cuda on the device ("gpu")
  */
 
 // namespace aliases
@@ -53,13 +55,16 @@ MPI_Comm global_comm;
 int mpirank;
 int numranks;
 
-const std::map<std::string, quest::SignedDistExec> validExecPolicies {
+const std::map<std::string, quest::SignedDistExec> validExecPolicies
+{
   {"seq", quest::SignedDistExec::CPU},
-#ifdef AXOM_USE_OPENMP
-  {"omp", quest::SignedDistExec::OpenMP},
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+    {"omp", quest::SignedDistExec::OpenMP},
 #endif
-#ifdef AXOM_USE_CUDA
-  {"gpu", quest::SignedDistExec::GPU}
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+  {
+    "gpu", quest::SignedDistExec::GPU
+  }
 #endif
 };
 
@@ -78,7 +83,7 @@ struct Arguments
   bool use_shared {false};
   bool use_batched_query {false};
   bool ignore_signs {false};
-  quest::SignedDistExec exec_space;
+  quest::SignedDistExec exec_space {quest::SignedDistExec::CPU};
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
@@ -134,10 +139,10 @@ struct Arguments
     std::string pol_info =
       "Sets execution space of the SignedDistance query.\n";
     pol_info += "Set to \'seq\' to use sequential execution policy.";
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
 #endif
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
     pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
 #endif
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
@@ -201,7 +206,7 @@ int main(int argc, char** argv)
 #endif
     exit(retval);
   }
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
   if(args.exec_space == quest::SignedDistExec::GPU)
   {
     using GPUExec = axom::CUDA_EXEC<256>;

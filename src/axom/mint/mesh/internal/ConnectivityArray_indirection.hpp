@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -437,7 +437,7 @@ public:
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  CellType getIDType(IndexType AXOM_NOT_USED(id) = 0) const
+  CellType getIDType(IndexType AXOM_UNUSED_PARAM(id) = 0) const
   {
     return m_cell_type;
   }
@@ -518,7 +518,7 @@ public:
    */
   void append(const IndexType* values,
               IndexType n_values,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     SLIC_ASSERT(values != nullptr);
     m_values->append(values, n_values);
@@ -544,7 +544,7 @@ public:
   void appendM(const IndexType* values,
                IndexType n_IDs,
                const IndexType* offsets,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     internal::append(n_IDs, values, offsets, m_values, m_offsets);
   }
@@ -600,7 +600,7 @@ public:
   void insert(const IndexType* values,
               IndexType start_ID,
               IndexType n_values,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     IndexType offsets[2];
     offsets[0] = 0;
@@ -630,7 +630,7 @@ public:
                IndexType start_ID,
                IndexType n_IDs,
                const IndexType* offsets,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     internal::insert(start_ID, n_IDs, values, offsets, m_values, m_offsets);
   }

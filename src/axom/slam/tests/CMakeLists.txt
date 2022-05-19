@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,6 +39,9 @@ set(gtest_slam_tests
 
     # aux tests
     slam_ModularInt.cpp
+    
+    #mesh structure test
+    slam_IA.cpp
     )
 
 

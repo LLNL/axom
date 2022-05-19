@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,13 +6,13 @@
 #ifndef AXOM_PRIMAL_PLANE_HPP_
 #define AXOM_PRIMAL_PLANE_HPP_
 
-#include "axom/core/Macros.hpp"                        // for Axom macros
-#include "axom/core/numerics/matvecops.hpp"            // for vector operators
-#include "axom/primal/geometry/OrientationResult.hpp"  // for OrientedSide
-#include "axom/primal/geometry/Vector.hpp"             // for primal::Vector
-#include "axom/primal/geometry/Point.hpp"              // for primal::Point
+#include "axom/core/Macros.hpp"
+#include "axom/core/numerics/matvecops.hpp"
+#include "axom/primal/geometry/OrientationResult.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
+#include "axom/slic/interface/slic.hpp"
 
 namespace axom
 {
@@ -101,6 +101,9 @@ public:
   using VectorType = primal::Vector<T, NDIMS>;
   using PointType = primal::Point<T, NDIMS>;
 
+  static_assert(NDIMS == 2 || NDIMS == 3,
+                "A plane object may be defined in 2-D or 3-D");
+
 public:
   /// \name Constructors
   /// @{
@@ -161,7 +164,7 @@ public:
    */
   AXOM_HOST_DEVICE T signedDistance(const PointType& x) const
   {
-    return m_normal.dot(VectorType(x.array())) - m_offset;
+    return m_normal.dot(VectorType(x)) - m_offset;
   }
 
   /*!
@@ -232,8 +235,6 @@ namespace primal
 template <typename T, int NDIMS>
 Plane<T, NDIMS>::Plane(const VectorType& normal, const PointType& x)
 {
-  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
-                         "A plane object may be defined in 2-D or 3-D");
   SLIC_ASSERT_MSG(!normal.is_zero(),
                   "Normal vector of a plane should be non-zero");
 
@@ -246,8 +247,6 @@ Plane<T, NDIMS>::Plane(const VectorType& normal, const PointType& x)
 template <typename T, int NDIMS>
 Plane<T, NDIMS>::Plane(const VectorType& normal, T offset) : m_offset(offset)
 {
-  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
-                         "A plane object may be defined in 2-D or 3-D");
   SLIC_ASSERT_MSG(!normal.is_zero(),
                   "Normal vector of a plane should be non-zero");
 
@@ -260,10 +259,7 @@ inline typename Plane<T, NDIMS>::PointType Plane<T, NDIMS>::projectPoint(
   const PointType& x) const
 {
   const T signed_distance = this->signedDistance(x);
-  PointType projx =
-    PointType((VectorType(x) - (m_normal * signed_distance)).array());
-
-  return projx;
+  return x - signed_distance * m_normal;
 }
 
 //------------------------------------------------------------------------------
@@ -278,27 +274,14 @@ inline void Plane<T, NDIMS>::flip()
 template <typename T, int NDIMS>
 inline int Plane<T, NDIMS>::getOrientation(const PointType& x, double TOL) const
 {
-  int oriented_side = -1;
-
   const T signed_distance = this->signedDistance(x);
 
   if(utilities::isNearlyEqual(signed_distance, 0.0, TOL))
   {
-    // on the plane
-    oriented_side = ON_BOUNDARY;
+    return primal::ON_BOUNDARY;
   }
-  else if(signed_distance < 0.0)
-  {
-    // below the plane
-    oriented_side = ON_NEGATIVE_SIDE;
-  }
-  else
-  {
-    // above  the plane
-    oriented_side = ON_POSITIVE_SIDE;
-  }
-
-  return oriented_side;
+  return signed_distance < 0. ? primal::ON_NEGATIVE_SIDE
+                              : primal::ON_POSITIVE_SIDE;
 }
 
 //------------------------------------------------------------------------------
@@ -338,9 +321,7 @@ Plane<T, 2> make_plane(const Point<T, 2>& x1, const Point<T, 2>& x2)
   normal[1] = x2[0] - x1[0];  //  dx
 
   // check for degenerate line or triangle
-  bool degenerate = normal.is_zero();
-
-  SLIC_CHECK_MSG(!degenerate, "Supplied points form a degenerate line");
+  SLIC_CHECK_MSG(!normal.is_zero(), "Supplied points form a degenerate line");
 
   return Plane<T, 2>(normal, x1);
 }
@@ -357,9 +338,8 @@ Plane<T, 3> make_plane(const Point<T, 3>& x1,
   Vector<T, 3> normal = Vector<T, 3>::cross_product(r1, r2);
 
   // check for degenerate line or triangle
-  bool degenerate = normal.is_zero();
-
-  SLIC_CHECK_MSG(!degenerate, "Supplied points form a degenerate triangle");
+  SLIC_CHECK_MSG(!normal.is_zero(),
+                 "Supplied points form a degenerate triangle");
 
   return Plane<T, 3>(normal, x1);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,7 +50,10 @@ public:
   inline bool isSubset() const { return false; }
   const ParentSet* parentSet() const { return this; }
 
-  bool isValid(bool AXOM_NOT_USED(verboseOutput) = false) const { return true; }
+  bool isValid(bool AXOM_UNUSED_PARAM(verboseOutput) = false) const
+  {
+    return true;
+  }
 
   bool empty() const { return true; }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,12 +6,10 @@
 #include "axom/mint/mesh/UnstructuredMesh.hpp" /* for mint::UnstructuredMesh */
 #include "axom/mint/mesh/internal/MeshHelpers.hpp" /* for mint::initFaces */
 
-#include "axom/core/utilities/Utilities.hpp" /* for utilities::max */
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
-#include "axom/slic/interface/slic.hpp"    /* for slic macros */
-
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"
 
 #include <string>
 #include <sstream>
@@ -1440,15 +1438,10 @@ TEST(mint_mesh_face_relation, correct_construction)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char *argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   return RUN_ALL_TESTS();
 }

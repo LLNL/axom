@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -105,22 +105,13 @@ public:
 
   Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
       DataType defaultValue = DataType(),
-      SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+      int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    m_data.resize(size() * numComp(), defaultValue);
-  }
-
-  /**
-   * Copy constructor from another map
-   */
-  Map(const Map& otherMap)
-    : StridePolicyType(otherMap.StridePolicyType::stride())
-    , m_set(otherMap.m_set)
-  {
-    m_data.resize(otherMap.m_data.size());
-    copy(otherMap);
+    m_data =
+      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
 
   /**
@@ -139,22 +130,6 @@ public:
       }
     }
   }
-
-  /**
-   * \brief Assignment operator for Map
-   */
-  Map& operator=(const Map& otherMap)
-  {
-    if(this != &otherMap)
-    {
-      m_set = otherMap.m_set;
-      m_data = otherMap.m_data;
-      StridePolicyType::operator=(otherMap);
-    }
-    return *this;
-  }
-
-  //~Map(){}
 
   /**
    * \brief Returns a pointer to the map's underlying set
@@ -415,7 +390,7 @@ private:
 
   // setStride function should not be called after constructor is called.
   // This (should) override the StridePolicy setStride(s) function.
-  void setStride(SetPosition AXOM_NOT_USED(str))
+  void setStride(SetPosition AXOM_UNUSED_PARAM(str))
   {
     SLIC_ASSERT_MSG(false,
                     "Stride should not be changed after construction of map.");

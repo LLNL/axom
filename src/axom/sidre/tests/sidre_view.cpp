@@ -1,13 +1,13 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
+#include "axom/slic.hpp"
+#include "axom/core/Types.hpp"
 
 #include "axom/sidre/core/sidre.hpp"
-
-#include "axom/core/Types.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::CHAR8_STR_ID;
@@ -2246,16 +2246,12 @@ INSTANTIATE_TEST_SUITE_P(sidre_view,
                                             ::testing::ValuesIn(offsets)));
 
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger,
 
   result = RUN_ALL_TESTS();
 

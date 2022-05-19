@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,13 +24,13 @@ install(
 #------------------------------------------------------------------------------
 configure_file(
     using-with-cmake/host-config.cmake.in
-    ${CMAKE_BINARY_DIR}/examples/using-with-cmake/host-config.cmake)
+    ${PROJECT_BINARY_DIR}/examples/using-with-cmake/host-config.cmake)
 
 install(
     FILES
         using-with-cmake/CMakeLists.txt
         using-with-cmake/example.cpp
-        ${CMAKE_BINARY_DIR}/examples/using-with-cmake/host-config.cmake
+        ${PROJECT_BINARY_DIR}/examples/using-with-cmake/host-config.cmake
     DESTINATION
         examples/axom/using-with-cmake
 )
@@ -40,13 +40,13 @@ install(
 #------------------------------------------------------------------------------
 configure_file(
     using-with-blt/host-config.cmake.in
-    ${CMAKE_BINARY_DIR}/examples/using-with-blt/host-config.cmake)
+    ${PROJECT_BINARY_DIR}/examples/using-with-blt/host-config.cmake)
 
 install(
     FILES
         using-with-blt/CMakeLists.txt
         using-with-blt/example.cpp
-        ${CMAKE_BINARY_DIR}/examples/using-with-blt/host-config.cmake
+        ${PROJECT_BINARY_DIR}/examples/using-with-blt/host-config.cmake
     DESTINATION
         examples/axom/using-with-blt
 )

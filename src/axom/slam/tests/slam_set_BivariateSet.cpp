@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -343,7 +343,7 @@ TYPED_TEST(BivariateSetTester, smoke)
 
 //-----------------------------------------------------------------------------
 
-// Tests BivariateSeet::firstSetSize(), secondSetSize()
+// Tests BivariateSet::firstSetSize(), secondSetSize()
 template <typename S1, typename S2>
 void bSetSizesTest(slam::BivariateSet<S1, S2>* bset)
 {
@@ -386,7 +386,7 @@ TYPED_TEST(BivariateSetTester, sizes)
 
 //-----------------------------------------------------------------------------
 
-// Tests BivariateSeet::getFirstSet(), getSecondSet(), getElements(idx)
+// Tests BivariateSet::getFirstSet(), getSecondSet(), getElements(idx)
 // and the ability to operate and iterate on the resulting sets
 template <typename S1, typename S2>
 void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)

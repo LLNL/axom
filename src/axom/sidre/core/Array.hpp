@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,7 +32,7 @@ constexpr axom::IndexType ZERO = 0;
 namespace detail
 {
 inline void describeViewImpl(TypeID T_type,
-                             const std::array<axom::IndexType, 1>& shape,
+                             const StackArray<axom::IndexType, 1>& shape,
                              View* view)
 {
   SLIC_ASSERT(view != nullptr);
@@ -43,7 +43,7 @@ inline void describeViewImpl(TypeID T_type,
 }
 
 inline void describeViewImpl(TypeID T_type,
-                             const std::array<axom::IndexType, 2>& shape,
+                             const StackArray<axom::IndexType, 2>& shape,
                              View* view)
 {
   SLIC_ASSERT(view != nullptr);

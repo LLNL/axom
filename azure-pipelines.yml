@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,14 +9,22 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_10-21-21_21h-28m'
-  GCC8_IMAGENAME: 'axom/tpls:gcc-8_10-21-21_21h-28m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_01-27-22_04h-29m'
+  GCC8_IMAGENAME: 'axom/tpls:gcc-8_01-27-22_04h-29m'
+  GCC11_IMAGENAME: 'axom/tpls:gcc-11_01-27-22_05h-56m'
 
 jobs:
 - job: Build_and_Test
 
   strategy:
     matrix:
+      linux_gcc11:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(GCC11_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
+        COMPILER: 'g++'
+        TEST_TARGET: 'linux_gcc11'
+        HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-gcc@11.1.0'
       linux_gcc8:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: '$(GCC8_IMAGENAME)'
@@ -34,7 +42,8 @@ jobs:
       linux_clang10:
         VM_ImageName: 'ubuntu-18.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON '
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
+        BUILD_TYPE: 'Release'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
@@ -46,7 +55,7 @@ jobs:
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu18.04-x86_64-clang@10.0.0'
       osx_gcc:
-        VM_ImageName: 'macos-10.14'
+        VM_ImageName: 'macos-1015'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
         TEST_TARGET: 'osx_gcc'
       windows:
@@ -90,7 +99,7 @@ jobs:
   - script:  |
       echo " -e $TEST_TARGET -e $COMPILER -e $DO_BUILD -e $DO_TEST -e $CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh"
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
-      docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
+      docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS -e BUILD_TYPE $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
 
     condition: eq( variables['Agent.OS'], 'Linux')
     displayName: 'Linux Build & Test ($(TEST_TARGET))'

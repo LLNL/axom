@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/StackArray.hpp" /* for axom::StackArray */
-#include "gtest/gtest.h"            /* for TEST and EXPECT_* macros */
+#include "axom/core/StackArray.hpp"
+#include "gtest/gtest.h"
 #include <string>
 
 namespace axom
@@ -70,6 +70,39 @@ void test_list_initilization(LAMBDA&& getValue)
     {getValue(0), getValue(1), getValue(2), getValue(3), getValue(4)}};
 
   check(arr, std::forward<LAMBDA>(getValue));
+}
+
+template <typename T, int N, typename LAMBDA>
+void test_less_than(LAMBDA&& getValue)
+{
+  StackArray<T, N> arr1, arr2;
+
+  for(int i = 0; i < N; ++i)
+  {
+    arr1[i] = getValue(i);
+    arr2[i] = getValue(i);
+  }
+
+  EXPECT_EQ(arr1, arr2);
+
+  // check that operator< returns false when the arrays are equal
+  EXPECT_FALSE(arr1 < arr2);
+  EXPECT_FALSE(arr2 < arr1);
+
+  // Modify a few values and check for less than
+  for(int index : {0, 1, N / 2, N - 1})
+  {
+    EXPECT_EQ(arr1, arr2);
+
+    T val = arr2[index];
+
+    arr2[index] = val + val;
+    EXPECT_TRUE(arr1 < arr2);
+    EXPECT_FALSE(arr2 < arr1);
+    EXPECT_LT(arr1, arr2);
+
+    arr2[index] = val;
+  }
 }
 
 } /* namespace internal */
@@ -140,6 +173,24 @@ TEST(core_stack_array, list_initilization)
 
   internal::test_list_initilization<std::string>(
     [](int i) { return std::to_string(i); });
+}
+
+TEST(core_stack_array, less_than)
+{
+  // Note: Using `i+1` instead of `i` in lambdas
+  // due to how `test_less_than()` is implemented
+
+  constexpr int N = 100;  // Number of values to store
+
+  internal::test_less_than<int, N>([](int i) { return i + 1; });
+
+  internal::test_less_than<double, N>([](int i) { return double(i + 1); });
+
+  // The following would produce a compiler error since Tensor does not have an operator<() !
+  //internal::test_less_than<Tensor, N>([](int i) { return Tensor(i + 1); });
+
+  internal::test_less_than<std::string, N>(
+    [](int i) { return std::to_string(i + 1); });
 }
 
 } /* namespace axom */

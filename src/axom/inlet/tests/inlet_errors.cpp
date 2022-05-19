@@ -1,12 +1,14 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
+#include "axom/slic.hpp"
 
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/tests/inlet_test_utils.hpp"
+
+#include "gtest/gtest.h"
 
 using axom::inlet::Inlet;
 using axom::inlet::VerificationError;
@@ -295,6 +297,71 @@ TYPED_TEST(inlet_errors, container_strict)
     }));
 }
 
+TYPED_TEST(inlet_errors, helpful_range)
+{
+  std::string testString = "foo = 7; bar = -8.5";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  inlet.addInt("foo", "foo's description").range(3, 5);
+  inlet.addDouble("bar", "bar's description").range(-4.2, 5.6);
+
+  // FIXME (JBE): This appears to be needed for NVCC specs,
+  // even though this test isn't built with NVCC.  Maybe the linker
+  // is doing something horrible? The selection of 1.5 is random
+  axom::fmt::format("{}", 1.5);
+
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  // Need something about "foo" and "range" and "3" and "5"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (err.path == axom::Path {"foo"}) && err.messageContains("range") &&
+        err.messageContains("3") && err.messageContains("5");
+    }));
+  // Need something about "bar" and "range" and "-4.2" and "5.6"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (err.path == axom::Path {"bar"}) && err.messageContains("range") &&
+        err.messageContains("-4.2") && err.messageContains("5.6");
+    }));
+}
+
+TYPED_TEST(inlet_errors, helpful_valid_values)
+{
+  std::string testString = "foo = 7; bar = 16.0; baz = 'shemp'";
+  Inlet inlet = createBasicInlet<TypeParam>(testString);
+
+  inlet.addInt("foo", "foo's description").validValues({3, 5});
+  inlet.addDouble("bar", "bar's description").validValues({2.0, 4.0});
+  inlet.addString("baz", "baz's description")
+    .validValues({"moe", "larry", "curly"});
+
+  std::vector<VerificationError> errors;
+  EXPECT_FALSE(inlet.verify(&errors));
+  // Need something about "foo" and "valid value" and "3" and "5" and "7"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (err.path == axom::Path {"foo"}) &&
+        err.messageContains("valid value") && err.messageContains("3") &&
+        err.messageContains("5") && err.messageContains("7");
+    }));
+  // Need something about "bar" and "valid value" and "2" and "4" and "16"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (err.path == axom::Path {"bar"}) &&
+        err.messageContains("valid value") && err.messageContains("16") &&
+        err.messageContains("2") && err.messageContains("4");
+    }));
+  // Need something about "baz" and "valid value" and "shemp" and "moe" and "larry" and "curly"
+  EXPECT_TRUE(
+    std::any_of(errors.begin(), errors.end(), [](const VerificationError& err) {
+      return (err.path == axom::Path {"baz"}) &&
+        err.messageContains("valid value") && err.messageContains("shemp") &&
+        err.messageContains("moe") && err.messageContains("larry") &&
+        err.messageContains("curly");
+    }));
+}
+
 #ifdef AXOM_USE_SOL
 
 TEST(inlet_errors_lua, function_verifier)
@@ -328,18 +395,12 @@ TEST(inlet_errors_lua, function_verifier)
 #endif
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

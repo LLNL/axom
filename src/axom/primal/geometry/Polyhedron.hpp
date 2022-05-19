@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -405,7 +405,7 @@ private:
     axom::int8 checkedSize = 0;
     axom::int8 facesAdded = 0;
     // # edges * (# vertices per edge) * (# orientation per edge)
-    axom::int8 checkedEdges[MAX_VERTS * 2 * 2];
+    axom::int8 checkedEdges[MAX_VERTS * 2 * 2] = {0};
 
     // Check each vertex
     for(int i = 0; i < numVertices(); i++)

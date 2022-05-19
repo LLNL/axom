@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -160,7 +160,8 @@ public:
   virtual PositionType findElementFlatIndex(PositionType pos1) const = 0;
 
   /**
-   * \brief Finds the range of indices o
+   * \brief Finds the range of indices of valid elements in the second set,
+   *        given the index of an element in the first set.
    * \param Position of the element in the first set
    *
    * \return A range set of the positions in the second set

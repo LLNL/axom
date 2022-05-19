@@ -1,7 +1,7 @@
 #!/bin/sh
-"exec" "python" "-u" "-B" "$0" "$@"
+"exec" "python3" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,7 +9,7 @@
 """
  file: build_src.py
 
- description: 
+ description:
   Builds all Axom with the host-configs for the current machine.
 
 """
@@ -27,16 +27,17 @@ def parse_args():
                       dest="directory",
                       default="",
                       help="Directory of source to be built (Defaults to current)")
-    # Whether to archive results
-    parser.add_option("-a", "--archive",
-                      dest="archive",
-                      default="",
-                      help="Archive build results under given name (Defaults to off)")
     # Whether to build a specific hostconfig
     parser.add_option("--host-config",
                       dest="hostconfig",
                       default="",
                       help="Specific host-config file to build (Tries multiple known paths to locate given file)")
+    # Build type for the configuration
+    parser.add_option("--build-type",
+                      dest="buildtype",
+                      default="Debug",
+                      choices = ("Debug", "RelWithDebInfo", "Release", "MinSizeRel"),
+                      help="The CMake build type to use")
     # Extra cmake options to pass to config build
     parser.add_option("--extra-cmake-options",
                       dest="extra_cmake_options",
@@ -56,7 +57,7 @@ def parse_args():
     # parse args
     ###############
     opts, extras = parser.parse_args()
-    # we want a dict b/c the values could 
+    # we want a dict b/c the values could
     # be passed without using optparse
     opts = vars(opts)
 
@@ -87,11 +88,6 @@ def main():
     else:
         repo_dir = get_repo_dir()
 
-    if opts["archive"] != "":
-        job_name = opts["archive"]
-    else:
-        job_name = get_username() + "/" + os.path.basename(__file__)
-
     try:
         original_wd = os.getcwd()
         os.chdir(repo_dir)
@@ -100,7 +96,10 @@ def main():
         # Default to build all SYS_TYPE's host-configs in host-config/
         build_all = not opts["hostconfig"] and not opts["automation"]
         if build_all:
-            res = build_and_test_host_configs(repo_dir, job_name, timestamp, False, opts["verbose"], opts["extra_cmake_options"])
+            res = build_and_test_host_configs(repo_dir, timestamp, False,
+                                              report_to_stdout = opts["verbose"],
+                                              extra_cmake_options = opts["extra_cmake_options"],
+                                              build_type = opts["buildtype"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
@@ -149,11 +148,11 @@ def main():
             test_root = get_build_and_test_root(repo_dir, timestamp)
             test_root = "{0}_{1}".format(test_root, hostconfig.replace(".cmake", "").replace("@","_"))
             os.mkdir(test_root)
-            res = build_and_test_host_config(test_root, hostconfig_path, opts["verbose"], opts["extra_cmake_options"])
+            res = build_and_test_host_config(test_root, hostconfig_path,
+                                             report_to_stdout = opts["verbose"],
+                                             extra_cmake_options = opts["extra_cmake_options"],
+                                             build_type = opts["buildtype"])
 
-        # Archive logs
-        if opts["archive"] != "":
-            archive_src_logs(repo_dir, job_name, timestamp)
     finally:
         os.chdir(original_wd)
 

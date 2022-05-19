@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,6 +51,43 @@ logging within an application.
   C++ API directly, e.g., call ``slic::logMessage()`` and  wrap the
   functionality in application specific macros to better suit the requirements
   of the application.
+
+.. _CollectiveSlicMacros:
+
+Collective Slic Macros
+^^^^^^^^^^^^^^^^^^^^^^^^^
+A subset of SLIC macros are collective operations when used with
+MPI-aware :ref:`LogStream` instances such as :ref:`SynchronizedStream`
+or :ref:`LumberjackStream`.
+
+Additionally, macros such as ``SLIC_WARNING`` and ``SLIC_CHECK`` become collective
+operations when certain flags are toggled on or functions are called. Other macros
+such as ``SLIC_ERROR`` and ``SLIC_ASSERT`` can be made not collective when certain
+functions are called.
+
+The table below details which SLIC macros are collective:
+
++-----------------------+------------+--------------------------------------------------------------------------+
+| Macro                 | Collective | Notes                                                                    |
++=======================+============+==========================================================================+
+| | ``SLIC_INFO``       | | No       | |                                                                        |
+| | ``SLIC_INFO_IF``    | |          | |                                                                        |
+|                       |            |                                                                          |
+| | ``SLIC_ERROR``      | | Yes      | | Not collective after ``slic::disableAbortOnError()`` is called         |
+| | ``SLIC_ERROR_IF``   | |          | |                                                                        |
+|                       |            |                                                                          |
+| | ``SLIC_WARNING``    | | Yes      | | Collective after ``slic::enableAbortOnWarning()`` is called            |
+| | ``SLIC_WARNING_IF`` | |          | |                                                                        |
+|                       |            |                                                                          |
+| | ``SLIC_DEBUG``      | | No       | |                                                                        |
+| | ``SLIC_DEBUG_IF``   | |          | |                                                                        |
+|                       |            |                                                                          |
+| | ``SLIC_ASSERT``     | | Yes      | | Not collective after ``slic::disableAbortOnError()`` is called         |
+| | ``SLIC_ASSERT_MSG`` | |          | |                                                                        |
+|                       |            |                                                                          |
+| | ``SLIC_CHECK``      | | Yes      | | Collective after ``slic::debug::checksAreErrors`` is set to true       |
+| | ``SLIC_CHECK_MSG``  | |          | |                                                                        |
++-----------------------+------------+--------------------------------------------------------------------------+
 
 .. _SLIC_INFO:
 
@@ -115,6 +152,12 @@ facilitate debugging.
   ``slic::enableAbortOnError()`` and ``slic::disableAbortOnError()`` accordingly.
   See the `Slic Doxygen API Documentation`_ for more information.
 
+.. warning::
+
+   ``SLIC_ERROR`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
+
+
 SLIC_ERROR_IF
 """"""""""""""
 
@@ -138,6 +181,11 @@ expression, ``(jacobian < 0.0 + TOL)`` evaluates to ``true``.
   cleaner and more compact code style by encapsulating the conditional branching
   logic within a macro.
 
+.. warning::
+
+   ``SLIC_ERROR_IF`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
+
 .. _SLIC_WARNING:
 
 SLIC_WARNING
@@ -153,6 +201,11 @@ macro.
 .. code-block:: c++
 
     SLIC_WARNING( "Region [" << ir << "] defined but not used in the problem!" );
+
+.. warning::
+
+   ``SLIC_WARNING`` can set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 SLIC_WARNING_IF
 """"""""""""""""
@@ -179,6 +232,11 @@ expression, ``(val < 1)``, evaluates to `` true``.
   cleaner and more compact code style by encapsulating the conditional branching
   logic within a macro.
 
+.. warning::
+
+   ``SLIC_WARNING_IF`` can be set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
+
 .. _SLIC_DEBUG:
 
 SLIC_DEBUG
@@ -196,8 +254,8 @@ macro
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
 
 SLIC_DEBUG_IF
@@ -226,8 +284,8 @@ expression, ``(value <0)``, evaluates to ``true``.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
 
 .. _SLIC_ASSERT:
@@ -253,9 +311,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_ASSERT`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 SLIC_ASSERT_MSG
 """"""""""""""""
@@ -273,9 +334,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_ASSERT_MSG`` is a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 .. _SLIC_CHECK:
 
@@ -297,9 +361,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_CHECK`` can be set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 SLIC_CHECK_MSG
 """"""""""""""""
@@ -317,9 +384,12 @@ macro.
 
 .. warning::
 
-   This macro will log messages only when the `Axom Toolkit`_ is configured and
-   built with debug symbols. Consult the `Axom Quick Start Guide`_ for more
+   This macro will log messages only when Axom is configured and
+   built with ``AXOM_DEBUG``. Consult the `Axom Quick Start Guide`_ for more
    information.
+
+   ``SLIC_CHECK_MSG`` can be set as a collective operation. See the
+   `Slic Macro Doxygen Reference`_  here for more information.
 
 .. #############################################################################
 ..  CITATIONS

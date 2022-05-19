@@ -1,4 +1,4 @@
-! Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+! Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 ! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
@@ -60,8 +60,8 @@ contains
     call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
     if (view%is_described()) then
        call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
-       call assert_true(view%get_shape(1, dims) == 1 .and. dims(1) == length, &
-            trim(name) // " get_shape")
+       call assert_true(view%get_shape(1, dims) == 1, trim(name) // " get_shape")
+       call assert_true(dims(1) == length, trim(name) // " dims(1)")
     endif
   end subroutine check_view_values
   
@@ -226,8 +226,8 @@ contains
         call assert_equals(view%get_type_id(), type, trim(name) // " get_type_id")
         call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
         call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
-        call assert_true(view%get_shape(1, dims) == 1 .and. dims(1) == length, &
-            trim(name) // " get_shape")
+        call assert_true(view%get_shape(1, dims) == 1, trim(name) // " get_shape")
+        call assert_true(dims(1) == length, trim(name) // " dims(1)")
       end subroutine check_scalar_values
 
   end subroutine scalar_view

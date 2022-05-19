@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -774,7 +774,7 @@ the cell centroid by averaging the coordinates of the constituent cell
 .. note::
 
    Since this kernel does not use the node IDs, the argument to the kernel
-   is annotated using the ``AXOM_NOT_USED`` macro to silence compiler
+   is annotated using the ``AXOM_UNUSED_PARAM`` macro to silence compiler
    warnings.
 
 .. literalinclude:: ../../../examples/user_guide/mint_tutorial.cpp
@@ -937,7 +937,7 @@ the face centroid by averaging the coordinates of the constituent face
 .. note::
 
    Since this kernel does not use the node IDs, the argument to the kernel
-   is annotated using the ``AXOM_NOT_USED`` macro to silence compiler
+   is annotated using the ``AXOM_UNUSED_PARAM`` macro to silence compiler
    warnings.
 
 .. literalinclude:: ../../../examples/user_guide/mint_tutorial.cpp

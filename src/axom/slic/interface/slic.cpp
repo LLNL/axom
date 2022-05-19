@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,74 +24,69 @@ void initialize() { Logger::initialize(); }
 bool isInitialized() { return (Logger::getActiveLogger() != nullptr); }
 
 //------------------------------------------------------------------------------
-void createLogger(const std::string& name, char imask)
+void ensureInitialized()
 {
   if(!isInitialized())
   {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
+    initialize();
+    disableAbortOnError();
+    disableAbortOnWarning();
+    setLoggingMsgLevel(slic::message::Debug);
+    std::string format = std::string("<TIMESTAMP>\n") +
+      std::string("[<LEVEL>]: <MESSAGE> \n") + std::string("FILE=<FILE>\n") +
+      std::string("LINE=<LINE>\n\n");
+    addStreamToAllMsgLevels(new slic::GenericOutputStream(&std::cout, format));
+
+    logMessage(
+      message::Warning,
+      "slic::initialize() must be called before any other calls to SLIC\n."
+      "The SLIC library called slic::initialize() for you and set up a minimal"
+      "configuration\nto allow log messages to print.\n"
+      "Please call slic::initialize() near the beginning of the code\n"
+      "to fix this error and get rid of this message.\n"
+      "Please call slic::finalize() after all other calls to SLIC.\n");
   }
+}
+
+//------------------------------------------------------------------------------
+void createLogger(const std::string& name, char imask)
+{
+  ensureInitialized();
   Logger::createLogger(name, imask);
 }
 
 //------------------------------------------------------------------------------
 bool activateLogger(const std::string& name)
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return false;
-  }
+  ensureInitialized();
   return Logger::activateLogger(name);
 }
 
 //------------------------------------------------------------------------------
 std::string getActiveLoggerName()
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return "";
-  }
+  ensureInitialized();
   return (Logger::getActiveLoggerName());
 }
 
 //------------------------------------------------------------------------------
 message::Level getLoggingMsgLevel()
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return message::Num_Levels;
-  }
+  ensureInitialized();
   return Logger::getActiveLogger()->getLoggingMsgLevel();
 }
 
 //------------------------------------------------------------------------------
 void setLoggingMsgLevel(message::Level level)
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->setLoggingMsgLevel(level);
 }
 
 //------------------------------------------------------------------------------
 void setAbortOnError(bool status)
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
-  }
+  ensureInitialized();
 
   Logger::getActiveLogger()->setAbortOnError(status);
 }
@@ -105,26 +100,14 @@ void disableAbortOnError() { setAbortOnError(false); }
 //------------------------------------------------------------------------------
 bool isAbortOnErrorsEnabled()
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return false;
-  }
-
+  ensureInitialized();
   return (Logger::getActiveLogger()->isAbortOnErrorsEnabled());
 }
 
 //------------------------------------------------------------------------------
 void setAbortOnWarning(bool status)
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
-  }
-
+  ensureInitialized();
   Logger::getActiveLogger()->setAbortOnWarning(status);
 }
 
@@ -137,44 +120,42 @@ void disableAbortOnWarning() { setAbortOnWarning(false); }
 //------------------------------------------------------------------------------
 bool isAbortOnWarningsEnabled()
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return false;
-  }
-
+  ensureInitialized();
   return (Logger::getActiveLogger()->isAbortOnWarningsEnabled());
 }
 
 //------------------------------------------------------------------------------
 void setAbortFunction(AbortFunctionPtr abort_func)
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
-  }
-
+  ensureInitialized();
   Logger::getActiveLogger()->setAbortFunction(abort_func);
 }
 
 //------------------------------------------------------------------------------
 void addStreamToMsgLevel(LogStream* ls, message::Level level)
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
-  }
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToMsgLevel(ls, level);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToMsgLevel(GenericOutputStream* ls, message::Level level)
+{
+  ensureInitialized();
   Logger::getActiveLogger()->addStreamToMsgLevel(ls, level);
 }
 
 //------------------------------------------------------------------------------
 void addStreamToAllMsgLevels(LogStream* ls)
 {
+  ensureInitialized();
+  Logger::getActiveLogger()->addStreamToAllMsgLevels(ls);
+}
+
+//------------------------------------------------------------------------------
+void addStreamToAllMsgLevels(GenericOutputStream* ls)
+{
+  ensureInitialized();
   Logger::getActiveLogger()->addStreamToAllMsgLevels(ls);
 }
 
@@ -183,10 +164,7 @@ void logMessage(message::Level level,
                 const std::string& message,
                 bool filter_duplicates)
 {
-  if(!isInitialized())
-  {
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->logMessage(level, message, filter_duplicates);
 }
 
@@ -196,10 +174,7 @@ void logMessage(message::Level level,
                 const std::string& tag,
                 bool filter_duplicates)
 {
-  if(!isInitialized())
-  {
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->logMessage(level, message, tag, filter_duplicates);
 }
 
@@ -210,10 +185,7 @@ void logMessage(message::Level level,
                 int line,
                 bool filter_duplicates)
 {
-  if(!isInitialized())
-  {
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->logMessage(level,
                                         message,
                                         fileName,
@@ -229,10 +201,7 @@ void logMessage(message::Level level,
                 int line,
                 bool filter_duplicates)
 {
-  if(!isInitialized())
-  {
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()
     ->logMessage(level, message, tag, fileName, line, filter_duplicates);
 }
@@ -259,24 +228,14 @@ void logWarningMessage(const std::string& message,
 //------------------------------------------------------------------------------
 void flushStreams()
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->flushStreams();
 }
 
 //------------------------------------------------------------------------------
 void pushStreams()
 {
-  if(!isInitialized())
-  {
-    std::cerr << "[ERROR]: slic::initialize() must be called "
-              << "before making any other calls to SLIC.";
-    return;
-  }
+  ensureInitialized();
   Logger::getActiveLogger()->pushStreams();
 }
 

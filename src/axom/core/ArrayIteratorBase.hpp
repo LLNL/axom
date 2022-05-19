@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,35 +19,45 @@ namespace axom
  *          Each increment operation advances the iterator to the next
  *          element in the Array-like.
  * \tparam ArrayType The type of the array to iterate over
+ * \tparam ValueType The type of the array's elements
  */
-template <typename ArrayType>
+template <typename ArrayType, typename ValueType>
 class ArrayIteratorBase
-  : public IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>
+  : public IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>
 {
+private:
+  using BaseType =
+    IteratorBase<ArrayIteratorBase<ArrayType, ValueType>, IndexType>;
+
 public:
-  ArrayIteratorBase(IndexType pos, ArrayType* arr)
-    : IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>(pos)
+  // Iterator traits required to satisfy LegacyRandomAccessIterator concept
+  // before C++20
+  // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
+  using difference_type = IndexType;
+  using value_type = typename std::remove_cv<ValueType>::type;
+  using reference = ValueType&;
+  using pointer = ValueType*;
+  using iterator_category = std::random_access_iterator_tag;
+
+public:
+  using ArrayPointerType = ArrayType*;
+
+  ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
+    : BaseType(pos)
     , m_arrayPtr(arr)
   { }
 
   /**
    * \brief Returns the current iterator value
    */
-  typename ArrayType::value_type& operator*()
-  {
-    return (
-      *m_arrayPtr)[IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>::m_pos];
-  }
+  ValueType& operator*() { return m_arrayPtr->flatIndex(BaseType::m_pos); }
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
-  void advance(IndexType n)
-  {
-    IteratorBase<ArrayIteratorBase<ArrayType>, IndexType>::m_pos += n;
-  }
+  void advance(IndexType n) { BaseType::m_pos += n; }
 
 protected:
-  ArrayType* const m_arrayPtr;
+  ArrayPointerType m_arrayPtr;
 };  // end of ArrayIteratorBase class
 
 /// @}

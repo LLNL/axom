@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,8 +57,83 @@ struct StackArray
 
   /// @}
 
+  /*!
+   * \brief Begin/end iterators
+   */
+  /// @{
+
+  AXOM_HOST_DEVICE T* begin() noexcept { return &m_data[0]; }
+  AXOM_HOST_DEVICE const T* begin() const noexcept { return &m_data[0]; }
+
+  AXOM_HOST_DEVICE T* end() noexcept { return &m_data[0] + N; }
+  AXOM_HOST_DEVICE const T* end() const noexcept { return &m_data[0] + N; }
+
+  /// @}
+
   T m_data[N];
 };
+
+/*!
+ * \brief Equality comparison operator for StackArray
+ *
+ * \param [in] lhs left StackArray to compare
+ * \param [in] rhs right StackArray to compare
+ * \return true if the StackArrays have the same element values
+ */
+template <typename T, int N>
+AXOM_HOST_DEVICE bool operator==(const StackArray<T, N>& lhs,
+                                 const StackArray<T, N>& rhs)
+{
+  for(int i = 0; i < N; ++i)
+  {
+    if(lhs[i] != rhs[i])
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+/*!
+ * \brief Inequality comparison operator for StackArray
+ *
+ * \param [in] lhs left StackArray to compare
+ * \param [in] rhs right StackArray to compare
+ * \return true if the StackArrays have different element values
+ */
+template <typename T, int N>
+AXOM_HOST_DEVICE bool operator!=(const StackArray<T, N>& lhs,
+                                 const StackArray<T, N>& rhs)
+{
+  return !(lhs == rhs);
+}
+
+/*!
+ * \brief Less than operator for StackArray
+ *
+ * \param [in] lhs left StackArray to compare
+ * \param [in] rhs right StackArray to compare
+ * \return true if \a lhs is lexicographically less than \a rhs, false otherwise
+ * \note It is only valid to call this function when values of type \a T are comparable, 
+ * e.g. when T has an operator<()
+ */
+template <typename T, int N>
+AXOM_HOST_DEVICE bool operator<(const StackArray<T, N>& lhs,
+                                const StackArray<T, N>& rhs)
+{
+  for(int i = 0; i < N; ++i)
+  {
+    if(lhs[i] < rhs[i])
+    {
+      return true;
+    }
+    else if(lhs[i] > rhs[i])
+    {
+      return false;
+    }
+  }
+  return false;
+}
 
 } /* namespace axom */
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -235,12 +235,12 @@ public:
   }
 
   virtual IndexType getNumberOfCellNodes(
-    IndexType AXOM_NOT_USED(cellID) = 0) const final override
+    IndexType AXOM_UNUSED_PARAM(cellID) = 0) const final override
   {
     return 1;
   }
 
-  virtual CellType getCellType(IndexType AXOM_NOT_USED(cellID) = 0) const final override
+  virtual CellType getCellType(IndexType AXOM_UNUSED_PARAM(cellID) = 0) const final override
   {
     return VERTEX;
   }
@@ -255,7 +255,7 @@ public:
    * \param [in] cellID the ID of the cell in question.
    */
   virtual IndexType getNumberOfCellFaces(
-    IndexType AXOM_NOT_USED(cellID) = 0) const final override
+    IndexType AXOM_UNUSED_PARAM(cellID) = 0) const final override
   {
     return 0;
   }
@@ -269,8 +269,8 @@ public:
    * \param [out] faces buffer to populate with the face IDs. Must be of length
    *  at least getNumberOfCellFaces( cellID ).
    */
-  virtual IndexType getCellFaceIDs(IndexType AXOM_NOT_USED(cellID),
-                                   IndexType* AXOM_NOT_USED(faces)) const final override
+  virtual IndexType getCellFaceIDs(IndexType AXOM_UNUSED_PARAM(cellID),
+                                   IndexType* AXOM_UNUSED_PARAM(faces)) const final override
   {
     SLIC_ERROR("ParticleMesh does not implement this method.");
     return 0;
@@ -352,7 +352,7 @@ public:
    * 
    * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual CellType getFaceType(IndexType AXOM_NOT_USED(faceID)) const final override
+  virtual CellType getFaceType(IndexType AXOM_UNUSED_PARAM(faceID)) const final override
   {
     SLIC_ERROR("ParticleMesh does not implement this method.");
     return UNDEFINED_CELL;
@@ -366,7 +366,7 @@ public:
    * \note The particle mesh does not have any faces so this call errors out.
    */
   virtual IndexType getNumberOfFaceNodes(
-    IndexType AXOM_NOT_USED(faceID)) const final override
+    IndexType AXOM_UNUSED_PARAM(faceID)) const final override
   {
     SLIC_ERROR("ParticleMesh does not implement this method.");
     return -1;
@@ -385,8 +385,8 @@ public:
    * 
    * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual IndexType getFaceNodeIDs(IndexType AXOM_NOT_USED(faceID),
-                                   IndexType* AXOM_NOT_USED(nodes)) const final override
+  virtual IndexType getFaceNodeIDs(IndexType AXOM_UNUSED_PARAM(faceID),
+                                   IndexType* AXOM_UNUSED_PARAM(nodes)) const final override
   {
     SLIC_ERROR("ParticleMesh does not implement this method.");
     return -1;
@@ -402,9 +402,9 @@ public:
    *
    * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual void getFaceCellIDs(IndexType AXOM_NOT_USED(faceID),
-                              IndexType& AXOM_NOT_USED(cellIDOne),
-                              IndexType& AXOM_NOT_USED(cellIDTwo)) const final override
+  virtual void getFaceCellIDs(IndexType AXOM_UNUSED_PARAM(faceID),
+                              IndexType& AXOM_UNUSED_PARAM(cellIDOne),
+                              IndexType& AXOM_UNUSED_PARAM(cellIDTwo)) const final override
   {
     SLIC_ERROR("ParticleMesh does not implement this method.");
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,7 +24,7 @@ constexpr double M = (2 * M_PI) / 50.0;
  * \brief Illustrates how to construct and use a mint::CurvilinearMesh object.
  */
 
-int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
+int main(int AXOM_UNUSED_PARAM(argc), char** AXOM_UNUSED_PARAM(argv))
 {
   constexpr int N = 100;
   constexpr double h = 0.5;

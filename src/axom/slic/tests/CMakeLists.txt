@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,12 +14,16 @@ set(gtest_slic_tests
     slic_asserts.cpp
     slic_interface.cpp
     slic_macros.cpp
+    slic_uninit.cpp
     )
 
 set(bench_slic_tests
     slic_benchmark_asserts.cpp
    )
 
+set(fruit_slic_tests
+    slic_interface_F.f
+   )
 
 #
 # Add gtest based tests
@@ -60,5 +64,23 @@ if (ENABLE_BENCHMARKS)
             NAME ${test_name}
             COMMAND ${test_name} --benchmark_min_time=0.0001
             )
+    endforeach()
+endif()
+
+#
+# Add Fortran tests
+#
+if (ENABLE_FORTRAN)
+    foreach(test ${fruit_slic_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        blt_add_executable( NAME ${test_name}_test
+                            SOURCES ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON slic fruit
+                            FOLDER axom/slic/tests
+                            )
+        axom_add_test( NAME    ${test_name}
+                       COMMAND ${test_name}_test
+                       )
     endforeach()
 endif()

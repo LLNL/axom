@@ -1,12 +1,13 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 #include "axom/mint/mesh/blueprint.hpp"
 
-// Mint includes
+// axom includes
 #include "axom/mint/config.hpp"          // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"  // for MeshTypes enum
+#include "axom/slic.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -370,18 +371,12 @@ TEST(mint_mesh_blueprint, get_set_uniform_mesh)
 #endif /* AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -93,7 +93,8 @@ public:
     phi[2] = s;
   }
 
-  static void computeDerivatives(const double* AXOM_NOT_USED(xr), double* phidot)
+  static void computeDerivatives(const double* AXOM_UNUSED_PARAM(xr),
+                                 double* phidot)
   {
     SLIC_ASSERT(phidot != nullptr);
 

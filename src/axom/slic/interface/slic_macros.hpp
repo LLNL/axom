@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,21 +7,31 @@
 #define AXOM_SLIC_MACROS_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Macros.hpp"  // for AXOM_HOST_DEVICE macros
+#include "axom/core/Macros.hpp"
 
 /*!
  * \file slic_macros.hpp
  */
 
-/// \name ERROR MACROS
-/// @{
+///@{
+//! \name SLIC_ERROR MACROS
+//!
+//! \collective
+//! \attention These error macros are collective operations.
+//! All ranks in the user-supplied communicator must call the macro
+//! when used within an MPI distributed environment, and slic::enableAbortOnError()
+//! is called for the current active logger (default is enabled
+//! for loggers)
+//! \sa axom::slic::isAbortOnErrorsEnabled()
+//! \sa axom::slic::setAbortOnError(bool status)
+//!
 
 /*!
  * \def SLIC_ERROR( msg )
  * \brief Logs an error and aborts the application.
  * \param [in] msg user-supplied message
- * \note The SLIC_ERROR macro is always active.
  * \warning This macro calls processAbort().
+ * \note The SLIC_ERROR macro is always active.
  *
  * Usage:
  * \code
@@ -42,8 +52,8 @@
  * \brief Logs an error iff EXP is true and aborts the application.
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message.
- * \note The SLIC_ERROR_IF macro is always active.
  * \warning This macro calls processAbort() if EXP is true.
+ * \note The SLIC_ERROR_IF macro is always active.
  *
  * Usage:
  * \code
@@ -62,10 +72,22 @@
     }                                                               \
   } while(axom::slic::detail::false_value)
 
-/// @}
+///@}
 
-/// \name WARNING MACROS
-/// @{
+///@{
+//! \name SLIC_WARNING MACROS
+//!
+//! \collective
+//! \attention These warning macros can be set as collective operations.
+//! These warning macros are collective if slic::enableAbortOnWarning()
+//! is called for the current active logger (default is disabled
+//! for loggers).
+//! These warning macros must then be called by all ranks in the
+//! user-supplied communicator when used within an MPI distributed
+//! environment.
+//! \sa axom::slic::isAbortOnWarningsEnabled()
+//! \sa axom::slic::setAbortOnWarning(bool status)
+//!
 
 /*!
  * \def SLIC_WARNING( msg )
@@ -111,22 +133,32 @@
     }                                                                 \
   } while(axom::slic::detail::false_value)
 
-/// @}
+///@}
 
 // Use complete debug macros when not on device
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
 
   //-----------------------------------------------------------------------------
-  /// \name ASSERT MACROS
   /// @{
+  //! \name SLIC_ASSERT MACROS
+  //!
+  //! \collective
+  //! \attention These assert macros are collective operations.
+  //! All ranks in the user-supplied communicator must call the macro
+  //! when used within an MPI distributed environment, and slic::enableAbortOnError()
+  //! is called for the current active logger (default is enabled
+  //! for loggers)
+  //! \sa axom::slic::isAbortOnErrorsEnabled()
+  //! \sa axom::slic::setAbortOnError(bool status)
+  //!
 
   /*!
  * \def SLIC_ASSERT( EXP )
  * \brief Asserts that a given expression is true. If the expression is not true
  *  an error will be logged and the application will be aborted.
  * \param [in] EXP user-supplied boolean expression.
- * \note This macro is only active when debugging is turned on.
  * \warning This macro calls processAbort() if EXP is false.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code
@@ -150,8 +182,8 @@
  * \brief Same as SLIC_ASSERT, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message
- * \note This macro is only active when debugging is turned on.
  * \warning This macro calls processAbort() if EXP is false.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  * \see SLIC_ASSERT( EXP )
  *
  * Usage:
@@ -171,11 +203,31 @@
       }                                                                      \
     } while(axom::slic::detail::false_value)
 
-  /// @}
+  ///@}
 
   //-----------------------------------------------------------------------------
-  /// \name DEBUG MACROS
   /// @{
+  //! \name SLIC_CHECK MACROS
+  //!
+  //! \collective
+  //! \attention These check macros can be set as collective operations.
+  //! These check macros are collective if either:
+  //! - slic::debug::checksAreErrors is set to true (default is false) and
+  //! slic::enableAbortOnError() is called for the current active logger (default is
+  //! enabled for loggers)
+  //! - slic::debug::checksAreErrors is set to false (default is false) and
+  //! slic::enableAbortOnWarning() is called for the current active logger (default is
+  //! disabled for loggers)
+  //!
+  //! These check macros must then be called by all ranks in the
+  //! user-supplied communicator when used within an MPI distributed
+  //! environment.
+  //!
+  //! \sa axom::slic::isAbortOnErrorsEnabled()
+  //! \sa axom::slic::setAbortOnError(bool status)
+  //! \sa axom::slic::isAbortOnWarningsEnabled()
+  //! \sa axom::slic::setAbortOnWarning(bool status)
+  //!
 
   /*!
  * \def SLIC_CHECK( EXP )
@@ -183,7 +235,7 @@
  *  a warning is logged, but, in contrast to the similar SLIC_ASSERT macro the
  *  application is not aborted.
  * \param [in] EXP user-supplied boolean expression.
- * \note This macro is only active when debugging is turned on.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code
@@ -214,7 +266,7 @@
  * \brief Same as SLIC_CHECK, but with a custom error message.
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message
- * \note This macro is only active when debugging is turned on.
+ * \note This macro is only active when AXOM_DEBUG is defined.
  * \see SLIC_DEBUG( EXP )
  *
  * Usage:
@@ -316,7 +368,7 @@
  * \def SLIC_DEBUG( msg )
  * \brief Logs a Debug message.
  * \param [in] msg user-supplied message
- * \note The SLIC_Debug macro is active in debug mode.
+ * \note The SLIC_Debug macro is active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code
@@ -340,7 +392,7 @@
  * \brief Logs an Debug message iff EXP is true
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message.
- * \note The SLIC_DEBUG_IF macro is active in debug mode.
+ * \note The SLIC_DEBUG_IF macro is active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code

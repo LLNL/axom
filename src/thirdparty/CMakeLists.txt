@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,6 +57,14 @@ mark_as_advanced(CLI11_FOUND)
 # Register the built-in fmt library for string formatting
 #------------------------------------------------------------------------------
 
+# NOTE: When updating fmt you must do the following changes to properly guard
+#  our fmt from other fmt's.
+# 
+# 1) Change the namespace from 'fmt' to 'axom::fmt'.  This is in fmt/core.h:203-204,
+#    as well as, search and replace `fmt::` to `axom::fmt`.
+# 2) Search and replace compiler define's prefix from `FMT_` to `AXOM_FMT_`.
+# 3) Keep fmt's headers installed under axom's include directory.
+
 # Headers that Axom adds to fmt
 set(axom_fmt_headers
     axom/fmt.hpp
@@ -84,9 +92,12 @@ blt_add_library(NAME    fmt
 target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
+target_include_directories(fmt INTERFACE 
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
+
 # Setup some variables for fmt in Axom's config.hpp
-set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
-set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
+set(AXOM_FMT_EXCEPTIONS FALSE PARENT_SCOPE)
+set(AXOM_FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 
 install(TARGETS              fmt
         EXPORT               axom-targets
@@ -166,10 +177,13 @@ if (AXOM_ENABLE_SPARSEHASH)
      )
      
     blt_add_library(NAME sparsehash
-            HEADERS ${sparsehash_headers})
+                    HEADERS ${sparsehash_headers})
      
     target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+    target_include_directories(sparsehash INTERFACE 
+                $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
 
     # Disable warning introduced in gcc@8.1+ related to how sparsehash casts memory
     # The double guarding for compiler family helps when compiling libraries with GNU

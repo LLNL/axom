@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,10 +16,9 @@
 #include "axom/slic.hpp"
 
 // C/C++ includes
-#include <random> /* for random number generator */
+#include <random>
 
 using namespace axom;
-using axom::slic::SimpleLogger;
 
 inline bool appendQuad(axom::IndexType i, axom::IndexType j)
 {
@@ -27,9 +26,9 @@ inline bool appendQuad(axom::IndexType i, axom::IndexType j)
 }
 
 //------------------------------------------------------------------------------
-int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
+int main(int AXOM_UNUSED_PARAM(argc), char** AXOM_UNUSED_PARAM(argv))
 {
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;  // create & initialize test logger
 
   constexpr int DIMENSION = 2;
   constexpr axom::IndexType X_EXTENT = 11;

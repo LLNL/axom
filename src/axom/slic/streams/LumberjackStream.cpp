@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -72,7 +72,7 @@ void LumberjackStream::append(message::Level msgLevel,
                               const std::string& tagName,
                               const std::string& fileName,
                               int line,
-                              bool AXOM_NOT_USED(filter_duplicates))
+                              bool AXOM_UNUSED_PARAM(filter_duplicates))
 {
   if(m_lj == nullptr)
   {

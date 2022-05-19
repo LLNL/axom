@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -120,9 +120,9 @@ Axom has the following inter-component dependencies:
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
 - Multimat depends on Slic, and Slam
-- Quest depends on Slam, Spin, Primal, and Mint
 - Inlet depends on Sidre, Slic, and Primal
 - Klee depends on Sidre, Slic, Inlet and Primal
+- Quest depends on Slam, Spin, Primal, Mint, and, optionally, Klee
 
 The figure below summarizes these dependencies. Solid links indicate hard 
 dependencies; dashed links indicate optional dependencies.
@@ -181,7 +181,7 @@ Axom Copyright and License Information
 
 Please see the :ref:`axom-license`.
 
-Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC.
+Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
 
 LLNL-CODE-741217

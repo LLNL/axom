@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -80,7 +80,7 @@ public:
    * \param [in] cellID the ID of the cell in question, this parameter is
    *  ignored.
    */
-  virtual CellType getCellType(IndexType AXOM_NOT_USED(cellID) = 0) const final override
+  virtual CellType getCellType(IndexType AXOM_UNUSED_PARAM(cellID) = 0) const final override
   {
     return (m_ndims == 1) ? SEGMENT : (m_ndims == 2) ? QUAD : HEX;
   }
@@ -92,7 +92,7 @@ public:
    *  ignored.
    */
   virtual IndexType getNumberOfCellNodes(
-    IndexType AXOM_NOT_USED(cellID) = 0) const final override
+    IndexType AXOM_UNUSED_PARAM(cellID) = 0) const final override
   {
     return (m_ndims == 1) ? 2 : (m_ndims == 2) ? 4 : 8;
   }
@@ -120,7 +120,7 @@ public:
    *  ignored.
    */
   virtual IndexType getNumberOfCellFaces(
-    IndexType AXOM_NOT_USED(cellID) = 0) const final override
+    IndexType AXOM_UNUSED_PARAM(cellID) = 0) const final override
   {
     CellType cell_type = getCellType();
     return getCellInfo(cell_type).num_faces;
@@ -218,7 +218,7 @@ public:
    * \param [in] faceID the ID of the face in question, this parameter is
    *  ignored.
    */
-  virtual CellType getFaceType(IndexType AXOM_NOT_USED(faceID) = 0) const final override
+  virtual CellType getFaceType(IndexType AXOM_UNUSED_PARAM(faceID) = 0) const final override
   {
     return (m_ndims == 2) ? SEGMENT : (m_ndims == 3) ? QUAD : UNDEFINED_CELL;
   }
@@ -230,7 +230,7 @@ public:
    *  ignored.
    */
   virtual IndexType getNumberOfFaceNodes(
-    IndexType AXOM_NOT_USED(faceID) = 0) const final override
+    IndexType AXOM_UNUSED_PARAM(faceID) = 0) const final override
   {
     return (m_ndims == 2) ? 2 : (m_ndims == 3) ? 4 : 0;
   }

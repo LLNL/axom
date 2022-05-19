@@ -1,6 +1,4 @@
-#!/usr/local/bin/python
-
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +6,7 @@
 """
  file: llnl_lc_uberenv_install_tools.py
 
- description: 
+ description:
   helpers for installing axom tpls on llnl lc systems.
 
 """
@@ -67,12 +65,11 @@ def get_timestamp(t=None,sep="_"):
     return  sbase % sargs
 
 
-def build_info(job_name):
+def build_info():
     res = {}
     res["built_by"] = os.environ["USER"]
     res["built_from_branch"] = "unknown"
     res["built_from_sha1"]   = "unknown"
-    res["job_name"] = job_name
     res["platform"] = get_platform()
     rc, out = sexe('git branch -a | grep \"*\"',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
@@ -85,9 +82,9 @@ def build_info(job_name):
     return res
 
 
-def write_build_info(ofile, job_name):
+def write_build_info(ofile):
     print("[build info]")
-    binfo_str = json.dumps(build_info(job_name),indent=2)
+    binfo_str = json.dumps(build_info(),indent=2)
     print(binfo_str)
     open(ofile,"w").write(binfo_str)
 
@@ -126,136 +123,6 @@ def log_failure(prefix, msg, timestamp=""):
     json.dump(info,open(pjoin(prefix,"failed.json"),"w"),indent=2)
 
 
-def copy_if_exists(src, dst, verbose=True):
-    if os.path.exists(src):
-        shutil.copy2(src, dst)
-
-    if verbose:
-        if os.path.exists(src):
-            print("[File copied]")
-        else:
-            print("[File not copied because source did not exist]")
-        print("[  Source: {0}]".format(src))
-        print("[  Destination: {0}]".format(dst))
-
-
-
-def normalize_job_name(job_name):
-    return job_name.replace(' ', '_').replace(',', '')
-
-
-def copy_build_dir_files(build_dir, archive_spec_dir):
-    copy_if_exists(pjoin(build_dir, "info.json"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "failed.json"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "success.json"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "output.log.make.txt"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "output.log.make.test.txt"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "output.log.make.install.txt"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "output.log.make.docs.txt"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "output.log.install_example.cmake.txt"), archive_spec_dir)
-    copy_if_exists(pjoin(build_dir, "output.log.install_example.blt.txt"), archive_spec_dir)
-
-    # Note: There should only be one of these per spec
-    last_test_logs = glob.glob(pjoin(build_dir, "Testing", "Temporary", "LastTest*.log"))
-    if len(last_test_logs) > 0:
-        copy_if_exists(last_test_logs[0], archive_spec_dir)
-
-    # Note: There should only be one of these per spec
-    test_xmls = glob.glob(pjoin(build_dir, "Testing", "*", "Test.xml"))
-    if len(test_xmls) > 0:
-        copy_if_exists(test_xmls[0], archive_spec_dir)
-
-
-def archive_src_logs(prefix, job_name, timestamp):
-    archive_dir = pjoin(get_archive_base_dir(), get_system_type())
-    archive_dir = pjoin(archive_dir, normalize_job_name(job_name), timestamp)
-    print("[Starting Archiving]")
-    print("[  Archive Dir: %s]" % archive_dir)
-    print("[  Prefix: %s]" % prefix)
-
-    if not os.path.exists(archive_dir):
-        os.makedirs(archive_dir)
-
-    copy_if_exists(pjoin(prefix, "info.json"), archive_dir)
-    copy_if_exists(pjoin(prefix, "failed.json"), archive_dir)
-    copy_if_exists(pjoin(prefix, "success.json"), archive_dir)
-
-    build_and_test_root = get_build_and_test_root(prefix, timestamp)
-    build_dirs = glob.glob(pjoin(build_and_test_root, "build-*"))
-    for build_dir in build_dirs:
-        spec = get_spec_from_build_dir(build_dir)
-        archive_spec_dir = pjoin(archive_dir, spec)
-
-        print("[  Spec Dir: %s]" % archive_spec_dir)
-
-        if not os.path.exists(archive_spec_dir):
-            os.makedirs(archive_spec_dir)
-
-        # Note: There should only be one of these per spec
-        config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
-        if len(config_spec_logs) > 0:
-            copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
-
-        # Note: There should only be one of these per spec
-        print("[  Build Dir: %s]" % build_dir)
-        copy_build_dir_files(build_dir, archive_spec_dir)
-
-    set_group_and_perms(archive_dir)
-
-
-def archive_tpl_logs(prefix, job_name, timestamp):
-    archive_dir = pjoin(get_archive_base_dir(), get_system_type())
-    archive_dir = pjoin(archive_dir, normalize_job_name(job_name), timestamp)
-    print("[Starting Archiving]")
-    print("[  Archive Dir: %s]" % archive_dir)
-    print("[  Prefix: %s]" % prefix)
-
-    if not os.path.exists(archive_dir):
-        os.makedirs(archive_dir)
-
-    tpl_build_dir = pjoin(prefix, get_system_type())
-    tpl_build_dir = pjoin(tpl_build_dir, timestamp)
-
-    copy_if_exists(pjoin(tpl_build_dir, "info.json"), archive_dir)
-
-    build_and_test_root = get_build_and_test_root(tpl_build_dir, timestamp)
-    print("[Build/Test Dir: %s]" % build_and_test_root)
-
-    tpl_logs = glob.glob(pjoin(tpl_build_dir, "output.log.spack.tpl.build.*"))
-    for tpl_log in tpl_logs:
-        spec = get_spec_from_tpl_log(tpl_log)
-        archive_spec_dir = pjoin(archive_dir, spec)
-
-        print("[  Spec Dir: %s]" % archive_spec_dir)
-
-        if not os.path.exists(archive_spec_dir):
-            os.makedirs(archive_spec_dir)
-
-        copy_if_exists(tpl_log, pjoin(archive_spec_dir, "output.log.spack.txt"))
-        
-        # Note: There should only be one of these per spec
-        config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
-        if len(config_spec_logs) > 0:
-            copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
-        else:
-            print("[Error: No config-build logs found in Spec Dir.]")
-
-        # Find build dir for spec
-        # Note: only compiler name/version is used in build directory not full spack spec
-        compiler = get_compiler_from_spec(spec)
-        build_dir_glob = pjoin(build_and_test_root, "build-*-%s" % (compiler))
-        build_dirs = glob.glob(build_dir_glob)
-        if len(build_dirs) > 0:
-            build_dir = build_dirs[0]
-
-            print("[  Build Dir: %s]" % build_dir)
-            copy_build_dir_files(build_dir, archive_spec_dir)
-        else:
-            print("[Error: No build dirs found in Build/Test root.]")
-
-    set_group_and_perms(archive_dir)
-
-
 def assertUberenvExists():
     if not os.path.exists(get_uberenv_path()):
         print("[ERROR: {0} does not exist".format(get_uberenv_path()))
@@ -269,7 +136,7 @@ def uberenv_create_mirror(prefix, spec, project_file, mirror_path):
     Calls uberenv to create a spack mirror.
     """
     assertUberenvExists()
-    cmd  = "python {0} --create-mirror -k ".format(get_uberenv_path())
+    cmd  = "{0} {1} --create-mirror -k ".format(sys.executable, get_uberenv_path())
     cmd += "--prefix=\"{0}\" --mirror=\"{1}\" ".format(prefix, mirror_path)
     cmd += "--spec=\"{0}\" ".format(spec)
     if project_file:
@@ -291,12 +158,12 @@ def uberenv_build(prefix, spec, project_file, mirror_path):
     Calls uberenv to install tpls for a given spec to given prefix.
     """
     assertUberenvExists()
-    cmd  = "python {0} -k ".format(get_uberenv_path())
+    cmd  = "{0} {1} -k ".format(sys.executable, get_uberenv_path())
     cmd += "--prefix=\"{0}\" --spec=\"{1}\" ".format(prefix, spec)
     cmd += "--mirror=\"{0}\" ".format(mirror_path)
     if project_file:
         cmd += "--project-json=\"{0}\" ".format(project_file)
-        
+
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec.replace(" ", "_"))
     print("[starting tpl install of spec %s]" % spec)
     print("[log file: %s]" % spack_tpl_build_log)
@@ -322,7 +189,10 @@ def uberenv_build(prefix, spec, project_file, mirror_path):
 # helpers for testing a set of host configs
 ############################################################
 
-def build_and_test_host_config(test_root, host_config, report_to_stdout = False, extra_cmake_options = ""):
+def build_and_test_host_config(test_root, host_config, 
+                               report_to_stdout = False,
+                               extra_cmake_options = "",
+                               build_type = "Debug"):
     host_config_root = get_host_config_root(host_config)
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
@@ -335,7 +205,7 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
     cfg_output_file = pjoin(test_root,"output.log.%s.configure.txt" % host_config_root)
     print("[starting configure of %s]" % host_config)
     print("[log file: %s]" % cfg_output_file)
-    res = sexe("python config-build.py -bp %s -ip %s -hc %s %s" % (build_dir, install_dir, host_config, extra_cmake_options),
+    res = sexe("%s config-build.py -bp %s -ip %s -bt %s -hc %s %s" % (sys.executable, build_dir, install_dir, build_type, host_config, extra_cmake_options),
                output_file = cfg_output_file,
                echo=True)
 
@@ -346,11 +216,11 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
     if res != 0:
         print("[ERROR: Configure for host-config: %s failed]\n" % host_config)
         return res
-        
+
     ####
     # build, test, and install
     ####
-    
+
     # build the code
     bld_output_file =  pjoin(build_dir,"output.log.make.txt")
     print("[starting build]")
@@ -441,7 +311,7 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
     # test the installation using installed cmake examples
     # TODO: enable tests for installed examples in device configurations
     # TODO: enable tests for installed makefile-based example
-    is_device_build = "nvcc" in host_config
+    is_device_build = "cuda" in host_config or "hip" in host_config
     should_test_installed_cmake_example = not is_device_build
     should_test_installed_blt_example = not is_device_build
     should_test_installed_make_example = False
@@ -512,7 +382,12 @@ def build_and_test_host_config(test_root, host_config, report_to_stdout = False,
     return 0
 
 
-def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_configs, report_to_stdout = False, extra_cmake_options = ""):
+def build_and_test_host_configs(prefix,
+                                timestamp,
+                                use_generated_host_configs,
+                                report_to_stdout = False,
+                                extra_cmake_options = "",
+                                build_type = "Debug"):
     host_configs = get_host_configs_for_current_machine(prefix, use_generated_host_configs)
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
@@ -524,27 +399,30 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
 
     test_root =  get_build_and_test_root(prefix, timestamp)
     os.mkdir(test_root)
-    write_build_info(pjoin(test_root,"info.json"), job_name) 
+    write_build_info(pjoin(test_root,"info.json")) 
     ok  = []
     bad = []
     for host_config in host_configs:
         build_dir = get_build_dir(test_root, host_config)
 
         start_time = time.time()
-        if build_and_test_host_config(test_root, host_config, report_to_stdout, extra_cmake_options) == 0:
+        if build_and_test_host_config(test_root, host_config,
+                                      report_to_stdout = report_to_stdout,
+                                      extra_cmake_options=extra_cmake_options,
+                                      build_type = build_type) == 0:
             ok.append(host_config)
-            log_success(build_dir, job_name, timestamp)
+            log_success(build_dir, "[Success: Built host-config: {0}]".format(host_config), timestamp)
         else:
             bad.append(host_config)
-            log_failure(build_dir, job_name, timestamp)
+            log_failure(build_dir, "[Error: Failed to build host-config: {0}]".format(host_config), timestamp)
         end_time = time.time()
         print("[build time: {0}]\n".format(convertSecondsToReadableTime(end_time - start_time)))
 
     # Log overall job success/failure
     if len(bad) != 0:
-        log_failure(test_root, job_name, timestamp)
+        log_failure(test_root, "[Error: Failed to build host-configs: {0}]".format(bad), timestamp)
     else:
-        log_success(test_root, job_name, timestamp)
+        log_success(test_root,"[Success: Built all host-configs: {0}]".format(ok), timestamp)
 
     # Output summary of failure/succesful builds
     if len(ok) > 0:
@@ -566,12 +444,11 @@ def build_and_test_host_configs(prefix, job_name, timestamp, use_generated_host_
 
 def set_group_and_perms(directory):
     """
-    Sets the proper group and access permissions of given input
-    directory. 
+    Sets the proper group and access permissions of given input directory.
     """
 
     skip = True
-    shared_dirs = [get_shared_base_dir(), get_shared_collab_dir(), get_archive_base_dir()]
+    shared_dirs = [get_shared_base_dir(), get_shared_collab_dir()]
     for shared_dir in shared_dirs:
         if directory.startswith(shared_dir):
             skip = False
@@ -585,10 +462,11 @@ def set_group_and_perms(directory):
         sexe("chgrp -f -R axom %s" % (directory),echo=True,error_prefix="WARNING:")
         print("[changing perms for axom members to 'rwX' and all to 'rX']")
         sexe("chmod -f -R g+rwX,a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
+        print("[done setting perms for: %s]" % directory)
     return 0
 
 
-def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to_stdout = False, mirror_location = ''):
+def full_build_and_test_of_tpls(builds_dir, timestamp, spec, report_to_stdout = False, mirror_location = ''):
     if spec:
         specs = [spec]
     else:
@@ -616,7 +494,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     # create a mirror
     uberenv_create_mirror(prefix, spec, "", mirror_dir)
     # write info about this build
-    write_build_info(pjoin(prefix, "info.json"), job_name)
+    write_build_info(pjoin(prefix, "info.json"))
 
     repo_dir = get_repo_dir()
     # Clean previously generated host-configs into TPL install directory
@@ -651,13 +529,13 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     src_build_failed = False
     if not tpl_build_failed:
         # build the src against the new tpls
-        res = build_and_test_host_configs(prefix, job_name, timestamp, True, report_to_stdout)
+        res = build_and_test_host_configs(prefix, timestamp, True, report_to_stdout)
         if res != 0:
             print("[ERROR: Build and test of src vs tpls test failed.]\n")
             src_build_failed = True
         else:
             print("[SUCCESS: Build and test of src vs tpls test passed.]\n")
- 
+
     # set proper perms for installed tpls
     set_group_and_perms(prefix)
 
@@ -668,7 +546,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec, report_to
     return res
 
 
-def build_devtools(builds_dir, job_name, timestamp):
+def build_devtools(builds_dir, timestamp):
     sys_type = get_system_type()
     project_file = "scripts/spack/devtools.json"
 
@@ -695,7 +573,7 @@ def build_devtools(builds_dir, job_name, timestamp):
     uberenv_create_mirror(prefix, compiler_spec, project_file, mirror_dir)
 
     # write info about this build
-    write_build_info(pjoin(prefix,"info.json"), job_name)
+    write_build_info(pjoin(prefix,"info.json"))
 
     # use uberenv to install devtools
     start_time = time.time()
@@ -796,15 +674,8 @@ def get_platform():
     return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
 
 
-def get_supported_sys_types():
-    return ["blueos_3_ppc64le_ib_p9", "blueos_3_ppc64le_ib", "toss_3_x86_64_ib"]
-
 def get_username():
     return getpass.getuser()
-
-
-def get_archive_base_dir():
-    return "/usr/WS2/axomdev/archive"
 
 
 def get_shared_base_dir():
@@ -827,25 +698,6 @@ def get_uberenv_path():
     return pjoin(get_script_dir(), "../uberenv/uberenv.py")
 
 
-def get_shared_devtool_dir():
-    return pjoin(get_shared_collab_dir(), "devtools")
-
-
-def get_spec_from_build_dir(build_dir):
-    base = "build-%s-%s-" % (get_machine_name(), get_system_type())
-    return os.path.basename(build_dir)[len(base):]
-
-
-def get_spec_from_tpl_log(tpl_log):
-    basename = os.path.basename(tpl_log)
-    basename = basename[len("output.log.spack.tpl.build.%"):-4]
-    # Remove anything that isn't part of the compiler spec
-    index = basename.find("^")
-    if index > -1:
-        basename = basename[:index-1]
-    return basename
-
-
 def on_rz():
     machine_name = get_machine_name()
     if machine_name.startswith("rz"):
@@ -861,7 +713,7 @@ def get_compiler_from_spec(spec):
     compiler = spec
     for c in ['~', '+']:
         index = compiler.find(c)
-        if index != -1: 
+        if index != -1:
             compiler = compiler[:index]
     return compiler
 

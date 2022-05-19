@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,6 +74,9 @@ public:
 
   /*!
    * \brief Dumps the messages to the console in rank-order.
+   * \collective
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
    */
   virtual void flush();
 

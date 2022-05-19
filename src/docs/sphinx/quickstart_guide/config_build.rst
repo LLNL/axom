@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -280,46 +280,51 @@ CMake Configuration Options
 
 Here are the key build system options in Axom:
 
-+------------------------------+---------+--------------------------------+
-| OPTION                       | Default | Description                    |
-+==============================+=========+================================+
-| AXOM_ENABLE_ALL_COMPONENTS   | ON      | Enable all components          |
-|                              |         | by default                     |
-+------------------------------+---------+--------------------------------+
-| AXOM_ENABLE_<FOO>            | ON      | Enables the axom component     |
-|                              |         | named 'foo'                    |
-|                              |         |                                |
-|                              |         | (e.g. AXOM_ENABLE_SIDRE)       |
-|                              |         | for the sidre component        |
-+------------------------------+---------+--------------------------------+
-| AXOM_ENABLE_DOCS             | ON      | Builds documentation           |
-+------------------------------+---------+--------------------------------+
-| AXOM_ENABLE_EXAMPLES         | ON      | Builds examples                |
-+------------------------------+---------+--------------------------------+
-| AXOM_ENABLE_TESTS            | ON      | Builds unit tests              |
-+------------------------------+---------+--------------------------------+
-| AXOM_ENABLE_TOOLS            | ON      | Builds tools                   |
-+------------------------------+---------+--------------------------------+
-| BUILD_SHARED_LIBS            | OFF     | Build shared libraries.        |
-|                              |         | Default is Static libraries    |
-+------------------------------+---------+--------------------------------+
-| ENABLE_ALL_WARNINGS          | ON      | Enable extra compiler warnings |
-|                              |         | in all build targets           |
-+------------------------------+---------+--------------------------------+
-| ENABLE_BENCHMARKS            | OFF     | Enable google benchmark        |
-+------------------------------+---------+--------------------------------+
-| ENABLE_CODECOV               | ON      | Enable code coverage via gcov  |
-+------------------------------+---------+--------------------------------+
-| ENABLE_FORTRAN               | ON      | Enable Fortran compiler        |
-|                              |         | support                        |
-+------------------------------+---------+--------------------------------+
-| ENABLE_MPI                   | OFF     | Enable MPI                     |
-+------------------------------+---------+--------------------------------+
-| ENABLE_OPENMP                | OFF     | Enable OpenMP                  |
-+------------------------------+---------+--------------------------------+
-| ENABLE_WARNINGS_AS_ERRORS    | OFF     | Compiler warnings treated as   |
-|                              |         | errors.                        |
-+------------------------------+---------+--------------------------------+
++------------------------------+---------+----------------------------------------+
+| OPTION                       | Default | Description                            |
++==============================+=========+========================================+
+| AXOM_DEBUG_DEFINE            | DEFAULT | Controls whether the `AXOM_DEBUG`      |
+|                              |         | compiler define is enabled             |
+|                              |         |                                        |
+|                              |         | By DEFAULT, it is enabled for          |
+|                              |         | `Debug` and `RelWithDebInfo` configs   |
+|                              |         | but this can be overridden by setting  |
+|                              |         | `AXOM_DEBUG_DEFINE` to `ON` or `OFF`   |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_ALL_COMPONENTS   | ON      | Enable all components by default       |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_<FOO>            | ON      | Enables the axom component named 'foo' |
+|                              |         |                                        |
+|                              |         | (e.g. AXOM_ENABLE_SIDRE)               |
+|                              |         | for the sidre component                |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_DOCS             | ON      | Builds documentation                   |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_EXAMPLES         | ON      | Builds examples                        |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_TESTS            | ON      | Builds unit tests                      |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_TOOLS            | ON      | Builds tools                           |
++------------------------------+---------+----------------------------------------+
+| BUILD_SHARED_LIBS            | OFF     | Build shared libraries.                |
+|                              |         | Default is Static libraries            |
++------------------------------+---------+----------------------------------------+
+| ENABLE_ALL_WARNINGS          | ON      | Enable extra compiler warnings         |
+|                              |         | in all build targets                   |
++------------------------------+---------+----------------------------------------+
+| ENABLE_BENCHMARKS            | OFF     | Enable google benchmark                |
++------------------------------+---------+----------------------------------------+
+| ENABLE_CODECOV               | ON      | Enable code coverage via gcov          |
++------------------------------+---------+----------------------------------------+
+| ENABLE_FORTRAN               | ON      | Enable Fortran compiler support        |
++------------------------------+---------+----------------------------------------+
+| ENABLE_MPI                   | OFF     | Enable MPI                             |
++------------------------------+---------+----------------------------------------+
+| ENABLE_OPENMP                | OFF     | Enable OpenMP                          |
++------------------------------+---------+----------------------------------------+
+| ENABLE_WARNINGS_AS_ERRORS    | OFF     | Compiler warnings treated as errors    |
+|                              |         | errors.                                |
++------------------------------+---------+----------------------------------------+
 
 If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable the desired
 components (other than 'core', which is always enabled).

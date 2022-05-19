@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,11 +10,12 @@
  *
  */
 
-#ifndef SIMPLELOGGER_HPP_
-#define SIMPLELOGGER_HPP_
+#ifndef SLIC_SIMPLELOGGER_HPP_
+#define SLIC_SIMPLELOGGER_HPP_
 
 // Other axom headers
-#include "axom/core/Macros.hpp"  // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 
 // slic component headers
 #include "axom/slic/interface/slic.hpp"
@@ -31,7 +32,7 @@ namespace slic
  * finalize operations of the slic::Logger class that is helpful for
  * unit tests and simple applications in axom.
  *
- * To use, create an instance of of this class before tests are run. This
+ * To use, create an instance of this class before tests are run. This
  * initializes the slic logger. When the object is destroyed (e.g., goes out
  * of scope), the slic logger is finalized. For example, when using gtest,
  * a simple main program can be used in each test source file to do this:
@@ -60,10 +61,10 @@ public:
   /*!
    * \brief Constructor initializes slic logging environment.
    */
-  SimpleLogger()
+  explicit SimpleLogger(message::Level level = message::Debug)
   {
     initialize();
-    setLoggingMsgLevel(message::Debug);
+    setLoggingMsgLevel(level);
 
     // Formatting for warning, errors and fatal message
     std::string wefFormatStr =
@@ -89,14 +90,21 @@ public:
   /*!
    * \brief Destructor finalizes slic loging environment.
    */
-  ~SimpleLogger() { finalize(); }
+  ~SimpleLogger()
+  {
+    if(isInitialized())
+    {
+      flushStreams();
+      finalize();
+    }
+  }
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(SimpleLogger);
   DISABLE_MOVE_AND_ASSIGNMENT(SimpleLogger);
 };
 
-} /* end namespace slic */
-} /* end namespace axom */
+}  // namespace slic
+}  // namespace axom
 
-#endif /* SIMPLELOGGER_HPP_ */
+#endif  // SLIC_SIMPLELOGGER_HPP_

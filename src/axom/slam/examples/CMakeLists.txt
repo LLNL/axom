@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,6 +22,7 @@ set(example_sources
     )
 
 set(slam_tests_extra_depends)
+blt_list_append( TO slam_tests_extra_depends ELEMENTS hip IF ${ENABLE_HIP} )
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)

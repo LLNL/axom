@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -83,13 +83,20 @@ public:
   /*!
    * \brief Pushes all messages to the output node according to Lumberjack's
    *  Communication scheme. Then writes it to the given stream.
+   *
+   * \collective
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
    */
   virtual void flush();
 
   /*!
    * \brief Pushes all messages once to their parent node according to
    *  Lumberjack's Communication scheme.
-
+   *
+   * \collective
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
    * \note This does not guarantee all messages have reached the output node.
    * \note This does not write out to the given stream.
    */

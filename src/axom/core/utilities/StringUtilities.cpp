@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -113,6 +113,24 @@ std::string removeAllInstances(const std::string& target,
   {
     result.erase(pos, substr.length());
     pos = result.find(substr);
+  }
+  return result;
+}
+
+std::string replaceAllInstances(const std::string& target,
+                                const std::string& findstr,
+                                const std::string& replacestr)
+{
+  if(findstr == replacestr || findstr.empty())
+  {
+    return target;
+  }
+  std::string result = target;
+  auto pos = result.find(findstr);
+  while(pos != std::string::npos)
+  {
+    result.replace(pos, findstr.length(), replacestr);
+    pos = result.find(findstr, pos + replacestr.length());
   }
   return result;
 }

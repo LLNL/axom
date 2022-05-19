@@ -111,14 +111,18 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_CUDA", False))
 
         if '+rocm' in spec:
+            hip_root = spec['hip'].prefix
+            rocm_root = hip_root + "/.."
+            hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
             entries.append(cmake_cache_option("ENABLE_HIP", True))
             entries.append(cmake_cache_path(
-                "HIP_ROOT_DIR", '{0}'.format(spec['hip'].prefix)))
+                "HIP_ROOT_DIR", hip_root))
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':
                 arch_str = ",".join(archs)
                 entries.append(cmake_cache_string(
                     "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
+            entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
         else:
             entries.append(cmake_cache_option("ENABLE_HIP", False))
 
@@ -132,7 +136,12 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries.append(cmake_cache_path("camp_DIR", spec['camp'].prefix))
         entries.append(cmake_cache_option("BUILD_SHARED_LIBS", '+shared' in spec))
         entries.append(cmake_cache_option("ENABLE_EXAMPLES", '+examples' in spec))
-        entries.append(cmake_cache_option("ENABLE_EXERCISES", '+exercises' in spec))
+        if spec.satisfies('@0.14.0:'):
+            entries.append(cmake_cache_option("RAJA_ENABLE_EXERCISES",
+                                              '+exercises' in spec))
+        else:
+            entries.append(cmake_cache_option("ENABLE_EXERCISES",
+                                              '+exercises' in spec))
 
         # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
         # is used by the spack compiler wrapper.  This can go away when BLT

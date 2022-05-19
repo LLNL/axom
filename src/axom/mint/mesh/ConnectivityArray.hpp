@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -430,7 +430,8 @@ public:
    *
    * \post getIDCapacity() >= n_IDs
    */
-  void reserve(IndexType ID_capacity, IndexType AXOM_NOT_USED(value_capacity) = 0)
+  void reserve(IndexType ID_capacity,
+               IndexType AXOM_UNUSED_PARAM(value_capacity) = 0)
   {
     SLIC_ERROR_IF(isExternal() && ID_capacity > m_values->capacity(),
                   "cannot exceed initial capacity of external buffer!");
@@ -446,7 +447,7 @@ public:
    *
    * \post getNumberOfIDs() == newIDSize
    */
-  void resize(IndexType ID_size, IndexType AXOM_NOT_USED(value_size) = 0)
+  void resize(IndexType ID_size, IndexType AXOM_UNUSED_PARAM(value_size) = 0)
   {
     m_values->resize(ID_size);
   }
@@ -523,7 +524,7 @@ public:
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  IndexType getNumberOfValuesForID(IndexType AXOM_NOT_USED(ID) = 0) const
+  IndexType getNumberOfValuesForID(IndexType AXOM_UNUSED_PARAM(ID) = 0) const
   {
     return m_stride;
   }
@@ -533,7 +534,7 @@ public:
    *
    * \param [in] ID not used, does not need to be specified.
    */
-  CellType getIDType(IndexType AXOM_NOT_USED(ID) = 0) const
+  CellType getIDType(IndexType AXOM_UNUSED_PARAM(ID) = 0) const
   {
     return m_cell_type;
   }
@@ -614,8 +615,8 @@ public:
    * \pre values != nullptr
    */
   void append(const IndexType* values,
-              IndexType AXOM_NOT_USED(n_values) = 0,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              IndexType AXOM_UNUSED_PARAM(n_values) = 0,
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     appendM(values, 1);
   }
@@ -634,8 +635,8 @@ public:
    */
   void appendM(const IndexType* values,
                IndexType n_IDs,
-               const IndexType* AXOM_NOT_USED(offsets) = nullptr,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const IndexType* AXOM_UNUSED_PARAM(offsets) = nullptr,
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     SLIC_ASSERT(values != nullptr);
     SLIC_ASSERT(n_IDs >= 0);
@@ -693,8 +694,8 @@ public:
    */
   void insert(const IndexType* values,
               IndexType start_ID,
-              IndexType AXOM_NOT_USED(n_values) = 0,
-              CellType AXOM_NOT_USED(type) = UNDEFINED_CELL)
+              IndexType AXOM_UNUSED_PARAM(n_values) = 0,
+              CellType AXOM_UNUSED_PARAM(type) = UNDEFINED_CELL)
   {
     insertM(values, start_ID, 1);
   }
@@ -716,8 +717,8 @@ public:
   void insertM(const IndexType* values,
                IndexType start_ID,
                IndexType n_IDs,
-               const IndexType* AXOM_NOT_USED(offsets) = nullptr,
-               const CellType* AXOM_NOT_USED(types) = nullptr)
+               const IndexType* AXOM_UNUSED_PARAM(offsets) = nullptr,
+               const CellType* AXOM_UNUSED_PARAM(types) = nullptr)
   {
     SLIC_ASSERT(start_ID >= 0);
     SLIC_ASSERT(start_ID <= getNumberOfIDs());

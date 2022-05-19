@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,8 +33,8 @@
 
 #include "mfem.hpp"
 
-#include "fmt/fmt.hpp"
-#include "fmt/locale.h"
+#include "axom/fmt.hpp"
+#include "axom/fmt/locale.h"
 
 namespace axom
 {
@@ -131,7 +131,7 @@ public:
 
     // Sample the in/out field at each point
     // store in QField which we register with the QFunc collection
-    const std::string inoutName = fmt::format("inout_{}", m_shapeName);
+    const std::string inoutName = axom::fmt::format("inout_{}", m_shapeName);
     const int vdim = 1;
     auto* inout = new mfem::QuadratureFunction(sp, vdim);
     inoutQFuncs.Register(inoutName, inout, true);
@@ -151,17 +151,18 @@ public:
         const bool in = m_octree->within(pt);
         res(p) = in ? 1. : 0.;
 
-        // SLIC_INFO(fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
+        // SLIC_INFO(axom::fmt::format("[{},{}] Pt: {}, In: {}", i,p,pt, (in? "yes" : "no") ));
       }
     }
     timer.stop();
 
-    SLIC_INFO(fmt::format(std::locale("en_US.UTF-8"),
-                          "\t Sampling inout field '{}' took {} seconds (@ "
-                          "{:L} queries per second)",
-                          inoutName,
-                          timer.elapsed(),
-                          static_cast<int>((NE * nq) / timer.elapsed())));
+    SLIC_INFO(
+      axom::fmt::format(std::locale("en_US.UTF-8"),
+                        "\t Sampling inout field '{}' took {} seconds (@ "
+                        "{:L} queries per second)",
+                        inoutName,
+                        timer.elapsed(),
+                        static_cast<int>((NE * nq) / timer.elapsed())));
   }
 
   /**
@@ -169,7 +170,7 @@ public:
   * in region defined by bounding box \a queryBounds
   */
   void computeVolumeFractionsBaseline(mfem::DataCollection* dc,
-                                      int AXOM_NOT_USED(sampleRes),
+                                      int AXOM_UNUSED_PARAM(sampleRes),
                                       int outputOrder)
   {
     // Step 1 -- generate a QField w/ the spatial coordinates
@@ -188,7 +189,7 @@ public:
     mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, coll);
     mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
     volFrac->MakeOwner(coll);
-    auto volFracName = fmt::format("vol_frac_{}", m_shapeName);
+    auto volFracName = axom::fmt::format("vol_frac_{}", m_shapeName);
     dc->RegisterField(volFracName, volFrac);
 
     auto* fe = fes->GetFE(0);
@@ -298,7 +299,7 @@ public:
   {
     const auto& shapeName = shape.getName();
 
-    SLIC_INFO(fmt::format("{:-^80}", " Generating the octree "));
+    SLIC_INFO(axom::fmt::format("{:-^80}", " Generating the octree "));
 
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
@@ -336,20 +337,20 @@ public:
       const int nVerts = m_surfaceMesh->getNumberOfNodes();
       const int nCells = m_surfaceMesh->getNumberOfCells();
 
-      SLIC_INFO(fmt::format(
+      SLIC_INFO(axom::fmt::format(
         "After welding, surface mesh has {} vertices  and {} triangles.",
         nVerts,
         nCells));
       mint::write_vtk(m_surfaceMesh,
-                      fmt::format("meldedTriMesh_{}.vtk", shapeName));
+                      axom::fmt::format("meldedTriMesh_{}.vtk", shapeName));
     }
   }
 
   void runShapeQuery(const klee::Shape& shape) override
   {
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      fmt::format(" Querying the octree for shape '{}'", shape.getName())));
+      axom::fmt::format(" Querying the octree for shape '{}'", shape.getName())));
 
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
@@ -367,21 +368,23 @@ public:
 
   void applyReplacementRules(const klee::Shape& shape) override
   {
-    using axom::utilities::string::splitLastNTokens;
+    using axom::utilities::string::rsplitN;
 
     const auto& shapeName = shape.getName();
-    SLIC_INFO(fmt::format(
+    SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      fmt::format("Applying replacement rules over for shape '{}'", shapeName)));
+      axom::fmt::format("Applying replacement rules over for shape '{}'",
+                        shapeName)));
 
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     // Get inout qfunc for this shape
-    auto* shapeQFunc = m_inoutShapeQFuncs.Get(fmt::format("inout_{}", shapeName));
+    auto* shapeQFunc =
+      m_inoutShapeQFuncs.Get(axom::fmt::format("inout_{}", shapeName));
     SLIC_ASSERT_MSG(
       shapeQFunc != nullptr,
-      fmt::format("Missing inout samples for shape '{}'", shapeName));
+      axom::fmt::format("Missing inout samples for shape '{}'", shapeName));
 
     // Create a copy of the inout samples for this shape
     // Replacements will be applied to this and then copied into our shape's material
@@ -391,7 +394,7 @@ public:
     const auto& thisMatName = shape.getMaterial();
     for(auto& mat : m_inoutMaterialQFuncs)
     {
-      const std::string otherMatName = splitLastNTokens(mat.first, 2, '_')[1];
+      const std::string otherMatName = rsplitN(mat.first, 2, '_')[1];
 
       // We'll handle the current shape's material at the end
       if(otherMatName == thisMatName)
@@ -400,7 +403,7 @@ public:
       }
 
       const bool shouldReplace = shape.replaces(otherMatName);
-      SLIC_DEBUG(fmt::format(
+      SLIC_DEBUG(axom::fmt::format(
         "Should we replace material '{}' with shape '{}' of material '{}'? {}",
         otherMatName,
         shapeName,
@@ -410,14 +413,15 @@ public:
       auto* otherMatQFunc = mat.second;
       SLIC_ASSERT_MSG(
         otherMatQFunc != nullptr,
-        fmt::format("Missing inout samples for material '{}'", otherMatName));
+        axom::fmt::format("Missing inout samples for material '{}'",
+                          otherMatName));
 
       quest::shaping::replaceMaterial(shapeQFuncCopy, otherMatQFunc, shouldReplace);
     }
 
     // Get inout qfunc for the current material
     const std::string materialQFuncName =
-      fmt::format("mat_inout_{}", thisMatName);
+      axom::fmt::format("mat_inout_{}", thisMatName);
     if(!m_inoutMaterialQFuncs.Has(materialQFuncName))
     {
       // initialize material from shape inout, the QFunc registry takes ownership
@@ -429,7 +433,7 @@ public:
       auto* matQFunc = m_inoutMaterialQFuncs.Get(materialQFuncName);
       SLIC_ASSERT_MSG(
         matQFunc != nullptr,
-        fmt::format("Missing inout samples for material '{}'", thisMatName));
+        axom::fmt::format("Missing inout samples for material '{}'", thisMatName));
 
       quest::shaping::copyShapeIntoMaterial(shapeQFuncCopy, matQFunc);
 
@@ -462,8 +466,8 @@ public:
     {
       const std::string matName = mat.first;
       SLIC_INFO(
-        fmt::format("Generating volume fraction fields for '{}' material",
-                    matName));
+        axom::fmt::format("Generating volume fraction fields for '{}' material",
+                          matName));
 
       // Sample the InOut field at the mesh quadrature points
       switch(m_vfSampling)

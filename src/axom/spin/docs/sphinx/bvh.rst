@@ -58,14 +58,15 @@ that can be used to traverse a BVH with user-defined actions.
 The returned traverser type has one function, ``traverse_tree()``, which takes the
 following arguments:
 
-- ``const PointType& p``: the query point to traverse the BVH with
+- ``const QueryObject& p``: the object to traverse the BVH with. This is passed
+  into each invocation of the traversal predicate.
 - ``LeafAction&& lf``: a function or lambda which is executed on each leaf node
   of the BVH that is reached during traversal. It should take in two arguments,
   the index of the leaf node in the BVH, and a pointer to an array mapping leaf
   node indices to the original index of elements.
 - ``Predicate&& predicate``: a function which determines whether to traverse
   down to a given internal node. It should take in two arguments: the query
-  point, and the tentative node's bounding box.
+  object, and the tentative node's bounding box.
 
 This object may be used within a CUDA kernel, so long as the execution space
 parameter of ``BVH`` is set correctly.
@@ -84,3 +85,49 @@ is set to the new surface element. The predicate used for traversal also utilize
 current-minimum candidate data to avoid traversing internal nodes that are farther than
 the current minimum squared distance.
 
+Example: Broad-phase collision detection
+========================================
+
+The following example tests each element of a surface mesh for intersection with
+each other element. It provides an example of how the device traversal object
+might be used in a broad-phase collision detection problem. First, we initialize
+the BVH with the bounding boxes of all the query objects (mesh elements), and
+create a traverser object:
+
+.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+   :start-after: _bvh_traverse_init_start
+   :end-before: _bvh_traverse_init_end
+   :language: C++
+
+Next, we define a traversal predicate. In this case, since we are testing objects
+in the mesh against each other, our query objects are bounding boxes. Thus, the
+traversal predicate tests if the query bounding box intersects with the bounding
+boxes of nodes in the BVH:
+
+.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+   :start-after: _bvh_traverse_predicate_start
+   :end-before: _bvh_traverse_predicate_end
+   :language: C++
+
+Since we do not know the total number of candidate intersections yet, we must
+traverse the BVH twice; for the first traversal we count the number of candidate
+intersections for each query object, allowing us to compute offset indices and
+total storage requirements for the collision pairs:
+
+.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+   :start-after: _bvh_traverse_first_pass_start
+   :end-before: _bvh_traverse_first_pass_end
+   :language: C++
+
+After computing offset indices and allocating output arrays, we can then perform
+a second traversal through the BVH. This time, we will store candidate collision
+pairs when we reach a leaf node:
+
+.. literalinclude:: ../../examples/spin_bvh_two_pass.cpp
+   :start-after: _bvh_traverse_second_pass_start
+   :end-before: _bvh_traverse_second_pass_end
+   :language: C++
+
+The result of the two-pass query is a list of candidate collision pairs. A code
+could then do further operations on these pairs of elements, such as test them
+for actual intersection.

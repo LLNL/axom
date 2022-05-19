@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,12 +41,17 @@ if ( RAJA_FOUND )
   blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
   blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
   blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS hip IF ENABLE_HIP)
 
   blt_add_executable( NAME raja_smoke_test
                       SOURCES raja_smoke.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                       DEPENDS_ON ${raja_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
+
+  target_include_directories(raja_smoke_test PUBLIC 
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
   axom_add_test( NAME    raja_smoke
                  COMMAND raja_smoke_test )
@@ -69,8 +74,12 @@ if( HDF5_FOUND)
                        DEPENDS_ON ${hdf5_smoke_dependencies}
                        FOLDER axom/thirdparty/tests )
 
+    target_include_directories(hdf5_smoke_test PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
+
     axom_add_test(NAME hdf5_smoke
-                 COMMAND hdf5_smoke_test)
+                  COMMAND hdf5_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------

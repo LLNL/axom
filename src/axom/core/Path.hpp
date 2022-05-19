@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -94,6 +94,9 @@ private:
 
   // The delimiter character
   char m_delim = '/';
+
+  // Indicates whether the path has a leading delimiter character
+  bool m_leading_delim = false;
 };
 
 /*!

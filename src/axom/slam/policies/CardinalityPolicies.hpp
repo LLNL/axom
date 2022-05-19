@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -92,7 +92,7 @@ struct ConstantCardinality
     m_begins = builder;
   }
 
-  const ElementType size(ElementType AXOM_NOT_USED(fromPos)) const
+  const ElementType size(ElementType AXOM_UNUSED_PARAM(fromPos)) const
   {
     return m_begins.stride();
   }
@@ -111,7 +111,7 @@ struct ConstantCardinality
 
   template <typename FromSetType>
   bool isValid(const FromSetType* fromSet,
-               bool AXOM_NOT_USED(vertboseOutput) = false) const
+               bool AXOM_UNUSED_PARAM(verboseOutput) = false) const
   {
     return m_begins.size() == fromSet->size();
   }

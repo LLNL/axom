@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -85,7 +85,7 @@ void printVector(StrType const& msg, VecType const& vec)
   SLIC_INFO(msg << ": " << sstr.str());
 }
 
-SetPosition elementCardinality(SetPosition AXOM_NOT_USED(fromPos))
+SetPosition elementCardinality(SetPosition AXOM_UNUSED_PARAM(fromPos))
 {
   return ELEM_STRIDE;
 }
@@ -585,8 +585,6 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();

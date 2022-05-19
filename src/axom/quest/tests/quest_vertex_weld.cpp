@@ -1,11 +1,10 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
@@ -306,18 +305,12 @@ TEST(quest_vertex_weld, indexedOctahedron)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

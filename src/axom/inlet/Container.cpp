@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1110,18 +1110,27 @@ bool Container::verify(std::vector<VerificationError>* errors) const
     // Verify the child Fields of this Container
     for(const auto& field : m_fieldChildren)
     {
-      verified = verified && field.second->verify(errors);
+      if(!field.second->verify(errors))
+      {
+        verified = false;
+      }
     }
     // Verify the child Containers of this Container
     for(const auto& container : m_containerChildren)
     {
-      verified = verified && container.second->verify(errors);
+      if(!container.second->verify(errors))
+      {
+        verified = false;
+      }
     }
 
     // Verify the child Functions of this Container
     for(const auto& function : m_functionChildren)
     {
-      verified = verified && function.second->verify(errors);
+      if(!function.second->verify(errors))
+      {
+        verified = false;
+      }
     }
   }
   // If this has a collection group, it always needs to be verified, as annotations

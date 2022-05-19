@@ -1,32 +1,16 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-// axom/core includes
+// axom includes
 #include "axom/config.hpp"
+#include "axom/core.hpp"
+#include "axom/primal.hpp"
+#include "axom/mint.hpp"
 
-#include "axom/core/Types.hpp"
-#include "axom/core/execution/execution_space.hpp"
-#include "axom/core/memory_management.hpp"
-#include "axom/core/numerics/Matrix.hpp"
-
-// axom/primal includes
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
-#include "axom/primal/utils/ZipPoint.hpp"
-#include "axom/primal/utils/ZipBoundingBox.hpp"
-
-// axom/spin includes
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
-
-// axom/mint includes
-#include "axom/mint/mesh/Mesh.hpp"
-#include "axom/mint/mesh/UniformMesh.hpp"
-#include "axom/mint/execution/interface.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -125,7 +109,7 @@ void generate_aabbs(const mint::Mesh* mesh,
     mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
+                const IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
       primal::BoundingBox<double, NDIMS> range;
 
       for(IndexType inode = 0; inode < nodes_per_dim; ++inode)
@@ -191,7 +175,7 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
     mesh,
     AXOM_LAMBDA(IndexType cellIdx,
                 numerics::Matrix<double> & coords,
-                const IndexType* AXOM_NOT_USED(nodeIds)) {
+                const IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
       BoxType range;
 
       PointType sum(0.0);
@@ -1704,18 +1688,12 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
 #endif /* AXOM_USE_CUDA && AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -173,6 +173,23 @@ std::string removeBeforeDelimiter(const std::string& str, const char delim = '/'
 */
 std::string removeAllInstances(const std::string& target,
                                const std::string& substr);
+
+/*!
+*****************************************************************************
+* \brief This function finds all instances of a substring and replaces it
+* with another string for the target string
+*
+* \param [in] target The string to operate on
+* \param [in] findstr The string to find
+* \param [in] replacestr The string to replace with
+*
+* \return The modified string. If @a findstr and @a replacestr are the same or
+* if @a findstr is an empty string, @a target is returned.
+*****************************************************************************
+*/
+std::string replaceAllInstances(const std::string& target,
+                                const std::string& findstr,
+                                const std::string& replacestr);
 
 }  // end namespace string
 }  // end namespace utilities

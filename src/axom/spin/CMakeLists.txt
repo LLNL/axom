@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -37,6 +37,7 @@ set( spin_headers
 
      ## policy
      policy/LinearBVH.hpp
+     policy/UniformGridStorage.hpp
    )
 
 set( spin_sources
@@ -54,6 +55,7 @@ blt_list_append( TO spin_depends_on ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO spin_depends_on ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO spin_depends_on ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO spin_depends_on ELEMENTS hip_runtime IF ${ENABLE_HIP} )
 
 #------------------------------------------------------------------------------
 # Make/Install the library

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -218,7 +218,7 @@ void cell_traversals()
       &mesh,
       AXOM_LAMBDA(IndexType cellIdx,
                   const numerics::Matrix<double>& coords,
-                  const IndexType* AXOM_NOT_USED(nodeIdx)) {
+                  const IndexType* AXOM_UNUSED_PARAM(nodeIdx)) {
         // sum nodal coordinates
         double xsum = 0.0;
         double ysum = 0.0;
@@ -349,7 +349,7 @@ void face_traversals()
       &mesh,
       AXOM_LAMBDA(IndexType faceIdx,
                   const numerics::Matrix<double>& coords,
-                  const IndexType* AXOM_NOT_USED(nodeIdx)) {
+                  const IndexType* AXOM_UNUSED_PARAM(nodeIdx)) {
         // sum nodal coordinates
         double xsum = 0.0;
         double ysum = 0.0;
@@ -382,7 +382,7 @@ void face_traversals()
 
     mint::for_all_faces<exec_policy, mint::xargs::cellids>(
       &mesh,
-      AXOM_LAMBDA(IndexType faceIdx, IndexType AXOM_NOT_USED(c1), IndexType c2) {
+      AXOM_LAMBDA(IndexType faceIdx, IndexType AXOM_UNUSED_PARAM(c1), IndexType c2) {
         boundary[faceIdx] = (c2 == -1) ? ON_BOUNDARY : INTERIOR;
       });
 
@@ -823,7 +823,7 @@ void using_sidre()
 /*!
  * \brief Tutorial main
  */
-int main(int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv))
+int main(int AXOM_UNUSED_PARAM(argc), char** AXOM_UNUSED_PARAM(argv))
 {
   // Native construction of various mesh types
   construct_uniform();

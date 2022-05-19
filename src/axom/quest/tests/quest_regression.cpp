@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,6 @@ namespace mint = axom::mint;
 namespace primal = axom::primal;
 namespace quest = axom::quest;
 namespace sidre = axom::sidre;
-namespace slic = axom::slic;
 namespace utilities = axom::utilities;
 
 using SpaceBoundingBox = primal::BoundingBox<double, DIM>;
@@ -114,7 +113,8 @@ struct Input
       .add_option("-m,--mesh",
                   meshName,
                   "Surface mesh file (STL files are currently supported)")
-      ->required();
+      ->required()
+      ->check(axom::CLI::ExistingFile);
 
     app
       .add_flag("--distance,!--no-distance",
@@ -130,10 +130,12 @@ struct Input
     // Note: Baselines comparisons only supported when Axom is configured with hdf5
     // Users must supply either a baseline, or both the query resolution and bounding box
 #ifdef AXOM_USE_HDF5
-    app.add_option("-b,--baseline",
-                   baselineRoot,
-                   "root file of baseline, a sidre rootfile.\n"
-                   "Note: Only supported when Axom configured with hdf5");
+    app
+      .add_option("-b,--baseline",
+                  baselineRoot,
+                  "root file of baseline, a sidre rootfile.\n"
+                  "Note: Only supported when Axom configured with hdf5")
+      ->check(axom::CLI::ExistingFile);
 #endif
 
     // user can supply 1 or 3 values for resolution
@@ -786,7 +788,7 @@ int main(int argc, char** argv)
   // initialize the problem
   MPI_Init(&argc, &argv);
 
-  slic::SimpleLogger logger;
+  axom::slic::SimpleLogger logger;
   sidre::DataStore ds;
 
   // parse the command arguments

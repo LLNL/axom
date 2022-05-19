@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -74,21 +74,11 @@ else()
     set(RAJA_FOUND FALSE CACHE BOOL "")
 endif()
 
-
-#------------------------------------------------------------------------------
-# HDF5
-#------------------------------------------------------------------------------
-if (HDF5_DIR)
-    include(cmake/thirdparty/SetupHDF5.cmake)
-    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
-else()
-    message(STATUS "HDF5 support is OFF")
-endif()
-
-
 #------------------------------------------------------------------------------
 # Conduit
 #------------------------------------------------------------------------------
+# Find Conduit first, then find HDF5 to fix "Could NOT find HDF5" issue with
+# newer CMake versions
 if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
 
@@ -102,6 +92,16 @@ if (CONDUIT_DIR)
                  "${CONDUIT_INSTALL_PREFIX}/include/conduit/")
 else()
     message(STATUS "Conduit support is OFF")
+endif()
+
+#------------------------------------------------------------------------------
+# HDF5
+#------------------------------------------------------------------------------
+if (HDF5_DIR)
+    include(cmake/thirdparty/SetupHDF5.cmake)
+    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
+else()
+    message(STATUS "HDF5 support is OFF")
 endif()
 
 #------------------------------------------------------------------------------
@@ -240,6 +240,7 @@ endif()
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
 blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS hip hip_runtime IF ENABLE_HIP)
 blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,6 +13,7 @@
 #include "axom/config.hpp"
 #include "axom/slic/core/Logger.hpp"
 #include "axom/slic/core/LogStream.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/core/MessageLevel.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
 
@@ -39,6 +40,15 @@ void initialize();
  * \return status true if initialized, else, false.
  */
 bool isInitialized();
+
+/*!
+ * \brief Ensures the SLIC logging environment is initialized.
+ *
+ * If SLIC is not initialized when this method is called, initialize SLIC
+ * to print all messages to std::cout and log a warning that prompts
+ * developers to properly call slic::initialize() and slic::finalize().
+ */
+void ensureInitialized();
 
 /*!
  * \brief Creates a new logger associated with the given name.
@@ -138,12 +148,20 @@ bool isAbortOnWarningsEnabled();
 void setAbortFunction(AbortFunctionPtr abort_func);
 
 /*!
- * \brief Adds the given stream to the the given level.
+ * \brief Adds the given stream to the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
  * \pre ls != nullptr
  */
 void addStreamToMsgLevel(LogStream* ls, message::Level level);
+
+/*!
+ * \brief Adds the given GenericOutputStream to the given level.
+ * \param [in] ls pointer to the GenericOutputStream.
+ * \param [in] level the level to log.
+ * \pre ls != nullptr
+ */
+void addStreamToMsgLevel(GenericOutputStream* ls, message::Level level);
 
 /*!
  * \brief Adds the given stream to all levels.
@@ -153,7 +171,33 @@ void addStreamToMsgLevel(LogStream* ls, message::Level level);
 void addStreamToAllMsgLevels(LogStream* ls);
 
 /*!
+ * \brief Adds the given GenericOutputStream to all levels.
+ * \param [in] ls pointer to the GenericOutputStream.
+ * \pre ls != nullptr.
+ */
+void addStreamToAllMsgLevels(GenericOutputStream* ls);
+
+///@{
+//! \name Collective Methods
+//!
+//! \attention These methods are collective operations.
+//! All ranks in the user-supplied communicator must call the method
+//! when used within an MPI distributed environment.
+//! The logMessage method is collective if either:
+//!  - Level of the given message is Error and slic::enableAbortOnError() is
+//!    called for the current active logger (default is enabled for loggers)
+//!  - Level of the given message is Warning and slic::enableAbortOnWarning()
+//!    is called for the current active logger (default is disabled for loggers)
+//!
+//! \sa axom::slic::isAbortOnErrorsEnabled()
+//! \sa axom::slic::setAbortOnError(bool status)
+//! \sa axom::slic::isAbortOnWarningsEnabled()
+//! \sa axom::slic::setAbortOnWarning(bool status)
+//!
+
+/*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] filter_duplicates optional parameter that indicates whether
@@ -166,6 +210,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied associated with this message.
@@ -180,6 +225,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
@@ -196,10 +242,11 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ * \collective
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied tag associated with the message.
- * \param [in] fileName the name of the file this message is logged form.
+ * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file this message is logged.
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
@@ -214,6 +261,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Convenience method to log an error message.
+ * \collective
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
@@ -224,6 +272,7 @@ void logErrorMessage(const std::string& message,
 
 /*!
  * \brief Convenience method to log warning messages.
+ * \collective
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
@@ -234,24 +283,35 @@ void logWarningMessage(const std::string& message,
 
 /*!
  * \brief Flushes all streams.
+ * \collective
  * \see Logger::flushStreams.
+ * \note When used within an MPI distributed environment, flushStreams is
+ *  a collective operation. All ranks in the user-supplied communicator must
+ *  call this method.
  */
 void flushStreams();
 
 /*!
  * \brief Pushes all streams.
+ * \collective
  * \see Logger::pushStreams.
+ * \note When used within an MPI distributed environment, pushStreams is
+ *  a collective operation. All ranks in the user-supplied communicator must
+ *  call this method.
  */
 void pushStreams();
 
 /*!
  * \brief Finalizes the slic logging environment.
+ * \collective
  */
 void finalize();
 
+///@}
+
 /*!
  * \brief Uses glibc's backtrace() functionality to return a stacktrace
- * \return s a string corresponding to the stacktrace.
+ * \returns a string corresponding to the stacktrace.
  */
 std::string stacktrace();
 
