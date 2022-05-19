@@ -6,6 +6,7 @@
 #ifndef SLAM_MAPPED_RELATION_SET_H_
 #define SLAM_MAPPED_RELATION_SET_H_
 
+#include "axom/slam/RangeSet.hpp"
 #include "axom/slam/BivariateSet.hpp"
 
 namespace axom
@@ -27,20 +28,29 @@ namespace slam
  * \see   BivariateSet
  */
 
-template <typename RelationType>
-class RelationSet : public OrderedSet<typename RelationType::SetPosition,
-                                      typename RelationType::SetElement>,
-                    public BivariateSet<typename RelationType::SetPosition,
-                                        typename RelationType::SetElement>
+template <typename Relation,
+          typename SetType1 = slam::Set<>,
+          typename SetType2 = slam::Set<>>
+class RelationSet final
+  : public OrderedSet<typename Relation::SetPosition, typename Relation::SetElement>,
+    public BivariateSet<SetType1, SetType2>
 {
+public:
+  using FirstSetType = SetType1;
+  using SecondSetType = SetType2;
+
+  using RelationType = Relation;
+
+private:
+  using RangeSetType =
+    RangeSet<typename RelationType::SetPosition, typename RelationType::SetElement>;
+  using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
+
 public:
   using PositionType = typename RelationType::SetPosition;
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
-
-  using BivariateSetType = BivariateSet<PositionType, ElementType>;
-  using SetType = typename BivariateSetType::SetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
   using BivariateSetType::INVALID_POS;
@@ -53,9 +63,10 @@ public:
    * \pre relation pointer must not be a null pointer
    */
   RelationSet(RelationType* relation)
-    : BivariateSetType(
-        relation ? relation->fromSet() : (SetType*)&BivariateSetType::s_nullSet,
-        relation ? relation->toSet() : (SetType*)&BivariateSetType::s_nullSet)
+    : BivariateSetType(relation ? relation->fromSet()
+                                : (FirstSetType*)&BivariateSetType::s_nullSet,
+                       relation ? relation->toSet()
+                                : (SecondSetType*)&BivariateSetType::s_nullSet)
     , m_relation(relation)
   {
     SLIC_ASSERT(relation != nullptr);
@@ -86,7 +97,7 @@ public:
     {
       if(ls[i] == pos2) return i;
     }
-    return INVALID_POS;
+    return BivariateSetType::INVALID_POS;
   }
 
   /**
@@ -107,7 +118,7 @@ public:
     {
       if(ls[i] == s2) return ls.offset() + i;
     }
-    return INVALID_POS;
+    return BivariateSetType::INVALID_POS;
   }
 
   /**
@@ -126,7 +137,14 @@ public:
 
     if(ls.size() > 0) return ls.offset();
 
-    return INVALID_POS;
+    return BivariateSetType::INVALID_POS;
+  }
+
+  RangeSetType elementRangeSet(PositionType pos1) const override
+  {
+    return typename RangeSetType::SetBuilder()
+      .size(m_relation->size(pos1))
+      .offset(m_relation->offset(pos1));
   }
 
   /**
@@ -143,12 +161,14 @@ public:
 
   ElementType at(PositionType pos) const override
   {
-    verifyPosition(pos);
+    verifyPositionImpl(pos);
     return (*m_relation->relationData())[pos];
   }
 
   /** \brief Returns the relation pointer   */
   RelationType* getRelation() const { return m_relation; }
+
+  RelationType* getRelation() { return m_relation; }
 
   /** \brief Return the size of the relation   */
   PositionType totalSize() const
@@ -182,10 +202,11 @@ public:
     return m_relation->isValid(verboseOutput);
   }
 
-private:
+public:
   //hiding size() from the Set base class, replaced with totalSize().
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
+  // KW -- made this public to use from BivariateMap
   PositionType size() const override
   {
     return PositionType(m_relation->relationData()->size());
@@ -199,16 +220,26 @@ private:
       s2 < m_relation->size(s1);
   }
 
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(sPos)) const override
+  void verifyPosition(PositionType sPos) const override
   {  //override function from RangeSet, overloading to avoid warning in compiler
+    verifyPositionImpl(sPos);
+  }
+
+  void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(sPos)) const
+  {
     SLIC_ASSERT_MSG(
       sPos >= 0 && sPos < size(),
       "SLAM::RelationSet -- requested out-of-range element at position "
         << sPos << ", but set only has " << size() << " elements.");
   }
 
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(s1),
-                      PositionType AXOM_DEBUG_PARAM(s2)) const override
+  void verifyPosition(PositionType s1, PositionType s2) const override
+  {
+    verifyPositionImpl(s1, s2);
+  }
+
+  void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(s1),
+                          PositionType AXOM_DEBUG_PARAM(s2)) const
   {
     SLIC_ASSERT_MSG(
       isValidIndex(s1, s2),

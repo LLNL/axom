@@ -36,7 +36,7 @@ public:
 
   using BlockIndex = typename BaseOctree::BlockIndex;
 
-  using SpaceVectorLevelMap = slam::Map<slam::Set<>, SpaceVector>;
+  using SpaceVectorLevelMap = slam::Map<SpaceVector>;
 
 public:
   /**

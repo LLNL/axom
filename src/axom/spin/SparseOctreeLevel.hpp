@@ -75,6 +75,8 @@ struct BroodRepresentationTraits
       std::numeric_limits<PointRepresenationType>::max();
     map.set_empty_key(maxVal);
     map.set_deleted_key(maxVal - 1);
+#else
+    AXOM_UNUSED_VAR(map);
 #endif
   }
 };
@@ -129,6 +131,8 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType, primal::Point<Co
 
     maxPt[DIM - 1]--;
     map.set_deleted_key(maxPt);
+#else
+    AXOM_UNUSED_VAR(map);
 #endif
   }
 };

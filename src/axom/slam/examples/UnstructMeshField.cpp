@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file UnstructMeshField.cpp
  *
  * \brief Example that uses Slam for generating and processing a simple 3D mesh
  *
@@ -16,8 +16,7 @@
  */
 
 #include "axom/config.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
@@ -75,10 +74,10 @@ public:
 
   /// types for maps
   using BaseSet = axom::slam::Set<PositionType, ElementType>;
-  using NodalPositions = slam::Map<BaseSet, Point3>;
-  using ZonalPositions = slam::Map<BaseSet, Point3>;
-  using NodeField = slam::Map<BaseSet, DataType>;
-  using ZoneField = slam::Map<BaseSet, DataType>;
+  using NodalPositions = slam::Map<Point3>;
+  using ZonalPositions = slam::Map<Point3>;
+  using NodeField = slam::Map<DataType>;
+  using ZoneField = slam::Map<DataType>;
 
 public:
   /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -112,8 +111,8 @@ struct Repository
   using SetType = axom::slam::Set<>;
   using IntsRegistry = slam::FieldRegistry<SetType, SetType::ElementType>;
   using RealsRegistry = slam::FieldRegistry<SetType, double>;
-  using IntField = slam::Map<SetType, SetType::ElementType>;
-  using RealField = slam::Map<SetType, double>;
+  using IntField = slam::Map<int>;
+  using RealField = slam::Map<double>;
 
   static IntsRegistry intsRegistry;
   static RealsRegistry realsRegistry;
@@ -182,10 +181,8 @@ public:
 
     SLIC_INFO("-- Number of zones: " << numZones);
 
-    // Note: The VTK format has an extra value per zone for the number of
-    // indices
-    // This is constant since we're assuming a Hex mesh.  General meshes can be
-    // different.
+    // Note: The VTK format has an extra value per zone for the number of indices
+    // This is constant since we're assuming a Hex mesh.  General meshes can be different.
     SLIC_ASSERT_MSG(
       (listSize - numZones) == numNodeZoneIndices,
       axom::fmt::format(
@@ -272,8 +269,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
   using RelationSubset = HexMesh::ZoneToNodeRelation::RelationSubset;
   using PositionType = HexMesh::PositionType;
 
-  /// Step 1: Compute the cardinalities of each node by looping through zone to
-  // node relation
+  /// Step 1: Compute the cardinalities of each node by looping through zone to node relation
   IndexBuf& nzBegins = Repository::intsRegistry.addBuffer("node_zone_begins",
                                                           mesh->nodes.size() + 1);
   for(PositionType zIdx = 0; zIdx < mesh->numZones(); ++zIdx)
@@ -286,8 +282,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
   }
 
   /// Step 2: Compute begin offsets for each node based on cardinalities
-  // Strategy: perform (inplace) exclusive prefix sum of cardinalities in
-  // nzBegins
+  // Strategy: perform (inplace) exclusive prefix sum of cardinalities in nzBegins
   PositionType prevVal = nzBegins[0];
   nzBegins[0] = 0;
   for(int i = 1; i <= mesh->numNodes(); ++i)
@@ -297,8 +292,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
     prevVal = nextVal;
   }
 
-  /// Step 3: Invert the zone_node relation, use nzBegins[node_index] as offset
-  // for next zone
+  /// Step 3: Invert the zone_node relation, use nzBegins[node_index] as offset for next zone
   IndexBuf& zIndices =
     Repository::intsRegistry.addBuffer("node_zone_indices",
                                        nzBegins[mesh->numNodes()]);
