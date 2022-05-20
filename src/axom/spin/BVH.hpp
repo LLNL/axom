@@ -94,7 +94,7 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  *     constexpr int DIMENSION = 3;
  *
  *     // get a list of axis-aligned bounding boxes in a flat array
- *     const double* aabbs = ...
+ *     const primal::BoundingBox<float, DIMENSION>* aabbs = ...
  *
  *     // create a 3D BVH instance in parallel on the CPU using OpenMP
  *     spin::BVH< DIMENSION, axom::OMP_EXEC > bvh;
