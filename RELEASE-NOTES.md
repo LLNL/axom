@@ -70,6 +70,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds examples for using the BVH device traversal API
 
 ###  Changed
+- Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
 - Moved bit-twiddling functions to core component
 - `axom::Array` now default-initializes its data by default. To create an Array with uninitialized
   elements, pass an `axom::ArrayOptions::Uninitialized` as the first constructor argument.

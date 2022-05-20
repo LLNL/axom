@@ -7,21 +7,21 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: gcc@8.4.0
+# Compiler Spec: clang@10.0.0
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/home/axom/axom_tpls/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/home/axom/axom_tpls/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/home/axom/axom_tpls/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/home/axom/axom_tpls/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/home/axom/axom_tpls/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/home/axom/axom_tpls/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/bin/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/bin/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE PATH "")
 
   set(CMAKE_Fortran_COMPILER "/usr/bin/gfortran" CACHE PATH "")
 
@@ -32,6 +32,8 @@ set(CMAKE_C_FLAGS "-pthread" CACHE STRING "")
 set(CMAKE_CXX_FLAGS "-pthread" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
+
+set(BLT_EXE_LINKER_FLAGS " -Wl,-rpath,/usr/lib -Wl,-rpath,/usr/lib64" CACHE STRING "Adds a missing libstdc++ rpath")
 
 set(BLT_CXX_STD "c++14" CACHE STRING "")
 
@@ -69,9 +71,9 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/home/axom/axom_tpls/gcc-8.4.0" CACHE PATH "")
+set(TPL_ROOT "/home/axom/axom_tpls/clang-10.0.0" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
 # C2C not built
 
@@ -81,9 +83,11 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
 set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1" CACHE PATH "")
+
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
 
 # scr not built
 

@@ -57,4 +57,4 @@ stages:
 include:
   - local: .gitlab/build_ruby.yml
   - local: .gitlab/build_lassen.yml
-#  - local: .gitlab/build_corona.yml
+  - local: .gitlab/build_corona.yml

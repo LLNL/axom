@@ -425,11 +425,13 @@ class Mfem(Package):
                 'HYPRE_OPT=-I%s' % hypre.prefix.include,
                 'HYPRE_LIB=%s' % ld_flags_from_library_list(all_hypre_libs)]
 
+        #AXOM EDIT START
         # Fix for working around missing dynamic libraries for TOSS4 MPI.
         # Use cxx instead of mpicxx for compilation and linking of
         # get_hypre_version executable check during configure step.
-        if 'toss_4' in os.environ["SYS_TYPE"]:
+        if "SYS_TYPE" in env and 'toss_4' in env["SYS_TYPE"]:
             options += ['GHV_CXX=%s' % self.compiler.cxx]
+        #AXOM EDIT END
 
         if '+metis' in spec:
             options += [
