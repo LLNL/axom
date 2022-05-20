@@ -423,7 +423,7 @@ public:
       xfer_node["cp_rank"].set_external(internal::getPointer<axom::IndexType>(mesh_node["fields/cp_rank/values"]), npts);
       xfer_node["closest_point"].set_external(internal::getPointer<double>(mesh_node["fields/closest_point/values/x"]), dim * npts);
 
-      if(mesh_node.has_path("fields_min_distance"))
+      if(mesh_node.has_path("fields/min_distance"))
       {
         xfer_node["debug/min_distance"].set_external(internal::getPointer<double>(mesh_node["fields/min_distance/values"]), npts);
       }
