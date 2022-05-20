@@ -122,4 +122,11 @@ TEST(core_execution_for_all, hip_exec)
   check_for_all<axom::HIP_EXEC<BLOCK_SIZE>>();
 }
 
+//------------------------------------------------------------------------------
+TEST(core_execution_for_all, hip_exec_async)
+{
+  constexpr int BLOCK_SIZE = 256;
+  check_for_all<axom::HIP_EXEC<BLOCK_SIZE, axom::ASYNC>>();
+}
+
 #endif
