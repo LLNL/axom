@@ -13,30 +13,31 @@
 #include "gtest/gtest.h"
 
 #include "axom/slic.hpp"
-
-#include "axom/slam/Utilities.hpp"
-#include "axom/slam/RangeSet.hpp"
-#include "axom/slam/Map.hpp"
+#include "axom/slam.hpp"
 
 namespace
 {
 namespace slam = axom::slam;
+namespace policies = axom::slam::policies;
 
 using SetPosition = slam::DefaultPositionType;
 using SetElement = slam::DefaultElementType;
 
 using SetType = slam::RangeSet<SetPosition, SetElement>;
 using BaseSet = slam::Set<SetPosition, SetElement>;
-using IntMap = slam::Map<BaseSet, int>;
-using RealMap = slam::Map<BaseSet, double>;
+using IntMap = slam::Map<int, BaseSet>;
+using RealMap = slam::Map<double, BaseSet>;
+
+template <typename T>
+using VecIndirection = policies::STLVectorIndirection<SetPosition, T>;
 
 static SetPosition const MAX_SET_SIZE = 10;
 
 template <int S>
-using CompileTimeStrideType = slam::policies::CompileTimeStride<int, S>;
+using CompileTimeStrideType = policies::CompileTimeStride<int, S>;
 
-using RunTimeStrideType = slam::policies::RuntimeStride<int>;
-using OneStrideType = slam::policies::StrideOne<int>;
+using RunTimeStrideType = policies::RuntimeStride<int>;
+using OneStrideType = policies::StrideOne<int>;
 
 }  // end anonymous namespace
 
@@ -60,7 +61,7 @@ bool constructAndTestMap()
   SLIC_INFO("Creating " << slam::util::TypeToString<T>::to_string()
                         << " map on the set ");
 
-  slam::Map<BaseSet, T> m(&s);
+  slam::Map<T, BaseSet> m(&s);
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO("Setting the elements.");
@@ -119,10 +120,11 @@ TEST(slam_map, map_builder)
   SLIC_INFO("Testing construction of Map using MapBuilders");
 
   using DataType = double;
-  using MapType = slam::Map<slam::Set<>, DataType>;
+  using MapSet = slam::Set<>;
+  using MapType = slam::Map<DataType, MapSet>;
   using MapBuilder = MapType::MapBuilder;
 
-  MapType m(MapBuilder().set(&MapType::s_nullSet));
+  MapType m(MapBuilder().set(policies::EmptySetTraits<MapSet>::emptySet()));
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(m.size(), 0);
   EXPECT_EQ(m.stride(), 1);
@@ -152,7 +154,8 @@ void constructAndTestMapWithStride(int stride)
   SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
                           << " map with stride " << stride << " on the set ");
 
-  axom::slam::Map<BaseSet, T, StrideType> m(&s, 0, stride);
+  using MapType = slam::Map<T, BaseSet, VecIndirection<T>, StrideType>;
+  MapType m(&s, 0, stride);
   EXPECT_TRUE(m.isValid());
 
   EXPECT_EQ(m.stride(), stride);
@@ -301,7 +304,8 @@ TEST(slam_map, iterate)
 template <typename StrideType>
 void constructAndTestMapIteratorWithStride(int stride)
 {
-  using RealMap = slam::Map<slam::Set<>, double, StrideType>;
+  using RealMap =
+    slam::Map<double, slam::Set<>, VecIndirection<double>, StrideType>;
   using MapIterator = typename RealMap::MapIterator;
 
   SetType s(MAX_SET_SIZE);

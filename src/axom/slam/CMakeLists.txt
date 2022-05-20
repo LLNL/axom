@@ -35,7 +35,6 @@ set(slam_headers
     policies/StridePolicies.hpp
     policies/IndirectionPolicies.hpp
     policies/SubsettingPolicies.hpp
-    policies/StoragePolicies.hpp
     policies/PolicyTraits.hpp
 
     # SRM Set headers
@@ -70,8 +69,6 @@ set(slam_headers
 
 set(slam_sources
     # SRM Set sources
-    # RangeSet.cpp
-    # IndirectionSet.cpp
     BitSet.cpp
     OrderedSet.cpp
 
