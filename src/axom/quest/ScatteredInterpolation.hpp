@@ -105,6 +105,12 @@ public:
   using PointType = typename DelaunayTriangulation::PointType;
   using BoundingBoxType = typename DelaunayTriangulation::BoundingBox;
 
+  /**
+   * \brief Builds a Delaunay triangulation over the point set from \a mesh_node
+   *
+   * \param [in] mesh_node Conduit node for the input mesh
+   * \param [in] coordset The name of the coordinate set for the input mesh
+   */
   void buildTriangulation(conduit::Node& mesh_node, const std::string& coordset)
   {
     // Perform some simple error checking
@@ -126,6 +132,7 @@ public:
     {
       bb.addPoint(pt);
     }
+    // Scale the bounding box to ensure that all input points are contained
     bb.scale(1.5);
 
     m_delaunay.initializeBoundary(bb);
@@ -137,6 +144,49 @@ public:
     m_delaunay.removeBoundary();
 
     m_delaunay.writeToVTKFile(fmt::format("delaunay_{}d.vtk", DIM));
+  }
+
+  /**
+   * \brief Locates cell from Delaunay complex containing each point in \a query_mesh
+   *
+   * \param [inout] query_node Conduit node for the query points in mesh Blueprint format; 
+   * results will be placed into the `cell_idx` field
+   * \param [in] coordset The name of the coordinate set for the query mesh
+   *
+   * \pre query_mesh is the root of a valid mesh blueprint with an unstructured 
+   * coordinate set \a coordset and a scalar field named `cell_idx` to store the results
+   * \note Uses `Delaunay::INVALID_INDEX` for points that cannot be located within the mesh
+   */
+  void locatePoints(conduit::Node& query_mesh, const std::string& coordset)
+  {
+    // Perform some simple error checking
+    SLIC_ASSERT(this->isValidBlueprint(query_mesh));
+
+    auto valuesPath = fmt::format("coordsets/{}/values", coordset);
+    SLIC_ASSERT(query_mesh.has_path(valuesPath));
+    auto& values = query_mesh[valuesPath];
+
+    SLIC_ASSERT(::extractDimension(values) == DIM);
+    const int npts = ::extractSize(values);
+
+    // Assume initially that coords are interleaved
+    auto coords = ::ArrayView_from_Node<PointType>(values["x"], npts);
+
+    SLIC_ERROR_IF(!query_mesh.has_path("fields/cell_idx/values"),
+                  "Query mesh for ScatteredInterpolation::locatePoints() is "
+                  "missing required 'cell_idx' field");
+
+    auto cell_idx = ::ArrayView_from_Node<axom::IndexType>(
+      query_mesh["fields/cell_idx/values"],
+      npts);
+
+    // we expect that some points will be outside the mesh
+    constexpr bool warnOnInvalid = false;
+    for(int idx = 0; idx < npts; ++idx)
+    {
+      const auto& pt = coords[idx];
+      cell_idx[idx] = m_delaunay.findContainingElement(pt, warnOnInvalid);
+    }
   }
 
 private:
