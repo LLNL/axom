@@ -385,21 +385,22 @@ public:
 };
 
 template <int DIM>
-axom::Array<primal::Point<double, DIM>> generatePts(const Input& params)
+axom::Array<primal::Point<double, DIM>> generatePts(
+  int numPts,
+  const std::vector<double>& bb_min,
+  const std::vector<double>& bb_max)
 {
   using axom::utilities::random_real;
 
   using PointType = typename primal::Point<double, DIM>;
   using BoundingBox = typename primal::BoundingBox<double, DIM>;
 
-  const int numPoints = params.numRandPoints;
-  axom::Array<PointType> pts(numPoints, numPoints);
+  axom::Array<PointType> pts(numPts, numPts);
 
-  BoundingBox bbox {PointType(params.boundsMin.data()),
-                    PointType(params.boundsMax.data())};
+  BoundingBox bbox {PointType(bb_min.data()), PointType(bb_max.data())};
 
   // generate random points within bounding box
-  for(int i = 0; i < numPoints; ++i)
+  for(int i = 0; i < numPts; ++i)
   {
     PointType& pt = pts[i];
     for(int d = 0; d < DIM; ++d)
@@ -430,25 +431,96 @@ int main(int argc, char** argv)
   }
 
   sidre::DataStore ds;
-  const std::string coordsName = "coords";
-  const std::string meshName = "mesh";
-  auto* ptMeshGroup = ds.getRoot()->createGroup("point_mesh");
 
-  internal::blueprint::PointMesh inputMesh(ptMeshGroup, coordsName, meshName);
+  const std::string input_coords_name = "input_coords";
+  const std::string input_mesh_name = "input_mesh";
+  auto* input_pt_mesh_group = ds.getRoot()->createGroup("input_point_mesh");
+  internal::blueprint::PointMesh inputMesh(input_pt_mesh_group,
+                                           input_coords_name,
+                                           input_mesh_name);
+
+  const std::string query_coords_name = "query_coords";
+  const std::string query_mesh_name = "query_mesh";
+  auto* query_pt_mesh_group = ds.getRoot()->createGroup("query_point_mesh");
+  internal::blueprint::PointMesh queryMesh(query_pt_mesh_group,
+                                           query_coords_name,
+                                           query_mesh_name);
 
   // Initialize the mesh points
   switch(params.dimension)
   {
   case 2:
-    inputMesh.setPoints(generatePts<2>(params));
+    inputMesh.setPoints(
+      generatePts<2>(params.numRandPoints, params.boundsMin, params.boundsMax));
+
+    queryMesh.setPoints(
+      generatePts<2>(params.numQueryPoints, params.boundsMin, params.boundsMax));
     break;
   case 3:
-    inputMesh.setPoints(generatePts<3>(params));
+    inputMesh.setPoints(
+      generatePts<3>(params.numRandPoints, params.boundsMin, params.boundsMax));
+
+    queryMesh.setPoints(
+      generatePts<3>(params.numQueryPoints, params.boundsMin, params.boundsMax));
     break;
   }
 
+  // Add a position field for our interpolation
+  switch(params.dimension)
   {
-    std::string file = params.outputFile + "_after_generate";
+  case 2:
+  {
+    using PtType = primal::Point<double, 2>;
+    inputMesh.registerNodalScalarField<double>("pos_x");
+    inputMesh.registerNodalScalarField<double>("pos_y");
+    auto pos_x = inputMesh.getNodalScalarField<double>("pos_x");
+    auto pos_y = inputMesh.getNodalScalarField<double>("pos_y");
+
+    const int nPts = inputMesh.numPoints();
+    auto pos = axom::ArrayView<PtType>(
+      static_cast<PtType*>(
+        inputMesh.coordsGroup()->getView("values/x")->getVoidPtr()),
+      nPts);
+
+    for(int i = 0; i < nPts; ++i)
+    {
+      auto& pt = pos[i];
+      pos_x[i] = pt[0];
+      pos_y[i] = pt[1];
+    }
+  }
+  break;
+  case 3:
+  {
+    using PtType = primal::Point<double, 3>;
+    inputMesh.registerNodalScalarField<double>("pos_x");
+    inputMesh.registerNodalScalarField<double>("pos_y");
+    inputMesh.registerNodalScalarField<double>("pos_z");
+    auto pos_x = inputMesh.getNodalScalarField<double>("pos_x");
+    auto pos_y = inputMesh.getNodalScalarField<double>("pos_y");
+    auto pos_z = inputMesh.getNodalScalarField<double>("pos_z");
+
+    const int nPts = inputMesh.numPoints();
+    auto pos = axom::ArrayView<PtType>(
+      static_cast<PtType*>(
+        inputMesh.coordsGroup()->getView("values/x")->getVoidPtr()),
+      nPts);
+
+    for(int i = 0; i < nPts; ++i)
+    {
+      auto& pt = pos[i];
+      pos_x[i] = pt[0];
+      pos_y[i] = pt[1];
+      pos_z[i] = pt[2];
+    }
+  }
+  break;
+  }
+  queryMesh.registerNodalScalarField<axom::IndexType>("cell_idx");
+
+  // Write input mesh to file
+  {
+    std::string file = params.outputFile + "_mesh_after_generate";
     SLIC_INFO(
       axom::fmt::format("After generate points -- writing mesh file: '{}'", file));
     inputMesh.saveMesh(file);
@@ -461,19 +533,33 @@ int main(int argc, char** argv)
   conduit::Node bp_input;
   inputMesh.rootGroup()->createNativeLayout(bp_input);
 
+  conduit::Node bp_query;
+  queryMesh.rootGroup()->createNativeLayout(bp_query);
+
   // Initialize the mesh points
   switch(params.dimension)
   {
   case 2:
     scattered_2d = std::unique_ptr<quest::ScatteredInterpolation<2>>(
       new quest::ScatteredInterpolation<2>);
-    scattered_2d->buildTriangulation(bp_input, coordsName);
+    scattered_2d->buildTriangulation(bp_input, input_coords_name);
+    scattered_2d->locatePoints(bp_query, query_coords_name);
     break;
   case 3:
     scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
       new quest::ScatteredInterpolation<3>);
-    scattered_3d->buildTriangulation(bp_input, coordsName);
+    scattered_3d->buildTriangulation(bp_input, input_coords_name);
+    scattered_3d->locatePoints(bp_query, query_coords_name);
     break;
+  }
+
+  // Write query mesh to file
+  {
+    std::string file = params.outputFile + "_mesh_after_query";
+    SLIC_INFO(
+      axom::fmt::format("After locating points on Delaunay triangulation: '{}'",
+                        file));
+    queryMesh.saveMesh(file);
   }
 
   return 0;
