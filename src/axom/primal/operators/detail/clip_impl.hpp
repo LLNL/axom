@@ -451,16 +451,16 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   //Clip octahedron by each plane
   for(int planeIndex = 0; planeIndex < 4; planeIndex++)
   {
-    // Each bit value indicates if that Polyhedron vertex is formed from
-    // Octahedron clipping with a plane.
-    unsigned int clipped = 0;
-
     PlaneType plane = planes[planeIndex];
 
     // Check that plane intersects Polyhedron
     if(intersect(plane, polyBox, true, eps))
     {
       int numVerts = poly.numVertices();
+
+      // Each bit value indicates if that Polyhedron vertex is formed from
+      // Octahedron clipping with a plane.
+      unsigned int clipped = 0;
 
       // Clip polyhedron against current plane, generating extra vertices
       // where edges meet the plane.
