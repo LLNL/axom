@@ -395,9 +395,9 @@ public:
     return valid;
   }
 
-private:
   /// \brief Find the index of the element that contains the query point, or the element closest to the point.
-  IndexType findContainingElement(const PointType& query_pt)
+  IndexType findContainingElement(const PointType& query_pt,
+                                  bool warnOnInvalid = true)
   {
     if(m_mesh.isEmpty())
     {
@@ -451,15 +451,23 @@ private:
       // Logically, this should never happen.
       if(!m_mesh.isValidElement(element_i))
       {
-        SLIC_WARNING(fmt::format(
-          "Entered invalid element in "
-          "Delaunay::findContainingElement(). Underlying mesh {} valid",
-          m_mesh.isValid() ? "is" : "is not"));
+        SLIC_WARNING_IF(
+          warnOnInvalid,
+          fmt::format(
+            "Entered invalid element in "
+            "Delaunay::findContainingElement(). Underlying mesh {} valid",
+            m_mesh.isValid() ? "is" : "is not"));
         return INVALID_INDEX;
       }
     }
   }
 
+  /**
+   * \brief helper function to retrieve the barycentric coordinate of the query point in the element
+   */
+  BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt) const;
+
+private:
   /// \brief Predicate for when to compact internal mesh data structures after removing elements
   bool shouldCompactMesh() const
   {
@@ -484,11 +492,6 @@ private:
   void generateInitialMesh(std::vector<DataType>& points,
                            std::vector<IndexType>& elem,
                            const BoundingBox& bb);
-
-  /**
-   * \brief helper function to retrieve the barycentric coordinate of the query point in the element
-   */
-  BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt) const;
 
 private:
   /// Helper struct to find the first element near a point to be inserted
