@@ -60,7 +60,7 @@ jobs:
         TEST_TARGET: 'osx_gcc'
       windows:
         VM_ImageName: 'windows-2019'
-        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
+        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF -DCMAKE_C_FLAGS="/fsanitize=address" -DCMAKE_CXX_FLAGS="/fsanitize=address" -DCMAKE_EXE_LINKER_FLAGS="/fsanitize=address"'
         TEST_TARGET: 'win_vs'
 
   pool:
