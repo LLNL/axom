@@ -46,6 +46,8 @@ set(gtest_slam_tests
 
 
 set(slam_tests_depends_on axom gtest)
+blt_list_append( TO slam_tests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
+
 
 #------------------------------------------------------------------------------
 # Add gtest based tests

@@ -70,6 +70,7 @@ if(AXOM_ENABLE_QUEST)
     # Add separable compilation flag
     if (ENABLE_HIP)
         blt_add_target_compile_flags(TO mesh_tester FLAGS "-fgpu-rdc")
+        blt_add_target_link_flags(TO mesh_tester FLAGS "-fgpu-rdc")
     endif()
 endif()
 

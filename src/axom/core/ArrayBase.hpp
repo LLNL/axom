@@ -804,7 +804,7 @@ struct ArrayOpsBase<T, false>
                          const T* values,
                          MemorySpace space)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
     if(TriviallyCopyable<T>::value)
     {
       axom::copy(array + begin, values, sizeof(T) * nelems);
@@ -886,11 +886,16 @@ struct ArrayOpsBase<T, false>
   }
 };
 
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
 template <typename T>
 struct ArrayOpsBase<T, true>
 {
-  using ExecSpace = axom::CUDA_EXEC<256>;
+
+  #if defined(__CUDACC__)
+    using ExecSpace = axom::CUDA_EXEC<256>;
+  #else
+    using ExecSpace = axom::HIP_EXEC<256>;
+  #endif
 
   static constexpr bool InitOnDevice = HasTrivialDefaultCtor<T>::value;
   static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
@@ -1134,7 +1139,7 @@ template <typename T, MemorySpace SPACE>
 struct ArrayOps
 {
 private:
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
   constexpr static bool IsDevice = (SPACE == MemorySpace::Device);
 #else
   constexpr static bool IsDevice = false;
@@ -1207,14 +1212,14 @@ struct ArrayOps<T, MemorySpace::Dynamic>
 {
 private:
   using Base = ArrayOpsBase<T, false>;
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
   using BaseDevice = ArrayOpsBase<T, true>;
 #endif
 
 public:
   static void init(T* array, IndexType begin, IndexType nelems, int allocId)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1234,7 +1239,7 @@ public:
                    int allocId,
                    const T& value)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1255,7 +1260,7 @@ public:
                          const T* values,
                          MemorySpace valueSpace)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1276,7 +1281,7 @@ public:
     {
       return;
     }
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1300,7 +1305,7 @@ public:
     {
       return;
     }
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1317,7 +1322,7 @@ public:
   template <typename... Args>
   static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
