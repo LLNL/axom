@@ -170,16 +170,16 @@ void demoArrayBasic()
   // _iteration_end
 }
 
-// The following example requires CUDA + Umpire + unified memory
-// FIXME: HIP
-#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA) && \
-  defined(__CUDACC__) && defined(UMPIRE_ENABLE_UM)
+// The following example requires CUDA or HIP + Umpire + unified memory
+#if defined(AXOM_USE_UMPIRE) && \
+  (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && \
+  defined(UMPIRE_ENABLE_UM)
   #define AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
 #endif
 
 #ifdef AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
 
-// _cuda_kernel_start
+// _device_kernel_start
 // Aliases used for convenience
 using UnifiedIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Unified>;
 using DeviceIntArrayView = axom::ArrayView<int, 1, axom::MemorySpace::Device>;
@@ -193,7 +193,7 @@ __global__ void add(const UnifiedIntArrayView A,
     C[i] = A[i] + B[i];
   }
 }
-// _cuda_kernel_end
+// _device_kernel_end
 
 // _basic_array_function_start
 void takesDeviceArrayView(axom::ArrayView<int, 1, axom::MemorySpace::Device>) { }
@@ -232,7 +232,7 @@ void demoArrayDevice()
   takesDeviceArrayView(view_of_array_using_view_method);
   // _basic_array_device_explicit_end
 
-  // _cuda_array_create_start
+  // _device_array_create_start
   const int unified_alloc_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
 
@@ -257,8 +257,8 @@ void demoArrayDevice()
   // The result array is allocated in device memory
   axom::Array<int, 1, axom::MemorySpace::Device> C_device(N);
 
-  // _cuda_array_create_end
-  // _cuda_array_propagate_start
+  // _device_array_create_end
+  // _device_array_propagate_start
 
   // For a Dynamic space memory array, copies and moves will use the allocator
   // from the other array, unless otherwise specified.
@@ -290,8 +290,8 @@ void demoArrayDevice()
     C_device,
     unified_alloc_id);
 
-  // _cuda_array_propagate_end
-  // _cuda_array_call_start
+  // _device_array_propagate_end
+  // _device_array_call_start
 
   // Passing by reference is not possible for CUDA kernels, so the three arrays
   // are converted to corresponding ArrayViews that are "shallow copies" of the
@@ -309,7 +309,7 @@ void demoArrayDevice()
   // We can also use a dynamic array, if we specify an allocator ID for host memory in the copy constructor.
   axom::Array<int> C_dynamic(C_device, host_alloc_id);
   std::cout << "Array C_dynamic = " << C_dynamic << std::endl;
-  // _cuda_array_call_end
+  // _device_array_call_end
 
   #ifdef AXOM_USE_RAJA
   // _array_w_raja_start
@@ -321,7 +321,13 @@ void demoArrayDevice()
   DeviceIntArrayView C_view = C_device_raja;
 
   // Write to the underlying array through C_view, which is captured by value
-  axom::for_all<axom::CUDA_EXEC<1>>(0, N, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+  #if defined(__CUDACC__)
+    using ExecSpace = axom::CUDA_EXEC<1>;
+  #else
+    using ExecSpace = axom::HIP_EXEC<1>;
+  #endif
+
+  axom::for_all<ExecSpace>(0, N, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
     C_view[i] = A_view[i] + B_view[i] + 1;
   });
 
