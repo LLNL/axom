@@ -24,6 +24,17 @@ these dependencies for Axom.
     and experimentation?
   * Others?
 
+Determinism
+-----------
+
+We strive for as close to deterministic behavior in our builds as possible.
+By this, we mean that repeated builds should should act the same in the following
+regards:
+
+* Set of libraries with their options and versions
+* Compilers, compiler flags, and versions
+* Installed file and directory structure with permissions
+
 
 ===========================================
 Build Scripts and Their Configuration Files
