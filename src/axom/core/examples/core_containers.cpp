@@ -323,8 +323,10 @@ void demoArrayDevice()
     // Write to the underlying array through C_view, which is captured by value
     #if defined(__CUDACC__)
   using ExecSpace = axom::CUDA_EXEC<1>;
-    #else
+    #elif defined(__HIPCC__)
   using ExecSpace = axom::HIP_EXEC<1>;
+    #else
+  using ExecSpace = axom::SEQ_EXEC;
     #endif
 
   axom::for_all<ExecSpace>(0, N, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
