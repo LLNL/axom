@@ -108,6 +108,10 @@ void about(std::ostream &oss)
   libs.push_back("c2c");
 #endif
 
+#ifdef AXOM_USE_CAMP
+  libs.push_back("camp");
+#endif
+
 #ifdef AXOM_USE_CLI11
   libs.push_back("CLI11");
 #endif

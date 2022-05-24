@@ -25,7 +25,7 @@ set( mint_example_dependencies axom )
 blt_list_append( TO mint_example_dependencies ELEMENTS cuda
                  IF ${ENABLE_CUDA} )
 
-blt_list_append( TO mint_example_dependencies ELEMENTS hip
+blt_list_append( TO mint_example_dependencies ELEMENTS blt::hip
                  IF ${ENABLE_HIP} )
 
 foreach( example ${mint_examples} )

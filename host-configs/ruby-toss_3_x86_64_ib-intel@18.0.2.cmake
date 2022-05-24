@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/spack/lib/spack/env/intel/icc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_13_22_42_01/spack/lib/spack/env/intel/icc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/spack/lib/spack/env/intel/icpc" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_13_22_42_01/spack/lib/spack/env/intel/icpc" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/spack/lib/spack/env/intel/ifort" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_13_22_42_01/spack/lib/spack/env/intel/ifort" CACHE PATH "")
 
 else()
 
@@ -26,6 +26,12 @@ else()
   set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/ifort" CACHE PATH "")
 
 endif()
+
+set(CMAKE_C_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-7.3.0/bin/gcc" CACHE STRING "")
+
+set(CMAKE_CXX_FLAGS "-gxx-name=/usr/tce/packages/gcc/gcc-7.3.0/bin/g++" CACHE STRING "")
+
+set(CMAKE_Fortran_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-7.3.0/bin/gcc" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -63,9 +69,9 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_03_02_21_48_47/intel-18.0.2" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_13_22_42_01/intel-18.0.2" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.7.2axom" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
@@ -73,11 +79,13 @@ set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
+# LUA not built
 
-set(RAJA_DIR "${TPL_ROOT}/raja-0.14.0" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-6.0.0axom" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1" CACHE PATH "")
+
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
 
 # scr not built
 

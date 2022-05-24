@@ -64,6 +64,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant('examples', default=True, description='Build examples')
     variant('tools',    default=True, description='Build tools')
 
+    # Hard requirement after Axom 0.6.1
     variant('cpp14',    default=True, description="Build with C++14 support")
 
     variant('fortran',  default=True, description="Build with Fortran support")
@@ -92,14 +93,16 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("cmake@3.8.2:", type='build')
     depends_on("cmake@3.16.8:", type='build', when="+rocm")
 
+    depends_on('blt', type='build')
+    depends_on('blt@0.5.1:', type='build', when='@0.6.2:')
 
     depends_on("mpi", when="+mpi")
 
     # Libraries
-    depends_on("conduit+python", when="+python")
-    depends_on("conduit~python", when="~python")
-    depends_on("conduit+hdf5", when="+hdf5")
-    depends_on("conduit~hdf5", when="~hdf5")
+    # Forward variants to Conduit
+    for _var in ['fortran', 'hdf5', 'mpi', 'python']:
+        depends_on("conduit+{0}".format(_var), when="+{0}".format(_var))
+        depends_on("conduit~{0}".format(_var), when="~{0}".format(_var))
 
     # HDF5 needs to be the same as Conduit's
     # FIXME: remove these hardcoded variants when we move to the new concretizer
@@ -149,6 +152,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-shroud", when="+devtools")
     depends_on("llvm+clang@10.0.0", when="+devtools", type='build')
+
+    # Hard requirement after Axom 0.6.1
+    conflicts("~cpp14", when="@0.6.2:")
 
     # Conduit's cmake config files moved and < 0.4.0 can't find it
     conflicts("^conduit@0.7.2:", when="@:0.4.0")
@@ -222,7 +228,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
                                                   description))
 
-        if "+cpp14" in spec:
+        if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
         return entries
@@ -252,10 +258,12 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 entries.append(
                     "# cuda_arch could not be determined\n\n")
 
-            if "+cpp14" in spec:
-                cudaflags += " -std=c++14"
-            else:
-                cudaflags += " -std=c++11"
+            if spec.satisfies("^blt@:0.6.1"):
+                # This is handled internally by BLT now
+                if "+cpp14" in spec:
+                    cudaflags += " -std=c++14"
+                else:
+                    cudaflags += " -std=c++11"
             entries.append(
                 cmake_cache_string("CMAKE_CUDA_FLAGS", cudaflags))
 
@@ -421,6 +429,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             else:
                 entries.append('# %s not built\n' % dep.upper())
 
+        # Workaround for Umpire not remembering where camp was installed
+        if '+umpire' in spec and spec.satisfies('^camp'):
+            dep_dir = get_spec_path(spec, 'camp', path_replacements)
+            entries.append(cmake_cache_path('CAMP_DIR', dep_dir))
+
         # SCR does not export it's targets so we need to pull in its dependencies
         if '+scr' in spec:
             dep_dir = get_spec_path(spec, 'scr', path_replacements)
@@ -455,7 +468,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 "# Root directory for generated developer tools\n")
             entries.append(cmake_cache_path("DEVTOOLS_ROOT", devtools_root))
 
-        if "+devtools" in spec and 'toss_4' not in os.environ["SYS_TYPE"]:
+        if "+devtools" in spec and 'toss_4' not in self._get_sys_type(spec):
             # Only turn on clangformat support if devtools is on and not TOSS4
             clang_fmt_path = spec['llvm'].prefix.bin.join('clang-format')
             entries.append(cmake_cache_path(
