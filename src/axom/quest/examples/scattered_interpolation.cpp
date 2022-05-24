@@ -242,33 +242,38 @@ public:
     return success;
   }
 
-  /// Outputs the object mesh to disk
-  void saveMesh(const std::string& outputMesh)
+  /// Outputs the mesh to disk
+  void saveMesh(const std::string& outputMesh, const std::string& protocol)
   {
     auto* ds = m_group->getDataStore();
 
-    ds->generateBlueprintIndex(
-      m_group->getPathName(),
-      m_group->getName(),
-      axom::fmt::format("blueprint_index/{}", m_group->getName()),
-      1);
+    const std::string ext = (protocol.find("hdf5") != std::string::npos)
+      ? "hdf5"
+      : (protocol.find("json") != std::string::npos ? "json" : protocol);
+    const std::string fname = axom::fmt::format("{}.{}", outputMesh, ext);
 
-    const std::string fname = axom::fmt::format("{}.root", outputMesh);
-    const std::string protocol = "json";
+    // generate metadata and write out as "root" file
+    {
+      auto* rootfile_grp = ds->getRoot()->hasGroup("rootfile_data")
+        ? ds->getRoot()->getGroup("rootfile_data")
+        : ds->getRoot()->createGroup("rootfile_data");
 
-    // // Add some blueprint metadata
-    if(!ds->getRoot()->hasView("number_of_files"))
-    {
-      ds->getRoot()->createViewScalar("number_of_files", 1);
-      ds->getRoot()->createViewString("file_pattern", fname);
-      ds->getRoot()->createViewScalar("number_of_trees", 1);
-      ds->getRoot()->createViewString("tree_pattern", "/");
-      ds->getRoot()->createViewString("protocol/name", protocol);
-      ds->getRoot()->createViewString("protocol/version", "0.8.2");
-    }
-    else
-    {
-      ds->getRoot()->getView("file_pattern")->setString(fname);
+      rootfile_grp->createViewScalar("number_of_files", 1);
+      rootfile_grp->createViewString("file_pattern", fname);
+      rootfile_grp->createViewScalar("number_of_trees", 1);
+      rootfile_grp->createViewString("tree_pattern", "/");
+      rootfile_grp->createViewString("protocol/name", protocol);
+      rootfile_grp->createViewString("protocol/version", "0.8.2");
+
+      ds->generateBlueprintIndex(
+        m_group->getPathName(),
+        m_group->getName(),
+        axom::fmt::format("rootfile_data/blueprint_index/{}", m_group->getName()),
+        1);
+
+      rootfile_grp->save(axom::fmt::format("{}.root", outputMesh), "json");
+
+      ds->getRoot()->destroyGroup("rootfile_data");
     }
 
     ds->getRoot()->save(fname, protocol);
@@ -315,6 +320,15 @@ struct Input
   int dimension {2};
   std::vector<double> boundsMin;
   std::vector<double> boundsMax;
+  std::string outputProtocol = SIDRE_DEFAULT_PROTOCOL;
+
+  const std::set<std::string> s_validProtocols {"json",
+                                                "sidre_json"
+#ifdef AXOM_USE_HDF5
+                                                ,
+                                                "sidre_hdf5"
+#endif
+  };
 
 public:
   void parse(int argc, char** argv, axom::CLI::App& app)
@@ -336,6 +350,11 @@ public:
     app.add_option("-o,--outfile", outputFile)
       ->description("The output file")
       ->capture_default_str();
+
+    app.add_option("-p,--protocol", outputProtocol)
+      ->description("Set the output protocol for sidre point meshes")
+      ->capture_default_str()
+      ->check(axom::CLI::IsMember(s_validProtocols));
 
     // Optional bounding box for query region
     auto* minbb = app.add_option("--min", boundsMin)
@@ -374,13 +393,15 @@ public:
       bounding box min: {{{}}}
       bounding box max: {{{}}}
       outfile = '{}'
+      output protocol = '{}'
     }})",
                                 dimension,
                                 numRandPoints,
                                 numQueryPoints,
                                 axom::fmt::join(boundsMin, ", "),
                                 axom::fmt::join(boundsMax, ", "),
-                                outputFile));
+                                outputFile,
+                                outputProtocol));
   }
 };
 
@@ -516,14 +537,21 @@ int main(int argc, char** argv)
   }
   break;
   }
+
   queryMesh.registerNodalScalarField<axom::IndexType>("cell_idx");
+  queryMesh.registerNodalScalarField<double>("pos_x");
+  queryMesh.registerNodalScalarField<double>("pos_y");
+  if(params.dimension > 2)
+  {
+    queryMesh.registerNodalScalarField<double>("pos_z");
+  }
 
   // Write input mesh to file
   {
     std::string file = params.outputFile + "_mesh_after_generate";
     SLIC_INFO(
       axom::fmt::format("After generate points -- writing mesh file: '{}'", file));
-    inputMesh.saveMesh(file);
+    inputMesh.saveMesh(file, params.outputProtocol);
   }
 
   std::unique_ptr<quest::ScatteredInterpolation<2>> scattered_2d;
@@ -544,12 +572,39 @@ int main(int argc, char** argv)
       new quest::ScatteredInterpolation<2>);
     scattered_2d->buildTriangulation(bp_input, input_coords_name);
     scattered_2d->locatePoints(bp_query, query_coords_name);
+
+    scattered_2d->interpolateField(bp_query,
+                                   query_coords_name,
+                                   bp_input,
+                                   "pos_x",
+                                   "pos_x");
+    scattered_2d->interpolateField(bp_query,
+                                   query_coords_name,
+                                   bp_input,
+                                   "pos_y",
+                                   "pos_y");
     break;
   case 3:
     scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
       new quest::ScatteredInterpolation<3>);
     scattered_3d->buildTriangulation(bp_input, input_coords_name);
     scattered_3d->locatePoints(bp_query, query_coords_name);
+
+    scattered_3d->interpolateField(bp_query,
+                                   query_coords_name,
+                                   bp_input,
+                                   "pos_x",
+                                   "pos_x");
+    scattered_3d->interpolateField(bp_query,
+                                   query_coords_name,
+                                   bp_input,
+                                   "pos_y",
+                                   "pos_y");
+    scattered_3d->interpolateField(bp_query,
+                                   query_coords_name,
+                                   bp_input,
+                                   "pos_z",
+                                   "pos_z");
     break;
   }
 
@@ -559,7 +614,7 @@ int main(int argc, char** argv)
     SLIC_INFO(
       axom::fmt::format("After locating points on Delaunay triangulation: '{}'",
                         file));
-    queryMesh.saveMesh(file);
+    queryMesh.saveMesh(file, params.outputProtocol);
   }
 
   return 0;
