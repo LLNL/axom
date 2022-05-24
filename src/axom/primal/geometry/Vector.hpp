@@ -216,6 +216,7 @@ public:
    * vector. If the size is not the same as the size of this vector, this
    * behaves the same way as the constructor which takes a pointer and size.
    */
+  AXOM_HOST_DEVICE
   Vector(std::initializer_list<T> values)
     : Vector {values.begin(), static_cast<int>(values.size())}
   { }
