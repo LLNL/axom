@@ -133,23 +133,6 @@ public:
     , m_managesBSet(false)
   { }
 
-  ~BivariateMap()
-  {
-    if(m_managesBSet && m_bset != nullptr)
-    {
-      delete m_bset;
-      m_bset = nullptr;
-    }
-  }
-
-  /**
-   * \brief Sets flag to indicate if instance manages its bivariate set pointer
-   *
-   * By default, a BivariateMap does not manage the memory associated with
-   * its BivariateSet.
-   */
-  void setManagesBSetPtr(bool flag) { m_managesBSet = flag; }
-
   // (KW) Problem -- does not work with RelationSet
   template <typename BivariateSetRetType, typename RelType = void>
   typename std::enable_if<!traits::has_relation_ptr<BivariateSetRetType>::value,
