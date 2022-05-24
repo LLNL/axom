@@ -414,6 +414,74 @@ TEST(slam_bivariate_map, iterate)
   constructAndTestBivariateMapIterator<BSet, StrideOneType>(1);
 }
 
+template <typename T, typename B, typename I, typename S>
+void testScopedCopyBehavior(int stride)
+{
+  using BMapType = BivariateMapType<T, B, I, S>;
+
+  SetType s1(MAX_SET_SIZE1);
+  SetType s2(MAX_SET_SIZE2);
+  ProductSetType s(&s1, &s2);
+
+  EXPECT_EQ(s.size(), MAX_SET_SIZE1 * MAX_SET_SIZE2);
+  EXPECT_TRUE(s.isValid());
+
+  SLIC_INFO("Creating " << slam::util::TypeToString<T>::to_string()
+                        << " map on the set ");
+
+  BMapType m;
+  {
+    BMapType m_inner(&s, static_cast<T>(0), stride);
+
+    EXPECT_TRUE(m_inner.isValid());
+    EXPECT_EQ(s.size(), m_inner.totalSize());
+    EXPECT_EQ(m_inner.stride(), stride);
+
+    SLIC_INFO("Setting the elements in the map.");
+
+    for(auto idx1 = 0; idx1 < m_inner.firstSetSize(); ++idx1)
+      for(auto idx2 = 0; idx2 < m_inner.secondSetSize(); ++idx2)
+        for(auto i = 0; i < stride; i++)
+        {
+          T* valPtr = m_inner.findValue(idx1, idx2, i);
+          EXPECT_NE(valPtr, nullptr);
+          *valPtr = getVal<T>(idx1, idx2, i);
+        }
+
+    m = m_inner;
+  }
+
+  EXPECT_TRUE(m.isValid());
+  EXPECT_EQ(s.size(), m.totalSize());
+  EXPECT_EQ(m.stride(), stride);
+
+  SLIC_INFO("Checking the elements with findValue().");
+  for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+    for(auto idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+      for(auto i = 0; i < stride; i++)
+      {
+        T* ptr = m.findValue(idx1, idx2, i);
+        EXPECT_NE(ptr, nullptr);
+        EXPECT_EQ(*ptr, getVal<T>(idx1, idx2, i));
+      }
+}
+
+TEST(slam_bivariate_map, testScopedMapBehavior)
+{
+  using BSet = BivariateSetType;
+  using IndPol = STLIndirection<double>;
+
+  testScopedCopyBehavior<double, BSet, IndPol, StrideOneType>(1);
+
+  testScopedCopyBehavior<double, BSet, IndPol, CompileTimeStrideType<1>>(1);
+  testScopedCopyBehavior<double, BSet, IndPol, CompileTimeStrideType<2>>(2);
+  testScopedCopyBehavior<double, BSet, IndPol, CompileTimeStrideType<3>>(3);
+
+  testScopedCopyBehavior<double, BSet, IndPol, RuntimeStrideType>(1);
+  testScopedCopyBehavior<double, BSet, IndPol, RuntimeStrideType>(2);
+  testScopedCopyBehavior<double, BSet, IndPol, RuntimeStrideType>(3);
+}
+
 TEST(slam_bivariate_map, traits)
 {
   EXPECT_TRUE(traits::indices_use_indirection<RelationSetType>::value);
