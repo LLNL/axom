@@ -362,7 +362,7 @@ void check_oct_tet_clip(double EPS)
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA policy, set to Unified)
+  // Determine new allocator (for CUDA or HIP policy, set to Unified)
   umpire::Allocator allocator =
     rm.getAllocator(axom::execution_space<ExecPolicy>::allocatorID());
 
@@ -429,7 +429,7 @@ TEST(primal_clip, clip_oct_tet_omp)
   #endif /* AXOM_USE_OPENMP */
 
   #if defined(AXOM_USE_CUDA)
-AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_gpu)
+AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_cuda)
 {
   unit_check_poly_clip<axom::CUDA_EXEC<256>>();
 }
@@ -440,7 +440,21 @@ AXOM_CUDA_TEST(primal_clip, clip_oct_tet_cuda)
   check_oct_tet_clip<axom::CUDA_EXEC<256>>(EPS);
 }
   #endif /* AXOM_USE_CUDA */
-#endif   /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
+
+  #if defined(AXOM_USE_HIP)
+TEST(primal_clip, unit_poly_clip_vertices_hip)
+{
+  unit_check_poly_clip<axom::HIP_EXEC<256>>();
+}
+
+TEST(primal_clip, clip_oct_tet_hip)
+{
+  const double EPS = 1e-4;
+  check_oct_tet_clip<axom::HIP_EXEC<256>>(EPS);
+}
+  #endif /* AXOM_USE_HIP */
+
+#endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 // Tetrahedron does not clip octahedron.
 TEST(primal_clip, oct_tet_clip_nonintersect)
