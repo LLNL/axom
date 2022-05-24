@@ -77,6 +77,14 @@ are available on your system as well.
 * `Spack's Github repo <https://github.com/spack/spack>`_
 * `Spack's documentation <https://spack.readthedocs.io/en/latest/>`_
 
+.. note::
+   Spack does not stop at the first error.  It attempts to build as many packages
+   as possible.  Due to this, finding the actual error can sometimes be hard but looking
+   through the log for a large indented section will help.  The error will
+   be in that section and also a message with a path to the full log will be printed
+   by Spack afterwards. Searching for ``-build-out.txt`` in your output should
+   help.
+
 Level 1: Vcpkg
 --------------
 
@@ -118,6 +126,10 @@ the following:
 * `Uberenv's Github repo <https://github.com/LLNL/uberenv>`_
 * `Uberenv's documentation <https://uberenv.readthedocs.io/en/latest/>`_
 
+.. note::
+   Uberenv's warnings and errors are easy to find by searching the output for ``[ERROR:``
+   or ``[Warning:``.  Uberenv will stop at the first error.
+
 Level 3: Build Scripts
 ----------------------
 
@@ -131,12 +143,21 @@ specs required.
 * ``build_tpls.py``: This script starts with building all TPLs listed in ``specs.json``.
   It will copy the generated host-configs to the base of the Axom repository.
   After building all of the TPLs, it will test Axom against those built TPLs. As well,
-  as testing the installed ``using-with-cmake`` example for correctness.
+  as testing the installed ``using-with-cmake`` example for correctness. This script stops
+  at the first failed TPL build but attempts to build all host-configs against the Axom source
+  with a summary at the end of which succeeded or failed.
 * ``build_src.py``: This scripts takes the existing host-configs, or the specific one you point
   at, and builds and tests Axom against them. It also tests the ``using-with-cmake`` examples.
 * ``build_devtools.py``: This script builds and installs the developer tools listed in the ``axomdevtools``
   Spack package.  It also uses a different set of Spack configs located in ``scripts/spack/devtools_config``,
   so that the regular Spack configs can reuse the seldom and previously built developer tools.
+
+.. note::
+   Due to the large amount of information printed to the screen over a full build, the build scripts
+   redirect most build step output to to log files.  They will not only tell you what command is being run,
+   i.e., ``[exe: some/command --with-options]``, but it will tell you the log file being written
+   to before it redirects the output from the following command, i.e., ``[[log file: /path/to/log``.
+
 
 =============
 Updating TPLs
