@@ -151,16 +151,21 @@ public:
   }
 
   /// \overload
-  template <typename USet = SetType,
-            typename Enable =
-              typename std::enable_if<!std::is_abstract<USet>::value>::type>
-  Map(const SetType& theSet,
+  template <typename USet,
+            typename TSet = SetType,
+            typename Enable = typename std::enable_if<
+              !std::is_abstract<TSet>::value && std::is_base_of<TSet, USet>::value>::type>
+  Map(const USet& theSet,
       DataType defaultValue = DataType(),
       SetPosition stride = StridePolicyType::DEFAULT_VALUE,
       int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_set(theSet)
   {
+    static_assert(std::is_same<SetType, USet>::value,
+                  "Argument set is of a more-derived type than the Map's set "
+                  "type. This may lead to object slicing. Use Map's pointer "
+                  "constructor instead to store polymorphic sets.");
     m_data =
       IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
