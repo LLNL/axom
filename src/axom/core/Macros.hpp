@@ -102,20 +102,6 @@
 #endif
 
 /*!
- * \def AXOM_HIP_TEST
- *
- * \brief Convenience macro used for a gtest that uses hip.
- */
-#if defined(AXOM_USE_HIP)
-  #define AXOM_HIP_TEST(X, Y)         \
-    static void hip_test_##X##Y();    \
-    TEST(X, Y) { hip_test_##X##Y(); } \
-    static void hip_test_##X##Y()
-#else
-  #define AXOM_HIP_TEST(X, Y) TEST(X, Y)
-#endif
-
-/*!
  * \def AXOM_DEVICE_CODE
  *
  * \brief Convenience macro used for kernel code
