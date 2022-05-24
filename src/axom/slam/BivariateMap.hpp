@@ -95,7 +95,7 @@ public:
   using SetElement = typename BSet::ElementType;
 
   using SetType = slam::RangeSet<SetPosition, SetElement>;
-  using MapType = Map<DataType, Set<SetPosition, SetElement>, IndPol, StrPol>;
+  using MapType = Map<DataType, SetType, IndPol, StrPol>;
   using OrderedSetType = typename BSet::OrderedSetType;
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
@@ -129,8 +129,7 @@ public:
                SetPosition stride = StridePolicyType::DEFAULT_VALUE)
     : StridePolicyType(stride)
     , m_bset(bSet)
-    , m_mapSet(bSet->size())
-    , m_map(&m_mapSet, defaultValue, stride)
+    , m_map(SetType(bSet->size()), defaultValue, stride)
     , m_managesBSet(false)
   { }
 
@@ -599,7 +598,6 @@ private:
 
 private:
   const BivariateSetType* m_bset;
-  SetType m_mapSet;  //for the map... since BivariateSet isn't a slam::Set
   MapType m_map;
   bool m_managesBSet;
 
