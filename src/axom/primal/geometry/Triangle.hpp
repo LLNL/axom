@@ -361,8 +361,7 @@ namespace axom
 namespace primal
 {
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE
-inline double Triangle<T, NDIMS>::angle(int idx) const
+AXOM_HOST_DEVICE inline double Triangle<T, NDIMS>::angle(int idx) const
 {
   SLIC_ASSERT(idx >= 0 && idx < NUM_TRI_VERTS);
 

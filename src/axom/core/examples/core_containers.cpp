@@ -171,7 +171,7 @@ void demoArrayBasic()
 }
 
 // The following example requires CUDA or HIP + Umpire + unified memory
-#if defined(AXOM_USE_UMPIRE) && \
+#if defined(AXOM_USE_UMPIRE) &&                        \
   (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && \
   defined(UMPIRE_ENABLE_UM)
   #define AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
@@ -320,12 +320,12 @@ void demoArrayDevice()
   axom::Array<int, 1, axom::MemorySpace::Device> C_device_raja(N);
   DeviceIntArrayView C_view = C_device_raja;
 
-  // Write to the underlying array through C_view, which is captured by value
-  #if defined(__CUDACC__)
-    using ExecSpace = axom::CUDA_EXEC<1>;
-  #else
-    using ExecSpace = axom::HIP_EXEC<1>;
-  #endif
+    // Write to the underlying array through C_view, which is captured by value
+    #if defined(__CUDACC__)
+  using ExecSpace = axom::CUDA_EXEC<1>;
+    #else
+  using ExecSpace = axom::HIP_EXEC<1>;
+    #endif
 
   axom::for_all<ExecSpace>(0, N, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
     C_view[i] = A_view[i] + B_view[i] + 1;

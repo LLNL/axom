@@ -749,7 +749,7 @@ void check_external_view(ArrayView<T>& v)
   EXPECT_EQ(data_ptr, v.data());
 }
 
-#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
+#if(defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
 
 template <typename T>
 __global__ void assign_raw(T* data, int N)
@@ -955,7 +955,7 @@ TEST(core_array, checkFill)
 }
 
 //------------------------------------------------------------------------------
-#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
+#if(defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
 TEST(core_array, checkFillDevice)
 {
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
@@ -1271,7 +1271,7 @@ TEST(core_array, checkIterator)
 }
 
 //------------------------------------------------------------------------------
-#if (defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
+#if(defined(__CUDACC__) || defined(__HIPCC__)) && defined(AXOM_USE_UMPIRE)
 void checkIteratorDeviceImpl()
 {
   constexpr int SIZE = 1000;
@@ -1636,10 +1636,10 @@ TEST(core_array, check_multidimensional_view)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDevice)
 {
-#if (!defined(__CUDACC__) && !defined(__HIPCC__)) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
-  GTEST_SKIP()
-    << "CUDA or HIP is not available, skipping tests that use Array in device code";
+#if(!defined(__CUDACC__) && !defined(__HIPCC__)) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
+                  "in device code";
 #else
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
@@ -1672,10 +1672,10 @@ TEST(core_array, checkDevice)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDevice2D)
 {
-#if (!defined(__CUDACC__) && !defined(__HIPCC__)) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
-  GTEST_SKIP()
-    << "CUDA or HIP is not available, skipping tests that use Array in device code";
+#if(!defined(__CUDACC__) && !defined(__HIPCC__)) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
+                  "in device code";
 #else
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
@@ -1736,10 +1736,10 @@ TEST(core_array, checkDefaultInitialization)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDefaultInitializationDevice)
 {
-#if (!defined(__CUDACC__) && !defined(__HIPCC__)) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
-  GTEST_SKIP()
-    << "CUDA or HIP is not available, skipping tests that use Array in device code";
+#if(!defined(__CUDACC__) && !defined(__HIPCC__)) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
+  GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
+                  "in device code";
 #else
   constexpr int MAGIC_INT = 255;
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)

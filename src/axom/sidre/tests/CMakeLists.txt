@@ -47,8 +47,8 @@ set(fruit_sidre_tests
    sidre_allocatable_F.f
    )
 
-set(sidre_tests_depends_on axom gtest)
-blt_list_append( TO sidre_tests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
+set(sidre_gtests_depends_on axom gtest)
+blt_list_append( TO sidre_gtests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
 
 
 #------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ foreach(test ${gtest_sidre_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${sidre_tests_depends_on}
+                        DEPENDS_ON ${sidre_gtests_depends_on}
                         FOLDER axom/sidre/tests
                         )
 
@@ -78,7 +78,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${sidre_tests_depends_on}
+                            DEPENDS_ON sidre gtest
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
@@ -96,7 +96,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${sidre_tests_depends_on} fruit
+                            DEPENDS_ON sidre fruit
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
