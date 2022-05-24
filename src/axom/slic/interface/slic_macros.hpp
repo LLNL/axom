@@ -426,8 +426,9 @@
 
 /// @}
 
-// Use assert when on device
-#elif defined(AXOM_DEBUG) && defined(AXOM_DEVICE_CODE)
+// Use assert when on device (HIP does not yet support assert())
+#elif defined(AXOM_DEBUG) && defined(AXOM_DEVICE_CODE) && \
+  !defined(__HIP_DEVICE_COMPILE__)
 
   #define SLIC_ASSERT(EXP) assert(EXP)
   #define SLIC_ASSERT_MSG(EXP, msg) assert(EXP)
