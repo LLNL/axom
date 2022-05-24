@@ -89,6 +89,42 @@ public:
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
 
+private:
+  template <typename USet = SetType, bool HasValue = !std::is_abstract<USet>::value>
+  struct SetContainer;
+
+  template <typename USet>
+  struct SetContainer<USet, false>
+  {
+    SetContainer(const USet* set) : m_pSet(set) { }
+
+    const USet* get() const { return m_pSet; }
+
+    const USet* m_pSet;
+  };
+
+  template <typename USet>
+  struct SetContainer<USet, true>
+  {
+    SetContainer(const USet* set) : m_pSet(set) { }
+    SetContainer(const USet& set) : m_set(set) { }
+
+    const USet* get() const
+    {
+      if(m_pSet)
+      {
+        return m_pSet;
+      }
+      else
+      {
+        return &m_set;
+      }
+    }
+
+    const USet* m_pSet {nullptr};
+    USet m_set;
+  };
+
 public:
   /**
    * \brief Constructor for Map using a Set pointer
@@ -104,6 +140,21 @@ public:
    */
 
   Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
+      DataType defaultValue = DataType(),
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+      int allocatorID = axom::getDefaultAllocatorID())
+    : StridePolicyType(stride)
+    , m_set(theSet)
+  {
+    m_data =
+      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
+  }
+
+  /// \overload
+  template <typename USet = SetType,
+            typename Enable =
+              typename std::enable_if<!std::is_abstract<USet>::value>::type>
+  Map(const SetType& theSet,
       DataType defaultValue = DataType(),
       SetPosition stride = StridePolicyType::DEFAULT_VALUE,
       int allocatorID = axom::getDefaultAllocatorID())
@@ -133,7 +184,7 @@ public:
   /**
    * \brief Returns a pointer to the map's underlying set
    */
-  const SetType* set() const { return m_set; }
+  const SetType* set() const { return m_set.get(); }
 
   /// \name Map individual access functions
   /// @{
@@ -192,8 +243,8 @@ public:
    */
   SetPosition size() const
   {
-    return !policies::EmptySetTraits<SetType>::isEmpty(m_set)
-      ? static_cast<SetPosition>(m_set->size())
+    return !policies::EmptySetTraits<SetType>::isEmpty(m_set.get())
+      ? static_cast<SetPosition>(m_set.get()->size())
       : SetPosition(0);
   }
 
@@ -396,7 +447,7 @@ private:
   }
 
 private:
-  const SetType* m_set;
+  SetContainer<> m_set;
   OrderedMap m_data;
 };
 
@@ -407,7 +458,7 @@ bool Map<T, S, IndPol, StrPol>::isValid(bool verboseOutput) const
 
   std::stringstream errStr;
 
-  if(policies::EmptySetTraits<S>::isEmpty(m_set))
+  if(policies::EmptySetTraits<S>::isEmpty(m_set.get()))
   {
     if(!m_data.empty())
     {
@@ -424,13 +475,13 @@ bool Map<T, S, IndPol, StrPol>::isValid(bool verboseOutput) const
   else
   {
     if(static_cast<SetPosition>(m_data.size()) !=
-       m_set->size() * StridePolicyType::stride())
+       m_set.get()->size() * StridePolicyType::stride())
     {
       if(verboseOutput)
       {
         errStr << "\n\t* the underlying set and its associated mapped data"
                << " have different sizes"
-               << " , underlying set has size " << m_set->size()
+               << " , underlying set has size " << m_set.get()->size()
                << " with stride " << StridePolicyType::stride()
                << " , data has size " << m_data.size();
       }
@@ -467,13 +518,13 @@ void Map<T, S, IndPol, StrPol>::print() const
 
   if(valid)
   {
-    if(!m_set)
+    if(!m_set.get())
     {
       sstr << "** map is empty.";
     }
     else
     {
-      sstr << "** underlying set has size " << m_set->size() << ": ";
+      sstr << "** underlying set has size " << m_set.get()->size() << ": ";
       sstr << "\n** the stride of the map is " << StridePolicyType::stride()
            << ": ";
 
