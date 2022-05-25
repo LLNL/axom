@@ -155,7 +155,7 @@
 
 /*!
  * \def SLIC_WARNING_IF( EXP, msg )
- * \brief Logs an warning iff EXP is true and aborts the application.
+ * \brief Logs a warning iff EXP is true
  * \param [in] EXP user-supplied boolean expression.
  * \param [in] msg user-supplied message.
  * \note The SLIC_WARNING_IF macro is always active.
