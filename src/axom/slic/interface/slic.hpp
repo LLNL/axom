@@ -97,13 +97,6 @@ void setLoggingMsgLevel(message::Level level);
 message::Level getLoggingMsgLevel();
 
 /*!
- * \brief Aborts and flushes on warning or error if corresponding AbortOnError
- * or AbortOnWarningis set to true
- * \param [in] level the logging level.
- */
-void abortIfEnabled(message::Level level);
-
-/*!
  * \brief Toggles the abort behavior for errors on the current active logger.
  * \param [in] status user-supplied flag.
  */
@@ -215,6 +208,14 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
 //! \sa axom::slic::isAbortOnWarningsEnabled()
 //! \sa axom::slic::setAbortOnWarning(bool status)
 //!
+
+/*!
+ * \brief Aborts and flushes on warning or error if corresponding AbortOnError
+ * or AbortOnWarningis set to true
+ * \collective
+ * \param [in] level the logging level.
+ */
+void abortIfEnabled(message::Level level);
 
 /*!
  * \brief Logs the given message to all registered streams.
