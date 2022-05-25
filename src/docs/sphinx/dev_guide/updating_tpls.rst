@@ -10,9 +10,9 @@ Third-party Libraries
 *********************
 
 Axom dependencies are grouped into four categories: Git submodules,
-built-in TPLs in the Axom source tree, system-level TPLs, and other 
-TPL libraries. The following sections describe how to install and update 
-these dependencies for Axom.
+built-in Third-party Libraries (TPLs) in the Axom source tree, system-level
+TPLs, and other TPL libraries. The following sections describe how to
+install and update these dependencies for Axom.
 
   * How does one add a new compiler or platform to the mix?
   * How does one build a new set of TPLs for a single platform or compiler
@@ -23,6 +23,141 @@ these dependencies for Axom.
   * How to use the scripts for team TPL support vs. local development 
     and experimentation?
   * Others?
+
+Determinism
+-----------
+
+We strive for as close to deterministic behavior in our builds as possible.
+By this, we mean that repeated builds should act the same in the following
+regards:
+
+* Set of libraries with their options and versions
+* Compilers, compiler flags, and versions
+* Installed file and directory structure with permissions
+
+
+===========================================
+Build Scripts and Their Configuration Files
+===========================================
+
+There are three levels of build scripts or programs that drive TPL builds.
+As you move up the levels, and away from Spack, the scripts require less
+configuration and even build multiple sets of TPLs and/or Axom configurations
+at a time.
+
+Here is a brief description of what the levels are handling and what important
+configuration and input files they use, from lowest level to highest.
+
+Level 1: Spack
+--------------
+
+Spack is a multi-platform package manager that builds and installs multiple versions
+and configurations of software packages. It has recipes on how to build each package
+with variants on each package to customize them to your needs.  For example, Axom
+has variants for Fortran and MPI, among others.  These recipes handle how to drive
+the individual packages build systems, as well as any packages they depend on.
+Spack also handles system level packages, so you can describe where they are on your
+system instead of building them from scratch.  You will need to describe which compilers
+are available on your system as well.
+
+* Platform specific configuration files live under ``scripts/spack/configs/<platform name>``.
+  There are two files per platform:
+
+   * ``compilers.yaml``: This file contains the compiler specs that describe the location
+     and any other required information about that compiler.  For example, compiler or 
+     linker flags.
+   * ``packages.yaml``: This file describes the system level packages.  For example,
+     where they are located and what version they are. This file is very imporant
+     due to its ability to drastically reduce the amount of packages that Spack builds.
+
+* Axom specific Spack package files live under ``scripts/spack/packages``. These override
+  the package files that live in Spack's repository here ``var/spack/repos/builtin/packages``.
+  We try to minimize these but we have had to alter the existing packages to apply fixes before
+  pushing them up to Spack proper or alterations to the recipes that are Axom specific.
+  This overriding does not happen at the Spack level, but at the next level, Uberenv.
+* `Spack's Github repo <https://github.com/spack/spack>`_
+* `Spack's documentation <https://spack.readthedocs.io/en/latest/>`_
+
+.. note::
+   Spack does not stop at the first error.  It attempts to build as many packages
+   as possible.  Due to this, finding the actual error can sometimes be hard but looking
+   through the log for a large indented section will help.  The error will
+   be in that section and also a message with a path to the full log will be printed
+   by Spack afterwards. Searching for ``-build-out.txt`` in your output should
+   help.
+
+Level 1: Vcpkg
+--------------
+
+Vcpkg is an open-source C++ Library Manager for Windows, Linux, and MacOS by Microsoft.
+Axom only uses it for our Windows TPL builds.
+
+* Project specific package files live under ``develop/scripts/vcpkg_ports``.  There are
+  two different files for each package:
+
+   * ``portfile.cmake``: This file is the recipe on how to build the package. Vcpkg
+     has strict rules about how your project is laid out and you can do the conversion
+     in this file as well.
+   * ``vcpkg.json``: This is the manifest file that describes information about the
+     package.  For example, dependencies, license information, and optional features.
+
+* `Vcpkg's Github repo <https://github.com/microsoft/vcpkg>`_
+* `Vcpkg's documentation <https://github.com/microsoft/vcpkg#table-of-contents>`_
+
+Level 2: Uberenv
+----------------
+
+Uberenv simplifies the use of two level 1 package managers, Spack and Vcpkg.
+We rely on Uberenv for two major points: reducing multiple commands into one
+and adding as much determinism as possible. The basic workflow in Uberenv is
+the following:
+
+#. Setup necessary paths and directories like the base directory where the
+   package manager will be installed.
+#. Clone the package manager to the specific Git commit.
+#. Apply patches to package manager. For example, disabling extra config scopes in Spack.
+#. Copy project specific package recipes over the packages manager's recipes.
+#. Clean previous temporary information from previous runs that may bleed into this run.
+#. Optionally create a package source mirror.
+#. Install packages via the selected package manager.
+
+* ``.uberenv_config.json``: This file describes project specific configurations,
+  such as, where to download the package manager, what git commit to use, and
+  the top level package to install.
+* `Uberenv's Github repo <https://github.com/LLNL/uberenv>`_
+* `Uberenv's documentation <https://uberenv.readthedocs.io/en/latest/>`_
+
+.. note::
+   Uberenv's warnings and errors are easy to find by searching the output for ``[ERROR:``
+   or ``[Warning:``.  Uberenv will stop at the first error.
+
+Level 3: Build Scripts
+----------------------
+
+There are three "build" scripts that live in ``scripts/llnl`` that are designed
+to handle suites of building TPLs via uberenv and Spack. They automatically
+handle the platform differences and know the full list of compilers and package
+specs required.
+
+* ``scripts/spack/specs.json``: This contains a list of all specs required per platform
+  or machine name.
+* ``build_tpls.py``: This script starts with building all TPLs listed in ``specs.json``.
+  It will copy the generated host-configs to the base of the Axom repository.
+  After building all of the TPLs, it will test Axom against those built TPLs. As well,
+  as testing the installed ``using-with-cmake`` example for correctness. This script stops
+  at the first failed TPL build but attempts to build all host-configs against the Axom source
+  with a summary at the end of which succeeded or failed.
+* ``build_src.py``: This scripts takes the existing host-configs, or the specific one you point
+  at, and builds and tests Axom against them. It also tests the ``using-with-cmake`` examples.
+* ``build_devtools.py``: This script builds and installs the developer tools listed in the ``axomdevtools``
+  Spack package.  It also uses a different set of Spack configs located in ``scripts/spack/devtools_config``,
+  so that the regular Spack configs can reuse the seldom and previously built developer tools.
+
+.. note::
+   Due to the large amount of information printed to the screen over a full build, the build scripts
+   redirect most build step output to log files.  They will not only tell you what command is being run,
+   i.e., ``[exe: some/command --with-options]``, but it will tell you the log file being written
+   to before it redirects the output from the command, i.e., ``[[log file: /path/to/log``.
 
 
 =============
@@ -49,7 +184,7 @@ traditional sense. To update one of these packages in Axom, simply go into
 its directory in Axom and check out a new version. If a version is intended
 to be changed in the Axom repo, make the version change on a branch and 
 submit a GitHub pull request as you would do for other software changes.
-More info on :ref:`toolkitbuild-label`.
+More info on :ref:`building-axom-label`.
 
 Built-in TPLs
 -------------
@@ -85,7 +220,6 @@ instructions on how to update a built-in TPL are as follows:
 #. Ensure that the build and tests still pass. More info on :ref:`testing-label`.
 
 #. Follow the normal pull request work flow. More info on :ref:`pullrequest-label`.
-
 
 .. _local-tpls-label:
 
