@@ -211,7 +211,7 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
 
 /*!
  * \brief Aborts and flushes on warning or error if corresponding AbortOnError
- * or AbortOnWarningis set to true
+ * or AbortOnWarning is set to true
  * \collective
  * \param [in] level the logging level.
  */
