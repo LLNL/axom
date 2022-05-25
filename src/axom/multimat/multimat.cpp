@@ -73,7 +73,8 @@ MultiMat::MapBaseType* MultiMat::helper_copyField(const MultiMat& mm, int map_i)
   }
   else
   {
-    SetType* setPtr = get_mapped_set(map_i);
+    const RangeSetType& setPtr =
+      *static_cast<RangeSetType*>(get_mapped_set(map_i));
     Field1D<T>* typed_ptr = dynamic_cast<Field1D<T>*>(other_map_ptr);
     Field1D<T>* new_ptr = new Field1D<T>(setPtr, T(), typed_ptr->stride());
     new_ptr->copy(*typed_ptr);

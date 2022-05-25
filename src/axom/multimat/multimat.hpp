@@ -102,7 +102,7 @@ protected:
   using MapBaseType = slam::MapBase<SetPosType>;
 
   template <typename T>
-  using MapType = slam::Map<T, SetType, IndPolicy<T>, MapStrideType>;
+  using MapType = slam::Map<T, RangeSetType, IndPolicy<T>, MapStrideType>;
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapType =  //this one has runtime stride
@@ -607,7 +607,8 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   {
     SLIC_ASSERT(field_mapping == FieldMapping::PER_CELL ||
                 field_mapping == FieldMapping::PER_MAT);
-    SetType* s = get_mapped_set(field_mapping);
+    const RangeSetType& s =
+      *static_cast<RangeSetType*>(get_mapped_set(field_mapping));
     Field1D<T>* new_map_ptr = new Field1D<T>(s, T(), stride);
 
     //copy data
@@ -743,11 +744,10 @@ slam::BivariateMap<T, BSetType> MultiMat::get2dFieldAsSlamBivarMap(
   // Get a reference to the unspecialized BMap
   auto& bmap = get2dField<T>(field_name);
 
-  auto bset = bmap.template getBivariateSet<BSetType, RelationSetType>();
+  const BSetType* pBset = static_cast<const BSetType*>(bmap.set());
 
   // Create instance of templated BivariateMap
-  slam::BivariateMap<T, BSetType> typedBMap(new BSetType(bset));
-  typedBMap.setManagesBSetPtr(true);
+  slam::BivariateMap<T, BSetType> typedBMap(pBset);
 
   // Copy data from original map to templated map
   // WARNING: Map and BMap should take a pointer to the data
