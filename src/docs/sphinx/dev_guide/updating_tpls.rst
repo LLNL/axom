@@ -10,9 +10,9 @@ Third-party Libraries
 *********************
 
 Axom dependencies are grouped into four categories: Git submodules,
-built-in TPLs in the Axom source tree, system-level TPLs, and other 
-TPL libraries. The following sections describe how to install and update 
-these dependencies for Axom.
+built-in Third-party Libraries (TPLs) in the Axom source tree, system-level
+TPLs, and other TPL libraries. The following sections describe how to
+install and update these dependencies for Axom.
 
   * How does one add a new compiler or platform to the mix?
   * How does one build a new set of TPLs for a single platform or compiler
