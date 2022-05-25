@@ -154,7 +154,7 @@ specs required.
 
 .. note::
    Due to the large amount of information printed to the screen over a full build, the build scripts
-   redirect most build step output to to log files.  They will not only tell you what command is being run,
+   redirect most build step output to log files.  They will not only tell you what command is being run,
    i.e., ``[exe: some/command --with-options]``, but it will tell you the log file being written
    to before it redirects the output from the following command, i.e., ``[[log file: /path/to/log``.
 
