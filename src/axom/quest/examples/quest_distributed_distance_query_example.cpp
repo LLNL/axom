@@ -61,6 +61,8 @@ public:
   int circlePoints {100};
   RuntimePolicy policy {RuntimePolicy::seq};
 
+  double distThreshold {1e100};
+
 private:
   bool m_verboseOutput {false};
 
@@ -107,6 +109,10 @@ public:
 
     app.add_option("-r,--radius", circleRadius)
       ->description("Radius for circle")
+      ->capture_default_str();
+
+    app.add_option("-d,--dist-threshold", distThreshold)
+      ->description("Distance threshold to search")
       ->capture_default_str();
 
     app.add_option("-n,--num-samples", circlePoints)
@@ -775,6 +781,7 @@ int main(int argc, char** argv)
   query.setRuntimePolicy(params.policy);
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
+  query.setDistanceThreshold(params.distThreshold);
   query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
 
   // Build the spatial index over the object on each rank
