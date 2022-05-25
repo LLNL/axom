@@ -28,7 +28,7 @@ Determinism
 -----------
 
 We strive for as close to deterministic behavior in our builds as possible.
-By this, we mean that repeated builds should should act the same in the following
+By this, we mean that repeated builds should act the same in the following
 regards:
 
 * Set of libraries with their options and versions
@@ -71,7 +71,7 @@ are available on your system as well.
 
 * Axom specific Spack package files live under ``scripts/spack/packages``. These override
   the package files that live in Spack's repository here ``var/spack/repos/builtin/packages``.
-  We try to minimize these but we have have to alter the existing packages to apply fixes before
+  We try to minimize these but we have had to alter the existing packages to apply fixes before
   pushing them up to Spack proper or alterations to the recipes that are Axom specific.
   This overriding does not happen at the Spack level, but at the next level, Uberenv.
 * `Spack's Github repo <https://github.com/spack/spack>`_
@@ -154,7 +154,7 @@ specs required.
 
 .. note::
    Due to the large amount of information printed to the screen over a full build, the build scripts
-   redirect most build step output to to log files.  They will not only tell you what command is being run,
+   redirect most build step output to log files.  They will not only tell you what command is being run,
    i.e., ``[exe: some/command --with-options]``, but it will tell you the log file being written
    to before it redirects the output from the command, i.e., ``[[log file: /path/to/log``.
 
