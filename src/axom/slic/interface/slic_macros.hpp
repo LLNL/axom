@@ -74,8 +74,9 @@
 
 /*!
  * @brief Macro that logs given error message only on root.
- * \note Must call `axom::slic::initialize(is_root=true)`
- *   or set via `axom::slic::setIsRoot(true)`. Otherwise, this not filter based on root.
+ * \note By default, all ranks are considered to be root.
+ *       Must call `axom::slic::initialize(is_root={true|false})`
+ *       or set via `axom::slic::setIsRoot({true|false})` to filter based on root.
  */
 #define SLIC_ERROR_ROOT(msg)                                        \
   do                                                                \
