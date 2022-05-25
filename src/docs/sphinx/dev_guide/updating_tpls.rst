@@ -42,7 +42,8 @@ Build Scripts and Their Configuration Files
 
 There are three levels of build scripts or programs that drive TPL builds.
 As you move up the levels, and away from Spack, the scripts require less
-configuration and even build suites of builds at a time.
+configuration and even build multiple sets of TPLs and/or Axom configurations
+at a time.
 
 Here is a brief description of what the levels are handling and what important
 configuration and input files they use, from lowest level to highest.
