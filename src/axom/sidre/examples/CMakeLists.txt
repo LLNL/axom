@@ -35,7 +35,7 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
-blt_list_append( TO EXTRA_LIBS ELEMENTS hip IF ENABLE_HIP )
+blt_list_append( TO EXTRA_LIBS ELEMENTS blt::hip IF ENABLE_HIP )
 
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples

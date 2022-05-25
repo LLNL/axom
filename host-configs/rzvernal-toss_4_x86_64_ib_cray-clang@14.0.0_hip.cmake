@@ -1,37 +1,33 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/tce/packages/cmake/cmake-3.16.8/bin/cmake
+# CMake executable path: /usr/tce/packages/cmake/cmake-3.21.1/bin/cmake
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: intel@19.0.4
+# Compiler Spec: clang@14.0.0
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_15_20_50_30/spack/lib/spack/env/intel/icc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2022_05_11_16_14_22/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_15_20_50_30/spack/lib/spack/env/intel/icpc" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2022_05_11_16_14_22/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_15_20_50_30/spack/lib/spack/env/intel/ifort" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2022_05_11_16_14_22/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/intel/intel-19.0.4/bin/icc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/opt/rocm-5.1.0/llvm/bin/amdclang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/intel/intel-19.0.4/bin/icpc" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/opt/rocm-5.1.0/llvm/bin/amdclang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-19.0.4/bin/ifort" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/opt/rocm-5.1.0/llvm/bin/amdflang" CACHE PATH "")
 
 endif()
 
-set(CMAKE_C_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE STRING "")
-
-set(CMAKE_CXX_FLAGS "-gxx-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/g++" CACHE STRING "")
-
-set(CMAKE_Fortran_FLAGS "-gcc-name=/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE STRING "")
+set(CMAKE_Fortran_FLAGS "-Mfreeform" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
@@ -39,11 +35,11 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 # MPI
 #------------------------------------------------------------------------------
 
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-5.1.0/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-5.1.0/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-5.1.0/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC_EXECUTABLE "/usr/bin/srun" CACHE PATH "")
 
@@ -54,6 +50,23 @@ set(ENABLE_MPI ON CACHE BOOL "")
 #------------------------------------------------------------------------------
 # Hardware
 #------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+
+# HIP
+
+#------------------------------------------------------------------------------
+
+
+set(ENABLE_HIP ON CACHE BOOL "")
+
+set(HIP_ROOT_DIR "/opt/rocm-5.1.0/hip" CACHE STRING "")
+
+set(HIP_CLANG_PATH "/opt/rocm-5.1.0/hip/../llvm/bin" CACHE STRING "")
+
+set(CMAKE_HIP_ARCHITECTURES "gfx90a" CACHE STRING "")
+
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags -L/opt/rocm-5.1.0/hip/../llvm/lib -L/opt/rocm-5.1.0/hip/lib -Wl,-rpath,/opt/rocm-5.1.0/hip/../llvm/lib:/opt/rocm-5.1.0/hip/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64 -L/opt/rocm-5.1.0/hip/../lib64 -Wl,-rpath,/opt/rocm-5.1.0/hip/../lib64 -lhsakmt -lamd_comgr" CACHE STRING "")
 
 #------------------------------------------------
 # Hardware Specifics
@@ -69,7 +82,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2022_05_15_20_50_30/intel-19.0.4" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2022_05_11_16_14_22/clang-14.0.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
@@ -93,22 +106,10 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
 # Devtools
 #------------------------------------------------------------------------------
 
-# Root directory for generated developer tools
+# ClangFormat disabled due to disabled devtools
 
-set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_3_x86_64_ib/2020_08_21_22_18_57/gcc-8.1.0" CACHE PATH "")
+set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
 
-set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
-
-set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/python3.7" CACHE PATH "")
-
-set(ENABLE_DOCS ON CACHE BOOL "")
-
-set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PATH "")
-
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
-
-set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH "")
-
-set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
+set(ENABLE_DOCS OFF CACHE BOOL "")
 
 

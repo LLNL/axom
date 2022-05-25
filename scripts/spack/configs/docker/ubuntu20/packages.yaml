@@ -51,52 +51,51 @@ packages:
   autotools:
     buildable: false
     externals:
-    - spec: autotools
+    - spec: autotools@2.69
       prefix: /usr
   bzip2:
     buildable: false
     externals:
-    - spec: bzip2
+    - spec: bzip2@1.0.6
       prefix: /usr
   gettext:
     buildable: false
     externals:
-    - spec: gettext
+    - spec: gettext@0.19.8.1
       prefix: /usr
   m4:
     buildable: false
     externals:
-    - spec: m4
+    - spec: m4@1.4.18
       prefix: /usr
   perl:
     buildable: false
     externals:
-    - spec: perl
+    - spec: perl@5.26.1
       prefix: /usr
   pkg-config:
     buildable: false
     externals:
-    - spec: pkg-config
+    - spec: pkg-config@0.29.1
       prefix: /usr
   tar:
     buildable: false
     externals:
-    - spec: tar
+    - spec: tar@1.29
       prefix: /usr
   graphviz:
     buildable: false
     externals:
-    - spec: graphviz
+    - spec: graphviz@2.40.1
       prefix: /usr
   openblas:
     buildable: false
     externals:
-    - spec: openblas
+    - spec: openblas@0.2.20
       prefix: /usr
 
   # Globally lock version of third party libraries
   conduit:
-    version: [0.7.2axom]
     variants: ~shared~test
   hdf5:
     variants: ~shared~mpi
@@ -121,9 +120,21 @@ packages:
     externals:
     - spec: cmake@3.18.5
       prefix: /usr
+  doxygen:
+    version: [1.8.17]
+    buildable: false
+    externals:
+    - spec: doxygen@1.8.17
+      prefix: /usr
   llvm:
     version: [10.0.0]
     buildable: false
     externals:
-    - spec: llvm+clang
+    - spec: llvm@10.0.0+clang
+      prefix: /usr
+  py-sphinx:
+    version: [1.8.5]
+    buildable: false
+    externals:
+    - spec: py-sphinx@1.8.5
       prefix: /usr

@@ -41,7 +41,7 @@ if ( RAJA_FOUND )
   blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
   blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
   blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS hip IF ENABLE_HIP)
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS blt::hip IF ENABLE_HIP)
 
   blt_add_executable( NAME raja_smoke_test
                       SOURCES raja_smoke.cpp

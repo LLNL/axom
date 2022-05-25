@@ -94,7 +94,7 @@ set( quest_depends_on
     )
 
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
-blt_list_append(TO quest_depends_on IF ENABLE_HIP ELEMENTS hip_runtime)
+blt_list_append(TO quest_depends_on IF ENABLE_HIP ELEMENTS blt::hip_runtime)
 blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)

@@ -156,7 +156,7 @@ LC platforms at LLNL. These scripts are located in the directory
 ``scripts/llnl_scripts``.
 
 
-.. _toolkitbuild-label:
+.. _building-axom-label:
 
 
 Building and Installing Axom

@@ -44,7 +44,7 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # Set some default BLT options before loading BLT only if not included in
     # another project
     if (NOT BLT_CXX_STD)
-        set(BLT_CXX_STD "c++11" CACHE STRING "")
+        set(BLT_CXX_STD "c++14" CACHE STRING "")
     endif()
 
     # These are not used in Axom, turn them off
@@ -95,6 +95,10 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # Mark BLT's built-in third-party targets as EXPORTABLE so they can be added
     # to the axom-targets export set
     set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
+endif()
+
+if("${BLT_CXX_STD}" STREQUAL "c++98" OR "${BLT_CXX_STD}" STREQUAL "c++11")
+    message(FATAL_ERROR "Axom requires BLT_CXX_STD to be 'c++14' or above.")
 endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
