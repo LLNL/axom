@@ -86,6 +86,7 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   , m_owns_datastore(true)
   , m_owns_mesh_data(own_mesh_data)
   , m_meshNodesGFName("mesh_nodes")
+  , m_num_files(-1)
 {
   m_datastore_ptr = new sidre::DataStore();
 
@@ -126,6 +127,7 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(const std::string& collection_n
   , m_owns_datastore(false)
   , m_owns_mesh_data(own_mesh_data)
   , m_meshNodesGFName("mesh_nodes")
+  , m_num_files(-1)
   , m_datastore_ptr(nullptr)
   , m_bp_index_grp(bp_index_grp)
 {
@@ -155,6 +157,13 @@ void MFEMSidreDataCollection::SetComm(MPI_Comm comm)
   appendRankToFileName = true;
   MPI_Comm_rank(m_comm, &myid);
   MPI_Comm_size(m_comm, &num_procs);
+}
+
+
+void MFEMSidreDataCollection::SetNumFiles(int num_files)
+{
+   SLIC_ASSERT_MSG(num_files > 0, "Output must be to at least 1 file");
+   m_num_files = num_files;
 }
   #endif
 
@@ -1078,7 +1087,12 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
     }
     temp_domain_grp->copyGroup(domain_grp);
 
-    writer.write(temp_root, num_procs, file_path, protocol);
+    int num_files = num_procs;
+    if (m_num_files > 0) {
+       SLIC_ASSERT_MSG(num_files <= num_procs, "Save output must have num_files less than or equal to number of mpi ranks");
+       num_files = m_num_files;
+    }
+    writer.write(temp_root, num_files, file_path, protocol);
 
     // Now that we've written the data, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_save");

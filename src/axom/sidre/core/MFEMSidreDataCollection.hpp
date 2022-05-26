@@ -226,6 +226,11 @@ public:
   /** If no mesh was associated with the collection, this method should be
       called before using any of the Load() methods to read parallel data. */
   void SetComm(MPI_Comm comm);
+
+  /// Set number of files for parallel writing
+  /*( Allows the user to consolidate data for N ranks into M files, 0 < M <= N
+  */
+  void SetNumFiles(int num_files);
   #endif
 
   /// Register a GridFunction in the Sidre DataStore.
@@ -529,6 +534,10 @@ private:
   // SetMeshNodesName().
   // Default value: "mesh_nodes".
   std::string m_meshNodesGFName;
+
+  // For Parallel IO, the user can specify a number of files less tnan or equal to the
+  // number of processors.
+  int m_num_files;
 
   // If the data collection owns the datastore, it will store a pointer to it.
   // Otherwise, this pointer is nullptr.
