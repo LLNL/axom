@@ -119,6 +119,7 @@ struct cleanup_function_signature<Ret(Args...)>
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
 
+#if 0
 /*!
  *******************************************************************************
  * \brief A lightweight type used to store a list of types
@@ -322,6 +323,21 @@ struct list_to_inlet_signature<TypeList<Ret, Args...>>
 {
   using type = Ret(typename inlet_function_arg_type<Args>::type...);
 };
+#endif
+
+template <typename Func>
+inline void destroy_func_inst(axom::uint8* function_storage)
+{
+  Func* function = reinterpret_cast<Func*>(function_storage);
+  // Destroy underlying function object
+  function->~Func();
+  // Destroy function storage
+  delete[] function_storage;
+}
+
+template <>
+inline void destroy_func_inst<void>(axom::uint8*)
+{ }
 
 }  // end namespace detail
 
@@ -336,9 +352,11 @@ struct list_to_inlet_signature<TypeList<Ret, Args...>>
  * for uniform retrieval through the Reader interface
  *******************************************************************************
  */
-template <typename... FunctionTags>
 class FunctionWrapper
 {
+private:
+  using StorageType = std::unique_ptr<axom::uint8[], void (*)(axom::uint8*)>;
+
 public:
   /*!
    *******************************************************************************
@@ -355,8 +373,9 @@ public:
   FunctionWrapper(std::function<FuncType>&& func)
   {
     m_function_valid = static_cast<bool>(func);
-    std::get<std::unique_ptr<std::function<FuncType>>>(m_funcs) =
-      cpp11_compat::make_unique<std::function<FuncType>>(std::move(func));
+    m_func = StorageType {new axom::uint8[sizeof(std::function<FuncType>)],
+                          &detail::destroy_func_inst<std::function<FuncType>>};
+    new(m_func.get()) std::function<FuncType>(std::move(func));
   }
 
   FunctionWrapper() = default;
@@ -377,13 +396,14 @@ public:
   template <typename Ret, typename... Args>
   Ret call(Args&&... args) const
   {
-    const auto& ptr = std::get<std::unique_ptr<
-      std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>>>(
-      m_funcs);
-    SLIC_ERROR_IF(
-      !m_function_valid || !ptr || !(*ptr),
-      fmt::format("[Inlet] Function '{0}' with requested type does not exist",
-                  m_name));
+    using FuncType =
+      std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>;
+
+    FuncType* ptr = reinterpret_cast<FuncType*>(m_func.get());
+    //SLIC_ERROR_IF(
+    //  !m_function_valid || !ptr || !(*ptr),
+    //  fmt::format("[Inlet] Function '{0}' with requested type does not exist",
+    //              m_name));
 
     const auto& func = *ptr;
     return func(
@@ -393,13 +413,14 @@ public:
   template <typename FuncType>
   std::function<FuncType> get() const
   {
-    const auto& ptr = std::get<std::unique_ptr<
-      std::function<typename detail::cleanup_function_signature<FuncType>::type>>>(
-      m_funcs);
-    SLIC_ERROR_IF(
-      !ptr,
-      fmt::format("[Inlet] Function '{0}' with requested type does not exist",
-                  m_name));
+    using StoredFuncType =
+      std::function<typename detail::cleanup_function_signature<FuncType>::type>;
+    //SLIC_ERROR_IF(
+    //  !ptr,
+    //  fmt::format("[Inlet] Function '{0}' with requested type does not exist",
+    //              m_name));
+    StoredFuncType* ptr = reinterpret_cast<StoredFuncType*>(m_func.get());
+
     return *ptr;
   }
 
@@ -424,13 +445,15 @@ private:
   // This is on the heap to reduce size - each pointer is only 8 bytes vs 32 bytes
   // for a std::function, and it is guaranteed that only one of the pointers will
   // actually point to something
-  std::tuple<std::unique_ptr<std::function<FunctionTags>>...> m_funcs;
+  StorageType m_func {nullptr, &detail::destroy_func_inst<void>};
   bool m_function_valid = false;
   std::string m_name;
 };
 
 namespace detail
 {
+static constexpr std::size_t MAX_NUM_ARGS = 2u;
+#if 0
 /*!
  *******************************************************************************
  * \brief "Unwraps" a list of lists, converts the inner lists to function
@@ -512,9 +535,10 @@ using func_signature_lists =
 
 using BasicFunctionWrapper = lists_to_wrapper<func_signature_lists>::type;
 
+#endif
 }  // end namespace detail
 
-using FunctionVariant = detail::BasicFunctionWrapper;
+using FunctionVariant = FunctionWrapper;
 
 class Function : public Verifiable<Function>
 {
