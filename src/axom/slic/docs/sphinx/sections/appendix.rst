@@ -74,28 +74,28 @@ The table below details which SLIC macros are collective:
 | | ``SLIC_INFO_IF``         | |                                                                          |
 | | ``SLIC_INFO_ROOT``       | |                                                                          |
 | | ``SLIC_INFO_ROOT_IF``    | |                                                                          |
-|                            |                                                                            |
++----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_ERROR``           | | Collective by default.                                                   |
 | | ``SLIC_ERROR_IF``        | | Collective after calling ``slic::enableAbortOnError()``.                 |
 | | ``SLIC_ERROR_ROOT``      | | No longer collective after calling ``slic::disableAbortOnError()``       |
 | | ``SLIC_ERROR_ROOT_IF``   | |                                                                          |
-|                            |                                                                            |
++----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_WARNING``         | | Not collective by default.                                               |
 | | ``SLIC_WARNING_IF``      | | Collective after calling ``slic::enableAbortOnWarning()``.               |
 | | ``SLIC_WARNING_ROOT``    | | No longer collective after calling ``slic::disableAbortOnWarning()``     |
 | | ``SLIC_WARNING_ROOT_IF`` | |                                                                          |
-|                            |                                                                            |
++----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_DEBUG``           | | Never                                                                    |
 | | ``SLIC_DEBUG_IF``        | |                                                                          |
 | | ``SLIC_DEBUG_ROOT``      | |                                                                          |
 | | ``SLIC_DEBUG_ROOT_IF``   | |                                                                          |
-|                            |                                                                            |
++----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_ASSERT``          | | Collective by default, and after calling ``slic::enableAbortOnError()``. |
 | | ``SLIC_ASSERT_MSG``      | |                                                                          |
-|                            |                                                                            |
++----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_CHECK``           | | Not collective by default.                                               |
 | | ``SLIC_CHECK_MSG``       | | Collective after ``slic::debug::checksAreErrors`` is set to ``true``,    |
 | |                          | |   defaults to ``false``.                                                 |
-|                            |                                                                            |+----------------------------+----------------------------------------------------------------------------+
++----------------------------+----------------------------------------------------------------------------+
 
 Doxygen generated API documentation on Macros can be found here: `SLIC Macros <../../../../doxygen/html/slic__macros_8hpp.html>`_
