@@ -128,8 +128,6 @@ inline void destroy_func_inst(axom::uint8* function_storage)
   Func* function = reinterpret_cast<Func*>(function_storage);
   // Destroy underlying function object
   function->~Func();
-  // Destroy function storage
-  delete[] function_storage;
 }
 
 template <>
@@ -152,7 +150,7 @@ inline void destroy_func_inst<void>(axom::uint8*)
 class FunctionWrapper
 {
 private:
-  using StorageType = std::unique_ptr<axom::uint8[], void (*)(axom::uint8*)>;
+  using StorageType = std::unique_ptr<axom::uint8, void (*)(axom::uint8*)>;
 
 public:
   /*!
@@ -170,9 +168,28 @@ public:
   FunctionWrapper(std::function<FuncType>&& func)
   {
     m_function_valid = static_cast<bool>(func);
-    m_func = StorageType {new axom::uint8[sizeof(std::function<FuncType>)],
+
+    // Create aligned storage
+    axom::uint8* aligned_buf;
+    {
+      const size_t fn_size = sizeof(std::function<FuncType>);
+      const size_t fn_align = alignof(std::function<FuncType>);
+      size_t aligned_alloc_min = fn_size + fn_align;
+      // Allocate buffer with enough space to align as an std::function
+      m_func_storage.reset(new axom::uint8[aligned_alloc_min]);
+      void* buf = m_func_storage.get();
+      aligned_buf = static_cast<axom::uint8*>(
+        std::align(fn_align, fn_size, buf, aligned_alloc_min));
+      SLIC_ASSERT_MSG(aligned_buf != nullptr,
+                      "Could not align storage for function");
+    }
+
+    // Use unique_ptr to hold the destructor for this function type
+    m_func = StorageType {aligned_buf,
                           &detail::destroy_func_inst<std::function<FuncType>>};
-    new(m_func.get()) std::function<FuncType>(std::move(func));
+    // Construct function object in-place in byte storage
+    new(aligned_buf) std::function<FuncType>(std::move(func));
+    // Store the type information of the passed-in std::function
     m_func_type = typeid(std::function<FuncType>);
   }
 
@@ -256,9 +273,9 @@ public:
   void setName(std::string&& name) { m_name = std::move(name); }
 
 private:
-  // This is on the heap to reduce size - each pointer is only 8 bytes vs 32 bytes
-  // for a std::function, and it is guaranteed that only one of the pointers will
-  // actually point to something
+  // We hold two unique_ptrs: one to manage the raw buffer of bytes, and one to
+  // hold the aligned pointer to the std::function and its destructor.
+  std::unique_ptr<axom::uint8[]> m_func_storage;
   StorageType m_func {nullptr, &detail::destroy_func_inst<void>};
   std::reference_wrapper<const std::type_info> m_func_type {typeid(void)};
 
