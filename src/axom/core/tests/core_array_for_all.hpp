@@ -855,7 +855,6 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
       umpire::resource::MemoryResourceType::Device);
   }
 #endif
-  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Helper function to copy device values to a host array
   auto convert_to_host_array = [=](const DynamicArray& arr) -> HostIntArray {
