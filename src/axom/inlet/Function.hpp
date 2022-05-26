@@ -18,6 +18,7 @@
 #include <functional>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 
 #include "axom/fmt.hpp"
 
@@ -172,6 +173,7 @@ public:
     m_func = StorageType {new axom::uint8[sizeof(std::function<FuncType>)],
                           &detail::destroy_func_inst<std::function<FuncType>>};
     new(m_func.get()) std::function<FuncType>(std::move(func));
+    m_func_type = typeid(std::function<FuncType>);
   }
 
   FunctionWrapper() = default;
@@ -194,12 +196,22 @@ public:
   {
     using FuncType =
       std::function<Ret(typename detail::inlet_function_arg_type<Args>::type...)>;
+    SLIC_ERROR_IF(
+      typeid(FuncType) != m_func_type.get(),
+      fmt::format(
+        "[Inlet] Attempted to call function '{0}' with incorrect type.\n"
+        " - Stored type: {1}\n"
+        " - Expected type: {2}\n",
+        m_name,
+        m_func_type.get().name(),
+        typeid(FuncType).name()));
 
     FuncType* ptr = reinterpret_cast<FuncType*>(m_func.get());
-    //SLIC_ERROR_IF(
-    //  !m_function_valid || !ptr || !(*ptr),
-    //  fmt::format("[Inlet] Function '{0}' with requested type does not exist",
-    //              m_name));
+    SLIC_ERROR_IF(
+      !m_function_valid || !(*ptr),
+      fmt::format(
+        "[Inlet] No valid function '{0} assigned to function wrapper.",
+        m_name));
 
     const auto& func = *ptr;
     return func(
@@ -211,10 +223,16 @@ public:
   {
     using StoredFuncType =
       std::function<typename detail::cleanup_function_signature<FuncType>::type>;
-    //SLIC_ERROR_IF(
-    //  !ptr,
-    //  fmt::format("[Inlet] Function '{0}' with requested type does not exist",
-    //              m_name));
+    SLIC_ERROR_IF(
+      typeid(StoredFuncType) != m_func_type.get(),
+      fmt::format(
+        "[Inlet] Attempted to get function '{0}' with incorrect type.\n"
+        " - Stored type: {1}\n"
+        " - Expected type: {2}\n",
+        m_name,
+        m_func_type.get().name(),
+        typeid(StoredFuncType).name()));
+
     StoredFuncType* ptr = reinterpret_cast<StoredFuncType*>(m_func.get());
 
     return *ptr;
@@ -242,6 +260,8 @@ private:
   // for a std::function, and it is guaranteed that only one of the pointers will
   // actually point to something
   StorageType m_func {nullptr, &detail::destroy_func_inst<void>};
+  std::reference_wrapper<const std::type_info> m_func_type {typeid(void)};
+
   bool m_function_valid = false;
   std::string m_name;
 };
