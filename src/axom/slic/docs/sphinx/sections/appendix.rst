@@ -95,7 +95,7 @@ The table below details which SLIC macros are collective:
 |                            |                                                                            |
 | | ``SLIC_CHECK``           | | Not collective by default.                                               |
 | | ``SLIC_CHECK_MSG``       | | Collective after ``slic::debug::checksAreErrors`` is set to ``true``,    |
-|                            | |   defaults to ``false``.                                                 |
-+----------------------------+-------------+--------------------------------------------------------------+
+| |                          | |   defaults to ``false``.                                                 |
+|                            |                                                                            |+----------------------------+----------------------------------------------------------------------------+
 
 Doxygen generated API documentation on Macros can be found here: `SLIC Macros <../../../../doxygen/html/slic__macros_8hpp.html>`_
