@@ -70,8 +70,9 @@ The table below details which SLIC macros are collective:
 +----------------------------+----------------------------------------------------------------------------+
 | Macro                      | Collective                                                                 |
 +============================+============================================================================+
-| | ``SLIC_ASSERT``          | | Collective by default, and after calling ``slic::enableAbortOnError()``. |
-| | ``SLIC_ASSERT_MSG``      | |                                                                          |
+| | ``SLIC_ASSERT``          | | Collective by default.                                                   |
+| | ``SLIC_ASSERT_MSG``      | | Collective after calling ``slic::enableAbortOnError()``.                 |
+| |                          | | No longer collective after calling ``slic::disableAbortOnError()``.      |
 +----------------------------+----------------------------------------------------------------------------+
 | | ``SLIC_CHECK``           | | Not collective by default.                                               |
 | | ``SLIC_CHECK_MSG``       | | Collective after ``slic::debug::checksAreErrors`` is set to ``true``,    |
