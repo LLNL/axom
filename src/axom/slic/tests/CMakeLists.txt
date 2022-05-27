@@ -29,6 +29,27 @@ endforeach()
 
 
 #
+# Parallel Unit Tests
+#
+if (ENABLE_MPI)
+    set(parallel_slic_tests
+        slic_macros_parallel.cpp )
+
+    foreach(test ${parallel_slic_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        blt_add_executable(NAME       ${test_name}_test
+                           SOURCES    ${test}
+                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                           DEPENDS_ON axom gtest fmt
+                           FOLDER     axom/slic/tests )
+        axom_add_test(NAME          ${test_name}
+                      COMMAND       ${test_name}_test 
+                      NUM_MPI_TASKS 4)
+    endforeach()
+endif()
+
+
+#
 # Benchmarks
 #
 if (ENABLE_BENCHMARKS)
