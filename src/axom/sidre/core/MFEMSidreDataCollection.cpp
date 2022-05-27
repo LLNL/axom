@@ -159,7 +159,6 @@ void MFEMSidreDataCollection::SetComm(MPI_Comm comm)
   MPI_Comm_size(m_comm, &num_procs);
 }
 
-
 void MFEMSidreDataCollection::SetNumFiles(int num_files)
 {
   SLIC_ASSERT_MSG(num_files > 0, "Output must be to at least 1 file");
