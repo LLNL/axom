@@ -1085,9 +1085,9 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
     temp_domain_grp->copyGroup(domain_grp);
 
     int num_files = num_procs;
-    if (m_num_files > 0) 
+    if (m_num_files > 0)
     {
-      SLIC_ASSERT_MSG(num_files <= num_procs, 
+      SLIC_ASSERT_MSG(num_files <= num_procs,
                       "Save output must have num_files less than or equal to "
                       "number of mpi ranks");
       num_files = m_num_files;
