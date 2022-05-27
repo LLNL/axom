@@ -228,7 +228,7 @@ public:
   void SetComm(MPI_Comm comm);
 
   /// Set number of files for parallel writing
-  /*( Allows the user to consolidate data for N ranks into M files, 0 < M <= N
+  /** Allows the user to consolidate data for N ranks into M files, 0 < M <= N
   */
   void SetNumFiles(int num_files);
   #endif
