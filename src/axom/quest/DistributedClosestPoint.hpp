@@ -296,6 +296,8 @@ public:
    */
   void setSquaredDistanceThreshold(double sqThreshold)
   {
+    SLIC_ERROR_IF(sqThreshold < 0.0,
+                  "Squared distance-threshold must be non-negative.");
     m_sqDistanceThreshold = sqThreshold;
   }
 
