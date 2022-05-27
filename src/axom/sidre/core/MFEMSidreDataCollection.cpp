@@ -162,8 +162,8 @@ void MFEMSidreDataCollection::SetComm(MPI_Comm comm)
 
 void MFEMSidreDataCollection::SetNumFiles(int num_files)
 {
-   SLIC_ASSERT_MSG(num_files > 0, "Output must be to at least 1 file");
-   m_num_files = num_files;
+  SLIC_ASSERT_MSG(num_files > 0, "Output must be to at least 1 file");
+  m_num_files = num_files;
 }
   #endif
 
@@ -841,10 +841,7 @@ void MFEMSidreDataCollection::SetMesh(MPI_Comm comm, Mesh* new_mesh)
 {
   // use MFEMSidreDataCollection's custom SetMesh, then set MPI info
   SetMesh(new_mesh);
-
-  m_comm = comm;
-  MPI_Comm_rank(comm, &myid);
-  MPI_Comm_size(comm, &num_procs);
+  SetComm(comm);
 }
   #endif
 
@@ -1088,9 +1085,12 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
     temp_domain_grp->copyGroup(domain_grp);
 
     int num_files = num_procs;
-    if (m_num_files > 0) {
-       SLIC_ASSERT_MSG(num_files <= num_procs, "Save output must have num_files less than or equal to number of mpi ranks");
-       num_files = m_num_files;
+    if (m_num_files > 0) 
+    {
+      SLIC_ASSERT_MSG(num_files <= num_procs, 
+                      "Save output must have num_files less than or equal to "
+                      "number of mpi ranks");
+      num_files = m_num_files;
     }
     writer.write(temp_root, num_files, file_path, protocol);
 
