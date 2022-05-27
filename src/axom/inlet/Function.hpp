@@ -198,7 +198,6 @@ public:
   }
 
   FunctionWrapper() = default;
-  FunctionWrapper(FunctionWrapper&& other) = default;
 
   /*!
    *******************************************************************************
