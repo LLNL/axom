@@ -122,16 +122,27 @@ struct cleanup_function_signature<Ret(Args...)>
 
 static constexpr std::size_t MAX_NUM_ARGS = 2u;
 
+// Represents a buffer of bytes aligned like an std::function.
+struct FunctionBuffer
+{
+  static constexpr size_t Alignment = alignof(std::function<void()>);
+  static constexpr size_t Size = sizeof(std::function<void()>);
+
+  alignas(Alignment) axom::uint8 m_bytes[Size];
+};
+
 template <typename Func>
-inline void destroy_func_inst(axom::uint8* function_storage)
+inline void destroy_func_inst(FunctionBuffer* function_storage)
 {
   Func* function = reinterpret_cast<Func*>(function_storage);
   // Destroy underlying function object
   function->~Func();
+  // Destroy allocated buffer
+  delete function_storage;
 }
 
 template <>
-inline void destroy_func_inst<void>(axom::uint8*)
+inline void destroy_func_inst<void>(FunctionBuffer*)
 { }
 
 }  // end namespace detail
@@ -150,7 +161,8 @@ inline void destroy_func_inst<void>(axom::uint8*)
 class FunctionWrapper
 {
 private:
-  using StorageType = std::unique_ptr<axom::uint8, void (*)(axom::uint8*)>;
+  using StorageType =
+    std::unique_ptr<detail::FunctionBuffer, void (*)(detail::FunctionBuffer*)>;
 
 public:
   /*!
@@ -167,28 +179,20 @@ public:
   template <typename FuncType>
   FunctionWrapper(std::function<FuncType>&& func)
   {
+    static_assert(
+      alignof(std::function<FuncType>) == detail::FunctionBuffer::Alignment,
+      "std::function does not have the same alignment across all instances.");
+    static_assert(
+      sizeof(std::function<FuncType>) == detail::FunctionBuffer::Size,
+      "std::function does not have the same size across all instances.");
+
     m_function_valid = static_cast<bool>(func);
 
-    // Create aligned storage
-    axom::uint8* aligned_buf;
-    {
-      const size_t fn_size = sizeof(std::function<FuncType>);
-      const size_t fn_align = alignof(std::function<FuncType>);
-      size_t aligned_alloc_min = fn_size + fn_align;
-      // Allocate buffer with enough space to align as an std::function
-      m_func_storage.reset(new axom::uint8[aligned_alloc_min]);
-      void* buf = m_func_storage.get();
-      aligned_buf = static_cast<axom::uint8*>(
-        std::align(fn_align, fn_size, buf, aligned_alloc_min));
-      SLIC_ASSERT_MSG(aligned_buf != nullptr,
-                      "Could not align storage for function");
-    }
-
     // Use unique_ptr to hold the destructor for this function type
-    m_func = StorageType {aligned_buf,
+    m_func = StorageType {new detail::FunctionBuffer,
                           &detail::destroy_func_inst<std::function<FuncType>>};
     // Construct function object in-place in byte storage
-    new(aligned_buf) std::function<FuncType>(std::move(func));
+    new(m_func.get()) std::function<FuncType>(std::move(func));
     // Store the type information of the passed-in std::function
     m_func_type = typeid(std::function<FuncType>);
   }
@@ -273,9 +277,6 @@ public:
   void setName(std::string&& name) { m_name = std::move(name); }
 
 private:
-  // We hold two unique_ptrs: one to manage the raw buffer of bytes, and one to
-  // hold the aligned pointer to the std::function and its destructor.
-  std::unique_ptr<axom::uint8[]> m_func_storage;
   StorageType m_func {nullptr, &detail::destroy_func_inst<void>};
   std::reference_wrapper<const std::type_info> m_func_type {typeid(void)};
 
