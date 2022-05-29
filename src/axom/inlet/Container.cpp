@@ -64,23 +64,23 @@ Container::Container(const std::string& name,
         {
           m_containerChildren.emplace(
             childName,
-            cpp11_compat::make_unique<Container>(childName,
-                                                 "",
-                                                 m_reader,
-                                                 m_sidreRootGroup,
-                                                 m_unexpectedNames,
-                                                 m_docEnabled,
-                                                 true));
+            std::make_unique<Container>(childName,
+                                        "",
+                                        m_reader,
+                                        m_sidreRootGroup,
+                                        m_unexpectedNames,
+                                        m_docEnabled,
+                                        true));
         }
         else if(inletType == "Field")
         {
           // FIXME: We probably need to write the type to the datastore
           m_fieldChildren.emplace(
             childName,
-            cpp11_compat::make_unique<Field>(group,
-                                             m_sidreRootGroup,
-                                             sidre::DataTypeId::NO_TYPE_ID,
-                                             m_docEnabled));
+            std::make_unique<Field>(group,
+                                    m_sidreRootGroup,
+                                    sidre::DataTypeId::NO_TYPE_ID,
+                                    m_docEnabled));
         }
       }
     }
@@ -145,12 +145,12 @@ Container& Container::addContainer(const std::string& name,
       // or do we need std::piecewise_construct/std::forward_as_tuple?
       const auto& emplaceResult = currContainer->m_containerChildren.emplace(
         currContainerName,
-        cpp11_compat::make_unique<Container>(currContainerName,
-                                             currDescr,
-                                             m_reader,
-                                             m_sidreRootGroup,
-                                             m_unexpectedNames,
-                                             m_docEnabled));
+        std::make_unique<Container>(currContainerName,
+                                    currDescr,
+                                    m_reader,
+                                    m_sidreRootGroup,
+                                    m_unexpectedNames,
+                                    m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
       currContainer = emplaceResult.first->second.get();
     }
@@ -312,10 +312,7 @@ Field& Container::addField(axom::sidre::Group* sidreGroup,
   }
   const auto& emplace_result = currContainer->m_fieldChildren.emplace(
     fullName,
-    cpp11_compat::make_unique<Field>(sidreGroup,
-                                     m_sidreRootGroup,
-                                     type,
-                                     m_docEnabled));
+    std::make_unique<Field>(sidreGroup, m_sidreRootGroup, type, m_docEnabled));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }
@@ -334,9 +331,7 @@ Function& Container::addFunctionInternal(axom::sidre::Group* sidreGroup,
   }
   const auto& emplace_result = currContainer->m_functionChildren.emplace(
     fullName,
-    cpp11_compat::make_unique<Function>(sidreGroup,
-                                        m_sidreRootGroup,
-                                        std::move(func)));
+    std::make_unique<Function>(sidreGroup, m_sidreRootGroup, std::move(func)));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }
