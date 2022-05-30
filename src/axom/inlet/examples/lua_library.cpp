@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "axom/inlet.hpp"
+#include "axom/sol.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
 int main()
@@ -37,7 +38,7 @@ int main()
   auto lr = std::make_unique<axom::inlet::LuaReader>();
 
   // Load extra io Lua library
-  lr->solState().open_libraries(axom::sol::lib::io);
+  lr->solState()->open_libraries(axom::sol::lib::io);
 
   // Parse example input string
   lr->parseString(input);
