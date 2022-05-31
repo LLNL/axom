@@ -57,7 +57,7 @@ reader class here:
 Inlet opens four Lua libraries by default: ``base``, ``math``, ``string``, ``package``. All libraries are documented
 in `Sol's open_library documentation <https://sol2.readthedocs.io/en/v2.20.6/api/state.html?highlight=open_libraries#enumerations>`_. 
 
-For example, you can add the `io` library by doing this:
+For example, you can add the ``io`` library by doing this:
 
 .. literalinclude:: ../../examples/lua_library.cpp
    :start-after: _inlet_io_library_add_start
