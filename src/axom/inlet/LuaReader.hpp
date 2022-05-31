@@ -19,14 +19,13 @@
 
 namespace axom
 {
-
 // Forward declarations to avoid having to include "sol.hpp" in everything
 // that depends on Inlet
 namespace sol
 {
 class state;
 enum class type;
-}
+}  // namespace sol
 
 namespace inlet
 {
@@ -95,15 +94,18 @@ public:
    */
   static const int baseIndex = 1;
 
+protected:
   /*!
    *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.
    * 
-   * \note This is an advanced feature. If you need to modify the Sol `state`,
-   *   be sure to include `axom/sol/sol.hpp`. This is to avoid incuring large
-   *   compile times to all users of Inlet.
+   * \note This is an advanced feature and could change the input file state after
+   *   it has been validated by Inlet. If you need to modify the Sol `state`,
+   *   be sure to include `axom/sol.hpp` and derive a new class to access this
+   *   publically. See the `lua_library.cpp` example. Including `sol.hpp` can
+   *   increase compile time significantly.
    *
    * \return Shared pointer to the Sol Lua state
    *****************************************************************************

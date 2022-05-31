@@ -325,7 +325,8 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, axom::sol::table& table)
     return false;
   }
 
-  table = (*m_lua)[*begin];  // Use the first one to index into the global lua state
+  // Use the first one to index into the global lua state
+  table = (*m_lua)[*begin];
   ++begin;
 
   // Then use the remaining keys to walk down to the requested table
