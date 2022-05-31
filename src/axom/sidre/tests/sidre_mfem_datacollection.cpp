@@ -135,7 +135,7 @@ TEST(sidre_datacollection, dc_save_two_files)
   // Try to go from N ranks to 2 files if we are running with more than 2 ranks
   int num_procs;
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-  if(num_procs > 2)
+  if(num_procs >= 2)
   {
     sdc.SetNumFiles(2);
   }
