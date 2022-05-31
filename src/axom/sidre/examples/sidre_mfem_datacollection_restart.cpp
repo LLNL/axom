@@ -189,8 +189,10 @@ private:
 
 int main(int argc, char* argv[])
 {
+  int num_procs = 1;
 #ifdef EXAMPLE_USES_MPI
   MPI_Init(&argc, &argv);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 #endif
 
   // Initialize the datacollection
@@ -232,7 +234,8 @@ int main(int argc, char* argv[])
     ->description(
       "Optional flag to set the number of output files for parallel "
       "simulations (default one output file per rank)")
-    ->capture_default_str();
+    ->capture_default_str()
+    ->check(axom::CLI::Range(1, num_procs).description("Range [1,num_procs]"));
   CLI11_PARSE(app, argc, argv);
 
 #ifdef EXAMPLE_USES_MPI

@@ -537,7 +537,7 @@ private:
   // Default value: "mesh_nodes".
   std::string m_meshNodesGFName;
 
-  // For Parallel IO, the user can specify a number of files less tnan or equal to the
+  // For Parallel IO, the user can specify a number of files less than or equal to the
   // number of processors.
   int m_num_files;
 
