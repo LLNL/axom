@@ -19,6 +19,7 @@
   #include "MFEMSidreDataCollection.hpp"
 
   #include "axom/core/utilities/StringUtilities.hpp"
+  #include "axom/core/utilities/Utilities.hpp"
 
 using mfem::Array;
 using mfem::GridFunction;
@@ -1090,6 +1091,7 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
                       "Save output must have num_files less than or equal to "
                       "number of mpi ranks");
       num_files = m_num_files;
+      num_files = axom::utilities::clampUpper(num_files, num_procs);
     }
     writer.write(temp_root, num_files, file_path, protocol);
 
