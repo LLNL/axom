@@ -107,6 +107,49 @@ TEST(sidre_datacollection, dc_save)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, dc_save_single_file)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc.SetComm(MPI_COMM_WORLD);
+  sdc.SetNumFiles(1);
+#endif
+
+  sdc.Save();
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_save_two_files)
+{
+  // 1D mesh divided into 10 segments
+  mfem::Mesh mesh(10);
+  MFEMSidreDataCollection sdc(testName());
+
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc.SetMesh(MPI_COMM_WORLD, &mesh);
+
+  // Try to go from N ranks to 2 files if we are running with more than 2 ranks
+  int num_procs;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+  if(num_procs > 2)
+  {
+    sdc.SetNumFiles(2);
+  }
+  else
+  {
+    sdc.SetNumFiles(1);
+  }
+#endif
+
+  sdc.Save();
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+}
+
 TEST(sidre_datacollection, dc_reload_gf)
 {
   const std::string field_name = "test_field";
