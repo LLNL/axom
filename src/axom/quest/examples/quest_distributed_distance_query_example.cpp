@@ -37,6 +37,7 @@
 
 // C/C++ includes
 #include <string>
+#include <limits>
 #include <map>
 #include <cmath>
 
@@ -61,7 +62,7 @@ public:
   int circlePoints {100};
   RuntimePolicy policy {RuntimePolicy::seq};
 
-  double distThreshold {1e100};
+  double distThreshold {std::numeric_limits<double>::max()};
 
 private:
   bool m_verboseOutput {false};
@@ -112,6 +113,7 @@ public:
       ->capture_default_str();
 
     app.add_option("-d,--dist-threshold", distThreshold)
+      ->check(axom::CLI::NonNegativeNumber)
       ->description("Distance threshold to search")
       ->capture_default_str();
 
