@@ -12,6 +12,7 @@
 #include "axom/slic/core/SimpleLogger.hpp"
 
 // _inlet_sol_state_start
+// Header required here because `axom::sol::state` is only forward declared in LuaReader.hpp.
 #include "axom/sol.hpp"
 
 class SolStateReader : public axom::inlet::LuaReader

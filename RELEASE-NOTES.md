@@ -104,6 +104,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   move the array to host memory, and will instead maintain the same allocator ID as the source array.
 - The device traversal method `BVH::TraverserType::traverse_tree()` now supports passing in arbitrary query objects
   for BVH traversal.
+- Moved `inlet::LuaReader::solState()` to be a protected function that now returns a `std::shared_ptr<axom::sol::state>`.
+  This is an advanced feature that could cause users to break an input file state after verification. This also alows us
+  to not expose `axom/sol.hpp` to all users of Inlet. This greatly reduces compile times. Using this feature requires
+  both a derived class and including `axom/sol.hpp` in the user code.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
