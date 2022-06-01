@@ -401,14 +401,16 @@ public:
   {
     if(m_mesh.isEmpty())
     {
-      SLIC_ERROR(
+      SLIC_ERROR_IF(
+        warnOnInvalid,
         "Attempting to insert point into empty Delaunay triangulation."
         "Delaunay::initializeBoundary() needs to be called first");
       return INVALID_INDEX;
     }
     if(!m_bounding_box.contains(query_pt))
     {
-      SLIC_WARNING(
+      SLIC_WARNING_IF(
+        warnOnInvalid,
         "Attempting to locate element at location outside valid domain");
       return INVALID_INDEX;
     }
