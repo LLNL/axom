@@ -59,6 +59,7 @@ public:
   std::string meshFile;
 
   double circleRadius {1.0};
+  std::vector<double> circleCenter {0.0, 0.0};
   int circlePoints {100};
   RuntimePolicy policy {RuntimePolicy::seq};
 
@@ -111,6 +112,12 @@ public:
     app.add_option("-r,--radius", circleRadius)
       ->description("Radius for circle")
       ->capture_default_str();
+
+    auto* circle_options =
+      app.add_option_group("circle", "Options for setting up the circle of points");
+    circle_options->add_option("--center", circleCenter)
+      ->description("Center for object (x,y[,z])")
+      ->expected(2, 3);
 
     app.add_option("-d,--dist-threshold", distThreshold)
       ->check(axom::CLI::NonNegativeNumber)
@@ -426,7 +433,7 @@ public:
    * Generates a collection of \a numPoints points along a circle
    * of radius \a radius centered at the origin
    */
-  void generateCircleMesh(double radius, int numPoints)
+  void generateCircleMesh(double radius, std::vector<double> &center, int numPoints)
   {
     using axom::utilities::random_real;
 
@@ -444,8 +451,8 @@ public:
     for(int i = 0; i < numPoints; ++i)
     {
       const double angleInRadians = random_real(thetaStart, thetaEnd);
-      const double rsinT = radius * std::sin(angleInRadians);
-      const double rcosT = radius * std::cos(angleInRadians);
+      const double rsinT = center[1] + radius * std::sin(angleInRadians);
+      const double rcosT = center[0] + radius * std::cos(angleInRadians);
 
       pts.push_back(PointType {rcosT, rsinT});
     }
@@ -738,6 +745,7 @@ int main(int argc, char** argv)
     objectDS.getRoot()->createGroup("object_mesh"));
 
   object_mesh_wrapper.generateCircleMesh(params.circleRadius,
+                                         params.circleCenter,
                                          params.circlePoints);
   object_mesh_wrapper.saveMesh();
 
