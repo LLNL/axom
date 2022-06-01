@@ -832,12 +832,12 @@ int main(int argc, char** argv)
     query_mesh_wrapper.getParticleMesh().getNodalVectorField<PointType>(
       "closest_point");
 
+  auto cpIndices =
+    query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
+      "cp_index");
+
   if(params.isVerbose())
   {
-    auto cpIndices =
-      query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
-        "cp_index");
-
     auto cpRank =
       query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
         "cp_rank");
@@ -874,11 +874,12 @@ int main(int argc, char** argv)
   }
 
   mfem::Array<int> dofs;
+  const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
+  const double nodist = std::numeric_limits<double>::signaling_NaN();
   for(auto idx : IndexSet(nQueryPts))
   {
-    const auto& cp = cpPositions[idx];
-    (*distances)(idx) = sqrt(squared_distance(qPts[idx], cp));
-
+    const auto& cp = cpIndices[idx] >= 0 ? cpPositions[idx] : nowhere;
+    (*distances)(idx) = cpIndices[idx] >= 0 ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
     primal::Vector<double, DIM> dir(qPts[idx], cp);
     directions->FESpace()->GetVertexVDofs(idx, dofs);
     directions->SetSubVector(dofs, dir.data());
