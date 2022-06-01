@@ -102,7 +102,6 @@ public:
 
   /// Constructor from a multi-component array Conduit node
   explicit InterleavedOrStridedPoints(conduit::Node& values)
-    : m_strided {{nullptr, nullptr, nullptr}}
   {
     SLIC_ASSERT(isMultiComponentArray(values));
 
@@ -128,7 +127,6 @@ public:
 
   /// Constructor from a multi-component array Sidre group node
   explicit InterleavedOrStridedPoints(const sidre::Group* values)
-    : m_strided {{nullptr, nullptr, nullptr}}
   {
     conduit::Node vals;
     SLIC_ASSERT(values != nullptr);
