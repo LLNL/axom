@@ -1093,7 +1093,14 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
       num_files = m_num_files;
       num_files = axom::utilities::clampUpper(num_files, num_procs);
     }
-    writer.write(temp_root, num_files, file_path, protocol);
+
+    // Specifying the tree pattern helps visit display our data.
+    std::string tree_pattern = "datagroup";
+    if(num_files != num_procs)
+    {
+      tree_pattern = "datagroup_%07d";
+    }
+    writer.write(temp_root, num_files, file_path, protocol, tree_pattern);
 
     // Now that we've written the data, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_save");
