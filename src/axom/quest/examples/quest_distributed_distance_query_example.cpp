@@ -114,7 +114,8 @@ public:
       ->capture_default_str();
 
     auto* circle_options =
-      app.add_option_group("circle", "Options for setting up the circle of points");
+      app.add_option_group("circle",
+                           "Options for setting up the circle of points");
     circle_options->add_option("--center", circleCenter)
       ->description("Center for object (x,y[,z])")
       ->expected(2, 3);
@@ -433,7 +434,7 @@ public:
    * Generates a collection of \a numPoints points along a circle
    * of radius \a radius centered at the origin
    */
-  void generateCircleMesh(double radius, std::vector<double> &center, int numPoints)
+  void generateCircleMesh(double radius, std::vector<double>& center, int numPoints)
   {
     using axom::utilities::random_real;
 
@@ -887,7 +888,8 @@ int main(int argc, char** argv)
   for(auto idx : IndexSet(nQueryPts))
   {
     const auto& cp = cpIndices[idx] >= 0 ? cpPositions[idx] : nowhere;
-    (*distances)(idx) = cpIndices[idx] >= 0 ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
+    (*distances)(idx) =
+      cpIndices[idx] >= 0 ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
     primal::Vector<double, DIM> dir(qPts[idx], cp);
     directions->FESpace()->GetVertexVDofs(idx, dofs);
     directions->SetSubVector(dofs, dir.data());
