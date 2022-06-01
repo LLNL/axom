@@ -427,6 +427,8 @@ private:
 struct Input
 {
   std::string outputFile {"scattered_interpolation"};
+  std::string inputFile;
+
   int numRandPoints {20};
   int numQueryPoints {20};
   int dimension {2};
@@ -443,42 +445,66 @@ struct Input
   };
 
 public:
+  bool hasInputMesh() const { return !inputFile.empty(); }
+
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
-    app.add_option("-n,--nrandpt", numRandPoints)
-      ->description("The number of points in the input mesh")
+    // Options for input data
+    // Either provide `-n` and `-d`; or `-i` (input mesh)
+    auto input_grp =
+      app.add_option_group("Input",
+                           "Parameters associated with input data.\n"
+                           "If an input mesh is provided, it will override the "
+                           "`-n` and `-d` options.");
+
+    input_grp->add_option("-n,--nrandpt", numRandPoints)
+      ->description("The number of points to generate for the input mesh")
       ->capture_default_str();
 
-    app.add_option("-q,--nquerypt", numQueryPoints)
-      ->description("The number of query points")
-      ->capture_default_str();
-
-    app.add_option("-d,--dim", dimension)
+    input_grp->add_option("-d,--dim", dimension)
       ->description(
         "The dimension of the mesh. 2 for triangle mesh in 2D; "
         "3 for tetrahedral mesh in 3D")
       ->capture_default_str();
 
-    app.add_option("-o,--outfile", outputFile)
+    input_grp->add_option("-i,--infile", inputFile)
+      ->description("Input point mesh with associated scalar fields")
+      ->check(axom::CLI::ExistingFile);
+
+    // Options for defining the query data
+    auto query_grp = app.add_option_group(
+      "Query",
+      "Parameters associated with query data. "
+      "Query box defaults to unit square/cube when not provided.\n"
+      "If no input mesh is provided, the input points "
+      "will lie in query bounding box.");
+
+    query_grp->add_option("-q,--nquerypt", numQueryPoints)
+      ->description("The number of query points")
+      ->capture_default_str();
+
+    auto* minbb = query_grp->add_option("--min", boundsMin)
+                    ->description("Min bounds for query box (x,y[,z])")
+                    ->expected(2, 3);
+    auto* maxbb = query_grp->add_option("--max", boundsMax)
+                    ->description("Max bounds for query box (x,y[,z])")
+                    ->expected(2, 3);
+    minbb->needs(maxbb);
+    maxbb->needs(minbb);
+
+    // Options for outputting the mesh
+    auto output_grp =
+      app.add_option_group("Output", "Parameters associated with output");
+    output_grp->add_option("-o,--outfile", outputFile)
       ->description("The output file")
       ->capture_default_str();
 
-    app.add_option("-p,--protocol", outputProtocol)
+    output_grp->add_option("-p,--protocol", outputProtocol)
       ->description("Set the output protocol for sidre point meshes")
       ->capture_default_str()
       ->check(axom::CLI::IsMember(s_validProtocols));
 
-    // Optional bounding box for query region
-    auto* minbb = app.add_option("--min", boundsMin)
-                    ->description("Min bounds for query box (x,y[,z])")
-                    ->expected(2, 3);
-    auto* maxbb = app.add_option("--max", boundsMax)
-                    ->description(
-                      "Max bounds for query box (x,y[,z]). "
-                      "Defaults to unit square/cube when not provided")
-                    ->expected(2, 3);
-    minbb->needs(maxbb);
-    maxbb->needs(minbb);
+    // --
 
     app.get_formatter()->column_width(45);
 
@@ -501,6 +527,7 @@ public:
     {{
       dimension: {}
       nrandpt: {}
+      inputFile: '{}'
       nquerypt: {}
       bounding box min: {{{}}}
       bounding box max: {{{}}}
@@ -509,6 +536,7 @@ public:
     }})",
                                 dimension,
                                 numRandPoints,
+                                inputFile,
                                 numQueryPoints,
                                 axom::fmt::join(boundsMin, ", "),
                                 axom::fmt::join(boundsMax, ", "),
@@ -545,10 +573,103 @@ axom::Array<primal::Point<double, DIM>> generatePts(
   return pts;
 }
 
+template <int DIM>
+void initializeInputMesh(Input& params, internal::blueprint::PointMesh& inputMesh)
+{
+  using BBoxType = primal::BoundingBox<double, DIM>;
+
+  if(params.hasInputMesh())
+  {
+    // Load mesh from file into inputMesh
+    conduit::Node mesh;
+    conduit::relay::io::blueprint::read_mesh(params.inputFile, mesh);
+
+    bool validMesh = inputMesh.loadFromConduitNode(mesh);
+    SLIC_ERROR_IF(
+      !validMesh,
+      axom::fmt::format("Could not read mesh '{}'", params.inputFile));
+
+    // recompute and reset bounding box based on input mesh
+    const int nPts = inputMesh.numPoints();
+    auto coords = quest::detail::InterleavedOrStridedPoints<DIM>(
+      inputMesh.coordsGroup()->getGroup("values"));
+
+    BBoxType bbox;
+    for(int idx = 0; idx < nPts; ++idx)
+    {
+      bbox.addPoint(coords[idx]);
+    }
+    SLIC_INFO("Input mesh bounding box: " << bbox);
+
+    params.boundsMin.clear();
+    params.boundsMax.clear();
+    for(int d = 0; d < DIM; ++d)
+    {
+      params.boundsMin.push_back(bbox.getMin()[d]);
+      params.boundsMax.push_back(bbox.getMax()[d]);
+    }
+
+    // Reset other input parameters
+    params.dimension = DIM;
+    params.numRandPoints = 0;
+  }
+  else
+  {
+    inputMesh.setPoints(
+      generatePts<DIM>(params.numRandPoints, params.boundsMin, params.boundsMax));
+
+    // Extract coordinate positions as scalar fields
+    const int nPts = inputMesh.numPoints();
+    auto coords = quest::detail::InterleavedOrStridedPoints<DIM>(
+      inputMesh.coordsGroup()->getGroup("values"));
+
+    inputMesh.registerNodalScalarField<double>("pos_x");
+    inputMesh.registerNodalScalarField<double>("pos_y");
+    if(DIM > 2)
+    {
+      inputMesh.registerNodalScalarField<double>("pos_z");
+    }
+
+    auto pos_x = inputMesh.getNodalScalarField<double>("pos_x");
+    auto pos_y = inputMesh.getNodalScalarField<double>("pos_y");
+    auto pos_z = (DIM > 2) ? inputMesh.getNodalScalarField<double>("pos_z")
+                           : inputMesh.getNodalScalarField<double>("");
+
+    for(int i = 0; i < nPts; ++i)
+    {
+      auto pt = coords[i];
+      pos_x[i] = pt[0];
+      pos_y[i] = pt[1];
+      if(DIM > 2)
+      {
+        pos_z[i] = pt[DIM - 1];
+      }
+    }
+  }
+}
+
+template <int DIM>
+void initializeQueryMesh(const Input& params,
+                         internal::blueprint::PointMesh& queryMesh,
+                         std::vector<std::string>&& fieldNames)
+{
+  queryMesh.setPoints(
+    generatePts<DIM>(params.numQueryPoints, params.boundsMin, params.boundsMax));
+
+  // Register and allocate required fields for query mesh
+  queryMesh.registerNodalScalarField<axom::IndexType>("cell_idx");
+
+  for(const auto& fld : fieldNames)
+  {
+    queryMesh.registerNodalScalarField<double>(fld);
+  }
+}
+
 int main(int argc, char** argv)
 {
   // Initialize the SLIC logger
   axom::slic::SimpleLogger logger(axom::slic::message::Info);
+  // axom::slic::enableAbortOnWarning();
 
   // Initialize default parameters and update with command line arguments:
   Input params;
@@ -563,99 +684,27 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
-  sidre::DataStore ds;
+  /// Set up the input mesh
+
+  sidre::DataStore input_ds;
 
   const std::string input_coords_name = "input_coords";
   const std::string input_mesh_name = "input_mesh";
-  auto* input_pt_mesh_group = ds.getRoot()->createGroup("input_point_mesh");
+  auto* input_pt_mesh_group =
+    input_ds.getRoot()->createGroup("input_point_mesh");
   internal::blueprint::PointMesh inputMesh(input_pt_mesh_group,
                                            input_coords_name,
                                            input_mesh_name);
-
-  const std::string query_coords_name = "query_coords";
-  const std::string query_mesh_name = "query_mesh";
-  auto* query_pt_mesh_group = ds.getRoot()->createGroup("query_point_mesh");
-  internal::blueprint::PointMesh queryMesh(query_pt_mesh_group,
-                                           query_coords_name,
-                                           query_mesh_name);
 
   // Initialize the mesh points
   switch(params.dimension)
   {
   case 2:
-    inputMesh.setPoints(
-      generatePts<2>(params.numRandPoints, params.boundsMin, params.boundsMax));
-
-    queryMesh.setPoints(
-      generatePts<2>(params.numQueryPoints, params.boundsMin, params.boundsMax));
+    initializeInputMesh<2>(params, inputMesh);
     break;
   case 3:
-    inputMesh.setPoints(
-      generatePts<3>(params.numRandPoints, params.boundsMin, params.boundsMax));
-
-    queryMesh.setPoints(
-      generatePts<3>(params.numQueryPoints, params.boundsMin, params.boundsMax));
+    initializeInputMesh<3>(params, inputMesh);
     break;
-  }
-
-  // Add a position field for our interpolation
-  switch(params.dimension)
-  {
-  case 2:
-  {
-    using PtType = primal::Point<double, 2>;
-    inputMesh.registerNodalScalarField<double>("pos_x");
-    inputMesh.registerNodalScalarField<double>("pos_y");
-    auto pos_x = inputMesh.getNodalScalarField<double>("pos_x");
-    auto pos_y = inputMesh.getNodalScalarField<double>("pos_y");
-
-    const int nPts = inputMesh.numPoints();
-    auto pos = axom::ArrayView<PtType>(
-      static_cast<PtType*>(
-        inputMesh.coordsGroup()->getView("values/x")->getVoidPtr()),
-      nPts);
-
-    for(int i = 0; i < nPts; ++i)
-    {
-      auto& pt = pos[i];
-      pos_x[i] = pt[0];
-      pos_y[i] = pt[1];
-    }
-  }
-  break;
-  case 3:
-  {
-    using PtType = primal::Point<double, 3>;
-    inputMesh.registerNodalScalarField<double>("pos_x");
-    inputMesh.registerNodalScalarField<double>("pos_y");
-    inputMesh.registerNodalScalarField<double>("pos_z");
-    auto pos_x = inputMesh.getNodalScalarField<double>("pos_x");
-    auto pos_y = inputMesh.getNodalScalarField<double>("pos_y");
-    auto pos_z = inputMesh.getNodalScalarField<double>("pos_z");
-
-    const int nPts = inputMesh.numPoints();
-    auto pos = axom::ArrayView<PtType>(
-      static_cast<PtType*>(
-        inputMesh.coordsGroup()->getView("values/x")->getVoidPtr()),
-      nPts);
-
-    for(int i = 0; i < nPts; ++i)
-    {
-      auto& pt = pos[i];
-      pos_x[i] = pt[0];
-      pos_y[i] = pt[1];
-      pos_z[i] = pt[2];
-    }
-  }
-  break;
-  }
-
-  queryMesh.registerNodalScalarField<axom::IndexType>("cell_idx");
-  queryMesh.registerNodalScalarField<double>("pos_x");
-  queryMesh.registerNodalScalarField<double>("pos_y");
-  if(params.dimension > 2)
-  {
-    queryMesh.registerNodalScalarField<double>("pos_z");
   }
 
   // Write input mesh to file
@@ -666,6 +715,29 @@ int main(int argc, char** argv)
     inputMesh.saveMesh(file, params.outputProtocol);
   }
 
+  /// Set up the query mesh
+
+  sidre::DataStore query_ds;
+  const std::string query_coords_name = "query_coords";
+  const std::string query_mesh_name = "query_mesh";
+  auto* query_pt_mesh_group =
+    query_ds.getRoot()->createGroup("query_point_mesh");
+  internal::blueprint::PointMesh queryMesh(query_pt_mesh_group,
+                                           query_coords_name,
+                                           query_mesh_name);
+
+  // Initialize the mesh points
+  switch(params.dimension)
+  {
+  case 2:
+    initializeQueryMesh<2>(params, queryMesh, inputMesh.getFieldNames());
+    break;
+  case 3:
+    initializeQueryMesh<3>(params, queryMesh, inputMesh.getFieldNames());
+    break;
+  }
+
+  /// Run the query
   std::unique_ptr<quest::ScatteredInterpolation<2>> scattered_2d;
   std::unique_ptr<quest::ScatteredInterpolation<3>> scattered_3d;
 
@@ -682,41 +754,24 @@ int main(int argc, char** argv)
   case 2:
     scattered_2d = std::unique_ptr<quest::ScatteredInterpolation<2>>(
       new quest::ScatteredInterpolation<2>);
-    scattered_2d->buildTriangulation(bp_input, input_coords_name);
+    scattered_2d->buildTriangulation(bp_input, inputMesh.coordsName());
     scattered_2d->locatePoints(bp_query, query_coords_name);
 
-    scattered_2d->interpolateField(bp_query,
-                                   query_coords_name,
-                                   bp_input,
-                                   "pos_x",
-                                   "pos_x");
-    scattered_2d->interpolateField(bp_query,
-                                   query_coords_name,
-                                   bp_input,
-                                   "pos_y",
-                                   "pos_y");
+    for(const auto& fld : inputMesh.getFieldNames())
+    {
+      scattered_2d->interpolateField(bp_query, query_coords_name, bp_input, fld, fld);
+    }
     break;
   case 3:
     scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
       new quest::ScatteredInterpolation<3>);
-    scattered_3d->buildTriangulation(bp_input, input_coords_name);
+    scattered_3d->buildTriangulation(bp_input, inputMesh.coordsName());
     scattered_3d->locatePoints(bp_query, query_coords_name);
 
-    scattered_3d->interpolateField(bp_query,
-                                   query_coords_name,
-                                   bp_input,
-                                   "pos_x",
-                                   "pos_x");
-    scattered_3d->interpolateField(bp_query,
-                                   query_coords_name,
-                                   bp_input,
-                                   "pos_y",
-                                   "pos_y");
-    scattered_3d->interpolateField(bp_query,
-                                   query_coords_name,
-                                   bp_input,
-                                   "pos_z",
-                                   "pos_z");
+    for(const auto& fld : inputMesh.getFieldNames())
+    {
+      scattered_3d->interpolateField(bp_query, query_coords_name, bp_input, fld, fld);
+    }
     break;
   }
 
