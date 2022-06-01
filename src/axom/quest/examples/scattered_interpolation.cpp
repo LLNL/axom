@@ -16,7 +16,9 @@
 #include "axom/primal.hpp"
 #include "axom/quest.hpp"
 
+#include "conduit.hpp"
 #include "conduit_blueprint.hpp"
+#include "conduit_relay.hpp"
 
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
@@ -54,6 +56,101 @@ public:
   sidre::Group* coordsGroup() const { return m_coordsGroup; }
   /// Gets the parent group for the blueprint mesh topology
   sidre::Group* topoGroup() const { return m_topoGroup; }
+
+  std::string meshName() const { return m_meshName; }
+  std::string coordsName() const { return m_coordName; }
+
+  /// Loads the point mesh from a conduit hierarchy
+  bool loadFromConduitNode(const conduit::Node& mesh_node)
+  {
+    conduit::Node info;
+    if(!conduit::blueprint::verify("mesh", mesh_node, info))
+    {
+      SLIC_ERROR("Invalid blueprint for particle mesh: \n" << info.to_yaml());
+      return false;
+    }
+    else
+    {
+      SLIC_INFO("mesh_node info: " << info.to_yaml());
+    }
+
+    m_group->destroyViewsAndData();
+    m_group->destroyGroups();
+
+    auto domains = conduit::blueprint::mesh::domains(mesh_node);
+    SLIC_ERROR_IF(domains.size() != 1,
+                  "loadFromConduitNode only currently supports loading "
+                  "blueprint files with a single mesh.");
+
+    m_group->importConduitTree(*domains[0]);
+    if(!this->isValid())
+    {
+      return false;
+    }
+
+    // Attempt to rename the mesh from the file
+    if(domains[0]->has_child("sidre_group_name"))
+    {
+      m_group->rename(domains[0]->child("sidre_group_name").name());
+    }
+    else if(!domains[0]->name().empty())
+    {
+      m_group->rename(domains[0]->name());
+    }
+
+    // Log some debug info
+    {
+      SLIC_INFO(axom::fmt::format("Root: {{name:{}, path:{}, num groups:{}}}",
+                                  m_group->getName(),
+                                  m_group->getPathName(),
+                                  m_group->getNumGroups()));
+
+      m_group->printTree(1, std::cout);
+    }
+
+    // extract coordset name and group
+    {
+      auto* coords = m_group->getGroup("coordsets");
+
+      SLIC_ERROR_IF(coords->getNumGroups() != 1,
+                    "PointMesh::loadFromConduitNode() only currently supports "
+                    "meshes with a single coordset");
+
+      m_coordName = coords->getGroup(0)->getName();
+
+      SLIC_INFO("Coords name is: " << m_coordName);
+      SLIC_ERROR_IF(!coords->hasGroup(m_coordName),
+                    "Missing required coordinates: " << m_coordName);
+
+      m_coordsGroup = coords->getGroup(m_coordName);
+    }
+
+    // extract mesh/topology name and group
+    {
+      auto* topos = m_group->getGroup("topologies");
+
+      SLIC_ERROR_IF(topos->getNumGroups() != 1,
+                    "PointMesh::loadFromConduitNode() only currently supports "
+                    "meshes with a single topology");
+
+      m_meshName = topos->getGroup(0)->getName();
+
+      SLIC_INFO("Mesh name is: " << m_meshName);
+      SLIC_ERROR_IF(!topos->hasGroup(m_meshName),
+                    "Missing required mesh: " << m_meshName);
+
+      m_topoGroup = topos->getGroup(m_meshName);
+    }
+
+    // extract fields group
+    {
+      m_fieldsGroup = m_group->hasGroup("fields")
+        ? m_group->getGroup("fields")
+        : m_group->createGroup("fields");
+    }
+
+    return true;
+  }
 
   /// Returns true if points have been added to the particle mesh
   bool hasPoints() const
@@ -277,6 +374,21 @@ public:
     }
 
     ds->getRoot()->save(fname, protocol);
+  }
+
+  /// Returns a list of registered field names
+  std::vector<std::string> getFieldNames() const
+  {
+    std::vector<std::string> names;
+
+    for(auto idx = m_fieldsGroup->getFirstValidGroupIndex();
+        sidre::indexIsValid(idx);
+        idx = m_fieldsGroup->getNextValidGroupIndex(idx))
+    {
+      names.push_back(m_fieldsGroup->getGroup(idx)->getName());
+    }
+
+    return names;
   }
 
 private:
