@@ -22,6 +22,14 @@
 #include "axom/fmt.hpp"
 #include "axom/slic.hpp"
 
+#include "axom/sol.hpp"
+
+extern "C" {
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+}
+
 namespace axom
 {
 namespace inlet
@@ -101,11 +109,12 @@ void nameRetrievalHelper(const std::vector<std::string>& ignores,
 
 LuaReader::LuaReader()
 {
-  m_lua.open_libraries(axom::sol::lib::base,
-                       axom::sol::lib::math,
-                       axom::sol::lib::string,
-                       axom::sol::lib::package);
-  auto vec_type = m_lua.new_usertype<FunctionType::Vector>(
+  m_lua = std::make_shared<axom::sol::state>();
+  m_lua->open_libraries(axom::sol::lib::base,
+                        axom::sol::lib::math,
+                        axom::sol::lib::string,
+                        axom::sol::lib::package);
+  auto vec_type = m_lua->new_usertype<FunctionType::Vector>(
     "Vector",  // Name of the class in Lua
     // Add make_vector as a constructor to enable "new Vector(x,y,z)"
     // Use lambdas for 2D and "default" cases - default arguments cannot be
@@ -196,7 +205,7 @@ LuaReader::LuaReader()
   // Pass the preloaded globals as both the set to ignore and the set to add
   // to, such that only the top-level preloaded globals are added
   detail::nameRetrievalHelper(m_preloaded_globals,
-                              m_lua.globals(),
+                              m_lua->globals(),
                               "",
                               m_preloaded_globals);
 }
@@ -210,7 +219,7 @@ bool LuaReader::parseFile(const std::string& filePath)
     return false;
   }
 
-  auto script = m_lua.script_file(filePath);
+  auto script = m_lua->script_file(filePath);
   if(!script.valid())
   {
     SLIC_WARNING(
@@ -226,7 +235,7 @@ bool LuaReader::parseString(const std::string& luaString)
     SLIC_WARNING("Inlet: Given an empty Lua string to parse.");
     return false;
   }
-  m_lua.script(luaString);
+  m_lua->script(luaString);
   return true;
 }
 
@@ -311,12 +320,13 @@ bool LuaReader::traverseToTable(Iter begin, Iter end, axom::sol::table& table)
     return true;
   }
 
-  if(!m_lua[*begin].valid())
+  if(!(*m_lua)[*begin].valid())
   {
     return false;
   }
 
-  table = m_lua[*begin];  // Use the first one to index into the global lua state
+  // Use the first one to index into the global lua state
+  table = (*m_lua)[*begin];
   ++begin;
 
   // Then use the remaining keys to walk down to the requested table
@@ -544,9 +554,9 @@ ReaderResult LuaReader::getValue(const std::string& id, T& value)
 
   if(tokens.size() == 1)
   {
-    if(m_lua[tokens[0]].valid())
+    if((*m_lua)[tokens[0]].valid())
     {
-      return detail::checkedGet(m_lua[tokens[0]], value);
+      return detail::checkedGet((*m_lua)[tokens[0]], value);
     }
     return ReaderResult::NotFound;
   }
@@ -567,7 +577,7 @@ ReaderResult LuaReader::getValue(const std::string& id, T& value)
 std::vector<std::string> LuaReader::getAllNames()
 {
   std::vector<std::string> result;
-  detail::nameRetrievalHelper(m_preloaded_globals, m_lua.globals(), "", result);
+  detail::nameRetrievalHelper(m_preloaded_globals, m_lua->globals(), "", result);
   return result;
 }
 
@@ -650,10 +660,10 @@ axom::sol::protected_function LuaReader::getFunctionInternal(const std::string& 
 
   if(tokens.size() == 1)
   {
-    if(m_lua[tokens[0]].valid())
+    if((*m_lua)[tokens[0]].valid())
     {
-      lua_func = m_lua[tokens[0]];
-      detail::checkedGet(m_lua[tokens[0]], lua_func);
+      lua_func = (*m_lua)[tokens[0]];
+      detail::checkedGet((*m_lua)[tokens[0]], lua_func);
     }
   }
   else
