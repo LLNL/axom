@@ -8,13 +8,12 @@
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/slam.hpp"
+#include "axom/sidre.hpp"
 #include "axom/primal.hpp"
-#include "axom/mint.hpp"
-#include "axom/spin.hpp"
 
 #include "axom/fmt.hpp"
 
+#include "conduit.hpp"
 #include "conduit_blueprint.hpp"
 
 #include <cmath>
@@ -87,6 +86,106 @@ namespace axom
 {
 namespace quest
 {
+namespace detail
+{
+/**
+ * \brief Utility class to enable processing an array of points whose layout
+ * is either interleaved or separated strided arrays
+ */
+template <int NDIMS>
+struct InterleavedOrStridedPoints
+{
+public:
+  using PointType = axom::primal::Point<double, NDIMS>;
+  using StridedPoints = axom::primal::detail::ZipBase<PointType>;
+  using InterleavedPoints = axom::ArrayView<PointType>;
+
+  /// Constructor from a multi-component array Conduit node
+  explicit InterleavedOrStridedPoints(conduit::Node& values)
+    : m_strided {{nullptr, nullptr, nullptr}}
+  {
+    SLIC_ASSERT(isMultiComponentArray(values));
+
+    m_is_interleaved = conduit::blueprint::mcarray::is_interleaved(values);
+
+    m_npts = ::extractSize(values);
+
+    if(m_is_interleaved)
+    {
+      m_interleaved = ::ArrayView_from_Node<PointType>(values["x"], m_npts);
+    }
+    else
+    {
+      const int dim = ::extractDimension(values);
+      SLIC_ASSERT(dim == NDIMS);
+
+      m_strided = StridedPoints {
+        {static_cast<double*>(values["x"].data_ptr()),
+         dim >= 2 ? static_cast<double*>(values["y"].data_ptr()) : nullptr,
+         dim >= 3 ? static_cast<double*>(values["z"].data_ptr()) : nullptr}};
+    }
+  }
+
+  /// Constructor from a multi-component array Sidre group node
+  explicit InterleavedOrStridedPoints(const sidre::Group* values)
+    : m_strided {{nullptr, nullptr, nullptr}}
+  {
+    conduit::Node vals;
+    SLIC_ASSERT(values != nullptr);
+    values->createNativeLayout(vals);
+
+    SLIC_ASSERT(isMultiComponentArray(vals));
+    m_is_interleaved = conduit::blueprint::mcarray::is_interleaved(vals);
+    m_npts = ::extractSize(vals);
+
+    if(m_is_interleaved)
+    {
+      m_interleaved = ::ArrayView_from_Node<PointType>(vals["x"], m_npts);
+    }
+    else
+    {
+      const int dim = ::extractDimension(vals);
+      SLIC_ASSERT(dim == NDIMS);
+
+      m_strided = StridedPoints {
+        {static_cast<double*>(vals["x"].data_ptr()),
+         dim >= 2 ? static_cast<double*>(vals["y"].data_ptr()) : nullptr,
+         dim >= 3 ? static_cast<double*>(vals["z"].data_ptr()) : nullptr}};
+    }
+  }
+
+  /// Returns the number of points in the array
+  int size() const { return m_npts; }
+
+  /// Access the point at index \a idx in the array
+  PointType operator[](int idx) const
+  {
+    return m_is_interleaved ? m_interleaved[idx] : m_strided[idx];
+  }
+
+private:
+  /// Predicate to check that a Conduit node is a valid mcarray
+  /// and print some debug information if it is not
+  bool isMultiComponentArray(conduit::Node& node) const
+  {
+    conduit::Node info;
+    if(!conduit::blueprint::verify("mcarray", node, info))
+    {
+      SLIC_INFO("Input was not a valid multicomponent array: " << info.to_yaml());
+      return false;
+    }
+    return true;
+  }
+
+private:
+  StridedPoints m_strided;
+  InterleavedPoints m_interleaved;
+  bool m_is_interleaved;
+  int m_npts;
+};
+
+}  // namespace detail
+
 /**
  * \brief A class to perform scattered data interpolation at arbitrary points
  * over an input point set
@@ -114,21 +213,24 @@ public:
     SLIC_ASSERT(this->isValidBlueprint(mesh_node));
 
     // Extract coordinates as ArrayView of PointType
-    auto coords = getCoordinatesArrayView(mesh_node, coordset);
+    const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
+    SLIC_ASSERT(mesh_node.has_path(valuesPath));
+    auto coords = detail::InterleavedOrStridedPoints<DIM>(mesh_node[valuesPath]);
+    const int npts = coords.size();
 
     // Compute the bounding box
     BoundingBoxType bb;
-    for(const auto& pt : coords)
+    for(int i = 0; i < npts; ++i)
     {
-      bb.addPoint(pt);
+      bb.addPoint(coords[i]);
     }
     // Scale the bounding box to ensure that all input points are contained
     bb.scale(1.5);
 
     m_delaunay.initializeBoundary(bb);
-    for(const auto& pt : coords)
+    for(int i = 0; i < npts; ++i)
     {
-      m_delaunay.insertPoint(pt);
+      m_delaunay.insertPoint(coords[i]);
     }
 
     m_delaunay.removeBoundary();
@@ -152,7 +254,9 @@ public:
     // Perform some simple error checking
     SLIC_ASSERT(this->isValidBlueprint(query_mesh));
 
-    auto coords = getCoordinatesArrayView(query_mesh, coordset);
+    const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
+    SLIC_ASSERT(query_mesh.has_path(valuesPath));
+    auto coords = detail::InterleavedOrStridedPoints<DIM>(query_mesh[valuesPath]);
     const int npts = coords.size();
 
     SLIC_ERROR_IF(!query_mesh.has_path("fields/cell_idx/values"),
@@ -167,8 +271,8 @@ public:
     constexpr bool warnOnInvalid = false;
     for(int idx = 0; idx < npts; ++idx)
     {
-      const auto& pt = coords[idx];
-      cell_idx[idx] = m_delaunay.findContainingElement(pt, warnOnInvalid);
+      cell_idx[idx] =
+        m_delaunay.findContainingElement(coords[idx], warnOnInvalid);
     }
   }
 
@@ -209,7 +313,10 @@ public:
     auto in_fld = getField<double>(input_mesh, input_field_name);
     auto out_fld = getField<double>(query_mesh, output_field_name);
     auto containing_cell = getField<axom::IndexType>(query_mesh, "cell_idx");
-    auto coords = getCoordinatesArrayView(query_mesh, coordset);
+
+    const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
+    SLIC_ASSERT(query_mesh.has_path(valuesPath));
+    auto coords = detail::InterleavedOrStridedPoints<DIM>(query_mesh[valuesPath]);
 
     // Interpolate field at query points
     const int npts = coords.size();
@@ -234,6 +341,10 @@ public:
       }
     }
   }
+
+  /// TODO: Add a function that takes x,y,z coordinates
+  /// and returns the vertex indices and the barycentric coords
+  /// of the point w.r.t. its containing element
 
 private:
   /// Check validity of blueprint group
@@ -276,26 +387,6 @@ private:
     const auto sz = values.dtype().number_of_elements();
 
     return ::ArrayView_from_Node<T>(values, sz);
-  }
-
-  /**
-   * \brief Returns an \a ArrayView<PointType> of the coordinates of the given \a mesh_node
-   *
-   * \param [in] mesh_node The root conduit node of a valid mesh blueprint
-   * \param [in] coordset The name of the coordinate set within \a mesh_node that we're returning
-   */
-  axom::ArrayView<PointType> getCoordinatesArrayView(conduit::Node& mesh_node,
-                                                     const std::string& coordset)
-  {
-    const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
-    SLIC_ASSERT(mesh_node.has_path(valuesPath));
-    auto& values = mesh_node[valuesPath];
-
-    SLIC_ASSERT(::extractDimension(values) == DIM);
-    const int npts = ::extractSize(values);
-
-    // Assume initially that coords are interleaved
-    return ::ArrayView_from_Node<PointType>(values["x"], npts);
   }
 
 private:
