@@ -60,6 +60,7 @@ public:
 
   double circleRadius {1.0};
   std::vector<double> circleCenter {0.0, 0.0};
+  // TODO: Ensure that circleCenter size matches dimensionality.
   int circlePoints {100};
   RuntimePolicy policy {RuntimePolicy::seq};
 
