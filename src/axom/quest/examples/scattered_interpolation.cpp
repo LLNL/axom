@@ -61,7 +61,8 @@ public:
   std::string coordsName() const { return m_coordName; }
 
   /// Loads the point mesh from a conduit hierarchy
-  bool loadFromConduitNode(const conduit::Node& mesh_node)
+  bool loadFromConduitNode(const conduit::Node& mesh_node,
+                           bool verboseOutput = false)
   {
     conduit::Node info;
     if(!conduit::blueprint::verify("mesh", mesh_node, info))
@@ -69,7 +70,7 @@ public:
       SLIC_ERROR("Invalid blueprint for particle mesh: \n" << info.to_yaml());
       return false;
     }
-    else
+    else if(verboseOutput)
     {
       SLIC_INFO("mesh_node info: " << info.to_yaml());
     }
@@ -99,6 +100,7 @@ public:
     }
 
     // Log some debug info
+    if(verboseOutput)
     {
       SLIC_INFO(axom::fmt::format("Root: {{name:{}, path:{}, num groups:{}}}",
                                   m_group->getName(),
@@ -118,7 +120,10 @@ public:
 
       m_coordName = coords->getGroup(0)->getName();
 
-      SLIC_INFO("Coords name is: " << m_coordName);
+      if(verboseOutput)
+      {
+        SLIC_INFO("Coords name is: " << m_coordName);
+      }
       SLIC_ERROR_IF(!coords->hasGroup(m_coordName),
                     "Missing required coordinates: " << m_coordName);
 
@@ -135,7 +140,10 @@ public:
 
       m_meshName = topos->getGroup(0)->getName();
 
-      SLIC_INFO("Mesh name is: " << m_meshName);
+      if(verboseOutput)
+      {
+        SLIC_INFO("Mesh name is: " << m_meshName);
+      }
       SLIC_ERROR_IF(!topos->hasGroup(m_meshName),
                     "Missing required mesh: " << m_meshName);
 
@@ -429,6 +437,7 @@ struct Input
   std::string outputFile {"scattered_interpolation"};
   std::string inputFile;
 
+  bool verboseOutput {false};
   int numRandPoints {20};
   int numQueryPoints {20};
   int dimension {2};
@@ -449,6 +458,11 @@ public:
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
+    app.add_flag("-v,--verbose", verboseOutput)
+      ->description(
+        "Increases the output verbosity while running the application")
+      ->capture_default_str();
+
     // Options for input data
     // Either provide `-n` and `-d`; or `-i` (input mesh)
     auto input_grp =
@@ -584,7 +598,7 @@ void initializeInputMesh(Input& params, internal::blueprint::PointMesh& inputMes
     conduit::Node mesh;
     conduit::relay::io::blueprint::read_mesh(params.inputFile, mesh);
 
-    bool validMesh = inputMesh.loadFromConduitNode(mesh);
+    bool validMesh = inputMesh.loadFromConduitNode(mesh, params.verboseOutput);
     SLIC_ERROR_IF(
       !validMesh,
       axom::fmt::format("Could not read mesh '{}'", params.inputFile));
