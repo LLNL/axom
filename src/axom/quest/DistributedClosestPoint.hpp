@@ -22,6 +22,7 @@
 #include "conduit_relay_io.hpp"
 
 #include <memory>
+#include <limits>
 #include <cstdlib>
 #include <cmath>
 
@@ -280,11 +281,24 @@ public:
   DistributedClosestPointImpl(RuntimePolicy runtimePolicy, bool isVerbose)
     : m_runtimePolicy(runtimePolicy)
     , m_isVerbose(isVerbose)
+    , m_sqDistanceThreshold(std::numeric_limits<double>::max())
   {
     setAllocatorID();
 
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+  }
+
+  /**
+   * \brief Sets the threshold for the query
+   *
+   * \param [in] threshold Ignore distances greater than this value.
+   */
+  void setSquaredDistanceThreshold(double sqThreshold)
+  {
+    SLIC_ERROR_IF(sqThreshold < 0.0,
+                  "Squared distance-threshold must be non-negative.");
+    m_sqDistanceThreshold = sqThreshold;
   }
 
 public:
@@ -754,7 +768,9 @@ public:
 
           auto traversePredicate = [&](const PointType& p,
                                        const BoxType& bb) -> bool {
-            return squared_distance(p, bb) <= curr_min.minSqDist;
+            auto sqDist = squared_distance(p, bb);
+            return sqDist <= curr_min.minSqDist &&
+              sqDist <= m_sqDistanceThreshold;
           };
 
           // Traverse the tree, searching for the point with minimum distance.
@@ -829,6 +845,7 @@ public:
 private:
   RuntimePolicy m_runtimePolicy;
   bool m_isVerbose {false};
+  double m_sqDistanceThreshold;
   int m_allocatorID;
   int m_rank;
   int m_nranks;
@@ -932,6 +949,17 @@ public:
     m_dimension = dim;
   }
 
+  /**
+   * \brief Sets the threshold for the query
+   *
+   * \param [in] threshold Ignore distances greater than this value.
+   */
+  void setDistanceThreshold(double threshold)
+  {
+    SLIC_ERROR_IF(threshold < 0.0, "Distance threshold must be non-negative.");
+    m_sqDistanceThreshold = threshold * threshold;
+  }
+
   /// Sets the logging verbosity of the query. By default the query is not verbose
   void setVerbosity(bool isVerbose) { m_isVerbose = isVerbose; }
 
@@ -1021,9 +1049,11 @@ public:
     switch(m_dimension)
     {
     case 2:
+      m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_2->computeClosestPoints(query_node, cooordset);
       break;
     case 3:
+      m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_3->computeClosestPoints(query_node, cooordset);
       break;
     }
@@ -1073,6 +1103,7 @@ private:
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
   int m_dimension {-1};
   bool m_isVerbose {false};
+  double m_sqDistanceThreshold {std::numeric_limits<double>::max()};
 
   bool m_objectMeshCreated {false};
 
