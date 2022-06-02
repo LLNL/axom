@@ -72,7 +72,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   points from a given 2D or 3D point mesh in the Mesh Blueprint format. The current implementation
   generates a Deluanay complex over the points and performs linear interpolation over the
   triangle/tetrahedron at the query points.
-- Adds a HIP execution policy for device kernels
+- Adds a HIP execution policy for device kernels to run on AMD GPU hardware
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
