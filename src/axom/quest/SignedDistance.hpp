@@ -563,7 +563,7 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace>
-inline axom::primal::BoundingBox<double, NDIMS> AXOM_HOST_DEVICE
+AXOM_HOST_DEVICE inline axom::primal::BoundingBox<double, NDIMS>
 SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell,
                                                      const detail::UcdMeshData& mesh,
                                                      ZipPoint meshPts)

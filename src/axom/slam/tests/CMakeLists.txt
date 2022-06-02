@@ -46,6 +46,8 @@ set(gtest_slam_tests
 
 
 set(slam_tests_depends_on axom gtest)
+
+# hipErrorNoBinaryForGpu without hip dependency
 blt_list_append( TO slam_tests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
 
 

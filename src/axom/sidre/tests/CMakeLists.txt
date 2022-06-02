@@ -48,6 +48,8 @@ set(fruit_sidre_tests
    )
 
 set(sidre_gtests_depends_on axom gtest)
+
+# hipErrorNoBinaryForGpu without hip dependency
 blt_list_append( TO sidre_gtests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
 
 
