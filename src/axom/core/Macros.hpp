@@ -16,6 +16,15 @@
 #include <cassert>  // for assert()
 
 /*!
+ * \def AXOM_GPUCC
+ *
+ * \brief Convenience macro for compiling CUDA/HIP source files
+ */
+#if defined(__CUDACC__) || defined(__HIPCC__)
+  #define AXOM_GPUCC
+#endif
+
+/*!
  * \def AXOM_DEVICE
  * \def AXOM_HOST_DEVICE
  *
@@ -66,16 +75,19 @@
 #endif
 
 /*!
+ * \def AXOM_USE_GPU
+ *
+ * \brief Convenience macro used for GPU-enabled checks
+ */
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #define AXOM_USE_GPU
+#endif
+
+/*!
  * \def AXOM_LAMBDA
  *
  * \brief Convenience macro used for lambda capture by value.
  * \note When CUDA or HIP is used, the macro always expands to a host/device lambda.
- *
- * \warning When compiling with CUDA or HIP, host/device lambdas incur a significant
- *  penalty on the CPU code. The way NVCC implements host/device lambdas
- *  prevents the compiler from proper in-lining them. When CUDA or HIP is enabled use
- *  the parallel_gpu execution policy or opt to turn off CUDA or HIP if the application
- *  is making more use of the parallel_cpu and serial execution policies.
  */
 #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
   #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
