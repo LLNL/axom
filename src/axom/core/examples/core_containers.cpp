@@ -171,8 +171,7 @@ void demoArrayBasic()
 }
 
 // The following example requires CUDA or HIP + Umpire + unified memory
-#if defined(AXOM_USE_UMPIRE) &&                        \
-  (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && \
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_GPU) && \
   defined(UMPIRE_ENABLE_UM)
   #define AXOM_CONTAINERS_EXAMPLE_ON_DEVICE
 #endif

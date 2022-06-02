@@ -265,7 +265,7 @@ TEST(core_memory_management, set_get_default_memory_space)
     axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   EXPECT_EQ(HostAllocatorID, axom::getDefaultAllocatorID());
 
-  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_GPU)
 
     #ifdef UMPIRE_ENABLE_PINNED
   const int PinnedAllocatorID =
@@ -296,7 +296,7 @@ TEST(core_memory_management, set_get_default_memory_space)
   EXPECT_EQ(UnifiedAllocatorID, axom::getDefaultAllocatorID());
     #endif
 
-  #endif  // AXOM_USE_CUDA || AXOM_USE_HIP
+  #endif  // AXOM_USE_GPU
 
   axom::setDefaultAllocator(HostAllocatorID);
   EXPECT_EQ(HostAllocatorID, axom::getDefaultAllocatorID());
@@ -314,7 +314,7 @@ TEST(core_memory_management, alloc_free)
     axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_alloc_and_free(HostAllocatorID, HOST_ACCESSIBLE);
 
-  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_GPU)
 
   constexpr bool NOT_HOST_ACCESSIBLE = false;
 
@@ -342,7 +342,7 @@ TEST(core_memory_management, alloc_free)
   check_alloc_and_free(UnifiedAllocatorID, HOST_ACCESSIBLE);
     #endif
 
-  #endif  // AXOM_USE_CUDA || AXOM_USE_HIP
+  #endif  // AXOM_USE_GPU
 
 #endif  // AXOM_USE_UMPIRE
 
@@ -360,7 +360,7 @@ TEST(core_memory_management, alloc_realloc_free)
     axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_alloc_realloc_free(HostAllocatorID, HOST_ACCESSIBLE);
 
-  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_GPU)
 
   constexpr bool NOT_HOST_ACCESSIBLE = false;
 
@@ -388,7 +388,7 @@ TEST(core_memory_management, alloc_realloc_free)
 
     #endif
 
-  #endif /* AXOM_USE_CUDA || AXOM_USE_HIP */
+  #endif /* AXOM_USE_GPU */
 
 #endif /* AXOM_USE_UMPIRE */
 

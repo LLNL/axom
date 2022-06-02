@@ -252,7 +252,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_insert)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -325,7 +325,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_insert)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -399,7 +399,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_set)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -455,7 +455,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_initializer_list)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -517,7 +517,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_default_ctor_obj)
     typename TestFixture::template HostTArray<NonTrivialDefaultCtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -594,7 +594,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_ctor_obj)
   using HostArray = typename TestFixture::template HostTArray<NonTrivialCtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -664,7 +664,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   using HostArray = typename TestFixture::template HostTArray<NonTrivialDtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -752,7 +752,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   using IntHostArray = typename TestFixture::HostArray;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -856,7 +856,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
   using HostIntArray = typename TestFixture::HostArray;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(

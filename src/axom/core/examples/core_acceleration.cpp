@@ -119,8 +119,7 @@ void demoAxomExecution()
 
 //Now, let's say we want to try out use of CUDA or HIP. We just change that execution space.
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && \
-  ((defined(AXOM_USE_CUDA) && defined(__CUDACC__)) ||     \
-   (defined(AXOM_USE_HIP) && defined(__HIPCC__)))
+  defined(AXOM_USE_GPU) && defined(AXOM_GPUCC)
   // _deviceexebasic_start
   //This example requires Umpire to be in use, and Unified memory available.
   const int allocator_id = axom::getUmpireResourceAllocatorID(
