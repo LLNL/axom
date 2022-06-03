@@ -42,6 +42,8 @@ public:
 public:
   using ArrayPointerType = ArrayType*;
 
+  ArrayIteratorBase() : BaseType(0) { }
+
   ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
     : BaseType(pos)
     , m_arrayPtr(arr)
@@ -57,7 +59,7 @@ protected:
   void advance(IndexType n) { BaseType::m_pos += n; }
 
 protected:
-  ArrayPointerType m_arrayPtr;
+  ArrayPointerType m_arrayPtr {nullptr};
 };  // end of ArrayIteratorBase class
 
 /// @}
