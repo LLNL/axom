@@ -52,7 +52,10 @@ public:
   /**
    * \brief Returns the current iterator value
    */
-  ValueType& operator*() const { return m_arrayPtr->flatIndex(BaseType::m_pos); }
+  ValueType& operator*() const
+  {
+    return m_arrayPtr->flatIndex(BaseType::m_pos);
+  }
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
