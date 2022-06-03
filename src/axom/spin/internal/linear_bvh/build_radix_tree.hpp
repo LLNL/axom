@@ -215,7 +215,8 @@ void reorder(ArrayView<const int32> indices,
 {
   AXOM_PERF_MARK_FUNCTION("reorder");
 
-  Array<T> temp = Array<T>(size, size, allocatorID);
+  Array<T> temp =
+    Array<T>(ArrayOptions::Uninitialized {}, size, size, allocatorID);
   const auto array_v = array.view();
   const auto temp_v = temp.view();
 
@@ -518,6 +519,8 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 {
   AXOM_PERF_MARK_FUNCTION("propagate_abbs");
 
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
   SLIC_ASSERT(leaf_size == data.m_size);
@@ -532,6 +535,9 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
   const auto leaf_aabb_ptr = data.m_leaf_aabbs.view();
 
   const auto inner_aabb_ptr = data.m_inner_aabbs.view();
+  for_all<ExecSpace>(
+    inner_size,
+    AXOM_LAMBDA(IndexType idx) { inner_aabb_ptr[idx] = BoxType {}; });
 
   Array<int32> counters(inner_size, inner_size, allocatorID);
   const auto counters_ptr = counters.view();
@@ -539,7 +545,7 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
   for_all<ExecSpace>(
     leaf_size,
     AXOM_LAMBDA(int32 i) {
-      primal::BoundingBox<FloatType, NDIMS> aabb = leaf_aabb_ptr[i];
+      BoxType aabb = leaf_aabb_ptr[i];
       int32 last_node = inner_size + i;
       int32 current_node = parent_ptr[inner_size + i];
 

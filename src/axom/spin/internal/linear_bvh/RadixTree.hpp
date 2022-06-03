@@ -55,11 +55,15 @@ struct RadixTree
     m_left_children = axom::Array<int32>(m_inner_size, m_inner_size, allocID);
     m_right_children = axom::Array<int32>(m_inner_size, m_inner_size, allocID);
     m_parents = axom::Array<int32>(parent_size, parent_size, allocID);
-    m_inner_aabbs = axom::Array<BoxType>(m_inner_size, m_inner_size, allocID);
+    m_inner_aabbs = axom::Array<BoxType>(ArrayOptions::Uninitialized {},
+                                         m_inner_size,
+                                         m_inner_size,
+                                         allocID);
 
     m_leafs = axom::Array<int32>(m_size, m_size, allocID);
     m_mcodes = axom::Array<uint32>(m_size, m_size, allocID);
-    m_leaf_aabbs = axom::Array<BoxType>(m_size, m_size, allocID);
+    m_leaf_aabbs =
+      axom::Array<BoxType>(ArrayOptions::Uninitialized {}, m_size, m_size, allocID);
   }
 };
 
