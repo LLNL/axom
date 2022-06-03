@@ -30,8 +30,7 @@ set(sidre_headers
     core/ListCollection.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
-    core/SidreDataTypeIds.h
-    core/sidre.hpp )
+    core/SidreDataTypeIds.h )
 
 set(sidre_sources
     core/Buffer.cpp

@@ -29,8 +29,7 @@
   #include "conduit_relay_io_hdf5.hpp"
 #endif
 
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/spio/IOManager.hpp"
+#include "axom/sidre.hpp"
 #include "axom/fmt.hpp"
 
 #include "mpi.h"

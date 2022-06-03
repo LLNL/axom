@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 #include "gtest/gtest.h"
 

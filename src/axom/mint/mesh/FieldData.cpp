@@ -10,7 +10,7 @@
 #include "axom/mint/mesh/FieldData.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"  // for sidre::Group, sidre::View
+  #include "axom/sidre.hpp"
 #endif
 
 namespace axom
