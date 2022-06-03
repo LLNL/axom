@@ -144,12 +144,13 @@ public:
    * \return total_count the total count of candidates for all query primitives.
    */
   template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
-  axom::Array<IndexType> findCandidatesImpl(Predicate&& predicate,
-                                            const axom::ArrayView<IndexType> offsets,
-                                            const axom::ArrayView<IndexType> counts,
-                                            IndexType numObjs,
-                                            PrimitiveIndexable objs,
-                                            int allocatorID) const;
+  axom::Array<IndexType> findCandidatesImpl(
+    Predicate&& predicate,
+    const axom::ArrayView<IndexType> offsets,
+    const axom::ArrayView<IndexType> counts,
+    IndexType numObjs,
+    PrimitiveIndexable objs,
+    int allocatorID) const;
 
   void writeVtkFileImpl(const std::string& fileName) const;
 
