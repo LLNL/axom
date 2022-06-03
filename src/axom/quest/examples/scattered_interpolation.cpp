@@ -768,6 +768,8 @@ int main(int argc, char** argv)
     scattered_2d = std::unique_ptr<quest::ScatteredInterpolation<2>>(
       new quest::ScatteredInterpolation<2>);
     scattered_2d->buildTriangulation(bp_input, inputMesh.coordsName());
+    scattered_2d->exportDelaunayComplex(bp_input, "delaunay_2d.vtk");
+
     scattered_2d->locatePoints(bp_query, query_coords_name);
 
     for(const auto& fld : inputMesh.getFieldNames())
@@ -779,6 +781,8 @@ int main(int argc, char** argv)
     scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
       new quest::ScatteredInterpolation<3>);
     scattered_3d->buildTriangulation(bp_input, inputMesh.coordsName());
+    scattered_3d->exportDelaunayComplex(bp_input, "delaunay_3d.vtk");
+
     scattered_3d->locatePoints(bp_query, query_coords_name);
 
     for(const auto& fld : inputMesh.getFieldNames())

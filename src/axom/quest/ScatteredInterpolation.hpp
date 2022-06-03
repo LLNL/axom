@@ -10,6 +10,7 @@
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/primal.hpp"
+#include "axom/mint.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -232,8 +233,6 @@ public:
     }
 
     m_delaunay.removeBoundary();
-
-    m_delaunay.writeToVTKFile(fmt::format("delaunay_{}d.vtk", DIM));
   }
 
   /**
@@ -338,6 +337,61 @@ public:
         out_fld[idx] = res;
       }
     }
+  }
+
+  /**
+   * \brief Exports the Delaunay complex with scalar fields as a vtk file
+   * 
+   * \param [in] mesh_node Conduit node for the input mesh
+   * \param [in] filename The name of the output file
+   * 
+   * \note Currently only includes scalar fields of type float64
+   */
+  void exportDelaunayComplex(conduit::Node& mesh_node, std::string&& filename) const
+  {
+    const auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
+    mint::UnstructuredMesh<mint::SINGLE_SHAPE> mint_mesh(DIM, CELL_TYPE);
+
+    const auto* iaMesh = m_delaunay.getMeshData();
+
+    // Add the mesh vertices
+    for(auto v : iaMesh->vertices().positions())
+    {
+      mint_mesh.appendNodes(iaMesh->getVertexPosition(v).data(), 1);
+    }
+
+    // Add the mesh cells
+    for(auto e : iaMesh->elements().positions())
+    {
+      mint_mesh.appendCell(&(iaMesh->boundaryVertices(e)[0]), CELL_TYPE);
+    }
+
+    // Add each of the scalar fields from mesh_node to the Delaunay complex
+    // Note: Currently only adds fields that have type float64
+    const int num_verts = iaMesh->vertices().size();
+    auto itr = mesh_node["fields"].children();
+    while(itr.has_next())
+    {
+      auto& node = itr.next();
+      const auto& fieldName = node.name();
+
+      if(node.has_child("values") &&
+         node["values"].dtype().number_of_elements() == num_verts)
+      {
+        SLIC_DEBUG(fmt::format(
+          "Processing field '{}' of type '{}' for Delaunay vtk file",
+          fieldName,
+          conduit::DataType::id_to_name(node["values"].dtype().id())));
+
+        if(node["values"].dtype().is_float64())
+        {
+          double* vals = node["values"].as_float64_ptr();
+          mint_mesh.createField(fieldName, mint::NODE_CENTERED, vals);
+        }
+      }
+    }
+
+    mint::write_vtk(&mint_mesh, filename);
   }
 
   /// TODO: Add a function that takes x,y,z coordinates
