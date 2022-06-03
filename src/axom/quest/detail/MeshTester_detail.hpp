@@ -341,27 +341,15 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
     counts.resize(this->m_aabbs.size());
 
     // Search for intersecting bounding boxes of triangles
-    IndexType* candidatesData = nullptr;
-    IndexType ncandidates = bvh.findBoundingBoxes(offsets.data(),
-                                                  counts.data(),
-                                                  candidatesData,
-                                                  this->m_aabbs.size(),
-                                                  this->m_aabbs.view());
+    m_currCandidates = bvh.findBoundingBoxes(offsets,
+                                             counts,
+                                             this->m_aabbs.size(),
+                                             this->m_aabbs.view());
 
-    m_currCandidates.reset(candidatesData);
-    return axom::ArrayView<IndexType, 1, Space>(candidatesData, ncandidates);
+    return m_currCandidates;
   }
 
-  // Helper functor used by unique_ptr for deleting the result array returned
-  // from the BVH query
-  struct CandidateDeleter
-  {
-    void operator()(IndexType* ptr) const { axom::deallocate(ptr); }
-  };
-
-  std::unique_ptr<IndexType, CandidateDeleter> m_currCandidates {
-    nullptr,
-    CandidateDeleter {}};
+  axom::Array<IndexType> m_currCandidates;
 };
 
 /*!
