@@ -23,7 +23,6 @@
 #include "Group.hpp"
 #include "DataStore.hpp"
 #include "View.hpp"
-#include "Iterator.hpp"
 #include "SidreTypes.hpp"
 #include "Array.hpp"
 #ifdef AXOM_USE_MPI

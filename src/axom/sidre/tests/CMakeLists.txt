@@ -23,7 +23,6 @@ set(gtest_sidre_tests
    sidre_view.cpp
    sidre_native_layout.cpp
    sidre_attribute.cpp
-   sidre_iterator.cpp
    sidre_mcarray.cpp
    )
 

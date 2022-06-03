@@ -27,7 +27,6 @@ set(sidre_headers
     core/Attribute.hpp
     core/AttrValues.hpp
     core/ItemCollection.hpp
-    core/Iterator.hpp
     core/ListCollection.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
@@ -40,8 +39,7 @@ set(sidre_sources
     core/DataStore.cpp
     core/View.cpp
     core/Attribute.cpp
-    core/AttrValues.cpp
-    core/Iterator.cpp )
+    core/AttrValues.cpp )
 
 # Add spio headers and sources when MPI is available
 if(ENABLE_MPI)
