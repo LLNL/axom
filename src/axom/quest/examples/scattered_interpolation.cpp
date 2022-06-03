@@ -723,7 +723,7 @@ int main(int argc, char** argv)
 
   // Write input mesh to file
   {
-    std::string file = params.outputFile + "_input";
+    std::string file = params.outputFile + "_input_mesh";
     SLIC_INFO(axom::fmt::format("Writing input mesh to '{}'", file));
     inputMesh.saveMesh(file, params.outputProtocol);
   }
@@ -790,7 +790,7 @@ int main(int argc, char** argv)
 
   // Write query mesh to file
   {
-    std::string file = params.outputFile + "_interpolated";
+    std::string file = params.outputFile + "_output_mesh";
     SLIC_INFO(axom::fmt::format("Writing interpolated point mesh to '{}'", file));
     queryMesh.saveMesh(file, params.outputProtocol);
   }
