@@ -68,6 +68,16 @@ foreach(d 2 3)
         )
 endforeach()
 
+if(AXOM_ENABLE_SIDRE)
+    blt_add_executable(
+        NAME        quest_scattered_interpolation_ex
+        SOURCES     scattered_interpolation.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends}
+        FOLDER      axom/quest/examples
+        )
+endif()
+
 
 ## Quest interface examples
 

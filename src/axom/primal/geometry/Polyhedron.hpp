@@ -493,9 +493,6 @@ public:
   AXOM_HOST_DEVICE
   double volume() const
   {
-    SLIC_CHECK_MSG(hasNeighbors(),
-                   "Polyhedron::volume() is only valid with vertex neighbors.");
-
     double retVol = 0.0;
 
     // 0 if less than 4 vertices
@@ -508,6 +505,10 @@ public:
     // faces and an arbitrary origin (the first vertex)
     else
     {
+      SLIC_CHECK_MSG(
+        hasNeighbors(),
+        "Polyhedron::volume() is only valid with vertex neighbors.");
+
       // faces is an overestimation
       int faces[MAX_VERTS * MAX_VERTS];
       int face_size[MAX_VERTS * 2];
