@@ -81,6 +81,50 @@ inline axom::ArrayView<axom::primal::Point<double, 3>> ArrayView_from_Node(
   return axom::ArrayView<PointType>(ptr, sz);
 }
 
+/**
+ * \brief Returns an ArrayView to the desired field from a mesh blueprint, which must be present
+ *
+ * \param [in] mesh_node The root conduit node of a valid mesh blueprint
+ * \param [in] field_name The name of the field to return; Can either be either the name of the field,
+ *  or the path to the field, e.g. fields/<field_name>/values
+ *
+ * \pre The field named \a field_name must be present in \a mesh_node or code will error out
+ * \note Only currently supports scalar fields
+ */
+template <typename T>
+inline axom::ArrayView<T> getField(conduit::Node& mesh_node,
+                                   const std::string& field_name)
+{
+  using axom::utilities::string::startsWith;
+
+  const std::string field_path = startsWith(field_name, "field")
+    ? field_name
+    : axom::fmt::format("fields/{}/values", field_name);
+  SLIC_ERROR_IF(
+    !mesh_node.has_path(field_path),
+    axom::fmt::format("Mesh blueprint is missing required field '{}'",
+                      field_name));
+
+  auto& values = mesh_node[field_path];
+  const auto sz = values.dtype().number_of_elements();
+
+  return ::ArrayView_from_Node<T>(values, sz);
+}
+
+/// Check validity of blueprint group
+inline bool isValidBlueprint(const conduit::Node& mesh_node)
+{
+  bool success = true;
+  conduit::Node info;
+  if(!conduit::blueprint::verify("mesh", mesh_node, info))
+  {
+    SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
+    success = false;
+  }
+
+  return success;
+}
+
 }  // namespace
 
 namespace axom
@@ -209,7 +253,7 @@ public:
   void buildTriangulation(conduit::Node& mesh_node, const std::string& coordset)
   {
     // Perform some simple error checking
-    SLIC_ASSERT(this->isValidBlueprint(mesh_node));
+    SLIC_ASSERT(::isValidBlueprint(mesh_node));
 
     // Extract coordinates as ArrayView of PointType
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
@@ -249,7 +293,7 @@ public:
   void locatePoints(conduit::Node& query_mesh, const std::string& coordset)
   {
     // Perform some simple error checking
-    SLIC_ASSERT(this->isValidBlueprint(query_mesh));
+    SLIC_ASSERT(::isValidBlueprint(query_mesh));
 
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(query_mesh.has_path(valuesPath));
@@ -303,13 +347,13 @@ public:
   {
     constexpr auto INVALID_INDEX = DelaunayTriangulation::INVALID_INDEX;
 
-    SLIC_ASSERT(this->isValidBlueprint(query_mesh));
-    SLIC_ASSERT(this->isValidBlueprint(input_mesh));
+    SLIC_ASSERT(::isValidBlueprint(query_mesh));
+    SLIC_ASSERT(::isValidBlueprint(input_mesh));
 
     // Extract the required fields from the input and query meshes
-    auto in_fld = getField<double>(input_mesh, input_field_name);
-    auto out_fld = getField<double>(query_mesh, output_field_name);
-    auto containing_cell = getField<axom::IndexType>(query_mesh, "cell_idx");
+    auto in_fld = ::getField<double>(input_mesh, input_field_name);
+    auto out_fld = ::getField<double>(query_mesh, output_field_name);
+    auto containing_cell = ::getField<axom::IndexType>(query_mesh, "cell_idx");
 
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(query_mesh.has_path(valuesPath));
@@ -397,49 +441,6 @@ public:
   /// TODO: Add a function that takes x,y,z coordinates
   /// and returns the vertex indices and the barycentric coords
   /// of the point w.r.t. its containing element
-
-private:
-  /// Check validity of blueprint group
-  bool isValidBlueprint(const conduit::Node& mesh_node) const
-  {
-    bool success = true;
-    conduit::Node info;
-    if(!conduit::blueprint::verify("mesh", mesh_node, info))
-    {
-      SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
-      success = false;
-    }
-
-    return success;
-  }
-
-  /**
-   * \brief Returns and ArrayView to the desired field from a mesh blueprint, which must be present
-   *
-   * \param [in] mesh_node The root conduit node of a valid mesh blueprint
-   * \param [in] field_name The name of the field to return; Can either be either the name of the field,
-   *  or the path to the field, e.g. fields/<field_name>/values
-   *
-   * \pre The field named \a field_name must be present in \a mesh_node or code will error out
-   * \note Only currently supports scalar fields
-   */
-  template <typename T>
-  ArrayView<T> getField(conduit::Node& mesh_node, const std::string& field_name)
-  {
-    using axom::utilities::string::startsWith;
-
-    const std::string field_path = startsWith(field_name, "field")
-      ? field_name
-      : fmt::format("fields/{}/values", field_name);
-    SLIC_ERROR_IF(
-      !mesh_node.has_path(field_path),
-      fmt::format("Mesh blueprint is missing required field '{}'", field_name));
-
-    auto& values = mesh_node[field_path];
-    const auto sz = values.dtype().number_of_elements();
-
-    return ::ArrayView_from_Node<T>(values, sz);
-  }
 
 private:
   DelaunayTriangulation m_delaunay;
