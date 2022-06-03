@@ -156,7 +156,7 @@ template <typename ExecSpace, typename FloatType, int NDIMS>
 void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
                 int32 size,
                 const primal::BoundingBox<FloatType, NDIMS>& bounds,
-                ArrayView<uint32> mcodes)
+                const ArrayView<uint32> mcodes)
 {
   AXOM_PERF_MARK_FUNCTION("get_mcodes");
 
@@ -208,7 +208,7 @@ void array_counting(ArrayView<IntType> iterator,
 // result  [b,a,c]
 //
 template <typename ExecSpace, typename T>
-void reorder(ArrayView<const int32> indices,
+void reorder(const ArrayView<const int32> indices,
              Array<T>& array,
              int32 size,
              int allocatorID)
@@ -253,7 +253,7 @@ void sort_mcodes(ArrayView<uint32> mcodes, int32 size, ArrayView<int32> iter)
 
 // fall back to std::stable_sort
 template <typename ExecSpace>
-void sort_mcodes(Array<uint32>& mcodes, int32 size, ArrayView<int32> iter)
+void sort_mcodes(Array<uint32>& mcodes, int32 size, const ArrayView<int32> iter)
 {
   AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 

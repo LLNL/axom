@@ -145,8 +145,8 @@ public:
    */
   template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
   axom::Array<IndexType> findCandidatesImpl(Predicate&& predicate,
-                                            axom::ArrayView<IndexType> offsets,
-                                            axom::ArrayView<IndexType> counts,
+                                            const axom::ArrayView<IndexType> offsets,
+                                            const axom::ArrayView<IndexType> counts,
                                             IndexType numObjs,
                                             PrimitiveIndexable objs,
                                             int allocatorID) const;
@@ -274,8 +274,8 @@ template <typename FloatType, int NDIMS, typename ExecSpace>
 template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
 axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   Predicate&& predicate,
-  axom::ArrayView<IndexType> offsets,
-  axom::ArrayView<IndexType> counts,
+  const axom::ArrayView<IndexType> offsets,
+  const axom::ArrayView<IndexType> counts,
   IndexType numObjs,
   PrimitiveIndexable objs,
   int allocatorID) const
