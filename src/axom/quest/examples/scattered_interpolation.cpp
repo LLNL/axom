@@ -556,6 +556,9 @@ public:
                                 axom::fmt::join(boundsMax, ", "),
                                 outputFile,
                                 outputProtocol));
+
+    axom::slic::setLoggingMsgLevel(verboseOutput ? axom::slic::message::Debug
+                                                 : axom::slic::message::Info);
   }
 };
 
