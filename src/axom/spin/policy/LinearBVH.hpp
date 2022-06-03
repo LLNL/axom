@@ -216,11 +216,11 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
   const int32 inner_size = radix_tree.m_inner_size;
   SLIC_ASSERT(inner_size == size - 1);
 
-  const int32* lchildren_ptr = radix_tree.m_left_children;
-  const int32* rchildren_ptr = radix_tree.m_right_children;
+  const auto lchildren_ptr = radix_tree.m_left_children.view();
+  const auto rchildren_ptr = radix_tree.m_right_children.view();
 
-  const BoundingBoxType* leaf_aabb_ptr = radix_tree.m_leaf_aabbs;
-  const BoundingBoxType* inner_aabb_ptr = radix_tree.m_inner_aabbs;
+  const auto leaf_aabb_ptr = radix_tree.m_leaf_aabbs.view();
+  const auto inner_aabb_ptr = radix_tree.m_inner_aabbs.view();
 
   const auto bvh_inner_nodes = m_inner_nodes.view();
   const auto bvh_inner_node_children = m_inner_node_children.view();
@@ -265,16 +265,7 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                              bvh_inner_node_children[out_offset + 1] = rchild;
                            }););
 
-  int32* radix_tree_leafs = radix_tree.m_leafs;
-  const auto bvh_leafs = m_leaf_nodes.view();
-
-  AXOM_PERF_MARK_SECTION(
-    "emit_bvh_leafs",
-    for_all<ExecSpace>(
-      size,
-      AXOM_LAMBDA(int32 i) { bvh_leafs[i] = radix_tree_leafs[i]; }););
-
-  radix_tree.deallocate();
+  m_leaf_nodes = std::move(radix_tree.m_leafs);
 
   m_initialized = true;
 }

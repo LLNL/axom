@@ -6,7 +6,7 @@
 #ifndef AXOM_SPIN_RADIXTREE_HPP_
 #define AXOM_SPIN_RADIXTREE_HPP_
 
-#include "axom/core/memory_management.hpp"
+#include "axom/core/Array.hpp"
 
 #include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
@@ -35,14 +35,14 @@ struct RadixTree
   int32 m_size;
   int32 m_inner_size;
 
-  int32* m_left_children;
-  int32* m_right_children;
-  int32* m_parents;
-  BoxType* m_inner_aabbs;
+  axom::Array<int32> m_left_children;
+  axom::Array<int32> m_right_children;
+  axom::Array<int32> m_parents;
+  axom::Array<BoxType> m_inner_aabbs;
 
-  int32* m_leafs;
-  uint32* m_mcodes;
-  BoxType* m_leaf_aabbs;
+  axom::Array<int32> m_leafs;
+  axom::Array<uint32> m_mcodes;
+  axom::Array<BoxType> m_leaf_aabbs;
 
   void allocate(int32 size, int allocID)
   {
@@ -50,32 +50,16 @@ struct RadixTree
 
     m_size = size;
     m_inner_size = m_size - 1;
+    int32 parent_size = m_size + m_inner_size;
 
-    m_left_children = axom::allocate<int32>(m_inner_size, allocID);
-    m_right_children = axom::allocate<int32>(m_inner_size, allocID);
-    m_parents = axom::allocate<int32>((m_size + m_inner_size), allocID);
-    m_inner_aabbs = axom::allocate<BoxType>(m_inner_size, allocID);
+    m_left_children = axom::Array<int32>(m_inner_size, m_inner_size, allocID);
+    m_right_children = axom::Array<int32>(m_inner_size, m_inner_size, allocID);
+    m_parents = axom::Array<int32>(parent_size, parent_size, allocID);
+    m_inner_aabbs = axom::Array<BoxType>(m_inner_size, m_inner_size, allocID);
 
-    m_leafs = axom::allocate<int32>(m_size, allocID);
-    m_mcodes = axom::allocate<uint32>(m_size, allocID);
-    m_leaf_aabbs = axom::allocate<BoxType>(m_size, allocID);
-  }
-
-  void deallocate()
-  {
-    AXOM_PERF_MARK_FUNCTION("RadixTree::deallocate");
-
-    m_inner_size = 0;
-    m_size = 0;
-
-    axom::deallocate(m_left_children);
-    axom::deallocate(m_right_children);
-    axom::deallocate(m_parents);
-    axom::deallocate(m_inner_aabbs);
-
-    axom::deallocate(m_leafs);
-    axom::deallocate(m_mcodes);
-    axom::deallocate(m_leaf_aabbs);
+    m_leafs = axom::Array<int32>(m_size, m_size, allocID);
+    m_mcodes = axom::Array<uint32>(m_size, m_size, allocID);
+    m_leaf_aabbs = axom::Array<BoxType>(m_size, m_size, allocID);
   }
 };
 
