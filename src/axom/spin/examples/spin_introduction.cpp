@@ -547,18 +547,19 @@ void findCandidateBVHTreeBins(BVH2DType* tree,
 {
   axom::IndexType offsets;
   axom::IndexType counts;
-  axom::IndexType* candidatesPtr;
   // Get the candidates for a given probe point:
   // BVH::findPoints takes an array of points, and allocates and fills an array
   // for all the candidate intersections with the points in a packed manner.
-  tree->findPoints(&offsets, &counts, candidatesPtr, 1, &ppoint);
+  axom::Array<axom::IndexType> candidatesArray =
+    tree->findPoints(axom::ArrayView<axom::IndexType>(&offsets, 1),
+                     axom::ArrayView<axom::IndexType>(&counts, 1),
+                     1,
+                     &ppoint);
 
   // Since we are only querying one point, offsets == 0 and
   // len(candidatesPtr) == counts
-  candidates = std::vector<int>(candidatesPtr, candidatesPtr + counts);
-
-  // Deallocate candidates array
-  axom::deallocate(candidatesPtr);
+  candidates =
+    std::vector<int>(candidatesArray.data(), candidatesArray.data() + counts);
 }
 // _bvh_candidate_end
 
