@@ -684,54 +684,125 @@ TEST(sidre_group, iterate_groups_with_iterator)
   foo_group->createView("qux_view");
   foo_group->createView("quux_view");
 
+  constexpr int numExpGroups = 3;
+  constexpr int numExpViews = 4;
+
   // iterate through groups and views of 'foo' using range-for syntax
   {
-    int numFoundGroups = 0;
-    const int numExpGroups = 3;
+    int nGroups = 0;
     for(auto& group : foo_group->groups())
     {
       EXPECT_EQ(foo_group, group.getParent());
       EXPECT_TRUE(endsWith(group.getName(), "_group"));
-      ++numFoundGroups;
+      ++nGroups;
     }
-    EXPECT_EQ(numExpGroups, numFoundGroups);
+    EXPECT_EQ(numExpGroups, nGroups);
 
-    int numFoundViews = 0;
-    const int numExpViews = 4;
+    int nViews = 0;
     for(auto& view : foo_group->views())
     {
       EXPECT_EQ(foo_group, view.getOwningGroup());
       EXPECT_TRUE(endsWith(view.getName(), "_view"));
-      ++numFoundViews;
+      ++nViews;
     }
-    EXPECT_EQ(numExpViews, numFoundViews);
+    EXPECT_EQ(numExpViews, nViews);
+  }
+
+  // const iterate through groups and views of 'foo' using range-for syntax
+  // starting from a non-const group
+  {
+    int nGroups = 0;
+    for(const auto& group : foo_group->groups())
+    {
+      EXPECT_EQ(foo_group, group.getParent());
+      EXPECT_TRUE(endsWith(group.getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(const auto& view : foo_group->views())
+    {
+      EXPECT_EQ(foo_group, view.getOwningGroup());
+      EXPECT_TRUE(endsWith(view.getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
+  }
+
+  // iterate through groups and views of 'foo' using range-for syntax
+  // starting from a const group
+  {
+    const auto* cfoo_group = ds.getRoot()->getGroup("foo");
+
+    int nGroups = 0;
+    for(const auto& group : cfoo_group->groups())
+    {
+      EXPECT_EQ(foo_group, group.getParent());
+      EXPECT_TRUE(endsWith(group.getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(const auto& view : foo_group->views())
+    {
+      EXPECT_EQ(foo_group, view.getOwningGroup());
+      EXPECT_TRUE(endsWith(view.getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
   }
 
   // iterate though groups and views of 'foo' using iterator syntax
   {
-    int numFoundGroups = 0;
-    const int numExpGroups = 3;
+    int nGroups = 0;
     for(auto it = foo_group->groups().begin(), itEnd = foo_group->groups().end();
         it != itEnd;
         ++it)
     {
       EXPECT_EQ(foo_group, it->getParent());
       EXPECT_TRUE(endsWith(it->getName(), "_group"));
-      ++numFoundGroups;
+      ++nGroups;
     }
-    EXPECT_EQ(numExpGroups, numFoundGroups);
+    EXPECT_EQ(numExpGroups, nGroups);
 
-    int numFoundViews = 0;
-    const int numExpViews = 4;
+    int nViews = 0;
     for(auto it = foo_group->views().begin(), itEnd = foo_group->views().end();
         it != itEnd;
         ++it)
     {
       EXPECT_EQ(foo_group, it->getOwningGroup());
       EXPECT_TRUE(endsWith(it->getName(), "_view"));
-      ++numFoundViews;
+      ++nViews;
     }
-    EXPECT_EQ(numExpViews, numFoundViews);
+    EXPECT_EQ(numExpViews, nViews);
+  }
+
+  // iterate though groups and views of 'foo' using const iterator syntax
+  {
+    int nGroups = 0;
+    for(auto it = foo_group->groups().cbegin(),
+             itEnd = foo_group->groups().cend();
+        it != itEnd;
+        ++it)
+    {
+      EXPECT_EQ(foo_group, it->getParent());
+      EXPECT_TRUE(endsWith(it->getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(auto it = foo_group->views().cbegin(), itEnd = foo_group->views().cend();
+        it != itEnd;
+        ++it)
+    {
+      EXPECT_EQ(foo_group, it->getOwningGroup());
+      EXPECT_TRUE(endsWith(it->getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
   }
 }
 

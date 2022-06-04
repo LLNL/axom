@@ -161,6 +161,7 @@ class MapCollection : public ItemCollection<TYPE>
 {
 public:
   using iterator = typename ItemCollection<TYPE>::iterator;
+  using const_iterator = typename ItemCollection<TYPE>::const_iterator;
 
 public:
   //
@@ -262,6 +263,12 @@ public:
 
   iterator begin() { return iterator(this, true); }
   iterator end() { return iterator(this, false); }
+
+  const_iterator cbegin() const { return const_iterator(this, true); }
+  const_iterator cend() const { return const_iterator(this, false); }
+
+  const_iterator begin() const { return const_iterator(this, true); }
+  const_iterator end() const { return const_iterator(this, false); }
 
 private:
   std::vector<TYPE*> m_items;

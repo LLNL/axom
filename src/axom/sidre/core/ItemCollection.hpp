@@ -236,8 +236,63 @@ public:
     CollectionType* m_collection;
   };
 
+  class const_iterator : public IteratorBase<const_iterator, IndexType>
+  {
+  private:
+    using BaseType = IteratorBase<const_iterator, IndexType>;
+    using CollectionType = ItemCollection<TYPE>;
+
+  public:
+    // Iterator traits required to satisfy LegacyRandomAccessIterator concept
+    // before C++20
+    // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
+    using difference_type = IndexType;
+    using value_type = typename std::remove_cv<TYPE>::type;
+    using reference = const TYPE&;
+    using pointer = const TYPE*;
+    using iterator_category = std::forward_iterator_tag;
+
+  public:
+    const_iterator(const CollectionType* coll, bool is_first)
+      : m_collection(coll)
+    {
+      SLIC_ASSERT(coll != nullptr);
+
+      BaseType::m_pos =
+        is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
+    }
+
+    pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
+
+    reference operator*() { return *m_collection->getItem(BaseType::m_pos); }
+
+  private:
+    // Remove backwards iteration functions
+    using BaseType::operator--;
+    using BaseType::operator-=;
+
+  protected:
+    /// Implementation of advance() as required by IteratorBase
+    void advance(IndexType n)
+    {
+      for(int i = 0; i < n; ++i)
+      {
+        BaseType::m_pos = m_collection->getNextValidIndex(BaseType::m_pos);
+      }
+    }
+
+  private:
+    const CollectionType* m_collection;
+  };
+
   virtual iterator begin() = 0;
   virtual iterator end() = 0;
+
+  virtual const_iterator cbegin() const = 0;
+  virtual const_iterator cend() const = 0;
+
+  virtual const_iterator begin() const = 0;
+  virtual const_iterator end() const = 0;
 };
 
 } /* end namespace sidre */

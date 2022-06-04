@@ -912,7 +912,7 @@ public:
   ViewCollection& views() { return *m_view_coll; }
 
   /*!
-   * \brief Returns a reference to the collection of views
+   * \brief Returns a const reference to the collection of views
    */
   const ViewCollection& views() const { return *m_view_coll; }
 
@@ -922,7 +922,7 @@ public:
   GroupCollection& groups() { return *m_group_coll; }
 
   /*!
-   * \brief Returns a reference to the collection of groups
+   * \brief Returns a const reference to the collection of groups
    */
   const GroupCollection& groups() const { return *m_group_coll; }
 
