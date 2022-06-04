@@ -111,6 +111,7 @@
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/IteratorBase.hpp"
 
 // Sidre project headers
 #include "SidreTypes.hpp"
@@ -186,7 +187,57 @@ public:
   ///
   virtual void removeAllItems() = 0;
 
-private:
+public:
+  class iterator : public IteratorBase<iterator, IndexType>
+  {
+  private:
+    using BaseType = IteratorBase<iterator, IndexType>;
+    using CollectionType = ItemCollection<TYPE>;
+
+  public:
+    // Iterator traits required to satisfy LegacyRandomAccessIterator concept
+    // before C++20
+    // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
+    using difference_type = IndexType;
+    using value_type = typename std::remove_cv<TYPE>::type;
+    using reference = TYPE&;
+    using pointer = TYPE*;
+    using iterator_category = std::forward_iterator_tag;
+
+  public:
+    iterator(CollectionType* coll, bool is_first) : m_collection(coll)
+    {
+      SLIC_ASSERT(coll != nullptr);
+
+      BaseType::m_pos =
+        is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
+    }
+
+    pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
+
+    reference operator*() { return *m_collection->getItem(BaseType::m_pos); }
+
+  private:
+    // Remove backwards iteration functions
+    using BaseType::operator--;
+    using BaseType::operator-=;
+
+  protected:
+    /// Implementation of advance() as required by IteratorBase
+    void advance(IndexType n)
+    {
+      for(int i = 0; i < n; ++i)
+      {
+        BaseType::m_pos = m_collection->getNextValidIndex(BaseType::m_pos);
+      }
+    }
+
+  private:
+    CollectionType* m_collection;
+  };
+
+  virtual iterator begin() = 0;
+  virtual iterator end() = 0;
 };
 
 } /* end namespace sidre */

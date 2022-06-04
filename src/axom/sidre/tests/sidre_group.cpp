@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
-#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core.hpp"
 #include "axom/sidre.hpp"
 
 #include "gtest/gtest.h"
@@ -658,6 +658,81 @@ TEST(sidre_group, iterate_groups)
   EXPECT_EQ(4, groupcount);
 
   delete ds;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group, iterate_groups_with_iterator)
+{
+  using axom::utilities::string::endsWith;
+
+  axom::sidre::DataStore ds;
+  auto* foo_group = ds.getRoot()->createGroup("foo");
+  foo_group->createGroup("bar_group");
+  foo_group->createGroup("bar_group/child_1");
+  foo_group->createGroup("bar_group/child_2");
+
+  foo_group->createGroup("baz_group");
+  foo_group->createGroup("baz_group/child_1");
+  foo_group->createGroup("baz_group/child_2");
+  foo_group->createGroup("baz_group/child_3");
+
+  foo_group->createGroup("qux_group");
+  foo_group->createGroup("qux_group/child_1");
+
+  foo_group->createView("bar_view");
+  foo_group->createView("baz_view");
+  foo_group->createView("qux_view");
+  foo_group->createView("quux_view");
+
+  // iterate through groups and views of 'foo' using range-for syntax
+  {
+    int numFoundGroups = 0;
+    const int numExpGroups = 3;
+    for(auto& group : foo_group->groups())
+    {
+      EXPECT_EQ(foo_group, group.getParent());
+      EXPECT_TRUE(endsWith(group.getName(), "_group"));
+      ++numFoundGroups;
+    }
+    EXPECT_EQ(numExpGroups, numFoundGroups);
+
+    int numFoundViews = 0;
+    const int numExpViews = 4;
+    for(auto& view : foo_group->views())
+    {
+      EXPECT_EQ(foo_group, view.getOwningGroup());
+      EXPECT_TRUE(endsWith(view.getName(), "_view"));
+      ++numFoundViews;
+    }
+    EXPECT_EQ(numExpViews, numFoundViews);
+  }
+
+  // iterate though groups and views of 'foo' using iterator syntax
+  {
+    int numFoundGroups = 0;
+    const int numExpGroups = 3;
+    for(auto it = foo_group->groups().begin(), itEnd = foo_group->groups().end();
+        it != itEnd;
+        ++it)
+    {
+      EXPECT_EQ(foo_group, it->getParent());
+      EXPECT_TRUE(endsWith(it->getName(), "_group"));
+      ++numFoundGroups;
+    }
+    EXPECT_EQ(numExpGroups, numFoundGroups);
+
+    int numFoundViews = 0;
+    const int numExpViews = 4;
+    for(auto it = foo_group->views().begin(), itEnd = foo_group->views().end();
+        it != itEnd;
+        ++it)
+    {
+      EXPECT_EQ(foo_group, it->getOwningGroup());
+      EXPECT_TRUE(endsWith(it->getName(), "_view"));
+      ++numFoundViews;
+    }
+    EXPECT_EQ(numExpViews, numFoundViews);
+  }
 }
 
 //------------------------------------------------------------------------------

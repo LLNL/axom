@@ -126,6 +126,9 @@ public:
   friend class DataStore;
   friend class View;
 
+  using ViewCollection = ItemCollection<View>;
+  using GroupCollection = ItemCollection<Group>;
+
   //@{
   //!  @name Basic query and accessor methods.
 
@@ -890,6 +893,42 @@ public:
   //@}
 
   //@{
+  //!  @name Accesors for group and view collections.
+  //!
+  //! These methods can be used to iterate on the collection of groups and views
+  //! Example:
+  //!      for (auto& group : grp->groups())
+  //!      {
+  //!          /// code here using group
+  //!      }
+  //!      for (auto& view : grp->views())
+  //!      {
+  //!          /// code here using view
+  //!      }
+
+  /*!
+   * \brief Returns a reference to the collection of views
+   */
+  ViewCollection& views() { return *m_view_coll; }
+
+  /*!
+   * \brief Returns a reference to the collection of views
+   */
+  const ViewCollection& views() const { return *m_view_coll; }
+
+  /*!
+   * \brief Returns a reference to the collection of groups
+   */
+  GroupCollection& groups() { return *m_group_coll; }
+
+  /*!
+   * \brief Returns a reference to the collection of groups
+   */
+  const GroupCollection& groups() const { return *m_group_coll; }
+
+  //@}
+
+  //@{
   //!  @name Group iteration methods.
   //!
   //! Using these methods, a code can get the first Group index and each
@@ -1589,13 +1628,6 @@ private:
 
   /// Character used to denote a path string passed to get/create calls.
   AXOM_EXPORT static const char s_path_delimiter;
-
-  ///////////////////////////////////////////////////////////////////
-  //
-  using ViewCollection = ItemCollection<View>;
-  //
-  using GroupCollection = ItemCollection<Group>;
-  ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
   ViewCollection* m_view_coll;

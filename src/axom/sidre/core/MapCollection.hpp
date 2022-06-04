@@ -160,6 +160,9 @@ template <typename TYPE>
 class MapCollection : public ItemCollection<TYPE>
 {
 public:
+  using iterator = typename ItemCollection<TYPE>::iterator;
+
+public:
   //
   // Default compiler-generated ctor, dtor, copy ctor, and copy assignment
   // operator suffice for this class.
@@ -256,6 +259,9 @@ public:
 
     m_name2idx_map.clear();
   }
+
+  iterator begin() { return iterator(this, true); }
+  iterator end() { return iterator(this, false); }
 
 private:
   std::vector<TYPE*> m_items;
