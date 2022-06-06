@@ -520,7 +520,7 @@
  * \endcode
  *
  */
-#define SLIC_INFO_ROOT_IF(msg) \
+#define SLIC_INFO_ROOT_IF(EXP, msg) \
   SLIC_INFO_IF((EXP) && (axom::slic::isRoot()), msg)
 
 #ifdef AXOM_DEBUG
@@ -602,7 +602,7 @@
  * \endcode
  *
  */
-  #define SLIC_DEBUG_ROOT_IF(msg) \
+  #define SLIC_DEBUG_ROOT_IF(EXP, msg) \
     SLIC_DEBUG_IF((EXP) && (axom::slic::isRoot()), msg)
 
 #else  // turn off debug macros
