@@ -463,7 +463,33 @@ public:
                             const QueryGeom* queryObjs,
                             axom::ArrayView<IndexType> outOffsets,
                             axom::ArrayView<IndexType> outCounts,
-                            axom::Array<IndexType>& outCandidates);
+                            axom::Array<IndexType>& outCandidates) const;
+
+  /// \overload
+  void getCandidatesAsArray(axom::ArrayView<const SpacePoint> queryObjs,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const
+  {
+    getCandidatesAsArray(queryObjs.size(),
+                         queryObjs.data(),
+                         outOffsets,
+                         outCounts,
+                         outCandidates);
+  }
+
+  /// \overload
+  void getCandidatesAsArray(axom::ArrayView<const SpatialBoundingBox> queryObjs,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const
+  {
+    getCandidatesAsArray(queryObjs.size(),
+                         queryObjs.data(),
+                         outOffsets,
+                         outCounts,
+                         outCandidates);
+  }
 
   /*!
    * Tests whether grid cell gridPt indexes the element with index idx
@@ -800,7 +826,7 @@ void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
   const QueryGeom* queryObjs,
   axom::ArrayView<IndexType> outOffsets,
   axom::ArrayView<IndexType> outCounts,
-  axom::Array<IndexType>& outCandidates)
+  axom::Array<IndexType>& outCandidates) const
 {
   SLIC_ERROR_IF(outOffsets.size() < qsize,
                 "outOffsets must have at least qsize elements");

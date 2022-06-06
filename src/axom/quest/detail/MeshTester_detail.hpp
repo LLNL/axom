@@ -432,11 +432,7 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
     offsets.resize(this->m_aabbs.size());
     counts.resize(this->m_aabbs.size());
 
-    gridIndex.getCandidatesAsArray(this->m_aabbs.size(),
-                                   this->m_aabbs.data(),
-                                   offsets,
-                                   counts,
-                                   m_currCandidates);
+    gridIndex.getCandidatesAsArray(this->m_aabbs, offsets, counts, m_currCandidates);
 
     return m_currCandidates;
   }
