@@ -26,6 +26,15 @@ struct ZipBase<Vector<T, NDIMS>>
 
   static constexpr bool Exists = true;
 
+  /// Default constructor for a ZipBase of primal::Vector
+  ZipBase()
+  {
+    for(int d = 0; d < NDIMS; ++d)
+    {
+      vec_arrays[d] = nullptr;
+    }
+  }
+
   /*!
    * \brief Creates a ZipIndexable over a set of arrays.
    * \param [in] arrays the arrays storing coordinate data for each dimension
@@ -36,9 +45,9 @@ struct ZipBase<Vector<T, NDIMS>>
   ZipBase(const T* const (&arrays)[Size])
   {
     AXOM_STATIC_ASSERT_MSG(Size >= NDIMS, "Must provide at least NDIMS arrays");
-    for(int i = 0; i < NDIMS; i++)
+    for(int d = 0; d < NDIMS; ++d)
     {
-      vec_arrays[i] = arrays[i];
+      vec_arrays[d] = arrays[d];
     }
   }
 
@@ -49,7 +58,7 @@ struct ZipBase<Vector<T, NDIMS>>
   AXOM_HOST_DEVICE GeomType operator[](int i) const
   {
     StackArray<T, NDIMS> pt_data;
-    for(int d = 0; d < NDIMS; d++)
+    for(int d = 0; d < NDIMS; ++d)
     {
       pt_data[d] = vec_arrays[d][i];
     }

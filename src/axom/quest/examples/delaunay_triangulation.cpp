@@ -42,8 +42,8 @@ public:
 
     app.add_option("-d,--dim", dimension)
       ->description(
-        "The dimension of the mesh. 2 for triangle mesh in 2D; 3 for "
-        "tetrahedral mesh in 3D")
+        "The dimension of the mesh. 2 for triangle mesh in 2D; "
+        "3 for tetrahedral mesh in 3D")
       ->capture_default_str();
 
     app.add_option("-s,--outputsteps", numOutputSteps)

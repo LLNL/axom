@@ -13,7 +13,7 @@
 
 if (LUA_FOUND)
   blt_add_library(NAME    sol
-                  HEADERS axom/sol.hpp)
+                  HEADERS axom/sol.hpp axom/sol_forward.hpp)
 
   target_include_directories(sol SYSTEM INTERFACE
               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -22,6 +22,7 @@ if (LUA_FOUND)
           EXPORT               axom-targets
           INCLUDES DESTINATION include)
   install(FILES        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol.hpp
+                       ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol_forward.hpp
           DESTINATION include/axom )
   install(EXPORT axom-targets DESTINATION lib/cmake)
 

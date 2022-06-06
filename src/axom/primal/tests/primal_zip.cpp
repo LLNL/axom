@@ -22,6 +22,14 @@ using namespace axom;
 
 //------------------------------------------------------------------------------
 
+template <typename PrimitiveType>
+void check_default_ctor()
+{
+  using ZipType = primal::ZipIndexable<PrimitiveType>;
+
+  ZipType zip;
+}
+
 template <typename ExecSpace, typename PrimitiveType>
 void check_zip_points_3d()
 {
@@ -430,6 +438,25 @@ void check_zip_rays_2d_from_3d()
 
   axom::deallocate(valid);
   axom::setDefaultAllocator(current_allocator);
+}
+
+TEST(primal_zip, default_ctor)
+{
+  check_default_ctor<primal::Point<double, 1>>();
+  check_default_ctor<primal::Point<double, 2>>();
+  check_default_ctor<primal::Point<double, 3>>();
+
+  check_default_ctor<primal::Vector<double, 1>>();
+  check_default_ctor<primal::Vector<double, 2>>();
+  check_default_ctor<primal::Vector<double, 3>>();
+
+  check_default_ctor<primal::Ray<double, 1>>();
+  check_default_ctor<primal::Ray<double, 2>>();
+  check_default_ctor<primal::Ray<double, 3>>();
+
+  check_default_ctor<primal::BoundingBox<double, 1>>();
+  check_default_ctor<primal::BoundingBox<double, 2>>();
+  check_default_ctor<primal::BoundingBox<double, 3>>();
 }
 
 TEST(primal_zip, zip_points_3d)

@@ -29,6 +29,16 @@ struct ZipBase<Ray<T, NDIMS>>
 
   static constexpr bool Exists = true;
 
+  /// Default constructor for a ZipBase of primal::Ray
+  ZipBase()
+  {
+    for(int d = 0; d < NDIMS; ++d)
+    {
+      ray_origs[d] = nullptr;
+      ray_dirs[d] = nullptr;
+    }
+  }
+
   /*!
    * \brief Creates a ZipIndexable from a set of arrays
    * \param [in] orig_arrays the arrays for each dimension storing the origin
@@ -45,10 +55,10 @@ struct ZipBase<Ray<T, NDIMS>>
   {
     AXOM_STATIC_ASSERT_MSG(Size1 >= NDIMS, "Must provide at least NDIMS arrays");
     AXOM_STATIC_ASSERT_MSG(Size2 >= NDIMS, "Must provide at least NDIMS arrays");
-    for(int i = 0; i < NDIMS; i++)
+    for(int d = 0; d < NDIMS; ++d)
     {
-      ray_origs[i] = orig_arrays[i];
-      ray_dirs[i] = dir_arrays[i];
+      ray_origs[d] = orig_arrays[d];
+      ray_dirs[d] = dir_arrays[d];
     }
   }
 
@@ -61,7 +71,7 @@ struct ZipBase<Ray<T, NDIMS>>
     using PointType = typename GeomType::PointType;
     using VectorType = typename GeomType::VectorType;
     StackArray<T, NDIMS> orig_data, dir_data;
-    for(int d = 0; d < NDIMS; d++)
+    for(int d = 0; d < NDIMS; ++d)
     {
       orig_data[d] = ray_origs[d][i];
       dir_data[d] = ray_dirs[d][i];
