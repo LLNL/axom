@@ -347,8 +347,8 @@ void check_find_bounding_boxes3d()
   // traverse the BVH to find the candidates for all the bounding boxes
   axom::Array<IndexType> offsets(N);
   axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates =
-    bvh.findBoundingBoxes(offsets, counts, N, query_boxes);
+  axom::Array<IndexType> candidates;
+  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
 
   // flag cells that are found by the bounding box ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
@@ -464,8 +464,8 @@ void check_find_bounding_boxes2d()
   // traverse the BVH to find the candidates for all the bounding boxes
   axom::Array<IndexType> offsets(N);
   axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates =
-    bvh.findBoundingBoxes(offsets, counts, N, query_boxes);
+  axom::Array<IndexType> candidates;
+  bvh.findBoundingBoxes(offsets, counts, candidates, N, query_boxes);
 
   // flag cells that are found by the bounding box ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
@@ -568,8 +568,8 @@ void check_find_rays3d()
   // traverse the BVH to find the candidates for all the centroids
   axom::Array<IndexType> offsets(N);
   axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates =
-    bvh.findRays(offsets, counts, N, query_rays);
+  axom::Array<IndexType> candidates;
+  bvh.findRays(offsets, counts, candidates, N, query_rays);
 
   // flag cells that are found by the ray ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
@@ -698,8 +698,8 @@ void check_find_rays2d()
   // traverse the BVH to find the candidates for all the centroids
   axom::Array<IndexType> offsets(N);
   axom::Array<IndexType> counts(N);
-  axom::Array<IndexType> candidates =
-    bvh.findRays(offsets, counts, N, query_rays);
+  axom::Array<IndexType> candidates;
+  bvh.findRays(offsets, counts, candidates, N, query_rays);
 
   // flag cells that are found by the ray ID
   int* iblank = mesh.createField<int>("iblank", mint::CELL_CENTERED);
@@ -808,8 +808,8 @@ void check_find_points3d()
   // traverse the BVH to find the candidates for all the centroids
   axom::Array<IndexType> offsets(ncells);
   axom::Array<IndexType> counts(ncells);
-  axom::Array<IndexType> candidates =
-    bvh.findPoints(offsets, counts, ncells, centroids);
+  axom::Array<IndexType> candidates;
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
 
@@ -830,7 +830,7 @@ void check_find_points3d()
     centroids[i][2] += OFFSET;
   }
 
-  candidates = bvh.findPoints(offsets, counts, ncells, centroids);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
@@ -900,8 +900,8 @@ void check_find_points2d()
   // traverse the BVH to find the candidates for all the centroids
   axom::Array<IndexType> offsets(ncells);
   axom::Array<IndexType> counts(ncells);
-  axom::Array<IndexType> candidates =
-    bvh.findPoints(offsets, counts, ncells, centroids);
+  axom::Array<IndexType> candidates;
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
 
@@ -921,7 +921,7 @@ void check_find_points2d()
     centroids[i][1] += OFFSET;
   }
 
-  candidates = bvh.findPoints(offsets, counts, ncells, centroids);
+  bvh.findPoints(offsets, counts, candidates, ncells, centroids);
 
   for(IndexType i = 0; i < ncells; ++i)
   {
@@ -979,15 +979,15 @@ void check_single_box2d()
 
   axom::Array<IndexType> offsets(NUM_BOXES);
   axom::Array<IndexType> counts(NUM_BOXES);
-  axom::Array<IndexType> candidates =
-    bvh.findPoints(offsets, counts, NUM_BOXES, &centroid);
+  axom::Array<IndexType> candidates;
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
 
   // shift centroid outside of the BVH, should return no candidates.
   centroid[0] += 10.0;
   centroid[1] += 10.0;
-  candidates = bvh.findPoints(offsets, counts, NUM_BOXES, &centroid);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 0);
 
   axom::deallocate(boxes);
@@ -1039,15 +1039,15 @@ void check_single_box3d()
 
   axom::Array<IndexType> offsets(NUM_BOXES);
   axom::Array<IndexType> counts(NUM_BOXES);
-  axom::Array<IndexType> candidates =
-    bvh.findPoints(offsets, counts, NUM_BOXES, &centroid);
+  axom::Array<IndexType> candidates;
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
 
   // shift centroid outside of the BVH, should return no candidates.
   centroid[0] += 10.0;
   centroid[1] += 10.0;
-  candidates = bvh.findPoints(offsets, counts, NUM_BOXES, &centroid);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
   EXPECT_EQ(counts[0], 0);
 
   axom::deallocate(boxes);
@@ -1185,8 +1185,8 @@ void check_find_points_zip3d()
   // traverse the BVH to find the candidates for all the centroids
   axom::Array<IndexType> offsets(ncells);
   axom::Array<IndexType> counts(ncells);
-  axom::Array<IndexType> candidates =
-    bvh.findPoints(offsets, counts, ncells, zip_test);
+  axom::Array<IndexType> candidates;
+  bvh.findPoints(offsets, counts, candidates, ncells, zip_test);
 
   spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
 
@@ -1276,8 +1276,8 @@ void check_find_points_zip2d()
   // traverse the BVH to find the candidates for all the centroids
   axom::Array<IndexType> offsets(ncells);
   axom::Array<IndexType> counts(ncells);
-  axom::Array<IndexType> candidates =
-    bvh.findPoints(offsets, counts, ncells, zip_test);
+  axom::Array<IndexType> candidates;
+  bvh.findPoints(offsets, counts, candidates, ncells, zip_test);
 
   spin::UniformGrid<IndexType, NDIMS> ug(lo, hi, res);
 
@@ -1621,8 +1621,8 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
 
   axom::Array<IndexType> offsets(NUM_BOXES, NUM_BOXES, allocID);
   axom::Array<IndexType> counts(NUM_BOXES, NUM_BOXES, allocID);
-  axom::Array<IndexType> candidates =
-    bvh.findPoints(offsets, counts, NUM_BOXES, centroid);
+  axom::Array<IndexType> candidates;
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid);
   EXPECT_TRUE(candidates.size() > 0);
 
   // Ensure the BVH uses interally the supplied pool allocator

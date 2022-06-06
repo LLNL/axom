@@ -341,10 +341,11 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
     counts.resize(this->m_aabbs.size());
 
     // Search for intersecting bounding boxes of triangles
-    m_currCandidates = bvh.findBoundingBoxes(offsets,
-                                             counts,
-                                             this->m_aabbs.size(),
-                                             this->m_aabbs.view());
+    bvh.findBoundingBoxes(offsets,
+                          counts,
+                          m_currCandidates,
+                          this->m_aabbs.size(),
+                          this->m_aabbs.view());
 
     return m_currCandidates;
   }

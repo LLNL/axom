@@ -595,11 +595,12 @@ public:
 
     axom::Array<IndexType> offsets(NE);
     axom::Array<IndexType> counts(NE);
-    axom::Array<IndexType> candidates =
-      bvh.findBoundingBoxes(offsets,
-                            counts,
-                            NE,
-                            reinterpret_cast<BoundingBoxType*>(m_hex_bbs));
+    axom::Array<IndexType> candidates;
+    bvh.findBoundingBoxes(offsets,
+                          counts,
+                          candidates,
+                          NE,
+                          reinterpret_cast<BoundingBoxType*>(m_hex_bbs));
 
     //Deallocate no longer needed variables
     axom::deallocate(m_aabbs);
