@@ -31,7 +31,12 @@ struct debug
 };
 
 /*!
- * \brief Initializes the SLIC logging environment.
+ * \brief Initializes the SLIC logging environment and allows setting which
+ * ranks write messages (root nodes). This defaults to all ranks writing unless
+ * selectively set by the user and can be set afterwards via slic::setIsRoot().
+ * 
+ * \sa slic::setIsRoot()
+ * 
  * \param [in] is_root Enables selective logging macros based on root.
  */
 void initialize(bool is_root = true);
@@ -44,6 +49,10 @@ bool isInitialized();
 
 /*!
  * \brief Checks if we are on the root rank. Used for selective logging on root nodes.
+ * 
+ * \sa slic::initialize()
+ * \sa slic::setIsRoot()
+ * 
  * \return status true if on root, else, false.
  */
 bool isRoot();
