@@ -159,14 +159,16 @@ TEST(slic_macros_parallel, test_error_macros)
   // Check for one rank being root
   axom::slic::setIsRoot(rank == 0);
   SLIC_ERROR_ROOT_IF(true, "this message is logged!");
-  if (rank == 0) {
+  if(rank == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
@@ -174,14 +176,16 @@ TEST(slic_macros_parallel, test_error_macros)
   // Check for more than one rank being root
   axom::slic::setIsRoot((rank % 2) == 0);
   SLIC_ERROR_ROOT_IF(true, "this message is logged!");
-  if ((rank % 2) == 0) {
+  if((rank % 2) == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
@@ -241,14 +245,16 @@ TEST(slic_macros_parallel, test_warning_macros)
   // Check for one rank being root
   axom::slic::setIsRoot(rank == 0);
   SLIC_WARNING_ROOT_IF(true, "this message is logged!");
-  if (rank == 0) {
+  if(rank == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
@@ -256,14 +262,16 @@ TEST(slic_macros_parallel, test_warning_macros)
   // Check for more than one rank being root
   axom::slic::setIsRoot((rank % 2) == 0);
   SLIC_WARNING_ROOT_IF(true, "this message is logged!");
-  if ((rank % 2) == 0) {
+  if((rank % 2) == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
@@ -323,14 +331,16 @@ TEST(slic_macros_parallel, test_info_macros)
   // Check for one rank being root
   axom::slic::setIsRoot(rank == 0);
   SLIC_INFO_ROOT_IF(true, "this message is logged!");
-  if (rank == 0) {
+  if(rank == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
@@ -338,14 +348,16 @@ TEST(slic_macros_parallel, test_info_macros)
   // Check for more than one rank being root
   axom::slic::setIsRoot((rank % 2) == 0);
   SLIC_INFO_ROOT_IF(true, "this message is logged!");
-  if ((rank % 2) == 0) {
+  if((rank % 2) == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
@@ -421,14 +433,16 @@ TEST(slic_macros_parallel, test_debug_macros)
   axom::slic::setIsRoot(rank == 0);
   SLIC_DEBUG_ROOT_IF(true, "this message is logged!");
 #ifdef AXOM_DEBUG
-  if (rank == 0) {
+  if(rank == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
@@ -441,14 +455,16 @@ TEST(slic_macros_parallel, test_debug_macros)
   axom::slic::setIsRoot((rank % 2) == 0);
   SLIC_DEBUG_ROOT_IF(true, "this message is logged!");
 #ifdef AXOM_DEBUG
-  if ((rank % 2) == 0) {
+  if((rank % 2) == 0)
+  {
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
-  else {
+  else
+  {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
   slic::internal::clear();
