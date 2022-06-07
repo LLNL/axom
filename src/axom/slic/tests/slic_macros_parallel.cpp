@@ -165,7 +165,7 @@ TEST(slic_macros_parallel, test_error_macros)
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
   else
   {
@@ -182,7 +182,7 @@ TEST(slic_macros_parallel, test_error_macros)
     check_level(slic::internal::test_stream.str(), "ERROR");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
   else
   {
@@ -251,7 +251,7 @@ TEST(slic_macros_parallel, test_warning_macros)
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
   else
   {
@@ -268,7 +268,7 @@ TEST(slic_macros_parallel, test_warning_macros)
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
   else
   {
@@ -337,7 +337,7 @@ TEST(slic_macros_parallel, test_info_macros)
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
   else
   {
@@ -354,7 +354,7 @@ TEST(slic_macros_parallel, test_info_macros)
     check_level(slic::internal::test_stream.str(), "INFO");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
   else
   {
@@ -439,7 +439,7 @@ TEST(slic_macros_parallel, test_debug_macros)
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
   }
   else
   {
@@ -461,7 +461,7 @@ TEST(slic_macros_parallel, test_debug_macros)
     check_level(slic::internal::test_stream.str(), "DEBUG");
     check_msg(slic::internal::test_stream.str(), "this message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
   }
   else
   {
