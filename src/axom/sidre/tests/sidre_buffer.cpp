@@ -442,7 +442,8 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
-  #if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(UMPIRE_ENABLE_CONST)
+  #if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && \
+    defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -483,7 +484,8 @@ TEST_P(UmpireTest, reallocate_zero)
 {
   constexpr int SIZE = 100;
 
-  #if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(UMPIRE_ENABLE_CONST)
+  #if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && \
+    defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -531,7 +533,7 @@ TEST_P(UmpireTest, reallocate_zero)
 
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
-  #if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP))
+  #if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP))
 
     #ifdef UMPIRE_ENABLE_PINNED
     ,

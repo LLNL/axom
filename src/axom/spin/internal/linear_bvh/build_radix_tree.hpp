@@ -471,7 +471,8 @@ template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
                                                const BBoxType& value)
 {
-#if (defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)) && defined(AXOM_USE_RAJA)
+#if(defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)) && \
+  defined(AXOM_USE_RAJA)
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   using FloatType = typename BBoxType::CoordType;

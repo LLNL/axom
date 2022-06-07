@@ -424,17 +424,17 @@ TEST(quest_signed_distance, sphere_vec_omp_test)
 #endif  // AXOM_USE_OPENMP
 
 //------------------------------------------------------------------------------
-#if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
+#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
 TEST(quest_signed_distance, sphere_vec_device_test)
 {
   constexpr int BLOCK_SIZE = 256;
-    #if defined(__CUDACC__)
+  #if defined(__CUDACC__)
   using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
-    #elif defined(__HIPCC__)
+  #elif defined(__HIPCC__)
   using exec = axom::HIP_EXEC<BLOCK_SIZE>;
-    #else
+  #else
   using exec = axom::SEQ_EXEC;
-    #endif
+  #endif
 
   run_vectorized_sphere_test<exec>();
 }
@@ -444,19 +444,18 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
 {
   constexpr int BLOCK_SIZE = 256;
 
-    #if defined(__CUDACC__)
+  #if defined(__CUDACC__)
   using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
-    #elif defined(__HIPCC__)
+  #elif defined(__HIPCC__)
   using exec = axom::HIP_EXEC<BLOCK_SIZE>;
-    #else
+  #else
   using exec = axom::SEQ_EXEC;
-    #endif
+  #endif
 
   using PointType = primal::Point<double, 3>;
 
   const int curr_allocator = axom::getDefaultAllocatorID();
-  axom::setDefaultAllocator(
-    axom::execution_space<exec>::allocatorID());
+  axom::setDefaultAllocator(axom::execution_space<exec>::allocatorID());
 
   constexpr double l1norm_expected = 6.7051997372579715;
   constexpr double l2norm_expected = 2.5894400431865519;
@@ -495,13 +494,13 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
   // _quest_distance_cpp_init_start
   // Set execution space
   constexpr int BlockSize = 256;
-    #if defined(__CUDACC__)
+  #if defined(__CUDACC__)
   using ExecSpace = axom::CUDA_EXEC<BlockSize>;
-    #elif defined(__HIPCC__)
+  #elif defined(__HIPCC__)
   using ExecSpace = axom::HIP_EXEC<BlockSize>;
-    #else
+  #else
   using ExecSpace = axom::SEQ_EXEC;
-    #endif
+  #endif
 
   // Create a custom allocator
   constexpr size_t PoolSize = 1024 * 1024 * 1024;
@@ -577,7 +576,6 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
   SLIC_INFO("Done.");
 }
 #endif  // (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
-
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])

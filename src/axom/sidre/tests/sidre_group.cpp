@@ -2927,7 +2927,7 @@ TEST_P(UmpireTest, allocate_default)
 
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
-  #if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP))
+  #if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP))
 
     #ifdef UMPIRE_ENABLE_PINNED
     ,

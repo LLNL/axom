@@ -61,7 +61,7 @@ const std::map<std::string, quest::SignedDistExec> validExecPolicies
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     {"omp", quest::SignedDistExec::OpenMP},
 #endif
-#if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
+#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
   {
     "gpu", quest::SignedDistExec::GPU
   }
@@ -142,7 +142,7 @@ struct Arguments
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
     pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
 #endif
-#if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
+#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
     pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
 #endif
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
@@ -206,16 +206,16 @@ int main(int argc, char** argv)
 #endif
     exit(retval);
   }
-#if (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
+#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
   if(args.exec_space == quest::SignedDistExec::GPU)
   {
-      #if defined(__CUDACC__)
+  #if defined(__CUDACC__)
     using GPUExec = axom::CUDA_EXEC<256>;
-      #elif defined(__HIPCC__)
+  #elif defined(__HIPCC__)
     using GPUExec = axom::HIP_EXEC<256>;
-      #else
+  #else
     using GPUExec = axom::SEQ_EXEC;
-      #endif
+  #endif
     axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
   }
 #endif
