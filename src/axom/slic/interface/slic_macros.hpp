@@ -579,7 +579,7 @@
  * \def SLIC_DEBUG_ROOT( msg )
  * \brief Logs a Debug message if on root
  * \param [in] msg user-supplied message.
- * \note The SLIC_DEBUG_ROOT macro is always active.
+ * \note The SLIC_DEBUG_ROOT macro is active when AXOM_DEBUG is defined.
  *
  * Usage:
  * \code
