@@ -226,7 +226,7 @@
     }                                                                 \
     else                                                              \
     {                                                                 \
-      axom::slic::abortIfEnabled(axom::slic::message::Error);         \
+      axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
     }                                                                 \
   } while(axom::slic::detail::false_value)
 
@@ -259,7 +259,7 @@
       }                                                                 \
       else                                                              \
       {                                                                 \
-        axom::slic::abortIfEnabled(axom::slic::message::Error);         \
+        axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
       }                                                                 \
     }                                                                   \
   } while(axom::slic::detail::false_value)
