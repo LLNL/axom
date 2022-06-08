@@ -13,9 +13,7 @@
  *          This is an implementation of ItemCollection to hold a
  *          collection of items of a fixed type. This implementation
  *          is intended to hold items that may have no name. If they do
- *          have names, those names are ignored. To satisfy the parent
- *          class interface, methods to access items by name are provided
- *          but they return null or invalid return values.
+ *          have names, those names are ignored.
  *
  *          This class is templated on the item type so that the same
  *          class can be used to hold either View or Group object pointers
@@ -42,47 +40,22 @@
  *            // sidre::InvalidIndex returned if there are no further items
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
- *
- *          - // Return false because this class cannot identify items
- *            // by name.
- *
- *               bool hasItem(const std::string& name) const;
- *
+ * *
  *          - // Return true if item with given index in collection; else false.
  *
  *               bool hasItem(IndexType idx) const;
- *
- *          - // Return false because this class cannot identify items
- *            // by name.
- *
- *               TYPE* getItem(const std::string& name);
- *               TYPE const* getItem(const std::string& name) const ;
  *
  *          - // Return pointer to item with given index (nullptr if none).
  *
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
  *
- *          - // Return sidre::InvalidName because this class cannot
- *            // identify items by name.
- *
- *               std::string getItemName(IndexType idx) const;
- *
- *          - // Return sidre::InvalidIndex because this class cannot
- *            // identify items by name.
- *
- *               IndexType getItemIndex(const std::string& name) const;
  *
  *          - // Insert item; the name argument will be ignored.
  *            // Return index if insertion succeeded, and InvalidIndex
  *            // otherwise.
  *
  *               IndexType insertItem(TYPE* item, const std::string& name);
- *
- *          - // Return nullptr because this class cannot identify items
- *            // by name. No item will be removed.
- *
- *               TYPE* removeItem(const std::string& name);
  *
  *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
@@ -167,34 +140,10 @@ public:
   IndexType getNextValidIndex(IndexType idx) const;
 
   ///
-  bool hasItem(const std::string& name) const
-  {
-    (void)name;
-    SLIC_WARNING("ListCollection::hasItem cannot identify items by name");
-    return false;
-  }
-
-  ///
   bool hasItem(IndexType idx) const
   {
     return (idx >= 0 && static_cast<unsigned>(idx) < m_items.size() &&
             m_items[static_cast<unsigned>(idx)]);
-  }
-
-  ///
-  TYPE* getItem(const std::string& name)
-  {
-    (void)name;
-    SLIC_WARNING("ListCollection::getItem cannot identify items by name");
-    return 0;
-  }
-
-  ///
-  TYPE const* getItem(const std::string& name) const
-  {
-    (void)name;
-    SLIC_WARNING("ListCollection::getItem cannot identify items by name");
-    return 0;
   }
 
   ///
@@ -210,26 +159,7 @@ public:
   }
 
   ///
-  const std::string& getItemName(IndexType idx) const
-  {
-    (void)idx;
-    SLIC_WARNING("ListCollection::getItemName Items do not have names");
-    return InvalidName;
-  }
-
-  ///
-  IndexType getItemIndex(const std::string& name) const
-  {
-    (void)name;
-    SLIC_WARNING("ListCollection::getItemIndex cannot identify items by name");
-    return 0;
-  }
-
-  ///
-  IndexType insertItem(TYPE* item, const std::string& name);
-
-  ///
-  TYPE* removeItem(const std::string& name);
+  IndexType insertItem(TYPE* item, const std::string& name = "");
 
   ///
   TYPE* removeItem(IndexType idx);
@@ -318,14 +248,6 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
     m_items.push_back(item);
   }
   return idx;
-}
-
-template <typename TYPE>
-TYPE* ListCollection<TYPE>::removeItem(const std::string& name)
-{
-  (void)name;
-  SLIC_WARNING("ListCollection::removeItem cannot identify items by name");
-  return 0;
 }
 
 template <typename TYPE>

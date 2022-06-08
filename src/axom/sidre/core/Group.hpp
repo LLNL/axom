@@ -55,6 +55,8 @@ class Group;
 class DataStore;
 template <typename TYPE>
 class ItemCollection;
+template <typename TYPE>
+class MapCollection;
 
 /*!
  * \class Group
@@ -927,7 +929,44 @@ public:
   const GroupCollection& groups() const { return *m_group_coll; }
 
   //@}
+private:
+  /*!
+   * \brief Casts the views ItemCollection to a (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of views
+   * \sa isUsingMap, isUsingList
+   */
+  MapCollection<View>* getNamedViews();
 
+  /*!
+   * \brief Casts the views ItemCollection to a const (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of views
+   * \sa isUsingMap, isUsingList
+   */
+  const MapCollection<View>* getNamedViews() const;
+
+  /*!
+   * \brief Casts the group ItemCollection to a (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of groups
+   * \sa isUsingMap, isUsingList
+   */
+  MapCollection<Group>* getNamedGroups();
+
+  /*!
+   * \brief Casts the group ItemCollection to a const (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of groups
+   * \sa isUsingMap, isUsingList
+   */
+  const MapCollection<Group>* getNamedGroups() const;
+
+public:
   //@{
   //!  @name Group iteration methods.
   //!

@@ -39,6 +39,48 @@ const char Group::s_path_delimiter = '/';
 
 ////////////////////////////////////////////////////////////////////////
 //
+// Utility functions to cast ItemCollections to (named) MapCollections
+//
+////////////////////////////////////////////////////////////////////////
+
+MapCollection<View>* Group::getNamedViews()
+{
+  SLIC_ASSERT_MSG(
+    this->isUsingMap(),
+    "Attempting to access named view collection of a (nameless) list Group");
+
+  return static_cast<MapCollection<View>*>(m_view_coll);
+}
+
+const MapCollection<View>* Group::getNamedViews() const
+{
+  SLIC_ASSERT_MSG(
+    this->isUsingMap(),
+    "Attempting to access named view collection of a (nameless) list Group");
+
+  return static_cast<const MapCollection<View>*>(m_view_coll);
+}
+
+MapCollection<Group>* Group::getNamedGroups()
+{
+  SLIC_ASSERT_MSG(
+    this->isUsingMap(),
+    "Attempting to access named group collection of a (nameless) list Group");
+
+  return static_cast<MapCollection<Group>*>(m_group_coll);
+}
+
+const MapCollection<Group>* Group::getNamedGroups() const
+{
+  SLIC_ASSERT_MSG(
+    this->isUsingMap(),
+    "Attempting to access named group collection of a (nameless) list Group");
+
+  return static_cast<const MapCollection<Group>*>(m_group_coll);
+}
+
+////////////////////////////////////////////////////////////////////////
+//
 // Basic query and accessor methods.
 //
 ////////////////////////////////////////////////////////////////////////
@@ -123,7 +165,7 @@ View* Group::getView(const std::string& path)
     !intpath.empty() && group->hasChildView(intpath),
     SIDRE_GROUP_LOG_PREPEND << "No View with name '" << intpath << "'");
 
-  return group->m_view_coll->getItem(intpath);
+  return group->getNamedViews()->getItem(intpath);
 }
 
 /*
@@ -150,7 +192,7 @@ const View* Group::getView(const std::string& path) const
     !intpath.empty() && group->hasChildView(intpath),
     SIDRE_GROUP_LOG_PREPEND << "No View with name '" << intpath << "'");
 
-  return group->m_view_coll->getItem(intpath);
+  return group->getNamedViews()->getItem(intpath);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -832,7 +874,7 @@ Group* Group::getGroup(const std::string& path)
                  SIDRE_GROUP_LOG_PREPEND
                    << "Group has no descendant Group named '" << path << "'.");
 
-  return group->m_group_coll->getItem(intpath);
+  return group->getNamedGroups()->getItem(intpath);
 }
 
 /*
@@ -860,7 +902,7 @@ const Group* Group::getGroup(const std::string& path) const
                    << "Group has no descendant Group with name '" << path
                    << "'.");
 
-  return group->m_group_coll->getItem(intpath);
+  return group->getNamedGroups()->getItem(intpath);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1782,7 +1824,7 @@ View* Group::attachView(View* view)
  */
 View* Group::detachView(const std::string& name)
 {
-  View* view = m_view_coll->removeItem(name);
+  View* view = getNamedViews()->removeItem(name);
   if(view != nullptr)
   {
     view->m_owning_group = nullptr;
@@ -1864,7 +1906,7 @@ Group* Group::attachGroup(Group* group)
  */
 Group* Group::detachGroup(const std::string& name)
 {
-  Group* group = m_group_coll->removeItem(name);
+  Group* group = getNamedGroups()->removeItem(name);
   if(group != nullptr)
   {
     group->m_parent = nullptr;
@@ -2404,7 +2446,7 @@ IndexType Group::getNumViews() const { return m_view_coll->getNumItems(); }
  */
 bool Group::hasChildView(const std::string& name) const
 {
-  return m_view_coll->hasItem(name);
+  return getNamedViews()->hasItem(name);
 }
 
 /*
@@ -2431,7 +2473,7 @@ IndexType Group::getViewIndex(const std::string& name) const
     hasChildView(name),
     SIDRE_GROUP_LOG_PREPEND << "Group has no View with name '" << name << "'");
 
-  return m_view_coll->getItemIndex(name);
+  return getNamedViews()->getItemIndex(name);
 }
 
 /*
@@ -2449,7 +2491,7 @@ const std::string& Group::getViewName(IndexType idx) const
     hasView(idx),
     SIDRE_GROUP_LOG_PREPEND << "Group has no View with index " << idx);
 
-  return m_view_coll->getItemName(idx);
+  return getNamedViews()->getItemName(idx);
 }
 
 /*
@@ -2529,7 +2571,7 @@ IndexType Group::getNextValidViewIndex(IndexType idx) const
  */
 bool Group::hasChildGroup(const std::string& name) const
 {
-  return m_group_coll->hasItem(name);
+  return getNamedGroups()->hasItem(name);
 }
 
 /*
@@ -2556,7 +2598,7 @@ IndexType Group::getGroupIndex(const std::string& name) const
                  SIDRE_GROUP_LOG_PREPEND
                    << "Group has no child Group with name '" << name << "'");
 
-  return m_group_coll->getItemIndex(name);
+  return getNamedGroups()->getItemIndex(name);
 }
 
 /*
@@ -2574,7 +2616,7 @@ const std::string& Group::getGroupName(IndexType idx) const
     hasGroup(idx),
     SIDRE_GROUP_LOG_PREPEND << "Group has no child Group with index " << idx);
 
-  return m_group_coll->getItemName(idx);
+  return getNamedGroups()->getItemName(idx);
 }
 
 /*

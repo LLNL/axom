@@ -152,16 +152,7 @@ public:
   virtual IndexType getNextValidIndex(IndexType idx) const = 0;
 
   ///
-  virtual bool hasItem(const std::string& name) const = 0;
-
-  ///
   virtual bool hasItem(IndexType idx) const = 0;
-
-  ///
-  virtual TYPE* getItem(const std::string& name) = 0;
-
-  ///
-  virtual TYPE const* getItem(const std::string& name) const = 0;
 
   ///
   virtual TYPE* getItem(IndexType idx) = 0;
@@ -170,16 +161,7 @@ public:
   virtual TYPE const* getItem(IndexType idx) const = 0;
 
   ///
-  virtual const std::string& getItemName(IndexType idx) const = 0;
-
-  ///
-  virtual IndexType getItemIndex(const std::string& name) const = 0;
-
-  ///
-  virtual IndexType insertItem(TYPE* item, const std::string& name) = 0;
-
-  ///
-  virtual TYPE* removeItem(const std::string& name) = 0;
+  virtual IndexType insertItem(TYPE* item, const std::string& name = "") = 0;
 
   ///
   virtual TYPE* removeItem(IndexType idx) = 0;
