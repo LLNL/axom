@@ -104,6 +104,10 @@ struct ConstantCardinality
     return m_begins[fromPos];
   }
 
+  IndirectionPtrType offsetData() { return m_begins.data(); }
+
+  const IndirectionPtrType offsetData() const { return m_begins.data(); }
+
   void bindBeginOffsets(ElementType fromSetSize, ElementType stride)
   {
     m_begins = typename BeginsSet::SetBuilder().size(fromSetSize).stride(stride);
@@ -168,6 +172,10 @@ struct VariableCardinality
   {
     return m_begins[fromPos];
   }
+
+  IndirectionPtrType offsetData() { return m_begins.data(); }
+
+  const IndirectionPtrType offsetData() const { return m_begins.data(); }
 
   ElementType totalSize() const
   {
