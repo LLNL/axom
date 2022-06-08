@@ -6,6 +6,8 @@
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
 #include "axom/sidre.hpp"
 
+#include "axom/fmt.hpp"
+
 #include "gtest/gtest.h"
 
 using axom::sidre::Attribute;
@@ -665,6 +667,85 @@ TEST(sidre_attribute, loop_attributes)
   }
 
   // XXX - now delete attribute and check again
+
+  delete ds;
+}
+
+TEST(sidre_attribute, iterate_attributes)
+{
+  DataStore* ds = new DataStore();
+
+  // Create attributes for DataStore
+  Attribute* color = ds->createAttributeString(g_name_color, g_color_none);
+  IndexType icolor = color->getIndex();
+  EXPECT_EQ(0, icolor);
+
+  Attribute* dump = ds->createAttributeScalar(g_name_dump, g_dump_no);
+  IndexType idump = dump->getIndex();
+  EXPECT_EQ(1, idump);
+
+  Attribute* size = ds->createAttributeScalar(g_name_size, g_size_small);
+  IndexType isize = size->getIndex();
+  EXPECT_EQ(2, isize);
+
+  for(Attribute& attr : ds->attributes())
+  {
+    switch(attr.getIndex())
+    {
+    case 0:
+      EXPECT_EQ(g_name_color, attr.getName());
+      break;
+    case 1:
+      EXPECT_EQ(g_name_dump, attr.getName());
+      break;
+    case 2:
+      EXPECT_EQ(g_name_size, attr.getName());
+      break;
+    default:
+      FAIL() << axom::fmt::format("Unexpected attribute: {{id:{}, name:'{}'}}",
+                                  attr.getIndex(),
+                                  attr.getName());
+      break;
+    }
+  }
+
+  for(const Attribute& attr : ds->attributes())
+  {
+    switch(attr.getIndex())
+    {
+    case 0:
+      EXPECT_EQ(g_name_color, attr.getName());
+      break;
+    case 1:
+      EXPECT_EQ(g_name_dump, attr.getName());
+      break;
+    case 2:
+      EXPECT_EQ(g_name_size, attr.getName());
+      break;
+    default:
+      FAIL() << axom::fmt::format("Unexpected attribute: {{id:{}, name:'{}'}}",
+                                  attr.getIndex(),
+                                  attr.getName());
+      break;
+    }
+  }
+
+  // Destroy all attributes and check for empty
+  ds->destroyAllAttributes();
+  EXPECT_EQ(0, ds->getNumAttributes());
+
+  for(Attribute& attr : ds->attributes())
+  {
+    switch(attr.getIndex())
+    {
+    default:
+      FAIL() << axom::fmt::format(
+        "Expected no attributes, but found: {{id:{}, name:'{}'}}",
+        attr.getIndex(),
+        attr.getName());
+      break;
+    }
+  }
 
   delete ds;
 }

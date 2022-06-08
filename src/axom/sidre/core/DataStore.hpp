@@ -53,6 +53,9 @@ class MapCollection;
 class DataStore
 {
 public:
+  using AttributeCollection = MapCollection<Attribute>;
+
+public:
   /*!
    * \brief Default ctor initializes DataStore object and creates a root Group.
    *
@@ -191,6 +194,7 @@ public:
 
   //@}
 
+public:
   //@{
   //!  @name Methods to query, access, create, and destroy Attributes.
 
@@ -367,6 +371,29 @@ public:
 
   //@}
 
+  //@{
+  //!  @name Accesors for attribute collections.
+  //!
+  //! These methods can be used to iterate on the collection of attributes
+  //! Example:
+  //!      for (auto& attr : ds->attributes())
+  //!      {
+  //!          /// code here using attribute
+  //!      }
+
+  /*!
+   * \brief Returns a reference to the collection of attributes
+   */
+  AttributeCollection& attributes() { return *m_attribute_coll; }
+
+  /*!
+   * \brief Returns a const reference to the collection of attributes
+   */
+  const AttributeCollection& attributes() const { return *m_attribute_coll; }
+
+  //@}
+
+public:
   /*!
    * \brief Generate a Conduit Blueprint index based on a mesh in stored in
    *        this DataStore.
@@ -452,6 +479,7 @@ private:
 
   //@}
 
+private:
   /// Root Group, created when DataStore object is created.
   Group* m_RootGroup;
 
@@ -460,11 +488,6 @@ private:
 
   /// Collection of unused unique Buffer indices (they can be recycled).
   std::stack<IndexType> m_free_buffer_ids;
-
-  ///////////////////////////////////////////////////////////////////
-  //
-  using AttributeCollection = MapCollection<Attribute>;
-  ///////////////////////////////////////////////////////////////////
 
   /// Collection of Attributes
   AttributeCollection* m_attribute_coll;
