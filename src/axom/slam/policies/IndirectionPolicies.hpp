@@ -33,6 +33,7 @@
 #define SLAM_POLICIES_INDIRECTION_H_
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/Array.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 namespace axom
@@ -272,6 +273,65 @@ private:
   IndirectionBufferType* m_vecBuf;
 };
 
+/**
+ * \brief A policy class for sets with axom::ArrayView-based indirection
+ */
+template <typename PositionType, typename ElementType>
+struct ViewIndirection
+{
+  using IndirectionResult = ElementType&;
+  using ConstIndirectionResult = const ElementType&;
+
+  using VectorType = axom::ArrayView<ElementType>;
+  using IndirectionBufferType = VectorType;
+
+  ViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
+
+  IndirectionBufferType data() const { return m_vecBuf; }
+
+  inline ConstIndirectionResult indirection(PositionType pos) const
+  {
+    SLIC_ASSERT_MSG(hasIndirection(),
+                    "SLAM::Set:CoreArrayIndirection -- Tried to dereference "
+                      << "a null vector in a vector based indirection set.");
+    //SLIC_ASSERT_MSG( pos < m_vecBuf->size(),
+    //  "SLAM::Set:CoreArrayIndirection -- "
+    //  << "Tried to access an out of bounds element at position "
+    //  << pos << " in vector with only " << m_vecBuf->size() << " elements.");
+
+    return m_vecBuf[pos];
+  }
+
+  inline IndirectionResult indirection(PositionType pos)
+  {
+    SLIC_ASSERT_MSG(hasIndirection(),
+                    "SLAM::Set:CoreArrayIndirection -- Tried to dereference "
+                      << "a null vector in a vector based indirection set.");
+
+    return m_vecBuf[pos];
+  }
+
+  inline IndirectionResult operator()(PositionType pos)
+  {
+    return indirection(pos);
+  }
+
+  inline ConstIndirectionResult operator()(PositionType pos) const
+  {
+    return indirection(pos);
+  }
+
+  bool hasIndirection() const { return m_vecBuf.data() != nullptr; }
+
+  inline bool isValid(PositionType size,
+                      PositionType offset,
+                      PositionType stride,
+                      bool verboseOutput = false) const;
+
+private:
+  IndirectionBufferType m_vecBuf;
+};
+
 /// \}
 
 template <typename PosType, typename ElemType>
@@ -408,6 +468,59 @@ bool CoreArrayIndirection<PosType, ElemType>::isValid(PosType size,
     PosType firstEltInd = offset;
     PosType lastEltInd = (size - 1) * stride + offset;
     PosType vecSize = static_cast<PosType>(m_vecBuf->size());
+
+    bool isRangeValid = (0 <= firstEltInd) && (firstEltInd < vecSize) &&
+      (0 <= lastEltInd) && (lastEltInd < vecSize);
+
+    if(!isRangeValid)
+    {
+      SLIC_DEBUG_IF(
+        verboseOutput,
+        "Invalid array-based IndirectionSet -- Data buffer "
+          << "must be large enough to hold all elements of the set. "
+          << "Underlying buffer size is " << vecSize << "."
+          << " Offset of " << offset << " leads to a first index of "
+          << firstEltInd << "."
+          << " Stride of " << stride << " and size of " << size
+          << " leads to a last index of " << lastEltInd << ".");
+
+      bValid = false;
+    }
+  }
+
+  return bValid;
+}
+
+template <typename PosType, typename ElemType>
+bool ViewIndirection<PosType, ElemType>::isValid(PosType size,
+                                                 PosType offset,
+                                                 PosType stride,
+                                                 bool verboseOutput) const
+{
+  AXOM_UNUSED_VAR(verboseOutput);
+
+  // always valid if set has zero size, even if indirection buffer is null
+  if(size == 0) return true;
+
+  bool bValid = true;
+
+  // Otherwise, check whether the set has elements, but the array ptr is null
+  if(!hasIndirection())
+  {
+    SLIC_DEBUG_IF(verboseOutput,
+                  "Array-based indirection set with non-zero size "
+                    << "(size=" << size << ") requires a valid data buffer,"
+                    << "but buffer pointer was null.");
+
+    bValid = false;
+  }
+  else
+  {
+    // Verify underlying vector has sufficient storage for all set elements
+    // Note: it is valid for the data buffer to have extra space
+    PosType firstEltInd = offset;
+    PosType lastEltInd = (size - 1) * stride + offset;
+    PosType vecSize = static_cast<PosType>(m_vecBuf.size());
 
     bool isRangeValid = (0 <= firstEltInd) && (firstEltInd < vecSize) &&
       (0 <= lastEltInd) && (lastEltInd < vecSize);
