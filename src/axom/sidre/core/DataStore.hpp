@@ -36,6 +36,10 @@ namespace sidre
 {
 class Buffer;
 class Group;
+
+template <typename TYPE>
+class IndexedCollection;
+
 template <typename TYPE>
 class MapCollection;
 
@@ -54,6 +58,7 @@ class DataStore
 {
 public:
   using AttributeCollection = MapCollection<Attribute>;
+  using BufferCollection = IndexedCollection<Buffer>;
 
 public:
   /*!
@@ -80,27 +85,15 @@ public:
    */
   const Group* getRoot() const { return m_RootGroup; };
 
+public:
   //@{
   //!  @name Methods to query, access, create, and destroy Buffers.
 
-  /*!
-   * \brief Return number of Buffers in the DataStore.
-   */
-  IndexType getNumBuffers() const
-  {
-    return static_cast<IndexType>(m_data_buffers.size() -
-                                  m_free_buffer_ids.size());
-  }
+  /// \brief Return number of Buffers in the DataStore.
+  IndexType getNumBuffers() const;
 
-  /*!
-   * \brief Return true if DataStore owns a Buffer with given index;
-   *        else false.
-   */
-  bool hasBuffer(IndexType idx) const
-  {
-    return (0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
-            m_data_buffers[static_cast<unsigned>(idx)] != nullptr);
-  }
+  /// \brief Return true if DataStore owns a Buffer with given index; else false
+  bool hasBuffer(IndexType idx) const;
 
   /*!
    * \brief Return (non-const) pointer to Buffer object with the given
@@ -484,10 +477,7 @@ private:
   Group* m_RootGroup;
 
   /// Collection of Buffers in DataStore instance.
-  std::vector<Buffer*> m_data_buffers;
-
-  /// Collection of unused unique Buffer indices (they can be recycled).
-  std::stack<IndexType> m_free_buffer_ids;
+  BufferCollection* m_buffer_coll;
 
   /// Collection of Attributes
   AttributeCollection* m_attribute_coll;
