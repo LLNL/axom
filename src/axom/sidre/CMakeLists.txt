@@ -27,6 +27,7 @@ set(sidre_headers
     core/Attribute.hpp
     core/AttrValues.hpp
     core/ItemCollection.hpp
+    core/IndexedCollection.hpp
     core/ListCollection.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
