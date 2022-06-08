@@ -59,6 +59,7 @@ struct NoIndirection
   using ConstIndirectionResult = const ElementType;
   using IndirectionBufferType = struct
   { };
+  using IndirectionPtrType = IndirectionBufferType*;
 
   NoIndirection() { }
 
@@ -94,6 +95,7 @@ struct ArrayIndirection
   using ConstIndirectionResult = const ElementType&;
 
   using IndirectionBufferType = ElementType;
+  using IndirectionPtrType = IndirectionBufferType*;
 
   ArrayIndirection(IndirectionBufferType* buf = nullptr) : m_arrBuf(buf) { }
 
@@ -147,6 +149,7 @@ struct STLVectorIndirection
 
   using VectorType = std::vector<ElementType>;
   using IndirectionBufferType = VectorType;
+  using IndirectionPtrType = IndirectionBufferType*;
 
   STLVectorIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
@@ -215,6 +218,7 @@ struct CoreArrayIndirection
 
   using VectorType = axom::Array<ElementType>;
   using IndirectionBufferType = VectorType;
+  using IndirectionPtrType = IndirectionBufferType*;
 
   CoreArrayIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
@@ -284,6 +288,7 @@ struct ViewIndirection
 
   using VectorType = axom::ArrayView<ElementType>;
   using IndirectionBufferType = VectorType;
+  using IndirectionPtrType = IndirectionBufferType;
 
   ViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
 

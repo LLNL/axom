@@ -77,6 +77,8 @@ struct ConstantCardinality
                           ElementType,
                           BeginsStridePolicy::DEFAULT_VALUE>::SizeType;
 
+  using IndirectionPtrType = typename BeginsIndirectionPolicy::IndirectionPtrType;
+
   ConstantCardinality() : m_begins() { }
   ConstantCardinality(BeginsSet begins) : m_begins(begins) { }
   ConstantCardinality(ElementType fromSetSize)
@@ -141,6 +143,7 @@ struct VariableCardinality
   using RelationalOperatorSizeType = BeginsSizePolicy;
 
   using IndirectionBufferType = typename IndirectionPolicy::IndirectionBufferType;
+  using IndirectionPtrType = typename IndirectionPolicy::IndirectionPtrType;
 
   VariableCardinality() : m_begins() { }
   VariableCardinality(BeginsSet begins) : m_begins(begins) { }
@@ -151,7 +154,7 @@ struct VariableCardinality
     m_begins = builder;
   }
 
-  void bindBeginOffsets(ElementType fromSetSize, IndirectionBufferType* data)
+  void bindBeginOffsets(ElementType fromSetSize, IndirectionPtrType data)
   {
     m_begins = typename BeginsSet::SetBuilder().size(fromSetSize + 1).data(data);
   }

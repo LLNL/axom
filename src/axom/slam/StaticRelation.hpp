@@ -66,6 +66,8 @@ public:
 
   using IndirectionBufferType =
     typename IndicesIndirectionPolicy::IndirectionBufferType;
+  using IndirectionPtrType =
+    typename IndicesIndirectionPolicy::IndirectionPtrType;
 
   // types for iterator
   using RelationIterator = typename RelationSubset::iterator;
@@ -222,17 +224,17 @@ public:
 
   SetPosition toSetSize() { return m_toSet->size(); }
 
-  void bindIndices(SetPosition size, IndirectionBufferType* data)
+  void bindIndices(SetPosition size, IndirectionPtrType data)
   {
     m_relationIndices = typename IndicesSet::SetBuilder().size(size).data(data);
   }
 
-  const IndirectionBufferType* relationData() const
+  const IndirectionPtrType relationData() const
   {
     return m_relationIndices.data();
   }
 
-  IndirectionBufferType* relationData() { return m_relationIndices.data(); }
+  IndirectionPtrType relationData() { return m_relationIndices.data(); }
 
 private:
   FromSetType* m_fromSet;
