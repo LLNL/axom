@@ -59,13 +59,13 @@
  *
  *          - // Return pointer to item with given name (nullptr if none).
  *
- *               TYPE* getItem(const std::string& name);
- *               TYPE const* getItem(const std::string& name) const ;
+ *               T* getItem(const std::string& name);
+ *               T const* getItem(const std::string& name) const ;
  *
  *          - // Return pointer to item with given index (nullptr if none).
  *
- *               TYPE* getItem(IndexType idx);
- *               TYPE const* getItem(IndexType idx) const;
+ *               T* getItem(IndexType idx);
+ *               T const* getItem(IndexType idx) const;
  *
  *          - // Return name of object with given index
  *            // (sidre::InvalidName if none).
@@ -80,17 +80,17 @@
  *          - // Insert item with given name; return index if insertion
  *            // succeeded, and InvalidIndex otherwise.
  *
- *               IndexType insertItem(TYPE* item, const std::string& name);
+ *               IndexType insertItem(T* item, const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
  *
- *               TYPE* removeItem(const std::string& name);
+ *               T* removeItem(const std::string& name);
  *
  *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
  *
- *               TYPE* removeItem(IndexType idx);
+ *               T* removeItem(IndexType idx);
  *
  *          - // Remove all items (items not destroyed).
  *
@@ -126,12 +126,12 @@ namespace sidre
  * \class ItemCollection
  *
  * \brief ItemCollection is an abstract base class template for holding
- *        a collection of items of template parameter type TYPE.  Derived
+ *        a collection of items of template parameter type T.  Derived
  *        child classes can determine how to specifically store the items.
  *
  *************************************************************************
  */
-template <typename TYPE>
+template <typename T>
 class ItemCollection
 {
 public:
@@ -155,16 +155,16 @@ public:
   virtual bool hasItem(IndexType idx) const = 0;
 
   ///
-  virtual TYPE* getItem(IndexType idx) = 0;
+  virtual T* getItem(IndexType idx) = 0;
 
   ///
-  virtual TYPE const* getItem(IndexType idx) const = 0;
+  virtual T const* getItem(IndexType idx) const = 0;
 
   ///
-  virtual IndexType insertItem(TYPE* item, const std::string& name = "") = 0;
+  virtual IndexType insertItem(T* item, const std::string& name = "") = 0;
 
   ///
-  virtual TYPE* removeItem(IndexType idx) = 0;
+  virtual T* removeItem(IndexType idx) = 0;
 
   ///
   virtual void removeAllItems() = 0;
@@ -174,16 +174,16 @@ public:
   {
   private:
     using BaseType = IteratorBase<iterator, IndexType>;
-    using CollectionType = ItemCollection<TYPE>;
+    using CollectionType = ItemCollection<T>;
 
   public:
     // Iterator traits required to satisfy LegacyRandomAccessIterator concept
     // before C++20
     // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
     using difference_type = IndexType;
-    using value_type = typename std::remove_cv<TYPE>::type;
-    using reference = TYPE&;
-    using pointer = TYPE*;
+    using value_type = typename std::remove_cv<T>::type;
+    using reference = T&;
+    using pointer = T*;
     using iterator_category = std::forward_iterator_tag;
 
   public:
@@ -222,16 +222,16 @@ public:
   {
   private:
     using BaseType = IteratorBase<const_iterator, IndexType>;
-    using CollectionType = ItemCollection<TYPE>;
+    using CollectionType = ItemCollection<T>;
 
   public:
     // Iterator traits required to satisfy LegacyRandomAccessIterator concept
     // before C++20
     // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
     using difference_type = IndexType;
-    using value_type = typename std::remove_cv<TYPE>::type;
-    using reference = const TYPE&;
-    using pointer = const TYPE*;
+    using value_type = typename std::remove_cv<T>::type;
+    using reference = const T&;
+    using pointer = const T*;
     using iterator_category = std::forward_iterator_tag;
 
   public:

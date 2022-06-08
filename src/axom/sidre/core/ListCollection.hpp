@@ -47,20 +47,20 @@
  *
  *          - // Return pointer to item with given index (nullptr if none).
  *
- *               TYPE* getItem(IndexType idx);
- *               TYPE const* getItem(IndexType idx) const;
+ *               T* getItem(IndexType idx);
+ *               T const* getItem(IndexType idx) const;
  *
  *
  *          - // Insert item; the name argument will be ignored.
  *            // Return index if insertion succeeded, and InvalidIndex
  *            // otherwise.
  *
- *               IndexType insertItem(TYPE* item, const std::string& name);
+ *               IndexType insertItem(T* item, const std::string& name);
  *
  *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
  *
- *               TYPE* removeItem(IndexType idx);
+ *               T* removeItem(IndexType idx);
  *
  *          - // Remove all items (items not destroyed).
  *
@@ -112,17 +112,17 @@ namespace sidre
  * \class ListCollection
  *
  * \brief ListCollection is a container class template for holding
- *        a collection of items of template parameter type TYPE, using
+ *        a collection of items of template parameter type T, using
  *        a list container.
  *
  *************************************************************************
  */
-template <typename TYPE>
-class ListCollection : public ItemCollection<TYPE>
+template <typename T>
+class ListCollection : public ItemCollection<T>
 {
 public:
-  using iterator = typename ItemCollection<TYPE>::iterator;
-  using const_iterator = typename ItemCollection<TYPE>::const_iterator;
+  using iterator = typename ItemCollection<T>::iterator;
+  using const_iterator = typename ItemCollection<T>::const_iterator;
 
 public:
   //
@@ -147,22 +147,22 @@ public:
   }
 
   ///
-  TYPE* getItem(IndexType idx)
+  T* getItem(IndexType idx)
   {
     return (hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr);
   }
 
   ///
-  TYPE const* getItem(IndexType idx) const
+  T const* getItem(IndexType idx) const
   {
     return (hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr);
   }
 
   ///
-  IndexType insertItem(TYPE* item, const std::string& name = "");
+  IndexType insertItem(T* item, const std::string& name = "");
 
   ///
-  TYPE* removeItem(IndexType idx);
+  T* removeItem(IndexType idx);
 
   ///
   void removeAllItems()
@@ -185,14 +185,14 @@ public:
   const_iterator end() const { return const_iterator(this, false); }
 
 private:
-  std::vector<TYPE*> m_items;
+  std::vector<T*> m_items;
   std::stack<IndexType> m_free_ids;
 
   std::list<IndexType> m_index_list;
 };
 
-template <typename TYPE>
-IndexType ListCollection<TYPE>::getFirstValidIndex() const
+template <typename T>
+IndexType ListCollection<T>::getFirstValidIndex() const
 {
   IndexType idx = 0;
   while(static_cast<unsigned>(idx) < m_items.size() &&
@@ -203,8 +203,8 @@ IndexType ListCollection<TYPE>::getFirstValidIndex() const
   return ((static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex);
 }
 
-template <typename TYPE>
-IndexType ListCollection<TYPE>::getNextValidIndex(IndexType idx) const
+template <typename T>
+IndexType ListCollection<T>::getNextValidIndex(IndexType idx) const
 {
   if(idx == InvalidIndex)
   {
@@ -220,8 +220,8 @@ IndexType ListCollection<TYPE>::getNextValidIndex(IndexType idx) const
   return ((static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex);
 }
 
-template <typename TYPE>
-IndexType ListCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
+template <typename T>
+IndexType ListCollection<T>::insertItem(T* item, const std::string& name)
 {
   SLIC_WARNING_IF(!name.empty(),
                   "Item " << name << " added to Group "
@@ -250,10 +250,10 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
   return idx;
 }
 
-template <typename TYPE>
-TYPE* ListCollection<TYPE>::removeItem(IndexType idx)
+template <typename T>
+T* ListCollection<T>::removeItem(IndexType idx)
 {
-  TYPE* ret_val = nullptr;
+  T* ret_val = nullptr;
   if(hasItem(idx))
   {
     for(auto itr = m_index_list.begin(); itr != m_index_list.end(); ++itr)
