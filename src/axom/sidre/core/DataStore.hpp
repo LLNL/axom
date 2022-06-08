@@ -187,6 +187,28 @@ public:
 
   //@}
 
+  //@{
+  //!  @name Accesors for buffer collections.
+  //!
+  //! These methods can be used to iterate on the collection of buffers
+  //! Example:
+  //!      for (auto& buffer : ds->buffers())
+  //!      {
+  //!          /// code here using buffers
+  //!      }
+
+  /*!
+   * \brief Returns a reference to the collection of buffers
+   */
+  BufferCollection& buffers() { return *m_buffer_coll; }
+
+  /*!
+   * \brief Returns a const reference to the collection of buffers
+   */
+  const BufferCollection& buffers() const { return *m_buffer_coll; }
+
+  //@}
+
 public:
   //@{
   //!  @name Methods to query, access, create, and destroy Attributes.
