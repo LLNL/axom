@@ -19,6 +19,10 @@
 #include "axom/mint/mesh/MeshTypes.hpp"
 #include "axom/mint/mesh/internal/MeshHelpers.hpp"
 
+// Slam includes
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/StaticRelation.hpp"
+
 // Slic includes
 #include "axom/slic/interface/slic.hpp"
 
@@ -45,6 +49,18 @@ struct topology_traits<SINGLE_SHAPE>
   constexpr static ConnectivityType cell_to_nodes = NO_INDIRECTION;
   constexpr static ConnectivityType cell_to_faces = NO_INDIRECTION;
   constexpr static ConnectivityType face_to_nodes = NO_INDIRECTION;
+
+  using IdxType = int;
+
+  using ZoneSet = slam::PositionSet<IdxType, IdxType>;
+  using NodeSet = slam::PositionSet<IdxType, IdxType>;
+
+  using ViewIndirection = slam::policies::ViewIndirection<IdxType, IdxType>;
+
+  using ZNStride = slam::policies::RuntimeStride<IdxType>;
+  using ZNCardinality = slam::policies::ConstantCardinality<IdxType, ZNStride>;
+  using ZoneNodeRelation =
+    slam::StaticRelation<IdxType, IdxType, ZNCardinality, ViewIndirection, ZoneSet, NodeSet>;
 };
 
 template <>
@@ -53,6 +69,18 @@ struct topology_traits<MIXED_SHAPE>
   constexpr static ConnectivityType cell_to_nodes = TYPED_INDIRECTION;
   constexpr static ConnectivityType cell_to_faces = INDIRECTION;
   constexpr static ConnectivityType face_to_nodes = TYPED_INDIRECTION;
+
+  using IdxType = int;
+
+  using ZoneSet = slam::PositionSet<IdxType, IdxType>;
+  using NodeSet = slam::PositionSet<IdxType, IdxType>;
+
+  using ViewIndirection = slam::policies::ViewIndirection<IdxType, IdxType>;
+
+  using ZNCardinality =
+    slam::policies::VariableCardinality<IdxType, ViewIndirection>;
+  using ZoneNodeRelation =
+    slam::StaticRelation<IdxType, IdxType, ZNCardinality, ViewIndirection, ZoneSet, NodeSet>;
 };
 
 /*!
@@ -128,6 +156,11 @@ class UnstructuredMesh : public Mesh
   AXOM_STATIC_ASSERT(TOPO == SINGLE_SHAPE || TOPO == MIXED_SHAPE);
 
 public:
+  using CellSet = typename topology_traits<TOPO>::ZoneSet;
+  using NodeSet = typename topology_traits<TOPO>::NodeSet;
+
+  using CellToNodeRelation = typename topology_traits<TOPO>::ZoneNodeRelation;
+
   /*! \brief The types for face-cell and cell-face connectivity.
    *
    * Usually, each face will connect two cells.  The exceptions are
@@ -1891,6 +1924,11 @@ private:
   }
 
   MeshCoordinates* m_coordinates;
+
+  CellSet m_cells;
+  NodeSet m_nodes;
+
+  CellToNodeRelation m_cell_node_rel;
 
   /*! \brief The nodes for each cell */
   CellToNodeConnectivity* m_cell_to_node;
