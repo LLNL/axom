@@ -233,7 +233,8 @@ namespace axom
 namespace primal
 {
 template <typename T, int NDIMS>
-Plane<T, NDIMS>::Plane(const VectorType& normal, const PointType& x)
+AXOM_HOST_DEVICE Plane<T, NDIMS>::Plane(const VectorType& normal,
+                                        const PointType& x)
 {
   SLIC_ASSERT_MSG(!normal.is_zero(),
                   "Normal vector of a plane should be non-zero");
@@ -245,7 +246,8 @@ Plane<T, NDIMS>::Plane(const VectorType& normal, const PointType& x)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-Plane<T, NDIMS>::Plane(const VectorType& normal, T offset) : m_offset(offset)
+AXOM_HOST_DEVICE Plane<T, NDIMS>::Plane(const VectorType& normal, T offset)
+  : m_offset(offset)
 {
   SLIC_ASSERT_MSG(!normal.is_zero(),
                   "Normal vector of a plane should be non-zero");
@@ -272,7 +274,8 @@ inline void Plane<T, NDIMS>::flip()
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline int Plane<T, NDIMS>::getOrientation(const PointType& x, double TOL) const
+AXOM_HOST_DEVICE inline int Plane<T, NDIMS>::getOrientation(const PointType& x,
+                                                            double TOL) const
 {
   const T signed_distance = this->signedDistance(x);
 
@@ -299,7 +302,7 @@ std::ostream& Plane<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline void Plane<T, NDIMS>::setNormal(const VectorType& normal)
+AXOM_HOST_DEVICE inline void Plane<T, NDIMS>::setNormal(const VectorType& normal)
 {
   m_normal = normal.unitVector();
 }
@@ -314,7 +317,8 @@ std::ostream& operator<<(std::ostream& os, const Plane<T, NDIMS>& p)
 }
 
 template <typename T>
-Plane<T, 2> make_plane(const Point<T, 2>& x1, const Point<T, 2>& x2)
+AXOM_HOST_DEVICE Plane<T, 2> make_plane(const Point<T, 2>& x1,
+                                        const Point<T, 2>& x2)
 {
   Vector<T, 2> normal;
   normal[0] = x1[1] - x2[1];  // -dy
@@ -328,9 +332,9 @@ Plane<T, 2> make_plane(const Point<T, 2>& x1, const Point<T, 2>& x2)
 
 //------------------------------------------------------------------------------
 template <typename T>
-Plane<T, 3> make_plane(const Point<T, 3>& x1,
-                       const Point<T, 3>& x2,
-                       const Point<T, 3>& x3)
+AXOM_HOST_DEVICE Plane<T, 3> make_plane(const Point<T, 3>& x1,
+                                        const Point<T, 3>& x2,
+                                        const Point<T, 3>& x3)
 {
   Vector<T, 3> r1(x1, x2);
   Vector<T, 3> r2(x1, x3);

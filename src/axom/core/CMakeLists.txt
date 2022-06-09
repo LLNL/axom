@@ -69,6 +69,7 @@ set(core_headers
     execution/internal/seq_exec.hpp
     execution/internal/omp_exec.hpp
     execution/internal/cuda_exec.hpp
+    execution/internal/hip_exec.hpp
 
     )
 
