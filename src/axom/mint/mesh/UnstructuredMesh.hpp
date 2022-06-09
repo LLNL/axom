@@ -48,7 +48,7 @@ struct topology_traits<SINGLE_SHAPE>
 {
   constexpr static ConnectivityType cell_to_nodes = NO_INDIRECTION;
   constexpr static ConnectivityType cell_to_faces = NO_INDIRECTION;
-  constexpr static ConnectivityType face_to_nodes = NO_INDIRECTION;
+  constexpr static ConnectivityType face_to_nodes = TYPED_INDIRECTION;
 
   using IdxType = int;
 
@@ -72,6 +72,11 @@ struct topology_traits<SINGLE_SHAPE>
   using FZCardinality = slam::policies::ConstantCardinality<IdxType, FZStride>;
   using FaceZoneRelation =
     slam::StaticRelation<IdxType, IdxType, FZCardinality, ViewIndirection, FaceSet, ZoneSet>;
+
+  using FNCardinality =
+    slam::policies::VariableCardinality<IdxType, ViewIndirection>;
+  using FaceNodeRelation =
+    slam::StaticRelation<IdxType, IdxType, FNCardinality, ViewIndirection, FaceSet, NodeSet>;
 };
 
 template <>
@@ -103,6 +108,11 @@ struct topology_traits<MIXED_SHAPE>
   using FZCardinality = slam::policies::ConstantCardinality<IdxType, FZStride>;
   using FaceZoneRelation =
     slam::StaticRelation<IdxType, IdxType, FZCardinality, ViewIndirection, FaceSet, ZoneSet>;
+
+  using FNCardinality =
+    slam::policies::VariableCardinality<IdxType, ViewIndirection>;
+  using FaceNodeRelation =
+    slam::StaticRelation<IdxType, IdxType, FNCardinality, ViewIndirection, FaceSet, NodeSet>;
 };
 
 /*!
@@ -185,6 +195,7 @@ public:
   using CellToNodeRelation = typename topology_traits<TOPO>::ZoneNodeRelation;
   using CellToFaceRelation = typename topology_traits<TOPO>::ZoneFaceRelation;
   using FaceToCellRelation = typename topology_traits<TOPO>::FaceZoneRelation;
+  using FaceToNodeRelation = typename topology_traits<TOPO>::FaceNodeRelation;
 
   /*! \brief The types for face-cell and cell-face connectivity.
    *
@@ -906,7 +917,7 @@ public:
    */
   virtual IndexType getNumberOfFaceNodes(IndexType faceID = 0) const final override
   {
-    return m_face_to_node->getNumberOfValuesForID(faceID);
+    return m_face_node_rel.CardinalityPolicy::size(faceID);
   }
 
   /*!
@@ -1176,7 +1187,7 @@ public:
    */
   IndexType getFaceNodesSize() const
   {
-    return m_face_to_node->getNumberOfValues();
+    return m_face_node_rel.relationData().size();
   }
 
   /*!
@@ -1860,12 +1871,12 @@ public:
 
   IndexType* getFaceNodeIDs(IndexType faceID)
   {
-    return (*m_face_to_node)[faceID];
+    return &(m_face_node_rel[faceID][0]);
   }
 
   const IndexType* getFaceNodeIDs(IndexType faceID) const
   {
-    return (*m_face_to_node)[faceID];
+    return &(m_face_node_rel[faceID][0]);
   }
 
   /// @}
@@ -1876,11 +1887,14 @@ public:
    */
   /// @{
 
-  IndexType* getFaceNodesArray() { return m_face_to_node->getValuePtr(); }
+  IndexType* getFaceNodesArray()
+  {
+    return m_face_node_rel.relationData().data();
+  }
 
   const IndexType* getFaceNodesArray() const
   {
-    return m_face_to_node->getValuePtr();
+    return m_face_node_rel.relationData().data();
   }
 
   /// @}
@@ -1893,12 +1907,12 @@ public:
 
   IndexType* getFaceNodesOffsetsArray()
   {
-    return m_face_to_node->getOffsetPtr();
+    return getRawPtr(m_face_node_rel.offsetData());
   }
 
   const IndexType* getFaceNodesOffsetsArray() const
   {
-    return m_face_to_node->getOffsetPtr();
+    return getRawPtr(m_face_node_rel.offsetData());
   }
 
   /// @}
@@ -1984,6 +1998,7 @@ private:
     m_cell_node_rel = CellToNodeRelation(&m_cells, &m_nodes);
     m_cell_face_rel = CellToFaceRelation(&m_cells, &m_faces);
     m_face_cell_rel = FaceToCellRelation(&m_faces, &m_cells);
+    m_face_node_rel = FaceToNodeRelation(&m_faces, &m_nodes);
 
     updateCellRelations();
   }
@@ -2006,6 +2021,7 @@ private:
   CellToNodeRelation m_cell_node_rel;
   CellToFaceRelation m_cell_face_rel;
   FaceToCellRelation m_face_cell_rel;
+  FaceToNodeRelation m_face_node_rel;
 
   /*! \brief The nodes for each cell */
   CellToNodeConnectivity* m_cell_to_node;
@@ -2066,15 +2082,9 @@ inline UnstructuredMesh<MIXED_SHAPE>::CellToFaceConnectivity*
  */
 template <>
 inline UnstructuredMesh<SINGLE_SHAPE>::FaceToNodeConnectivity*
-UnstructuredMesh<SINGLE_SHAPE>::initializeFaceToNode(CellType cell_type) const
+UnstructuredMesh<SINGLE_SHAPE>::initializeFaceToNode(CellType) const
 {
-  const CellType face_type = getCellInfo(cell_type).face_types[0];
-  if(face_type == UNDEFINED_CELL)
-  {
-    return new UnstructuredMesh<SINGLE_SHAPE>::FaceToNodeConnectivity(1, 0);
-  }
-
-  return new UnstructuredMesh<SINGLE_SHAPE>::FaceToNodeConnectivity(face_type, 0);
+  return new UnstructuredMesh<SINGLE_SHAPE>::FaceToNodeConnectivity(0, 0);
 }
 
 /*!
@@ -2132,6 +2142,14 @@ inline void UnstructuredMesh<SINGLE_SHAPE>::updateFaceRelations()
   m_face_cell_rel.bindBeginOffsets(m_faces.size(), 2);
   m_face_cell_rel.bindIndices(m_face_to_cell->getNumberOfValues(),
                               m_face_cell_backing);
+
+  ArrayView<IndexType> m_face_node_offsets(m_face_to_node->getOffsetPtr(),
+                                           m_face_to_node->getNumberOfIDs() + 1);
+  ArrayView<IndexType> m_face_node_backing(m_face_to_node->getValuePtr(),
+                                           m_face_to_node->getNumberOfValues());
+  m_face_node_rel.bindBeginOffsets(m_faces.size(), m_face_node_offsets);
+  m_face_node_rel.bindIndices(m_face_node_backing.size(),
+                              m_face_node_backing);
 }
 
 template <>
@@ -2151,6 +2169,14 @@ inline void UnstructuredMesh<MIXED_SHAPE>::updateFaceRelations()
   m_face_cell_rel.bindBeginOffsets(m_faces.size(), 2);
   m_face_cell_rel.bindIndices(m_face_to_cell->getNumberOfValues(),
                               m_face_cell_backing);
+
+  ArrayView<IndexType> m_face_node_offsets(m_face_to_node->getOffsetPtr(),
+                                           m_face_to_node->getNumberOfIDs() + 1);
+  ArrayView<IndexType> m_face_node_backing(m_face_to_node->getValuePtr(),
+                                           m_face_to_node->getNumberOfValues());
+  m_face_node_rel.bindBeginOffsets(m_faces.size(), m_face_node_offsets);
+  m_face_node_rel.bindIndices(m_face_node_backing.size(),
+                              m_face_node_backing);
 }
 
 } /* namespace mint */
