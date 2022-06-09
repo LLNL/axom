@@ -54,6 +54,7 @@ struct topology_traits<SINGLE_SHAPE>
 
   using ZoneSet = slam::PositionSet<IdxType, IdxType>;
   using NodeSet = slam::PositionSet<IdxType, IdxType>;
+  using FaceSet = slam::PositionSet<IdxType, IdxType>;
 
   using ViewIndirection = slam::policies::ViewIndirection<IdxType, IdxType>;
 
@@ -61,6 +62,11 @@ struct topology_traits<SINGLE_SHAPE>
   using ZNCardinality = slam::policies::ConstantCardinality<IdxType, ZNStride>;
   using ZoneNodeRelation =
     slam::StaticRelation<IdxType, IdxType, ZNCardinality, ViewIndirection, ZoneSet, NodeSet>;
+
+  using ZFStride = slam::policies::RuntimeStride<IdxType>;
+  using ZFCardinality = slam::policies::ConstantCardinality<IdxType, ZFStride>;
+  using ZoneFaceRelation =
+    slam::StaticRelation<IdxType, IdxType, ZFCardinality, ViewIndirection, ZoneSet, FaceSet>;
 };
 
 template <>
@@ -74,6 +80,7 @@ struct topology_traits<MIXED_SHAPE>
 
   using ZoneSet = slam::PositionSet<IdxType, IdxType>;
   using NodeSet = slam::PositionSet<IdxType, IdxType>;
+  using FaceSet = slam::PositionSet<IdxType, IdxType>;
 
   using ViewIndirection = slam::policies::ViewIndirection<IdxType, IdxType>;
 
@@ -81,6 +88,11 @@ struct topology_traits<MIXED_SHAPE>
     slam::policies::VariableCardinality<IdxType, ViewIndirection>;
   using ZoneNodeRelation =
     slam::StaticRelation<IdxType, IdxType, ZNCardinality, ViewIndirection, ZoneSet, NodeSet>;
+
+  using ZFCardinality =
+    slam::policies::VariableCardinality<IdxType, ViewIndirection>;
+  using ZoneFaceRelation =
+    slam::StaticRelation<IdxType, IdxType, ZFCardinality, ViewIndirection, ZoneSet, FaceSet>;
 };
 
 /*!
@@ -158,8 +170,10 @@ class UnstructuredMesh : public Mesh
 public:
   using CellSet = typename topology_traits<TOPO>::ZoneSet;
   using NodeSet = typename topology_traits<TOPO>::NodeSet;
+  using FaceSet = typename topology_traits<TOPO>::FaceSet;
 
   using CellToNodeRelation = typename topology_traits<TOPO>::ZoneNodeRelation;
+  using CellToFaceRelation = typename topology_traits<TOPO>::ZoneFaceRelation;
 
   /*! \brief The types for face-cell and cell-face connectivity.
    *
@@ -1304,12 +1318,12 @@ public:
 
   IndexType* getCellFaceIDs(IndexType cellID)
   {
-    return (*m_cell_to_face)[cellID];
+    return &(m_cell_face_rel[cellID][0]);
   }
 
   const IndexType* getCellFaceIDs(IndexType cellID) const
   {
-    return (*m_cell_to_face)[cellID];
+    return &(m_cell_face_rel[cellID][0]);
   }
 
   /// @}
@@ -1373,11 +1387,14 @@ public:
    */
   /// @{
 
-  IndexType* getCellFacesArray() { return m_cell_to_face->getValuePtr(); }
+  IndexType* getCellFacesArray()
+  {
+    return m_cell_face_rel.relationData().data();
+  }
 
   const IndexType* getCellFacesArray() const
   {
-    return m_cell_to_face->getValuePtr();
+    return m_cell_face_rel.relationData().data();
   }
 
   /// @}
@@ -1390,12 +1407,12 @@ public:
 
   IndexType* getCellFacesOffsetsArray()
   {
-    return m_cell_to_face->getOffsetPtr();
+    return getRawPtr(m_cell_face_rel.offsetData());
   }
 
   const IndexType* getCellFacesOffsetsArray() const
   {
-    return m_cell_to_face->getOffsetPtr();
+    return getRawPtr(m_cell_face_rel.offsetData());
   }
 
   /// @}
@@ -1801,6 +1818,7 @@ public:
 
       m_face_to_node->reserve(facecount, f2noffsets[facecount]);
       m_face_to_node->appendM(f2ndata, facecount, f2noffsets, f2ntypes);
+      updateFaceRelations();
     }
 
     m_mesh_fields[FACE_CENTERED]->resize(getNumberOfFaces());
@@ -1951,12 +1969,14 @@ private:
     m_mesh_fields[FACE_CENTERED]->resize(getNumberOfFaces());
 
     m_cell_node_rel = CellToNodeRelation(&m_cells, &m_nodes);
+    m_cell_face_rel = CellToFaceRelation(&m_cells, &m_faces);
 
     updateCellRelations();
   }
 
   void updateNodes() { m_nodes = NodeSet(m_coordinates->numNodes()); }
   void updateCellRelations();
+  void updateFaceRelations();
 
   static const IndexType* getRawPtr(const IndexType* ptr) { return ptr; }
   static IndexType* getRawPtr(IndexType* ptr) { return ptr; }
@@ -1967,8 +1987,10 @@ private:
 
   CellSet m_cells;
   NodeSet m_nodes;
+  FaceSet m_faces;
 
   CellToNodeRelation m_cell_node_rel;
+  CellToFaceRelation m_cell_face_rel;
 
   /*! \brief The nodes for each cell */
   CellToNodeConnectivity* m_cell_to_node;
@@ -2075,6 +2097,33 @@ inline void UnstructuredMesh<MIXED_SHAPE>::updateCellRelations()
   m_cell_node_rel.bindBeginOffsets(m_cells.size(), cell_node_offsets);
   m_cell_node_rel.bindIndices(m_cell_to_node->getNumberOfValues(),
                               cell_node_backing);
+}
+
+template <>
+inline void UnstructuredMesh<SINGLE_SHAPE>::updateFaceRelations()
+{
+  m_faces = FaceSet(m_face_to_cell->getNumberOfIDs());
+
+  const auto& cellInfo = getCellInfo(m_cell_to_node->getIDType());
+
+  ArrayView<IndexType> m_cell_face_backing(m_cell_to_face->getValuePtr(),
+                                           m_cell_to_face->getNumberOfValues());
+  m_cell_face_rel.bindBeginOffsets(m_cells.size(), cellInfo.num_faces);
+  m_cell_face_rel.bindIndices(m_cell_to_face->getNumberOfValues(),
+                              m_cell_face_backing);
+}
+
+template <>
+inline void UnstructuredMesh<MIXED_SHAPE>::updateFaceRelations()
+{
+  m_faces = FaceSet(m_face_to_cell->getNumberOfIDs());
+  ArrayView<IndexType> cell_face_offsets(m_cell_to_face->getOffsetPtr(),
+                                         m_cell_to_face->getNumberOfIDs() + 1);
+  ArrayView<IndexType> cell_face_backing(m_cell_to_face->getValuePtr(),
+                                         m_cell_to_face->getNumberOfValues());
+  m_cell_face_rel.bindBeginOffsets(m_cells.size(), cell_face_offsets);
+  m_cell_face_rel.bindIndices(m_cell_to_face->getNumberOfValues(),
+                              cell_face_backing);
 }
 
 } /* namespace mint */
