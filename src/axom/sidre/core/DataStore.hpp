@@ -188,9 +188,9 @@ public:
   //@}
 
   //@{
-  //!  @name Accesors for buffer collections.
+  //!  @name Accessors for buffer collections.
   //!
-  //! These methods can be used to iterate on the collection of buffers
+  //! These methods can be used to iterate over the collection of buffers
   //! Example:
   //!      for (auto& buffer : ds->buffers())
   //!      {
@@ -387,9 +387,9 @@ public:
   //@}
 
   //@{
-  //!  @name Accesors for attribute collections.
+  //!  @name Accessors for attribute collections.
   //!
-  //! These methods can be used to iterate on the collection of attributes
+  //! These methods can be used to iterate over the collection of attributes
   //! Example:
   //!      for (auto& attr : ds->attributes())
   //!      {

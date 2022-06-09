@@ -895,9 +895,9 @@ public:
   //@}
 
   //@{
-  //!  @name Accesors for group and view collections.
+  //!  @name Accessors for group and view collections.
   //!
-  //! These methods can be used to iterate on the collection of groups and views
+  //! These methods can be used to iterate over the collection of groups and views
   //! Example:
   //!      for (auto& group : grp->groups())
   //!      {
