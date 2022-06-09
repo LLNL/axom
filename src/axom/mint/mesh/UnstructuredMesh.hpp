@@ -67,6 +67,11 @@ struct topology_traits<SINGLE_SHAPE>
   using ZFCardinality = slam::policies::ConstantCardinality<IdxType, ZFStride>;
   using ZoneFaceRelation =
     slam::StaticRelation<IdxType, IdxType, ZFCardinality, ViewIndirection, ZoneSet, FaceSet>;
+
+  using FZStride = slam::policies::CompileTimeStride<IdxType, 2>;
+  using FZCardinality = slam::policies::ConstantCardinality<IdxType, FZStride>;
+  using FaceZoneRelation =
+    slam::StaticRelation<IdxType, IdxType, FZCardinality, ViewIndirection, FaceSet, ZoneSet>;
 };
 
 template <>
@@ -93,6 +98,11 @@ struct topology_traits<MIXED_SHAPE>
     slam::policies::VariableCardinality<IdxType, ViewIndirection>;
   using ZoneFaceRelation =
     slam::StaticRelation<IdxType, IdxType, ZFCardinality, ViewIndirection, ZoneSet, FaceSet>;
+
+  using FZStride = slam::policies::CompileTimeStride<IdxType, 2>;
+  using FZCardinality = slam::policies::ConstantCardinality<IdxType, FZStride>;
+  using FaceZoneRelation =
+    slam::StaticRelation<IdxType, IdxType, FZCardinality, ViewIndirection, FaceSet, ZoneSet>;
 };
 
 /*!
@@ -174,6 +184,7 @@ public:
 
   using CellToNodeRelation = typename topology_traits<TOPO>::ZoneNodeRelation;
   using CellToFaceRelation = typename topology_traits<TOPO>::ZoneFaceRelation;
+  using FaceToCellRelation = typename topology_traits<TOPO>::FaceZoneRelation;
 
   /*! \brief The types for face-cell and cell-face connectivity.
    *
@@ -858,7 +869,7 @@ public:
    */
   virtual IndexType getNumberOfFaces() const final override
   {
-    return m_face_to_cell->getNumberOfIDs();
+    return m_faces.size();
   }
 
   /*!
@@ -946,9 +957,8 @@ public:
                               IndexType& cellIDOne,
                               IndexType& cellIDTwo) const final override
   {
-    IndexType* faces = (*m_face_to_cell)[faceID];
-    cellIDOne = faces[0];
-    cellIDTwo = faces[1];
+    cellIDOne = m_face_cell_rel[faceID][0];
+    cellIDTwo = m_face_cell_rel[faceID][1];
   }
 
   /// @}
@@ -1899,11 +1909,14 @@ public:
    */
   /// @{
 
-  IndexType* getFaceCellsArray() { return m_face_to_cell->getValuePtr(); }
+  IndexType* getFaceCellsArray()
+  {
+    return m_face_cell_rel.relationData().data();
+  }
 
   const IndexType* getFaceCellsArray() const
   {
-    return m_face_to_cell->getValuePtr();
+    return m_face_cell_rel.relationData().data();
   }
 
   /// @}
@@ -1970,6 +1983,7 @@ private:
 
     m_cell_node_rel = CellToNodeRelation(&m_cells, &m_nodes);
     m_cell_face_rel = CellToFaceRelation(&m_cells, &m_faces);
+    m_face_cell_rel = FaceToCellRelation(&m_faces, &m_cells);
 
     updateCellRelations();
   }
@@ -1991,6 +2005,7 @@ private:
 
   CellToNodeRelation m_cell_node_rel;
   CellToFaceRelation m_cell_face_rel;
+  FaceToCellRelation m_face_cell_rel;
 
   /*! \brief The nodes for each cell */
   CellToNodeConnectivity* m_cell_to_node;
@@ -2111,6 +2126,12 @@ inline void UnstructuredMesh<SINGLE_SHAPE>::updateFaceRelations()
   m_cell_face_rel.bindBeginOffsets(m_cells.size(), cellInfo.num_faces);
   m_cell_face_rel.bindIndices(m_cell_to_face->getNumberOfValues(),
                               m_cell_face_backing);
+
+  ArrayView<IndexType> m_face_cell_backing(m_face_to_cell->getValuePtr(),
+                                           m_face_to_cell->getNumberOfValues());
+  m_face_cell_rel.bindBeginOffsets(m_faces.size(), 2);
+  m_face_cell_rel.bindIndices(m_face_to_cell->getNumberOfValues(),
+                              m_face_cell_backing);
 }
 
 template <>
@@ -2124,6 +2145,12 @@ inline void UnstructuredMesh<MIXED_SHAPE>::updateFaceRelations()
   m_cell_face_rel.bindBeginOffsets(m_cells.size(), cell_face_offsets);
   m_cell_face_rel.bindIndices(m_cell_to_face->getNumberOfValues(),
                               cell_face_backing);
+
+  ArrayView<IndexType> m_face_cell_backing(m_face_to_cell->getValuePtr(),
+                                           m_face_to_cell->getNumberOfValues());
+  m_face_cell_rel.bindBeginOffsets(m_faces.size(), 2);
+  m_face_cell_rel.bindIndices(m_face_to_cell->getNumberOfValues(),
+                              m_face_cell_backing);
 }
 
 } /* namespace mint */
