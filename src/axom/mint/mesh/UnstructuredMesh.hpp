@@ -1035,6 +1035,7 @@ public:
     IndexType connectivity_size =
       (hasMixedCellTypes()) ? USE_DEFAULT : getNumberOfCellNodes() * cell_size;
     m_cell_to_node->resize(cell_size, connectivity_size);
+    updateCellRelations();
     m_mesh_fields[CELL_CENTERED]->resize(cell_size);
   }
 
@@ -1051,6 +1052,7 @@ public:
                     IndexType connectivity_capacity = USE_DEFAULT)
   {
     m_cell_to_node->reserve(cell_capacity, connectivity_capacity);
+    updateCellRelations();
     m_mesh_fields[CELL_CENTERED]->reserve(cell_capacity);
   }
 
@@ -1100,6 +1102,7 @@ public:
   void resizeNodes(IndexType nodes_size)
   {
     m_coordinates->resize(nodes_size);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->resize(nodes_size);
   }
 
@@ -1113,6 +1116,7 @@ public:
   void reserveNodes(IndexType node_capacity)
   {
     m_coordinates->reserve(node_capacity);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->reserve(node_capacity);
   }
 
@@ -1410,6 +1414,7 @@ public:
     IndexType n_values =
       (type == UNDEFINED_CELL) ? 0 : getCellInfo(type).num_nodes;
     m_cell_to_node->append(connec, n_values, type);
+    updateCellRelations();
     m_mesh_fields[CELL_CENTERED]->resize(getNumberOfCells());
   }
 
@@ -1432,6 +1437,7 @@ public:
                    const CellType* types = nullptr)
   {
     m_cell_to_node->appendM(connec, n_cells, offsets, types);
+    updateCellRelations();
     m_mesh_fields[CELL_CENTERED]->resize(getNumberOfCells());
   }
 
@@ -1455,6 +1461,7 @@ public:
     IndexType n_values =
       (type == UNDEFINED_CELL) ? 0 : getCellInfo(type).num_nodes;
     m_cell_to_node->insert(connec, ID, n_values, type);
+    updateCellRelations();
     m_mesh_fields[CELL_CENTERED]->emplace(ID, 1);
   }
 
@@ -1479,6 +1486,7 @@ public:
                    const CellType* types = nullptr)
   {
     m_cell_to_node->insertM(connec, start_ID, n_cells, offsets, types);
+    updateCellRelations();
     m_mesh_fields[CELL_CENTERED]->emplace(start_ID, n_cells);
   }
 
@@ -1515,6 +1523,7 @@ public:
   IndexType appendNode(double x)
   {
     IndexType n_index = m_coordinates->append(x);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
     return n_index;
   }
@@ -1522,6 +1531,7 @@ public:
   IndexType appendNode(double x, double y)
   {
     IndexType n_index = m_coordinates->append(x, y);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
     return n_index;
   }
@@ -1529,6 +1539,7 @@ public:
   IndexType appendNode(double x, double y, double z)
   {
     IndexType n_index = m_coordinates->append(x, y, z);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
     return n_index;
   }
@@ -1551,6 +1562,7 @@ public:
   void appendNodes(const double* coords, IndexType n = 1)
   {
     m_coordinates->append(coords, n);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
   }
 
@@ -1574,12 +1586,14 @@ public:
   void appendNodes(const double* x, const double* y, IndexType n)
   {
     m_coordinates->append(x, y, n);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
   }
 
   void appendNodes(const double* x, const double* y, const double* z, IndexType n)
   {
     m_coordinates->append(x, y, z, n);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
   }
 
@@ -1603,6 +1617,7 @@ public:
   void insertNode(IndexType nodeID, double x, bool update_connectivity = true)
   {
     m_coordinates->insert(nodeID, x);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->emplace(nodeID, 1);
     if(update_connectivity)
     {
@@ -1616,6 +1631,7 @@ public:
                   bool update_connectivity = true)
   {
     m_coordinates->insert(nodeID, x, y);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->emplace(nodeID, 1);
     if(update_connectivity)
     {
@@ -1630,6 +1646,7 @@ public:
                   bool update_connectivity = true)
   {
     m_coordinates->insert(nodeID, x, y, z);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->emplace(nodeID, 1);
     if(update_connectivity)
     {
@@ -1661,6 +1678,7 @@ public:
                    bool update_connectivity = true)
   {
     m_coordinates->insert(nodeID, coords, n);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->emplace(nodeID, n);
     if(update_connectivity)
     {
@@ -1696,6 +1714,7 @@ public:
                    bool update_connectivity = true)
   {
     m_coordinates->insert(nodeID, x, y, n);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->emplace(nodeID, n);
     if(update_connectivity)
     {
@@ -1711,6 +1730,7 @@ public:
                    bool update_connectivity = true)
   {
     m_coordinates->insert(nodeID, x, y, z, n);
+    updateNodes();
     m_mesh_fields[NODE_CENTERED]->emplace(nodeID, n);
     if(update_connectivity)
     {
@@ -1908,6 +1928,7 @@ private:
         values[i] += n;
       }
     }
+    updateCellRelations();
   }
 
   /*!
@@ -1928,7 +1949,14 @@ private:
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
     m_mesh_fields[CELL_CENTERED]->resize(getNumberOfCells());
     m_mesh_fields[FACE_CENTERED]->resize(getNumberOfFaces());
+
+    m_cell_node_rel = CellToNodeRelation(&m_cells, &m_nodes);
+
+    updateCellRelations();
   }
+
+  void updateNodes() { m_nodes = NodeSet(m_coordinates->numNodes()); }
+  void updateCellRelations();
 
   static const IndexType* getRawPtr(const IndexType* ptr) { return ptr; }
   static IndexType* getRawPtr(IndexType* ptr) { return ptr; }
@@ -2021,6 +2049,32 @@ inline UnstructuredMesh<MIXED_SHAPE>::FaceToNodeConnectivity*
   UnstructuredMesh<MIXED_SHAPE>::initializeFaceToNode(CellType) const
 {
   return new UnstructuredMesh<MIXED_SHAPE>::FaceToNodeConnectivity(0, 0);
+}
+
+template <>
+inline void UnstructuredMesh<SINGLE_SHAPE>::updateCellRelations()
+{
+  m_cells = CellSet(m_cell_to_node->getNumberOfIDs());
+  const auto& cellInfo = getCellInfo(m_cell_to_node->getIDType());
+
+  ArrayView<IndexType> m_cell_node_backing(m_cell_to_node->getValuePtr(),
+                                           m_cell_to_node->getNumberOfValues());
+  m_cell_node_rel.bindBeginOffsets(m_cells.size(), cellInfo.num_nodes);
+  m_cell_node_rel.bindIndices(m_cell_to_node->getNumberOfValues(),
+                              m_cell_node_backing);
+}
+
+template <>
+inline void UnstructuredMesh<MIXED_SHAPE>::updateCellRelations()
+{
+  m_cells = CellSet(m_cell_to_node->getNumberOfIDs());
+  ArrayView<IndexType> cell_node_offsets(m_cell_to_node->getOffsetPtr(),
+                                         m_cell_to_node->getNumberOfIDs() + 1);
+  ArrayView<IndexType> cell_node_backing(m_cell_to_node->getValuePtr(),
+                                         m_cell_to_node->getNumberOfValues());
+  m_cell_node_rel.bindBeginOffsets(m_cells.size(), cell_node_offsets);
+  m_cell_node_rel.bindIndices(m_cell_to_node->getNumberOfValues(),
+                              cell_node_backing);
 }
 
 } /* namespace mint */
