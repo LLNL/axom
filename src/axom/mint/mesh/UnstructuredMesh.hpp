@@ -2120,8 +2120,7 @@ inline void UnstructuredMesh<MIXED_SHAPE>::updateCellRelations()
   ArrayView<IndexType> cell_node_backing(m_cell_to_node->getValuePtr(),
                                          m_cell_to_node->getNumberOfValues());
   m_cell_node_rel.bindBeginOffsets(m_cells.size(), cell_node_offsets);
-  m_cell_node_rel.bindIndices(m_cell_to_node->getNumberOfValues(),
-                              cell_node_backing);
+  m_cell_node_rel.bindIndices(cell_node_backing.size(), cell_node_backing);
 }
 
 template <>
@@ -2131,25 +2130,22 @@ inline void UnstructuredMesh<SINGLE_SHAPE>::updateFaceRelations()
 
   const auto& cellInfo = getCellInfo(m_cell_to_node->getIDType());
 
-  ArrayView<IndexType> m_cell_face_backing(m_cell_to_face->getValuePtr(),
-                                           m_cell_to_face->getNumberOfValues());
+  ArrayView<IndexType> cell_face_backing(m_cell_to_face->getValuePtr(),
+                                         m_cell_to_face->getNumberOfValues());
   m_cell_face_rel.bindBeginOffsets(m_cells.size(), cellInfo.num_faces);
-  m_cell_face_rel.bindIndices(m_cell_to_face->getNumberOfValues(),
-                              m_cell_face_backing);
+  m_cell_face_rel.bindIndices(cell_face_backing.size(), cell_face_backing);
 
-  ArrayView<IndexType> m_face_cell_backing(m_face_to_cell->getValuePtr(),
-                                           m_face_to_cell->getNumberOfValues());
+  ArrayView<IndexType> face_cell_backing(m_face_to_cell->getValuePtr(),
+                                         m_face_to_cell->getNumberOfValues());
   m_face_cell_rel.bindBeginOffsets(m_faces.size(), 2);
-  m_face_cell_rel.bindIndices(m_face_to_cell->getNumberOfValues(),
-                              m_face_cell_backing);
+  m_face_cell_rel.bindIndices(face_cell_backing.size(), face_cell_backing);
 
-  ArrayView<IndexType> m_face_node_offsets(m_face_to_node->getOffsetPtr(),
-                                           m_face_to_node->getNumberOfIDs() + 1);
-  ArrayView<IndexType> m_face_node_backing(m_face_to_node->getValuePtr(),
-                                           m_face_to_node->getNumberOfValues());
-  m_face_node_rel.bindBeginOffsets(m_faces.size(), m_face_node_offsets);
-  m_face_node_rel.bindIndices(m_face_node_backing.size(),
-                              m_face_node_backing);
+  ArrayView<IndexType> face_node_offsets(m_face_to_node->getOffsetPtr(),
+                                         m_face_to_node->getNumberOfIDs() + 1);
+  ArrayView<IndexType> face_node_backing(m_face_to_node->getValuePtr(),
+                                         m_face_to_node->getNumberOfValues());
+  m_face_node_rel.bindBeginOffsets(m_faces.size(), face_node_offsets);
+  m_face_node_rel.bindIndices(face_node_backing.size(), face_node_backing);
 }
 
 template <>
@@ -2161,22 +2157,19 @@ inline void UnstructuredMesh<MIXED_SHAPE>::updateFaceRelations()
   ArrayView<IndexType> cell_face_backing(m_cell_to_face->getValuePtr(),
                                          m_cell_to_face->getNumberOfValues());
   m_cell_face_rel.bindBeginOffsets(m_cells.size(), cell_face_offsets);
-  m_cell_face_rel.bindIndices(m_cell_to_face->getNumberOfValues(),
-                              cell_face_backing);
+  m_cell_face_rel.bindIndices(cell_face_backing.size(), cell_face_backing);
 
-  ArrayView<IndexType> m_face_cell_backing(m_face_to_cell->getValuePtr(),
-                                           m_face_to_cell->getNumberOfValues());
+  ArrayView<IndexType> face_cell_backing(m_face_to_cell->getValuePtr(),
+                                         m_face_to_cell->getNumberOfValues());
   m_face_cell_rel.bindBeginOffsets(m_faces.size(), 2);
-  m_face_cell_rel.bindIndices(m_face_to_cell->getNumberOfValues(),
-                              m_face_cell_backing);
+  m_face_cell_rel.bindIndices(face_cell_backing.size(), face_cell_backing);
 
-  ArrayView<IndexType> m_face_node_offsets(m_face_to_node->getOffsetPtr(),
-                                           m_face_to_node->getNumberOfIDs() + 1);
-  ArrayView<IndexType> m_face_node_backing(m_face_to_node->getValuePtr(),
-                                           m_face_to_node->getNumberOfValues());
-  m_face_node_rel.bindBeginOffsets(m_faces.size(), m_face_node_offsets);
-  m_face_node_rel.bindIndices(m_face_node_backing.size(),
-                              m_face_node_backing);
+  ArrayView<IndexType> face_node_offsets(m_face_to_node->getOffsetPtr(),
+                                         m_face_to_node->getNumberOfIDs() + 1);
+  ArrayView<IndexType> face_node_backing(m_face_to_node->getValuePtr(),
+                                         m_face_to_node->getNumberOfValues());
+  m_face_node_rel.bindBeginOffsets(m_faces.size(), face_node_offsets);
+  m_face_node_rel.bindIndices(face_node_backing.size(), face_node_backing);
 }
 
 } /* namespace mint */
