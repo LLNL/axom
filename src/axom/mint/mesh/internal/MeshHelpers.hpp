@@ -7,6 +7,7 @@
 
 #include "axom/core/Macros.hpp"          // for AXOM_UNUSED_PARAM
 #include "axom/core/Types.hpp"           // for nullptr
+#include "axom/core/Array.hpp"
 #include "axom/mint/config.hpp"          // for mint compile-time type
 #include "axom/mint/mesh/CellTypes.hpp"  // for CellType
 
@@ -65,13 +66,13 @@ std::string make_face_key(int vcount, IndexType* values, char sep);
  */
 bool initFaces(Mesh* m,
                IndexType& facecount,
-               IndexType*& f2c,
-               IndexType*& c2f,
-               IndexType*& c2n,
-               IndexType*& c2foffsets,
-               IndexType*& f2n,
-               IndexType*& f2noffsets,
-               CellType*& f2ntypes);
+               Array<IndexType>& f2c,
+               Array<IndexType>& c2f,
+               Array<IndexType>& c2n,
+               Array<IndexType>& c2foffsets,
+               Array<IndexType>& f2n,
+               Array<IndexType>& f2noffsets,
+               Array<CellType>& f2ntypes);
 
 } /* namespace internal */
 } /* namespace mint */
