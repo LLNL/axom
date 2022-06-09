@@ -673,7 +673,7 @@ public:
    */
   virtual IndexType getNumberOfCells() const final override
   {
-    return m_cell_to_node->getNumberOfIDs();
+    return m_cells.size();
   }
 
   /*!
@@ -708,7 +708,7 @@ public:
    */
   virtual IndexType getNumberOfCellNodes(IndexType cellID = 0) const final override
   {
-    return m_cell_to_node->getNumberOfValuesForID(cellID);
+    return m_cell_node_rel.CardinalityPolicy::size(cellID);
   }
 
   /*!
@@ -727,9 +727,13 @@ public:
                                    IndexType* nodes) const final override
   {
     SLIC_ASSERT(nodes != nullptr);
-    const IndexType n_nodes = getNumberOfCellNodes(cellID);
-    std::memcpy(nodes, getCellNodeIDs(cellID), n_nodes * sizeof(IndexType));
-    return n_nodes;
+    const auto subset = m_cell_node_rel[cellID];
+    for(int inode = 0; inode < subset.size(); inode++)
+    {
+      nodes[inode] = subset[inode];
+    }
+
+    return subset.size();
   }
 
   /*!
@@ -1007,7 +1011,7 @@ public:
    */
   IndexType getCellNodesSize() const
   {
-    return m_cell_to_node->getNumberOfValues();
+    return m_cell_node_rel.relationData().size();
   }
 
   /*!
@@ -1272,12 +1276,12 @@ public:
 
   IndexType* getCellNodeIDs(IndexType cellID)
   {
-    return (*m_cell_to_node)[cellID];
+    return &(m_cell_node_rel[cellID][0]);
   }
 
   const IndexType* getCellNodeIDs(IndexType cellID) const
   {
-    return (*m_cell_to_node)[cellID];
+    return &(m_cell_node_rel[cellID][0]);
   }
 
   /*!
@@ -1312,11 +1316,14 @@ public:
    */
   /// @{
 
-  IndexType* getCellNodesArray() { return m_cell_to_node->getValuePtr(); }
+  IndexType* getCellNodesArray()
+  {
+    return m_cell_node_rel.relationData().data();
+  }
 
   const IndexType* getCellNodesArray() const
   {
-    return m_cell_to_node->getValuePtr();
+    return m_cell_node_rel.relationData().data();
   }
 
   /// @}
@@ -1330,12 +1337,12 @@ public:
 
   IndexType* getCellNodesOffsetsArray()
   {
-    return m_cell_to_node->getOffsetPtr();
+    return getRawPtr(m_cell_node_rel.offsetData());
   }
 
   const IndexType* getCellNodesOffsetsArray() const
   {
-    return m_cell_to_node->getOffsetPtr();
+    return getRawPtr(m_cell_node_rel.offsetData());
   }
 
   /// @}
@@ -1922,6 +1929,11 @@ private:
     m_mesh_fields[CELL_CENTERED]->resize(getNumberOfCells());
     m_mesh_fields[FACE_CENTERED]->resize(getNumberOfFaces());
   }
+
+  static const IndexType* getRawPtr(const IndexType* ptr) { return ptr; }
+  static IndexType* getRawPtr(IndexType* ptr) { return ptr; }
+  static IndexType* getRawPtr(ArrayView<IndexType> view) { return view.data(); }
+  static IndexType* getRawPtr(...) { return nullptr; }
 
   MeshCoordinates* m_coordinates;
 
