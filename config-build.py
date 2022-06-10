@@ -92,10 +92,14 @@ def parse_arguments():
     msvcversions = {'2017': 'Visual Studio 15 2017',
                     '201764': 'Visual Studio 15 2017 Win64',
                     '2019': 'Visual Studio 16 2019',
-                    '201964': 'Visual Studio 16 2019'}
+                    '201964': 'Visual Studio 16 2019',
+                    '2022': 'Visual Studio 17 2022',
+                    '202264': 'Visual Studio 17 2022'}
     # Newer versions  of MSVC might supply an architecture flag
     generator_archs = {'2019': 'Win32',
-                       '201964': 'x64'}
+                       '201964': 'x64',
+                       '2022': 'Win32',
+                       '202264': 'x64'}
     parser.add_argument(
         "--msvc",
         type=str,
@@ -305,6 +309,7 @@ def run_cmake(buildpath, cmakeline):
     os.chdir(buildpath)
     print("Executing CMake line: '%s'" % cmakeline)
     print("")
+
     returncode = subprocess.call(cmakeline, shell=True)
     if not returncode == 0:
         print(
