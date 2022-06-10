@@ -37,44 +37,40 @@ namespace sidre
 // support path syntax.
 const char Group::s_path_delimiter = '/';
 
-////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //
-// Utility functions to cast ItemCollections to (named) MapCollections
+// Private utility functions to cast ItemCollections to (named) MapCollections.
 //
-////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 MapCollection<View>* Group::getNamedViews()
 {
-  SLIC_ASSERT_MSG(
-    this->isUsingMap(),
-    "Attempting to access named view collection of a (nameless) list Group");
+  SLIC_ASSERT_MSG(this->isUsingMap(),
+                  "Invalid cast: The views in this group do not have names");
 
   return static_cast<MapCollection<View>*>(m_view_coll);
 }
 
 const MapCollection<View>* Group::getNamedViews() const
 {
-  SLIC_ASSERT_MSG(
-    this->isUsingMap(),
-    "Attempting to access named view collection of a (nameless) list Group");
+  SLIC_ASSERT_MSG(this->isUsingMap(),
+                  "Invalid cast: The views in this group do not have names");
 
   return static_cast<const MapCollection<View>*>(m_view_coll);
 }
 
 MapCollection<Group>* Group::getNamedGroups()
 {
-  SLIC_ASSERT_MSG(
-    this->isUsingMap(),
-    "Attempting to access named group collection of a (nameless) list Group");
+  SLIC_ASSERT_MSG(this->isUsingMap(),
+                  "Invalid cast: The groups in this group do not have names");
 
   return static_cast<MapCollection<Group>*>(m_group_coll);
 }
 
 const MapCollection<Group>* Group::getNamedGroups() const
 {
-  SLIC_ASSERT_MSG(
-    this->isUsingMap(),
-    "Attempting to access named group collection of a (nameless) list Group");
+  SLIC_ASSERT_MSG(this->isUsingMap(),
+                  "Invalid cast: The groups in this group do not have names");
 
   return static_cast<const MapCollection<Group>*>(m_group_coll);
 }
