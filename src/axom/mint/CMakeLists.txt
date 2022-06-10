@@ -61,7 +61,6 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
     ## Internal implementation
-    mesh/internal/ConnectivityArray_indirection.hpp
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp

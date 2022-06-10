@@ -31,7 +31,6 @@ namespace mint
 enum ConnectivityType
 {
   NO_INDIRECTION,
-  INDIRECTION,
   TYPED_INDIRECTION
 };
 
@@ -113,7 +112,6 @@ enum ConnectivityType
  * \tparam TYPE the type of the ConnectivityArray this class deals with the
  *  case of TYPE == NO_INDIRECTION.
  *
- * \see ConnectivityArray_indirection.hpp
  * \see ConnectivityArray_typed_indirection.hpp
  * \see ConnectivityArray_internal.hpp
  */
@@ -740,7 +738,6 @@ private:
 } /* namespace mint */
 } /* namespace axom */
 
-#include "axom/mint/mesh/internal/ConnectivityArray_indirection.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArray_typed_indirection.hpp"
 
 #endif /* MINT_ConnectivityArray_HPP_ */
