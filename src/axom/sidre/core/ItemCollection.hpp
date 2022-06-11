@@ -135,6 +135,9 @@ template <typename T>
 class ItemCollection
 {
 public:
+  using value_type = T;
+
+public:
   virtual ~ItemCollection() { }
 
   //

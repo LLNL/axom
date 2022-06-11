@@ -147,8 +147,7 @@ namespace sidre
  * \class MapCollection
  *
  * \brief MapCollection is a container class template for holding
- *        a collection of items of template parameter type T, using
- *        a map container of type MAP_T.
+ *        a collection of items of template parameter type T
  *
  * \warning Only std::map and std::unordered_map have been tried so far.
  *          These classes have identical APIs for the functionality we
@@ -160,6 +159,7 @@ template <typename T>
 class MapCollection : public ItemCollection<T>
 {
 public:
+  using value_type = T;
   using iterator = typename ItemCollection<T>::iterator;
   using const_iterator = typename ItemCollection<T>::const_iterator;
 

@@ -121,6 +121,7 @@ template <typename T>
 class ListCollection : public ItemCollection<T>
 {
 public:
+  using value_type = T;
   using iterator = typename ItemCollection<T>::iterator;
   using const_iterator = typename ItemCollection<T>::const_iterator;
 

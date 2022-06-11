@@ -15,6 +15,14 @@
 
 namespace sidre = axom::sidre;
 
+struct NamedItem
+{
+  NamedItem(const std::string& name) : m_name(name) { }
+  const std::string& getName() const { return m_name; }
+
+  std::string m_name;
+};
+
 template <typename CollectionType>
 class ItemCollectionTest : public ::testing::Test
 {
@@ -24,11 +32,16 @@ protected:
   void TearDown() override { delete m_coll; }
 
 protected:
-  sidre::ItemCollection<double>* m_coll {nullptr};
+  sidre::ItemCollection<typename CollectionType::value_type>* m_coll {nullptr};
 };
 
 using MyTypes =
-  ::testing::Types<sidre::IndexedCollection<double>, sidre::ListCollection<double>>;
+  ::testing::Types<sidre::IndexedCollection<double>,
+                   sidre::ListCollection<double>,
+                   //sidre::MapCollection<double>, // note: invalid since double doesn't have required getName()
+                   sidre::IndexedCollection<NamedItem>,
+                   sidre::ListCollection<NamedItem>,
+                   sidre::MapCollection<NamedItem>>;
 TYPED_TEST_SUITE(ItemCollectionTest, MyTypes);
 
 TYPED_TEST(ItemCollectionTest, TestEmpty)
@@ -37,4 +50,3 @@ TYPED_TEST(ItemCollectionTest, TestEmpty)
 
   EXPECT_EQ(0, coll->getNumItems());
 }
-

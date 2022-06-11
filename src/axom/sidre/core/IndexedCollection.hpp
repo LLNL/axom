@@ -38,6 +38,7 @@ template <typename T>
 class IndexedCollection : public ItemCollection<T>
 {
 public:
+  using value_type = T;
   using iterator = typename ItemCollection<T>::iterator;
   using const_iterator = typename ItemCollection<T>::const_iterator;
 
