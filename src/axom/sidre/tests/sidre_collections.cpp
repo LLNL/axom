@@ -26,13 +26,31 @@ struct NamedItem
 template <typename CollectionType>
 class ItemCollectionTest : public ::testing::Test
 {
+public:
+  using ValueType = typename CollectionType::value_type;
+
 protected:
   void SetUp() override { m_coll = new CollectionType; }
 
   void TearDown() override { delete m_coll; }
 
 protected:
-  sidre::ItemCollection<typename CollectionType::value_type>* m_coll {nullptr};
+  template <typename T>
+  typename std::enable_if<std::is_same<double, T>::value, double>::type
+  create_item(const std::string& str)
+  {
+    return static_cast<double>(str.size() * 1.111);
+  }
+
+  template <typename T>
+  typename std::enable_if<std::is_same<NamedItem, T>::value, NamedItem>::type
+  create_item(const std::string& str)
+  {
+    return NamedItem(str);
+  }
+
+protected:
+  sidre::ItemCollection<ValueType>* m_coll {nullptr};
 };
 
 using MyTypes =
@@ -49,4 +67,14 @@ TYPED_TEST(ItemCollectionTest, TestEmpty)
   auto* coll = this->m_coll;
 
   EXPECT_EQ(0, coll->getNumItems());
+}
+
+TYPED_TEST(ItemCollectionTest, insertItem)
+{
+  auto* coll = this->m_coll;
+
+  auto val = this->template create_item<typename TestFixture::ValueType>("foo");
+
+  coll->insertItem(&val, "foo");
+  EXPECT_EQ(1, coll->getNumItems());
 }
