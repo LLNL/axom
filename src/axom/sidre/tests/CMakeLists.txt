@@ -15,6 +15,7 @@ set(gtest_sidre_tests
    sidre_buffer.cpp
    sidre_buffer_unit.cpp
    sidre_class.cpp
+   sidre_collections.cpp
    sidre_datastore.cpp
    sidre_datastore_unit.cpp
    sidre_external.cpp
