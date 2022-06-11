@@ -20,6 +20,11 @@ struct NamedItem
   NamedItem(const std::string& name) : m_name(name) { }
   const std::string& getName() const { return m_name; }
 
+  friend bool operator==(const NamedItem& lhs, const NamedItem& rhs)
+  {
+    return lhs.getName() == rhs.getName();
+  }
+
   std::string m_name;
 };
 
@@ -170,6 +175,79 @@ TYPED_TEST(ItemCollectionTest, removeItems)
   EXPECT_EQ(0, coll->getNumItems());
 }
 
+TYPED_TEST(ItemCollectionTest, removeAndAddItems)
+{
+  auto* coll = this->m_coll;
+
+  std::vector<std::string> names {"a",
+                                  "b",
+                                  "c",
+                                  "aa",
+                                  "bb",
+                                  "cc",
+                                  "aaa",
+                                  "bbb",
+                                  "ccc",
+                                  "aaaa",
+                                  "bbbb",
+                                  "cccc"};
+  std::vector<std::string> remove_names {"b", "bb", "bbb", "bbbb"};
+  std::vector<std::string>
+    keep_names {"a", "c", "aa", "cc", "aaa", "ccc", "aaaa", "cccc"};
+  std::vector<std::string> add_names {"d", "dd", "ddd", "dddd"};
+
+  auto map = this->addItems(names);
+  EXPECT_EQ(names.size(), coll->getNumItems());
+
+  // Remove items from 'remove' list
+  for(auto n : remove_names)
+  {
+    if(map.find(n) != map.end())
+    {
+      axom::IndexType idx = map[n];
+      auto* val = coll->getItem(idx);
+      coll->removeItem(idx);
+      delete val;
+    }
+  }
+
+  // check that items from 'keep' list are still present and 'remove' are missing
+  for(auto kv : map)
+  {
+    if(std::find(remove_names.begin(), remove_names.end(), kv.first) !=
+       remove_names.end())
+    {
+      EXPECT_FALSE(coll->hasItem(kv.second));
+    }
+
+    if(std::find(keep_names.begin(), keep_names.end(), kv.first) !=
+       keep_names.end())
+    {
+      EXPECT_TRUE(coll->hasItem(kv.second));
+    }
+  }
+
+  // Add items from 'add' list
+  auto secondMap = this->addItems(add_names);
+  map.insert(secondMap.begin(), secondMap.end());
+
+  // check that items from 'keep' and 'add' lists are still present
+  // can no longer check remove since indices will be reused
+  for(auto kv : map)
+  {
+    if(std::find(keep_names.begin(), keep_names.end(), kv.first) !=
+       keep_names.end())
+    {
+      EXPECT_TRUE(coll->hasItem(kv.second));
+    }
+
+    if(std::find(add_names.begin(), add_names.end(), kv.first) != add_names.end())
+    {
+      EXPECT_TRUE(coll->hasItem(kv.second));
+    }
+  }
+}
+
 TYPED_TEST(ItemCollectionTest, getItemsAndRemove)
 {
   auto* coll = this->m_coll;
@@ -210,4 +288,54 @@ TYPED_TEST(ItemCollectionTest, getItemsAndRemoveAll)
 
   coll->removeAllItems();
   EXPECT_EQ(0, coll->getNumItems());
+}
+
+TYPED_TEST(ItemCollectionTest, iterators)
+{
+  auto* coll = this->m_coll;
+
+  std::vector<std::string>
+    names {"a", "b", "c", "aa", "bb", "cc", "aaa", "bbb", "ccc"};
+
+  auto map = this->addItems(names);
+  EXPECT_EQ(names.size(), coll->getNumItems());
+
+  // remove some items
+  for(auto str : {"dddd", "ccc", "bb", "a"})
+  {
+    if(map.find(str) != map.end())
+    {
+      auto* val = coll->removeItem(map[str]);
+      delete val;
+    }
+  }
+
+  // add some items
+  this->addItems({"dddd", "ddd", "dd", "d"});
+  EXPECT_EQ(names.size() - 3 + 4, coll->getNumItems());
+
+  // iterators
+  for(auto it = coll->begin(), itEnd = coll->end(); it != itEnd; ++it)
+  {
+    axom::IndexType idx = it.index();
+    EXPECT_TRUE(coll->hasItem(idx));
+    EXPECT_EQ(*coll->getItem(idx), *it);
+  }
+
+  // const-iterators
+  for(auto it = coll->cbegin(), itEnd = coll->cend(); it != itEnd; ++it)
+  {
+    axom::IndexType idx = it.index();
+    EXPECT_TRUE(coll->hasItem(idx));
+    EXPECT_EQ(*coll->getItem(idx), *it);
+  }
+
+  // iterators on const collection
+  const auto* c_coll = coll;
+  for(auto it = c_coll->begin(), itEnd = c_coll->cend(); it != itEnd; ++it)
+  {
+    axom::IndexType idx = it.index();
+    EXPECT_TRUE(coll->hasItem(idx));
+    EXPECT_EQ(*coll->getItem(idx), *it);
+  }
 }

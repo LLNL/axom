@@ -198,6 +198,8 @@ public:
         is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
     }
 
+    IndexType index() const { return BaseType::m_pos; }
+
     pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
 
     reference operator*() { return *m_collection->getItem(BaseType::m_pos); }
@@ -246,6 +248,8 @@ public:
       BaseType::m_pos =
         is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
     }
+
+    IndexType index() const { return BaseType::m_pos; }
 
     pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
 
