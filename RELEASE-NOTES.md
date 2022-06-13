@@ -113,6 +113,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   This is an advanced feature that could cause users to break an input file state after verification. This also alows us
   to not expose `axom/sol.hpp` to all users of Inlet. This greatly reduces compile times. Using this feature requires
   both a derived class and including `axom/sol.hpp` in the user code.
+- Renamed some overloads of function `createView` of
+  `axom::sidre::Group` which accept `int ndims, IndexType *shape`
+  arguments to be `createViewWithShape` or `createViewWithShapeAndAllocate`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
@@ -130,6 +133,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug in axom::Path that ignored the leading delimiter character if one was present
 - Fixed gcc compiler errors in configurations without RAJA or Umpire
 - Fixed `axom::Array<T>` behavior on copy-construction when `T` is a non-trivial type
+- Replaced `using` statement in `SidreDataTypesIds.h` with `typedef`
+  since C syntax is required in this file.
 
 ## [Version 0.6.1] - Release date 2021-11-17
 

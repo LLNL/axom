@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer create_timer(true);
-  for(unsigned int i = 0; i < num_groups; ++i)
+  for(int i = 0; i < num_groups; ++i)
   {
     root->createGroup(names[i]);
   }
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer query_timer(true);
-  for(unsigned int i = 0; i < num_groups; ++i)
+  for(int i = 0; i < num_groups; ++i)
   {
     if(!root->hasGroup(names[i]))
     {
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer destroy_timer(true);
-  for(unsigned int i = 0; i < num_groups; ++i)
+  for(int i = 0; i < num_groups; ++i)
   {
     root->destroyGroup(names[i]);
   }

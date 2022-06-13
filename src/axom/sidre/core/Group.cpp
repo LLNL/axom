@@ -265,10 +265,10 @@ View* Group::createView(const std::string& path, TypeID type, IndexType num_elem
  *
  *************************************************************************
  */
-View* Group::createView(const std::string& path,
-                        TypeID type,
-                        int ndims,
-                        const IndexType* shape)
+View* Group::createViewWithShape(const std::string& path,
+                                 TypeID type,
+                                 int ndims,
+                                 const IndexType* shape)
 {
   if(type == NO_TYPE_ID || ndims < 0 || shape == nullptr)
   {
@@ -366,13 +366,13 @@ View* Group::createView(const std::string& path,
  *
  *************************************************************************
  */
-View* Group::createView(const std::string& path,
-                        TypeID type,
-                        int ndims,
-                        const IndexType* shape,
-                        Buffer* buff)
+View* Group::createViewWithShape(const std::string& path,
+                                 TypeID type,
+                                 int ndims,
+                                 const IndexType* shape,
+                                 Buffer* buff)
 {
-  View* view = createView(path, type, ndims, shape);
+  View* view = createViewWithShape(path, type, ndims, shape);
   if(view != nullptr)
   {
     view->attachBuffer(buff);
@@ -452,13 +452,13 @@ View* Group::createView(const std::string& path,
  *
  *************************************************************************
  */
-View* Group::createView(const std::string& path,
-                        TypeID type,
-                        int ndims,
-                        const IndexType* shape,
-                        void* external_ptr)
+View* Group::createViewWithShape(const std::string& path,
+                                 TypeID type,
+                                 int ndims,
+                                 const IndexType* shape,
+                                 void* external_ptr)
 {
-  View* view = createView(path, type, ndims, shape);
+  View* view = createViewWithShape(path, type, ndims, shape);
   if(view != nullptr)
   {
     view->setExternalDataPtr(external_ptr);
@@ -523,15 +523,15 @@ View* Group::createViewAndAllocate(const std::string& path,
  *
  *************************************************************************
  */
-View* Group::createViewAndAllocate(const std::string& path,
-                                   TypeID type,
-                                   int ndims,
-                                   const IndexType* shape,
-                                   int allocID)
+View* Group::createViewWithShapeAndAllocate(const std::string& path,
+                                            TypeID type,
+                                            int ndims,
+                                            const IndexType* shape,
+                                            int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 
-  View* view = createView(path, type, ndims, shape);
+  View* view = createViewWithShape(path, type, ndims, shape);
   if(view != nullptr)
   {
     view->allocate(allocID);

@@ -19,7 +19,7 @@
 
 #include <stdint.h> /* for int64_t */
 
-using SIDRE_IndexType = int64_t;
+typedef int64_t SIDRE_IndexType;
 
 const SIDRE_IndexType SIDRE_InvalidIndex = -1;
 

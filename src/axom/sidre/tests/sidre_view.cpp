@@ -712,7 +712,7 @@ TEST(sidre_view, int_alloc_view)
   dv->allocate();
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
-  dv = root->createView("v1", INT_ID, 1, shape);
+  dv = root->createViewWithShape("v1", INT_ID, 1, shape);
   EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
   dv->allocate();
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
@@ -725,7 +725,7 @@ TEST(sidre_view, int_alloc_view)
   dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
-  dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
+  dv = root->createViewWithShapeAndAllocate("a1", INT_ID, 1, shape);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
