@@ -15,16 +15,18 @@
 #define INLET_LUAMAP_HPP
 
 #include "axom/inlet/Reader.hpp"
-#include "axom/sol.hpp"
-
-extern "C" {
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
+#include "axom/sol_forward.hpp"
 
 namespace axom
 {
+// Forward declarations to avoid having to include "sol.hpp" in everything
+// that depends on Inlet
+namespace sol
+{
+class state;
+enum class type;
+}  // namespace sol
+
 namespace inlet
 {
 /*!
@@ -92,16 +94,23 @@ public:
    */
   static const int baseIndex = 1;
 
+protected:
   /*!
    *****************************************************************************
    * \brief Returns the Sol Lua state
    *
    * This allows the user to access functionality that was not provided by Inlet.
+   * 
+   * \note This is an advanced feature and could change the input file state after
+   *   it has been validated by Inlet. If you need to modify the Sol `state`,
+   *   be sure to include `axom/sol.hpp` and derive a new class to access this
+   *   publically. See the `lua_library.cpp` example. Including `sol.hpp` can
+   *   increase compile time significantly.
    *
-   * \return Reference to the Sol Lua state
+   * \return Shared pointer to the Sol Lua state
    *****************************************************************************
    */
-  axom::sol::state& solState() { return m_lua; }
+  std::shared_ptr<axom::sol::state> solState() { return m_lua; }
 
 private:
   // Expect this to be called for only Inlet-supported types.
@@ -149,7 +158,8 @@ private:
    */
   axom::sol::protected_function getFunctionInternal(const std::string& id);
 
-  axom::sol::state m_lua;
+  std::shared_ptr<axom::sol::state> m_lua;
+
   // The elements in the global table preloaded by Sol/Lua, these are ignored
   // to ensure that name retrieval only includes user-provided paths
   std::vector<std::string> m_preloaded_globals;

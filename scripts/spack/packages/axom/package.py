@@ -184,6 +184,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             sys_type = env["SYS_TYPE"]
         return sys_type
 
+    def is_fortran_compiler(self, compiler):
+        if self.compiler.fc is not None and compiler in self.compiler.fc:
+           return True
+        return False
+
     @property
     def cache_name(self):
         hostname = socket.gethostname()
@@ -209,24 +214,21 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         spec = self.spec
         entries = super(Axom, self).initconfig_compiler_entries()
 
-        if "+fortran" in spec or self.compiler.fc is not None:
+        if "+fortran" in spec:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", True))
+            if self.is_fortran_compiler("gfortran") and "clang" in self.compiler.cxx:
+                libdir = pjoin(os.path.dirname(
+                               os.path.dirname(self.compiler.cxx)), "lib")
+                flags = ""
+                for _libpath in [libdir, libdir + "64"]:
+                    if os.path.exists(_libpath):
+                        flags += " -Wl,-rpath,{0}".format(_libpath)
+                description = ("Adds a missing libstdc++ rpath")
+                if flags:
+                    entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
+                                                      description))
         else:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", False))
-
-        if ((self.compiler.fc is not None)
-           and ("gfortran" in self.compiler.fc)
-           and ("clang" in self.compiler.cxx)):
-            libdir = pjoin(os.path.dirname(
-                           os.path.dirname(self.compiler.cxx)), "lib")
-            flags = ""
-            for _libpath in [libdir, libdir + "64"]:
-                if os.path.exists(_libpath):
-                    flags += " -Wl,-rpath,{0}".format(_libpath)
-            description = ("Adds a missing libstdc++ rpath")
-            if flags:
-                entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags,
-                                                  description))
 
         if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
@@ -297,9 +299,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # These flags are already part of the wrapped compilers on TOSS4 systems
             #hip_link_flags = "-Wl,--disable-new-dtags -L{0}/lib -L{0}/../lib64 -L{0}/../lib -Wl,-rpath,{0}/lib:{0}/../lib:{0}/../lib64 -lamdhip64 -lhsakmt -lhsa-runtime64".format(hip_root)
 
-            if self.compiler.fc is not None:
+            if "+fortran" in spec:
                 # Flags for crayftn
-                if "crayftn" in self.compiler.fc:
+                if self.is_fortran_compiler("crayftn"):
                     # Fix for working around CMake adding implicit link directories
                     # returned by the Cray crayftn compiler to link executables with
                     # non-system default stdlib
@@ -312,7 +314,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.1/cce/x86_64/lib:/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
 
                 # Flags for amdflang
-                if "amdflang" in self.compiler.fc:
+                if self.is_fortran_compiler("amdflang"):
                     hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -L{0}/lib -Wl,-rpath,{0}/../llvm/lib:{0}/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64".format(hip_root)
 
             # Additional libraries for TOSS4
@@ -334,7 +336,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             not spec.satisfies('+cuda target=ppc64le:')
         ))
 
-        if (self.compiler.fc is not None) and ("xlf" in self.compiler.fc):
+        if "+fortran" in spec and self.is_fortran_compiler("xlf"):
             # Grab lib directory for the current fortran compiler
             libdir = pjoin(os.path.dirname(
                            os.path.dirname(self.compiler.fc)),
@@ -361,24 +363,24 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 "-WF,-C!  -qxlf2003=polymorphic",
                 description))
 
-            if spec.satisfies('target=ppc64le:'):
-                # Fix for working around CMake adding implicit link directories
-                # returned by the BlueOS compilers to link executables with
-                # non-system default stdlib
-                _roots = ["/usr/tce/packages/gcc/gcc-4.9.3",
-                          "/usr/tce/packages/gcc/gcc-4.9.3/gnu"]
-                _subdirs = ["lib64",
-                            "lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3"]
-                _existing_paths = []
-                for root in _roots:
-                    for subdir in _subdirs:
-                        _curr_path = pjoin(root, subdir)
-                        if os.path.exists(_curr_path):
-                            _existing_paths.append(_curr_path)
-                if _existing_paths:
-                    entries.append(cmake_cache_string(
-                        "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
-                        ";".join(_existing_paths)))
+        if spec.satisfies('target=ppc64le:'):
+            # Fix for working around CMake adding implicit link directories
+            # returned by the BlueOS compilers to link executables with
+            # non-system default stdlib
+            _roots = ["/usr/tce/packages/gcc/gcc-4.9.3",
+                      "/usr/tce/packages/gcc/gcc-4.9.3/gnu"]
+            _subdirs = ["lib64",
+                        "lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3"]
+            _existing_paths = []
+            for root in _roots:
+                for subdir in _subdirs:
+                    _curr_path = pjoin(root, subdir)
+                    if os.path.exists(_curr_path):
+                        _existing_paths.append(_curr_path)
+            if _existing_paths:
+                entries.append(cmake_cache_string(
+                    "BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE",
+                    ";".join(_existing_paths)))
 
         return entries
 

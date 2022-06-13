@@ -393,6 +393,14 @@ AXOM_CUDA_TEST(primal_point, point_check_policies)
 
   check_point_policy<cuda_exec>();
 #endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+  using hip_exec = axom::HIP_EXEC<512>;
+
+  check_point_policy<hip_exec>();
+#endif
 }
 
 //------------------------------------------------------------------------------

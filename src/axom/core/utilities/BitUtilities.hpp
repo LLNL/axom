@@ -82,7 +82,7 @@ struct BitTraits<axom::uint8>
 AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 {
   /* clang-format off */
-#ifdef AXOM_DEVICE_CODE
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_CUDA)
   return word != axom::uint64(0) ? __ffsll(word) - 1 : 64;
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
   unsigned long cnt;
@@ -119,7 +119,7 @@ AXOM_HOST_DEVICE inline int trailingZeros(axom::uint64 word)
 AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 {
   /* clang-format off */
-#ifdef AXOM_DEVICE_CODE
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for popcount
   return __popcll(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)
@@ -157,7 +157,7 @@ AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
 AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 word)
 {
   /* clang-format off */
-#ifdef AXOM_DEVICE_CODE
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_CUDA)
   // Use CUDA intrinsic for count leading zeros
   return __clz(word);
 #elif defined(_AXOM_CORE_USE_INTRINSICS_MSVC)

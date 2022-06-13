@@ -93,18 +93,22 @@ set( quest_depends_on
     fmt
     )
 
+blt_list_append(TO quest_depends_on IF AXOM_ENABLE_SIDRE ELEMENTS sidre)
 blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
 blt_list_append(TO quest_depends_on IF ENABLE_HIP ELEMENTS blt::hip_runtime)
 blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
 
+if(AXOM_ENABLE_SIDRE)
+    list(APPEND quest_headers    ScatteredInterpolation.hpp )
+endif()
+
 if(CONDUIT_FOUND AND ENABLE_MPI)
-    list(APPEND quest_headers DistributedClosestPoint.hpp )
+    list(APPEND quest_headers    DistributedClosestPoint.hpp )
     list(APPEND quest_depends_on conduit::conduit
                                  conduit::conduit_mpi)
 endif()
-
 
 if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND quest_headers Shaper.hpp

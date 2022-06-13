@@ -11,6 +11,17 @@
 #include "axom/inlet.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
+// _inlet_sol_state_start
+// Header required here because `axom::sol::state` is only forward declared in LuaReader.hpp.
+#include "axom/sol.hpp"
+
+class SolStateReader : public axom::inlet::LuaReader
+{
+public:
+  using LuaReader::solState;
+};
+// _inlet_sol_state_end
+
 int main()
 {
   const std::string test_file_name = "load_library_test_file";
@@ -34,20 +45,20 @@ int main()
 
   // _inlet_io_library_add_start
   // Create Inlet Reader that supports Lua input files
-  auto lr = std::make_unique<axom::inlet::LuaReader>();
+  auto reader = std::make_unique<SolStateReader>();
 
   // Load extra io Lua library
-  lr->solState().open_libraries(axom::sol::lib::io);
+  reader->solState()->open_libraries(axom::sol::lib::io);
 
   // Parse example input string
-  lr->parseString(input);
+  reader->parseString(input);
   // _inlet_io_library_add_end
 
   // Inlet stores all input information in the Sidre DataStore
   axom::sidre::DataStore ds;
 
   // Create Inlet with LuaReader and the Sidre Group which Inlet will use
-  axom::inlet::Inlet myinlet(std::move(lr), ds.getRoot());
+  axom::inlet::Inlet myinlet(std::move(reader), ds.getRoot());
 
   // Define and store the values in the input file
   myinlet.addFunction("read_str",

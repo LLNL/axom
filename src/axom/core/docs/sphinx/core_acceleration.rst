@@ -53,11 +53,11 @@ Here is an Axom example showing sequential execution:
    :end-before: _exebasic_end
    :language: C++
 
-Here's the same loop from the above snippet, this time with CUDA:
+Here's the same loop from the above snippet, this time with CUDA or HIP:
 
 .. literalinclude:: ../../examples/core_acceleration.cpp
-   :start-after: _cudaexebasic_start
-   :end-before: _cudaexebasic_end
+   :start-after: _deviceexebasic_start
+   :end-before: _deviceexebasic_end
    :language: C++
 
 For more advanced functionality, users can directly call RAJA and Umpire.

@@ -63,6 +63,17 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
+void Logger::abortIfEnabled(message::Level level)
+{
+  if((m_abortOnError && (level == message::Error)) ||
+     (m_abortOnWarning && (level == message::Warning)))
+  {
+    this->flushStreams();
+    m_abortFunction();
+  }
+}
+
+//------------------------------------------------------------------------------
 void Logger::setAbortFunction(AbortFunctionPtr abort_func)
 {
   if(abort_func == nullptr)
@@ -202,26 +213,17 @@ void Logger::logMessage(message::Level level,
 {
   if(m_isEnabled[level] == false)
   {
-    /* short-circuit */
     return;
-
-  }  // END if
+  }
 
   unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
   for(unsigned istream = 0; istream < nstreams; ++istream)
   {
     m_logStreams[level][istream]
       ->append(level, message, tagName, fileName, line, filter_duplicates);
+  }
 
-  }  // END for all streams
-
-  if((m_abortOnError && (level == message::Error)) ||
-     (m_abortOnWarning && (level == message::Warning)))
-  {
-    this->flushStreams();
-    m_abortFunction();
-
-  }  // END if
+  abortIfEnabled(level);
 }
 
 //------------------------------------------------------------------------------

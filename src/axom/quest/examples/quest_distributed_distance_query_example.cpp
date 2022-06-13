@@ -37,6 +37,7 @@
 
 // C/C++ includes
 #include <string>
+#include <limits>
 #include <map>
 #include <cmath>
 
@@ -58,8 +59,12 @@ public:
   std::string meshFile;
 
   double circleRadius {1.0};
+  std::vector<double> circleCenter {0.0, 0.0};
+  // TODO: Ensure that circleCenter size matches dimensionality.
   int circlePoints {100};
   RuntimePolicy policy {RuntimePolicy::seq};
+
+  double distThreshold {std::numeric_limits<double>::max()};
 
 private:
   bool m_verboseOutput {false};
@@ -107,6 +112,18 @@ public:
 
     app.add_option("-r,--radius", circleRadius)
       ->description("Radius for circle")
+      ->capture_default_str();
+
+    auto* circle_options =
+      app.add_option_group("circle",
+                           "Options for setting up the circle of points");
+    circle_options->add_option("--center", circleCenter)
+      ->description("Center for object (x,y[,z])")
+      ->expected(2, 3);
+
+    app.add_option("-d,--dist-threshold", distThreshold)
+      ->check(axom::CLI::NonNegativeNumber)
+      ->description("Distance threshold to search")
       ->capture_default_str();
 
     app.add_option("-n,--num-samples", circlePoints)
@@ -418,7 +435,7 @@ public:
    * Generates a collection of \a numPoints points along a circle
    * of radius \a radius centered at the origin
    */
-  void generateCircleMesh(double radius, int numPoints)
+  void generateCircleMesh(double radius, std::vector<double>& center, int numPoints)
   {
     using axom::utilities::random_real;
 
@@ -436,8 +453,8 @@ public:
     for(int i = 0; i < numPoints; ++i)
     {
       const double angleInRadians = random_real(thetaStart, thetaEnd);
-      const double rsinT = radius * std::sin(angleInRadians);
-      const double rcosT = radius * std::cos(angleInRadians);
+      const double rsinT = center[1] + radius * std::sin(angleInRadians);
+      const double rcosT = center[0] + radius * std::cos(angleInRadians);
 
       pts.push_back(PointType {rcosT, rsinT});
     }
@@ -730,6 +747,7 @@ int main(int argc, char** argv)
     objectDS.getRoot()->createGroup("object_mesh"));
 
   object_mesh_wrapper.generateCircleMesh(params.circleRadius,
+                                         params.circleCenter,
                                          params.circlePoints);
   object_mesh_wrapper.saveMesh();
 
@@ -775,6 +793,7 @@ int main(int argc, char** argv)
   query.setRuntimePolicy(params.policy);
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
+  query.setDistanceThreshold(params.distThreshold);
   query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
 
   // Build the spatial index over the object on each rank
@@ -823,12 +842,12 @@ int main(int argc, char** argv)
     query_mesh_wrapper.getParticleMesh().getNodalVectorField<PointType>(
       "closest_point");
 
+  auto cpIndices =
+    query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
+      "cp_index");
+
   if(params.isVerbose())
   {
-    auto cpIndices =
-      query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
-        "cp_index");
-
     auto cpRank =
       query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
         "cp_rank");
@@ -865,11 +884,13 @@ int main(int argc, char** argv)
   }
 
   mfem::Array<int> dofs;
+  const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
+  const double nodist = std::numeric_limits<double>::signaling_NaN();
   for(auto idx : IndexSet(nQueryPts))
   {
-    const auto& cp = cpPositions[idx];
-    (*distances)(idx) = sqrt(squared_distance(qPts[idx], cp));
-
+    const auto& cp = cpIndices[idx] >= 0 ? cpPositions[idx] : nowhere;
+    (*distances)(idx) =
+      cpIndices[idx] >= 0 ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
     primal::Vector<double, DIM> dir(qPts[idx], cp);
     directions->FESpace()->GetVertexVDofs(idx, dofs);
     directions->SetSubVector(dofs, dir.data());
