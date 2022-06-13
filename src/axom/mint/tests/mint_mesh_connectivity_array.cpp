@@ -57,29 +57,6 @@ IndexType calc_ID_capacity(const ConnectivityArray<NO_INDIRECTION>& connec,
  *
  * \param [in] connec the ConnectivityArray in question.
  * \param [in] increase the amount the number of IDs will increase by
- *
- * \note The plus/minus one are to account for the fact that the offset array is
- *  what gets resized which has capacity getIDCapacity() + 1.
- */
-IndexType calc_ID_capacity(const ConnectivityArray<INDIRECTION>& connec,
-                           IndexType increase)
-{
-  IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
-  if(new_n_IDs > connec.getIDCapacity())
-  {
-    return (
-      static_cast<IndexType>((new_n_IDs + 1) * connec.getResizeRatio() + 0.5) - 1);
-  }
-
-  return connec.getIDCapacity();
-}
-
-/*!
- * \brief Return the new ID capacity for a ConnectivityArray given an
- *  increase.
- *
- * \param [in] connec the ConnectivityArray in question.
- * \param [in] increase the amount the number of IDs will increase by
  */
 IndexType calc_ID_capacity(const ConnectivityArray<TYPED_INDIRECTION>& connec,
                            IndexType increase)
@@ -907,24 +884,6 @@ void checkExternalConstructor(const ConnectivityArray<NO_INDIRECTION>& connec)
  *
  * \param [in] connec the ConnectivityArray to check.
  */
-void checkExternalConstructor(const ConnectivityArray<INDIRECTION>& connec)
-{
-  ASSERT_TRUE(connec.isExternal());
-
-  CellType cell_type = connec.getIDType();
-  const IndexType n_IDs = connec.getNumberOfIDs();
-  IndexType* values = const_cast<IndexType*>(connec.getValuePtr());
-  IndexType* offsets = const_cast<IndexType*>(connec.getOffsetPtr());
-  ConnectivityArray<INDIRECTION> connec_cpy(cell_type, n_IDs, values, offsets);
-  internal::check_equality(connec, connec_cpy);
-}
-
-/*!
- * \brief Check that the ConnectivityArray can be reconstructed from
- *  a external buffers.
- *
- * \param [in] connec the ConnectivityArray to check.
- */
 void checkExternalConstructor(const ConnectivityArray<TYPED_INDIRECTION>& connec)
 {
   ASSERT_TRUE(connec.isExternal());
@@ -1090,18 +1049,13 @@ TEST(mint_connectivity_array, IndirectionNativeAppend)
   internal::calcTotalIDsAndValues(max_IDs, total_IDs, total_values);
 
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray<INDIRECTION> native_vertex(VERTEX);
-  internal::checkConnectivity(native_vertex, false, 0, 0);
-
   ConnectivityArray<TYPED_INDIRECTION> native_mixed;
   internal::checkConnectivity(native_mixed, false, 0, 0);
 
   /* Append the values */
-  internal::testAppend(native_vertex, max_IDs, values, offsets);
   internal::testAppend(native_mixed, max_IDs, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(native_vertex, false, total_IDs, total_values);
   internal::checkConnectivity(native_mixed, false, total_IDs, total_values);
 
   delete[] values;
@@ -1129,21 +1083,6 @@ TEST(mint_connectivity_array_DeathTest, IndirectionExternalAppend)
   internal::calcTotalIDsAndValues(max_IDs, total_IDs, total_values);
 
   /* Create the external storage ConnectivityArrays to be tested. */
-  IndexType* ext_vertex_values = new IndexType[total_values];
-  IndexType* ext_vertex_offsets = new IndexType[total_IDs + 1];
-  ConnectivityArray<INDIRECTION> ext_vertex(VERTEX,
-                                            0,
-                                            ext_vertex_values,
-                                            ext_vertex_offsets,
-                                            total_IDs,
-                                            total_values);
-  internal::checkConnectivity(ext_vertex,
-                              true,
-                              0,
-                              0,
-                              ext_vertex_values,
-                              ext_vertex_offsets);
-
   IndexType* ext_mixed_values = new IndexType[total_IDs * hex_stride];
   IndexType* ext_mixed_offsets = new IndexType[total_IDs + 1];
   CellType* ext_mixed_types = new CellType[total_IDs];
@@ -1162,16 +1101,9 @@ TEST(mint_connectivity_array_DeathTest, IndirectionExternalAppend)
                               ext_mixed_types);
 
   /* Check that appending functions properly */
-  internal::testAppend(ext_vertex, max_IDs, values, offsets);
   internal::testAppend(ext_mixed, max_IDs, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(ext_vertex,
-                              true,
-                              total_IDs,
-                              total_values,
-                              ext_vertex_values,
-                              ext_vertex_offsets);
   internal::checkConnectivity(ext_mixed,
                               true,
                               total_IDs,
@@ -1181,18 +1113,14 @@ TEST(mint_connectivity_array_DeathTest, IndirectionExternalAppend)
                               ext_mixed_types);
 
   /* Check that the external ConnectivityArrays cannot append any more. */
-  EXPECT_DEATH_IF_SUPPORTED(ext_vertex.append(values, 1), IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(ext_mixed.append(values, 1, VERTEX), IGNORE_OUTPUT);
 
   /* Check that the external constructor functions properly. */
-  internal::checkExternalConstructor(ext_vertex);
   internal::checkExternalConstructor(ext_mixed);
 
   delete[] values;
   delete[] offsets;
   delete[] types;
-  delete[] ext_vertex_values;
-  delete[] ext_vertex_offsets;
   delete[] ext_mixed_values;
   delete[] ext_mixed_offsets;
   delete[] ext_mixed_types;
@@ -1222,24 +1150,17 @@ TEST(mint_connectivity_array, IndirectionSidreAppend)
   internal::calcTotalIDsAndValues(max_IDs, total_IDs, total_values);
 
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  sidre::Group* vertex_group = root->createGroup("vertex");
-  ConnectivityArray<INDIRECTION> sidre_vertex(VERTEX, vertex_group, "test");
-  internal::checkConnectivity(sidre_vertex, 0, 0, vertex_group);
-
   sidre::Group* mixed_group = root->createGroup("mixed");
   ConnectivityArray<TYPED_INDIRECTION> sidre_mixed(mixed_group, "test");
   internal::checkConnectivity(sidre_mixed, 0, 0, mixed_group);
 
   /* Append the values */
-  internal::testAppend(sidre_vertex, max_IDs, values, offsets);
   internal::testAppend(sidre_mixed, max_IDs, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(sidre_vertex, total_IDs, total_values, vertex_group);
   internal::checkConnectivity(sidre_mixed, total_IDs, total_values, mixed_group);
 
   /* Check that restoring from sidre functions properly */
-  internal::checkSidreConstructor(sidre_vertex);
   internal::checkSidreConstructor(sidre_mixed);
 
   delete[] values;
@@ -1407,18 +1328,13 @@ TEST(mint_connectivity_array, IndirectionNativeSet)
   internal::calcTotalIDsAndValues(max_IDs, total_IDs, total_values);
 
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray<INDIRECTION> native_vertex(VERTEX);
-  internal::checkConnectivity(native_vertex, false, 0, 0);
-
   ConnectivityArray<TYPED_INDIRECTION> native_mixed;
   internal::checkConnectivity(native_mixed, false, 0, 0);
 
   /* Append and set the values */
-  internal::testSet(native_vertex, max_IDs, initial_values, values, offsets);
   internal::testSet(native_mixed, max_IDs, initial_values, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(native_vertex, false, total_IDs, total_values);
   internal::checkConnectivity(native_mixed, false, total_IDs, total_values);
 
   delete[] values;
@@ -1448,21 +1364,6 @@ TEST(mint_connectivity_array, IndirectionExternalSet)
   internal::calcTotalIDsAndValues(max_IDs, total_IDs, total_values);
 
   /* Create the external storage ConnectivityArrays to be tested. */
-  IndexType* ext_vertex_values = new IndexType[total_values];
-  IndexType* ext_vertex_offsets = new IndexType[total_IDs + 1];
-  ConnectivityArray<INDIRECTION> ext_vertex(VERTEX,
-                                            0,
-                                            ext_vertex_values,
-                                            ext_vertex_offsets,
-                                            total_IDs,
-                                            total_values);
-  internal::checkConnectivity(ext_vertex,
-                              true,
-                              0,
-                              0,
-                              ext_vertex_values,
-                              ext_vertex_offsets);
-
   IndexType* ext_mixed_values = new IndexType[total_IDs * hex_stride];
   IndexType* ext_mixed_offsets = new IndexType[total_IDs + 1];
   CellType* ext_mixed_types = new CellType[total_IDs];
@@ -1481,16 +1382,9 @@ TEST(mint_connectivity_array, IndirectionExternalSet)
                               ext_mixed_types);
 
   /* Append and set the values */
-  internal::testSet(ext_vertex, max_IDs, initial_values, values, offsets);
   internal::testSet(ext_mixed, max_IDs, initial_values, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(ext_vertex,
-                              true,
-                              total_IDs,
-                              total_values,
-                              ext_vertex_values,
-                              ext_vertex_offsets);
   internal::checkConnectivity(ext_mixed,
                               true,
                               total_IDs,
@@ -1500,14 +1394,11 @@ TEST(mint_connectivity_array, IndirectionExternalSet)
                               ext_mixed_types);
 
   /* Check that the external constructor functions properly. */
-  internal::checkExternalConstructor(ext_vertex);
   internal::checkExternalConstructor(ext_mixed);
 
   delete[] values;
   delete[] offsets;
   delete[] types;
-  delete[] ext_vertex_values;
-  delete[] ext_vertex_offsets;
   delete[] ext_mixed_values;
   delete[] ext_mixed_offsets;
   delete[] ext_mixed_types;
@@ -1538,24 +1429,17 @@ TEST(mint_connectivity_array, IndirectionSidreSet)
   internal::calcTotalIDsAndValues(max_IDs, total_IDs, total_values);
 
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  sidre::Group* vertex_group = root->createGroup("vertex");
-  ConnectivityArray<INDIRECTION> sidre_vertex(VERTEX, vertex_group, "test");
-  internal::checkConnectivity(sidre_vertex, 0, 0, vertex_group);
-
   sidre::Group* mixed_group = root->createGroup("mixed");
   ConnectivityArray<TYPED_INDIRECTION> sidre_mixed(mixed_group, "test");
   internal::checkConnectivity(sidre_mixed, 0, 0, mixed_group);
 
   /* Append and set the values */
-  internal::testSet(sidre_vertex, max_IDs, initial_values, values, offsets);
   internal::testSet(sidre_mixed, max_IDs, initial_values, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(sidre_vertex, total_IDs, total_values, vertex_group);
   internal::checkConnectivity(sidre_mixed, total_IDs, total_values, mixed_group);
 
   /* Check that restoring from sidre functions properly */
-  internal::checkSidreConstructor(sidre_vertex);
   internal::checkSidreConstructor(sidre_mixed);
 
   delete[] values;
@@ -1713,18 +1597,14 @@ TEST(mint_connectivity_array, IndirectionNativeInsert)
   const IndexType* values = internal::createValues(total_values);
 
   /* Create the native storage ConnectivityArrays to be tested. */
-  ConnectivityArray<INDIRECTION> native_vertex(VERTEX);
-  internal::checkConnectivity(native_vertex, false, 0, 0);
-
   ConnectivityArray<TYPED_INDIRECTION> native_mixed;
   internal::checkConnectivity(native_mixed, false, 0, 0);
 
   /* Insert the values. */
-  internal::testInsert(native_vertex, total_IDs, values, offsets);
   internal::testInsert(native_mixed, total_IDs, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(native_vertex, false, total_IDs, total_values);
+  internal::checkConnectivity(native_mixed, false, total_IDs, total_values);
 
   delete[] values;
   delete[] offsets;
@@ -1746,21 +1626,6 @@ TEST(mint_connectivity_array_DeathTest, IndirectionExternalInsert)
   const IndexType* values = internal::createValues(total_values);
 
   /* Create the external storage ConnectivityArrays to be tested. */
-  IndexType* ext_vertex_values = new IndexType[total_values];
-  IndexType* ext_vertex_offsets = new IndexType[total_IDs + 1];
-  ConnectivityArray<INDIRECTION> ext_vertex(VERTEX,
-                                            0,
-                                            ext_vertex_values,
-                                            ext_vertex_offsets,
-                                            total_IDs,
-                                            total_values);
-  internal::checkConnectivity(ext_vertex,
-                              true,
-                              0,
-                              0,
-                              ext_vertex_values,
-                              ext_vertex_offsets);
-
   IndexType* ext_mixed_values = new IndexType[total_IDs * hex_stride];
   IndexType* ext_mixed_offsets = new IndexType[total_IDs + 1];
   CellType* ext_mixed_types = new CellType[total_IDs];
@@ -1779,16 +1644,9 @@ TEST(mint_connectivity_array_DeathTest, IndirectionExternalInsert)
                               ext_mixed_types);
 
   /* Insert the values. */
-  internal::testInsert(ext_vertex, total_IDs, values, offsets);
   internal::testInsert(ext_mixed, total_IDs, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(ext_vertex,
-                              true,
-                              total_IDs,
-                              total_values,
-                              ext_vertex_values,
-                              ext_vertex_offsets);
   internal::checkConnectivity(ext_mixed,
                               true,
                               total_IDs,
@@ -1798,19 +1656,15 @@ TEST(mint_connectivity_array_DeathTest, IndirectionExternalInsert)
                               ext_mixed_types);
 
   /* Check that the external ConnectivityArrays cannot append any more. */
-  EXPECT_DEATH_IF_SUPPORTED(ext_vertex.insert(values, 0, 1), IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(ext_mixed.insert(values, 0, 1, VERTEX),
                             IGNORE_OUTPUT);
 
   /* Check that the external constructor functions properly. */
-  internal::checkExternalConstructor(ext_vertex);
   internal::checkExternalConstructor(ext_mixed);
 
   delete[] values;
   delete[] offsets;
   delete[] types;
-  delete[] ext_vertex_values;
-  delete[] ext_vertex_offsets;
   delete[] ext_mixed_values;
   delete[] ext_mixed_offsets;
   delete[] ext_mixed_types;
@@ -1835,24 +1689,17 @@ TEST(mint_connectivity_array, IndirectionSidreInsert)
   const IndexType* values = internal::createValues(total_values);
 
   /* Create the sidre storage ConnectivityArrays to be tested. */
-  sidre::Group* vertex_group = root->createGroup("vertex");
-  ConnectivityArray<INDIRECTION> sidre_vertex(VERTEX, vertex_group, "test");
-  internal::checkConnectivity(sidre_vertex, 0, 0, vertex_group);
-
   sidre::Group* mixed_group = root->createGroup("mixed");
   ConnectivityArray<TYPED_INDIRECTION> sidre_mixed(mixed_group, "test");
   internal::checkConnectivity(sidre_mixed, 0, 0, mixed_group);
 
   /* Insert the values */
-  internal::testInsert(sidre_vertex, total_IDs, values, offsets);
   internal::testInsert(sidre_mixed, total_IDs, values, offsets, types);
 
   /* Check that the number of IDs and values is correct. */
-  internal::checkConnectivity(sidre_vertex, total_IDs, total_values, vertex_group);
   internal::checkConnectivity(sidre_mixed, total_IDs, total_values, mixed_group);
 
   /* Check that restoring from sidre functions properly */
-  internal::checkSidreConstructor(sidre_vertex);
   internal::checkSidreConstructor(sidre_mixed);
 
   delete[] values;
@@ -1973,10 +1820,6 @@ TEST(mint_connectivity_array_DeathTest, IndirectionNativeCapacity)
   for(double ratio = 0.75; ratio <= 3.0; ratio += 0.25)
   {
     /* Create the native storage ConnectivityArrays to be tested. */
-    ConnectivityArray<INDIRECTION> native_vertex(VERTEX, 0, 0);
-    native_vertex.setResizeRatio(ratio);
-    internal::checkConnectivity(native_vertex, false, 0, 0);
-
     ConnectivityArray<TYPED_INDIRECTION> native_mixed(0, 0);
     native_mixed.setResizeRatio(ratio);
     internal::checkConnectivity(native_mixed, false, 0, 0);
@@ -1985,15 +1828,11 @@ TEST(mint_connectivity_array_DeathTest, IndirectionNativeCapacity)
     if(ratio < 1.0)
     {
       EXPECT_DEATH_IF_SUPPORTED(
-        internal::testCapacity(native_vertex, n_IDs, values, offsets),
-        IGNORE_OUTPUT);
-      EXPECT_DEATH_IF_SUPPORTED(
         internal::testCapacity(native_mixed, n_IDs, values, offsets, types),
         IGNORE_OUTPUT);
     }
     else
     {
-      internal::testCapacity(native_vertex, n_IDs, values, offsets);
       internal::testCapacity(native_mixed, n_IDs, values, offsets, types);
     }
   }
@@ -2024,11 +1863,6 @@ TEST(mint_connectivity_array_DeathTest, IndirectionSidreCapacity)
   for(double ratio = 0.75; ratio <= 3.0; ratio += 0.25)
   {
     /* Create the sidre storage ConnectivityArrays to be tested. */
-    sidre::Group* vertex_group = root->createGroup("vertex");
-    ConnectivityArray<INDIRECTION> sidre_vertex(VERTEX, vertex_group, "test", 0, 0);
-    sidre_vertex.setResizeRatio(ratio);
-    internal::checkConnectivity(sidre_vertex, 0, 0, vertex_group);
-
     sidre::Group* mixed_group = root->createGroup("mixed");
     ConnectivityArray<TYPED_INDIRECTION> sidre_mixed(mixed_group, "test", 0, 0);
     sidre_mixed.setResizeRatio(ratio);
@@ -2038,15 +1872,11 @@ TEST(mint_connectivity_array_DeathTest, IndirectionSidreCapacity)
     if(ratio < 1.0)
     {
       EXPECT_DEATH_IF_SUPPORTED(
-        internal::testCapacity(sidre_vertex, n_IDs, values, offsets),
-        IGNORE_OUTPUT);
-      EXPECT_DEATH_IF_SUPPORTED(
         internal::testCapacity(sidre_mixed, n_IDs, values, offsets, types),
         IGNORE_OUTPUT);
     }
     else
     {
-      internal::testCapacity(sidre_vertex, n_IDs, values, offsets);
       internal::testCapacity(sidre_mixed, n_IDs, values, offsets, types);
     }
 
