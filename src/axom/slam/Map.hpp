@@ -179,8 +179,7 @@ public:
     //copy the data if exists
     if(builder.m_data_ptr)
     {
-      const auto sz = this->size();
-      for(auto idx = SetPosition(); idx < sz; ++idx)
+      for(SetPosition idx = SetPosition(); idx < builder.m_set->size(); ++idx)
       {
         m_data[idx] = builder.m_data_ptr[idx];
       }

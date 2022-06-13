@@ -6,7 +6,6 @@
 // 2D vector for XY geometry
 // Fri Nov 21 10:50:53 PST 2014
 #include <math.h>
-#include <iostream> 
 
 #ifndef	_VECTORXY_H
 #define	_VECTORXY_H 1
@@ -150,8 +149,8 @@ namespace tinyHydro {
   }
 
 
-} // end namespace tinyHydro
 
-std::ostream& operator<<(std::ostream& os, const tinyHydro::VectorXY & vec);
+
+} // end namespace tinyHydro
 
 #endif
