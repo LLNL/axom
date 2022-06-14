@@ -241,10 +241,11 @@ TEST(sidre_buffer, create_buffer_view)
       break;
 
     case 4:
-      view = root->createView("data4", INT_ID, ndims, shape, buff);
+      view = root->createViewWithShape("data4", INT_ID, ndims, shape, buff);
       break;
     case 5:
-      view = root->createView("data5", INT_ID, ndims, shape)->attachBuffer(buff);
+      view =
+        root->createViewWithShape("data5", INT_ID, ndims, shape)->attachBuffer(buff);
       break;
     case 6:
       view = root->createView("data6")->attachBuffer(INT_ID, ndims, shape, buff);

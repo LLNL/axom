@@ -1781,7 +1781,7 @@ TEST(sidre_group, save_restore_external_data)
   // XXX this falls into createView(name, type, ndims, shape)
   // root1->createView("empty_array", INT_ID, nfoo, NULL);
   root1->createView("external_undescribed")->setExternalDataPtr(foo4);
-  root1->createView("int2d", INT_ID, 2, shape, int2d1);
+  root1->createViewWithShape("int2d", INT_ID, 2, shape, int2d1);
 
   for(int i = 0; i < nprotocols; ++i)
   {
@@ -2043,9 +2043,10 @@ TEST(sidre_group, save_restore_other)
 
   root1->createView("empty_view");
   root1->createView("empty_described", INT_ID, ndata);
-  root1->createView("empty_shape", INT_ID, 2, shape1);
+  root1->createViewWithShape("empty_shape", INT_ID, 2, shape1);
 
-  auto* view = root1->createViewAndAllocate("buffer_shape", INT_ID, 2, shape1);
+  auto* view =
+    root1->createViewWithShapeAndAllocate("buffer_shape", INT_ID, 2, shape1);
 
   // fill the data
   {
@@ -2725,7 +2726,8 @@ TEST_P(UmpireTest, allocate)
 
   {
     IndexType shape[] = {1, SIZE, 1};
-    View* view = root->createViewAndAllocate("v", INT_ID, 3, shape, allocID);
+    View* view =
+      root->createViewWithShapeAndAllocate("v", INT_ID, 3, shape, allocID);
 
     ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
     root->destroyViewAndData("v");
@@ -2755,7 +2757,7 @@ TEST_P(UmpireTest, allocate_default)
 
   {
     IndexType shape[] = {1, SIZE, 1};
-    View* view = root->createViewAndAllocate("v", INT_ID, 3, shape);
+    View* view = root->createViewWithShapeAndAllocate("v", INT_ID, 3, shape);
 
     ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
     root->destroyViewAndData("v");

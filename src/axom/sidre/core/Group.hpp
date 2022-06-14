@@ -426,10 +426,10 @@ public:
    *
    * \return pointer to new View object or nullptr if one is not created.
    */
-  View* createView(const std::string& path,
-                   TypeID type,
-                   int ndims,
-                   const IndexType* shape);
+  View* createViewWithShape(const std::string& path,
+                            TypeID type,
+                            int ndims,
+                            const IndexType* shape);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -515,11 +515,11 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView(const std::string& path,
-                   TypeID type,
-                   int ndims,
-                   const IndexType* shape,
-                   Buffer* buff);
+  View* createViewWithShape(const std::string& path,
+                            TypeID type,
+                            int ndims,
+                            const IndexType* shape,
+                            Buffer* buff);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -607,11 +607,11 @@ public:
    *
    * \sa View::setExternalDataPtr()
    */
-  View* createView(const std::string& path,
-                   TypeID type,
-                   int ndims,
-                   const IndexType* shape,
-                   void* external_ptr);
+  View* createViewWithShape(const std::string& path,
+                            TypeID type,
+                            int ndims,
+                            const IndexType* shape,
+                            void* external_ptr);
   /*!
    * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and attach externally-owned
@@ -675,11 +675,11 @@ public:
    *
    * \sa View::allocate()
    */
-  View* createViewAndAllocate(const std::string& path,
-                              TypeID type,
-                              int ndims,
-                              const IndexType* shape,
-                              int allocID = INVALID_ALLOCATOR_ID);
+  View* createViewWithShapeAndAllocate(const std::string& path,
+                                       TypeID type,
+                                       int ndims,
+                                       const IndexType* shape,
+                                       int allocID = INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Create View object with given name or path in this Group that
