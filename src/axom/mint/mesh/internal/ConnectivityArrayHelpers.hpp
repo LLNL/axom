@@ -7,6 +7,7 @@
 #define MINT_ConnectivityArrayHelpers_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/Array.hpp"
 
 #include "axom/mint/deprecated/MCArray.hpp"
 #include "axom/mint/config.hpp"
@@ -263,8 +264,8 @@ inline IndexType getStride(const sidre::Group* group)
 inline void append(IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   axom::deprecated::MCArray<IndexType>* m_values,
-                   axom::deprecated::MCArray<IndexType>* m_offsets)
+                   axom::Array<IndexType>* m_values,
+                   axom::Array<IndexType>* m_offsets)
 {
   SLIC_ASSERT(values != nullptr);
   SLIC_ASSERT(offsets != nullptr);
@@ -275,11 +276,11 @@ inline void append(IndexType n_IDs,
   IndexType old_n_values = m_values->size();
   IndexType old_n_offsets = m_offsets->size();
 
-  m_offsets->append(offsets + 1, n_IDs);
-  m_values->append(values, n_values_to_add);
+  m_offsets->insert(m_offsets->end(), n_IDs, offsets + 1);
+  m_values->insert(m_values->end(), n_values_to_add, values);
 
   /* Correct the appended offsets. */
-  IndexType* m_offsets_ptr = m_offsets->getData();
+  IndexType* m_offsets_ptr = m_offsets->data();
   const IndexType correction = old_n_values - offsets[0];
   for(IndexType i = 0; i < n_IDs; ++i)
   {
@@ -304,8 +305,8 @@ inline void append(IndexType n_IDs,
 inline void set(IndexType start_ID,
                 const IndexType* values,
                 IndexType n_IDs,
-                axom::deprecated::MCArray<IndexType>* m_values,
-                axom::deprecated::MCArray<IndexType>* m_offsets)
+                axom::Array<IndexType>* m_values,
+                axom::Array<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID + n_IDs <= m_offsets->size() - 1);
@@ -342,8 +343,8 @@ inline void insert(IndexType start_ID,
                    IndexType n_IDs,
                    const IndexType* values,
                    const IndexType* offsets,
-                   axom::deprecated::MCArray<IndexType>* m_values,
-                   axom::deprecated::MCArray<IndexType>* m_offsets)
+                   axom::Array<IndexType>* m_values,
+                   axom::Array<IndexType>* m_offsets)
 {
   SLIC_ASSERT(start_ID >= 0);
   SLIC_ASSERT(start_ID <= m_offsets->size() - 1);
@@ -354,7 +355,7 @@ inline void insert(IndexType start_ID,
   SLIC_ASSERT(m_offsets != nullptr);
 
   IndexType n_values = offsets[n_IDs] - offsets[0];
-  IndexType* m_offsets_ptr = m_offsets->getData();
+  IndexType* m_offsets_ptr = m_offsets->data();
   IndexType insert_pos = m_offsets_ptr[start_ID];
 
   /* Increment the offsets after the insertion position. */
@@ -364,11 +365,11 @@ inline void insert(IndexType start_ID,
     m_offsets_ptr[i] += n_values;
   }
 
-  m_offsets->insert(offsets + 1, n_IDs, start_ID + 1);
-  m_values->insert(values, n_values, insert_pos);
+  m_offsets->insert(start_ID + 1, n_IDs, offsets + 1);
+  m_values->insert(insert_pos, n_values, values);
 
   /* Correct the inserted offsets. */
-  m_offsets_ptr = m_offsets->getData();
+  m_offsets_ptr = m_offsets->data();
   const IndexType correction = insert_pos - offsets[0];
   for(IndexType i = 0; i < n_IDs; ++i)
   {
