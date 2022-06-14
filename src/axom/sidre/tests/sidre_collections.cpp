@@ -13,6 +13,8 @@
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
+#include "axom/fmt.hpp"
+
 namespace sidre = axom::sidre;
 
 struct NamedItem
@@ -137,6 +139,46 @@ TYPED_TEST(ItemCollectionTest, insertSeveralItems)
     coll->insertItem(val, key);
   }
   EXPECT_EQ(5, coll->getNumItems());
+}
+
+TYPED_TEST(ItemCollectionTest, insertManyItems)
+{
+  using ValueType = typename TestFixture::ValueType;
+  const int SZ = 1000;
+  auto* coll = this->m_coll;
+
+  int num_added = 0;
+  int num_removed = 0;
+
+  for(char c = 'a'; c <= 'z'; ++c)
+  {
+    std::vector<axom::IndexType> indices;
+
+    // insert SZ items
+    for(int i = 0; i < SZ; ++i)
+    {
+      auto str = axom::fmt::format("{}_{:08}", c, i);
+      auto* val = this->template create_item<ValueType>(str);
+      std::string key = TestFixture::IsNameBased ? str : "";
+
+      auto idx = coll->insertItem(val, key);
+      indices.push_back(idx);
+      ++num_added;
+    }
+    EXPECT_EQ(num_added - num_removed, coll->getNumItems());
+
+    // remove a third of the new items
+    for(std::size_t i = 0; i < indices.size(); ++i)
+    {
+      if(i % 3 == 0)
+      {
+        auto* val = coll->removeItem(indices[i]);
+        delete val;
+        ++num_removed;
+      }
+    }
+    EXPECT_EQ(num_added - num_removed, coll->getNumItems());
+  }
 }
 
 TYPED_TEST(ItemCollectionTest, hasItems)
