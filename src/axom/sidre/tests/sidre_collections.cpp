@@ -526,3 +526,57 @@ TYPED_TEST(IndexedCollectionTest, testIndexedCollection)
     EXPECT_EQ(sz + 5, idx_coll->getNumItems());
   }
 }
+
+TYPED_TEST(IndexedCollectionTest, outOfOrderInsert)
+{
+  using ValueType = typename TestFixture::ValueType;
+
+  auto* idx_coll = this->getCollection();
+  if(idx_coll != nullptr)
+  {
+    std::vector<std::string>
+      names {"a", "b", "c", "aa", "bb", "cc", "aaa", "bbb", "ccc"};
+
+    // add some items and check their properties
+    auto map = this->addItems(names);
+    EXPECT_EQ(names.size(), idx_coll->getNumItems());
+
+    const axom::IndexType idx_end = idx_coll->getLastAvailableEmptyIndex();
+    EXPECT_EQ(idx_end, idx_coll->getNumItems());
+
+    // remove some items by index
+    const axom::IndexType idx_b = map["b"];
+    const axom::IndexType idx_bb = map["bb"];
+    const axom::IndexType idx_bbb = map["bbb"];
+    for(auto rem_idx : {idx_b, idx_bb, idx_bbb})
+    {
+      EXPECT_TRUE(idx_coll->hasItem(rem_idx));
+      auto* val = idx_coll->removeItem(rem_idx);
+      delete val;
+    }
+
+    // Insert items into locations known to be empty but not at the top of the stack
+    // Ensure that the size is correct
+    {
+      auto sz = idx_coll->getNumItems();
+      int numAdded = 0;
+      for(auto& pr :
+          {std::make_pair(idx_b, this->template create_item<ValueType>("d")),
+           std::make_pair(idx_bb, this->template create_item<ValueType>("dd")),
+           std::make_pair(idx_end, this->template create_item<ValueType>("dddd")),
+           std::make_pair(idx_bbb, this->template create_item<ValueType>("ddd"))})
+      {
+        const auto idx = pr.first;
+        auto* val = pr.second;
+        EXPECT_FALSE(idx_coll->hasItem(idx));
+
+        // Note: The following overload is unique to IndexedCollection
+        idx_coll->insertItem(val, idx);
+        EXPECT_TRUE(idx_coll->hasItem(idx));
+        ++numAdded;
+        EXPECT_EQ(sz + numAdded, idx_coll->getNumItems());
+      }
+      EXPECT_EQ(sz + 4, idx_coll->getNumItems());
+    }
+  }
+}

@@ -32,6 +32,9 @@ namespace sidre
  *
  * \brief IndexedCollection is a container for a collection of pointers
  * to items of template parameter type T, each with a corresponding index
+ *
+ * Each item has an associated index which will always be in the range
+ * between 0 and \a getLastAvailableEmptyIndex()
  *************************************************************************
  */
 template <typename T>
@@ -49,7 +52,7 @@ public:
   //
 
   /// Gets the number of items stored in the collection
-  size_t getNumItems() const { return m_items.size() - m_free_ids.size(); }
+  size_t getNumItems() const { return m_num_items; }
 
   /// Returns the index of the first valid item or InvalidIndex if there are none
   IndexType getFirstValidIndex() const;
@@ -93,7 +96,11 @@ public:
     return insertItem(item);
   }
 
-  /// Insert \a item at index \a idx
+  /*!
+   * \brief  Insert \a item at index \a idx
+   * 
+   * \pre Index \a idx must be empty, i.e. !hasItem(idx) 
+   */
   IndexType insertItem(T* item, IndexType idx)
   {
     SLIC_ASSERT_MSG(!hasItem(idx),
@@ -102,9 +109,10 @@ public:
                     "Index " << idx << " is out of range. Max allowed index is "
                              << m_items.size());
 
-    if(static_cast<unsigned>(idx) == m_items.size())
+    if(idx == getLastAvailableEmptyIndex())
     {
       m_items.push_back(item);
+      ++m_num_items;
     }
     else
     {
@@ -112,6 +120,10 @@ public:
       if(!m_free_ids.empty() && m_free_ids.top() == idx)
       {
         m_free_ids.pop();
+      }
+      if(m_items[idx] == nullptr)
+      {
+        ++m_num_items;
       }
       m_items[idx] = item;
     }
@@ -122,7 +134,12 @@ public:
   /// Removes the item from index \a idx but does not destroy it
   T* removeItem(IndexType idx);
 
-  /// Removes all items from the collection, but does not destroy them
+  /*!
+   * \brief Removes all items from the collection, but does not destroy them
+   * 
+   * \warning This function can leak memory if the collection stores 
+   * a pointer to the only copy of the items
+   */
   void removeAllItems()
   {
     m_items.clear();
@@ -130,9 +147,10 @@ public:
     {
       m_free_ids.pop();
     }
+    m_num_items = 0;
   }
 
-  /**
+  /*!
    * \brief Return the index of a valid empty slot in the collection
    *
    * Finds an empty (unused) index at which an item can be inserted
@@ -169,6 +187,13 @@ public:
     return newIndex;
   }
 
+  /*!
+   * \brief Gets the empty index at the end of the range of available indices
+   *
+   * \note This index will always be empty
+   */
+  IndexType getLastAvailableEmptyIndex() const { return m_items.size(); }
+
   iterator begin() { return iterator(this, true); }
   iterator end() { return iterator(this, false); }
 
@@ -179,21 +204,22 @@ public:
   const_iterator end() const { return const_iterator(this, false); }
 
 private:
-  /// Predicate to check if index \a idx is in half-open range, 0 <= idx < m_items.size()
+  /// Predicate to check if index \a idx is in the half-open range, 0 <= idx < getLastAvailableEmptyIndex()
   bool isInHalfOpenRange(IndexType idx) const
   {
-    return idx >= 0 && static_cast<unsigned>(idx) < m_items.size();
+    return idx >= 0 && idx < getLastAvailableEmptyIndex();
   }
 
-  /// Predicate to check if index \a idx is in closed range, 0 <= idx <= m_items.size()
+  /// Predicate to check if index \a idx is in the closed range, 0 <= idx <= getLastAvailableEmptyIndex()
   bool isInClosedRange(IndexType idx) const
   {
-    return idx >= 0 && static_cast<unsigned>(idx) <= m_items.size();
+    return idx >= 0 && idx <= getLastAvailableEmptyIndex();
   }
 
 private:
   std::vector<T*> m_items;
   std::stack<IndexType> m_free_ids;
+  int m_num_items {0};
 };
 
 // -----------------------------------------------------------------------------
@@ -235,6 +261,7 @@ T* IndexedCollection<T>::removeItem(IndexType idx)
     T* item = m_items[idx];
     m_items[idx] = nullptr;
     m_free_ids.push(idx);
+    --m_num_items;
 
     return item;
   }
