@@ -181,6 +181,60 @@ TYPED_TEST(ItemCollectionTest, insertManyItems)
   }
 }
 
+TYPED_TEST(ItemCollectionTest, removeNonExistent)
+{
+  using ValueType = typename TestFixture::ValueType;
+  const int SZ = 100;
+  auto* coll = this->m_coll;
+
+  int num_added = 0;
+  int num_removed = 0;
+
+  std::vector<axom::IndexType> indices;
+
+  // insert SZ items
+  for(int i = 0; i < SZ; ++i)
+  {
+    auto str = axom::fmt::format("a_{:08}", i);
+    auto* val = this->template create_item<ValueType>(str);
+    std::string key = TestFixture::IsNameBased ? str : "";
+
+    auto idx = coll->insertItem(val, key);
+    indices.push_back(idx);
+    ++num_added;
+  }
+  EXPECT_EQ(num_added - num_removed, coll->getNumItems());
+
+  // remove a third of the items
+  for(std::size_t i = 0; i < indices.size(); ++i)
+  {
+    EXPECT_TRUE(coll->hasItem(indices[i]));
+    if(i % 3 == 0)
+    {
+      auto* val = coll->removeItem(indices[i]);
+      delete val;
+      ++num_removed;
+    }
+  }
+  EXPECT_EQ(num_added - num_removed, coll->getNumItems());
+
+  // attempt to remove same items
+  for(std::size_t i = 0; i < indices.size(); ++i)
+  {
+    if(i % 3 == 0)
+    {
+      EXPECT_FALSE(coll->hasItem(indices[i]));
+      auto* val = coll->removeItem(indices[i]);
+      EXPECT_EQ(nullptr, val);
+    }
+    else
+    {
+      EXPECT_TRUE(coll->hasItem(indices[i]));
+    }
+  }
+  EXPECT_EQ(num_added - num_removed, coll->getNumItems());
+}
+
 TYPED_TEST(ItemCollectionTest, hasItems)
 {
   auto* coll = this->m_coll;
@@ -484,6 +538,55 @@ TYPED_TEST(MapCollectionTest, testMapCollection)
                   std::find(removed_names.begin(), removed_names.end(), name));
       }
     }
+  }
+}
+
+TYPED_TEST(MapCollectionTest, removeNonExistent)
+{
+  using ValueType = typename TestFixture::ValueType;
+  const int SZ = 100;
+  auto* map_coll = this->getCollection();
+
+  if(map_coll != nullptr)
+  {
+    int num_added = 0;
+    int num_removed = 0;
+
+    std::vector<std::string> names_to_remove;
+
+    // insert SZ items
+    for(int i = 0; i < SZ; ++i)
+    {
+      auto str = axom::fmt::format("a_{:08}", i);
+      auto* val = this->template create_item<ValueType>(str);
+      map_coll->insertItem(val, str);
+      ++num_added;
+
+      if(i % 3 == 0)
+      {
+        names_to_remove.push_back(str);
+      }
+    }
+    EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
+
+    // remove a third of the items
+    for(const auto& str : names_to_remove)
+    {
+      EXPECT_TRUE(map_coll->hasItem(str));
+      auto* val = map_coll->removeItem(str);
+      delete val;
+      ++num_removed;
+    }
+    EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
+
+    // attempt to remove same items
+    for(const auto& str : names_to_remove)
+    {
+      EXPECT_FALSE(map_coll->hasItem(str));
+      auto* val = map_coll->removeItem(str);
+      EXPECT_EQ(nullptr, val);
+    }
+    EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
   }
 }
 
