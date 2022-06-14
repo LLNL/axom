@@ -465,8 +465,25 @@ public:
    */
   ArrayIterator insert(ArrayIterator pos, IndexType n, const T& value);
 
-  // Make the overload "visible"
-  using ArrayBase<T, DIM, Array<T, DIM, SPACE>>::insert;
+  /*!
+   * \brief Inserts an Array to the end of the calling object
+   *
+   * \param [in] other The Array to append
+   *
+   * \pre The shapes of the calling Array and @a other are the same
+   * (excluding the leading dimension), i.e., shape()[1:] == other.shape()[1:]
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  template <MemorySpace OtherSpace>
+  void insert(IndexType pos, ArrayView<const T, DIM, OtherSpace> other);
+
+  /// \overload
+  template <MemorySpace OtherSpace>
+  void insert(IndexType pos, ArrayView<T, DIM, OtherSpace> other)
+  {
+    insert(pos, ArrayView<const T, DIM, OtherSpace>(other));
+  }
 
   /*!
    * \brief Appends an Array to the end of the calling object
@@ -476,10 +493,17 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  template <typename OtherArrayType>
-  void append(const ArrayBase<T, DIM, OtherArrayType>& other)
+  template <MemorySpace OtherSpace>
+  void append(ArrayView<const T, DIM, OtherSpace> other)
   {
-    ArrayBase<T, DIM, Array<T, DIM, SPACE>>::insert(size(), other);
+    insert(size(), other);
+  }
+
+  /// \overload
+  template <MemorySpace OtherSpace>
+  void append(ArrayView<T, DIM, OtherSpace> other)
+  {
+    insert(size(), other);
   }
 
   /*!
@@ -1080,6 +1104,18 @@ inline typename Array<T, DIM, SPACE>::ArrayIterator Array<T, DIM, SPACE>::insert
   assert(pos >= begin() && pos <= end());
   insert(pos - begin(), n, value);
   return pos;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+template <MemorySpace OtherSpace>
+inline void Array<T, DIM, SPACE>::insert(IndexType pos,
+                                         ArrayView<const T, DIM, OtherSpace> other)
+{
+  // First update the dimensions
+  this->insertRange(other.shape());
+  // Then add the raw data to the buffer
+  insert(pos, other.size(), other.data());
 }
 
 //------------------------------------------------------------------------------
