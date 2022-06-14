@@ -60,7 +60,8 @@ public:
   /// Return true if there is an item at index \a idx
   bool hasItem(IndexType idx) const
   {
-    return isInRange(idx) && m_items[static_cast<unsigned>(idx)] != nullptr;
+    return isInHalfOpenRange(idx) &&
+      m_items[static_cast<unsigned>(idx)] != nullptr;
   }
 
   /// Return the \a item at index \idx or nullptr if that index is empty
@@ -78,9 +79,7 @@ public:
   /// Insert \a item into the next available free index
   IndexType insertItem(T* item)
   {
-    const IndexType newIndex = getValidEmptyIndex();
-    m_items[newIndex] = item;
-    return newIndex;
+    return insertItem(item, getValidEmptyIndex());
   }
 
   /*!
@@ -99,11 +98,24 @@ public:
   {
     SLIC_ASSERT_MSG(!hasItem(idx),
                     "Attempting to insert item into non-empty index " << idx);
-    SLIC_ASSERT_MSG(isInRange(idx),
+    SLIC_ASSERT_MSG(isInClosedRange(idx),
                     "Index " << idx << " is out of range. Max allowed index is "
                              << m_items.size());
 
-    m_items[idx] = item;
+    if(static_cast<unsigned>(idx) == m_items.size())
+    {
+      m_items.push_back(item);
+    }
+    else
+    {
+      // Remove this index from the free_ids stack if it's at the top
+      if(!m_free_ids.empty() && m_free_ids.top() == idx)
+      {
+        m_free_ids.pop();
+      }
+      m_items[idx] = item;
+    }
+
     return idx;
   }
 
@@ -120,20 +132,39 @@ public:
     }
   }
 
-  /// Return the index of a valid empty slot in the collection
+  /**
+   * \brief Return the index of a valid empty slot in the collection
+   *
+   * Finds an empty (unused) index at which an item can be inserted
+   */
   IndexType getValidEmptyIndex()
   {
-    IndexType newIndex;
-    if(m_free_ids.empty())
-    {
-      newIndex = m_items.size();
-      m_items.push_back(nullptr);
-    }
-    else
+    IndexType newIndex = sidre::InvalidIndex;
+    bool found_empty_index = false;
+
+    // try to find an empty index from the stack
+    while(!m_free_ids.empty() && !found_empty_index)
     {
       newIndex = m_free_ids.top();
-      m_free_ids.pop();
+      if(hasItem(newIndex))
+      {
+        m_free_ids.pop();
+      }
+      else
+      {
+        found_empty_index = true;
+      }
     }
+
+    // if empty index not found, extend the array
+    if(!found_empty_index)
+    {
+      newIndex = m_items.size();
+    }
+
+    SLIC_ASSERT_MSG(
+      isInClosedRange(newIndex) && !hasItem(newIndex),
+      "Index " << newIndex << " in IndexedCollection is not a valid empty index");
 
     return newIndex;
   }
@@ -148,9 +179,16 @@ public:
   const_iterator end() const { return const_iterator(this, false); }
 
 private:
-  bool isInRange(IndexType idx) const
+  /// Predicate to check if index \a idx is in half-open range, 0 <= idx < m_items.size()
+  bool isInHalfOpenRange(IndexType idx) const
   {
     return idx >= 0 && static_cast<unsigned>(idx) < m_items.size();
+  }
+
+  /// Predicate to check if index \a idx is in closed range, 0 <= idx <= m_items.size()
+  bool isInClosedRange(IndexType idx) const
+  {
+    return idx >= 0 && static_cast<unsigned>(idx) <= m_items.size();
   }
 
 private:

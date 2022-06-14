@@ -444,3 +444,85 @@ TYPED_TEST(MapCollectionTest, testMapCollection)
     }
   }
 }
+
+// ----------------------------------------------------------------------------
+// Adds tests specifically for IndexedCollection
+// ----------------------------------------------------------------------------
+
+template <typename TheValueType>
+class IndexedCollectionTest
+  : public ItemCollectionTest<sidre::IndexedCollection<TheValueType>>
+{
+public:
+  using ValueType = TheValueType;
+  using IndexedCollectionType = sidre::IndexedCollection<TheValueType>;
+  using ItemCollectionBase = ItemCollectionTest<IndexedCollectionType>;
+
+protected:
+  void SetUp() override { ItemCollectionBase::SetUp(); }
+
+  void TearDown() override { ItemCollectionBase::TearDown(); }
+
+  IndexedCollectionType* getCollection()
+  {
+    return static_cast<IndexedCollectionType*>(this->m_coll);
+  }
+};
+
+using ICollTypes = ::testing::Types<double, NamedItem>;
+TYPED_TEST_SUITE(IndexedCollectionTest, ICollTypes);
+
+TYPED_TEST(IndexedCollectionTest, testIndexedCollection)
+{
+  using ValueType = typename TestFixture::ValueType;
+
+  auto* idx_coll = this->getCollection();
+  if(idx_coll != nullptr)
+  {
+    std::vector<std::string>
+      names {"a", "b", "c", "aa", "bb", "cc", "aaa", "bbb", "ccc"};
+
+    // add some items and check their properties
+    auto map = this->addItems(names);
+    EXPECT_EQ(names.size(), idx_coll->getNumItems());
+
+    auto idx_b = map["b"];
+    auto idx_bb = map["bb"];
+    auto idx_bbb = map["bbb"];
+
+    // remove items by index
+    for(auto rem_idx : {idx_b, idx_bb, idx_bbb})
+    {
+      EXPECT_TRUE(idx_coll->hasItem(rem_idx));
+      auto* val = idx_coll->removeItem(rem_idx);
+      delete val;
+    }
+
+    // attempt to remove items by index again
+    for(auto rem_idx : {idx_b, idx_bb, idx_bbb})
+    {
+      EXPECT_FALSE(idx_coll->hasItem(rem_idx));
+      EXPECT_EQ(nullptr, idx_coll->removeItem(rem_idx));
+    }
+
+    // get new indices without inserting anything; size should stay the same
+    auto sz = idx_coll->getNumItems();
+    for(int i = 0; i < 10; ++i)
+    {
+      idx_coll->getValidEmptyIndex();
+      EXPECT_EQ(sz, idx_coll->getNumItems());
+    }
+
+    // add some new items
+    for(auto str : {"ddddd", "dddd", "ddd", "dd", "d"})
+    {
+      auto idx = idx_coll->getValidEmptyIndex();
+      EXPECT_FALSE(idx_coll->hasItem(idx));
+
+      auto* val = this->template create_item<ValueType>(str);
+      idx_coll->insertItem(val, idx);
+      EXPECT_TRUE(idx_coll->hasItem(idx));
+    }
+    EXPECT_EQ(sz + 5, idx_coll->getNumItems());
+  }
+}
