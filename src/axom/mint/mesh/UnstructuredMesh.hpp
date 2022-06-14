@@ -701,6 +701,7 @@ public:
    */
   virtual IndexType getNumberOfCellNodes(IndexType cellID = 0) const final override
   {
+    using CardinalityPolicy = typename CellToNodeRelation::CardinalityPolicy;
     return m_cell_node_rel.CardinalityPolicy::size(cellID);
   }
 
@@ -876,6 +877,7 @@ public:
    */
   virtual IndexType getNumberOfFaceNodes(IndexType faceID = 0) const final override
   {
+    using CardinalityPolicy = typename FaceToNodeRelation::CardinalityPolicy;
     return m_face_node_rel.CardinalityPolicy::size(faceID);
   }
 
