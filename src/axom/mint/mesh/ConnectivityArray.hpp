@@ -627,8 +627,7 @@ public:
   {
     SLIC_ASSERT(values != nullptr);
     SLIC_ASSERT(n_IDs >= 0);
-    m_values->insert(m_values->shape()[0],
-                     ArrayView<const IndexType, 2>(values, {n_IDs, m_stride}));
+    m_values->append(ArrayView<const IndexType, 2>(values, {n_IDs, m_stride}));
   }
 
   /*!
@@ -711,7 +710,7 @@ public:
     SLIC_ASSERT(start_ID >= 0);
     SLIC_ASSERT(start_ID <= getNumberOfIDs());
     SLIC_ASSERT(values != nullptr);
-    m_values->insert(start_ID,
+    m_values->insert(start_ID * m_stride,
                      ArrayView<const IndexType, 2>(values, {n_IDs, m_stride}));
   }
 
