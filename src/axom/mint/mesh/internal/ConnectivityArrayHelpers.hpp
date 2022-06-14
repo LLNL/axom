@@ -9,7 +9,6 @@
 #include "axom/config.hpp"
 #include "axom/core/Array.hpp"
 
-#include "axom/mint/deprecated/MCArray.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 
@@ -17,7 +16,6 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
-  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 #include <cmath>   /* for std::ceil */

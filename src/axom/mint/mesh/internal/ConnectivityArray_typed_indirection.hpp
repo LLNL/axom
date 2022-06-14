@@ -10,7 +10,6 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/mint/deprecated/MCArray.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
@@ -18,7 +17,6 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
-  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 #include <cstring>
