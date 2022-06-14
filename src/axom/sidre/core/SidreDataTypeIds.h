@@ -11,6 +11,11 @@
  *
  */
 
+/*
+ * Note: Use only C code in this file
+ *       since it might be included from a C file.
+ */
+
 #ifndef SIDRE_DATATYPEIDS_H_
 #define SIDRE_DATATYPEIDS_H_
 
