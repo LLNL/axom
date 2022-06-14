@@ -5,8 +5,8 @@
 #ifndef MINT_MESH_HELPERS_HPP_
 #define MINT_MESH_HELPERS_HPP_
 
-#include "axom/core/Macros.hpp"          // for AXOM_UNUSED_PARAM
-#include "axom/core/Types.hpp"           // for nullptr
+#include "axom/core/Macros.hpp"  // for AXOM_UNUSED_PARAM
+#include "axom/core/Types.hpp"   // for nullptr
 #include "axom/core/Array.hpp"
 #include "axom/mint/config.hpp"          // for mint compile-time type
 #include "axom/mint/mesh/CellTypes.hpp"  // for CellType

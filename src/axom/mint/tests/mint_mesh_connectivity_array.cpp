@@ -46,9 +46,10 @@ IndexType calc_ID_capacity(const ConnectivityArray<NO_INDIRECTION>& connec,
   if(new_n_IDs > connec.getIDCapacity())
   {
     IndexType stride = connec.getNumberOfValuesForID();
-    IndexType newCapacity = static_cast<IndexType>(new_n_IDs * stride * connec.getResizeRatio() + 0.5);
+    IndexType newCapacity =
+      static_cast<IndexType>(new_n_IDs * stride * connec.getResizeRatio() + 0.5);
     IndexType remainder = newCapacity % stride;
-    if (remainder != 0)
+    if(remainder != 0)
     {
       newCapacity += stride - remainder;
     }

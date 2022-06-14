@@ -17,7 +17,6 @@ namespace axom
 {
 namespace mint
 {
-
 /*!
  * \class ExternalArray
  *

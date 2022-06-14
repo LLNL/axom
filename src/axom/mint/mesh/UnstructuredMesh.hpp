@@ -848,8 +848,7 @@ public:
    * \deprecated Has no significance, since adding external faces is not
    *             supported. Use getNumberOfFaces() instead.
    */
-  [[deprecated]]
-  virtual IndexType getFaceCapacity() const final override
+  [[deprecated]] virtual IndexType getFaceCapacity() const final override
   {
     return m_faces.size();
   }
@@ -1134,10 +1133,7 @@ public:
   /*!
    * \brief Return the face resize ratio.
    */
-  double getFaceResizeRatio() const
-  {
-    return 2.0;
-  }
+  double getFaceResizeRatio() const { return 2.0; }
 
   /*!
    * \brief Return the size of the connectivity array.
@@ -1153,8 +1149,7 @@ public:
    * \deprecated Has no significance, since adding external faces is not
    *             supported. Use getFaceNodesSize() instead.
    */
-  [[deprecated]]
-  IndexType getFaceNodesCapacity() const
+  [[deprecated]] IndexType getFaceNodesCapacity() const
   {
     return m_face_node_rel.relationData().size();
   }
