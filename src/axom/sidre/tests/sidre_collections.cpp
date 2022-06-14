@@ -339,3 +339,108 @@ TYPED_TEST(ItemCollectionTest, iterators)
     EXPECT_EQ(*coll->getItem(idx), *it);
   }
 }
+
+// ----------------------------------------------------------------------------
+// Adds tests specifically for MapCollection
+// ----------------------------------------------------------------------------
+
+template <typename TheValueType>
+class MapCollectionTest
+  : public ItemCollectionTest<sidre::MapCollection<TheValueType>>
+{
+public:
+  using ValueType = TheValueType;
+  using MapCollectionType = sidre::MapCollection<TheValueType>;
+  using ItemCollectionBase = ItemCollectionTest<MapCollectionType>;
+
+protected:
+  void SetUp() override { ItemCollectionBase::SetUp(); }
+
+  void TearDown() override { ItemCollectionBase::TearDown(); }
+
+  MapCollectionType* getCollection()
+  {
+    return static_cast<MapCollectionType*>(this->m_coll);
+  }
+};
+
+using MCollTypes = ::testing::Types<NamedItem>;
+TYPED_TEST_SUITE(MapCollectionTest, MCollTypes);
+
+TYPED_TEST(MapCollectionTest, testMapCollection)
+{
+  auto* map_coll = this->getCollection();
+  if(map_coll != nullptr)
+  {
+    std::vector<std::string>
+      names {"a", "b", "c", "aa", "bb", "cc", "aaa", "bbb", "ccc"};
+
+    // add some items and check their properties
+    this->addItems(names);
+    EXPECT_EQ(names.size(), map_coll->getNumItems());
+
+    for(auto& str : names)
+    {
+      EXPECT_TRUE(map_coll->hasItem(str));
+      EXPECT_EQ(str, map_coll->getItem(str)->getName());
+
+      auto idx = map_coll->getItemIndex(str);
+      EXPECT_EQ(str, map_coll->getItemName(idx));
+      EXPECT_EQ(*map_coll->getItem(idx), *map_coll->getItem(str));
+    }
+
+    // remove some items
+    std::vector<std::string> removed_names {"bbb", "bb", "b"};
+    for(auto& str : removed_names)
+    {
+      EXPECT_TRUE(map_coll->hasItem(str));
+      auto* val = map_coll->removeItem(str);
+      EXPECT_FALSE(map_coll->hasItem(str));
+      delete val;
+    }
+    EXPECT_EQ(names.size() - removed_names.size(), map_coll->getNumItems());
+
+    // iterate through remaining items
+    for(auto& val : *map_coll)
+    {
+      const auto& name = val.getName();
+      EXPECT_TRUE(map_coll->hasItem(name));
+
+      const auto& idx = map_coll->getItemIndex(name);
+      EXPECT_TRUE(map_coll->hasItem(idx));
+
+      // item is in names, but not in removed_names
+      EXPECT_NE(names.end(), std::find(names.begin(), names.end(), name));
+      EXPECT_EQ(removed_names.end(),
+                std::find(removed_names.begin(), removed_names.end(), name));
+    }
+
+    // add some items and iterate through collection
+    {
+      std::vector<std::string> added_names {"dddd", "ddd", "dd", "d"};
+      this->addItems(added_names);
+      auto amended_names = names;
+      amended_names.insert(amended_names.end(),
+                           added_names.begin(),
+                           added_names.end());
+      EXPECT_EQ(amended_names.size() - removed_names.size(),
+                map_coll->getNumItems());
+
+      // iterate through current items
+      for(auto& val : *map_coll)
+      {
+        const auto& name = val.getName();
+        EXPECT_TRUE(map_coll->hasItem(name));
+
+        const auto& idx = map_coll->getItemIndex(name);
+        EXPECT_TRUE(map_coll->hasItem(idx));
+
+        // item is in (ammended) names, but not in removed_names
+        EXPECT_NE(amended_names.end(),
+                  std::find(amended_names.begin(), amended_names.end(), name));
+        EXPECT_EQ(removed_names.end(),
+                  std::find(removed_names.begin(), removed_names.end(), name));
+      }
+    }
+  }
+}
