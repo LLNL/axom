@@ -69,6 +69,7 @@ public:
    *
    * \post size() == num_elements
    */
+  template <int UDIM = DIM, typename Enable = std::enable_if_t<UDIM != 1>>
   ExternalArray(T* data, const StackArray<IndexType, DIM>& shape, IndexType capacity)
     : axom::Array<T, DIM>()
   {
@@ -81,6 +82,29 @@ public:
                   "Dimensions passed as shape must all be non-negative.");
 
     this->m_num_elements = detail::packProduct(shape.m_data);
+    this->m_capacity = capacity;
+
+    if(this->m_num_elements > capacity)
+    {
+      SLIC_WARNING(fmt::format(
+        "Attempting to set number of elements greater than the available "
+        "capacity. (elements = {}, capacity = {})",
+        this->m_num_elements,
+        capacity));
+      this->m_capacity = this->m_num_elements;
+    }
+
+    this->m_data = data;
+  }
+
+  /// \overload
+  template <int UDIM = DIM, typename Enable = std::enable_if_t<UDIM == 1>>
+  ExternalArray(T* data, IndexType size, IndexType capacity)
+    : axom::Array<T, DIM>()
+  {
+    SLIC_ASSERT(data != nullptr);
+
+    this->m_num_elements = size;
     this->m_capacity = capacity;
 
     if(this->m_num_elements > capacity)
