@@ -31,14 +31,17 @@ enum class ExecPolicy
   GPU
 };
 
-const std::map<std::string, ExecPolicy> validExecPolicies {
+const std::map<std::string, ExecPolicy> validExecPolicies
+{
   {"seq", ExecPolicy::CPU},
 #ifdef AXOM_USE_RAJA
   #ifdef AXOM_USE_OPENMP
-  {"omp", ExecPolicy::OpenMP},
+    {"omp", ExecPolicy::OpenMP},
   #endif
-  #ifdef AXOM_USE_CUDA
-  {"gpu", ExecPolicy::GPU}
+  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  {
+    "gpu", ExecPolicy::GPU
+  }
   #endif
 #endif
 };
@@ -190,7 +193,7 @@ struct Arguments
   #ifdef AXOM_USE_OPENMP
     pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
   #endif
-  #ifdef AXOM_USE_CUDA
+  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
     pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
   #endif
 #endif
@@ -227,10 +230,14 @@ int main(int argc, char** argv)
     finalize_logger();
     return retval;
   }
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
   if(args.exec_space == ExecPolicy::GPU)
   {
+  #ifdef AXOM_USE_HIP
+    using GPUExec = axom::HIP_EXEC<256>;
+  #else
     using GPUExec = axom::CUDA_EXEC<256>;
+  #endif
     axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
   }
 #endif
@@ -257,11 +264,14 @@ int main(int argc, char** argv)
                                             args.num_bins);
     break;
   #endif
-  #ifdef AXOM_USE_CUDA
+  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
   case ExecPolicy::GPU:
-    benchmark_point_in_cell<axom::CUDA_EXEC<256>>(testMesh,
-                                                  args.num_rand_pts,
-                                                  args.num_bins);
+    #ifdef AXOM_USE_HIP
+    using GPUExec = axom::HIP_EXEC<256>;
+    #else
+    using GPUExec = axom::CUDA_EXEC<256>;
+    #endif
+    benchmark_point_in_cell<GPUExec>(testMesh, args.num_rand_pts, args.num_bins);
     break;
   #endif
 #endif
