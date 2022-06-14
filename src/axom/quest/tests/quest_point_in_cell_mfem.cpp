@@ -411,9 +411,15 @@ public:
     axom::Array<SpacePt> isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
 
     const auto SZ = isoPts.size();
+#ifdef AXOM_USE_HIP
     axom::Array<SpacePt> spacePts(SZ, SZ, m_allocatorID);
     axom::Array<SpacePt> foundIso(SZ, SZ, m_allocatorID);
     axom::Array<IndexType> foundIDs(SZ, SZ, m_allocatorID);
+#else
+    axom::Array<SpacePt> spacePts(SZ, SZ);
+    axom::Array<SpacePt> foundIso(SZ, SZ);
+    axom::Array<IndexType> foundIDs(SZ, SZ);
+#endif
 
     axom::Array<SpacePt> foundIsoDevice(SZ, SZ, devAllocID);
     axom::Array<IndexType> foundIDsDevice(SZ, SZ, devAllocID);
