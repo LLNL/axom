@@ -50,12 +50,11 @@ namespace internal
  */
 inline CellType initializeFromGroup(
   sidre::Group* group,
-  axom::deprecated::MCArray<IndexType>** m_values,
-  axom::deprecated::MCArray<IndexType>** m_offsets = nullptr,
-  axom::deprecated::MCArray<CellType>** m_types = nullptr)
+  std::unique_ptr<axom::Array<IndexType>>& m_values,
+  std::unique_ptr<axom::Array<IndexType>>& m_offsets,
+  std::unique_ptr<axom::Array<CellType>>& m_types)
 {
   SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
-  SLIC_ERROR_IF(m_values == nullptr, "Pointer values array must not be null.");
 
   SLIC_ERROR_IF(
     !group->hasView("coordset"),
@@ -117,46 +116,116 @@ inline CellType initializeFromGroup(
                   << "does not have a child view 'connectivity'.");
 
   sidre::View* connec_view = elems_group->getView("connectivity");
-  *m_values = new sidre::deprecated::MCArray<IndexType>(connec_view);
-  SLIC_ERROR_IF(*m_values == nullptr, "Error in Array allocation.");
+  m_values = std::make_unique<sidre::Array<IndexType>>(connec_view);
 
-  if(m_offsets != nullptr)
   {
     SLIC_ERROR_IF(!elems_group->hasView("offsets"),
                   "sidre::Group " << group->getPathName()
                                   << " does not conform to mesh blueprint.");
 
     sidre::View* offsets_view = elems_group->getView("offsets");
-    *m_offsets = new sidre::deprecated::MCArray<IndexType>(offsets_view);
+    m_offsets = std::make_unique<sidre::Array<IndexType>>(offsets_view);
 
-    SLIC_ERROR_IF(*m_offsets == nullptr, "Error in Array allocation.");
-    SLIC_ERROR_IF((*m_offsets)->numComponents() != 1,
-                  "offsets array must have only 1 component not "
-                    << (*m_offsets)->numComponents() << ".");
-
-    if((*m_offsets)->size() == 0)
+    if(m_offsets->size() == 0)
     {
-      (*m_offsets)->append(0);
+      m_offsets->push_back(0);
     }
-    SLIC_ERROR_IF((**m_offsets)[0] != 0,
-                  "The offset of ID 0 must be 0 not " << (**m_offsets)[0] << ".");
+    SLIC_ERROR_IF((*m_offsets)[0] != 0,
+                  "The offset of ID 0 must be 0 not " << (*m_offsets)[0] << ".");
   }
 
-  if(m_types != nullptr)
   {
     SLIC_ERROR_IF(!elems_group->hasView("types"),
                   "sidre::Group " << group->getPathName()
                                   << " does not conform to mesh blueprint.");
 
     sidre::View* type_view = elems_group->getView("types");
-    *m_types = new sidre::deprecated::MCArray<CellType>(type_view);
-
-    SLIC_ERROR_IF(*m_types == nullptr, "Error in Array allocation.");
-    SLIC_ERROR_IF((*m_types)->numComponents() != 1,
-                  "Types array must have only 1 component not "
-                    << (*m_types)->numComponents() << ".");
+    m_types = std::make_unique<sidre::Array<CellType>>(type_view);
   }
 
+  return cell_type;
+}
+/*!
+ * \brief Initializes the members of a ConnectivityArray instance from a
+ *  sidre::Group which already has data.
+ *
+ * \param [in] group the sidre::Group to create the ConnectivityArray from.
+ * \param [out] m_values a pointer to a pointer to the values array.
+ *
+ * \note if the offset/types pointers aren't given then this method does not
+ *  check that the appropriate views exist.
+ * \note the given Group must conform to a single Blueprint topology.
+ *
+ * \pre group != nullptr
+ * \pre m_values != nullptr
+ */
+inline CellType initializeFromGroup(
+  sidre::Group* group,
+  std::unique_ptr<axom::Array<IndexType, 2>>& m_values)
+{
+  SLIC_ERROR_IF(group == nullptr, "sidre::Group pointer must not be null.");
+
+  SLIC_ERROR_IF(
+    !group->hasView("coordset"),
+    "sidre::Group "
+      << group->getPathName()
+      << " does not conform to mesh blueprint. No child view 'coordset'.");
+  SLIC_ERROR_IF(
+    !group->getView("coordset")->isString(),
+    "sidre::Group "
+      << group->getPathName()
+      << " does not conform to mesh blueprint. Child view 'coordset' "
+      << "does not hold a string.");
+
+  SLIC_ERROR_IF(
+    !group->hasView("type"),
+    "sidre::Group "
+      << group->getPathName()
+      << " does not conform to mesh blueprint. No child view 'type'.");
+  sidre::View* type_view = group->getView("type");
+  SLIC_ERROR_IF(!type_view->isString(),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. Child view 'type' "
+                  << "does not hold a string.");
+  SLIC_ERROR_IF(std::strcmp(type_view->getString(), "unstructured") != 0,
+                "Incorrect type found. Expected 'unstructured' but got '"
+                  << type_view->getString() << "'.");
+
+  SLIC_ERROR_IF(!group->hasGroup("elements"),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. No 'elements' group "
+                  << "found.");
+  sidre::Group* elems_group = group->getGroup("elements");
+
+  SLIC_ERROR_IF(!elems_group->hasView("shape"),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. The elements group "
+                  << "does not have a child view 'shape'.");
+
+  sidre::View* shape_view = elems_group->getView("shape");
+  std::string bp_name = shape_view->getString();
+  CellType cell_type = UNDEFINED_CELL;
+
+  for(IndexType i = 0; i < NUM_CELL_TYPES; ++i)
+  {
+    if(cell_info[i].blueprint_name == bp_name)
+    {
+      cell_type = cell_info[i].cell_type;
+      break;
+    }
+  }
+
+  SLIC_ERROR_IF(!elems_group->hasView("connectivity"),
+                "sidre::Group "
+                  << group->getPathName()
+                  << " does not conform to mesh blueprint. The elements group "
+                  << "does not have a child view 'connectivity'.");
+
+  sidre::View* connec_view = elems_group->getView("connectivity");
+  m_values = std::make_unique<sidre::MCArray<IndexType>>(connec_view);
   return cell_type;
 }
 

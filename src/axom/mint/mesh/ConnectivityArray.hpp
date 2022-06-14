@@ -273,7 +273,7 @@ public:
     , m_stride(-1)
     , m_values(nullptr)
   {
-    m_cell_type = internal::initializeFromGroup(group, &m_values);
+    m_cell_type = internal::initializeFromGroup(group, m_values);
     m_stride = internal::getStride(group);
 
     if(m_cell_type != UNDEFINED_CELL)

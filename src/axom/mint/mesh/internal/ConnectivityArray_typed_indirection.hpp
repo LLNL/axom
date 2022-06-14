@@ -156,7 +156,7 @@ public:
   ConnectivityArray(sidre::Group* group)
   {
     CellType cell_type =
-      internal::initializeFromGroup(group, &m_values, &m_offsets, &m_types);
+      internal::initializeFromGroup(group, m_values, m_offsets, m_types);
     SLIC_ERROR_IF(cell_type != UNDEFINED_CELL,
                   "Mixed topology requires UNDEFINED_CELL cell type.");
 
