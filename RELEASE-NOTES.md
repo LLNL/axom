@@ -73,6 +73,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   generates a Deluanay complex over the points and performs linear interpolation over the
   triangle/tetrahedron at the query points.
 - Adds a HIP execution policy for device kernels to run on AMD GPU hardware
+- Adds new Slic macros that allow you to selectively print messages only on root ranks. For example,
+  `SLIC_ERROR_ROOT(msg)` and `SLIC_ERROR_ROOT_IF(EXP, msg)`. This can be set via
+  `slic::initialize(bool is_root = true)` or `slic::setIsRoot()`.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
