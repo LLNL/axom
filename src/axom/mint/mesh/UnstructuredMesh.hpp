@@ -48,7 +48,7 @@ struct topology_traits<SINGLE_SHAPE>
 {
   constexpr static ConnectivityType cell_to_nodes = NO_INDIRECTION;
 
-  using IdxType = int;
+  using IdxType = axom::IndexType;
 
   using ZoneSet = slam::PositionSet<IdxType, IdxType>;
   using NodeSet = slam::PositionSet<IdxType, IdxType>;
@@ -82,7 +82,7 @@ struct topology_traits<MIXED_SHAPE>
 {
   constexpr static ConnectivityType cell_to_nodes = TYPED_INDIRECTION;
 
-  using IdxType = int;
+  using IdxType = axom::IndexType;
 
   using ZoneSet = slam::PositionSet<IdxType, IdxType>;
   using NodeSet = slam::PositionSet<IdxType, IdxType>;
