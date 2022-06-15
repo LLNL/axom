@@ -492,11 +492,26 @@ TEST(sidre_datastore, iterate_buffers_with_delete_iterators)
   expBuffCount = 13;
   EXPECT_EQ(expBuffCount, ds->getNumBuffers());
 
-  // iterate
+  // iterate using 'range-for' syntax
   {
     int foundBuffers = 0;
     for(auto& buff : ds->buffers())
     {
+      const IndexType idx = buff.getIndex();
+      ++foundBuffers;
+      EXPECT_TRUE(indexIsValid(idx));
+      EXPECT_EQ(ds->getBuffer(idx), &buff);
+    }
+    EXPECT_EQ(expBuffCount, foundBuffers);
+  }
+
+  // iterate using begin/end iterator syntax
+  {
+    int foundBuffers = 0;
+    for(auto it = ds->buffers().begin(), itEnd = ds->buffers().end(); it != itEnd;
+        ++it)
+    {
+      auto& buff = *it;
       const IndexType idx = buff.getIndex();
       ++foundBuffers;
       EXPECT_TRUE(indexIsValid(idx));

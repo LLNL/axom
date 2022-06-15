@@ -761,6 +761,9 @@ TEST(sidre_group, iterate_groups_with_iterator)
         it != itEnd;
         ++it)
     {
+      auto& grp = *it;
+      EXPECT_EQ(grp.getPath(), it->getPath());
+
       EXPECT_EQ(foo_group, it->getParent());
       EXPECT_TRUE(endsWith(it->getName(), "_group"));
       ++nGroups;
@@ -772,6 +775,9 @@ TEST(sidre_group, iterate_groups_with_iterator)
         it != itEnd;
         ++it)
     {
+      auto& view = *it;
+      EXPECT_EQ(view.getPath(), it->getPath());
+
       EXPECT_EQ(foo_group, it->getOwningGroup());
       EXPECT_TRUE(endsWith(it->getName(), "_view"));
       ++nViews;
