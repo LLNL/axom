@@ -238,7 +238,7 @@ contains
     ds = SidreDataStore()
     root = ds%get_root()
 
-    view = root%create_view_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
+    view = root%create_view_with_shape_and_allocate("iarray", SIDRE_INT_ID, 3, extents_in)
 
     call view%get_data(ipointer)
 

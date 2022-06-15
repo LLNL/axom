@@ -44,7 +44,7 @@ if (CAMP_DIR)
     # Note: camp sets a compile feature that is not available on XL
     set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
 else()
-    message(STATUS "Umpire support is OFF")
+    message(STATUS "Camp support is OFF")
     set(CAMP_FOUND FALSE CACHE BOOL "")
 endif()
 
