@@ -590,6 +590,88 @@ TYPED_TEST(MapCollectionTest, removeNonExistent)
   }
 }
 
+TYPED_TEST(MapCollectionTest, insertAlreadyPresent)
+{
+  using ValueType = typename TestFixture::ValueType;
+  const int SZ = 100;
+  auto* map_coll = this->getCollection();
+
+  if(map_coll != nullptr)
+  {
+    int num_added = 0;
+    int num_removed = 0;
+
+    std::vector<std::string> names_to_remove;
+    std::vector<std::string> names_to_add;
+
+    // insert SZ items
+    for(int i = 0; i < SZ; ++i)
+    {
+      auto str = axom::fmt::format("a_{:08}", i);
+      auto* val = this->template create_item<ValueType>(str);
+      map_coll->insertItem(val, str);
+      ++num_added;
+
+      // create a list of items to remove and to add back
+      switch(i % 3)
+      {
+      case 0:
+        names_to_remove.push_back(str);
+        names_to_add.push_back(str);
+        break;
+      case 1:
+        names_to_add.push_back(str);
+        break;
+      case 2:
+        //no-op
+        break;
+      }
+    }
+    EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
+
+    // remove a third of the items
+    for(const auto& str : names_to_remove)
+    {
+      EXPECT_TRUE(map_coll->hasItem(str));
+      auto* val = map_coll->removeItem(str);
+      delete val;
+      ++num_removed;
+      EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
+    }
+    EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
+
+    // add back a bunch of items; some aleady present, others new
+    for(const auto& str : names_to_add)
+    {
+      const bool hasItem = map_coll->hasItem(str);
+      const bool wasRemoved =
+        std::find(names_to_remove.begin(), names_to_remove.end(), str) !=
+        names_to_remove.end();
+      EXPECT_NE(hasItem, wasRemoved);
+
+      auto* val = this->template create_item<ValueType>(str);
+      auto idx = map_coll->insertItem(val, str);
+
+      if(hasItem)
+      {
+        // new item was not removed, must deallocate
+        EXPECT_EQ(sidre::InvalidIndex, idx);
+        delete val;
+        val = nullptr;
+      }
+      else
+      {
+        // new item was added
+        EXPECT_NE(sidre::InvalidIndex, idx);
+        ++num_added;
+      }
+      EXPECT_TRUE(map_coll->hasItem(str));
+      EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
+    }
+    EXPECT_EQ(num_added - num_removed, map_coll->getNumItems());
+  }
+}
+
 // ----------------------------------------------------------------------------
 // Adds tests specifically for IndexedCollection
 // ----------------------------------------------------------------------------
@@ -723,5 +805,113 @@ TYPED_TEST(IndexedCollectionTest, outOfOrderInsert)
       }
       EXPECT_EQ(sz + 4, idx_coll->getNumItems());
     }
+  }
+}
+
+TYPED_TEST(IndexedCollectionTest, insertAlreadyPresent)
+{
+  using ValueType = typename TestFixture::ValueType;
+  const int SZ = 100;
+  auto* indexed_coll = this->getCollection();
+
+  if(indexed_coll != nullptr)
+  {
+    int num_added = 0;
+    int num_removed = 0;
+
+    std::vector<axom::IndexType> inds_to_remove;
+    std::vector<axom::IndexType> inds_to_add;
+
+    // insert SZ items
+    for(int i = 0; i < SZ; ++i)
+    {
+      auto str = axom::fmt::format("a_{:08}", i);
+      auto* val = this->template create_item<ValueType>(str);
+      auto idx = indexed_coll->insertItem(val);
+      ++num_added;
+
+      // create a list of items to remove and to add back
+      switch(i % 3)
+      {
+      case 0:
+        inds_to_remove.push_back(idx);
+        inds_to_add.push_back(idx);
+        break;
+      case 1:
+        inds_to_add.push_back(idx);
+        break;
+      case 2:
+        //no-op
+        break;
+      }
+    }
+    EXPECT_EQ(num_added - num_removed, indexed_coll->getNumItems());
+
+    // remove a third of the items
+    for(const auto& idx : inds_to_remove)
+    {
+      EXPECT_TRUE(indexed_coll->hasItem(idx));
+      auto* val = indexed_coll->removeItem(idx);
+      delete val;
+      ++num_removed;
+      EXPECT_EQ(num_added - num_removed, indexed_coll->getNumItems());
+    }
+    EXPECT_EQ(num_added - num_removed, indexed_coll->getNumItems());
+
+    // add back a bunch of items; some aleady present, others new
+    for(const auto& idx : inds_to_add)
+    {
+      const bool hasItem = indexed_coll->hasItem(idx);
+      const bool wasRemoved =
+        std::find(inds_to_remove.begin(), inds_to_remove.end(), idx) !=
+        inds_to_remove.end();
+      EXPECT_NE(hasItem, wasRemoved);
+
+      auto str = axom::fmt::format("a_{:08}", idx);
+      auto* val = this->template create_item<ValueType>(str);
+      auto newIndex = indexed_coll->insertItem(val, idx);
+
+      if(hasItem)
+      {
+        // new item was not removed, must deallocate
+        EXPECT_EQ(sidre::InvalidIndex, newIndex);
+        delete val;
+        val = nullptr;
+      }
+      else
+      {
+        // new item was added
+        EXPECT_NE(sidre::InvalidIndex, newIndex);
+        ++num_added;
+      }
+      EXPECT_TRUE(indexed_coll->hasItem(idx));
+      EXPECT_EQ(num_added - num_removed, indexed_coll->getNumItems());
+    }
+    EXPECT_EQ(num_added - num_removed, indexed_coll->getNumItems());
+  }
+}
+
+TYPED_TEST(IndexedCollectionTest, insertArbitraryIdx)
+{
+  using ValueType = typename TestFixture::ValueType;
+  auto* indexed_coll = this->getCollection();
+
+  if(indexed_coll != nullptr)
+  {
+    int num_added = 0;
+
+    std::vector<axom::IndexType> indices {1, 10, 100, 1000, 500, 50, 5};
+    for(auto idx : indices)
+    {
+      auto str = axom::fmt::format("a_{:08}", idx);
+      auto* val = this->template create_item<ValueType>(str);
+      auto insertedIdx = indexed_coll->insertItem(val, idx);
+      ++num_added;
+
+      EXPECT_EQ(insertedIdx, idx);
+      EXPECT_EQ(num_added, indexed_coll->getNumItems());
+    }
+
+    EXPECT_EQ(indices.size(), indexed_coll->getNumItems());
   }
 }

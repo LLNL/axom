@@ -97,17 +97,32 @@ public:
   }
 
   /*!
-   * \brief  Insert \a item at index \a idx
-   * 
-   * \pre Index \a idx must be empty, i.e. !hasItem(idx) 
+   * \brief  Insert \a item at index \a idx if that index is not already occupied
+   *
+   * \return Index at which \a item was inserted, if successful; sidre::InvalidIndex otherwise
    */
   IndexType insertItem(T* item, IndexType idx)
   {
-    SLIC_ASSERT_MSG(!hasItem(idx),
-                    "Attempting to insert item into non-empty index " << idx);
-    SLIC_ASSERT_MSG(isInClosedRange(idx),
-                    "Index " << idx << " is out of range. Max allowed index is "
-                             << m_items.size());
+    if(hasItem(idx))
+    {
+      return sidre::InvalidIndex;
+    }
+
+    if(idx < 0)
+    {
+      return sidre::InvalidIndex;
+    }
+
+    // grow capacity to support insertion at index
+    if(!isInHalfOpenRange(idx))
+    {
+      m_items.reserve(idx);
+      for(auto i = getLastAvailableEmptyIndex(); i < idx; ++i)
+      {
+        m_free_ids.push(i);
+        m_items.push_back(nullptr);
+      }
+    }
 
     if(idx == getLastAvailableEmptyIndex())
     {
@@ -136,8 +151,8 @@ public:
 
   /*!
    * \brief Removes all items from the collection, but does not destroy them
-   * 
-   * \warning This function can leak memory if the collection stores 
+   *
+   * \warning This function can leak memory if the collection stores
    * a pointer to the only copy of the items
    */
   void removeAllItems()
