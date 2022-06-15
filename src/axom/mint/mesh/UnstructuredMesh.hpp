@@ -1899,6 +1899,14 @@ private:
    */
   void initialize()
   {
+    m_cell_node_rel = CellToNodeRelation(&m_cells, &m_nodes);
+    m_cell_face_rel = CellToFaceRelation(&m_cells, &m_faces);
+    m_face_cell_rel = FaceToCellRelation(&m_faces, &m_cells);
+    m_face_node_rel = FaceToNodeRelation(&m_faces, &m_nodes);
+
+    updateNodes();
+    updateCellRelations();
+
     m_explicit_coords = true;
     m_explicit_connectivity = true;
     m_mesh_fields[NODE_CENTERED]->setResizeRatio(getNodeResizeRatio());
@@ -1912,13 +1920,6 @@ private:
     m_mesh_fields[NODE_CENTERED]->resize(getNumberOfNodes());
     m_mesh_fields[CELL_CENTERED]->resize(getNumberOfCells());
     m_mesh_fields[FACE_CENTERED]->resize(getNumberOfFaces());
-
-    m_cell_node_rel = CellToNodeRelation(&m_cells, &m_nodes);
-    m_cell_face_rel = CellToFaceRelation(&m_cells, &m_faces);
-    m_face_cell_rel = FaceToCellRelation(&m_faces, &m_cells);
-    m_face_node_rel = FaceToNodeRelation(&m_faces, &m_nodes);
-
-    updateCellRelations();
   }
 
   void updateNodes() { m_nodes = NodeSet(m_coordinates->numNodes()); }
