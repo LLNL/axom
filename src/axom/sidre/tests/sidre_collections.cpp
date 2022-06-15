@@ -915,3 +915,34 @@ TYPED_TEST(IndexedCollectionTest, insertArbitraryIdx)
     EXPECT_EQ(indices.size(), indexed_coll->getNumItems());
   }
 }
+
+TYPED_TEST(IndexedCollectionTest, insertBadIdx)
+{
+  using ValueType = typename TestFixture::ValueType;
+  auto* indexed_coll = this->getCollection();
+
+  if(indexed_coll != nullptr)
+  {
+    int num_added = 0;
+
+    std::vector<axom::IndexType> indices {1, -10, 100, -1000, 500, -50, 5};
+    for(auto idx : indices)
+    {
+      auto str = axom::fmt::format("a_{:08}", idx);
+      auto* val = this->template create_item<ValueType>(str);
+      auto insertedIdx = indexed_coll->insertItem(val, idx);
+      if(idx < 0)
+      {
+        EXPECT_EQ(sidre::InvalidIndex, insertedIdx);
+      }
+      else
+      {
+        EXPECT_EQ(idx, insertedIdx);
+        ++num_added;
+      }
+      EXPECT_EQ(num_added, indexed_coll->getNumItems());
+    }
+
+    EXPECT_EQ(num_added, indexed_coll->getNumItems());
+  }
+}
