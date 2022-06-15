@@ -391,14 +391,22 @@ public:
       m_mesh->GetNE(),
       constructTimer.elapsed()));
 
+#ifdef AXOM_USE_UMPIRE
+    using SpacePtArray = axom::Array<SpacePt, 1, axom::MemorySpace::Unified>;
+    using IndexArray = axom::Array<IndexType, 1, axom::MemorySpace::Unified>;
+#else
+    using SpacePtArray = axom::Array<SpacePt>;
+    using IndexArray = axom::Array<IndexType>;
+#endif
+
     // Test that a fixed set of isoparametric coords on each cell
     // maps to the correct place.
-    axom::Array<SpacePt> isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
+    SpacePtArray isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
 
     const auto SZ = isoPts.size();
-    axom::Array<SpacePt> spacePts(SZ, SZ);
-    axom::Array<SpacePt> foundIso(SZ, SZ);
-    axom::Array<IndexType> foundIDs(SZ, SZ);
+    SpacePtArray spacePts(SZ, SZ, m_allocatorID);
+    SpacePtArray foundIso(SZ, SZ, m_allocatorID);
+    IndexArray foundIDs(SZ, SZ, m_allocatorID);
 
     axom::utilities::Timer queryTimer2(true);
     SpacePt foundIsoPar;
