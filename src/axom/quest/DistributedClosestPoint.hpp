@@ -485,7 +485,7 @@ public:
       // TODO: Devise a more efficient algorithm to only send data to ranks with closer points
       for(int i = 1; i < m_nranks; ++i)
       {
-        if(m_rank == 0)
+        if(m_isVerbose && m_rank == 0)
         {
           SLIC_INFO(fmt::format("=======  Round {}/{} =======", i, m_nranks));
         }
