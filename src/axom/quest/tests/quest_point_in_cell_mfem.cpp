@@ -394,12 +394,9 @@ public:
       m_mesh->GetNE(),
       constructTimer.elapsed()));
 
-    using SpacePtArray = axom::Array<SpacePt>;
-    using IndexArray = axom::Array<IndexType>;
-
     // Test that a fixed set of isoparametric coords on each cell
     // maps to the correct place.
-    SpacePtArray isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
+    axom::Array<SpacePt> isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
 
     const auto SZ = isoPts.size();
     axom::Array<SpacePt> spacePts(SZ, SZ);
