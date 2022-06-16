@@ -2558,7 +2558,7 @@ IndexType Group::getNextValidViewIndex(IndexType idx) const
 }
 
 /*!
- * \brief Returns an adapter to support iterating the collection of views
+ * \brief Returns an adaptor to support iterating the collection of views
  */
 typename Group::ViewCollection::iterator_adaptor Group::views()
 {
@@ -2566,7 +2566,7 @@ typename Group::ViewCollection::iterator_adaptor Group::views()
 }
 
 /*!
- * \brief Returns a const adapter to support iterating the collection of views
+ * \brief Returns a const adaptor to support iterating the collection of views
  */
 typename Group::ViewCollection::const_iterator_adaptor Group::views() const
 {
@@ -2574,7 +2574,7 @@ typename Group::ViewCollection::const_iterator_adaptor Group::views() const
 }
 
 /*!
- * \brief Returns an adapter to support iterating the collection of groups
+ * \brief Returns an adaptor to support iterating the collection of groups
  */
 typename Group::GroupCollection::iterator_adaptor Group::groups()
 {
@@ -2582,7 +2582,7 @@ typename Group::GroupCollection::iterator_adaptor Group::groups()
 }
 
 /*!
- * \brief Returns a const adapter to support iterating the collection of groups
+ * \brief Returns a const adaptor to support iterating the collection of groups
  */
 typename Group::GroupCollection::const_iterator_adaptor Group::groups() const
 {

@@ -910,22 +910,22 @@ public:
   //!      }
 
   /*!
-   * \brief Returns an adapter to support iterating the collection of views
+   * \brief Returns an adaptor to support iterating the collection of views
    */
   typename ViewCollection::iterator_adaptor views();
 
   /*!
-   * \brief Returns a const adapter to support iterating the collection of views
+   * \brief Returns a const adaptor to support iterating the collection of views
    */
   typename ViewCollection::const_iterator_adaptor views() const;
 
   /*!
-   * \brief Returns an adapter to support iterating the collection of groups
+   * \brief Returns an adaptor to support iterating the collection of groups
    */
   typename GroupCollection::iterator_adaptor groups();
 
   /*!
-   * \brief Returns a const adapter to support iterating the collection of groups
+   * \brief Returns a const adaptor to support iterating the collection of groups
    */
   typename GroupCollection::const_iterator_adaptor groups() const;
 

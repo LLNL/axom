@@ -201,12 +201,12 @@ public:
   //!      }
 
   /*!
-   * \brief Returns an adapter to support iterating the collection of buffers
+   * \brief Returns an adaptor to support iterating the collection of buffers
    */
   typename BufferCollection::iterator_adaptor buffers();
 
   /*!
-   * \brief Returns a const adapter to support iterating the collection of buffers
+   * \brief Returns a const adaptor to support iterating the collection of buffers
    */
   typename BufferCollection::const_iterator_adaptor buffers() const;
 
@@ -400,12 +400,12 @@ public:
   //!      }
 
   /*!
-   * \brief Returns an adapter to support iterating the collection of attributes
+   * \brief Returns an adaptor to support iterating the collection of attributes
    */
   typename AttributeCollection::iterator_adaptor attributes();
 
   /*!
-   * \brief Returns a const adapter to support iterating the collection of attributes
+   * \brief Returns a const adaptor to support iterating the collection of attributes
    */
   typename AttributeCollection::const_iterator_adaptor attributes() const;
 
