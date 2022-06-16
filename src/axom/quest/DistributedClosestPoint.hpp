@@ -485,17 +485,15 @@ public:
       // TODO: Devise a more efficient algorithm to only send data to ranks with closer points
       for(int i = 1; i < m_nranks; ++i)
       {
-        if(m_rank == 0)
-        {
-          SLIC_INFO(fmt::format("=======  Round {}/{} =======", i, m_nranks));
-        }
+        SLIC_INFO_IF(m_isVerbose && m_rank == 0,
+                     fmt::format("=======  Round {}/{} =======", i, m_nranks));
+
         const int dst_rank = (m_rank + i) % m_nranks;
         const int rec_rank = (m_rank - i + m_nranks) % m_nranks;
 
-        if(m_isVerbose)
-        {
-          SLIC_INFO(fmt::format("Rank {} -- sending to dst {}", m_rank, dst_rank));
-        }
+        SLIC_INFO_IF(
+          m_isVerbose,
+          fmt::format("Rank {} -- sending to dst {}", m_rank, dst_rank));
 
         if(m_isVerbose)
         {
