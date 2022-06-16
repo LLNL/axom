@@ -274,6 +274,64 @@ public:
     const CollectionType* m_collection;
   };
 
+  class const_iterator_adaptor
+  {
+  public:
+    using CollectionType = ItemCollection<T>;
+
+  public:
+    const_iterator_adaptor(CollectionType* coll) : m_collection(coll) { }
+
+    std::size_t size() const
+    {
+      return m_collection ? m_collection->getNumItems() : 0;
+    }
+
+    const_iterator begin() { return const_iterator(m_collection, true); }
+    const_iterator end() { return const_iterator(m_collection, false); }
+
+    const_iterator cbegin() const { return const_iterator(m_collection, true); }
+    const_iterator cend() const { return const_iterator(m_collection, true); }
+
+  private:
+    const CollectionType* m_collection {nullptr};
+  };
+
+  class iterator_adaptor
+  {
+  public:
+    using CollectionType = ItemCollection<T>;
+
+  public:
+    iterator_adaptor(CollectionType* coll) : m_collection(coll) { }
+
+    std::size_t size() const
+    {
+      return m_collection ? m_collection->getNumItems() : 0;
+    }
+
+    iterator begin() { return iterator(m_collection, true); }
+    iterator end() { return iterator(m_collection, false); }
+
+    const_iterator cbegin() const { return const_iterator(m_collection, true); }
+    const_iterator cend() const { return const_iterator(m_collection, false); }
+
+    operator const_iterator_adaptor() const
+    {
+      return const_iterator_adaptor(m_collection);
+    }
+
+  private:
+    CollectionType* m_collection {nullptr};
+  };
+
+  iterator_adaptor getIteratorAdaptor() { return iterator_adaptor(this); }
+
+  const_iterator_adaptor getIteratorAdaptor() const
+  {
+    return const_iterator_adaptor(this);
+  }
+
   virtual iterator begin() = 0;
   virtual iterator end() = 0;
 

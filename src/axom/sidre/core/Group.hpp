@@ -38,6 +38,7 @@
 // Sidre headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
+#include "ItemCollection.hpp"
 
 // Define the default protocol for sidre I/O
 #ifdef AXOM_USE_HDF5
@@ -895,7 +896,7 @@ public:
   //@}
 
   //@{
-  //!  @name Accessors for group and view collections.
+  //!  @name Accessors for iterating the group and view collections.
   //!
   //! These methods can be used to iterate over the collection of groups and views
   //! Example:
@@ -909,24 +910,24 @@ public:
   //!      }
 
   /*!
-   * \brief Returns a reference to the collection of views
+   * \brief Returns an adapter to support iterating the collection of views
    */
-  ViewCollection& views() { return *m_view_coll; }
+  typename ViewCollection::iterator_adaptor views();
 
   /*!
-   * \brief Returns a const reference to the collection of views
+   * \brief Returns a const adapter to support iterating the collection of views
    */
-  const ViewCollection& views() const { return *m_view_coll; }
+  typename ViewCollection::const_iterator_adaptor views() const;
 
   /*!
-   * \brief Returns a reference to the collection of groups
+   * \brief Returns an adapter to support iterating the collection of groups
    */
-  GroupCollection& groups() { return *m_group_coll; }
+  typename GroupCollection::iterator_adaptor groups();
 
   /*!
-   * \brief Returns a const reference to the collection of groups
+   * \brief Returns a const adapter to support iterating the collection of groups
    */
-  const GroupCollection& groups() const { return *m_group_coll; }
+  typename GroupCollection::const_iterator_adaptor groups() const;
 
   //@}
 private:

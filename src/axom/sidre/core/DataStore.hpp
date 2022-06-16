@@ -29,6 +29,9 @@
 // Sidre project headers
 #include "Attribute.hpp"
 #include "SidreTypes.hpp"
+#include "ItemCollection.hpp"
+#include "IndexedCollection.hpp"
+#include "MapCollection.hpp"
 
 namespace axom
 {
@@ -188,7 +191,7 @@ public:
   //@}
 
   //@{
-  //!  @name Accessors for buffer collections.
+  //!  @name Accessors for iterating buffer collections.
   //!
   //! These methods can be used to iterate over the collection of buffers
   //! Example:
@@ -198,14 +201,14 @@ public:
   //!      }
 
   /*!
-   * \brief Returns a reference to the collection of buffers
+   * \brief Returns an adapter to support iterating the collection of buffers
    */
-  BufferCollection& buffers() { return *m_buffer_coll; }
+  typename BufferCollection::iterator_adaptor buffers();
 
   /*!
-   * \brief Returns a const reference to the collection of buffers
+   * \brief Returns a const adapter to support iterating the collection of buffers
    */
-  const BufferCollection& buffers() const { return *m_buffer_coll; }
+  typename BufferCollection::const_iterator_adaptor buffers() const;
 
   //@}
 
@@ -387,7 +390,7 @@ public:
   //@}
 
   //@{
-  //!  @name Accessors for attribute collections.
+  //!  @name Accessors for iterating attribute collections.
   //!
   //! These methods can be used to iterate over the collection of attributes
   //! Example:
@@ -397,14 +400,14 @@ public:
   //!      }
 
   /*!
-   * \brief Returns a reference to the collection of attributes
+   * \brief Returns an adapter to support iterating the collection of attributes
    */
-  AttributeCollection& attributes() { return *m_attribute_coll; }
+  typename AttributeCollection::iterator_adaptor attributes();
 
   /*!
-   * \brief Returns a const reference to the collection of attributes
+   * \brief Returns a const adapter to support iterating the collection of attributes
    */
-  const AttributeCollection& attributes() const { return *m_attribute_coll; }
+  typename AttributeCollection::const_iterator_adaptor attributes() const;
 
   //@}
 

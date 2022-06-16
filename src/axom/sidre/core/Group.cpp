@@ -2557,6 +2557,38 @@ IndexType Group::getNextValidViewIndex(IndexType idx) const
   return m_view_coll->getNextValidIndex(idx);
 }
 
+/*!
+ * \brief Returns an adapter to support iterating the collection of views
+ */
+typename Group::ViewCollection::iterator_adaptor Group::views()
+{
+  return m_view_coll->getIteratorAdaptor();
+}
+
+/*!
+ * \brief Returns a const adapter to support iterating the collection of views
+ */
+typename Group::ViewCollection::const_iterator_adaptor Group::views() const
+{
+  return m_view_coll->getIteratorAdaptor();
+}
+
+/*!
+ * \brief Returns an adapter to support iterating the collection of groups
+ */
+typename Group::GroupCollection::iterator_adaptor Group::groups()
+{
+  return m_group_coll->getIteratorAdaptor();
+}
+
+/*!
+ * \brief Returns a const adapter to support iterating the collection of groups
+ */
+typename Group::GroupCollection::const_iterator_adaptor Group::groups() const
+{
+  return m_group_coll->getIteratorAdaptor();
+}
+
 /*
  *************************************************************************
  *

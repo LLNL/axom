@@ -309,6 +309,16 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
   return m_buffer_coll->getNextValidIndex(idx);
 }
 
+typename DataStore::BufferCollection::iterator_adaptor DataStore::buffers()
+{
+  return m_buffer_coll->getIteratorAdaptor();
+}
+
+typename DataStore::BufferCollection::const_iterator_adaptor DataStore::buffers() const
+{
+  return m_buffer_coll->getIteratorAdaptor();
+}
+
 /*
  *************************************************************************
  *
@@ -531,6 +541,17 @@ IndexType DataStore::getFirstValidAttributeIndex() const
 IndexType DataStore::getNextValidAttributeIndex(IndexType idx) const
 {
   return m_attribute_coll->getNextValidIndex(idx);
+}
+
+typename DataStore::AttributeCollection::iterator_adaptor DataStore::attributes()
+{
+  return m_attribute_coll->getIteratorAdaptor();
+}
+
+typename DataStore::AttributeCollection::const_iterator_adaptor
+DataStore::attributes() const
+{
+  return m_attribute_coll->getIteratorAdaptor();
 }
 
 /*
