@@ -763,22 +763,34 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
 
   // Helper function to check all values in the array for consistency
   auto check_array_values = [=](const DynamicArray& arr, int expected) -> bool {
-    // Copy device side values into int array
-    IntArray values(arr.size(), arr.size(), kernelAllocID);
-    const auto values_v = values.view();
-    const auto arr_v = arr.view();
-    axom::for_all<ExecSpace>(
-      arr.size(),
-      AXOM_LAMBDA(axom::IndexType i) { values_v[i] = arr_v[i].m_val; });
-
-    // handles synchronization, if necessary
-    if(axom::execution_space<ExecSpace>::async())
+    IntHostArray values_host;
+    if(arr.getAllocatorID() == kernelAllocID)
     {
-      axom::synchronize<ExecSpace>();
+      // Copy device side values into int array
+      IntArray values(arr.size(), arr.size(), kernelAllocID);
+      const auto values_v = values.view();
+      const auto arr_v = arr.view();
+      axom::for_all<ExecSpace>(
+        arr.size(),
+        AXOM_LAMBDA(axom::IndexType i) { values_v[i] = arr_v[i].m_val; });
+
+      // handles synchronization, if necessary
+      if(axom::execution_space<ExecSpace>::async())
+      {
+        axom::synchronize<ExecSpace>();
+      }
+      values_host = IntHostArray(values, hostAllocID);
+    }
+    else
+    {
+      values_host.resize(arr.size());
+      for(int i = 0; i < arr.size(); i++)
+      {
+        values_host[i] = arr[i].m_val;
+      }
     }
 
     // Check array contents on host
-    IntHostArray values_host(values, hostAllocID);
     bool allValuesEq = true;
     for(int i = 0; i < arr.size(); ++i)
     {
@@ -827,12 +839,9 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
     DynamicArray arr3 = arr;
     EXPECT_TRUE(check_array_values(arr3, MAGIC_COPY_CTOR));
 
-// Transfers between memory spaces should invoke each element's copy constructor
-// Segfaulting with hip policy
-#ifndef AXOM_USE_HIP
+    // Transfers between memory spaces should invoke each element's copy constructor
     DynamicArray arr4(arr, hostAllocID);
     EXPECT_TRUE(check_array_values(arr4, MAGIC_COPY_CTOR));
-#endif
 
     // Fill with instance of copy-constructed type - each element should be
     // copy-constructed from the argument

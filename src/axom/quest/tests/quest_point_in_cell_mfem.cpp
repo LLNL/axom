@@ -379,6 +379,9 @@ public:
   /*! Tests PointInCell class using isoparametric points within each cell */
   void testIsoGridPointsOnMesh(const std::string& meshTypeStr)
   {
+    int devAllocID = axom::execution_space<ExecSpace>::allocatorID();
+    int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
     std::string filename =
       axom::fmt::format("quest_point_in_cell_{}_quad", meshTypeStr);
 
@@ -400,6 +403,9 @@ public:
     axom::Array<SpacePt> foundIso(SZ, SZ);
     axom::Array<IndexType> foundIDs(SZ, SZ);
 
+    axom::Array<SpacePt> foundIsoDevice(SZ, SZ, devAllocID);
+    axom::Array<IndexType> foundIDsDevice(SZ, SZ, devAllocID);
+
     axom::utilities::Timer queryTimer2(true);
     SpacePt foundIsoPar;
     for(int eltId = 0; eltId < m_mesh->GetNE(); ++eltId)
@@ -413,7 +419,27 @@ public:
       }
 
       // locate the reconstructed points (using EXEC space)
-      spatialIndex.locatePoints(spacePts.view(), foundIDs.data(), foundIso.data());
+      if(axom::execution_space<ExecSpace>::onDevice())
+      {
+        int devAllocID = axom::execution_space<ExecSpace>::allocatorID();
+        // copy query points to device
+        axom::Array<SpacePt> spacePtsDevice(spacePts, devAllocID);
+
+        // run device query
+        spatialIndex.locatePoints(spacePtsDevice.view(),
+                                  foundIDsDevice.data(),
+                                  foundIsoDevice.data());
+
+        // copy results back to host
+        foundIso = axom::Array<SpacePt>(foundIsoDevice, hostAllocID);
+        foundIDs = axom::Array<IndexType>(foundIDsDevice, hostAllocID);
+      }
+      else
+      {
+        spatialIndex.locatePoints(spacePts.view(),
+                                  foundIDs.data(),
+                                  foundIso.data());
+      }
 
       // check results
       for(int idx = 0; idx < SZ; ++idx)
