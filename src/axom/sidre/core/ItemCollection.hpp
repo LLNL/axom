@@ -137,6 +137,12 @@ class ItemCollection
 public:
   using value_type = T;
 
+  // Forward declare iterator classes and helpers
+  class iterator;
+  class const_iterator;
+  class iterator_adaptor;
+  class const_iterator_adaptor;
+
 public:
   virtual ~ItemCollection() { }
 
@@ -173,165 +179,6 @@ public:
   virtual void removeAllItems() = 0;
 
 public:
-  class iterator : public IteratorBase<iterator, IndexType>
-  {
-  private:
-    using BaseType = IteratorBase<iterator, IndexType>;
-    using CollectionType = ItemCollection<T>;
-
-  public:
-    // Iterator traits required to satisfy LegacyRandomAccessIterator concept
-    // before C++20
-    // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
-    using difference_type = IndexType;
-    using value_type = typename std::remove_cv<T>::type;
-    using reference = T&;
-    using pointer = T*;
-    using iterator_category = std::forward_iterator_tag;
-
-  public:
-    iterator(CollectionType* coll, bool is_first) : m_collection(coll)
-    {
-      SLIC_ASSERT(coll != nullptr);
-
-      BaseType::m_pos =
-        is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
-    }
-
-    IndexType index() const { return BaseType::m_pos; }
-
-    pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
-
-    reference operator*() { return *m_collection->getItem(BaseType::m_pos); }
-
-  private:
-    // Remove backwards iteration functions
-    using BaseType::operator--;
-    using BaseType::operator-=;
-
-  protected:
-    /// Implementation of advance() as required by IteratorBase
-    void advance(IndexType n)
-    {
-      for(int i = 0; i < n; ++i)
-      {
-        BaseType::m_pos = m_collection->getNextValidIndex(BaseType::m_pos);
-      }
-    }
-
-  private:
-    CollectionType* m_collection;
-  };
-
-  class const_iterator : public IteratorBase<const_iterator, IndexType>
-  {
-  private:
-    using BaseType = IteratorBase<const_iterator, IndexType>;
-    using CollectionType = ItemCollection<T>;
-
-  public:
-    // Iterator traits required to satisfy LegacyRandomAccessIterator concept
-    // before C++20
-    // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
-    using difference_type = IndexType;
-    using value_type = typename std::remove_cv<T>::type;
-    using reference = const T&;
-    using pointer = const T*;
-    using iterator_category = std::forward_iterator_tag;
-
-  public:
-    const_iterator(const CollectionType* coll, bool is_first)
-      : m_collection(coll)
-    {
-      SLIC_ASSERT(coll != nullptr);
-
-      BaseType::m_pos =
-        is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
-    }
-
-    IndexType index() const { return BaseType::m_pos; }
-
-    pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
-
-    reference operator*() { return *m_collection->getItem(BaseType::m_pos); }
-
-  private:
-    // Remove backwards iteration functions
-    using BaseType::operator--;
-    using BaseType::operator-=;
-
-  protected:
-    /// Implementation of advance() as required by IteratorBase
-    void advance(IndexType n)
-    {
-      for(int i = 0; i < n; ++i)
-      {
-        BaseType::m_pos = m_collection->getNextValidIndex(BaseType::m_pos);
-      }
-    }
-
-  private:
-    const CollectionType* m_collection;
-  };
-
-  class const_iterator_adaptor
-  {
-  public:
-    using CollectionType = ItemCollection<T>;
-
-  public:
-    const_iterator_adaptor(CollectionType* coll) : m_collection(coll) { }
-
-    std::size_t size() const
-    {
-      return m_collection ? m_collection->getNumItems() : 0;
-    }
-
-    const_iterator begin() { return const_iterator(m_collection, true); }
-    const_iterator end() { return const_iterator(m_collection, false); }
-
-    const_iterator cbegin() const { return const_iterator(m_collection, true); }
-    const_iterator cend() const { return const_iterator(m_collection, true); }
-
-  private:
-    const CollectionType* m_collection {nullptr};
-  };
-
-  class iterator_adaptor
-  {
-  public:
-    using CollectionType = ItemCollection<T>;
-
-  public:
-    iterator_adaptor(CollectionType* coll) : m_collection(coll) { }
-
-    std::size_t size() const
-    {
-      return m_collection ? m_collection->getNumItems() : 0;
-    }
-
-    iterator begin() { return iterator(m_collection, true); }
-    iterator end() { return iterator(m_collection, false); }
-
-    const_iterator cbegin() const { return const_iterator(m_collection, true); }
-    const_iterator cend() const { return const_iterator(m_collection, false); }
-
-    operator const_iterator_adaptor() const
-    {
-      return const_iterator_adaptor(m_collection);
-    }
-
-  private:
-    CollectionType* m_collection {nullptr};
-  };
-
-  iterator_adaptor getIteratorAdaptor() { return iterator_adaptor(this); }
-
-  const_iterator_adaptor getIteratorAdaptor() const
-  {
-    return const_iterator_adaptor(this);
-  }
-
   virtual iterator begin() = 0;
   virtual iterator end() = 0;
 
@@ -340,6 +187,181 @@ public:
 
   virtual const_iterator begin() const = 0;
   virtual const_iterator end() const = 0;
+
+  /// Returns an adaptor wrapping this collection in support of iteration
+  iterator_adaptor getIteratorAdaptor() { return iterator_adaptor(this); }
+
+  /// Returns a const adaptor wrapping this collection in support of iteration
+  const_iterator_adaptor getIteratorAdaptor() const
+  {
+    return const_iterator_adaptor(this);
+  }
+};
+
+/*!
+ * \brief An std-compliant forward iterator for an ItemCollection
+ */
+template <typename T>
+class ItemCollection<T>::iterator : public IteratorBase<iterator, IndexType>
+{
+private:
+  using BaseType = IteratorBase<iterator, IndexType>;
+  using CollectionType = ItemCollection<T>;
+
+public:
+  // Iterator traits required to satisfy LegacyRandomAccessIterator concept
+  // before C++20
+  // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
+  using difference_type = IndexType;
+  using value_type = typename std::remove_cv<T>::type;
+  using reference = T&;
+  using pointer = T*;
+  using iterator_category = std::forward_iterator_tag;
+
+public:
+  iterator(CollectionType* coll, bool is_first) : m_collection(coll)
+  {
+    SLIC_ASSERT(coll != nullptr);
+
+    BaseType::m_pos = is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
+  }
+
+  IndexType index() const { return BaseType::m_pos; }
+
+  pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
+
+  reference operator*() { return *m_collection->getItem(BaseType::m_pos); }
+
+private:
+  // Remove backwards iteration functions
+  using BaseType::operator--;
+  using BaseType::operator-=;
+
+protected:
+  /// Implementation of advance() as required by IteratorBase
+  void advance(IndexType n)
+  {
+    for(int i = 0; i < n; ++i)
+    {
+      BaseType::m_pos = m_collection->getNextValidIndex(BaseType::m_pos);
+    }
+  }
+
+private:
+  CollectionType* m_collection;
+};
+
+/*!
+ * \brief An std-compliant forward iterator for a const ItemCollection
+ */
+template <typename T>
+class ItemCollection<T>::const_iterator
+  : public IteratorBase<const_iterator, IndexType>
+{
+private:
+  using BaseType = IteratorBase<const_iterator, IndexType>;
+  using CollectionType = ItemCollection<T>;
+
+public:
+  // Iterator traits required to satisfy LegacyRandomAccessIterator concept
+  // before C++20
+  // See: https://en.cppreference.com/w/cpp/iterator/iterator_traits
+  using difference_type = IndexType;
+  using value_type = typename std::remove_cv<T>::type;
+  using reference = const T&;
+  using pointer = const T*;
+  using iterator_category = std::forward_iterator_tag;
+
+public:
+  const_iterator(const CollectionType* coll, bool is_first) : m_collection(coll)
+  {
+    SLIC_ASSERT(coll != nullptr);
+
+    BaseType::m_pos = is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
+  }
+
+  IndexType index() const { return BaseType::m_pos; }
+
+  pointer operator->() { return m_collection->getItem(BaseType::m_pos); }
+
+  reference operator*() { return *m_collection->getItem(BaseType::m_pos); }
+
+private:
+  // Remove backwards iteration functions
+  using BaseType::operator--;
+  using BaseType::operator-=;
+
+protected:
+  /// Implementation of advance() as required by IteratorBase
+  void advance(IndexType n)
+  {
+    for(int i = 0; i < n; ++i)
+    {
+      BaseType::m_pos = m_collection->getNextValidIndex(BaseType::m_pos);
+    }
+  }
+
+private:
+  const CollectionType* m_collection;
+};
+
+/*!
+ * \brief Utility class to wrap an ItemCollection in support of iteration
+ */
+template <typename T>
+class ItemCollection<T>::iterator_adaptor
+{
+public:
+  using CollectionType = ItemCollection<T>;
+
+public:
+  iterator_adaptor(CollectionType* coll) : m_collection(coll) { }
+
+  std::size_t size() const
+  {
+    return m_collection ? m_collection->getNumItems() : 0;
+  }
+
+  iterator begin() { return iterator(m_collection, true); }
+  iterator end() { return iterator(m_collection, false); }
+
+  const_iterator cbegin() const { return const_iterator(m_collection, true); }
+  const_iterator cend() const { return const_iterator(m_collection, false); }
+
+  operator const_iterator_adaptor() const
+  {
+    return const_iterator_adaptor(m_collection);
+  }
+
+private:
+  CollectionType* m_collection {nullptr};
+};
+
+/*!
+ * \brief Utility class to wrap a const ItemCollection in support of iteration
+ */
+template <typename T>
+class ItemCollection<T>::const_iterator_adaptor
+{
+public:
+  using CollectionType = ItemCollection<T>;
+
+public:
+  const_iterator_adaptor(const CollectionType* coll) : m_collection(coll) { }
+
+  std::size_t size() const
+  {
+    return m_collection ? m_collection->getNumItems() : 0;
+  }
+
+  const_iterator begin() { return const_iterator(m_collection, true); }
+  const_iterator end() { return const_iterator(m_collection, false); }
+
+  const_iterator cbegin() const { return const_iterator(m_collection, true); }
+  const_iterator cend() const { return const_iterator(m_collection, true); }
+
+private:
+  const CollectionType* m_collection {nullptr};
 };
 
 } /* end namespace sidre */
