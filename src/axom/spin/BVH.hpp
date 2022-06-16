@@ -301,11 +301,12 @@ public:
    * \param [in]  numPts the total number of query points supplied
    * \param [in]  points array of points to query against the BVH
    *
-   *
    * \note Upon completion, the ith query point has:
    *  * counts[ i ] candidates
    *  * Stored in the candidates array in the following range:
    *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
    *
    * \pre offsets.size() == numPts
    * \pre counts.size()  == numPts
@@ -330,6 +331,8 @@ public:
    * \note After the call to findRays(), the ith ray has:
    *  * counts[ i ] candidates
    *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
    *
    * \pre offsets.size() == numRays
    * \pre counts.size()  == numRays
@@ -354,6 +357,8 @@ public:
    * \note After the call to findBoundingBoxes(), the ith bounding box has:
    *  * counts[ i ] candidates
    *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
    *
    * \pre offsets.size() == numBoxes
    * \pre counts.size()  == numBoxes
