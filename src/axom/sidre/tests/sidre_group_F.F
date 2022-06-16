@@ -907,9 +907,9 @@ contains
     shape1 = [ndata, 2]
     view1 = root1%create_view("empty_view")
     view2 = root1%create_view("empty_described", SIDRE_INT_ID, ndata)
-    view3 = root1%create_view("empty_shape", SIDRE_INT_ID, 2, shape1)
+    view3 = root1%create_view_with_shape("empty_shape", SIDRE_INT_ID, 2, shape1)
 
-    view4 = root1%create_view_and_allocate("buffer_shape", &
+    view4 = root1%create_view_with_shape_and_allocate("buffer_shape", &
          SIDRE_INT_ID, 2, shape1)
 
     do i = 1, nprotocols

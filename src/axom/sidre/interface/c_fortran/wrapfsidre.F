@@ -115,18 +115,18 @@ module axom_sidre
         procedure :: create_view_empty => group_create_view_empty
         procedure :: create_view_from_type_int32_t => group_create_view_from_type_int32_t
         procedure :: create_view_from_type_int64_t => group_create_view_from_type_int64_t
-        procedure :: create_view_from_shape => group_create_view_from_shape
+        procedure :: create_view_with_shape_base => group_create_view_with_shape_base
         procedure :: create_view_into_buffer => group_create_view_into_buffer
         procedure :: create_view_from_type_and_buffer_int32_t => group_create_view_from_type_and_buffer_int32_t
         procedure :: create_view_from_type_and_buffer_int64_t => group_create_view_from_type_and_buffer_int64_t
-        procedure :: create_view_from_shape_and_buffer => group_create_view_from_shape_and_buffer
+        procedure :: create_view_with_shape_and_buffer => group_create_view_with_shape_and_buffer
         procedure :: create_view_external => group_create_view_external
         procedure :: create_view_from_type_external_int32_t => group_create_view_from_type_external_int32_t
         procedure :: create_view_from_type_external_int64_t => group_create_view_from_type_external_int64_t
-        procedure :: create_view_from_shape_external => group_create_view_from_shape_external
+        procedure :: create_view_with_shape_external => group_create_view_with_shape_external
         procedure :: create_view_and_allocate_nelems_int32_t => group_create_view_and_allocate_nelems_int32_t
         procedure :: create_view_and_allocate_nelems_int64_t => group_create_view_and_allocate_nelems_int64_t
-        procedure :: create_view_and_allocate_shape => group_create_view_and_allocate_shape
+        procedure :: create_view_with_shape_and_allocate => group_create_view_with_shape_and_allocate
         procedure :: create_view_scalar_int => group_create_view_scalar_int
         procedure :: create_view_scalar_long => group_create_view_scalar_long
         procedure :: create_view_scalar_float => group_create_view_scalar_float
@@ -166,20 +166,20 @@ module axom_sidre
         procedure :: associated => group_associated
         generic :: create_view => create_view_empty,  &
             create_view_from_type_int32_t, create_view_from_type_int64_t &
-            , create_view_from_shape, create_view_into_buffer,  &
+            , create_view_into_buffer,  &
             create_view_from_type_and_buffer_int32_t,  &
             create_view_from_type_and_buffer_int64_t,  &
-            create_view_from_shape_and_buffer, create_view_external,  &
-            create_view_from_type_external_int32_t,  &
-            create_view_from_type_external_int64_t,  &
-            create_view_from_shape_external
+            create_view_external, create_view_from_type_external_int32_t &
+            , create_view_from_type_external_int64_t
         generic :: create_view_and_allocate =>  &
             create_view_and_allocate_nelems_int32_t,  &
-            create_view_and_allocate_nelems_int64_t,  &
-            create_view_and_allocate_shape
+            create_view_and_allocate_nelems_int64_t
         generic :: create_view_scalar => create_view_scalar_int,  &
             create_view_scalar_long, create_view_scalar_float,  &
             create_view_scalar_double
+        generic :: create_view_with_shape => create_view_with_shape_base &
+            , create_view_with_shape_and_buffer,  &
+            create_view_with_shape_external
         generic :: destroy_group => destroy_group_name,  &
             destroy_group_index_int32_t, destroy_group_index_int64_t
         generic :: destroy_view_and_data => destroy_view_and_data_name,  &
@@ -956,10 +956,10 @@ module axom_sidre
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_bufferify
 
-        function c_group_create_view_from_shape(self, path, type, ndims, &
-                shape, SHT_crv) &
+        function c_group_create_view_with_shape_base(self, path, type, &
+                ndims, shape, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_from_shape")
+                bind(C, name="SIDRE_Group_create_view_with_shape_base")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -970,12 +970,12 @@ module axom_sidre
             integer(C_INT64_T), intent(IN) :: shape(*)
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_from_shape
+        end function c_group_create_view_with_shape_base
 
-        function c_group_create_view_from_shape_bufferify(self, path, &
-                Lpath, type, ndims, shape, SHT_crv) &
+        function c_group_create_view_with_shape_base_bufferify(self, &
+                path, Lpath, type, ndims, shape, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_from_shape_bufferify")
+                bind(C, name="SIDRE_Group_create_view_with_shape_base_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -987,7 +987,7 @@ module axom_sidre
             integer(C_INT64_T), intent(IN) :: shape(*)
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_from_shape_bufferify
+        end function c_group_create_view_with_shape_base_bufferify
 
         function c_group_create_view_into_buffer(self, path, buff, &
                 SHT_crv) &
@@ -1051,10 +1051,10 @@ module axom_sidre
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_and_buffer_bufferify
 
-        function c_group_create_view_from_shape_and_buffer(self, path, &
+        function c_group_create_view_with_shape_and_buffer(self, path, &
                 type, ndims, shape, buff, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_from_shape_and_buffer")
+                bind(C, name="SIDRE_Group_create_view_with_shape_and_buffer")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_buffer_capsule, SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -1066,12 +1066,12 @@ module axom_sidre
             type(SIDRE_SHROUD_buffer_capsule), intent(INOUT) :: buff
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_from_shape_and_buffer
+        end function c_group_create_view_with_shape_and_buffer
 
-        function c_group_create_view_from_shape_and_buffer_bufferify( &
+        function c_group_create_view_with_shape_and_buffer_bufferify( &
                 self, path, Lpath, type, ndims, shape, buff, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_from_shape_and_buffer_bufferify")
+                bind(C, name="SIDRE_Group_create_view_with_shape_and_buffer_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_buffer_capsule, SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -1084,7 +1084,7 @@ module axom_sidre
             type(SIDRE_SHROUD_buffer_capsule), intent(INOUT) :: buff
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_from_shape_and_buffer_bufferify
+        end function c_group_create_view_with_shape_and_buffer_bufferify
 
         function c_group_create_view_external(self, path, external_ptr, &
                 SHT_crv) &
@@ -1148,10 +1148,10 @@ module axom_sidre
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_external_bufferify
 
-        function c_group_create_view_from_shape_external(self, path, &
+        function c_group_create_view_with_shape_external(self, path, &
                 type, ndims, shape, external_ptr, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_from_shape_external")
+                bind(C, name="SIDRE_Group_create_view_with_shape_external")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -1163,12 +1163,12 @@ module axom_sidre
             type(C_PTR), value, intent(IN) :: external_ptr
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_from_shape_external
+        end function c_group_create_view_with_shape_external
 
-        function c_group_create_view_from_shape_external_bufferify(self, &
+        function c_group_create_view_with_shape_external_bufferify(self, &
                 path, Lpath, type, ndims, shape, external_ptr, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_from_shape_external_bufferify")
+                bind(C, name="SIDRE_Group_create_view_with_shape_external_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -1181,7 +1181,7 @@ module axom_sidre
             type(C_PTR), value, intent(IN) :: external_ptr
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_from_shape_external_bufferify
+        end function c_group_create_view_with_shape_external_bufferify
 
         function c_group_create_view_and_allocate_nelems(self, path, &
                 type, num_elems, SHT_crv) &
@@ -1214,10 +1214,10 @@ module axom_sidre
             type(C_PTR) SHT_rv
         end function c_group_create_view_and_allocate_nelems_bufferify
 
-        function c_group_create_view_and_allocate_shape(self, path, &
+        function c_group_create_view_with_shape_and_allocate(self, path, &
                 type, ndims, shape, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_and_allocate_shape")
+                bind(C, name="SIDRE_Group_create_view_with_shape_and_allocate")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -1228,12 +1228,12 @@ module axom_sidre
             integer(C_INT64_T), intent(IN) :: shape(*)
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_and_allocate_shape
+        end function c_group_create_view_with_shape_and_allocate
 
-        function c_group_create_view_and_allocate_shape_bufferify(self, &
-                path, Lpath, type, ndims, shape, SHT_crv) &
+        function c_group_create_view_with_shape_and_allocate_bufferify( &
+                self, path, Lpath, type, ndims, shape, SHT_crv) &
                 result(SHT_rv) &
-                bind(C, name="SIDRE_Group_create_view_and_allocate_shape_bufferify")
+                bind(C, name="SIDRE_Group_create_view_with_shape_and_allocate_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_INT64_T, C_PTR
             import :: SIDRE_SHROUD_group_capsule, SIDRE_SHROUD_view_capsule
             implicit none
@@ -1245,7 +1245,7 @@ module axom_sidre
             integer(C_INT64_T), intent(IN) :: shape(*)
             type(SIDRE_SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
-        end function c_group_create_view_and_allocate_shape_bufferify
+        end function c_group_create_view_with_shape_and_allocate_bufferify
 
         function c_group_create_view_scalar_int(self, path, value, &
                 SHT_crv) &
@@ -3040,7 +3040,8 @@ contains
         ! splicer end class.Group.method.create_view_from_type_int64_t
     end function group_create_view_from_type_int64_t
 
-    function group_create_view_from_shape(obj, path, type, ndims, shape) &
+    function group_create_view_with_shape_base(obj, path, type, ndims, &
+            shape) &
             result(SHT_rv)
         use iso_c_binding, only : C_INT, C_INT64_T, C_PTR
         class(SidreGroup) :: obj
@@ -3049,13 +3050,13 @@ contains
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_INT64_T), intent(IN) :: shape(:)
         type(SidreView) :: SHT_rv
-        ! splicer begin class.Group.method.create_view_from_shape
+        ! splicer begin class.Group.method.create_view_with_shape_base
         type(C_PTR) :: SHT_prv
-        SHT_prv = c_group_create_view_from_shape_bufferify(obj%cxxmem, &
+        SHT_prv = c_group_create_view_with_shape_base_bufferify(obj%cxxmem, &
             path, len_trim(path, kind=C_INT), type, ndims, shape, &
             SHT_rv%cxxmem)
-        ! splicer end class.Group.method.create_view_from_shape
-    end function group_create_view_from_shape
+        ! splicer end class.Group.method.create_view_with_shape_base
+    end function group_create_view_with_shape_base
 
     function group_create_view_into_buffer(obj, path, buff) &
             result(SHT_rv)
@@ -3108,7 +3109,7 @@ contains
         ! splicer end class.Group.method.create_view_from_type_and_buffer_int64_t
     end function group_create_view_from_type_and_buffer_int64_t
 
-    function group_create_view_from_shape_and_buffer(obj, path, type, &
+    function group_create_view_with_shape_and_buffer(obj, path, type, &
             ndims, shape, buff) &
             result(SHT_rv)
         use iso_c_binding, only : C_INT, C_INT64_T, C_PTR
@@ -3119,13 +3120,13 @@ contains
         integer(C_INT64_T), intent(IN) :: shape(:)
         type(SidreBuffer), intent(INOUT) :: buff
         type(SidreView) :: SHT_rv
-        ! splicer begin class.Group.method.create_view_from_shape_and_buffer
+        ! splicer begin class.Group.method.create_view_with_shape_and_buffer
         type(C_PTR) :: SHT_prv
-        SHT_prv = c_group_create_view_from_shape_and_buffer_bufferify(obj%cxxmem, &
+        SHT_prv = c_group_create_view_with_shape_and_buffer_bufferify(obj%cxxmem, &
             path, len_trim(path, kind=C_INT), type, ndims, shape, &
             buff%cxxmem, SHT_rv%cxxmem)
-        ! splicer end class.Group.method.create_view_from_shape_and_buffer
-    end function group_create_view_from_shape_and_buffer
+        ! splicer end class.Group.method.create_view_with_shape_and_buffer
+    end function group_create_view_with_shape_and_buffer
 
     function group_create_view_external(obj, path, external_ptr) &
             result(SHT_rv)
@@ -3178,7 +3179,7 @@ contains
         ! splicer end class.Group.method.create_view_from_type_external_int64_t
     end function group_create_view_from_type_external_int64_t
 
-    function group_create_view_from_shape_external(obj, path, type, &
+    function group_create_view_with_shape_external(obj, path, type, &
             ndims, shape, external_ptr) &
             result(SHT_rv)
         use iso_c_binding, only : C_INT, C_INT64_T, C_PTR
@@ -3189,13 +3190,13 @@ contains
         integer(C_INT64_T), intent(IN) :: shape(:)
         type(C_PTR), intent(IN) :: external_ptr
         type(SidreView) :: SHT_rv
-        ! splicer begin class.Group.method.create_view_from_shape_external
+        ! splicer begin class.Group.method.create_view_with_shape_external
         type(C_PTR) :: SHT_prv
-        SHT_prv = c_group_create_view_from_shape_external_bufferify(obj%cxxmem, &
+        SHT_prv = c_group_create_view_with_shape_external_bufferify(obj%cxxmem, &
             path, len_trim(path, kind=C_INT), type, ndims, shape, &
             external_ptr, SHT_rv%cxxmem)
-        ! splicer end class.Group.method.create_view_from_shape_external
-    end function group_create_view_from_shape_external
+        ! splicer end class.Group.method.create_view_with_shape_external
+    end function group_create_view_with_shape_external
 
     function group_create_view_and_allocate_nelems_int32_t(obj, path, &
             type, num_elems) &
@@ -3231,7 +3232,7 @@ contains
         ! splicer end class.Group.method.create_view_and_allocate_nelems_int64_t
     end function group_create_view_and_allocate_nelems_int64_t
 
-    function group_create_view_and_allocate_shape(obj, path, type, &
+    function group_create_view_with_shape_and_allocate(obj, path, type, &
             ndims, shape) &
             result(SHT_rv)
         use iso_c_binding, only : C_INT, C_INT64_T, C_PTR
@@ -3241,13 +3242,13 @@ contains
         integer(C_INT), value, intent(IN) :: ndims
         integer(C_INT64_T), intent(IN) :: shape(:)
         type(SidreView) :: SHT_rv
-        ! splicer begin class.Group.method.create_view_and_allocate_shape
+        ! splicer begin class.Group.method.create_view_with_shape_and_allocate
         type(C_PTR) :: SHT_prv
-        SHT_prv = c_group_create_view_and_allocate_shape_bufferify(obj%cxxmem, &
+        SHT_prv = c_group_create_view_with_shape_and_allocate_bufferify(obj%cxxmem, &
             path, len_trim(path, kind=C_INT), type, ndims, shape, &
             SHT_rv%cxxmem)
-        ! splicer end class.Group.method.create_view_and_allocate_shape
-    end function group_create_view_and_allocate_shape
+        ! splicer end class.Group.method.create_view_with_shape_and_allocate
+    end function group_create_view_with_shape_and_allocate
 
     function group_create_view_scalar_int(obj, path, value) &
             result(SHT_rv)

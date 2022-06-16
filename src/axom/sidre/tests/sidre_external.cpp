@@ -57,11 +57,11 @@ TEST(sidre_external, create_external_view)
       break;
 
     case 4:
-      view = root->createView("data4", INT_ID, ndims, shape, idata);
+      view = root->createViewWithShape("data4", INT_ID, ndims, shape, idata);
       break;
     case 5:
-      view =
-        root->createView("data5", INT_ID, ndims, shape)->setExternalDataPtr(idata);
+      view = root->createViewWithShape("data5", INT_ID, ndims, shape)
+               ->setExternalDataPtr(idata);
       break;
     case 6:
       view =
