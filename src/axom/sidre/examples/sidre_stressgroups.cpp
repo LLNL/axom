@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
-  IndexType num_groups = 0;
+  size_t num_groups = 0;
   if(argc > 1)
   {
     num_groups = static_cast<IndexType>(atoi(argv[1]));
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 
   std::set<std::string> name_set;
 
-  while(static_cast<IndexType>(name_set.size()) < num_groups)
+  while(name_set.size() < num_groups)
   {
     std::string new_string;
     for(int c = 0; c < 8; ++c)
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer create_timer(true);
-  for(unsigned int i = 0; i < num_groups; ++i)
+  for(size_t i = 0; i < num_groups; ++i)
   {
     root->createGroup(names[i]);
   }
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer query_timer(true);
-  for(unsigned int i = 0; i < num_groups; ++i)
+  for(size_t i = 0; i < num_groups; ++i)
   {
     if(!root->hasGroup(names[i]))
     {
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
   std::random_shuffle(names.begin(), names.end());
 
   axom::utilities::Timer destroy_timer(true);
-  for(unsigned int i = 0; i < num_groups; ++i)
+  for(size_t i = 0; i < num_groups; ++i)
   {
     root->destroyGroup(names[i]);
   }

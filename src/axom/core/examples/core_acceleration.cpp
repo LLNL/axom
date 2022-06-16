@@ -117,10 +117,10 @@ void demoAxomExecution()
 
 // _exebasic_end
 
-//Now, let's say we want to try out use of CUDA. We just change that execution space.
+//Now, let's say we want to try out use of CUDA or HIP. We just change that execution space.
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && \
-  defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  // _cudaexebasic_start
+  defined(AXOM_USE_GPU) && defined(AXOM_GPUCC)
+  // _deviceexebasic_start
   //This example requires Umpire to be in use, and Unified memory available.
   const int allocator_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
@@ -135,18 +135,27 @@ void demoAxomExecution()
     C[i] = 0;
   }
 
-  axom::for_all<axom::CUDA_EXEC<256>>(
+  #if defined(__CUDACC__)
+  using ExecSpace = axom::CUDA_EXEC<256>;
+  #elif defined(__HIPCC__)
+  using ExecSpace = axom::HIP_EXEC<256>;
+  #else
+  using ExecSpace = axom::SEQ_EXEC;
+  #endif
+
+  axom::for_all<ExecSpace>(
     0,
     N,
     AXOM_LAMBDA(axom::IndexType i) { C[i] = A[i] + B[i]; });
 
-  std::cout << "Sums: " << std::endl;
+  std::cout << "\nSums (" << axom::execution_space<ExecSpace>::name()
+            << ") :" << std::endl;
   for(int i = 0; i < N; i++)
   {
     std::cout << C[i] << " ";
   }
   std::cout << std::endl;
-// _cudaexebasic_end
+// _deviceexebasic_end
 #endif
 }
 

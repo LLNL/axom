@@ -110,6 +110,11 @@ TEST(core_execution_space, check_valid)
   check_valid<axom::CUDA_EXEC<256>>();
   check_valid<axom::CUDA_EXEC<256, axom::ASYNC>>();
 #endif
+
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  check_valid<axom::HIP_EXEC<256>>();
+  check_valid<axom::HIP_EXEC<256, axom::ASYNC>>();
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -204,5 +209,50 @@ TEST(core_execution_space, check_cuda_exec_async)
                                                    ON_DEVICE);
 }
   #endif  // defined(AXOM_USE_CUDA)
+
+  //------------------------------------------------------------------------------
+  #if defined(AXOM_USE_HIP)
+
+TEST(core_execution_space, check_hip_exec)
+{
+  constexpr int BLOCK_SIZE = 256;
+
+  check_valid<axom::HIP_EXEC<BLOCK_SIZE>>();
+
+  constexpr bool IS_ASYNC = false;
+  constexpr bool ON_DEVICE = true;
+
+  int allocator_id =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  check_execution_mappings<axom::HIP_EXEC<BLOCK_SIZE>,
+                           RAJA::hip_exec<BLOCK_SIZE>,
+                           RAJA::hip_reduce,
+                           RAJA::hip_atomic,
+                           RAJA::hip_synchronize>(allocator_id,
+                                                  IS_ASYNC,
+                                                  ON_DEVICE);
+}
+
+//------------------------------------------------------------------------------
+TEST(core_execution_space, check_hip_exec_async)
+{
+  constexpr int BLOCK_SIZE = 256;
+
+  check_valid<axom::HIP_EXEC<BLOCK_SIZE, axom::ASYNC>>();
+
+  constexpr bool IS_ASYNC = true;
+  constexpr bool ON_DEVICE = true;
+
+  int allocator_id =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  check_execution_mappings<axom::HIP_EXEC<BLOCK_SIZE, axom::ASYNC>,
+                           RAJA::hip_exec_async<BLOCK_SIZE>,
+                           RAJA::hip_reduce,
+                           RAJA::hip_atomic,
+                           RAJA::hip_synchronize>(allocator_id,
+                                                  IS_ASYNC,
+                                                  ON_DEVICE);
+}
+  #endif  // defined(AXOM_USE_HIP)
 
 #endif  // defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_RAJA)

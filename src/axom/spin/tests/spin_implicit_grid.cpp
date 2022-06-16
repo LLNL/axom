@@ -459,10 +459,14 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
   using BBox = typename TestFixture::BBox;
   using GridT = typename TestFixture::GridT;
   using SpacePt = typename TestFixture::SpacePt;
+  using ExecSpace = typename TestFixture::ExecSpace;
 
   SLIC_INFO("Test ImplicitGrid getCandidatesAsArray() with "
-            << axom::execution_space<typename TestFixture::ExecSpace>::name()
+            << axom::execution_space<ExecSpace>::name()
             << " execution space for points in " << DIM << "D");
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -493,10 +497,28 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
       SpacePt {.35, 0.25, 0.99},  // outside coord 2
     };
 
-    axom::Array<int> count(9), offset(9), candidates;
+    axom::Array<int> count, offset, candidates;
+    {
+      // Copy query points to the device
+      axom::ArrayView<const SpacePt> queryPtsHost(queryPts, 9);
+      axom::Array<SpacePt> queryPtsDevice(queryPtsHost, kernelAllocID);
 
-    // Run query against implicit grid
-    grid.getCandidatesAsArray(9, queryPts, offset, count, candidates);
+      axom::Array<int> countDevice, offsetDevice, candidatesDevice;
+
+      // Run query against implicit grid
+      grid.getCandidatesAsArray(9,
+                                queryPtsDevice.data(),
+                                offsetDevice,
+                                countDevice,
+                                candidatesDevice);
+
+      // Copy results back to the host
+      count = axom::Array<int>(countDevice, hostAllocID);
+      offset = axom::Array<int>(offsetDevice, hostAllocID);
+      candidates = axom::Array<int>(candidatesDevice, hostAllocID);
+    }
+
+    // Copy results back to the host
 
     // Test some points that are expected to match
     for(int i = 0; i < 5; ++i)
@@ -527,10 +549,25 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
                           // Should be inside obj2 and obj3, but not obj1
                           SpacePt {.85, .85, .85}};
 
-    axom::Array<int> count(3), offset(3), candidates;
+    axom::Array<int> count, offset, candidates;
+    {
+      // Copy query points to the device
+      axom::ArrayView<const SpacePt> queryPtsHost(queryPts, 3);
+      axom::Array<SpacePt> queryPtsDevice(queryPtsHost, kernelAllocID);
 
-    // Run query against implicit grid
-    grid.getCandidatesAsArray(3, queryPts, offset, count, candidates);
+      axom::Array<int> countDevice, offsetDevice, candidatesDevice;
+      // Run query against implicit grid
+      grid.getCandidatesAsArray(3,
+                                queryPtsDevice.data(),
+                                offsetDevice,
+                                countDevice,
+                                candidatesDevice);
+
+      // Copy results back to the host
+      count = axom::Array<int>(countDevice, hostAllocID);
+      offset = axom::Array<int>(offsetDevice, hostAllocID);
+      candidates = axom::Array<int>(candidatesDevice, hostAllocID);
+    }
     std::unordered_set<int> expected[] = {{2}, {3}, {2, 3}};
 
     for(int i = 0; i < 3; i++)
@@ -729,10 +766,14 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
   using BBox = typename TestFixture::BBox;
   using GridT = typename TestFixture::GridT;
   using SpacePt = typename TestFixture::SpacePt;
+  using ExecSpace = typename TestFixture::ExecSpace;
 
   SLIC_INFO("Test ImplicitGrid getCandidatesAsArray() with "
-            << axom::execution_space<typename TestFixture::ExecSpace>::name()
+            << axom::execution_space<ExecSpace>::name()
             << " execution space for boxes in " << DIM << "D");
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -824,10 +865,26 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
                                    DIM * 6,
                                    DIM * 10};
 
-  axom::Array<int> offset(N_QUERIES), count(N_QUERIES), candidates;
+  axom::Array<int> offset, count, candidates;
+  {
+    // Copy query points to the device
+    axom::ArrayView<const BBox> queryBoxesHost(queryBoxes, N_QUERIES);
+    axom::Array<BBox> queryBoxesDevice(queryBoxesHost, kernelAllocID);
 
-  // Run query against implicit grid
-  grid.getCandidatesAsArray(N_QUERIES, queryBoxes, offset, count, candidates);
+    axom::Array<int> countDevice, offsetDevice, candidatesDevice;
+
+    // Run query against implicit grid
+    grid.getCandidatesAsArray(N_QUERIES,
+                              queryBoxesDevice.data(),
+                              offsetDevice,
+                              countDevice,
+                              candidatesDevice);
+
+    // Copy results back to the host
+    count = axom::Array<int>(countDevice, hostAllocID);
+    offset = axom::Array<int>(offsetDevice, hostAllocID);
+    candidates = axom::Array<int>(candidatesDevice, hostAllocID);
+  }
 
   for(int i = 0; i < N_QUERIES; i++)
   {

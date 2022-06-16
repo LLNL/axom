@@ -245,7 +245,18 @@ public:
    */
   void insert(const SpatialBoundingBox& bbox, IndexType idx)
   {
-    insert(1, &bbox, idx);
+    if(axom::execution_space<ExecSpace>::onDevice())
+    {
+      int deviceAllocId = axom::execution_space<ExecSpace>::allocatorID();
+      // Copy host box to device array
+      ArrayView<const SpatialBoundingBox> bbox_host(&bbox, 1);
+      Array<SpatialBoundingBox> bbox_device(bbox_host, deviceAllocId);
+      insert(1, bbox_device.data(), idx);
+    }
+    else
+    {
+      insert(1, &bbox, idx);
+    }
   }
 
   /*!

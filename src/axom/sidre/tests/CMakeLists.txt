@@ -47,6 +47,12 @@ set(fruit_sidre_tests
    sidre_allocatable_F.f
    )
 
+set(sidre_gtests_depends_on axom gtest)
+
+# hipErrorNoBinaryForGpu without hip dependency
+blt_list_append( TO sidre_gtests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
+
+
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
@@ -55,7 +61,7 @@ foreach(test ${gtest_sidre_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON axom gtest
+                        DEPENDS_ON ${sidre_gtests_depends_on}
                         FOLDER axom/sidre/tests
                         )
 

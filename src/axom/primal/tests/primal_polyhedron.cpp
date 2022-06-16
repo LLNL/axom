@@ -136,7 +136,7 @@ void check_volume()
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA policy, set to Unified)
+  // Determine new allocator (for CUDA or HIP policy, set to Unified)
   umpire::Allocator allocator =
     rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
@@ -201,6 +201,16 @@ AXOM_CUDA_TEST(primal_polyhedron, check_volume_cuda)
   check_volume<exec>();
 }
   #endif /* AXOM_USE_CUDA */
+
+  #ifdef AXOM_USE_HIP
+TEST(primal_polyhedron, check_volume_hip)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+
+  check_volume<exec>();
+}
+  #endif /* AXOM_USE_HIP */
 
 #endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 

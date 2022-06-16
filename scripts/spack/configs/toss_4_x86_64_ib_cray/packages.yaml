@@ -22,39 +22,39 @@ packages:
       mpi: [cray-mpich]
 
   hip:
-    version: [5.1.0]
+    version: [5.1.1]
     buildable: false
     externals:
-    - spec: hip@5.1.0
-      prefix: /opt/rocm-5.1.0/hip
+    - spec: hip@5.1.1
+      prefix: /opt/rocm-5.1.1/hip
 
   llvm-amdgpu:
-    version: [5.1.0]
+    version: [5.1.1]
     buildable: false
     externals:
-    - spec: llvm-amdgpu@5.1.0
-      prefix: /opt/rocm-5.1.0/llvm
+    - spec: llvm-amdgpu@5.1.1
+      prefix: /opt/rocm-5.1.1/llvm
 
   hsa-rocr-dev:
-    version: [5.1.0]
+    version: [5.1.1]
     buildable: false
     externals:
-    - spec: hsa-rocr-dev@5.1.0
-      prefix: /opt/rocm-5.1.0/
+    - spec: hsa-rocr-dev@5.1.1
+      prefix: /opt/rocm-5.1.1/
 
   rocminfo:
-    version: [5.1.0]
+    version: [5.1.1]
     buildable: false
     externals:
-    - spec: rocminfo@5.1.0
-      prefix: /opt/rocm-5.1.0/
+    - spec: rocminfo@5.1.1
+      prefix: /opt/rocm-5.1.1/
 
   rocm-device-libs:
-    version: [5.1.0]
+    version: [5.1.1]
     buildable: false
     externals:
-    - spec: rocm-device-libs@5.1.0
-      prefix: /opt/rocm-5.1.0/
+    - spec: rocm-device-libs@5.1.1
+      prefix: /opt/rocm-5.1.1/
 
 # Lock down which MPI we are using
   mpi:
@@ -62,8 +62,8 @@ packages:
   cray-mpich:
     buildable: false
     externals:
-    - spec: cray-mpich@8.1.13%clang@14.0.0+slurm
-      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.13-rocmcc-5.1.0/
+    - spec: cray-mpich@8.1.16%clang@14.0.0+slurm
+      prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.16-rocmcc-5.1.1/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
