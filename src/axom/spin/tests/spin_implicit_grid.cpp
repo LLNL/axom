@@ -503,7 +503,9 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
       axom::ArrayView<const SpacePt> queryPtsHost(queryPts, 9);
       axom::Array<SpacePt> queryPtsDevice(queryPtsHost, kernelAllocID);
 
-      axom::Array<int> countDevice(9), offsetDevice(9), candidatesDevice;
+      axom::Array<int> countDevice(9, 9, kernelAllocID);
+      axom::Array<int> offsetDevice(9, 9, kernelAllocID);
+      axom::Array<int> candidatesDevice;
 
       // Run query against implicit grid
       grid.getCandidatesAsArray(9,
@@ -555,7 +557,9 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_pt_vectorized)
       axom::ArrayView<const SpacePt> queryPtsHost(queryPts, 3);
       axom::Array<SpacePt> queryPtsDevice(queryPtsHost, kernelAllocID);
 
-      axom::Array<int> countDevice(3), offsetDevice(3), candidatesDevice;
+      axom::Array<int> countDevice(3, 3, kernelAllocID);
+      axom::Array<int> offsetDevice(3, 3, kernelAllocID);
+      axom::Array<int> candidatesDevice;
       // Run query against implicit grid
       grid.getCandidatesAsArray(3,
                                 queryPtsDevice.data(),
@@ -871,8 +875,9 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
     axom::ArrayView<const BBox> queryBoxesHost(queryBoxes, N_QUERIES);
     axom::Array<BBox> queryBoxesDevice(queryBoxesHost, kernelAllocID);
 
-    axom::Array<int> countDevice(N_QUERIES), offsetDevice(N_QUERIES),
-      candidatesDevice;
+    axom::Array<int> countDevice(N_QUERIES, N_QUERIES, kernelAllocID);
+    axom::Array<int> offsetDevice(N_QUERIES, N_QUERIES, kernelAllocID);
+    axom::Array<int> candidatesDevice;
 
     // Run query against implicit grid
     grid.getCandidatesAsArray(N_QUERIES,
