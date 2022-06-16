@@ -1006,11 +1006,13 @@ void check_single_box2d()
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
   PointType centroid {0.5, 0.5};
+  PointType* centroid_device = axom::allocate<PointType>(1);
+  axom::copy(centroid_device, &centroid, sizeof(PointType));
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
   EXPECT_TRUE(candidates != nullptr);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
@@ -1019,9 +1021,11 @@ void check_single_box2d()
   // shift centroid outside of the BVH, should return no candidates.
   centroid[0] += 10.0;
   centroid[1] += 10.0;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
+  axom::copy(centroid_device, &centroid, sizeof(PointType));
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
   EXPECT_EQ(counts[0], 0);
 
+  axom::deallocate(centroid_device);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);
@@ -1071,11 +1075,13 @@ void check_single_box3d()
   // Should return one and only one candidate that corresponds to the
   // single bounding box.
   PointType centroid {0.5, 0.5, 0.5};
+  PointType* centroid_device = axom::allocate<PointType>(1);
+  axom::copy(centroid_device, &centroid, sizeof(PointType));
 
   IndexType* offsets = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* counts = axom::allocate<IndexType>(NUM_BOXES);
   IndexType* candidates = nullptr;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
   EXPECT_TRUE(candidates != nullptr);
   EXPECT_EQ(counts[0], 1);
   EXPECT_EQ(0, candidates[offsets[0]]);
@@ -1084,9 +1090,11 @@ void check_single_box3d()
   // shift centroid outside of the BVH, should return no candidates.
   centroid[0] += 10.0;
   centroid[1] += 10.0;
-  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, &centroid);
+  axom::copy(centroid_device, &centroid, sizeof(PointType));
+  bvh.findPoints(offsets, counts, candidates, NUM_BOXES, centroid_device);
   EXPECT_EQ(counts[0], 0);
 
+  axom::deallocate(centroid_device);
   axom::deallocate(boxes);
   axom::deallocate(offsets);
   axom::deallocate(counts);
