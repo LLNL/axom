@@ -429,8 +429,8 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::writeVtkFileImpl(
 
   // STEP 2: traverse the BVH and dump each bin
   constexpr int32 ROOT = 0;
-  lbvh::write_recursive<FloatType, NDIMS>(m_inner_nodes.data(),
-                                          m_inner_node_children.data(),
+  lbvh::write_recursive<FloatType, NDIMS>(m_inner_nodes,
+                                          m_inner_node_children,
                                           ROOT,
                                           1,
                                           numPoints,

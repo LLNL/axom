@@ -152,8 +152,8 @@ void write_root(const primal::BoundingBox<FloatType, 3>& root,
 
 //------------------------------------------------------------------------------
 template <typename FloatType, int NDIMS>
-void write_recursive(const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
-                     const int32* inner_node_children,
+void write_recursive(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> inner_nodes,
+                     ArrayView<const int32> inner_node_children,
                      int32 current_node,
                      int32 level,
                      int32& numPoints,
