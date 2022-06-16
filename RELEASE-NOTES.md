@@ -76,6 +76,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds new Slic macros that allow you to selectively print messages only on root ranks. For example,
   `SLIC_ERROR_ROOT(msg)` and `SLIC_ERROR_ROOT_IF(EXP, msg)`. This can be set via
   `slic::initialize(bool is_root = true)` or `slic::setIsRoot()`.
+- Adds an overload of `ImplicitGrid::getCandidatesAsArray()` to accept query points/bounding boxes
+  as an `axom::ArrayView`.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -119,6 +121,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Renamed some overloads of function `createView` of
   `axom::sidre::Group` which accept `int ndims, IndexType *shape`
   arguments to be `createViewWithShape` or `createViewWithShapeAndAllocate`.
+- Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
+  for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
