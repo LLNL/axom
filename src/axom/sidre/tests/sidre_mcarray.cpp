@@ -3,10 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/utilities/Utilities.hpp"
-#include "axom/core/ArrayView.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 #include "gtest/gtest.h"
 

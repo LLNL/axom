@@ -17,6 +17,7 @@
   #include "axom/fmt.hpp"
 
   #include "MFEMSidreDataCollection.hpp"
+  #include "axom/sidre/spio/IOManager.hpp"
 
   #include "axom/core/utilities/StringUtilities.hpp"
   #include "axom/core/utilities/Utilities.hpp"

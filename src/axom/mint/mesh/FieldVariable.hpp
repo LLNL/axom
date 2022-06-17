@@ -16,7 +16,7 @@
 #include "axom/mint/config.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre.hpp"
   #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 

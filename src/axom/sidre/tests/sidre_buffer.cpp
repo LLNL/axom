@@ -5,7 +5,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::DataStore;

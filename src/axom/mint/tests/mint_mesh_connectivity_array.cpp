@@ -16,7 +16,7 @@
 #include "axom/slic.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre.hpp"
 #endif
 
 #include <algorithm>
