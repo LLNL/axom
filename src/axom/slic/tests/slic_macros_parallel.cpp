@@ -5,6 +5,8 @@
 
 #include "axom/config.hpp"
 
+#include "axom/core/utilities/Utilities.hpp"
+
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
 #include "axom/slic/streams/GenericOutputStream.hpp"
@@ -99,6 +101,19 @@ void check_line(const std::string& msg, int expected_line)
   std::string l = msg.substr(start);
   const int line = std::stoi(l);
   EXPECT_EQ(line, expected_line);
+}
+
+//------------------------------------------------------------------------------
+void customAbortFunction()
+{
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  slic::internal::clear();
+  slic::setAbortFunction(axom::utilities::processAbort); /* Reset to default */
+  slic::disableAbortOnError(); /* disable abort for testing purposes */
+
+  SUCCEED() << "Rank " << rank << " has aborted successfully!";
 }
 
 }  // end anonymous namespace
@@ -475,8 +490,40 @@ TEST(slic_macros_parallel, test_debug_macros)
 }
 
 //------------------------------------------------------------------------------
+TEST(slic_macros_parallel, test_assert_abort_macros)
+{
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  slic::enableAbortOnError(); /* enable abort for testing purposes */
+  slic::setAbortFunction(customAbortFunction);
+
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  int val = (rank % 2) == 0 ? 42 : -42;
+  SLIC_ASSERT(val < 0);
+
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
+
+  SLIC_ASSERT(val != 0);
+
+  slic::internal::clear();
+  slic::setAbortFunction(axom::utilities::processAbort); /* Reset to default */
+  slic::disableAbortOnError(); /* disable abort for testing purposes */
+
+  FAIL() << "Rank " << rank << " should not get here; SLIC should have aborted by now";
+
+#else
+  // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
+  AXOM_UNUSED_VAR(val);
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+#endif
+}
+
+//------------------------------------------------------------------------------
 TEST(slic_macros_parallel, test_assert_macros)
 {
+  slic::internal::clear();
   EXPECT_TRUE(slic::internal::is_stream_empty());
 
   constexpr int val = 42;
