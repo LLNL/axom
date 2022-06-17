@@ -82,6 +82,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `for(auto& it = grp.views().begin(), itEnd = grp.views().end(); it ! itEnd ; ++it) {...}`, and similarly for the groups of a group.
 - Adds forward iterators to the `Attribute`s and `Buffers`s of a `sidre::DataStore`,
   with a similar syntax, e.g. `for(auto& buf : datastore.buffers()){...}`.
+- Adds an overload of `ImplicitGrid::getCandidatesAsArray()` to accept query points/bounding boxes
+  as an `axom::ArrayView`.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -132,6 +134,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   sidre functionality.
 - Removed functions from `sidre::ItemCollection` base class that were not common to all derived classes
   and added a new derived class `sidre::IndexedCollection`
+- Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
+  for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
