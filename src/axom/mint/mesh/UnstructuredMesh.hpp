@@ -189,20 +189,26 @@ public:
   using FaceSet = typename topology_traits<TOPO>::FaceSet;
 
   using CellToNodeRelation = typename topology_traits<TOPO>::ZoneNodeRelation;
-  using CellToFaceRelation = typename topology_traits<TOPO>::ZoneFaceRelation;
-  using FaceToCellRelation = typename topology_traits<TOPO>::FaceZoneRelation;
-  using FaceToNodeRelation = typename topology_traits<TOPO>::FaceNodeRelation;
 
-  /*! \brief The types for face-cell and cell-face connectivity.
+  /*! \brief The types for face-cell and cell-face relations.
    *
    * Usually, each face will connect two cells.  The exceptions are
    * - edge faces, which will connect to one cell.  The other will be -1.
    * - some faces in a malformed mesh, which may join more than two cells.
-   *   The concensus is that storing such a non-manifold mesh is not useful
+   *   The consensus is that storing such a non-manifold mesh is not useful
    *   so we only store the first two incident cells and return an error.
-   *
-   * Face types are stored in the face-node connectivity.
    */
+  using CellToFaceRelation = typename topology_traits<TOPO>::ZoneFaceRelation;
+  using FaceToCellRelation = typename topology_traits<TOPO>::FaceZoneRelation;
+
+  /*! \brief The type for face-node relations.
+   *
+   * This is represented as a variable-cardinality relation regardless of
+   * whether the mesh is single-shape or mixed-shape, since a cell type may
+   * have different constituent face types.
+   */
+  using FaceToNodeRelation = typename topology_traits<TOPO>::FaceNodeRelation;
+
   using CellToNodeConnectivity =
     ConnectivityArray<topology_traits<TOPO>::cell_to_nodes>;
 
