@@ -155,6 +155,10 @@ void demoAxomExecution()
     std::cout << C[i] << " ";
   }
   std::cout << std::endl;
+
+  axom::deallocate(A);
+  axom::deallocate(B);
+  axom::deallocate(C);
 // _deviceexebasic_end
 #endif
 }
