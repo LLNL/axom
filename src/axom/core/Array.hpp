@@ -1113,7 +1113,7 @@ inline void Array<T, DIM, SPACE>::insert(IndexType pos,
                                          ArrayView<const T, DIM, OtherSpace> other)
 {
   // First update the dimensions
-  this->insertRange(other.shape());
+  this->updateShapeOnInsert(other.shape());
   // Then add the raw data to the buffer
   insert(pos, other.size(), other.data());
 }

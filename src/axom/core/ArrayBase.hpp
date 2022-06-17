@@ -348,7 +348,7 @@ protected:
    *  of a range of elements.
    *  Intended to be called after the insertion of a multidimensional subslice.
    */
-  void insertRange(const StackArray<IndexType, DIM>& range_shape)
+  void updateShapeOnInsert(const StackArray<IndexType, DIM>& range_shape)
   {
 #ifdef AXOM_DEBUG
     if(!std::equal(m_dims.begin() + 1, m_dims.end(), range_shape.begin() + 1))
@@ -529,7 +529,7 @@ protected:
    *  of a range of elements.
    *  No-op, since we don't keep any shape information in this specialization.
    */
-  void insertRange(const StackArray<IndexType, 1>&) { }
+  void updateShapeOnInsert(const StackArray<IndexType, 1>&) { }
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
