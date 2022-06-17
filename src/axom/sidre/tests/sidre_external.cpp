@@ -9,7 +9,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::DataStore;
 using axom::sidre::DOUBLE_ID;

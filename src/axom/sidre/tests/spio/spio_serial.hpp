@@ -7,8 +7,7 @@
 
 #include "axom/config.hpp"      // for AXOM_USE_HDF5
 #include "axom/core/Types.hpp"  // for common::int64
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/spio/IOManager.hpp"
+#include "axom/sidre.hpp"
 #include <list>
 
 #include "mpi.h"

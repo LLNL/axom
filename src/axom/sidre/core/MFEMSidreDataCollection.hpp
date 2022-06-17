@@ -7,12 +7,13 @@
 #define MFEM_SIDRE_DATACOLLECTION_HPP_
 
 #include "axom/config.hpp"
+#include "DataStore.hpp"
+#include "Group.hpp"
+#include "View.hpp"
 
 #ifdef AXOM_USE_MFEM
 
   #include "mfem.hpp"
-
-  #include "axom/sidre/core/sidre.hpp"
 
 namespace axom
 {
