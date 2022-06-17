@@ -114,7 +114,7 @@ Axom has the following inter-component dependencies:
 - Core has no dependencies and the other components depend on Core
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
-- Mint optionally depends on Sidre
+- Mint depends on Slam, and optionally Sidre
 - Inlet depends on Sidre, Slic, and Primal
 - Klee depends on Sidre, Slic, Inlet and Primal
 - Quest depends on Slam, Spin, Primal, Mint, and, optionally, Klee

@@ -12,7 +12,7 @@
 # Note: Mint also optionally depends on Sidre when AXOM_MINT_USE_SIDRE=ON
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Mint
-                        COMPONENTS SLIC)
+                        COMPONENTS SLIC SLAM)
 
 #------------------------------------------------------------------------------
 # Add mint options

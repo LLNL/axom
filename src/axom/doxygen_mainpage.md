@@ -23,7 +23,7 @@ Dependencies between components are as follows:
   - Slic optionally depends on Lumberjack
 - Slam, Primal, Sidre, Spin, Inlet, Mint, Klee and Quest all depend on Slic and Core
   - Inlet depends on Sidre and Primal
-  - Mint optionally depends on Sidre
+  - Mint depends on Slam, and optionally Sidre
   - Spin depends on Primal and Slam
   - Quest depends on Slam, Primal, Spin, and Mint
   - Klee depends on Sidre, Inlet and Primal
