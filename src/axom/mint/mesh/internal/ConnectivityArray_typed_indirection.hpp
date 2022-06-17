@@ -633,6 +633,10 @@ public:
   /// @}
 
 private:
+  // We keep unique_ptrs to axom::Array to polymorphically hold:
+  //  * axom::Array if we own the memory
+  //  * sidre::Array if the memory is stored in Sidre
+  //  * mint::utilities::ExternalArray if the memory is externally-owned
   std::unique_ptr<axom::Array<IndexType>> m_values;
   std::unique_ptr<axom::Array<CellType>> m_types;
   std::unique_ptr<axom::Array<IndexType>> m_offsets;

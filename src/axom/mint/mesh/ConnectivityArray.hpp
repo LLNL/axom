@@ -719,6 +719,10 @@ public:
 private:
   CellType m_cell_type;
   IndexType m_stride;
+  // We keep a unique_ptr to an axom::Array to polymorphically hold:
+  //  * axom::Array if we own the memory
+  //  * sidre::Array if the memory is stored in Sidre
+  //  * mint::utilities::ExternalArray if the memory is externally-owned
   std::unique_ptr<axom::Array<IndexType, 2>> m_values;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
