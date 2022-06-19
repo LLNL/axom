@@ -265,6 +265,12 @@ TEST(quest_signed_distance, sphere_test_with_normals)
     const auto normal_expected = VectorType(cp_expected).unitVector();
     EXPECT_NEAR(1., normal.dot(normal_expected), 1e-2);
 
+    // Check that the distance (squared) is the same as the distance
+    // between the query point and the returned closest point
+    EXPECT_NEAR(phi_computed[inode] * phi_computed[inode],
+                primal::squared_distance(pt, cp),
+                1e-8);
+
     phi_expected[inode] = analytic_sphere.computeSignedDistance(pt);
     EXPECT_NEAR(phi_computed[inode], phi_expected[inode], 1.e-2);
 

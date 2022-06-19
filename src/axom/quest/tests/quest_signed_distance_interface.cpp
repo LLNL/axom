@@ -604,6 +604,12 @@ TEST(quest_signed_distance_interface, analytic_sphere_with_closest_pt_and_normal
     const auto normal_expected = VectorType(cp_expected).unitVector();
     EXPECT_NEAR(1., normal.dot(normal_expected), 1e-2);
 
+    // Check that the distance (squared) is the same as the distance
+    // between the query point and the returned closest point
+    EXPECT_NEAR(phi_computed[inode] * phi_computed[inode],
+                primal::squared_distance(pt, closest_point),
+                1e-8);
+
     // compute error
     phi_diff[inode] = phi_computed[inode] - phi_expected[inode];
     phi_err[inode] = utilities::abs(phi_diff[inode]);
