@@ -16,6 +16,7 @@
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 namespace axom
@@ -223,6 +224,27 @@ inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& pt,
   }
 
   return Point<T, NDIMS>(res.array());
+}
+
+/*!
+ * \brief Computes the closest point from a point, P, to a sphere.
+ *
+ * \param [in] P the query point
+ * \param [in] sphere user-supplied triangle
+ * \return cp the closest point on sphere \a sphere to point P
+ *
+ * \note The closest point is uniquely defined everyone except at the sphere's origin.
+ * We handle that case by returning the point on the sphere along the direction
+ * determined by \a primal::Vector::unitVector() for the zero vector
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                                      const Sphere<T, NDIMS>& sphere)
+{
+  using VectorType = Vector<T, NDIMS>;
+
+  const auto v = VectorType(sphere.getCenter(), P).unitVector();
+  return sphere.getCenter() + sphere.getRadius() * v;
 }
 
 }  // namespace primal
