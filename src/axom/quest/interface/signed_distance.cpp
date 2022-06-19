@@ -8,7 +8,7 @@
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 #include "axom/quest/SignedDistance.hpp"
 
-// Mint includes
+#include "axom/primal.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
 
 #include "axom/slic/interface/slic.hpp"
@@ -380,6 +380,64 @@ double signed_distance_evaluate(double x, double y, double z)
     SLIC_ERROR("Unsupported execution space");
     break;
   }
+  return (phi);
+}
+
+//------------------------------------------------------------------------------
+double signed_distance_evaluate(double x,
+                                double y,
+                                double z,
+                                double& cp_x,
+                                double& cp_y,
+                                double& cp_z,
+                                double& n_x,
+                                double& n_y,
+                                double& n_z)
+{
+  SLIC_ERROR_IF(
+    !signed_distance_initialized(),
+    "signed distance query must be initialized prior to calling evaluate()!");
+
+  SLIC_ERROR_IF(Parameters.dimension != 3,
+                "This overload of signed_distance_evaluate is only available "
+                "for 3D queries");
+
+  using PointType = primal::Point<double, 3>;
+  using VectorType = primal::Vector<double, 3>;
+
+  const PointType query {x, y, z};
+  PointType closest_pt;
+  VectorType normal;
+
+  double phi = 0.0;
+  switch(Parameters.exec_space)
+  {
+  case SignedDistExec::CPU:
+    phi = s_query->computeDistance(query, closest_pt, normal);
+    break;
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+  case SignedDistExec::OpenMP:
+    phi = s_query_omp->computeDistance(query, closest_pt, normal);
+    break;
+#endif
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+  case SignedDistExec::GPU:
+    phi = s_query_gpu->computeDistance(query, closest_pt, normal);
+    break;
+#endif
+  default:
+    SLIC_ERROR("Unsupported execution space");
+    break;
+  }
+
+  // copy result back to the output parameters
+  cp_x = closest_pt[0];
+  cp_y = closest_pt[1];
+  cp_z = closest_pt[2];
+  n_x = normal[0];
+  n_y = normal[1];
+  n_z = normal[2];
+
   return (phi);
 }
 
