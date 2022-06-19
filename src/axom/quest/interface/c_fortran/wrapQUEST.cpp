@@ -278,12 +278,36 @@ void QUEST_signed_distance_set_execution_space(int execSpace)
   // splicer end function.signed_distance_set_execution_space
 }
 
-double QUEST_signed_distance_evaluate(double x, double y, double z)
+double QUEST_signed_distance_evaluate_0(double x, double y, double z)
 {
-  // splicer begin function.signed_distance_evaluate
+  // splicer begin function.signed_distance_evaluate_0
   double SHC_rv = axom::quest::signed_distance_evaluate(x, y, z);
   return SHC_rv;
-  // splicer end function.signed_distance_evaluate
+  // splicer end function.signed_distance_evaluate_0
+}
+
+double QUEST_signed_distance_evaluate_1(double x,
+                                        double y,
+                                        double z,
+                                        double *cp_x,
+                                        double *cp_y,
+                                        double *cp_z,
+                                        double *n_x,
+                                        double *n_y,
+                                        double *n_z)
+{
+  // splicer begin function.signed_distance_evaluate_1
+  double SHC_rv = axom::quest::signed_distance_evaluate(x,
+                                                        y,
+                                                        z,
+                                                        *cp_x,
+                                                        *cp_y,
+                                                        *cp_z,
+                                                        *n_x,
+                                                        *n_y,
+                                                        *n_z);
+  return SHC_rv;
+  // splicer end function.signed_distance_evaluate_1
 }
 
 void QUEST_signed_distance_finalize(void)
