@@ -268,7 +268,37 @@ public:
   double computeDistance(const PointType& queryPnt) const;
 
   /*!
+   * \brief Computes the distance of the given point to the surface mesh
+   * This overload also returns the computed closest point on the surface to the query point
+   * and the surface normal at that point
+   *
+   * \param [in] queryPnt user-supplied point.
+   * \param [out] closestPnt the closest point on the surface to \a queryPnt
+   * \param [out] surfaceNormal the surface normal of \a closestPt
+   *
+   * \note When the input is not a closed surface mesh, the assumption is that
+   *  the surface mesh divides the computational mesh domain into two regions.
+   *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+   *  the computational mesh at which the signed distance field is evaluated,
+   *  along some plane.
+   *
+   * \warning The sign of the distance from a given query point is determined by
+   *  a pseudo-normal which is computed at the closest point on the surface
+   *  mesh. For a non-watertight mesh, the sign of the distance is not defined
+   *  everywhere. Specifically, the sign is ambiguous for all points for which
+   *  a normal projection onto the surface does not exist.
+   *
+   * \return minDist the signed minimum distance to the surface mesh.
+   */
+  double computeDistance(const PointType& queryPnt,
+                         PointType& closestPnt,
+                         VectorType& surfaceNormal) const;
+
+  /*!
    * \brief Computes the distances of a set of points to the surface mesh.
+   * Optionally also returns the computed closest points on the surface to each 
+   * query point and the surface normals at those points
+   *
    * \param [in] npts number of points to query
    * \param [in] queryPnt user-supplied point indexable type. This can be a
    *  pointer-to-array, or a ZipIndexable<PointType>.
@@ -276,6 +306,8 @@ public:
    *  for query points
    * \param [out] outClosestPts array to fill with closest points on the mesh.
    *  Optional.
+   * \param [out] outNormals array to fill with surface normals associated with 
+   * closest points on the mesh. Optional.
    *
    * \note When the input is not a closed surface mesh, the assumption is that
    *  the surface mesh divides the computational mesh domain into two regions.
@@ -297,7 +329,8 @@ public:
   void computeDistances(int npts,
                         PointIndexable queryPts,
                         double* outSgnDist,
-                        PointType* outClosestPts = nullptr) const;
+                        PointType* outClosestPts = nullptr,
+                        VectorType* outNormals = nullptr) const;
 
   /*!
    * \brief Returns a const reference to the underlying bucket tree.
@@ -336,6 +369,14 @@ private:
                                               const detail::UcdMeshData& mesh,
                                               ZipPoint meshPts,
                                               bool computeSign);
+
+  /*!
+   * \brief Returns the surface (pseudo)-normal at the closest point 
+   * to the query point associated with \a currMin
+   *
+   * \param [in] currMin the minimum-distance surface element data
+   */
+  AXOM_HOST_DEVICE static VectorType getSurfaceNormal(const MinCandidate& currMin);
 
   /*!
    * \brief Computes the sign of the given query point given the closest point data
@@ -472,9 +513,20 @@ template <int NDIMS, typename ExecSpace>
 inline double SignedDistance<NDIMS, ExecSpace>::computeDistance(
   const PointType& pt) const
 {
-  PointType closest_pt;
   double dist;
-  this->computeDistances(1, &pt, &dist, &closest_pt);
+  this->computeDistances(1, &pt, &dist, nullptr, nullptr);
+  return (dist);
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace>
+inline double SignedDistance<NDIMS, ExecSpace>::computeDistance(
+  const PointType& queryPnt,
+  PointType& closestPnt,
+  VectorType& surfaceNormal) const
+{
+  double dist;
+  this->computeDistances(1, &queryPnt, &dist, &closestPnt, &surfaceNormal);
   return (dist);
 }
 
@@ -485,7 +537,8 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
   int npts,
   PointIndexable queryPts,
   double* outSgnDist,
-  PointType* outClosestPts) const
+  PointType* outClosestPts,
+  VectorType* outNormals) const
 {
   SLIC_ASSERT(npts > 0);
   SLIC_ASSERT(m_surfaceMesh != nullptr);
@@ -557,6 +610,11 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
         if(outClosestPts)
         {
           outClosestPts[idx] = curr_min.minPt;
+        }
+
+        if(outNormals)
+        {
+          outNormals[idx] = getSurfaceNormal(curr_min).unitVector();
         }
       }););
 }
@@ -699,31 +757,30 @@ AXOM_HOST_DEVICE inline void SignedDistance<NDIMS, ExecSpace>::checkCandidate(
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace>
+AXOM_HOST_DEVICE inline typename SignedDistance<NDIMS, ExecSpace>::VectorType
+SignedDistance<NDIMS, ExecSpace>::getSurfaceNormal(const MinCandidate& currMin)
+{
+  // Closest point is either internal to a face of the surface or, for points on
+  // a boundary edge or vertex, we already computed the (pseudo)-normal during the traversal
+  return (currMin.minType == detail::ClosestPointLocType::face)
+    ? currMin.minTri.normal()
+    : currMin.sumNormals;
+}
+
+//------------------------------------------------------------------------------
+template <int NDIMS, typename ExecSpace>
 AXOM_HOST_DEVICE inline double SignedDistance<NDIMS, ExecSpace>::computeSign(
   const PointType& qpt,
   const MinCandidate& currMin)
 {
-  double sgn = 1.0;
-  // STEP 1: Select the pseudo-normal N at the closest point to calculate the sign.
-  // There are effectively 3 cases based on the location of the closest point.
-  VectorType N;
-  switch(currMin.minType)
-  {
-  case detail::ClosestPointLocType::face:
-    // CASE 1: closest point is on the face of the surface element
-    N = currMin.minTri.normal();
-    break;
-  default:  // Use precomputed normal for edges and vertices
-    N = currMin.sumNormals;
-    break;
-  }
+  // Get the pseudo-normal at the closest point
+  const VectorType n = getSurfaceNormal(currMin);
 
-  // STEP 2: Given the pseudo-normal, N, and the vector r from the closest point
-  // to the query point, compute the sign by checking the sign of their dot product.
-  VectorType r(currMin.minPt, qpt);
-  double dotprod = r.dot(N);
-  sgn = (dotprod >= 0.0) ? 1.0 : -1.0;
-  return sgn;
+  // and the vector from the closest point to the query point
+  const VectorType r(currMin.minPt, qpt);
+
+  // determine the sign from their dot product
+  return (r.dot(n) >= 0.0) ? 1.0 : -1.0;
 }
 
 }  // end namespace quest
