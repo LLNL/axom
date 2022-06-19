@@ -421,7 +421,8 @@ SignedDistance<NDIMS, ExecSpace>::SignedDistance(const mint::Mesh* surfaceMesh,
   // Sanity checks
   SLIC_ASSERT(surfaceMesh != nullptr);
 
-  bool bvh_constructed = setMesh(surfaceMesh, allocatorID);
+  const bool bvh_constructed = setMesh(surfaceMesh, allocatorID);
+  AXOM_UNUSED_VAR(bvh_constructed);  // silence warning in release mode
   SLIC_ASSERT(bvh_constructed);
 }
 
@@ -629,6 +630,7 @@ SignedDistance<NDIMS, ExecSpace>::getCellBoundingBox(axom::IndexType icell,
   // Get the cell type, for now we support linear triangle,quad in 3-D and
   // line segments in 2-D.
   const mint::CellType cellType = mesh.getCellType(icell);
+  AXOM_UNUSED_VAR(cellType);  // silence warning in release configs
   SLIC_ASSERT(cellType == mint::TRIANGLE || cellType == mint::QUAD ||
               cellType == mint::SEGMENT);
 
