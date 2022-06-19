@@ -798,7 +798,7 @@ public:
     }
 
     /// Implementation here -- update material volume fractions based on replacement rules
-    // Note: we're not yet using the shape volume fractions
+    // Note: we're not yet updating the shape volume fractions
     AXOM_UNUSED_VAR(shapeVolFrac);
   }
 
