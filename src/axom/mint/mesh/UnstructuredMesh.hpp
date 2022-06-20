@@ -54,7 +54,7 @@ struct topology_traits<SINGLE_SHAPE>
   using NodeSet = slam::PositionSet<IdxType, IdxType>;
   using FaceSet = slam::PositionSet<IdxType, IdxType>;
 
-  using ViewIndirection = slam::policies::ViewIndirection<IdxType, IdxType>;
+  using ViewIndirection = slam::policies::ArrayViewIndirection<IdxType, IdxType>;
 
   using ZNStride = slam::policies::RuntimeStride<IdxType>;
   using ZNCardinality = slam::policies::ConstantCardinality<IdxType, ZNStride>;
@@ -88,7 +88,7 @@ struct topology_traits<MIXED_SHAPE>
   using NodeSet = slam::PositionSet<IdxType, IdxType>;
   using FaceSet = slam::PositionSet<IdxType, IdxType>;
 
-  using ViewIndirection = slam::policies::ViewIndirection<IdxType, IdxType>;
+  using ViewIndirection = slam::policies::ArrayViewIndirection<IdxType, IdxType>;
 
   using ZNCardinality =
     slam::policies::VariableCardinality<IdxType, ViewIndirection>;

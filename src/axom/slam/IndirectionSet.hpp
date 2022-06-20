@@ -70,7 +70,7 @@ using ArrayViewIndirectionSet =
              policies::RuntimeSize<PosType>,
              policies::ZeroOffset<PosType>,
              policies::StrideOne<PosType>,
-             policies::ViewIndirection<PosType, ElemType>>;
+             policies::ArrayViewIndirection<PosType, ElemType>>;
 
 }  // end namespace slam
 }  // end namespace axom

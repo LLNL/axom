@@ -281,7 +281,7 @@ private:
  * \brief A policy class for sets with axom::ArrayView-based indirection
  */
 template <typename PositionType, typename ElementType>
-struct ViewIndirection
+struct ArrayViewIndirection
 {
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType&;
@@ -290,7 +290,7 @@ struct ViewIndirection
   using IndirectionBufferType = VectorType;
   using IndirectionPtrType = IndirectionBufferType;
 
-  ViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
+  ArrayViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
 
   IndirectionBufferType& data() { return m_vecBuf; }
   const IndirectionBufferType& data() const { return m_vecBuf; }
@@ -298,10 +298,10 @@ struct ViewIndirection
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
     SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:CoreArrayIndirection -- Tried to dereference "
+                    "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
                       << "a null vector in a vector based indirection set.");
     //SLIC_ASSERT_MSG( pos < m_vecBuf->size(),
-    //  "SLAM::Set:CoreArrayIndirection -- "
+    //  "SLAM::Set:ArrayViewIndirection -- "
     //  << "Tried to access an out of bounds element at position "
     //  << pos << " in vector with only " << m_vecBuf->size() << " elements.");
 
@@ -311,7 +311,7 @@ struct ViewIndirection
   inline IndirectionResult indirection(PositionType pos)
   {
     SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:CoreArrayIndirection -- Tried to dereference "
+                    "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
                       << "a null vector in a vector based indirection set.");
 
     return m_vecBuf[pos];
@@ -498,10 +498,10 @@ bool CoreArrayIndirection<PosType, ElemType>::isValid(PosType size,
 }
 
 template <typename PosType, typename ElemType>
-bool ViewIndirection<PosType, ElemType>::isValid(PosType size,
-                                                 PosType offset,
-                                                 PosType stride,
-                                                 bool verboseOutput) const
+bool ArrayViewIndirection<PosType, ElemType>::isValid(PosType size,
+                                                      PosType offset,
+                                                      PosType stride,
+                                                      bool verboseOutput) const
 {
   AXOM_UNUSED_VAR(verboseOutput);
 
