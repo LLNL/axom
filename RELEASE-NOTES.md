@@ -76,6 +76,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds new Slic macros that allow you to selectively print messages only on root ranks. For example,
   `SLIC_ERROR_ROOT(msg)` and `SLIC_ERROR_ROOT_IF(EXP, msg)`. This can be set via
   `slic::initialize(bool is_root = true)` or `slic::setIsRoot()`.
+- Adds forward iterators to the `View`s and `Group`s of a `sidre::Group`.
+  These can be accessed via the range-for syntax as `for(auto& view: grp.views()){...}`,
+  Or using the iterator syntax as
+  `for(auto& it = grp.views().begin(), itEnd = grp.views().end(); it ! itEnd ; ++it) {...}`, and similarly for the groups of a group.
+- Adds forward iterators to the `Attribute`s and `Buffers`s of a `sidre::DataStore`,
+  with a similar syntax, e.g. `for(auto& buf : datastore.buffers()){...}`.
+- Adds an overload of `ImplicitGrid::getCandidatesAsArray()` to accept query points/bounding boxes
+  as an `axom::ArrayView`.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -119,6 +127,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Renamed some overloads of function `createView` of
   `axom::sidre::Group` which accept `int ndims, IndexType *shape`
   arguments to be `createViewWithShape` or `createViewWithShapeAndAllocate`.
+- Replaced an unused older incarnation of iterators in sidre with a new `std`-compliant
+  implementation
+- Removed an out-of-date manually-generated header file in sidre `sidre/core/sidre.hpp`.
+  We recommend using the automatically generated header file `axom/sidre.hpp` to include
+  sidre functionality.
+- Removed functions from `sidre::ItemCollection` base class that were not common to all derived classes
+  and added a new derived class `sidre::IndexedCollection`
+- Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
+  for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s

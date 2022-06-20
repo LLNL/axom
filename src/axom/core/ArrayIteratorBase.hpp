@@ -42,6 +42,8 @@ public:
 public:
   using ArrayPointerType = ArrayType*;
 
+  ArrayIteratorBase() : BaseType(0) { }
+
   ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
     : BaseType(pos)
     , m_arrayPtr(arr)
@@ -50,14 +52,17 @@ public:
   /**
    * \brief Returns the current iterator value
    */
-  ValueType& operator*() { return m_arrayPtr->flatIndex(BaseType::m_pos); }
+  ValueType& operator*() const
+  {
+    return m_arrayPtr->flatIndex(BaseType::m_pos);
+  }
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
   void advance(IndexType n) { BaseType::m_pos += n; }
 
 protected:
-  ArrayPointerType m_arrayPtr;
+  ArrayPointerType m_arrayPtr {nullptr};
 };  // end of ArrayIteratorBase class
 
 /// @}

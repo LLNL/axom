@@ -4,10 +4,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
-
+#include "axom/sidre.hpp"
 #include <vector>
-
-#include "axom/sidre/core/sidre.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::DataStore;

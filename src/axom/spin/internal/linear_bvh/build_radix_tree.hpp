@@ -88,7 +88,7 @@ static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
 
 template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
 void transform_boxes(const BoxIndexable boxes,
-                     primal::BoundingBox<FloatType, NDIMS>* aabbs,
+                     ArrayView<primal::BoundingBox<FloatType, NDIMS>> aabbs,
                      int32 size,
                      FloatType scale_factor)
 {
@@ -108,7 +108,7 @@ void transform_boxes(const BoxIndexable boxes,
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
 primal::BoundingBox<FloatType, NDIMS> reduce(
-  primal::BoundingBox<FloatType, NDIMS>* aabbs,
+  ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
   int32 size)
 {
   AXOM_PERF_MARK_FUNCTION("reduce_abbs");
@@ -153,10 +153,10 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
-void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
+void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
                 int32 size,
                 const primal::BoundingBox<FloatType, NDIMS>& bounds,
-                uint32* mcodes)
+                const ArrayView<uint32> mcodes)
 {
   AXOM_PERF_MARK_FUNCTION("get_mcodes");
 
@@ -188,7 +188,7 @@ void get_mcodes(primal::BoundingBox<FloatType, NDIMS>* aabbs,
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename IntType>
-void array_counting(IntType* iterator,
+void array_counting(ArrayView<IntType> iterator,
                     const IntType& size,
                     const IntType& start,
                     const IntType& step)
@@ -208,21 +208,26 @@ void array_counting(IntType* iterator,
 // result  [b,a,c]
 //
 template <typename ExecSpace, typename T>
-void reorder(int32* indices, T*& array, int32 size, int allocatorID)
+void reorder(const ArrayView<const int32> indices,
+             Array<T>& array,
+             int32 size,
+             int allocatorID)
 {
   AXOM_PERF_MARK_FUNCTION("reorder");
 
-  T* temp = axom::allocate<T>(size, allocatorID);
+  Array<T> temp =
+    Array<T>(ArrayOptions::Uninitialized {}, size, size, allocatorID);
+  const auto array_v = array.view();
+  const auto temp_v = temp.view();
 
   for_all<ExecSpace>(
     size,
     AXOM_LAMBDA(int32 i) {
       int32 in_idx = indices[i];
-      temp[i] = array[in_idx];
+      temp_v[i] = array_v[in_idx];
     });
 
-  axom::deallocate(array);
-  array = temp;
+  array = std::move(temp);
 }
 
 //------------------------------------------------------------------------------
@@ -231,7 +236,7 @@ void reorder(int32* indices, T*& array, int32 size, int allocatorID)
    ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12)))
 
 template <typename ExecSpace>
-void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
+void sort_mcodes(ArrayView<uint32> mcodes, int32 size, ArrayView<int32> iter)
 {
   AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 
@@ -240,15 +245,15 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
   AXOM_PERF_MARK_SECTION(
     "raja_stable_sort",
     using EXEC_POL = typename axom::execution_space<ExecSpace>::loop_policy;
-    RAJA::stable_sort_pairs<EXEC_POL>(RAJA::make_span(mcodes, size),
-                                      RAJA::make_span(iter, size)););
+    RAJA::stable_sort_pairs<EXEC_POL>(RAJA::make_span(mcodes.data(), size),
+                                      RAJA::make_span(iter.data(), size)););
 }
 
 #else
 
 // fall back to std::stable_sort
 template <typename ExecSpace>
-void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
+void sort_mcodes(Array<uint32>& mcodes, int32 size, const ArrayView<int32> iter)
 {
   AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 
@@ -257,8 +262,8 @@ void sort_mcodes(uint32*& mcodes, int32 size, int32* iter)
   AXOM_PERF_MARK_SECTION(
     "cpu_sort",
 
-    std::stable_sort(iter,
-                     iter + size,
+    std::stable_sort(iter.begin(),
+                     iter.begin() + size,
                      [=](int32 i1, int32 i2) { return mcodes[i1] < mcodes[i2]; });
 
   );
@@ -274,7 +279,7 @@ template <typename IntType, typename MCType>
 AXOM_HOST_DEVICE IntType delta(const IntType& a,
                                const IntType& b,
                                const IntType& inner_size,
-                               const MCType* mcodes)
+                               axom::ArrayView<MCType> mcodes)
 {
   bool tie = false;
   bool out_of_range = (b < 0 || b > inner_size);
@@ -306,10 +311,10 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
   // lambda captures of pointers inside a struct. Bad memories
   // of random segfaults ........ be warned
   const int32 inner_size = data.m_inner_size;
-  int32* lchildren_ptr = data.m_left_children;
-  int32* rchildren_ptr = data.m_right_children;
-  int32* parent_ptr = data.m_parents;
-  const uint32* mcodes_ptr = data.m_mcodes;
+  const auto lchildren_ptr = data.m_left_children.view();
+  const auto rchildren_ptr = data.m_right_children.view();
+  const auto parent_ptr = data.m_parents.view();
+  const auto mcodes_ptr = data.m_mcodes.view();
 
   for_all<ExecSpace>(
     inner_size,
@@ -384,17 +389,6 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         parent_ptr[0] = -1;
       }
     });
-}
-
-//------------------------------------------------------------------------------
-template <typename ExecSpace, typename T>
-static void array_memset(T* array, const int32 size, const T val)
-{
-  AXOM_PERF_MARK_FUNCTION("array_memset");
-
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(int32 i) { array[i] = val; });
 }
 
 //------------------------------------------------------------------------------
@@ -525,6 +519,8 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 {
   AXOM_PERF_MARK_FUNCTION("propagate_abbs");
 
+  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
   SLIC_ASSERT(leaf_size == data.m_size);
@@ -533,24 +529,23 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
   // of a huge amount of pain and suffering due so cuda
   // labda captures of pointers indide a struct. Bad memories
   // of random segfaults ........ be warned
-  const int32* lchildren_ptr = data.m_left_children;
-  const int32* rchildren_ptr = data.m_right_children;
-  const int32* parent_ptr = data.m_parents;
-  const primal::BoundingBox<FloatType, NDIMS>* leaf_aabb_ptr = data.m_leaf_aabbs;
+  const auto lchildren_ptr = data.m_left_children.view();
+  const auto rchildren_ptr = data.m_right_children.view();
+  const auto parent_ptr = data.m_parents.view();
+  const auto leaf_aabb_ptr = data.m_leaf_aabbs.view();
 
-  primal::BoundingBox<FloatType, NDIMS>* inner_aabb_ptr = data.m_inner_aabbs;
+  const auto inner_aabb_ptr = data.m_inner_aabbs.view();
+  for_all<ExecSpace>(
+    inner_size,
+    AXOM_LAMBDA(IndexType idx) { inner_aabb_ptr[idx] = BoxType {}; });
 
-  int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID);
-
-  using BoxType = primal::BoundingBox<FloatType, NDIMS>;
-
-  array_memset<ExecSpace>(counters_ptr, inner_size, 0);
-  array_memset<ExecSpace>(inner_aabb_ptr, inner_size, BoxType {});
+  Array<int32> counters(inner_size, inner_size, allocatorID);
+  const auto counters_ptr = counters.view();
 
   for_all<ExecSpace>(
     leaf_size,
     AXOM_LAMBDA(int32 i) {
-      primal::BoundingBox<FloatType, NDIMS> aabb = leaf_aabb_ptr[i];
+      BoxType aabb = leaf_aabb_ptr[i];
       int32 last_node = inner_size + i;
       int32 current_node = parent_ptr[inner_size + i];
 
@@ -590,8 +585,6 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
         current_node = parent_ptr[current_node];
       }
     });
-
-  axom::deallocate(counters_ptr);
 }
 
 //------------------------------------------------------------------------------
@@ -611,15 +604,21 @@ void build_radix_tree(const BoxIndexable boxes,
   radix_tree.allocate(size, allocatorID);
 
   // copy so we don't reorder the input
-  transform_boxes<ExecSpace>(boxes, radix_tree.m_leaf_aabbs, size, scale_factor);
+  transform_boxes<ExecSpace>(boxes,
+                             radix_tree.m_leaf_aabbs.view(),
+                             size,
+                             scale_factor);
 
   // evaluate global bounds
-  bounds = reduce<ExecSpace>(radix_tree.m_leaf_aabbs, size);
+  bounds = reduce<ExecSpace, FloatType, NDIMS>(radix_tree.m_leaf_aabbs, size);
 
   // sort aabbs based on morton code
   // original positions of the sorted morton codes.
   // allows us to gather / sort other arrays.
-  get_mcodes<ExecSpace>(radix_tree.m_leaf_aabbs, size, bounds, radix_tree.m_mcodes);
+  get_mcodes<ExecSpace, FloatType, NDIMS>(radix_tree.m_leaf_aabbs,
+                                          size,
+                                          bounds,
+                                          radix_tree.m_mcodes);
   sort_mcodes<ExecSpace>(radix_tree.m_mcodes, size, radix_tree.m_leafs);
 
   reorder<ExecSpace>(radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size, allocatorID);
