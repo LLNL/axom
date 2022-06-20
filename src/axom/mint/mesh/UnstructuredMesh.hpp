@@ -855,7 +855,11 @@ public:
    * \deprecated Has no significance, since adding external faces is not
    *             supported. Use getNumberOfFaces() instead.
    */
-  [[deprecated]] virtual IndexType getFaceCapacity() const final override
+  // clang-format off
+  [[deprecated("No significance. Will be removed in a later release.")]]
+  // clang-format on
+  virtual IndexType
+  getFaceCapacity() const final override
   {
     return m_faces.size();
   }
@@ -1157,7 +1161,11 @@ public:
    * \deprecated Has no significance, since adding external faces is not
    *             supported. Use getFaceNodesSize() instead.
    */
-  [[deprecated]] IndexType getFaceNodesCapacity() const
+  // clang-format off
+  [[deprecated("No significance. Will be removed in a later release.")]]
+  // clang-format on
+  IndexType
+  getFaceNodesCapacity() const
   {
     return m_face_node_rel.relationData().size();
   }
