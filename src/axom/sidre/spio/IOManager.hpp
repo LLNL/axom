@@ -65,7 +65,8 @@ public:
    * The Group, including all of its child groups and views, is written
    * to files according to the given protocol.
    *
-   * This is an MPI collective call.
+   * This is an MPI collective call that must be called on all ranks in the
+   * communicator used in this object's constructor.
    *
    * valid protocols:
    *
@@ -86,6 +87,10 @@ public:
    * unchanged and used as the root file's name, while the subdirectory
    * name will be the file_base string with the ".root" suffix removed from
    * its end.
+   *
+   * The file_base string must be identical on all ranks making this call.
+   * If it is not identical, a warning will be printed and the files produced
+   * here may not be useable in a subsequent call to IOManager::read().
    *
    * \note The sidre_hdf5 and conduit_hdf5 protocols are only available
    * when Axom is configured with hdf5.
@@ -237,9 +242,10 @@ public:
   /*!
    * \brief read from input file
    *
-   * This is an MPI collective call.  Calling code may also need to add
+   * This is an MPI collective call on all ranks in the communicator used
+   * to construct this object.  Calling code may also need to add
    * an MPI barrier after this call if invoking subsequent operations that
-   * may change the inpt files.
+   * may change the input files.
    *
    * \param group         Group to fill with input data
    * \param root_file     root file containing input data
@@ -254,9 +260,10 @@ public:
   /*!
    * \brief read from a root file
    *
-   * This is an MPI collective call.  Calling code may also need to add
+   * This is an MPI collective call on all ranks in the communicator used
+   * to construct this object.  Calling code may also need to add
    * an MPI barrier after this call if invoking subsequent operations that
-   * may change the inpt files.
+   * may change the input files.
    *
    * \param group      Group to fill with input data
    * \param root_file  root file containing input data
