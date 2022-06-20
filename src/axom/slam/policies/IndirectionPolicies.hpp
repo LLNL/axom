@@ -292,7 +292,8 @@ struct ViewIndirection
 
   ViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
 
-  IndirectionBufferType data() const { return m_vecBuf; }
+  IndirectionBufferType& data() { return m_vecBuf; }
+  const IndirectionBufferType& data() const { return m_vecBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
