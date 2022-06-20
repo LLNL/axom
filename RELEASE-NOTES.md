@@ -72,6 +72,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   points from a given 2D or 3D point mesh in the Mesh Blueprint format. The current implementation
   generates a Deluanay complex over the points and performs linear interpolation over the
   triangle/tetrahedron at the query points.
+- Adds a HIP execution policy for device kernels to run on AMD GPU hardware
+- Adds new Slic macros that allow you to selectively print messages only on root ranks. For example,
+  `SLIC_ERROR_ROOT(msg)` and `SLIC_ERROR_ROOT_IF(EXP, msg)`. This can be set via
+  `slic::initialize(bool is_root = true)` or `slic::setIsRoot()`.
+- Adds forward iterators to the `View`s and `Group`s of a `sidre::Group`.
+  These can be accessed via the range-for syntax as `for(auto& view: grp.views()){...}`,
+  Or using the iterator syntax as
+  `for(auto& it = grp.views().begin(), itEnd = grp.views().end(); it ! itEnd ; ++it) {...}`, and similarly for the groups of a group.
+- Adds forward iterators to the `Attribute`s and `Buffers`s of a `sidre::DataStore`,
+  with a similar syntax, e.g. `for(auto& buf : datastore.buffers()){...}`.
+- Adds an overload of `ImplicitGrid::getCandidatesAsArray()` to accept query points/bounding boxes
+  as an `axom::ArrayView`.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -112,6 +124,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   This is an advanced feature that could cause users to break an input file state after verification. This also alows us
   to not expose `axom/sol.hpp` to all users of Inlet. This greatly reduces compile times. Using this feature requires
   both a derived class and including `axom/sol.hpp` in the user code.
+- Renamed some overloads of function `createView` of
+  `axom::sidre::Group` which accept `int ndims, IndexType *shape`
+  arguments to be `createViewWithShape` or `createViewWithShapeAndAllocate`.
+- Replaced an unused older incarnation of iterators in sidre with a new `std`-compliant
+  implementation
+- Removed an out-of-date manually-generated header file in sidre `sidre/core/sidre.hpp`.
+  We recommend using the automatically generated header file `axom/sidre.hpp` to include
+  sidre functionality.
+- Removed functions from `sidre::ItemCollection` base class that were not common to all derived classes
+  and added a new derived class `sidre::IndexedCollection`
+- Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
+  for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
@@ -129,6 +153,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug in axom::Path that ignored the leading delimiter character if one was present
 - Fixed gcc compiler errors in configurations without RAJA or Umpire
 - Fixed `axom::Array<T>` behavior on copy-construction when `T` is a non-trivial type
+- Replaced `using` statement in `SidreDataTypesIds.h` with `typedef`
+  since C syntax is required in this file.
 
 ## [Version 0.6.1] - Release date 2021-11-17
 

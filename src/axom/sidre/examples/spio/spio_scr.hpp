@@ -13,8 +13,7 @@
   #include "scr.h"
 #endif
 
-#include "axom/sidre/spio/IOManager.hpp"
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 #include "conduit_relay.hpp"
 
 using axom::sidre::DataStore;

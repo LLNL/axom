@@ -387,6 +387,14 @@ AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
 
   check_vector_policy<cuda_exec>();
 #endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+  using hip_exec = axom::HIP_EXEC<512>;
+
+  check_vector_policy<hip_exec>();
+#endif
 }
 
 //----------------------------------------------------------------------

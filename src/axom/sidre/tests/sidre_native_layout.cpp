@@ -8,7 +8,7 @@
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/slic.hpp"
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 #include "conduit_blueprint.hpp"
 

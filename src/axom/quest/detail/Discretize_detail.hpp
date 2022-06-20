@@ -262,6 +262,7 @@ bool discretize(Point2D *&polyline,
                 OctType *&out,
                 int &octcount)
 {
+  int allocId = axom::execution_space<ExecSpace>::allocatorID();
   // Check for invalid input.  If any segment is invalid, exit returning false.
   bool stillValid = true;
   int segmentcount = pointcount - 1;
@@ -289,7 +290,7 @@ bool discretize(Point2D *&polyline,
   // That was the octahedron count for one segment.  Multiply by the number
   // of segments we will compute.
   int totaloctcount = segoctcount * segmentcount;
-  out = axom::allocate<OctType>(totaloctcount);
+  out = axom::allocate<OctType>(totaloctcount, allocId);
   octcount = 0;
 
   for(int seg = 0; seg < segmentcount; ++seg)

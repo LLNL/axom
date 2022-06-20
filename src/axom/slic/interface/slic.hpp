@@ -31,15 +31,38 @@ struct debug
 };
 
 /*!
- * \brief Initializes the SLIC logging environment.
+ * \brief Initializes the SLIC logging environment and allows setting which
+ * ranks write messages (root nodes). This defaults to all ranks writing unless
+ * selectively set by the user and can be set afterwards via slic::setIsRoot().
+ * 
+ * \sa slic::setIsRoot()
+ * 
+ * \param [in] is_root Enables selective logging macros based on root.
  */
-void initialize();
+void initialize(bool is_root = true);
 
 /*!
  * \brief Checks if the SLIC logging environment is initialized.
  * \return status true if initialized, else, false.
  */
 bool isInitialized();
+
+/*!
+ * \brief Checks if we are on the root rank. Used for selective logging on root nodes.
+ * 
+ * \sa slic::initialize()
+ * \sa slic::setIsRoot()
+ * 
+ * \return status true if on root, else, false.
+ */
+bool isRoot();
+
+/*!
+ * \brief Marks this node as root and enables the selective root logging filtering
+ * used in the SLIC_*_ROOT_* macros.
+ * \param [in] is_root Enables selective logging macros based on root.
+ */
+void setIsRoot(bool is_root);
 
 /*!
  * \brief Ensures the SLIC logging environment is initialized.
@@ -194,6 +217,14 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
 //! \sa axom::slic::isAbortOnWarningsEnabled()
 //! \sa axom::slic::setAbortOnWarning(bool status)
 //!
+
+/*!
+ * \brief Aborts and flushes on warning or error if corresponding AbortOnError
+ * or AbortOnWarning is set to true
+ * \collective
+ * \param [in] level the logging level.
+ */
+void abortIfEnabled(message::Level level);
 
 /*!
  * \brief Logs the given message to all registered streams.

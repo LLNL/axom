@@ -2181,7 +2181,7 @@ void check_plane_bb_intersect()
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA policy, set to device)
+  // Determine new allocator (for CUDA or HIP policy, set to device)
   umpire::Allocator allocator =
     (axom::execution_space<ExecSpace>::onDevice()
        ? rm.getAllocator(umpire::resource::Device)
@@ -2264,7 +2264,7 @@ void check_plane_seg_intersect()
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA policy, set to device)
+  // Determine new allocator (for CUDA or HIP policy, set to device)
   umpire::Allocator allocator =
     (axom::execution_space<ExecSpace>::onDevice()
        ? rm.getAllocator(umpire::resource::Device)
@@ -2385,6 +2385,24 @@ AXOM_CUDA_TEST(primal_intersect, plane_seg_test_intersection_cuda)
   check_plane_seg_intersect<exec>();
 }
   #endif /* AXOM_USE_CUDA */
+
+  #ifdef AXOM_USE_HIP
+TEST(primal_intersect, plane_bb_test_intersection_hip)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+
+  check_plane_bb_intersect<exec>();
+}
+
+TEST(primal_intersect, plane_seg_test_intersection_hip)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+
+  check_plane_seg_intersect<exec>();
+}
+  #endif /* AXOM_USE_HIP */
 
 #endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 

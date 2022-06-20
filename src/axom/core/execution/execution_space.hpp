@@ -102,4 +102,9 @@ struct execution_space
   #include "axom/core/execution/internal/cuda_exec.hpp"
 #endif
 
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__HIPCC__)
+  #include "axom/core/execution/internal/hip_exec.hpp"
+#endif
+
 #endif  // AXOM_EXECUTIONSPACE_HPP_

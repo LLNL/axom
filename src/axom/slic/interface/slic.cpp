@@ -18,10 +18,22 @@ namespace slic
 //------------------------------------------------------------------------------
 bool debug::checksAreErrors = false;
 
-void initialize() { Logger::initialize(); }
+static bool s_is_root = true;
+
+void initialize(bool is_root)
+{
+  axom::slic::s_is_root = is_root;
+  Logger::initialize();
+}
 
 //------------------------------------------------------------------------------
 bool isInitialized() { return (Logger::getActiveLogger() != nullptr); }
+
+//------------------------------------------------------------------------------
+bool isRoot() { return axom::slic::s_is_root; }
+
+//------------------------------------------------------------------------------
+void setIsRoot(bool is_root) { axom::slic::s_is_root = is_root; }
 
 //------------------------------------------------------------------------------
 void ensureInitialized()
@@ -74,6 +86,13 @@ message::Level getLoggingMsgLevel()
 {
   ensureInitialized();
   return Logger::getActiveLogger()->getLoggingMsgLevel();
+}
+
+//------------------------------------------------------------------------------
+void abortIfEnabled(message::Level level)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->abortIfEnabled(level);
 }
 
 //------------------------------------------------------------------------------

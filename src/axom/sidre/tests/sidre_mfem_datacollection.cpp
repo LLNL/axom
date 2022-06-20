@@ -5,17 +5,14 @@
 
 #include "axom/config.hpp"
 #include "axom/slic.hpp"
+#include "axom/sidre.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error This file requires MFEM
 #endif
 
 #include "mfem.hpp"
-
 #include "gtest/gtest.h"
-
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/core/MFEMSidreDataCollection.hpp"
 
 #ifdef AXOM_USE_MPI
   #include "mpi.h"

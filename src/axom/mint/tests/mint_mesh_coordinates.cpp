@@ -10,7 +10,7 @@
 #include "axom/mint/mesh/MeshCoordinates.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre.hpp"
 #endif
 
 #include "gtest/gtest.h"

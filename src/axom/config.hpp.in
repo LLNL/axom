@@ -66,6 +66,7 @@
 #cmakedefine AXOM_USE_CLI11
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CUDA
+#cmakedefine AXOM_USE_HIP
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_LUA

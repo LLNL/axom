@@ -518,7 +518,7 @@ TEST(primal_zip, zip_rays_2d_from_3d)
 }
 
 #ifdef AXOM_USE_CUDA
-AXOM_CUDA_TEST(primal_zip, zip_points_3d_gpu)
+AXOM_CUDA_TEST(primal_zip, zip_points_3d_cuda)
 {
   using PointType = primal::Point<double, 3>;
   using ExecSpace = axom::CUDA_EXEC<256>;
@@ -526,14 +526,14 @@ AXOM_CUDA_TEST(primal_zip, zip_points_3d_gpu)
   check_zip_points_3d<ExecSpace, PointType>();
 }
 
-TEST(primal_zip, zip_points_2d_from_3d_gpu)
+TEST(primal_zip, zip_points_2d_from_3d_cuda)
 {
   using ExecSpace = axom::CUDA_EXEC<256>;
 
   check_zip_points_2d_from_3d<ExecSpace>();
 }
 
-AXOM_CUDA_TEST(primal_zip, zip_vectors_3d_gpu)
+AXOM_CUDA_TEST(primal_zip, zip_vectors_3d_cuda)
 {
   using PointType = primal::Vector<double, 3>;
   using ExecSpace = axom::CUDA_EXEC<256>;
@@ -541,37 +541,97 @@ AXOM_CUDA_TEST(primal_zip, zip_vectors_3d_gpu)
   check_zip_points_3d<ExecSpace, PointType>();
 }
 
-TEST(primal_zip, zip_vectors_2d_from_3d_gpu)
+TEST(primal_zip, zip_vectors_2d_from_3d_cuda)
 {
   using ExecSpace = axom::CUDA_EXEC<256>;
 
   check_zip_vectors_2d_from_3d<ExecSpace>();
 }
 
-AXOM_CUDA_TEST(primal_zip, zip_bbs_3d_gpu)
+AXOM_CUDA_TEST(primal_zip, zip_bbs_3d_cuda)
 {
   using ExecSpace = axom::CUDA_EXEC<256>;
 
   check_zip_bbs_3d<ExecSpace>();
 }
 
-TEST(primal_zip, zip_bbs_2d_from_3d_gpu)
+TEST(primal_zip, zip_bbs_2d_from_3d_cuda)
 {
   using ExecSpace = axom::CUDA_EXEC<256>;
 
   check_zip_bbs_2d_from_3d<ExecSpace>();
 }
 
-TEST(primal_zip, zip_rays_3d_gpu)
+TEST(primal_zip, zip_rays_3d_cuda)
 {
   using ExecSpace = axom::CUDA_EXEC<256>;
 
   check_zip_rays_3d<ExecSpace>();
 }
 
-TEST(primal_zip, zip_rays_2d_from_3d_gpu)
+TEST(primal_zip, zip_rays_2d_from_3d_cuda)
 {
   using ExecSpace = axom::CUDA_EXEC<256>;
+
+  check_zip_rays_2d_from_3d<ExecSpace>();
+}
+#endif
+
+#ifdef AXOM_USE_HIP
+TEST(primal_zip, zip_points_3d_hip)
+{
+  using PointType = primal::Point<double, 3>;
+  using ExecSpace = axom::HIP_EXEC<256>;
+
+  check_zip_points_3d<ExecSpace, PointType>();
+}
+
+TEST(primal_zip, zip_points_2d_from_3d_hip)
+{
+  using ExecSpace = axom::HIP_EXEC<256>;
+
+  check_zip_points_2d_from_3d<ExecSpace>();
+}
+
+TEST(primal_zip, zip_vectors_3d_hip)
+{
+  using PointType = primal::Vector<double, 3>;
+  using ExecSpace = axom::HIP_EXEC<256>;
+
+  check_zip_points_3d<ExecSpace, PointType>();
+}
+
+TEST(primal_zip, zip_vectors_2d_from_3d_hip)
+{
+  using ExecSpace = axom::HIP_EXEC<256>;
+
+  check_zip_vectors_2d_from_3d<ExecSpace>();
+}
+
+TEST(primal_zip, zip_bbs_3d_hip)
+{
+  using ExecSpace = axom::HIP_EXEC<256>;
+
+  check_zip_bbs_3d<ExecSpace>();
+}
+
+TEST(primal_zip, zip_bbs_2d_from_3d_hip)
+{
+  using ExecSpace = axom::HIP_EXEC<256>;
+
+  check_zip_bbs_2d_from_3d<ExecSpace>();
+}
+
+TEST(primal_zip, zip_rays_3d_hip)
+{
+  using ExecSpace = axom::HIP_EXEC<256>;
+
+  check_zip_rays_3d<ExecSpace>();
+}
+
+TEST(primal_zip, zip_rays_2d_from_3d_hip)
+{
+  using ExecSpace = axom::HIP_EXEC<256>;
 
   check_zip_rays_2d_from_3d<ExecSpace>();
 }

@@ -56,6 +56,11 @@ using MyTypes = ::testing::Types<
   axom::CUDA_EXEC<256>,
   axom::CUDA_EXEC<256, axom::ASYNC>,
 #endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  axom::HIP_EXEC<100>,
+  axom::HIP_EXEC<256>,
+  axom::HIP_EXEC<256, axom::ASYNC>,
+#endif
   axom::SEQ_EXEC>;
 
 TYPED_TEST_SUITE(core_array_for_all, MyTypes);
@@ -247,7 +252,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_insert)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -320,7 +325,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_insert)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -394,7 +399,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_range_set)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -450,7 +455,7 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_initializer_list)
   using ExecSpace = typename TestFixture::ExecSpace;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -512,7 +517,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_default_ctor_obj)
     typename TestFixture::template HostTArray<NonTrivialDefaultCtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -589,7 +594,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_ctor_obj)
   using HostArray = typename TestFixture::template HostTArray<NonTrivialCtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -659,7 +664,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_dtor_obj)
   using HostArray = typename TestFixture::template HostTArray<NonTrivialDtor>;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -747,7 +752,7 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
   using IntHostArray = typename TestFixture::HostArray;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
@@ -758,22 +763,34 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
 
   // Helper function to check all values in the array for consistency
   auto check_array_values = [=](const DynamicArray& arr, int expected) -> bool {
-    // Copy device side values into int array
-    IntArray values(arr.size(), arr.size(), kernelAllocID);
-    const auto values_v = values.view();
-    const auto arr_v = arr.view();
-    axom::for_all<ExecSpace>(
-      arr.size(),
-      AXOM_LAMBDA(axom::IndexType i) { values_v[i] = arr_v[i].m_val; });
-
-    // handles synchronization, if necessary
-    if(axom::execution_space<ExecSpace>::async())
+    IntHostArray values_host;
+    if(arr.getAllocatorID() == kernelAllocID)
     {
-      axom::synchronize<ExecSpace>();
+      // Copy device side values into int array
+      IntArray values(arr.size(), arr.size(), kernelAllocID);
+      const auto values_v = values.view();
+      const auto arr_v = arr.view();
+      axom::for_all<ExecSpace>(
+        arr.size(),
+        AXOM_LAMBDA(axom::IndexType i) { values_v[i] = arr_v[i].m_val; });
+
+      // handles synchronization, if necessary
+      if(axom::execution_space<ExecSpace>::async())
+      {
+        axom::synchronize<ExecSpace>();
+      }
+      values_host = IntHostArray(values, hostAllocID);
+    }
+    else
+    {
+      values_host.resize(arr.size());
+      for(int i = 0; i < arr.size(); i++)
+      {
+        values_host[i] = arr[i].m_val;
+      }
     }
 
     // Check array contents on host
-    IntHostArray values_host(values, hostAllocID);
     bool allValuesEq = true;
     for(int i = 0; i < arr.size(); ++i)
     {
@@ -848,14 +865,13 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_emplace)
   using HostIntArray = typename TestFixture::HostArray;
 
   int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
   if(axom::execution_space<ExecSpace>::onDevice())
   {
     kernelAllocID = axom::getUmpireResourceAllocatorID(
       umpire::resource::MemoryResourceType::Device);
   }
 #endif
-  int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   // Helper function to copy device values to a host array
   auto convert_to_host_array = [=](const DynamicArray& arr) -> HostIntArray {

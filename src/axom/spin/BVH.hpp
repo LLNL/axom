@@ -301,31 +301,23 @@ public:
    * \param [in]  numPts the total number of query points supplied
    * \param [in]  points array of points to query against the BVH
    *
-   * \return numCandidates the size of the candidates array returned
-   *
-   * \note offsets and counts are pointers to arrays of size numPts that are
-   *  pre-allocated by the caller before calling findPoints().
-   *
-   * \note The candidates array is allocated internally by the method and
-   *  ownership of the memory is transferred to the caller. Consequently, the
-   *  caller is responsible for properly deallocating the candidates buffer.
-   *
    * \note Upon completion, the ith query point has:
    *  * counts[ i ] candidates
    *  * Stored in the candidates array in the following range:
    *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
    *
-   * \pre offsets != nullptr
-   * \pre counts  != nullptr
-   * \pre candidates == nullptr
+   * \pre offsets.size() == numPts
+   * \pre counts.size()  == numPts
    * \pre points != nullptr
    */
   template <typename PointIndexable>
-  IndexType findPoints(IndexType* offsets,
-                       IndexType* counts,
-                       IndexType*& candidates,
-                       IndexType numPts,
-                       PointIndexable points) const;
+  void findPoints(axom::ArrayView<IndexType> offsets,
+                  axom::ArrayView<IndexType> counts,
+                  axom::Array<IndexType>& candidates,
+                  IndexType numPts,
+                  PointIndexable points) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given rays.
@@ -336,26 +328,22 @@ public:
    * \param [in] numRays the total number of rays
    * \param [in] rays array of the rays to query against the BVH
    *
-   * \return numCandidates the size of the candidates array returned
-   *
-   * \note offsets and counts are arrays of size numRays that are pre-allocated
-   *  by the caller, prior to the calling findRays().
-   *
    * \note After the call to findRays(), the ith ray has:
    *  * counts[ i ] candidates
    *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
    *
-   * \pre offsets    != nullptr
-   * \pre counts     != nullptr
-   * \pre candidates == nullptr
+   * \pre offsets.size() == numRays
+   * \pre counts.size()  == numRays
    * \pre rays != nullptr
    */
   template <typename RayIndexable>
-  IndexType findRays(IndexType* offsets,
-                     IndexType* counts,
-                     IndexType*& candidates,
-                     IndexType numRays,
-                     RayIndexable rays) const;
+  void findRays(axom::ArrayView<IndexType> offsets,
+                axom::ArrayView<IndexType> counts,
+                axom::Array<IndexType>& candidates,
+                IndexType numRays,
+                RayIndexable rays) const;
 
   /*!
    * \brief Finds the candidate bins that intersect the given bounding boxes.
@@ -366,26 +354,22 @@ public:
    * \param [in]  numBoxes the total number of bounding boxes
    * \param [in]  boxes array of boxes to query against the BVH
    *
-   * \return numCandidates the size of the candidates array returned
-   *
-   * \note offsets and counts are pointers to arrays of size numBoxes that are
-   *  pre-allocated by the caller before calling findBoundingBoxes().
-   *
    * \note After the call to findBoundingBoxes(), the ith bounding box has:
    *  * counts[ i ] candidates
    *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *  * The sum of all counts is the size of the candidates array,
+   *    candidates.size()
    *
-   * \pre offsets    != nullptr
-   * \pre counts     != nullptr
-   * \pre candidates == nullptr
+   * \pre offsets.size() == numBoxes
+   * \pre counts.size()  == numBoxes
    * \pre boxes != nullptr
    */
   template <typename BoxIndexable>
-  IndexType findBoundingBoxes(IndexType* offsets,
-                              IndexType* counts,
-                              IndexType*& candidates,
-                              IndexType numBoxes,
-                              BoxIndexable boxes) const;
+  void findBoundingBoxes(axom::ArrayView<IndexType> offsets,
+                         axom::ArrayView<IndexType> counts,
+                         axom::Array<IndexType>& candidates,
+                         IndexType numBoxes,
+                         BoxIndexable boxes) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -478,11 +462,12 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 template <typename PointIndexable>
-IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
-                                                             IndexType* counts,
-                                                             IndexType*& candidates,
-                                                             IndexType numPts,
-                                                             PointIndexable pts) const
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(
+  axom::ArrayView<IndexType> offsets,
+  axom::ArrayView<IndexType> counts,
+  axom::Array<IndexType>& candidates,
+  IndexType numPts,
+  PointIndexable pts) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findPoints");
 
@@ -493,9 +478,6 @@ IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
                 "Iterator must return objects convertible to primal::Point.");
 
   SLIC_ASSERT(m_bvh != nullptr);
-  SLIC_ASSERT(offsets != nullptr);
-  SLIC_ASSERT(counts != nullptr);
-  SLIC_ASSERT(candidates == nullptr);
 
   // Define traversal predicates
   auto predicate = [=] AXOM_HOST_DEVICE(const PointType& p,
@@ -503,23 +485,23 @@ IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(IndexType* offsets,
     return bb.contains(p);
   };
 
-  return m_bvh->template findCandidatesImpl<PointType>(predicate,
-                                                       offsets,
-                                                       counts,
-                                                       candidates,
-                                                       numPts,
-                                                       pts,
-                                                       m_AllocatorID);
+  candidates = m_bvh->template findCandidatesImpl<PointType>(predicate,
+                                                             offsets,
+                                                             counts,
+                                                             numPts,
+                                                             pts,
+                                                             m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 template <typename RayIndexable>
-IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
-                                                           IndexType* counts,
-                                                           IndexType*& candidates,
-                                                           IndexType numRays,
-                                                           RayIndexable rays) const
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(
+  axom::ArrayView<IndexType> offsets,
+  axom::ArrayView<IndexType> counts,
+  axom::Array<IndexType>& candidates,
+  IndexType numRays,
+  RayIndexable rays) const
 {
   AXOM_PERF_MARK_FUNCTION("BVH::findRays");
 
@@ -530,9 +512,6 @@ IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
                 "Iterator must return objects convertible to primal::Ray.");
 
   SLIC_ASSERT(m_bvh != nullptr);
-  SLIC_ASSERT(offsets != nullptr);
-  SLIC_ASSERT(counts != nullptr);
-  SLIC_ASSERT(candidates == nullptr);
 
   const FloatType TOL = m_tolerance;
 
@@ -543,22 +522,21 @@ IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(IndexType* offsets,
     return primal::detail::intersect_ray(r, bb, tmp, TOL);
   };
 
-  return m_bvh->template findCandidatesImpl<RayType>(predicate,
-                                                     offsets,
-                                                     counts,
-                                                     candidates,
-                                                     numRays,
-                                                     rays,
-                                                     m_AllocatorID);
+  candidates = m_bvh->template findCandidatesImpl<RayType>(predicate,
+                                                           offsets,
+                                                           counts,
+                                                           numRays,
+                                                           rays,
+                                                           m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 template <typename BoxIndexable>
-IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
-  IndexType* offsets,
-  IndexType* counts,
-  IndexType*& candidates,
+void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
+  axom::ArrayView<IndexType> offsets,
+  axom::ArrayView<IndexType> counts,
+  axom::Array<IndexType>& candidates,
   IndexType numBoxes,
   BoxIndexable boxes) const
 {
@@ -572,9 +550,6 @@ IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
     "Iterator must return objects convertible to primal::BoundingBox.");
 
   SLIC_ASSERT(m_bvh != nullptr);
-  SLIC_ASSERT(offsets != nullptr);
-  SLIC_ASSERT(counts != nullptr);
-  SLIC_ASSERT(candidates == nullptr);
 
   // STEP 2: define traversal predicates
   auto predicate = [=] AXOM_HOST_DEVICE(const BoxType& bb1,
@@ -582,13 +557,12 @@ IndexType BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(
     return bb1.intersectsWith(bb2);
   };
 
-  return m_bvh->template findCandidatesImpl<BoxType>(predicate,
-                                                     offsets,
-                                                     counts,
-                                                     candidates,
-                                                     numBoxes,
-                                                     boxes,
-                                                     m_AllocatorID);
+  candidates = m_bvh->template findCandidatesImpl<BoxType>(predicate,
+                                                           offsets,
+                                                           counts,
+                                                           numBoxes,
+                                                           boxes,
+                                                           m_AllocatorID);
 }
 
 //------------------------------------------------------------------------------
