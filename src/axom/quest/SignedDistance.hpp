@@ -18,7 +18,6 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Vector.hpp"
-
 #include "axom/primal/utils/ZipPoint.hpp"
 
 // mint includes
@@ -30,7 +29,7 @@
 #include "axom/mint/mesh/Mesh.hpp"
 
 // C/C++ includes
-#include <cmath>  // for std::sqrt()
+#include <cmath>
 
 namespace axom
 {
@@ -240,7 +239,7 @@ public:
    *  everywhere. Specifically, the sign is ambiguous for all points for which
    *  a normal projection onto the surface does not exist.
    *
-   * \return minDist minimum signed distance of the query point to the surface.
+   * \return minimum signed distance of the query point to the surface.
    */
   double computeDistance(double x, double y, double z = 0.0)
   {
@@ -263,7 +262,7 @@ public:
    *  everywhere. Specifically, the sign is ambiguous for all points for which
    *  a normal projection onto the surface does not exist.
    *
-   * \return minDist the signed minimum distance to the surface mesh.
+   * \return the signed minimum distance to the surface mesh.
    */
   double computeDistance(const PointType& queryPnt) const;
 
@@ -288,7 +287,7 @@ public:
    *  everywhere. Specifically, the sign is ambiguous for all points for which
    *  a normal projection onto the surface does not exist.
    *
-   * \return minDist the signed minimum distance to the surface mesh.
+   * \return the signed minimum distance to the surface mesh.
    */
   double computeDistance(const PointType& queryPnt,
                          PointType& closestPnt,
@@ -321,7 +320,7 @@ public:
    *  everywhere. Specifically, the sign is ambiguous for all points for which
    *  a normal projection onto the surface does not exist.
    *
-   * \return minDist the signed minimum distance to the surface mesh.
+   * \return the signed minimum distance to the surface mesh.
    *
    * \pre outSgnDist != nullptr
    */
@@ -384,7 +383,7 @@ private:
    * \param [in] qpt query point to check against surface element
    * \param [in] currMin the minimum-distance surface element data
    *
-   * \return sgn 1.0 if outside, -1.0 if inside
+   * \return 1.0 if outside, -1.0 if inside
    */
   AXOM_HOST_DEVICE static double computeSign(const PointType& qpt,
                                              const MinCandidate& currMin);

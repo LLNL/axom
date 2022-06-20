@@ -84,7 +84,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   with a similar syntax, e.g. `for(auto& buf : datastore.buffers()){...}`.
 - Adds an overload of `ImplicitGrid::getCandidatesAsArray()` to accept query points/bounding boxes
   as an `axom::ArrayView`.
-- Adds a `primal::closest_point` overload to finding the closest point on a sphere to a given point
+- Adds a `primal::closest_point(point,sphere)` overload to find the closest point on a sphere to a given point
 - Adds an overload to quest's `SignedDistance` query to return the closest point on the surface 
   to the query point and the surface normal at that point. Also exposes this functionality 
   in quest's signed_distance C API.

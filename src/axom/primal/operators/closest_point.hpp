@@ -233,9 +233,9 @@ inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& pt,
  * \param [in] sphere user-supplied triangle
  * \return cp the closest point on sphere \a sphere to point P
  *
- * \note The closest point is uniquely defined everyone except at the sphere's origin.
- * We handle that case by returning the point on the sphere along the direction
- * determined by \a primal::Vector::unitVector() for the zero vector
+ * \note The closest point is uniquely defined everywhere except at the sphere's center.
+ * We handle that case by returning the point on the sphere along an arbitrary direction
+ * (specifically, the direction determined by \a primal::Vector::unitVector() )
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
