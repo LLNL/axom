@@ -173,7 +173,7 @@ TEST(primal_closest_point, sphere_point_2D)
   // define several spheres of different centers and radii
   axom::Array<double> radii = {1., .12345, 543.21, .4, 0.001, 87, 0.};
   axom::Array<QPoint> centers = {QPoint {0, 0},
-                                 QPoint {1, 0, 0},
+                                 QPoint {1, 0},
                                  QPoint {7.5, 8.25},
                                  QPoint {-1.3, 2.3},
                                  QPoint {-20, -40},
