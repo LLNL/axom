@@ -16,6 +16,7 @@ set( primal_tests
     primal_compute_moments.cpp
     primal_curved_polygon.cpp
     primal_in_sphere.cpp
+    primal_integral.cpp
     primal_intersect.cpp
     primal_intersect_impl.cpp
     primal_numeric_array.cpp
