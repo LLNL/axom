@@ -188,18 +188,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
                   GNU         "-fdiagnostics-color=always"
                   CLANG       "-fcolor-diagnostics"
                   )
-list(APPEND custom_compiler_flags_list AXOM_NINJA_FLAGS)
 
-
-# message(STATUS "Custom compiler flags:")
-# foreach(flag ${custom_compiler_flags_list})
-#    message(STATUS "\tvalue of ${flag} is '${${flag}}'")
-# endforeach()
-
-
-#------------------------------------------------------------------------------
-# Miscelaneous cmake commands
-#------------------------------------------------------------------------------
 if(${AXOM_ENABLE_EXPORTS})
   set(CMAKE_ENABLE_EXPORTS ON)
 endif()
@@ -208,8 +197,12 @@ if( ${CMAKE_MAKE_PROGRAM} STREQUAL "ninja" OR ${CMAKE_MAKE_PROGRAM} MATCHES ".*/
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_NINJA_FLAGS}")
 endif()
 
+# message(STATUS "Custom compiler flags:")
+# foreach(flag ${custom_compiler_flags_list})
+#    message(STATUS "\tvalue of ${flag} is '${${flag}}'")
+# endforeach()
+
 # Disable warnings about conditionals over constants
 if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
-
