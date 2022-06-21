@@ -102,6 +102,8 @@ protected:
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
   using MapBaseType = slam::MapBase<SetPosType>;
 
+  using MapUniquePtr = std::unique_ptr<MapBaseType>;
+
   template <typename T>
   using MapType = slam::Map<T, RangeSetType, IndPolicy<T>, MapStrideType>;
 
@@ -164,7 +166,7 @@ public:
   //       members or replacing them with std::unique_ptr.
 
   /** Destructor **/
-  ~MultiMat();
+  ~MultiMat() = default;
   /** Copy constructor (Deep copy). **/
   MultiMat(const MultiMat&);
   /** Assignment operator **/
@@ -488,7 +490,7 @@ private:  //private functions
   void transposeField_helper(int field_idx);
 
   template <typename T>
-  MapBaseType* helper_copyField(const MultiMat&, int map_i);
+  MapUniquePtr helper_copyField(const MultiMat&, int map_i);
 
 private:
   unsigned int m_ncells, m_nmats;
@@ -521,7 +523,7 @@ private:
   //std::vector of information for each fields
   std::vector<std::string> m_fieldNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
-  std::vector<MapBaseType*> m_mapVec;
+  std::vector<MapUniquePtr> m_mapVec;
   std::vector<DataTypeSupported> m_dataTypeVec;
   std::vector<DataLayout> m_fieldDataLayoutVec;
   std::vector<SparsityLayout> m_fieldSparsityLayoutVec;
@@ -610,7 +612,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     Field2D<T>* new_map_ptr =
       new Field2D<T>(*this, s, field_name, data_arr, stride);
 
-    m_mapVec.push_back(new_map_ptr);
+    m_mapVec.push_back(MapUniquePtr {new_map_ptr});
   }
   else
   {
@@ -625,7 +627,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     for(auto iter = new_map_ptr->begin(); iter != new_map_ptr->end(); iter++)
       for(auto str = 0; str < stride; ++str) iter(str) = data_arr[i++];
 
-    m_mapVec.push_back(new_map_ptr);
+    m_mapVec.push_back(MapUniquePtr {new_map_ptr});
   }
 
   m_fieldNameVec.push_back(field_name);
@@ -664,7 +666,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
   if(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL ||
      m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
   {
-    return *dynamic_cast<Field1D<T>*>(m_mapVec[fieldIdx]);
+    return *dynamic_cast<Field1D<T>*>(m_mapVec[fieldIdx].get());
   }
   else
   {
@@ -673,7 +675,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
     //Right now we're allowing Field2D (BivariateMap) to be returned as
     // a Field1D (Map) so it can be accessed like a 1d array, but the
     // indexing information would be lost.
-    auto* map_2d = dynamic_cast<BivariateMapType<T>*>(m_mapVec[fieldIdx]);
+    auto* map_2d = dynamic_cast<BivariateMapType<T>*>(m_mapVec[fieldIdx].get());
     return *(map_2d->getMap());
   }
 }
@@ -688,7 +690,7 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 
   SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
 
-  return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
+  return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx].get());
 }
 
 template <typename T, typename BSetType>
