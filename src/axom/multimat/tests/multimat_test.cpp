@@ -589,7 +589,8 @@ TEST(multimat, test_dynamic_multimat_1_array)
             }
             else
             {
-              idx1 = mi, idx2 = ci;
+              idx1 = mi;
+              idx2 = ci;
             }
 
             EXPECT_TRUE(mm.removeEntry(ci, mi));
@@ -611,7 +612,8 @@ TEST(multimat, test_dynamic_multimat_1_array)
         }
         else
         {
-          idx1 = 0, idx2 = ci;
+          idx1 = 0;
+          idx2 = ci;
         }
 
         EXPECT_TRUE(mm.addEntry(ci, 0));
