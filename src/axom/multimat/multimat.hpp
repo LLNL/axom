@@ -694,6 +694,9 @@ MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_nam
 
   //create instance of that map
   int fi = getFieldIdx(field_name);
+
+  if(fi < 0) throw std::invalid_argument("No field with this name is found");
+
   BSetType* bi_set =
     (BSetType*)this->get_mapped_biSet(m_fieldDataLayoutVec[fi],
                                       m_fieldSparsityLayoutVec[fi]);
@@ -713,8 +716,13 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   auto& bmap = get2dField<T>(field_name);
 
   //create instance of that map
+  int fieldIdx = getFieldIdx(field_name);
+
+  if(fieldIdx < 0)
+    throw std::invalid_argument("No field with this name is found");
+
   ProductSetType* prod_set;
-  if(m_fieldDataLayoutVec[getFieldIdx(field_name)] == DataLayout::CELL_DOM)
+  if(m_fieldDataLayoutVec[fieldIdx] == DataLayout::CELL_DOM)
     prod_set = m_cellMatProdSet;
   else
     prod_set = m_matCellProdSet;
