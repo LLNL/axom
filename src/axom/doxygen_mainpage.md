@@ -10,6 +10,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage kleetop provides functionality to add non-conformal material regions to meshes.
 * @subpage lumberjacktop provides logging aggregation and filtering capability.
 * @subpage minttop provides a comprehensive mesh data model.
+* @subpage multimattop provides an API for managing multimaterial field data.
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.
 * @subpage questtop provides an API to query point distance and position relative to meshes.
 * @subpage sidretop provides a data store with hierarchical structure.
@@ -21,12 +22,13 @@ Dependencies between components are as follows:
 - Core, Slic, and Lumberjack provide basic services to the rest of Axom and to user code 
   - Core has no dependencies, and the other modules depend on Core
   - Slic optionally depends on Lumberjack
-- Slam, Primal, Sidre, Spin, Inlet, Mint, Klee and Quest all depend on Slic and Core
+- Slam, Primal, Sidre, Spin, Inlet, Mint, Klee, Multimat and Quest all depend on Slic and Core
   - Inlet depends on Sidre and Primal
   - Mint optionally depends on Sidre
   - Spin depends on Primal and Slam
   - Quest depends on Slam, Primal, Spin, and Mint
   - Klee depends on Sidre, Inlet and Primal
+  - Multimat depends on Slic, and Slam
 
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
