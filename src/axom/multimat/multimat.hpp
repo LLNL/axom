@@ -285,9 +285,9 @@ public:
    * \param field_name the name of the field
    * \return Field1D<T>& the field reference
    */
-
   template <typename T>
   Field1D<T>& get1dField(const std::string& field_name);
+
   /**
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field2D, containing an entry for each cell and
