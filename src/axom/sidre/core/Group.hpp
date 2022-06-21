@@ -38,6 +38,7 @@
 // Sidre headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
+#include "ItemCollection.hpp"
 
 // Define the default protocol for sidre I/O
 #ifdef AXOM_USE_HDF5
@@ -55,6 +56,8 @@ class Group;
 class DataStore;
 template <typename TYPE>
 class ItemCollection;
+template <typename TYPE>
+class MapCollection;
 
 /*!
  * \class Group
@@ -125,6 +128,9 @@ public:
   //
   friend class DataStore;
   friend class View;
+
+  using ViewCollection = ItemCollection<View>;
+  using GroupCollection = ItemCollection<Group>;
 
   //@{
   //!  @name Basic query and accessor methods.
@@ -890,6 +896,79 @@ public:
   //@}
 
   //@{
+  //!  @name Accessors for iterating the group and view collections.
+  //!
+  //! These methods can be used to iterate over the collection of groups and views
+  //! Example:
+  //!      for (auto& group : grp->groups())
+  //!      {
+  //!          /// code here using group
+  //!      }
+  //!      for (auto& view : grp->views())
+  //!      {
+  //!          /// code here using view
+  //!      }
+
+  /*!
+   * \brief Returns an adaptor to support iterating the collection of views
+   */
+  typename ViewCollection::iterator_adaptor views();
+
+  /*!
+   * \brief Returns a const adaptor to support iterating the collection of views
+   */
+  typename ViewCollection::const_iterator_adaptor views() const;
+
+  /*!
+   * \brief Returns an adaptor to support iterating the collection of groups
+   */
+  typename GroupCollection::iterator_adaptor groups();
+
+  /*!
+   * \brief Returns a const adaptor to support iterating the collection of groups
+   */
+  typename GroupCollection::const_iterator_adaptor groups() const;
+
+  //@}
+private:
+  /*!
+   * \brief Casts the views ItemCollection to a (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of views
+   * \sa isUsingMap, isUsingList
+   */
+  MapCollection<View>* getNamedViews();
+
+  /*!
+   * \brief Casts the views ItemCollection to a const (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of views
+   * \sa isUsingMap, isUsingList
+   */
+  const MapCollection<View>* getNamedViews() const;
+
+  /*!
+   * \brief Casts the group ItemCollection to a (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of groups
+   * \sa isUsingMap, isUsingList
+   */
+  MapCollection<Group>* getNamedGroups();
+
+  /*!
+   * \brief Casts the group ItemCollection to a const (named) MapCollection
+   *
+   * \warning This is only valid when the group is using a map rather than a list
+   * for its collection of groups
+   * \sa isUsingMap, isUsingList
+   */
+  const MapCollection<Group>* getNamedGroups() const;
+
+public:
+  //@{
   //!  @name Group iteration methods.
   //!
   //! Using these methods, a code can get the first Group index and each
@@ -1589,13 +1668,6 @@ private:
 
   /// Character used to denote a path string passed to get/create calls.
   AXOM_EXPORT static const char s_path_delimiter;
-
-  ///////////////////////////////////////////////////////////////////
-  //
-  using ViewCollection = ItemCollection<View>;
-  //
-  using GroupCollection = ItemCollection<Group>;
-  ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
   ViewCollection* m_view_coll;

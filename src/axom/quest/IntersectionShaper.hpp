@@ -320,12 +320,13 @@ public:
     }
 
     // Generate the Octahedra
-    bool disc_status = axom::quest::discretize<ExecSpace>(polyline,
-                                                          polyline_size,
-                                                          m_level,
-                                                          m_octs,
-                                                          m_octcount);
+    const bool disc_status = axom::quest::discretize<ExecSpace>(polyline,
+                                                                polyline_size,
+                                                                m_level,
+                                                                m_octs,
+                                                                m_octcount);
 
+    AXOM_UNUSED_VAR(disc_status);  // silence warnings in release configs
     SLIC_ASSERT_MSG(
       disc_status,
       "Discretization of contour has failed. Check that contour is valid");
@@ -593,9 +594,9 @@ public:
       "{:-^80}",
       " Finding octahedra candidates for each hexahedral element "));
 
-    axom::IndexType* offsets = axom::allocate<axom::IndexType>(NE);
-    axom::IndexType* counts = axom::allocate<axom::IndexType>(NE);
-    axom::IndexType* candidates = nullptr;
+    axom::Array<IndexType> offsets(NE);
+    axom::Array<IndexType> counts(NE);
+    axom::Array<IndexType> candidates;
     bvh.findBoundingBoxes(offsets,
                           counts,
                           candidates,
@@ -609,10 +610,11 @@ public:
     using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
     using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 
+    const auto counts_v = counts.view();
     RAJA::ReduceSum<REDUCE_POL, int> totalCandidates(0);
     axom::for_all<ExecSpace>(
       NE,
-      AXOM_LAMBDA(axom::IndexType i) { totalCandidates += counts[i]; });
+      AXOM_LAMBDA(axom::IndexType i) { totalCandidates += counts_v[i]; });
 
     // Initialize hexahedron indices and octahedra candidates
     axom::IndexType* hexIndices =
@@ -653,14 +655,16 @@ public:
       "{:-^80}",
       " Linearizing each tetrahedron, octahedron candidate pair "));
 
+    const auto offsets_v = offsets.view();
+    const auto candidates_v = candidates.view();
     AXOM_PERF_MARK_SECTION(
       "init_candidates",
       axom::for_all<ExecSpace>(
         NE,
         AXOM_LAMBDA(axom::IndexType i) {
-          for(int j = 0; j < counts[i]; j++)
+          for(int j = 0; j < counts_v[i]; j++)
           {
-            int octIdx = candidates[offsets[i] + j];
+            int octIdx = candidates_v[offsets_v[i] + j];
             if(!oct_has_duplicate_verts(m_octs[octIdx]))
             {
               for(int k = 0; k < NUM_TETS_PER_HEX; k++)
@@ -747,9 +751,6 @@ public:
     axom::deallocate(ZERO);
     axom::deallocate(m_hexes);
     axom::deallocate(m_hex_bbs);
-    axom::deallocate(offsets);
-    axom::deallocate(counts);
-    axom::deallocate(candidates);
     axom::deallocate(hexIndices);
     axom::deallocate(octCandidates);
     axom::deallocate(tets);
@@ -797,6 +798,8 @@ public:
     }
 
     /// Implementation here -- update material volume fractions based on replacement rules
+    // Note: we're not yet updating the shape volume fractions
+    AXOM_UNUSED_VAR(shapeVolFrac);
   }
 
   void finalizeShapeQuery() override

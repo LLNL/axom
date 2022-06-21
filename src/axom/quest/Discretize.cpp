@@ -222,9 +222,8 @@ int mesh_from_discretized_polyline(const OctType* octs,
   const int tetcount = 8 * octcount;
   const int vertcount = 4 * tetcount;
   int octPerSeg = octcount / segcount;
-  int remainderOcts = octcount % segcount;
   SLIC_ASSERT_MSG(
-    remainderOcts == 0,
+    (octcount % segcount) == 0,  // remainderOcts
     "Total octahedron count is not evenly divisible by segment count");
 
   // Step 0: create the UnstructuredMesh

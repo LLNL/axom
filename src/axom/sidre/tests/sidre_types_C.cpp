@@ -8,10 +8,7 @@
 #include <limits>
 
 #include "axom/core/Types.hpp"
-
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/interface/SidreTypes.h"
-#include "axom/sidre/core/SidreTypes.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::DataType;
 using axom::sidre::getTypeID;

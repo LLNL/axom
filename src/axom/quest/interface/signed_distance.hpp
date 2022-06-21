@@ -248,6 +248,32 @@ void signed_distance_set_execution_space(SignedDistExec execSpace);
 double signed_distance_evaluate(double x, double y, double z = 0.0);
 
 /*!
+ * \brief Evaluates the signed distance function at the given 3D point.
+ *
+ * \param [in] x the x-coordinate of the point in query
+ * \param [in] y the y-coordinate of the point in query
+ * \param [in] z the z-coordinate of the point in query
+ * \param [out] cp_x the x-coordinate of the computed closest point on surface to query point
+ * \param [out] cp_y the y-coordinate of the computed closest point on surface to query point
+ * \param [out] cp_z the z-coordinate of the computed closest point on surface to query point
+ * \param [out] n_x the x-coordinate of the surface normal at the computed closest point
+ * \param [out] n_y the y-coordinate of the surface normal at the computed closest point
+ * \param [out] n_z the z-coordinate of the surface normal at the computed closest point
+ *
+ * \return d the signed distance evaluated at the specified point. The closest surface point
+ * to the query point and the normal at that point are returned as OUT parameters 
+ */
+double signed_distance_evaluate(double x,
+                                double y,
+                                double z,
+                                double& cp_x,
+                                double& cp_y,
+                                double& cp_z,
+                                double& n_x,
+                                double& n_y,
+                                double& n_z);
+
+/*!
  * \brief Evaluates the signed distance function at the given set of points.
  *
  * \param [in] x array consisting of the x-coordinates for each query point
