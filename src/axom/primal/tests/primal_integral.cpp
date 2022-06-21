@@ -14,7 +14,6 @@
 namespace primal = axom::primal;
 namespace slic = axom::slic;
 
-
 /*!
  * \brief Utility function to initialize the logger
  */
@@ -79,25 +78,35 @@ TEST(primal_integral, evaluate_area_integral)
 
   double trinodes3[] = {0.0, 0.0, 1.0, 0.0};
   Bezier tri3(trinodes3, 1);
-  
+
   axom::Array<Bezier> triangle({tri1, tri2, tri3});
-  EXPECT_NEAR(evaluate_area_integral(triangle, const_integrand, npts), 0.5, abs_tol);
-  EXPECT_NEAR(evaluate_area_integral(triangle, poly_integrand, npts), 1.0 / 60.0, abs_tol);
-  EXPECT_NEAR(evaluate_area_integral(triangle, transc_integrand, npts), 0.0415181074232, abs_tol);
+  EXPECT_NEAR(evaluate_area_integral(triangle, const_integrand, npts),
+              0.5,
+              abs_tol);
+  EXPECT_NEAR(evaluate_area_integral(triangle, poly_integrand, npts),
+              1.0 / 60.0,
+              abs_tol);
+  EXPECT_NEAR(evaluate_area_integral(triangle, transc_integrand, npts),
+              0.0415181074232,
+              abs_tol);
 
   // Test on parabolic domain (between f(x) = 1-x^2 and g(x) = x^2-1, shifted to the right 1 unit)
-  double paranodes1[] = {2.0, 1.0, 0.0, 
-                         0.0, 2.0, 0.0};
+  double paranodes1[] = {2.0, 1.0, 0.0, 0.0, 2.0, 0.0};
   Bezier para1(paranodes1, 2);
 
-  double paranodes2[] = {0.0,  1.0, 2.0,
-                         0.0, -2.0, 0.0};
+  double paranodes2[] = {0.0, 1.0, 2.0, 0.0, -2.0, 0.0};
   Bezier para2(paranodes2, 2);
 
-  axom::Array<Bezier> parabola_shape({para1, para2}); 
-  EXPECT_NEAR(evaluate_area_integral(parabola_shape, const_integrand, npts), 8.0 / 3.0, abs_tol);
-  EXPECT_NEAR(evaluate_area_integral(parabola_shape, poly_integrand, npts), 64.0 / 105.0, abs_tol);
-  EXPECT_NEAR(evaluate_area_integral(parabola_shape, transc_integrand, npts), 0.0, abs_tol);
+  axom::Array<Bezier> parabola_shape({para1, para2});
+  EXPECT_NEAR(evaluate_area_integral(parabola_shape, const_integrand, npts),
+              8.0 / 3.0,
+              abs_tol);
+  EXPECT_NEAR(evaluate_area_integral(parabola_shape, poly_integrand, npts),
+              64.0 / 105.0,
+              abs_tol);
+  EXPECT_NEAR(evaluate_area_integral(parabola_shape, transc_integrand, npts),
+              0.0,
+              abs_tol);
 }
 
 TEST(primal_integral, evaluate_line_integral_scalar)
@@ -117,31 +126,40 @@ TEST(primal_integral, evaluate_line_integral_scalar)
   };
 
   // Test on single parabolic segment
-  double paranodes[] = {-1.0,  0.5, 2.0, 
-                         1.0, -2.0, 4.0};
+  double paranodes[] = {-1.0, 0.5, 2.0, 1.0, -2.0, 4.0};
   Bezier parabola_segment(paranodes, 2);
 
-  EXPECT_NEAR(evaluate_line_integral(parabola_segment, const_integrand, npts), 6.12572661998, abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(parabola_segment, poly_integrand, npts), 37.8010703669, abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(parabola_segment, transc_integrand, npts), 0.495907795678, abs_tol);
+  EXPECT_NEAR(evaluate_line_integral(parabola_segment, const_integrand, npts),
+              6.12572661998,
+              abs_tol);
+  EXPECT_NEAR(evaluate_line_integral(parabola_segment, poly_integrand, npts),
+              37.8010703669,
+              abs_tol);
+  EXPECT_NEAR(evaluate_line_integral(parabola_segment, transc_integrand, npts),
+              0.495907795678,
+              abs_tol);
 
   // Test on a collection of Bezier curves
-  double segnodes1[] = {-1.0, -1.0/3.0,  1.0/3.0, 1.0, 
-                        -1.0,  1.0,     -1.0,     1.0};
+  double segnodes1[] = {-1.0, -1.0 / 3.0, 1.0 / 3.0, 1.0, -1.0, 1.0, -1.0, 1.0};
   Bezier cubic_segment(segnodes1, 3);
 
-  double segnodes2[] = {1.0, -1.0, 
-                        1.0,  0.0};
+  double segnodes2[] = {1.0, -1.0, 1.0, 0.0};
   Bezier linear_segment(segnodes2, 1);
 
-  double segnodes3[] = {-1.0, -3.0, -1.0,
-                         0.0,  1.0,  2.0};
+  double segnodes3[] = {-1.0, -3.0, -1.0, 0.0, 1.0, 2.0};
   Bezier quadratic_segment(segnodes3, 2);
 
-  axom::Array<Bezier> connected_curve({cubic_segment, linear_segment, quadratic_segment});
-  EXPECT_NEAR(evaluate_line_integral(connected_curve, const_integrand, npts), 8.28968500196, abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(connected_curve, poly_integrand, npts), -5.97565740064, abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(connected_curve, transc_integrand, npts), -0.574992518405, abs_tol);
+  axom::Array<Bezier> connected_curve(
+    {cubic_segment, linear_segment, quadratic_segment});
+  EXPECT_NEAR(evaluate_line_integral(connected_curve, const_integrand, npts),
+              8.28968500196,
+              abs_tol);
+  EXPECT_NEAR(evaluate_line_integral(connected_curve, poly_integrand, npts),
+              -5.97565740064,
+              abs_tol);
+  EXPECT_NEAR(evaluate_line_integral(connected_curve, transc_integrand, npts),
+              -0.574992518405,
+              abs_tol);
 }
 
 TEST(primal_integral, evaluate_line_integral_vector)
@@ -168,7 +186,7 @@ TEST(primal_integral, evaluate_line_integral_vector)
 
   // Test on a closed curve
   auto area_field = [](Point2D x) -> Vector2D {
-    return Vector2D({-0.5*x[1], 0.5*x[0]});
+    return Vector2D({-0.5 * x[1], 0.5 * x[0]});
   };
   auto conservative_field = [](Point2D x) -> Vector2D {
     return Vector2D({2 * x[0] * x[1] * x[1], 2 * x[0] * x[0] * x[1]});
@@ -177,13 +195,11 @@ TEST(primal_integral, evaluate_line_integral_vector)
     double denom = 2 * M_PI * (x[0] * x[0] + x[1] * x[1]);
     return Vector2D({-x[1] / denom, x[0] / denom});
   };
-  
-  double paranodes1[] = {1.0, 0.0, -1.0,
-                         0.0, 2.0,  0.0};
+
+  double paranodes1[] = {1.0, 0.0, -1.0, 0.0, 2.0, 0.0};
   Bezier para1(paranodes1, 2);
 
-  double paranodes2[] = {-1.0,  0.0, 1.0, 
-                          0.0, -2.0, 0.0};
+  double paranodes2[] = {-1.0, 0.0, 1.0, 0.0, -2.0, 0.0};
   Bezier para2(paranodes2, 2);
 
   axom::Array<Bezier> parabola_shape({para1, para2});
@@ -198,12 +214,11 @@ TEST(primal_integral, evaluate_line_integral_vector)
               abs_tol);
 }
 
-
 int main(int argc, char* argv[])
 {
   // -- Initialize logger
   initializeLogger();
- 
+
   ::testing::InitGoogleTest(&argc, argv);
 
   int result = RUN_ALL_TESTS();
