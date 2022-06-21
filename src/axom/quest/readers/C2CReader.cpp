@@ -35,8 +35,12 @@ struct NURBSInterpolator
   NURBSInterpolator(const c2c::NURBSData& curve, double EPS = 1E-9)
     : m_curve(curve)
   {
-    int p = m_curve.order - 1;
-    int knotSize = m_curve.knots.size();
+    const int p = m_curve.order - 1;
+    const int knotSize = m_curve.knots.size();
+
+    AXOM_UNUSED_VAR(p);  // silence warnings in release configs
+    AXOM_UNUSED_VAR(knotSize);
+
     SLIC_ASSERT(p >= 1);
     SLIC_ASSERT(knotSize >= 2 * p);
     computeSpanIntervals(EPS);

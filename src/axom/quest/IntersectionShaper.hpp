@@ -320,12 +320,13 @@ public:
     }
 
     // Generate the Octahedra
-    bool disc_status = axom::quest::discretize<ExecSpace>(polyline,
-                                                          polyline_size,
-                                                          m_level,
-                                                          m_octs,
-                                                          m_octcount);
+    const bool disc_status = axom::quest::discretize<ExecSpace>(polyline,
+                                                                polyline_size,
+                                                                m_level,
+                                                                m_octs,
+                                                                m_octcount);
 
+    AXOM_UNUSED_VAR(disc_status);  // silence warnings in release configs
     SLIC_ASSERT_MSG(
       disc_status,
       "Discretization of contour has failed. Check that contour is valid");
@@ -797,6 +798,8 @@ public:
     }
 
     /// Implementation here -- update material volume fractions based on replacement rules
+    // Note: we're not yet updating the shape volume fractions
+    AXOM_UNUSED_VAR(shapeVolFrac);
   }
 
   void finalizeShapeQuery() override
