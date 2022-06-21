@@ -1,4 +1,7 @@
-// primal_integral_test.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/primal.hpp"
 #include "axom/slic.hpp"
