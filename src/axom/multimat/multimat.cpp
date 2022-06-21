@@ -154,15 +154,6 @@ MultiMat::MultiMat(const MultiMat& other)
   }
 }
 
-MultiMat& MultiMat::operator=(const MultiMat& other)
-{
-  if(this == &other) return *this;
-
-  throw axom::slam::NotImplementedException();
-
-  //return *this;
-}
-
 void MultiMat::setNumberOfMaterials(int n)
 {
   SLIC_ASSERT(n > 0);

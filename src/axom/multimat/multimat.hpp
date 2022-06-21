@@ -158,12 +158,16 @@ public:
    */
   MultiMat(DataLayout data_layout = DataLayout::CELL_DOM,
            SparsityLayout sparsity_layout = SparsityLayout::SPARSE);
+
+  // TODO: Ideally, rule-of-zero the below by removing this class's pointer
+  //       members or replacing them with std::unique_ptr.
+
   /** Destructor **/
   ~MultiMat();
   /** Copy constructor (Deep copy). **/
   MultiMat(const MultiMat&);
   /** Assignment operator **/
-  MultiMat& operator=(const MultiMat&);
+  MultiMat& operator=(const MultiMat&) = delete;
 
   //Set-up functions
   /**
