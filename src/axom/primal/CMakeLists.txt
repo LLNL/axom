@@ -45,6 +45,7 @@ set( primal_headers
      operators/compute_bounding_box.hpp
      operators/compute_moments.hpp
      operators/in_sphere.hpp
+     operators/evaluate_integral.hpp
      operators/split.hpp
 
      operators/detail/clip_impl.hpp
@@ -78,6 +79,7 @@ set( primal_dependencies
 
 blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 blt_list_append( TO primal_dependencies ELEMENTS blt::hip_runtime IF ENABLE_HIP )
+blt_list_append( TO primal_dependencies ELEMENTS mfem IF MFEM_FOUND )
 
 blt_add_library(
     NAME                  primal
