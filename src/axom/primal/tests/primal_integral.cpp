@@ -23,7 +23,7 @@ TEST(primal_integral, evaluate_area_integral)
   int npts = 15;
 
   // Define anonymous functions for testing
-  auto const_integrand = [](Point2D x) -> double { return 1.0; };
+  auto const_integrand = [](Point2D /*x*/) -> double { return 1.0; };
   auto poly_integrand = [](Point2D x) -> double { return x[0] * x[1] * x[1]; };
   auto transc_integrand = [](Point2D x) -> double {
     return std::sin(x[0] * x[1]);
@@ -79,7 +79,7 @@ TEST(primal_integral, evaluate_line_integral_scalar)
   int npts = 30;
 
   // Define anonymous functions for testing
-  auto const_integrand = [](Point2D x) -> double { return 1.0; };
+  auto const_integrand = [](Point2D /*x*/) -> double { return 1.0; };
   auto poly_integrand = [](Point2D x) -> double { return x[0] * x[1] * x[1]; };
   auto transc_integrand = [](Point2D x) -> double {
     return std::sin(x[0] * x[1]);
