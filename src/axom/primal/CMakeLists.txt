@@ -45,7 +45,6 @@ set( primal_headers
      operators/compute_bounding_box.hpp
      operators/compute_moments.hpp
      operators/in_sphere.hpp
-     operators/evaluate_integral.hpp
      operators/split.hpp
 
      operators/detail/clip_impl.hpp
@@ -68,6 +67,8 @@ set( primal_sources
      ## operators
      operators/detail/intersect_impl.cpp
    )
+
+blt_list_append( TO primal_headers ELEMENTS operators/evaluate_integral.hpp IF MFEM_FOUND )
 
 #------------------------------------------------------------------------------
 # Build and install the library

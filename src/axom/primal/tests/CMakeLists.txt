@@ -16,7 +16,6 @@ set( primal_tests
     primal_compute_moments.cpp
     primal_curved_polygon.cpp
     primal_in_sphere.cpp
-    primal_integral.cpp
     primal_intersect.cpp
     primal_intersect_impl.cpp
     primal_numeric_array.cpp
@@ -38,6 +37,8 @@ set( primal_tests
     primal_vector.cpp
     primal_zip.cpp
    )
+
+blt_list_append( TO primal_tests ELEMENTS primal_integral.cpp IF MFEM_FOUND )
 
 set(primal_test_depends axom fmt gtest)
 
