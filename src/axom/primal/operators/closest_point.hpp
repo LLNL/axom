@@ -230,8 +230,8 @@ inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& pt,
  * \brief Computes the closest point from a point, P, to a sphere.
  *
  * \param [in] P the query point
- * \param [in] sphere user-supplied triangle
- * \return cp the closest point on sphere \a sphere to point P
+ * \param [in] sphere user-supplied sphere
+ * \return cp the closest point on \a sphere to point \a P
  *
  * \note The closest point is uniquely defined everywhere except at the sphere's center.
  * We handle that case by returning the point on the sphere along an arbitrary direction

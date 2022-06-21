@@ -7,13 +7,7 @@
 #include <algorithm>
 
 #include "gtest/gtest.h"
-
-#include "axom/primal/geometry/NumericArray.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
-#include "axom/primal/geometry/OrientedBoundingBox.hpp"
-#include "axom/primal/operators/squared_distance.hpp"
-#include "axom/primal/operators/closest_point.hpp"
+#include "axom/primal.hpp"
 
 namespace primal = axom::primal;
 

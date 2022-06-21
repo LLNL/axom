@@ -275,7 +275,7 @@ public:
    * \param [out] closestPnt the closest point on the surface to \a queryPnt
    * \param [out] surfaceNormal the surface normal of \a closestPt
    *
-   * \note When the input is not a closed surface mesh, the assumption is that
+   * \note When the underlying surface mesh is not watertight, the assumption is that
    *  the surface mesh divides the computational mesh domain into two regions.
    *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
    *  the computational mesh at which the signed distance field is evaluated,
@@ -295,7 +295,7 @@ public:
 
   /*!
    * \brief Computes the distances of a set of points to the surface mesh.
-   * Optionally also returns the computed closest points on the surface to each 
+   * Optionally also returns the computed closest points on the surface to each
    * query point and the surface normals at those points
    *
    * \param [in] npts number of points to query
@@ -305,7 +305,7 @@ public:
    *  for query points
    * \param [out] outClosestPts array to fill with closest points on the mesh.
    *  Optional.
-   * \param [out] outNormals array to fill with surface normals associated with 
+   * \param [out] outNormals array to fill with surface normals associated with
    * closest points on the mesh. Optional.
    *
    * \note When the input is not a closed surface mesh, the assumption is that
@@ -370,7 +370,7 @@ private:
                                               bool computeSign);
 
   /*!
-   * \brief Returns the surface (pseudo)-normal at the closest point 
+   * \brief Returns the surface (pseudo)-normal at the closest point
    * to the query point associated with \a currMin
    *
    * \param [in] currMin the minimum-distance surface element data
