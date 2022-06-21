@@ -272,14 +272,15 @@ public:
    * \brief Search for and return the field index of the field given its name.
    *
    * \param field_name the name of the field
-   * \return int the index of the field
+   * \return if found, the index of the field; otherwise, -1
    */
   int getFieldIdx(const std::string& field_name) const;
 
   /**
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field1D, containing an entry for each cell
-   * or material. To retrieve a field of type Field2D, use get2dField()
+   * or material. To retrieve a field of type Field2D, use get2dField().
+   * Throws exception if \a field_name is not found.
    *
    * \tparam T The data type of the field
    * \param field_name the name of the field
@@ -291,7 +292,8 @@ public:
   /**
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field2D, containing an entry for each cell and
-   * each material. To retrieve a field of type Field1D, use get1dField()
+   * each material. To retrieve a field of type Field1D, use get1dField().
+   * Throws exception if \a field_name is not found.
    *
    * \tparam T The data type of the field
    * \param field_name the name of the field
@@ -324,8 +326,8 @@ public:
   /**
    * \brief Get a set of index for a Subfield.
    * \detail for a cell-dominant layout, this is equivalent to getting the set
-   * of material presented in a cell. Vise versa, for a material-dominant
-   * layout, this returns a set of cell that contains a material.\n
+   * of materials presented in a cell. Vice versa, for a material-dominant
+   * layout, this returns a set of cells containing a material.\n
    * getMatInCell() and getCellContainingMat() are layout specific
    * calls for this function.
    *
@@ -346,7 +348,7 @@ public:
    * Accessing the Field2D using this indexing set should be done with the
    * bracket operator.
    *
-   * e.g.
+   * For example:
    * \code
    *   IndexSet indexing_set = getSubfieldIndexingSet( idx );
    *   for( int i : indexing_set );
@@ -431,19 +433,21 @@ public:
   void convertToStatic();
 
   /**
-   * \brief Add a material in a cell.
+   * \brief Add a material to a cell.
    *
    * In a cell-dominant layout, firstIdx is the cell index, secondIdx is the
-   * material index. And it's reverse for material-dominant layout.
+   * material index.  Conversely, for a material-dominant layout, firstIdx
+   * is the material index and secondIdx is the cell index.
    *
-   * \return true if the material is added in the. False if it already exists.
+   * \return true if the material is added to the cell, false if it already exists.
    */
   bool addEntry(int firstIdx, int secondIdx);
   /**
    * \brief Remove a material from a cell
    *
    * In a cell-dominant layout, firstIdx is the cell index, secondIdx is the
-   * material index. And it's reverse for material-dominant layout.
+   * material index. Conversely, for a material-dominant layout, firstIdx
+   * is the material index and secondIdx is the cell index.
    *
    * \return true if a material is removed. False if it was not in the cell.
    */
