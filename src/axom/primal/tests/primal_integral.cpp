@@ -12,46 +12,6 @@
 #include <iostream>
 
 namespace primal = axom::primal;
-namespace slic = axom::slic;
-
-/*!
- * \brief Utility function to initialize the logger
- */
-void initializeLogger()
-{
-  // Initialize Logger
-  slic::initialize();
-  slic::setLoggingMsgLevel(axom::slic::message::Info);
-
-  slic::LogStream* logStream;
-
-#ifdef AXOM_USE_MPI
-  std::string fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
-  #ifdef AXOM_USE_LUMBERJACK
-  const int RLIMIT = 8;
-  logStream = new slic::LumberjackStream(&std::cout, MPI_COMM_WORLD, RLIMIT, fmt);
-  #else
-  logStream = new slic::SynchronizedStream(&std::cout, MPI_COMM_WORLD, fmt);
-  #endif
-#else
-  std::string fmt = "[<LEVEL>]: <MESSAGE>\n";
-  logStream = new slic::GenericOutputStream(&std::cout, fmt);
-#endif  // AXOM_USE_MPI
-
-  slic::addStreamToAllMsgLevels(logStream);
-}
-
-/*!
- * \brief Utility function to finalize the logger
- */
-void finalizeLogger()
-{
-  if(slic::isInitialized())
-  {
-    slic::flushStreams();
-    slic::finalize();
-  }
-}
 
 TEST(primal_integral, evaluate_area_integral)
 {
@@ -216,15 +176,11 @@ TEST(primal_integral, evaluate_line_integral_vector)
 
 int main(int argc, char* argv[])
 {
-  // -- Initialize logger
-  initializeLogger();
-
   ::testing::InitGoogleTest(&argc, argv);
+
+  axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
 
-  // -- Finalize logger
-  finalizeLogger();
-
-  return 0;
+  return result;
 }

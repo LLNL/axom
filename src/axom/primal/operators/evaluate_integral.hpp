@@ -43,7 +43,6 @@ namespace axom
 {
 namespace primal
 {
-
 /*!
  * \brief Computes the tangent vector to a Bezier curve.
  * 
