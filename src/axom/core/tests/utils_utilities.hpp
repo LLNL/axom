@@ -285,6 +285,8 @@ TEST(utils_utilities, lerp)
     {
       double A = axom::utilities::random_real(lower, upper);
       double B = axom::utilities::random_real(lower, upper);
+
+      // Test interpolation and also extrapolation beyond endpoints.
       double t = axom::utilities::random_real(-1.5, 1.5);
 
       double exp = A + (B - A) * t;

@@ -42,7 +42,7 @@ template <typename T, int NDIMS>
 class Polygon
 {
 public:
-  using PointType = primal::Point<T, NDIMS>;
+  using PointType = Point<T, NDIMS>;
 
 public:
   /*! Default constructor for an empty polygon   */
