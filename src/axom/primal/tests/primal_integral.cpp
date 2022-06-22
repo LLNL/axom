@@ -20,7 +20,7 @@ TEST(primal_integral, evaluate_area_integral)
   double abs_tol = 1e-10;
 
   // Quadrature nodes. Should be sufficiently high to pass tests
-  int npts = 15;
+  int npts = 20;
 
   // Define anonymous functions for testing
   auto const_integrand = [](Point2D /*x*/) -> double { return 1.0; };
@@ -30,16 +30,18 @@ TEST(primal_integral, evaluate_area_integral)
   };
 
   // Test on triangular domain
-  double trinodes1[] = {0.0, 1.0, 0.0, 0.0};
+  Point2D trinodes1[] = {Point2D {0.0, 0.0}, Point2D {1.0, 0.0}};
   Bezier tri1(trinodes1, 1);
 
-  double trinodes2[] = {1.0, 0.0, 0.0, 1.0};
+  Point2D trinodes2[] = {Point2D {1.0, 0.0}, Point2D {0.0, 1.0}};
   Bezier tri2(trinodes2, 1);
 
-  double trinodes3[] = {0.0, 0.0, 1.0, 0.0};
+  Point2D trinodes3[] = {Point2D {0.0, 1.0}, Point2D {0.0, 0.0}};
   Bezier tri3(trinodes3, 1);
 
   axom::Array<Bezier> triangle({tri1, tri2, tri3});
+
+  // Compare against hand computed/high-precision calculated values
   EXPECT_NEAR(evaluate_area_integral(triangle, const_integrand, npts),
               0.5,
               abs_tol);
@@ -51,13 +53,19 @@ TEST(primal_integral, evaluate_area_integral)
               abs_tol);
 
   // Test on parabolic domain (between f(x) = 1-x^2 and g(x) = x^2-1, shifted to the right 1 unit)
-  double paranodes1[] = {2.0, 1.0, 0.0, 0.0, 2.0, 0.0};
+  Point2D paranodes1[] = {Point2D {2.0, 0.0},
+                          Point2D {1.0, 2.0},
+                          Point2D {0.0, 0.0}};
   Bezier para1(paranodes1, 2);
 
-  double paranodes2[] = {0.0, 1.0, 2.0, 0.0, -2.0, 0.0};
+  Point2D paranodes2[] = {Point2D {0.0, 0.0},
+                          Point2D {1.0, -2.0},
+                          Point2D {2.0, 0.0}};
   Bezier para2(paranodes2, 2);
 
   axom::Array<Bezier> parabola_shape({para1, para2});
+
+  // Compare against hand computed/high-precision calculated values
   EXPECT_NEAR(evaluate_area_integral(parabola_shape, const_integrand, npts),
               8.0 / 3.0,
               abs_tol);
@@ -86,9 +94,12 @@ TEST(primal_integral, evaluate_line_integral_scalar)
   };
 
   // Test on single parabolic segment
-  double paranodes[] = {-1.0, 0.5, 2.0, 1.0, -2.0, 4.0};
+  Point2D paranodes[] = {Point2D {-1.0, 1.0},
+                         Point2D {0.5, -2.0},
+                         Point2D {2.0, 4.0}};
   Bezier parabola_segment(paranodes, 2);
 
+  // Compare against hand computed/high-precision calculated values
   EXPECT_NEAR(evaluate_line_integral(parabola_segment, const_integrand, npts),
               6.12572661998,
               abs_tol);
@@ -100,17 +111,24 @@ TEST(primal_integral, evaluate_line_integral_scalar)
               abs_tol);
 
   // Test on a collection of Bezier curves
-  double segnodes1[] = {-1.0, -1.0 / 3.0, 1.0 / 3.0, 1.0, -1.0, 1.0, -1.0, 1.0};
+  Point2D segnodes1[] = {Point2D {-1.0, -1.0},
+                         Point2D {-1.0 / 3.0, 1.0},
+                         Point2D {1.0 / 3.0, -1.0},
+                         Point2D {1.0, 1.0}};
   Bezier cubic_segment(segnodes1, 3);
 
-  double segnodes2[] = {1.0, -1.0, 1.0, 0.0};
+  Point2D segnodes2[] = {Point2D {1.0, 1.0}, Point2D {-1.0, 0.0}};
   Bezier linear_segment(segnodes2, 1);
 
-  double segnodes3[] = {-1.0, -3.0, -1.0, 0.0, 1.0, 2.0};
+  Point2D segnodes3[] = {Point2D {-1.0, 0.0},
+                         Point2D {-3.0, 1.0},
+                         Point2D {-1.0, 2.0}};
   Bezier quadratic_segment(segnodes3, 2);
 
   axom::Array<Bezier> connected_curve(
     {cubic_segment, linear_segment, quadratic_segment});
+
+  // Compare against hand computed/high-precision calculated values
   EXPECT_NEAR(evaluate_line_integral(connected_curve, const_integrand, npts),
               8.28968500196,
               abs_tol);
@@ -137,9 +155,10 @@ TEST(primal_integral, evaluate_line_integral_vector)
     return Vector2D({x[1] * x[1], 3 * x[0] - 6 * x[1]});
   };
 
-  double segnodes[] = {3.0, 0.0, 7.0, 12.0};
+  Point2D segnodes[] = {Point2D {3.0, 7.0}, Point2D {0.0, 12.0}};
   Bezier linear_segment(segnodes, 1);
 
+  // Compare against hand computed values
   EXPECT_NEAR(evaluate_line_integral(linear_segment, vec_field, npts),
               -1079.0 / 2.0,
               abs_tol);
@@ -156,19 +175,29 @@ TEST(primal_integral, evaluate_line_integral_vector)
     return Vector2D({-x[1] / denom, x[0] / denom});
   };
 
-  double paranodes1[] = {1.0, 0.0, -1.0, 0.0, 2.0, 0.0};
+  Point2D paranodes1[] = {Point2D {1.0, 0.0},
+                          Point2D {0.0, 2.0},
+                          Point2D {-1.0, 0.0}};
   Bezier para1(paranodes1, 2);
 
-  double paranodes2[] = {-1.0, 0.0, 1.0, 0.0, -2.0, 0.0};
+  Point2D paranodes2[] = {Point2D {-1.0, 0.0},
+                          Point2D {0.0, -2.0},
+                          Point2D {1.0, 0.0}};
   Bezier para2(paranodes2, 2);
 
   axom::Array<Bezier> parabola_shape({para1, para2});
+
+  // This vector field calculates the area of the region
   EXPECT_NEAR(evaluate_line_integral(parabola_shape, area_field, npts),
               8.0 / 3.0,
               abs_tol);
+
+  // This vector field is conservative, so it should evaluate to zero
   EXPECT_NEAR(evaluate_line_integral(parabola_shape, conservative_field, npts),
               0.0,
               abs_tol);
+
+  // This vector field is generated by a in/out query, should return 1 (inside)
   EXPECT_NEAR(evaluate_line_integral(parabola_shape, winding_field, npts),
               1.0,
               abs_tol);
