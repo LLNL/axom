@@ -75,6 +75,19 @@ TEST(primal_integral, evaluate_area_integral)
   EXPECT_NEAR(evaluate_area_integral(parabola_shape, transc_integrand, npts),
               0.0,
               abs_tol);
+
+  // Ensure compatibility with curved polygons
+  Bezier pedges[2] = {para1, para2};
+  primal::CurvedPolygon<double, 2> parabola_polygon(pedges, 2);
+  EXPECT_NEAR(evaluate_area_integral(parabola_polygon, const_integrand, npts),
+              8.0 / 3.0,
+              abs_tol);
+  EXPECT_NEAR(evaluate_area_integral(parabola_polygon, poly_integrand, npts),
+              64.0 / 105.0,
+              abs_tol);
+  EXPECT_NEAR(evaluate_area_integral(parabola_polygon, transc_integrand, npts),
+              0.0,
+              abs_tol);
 }
 
 TEST(primal_integral, evaluate_line_integral_scalar)
@@ -210,6 +223,6 @@ int main(int argc, char* argv[])
   axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
-
+  
   return result;
 }
