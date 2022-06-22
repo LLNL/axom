@@ -3,11 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/* /file primal_bezier_curve.cpp
- * /brief This file tests primal's Bezier curve functionality
+/*! 
+ * \file primal_bezier_curve.cpp
+ * \brief This file tests primal's Bezier curve functionality
  */
 
 #include "gtest/gtest.h"
+
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
@@ -56,8 +59,8 @@ TEST(primal_beziercurve, set_order)
   EXPECT_EQ(-1, bCurve.getOrder());
 
   const int order = 1;
-  PointType controlPoints[] = {PointType::make_point(0.6, 1.2, 1.0),
-                               PointType::make_point(0.0, 1.6, 1.8)};
+  PointType controlPoints[2] = {PointType {0.6, 1.2, 1.0},
+                                PointType {0.0, 1.6, 1.8}};
 
   bCurve.setOrder(order);
   EXPECT_EQ(order, bCurve.getOrder());
@@ -85,8 +88,8 @@ TEST(primal_beziercurve, point_array_constructor)
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2, 1.0),
-                                PointType::make_point(0.0, 1.6, 1.8)};
+  PointType controlPoints[2] = {PointType {0.6, 1.2, 1.0},
+                                PointType {0.0, 1.6, 1.8}};
 
   BezierCurveType bCurve(controlPoints, 1);
 
@@ -140,14 +143,14 @@ TEST(primal_beziercurve, evaluate)
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 3;
-  PointType data[order + 1] = {PointType::make_point(0.6, 1.2, 1.0),
-                               PointType::make_point(1.3, 1.6, 1.8),
-                               PointType::make_point(2.9, 2.4, 2.3),
-                               PointType::make_point(3.2, 3.5, 3.0)};
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
 
   BezierCurveType b2Curve(data, order);
 
-  PointType midtval = PointType::make_point(2.05, 2.0875, 2.0375);
+  PointType midtval {2.05, 2.0875, 2.0375};
 
   // Evaluate the curve at several parameter values
   // Curve should interpolate endpoints
@@ -164,6 +167,43 @@ TEST(primal_beziercurve, evaluate)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_beziercurve_, tangent)
+{
+  SLIC_INFO("Testing Bezier tangent calculation");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int order = 3;
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
+
+  BezierCurveType b2Curve(data, order);
+
+  VectorType midtval = VectorType {3.15, 2.325, 1.875};
+  VectorType starttval = VectorType {2.1, 1.2, 2.4};
+  VectorType endtval = VectorType {.9, 3.3, 2.1};
+
+  // Evaluate the curve at several parameter values
+  // Curve should be tangent to control net at endpoints
+  VectorType eval0 = b2Curve.dt(0.0);
+  VectorType eval1 = b2Curve.dt(1.0);
+  VectorType evalMid = b2Curve.dt(0.5);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(starttval[i], eval0[i], 1e-15);
+    EXPECT_NEAR(endtval[i], eval1[i], 1e-15);
+    EXPECT_NEAR(midtval[i], evalMid[i], 1e-15);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_beziercurve, split_cubic)
 {
   SLIC_INFO("Testing Bezier splitting of a cubic");
@@ -174,10 +214,10 @@ TEST(primal_beziercurve, split_cubic)
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 3;
-  PointType data[order + 1] = {PointType::make_point(0.6, 1.2, 1.0),
-                               PointType::make_point(1.3, 1.6, 1.8),
-                               PointType::make_point(2.9, 2.4, 2.3),
-                               PointType::make_point(3.2, 3.5, 3.0)};
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
   BezierCurveType b2Curve(data, order);
 
   BezierCurveType b3Curve(order);  // Checks split with order constructor
@@ -242,8 +282,7 @@ TEST(primal_beziercurve, split_linear)
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 1;
-  PointType data[order + 1] = {PointType::make_point(-1, -5),
-                               PointType::make_point(1, 5)};
+  PointType data[order + 1] = {PointType {-1, -5}, PointType {1, 5}};
   BezierCurveType b(data, order);
 
   {
@@ -292,9 +331,9 @@ TEST(primal_beziercurve, split_quadratic)
   const int order = 2;
 
   // Control points for the three levels of the quadratic de Casteljau algorithm
-  PointType lev0[3] = {PointType::make_point(1.1, 1.1),
-                       PointType::make_point(5.5, 5.5),
-                       PointType::make_point(9.9, 2.2)};
+  PointType lev0[3] = {PointType {1.1, 1.1},
+                       PointType {5.5, 5.5},
+                       PointType {9.9, 2.2}};
 
   PointType lev1[2] = {PointType::lerp(lev0[0], lev0[1], t),
                        PointType::lerp(lev0[1], lev0[2], t)};
@@ -318,9 +357,11 @@ TEST(primal_beziercurve, split_quadratic)
   BezierCurveType c1, c2;
   b.split(t, c1, c2);
 
-  SLIC_INFO(""
-            << "Original quadratic: " << b << "\nCurves after splitting at t = "
-            << t << "\n\t c1: " << c1 << "\n\t c2: " << c2);
+  SLIC_INFO(""                                          //
+            << "Original quadratic: " << b              //
+            << "\nCurves after splitting at t = " << t  //
+            << "\n\t c1: " << c1                        //
+            << "\n\t c2: " << c2);
 
   // Check values
   for(int p = 0; p <= order; ++p)
@@ -360,8 +401,8 @@ TEST(primal_beziercurve, isLinear)
     auto curve = BezierCurveType(order);
     EXPECT_TRUE(curve.isLinear());
 
-    curve[0] = PointType::make_point(1., 1.8);
-    curve[1] = PointType::make_point(-12., 3.5);
+    curve[0] = PointType {1., 1.8};
+    curve[1] = PointType {-12., 3.5};
     EXPECT_TRUE(curve.isLinear());
   }
 
@@ -372,14 +413,14 @@ TEST(primal_beziercurve, isLinear)
     EXPECT_TRUE(curve.isLinear());
 
     // straight line
-    curve[0] = PointType::make_point(1, 1);
-    curve[1] = PointType::make_point(2, 2);
-    curve[2] = PointType::make_point(3, 3);
+    curve[0] = PointType {1, 1};
+    curve[1] = PointType {2, 2};
+    curve[2] = PointType {3, 3};
     EXPECT_TRUE(curve.isLinear());
 
     // move middle point and check linearity with different tolerances
     VectorType v(curve[2], curve[0]);
-    auto normal = VectorType::make_vector(-v[1], v[0]);
+    auto normal = VectorType {-v[1], v[0]};
     curve[1].array() += 0.005 * normal.array();
     SLIC_INFO("Updated curve: " << curve);
 
@@ -402,6 +443,55 @@ TEST(primal_beziercurve, isLinear)
   }
 }
 
+TEST(primal_beziercurve, reverseOrientation)
+{
+  SLIC_INFO("Testing reverseOrientation() on Bezier curves");
+
+  {
+    const int DIM = 2;
+    using CoordType = double;
+    using PointType = primal::Point<CoordType, DIM>;
+    using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+    // test different orders
+    for(int order = 0; order <= 10; ++order)
+    {
+      // control points for curve monotonically increase
+      axom::Array<PointType> pts(order + 1);
+      for(int i = 0; i <= order; ++i)
+      {
+        pts[i] = PointType(i);
+      }
+      BezierCurveType curve(pts.data(), order);
+
+      for(int i = 1; i <= order; ++i)
+      {
+        EXPECT_GT(curve[i][0], curve[i - 1][0]);
+      }
+
+      // create a reversed curve and check that it monotonically decreases
+      BezierCurveType reversed = curve;
+      reversed.reverseOrientation();
+
+      for(int i = 1; i <= order; ++i)
+      {
+        EXPECT_LT(reversed[i][0], reversed[i - 1][0]);
+      }
+
+      // Check that the control points are actually reversed
+      for(int i = 0; i <= order; ++i)
+      {
+        EXPECT_EQ(curve[i], reversed[order - i]);
+      }
+
+      // check that reversing again reverts to the original
+      BezierCurveType reversedAgain = reversed;
+      reversedAgain.reverseOrientation();
+      EXPECT_EQ(curve, reversedAgain);
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
@@ -409,7 +499,8 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
+
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 
