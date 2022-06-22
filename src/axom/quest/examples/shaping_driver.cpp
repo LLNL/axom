@@ -485,15 +485,10 @@ int main(int argc, char** argv)
     shaper->applyTransforms(shape);
     slic::flushStreams();
 
-    SLIC_INFO("FINISHED APPLYING TRANSFORMS");
-    slic::flushStreams();
-
     // Generate a spatial index over the shape
     shaper->prepareShapeQuery(shapeDim, shape);
     slic::flushStreams();
 
-    SLIC_INFO("FINISHED PREPARING QUERY");
-    slic::flushStreams();
     // Query the mesh against this shape
     shaper->runShapeQuery(shape);
     slic::flushStreams();
