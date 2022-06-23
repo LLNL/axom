@@ -75,6 +75,41 @@ double evaluate_line_integral(const axom::Array<primal::BezierCurve<double, 2>>&
 }
 
 /*!
+ * \brief Evaluate a line integral along the boundary of a CurvedPolygon object.
+ *
+ * See above definition for details.
+ * 
+ * \param [in] cpoly the CurvedPolygon object
+ * \param [in] integrand the lambda function representing the integrand. 
+ * Must accept a 2D point as input and return a double
+ * \param [in] npts_Q the number of quadrature points to evaluate the line integral
+ * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
+ * \return the value of the integral
+ */
+template <class Lambda>
+double evaluate_line_integral(const primal::CurvedPolygon<double, 2> cpoly,
+                              Lambda&& integrand,
+                              int npts)
+{
+  // Generate quadrature library, defaulting to GaussLegendre quadrature.
+  //  Use the same one for every curve in the polygon
+  //  Quadrature order is equal to 2*N - 1
+  static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
+  const mfem::IntegrationRule* quad =
+    &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1));
+
+  double total_integral = 0.0;
+  for(int i = 0; i < cpoly.numEdges(); i++)
+  {
+    // Compute the line integral along each component.
+    total_integral +=
+      detail::evaluate_line_integral_component(cpoly[i], integrand, quad);
+  }
+
+  return total_integral;
+}
+
+/*!
  * \brief Evaluate a line integral on a single Bezier curve.
  *
  * Evaluate the line integral with a given number of Gaussian

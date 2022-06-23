@@ -112,10 +112,13 @@ TEST(primal_integral, evaluate_line_integral_scalar)
                          Point2D {2.0, 4.0}};
   Bezier parabola_segment(paranodes, 2);
 
-  // Compare against hand computed/high-precision calculated values
+  // Compare against hand computed/high-precision calculated values.
+
+  // Constant integrand line integral is equivalent to arc-length calculation
   EXPECT_NEAR(evaluate_line_integral(parabola_segment, const_integrand, npts),
               6.12572661998,
               abs_tol);
+
   EXPECT_NEAR(evaluate_line_integral(parabola_segment, poly_integrand, npts),
               37.8010703669,
               abs_tol);
