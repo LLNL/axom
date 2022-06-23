@@ -90,8 +90,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   in quest's signed_distance C API.
 - Adds utility function for linear interpolation (`lerp`) of two numbers
 - Adds utility function to compute binomial coefficients  
-- Adds a `CurvedPolygon` class to primal representing a polygon with `BezierCurves` as edges
+- Adds a `CurvedPolygon` class to primal representing a polygon with `BezierCurve`s as edges
 - Adds functions to compute the moments (area, centroid) of a `CurvedPolygon`
+- Adds functions to evaluate integrals over `BezierCurve` and `CurvedPolygon` objects 
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
