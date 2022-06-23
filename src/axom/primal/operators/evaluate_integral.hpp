@@ -107,7 +107,6 @@ double evaluate_line_integral(const primal::BezierCurve<double, 2>& c,
  *
  * Assumes that the array of Bezier curves is closed and connected. Will compute
  * the integral regardless, but the result will be meaningless.
- * Will eventually incorperate the CurverdPolygon class.
  * Uses a Spectral Mesh-Free Quadrature derived from Green's theorem, evaluating
  * the area integral as a line integral of the antiderivative over the curve.
  *
