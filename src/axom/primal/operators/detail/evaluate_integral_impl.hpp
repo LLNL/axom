@@ -39,7 +39,7 @@ namespace detail
  */
 inline double evaluate_line_integral_component(
   const primal::BezierCurve<double, 2>& c,
-  std::function<double(Point2D)> integrand,
+  std::function<double(Point2D)>&& integrand,
   const mfem::IntegrationRule* quad)
 {
   // Store/compute quadrature result
@@ -70,7 +70,7 @@ inline double evaluate_line_integral_component(
  */
 inline double evaluate_line_integral_component(
   const primal::BezierCurve<double, 2>& c,
-  std::function<Vector2D(Point2D)> vec_field,
+  std::function<Vector2D(Point2D)>&& vec_field,
   const mfem::IntegrationRule* quad)
 {
   // Store/compute quadrature result
