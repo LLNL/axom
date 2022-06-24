@@ -40,19 +40,19 @@ namespace detail
 inline double evaluate_line_integral_component(
   const primal::BezierCurve<double, 2>& c,
   std::function<double(Point2D)> scalar_integrand,
-  const mfem::IntegrationRule* quad)
+  const mfem::IntegrationRule& quad)
 {
   // Store/compute quadrature result
   double full_quadrature = 0.0;
-  for(int q = 0; q < quad->GetNPoints(); q++)
+  for(int q = 0; q < quad.GetNPoints(); q++)
   {
     // Get intermediate quadrature point
     //  at which to evaluate tangent vector
-    auto x_q = c.evaluate(quad->IntPoint(q).x);
-    auto dx_q = c.dt(quad->IntPoint(q).x);
+    auto x_q = c.evaluate(quad.IntPoint(q).x);
+    auto dx_q = c.dt(quad.IntPoint(q).x);
 
     full_quadrature +=
-      quad->IntPoint(q).weight * scalar_integrand(x_q) * dx_q.norm();
+      quad.IntPoint(q).weight * scalar_integrand(x_q) * dx_q.norm();
   }
 
   return full_quadrature;
@@ -72,20 +72,20 @@ inline double evaluate_line_integral_component(
 inline double evaluate_line_integral_component(
   const primal::BezierCurve<double, 2>& c,
   std::function<Vector2D(Point2D)> vec_field,
-  const mfem::IntegrationRule* quad)
+  const mfem::IntegrationRule& quad)
 {
   // Store/compute quadrature result
   double full_quadrature = 0.0;
-  for(int q = 0; q < quad->GetNPoints(); q++)
+  for(int q = 0; q < quad.GetNPoints(); q++)
   {
     // Get intermediate quadrature point
     //  on which to evaluate dot product
-    auto x_q = c.evaluate(quad->IntPoint(q).x);
-    auto dx_q = c.dt(quad->IntPoint(q).x);
+    auto x_q = c.evaluate(quad.IntPoint(q).x);
+    auto dx_q = c.dt(quad.IntPoint(q).x);
     auto func_val = vec_field(x_q);
 
     full_quadrature +=
-      quad->IntPoint(q).weight * Vector2D::dot_product(func_val, dx_q);
+      quad.IntPoint(q).weight * Vector2D::dot_product(func_val, dx_q);
   }
 
   return full_quadrature;
@@ -112,32 +112,32 @@ template <class Lambda>
 double evaluate_area_integral_component(const primal::BezierCurve<double, 2>& c,
                                         Lambda&& integrand,
                                         double int_lb,
-                                        const mfem::IntegrationRule* quad_Q,
-                                        const mfem::IntegrationRule* quad_P)
+                                        const mfem::IntegrationRule& quad_Q,
+                                        const mfem::IntegrationRule& quad_P)
 {
   // Store some intermediate values
   double antiderivative = 0.0;
 
   // Store/compute quadrature result
   double full_quadrature = 0.0;
-  for(int q = 0; q < quad_Q->GetNPoints(); q++)
+  for(int q = 0; q < quad_Q.GetNPoints(); q++)
   {
     // Get intermediate quadrature point
     //  on which to evaluate antiderivative
-    auto x_q = c.evaluate(quad_Q->IntPoint(q).x);
+    auto x_q = c.evaluate(quad_Q.IntPoint(q).x);
 
     // Evaluate the antiderivative at x_q, add it to full quadrature
-    for(int xi = 0; xi < quad_P->GetNPoints(); xi++)
+    for(int xi = 0; xi < quad_P.GetNPoints(); xi++)
     {
       // Define interior quadrature points
       auto x_qxi =
-        Point2D({x_q[0], (x_q[1] - int_lb) * quad_P->IntPoint(xi).x + int_lb});
+        Point2D({x_q[0], (x_q[1] - int_lb) * quad_P.IntPoint(xi).x + int_lb});
 
       antiderivative =
-        quad_P->IntPoint(xi).weight * (x_q[1] - int_lb) * integrand(x_qxi);
+        quad_P.IntPoint(xi).weight * (x_q[1] - int_lb) * integrand(x_qxi);
 
-      full_quadrature += quad_Q->IntPoint(q).weight *
-        c.dt(quad_Q->IntPoint(q).x)[0] * -antiderivative;
+      full_quadrature += quad_Q.IntPoint(q).weight *
+        c.dt(quad_Q.IntPoint(q).x)[0] * -antiderivative;
     }
   }
 

@@ -68,12 +68,12 @@ set( primal_sources
      operators/detail/intersect_impl.cpp
    )
 
-blt_list_append( 
-   TO       primal_headers 
-   ELEMENTS operators/evaluate_integral.hpp
-            operators/detail/evaluate_integral_impl.hpp
-   IF       MFEM_FOUND 
-    )
+blt_list_append(
+    TO       primal_headers 
+    ELEMENTS operators/evaluate_integral.hpp
+             operators/detail/evaluate_integral_impl.hpp
+    IF       MFEM_FOUND 
+               )
 
 #------------------------------------------------------------------------------
 # Build and install the library
