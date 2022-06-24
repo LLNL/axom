@@ -103,7 +103,8 @@ private:
     m_owns_data = true;
 
     // Build a 2D mesh with 100 square elements
-    m_mesh = new mfem::Mesh(10, 10, mfem::Element::QUADRILATERAL);
+    m_mesh = new mfem::Mesh(
+      mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::QUADRILATERAL));
 
 #ifdef EXAMPLE_USES_MPI
     mfem::Mesh* tmp_mesh = m_mesh;
