@@ -11,7 +11,6 @@
 #include "axom/sidre/core/Buffer.hpp"
 #include "axom/sidre/core/Group.hpp"
 #include "axom/sidre/core/View.hpp"
-#include "axom/sidre/interface/SidreTypes.h"
 
 // splicer begin class.View.CXX_definitions
 // splicer end class.View.CXX_definitions

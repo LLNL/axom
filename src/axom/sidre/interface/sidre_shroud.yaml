@@ -37,7 +37,14 @@ declarations:
   fields:
     # defined in SidreTypes.hpp
     c_header : axom/sidre/interface/SidreTypes.h
+    cxx_header : axom/sidre/interface/SidreTypes.h
     c_type   : SIDRE_IndexType
+    f_type: integer(SIDRE_IndexType)
+    f_kind: SIDRE_IndexType
+    f_module_name: axom_sidre
+    f_c_module:
+      "--import--":
+      -  SIDRE_IndexType
 
 - decl: typedef int TypeID
   fields:
@@ -58,7 +65,7 @@ declarations:
 
 - decl: class Group
   # SidreTypes.h is required for C_invalid_name pattern.
-  cxx_header: axom/sidre/core/Group.hpp axom/sidre/interface/SidreTypes.h
+  cxx_header: axom/sidre/core/Group.hpp
   format:
     F_derived_name:  SidreGroup
 

@@ -11,7 +11,6 @@
 #include "axom/sidre/core/Buffer.hpp"
 #include "axom/sidre/core/DataStore.hpp"
 #include "axom/sidre/core/Group.hpp"
-#include "axom/sidre/interface/SidreTypes.h"
 
 // splicer begin class.DataStore.CXX_definitions
 // splicer end class.DataStore.CXX_definitions

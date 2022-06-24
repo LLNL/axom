@@ -13,8 +13,18 @@
 #ifndef SIDRETYPES_H
 #define SIDRETYPES_H
 
+// Axom includes
 #include "axom/config.hpp"
 #include "axom/sidre/core/SidreDataTypeIds.h"
+
+// C includes
+#include <stdint.h> /* for int64_t */
+
+#if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
+typedef int64_t SIDRE_IndexType;
+#else
+typedef int64_t SIDRE_IndexType;
+#endif
 
 #define SIDRE_InvalidName NULL
 

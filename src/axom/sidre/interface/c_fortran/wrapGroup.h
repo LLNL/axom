@@ -14,15 +14,14 @@
 #ifndef WRAPGROUP_H
 #define WRAPGROUP_H
 
+#include "axom/sidre/interface/SidreTypes.h"
 #include "typesSidre.h"
 #ifdef __cplusplus
   #include <cstddef>
-  #include <cstdint>
   #include "axom/sidre/core/SidreTypes.hpp"
 #else
   #include <stdbool.h>
   #include <stddef.h>
-  #include "axom/sidre/interface/SidreTypes.h"
 #endif
 
 // splicer begin class.Group.CXX_declarations

@@ -14,18 +14,17 @@
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
 
+#include "axom/sidre/interface/SidreTypes.h"
 #ifdef AXOM_USE_MPI
   #include "mpi.h"
 #endif
 #include "typesSidre.h"
 #ifdef __cplusplus
   #include <cstddef>
-  #include <cstdint>
   #include "axom/sidre/core/SidreTypes.hpp"
 #else
   #include <stdbool.h>
   #include <stddef.h>
-  #include "axom/sidre/interface/SidreTypes.h"
 #endif
 
 // splicer begin class.DataStore.CXX_declarations

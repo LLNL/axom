@@ -14,15 +14,14 @@
 #ifndef WRAPVIEW_H
 #define WRAPVIEW_H
 
+#include "axom/sidre/interface/SidreTypes.h"
 #include "typesSidre.h"
 #ifdef __cplusplus
   #include <cstddef>
-  #include <cstdint>
   #include "axom/sidre/core/SidreTypes.hpp"
 #else
   #include <stdbool.h>
   #include <stddef.h>
-  #include "axom/sidre/interface/SidreTypes.h"
 #endif
 
 // splicer begin class.View.CXX_declarations

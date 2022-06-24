@@ -14,14 +14,13 @@
 #ifndef WRAPBUFFER_H
 #define WRAPBUFFER_H
 
+#include "axom/sidre/interface/SidreTypes.h"
 #include "typesSidre.h"
 #ifdef __cplusplus
   #include <cstddef>
-  #include <cstdint>
   #include "axom/sidre/core/SidreTypes.hpp"
 #else
   #include <stddef.h>
-  #include "axom/sidre/interface/SidreTypes.h"
 #endif
 
 // splicer begin class.Buffer.CXX_declarations
