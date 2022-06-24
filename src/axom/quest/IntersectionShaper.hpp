@@ -218,8 +218,6 @@ public:
         "Running intersection-based shaper in execution Space: {}",
         axom::execution_space<ExecSpace>::name())));
 
-    umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-
     // Save current/default allocator
     const int current_allocator = axom::getDefaultAllocatorID();
 
@@ -366,9 +364,6 @@ public:
           PolyhedronType octPoly;
           double octVolume;
 
-          // OK
-          // octPoly.addVertex(Point3D{});
-
           octPoly.addVertex(local_octs[i][0]);
           octPoly.addVertex(local_octs[i][1]);
           octPoly.addVertex(local_octs[i][2]);
@@ -438,8 +433,6 @@ public:
     constexpr int NUM_COMPS_PER_VERT = 3;
     constexpr int NUM_TETS_PER_HEX = 24;
     constexpr double ZERO_THRESHOLD = 1.e-10;
-
-    umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
     // Save current/default allocator
     const int current_allocator = axom::getDefaultAllocatorID();

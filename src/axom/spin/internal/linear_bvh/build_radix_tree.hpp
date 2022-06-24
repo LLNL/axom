@@ -400,7 +400,6 @@ template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
 {
 #if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   using FloatType = typename BBoxType::CoordType;
   using PointType = typename BBoxType::PointType;
@@ -475,7 +474,6 @@ AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
   defined(AXOM_USE_RAJA)
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
-  using FloatType = typename BBoxType::CoordType;
   using PointType = typename BBoxType::PointType;
 
   constexpr int NDIMS = PointType::DIMENSION;
