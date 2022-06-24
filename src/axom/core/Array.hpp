@@ -1400,7 +1400,15 @@ inline void Array<T, DIM, SPACE>::dynamicRealloc(IndexType new_num_elements)
     utilities::processAbort();
   }
 
-  m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
+  if(m_num_elements == 0)
+  {
+    axom::deallocate(m_data);
+    m_data = axom::allocate<T>(new_capacity, m_allocator_id);
+  }
+  else
+  {
+    m_data = axom::reallocate<T>(m_data, new_capacity, m_allocator_id);
+  }
   m_capacity = new_capacity;
 
   assert(m_data != nullptr || m_capacity <= 0);
