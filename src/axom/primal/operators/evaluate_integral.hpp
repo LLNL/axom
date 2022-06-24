@@ -12,6 +12,8 @@
  * Line integrals are computed with 1D quadrature rules supplied
  * by MFEM. 2D area integrals computed with "Spectral Mesh-Free Quadrature for Planar 
  * Regions Bounded by Rational Parametric Curves" by David Gunderman et al.
+ * 
+ * \note This requires the MFEM third-party library
  */
 
 #ifndef PRIMAL_EVAL_INTEGRAL_HPP_
@@ -60,8 +62,8 @@ double evaluate_line_integral(const axom::Array<primal::BezierCurve<double, 2>>&
   //  Use the same one for every curve in the polygon
   //  Quadrature order is equal to 2*N - 1
   static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule* quad =
-    &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1));
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
   double total_integral = 0.0;
   for(const auto& curve : cs)
@@ -95,8 +97,8 @@ double evaluate_line_integral(const primal::CurvedPolygon<double, 2> cpoly,
   //  Use the same one for every curve in the polygon
   //  Quadrature order is equal to 2*N - 1
   static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule* quad =
-    &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1));
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
   double total_integral = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
@@ -131,8 +133,8 @@ double evaluate_line_integral(const primal::BezierCurve<double, 2>& c,
   //  Use the same one for every curve in the polygon
   //  Quadrature order is equal to 2*N - 1
   static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule* quad =
-    &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1));
+  const mfem::IntegrationRule& quad =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
   return detail::evaluate_line_integral_component(c, integrand, quad);
 }
@@ -161,14 +163,15 @@ double evaluate_area_integral(const axom::Array<primal::BezierCurve<double, 2>>&
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
   static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule *quad_Q, *quad_P;
 
   if(npts_P <= 0) npts_P = npts_Q;
 
   // Get the quadrature for the line integral.
   //  Quadrature order is equal to 2*N - 1
-  quad_Q = &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_Q - 1));
-  quad_P = &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_P - 1));
+  const mfem::IntegrationRule& quad_Q =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_Q - 1);
+  const mfem::IntegrationRule& quad_P =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_P - 1);
 
   // Use minimum y-coord of control nodes as lower bound for integration
   double int_lb = cs[0][0][1];
@@ -211,14 +214,15 @@ double evaluate_area_integral(const primal::CurvedPolygon<double, 2> cpoly,
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
   static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule *quad_Q, *quad_P;
 
   if(npts_P <= 0) npts_P = npts_Q;
 
   // Get the quadrature for the line integral.
   //  Quadrature order is equal to 2*N - 1
-  quad_Q = &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_Q - 1));
-  quad_P = &(my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_P - 1));
+  const mfem::IntegrationRule& quad_Q =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_Q - 1);
+  const mfem::IntegrationRule& quad_P =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_P - 1);
 
   // Use minimum y-coord of control nodes as lower bound for integration
   double int_lb = cpoly[0][0][1];
