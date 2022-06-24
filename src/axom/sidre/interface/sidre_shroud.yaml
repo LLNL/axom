@@ -39,6 +39,7 @@ declarations:
     c_header : axom/sidre/interface/SidreTypes.h
     cxx_header : axom/sidre/interface/SidreTypes.h
     c_type   : SIDRE_IndexType
+    f_cast: int({f_var}, SIDRE_IndexType)
     f_type: integer(SIDRE_IndexType)
     f_kind: SIDRE_IndexType
     f_module_name: axom_sidre
@@ -46,13 +47,21 @@ declarations:
       "--import--":
       -  SIDRE_IndexType
 
-- decl: typedef int TypeID
+- decl: typedef short TypeID
   fields:
     # enum for types
     c_header : axom/sidre/interface/SidreTypes.h
     cxx_header : axom/sidre/core/SidreTypes.hpp
-    c_to_cxx : axom::sidre::getTypeID({c_var})
-    cxx_to_c : static_cast<int>({cxx_var})
+    c_to_cxx : static_cast<axom::sidre::TypeID>({c_var})
+    cxx_to_c : static_cast<SIDRE_TypeID>({cxx_var})
+    c_type   : SIDRE_TypeID
+    f_cast: int({f_var}, TypeID)
+    f_type: integer(TypeID)
+    f_kind: TypeID
+    f_module_name: axom_sidre
+    f_c_module:
+      "--import--":
+      -  TypeID
 
 # XXX
 # parameters:

@@ -29,7 +29,7 @@ use conduit, only : &
     CONDUIT_ULONG_ID, &
     CONDUIT_FLOAT_ID, &
     CONDUIT_DOUBLE_ID
-use, intrinsic :: iso_c_binding, only : C_INT32_T, C_INT64_T
+use, intrinsic :: iso_c_binding, only : C_SHORT, C_INT32_T, C_INT64_T
 ! splicer end module_use
 
 ! splicer begin module_top
@@ -38,10 +38,12 @@ integer, parameter :: MAXNAMESIZE = 128
 #if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
 integer, parameter :: SIDRE_IndexType = C_INT64_T
 #else
-integer, parameter :: SIDRE_IndexType = C_INT64_T
+integer, parameter :: SIDRE_IndexType = C_INT32_T
 #endif
 
-integer, parameter :: &
+integer, parameter :: TypeID = C_SHORT
+
+integer(TypeID), parameter :: &
     SIDRE_NO_TYPE_ID    = CONDUIT_EMPTY_ID, &
     SIDRE_INT8_ID       = CONDUIT_INT8_ID, &
     SIDRE_INT16_ID      = CONDUIT_INT16_ID, &

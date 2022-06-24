@@ -23,8 +23,10 @@
 #if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
 typedef int64_t SIDRE_IndexType;
 #else
-typedef int64_t SIDRE_IndexType;
+typedef int32_t SIDRE_IndexType;
 #endif
+
+typedef short SIDRE_TypeID;
 
 #define SIDRE_InvalidName NULL
 

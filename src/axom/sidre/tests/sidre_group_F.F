@@ -186,7 +186,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root, parent
     type(SidreView) view1, view2
-    integer(SIDRE_IndexType) idx1, idx2, idx3    ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3
     character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_view_name_index")
@@ -229,7 +229,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root, parent, emptygrp
     type(SidreGroup) group1, group2, group1out, group2out
-    integer(SIDRE_IndexType) idx1, idx2, idx3, badidx1, badidx2    ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3, badidx1, badidx2
 
     call set_case_name("get_first_and_next_group_index")
 
@@ -271,7 +271,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root, parent, emptygrp
     type(SidreView) view1, view2, view1out, view2out
-    integer(SIDRE_IndexType) idx1, idx2, idx3, badidx1, badidx2    ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3, badidx1, badidx2
 
     call set_case_name("get_first_and_next_view_index")
 
@@ -312,7 +312,7 @@ contains
   subroutine get_group_name_index
     type(SidreDataStore) ds
     type(SidreGroup) root, parent, grp1, grp2
-    integer(SIDRE_IndexType) idx1, idx2, idx3     ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3
     character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_group_name_index")
@@ -551,7 +551,7 @@ contains
     type(SidreView) view1, view2
     type(SidreBuffer) tmpbuf
 !XX    type(SidreBuffer) buffer1, tmpbuf
-    integer(SIDRE_IndexType) bufferid1      ! IndexType
+    integer(SIDRE_IndexType) bufferid1
     character(len=30) view_name1, view_name2
 !XX    logical buffvalid
 
@@ -812,7 +812,7 @@ contains
     view1 = root1%create_array_view("external_array", foo1)
     ! unable to use create_array_view since foo3 is not associated.
     view2 = root1%create_view("empty_array")
-    call view2%apply_type_nelems(SIDRE_INT_ID, 0_C_LONG)
+    call view2%apply_type_nelems(SIDRE_INT_ID, 0_SIDRE_IndexType)
     view3 = root1%create_view("external_undescribed")
     call view3%set_external_data_ptr(C_LOC(foo4))
     view4 = root1%create_array_view("int2d", int2d1)
@@ -843,14 +843,14 @@ contains
        view1 = root2%get_view("external_array")
        call assert_true(view1%is_external(), "external_array is_external")
        call assert_true(view1%is_described(), "external_array is_described")
-       call assert_equals(view1%get_type_id(), SIDRE_INT_ID, "external_array get_type_id")
+       call assert_true(view1%get_type_id() == SIDRE_INT_ID, "external_array get_type_id")
        call assert_true(view1%get_num_elements() == nfoo, "external_array get_num_elements")
        call view1%set_array_data_ptr(foo2)
 
        view2 = root2%get_view("empty_array")
        call assert_true(view2%is_empty(), "empty_array is_empty")
        call assert_true(view2%is_described(), "empty_array is_described")
-       call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_array get_type_id")
+       call assert_true(view2%get_type_id() == SIDRE_INT_ID, "empty_array get_type_id")
        call assert_true(view2%get_num_elements() == 0, "empty_array get_num_elements")
 !       call view2%set_array_data_ptr(foo3)
 !       call root2%set_array_data_ptr("empty_array", foo3)
@@ -862,7 +862,7 @@ contains
        view4 = root2%get_view("int2d")
        call assert_true(view4%is_external(), "int2d is_external")
        call assert_true(view4%is_described(), "int2d is_described")
-       call assert_equals(view4%get_type_id(), SIDRE_INT_ID, "int2d get_type_id")
+       call assert_true(view4%get_type_id() == SIDRE_INT_ID, "int2d get_type_id")
        call assert_true(view4%get_num_elements() == nfoo*2, "int2d get_num_elements")
        call assert_equals(view4%get_num_dimensions(), 2, "int2d get_num_dimensions")
        rank = view4%get_shape(7, extents)
@@ -940,13 +940,13 @@ contains
        view2 = root2%get_view("empty_described")
        call assert_true(view2%is_empty(), "empty_described is_empty")
        call assert_true(view2%is_described(), "empty_described is_described")
-       call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_described get_type_id")
+       call assert_true(view2%get_type_id() == SIDRE_INT_ID, "empty_described get_type_id")
        call assert_true(view2%get_num_elements() == ndata, "empty_described get_num_elements")
 
        view3 = root2%get_view("empty_shape")
        call assert_true(view3%is_empty(), "empty_shape is_empty")
        call assert_true(view3%is_described(), "empty_shape is_described")
-       call assert_equals(view3%get_type_id(), SIDRE_INT_ID, "empty_shape get_type_id")
+       call assert_true(view3%get_type_id() == SIDRE_INT_ID, "empty_shape get_type_id")
        call assert_true(view3%get_num_elements() == ndata*2, "empty_shape get_num_elements")
        shape2(:) = 0
        rank = view3%get_shape(7, shape2)
@@ -956,7 +956,7 @@ contains
        view4 = root2%get_view("buffer_shape")
        call assert_true(view4%has_buffer(), "buffer_shape has_buffer")
        call assert_true(view4%is_described(), "buffer_shape is_described")
-       call assert_equals(view4%get_type_id(), SIDRE_INT_ID, "buffer_shape get_type_id")
+       call assert_true(view4%get_type_id() == SIDRE_INT_ID, "buffer_shape get_type_id")
        call assert_true(view4%get_num_elements() == ndata*2, "buffer_shape get_num_elements")
        shape2(:) = 0
        rank = view4%get_shape(7, shape2)

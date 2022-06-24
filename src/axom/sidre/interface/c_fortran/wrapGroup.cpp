@@ -396,14 +396,14 @@ SIDRE_View *SIDRE_Group_create_view_empty_bufferify(SIDRE_Group *self,
 
 SIDRE_View *SIDRE_Group_create_view_from_type(SIDRE_Group *self,
                                               const char *path,
-                                              int type,
+                                              SIDRE_TypeID type,
                                               SIDRE_IndexType num_elems,
                                               SIDRE_View *SHC_rv)
 {
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_from_type
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createView(SHCXX_path, SHCXX_type, num_elems);
   // C_error_pattern
@@ -423,14 +423,14 @@ SIDRE_View *SIDRE_Group_create_view_from_type(SIDRE_Group *self,
 SIDRE_View *SIDRE_Group_create_view_from_type_bufferify(SIDRE_Group *self,
                                                         const char *path,
                                                         int Lpath,
-                                                        int type,
+                                                        SIDRE_TypeID type,
                                                         SIDRE_IndexType num_elems,
                                                         SIDRE_View *SHC_rv)
 {
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_from_type_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createView(SHCXX_path, SHCXX_type, num_elems);
   SHC_rv->addr = SHCXX_rv;
@@ -441,7 +441,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_bufferify(SIDRE_Group *self,
 
 SIDRE_View *SIDRE_Group_create_view_with_shape_base(SIDRE_Group *self,
                                                     const char *path,
-                                                    int type,
+                                                    SIDRE_TypeID type,
                                                     int ndims,
                                                     const SIDRE_IndexType *shape,
                                                     SIDRE_View *SHC_rv)
@@ -449,7 +449,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_base(SIDRE_Group *self,
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_base
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewWithShape(SHCXX_path, SHCXX_type, ndims, shape);
   // C_error_pattern
@@ -470,7 +470,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_base_bufferify(
   SIDRE_Group *self,
   const char *path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType *shape,
   SIDRE_View *SHC_rv)
@@ -478,7 +478,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_base_bufferify(
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_base_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewWithShape(SHCXX_path, SHCXX_type, ndims, shape);
   SHC_rv->addr = SHCXX_rv;
@@ -532,7 +532,7 @@ SIDRE_View *SIDRE_Group_create_view_into_buffer_bufferify(SIDRE_Group *self,
 
 SIDRE_View *SIDRE_Group_create_view_from_type_and_buffer(SIDRE_Group *self,
                                                          const char *path,
-                                                         int type,
+                                                         SIDRE_TypeID type,
                                                          SIDRE_IndexType num_elems,
                                                          SIDRE_Buffer *buff,
                                                          SIDRE_View *SHC_rv)
@@ -540,7 +540,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_and_buffer(SIDRE_Group *self,
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_from_type_and_buffer
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::Buffer *SHCXX_buff =
     static_cast<axom::sidre::Buffer *>(buff->addr);
   axom::sidre::View *SHCXX_rv =
@@ -563,7 +563,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_and_buffer_bufferify(
   SIDRE_Group *self,
   const char *path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   SIDRE_IndexType num_elems,
   SIDRE_Buffer *buff,
   SIDRE_View *SHC_rv)
@@ -571,7 +571,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_and_buffer_bufferify(
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_from_type_and_buffer_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::Buffer *SHCXX_buff =
     static_cast<axom::sidre::Buffer *>(buff->addr);
   axom::sidre::View *SHCXX_rv =
@@ -584,7 +584,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_and_buffer_bufferify(
 
 SIDRE_View *SIDRE_Group_create_view_with_shape_and_buffer(SIDRE_Group *self,
                                                           const char *path,
-                                                          int type,
+                                                          SIDRE_TypeID type,
                                                           int ndims,
                                                           const SIDRE_IndexType *shape,
                                                           SIDRE_Buffer *buff,
@@ -593,7 +593,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_and_buffer(SIDRE_Group *self,
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_and_buffer
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::Buffer *SHCXX_buff =
     static_cast<axom::sidre::Buffer *>(buff->addr);
   axom::sidre::View *SHCXX_rv =
@@ -616,7 +616,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_and_buffer_bufferify(
   SIDRE_Group *self,
   const char *path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType *shape,
   SIDRE_Buffer *buff,
@@ -625,7 +625,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_and_buffer_bufferify(
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_and_buffer_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::Buffer *SHCXX_buff =
     static_cast<axom::sidre::Buffer *>(buff->addr);
   axom::sidre::View *SHCXX_rv =
@@ -677,7 +677,7 @@ SIDRE_View *SIDRE_Group_create_view_external_bufferify(SIDRE_Group *self,
 
 SIDRE_View *SIDRE_Group_create_view_from_type_external(SIDRE_Group *self,
                                                        const char *path,
-                                                       int type,
+                                                       SIDRE_TypeID type,
                                                        SIDRE_IndexType num_elems,
                                                        void *external_ptr,
                                                        SIDRE_View *SHC_rv)
@@ -685,7 +685,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_external(SIDRE_Group *self,
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_from_type_external
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createView(SHCXX_path, SHCXX_type, num_elems, external_ptr);
   // C_error_pattern
@@ -706,7 +706,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_external_bufferify(
   SIDRE_Group *self,
   const char *path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   SIDRE_IndexType num_elems,
   void *external_ptr,
   SIDRE_View *SHC_rv)
@@ -714,7 +714,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_external_bufferify(
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_from_type_external_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createView(SHCXX_path, SHCXX_type, num_elems, external_ptr);
   SHC_rv->addr = SHCXX_rv;
@@ -725,7 +725,7 @@ SIDRE_View *SIDRE_Group_create_view_from_type_external_bufferify(
 
 SIDRE_View *SIDRE_Group_create_view_with_shape_external(SIDRE_Group *self,
                                                         const char *path,
-                                                        int type,
+                                                        SIDRE_TypeID type,
                                                         int ndims,
                                                         const SIDRE_IndexType *shape,
                                                         void *external_ptr,
@@ -734,7 +734,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_external(SIDRE_Group *self,
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_external
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewWithShape(SHCXX_path, SHCXX_type, ndims, shape, external_ptr);
   // C_error_pattern
@@ -755,7 +755,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_external_bufferify(
   SIDRE_Group *self,
   const char *path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType *shape,
   void *external_ptr,
@@ -764,7 +764,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_external_bufferify(
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_external_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewWithShape(SHCXX_path, SHCXX_type, ndims, shape, external_ptr);
   SHC_rv->addr = SHCXX_rv;
@@ -775,14 +775,14 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_external_bufferify(
 
 SIDRE_View *SIDRE_Group_create_view_and_allocate_nelems(SIDRE_Group *self,
                                                         const char *path,
-                                                        int type,
+                                                        SIDRE_TypeID type,
                                                         SIDRE_IndexType num_elems,
                                                         SIDRE_View *SHC_rv)
 {
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_and_allocate_nelems
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewAndAllocate(SHCXX_path, SHCXX_type, num_elems);
   // C_error_pattern
@@ -803,14 +803,14 @@ SIDRE_View *SIDRE_Group_create_view_and_allocate_nelems_bufferify(
   SIDRE_Group *self,
   const char *path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   SIDRE_IndexType num_elems,
   SIDRE_View *SHC_rv)
 {
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_and_allocate_nelems_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewAndAllocate(SHCXX_path, SHCXX_type, num_elems);
   SHC_rv->addr = SHCXX_rv;
@@ -822,7 +822,7 @@ SIDRE_View *SIDRE_Group_create_view_and_allocate_nelems_bufferify(
 SIDRE_View *SIDRE_Group_create_view_with_shape_and_allocate(
   SIDRE_Group *self,
   const char *path,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType *shape,
   SIDRE_View *SHC_rv)
@@ -830,7 +830,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_and_allocate(
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_and_allocate
   const std::string SHCXX_path(path);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewWithShapeAndAllocate(SHCXX_path, SHCXX_type, ndims, shape);
   // C_error_pattern
@@ -851,7 +851,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_and_allocate_bufferify(
   SIDRE_Group *self,
   const char *path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType *shape,
   SIDRE_View *SHC_rv)
@@ -859,7 +859,7 @@ SIDRE_View *SIDRE_Group_create_view_with_shape_and_allocate_bufferify(
   axom::sidre::Group *SH_this = static_cast<axom::sidre::Group *>(self->addr);
   // splicer begin class.Group.method.create_view_with_shape_and_allocate_bufferify
   const std::string SHCXX_path(path, Lpath);
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::View *SHCXX_rv =
     SH_this->createViewWithShapeAndAllocate(SHCXX_path, SHCXX_type, ndims, shape);
   SHC_rv->addr = SHCXX_rv;

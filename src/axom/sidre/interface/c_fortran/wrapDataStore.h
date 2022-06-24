@@ -53,7 +53,7 @@ SIDRE_Buffer* SIDRE_DataStore_create_buffer_empty(SIDRE_DataStore* self,
                                                   SIDRE_Buffer* SHC_rv);
 
 SIDRE_Buffer* SIDRE_DataStore_create_buffer_from_type(SIDRE_DataStore* self,
-                                                      int type,
+                                                      SIDRE_TypeID type,
                                                       SIDRE_IndexType num_elems,
                                                       SIDRE_Buffer* SHC_rv);
 

@@ -98,14 +98,14 @@ SIDRE_Buffer *SIDRE_DataStore_create_buffer_empty(SIDRE_DataStore *self,
 }
 
 SIDRE_Buffer *SIDRE_DataStore_create_buffer_from_type(SIDRE_DataStore *self,
-                                                      int type,
+                                                      SIDRE_TypeID type,
                                                       SIDRE_IndexType num_elems,
                                                       SIDRE_Buffer *SHC_rv)
 {
   axom::sidre::DataStore *SH_this =
     static_cast<axom::sidre::DataStore *>(self->addr);
   // splicer begin class.DataStore.method.create_buffer_from_type
-  axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
+  axom::sidre::TypeID SHCXX_type = static_cast<axom::sidre::TypeID>(type);
   axom::sidre::Buffer *SHCXX_rv = SH_this->createBuffer(SHCXX_type, num_elems);
   // C_error_pattern
   if(SHCXX_rv == nullptr)
