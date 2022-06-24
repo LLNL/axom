@@ -56,6 +56,8 @@ Please see the `AXOMMacros.hpp` header file for other available macros and
 usage examples.
 
 
+.. _codemacros-conditional-label:
+
 ------------------------------------
 Conditionally compiled code
 ------------------------------------
@@ -76,10 +78,18 @@ for a debug build **must** be guarded using the `AXOM_DEBUG` macro::
       // rest of method implementation
    }
 
-The Axom build system provides various other macros for controlling 
-conditionally-compiled code. The macro constants will be defined based 
-on CMake options given when the code is configured. Please see the 
-`config.hpp` header file in the source include directory for a complete list.
+Axom provides various other macro constants for conditionally-compiled code 
+based on which built-in and third-party libraries are being used and which Axom 
+components are enabled. The macro constants are defined in the ``config.hpp.in``
+file in the top-level Axom source directory. Each of these macro constants has
+the form ``AXOM_USE_<FOO>``, where ``FOO`` is the name of an Axom library
+dependency or the name of an Axom component.
+
+When CMake is run to configure an Axom build, the macro constants are set 
+based on CMake options and Axom dependencies and this file is converted to 
+the ``config.hpp`` header file in the Axom build space. The ``config.hpp`` 
+header file is included in all Axom source and header files for consistent 
+application of the macro constants throughout the code.
 
 
 ------------------------------------

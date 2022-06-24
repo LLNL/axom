@@ -44,7 +44,7 @@ test on.
 External Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Axom's dependencies come in two flavors:
+Axom has two types of dependencies:
 
 * Libraries. These contain code that axom must link against.
 * Tools. These are executables that we use during code development; e.g., 
@@ -66,7 +66,7 @@ The following table lists:
     each library
   * Which libraries are required or optional dependencies for Axom. While 
     most Axom libraries are not required, they are required to access all 
-    capabilities of componements listed.
+    capabilities of components listed.
   * The CMake variable that must be set to the path of each library 
     installation when configuring a build with the library
 
@@ -269,7 +269,7 @@ example::
                        -DBUILD_SHARED_LIBS=ON               \
                        -DENABLE_FORTRAN=OFF
 
-This will configure CMake to build shared libraries and disable fortran
+This will configure CMake to build shared libraries and disable Fortran
 for the generated configuration.
 
 
@@ -338,7 +338,7 @@ If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable the desired
 components (other than 'core', which is always enabled).
 
 See `Axom software documentation <../../../index.html>`_
-for a list of Axom's components and their dependencies.
+for a list of Axom components and their dependencies.
 
 See :ref:`dependencies-label` for configuration variables to specify paths
 to Axom external dependencies.
@@ -436,6 +436,14 @@ Tools and features primarily intended for developers
 | AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS | OFF     | Enable an expanded set of tests for    |
 |                                          |         | the Axom Quest component               |
 +------------------------------------------+---------+----------------------------------------+
+
+Axom source code macro constants
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Axom developers, please note that Axom provides macro constants to control 
+conditionally-compiled code based on which built-in and third-party libraries 
+are being used and which Axom components are enabled. Please see
+:ref:`codemacros-conditional-label` for more information.
 
 
 Make targets
