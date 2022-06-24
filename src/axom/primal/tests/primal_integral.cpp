@@ -143,8 +143,6 @@ TEST(primal_integral, evaluate_line_integral_scalar)
 
   axom::Array<Bezier> connected_curve(
     {cubic_segment, linear_segment, quadratic_segment});
-
-  // Compare against hand computed/high-precision calculated values
   EXPECT_NEAR(evaluate_line_integral(connected_curve, const_integrand, npts),
               8.28968500196,
               abs_tol);
@@ -153,6 +151,18 @@ TEST(primal_integral, evaluate_line_integral_scalar)
               abs_tol);
   EXPECT_NEAR(evaluate_line_integral(connected_curve, transc_integrand, npts),
               -0.574992518405,
+              abs_tol);
+
+  // Test algorithm on disconnected curves
+  axom::Array<Bezier> disconnected_curve({cubic_segment, quadratic_segment});
+  EXPECT_NEAR(evaluate_line_integral(disconnected_curve, const_integrand, npts),
+              6.05361702446,
+              abs_tol);
+  EXPECT_NEAR(evaluate_line_integral(disconnected_curve, poly_integrand, npts),
+              -6.34833539689,
+              abs_tol);
+  EXPECT_NEAR(evaluate_line_integral(disconnected_curve, transc_integrand, npts),
+              -0.914161242161,
               abs_tol);
 }
 
@@ -217,6 +227,26 @@ TEST(primal_integral, evaluate_line_integral_vector)
   EXPECT_NEAR(evaluate_line_integral(parabola_shape, winding_field, npts),
               1.0,
               abs_tol);
+
+  // Test algorithm on disconnected curves
+  Point2D paranodes2_shifted[] = {Point2D {-1.0, -1.0},
+                                  Point2D {0.0, -3.0},
+                                  Point2D {1.0, -1.0}};
+  Bezier para2_shift(paranodes2_shifted, 2);
+  axom::Array<Bezier> disconnected_parabola_shape({para1, para2_shift});
+
+  EXPECT_NEAR(
+    evaluate_line_integral(disconnected_parabola_shape, area_field, npts),
+    11.0 / 3.0,
+    abs_tol);
+  EXPECT_NEAR(
+    evaluate_line_integral(disconnected_parabola_shape, conservative_field, npts),
+    0.0,
+    abs_tol);
+  EXPECT_NEAR(
+    evaluate_line_integral(disconnected_parabola_shape, winding_field, npts),
+    0.75,
+    abs_tol);
 }
 
 int main(int argc, char* argv[])
