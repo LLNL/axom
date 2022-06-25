@@ -141,6 +141,9 @@ TEST(sidre_datacollection, dc_save_two_files)
   {
     sdc.SetNumFiles(1);
   }
+#else
+  // Just save the single file when not using MPI
+  sdc.SetMesh(&mesh);
 #endif
 
   sdc.Save();
