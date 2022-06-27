@@ -33,9 +33,8 @@ else()
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
         message(FATAL_ERROR
             "Cannot locate BLT. "
-            "Either run the following two commands in your git repository: \n"
-            "    git submodule init\n"
-            "    git submodule update\n"
+            "Either run the following command in your git repository: \n"
+            "    git submodule update --init --recursive\n"
             "Or add -DBLT_SOURCE_DIR=/path/to/blt to your CMake command." )
     endif()
 endif()
