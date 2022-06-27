@@ -6,10 +6,10 @@
 # Axom project
 #------------------------------------------------------------------------------
 
-if (ENABLE_CUDA)
-    cmake_minimum_required(VERSION 3.9)
+if (ENABLE_HIP)
+    cmake_minimum_required(VERSION 3.21)
 else()
-    cmake_minimum_required(VERSION 3.8.2)
+    cmake_minimum_required(VERSION 3.14)
 endif()
 
 project(axom LANGUAGES C CXX)
