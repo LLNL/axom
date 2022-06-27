@@ -322,7 +322,10 @@ Axom components, tests, examples, etc.
 | AXOM_ENABLE_<FOO>            | ON      | Enable the axom component named 'Foo'  |
 |                              |         |                                        |
 |                              |         | (e.g. AXOM_ENABLE_SIDRE)               |
-|                              |         | for the Sidre component                |
+|                              |         | for the Sidre component.               |
+|                              |         |                                        |
+|                              |         | Overrides AXOM_ENABLE_ALL_COMPONENTS   |
+|                              |         | for the specified component.           |
 +------------------------------+---------+----------------------------------------+
 | AXOM_ENABLE_EXAMPLES         | ON      | Build Axom examples                    |
 +------------------------------+---------+----------------------------------------+
@@ -336,8 +339,10 @@ Axom components, tests, examples, etc.
 | AXOM_ENABLE_TOOLS            | ON      | Enable Axom development tools          |
 +------------------------------+---------+----------------------------------------+
 
-If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable the desired
-components (other than 'core', which is always enabled).
+If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable a desired
+component (other than 'core', which is always enabled). Similarly, if 
+``AXOM_ENABLE_ALL_COMPONENTS`` is ON, you can disable individual components by
+setting ``AXOM_ENABLE_<FOO>`` to OFF for the component you want turned off. 
 
 See `Axom software documentation <../../../index.html>`_
 for a list of Axom components and their dependencies. Note that when enabling 
