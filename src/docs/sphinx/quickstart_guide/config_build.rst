@@ -46,7 +46,7 @@ External Dependencies
 Axom has two types of dependencies:
 
 * **Libraries.** These contain code that axom must link against.
-* **Tools.** These are executables that we use during code development; e.g., 
+* **Tools.** These are executables that we use during code development; e.g. 
   generate documentation, format code, etc.
 
 Unless noted otherwise in the following discussion, Axom dependencies are 
@@ -405,7 +405,7 @@ options to be provided, which are summarized in the following table.
 +------------------------------+------------------------------------------+
 | CUDA_TOOLKIT_ROOT_DIR        | Path to CUDA software stack installation |
 +------------------------------+------------------------------------------+
-| CMAKE_CUDA_COMPILER          | Path to CUDA compiler (e.g., nvcc)       |
+| CMAKE_CUDA_COMPILER          | Path to CUDA compiler (e.g. nvcc)        |
 +------------------------------+------------------------------------------+
 | CMAKE_CUDA_ARCHITECTURES     | Target architecture(s) for CUDA          |
 +------------------------------+------------------------------------------+
