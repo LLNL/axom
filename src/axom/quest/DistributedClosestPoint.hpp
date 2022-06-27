@@ -109,6 +109,34 @@ axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(conduit::Node& nod
   return axom::ArrayView<PointType>(ptr, sz);
 }
 
+/**
+ * \brief Put BoundingBox into a Conduit Node.
+ */
+template <int NDIMS>
+void put_to_conduit_node( const primal::BoundingBox<double, NDIMS>& bb,
+                          conduit::Node& node)
+{
+  node["dim"].set(bb.dimension());
+  node["lo"].set(bb.getMin().data(), bb.dimension());
+  node["hi"].set(bb.getMax().data(), bb.dimension());
+}
+
+/**
+ * \brief Get BoundingBox from a Conduit Node.
+ */
+template <int NDIMS>
+void get_from_conduit_node( primal::BoundingBox<double, NDIMS>& bb,
+                            const conduit::Node& node)
+{
+  int dim = node["dim"].as_int();
+  SLIC_ASSERT(dim == NDIMS);
+  const double* lo = node["lo"].as_double_ptr();
+  const double* hi = node["hi"].as_double_ptr();
+  bb = primal::BoundingBox<double, NDIMS>(
+    primal::Point<double, NDIMS>(lo, NDIMS),
+    primal::Point<double, NDIMS>(hi, NDIMS));
+}
+
 /// Helper function to extract the dimension from the coordinate values group
 /// of a mesh blueprint coordset
 inline int extractDimension(const conduit::Node& values_node)
@@ -214,7 +242,7 @@ inline int isend_using_schema(conduit::Node& node,
  * \param [in] recv_rank MPI rank to receive \a recv_node from
  * \param [in] tag tag for MPI messages
  * \param [in] comm MPI communicator to use
- * 
+ *
  * Sends/receives a pair of conduit nodes (along with their schemas) from the current rank.
  * Uses non-blocking send (isend) and blocking receives and ensures that the request
  * objects associated with the send are finalized
@@ -387,11 +415,87 @@ public:
     return false;
   }
 
+  /// Get local copy of all ranks BVH root bounding boxes.
+  void gatherBVHRoots()
+  {
+    SLIC_ASSERT_MSG(
+      isBVHTreeInitialized(),
+      "BVH tree must be initialized before calling 'gatherBVHRoots");
+
+    BoxType local_bb;
+    switch(m_runtimePolicy)
+    {
+    case RuntimePolicy::seq:
+      local_bb = m_bvh_seq->getBounds();
+      break;
+
+    case RuntimePolicy::omp:
+#ifdef _AXOM_DCP_USE_OPENMP
+      local_bb = m_bvh_omp->getBounds();
+#else
+      break;
+#endif
+
+    case RuntimePolicy::cuda:
+#ifdef _AXOM_DCP_USE_CUDA
+      local_bb = m_bvh_cuda->getBounds();
+#else
+      break;
+#endif
+    }
+
+    gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
+  }
+
+  /// Allgather one bounding box from each rank.
+  void gatherBoundingBoxes(const BoxType &aabb, BoxArray& all_aabbs) const
+  {
+    // Using MPI calls.  Should we change to Conduit relay MPI?
+    Array<double> sendbuf( 2*DIM );
+    aabb.getMin().to_array(&sendbuf[0]);
+    aabb.getMax().to_array(&sendbuf[DIM]);
+    Array<double> recvbuf( m_nranks*sendbuf.size() );
+    int errf = MPI_Allgather(sendbuf.data(), 2*DIM, mpi_traits<double>::type,
+                             recvbuf.data(), 2*DIM, mpi_traits<double>::type,
+                             MPI_COMM_WORLD);
+    SLIC_ASSERT(errf == MPI_SUCCESS);
+
+    all_aabbs.clear();
+    all_aabbs.reserve(m_nranks);
+    for ( int i=0; i<m_nranks; ++i ) {
+      PointType lower( &recvbuf[i*2*DIM] );
+      PointType upper( &recvbuf[i*2*DIM+DIM] );
+      all_aabbs.emplace_back(BoxType(lower, upper));
+    }
+  }
+
+  /// Compute bounding box for local part of a mesh.
+  BoxType computeMeshBoundingBox(conduit::Node& mesh,
+                                 const std::string& coordset) const
+  {
+    // clang-format off
+    auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
+    SLIC_ASSERT( internal::extractDimension(coords) == NDIMS );
+    const int npts = internal::extractSize(coords);
+
+    PointType lo, hi;
+    const char *dirNames[] = {"x", "y", "z"};
+    for ( int d=0; d<NDIMS; ++d )
+    {
+      // Q: Safe to assume coordVals have stride 1?
+      auto coordVals = internal::getPointer<double>(coords[dirNames[d]]);
+      lo[d] = *std::min_element(coordVals, coordVals+npts);
+      hi[d] = *std::max_element(coordVals, coordVals+npts);
+    }
+
+    return BoxType(lo, hi);
+  }
+
   /**
    * \brief Computes the closest point within the objects for each query point
-   * in the provided particle mesh, provided in the mesh blueprint rooted at \a meshGroup
+   * in the provided particle mesh, provided in the mesh blueprint rooted at \a query_mesh
    *
-   * \param mesh_node The root node of a mesh blueprint for the query points
+   * \param query_mesh The root node of a mesh blueprint for the query points
    * \param coordset The coordinate set for the query points
    *
    * Uses the \a coordset coordinate set of the provided blueprint mesh
@@ -405,11 +509,13 @@ public:
    * with stride NDIMS. We intend to loosen this restriction in the future
    *
    * \note We're temporarily also using a min_distance field while debugging this class.
-   * The code will use this field if it is present in \a mesh_node.
+   * The code will use this field if it is present in \a query_mesh.
    */
   void computeClosestPoints(conduit::Node& mesh_node,
                             const std::string& coordset) const
   {
+    return new_computeClosestPoints(mesh_node, coordset);
+
     SLIC_ASSERT_MSG(
       isBVHTreeInitialized(),
       "BVH tree must be initialized before calling 'computeClosestPoints");
@@ -590,6 +696,187 @@ public:
       }
     }
   }
+  void new_computeClosestPoints(conduit::Node& query_mesh,
+                            const std::string& coordset) const
+  {
+    SLIC_ASSERT_MSG(
+      isBVHTreeInitialized(),
+      "BVH tree must be initialized before calling 'computeClosestPoints");
+
+    // Utility function to dump a conduit node on each rank, e.g. for debugging
+    auto dumpNode = [=](const conduit::Node& n,
+                        const std::string&& fname,
+                        const std::string& protocol = "json") {
+      conduit::relay::io::save(n, fname, protocol);
+    };
+
+    BoxType queryPartitionBb = computeMeshBoundingBox(query_mesh, coordset);
+
+    // create conduit node containing data that has to xfer between ranks
+    conduit::Node xfer_node;
+    {
+      // clang-format off
+      auto& coords = query_mesh[fmt::format("coordsets/{}/values", coordset)];
+      const int dim = internal::extractDimension(coords);
+      const int npts = internal::extractSize(coords);
+
+      xfer_node["npts"] = npts;
+      xfer_node["dim"] = dim;
+      xfer_node["src_rank"] = m_rank;
+      xfer_node["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * npts);
+      xfer_node["cp_index"].set_external(internal::getPointer<axom::IndexType>(query_mesh["fields/cp_index/values"]), npts);
+      xfer_node["cp_rank"].set_external(internal::getPointer<axom::IndexType>(query_mesh["fields/cp_rank/values"]), npts);
+      xfer_node["closest_point"].set_external(internal::getPointer<double>(query_mesh["fields/closest_point/values/x"]), dim * npts);
+      put_to_conduit_node(queryPartitionBb, xfer_node["aabb"]);
+
+      if(query_mesh.has_path("fields/min_distance"))
+      {
+        xfer_node["debug/min_distance"].set_external(internal::getPointer<double>(query_mesh["fields/min_distance/values"]), npts);
+      }
+      // clang-format on
+    }
+
+    if(m_isVerbose)
+    {
+      dumpNode(xfer_node, fmt::format("round_{}_r{}_begin.json", 0, m_rank));
+    }
+
+    // arbitrary tags for sending data to other ranks and getting it back
+    const int tag = 1234;
+
+    std::vector<relay::mpi::ISendRequest> isendRequests;
+
+    for(int i = 0; i < m_nranks; ++i)
+    {
+      SLIC_INFO_IF(m_isVerbose && m_rank == 0,
+                   fmt::format("=======  Starting round {}/{} =======", i, m_nranks));
+
+      if (!xfer_node.has_path("skip"))
+      {
+
+        get_from_conduit_node(queryPartitionBb, xfer_node["aabb"]);
+
+        // Send xfer_node to the next rank within threshold.
+        // Ranks beyond threshold, get a skip message instead.
+        // No send if search circles back to local rank.
+        for ( int j=0; j<m_nranks-i; ++j ) {
+          const int next_dst = (m_rank + 1 + j) % m_nranks;
+
+          SLIC_INFO_IF(
+            m_isVerbose,
+            fmt::format("Rank {} -- sending to dst {}", m_rank, next_dst));
+
+          if(m_isVerbose)
+          {
+            dumpNode(xfer_node, fmt::format("round_{}_r{}_begin.json", i, m_rank));
+          }
+
+          double sqDist = squared_distance( m_objectPartitionBbs[next_dst],
+                                            queryPartitionBb );
+
+          if (next_dst != m_rank) {
+
+            if (sqDist <= m_sqDistanceThreshold ||
+                next_dst == xfer_node["src_rank"].as_int()) {
+              isend_using_schema(xfer_node,
+                                 next_dst,
+                                 tag,
+                                 MPI_COMM_WORLD,
+                                 &isendRequests[next_dst]);
+              break;
+            }
+            else {
+              conduit::Node skip;
+              // I think we can use an empty Node, but be explicit for now.
+              skip["skip"] = true;
+              skip["src_rank"] = xfer_node["src_rank"];
+              isend_using_schema(skip,
+                                 next_dst,
+                                 tag,
+                                 MPI_COMM_WORLD,
+                                 &isendRequests[next_dst]);
+            }
+          }
+
+        }
+      }
+
+      // FIXME: this needs to be protected in serial runs.
+      if (m_nranks > 1)
+      {
+        conduit::relay::mpi::recv_using_schema(xfer_node,
+                                               MPI_ANY_SOURCE,
+                                               tag,
+                                               MPI_COMM_WORLD);
+      }
+
+      if (!xfer_node.has_path("skip"))
+      {
+        SLIC_ASSERT(xfer_node["src_rank"].as_int() != m_rank);
+
+        // Distance search using local object partition and the xfer_node.
+        switch(m_runtimePolicy)
+        {
+        case RuntimePolicy::seq:
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, true);
+          break;
+
+        case RuntimePolicy::omp:
+#ifdef _AXOM_DCP_USE_OPENMP
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, true);
+#endif
+          break;
+
+        case RuntimePolicy::cuda:
+#ifdef _AXOM_DCP_USE_CUDA
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, true);
+#endif
+          break;
+        }
+
+        if (xfer_node["src_rank"].as_int() == m_rank)
+        {
+          // This is the query partition we stared with.
+          // Copy it back to query_mesh.
+          const int npts = xfer_node["npts"].value();
+          axom::copy(xfer_node["cp_rank"].data_ptr(),
+                     xfer_node["cp_rank"].data_ptr(),
+                     npts * sizeof(axom::IndexType));
+          axom::copy(xfer_node["cp_index"].data_ptr(),
+                     xfer_node["cp_index"].data_ptr(),
+                     npts * sizeof(axom::IndexType));
+          axom::copy(xfer_node["closest_point"].data_ptr(),
+                     xfer_node["closest_point"].data_ptr(),
+                     npts * sizeof(PointType));
+
+          if(m_isVerbose)
+          {
+            dumpNode(query_mesh,
+                     axom::fmt::format("round_{}_r{}_end.json", i, m_rank));
+
+            SLIC_ASSERT_MSG(
+              conduit::blueprint::mcarray::is_interleaved(
+                query_mesh["fields/closest_point/values"]),
+              fmt::format("After copy on iteration {}, 'closest_point' field of "
+                          "'query_mesh' is not interleaved",
+                          i));
+          }
+        }
+      }
+
+      if(m_isVerbose)
+      {
+        dumpNode(xfer_node, fmt::format("round_{}_r{}_end.json", 0, m_rank));
+      }
+
+    } // Loop through m_nranks
+
+    SLIC_ASSERT_MSG(false, "Need to make one more exchange to get query partitions back to their original owners.");
+    SLIC_ASSERT_MSG(false, "Need to wait for all non-blocking sends to finish.");
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    slic::flushStreams();
+  }
 
 private:
   /// Sets the allocator ID to the default associated with the execution policy
@@ -666,9 +953,14 @@ public:
     bvh->setAllocatorID(m_allocatorID);
     int result = bvh->initialize(boxesView, npts);
 
+    gatherBVHRoots();
+
     return (result == spin::BVH_BUILD_OK);
   }
 
+  /**
+   * TODO: is_first may be unnecessary and always equal to xfer_node["src_rank"] == m_rank.
+   */
   template <typename BVHTreeType>
   void computeLocalClosestPoints(const BVHTreeType* bvh,
                                  conduit::Node& xfer_node,
@@ -694,6 +986,11 @@ public:
 
     /// Create ArrayViews in ExecSpace that are compatible with fields
     // TODO: Avoid copying arrays (here and at the end) if both are on the host
+    // BTNG: This is probably a deep copy.
+    // xfer_node["cp_index"]           -view> cpIndexes  -deep> cp_idx   -view> query_inds     -deep> cpIndexes
+    // xfer_node["cp_rank"]            -view> cpRanks    -deep> cp_ranks -view> query_ranks    -deep> cpRanks
+    // xfer_node["closest_point"]      -view> closestPts -deep> cp_pos   -view> query_pos      -deep> closestPts
+    // xfer_node["debug/min_distance"] -view> minDist    -deep> cp_dist  -view> query_min_dist -deep> minDist
     auto cp_idx = is_first
       ? axom::Array<axom::IndexType>(npts, npts, m_allocatorID)
       : axom::Array<axom::IndexType>(cpIndexes, m_allocatorID);
@@ -821,6 +1118,7 @@ public:
           // }
         }););
 
+    // BTNG: copy args are (dst,src,numbytes)
     axom::copy(cpIndexes.data(),
                query_inds.data(),
                cpIndexes.size() * sizeof(axom::IndexType));
@@ -849,7 +1147,7 @@ private:
   int m_nranks;
 
   PointArray m_points;
-  BoxArray m_boxes;
+  BoxArray m_objectPartitionBbs;
 
   std::unique_ptr<SeqBVHTree> m_bvh_seq;
 
@@ -865,7 +1163,7 @@ private:
 }  // namespace internal
 
 /**
- * \brief Encapsulated the Distributed closest point query for a collection of query points 
+ * \brief Encapsulated the Distributed closest point query for a collection of query points
  * over an "object mesh"
  *
  * The object mesh and the query mesh are provided as conduit nodes using the mesh blueprint schema.
@@ -885,7 +1183,7 @@ private:
  *
  * To use this class, first set some parameters, such as the runtime execution policy,
  * then pass in the object mesh and build a spatial index over this mesh.
- * Finally, compute the closest points in the object mesh to each point in a query mesh 
+ * Finally, compute the closest points in the object mesh to each point in a query mesh
  * using the \a computeClosestPoint() function.
  *
  * \note The implementation currently assumes that the coordinates for the positions and vector field
@@ -936,7 +1234,7 @@ public:
   /**
    * \brief Sets the dimension for the query
    *
-   * \note Users do not need to call this function explicitly. The dimension 
+   * \note Users do not need to call this function explicitly. The dimension
    * is set by the \a setObjectMesh function
    */
   void setDimension(int dim)
@@ -1027,7 +1325,7 @@ public:
   }
 
   /**
-   * \brief Computes the closest point on the object mesh for each point 
+   * \brief Computes the closest point on the object mesh for each point
    * on the provided query mesh
    *
    * \param [in] query_node conduit node containing the query points
