@@ -27,7 +27,7 @@ Basic requirements:
 
   * C++ compiler with C++14 support at a minimum
   * CMake with a minimum required version of 3.14 for CPU-only and CUDA builds,
-    and a minimum version of 3.21 when building with HIP support.
+    and a minimum version of 3.21 when building with HIP support
   * Fortran Compiler (optional)
 
 Supported Compilers
@@ -346,11 +346,12 @@ must be set to a valid path to the dependency installation. See
 :ref:`dependencies-label` for a complete listing of configuration variables 
 to specify paths to Axom external dependencies. 
 
-.. note:: ``AXOM_ENABLE_EXAMPLES``, ``AXOM_ENABLE_TESTS``, and ``AXOM_ENABLE_DOCS``
-          are *CMake-dependent options*. Thus, if a non-Axom prefix variable form
-          is ON, such as ``ENABLE_TESTS``, tests can be enabled in other packages in 
-          a project build and turned off in Axom by setting the Axom prefix form
-          ``AXOM_ENABLE_TESTS`` to OFF.
+.. note:: ``AXOM_ENABLE_EXAMPLES``, ``AXOM_ENABLE_TESTS``, and 
+          ``AXOM_ENABLE_DOCS`` are *CMake-dependent options*. Thus, if a 
+          variable without the ``AXOM_`` prefix is ON, such as ``ENABLE_TESTS``,
+          tests can be enabled in other packages in a project build and turned 
+          off in Axom by setting the Axom prefix form ``AXOM_ENABLE_TESTS`` to 
+          OFF.
 
 
 Axom build options, compiler support, and parallelism
@@ -414,13 +415,9 @@ options to be provided, which are summarized in the following table.
 | CMAKE_HIP_ARCHITECTURES      | Target architecture(s) for HIP           |
 +------------------------------+------------------------------------------+
 
-.. important:: Depending on the version of RAJA you are using, you may need to
-               set the C++ standard to C++14. RAJA requires C++14 as of release
-               v2022.03.0.
-
 .. note :: To configure the version of the C++ standard, you can supply one of the
            following values for **BLT_CXX_STD**:  'c++11' or 'c++14'.
-           Axom requires at least 'c++11', the  default value.
+           Axom requires at least 'c++14', the  default value.
 
 
 Tools and features primarily intended for developers
