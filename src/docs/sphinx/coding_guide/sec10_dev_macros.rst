@@ -79,11 +79,11 @@ for a debug build **must** be guarded using the `AXOM_DEBUG` macro::
    }
 
 Axom provides various other macro constants for conditionally-compiled code 
-based on which built-in and third-party libraries are being used and which Axom 
-components are enabled. The macro constants are defined in the ``config.hpp.in``
-file in the top-level Axom source directory. Each of these macro constants has
-the form ``AXOM_USE_<FOO>``, where ``FOO`` is the name of an Axom library
-dependency or the name of an Axom component.
+which reflect which built-in and third-party libraries are being used and 
+which Axom components are enabled. The macro constants are defined in the 
+``config.hpp.in`` file in the top-level Axom source directory. Each of these 
+macro constants has the form ``AXOM_USE_<FOO>``, where ``FOO`` is the name of 
+an Axom library dependency or the name of an Axom component.
 
 When CMake is run to configure an Axom build, the macro constants are set 
 based on CMake options and Axom dependencies and this file is converted to 

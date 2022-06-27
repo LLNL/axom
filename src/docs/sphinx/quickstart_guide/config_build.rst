@@ -25,10 +25,9 @@ Requirements, Dependencies, and Supported Compilers
 Basic requirements:
 ~~~~~~~~~~~~~~~~~~~
 
-  * C++ Compiler with C++11 support at a minimum. Depending on which Axom 
-    features you enable, a C++14 compliant compiler may be required.
-  * CMake. Minimum version required is 3.8.2. If using CUDA, 3.9 is the minimum 
-    required version.
+  * C++ compiler with C++14 support at a minimum
+  * CMake with a minimum required version of 3.14 for CPU-only and CUDA builds,
+    and a minimum version of 3.21 when building with HIP support.
   * Fortran Compiler (optional)
 
 Supported Compilers
@@ -46,9 +45,9 @@ External Dependencies
 
 Axom has two types of dependencies:
 
-* Libraries. These contain code that axom must link against.
-* Tools. These are executables that we use during code development; e.g., 
-generate documentation, format code, etc.
+* **Libraries.** These contain code that axom must link against.
+* **Tools.** These are executables that we use during code development; e.g., 
+  generate documentation, format code, etc.
 
 Unless noted otherwise in the following discussion, Axom dependencies are 
 optional.
@@ -74,10 +73,10 @@ The following table lists:
   Library          Dependent Components                 Build system variable
 ================== ==================================== ======================
   `Conduit`_       Required: Sidre                      CONDUIT_DIR
-  `c2c`_           Optional                             C2C_DIR
+  `c2c`_           Optional: Quest                      C2C_DIR
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
-  `MFEM`_          Optional: Quest                      MFEM_DIR
+  `MFEM`_          Optional: Quest, Sidre               MFEM_DIR
   `RAJA`_          Optional: Mint, Spin, Quest          RAJA_DIR
   `SCR`_           Optional: Sidre                      SCR_DIR
   `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR
@@ -133,10 +132,6 @@ Each tool has a corresponding build system variable (with the suffix
 ``_EXECUTABLE``) to supply a path to the tool executable. For example, 
 ``sphinx`` has a corresponding build system variable ``SPHINX_EXECUTABLE``.
 
-.. note:: To get a full list of all Axom dependencies in an ``uberenv``
-          build of our TPLs, please go to the TPL root directory and
-          run the following Spack command ``./spack/bin/spack spec axom``.
-
 
 .. _tplbuild-label:
 
@@ -145,15 +140,14 @@ Building and Installing Third-party Libraries
 ---------------------------------------------
 
 We use the `Spack Package Manager <https://github.com/spack/spack>`_
-to manage and build TPL dependencies for Axom. The Spack process works on 
-Linux and macOS systems. Although we test Axom on Windows and some Axom users
-build their applications for Windows, Axom does not currently have a tool to 
-automatically build dependencies for Windows systems.
+to manage and build TPL dependencies for Axom on Linux and MacOS systems.
+Similarly, support for managing and building TPLs on Windows is provided 
+through `Vcpkg <https://github.com/microsoft/vcpkg>`_.
 
 To make the TPL management process easier and automatic (you don't really need 
-to learn much about Spack), we drive it with a Python script called 
+to learn much about Spack or Vcpkg), we drive it with a Python script called 
 ``uberenv.py``, which is located in the ``scripts/uberenv`` directory. 
-Running this script does several things:
+Running this script on Linux or MacOS does several things:
 
   * It clones the Spack repo from GitHub and checks out a specific version
     that we have tested.
@@ -181,6 +175,12 @@ You can also see examples of how Spack spec names are passed to ``uberenv.py``
 in the Python scripts we use to build TPLs for Axom development on
 LC platforms at LLNL. These scripts are located in the directory
 ``scripts/llnl_scripts``.
+
+.. note:: To get a full list of all Axom dependencies in an ``uberenv``
+          ``spack`` build of our TPLs, please go to the TPL root directory
+          and run the following Spack command: ``./spack/bin/spack spec axom``.
+          The analogous command for an ``uberenv`` ``vcpkg`` build is:
+          ``.\vcpkg depend-info axom``.
 
 
 .. _building-axom-label:
@@ -333,15 +333,18 @@ Axom components, tests, examples, etc.
 | AXOM_ENABLE_DOCS             | ON      | Enable Axom documentation to be built  |
 |                              |         | as a make target                       |
 +------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_TOOLS            | ON      | Enable Axom development tools          |
++------------------------------+---------+----------------------------------------+
 
 If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable the desired
 components (other than 'core', which is always enabled).
 
 See `Axom software documentation <../../../index.html>`_
-for a list of Axom components and their dependencies.
-
-See :ref:`dependencies-label` for configuration variables to specify paths
-to Axom external dependencies.
+for a list of Axom components and their dependencies. Note that when enabling 
+an external dependency for an Axom component, the CMake variable ``BAR_DIR`` 
+must be set to a valid path to the dependency installation. See 
+:ref:`dependencies-label` for a complete listing of configuration variables 
+to specify paths to Axom external dependencies. 
 
 .. note:: ``AXOM_ENABLE_EXAMPLES``, ``AXOM_ENABLE_TESTS``, and ``AXOM_ENABLE_DOCS``
           are *CMake-dependent options*. Thus, if a non-Axom prefix variable form
@@ -426,8 +429,6 @@ Tools and features primarily intended for developers
 +------------------------------------------+---------+----------------------------------------+
 | OPTION                                   | Default | Description                            |
 +==========================================+=========+========================================+
-| AXOM_ENABLE_TOOLS                        | ON      | Enable Axom development tools          |
-+------------------------------------------+---------+----------------------------------------+
 | ENABLE_CODECOV                           | ON      | Enable code coverage via gcov          |
 +------------------------------------------+---------+----------------------------------------+
 | AXOM_ENABLE_ANNOTATIONS                  | OFF     | Enable source code annotations to      |
