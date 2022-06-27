@@ -72,6 +72,23 @@ using ArrayViewIndirectionSet =
              policies::StrideOne<PosType>,
              policies::ArrayViewIndirection<PosType, ElemType>>;
 
+/**
+ * \brief Alias template for an OrderedSet with indirection over an axom::Array
+ *
+ * \tparam PosType The position type for indexing into the set
+ * \tparam ElemType The type for the set's elements
+ * \sa OrderedSet
+ */
+template <typename PosType = slam::DefaultPositionType,
+          typename ElemType = slam::DefaultElementType>
+using CoreArrayIndirectionSet =
+  OrderedSet<PosType,
+             ElemType,
+             policies::RuntimeSize<PosType>,
+             policies::ZeroOffset<PosType>,
+             policies::StrideOne<PosType>,
+             policies::CoreArrayIndirection<PosType, ElemType>>;
+
 }  // end namespace slam
 }  // end namespace axom
 

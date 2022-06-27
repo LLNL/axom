@@ -10,25 +10,22 @@
  * using the IndirectionSetTester class
  */
 
-#include <iterator>
-#include <sstream>    // for std::stringstream
-#include <algorithm>  // for std::next_permutation
-#include <iterator>   // for std::ostream_iterator
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
+
 #include "gtest/gtest.h"
 
-#include "axom/slic.hpp"
-
-#include "axom/slam/Utilities.hpp"
-#include "axom/slam/IndirectionSet.hpp"
-#include "axom/slam/RangeSet.hpp"  // for PositionSet
+#include <iterator>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 
 namespace slam = axom::slam;
 
 namespace
 {
 static const int MAX_SET_SIZE = 10;
-
-}  // end anonymous namespace
+}
 
 /**
  * Simple test class for IndirectionSets
@@ -67,6 +64,12 @@ public:
     {
       mDataVec[2].push_back(static_cast<ElemType>(i));
     }
+
+    for(int i = 0; i < 3; ++i)
+    {
+      mDataArr[i].resize(mDataVec[i].size());
+      std::copy(mDataVec[i].begin(), mDataVec[i].end(), mDataArr[i].begin());
+    }
   }
 
   /**
@@ -80,6 +83,7 @@ public:
     for(int i = 0; i < 1000; ++i)
     {
       std::next_permutation(mDataVec[index].begin(), mDataVec[index].end());
+      std::next_permutation(mDataArr[index].begin(), mDataArr[index].end());
     }
   }
 
@@ -91,7 +95,6 @@ public:
   void getDataBuffer(ElemType*& ptr, int index = 0)
   {
     checkIndex(index);
-
     ptr = mDataVec[index].data();
   }
 
@@ -103,14 +106,23 @@ public:
   void getDataBuffer(std::vector<ElemType>*& ptr, int index = 0)
   {
     checkIndex(index);
-
     ptr = &mDataVec[index];
+  }
+
+  /**
+   * Get a pointer to the data buffer
+   * Specialization for CoreArrayIndirection
+   * \pre index must be 0, 1 or 2
+   */
+  void getDataBuffer(axom::Array<ElemType>*& ptr, int index = 0)
+  {
+    checkIndex(index);
+    ptr = &mDataArr[index];
   }
 
   void getDataBuffer(axom::ArrayView<ElemType>& ptr, int index = 0)
   {
     checkIndex(index);
-
     ptr =
       axom::ArrayView<ElemType>(mDataVec[index].data(), mDataVec[index].size());
   }
@@ -125,6 +137,7 @@ private:
 
 private:
   std::vector<ElemType> mDataVec[3];
+  axom::Array<ElemType> mDataArr[3];
 };
 
 template <typename ElemType>
@@ -149,6 +162,7 @@ bool compareData(axom::ArrayView<ElemType> a, axom::ArrayView<ElemType> b)
 using MyTypes =
   ::testing::Types<slam::ArrayIndirectionSet<axom::int32, axom::int64>,
                    slam::VectorIndirectionSet<axom::int32, axom::int64>,
+                   slam::CoreArrayIndirectionSet<axom::int32, axom::int64>,
                    slam::ArrayViewIndirectionSet<axom::int32, axom::int64>>;
 
 TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
@@ -520,8 +534,7 @@ TEST(slam_set_indirectionset, negative_stride)
     EXPECT_FALSE(noDataVSet.isValid(bVerbose));
 
     VecSet outOfBoundsVSet(VecSet::SetBuilder()
-                             .size(setSize + 1)  // Note: This will cause the last
-                                                 // index to be out of bounds
+                             .size(setSize + 1)  // Note: last index is out of bounds
                              .offset(setOffset)
                              .stride(setStride)
                              .data(&intVec));
@@ -529,8 +542,7 @@ TEST(slam_set_indirectionset, negative_stride)
 
     VecSet outOfBoundsVSet2(VecSet::SetBuilder()
                               .size(setSize)
-                              .offset(-1)  // Note: This will cause the first index
-                                           // to be out of bounds
+                              .offset(-1)  // Note: first index is out of bounds
                               .stride(1)
                               .data(&intVec));
     EXPECT_FALSE(outOfBoundsVSet2.isValid(bVerbose));
@@ -581,8 +593,7 @@ TEST(slam_set_indirectionset, negative_stride)
     EXPECT_FALSE(noDataASet.isValid(bVerbose));
 
     ArrSet outOfBoundsASet1(ArrSet::SetBuilder()
-                              .size(setSize + 1)  // Note: This will cause the last
-                                                  // index to be out of bounds
+                              .size(setSize + 1)  // Note: last index is out of bounds
                               .offset(setOffset)
                               .stride(setStride)
                               .data(intVec.data()));
@@ -590,8 +601,7 @@ TEST(slam_set_indirectionset, negative_stride)
 
     ArrSet outOfBoundsASet2(ArrSet::SetBuilder()
                               .size(setSize)
-                              .offset(-1)  // Note: This will cause the first index
-                                           // to be out of bounds
+                              .offset(-1)  // Note: first index is out of bounds
                               .stride(1)
                               .data(intVec.data()));
     EXPECT_FALSE(outOfBoundsASet2.isValid(bVerbose));
@@ -616,7 +626,6 @@ int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
