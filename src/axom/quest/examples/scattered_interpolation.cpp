@@ -727,7 +727,9 @@ int main(int argc, char** argv)
   // Write input mesh to file
   {
     std::string file = params.outputFile + "_input_mesh";
-    SLIC_INFO(axom::fmt::format("Writing input mesh to '{}/{}'", axom::utilities::filesystem::getCWD(),file));
+    SLIC_INFO(axom::fmt::format("Writing input mesh to '{}/{}'",
+                                axom::utilities::filesystem::getCWD(),
+                                file));
     inputMesh.saveMesh(file, params.outputProtocol);
   }
 
