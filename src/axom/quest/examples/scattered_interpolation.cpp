@@ -766,36 +766,100 @@ int main(int argc, char** argv)
   conduit::Node bp_query;
   queryMesh.rootGroup()->createNativeLayout(bp_query);
 
-  // Initialize the mesh points
+  // Initialize the ScatteredInterpolation instance (templated on the dimension)
   switch(params.dimension)
   {
   case 2:
     scattered_2d = std::unique_ptr<quest::ScatteredInterpolation<2>>(
       new quest::ScatteredInterpolation<2>);
+    break;
+  case 3:
+    scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
+      new quest::ScatteredInterpolation<3>);
+    break;
+  }
+
+  // Generate the Delaunay complex
+  int numVerts = 0, numSimps = 0;
+  axom::utilities::Timer timer(true);
+  switch(params.dimension)
+  {
+  case 2:
     scattered_2d->buildTriangulation(bp_input, inputMesh.coordsName());
+    numVerts = scattered_2d->numVertices();
+    numSimps = scattered_2d->numSimplices();
+    break;
+  case 3:
+    scattered_3d->buildTriangulation(bp_input, inputMesh.coordsName());
+    numVerts = scattered_3d->numVertices();
+    numSimps = scattered_3d->numSimplices();
+    break;
+  }
+  timer.stop();
+  SLIC_INFO(axom::fmt::format(
+    "It took {} seconds to create a Delaunay complex with {} "
+    "points. Mesh has {} {}. Insertion rate of {:.1f} points per second.",
+    timer.elapsedTimeInSec(),
+    numVerts,
+    numSimps,
+    params.dimension == 2 ? "triangles" : "tetrahedra",
+    numVerts / timer.elapsedTimeInSec()));
+
+  // Dump the Delaunay complex to disk as a vtk file
+  switch(params.dimension)
+  {
+  case 2:
     scattered_2d->exportDelaunayComplex(bp_input, "delaunay_2d.vtk");
+    break;
+  case 3:
+    scattered_3d->exportDelaunayComplex(bp_input, "delaunay_3d.vtk");
+    break;
+  }
 
+  // Find the simplices containing each of the query points
+  timer.start();
+  switch(params.dimension)
+  {
+  case 2:
     scattered_2d->locatePoints(bp_query, query_coords_name);
+    break;
+  case 3:
+    scattered_3d->locatePoints(bp_query, query_coords_name);
+    break;
+  }
+  timer.stop();
+  SLIC_INFO(
+    axom::fmt::format("It took {} seconds to locate {} points. Query rate of "
+                      "{:.1f} points per second.",
+                      timer.elapsedTimeInSec(),
+                      queryMesh.numPoints(),
+                      queryMesh.numPoints() / timer.elapsedTimeInSec()));
 
+  // Perform the interpolation on each of the fields
+  timer.start();
+  switch(params.dimension)
+  {
+  case 2:
     for(const auto& fld : inputMesh.getFieldNames())
     {
       scattered_2d->interpolateField(bp_query, query_coords_name, bp_input, fld, fld);
     }
     break;
   case 3:
-    scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
-      new quest::ScatteredInterpolation<3>);
-    scattered_3d->buildTriangulation(bp_input, inputMesh.coordsName());
-    scattered_3d->exportDelaunayComplex(bp_input, "delaunay_3d.vtk");
-
-    scattered_3d->locatePoints(bp_query, query_coords_name);
-
     for(const auto& fld : inputMesh.getFieldNames())
     {
       scattered_3d->interpolateField(bp_query, query_coords_name, bp_input, fld, fld);
     }
     break;
   }
+  timer.stop();
+  SLIC_INFO(
+    axom::fmt::format("It took {} seconds to interpolate the data on {} "
+                      "fields. Interpolation rate of {:.1f} points per second.",
+                      timer.elapsedTimeInSec(),
+                      inputMesh.getFieldNames().size(),
+                      queryMesh.numPoints() * inputMesh.getFieldNames().size() /
+                        timer.elapsedTimeInSec()));
 
   // Write query mesh to file
   {
