@@ -38,6 +38,8 @@ set( primal_tests
     primal_zip.cpp
    )
 
+blt_list_append( TO primal_tests ELEMENTS primal_integral.cpp IF MFEM_FOUND )
+
 set(primal_test_depends axom fmt gtest)
 
 blt_list_append( TO primal_test_depends ELEMENTS cuda IF ENABLE_CUDA )

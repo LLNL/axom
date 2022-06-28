@@ -76,7 +76,7 @@ The following table lists:
   `c2c`_           Optional: Quest                      C2C_DIR
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
-  `MFEM`_          Optional: Quest, Sidre               MFEM_DIR
+  `MFEM`_          Optional: Primal, Quest, Sidre       MFEM_DIR
   `RAJA`_          Optional: Mint, Spin, Quest          RAJA_DIR
   `SCR`_           Optional: Sidre                      SCR_DIR
   `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR
