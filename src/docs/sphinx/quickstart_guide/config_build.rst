@@ -45,7 +45,7 @@ External Dependencies
 
 Axom has two types of dependencies:
 
-* **Libraries.** These contain code that axom must link against.
+* **Libraries.** These contain code that Axom must link against.
 * **Tools.** These are executables that we use during code development; e.g. 
   generate documentation, format code, etc.
 
@@ -72,7 +72,7 @@ The following table lists:
 ================== ==================================== ======================
   Library          Dependent Components                 Build system variable
 ================== ==================================== ======================
-  `Conduit`_       Required: Sidre                      CONDUIT_DIR
+  `Conduit`_       Required: Inlet, Sidre               CONDUIT_DIR
   `c2c`_           Optional: Quest                      C2C_DIR
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
@@ -265,7 +265,7 @@ conventions, we support three build types: ``Release``, ``RelWithDebInfo``, and
 You can also pass extra CMake configuration variables to the script. For 
 example::
 
-   $ ./config-build.py -hc path/to/host-config/file/<host-config file name> \
+   $ ./config-build.py -hc path/to/host-config/<file name> \
                        -DBUILD_SHARED_LIBS=ON               \
                        -DENABLE_FORTRAN=OFF
 
@@ -319,7 +319,7 @@ Axom components, tests, examples, etc.
 +==============================+=========+========================================+
 | AXOM_ENABLE_ALL_COMPONENTS   | ON      | Enable all components by default       |
 +------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_<FOO>            | ON      | Enable the axom component named 'Foo'  |
+| AXOM_ENABLE_<FOO>            | ON      | Enable the Axom component named 'Foo'  |
 |                              |         |                                        |
 |                              |         | (e.g. AXOM_ENABLE_SIDRE)               |
 |                              |         | for the Sidre component.               |
@@ -331,7 +331,7 @@ Axom components, tests, examples, etc.
 +------------------------------+---------+----------------------------------------+
 | AXOM_ENABLE_TESTS            | ON      | Build Axom unit tests                  |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_BENCHMARKS            | OFF     | Enable Google benchmark                |
+| ENABLE_BENCHMARKS            | OFF     | Build Axom benchmarks                  |
 +------------------------------+---------+----------------------------------------+
 | AXOM_ENABLE_DOCS             | ON      | Enable Axom documentation to be built  |
 |                              |         | as a make target                       |
