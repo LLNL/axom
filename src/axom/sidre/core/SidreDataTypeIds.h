@@ -13,7 +13,7 @@
 
 /*
  * Note: Use only C code in this file
- *       since it might be included from a C file.
+ *       since it will be included from a C file.
  */
 
 #ifndef SIDRE_DATATYPEIDS_H_
@@ -22,11 +22,7 @@
 // Libraries and other axom headers
 #include "conduit.h"
 
-#include <stdint.h> /* for int64_t */
-
-typedef int64_t SIDRE_IndexType;
-
-const SIDRE_IndexType SIDRE_InvalidIndex = -1;
+#define SIDRE_InvalidIndex -1
 
 #define SIDRE_NO_TYPE_ID CONDUIT_EMPTY_ID
 #define SIDRE_INT8_ID CONDUIT_INT8_ID

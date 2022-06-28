@@ -37,15 +37,51 @@ declarations:
   fields:
     # defined in SidreTypes.hpp
     c_header : axom/sidre/interface/SidreTypes.h
+    cxx_header : axom/sidre/interface/SidreTypes.h
     c_type   : SIDRE_IndexType
+    f_cast: int({f_var}, SIDRE_IndexType)
+    f_type: integer(SIDRE_IndexType)
+    f_kind: SIDRE_IndexType
+    f_module_name: axom_sidre
+    f_c_module:
+      "--import--":
+      -  SIDRE_IndexType
 
-- decl: typedef int TypeID
+- decl: typedef short TypeID
   fields:
     # enum for types
     c_header : axom/sidre/interface/SidreTypes.h
     cxx_header : axom/sidre/core/SidreTypes.hpp
-    c_to_cxx : axom::sidre::getTypeID({c_var})
-    cxx_to_c : static_cast<int>({cxx_var})
+    c_to_cxx : static_cast<axom::sidre::TypeID>({c_var})
+    cxx_to_c : static_cast<SIDRE_TypeID>({cxx_var})
+    c_type   : SIDRE_TypeID
+    f_cast: int({f_var}, TypeID)
+    f_type: integer(TypeID)
+    f_kind: TypeID
+    f_module_name: axom_sidre
+    f_c_module:
+      "--import--":
+      -  TypeID
+
+# This typedef is to work around a problem with amdflang.
+# The compiler fails on getTypeID type-bound procedures that return a C_SHORT.
+# Instead, return a C_INT.
+- decl: typedef int TypeIDint
+  fields:
+    # enum for types
+    c_header : axom/sidre/interface/SidreTypes.h
+    cxx_header : axom/sidre/core/SidreTypes.hpp
+    c_to_cxx : static_cast<axom::sidre::TypeIDint>({c_var})
+    cxx_to_c : static_cast<SIDRE_TypeIDint>({cxx_var})
+    cxx_type : axom::sidre::TypeID
+    c_type   : SIDRE_TypeIDint
+    f_cast: int({f_var}, TypeIDint)
+    f_type: integer(TypeIDint)
+    f_kind: TypeIDint
+    f_module_name: axom_sidre
+    f_c_module:
+      "--import--":
+      -  TypeIDint
 
 # XXX
 # parameters:
@@ -58,7 +94,7 @@ declarations:
 
 - decl: class Group
   # SidreTypes.h is required for C_invalid_name pattern.
-  cxx_header: axom/sidre/core/Group.hpp axom/sidre/interface/SidreTypes.h
+  cxx_header: axom/sidre/core/Group.hpp
   format:
     F_derived_name:  SidreGroup
 
@@ -471,7 +507,7 @@ declarations:
 
     # Methods to query and access Buffer data
     - decl: void* getVoidPtr()
-    - decl: TypeID getTypeID() const
+    - decl: TypeIDint getTypeID() const
     - decl: size_t getNumElements() const
     - decl: size_t getTotalBytes() const
     - decl: size_t getBytesPerElement() const
@@ -537,7 +573,7 @@ declarations:
   - decl: bool isOpaque() const
   - decl: bool isScalar() const
   - decl: bool isString() const
-  - decl: TypeID getTypeID() const
+  - decl: TypeIDint getTypeID() const
   - decl: size_t getTotalBytes() const
   - decl: size_t getNumElements() const
   - decl: size_t getBytesPerElement() const

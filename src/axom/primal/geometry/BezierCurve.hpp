@@ -12,7 +12,7 @@
 #ifndef AXOM_PRIMAL_BEZIERCURVE_HPP_
 #define AXOM_PRIMAL_BEZIERCURVE_HPP_
 
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -50,7 +50,6 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * The curve is approximated by the control points,
  * parametrized from t=0 to t=1.
  */
-
 template <typename T, int NDIMS>
 class BezierCurve
 {
@@ -63,6 +62,12 @@ public:
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
 
+  AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
+                         "A Bezier Curve object may be defined in 2-D or 3-D");
+  AXOM_STATIC_ASSERT_MSG(
+    std::is_arithmetic<T>::value,
+    "A Bezier Curve must be defined using an arithmetic type");
+
 public:
   /*!
    * \brief Constructor for a Bezier Curve that reserves space for
@@ -73,12 +78,6 @@ public:
    */
   explicit BezierCurve(int ord = -1)
   {
-    AXOM_STATIC_ASSERT_MSG(
-      (NDIMS == 2) || (NDIMS == 3),
-      "A Bezier Curve object may be defined in 2-D or 3-D");
-    AXOM_STATIC_ASSERT_MSG(
-      std::is_arithmetic<T>::value,
-      "A Bezier Curve must be defined using an arithmetic type");
     SLIC_ASSERT(ord >= -1);
     const int sz = utilities::max(-1, ord + 1);
     m_controlPoints.resize(sz);
@@ -98,12 +97,6 @@ public:
    */
   BezierCurve(T* pts, int ord)
   {
-    AXOM_STATIC_ASSERT_MSG(
-      (NDIMS == 2) || (NDIMS == 3),
-      "A Bezier Curve object may be defined in 2-D or 3-D");
-    AXOM_STATIC_ASSERT_MSG(
-      std::is_arithmetic<T>::value,
-      "A Bezier Curve must be defined using an arithmetic type");
     SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(ord >= 0);
 
@@ -128,15 +121,8 @@ public:
    * \pre order is greater than or equal to zero
    *
    */
-
   BezierCurve(PointType* pts, int ord)
   {
-    AXOM_STATIC_ASSERT_MSG(
-      (NDIMS == 2) || (NDIMS == 3),
-      "A Bezier Curve object may be defined in 2-D or 3-D");
-    AXOM_STATIC_ASSERT_MSG(
-      std::is_arithmetic<T>::value,
-      "A Bezier Curve must be defined using an arithmetic type");
     SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(ord >= 0);
 
@@ -149,13 +135,30 @@ public:
     }
   }
 
-  /*! Sets the order of the Bezier Curve*/
+  /*!
+   * \brief Constructor for a Bezier Curve from an vector of coordinates
+   *
+   * \param [in] pts a vector with ord+1 control points
+   * \param [in] ord The Curve's polynomial order
+   * \pre order is greater than or equal to zero
+   *
+   */
+  BezierCurve(const std::vector<PointType>& pts, int ord)
+  {
+    SLIC_ASSERT(ord >= 0);
+
+    const int sz = utilities::max(0, ord + 1);
+    m_controlPoints.resize(sz);
+    m_controlPoints = pts;
+  }
+
+  /// Sets the order of the Bezier Curve
   void setOrder(int ord) { m_controlPoints.resize(ord + 1); }
 
-  /*! Returns the order of the Bezier Curve*/
+  /// Returns the order of the Bezier Curve
   int getOrder() const { return static_cast<int>(m_controlPoints.size()) - 1; }
 
-  /*! Clears the list of control points*/
+  /// Clears the list of control points
   void clear()
   {
     const int ord = getOrder();
@@ -165,13 +168,13 @@ public:
     }
   }
 
-  /*! Retrieves the control point at index \a idx */
+  /// Retrieves the control point at index \a idx
   PointType& operator[](int idx) { return m_controlPoints[idx]; }
 
-  /*! Retrieves the control point at index \a idx */
+  /// Retrieves the control point at index \a idx
   const PointType& operator[](int idx) const { return m_controlPoints[idx]; }
 
-  /* Checks equality of two Bezier Curve */
+  /// Checks equality of two Bezier Curve
   friend inline bool operator==(const BezierCurve<T, NDIMS>& lhs,
                                 const BezierCurve<T, NDIMS>& rhs)
   {
@@ -184,17 +187,28 @@ public:
     return !(lhs == rhs);
   }
 
-  /*! Returns a copy of the Bezier curve's control points */
+  /// Returns a copy of the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
-  /*! Returns an axis-aligned bounding box containing the Bezier curve */
+  /// Reverses the order of the Bezier curve's control points
+  void reverseOrientation()
+  {
+    const int ord = getOrder();
+    const int mid = (ord + 1) / 2;
+    for(int i = 0; i < mid; ++i)
+    {
+      axom::utilities::swap(m_controlPoints[i], m_controlPoints[ord - i]);
+    }
+  }
+
+  /// Returns an axis-aligned bounding box containing the Bezier curve
   BoundingBoxType boundingBox() const
   {
     return BoundingBoxType(m_controlPoints.data(),
                            static_cast<int>(m_controlPoints.size()));
   }
 
-  /*! Returns an oriented bounding box containing the Bezier curve */
+  /// Returns an oriented bounding box containing the Bezier curve
   OrientedBoundingBoxType orientedBoundingBox() const
   {
     return OrientedBoundingBoxType(m_controlPoints.data(),
@@ -209,9 +223,10 @@ public:
    *
    * \note We typically evaluate the curve at \a t between 0 and 1
    */
-
   PointType evaluate(T t) const
   {
+    using axom::utilities::lerp;
+
     PointType ptval;
 
     const int ord = getOrder();
@@ -230,7 +245,7 @@ public:
         const int end = ord - p;
         for(int k = 0; k <= end; ++k)
         {
-          dCarray[k] = (1 - t) * dCarray[k] + t * dCarray[k + 1];
+          dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
         }
       }
       ptval[i] = dCarray[0];
@@ -240,11 +255,52 @@ public:
   }
 
   /*!
-   * \brief Splits a Bezier curve into two Bezier curves at particular parameter
-   * value between 0 and 1
+   * \brief Computes the tangent of  a Bezier curve at a particular parameter value \a t
+   *
+   * \param [in] t parameter value at which to compute tangent 
+   * \return p the tangent vector of the Bezier curve at t
+   *
+   * \note We typically find the tangent of the curve at \a t between 0 and 1
+   */
+  VectorType dt(T t) const
+  {
+    using axom::utilities::lerp;
+    VectorType val;
+
+    const int ord = getOrder();
+    std::vector<T> dCarray(ord + 1);
+
+    // Run de Casteljau algorithm on each dimension
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      for(int p = 0; p <= ord; ++p)
+      {
+        dCarray[p] = m_controlPoints[p][i];
+      }
+
+      // stop one step early and take difference of last two values
+      for(int p = 1; p <= ord - 1; ++p)
+      {
+        const int end = ord - p;
+        for(int k = 0; k <= end; ++k)
+        {
+          dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+        }
+      }
+      val[i] = ord * (dCarray[1] - dCarray[0]);
+    }
+
+    return val;
+  }
+
+  /*!
+   * \brief Splits a Bezier curve into two Bezier curves at a given parameter value
    *
    * \param [in] t parameter value between 0 and 1 at which to evaluate
-   * \param [out] c1, c2 Bezier curves that split the original
+   * \param [out] c1 First output Bezier curve
+   * \param [out] c2 Second output Bezier curve
+   *
+   * \pre Parameter \a t must be between 0 and 1
    */
   void split(T t, BezierCurve& c1, BezierCurve& c2) const
   {
@@ -265,12 +321,7 @@ public:
       const int end = ord - p;
       for(int k = 0; k <= end; ++k)
       {
-        PointType& pt1 = c2[k];
-        const PointType& pt2 = c2[k + 1];
-        for(int i = 0; i < NDIMS; ++i)
-        {
-          pt1[i] = (1 - t) * pt1[i] + t * pt2[i];
-        }
+        c2[k] = PointType::lerp(c2[k], c2[k + 1], t);
       }
       c1[p] = c2[0];
     }
@@ -331,7 +382,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-/// Free functions implementing BezierCurve's operators
+/// Free functions related to BezierCurve
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)

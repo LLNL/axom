@@ -678,10 +678,9 @@ public:
     using axom::primal::squared_distance;
     using int32 = axom::int32;
 
-    // Extract the dimension and number of points from the coordinate values group
-    const int dim = xfer_node["dim"].value();
+    // Check dimension and extract the number of points
+    SLIC_ASSERT(xfer_node["dim"].as_int32() == NDIMS);
     const int npts = xfer_node["npts"].value();
-    SLIC_ASSERT(dim == NDIMS);
 
     /// Extract fields from the input node as ArrayViews
     auto queryPts = ArrayView_from_Node<PointType>(xfer_node["coords"], npts);

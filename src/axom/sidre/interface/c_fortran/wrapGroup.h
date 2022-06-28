@@ -14,15 +14,14 @@
 #ifndef WRAPGROUP_H
 #define WRAPGROUP_H
 
+#include "axom/sidre/interface/SidreTypes.h"
 #include "typesSidre.h"
 #ifdef __cplusplus
   #include <cstddef>
-  #include <cstdint>
   #include "axom/sidre/core/SidreTypes.hpp"
 #else
   #include <stdbool.h>
   #include <stddef.h>
-  #include "axom/sidre/interface/SidreTypes.h"
 #endif
 
 // splicer begin class.Group.CXX_declarations
@@ -116,20 +115,20 @@ SIDRE_View* SIDRE_Group_create_view_empty_bufferify(SIDRE_Group* self,
 
 SIDRE_View* SIDRE_Group_create_view_from_type(SIDRE_Group* self,
                                               const char* path,
-                                              int type,
+                                              SIDRE_TypeID type,
                                               SIDRE_IndexType num_elems,
                                               SIDRE_View* SHC_rv);
 
 SIDRE_View* SIDRE_Group_create_view_from_type_bufferify(SIDRE_Group* self,
                                                         const char* path,
                                                         int Lpath,
-                                                        int type,
+                                                        SIDRE_TypeID type,
                                                         SIDRE_IndexType num_elems,
                                                         SIDRE_View* SHC_rv);
 
 SIDRE_View* SIDRE_Group_create_view_with_shape_base(SIDRE_Group* self,
                                                     const char* path,
-                                                    int type,
+                                                    SIDRE_TypeID type,
                                                     int ndims,
                                                     const SIDRE_IndexType* shape,
                                                     SIDRE_View* SHC_rv);
@@ -138,7 +137,7 @@ SIDRE_View* SIDRE_Group_create_view_with_shape_base_bufferify(
   SIDRE_Group* self,
   const char* path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType* shape,
   SIDRE_View* SHC_rv);
@@ -156,7 +155,7 @@ SIDRE_View* SIDRE_Group_create_view_into_buffer_bufferify(SIDRE_Group* self,
 
 SIDRE_View* SIDRE_Group_create_view_from_type_and_buffer(SIDRE_Group* self,
                                                          const char* path,
-                                                         int type,
+                                                         SIDRE_TypeID type,
                                                          SIDRE_IndexType num_elems,
                                                          SIDRE_Buffer* buff,
                                                          SIDRE_View* SHC_rv);
@@ -165,14 +164,14 @@ SIDRE_View* SIDRE_Group_create_view_from_type_and_buffer_bufferify(
   SIDRE_Group* self,
   const char* path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   SIDRE_IndexType num_elems,
   SIDRE_Buffer* buff,
   SIDRE_View* SHC_rv);
 
 SIDRE_View* SIDRE_Group_create_view_with_shape_and_buffer(SIDRE_Group* self,
                                                           const char* path,
-                                                          int type,
+                                                          SIDRE_TypeID type,
                                                           int ndims,
                                                           const SIDRE_IndexType* shape,
                                                           SIDRE_Buffer* buff,
@@ -182,7 +181,7 @@ SIDRE_View* SIDRE_Group_create_view_with_shape_and_buffer_bufferify(
   SIDRE_Group* self,
   const char* path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType* shape,
   SIDRE_Buffer* buff,
@@ -201,7 +200,7 @@ SIDRE_View* SIDRE_Group_create_view_external_bufferify(SIDRE_Group* self,
 
 SIDRE_View* SIDRE_Group_create_view_from_type_external(SIDRE_Group* self,
                                                        const char* path,
-                                                       int type,
+                                                       SIDRE_TypeID type,
                                                        SIDRE_IndexType num_elems,
                                                        void* external_ptr,
                                                        SIDRE_View* SHC_rv);
@@ -210,14 +209,14 @@ SIDRE_View* SIDRE_Group_create_view_from_type_external_bufferify(
   SIDRE_Group* self,
   const char* path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   SIDRE_IndexType num_elems,
   void* external_ptr,
   SIDRE_View* SHC_rv);
 
 SIDRE_View* SIDRE_Group_create_view_with_shape_external(SIDRE_Group* self,
                                                         const char* path,
-                                                        int type,
+                                                        SIDRE_TypeID type,
                                                         int ndims,
                                                         const SIDRE_IndexType* shape,
                                                         void* external_ptr,
@@ -227,7 +226,7 @@ SIDRE_View* SIDRE_Group_create_view_with_shape_external_bufferify(
   SIDRE_Group* self,
   const char* path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType* shape,
   void* external_ptr,
@@ -235,7 +234,7 @@ SIDRE_View* SIDRE_Group_create_view_with_shape_external_bufferify(
 
 SIDRE_View* SIDRE_Group_create_view_and_allocate_nelems(SIDRE_Group* self,
                                                         const char* path,
-                                                        int type,
+                                                        SIDRE_TypeID type,
                                                         SIDRE_IndexType num_elems,
                                                         SIDRE_View* SHC_rv);
 
@@ -243,14 +242,14 @@ SIDRE_View* SIDRE_Group_create_view_and_allocate_nelems_bufferify(
   SIDRE_Group* self,
   const char* path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   SIDRE_IndexType num_elems,
   SIDRE_View* SHC_rv);
 
 SIDRE_View* SIDRE_Group_create_view_with_shape_and_allocate(
   SIDRE_Group* self,
   const char* path,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType* shape,
   SIDRE_View* SHC_rv);
@@ -259,7 +258,7 @@ SIDRE_View* SIDRE_Group_create_view_with_shape_and_allocate_bufferify(
   SIDRE_Group* self,
   const char* path,
   int Lpath,
-  int type,
+  SIDRE_TypeID type,
   int ndims,
   const SIDRE_IndexType* shape,
   SIDRE_View* SHC_rv);

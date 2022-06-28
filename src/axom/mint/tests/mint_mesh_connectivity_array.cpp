@@ -1,12 +1,7 @@
-/*
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * This source code cannot be distributed without permission and further
- * review from Lawrence Livermore National Laboratory.
- */
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
 

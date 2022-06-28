@@ -7,7 +7,7 @@
  * \file squared_distance.hpp
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
- *  the "signed" squared distance between two geometric entities.
+ *  the squared distance between two geometric entities.
  */
 
 #ifndef AXOM_PRIMAL_SQUAREDDISTANCE_HPP_
@@ -32,7 +32,7 @@ namespace primal
  * \param [in] A source point
  * \param [in] B end point.
  * \param [in] N length of A and B.
- * \return d the distance from point A to point B.  If N < 1, return 0.
+ * \return the squared distance from point A to point B.  If N < 1, return 0.
  * \pre A and B are arrays of at least length N.
  */
 inline double squared_distance(const double* A, const double* B, int N)
@@ -52,7 +52,7 @@ inline double squared_distance(const double* A, const double* B, int N)
  * \brief Computes the squared distance from point A to point B.
  * \param [in] A source point
  * \param [in] B end point.
- * \return d the distance from point A to point B.
+ * \return the squared distance from point A to point B.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
@@ -67,7 +67,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
  *  given axis-aligned bounding box B.
  * \param [in] P the query point.
  * \param [in] B the axis-aligned bounding box.
- * \return d the signed distance from P to the closest point on B.
+ * \return the squared distance from P to the closest point on box B.
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
@@ -95,7 +95,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
     }
   }
 
-  // return squared signed distance to the closest point
+  // return squared distance to the closest point
   return squared_distance(P, cp);
 }
 
@@ -104,7 +104,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
  *  given segment, S.
  * \param [in] P the query point.
  * \param [in] S the input segment.
- * \return d the minimum distance from P on the
+ * \return the minimum squared-distance from P to the segment S.
  */
 template <typename T, int NDIMS>
 inline double squared_distance(const Point<T, NDIMS>& P,
@@ -142,7 +142,7 @@ inline double squared_distance(const Point<T, NDIMS>& P,
  *  closest point on the given triangle.
  * \param [in] P the query point.
  * \param [in] tri the supplied triangle.
- * \return d the distance from Q to the closest point on the triangle T.
+ * \return the squared distance from P to the closest point on the triangle T.
  */
 template <typename T, int NDIMS>
 inline double squared_distance(const Point<T, NDIMS>& P,

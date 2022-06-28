@@ -84,6 +84,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   with a similar syntax, e.g. `for(auto& buf : datastore.buffers()){...}`.
 - Adds an overload of `ImplicitGrid::getCandidatesAsArray()` to accept query points/bounding boxes
   as an `axom::ArrayView`.
+- Adds a `primal::closest_point(point,sphere)` overload to find the closest point on a sphere to a given point
+- Adds an overload to quest's `SignedDistance` query to return the closest point on the surface 
+  to the query point and the surface normal at that point. Also exposes this functionality 
+  in quest's signed_distance C API.
+- Adds utility function for linear interpolation (`lerp`) of two numbers
+- Adds utility function to compute binomial coefficients  
+- Adds a `CurvedPolygon` class to primal representing a polygon with `BezierCurves` as edges
+- Adds functions to compute the moments (area, centroid) of a `CurvedPolygon`
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -136,6 +144,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and added a new derived class `sidre::IndexedCollection`
 - Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
   for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
+- Renamed `primal::Polygon::centroid()` to `primal::Polygon::vertexMean()` because it was not actually computing the centroid.
+- `axom:sidre:IndexType` is now the same type as
+  `axom:IndexType`. Before, Sidre always used `int64_t`. Now it
+  respects the define `AXOM_USE_64BIT_INDEXTYPE`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s

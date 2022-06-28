@@ -42,7 +42,7 @@ using Schema = conduit::Schema;
  * \brief IndexType is used for any labeling of a sidre object by an
  *        integer identifier.
  */
-using IndexType = SIDRE_IndexType;
+using IndexType = axom::IndexType;
 
 /*!
  * \brief Common invalid index identifier used in sidre.

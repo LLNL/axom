@@ -138,6 +138,7 @@ int main(int argc, char** argv)
 #else
   int my_rank = 0;
   int num_ranks = 1;
+  AXOM_UNUSED_VAR(num_ranks);
 #endif
 
   // -- Initialize logger
