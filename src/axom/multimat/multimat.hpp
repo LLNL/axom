@@ -504,13 +504,13 @@ private:
   //cell to mat relations
   std::vector<SetPosType> m_cellMatRel_beginsVec;
   std::vector<SetPosType> m_cellMatRel_indicesVec;
-  std::unique_ptr<StaticVariableRelationType> m_cellMatRel;
-  std::unique_ptr<DynamicVariableRelationType> m_cellMatRelDyn;
+  StaticVariableRelationType m_cellMatRel;
+  DynamicVariableRelationType m_cellMatRelDyn;
   //mat to cell relations
   std::vector<SetPosType> m_matCellRel_beginsVec;
   std::vector<SetPosType> m_matCellRel_indicesVec;
-  std::unique_ptr<StaticVariableRelationType> m_matCellRel;
-  std::unique_ptr<DynamicVariableRelationType> m_matCellRelDyn;
+  StaticVariableRelationType m_matCellRel;
+  DynamicVariableRelationType m_matCellRelDyn;
 
   //slam bivariateSet variables
   //cell to mat versions

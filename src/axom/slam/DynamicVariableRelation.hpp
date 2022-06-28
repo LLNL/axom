@@ -56,7 +56,10 @@ public:
     : m_fromSet(fromSet)
     , m_toSet(toSet)
   {
-    m_relationsVec.resize(m_fromSet->size());
+    if(m_fromSet)
+    {
+      m_relationsVec.resize(m_fromSet->size());
+    }
   }
 
   ~DynamicVariableRelation() { }
