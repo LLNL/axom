@@ -125,7 +125,7 @@ public:
   {
     friend struct OrderedSet;
 
-    using DataType = typename IndirectionPolicyType::IndirectionBufferType;
+    using DataType = typename IndirectionPolicyType::IndirectionPtrType;
     using ParentSetType = typename SubsettingPolicyType::ParentSetType;
 
     SetBuilder& size(PositionType sz)
@@ -160,7 +160,7 @@ public:
       return *this;
     }
 
-    SetBuilder& data(DataType* bufPtr)
+    SetBuilder& data(DataType bufPtr)
     {
       m_data = IndirectionPolicyType(bufPtr);
       return *this;
