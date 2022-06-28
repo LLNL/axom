@@ -49,7 +49,7 @@ contains
     call assert_true(view%is_external())
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(iarray))
@@ -106,7 +106,7 @@ contains
     call assert_true(view%is_external())
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(iarray))
@@ -141,7 +141,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root
     type(SidreView)  view
-    integer type
+    integer(TypeID) type
     integer num_elements
     integer i
 
@@ -157,7 +157,7 @@ contains
     view = root%create_array_view("iarray", iarray)
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
@@ -181,7 +181,7 @@ contains
     type(SidreGroup) root
     type(SidreView)  view
     integer num_elements
-    integer type
+    integer(TypeID) type
     integer i
 
     call set_case_name("external_allocatable_double")
@@ -198,7 +198,7 @@ contains
     view = root%create_array_view("darray", darray)
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_DOUBLE_ID)
+    call assert_true(type == SIDRE_DOUBLE_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
@@ -223,7 +223,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root
     type(SidreView)  view
-    integer type
+    integer(TypeID) type
     integer num_elements
     integer i, j, k
     integer rank
@@ -243,7 +243,7 @@ contains
     call view%get_data(ipointer)
 
     type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
+    call assert_true(type == SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, size(ipointer))
