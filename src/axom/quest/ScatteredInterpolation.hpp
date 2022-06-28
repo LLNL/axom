@@ -255,10 +255,17 @@ private:
     slam::CoreArrayIndirectionSet<typename VertexSet::PositionType, axom::IndexType>;
 
 private:
-  // for each point, get its level and morton index
+  /**
+   *  \brief Helper struct for sorting input points in the Biased Randomized Incremental Order (BRIO)
+   *
+   *  BRIO helps improve worst-case performance on poorly ordered point sets.
+   *  It was introduced in the following paper:
+   *    N. Amenta, S. Choi, and G. Rote. "Incremental constructions con BRIO."
+   *    Proceedings of the 19th annual symposium on Computational geometry, 2003.
+   */
   struct BrioComparator
   {
-    IndexType m_index;
+    axom::IndexType m_index;
     int m_level;
     MortonIndexType m_morton;
 
@@ -275,24 +282,26 @@ private:
     }
   };
 
+  /**
+   * \brief Generates a permutation of [0, pts.size()) following BRIO 
+   * 
+   * \sa BrioComparator
+   */
   template <typename PointArray>
   axom::Array<axom::IndexType> computeInsertionOrder(const PointArray& pts,
                                                      const BoundingBoxType& bb)
   {
-    using QuantizedCoordType = axom::uint32;
-    using MortonizerType =
-      spin::Mortonizer<QuantizedCoordType, MortonIndexType, DIM>;
-
-    primal::NumericArray<QuantizedCoordType, DIM> res(1 << 31, DIM);
-    auto quantizer =
-      spin::rectangular_lattice_from_bounding_box<DIM, double, QuantizedCoordType>(
-        bb,
-        res);
+    // This function will compute a permutation of pts following BRIO.
+    // Each point gets a level from the computeLevel() lambda
+    // and a quantized Morton index from a rectangular lattice over the bounding box
 
     const int npts = pts.size();
     const int nlevels =
       axom::utilities::ceil(axom::utilities::log2<double>(npts));
 
+    // Each point has a 50% chance of being at the max level; of the remaining points
+    // from the previous level, there's a 50% chance of being at the current level.
+    // Any remaining points are at level 0.
     auto computeLevel = [nlevels]() {
       for(int level = nlevels; level > 0; --level)
       {
@@ -304,6 +313,20 @@ private:
       return 0;
     };
 
+    // We use a Morton index, quantized over the mesh bounding box to
+    // order the points on each level
+    using QuantizedCoordType = axom::uint32;
+    using MortonizerType =
+      spin::Mortonizer<QuantizedCoordType, MortonIndexType, DIM>;
+
+    constexpr int shift_bits = (DIM == 2) ? 31 : 21;
+    primal::NumericArray<QuantizedCoordType, DIM> res(1 << shift_bits, DIM);
+    auto quantizer =
+      spin::rectangular_lattice_from_bounding_box<DIM, double, QuantizedCoordType>(
+        bb,
+        res);
+
+    // Add points and sort following BRIO
     axom::Array<BrioComparator> brio(0, npts);
     for(int idx = 0; idx < npts; ++idx)
     {
@@ -311,30 +334,10 @@ private:
         idx,
         computeLevel(),
         MortonizerType::mortonize(quantizer.gridCell(pts[idx]))));
-      //SLIC_INFO(fmt::format("Point {} -- level: {}, morton {} -- {}",
-      //                      brio[idx].m_index,
-      //                      brio[idx].m_level,
-      //                      brio[idx].m_morton,
-      //                      pts[brio[idx].m_index]));
     }
     std::sort(brio.begin(), brio.end());
 
-    SLIC_INFO("----- After sorting ---- ");
-    for(int idx = 0; idx < npts; ++idx)
-    {
-      brio.emplace_back(BrioComparator(
-        idx,
-        computeLevel(),
-        MortonizerType::mortonize(quantizer.gridCell(pts[idx]))));
-
-      //SLIC_INFO(fmt::format("Point {} -- level: {}, morton {} -- {}",
-      //                      brio[idx].m_index,
-      //                      brio[idx].m_level,
-      //                      brio[idx].m_morton,
-      //                      pts[brio[idx].m_index]));
-    }
-    SLIC_INFO("-------------------- ");
-
+    // extract and return the reordered points
     axom::Array<axom::IndexType> reordered(0, npts);
     for(int idx = 0; idx < npts; ++idx)
     {
@@ -373,18 +376,10 @@ public:
     bb.scale(1.5);
 
     // Reorder the points according to the Biased Random Insertion Order (BRIO) algorithm
+    // and store the mapping since we'll need to apply it during interpolation
     m_brio_data = computeInsertionOrder(coords, bb);
     m_brio = VertexIndirectionSet(
-      VertexIndirectionSet::SetBuilder().size(npts).data(&m_brio_data));
-
-    // Store the inverse of the BRIO order for interpolation
-    //m_inverse_brio_data = axom::Array<axom::IndexType>(npts, npts);
-    //m_inverse_brio = VertexIndirectionSet(
-    //  VertexIndirectionSet::SetBuilder().size(npts).data(&m_inverse_brio_data));
-    //for(auto idx : m_inverse_brio.positions())
-    //{
-    //  m_inverse_brio[m_brio[idx]] = idx;
-    //}
+      typename VertexIndirectionSet::SetBuilder().size(npts).data(&m_brio_data));
 
     m_delaunay.initializeBoundary(bb);
     for(int i = 0; i < npts; ++i)
@@ -393,27 +388,6 @@ public:
     }
 
     m_delaunay.removeBoundary();
-
-    // check that the mapping is as expected
-    for(int i = 0; i < npts; ++i)
-    {
-      auto dPt = m_delaunay.getMeshData()->getVertexPosition(i);
-      auto cPt = coords[m_brio[i]];
-
-      //SLIC_INFO(fmt::format("Delaunay pt {} vs. brio pt {}", dPt, cPt));
-      SLIC_ASSERT(
-        axom::utilities::isNearlyEqual(primal::squared_distance(dPt, cPt), 0.));
-
-      //auto dPtInv =
-      //  m_delaunay.getMeshData()->getVertexPosition(m_inverse_brio[i]);
-      //auto cPtInv = coords[i];
-
-      ////SLIC_INFO(
-      ////  fmt::format("Inverse delaunay pt {} vs. brio pt {}", dPtInv, cPtInv));
-      //SLIC_ASSERT(
-      //  axom::utilities::isNearlyEqual(primal::squared_distance(dPtInv, cPtInv),
-      //                                 0.));
-    }
   }
 
   /**
@@ -510,31 +484,11 @@ public:
         double res = 0.;
         const auto baryCoords = m_delaunay.getBaryCoords(cell_id, coords[idx]);
         const auto verts = m_delaunay.getMeshData()->boundaryVertices(cell_id);
-
-        auto testBary =
-          m_delaunay.getElement(cell_id).physToBarycentric(coords[idx]);
-        for(int d = 0; d < DIM + 1; ++d)
-        {
-          SLIC_ASSERT_MSG(
-            testBary[d] > 0.,
-            fmt ::format(
-              "Point {} not in element ({}) {} -- barycentric coords: {}",
-              coords[idx],
-              cell_id,
-              m_delaunay.getElement(cell_id),
-              testBary));
-        }
-
         for(auto it = verts.begin(); it < verts.end(); ++it)
         {
-          res += in_fld[m_brio_data[*it]] * baryCoords[it.index()];
+          // apply BRIO mapping to input vertex indices to match Delaunay insertion order
+          res += in_fld[m_brio[*it]] * baryCoords[it.index()];
         }
-
-        SLIC_INFO(fmt::format("For point {} in field '{}' -- value is {}",
-                              coords[idx],
-                              input_field_name,
-                              res));
-
         out_fld[idx] = res;
       }
     }
@@ -550,7 +504,7 @@ public:
    */
   void exportDelaunayComplex(conduit::Node& mesh_node, std::string&& filename) const
   {
-    const auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
+    constexpr auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
     mint::UnstructuredMesh<mint::SINGLE_SHAPE> mint_mesh(DIM, CELL_TYPE);
 
     const auto* iaMesh = m_delaunay.getMeshData();
@@ -592,14 +546,26 @@ public:
 
           for(auto idx : m_brio.positions())
           {
+            // apply BRIO mapping to input vertex indices to match Delaunay insertion order
             fld[idx] = vals[m_brio[idx]];
-            //fld[m_inverse_brio[idx]] = vals[idx];
           }
         }
       }
     }
 
     mint::write_vtk(&mint_mesh, filename);
+  }
+
+  /// Returns the number of vertices in the underlying Deluanay complex
+  int numVertices() const
+  {
+    return m_delaunay.getMeshData()->vertices().size();
+  }
+
+  /// Returns the number of simplices (triangles/tetrahedra) in the underlying Deluanay complex
+  int numSimplices() const
+  {
+    return m_delaunay.getMeshData()->elements().size();
   }
 
   /// TODO: Add a function that takes x,y,z coordinates
@@ -610,9 +576,7 @@ private:
   DelaunayTriangulation m_delaunay;
 
   axom::Array<axom::IndexType> m_brio_data;
-  //axom::Array<axom::IndexType> m_inverse_brio_data;
   VertexIndirectionSet m_brio;
-  //VertexIndirectionSet m_inverse_brio;
 };
 
 template <int NDIMS>
