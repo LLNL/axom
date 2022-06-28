@@ -45,13 +45,13 @@ void *SIDRE_Buffer_get_void_ptr(SIDRE_Buffer *self)
   // splicer end class.Buffer.method.get_void_ptr
 }
 
-SIDRE_TypeID SIDRE_Buffer_get_type_id(const SIDRE_Buffer *self)
+SIDRE_TypeIDint SIDRE_Buffer_get_type_id(const SIDRE_Buffer *self)
 {
   const axom::sidre::Buffer *SH_this =
     static_cast<const axom::sidre::Buffer *>(self->addr);
   // splicer begin class.Buffer.method.get_type_id
   axom::sidre::TypeID SHCXX_rv = SH_this->getTypeID();
-  SIDRE_TypeID SHC_rv = static_cast<SIDRE_TypeID>(SHCXX_rv);
+  SIDRE_TypeIDint SHC_rv = static_cast<SIDRE_TypeIDint>(SHCXX_rv);
   return SHC_rv;
   // splicer end class.Buffer.method.get_type_id
 }

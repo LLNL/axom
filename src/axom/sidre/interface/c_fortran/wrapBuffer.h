@@ -39,7 +39,7 @@ size_t SIDRE_Buffer_get_num_views(const SIDRE_Buffer* self);
 
 void* SIDRE_Buffer_get_void_ptr(SIDRE_Buffer* self);
 
-SIDRE_TypeID SIDRE_Buffer_get_type_id(const SIDRE_Buffer* self);
+SIDRE_TypeIDint SIDRE_Buffer_get_type_id(const SIDRE_Buffer* self);
 
 size_t SIDRE_Buffer_get_num_elements(const SIDRE_Buffer* self);
 

@@ -63,6 +63,26 @@ declarations:
       "--import--":
       -  TypeID
 
+# This typedef is to work around a problem with amdflang.
+# The compiler fails on getTypeID type-bound procedures that return a C_SHORT.
+# Instead, return a C_INT.
+- decl: typedef int TypeIDint
+  fields:
+    # enum for types
+    c_header : axom/sidre/interface/SidreTypes.h
+    cxx_header : axom/sidre/core/SidreTypes.hpp
+    c_to_cxx : static_cast<axom::sidre::TypeIDint>({c_var})
+    cxx_to_c : static_cast<SIDRE_TypeIDint>({cxx_var})
+    cxx_type : axom::sidre::TypeID
+    c_type   : SIDRE_TypeIDint
+    f_cast: int({f_var}, TypeIDint)
+    f_type: integer(TypeIDint)
+    f_kind: TypeIDint
+    f_module_name: axom_sidre
+    f_c_module:
+      "--import--":
+      -  TypeIDint
+
 # XXX
 # parameters:
 #  InvalidID: IDTYPE -1
@@ -487,7 +507,7 @@ declarations:
 
     # Methods to query and access Buffer data
     - decl: void* getVoidPtr()
-    - decl: TypeID getTypeID() const
+    - decl: TypeIDint getTypeID() const
     - decl: size_t getNumElements() const
     - decl: size_t getTotalBytes() const
     - decl: size_t getBytesPerElement() const
@@ -553,7 +573,7 @@ declarations:
   - decl: bool isOpaque() const
   - decl: bool isScalar() const
   - decl: bool isString() const
-  - decl: TypeID getTypeID() const
+  - decl: TypeIDint getTypeID() const
   - decl: size_t getTotalBytes() const
   - decl: size_t getNumElements() const
   - decl: size_t getBytesPerElement() const

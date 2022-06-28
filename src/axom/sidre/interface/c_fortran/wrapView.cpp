@@ -222,13 +222,13 @@ bool SIDRE_View_is_string(const SIDRE_View *self)
   // splicer end class.View.method.is_string
 }
 
-SIDRE_TypeID SIDRE_View_get_type_id(const SIDRE_View *self)
+SIDRE_TypeIDint SIDRE_View_get_type_id(const SIDRE_View *self)
 {
   const axom::sidre::View *SH_this =
     static_cast<const axom::sidre::View *>(self->addr);
   // splicer begin class.View.method.get_type_id
   axom::sidre::TypeID SHCXX_rv = SH_this->getTypeID();
-  SIDRE_TypeID SHC_rv = static_cast<SIDRE_TypeID>(SHCXX_rv);
+  SIDRE_TypeIDint SHC_rv = static_cast<SIDRE_TypeIDint>(SHCXX_rv);
   return SHC_rv;
   // splicer end class.View.method.get_type_id
 }

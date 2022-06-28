@@ -72,7 +72,7 @@ bool SIDRE_View_is_scalar(const SIDRE_View* self);
 
 bool SIDRE_View_is_string(const SIDRE_View* self);
 
-SIDRE_TypeID SIDRE_View_get_type_id(const SIDRE_View* self);
+SIDRE_TypeIDint SIDRE_View_get_type_id(const SIDRE_View* self);
 
 size_t SIDRE_View_get_total_bytes(const SIDRE_View* self);
 

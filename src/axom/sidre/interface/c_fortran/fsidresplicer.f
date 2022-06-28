@@ -29,7 +29,7 @@ use conduit, only : &
     CONDUIT_ULONG_ID, &
     CONDUIT_FLOAT_ID, &
     CONDUIT_DOUBLE_ID
-use, intrinsic :: iso_c_binding, only : C_SHORT, C_INT32_T, C_INT64_T
+use, intrinsic :: iso_c_binding, only : C_SHORT, C_INT, C_INT32_T, C_INT64_T
 ! splicer end module_use
 
 ! splicer begin module_top
@@ -42,6 +42,7 @@ integer, parameter :: SIDRE_IndexType = C_INT32_T
 #endif
 
 integer, parameter :: TypeID = C_SHORT
+integer, parameter :: TypeIDint = C_INT
 
 integer(TypeID), parameter :: &
     SIDRE_NO_TYPE_ID    = CONDUIT_EMPTY_ID, &

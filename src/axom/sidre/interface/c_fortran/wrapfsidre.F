@@ -34,7 +34,7 @@ module axom_sidre
         CONDUIT_ULONG_ID, &
         CONDUIT_FLOAT_ID, &
         CONDUIT_DOUBLE_ID
-    use, intrinsic :: iso_c_binding, only : C_SHORT, C_INT32_T, C_INT64_T
+    use, intrinsic :: iso_c_binding, only : C_SHORT, C_INT, C_INT32_T, C_INT64_T
     ! splicer end module_use
     implicit none
 
@@ -48,6 +48,7 @@ module axom_sidre
 #endif
 
     integer, parameter :: TypeID = C_SHORT
+    integer, parameter :: TypeIDint = C_INT
 
     integer(TypeID), parameter :: &
         SIDRE_NO_TYPE_ID    = CONDUIT_EMPTY_ID, &
@@ -594,10 +595,10 @@ module axom_sidre
         pure function c_buffer_get_type_id(self) &
                 result(SHT_rv) &
                 bind(C, name="SIDRE_Buffer_get_type_id")
-            import :: SIDRE_SHROUD_buffer_capsule, TypeID
+            import :: SIDRE_SHROUD_buffer_capsule, TypeIDint
             implicit none
             type(SIDRE_SHROUD_buffer_capsule), intent(IN) :: self
-            integer(TypeID) :: SHT_rv
+            integer(TypeIDint) :: SHT_rv
         end function c_buffer_get_type_id
 
         pure function c_buffer_get_num_elements(self) &
@@ -1996,10 +1997,10 @@ module axom_sidre
         pure function c_view_get_type_id(self) &
                 result(SHT_rv) &
                 bind(C, name="SIDRE_View_get_type_id")
-            import :: SIDRE_SHROUD_view_capsule, TypeID
+            import :: SIDRE_SHROUD_view_capsule, TypeIDint
             implicit none
             type(SIDRE_SHROUD_view_capsule), intent(IN) :: self
-            integer(TypeID) :: SHT_rv
+            integer(TypeIDint) :: SHT_rv
         end function c_view_get_type_id
 
         pure function c_view_get_total_bytes(self) &
@@ -2636,9 +2637,9 @@ contains
 
     function buffer_get_type_id(obj) &
             result(SHT_rv)
-        use iso_c_binding, only : C_SHORT
+        use iso_c_binding, only : C_INT
         class(SidreBuffer) :: obj
-        integer(TypeID) :: SHT_rv
+        integer(TypeIDint) :: SHT_rv
         ! splicer begin class.Buffer.method.get_type_id
         SHT_rv = c_buffer_get_type_id(obj%cxxmem)
         ! splicer end class.Buffer.method.get_type_id
@@ -5092,9 +5093,9 @@ contains
 
     function view_get_type_id(obj) &
             result(SHT_rv)
-        use iso_c_binding, only : C_SHORT
+        use iso_c_binding, only : C_INT
         class(SidreView) :: obj
-        integer(TypeID) :: SHT_rv
+        integer(TypeIDint) :: SHT_rv
         ! splicer begin class.View.method.get_type_id
         SHT_rv = c_view_get_type_id(obj%cxxmem)
         ! splicer end class.View.method.get_type_id
