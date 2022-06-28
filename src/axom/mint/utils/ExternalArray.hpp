@@ -23,7 +23,7 @@ namespace mint
  * \brief Provides a generic multi-component array, constructed from external
  *  storage.
  *
- *  This sidre::Array class extends axom::Array by storing data in an
+ *  This ExternalArray class extends axom::Array by storing data in an
  *  externally-owned buffer. This class provides a generic multi-component
  *  array container with dynamic resizing and insertion. Each element in the
  *  array is a tuple consisting of 1 or more components, which are stored
