@@ -145,6 +145,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
   for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
 - Renamed `primal::Polygon::centroid()` to `primal::Polygon::vertexMean()` because it was not actually computing the centroid.
+- `axom:sidre:IndexType` is now the same type as
+  `axom:IndexType`. Before, Sidre always used `int64_t`. Now it
+  respects the define `AXOM_USE_64BIT_INDEXTYPE`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
