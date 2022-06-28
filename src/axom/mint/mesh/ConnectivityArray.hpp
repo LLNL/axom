@@ -36,6 +36,16 @@ enum ConnectivityType
 };
 
 /*!
+ * \brief Represents the type of storage the ConnectivityArray is constructed with.
+ */
+enum class StorageMode
+{
+  Native,
+  External,
+  Sidre
+};
+
+/*!
  * \class ConnectivityArray
  *
  * \brief Provides an interface for general mesh connectivity.
@@ -145,6 +155,7 @@ public:
   ConnectivityArray(CellType cell_type, IndexType ID_capacity = USE_DEFAULT)
     : m_cell_type(cell_type)
     , m_stride(-1)
+    , m_storageMode(StorageMode::Native)
   {
     SLIC_ERROR_IF(m_cell_type == UNDEFINED_CELL,
                   "Cannot have an undefined cell type.");
@@ -169,6 +180,7 @@ public:
   ConnectivityArray(IndexType stride, IndexType ID_capacity = USE_DEFAULT)
     : m_cell_type(UNDEFINED_CELL)
     , m_stride(stride)
+    , m_storageMode(StorageMode::Native)
   {
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
@@ -206,6 +218,7 @@ public:
                     IndexType ID_capacity = USE_DEFAULT)
     : m_cell_type(cell_type)
     , m_stride(-1)
+    , m_storageMode(StorageMode::External)
   {
     SLIC_ERROR_IF(m_cell_type == UNDEFINED_CELL,
                   "Cannot have an undefined cell type.");
@@ -243,6 +256,7 @@ public:
                     IndexType ID_capacity = USE_DEFAULT)
     : m_cell_type(UNDEFINED_CELL)
     , m_stride(stride)
+    , m_storageMode(StorageMode::External)
   {
     m_values.reset(new ExternalArray<IndexType, 2>(values,
                                                    {n_IDs, m_stride},
@@ -271,6 +285,7 @@ public:
   ConnectivityArray(sidre::Group* group)
     : m_cell_type(UNDEFINED_CELL)
     , m_stride(-1)
+    , m_storageMode(StorageMode::Sidre)
     , m_values(nullptr)
   {
     m_cell_type = internal::initializeFromGroup(group, m_values);
@@ -312,6 +327,7 @@ public:
                     IndexType ID_capacity = USE_DEFAULT)
     : m_cell_type(cell_type)
     , m_stride(getCellInfo(m_cell_type).num_nodes)
+    , m_storageMode(StorageMode::Sidre)
     , m_values(nullptr)
   {
     SLIC_ERROR_IF(m_cell_type == UNDEFINED_CELL,
@@ -354,6 +370,7 @@ public:
                     IndexType ID_capacity = USE_DEFAULT)
     : m_cell_type(UNDEFINED_CELL)
     , m_stride(stride)
+    , m_storageMode(StorageMode::Sidre)
   {
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero.");
 
@@ -463,24 +480,12 @@ public:
   /*!
    * \brief Return true iff constructed via the external constructor.
    */
-  bool isExternal() const
-  {
-    auto& array = *m_values;
-    return typeid(array) == typeid(ExternalArray<IndexType, 2>);
-  }
+  bool isExternal() const { return m_storageMode == StorageMode::External; }
 
   /*!
    * \brief Return true iff constructed via the sidre constructors.
    */
-  bool isInSidre() const
-  {
-#ifdef AXOM_MINT_USE_SIDRE
-    auto& array = *m_values;
-    return typeid(array) == typeid(sidre::MCArray<IndexType>);
-#else
-    return false;
-#endif
-  }
+  bool isInSidre() const { return m_storageMode == StorageMode::Sidre; }
 
   /*
    * \brief Return a const pointer to the sidre::Group that holds the data
@@ -719,6 +724,7 @@ public:
 private:
   CellType m_cell_type;
   IndexType m_stride;
+  StorageMode m_storageMode;
   // We keep a unique_ptr to an axom::Array to polymorphically hold:
   //  * axom::Array if we own the memory
   //  * sidre::Array if the memory is stored in Sidre

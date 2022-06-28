@@ -60,7 +60,8 @@ public:
    */
   ConnectivityArray(IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
-    : m_types(std::make_unique<axom::Array<CellType>>(0, ID_capacity))
+    : m_storageMode(StorageMode::Native)
+    , m_types(std::make_unique<axom::Array<CellType>>(0, ID_capacity))
     , m_offsets(
         std::make_unique<axom::Array<IndexType>>(0, m_types->capacity() + 1))
   {
@@ -109,7 +110,8 @@ public:
                     CellType* types,
                     IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
-    : m_types(std::make_unique<ExternalArray<CellType>>(types, n_IDs, ID_capacity))
+    : m_storageMode(StorageMode::External)
+    , m_types(std::make_unique<ExternalArray<CellType>>(types, n_IDs, ID_capacity))
     , m_offsets(
         std::make_unique<ExternalArray<IndexType>>(offsets,
                                                    n_IDs + 1,
@@ -151,7 +153,7 @@ public:
    * \post getIDCapacity() >= getNumberOfIDs()
    * \post getValueCapacity() >= getNumberOfValues()
    */
-  ConnectivityArray(sidre::Group* group)
+  ConnectivityArray(sidre::Group* group) : m_storageMode(StorageMode::Sidre)
   {
     CellType cell_type =
       internal::initializeFromGroup(group, m_values, m_offsets, m_types);
@@ -184,6 +186,7 @@ public:
                     const std::string& coordset,
                     IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
+    : m_storageMode(StorageMode::Sidre)
   {
     bool create_offsets = true;
     bool create_types = true;
@@ -340,44 +343,12 @@ public:
   /*!
    * \brief Return true iff constructed via the external constructor.
    */
-  bool isExternal() const
-  {
-    bool consistent = true;
-    auto& values_ref = *m_values;
-    auto& offsets_ref = *m_offsets;
-    auto& types_ref = *m_types;
-    bool is_external = typeid(values_ref) == typeid(ExternalArray<IndexType, 1>);
-    consistent &= is_external ==
-      (typeid(offsets_ref) == typeid(ExternalArray<IndexType, 1>));
-    consistent &=
-      is_external == (typeid(types_ref) == typeid(ExternalArray<CellType, 1>));
-
-    SLIC_WARNING_IF(!consistent, "External state not consistent.");
-    return is_external;
-  }
+  bool isExternal() const { return m_storageMode == StorageMode::External; }
 
   /*!
    * \brief Return true iff constructed via the sidre constructors.
    */
-  bool isInSidre() const
-  {
-#ifdef AXOM_MINT_USE_SIDRE
-    bool consistent = true;
-    auto& values_ref = *m_values;
-    auto& offsets_ref = *m_offsets;
-    auto& types_ref = *m_types;
-    bool is_in_sidre = typeid(values_ref) == typeid(sidre::Array<IndexType, 1>);
-    consistent &= is_in_sidre ==
-      (typeid(offsets_ref) == typeid(sidre::Array<IndexType, 1>));
-    consistent &=
-      is_in_sidre == (typeid(types_ref) == typeid(sidre::Array<CellType, 1>));
-
-    SLIC_WARNING_IF(!consistent, "External state not consistent.");
-    return is_in_sidre;
-#else
-    return false;
-#endif
-  }
+  bool isInSidre() const { return m_storageMode == StorageMode::Sidre; }
 
   /*
    * \brief Return a const pointer to the sidre::Group that holds the data
@@ -633,6 +604,7 @@ public:
   /// @}
 
 private:
+  StorageMode m_storageMode;
   // We keep unique_ptrs to axom::Array to polymorphically hold:
   //  * axom::Array if we own the memory
   //  * sidre::Array if the memory is stored in Sidre
