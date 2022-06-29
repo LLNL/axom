@@ -104,17 +104,7 @@ void check_line(const std::string& msg, int expected_line)
 }
 
 //------------------------------------------------------------------------------
-void customAbortFunction()
-{
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  slic::internal::clear();
-  slic::setAbortFunction(axom::utilities::processAbort); /* Reset to default */
-  slic::disableAbortOnError(); /* disable abort for testing purposes */
-
-  SUCCEED() << "Rank " << rank << " has aborted successfully!";
-}
+void assert_lt_zero(int val) { SLIC_ASSERT(val < 0); }
 
 }  // end anonymous namespace
 
@@ -496,22 +486,16 @@ TEST(slic_macros_parallel, test_assert_abort_macros)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   slic::enableAbortOnError(); /* enable abort for testing purposes */
-  slic::setAbortFunction(customAbortFunction);
 
   EXPECT_TRUE(slic::internal::is_stream_empty());
 
   int val = (rank % 2) == 0 ? 42 : -42;
-  SLIC_ASSERT(val < 0);
 
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
 
-  SLIC_ASSERT(val != 0);
-
+  EXPECT_DEATH(assert_lt_zero(val), "") << "Rank " << rank << " did not abort";
   slic::internal::clear();
-  slic::setAbortFunction(axom::utilities::processAbort); /* Reset to default */
   slic::disableAbortOnError(); /* disable abort for testing purposes */
-
-  FAIL() << "Rank " << rank << " should not get here; SLIC should have aborted by now";
 
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
