@@ -330,6 +330,21 @@ public:
   }
 
   /*!
+   * \brief Return the line segment that closes the calling object
+   *
+   * This function returns the segment (first order Bezier curve) that 
+   * connects the last control node to the first, closing the shape
+   * into a closed curved polygon.
+   *
+   * \return The closing line segment.
+   */
+  BezierCurve linear_closure() const 
+  {
+    PointType nodes[2] = {m_controlPoints[getOrder()], m_controlPoints[0]};
+    return BezierCurve(nodes, 1);
+  }
+
+  /*!
    * \brief Predicate to check if the Bezier curve is approximately linear
    *
    * This function checks if the internal control points of the BezierCurve
@@ -338,7 +353,6 @@ public:
    * \param [in] tol Threshold for sum of squared distances
    * \return True if c1 is near-linear
    */
-
   bool isLinear(double tol = 1E-8) const
   {
     const int ord = getOrder();

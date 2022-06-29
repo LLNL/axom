@@ -34,9 +34,9 @@ int main(int argc, char** argv)
 
   axom::slic::SimpleLogger logger;
   //square_test();
-  //parabola_test();
+  parabola_test();
   //split_parabola_test();
-  segment_test();
+  //segment_test();
 
   return 0;
 }
@@ -96,6 +96,10 @@ void parabola_test()
   Bezier pedges[2] = {para1, para2};
   CPolygon parabola_polygon(pedges, 2);
   int npts = 5;
+
+  Bezier closer = para1.linear_closure();
+  std::cout << para1 << std::endl;
+  std::cout << closer << std::endl;
 
   for(int i = 0; i < 5; i++)
   {
