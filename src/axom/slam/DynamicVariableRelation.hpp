@@ -18,6 +18,8 @@
 #include "axom/config.hpp"
 #include "axom/slic.hpp"
 
+#include "axom/slam/policies/PolicyTraits.hpp"
+
 #include "axom/slam/Set.hpp"
 #include "axom/slam/Relation.hpp"
 
@@ -103,6 +105,20 @@ public:
     for(auto& vec : m_relationsVec) sz += vec.size();
     return sz;
   }
+
+  bool hasFromSet() const
+  {
+    return !policies::EmptySetTraits<SetType>::isEmpty(m_fromSet);
+  }
+  SetType* fromSet() { return m_fromSet; }
+  const SetType* fromSet() const { return m_fromSet; }
+
+  bool hasToSet() const
+  {
+    return !policies::EmptySetTraits<SetType>::isEmpty(m_toSet);
+  }
+  SetType* toSet() { return m_toSet; }
+  const SetType* toSet() const { return m_toSet; }
 
   SetPosition fromSetSize() const { return m_relationsVec.size(); }
 
