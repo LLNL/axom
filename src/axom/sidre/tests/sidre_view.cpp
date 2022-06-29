@@ -1898,8 +1898,7 @@ TEST_P(UmpireTest, allocate_default)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate)
 {
-  #if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && \
-    defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -1930,8 +1929,7 @@ TEST_P(UmpireTest, reallocate)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate_zero)
 {
-  #if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && \
-    defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -1970,7 +1968,7 @@ TEST_P(UmpireTest, reallocate_zero)
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
 
-  #if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP))
+  #ifdef AXOM_USE_GPU
 
     #ifdef UMPIRE_ENABLE_PINNED
     ,
@@ -1992,7 +1990,7 @@ const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
     #endif
 
-  #endif /* (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) */
+  #endif /* defined(AXOM_USE_GPU) */
 
 };
 

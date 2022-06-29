@@ -39,7 +39,7 @@ const std::map<std::string, ExecPolicy> validExecPolicies
   #ifdef AXOM_USE_OPENMP
     {"omp", ExecPolicy::OpenMP},
   #endif
-  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #ifdef AXOM_USE_GPU
     {"gpu", ExecPolicy::GPU}
   #endif
 #endif
@@ -193,7 +193,7 @@ struct Arguments
   #ifdef AXOM_USE_OPENMP
     pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
   #endif
-  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #ifdef AXOM_USE_GPU
     pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
   #endif
 #endif
@@ -230,7 +230,7 @@ int main(int argc, char** argv)
     finalize_logger();
     return retval;
   }
-#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+#ifdef AXOM_USE_GPU
   if(args.exec_space == ExecPolicy::GPU)
   {
   #ifdef AXOM_USE_HIP
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
                                             args.num_bins);
     break;
   #endif
-  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #ifdef AXOM_USE_GPU
   case ExecPolicy::GPU:
     #ifdef AXOM_USE_HIP
     using GPUExec = axom::HIP_EXEC<256>;

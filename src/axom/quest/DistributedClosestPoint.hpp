@@ -778,7 +778,6 @@ public:
     double* sqDistThresh =
       axom::allocate<double>(1, axom::execution_space<ExecSpace>::allocatorID());
     *sqDistThresh = m_sqDistanceThreshold;
-    ;
 
     auto pointsView = m_points.view();
 

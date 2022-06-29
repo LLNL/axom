@@ -810,7 +810,6 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
       BBoxes[i] = BBox {SpacePt {0.025 + 0.1 * i, .05, .05},
                         SpacePt {0.075 + 0.1 * i, .95, .95}};
     }
-    grid.insert(10, BBoxes.data(), 0);
 
     if(DIM >= 2)
     {
@@ -818,7 +817,6 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
       {
         BBoxes[10 + i] = BBox {SpacePt {0.05, 0.025 + 0.1 * i, .05},
                                SpacePt {0.95, 0.075 + 0.1 * i, .95}};
-        grid.insert(BBoxes[10 + i], 10 + i);
       }
     }
 
@@ -828,9 +826,10 @@ TYPED_TEST(ImplicitGridExecTest, get_candidates_box_vectorized)
       {
         BBoxes[20 + i] = BBox {SpacePt {0.05, 0.05, 0.025 + 0.1 * i},
                                SpacePt {0.95, 0.95, 0.075 + 0.1 * i}};
-        grid.insert(BBoxes[20 + i], 20 + i);
       }
     }
+
+    grid.insert(10 * DIM, BBoxes.data(), 0);
 
     // Check that each grid cell contains DIM objects
     for(int i = 0; i < i_max; ++i)

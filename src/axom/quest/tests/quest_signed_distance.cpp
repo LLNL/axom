@@ -424,7 +424,7 @@ TEST(quest_signed_distance, sphere_vec_omp_test)
 #endif  // AXOM_USE_OPENMP
 
 //------------------------------------------------------------------------------
-#if(defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
 TEST(quest_signed_distance, sphere_vec_device_test)
 {
   constexpr int BLOCK_SIZE = 256;
@@ -575,7 +575,7 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
 
   SLIC_INFO("Done.");
 }
-#endif  // (defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)) && defined(AXOM_USE_RAJA)
+#endif  // defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
