@@ -329,7 +329,7 @@ public:
                                                                 m_octs,
                                                                 m_octcount);
 
-    // Oddities required by hip
+    // Oddities required by hip to avoid capturing `this`
     OctahedronType* local_octs = m_octs;
 
     AXOM_UNUSED_VAR(disc_status);  // silence warnings in release configs
@@ -454,7 +454,7 @@ public:
     // Access-aligned bounding boxes
     m_aabbs = axom::allocate<BoundingBoxType>(m_octcount);
 
-    // Oddities required by hip
+    // Oddities required by hip to avoid capturing `this`
     OctahedronType* local_octs = m_octs;
     BoundingBoxType* local_aabbs = m_aabbs;
 
@@ -504,7 +504,7 @@ public:
     m_hexes = axom::allocate<PolyhedronType>(NE);
     m_hex_bbs = axom::allocate<BoundingBoxType>(NE);
 
-    // Oddities required by hip
+    // Oddities required by hip to avoid capturing `this`
     PolyhedronType* local_hexes = m_hexes;
     BoundingBoxType* local_hex_bbs = m_hex_bbs;
 
@@ -706,7 +706,7 @@ public:
     // Hex volume is the volume of the hexahedron element
     m_hex_volumes = axom::allocate<double>(NE);
 
-    // Oddities required by hip
+    // Oddities required by hip to avoid capturing `this`
     double* local_overlap_volumes = m_overlap_volumes;
     double* local_hex_volumes = m_hex_volumes;
 

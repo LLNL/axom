@@ -31,20 +31,20 @@ enum class ExecPolicy
   GPU
 };
 
+/* clang-format off */
 const std::map<std::string, ExecPolicy> validExecPolicies
 {
-  {"seq", ExecPolicy::CPU},
+    {"seq", ExecPolicy::CPU},
 #ifdef AXOM_USE_RAJA
   #ifdef AXOM_USE_OPENMP
     {"omp", ExecPolicy::OpenMP},
   #endif
   #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
-  {
-    "gpu", ExecPolicy::GPU
-  }
+    {"gpu", ExecPolicy::GPU}
   #endif
 #endif
 };
+/* clang-format on */
 
 void initialize_logger();
 void finalize_logger();

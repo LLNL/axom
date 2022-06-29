@@ -399,7 +399,7 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
 template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
 {
-#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
+#ifdef AXOM_DEVICE_CODE
 
   using FloatType = typename BBoxType::CoordType;
   using PointType = typename BBoxType::PointType;
@@ -455,7 +455,7 @@ AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
 
   return BBoxType {min_pt, max_pt};
 
-#else  // __CUDA_ARCH__ || __HIP_DEVICE_COMPILE__
+#else  // AXOM_DEVICE_CODE
   std::atomic_thread_fence(std::memory_order_acquire);
   return box;
 #endif
@@ -470,8 +470,7 @@ template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
                                                const BBoxType& value)
 {
-#if(defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)) && \
-  defined(AXOM_USE_RAJA)
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_RAJA)
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   using PointType = typename BBoxType::PointType;
