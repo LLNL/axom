@@ -294,6 +294,45 @@ public:
   }
 
   /*!
+   * \brief Computes the second derivative of a Bezier curve at a particular parameter value \a t
+   *
+   * \param [in] t parameter value at which to compute tangent 
+   * \return p the 2nd derivative vector of the Bezier curve at t
+   *
+   * \note We typically find the second derivative of the curve at \a t between 0 and 1
+   */
+  VectorType dtdt(T t) const
+  {
+    using axom::utilities::lerp;
+    VectorType val;
+
+    const int ord = getOrder();
+    std::vector<T> dCarray(ord + 1);
+
+    // Run de Casteljau algorithm on each dimension
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      for(int p = 0; p <= ord; ++p)
+      {
+        dCarray[p] = m_controlPoints[p][i];
+      }
+
+      // stop two steps early and take finite difference of last three values
+      for(int p = 1; p <= ord - 2; ++p)
+      {
+        const int end = ord - p;
+        for(int k = 0; k <= end; ++k)
+        {
+          dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+        }
+      }
+      val[i] = ord * (ord - 1) * (dCarray[2] + 2 * dCarray[1] - dCarray[0]);
+    }
+
+    return val;
+  }
+
+  /*!
    * \brief Splits a Bezier curve into two Bezier curves at a given parameter value
    *
    * \param [in] t parameter value between 0 and 1 at which to evaluate
