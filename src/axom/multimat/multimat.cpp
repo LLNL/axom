@@ -100,6 +100,22 @@ MultiMat::ProductSetType& MultiMat::getRelDenseSet(DataLayout layout)
   return (layout == DataLayout::CELL_DOM) ? m_cellMatProdSet : m_matCellProdSet;
 }
 
+bool MultiMat::hasValidStaticRelation(DataLayout layout) const
+{
+  const StaticVariableRelationType& rel =
+    (layout == DataLayout::CELL_DOM) ? m_cellMatRel : m_matCellRel;
+
+  return rel.hasFromSet() && rel.hasToSet();
+}
+
+bool MultiMat::hasValidDynamicRelation(DataLayout layout) const
+{
+  const DynamicVariableRelationType& rel =
+    (layout == DataLayout::CELL_DOM) ? m_cellMatRelDyn : m_matCellRelDyn;
+
+  return rel.hasFromSet() && rel.hasToSet();
+}
+
 // Copy constructor
 MultiMat::MultiMat(const MultiMat& other)
   : m_ncells(other.m_ncells)
@@ -117,7 +133,7 @@ MultiMat::MultiMat(const MultiMat& other)
   , m_fieldSparsityLayoutVec(other.m_fieldSparsityLayoutVec)
   , m_dynamic_mode(false)
 {
-  if(other.m_cellMatRel.isValid())
+  if(other.hasValidStaticRelation(DataLayout::CELL_DOM))
   {
     m_cellMatRel = StaticVariableRelationType(&m_cellSet, &m_matSet);
     m_cellMatRel.bindBeginOffsets(m_cellSet.size(), &m_cellMatRel_beginsVec);
@@ -126,7 +142,7 @@ MultiMat::MultiMat(const MultiMat& other)
     m_cellMatNZSet = RelationSetType(&m_cellMatRel);
     m_cellMatProdSet = ProductSetType(&m_cellSet, &m_matSet);
   }
-  if(other.m_matCellRel.isValid())
+  if(other.hasValidStaticRelation(DataLayout::MAT_DOM))
   {
     m_matCellRel = StaticVariableRelationType(&m_matSet, &m_cellSet);
     m_matCellRel.bindBeginOffsets(m_matSet.size(), &m_matCellRel_beginsVec);
@@ -193,8 +209,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
   std::vector<SetPosType>& Rel_beginsVec = getRelBeginVec(layout);
   std::vector<SetPosType>& Rel_indicesVec = getRelIndVec(layout);
 
-  SLIC_ASSERT(!Rel_ptr.hasFromSet() &&
-              !Rel_ptr.hasToSet());  //cellmatRel has not been set
+  SLIC_ASSERT(!hasValidStaticRelation(layout));
 
   RangeSetType& set1 = getRelDominantSet(layout);
   RangeSetType& set2 = getRelSecondarySet(layout);
@@ -299,15 +314,14 @@ int MultiMat::getFieldIdx(const std::string& field_name) const
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
-  //SLIC_ASSERT(m_dataLayout == DataLayout::CELL_DOM);
-  SLIC_ASSERT(m_cellMatRel.relationData() != nullptr);
+  SLIC_ASSERT(hasValidStaticRelation(DataLayout::CELL_DOM));
 
   return m_cellMatRel[c];
 }
 
 MultiMat::IdSet MultiMat::getCellContainingMat(int m)
 {
-  SLIC_ASSERT(m_matCellRel.relationData() != nullptr);
+  SLIC_ASSERT(hasValidStaticRelation(DataLayout::MAT_DOM));
 
   return m_matCellRel[m];
 }
@@ -365,8 +379,10 @@ void MultiMat::convertToDynamic()
   {
     return;
   }
-  SLIC_ASSERT(m_cellMatRelDyn.fromSetSize() == 0);
-  SLIC_ASSERT(m_matCellRelDyn.fromSetSize() == 0);
+  // If we weren't in dynamic mode before, we shouldn't already have dynamic
+  // relations
+  SLIC_ASSERT(!hasValidDynamicRelation(DataLayout::CELL_DOM));
+  SLIC_ASSERT(!hasValidDynamicRelation(DataLayout::MAT_DOM));
 
   // Save what the current layout is for later
   //m_static_layout = Layout { m_dataLayout, m_sparsityLayout };  //old version with single layout for all MM
@@ -389,13 +405,12 @@ void MultiMat::convertToDynamic()
   //create the dynamic relation
   for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    StaticVariableRelationType& rel = getRelStatic(layout);
-
-    if(rel.relationData() == nullptr)
+    if(!hasValidStaticRelation(layout))
     {
       // We don't have a relation for this layout type
       continue;
     }
+    StaticVariableRelationType& rel = getRelStatic(layout);
 
     SetType* set1 = rel.fromSet();
     SetType* set2 = rel.toSet();
@@ -411,12 +426,10 @@ void MultiMat::convertToDynamic()
     }
 
     getRelDynamic(layout) = relDyn;
+
+    SLIC_ASSERT(getRelDynamic(layout).isValid());
+    SLIC_ASSERT(getRelDynamic(layout).totalSize() == getRelStatic(layout).totalSize());
   }
-
-  SLIC_ASSERT(m_cellMatRelDyn.isValid());
-
-  SLIC_ASSERT(m_cellMatRelDyn.totalSize() == m_cellMatRel.totalSize());
-  SLIC_ASSERT(m_matCellRelDyn.totalSize() == m_matCellRel.totalSize());
 
   m_cellMatRel = StaticVariableRelationType {};
   m_cellMatNZSet = RelationSetType {};
@@ -433,19 +446,19 @@ void MultiMat::convertToStatic()
   // Change dynamicRelation back to staticRelation
   // change the layout to previously stored static layout
 
-  SLIC_ASSERT(m_cellMatRel.relationData() == nullptr);
-  SLIC_ASSERT(m_matCellRel.relationData() == nullptr);
+  SLIC_ASSERT(!hasValidStaticRelation(DataLayout::CELL_DOM));
+  SLIC_ASSERT(!hasValidStaticRelation(DataLayout::MAT_DOM));
 
   //Create the static relations
   for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
-
-    if(relDyn.fromSetSize() == 0)
+    if(!hasValidDynamicRelation(layout))
     {
       // We don't have a relation for this layout type
       continue;
     }
+
+    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
 
     RangeSetType& set1 = getRelDominantSet(layout);
     RangeSetType& set2 = getRelSecondarySet(layout);
@@ -516,13 +529,13 @@ bool MultiMat::addEntry(int cell_id, int mat_id)
   bool searched = false;
   for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
-
-    if(relDyn.fromSetSize() == 0)
+    if(!hasValidDynamicRelation(layout))
     {
       // We don't have a relation for this layout type
       continue;
     }
+
+    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
 
     std::pair<int, int> idx;
     if(layout == DataLayout::CELL_DOM)
@@ -559,13 +572,13 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
 
   for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
-
-    if(relDyn.fromSetSize() == 0)
+    if(!hasValidDynamicRelation(layout))
     {
       // We don't have a relation for this layout type
       continue;
     }
+
+    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
 
     std::pair<int, int> idx;
     if(layout == DataLayout::CELL_DOM)
@@ -936,10 +949,13 @@ void MultiMat::transposeField_helper(int field_idx)
   {
     new_layout = DataLayout::CELL_DOM;
   }
-  StaticVariableRelationType& newRel = getRelStatic(new_layout);
+
+  if(!hasValidStaticRelation(new_layout))
+  {
+    makeOtherRelation(new_layout);
+  }
   RelationSetType* newNZSet = &getRelSparseSet(new_layout);
   ProductSetType* newProdSet = &getRelDenseSet(new_layout);
-  if(newRel.relationData() == nullptr) makeOtherRelation(new_layout);
 
   auto& set1 = *(oldRel.fromSet());
   auto& set2 = *(oldRel.toSet());

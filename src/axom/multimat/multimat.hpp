@@ -554,6 +554,20 @@ private:  //private functions
    */
   ProductSetType& getRelDenseSet(DataLayout layout);
 
+  /*!
+   * \brief Returns true if the static relation corresponding to the given data
+   *        layout is valid.
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  bool hasValidStaticRelation(DataLayout layout) const;
+
+  /*!
+   * \brief Returns true if the dynamic relation corresponding to the given data
+   *        layout is valid.
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  bool hasValidDynamicRelation(DataLayout layout) const;
+
 private:
   unsigned int m_ncells, m_nmats;
 
