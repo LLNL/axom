@@ -246,16 +246,6 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
   SLIC_ASSERT(m_dataTypeVec.size() == 1);
   SLIC_ASSERT(m_fieldDataLayoutVec.size() == 1);
   SLIC_ASSERT(m_fieldSparsityLayoutVec.size() == 1);
-
-  // not efficient to have both rel, but here for debug
-  if(layout == DataLayout::CELL_DOM)
-  {
-    makeOtherRelation(DataLayout::MAT_DOM);
-  }
-  else
-  {
-    makeOtherRelation(DataLayout::CELL_DOM);
-  }
 }
 
 int MultiMat::setVolfracField(double* arr,
@@ -397,10 +387,15 @@ void MultiMat::convertToDynamic()
   }
 
   //create the dynamic relation
-  for(int f = 0; f < 2; f++)
+  for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    DataLayout layout = static_cast<DataLayout>(f);
     StaticVariableRelationType& rel = getRelStatic(layout);
+
+    if(rel.relationData() == nullptr)
+    {
+      // We don't have a relation for this layout type
+      continue;
+    }
 
     SetType* set1 = rel.fromSet();
     SetType* set2 = rel.toSet();
@@ -442,10 +437,15 @@ void MultiMat::convertToStatic()
   SLIC_ASSERT(m_matCellRel.relationData() == nullptr);
 
   //Create the static relations
-  for(int f = 0; f < 2; f++)
+  for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    DataLayout layout = static_cast<DataLayout>(f);
     DynamicVariableRelationType& relDyn = getRelDynamic(layout);
+
+    if(relDyn.fromSetSize() == 0)
+    {
+      // We don't have a relation for this layout type
+      continue;
+    }
 
     RangeSetType& set1 = getRelDominantSet(layout);
     RangeSetType& set2 = getRelSecondarySet(layout);
@@ -513,16 +513,42 @@ bool MultiMat::addEntry(int cell_id, int mat_id)
   //right now this is implemented by converting the data layout to dense so that
   // adding an entry only involve changing the relation data.
 
-  auto& rel_vec = m_cellMatRelDyn.data(cell_id);
-  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), mat_id);
-  if(found_iter != rel_vec.end())
+  bool searched = false;
+  for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    SLIC_ASSERT_MSG(false, "MultiMat::addEntry() -- entry already exists.");
-    return false;
-  }
+    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
 
-  m_cellMatRelDyn.insert(cell_id, mat_id);
-  m_matCellRelDyn.insert(mat_id, cell_id);
+    if(relDyn.fromSetSize() == 0)
+    {
+      // We don't have a relation for this layout type
+      continue;
+    }
+
+    std::pair<int, int> idx;
+    if(layout == DataLayout::CELL_DOM)
+    {
+      idx = {cell_id, mat_id};
+    }
+    else
+    {
+      idx = {mat_id, cell_id};
+    }
+
+    auto& rel_vec = relDyn.data(idx.first);
+    if(!searched)
+    {
+      // Search through the first valid relation we encounter to check if the
+      // entry already exists
+      auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx.second);
+      if(found_iter != rel_vec.end())
+      {
+        SLIC_ASSERT_MSG(false, "MultiMat::addEntry() -- entry already exists.");
+        return false;
+      }
+    }
+
+    relDyn.insert(idx.first, idx.second);
+  }
 
   return true;
 }
@@ -531,19 +557,36 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
 {
   SLIC_ASSERT(m_dynamic_mode);
 
-  auto& rel_vec = m_cellMatRelDyn.data(cell_id);
-  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), mat_id);
-  if(found_iter == rel_vec.end())
+  for(DataLayout layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
   {
-    SLIC_ASSERT_MSG(false, "MultiMat::removeEntry() -- entry not found");
-    return false;
+    DynamicVariableRelationType& relDyn = getRelDynamic(layout);
+
+    if(relDyn.fromSetSize() == 0)
+    {
+      // We don't have a relation for this layout type
+      continue;
+    }
+
+    std::pair<int, int> idx;
+    if(layout == DataLayout::CELL_DOM)
+    {
+      idx = {cell_id, mat_id};
+    }
+    else
+    {
+      idx = {mat_id, cell_id};
+    }
+
+    auto& rel_vec = relDyn.data(idx.first);
+    auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx.second);
+    if(found_iter == rel_vec.end())
+    {
+      SLIC_ASSERT_MSG(false, "MultiMat::removeEntry() -- entry not found");
+      return false;
+    }
+
+    rel_vec.erase(found_iter);
   }
-
-  rel_vec.erase(found_iter);
-
-  auto& rel_vec_2 = m_matCellRelDyn.data(mat_id);
-  auto&& found_iter_2 = std::find(rel_vec_2.begin(), rel_vec_2.end(), cell_id);
-  rel_vec_2.erase(found_iter_2);
 
   //TODO make all map value zero?
 
