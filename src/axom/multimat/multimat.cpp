@@ -748,7 +748,7 @@ void MultiMat::convertFieldLayout(int field_idx,
   SLIC_ASSERT(false);
 }
 
-void axom::multimat::MultiMat::convertFieldToSparse(int field_idx)
+void MultiMat::convertFieldToSparse(int field_idx)
 {
   SLIC_ASSERT(0 <= field_idx && field_idx < static_cast<int>(m_mapVec.size()));
 
@@ -783,7 +783,7 @@ void axom::multimat::MultiMat::convertFieldToSparse(int field_idx)
   m_fieldSparsityLayoutVec[field_idx] = SparsityLayout::SPARSE;
 }
 
-void axom::multimat::MultiMat::convertFieldToDense(int field_idx)
+void MultiMat::convertFieldToDense(int field_idx)
 {
   SLIC_ASSERT(0 <= field_idx && field_idx < static_cast<int>(m_mapVec.size()));
 
@@ -1001,7 +1001,7 @@ void MultiMat::transposeField_helper(int field_idx)
   m_fieldDataLayoutVec[field_idx] = new_layout;
 }
 
-void axom::multimat::MultiMat::transposeField(int field_idx)
+void MultiMat::transposeField(int field_idx)
 {
   if(m_fieldMappingVec[field_idx] != FieldMapping::PER_CELL_MAT) return;
 
