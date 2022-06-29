@@ -84,15 +84,18 @@ using MyTypesExec = ::testing::Types<
 
 TYPED_TEST_SUITE(ImplicitGridExecTest, MyTypesExec);
 
-TYPED_TEST(ImplicitGridTest, initialization)
+TYPED_TEST(ImplicitGridExecTest, initialization_vectorized)
 {
   const int DIM = TestFixture::DIM;
   using GridCell = typename TestFixture::GridCell;
   using BBox = typename TestFixture::BBox;
   using GridT = typename TestFixture::GridT;
   using SpacePt = typename TestFixture::SpacePt;
+  using ExecSpace = typename TestFixture::ExecSpace;
 
-  SLIC_INFO("Test ImplicitGrid constructor in " << DIM << "D");
+  SLIC_INFO("Test ImplicitGrid constructor with "
+            << axom::execution_space<ExecSpace>::name()
+            << " execution space and in " << DIM << "D");
 
   GridCell res(10);
   BBox bbox(SpacePt::zero(), SpacePt::ones());
