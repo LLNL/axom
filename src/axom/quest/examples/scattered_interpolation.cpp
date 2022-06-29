@@ -770,12 +770,10 @@ int main(int argc, char** argv)
   switch(params.dimension)
   {
   case 2:
-    scattered_2d = std::unique_ptr<quest::ScatteredInterpolation<2>>(
-      new quest::ScatteredInterpolation<2>);
+    scattered_2d = std::make_unique<quest::ScatteredInterpolation<2>>();
     break;
   case 3:
-    scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
-      new quest::ScatteredInterpolation<3>);
+    scattered_3d = std::make_unique<quest::ScatteredInterpolation<3>>();
     break;
   }
 
