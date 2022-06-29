@@ -478,7 +478,7 @@ protected:
 
 private:  //private functions
   //Given a relation (cell->mat or mat->cell), create the other relation
-  void makeOtherRelation();
+  void makeOtherRelation(DataLayout layout);
 
   //helper functions
   template <typename DataType>
@@ -491,6 +491,68 @@ private:  //private functions
 
   template <typename T>
   MapUniquePtr helper_copyField(const MultiMat&, int map_i);
+
+  /*!
+   * \brief Returns a reference to the corresponding array of offsets for a
+   *        static relation corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  std::vector<SetPosType>& getRelBeginVec(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the corresponding array of indices for
+   *        a static relation corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  std::vector<SetPosType>& getRelIndVec(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the static relation corresponding to a
+   *        layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  StaticVariableRelationType& getRelStatic(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the dynamic relation corresponding to a
+   *        layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  DynamicVariableRelationType& getRelDynamic(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the dominant set of elements in the relation
+   *        corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  RangeSetType& getRelDominantSet(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the secondary set of elements in the relation
+   *        corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  RangeSetType& getRelSecondarySet(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to a sparse set corresponding to a relation.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  RelationSetType& getRelSparseSet(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to a product set corresponding to a relation.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  ProductSetType& getRelDenseSet(DataLayout layout);
 
 private:
   unsigned int m_ncells, m_nmats;
