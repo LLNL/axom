@@ -210,7 +210,7 @@ contains
         type(SidreView), intent(IN) :: view
         integer, intent(IN) :: state
         logical, intent(IN) :: is_described, is_allocated, is_applied
-        integer, intent(IN) :: type
+        integer(TypeID), intent(IN) :: type
         integer, intent(IN) :: length
         character(30) name
 
@@ -223,7 +223,7 @@ contains
         call assert_equals(view%is_allocated(), is_allocated, trim(name) // "is_allocated")
         call assert_equals(view%is_applied(), is_applied, trim(name) // " is_applied")
 
-        call assert_equals(view%get_type_id(), type, trim(name) // " get_type_id")
+        call assert_true(view%get_type_id() == type, trim(name) // " get_type_id")
         call assert_equals(int(view%get_num_elements(), kind(length)), length, trim(name) // " get_num_elements")
         call assert_equals(view%get_num_dimensions(), 1, trim(name) // " get_num_dimensions")
         call assert_true(view%get_shape(1, dims) == 1, trim(name) // " get_shape")
@@ -251,7 +251,7 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, elem_count)
-    call assert_equals(dv%get_type_id(), SIDRE_INT_ID, "dv%get_type_id(), SIDRE_INT_ID")
+    call assert_true(dv%get_type_id() == SIDRE_INT_ID, "dv%get_type_id(), SIDRE_INT_ID")
     call dv%get_data(data)
 
     do i = 1, elem_count
@@ -437,8 +437,8 @@ contains
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
-    integer(C_LONG) depth_nelems
-    integer(C_LONG) total_nelems
+    integer(SIDRE_IndexType) depth_nelems
+    integer(SIDRE_IndexType) total_nelems
 
     call set_case_name("int_array_depth_view")
 
@@ -516,9 +516,9 @@ contains
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
-    integer(C_LONG) field_nelems
-    integer(C_LONG) elem_count
-    integer(C_LONG) offset0, offset1
+    integer(SIDRE_IndexType) field_nelems
+    integer(SIDRE_IndexType) elem_count
+    integer(SIDRE_IndexType) offset0, offset1
 
     call set_case_name("int_array_view_attach_buffer")
 
@@ -601,10 +601,10 @@ contains
     real(C_DOUBLE), pointer :: data(:)
     type(C_PTR) data_ptr
     integer(C_INT) i
-    integer(C_LONG) field_nelems
-    integer(C_LONG) v1_nelems, v1_stride, v1_offset
-    integer(C_LONG) v2_nelems, v2_stride, v2_offset
-    integer(C_LONG) v3_nelems, v3_stride, v3_offset
+    integer(SIDRE_IndexType) field_nelems
+    integer(SIDRE_IndexType) v1_nelems, v1_stride, v1_offset
+    integer(SIDRE_IndexType) v2_nelems, v2_stride, v2_offset
+    integer(SIDRE_INdexType) v3_nelems, v3_stride, v3_offset
     real(C_DOUBLE), pointer :: data1(:), data2(:), data3(:)
     real(C_DOUBLE) :: elem
     integer int_size, double_size

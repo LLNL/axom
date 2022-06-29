@@ -318,36 +318,6 @@ public:
     return m_strides;
   }
 
-  /*!
-   * \brief Appends an Array to the end of the calling object
-   *
-   * \param [in] other The Array to append
-   * 
-   * \pre The shapes of the calling Array and @a other are the same
-   * (excluding the leading dimension), i.e., shape()[1:] == other.shape()[1:]
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  template <typename OtherArrayType>
-  void insert(IndexType pos, const ArrayBase<T, DIM, OtherArrayType>& other)
-  {
-#ifdef AXOM_DEBUG
-    if(!std::equal(m_dims.begin() + 1, m_dims.end(), other.shape().begin() + 1))
-    {
-      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
-      utilities::processAbort();
-    }
-#endif
-
-    // First update the dimensions - we're adding only to the leading dimension
-    m_dims[0] += other.shape()[0];
-    // Then add the raw data to the buffer
-    asDerived().insert(pos,
-                       static_cast<const OtherArrayType&>(other).size(),
-                       static_cast<const OtherArrayType&>(other).data());
-    updateStrides();
-  }
-
 protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
@@ -371,6 +341,25 @@ protected:
     {
       m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
     }
+  }
+
+  /*!
+   * \brief Updates the internal dimensions and striding based on the insertion
+   *  of a range of elements.
+   *  Intended to be called after the insertion of a multidimensional subslice.
+   */
+  void updateShapeOnInsert(const StackArray<IndexType, DIM>& range_shape)
+  {
+#ifdef AXOM_DEBUG
+    if(!std::equal(m_dims.begin() + 1, m_dims.end(), range_shape.begin() + 1))
+    {
+      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
+      utilities::processAbort();
+    }
+#endif
+    // First update the dimensions - we're adding only to the leading dimension
+    m_dims[0] += range_shape[0];
+    updateStrides();
   }
 
 private:
@@ -529,26 +518,18 @@ public:
   /// No member data, so this is a no-op
   void swap(ArrayBase&) { }
 
-  /*!
-   * \brief Appends an Array to the end of the calling object
-   *
-   * \param [in] other The Array to append
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  template <typename OtherArrayType>
-  void insert(IndexType pos, const ArrayBase<T, 1, OtherArrayType>& other)
-  {
-    asDerived().insert(pos,
-                       static_cast<const OtherArrayType&>(other).size(),
-                       static_cast<const OtherArrayType&>(other).data());
-  }
-
 protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    */
   IndexType blockSize() const { return 1; }
+
+  /*!
+   * \brief Updates the internal dimensions and striding based on the insertion
+   *  of a range of elements.
+   *  No-op, since we don't keep any shape information in this specialization.
+   */
+  void updateShapeOnInsert(const StackArray<IndexType, 1>&) { }
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/

@@ -44,6 +44,7 @@ public:
   using SetType = TheSet;
   using IndirectionType = typename SetType::IndirectionPolicyType;
   using BufferType = typename IndirectionType::IndirectionBufferType;
+  using BufferPtrType = typename IndirectionType::IndirectionPtrType;
 
   using PosType = typename SetType::PositionType;
   using ElemType = typename SetType::ElementType;
@@ -106,6 +107,14 @@ public:
     ptr = &mDataVec[index];
   }
 
+  void getDataBuffer(axom::ArrayView<ElemType>& ptr, int index = 0)
+  {
+    checkIndex(index);
+
+    ptr =
+      axom::ArrayView<ElemType>(mDataVec[index].data(), mDataVec[index].size());
+  }
+
 private:
   /** Check that the index is valid; fail test if not */
   void checkIndex(int index)
@@ -118,10 +127,29 @@ private:
   std::vector<ElemType> mDataVec[3];
 };
 
+template <typename ElemType>
+bool compareData(ElemType* a, ElemType* b)
+{
+  return a == b;
+}
+
+template <typename ElemType>
+bool compareData(std::vector<ElemType>* a, std::vector<ElemType>* b)
+{
+  return a == b;
+}
+
+template <typename ElemType>
+bool compareData(axom::ArrayView<ElemType> a, axom::ArrayView<ElemType> b)
+{
+  return (a.data() == b.data()) && (a.size() == b.size());
+}
+
 // Tests several types of indirection sets
 using MyTypes =
   ::testing::Types<slam::ArrayIndirectionSet<axom::int32, axom::int64>,
-                   slam::VectorIndirectionSet<axom::int32, axom::int64>>;
+                   slam::VectorIndirectionSet<axom::int32, axom::int64>,
+                   slam::ArrayViewIndirectionSet<axom::int32, axom::int64>>;
 
 TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
 
@@ -166,10 +194,10 @@ TYPED_TEST(IndirectionSetTester, set_builder)
   SLIC_INFO("Testing construction of IndirectionSet using SetBuilders");
 
   using SetType = typename TestFixture::SetType;
-  using BufferType = typename TestFixture::BufferType;
+  using BufferPtrType = typename TestFixture::BufferPtrType;
   using SetBuilder = typename SetType::SetBuilder;
 
-  BufferType* bufPtr = nullptr;
+  BufferPtrType bufPtr {};
   this->getDataBuffer(bufPtr);
 
   bool bVerbose = false;
@@ -223,11 +251,11 @@ TYPED_TEST(IndirectionSetTester, set_builder)
 TYPED_TEST(IndirectionSetTester, iterate)
 {
   using SetType = typename TestFixture::SetType;
-  using BufferType = typename TestFixture::BufferType;
+  using BufferPtrType = typename TestFixture::BufferPtrType;
   using SetPosition = typename TestFixture::PosType;
   using SetElement = typename TestFixture::ElemType;
 
-  BufferType* bufPtr = nullptr;
+  BufferPtrType bufPtr {};
   this->getDataBuffer(bufPtr);
 
   SetType s(typename SetType::SetBuilder().size(MAX_SET_SIZE).data(bufPtr));
@@ -299,18 +327,18 @@ TYPED_TEST(IndirectionSetTester, equality)
   SLIC_INFO("Testing equality/inequality for several sets");
 
   using SetType = typename TestFixture::SetType;
-  using BufferType = typename TestFixture::BufferType;
+  using BufferPtrType = typename TestFixture::BufferPtrType;
   using SetPosition = typename TestFixture::PosType;
   using SetElement = typename TestFixture::ElemType;
 
   // Get pointers to the data
-  BufferType* bufPtr[3] = {nullptr, nullptr, nullptr};
+  BufferPtrType bufPtr[3] = {{}, {}, {}};
   this->getDataBuffer(bufPtr[0], 0);
   this->getDataBuffer(bufPtr[1], 1);
   this->getDataBuffer(bufPtr[2], 2);
-  EXPECT_NE(bufPtr[0], bufPtr[1]);
-  EXPECT_NE(bufPtr[0], bufPtr[2]);
-  EXPECT_NE(bufPtr[1], bufPtr[2]);
+  EXPECT_FALSE(compareData(bufPtr[0], bufPtr[1]));
+  EXPECT_FALSE(compareData(bufPtr[0], bufPtr[2]));
+  EXPECT_FALSE(compareData(bufPtr[1], bufPtr[2]));
 
   // Initialize the first set
   SetType s0(typename SetType::SetBuilder()  //
@@ -363,9 +391,9 @@ TYPED_TEST(IndirectionSetTester, out_of_bounds)
             << "-- code is expected to assert and die.");
 
   using SetType = typename TestFixture::SetType;
-  using BufferType = typename TestFixture::BufferType;
+  using BufferPtrType = typename TestFixture::BufferPtrType;
 
-  BufferType* bufPtr = nullptr;
+  BufferPtrType bufPtr {};
   this->getDataBuffer(bufPtr);
 
   SetType s(typename SetType::SetBuilder()  //

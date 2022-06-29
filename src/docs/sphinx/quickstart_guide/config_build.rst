@@ -25,41 +25,58 @@ Requirements, Dependencies, and Supported Compilers
 Basic requirements:
 ~~~~~~~~~~~~~~~~~~~
 
-  * C++ Compiler with C++11 support
-  * CMake
+  * C++ compiler with C++14 support at a minimum
+  * CMake with a minimum required version of 3.14 for CPU-only and CUDA builds,
+    and a minimum version of 3.21 when building with HIP support
   * Fortran Compiler (optional)
 
 Supported Compilers
 ~~~~~~~~~~~~~~~~~~~
 
-Axom supports a wide variety of compilers.
-Please see the ``<axom_src>/scripts/spack/configs/<platform>/compilers.yaml``
-for an up to date list of the currently supported and tested compilers for
-each platform.
+Axom supports a wide variety of compilers. Please see the file 
+``axom/scripts/spack/configs/<platform>/compilers.yaml``
+for the current list of supported and tested compilers for the platforms we
+test on.
 
 .. _dependencies-label:
 
 External Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Axom's dependencies come in two flavors:
+Axom has two types of dependencies:
 
-* Library: contain code that axom must link against
-* Tool:  executables that we use as part of our development process, e.g. to generate documentation and format our code.
+* **Libraries.** These contain code that Axom must link against.
+* **Tools.** These are executables that we use during code development; e.g. 
+  generate documentation, format code, etc.
 
-Unless otherwise marked, the dependencies are optional.
+Unless noted otherwise in the following discussion, Axom dependencies are 
+optional.
+
+.. note:: A typical Axom user need only understand how to enable Axom features
+          and provide a valid installation path for each required library
+          dependency for each enabled feature. 
 
 Library Dependencies
 """"""""""""""""""""
 
+The following table lists:
+
+  * Axom external library dependencies and links to documentation for
+    each library
+  * Which libraries are required or optional dependencies for Axom. While 
+    most Axom libraries are not required, they are required to access all 
+    capabilities of components listed.
+  * The CMake variable that must be set to the path of each library 
+    installation when configuring a build with the library
+
 ================== ==================================== ======================
   Library          Dependent Components                 Build system variable
 ================== ==================================== ======================
-  `Conduit`_       Required: Sidre                      CONDUIT_DIR
-  `c2c`_           Optional                             C2C_DIR
+  `Conduit`_       Required: Inlet, Sidre               CONDUIT_DIR
+  `c2c`_           Optional: Quest                      C2C_DIR
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
-  `MFEM`_          Optional: Quest                      MFEM_DIR
+  `MFEM`_          Optional: Primal, Quest, Sidre       MFEM_DIR
   `RAJA`_          Optional: Mint, Spin, Quest          RAJA_DIR
   `SCR`_           Optional: Sidre                      SCR_DIR
   `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR
@@ -74,16 +91,24 @@ Library Dependencies
 .. _SCR: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 .. _Umpire: https://umpire.readthedocs.io/en/latest/
 
-Each library dependency has a corresponding build system variable
-(with the suffix ``_DIR``) to supply the path to the library's installation directory.
-For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``.
+Note that each  library dependency has a corresponding build system variable
+(with the suffix ``_DIR``) to supply the path to the library's installation 
+directory. For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``.
 
-.. note::
-  Optional `c2c` library is currently only available for configurations on LLNL clusters.
+.. note:: Optional `c2c` library is currently only available for configurations
+          on LLNL clusters.
 
 
 Tool Dependencies
 """""""""""""""""
+
+The following table lists:
+
+  * Axom external tool dependencies, with links to documentation for
+    each tool
+  * The purpose of each tool; i.e., how it is used in Axom development
+  * The CMake variable that must be set to the path of the tool 
+    installation to enable its use in Axom
 
 ================== ==================================== ======================
   Tool             Purpose                              Build System Variable
@@ -103,14 +128,9 @@ Tool Dependencies
 .. _Shroud: https://shroud.readthedocs.io/en/develop/
 .. _Sphinx: http://www.sphinx-doc.org/en/master/
 
-Each tool has a corresponding build system variable (with the suffix ``_EXECUTABLE``)
-to supply the tool's executable path. For example, ``sphinx`` has a corresponding build
-system variable ``SPHINX_EXECUTABLE``.
-
-.. note::
-  To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
-  build of our TPLs, please go to the TPL root directory and
-  run the following spack command ``./spack/bin/spack spec axom``.
+Each tool has a corresponding build system variable (with the suffix 
+``_EXECUTABLE``) to supply a path to the tool executable. For example, 
+``sphinx`` has a corresponding build system variable ``SPHINX_EXECUTABLE``.
 
 
 .. _tplbuild-label:
@@ -120,40 +140,47 @@ Building and Installing Third-party Libraries
 ---------------------------------------------
 
 We use the `Spack Package Manager <https://github.com/spack/spack>`_
-to manage and build TPL dependencies for Axom. The Spack process works on Linux and macOS
-systems. Axom does not currently have a tool to automatically build dependencies for
-Windows systems.
+to manage and build TPL dependencies for Axom on Linux and MacOS systems.
+Similarly, support for managing and building TPLs on Windows is provided 
+through `Vcpkg <https://github.com/microsoft/vcpkg>`_.
 
-To make the TPL process easier (you don't really need to learn much about Spack) and
-automatic, we drive it with a python script called ``uberenv.py``, which is located in the
-``scripts/uberenv`` directory. Running this script does several things:
+To make the TPL management process easier and automatic (you don't really need 
+to learn much about Spack or Vcpkg), we drive it with a Python script called 
+``uberenv.py``, which is located in the ``scripts/uberenv`` directory. 
+Running this script on Linux or MacOS does several things:
 
-  * Clones the Spack repo from GitHub and checks out a specific version
+  * It clones the Spack repo from GitHub and checks out a specific version
     that we have tested.
-  * Configures Spack compiler sets, adds custom package build rules and sets any options
-    specific to Axom.
-  * Invokes Spack to build a complete set of TPLs for each configuration and generates a
-    *host-config* file that captures all details of the configuration and build
-    dependencies.
+  * It configures Spack compiler sets, adds custom package build rules, and 
+    sets any options specific to Axom.
+  * It invokes Spack to build a complete set of TPLs for each configuration and 
+    generates a *host-config* file (i.e., CMake cache file) that includes all 
+    details of the configuration and build dependencies.
 
 The figure illustrates what the script does.
 
 .. figure:: Uberenv.jpg
 
-The uberenv script is run from Axom's top-level directory like this::
+The uberenv script is run from the top-level Axom directory like this::
 
     $ python ./scripts/uberenv/uberenv.py --prefix {install path}  \
                                           --spec spec              \
                                         [ --mirror {mirror path} ]
 
 
-For more details about ``uberenv.py`` and the options it supports,
+For more details about ``uberenv.py`` and the options it supports, please
 see the `uberenv docs <https://uberenv.readthedocs.io/en/latest/>`_
 
 You can also see examples of how Spack spec names are passed to ``uberenv.py``
-in the python scripts we use to build TPLs for the Axom development team on
+in the Python scripts we use to build TPLs for Axom development on
 LC platforms at LLNL. These scripts are located in the directory
 ``scripts/llnl_scripts``.
+
+.. note:: To get a full list of all Axom dependencies in an ``uberenv``
+          ``spack`` build of our TPLs, please go to the TPL root directory
+          and run the following Spack command: ``./spack/bin/spack spec axom``.
+          The analogous command for an ``uberenv`` ``vcpkg`` build is:
+          ``.\vcpkg depend-info axom``.
 
 
 .. _building-axom-label:
@@ -162,16 +189,16 @@ LC platforms at LLNL. These scripts are located in the directory
 Building and Installing Axom
 ----------------------------
 
-This section provides essential instructions for building the code.
+This section provides essential instructions for building the Axom code.
 
 Axom uses `BLT <https://github.com/LLNL/blt>`_, a CMake-based system, to
 configure and build the code. There are two ways to configure Axom:
 
- * Using a helper script ``config-build.py``
- * Directly invoke CMake from the command line.
+ * Using the helper Python script ``config-build.py``
+ * Directly invoke CMake from the command line
 
-Either way, we typically pass in many of the configuration options and variables
-using platform-specific *host-config* files.
+Either way, we typically pass in many of the configuration options and 
+variables using platform-specific *host-config* files.
 
 
 .. _hostconfig-label:
@@ -179,73 +206,77 @@ using platform-specific *host-config* files.
 Host-config files
 ~~~~~~~~~~~~~~~~~
 
-Host-config files help make Axom's configuration process more automatic and
+Host-config files help make the Axom configuration process more automatic and
 reproducible. A host-config file captures all build configuration
-information used for the build such as compiler version and options,
-paths to all TPLs, etc. When passed to CMake, a host-config file initializes
-the CMake cache with the configuration specified in the file.
+information used for a build, such as compiler version and options,
+paths to all TPLs, etc. When passed to CMake 
+(via the ``-C path/to/hostconfig/file/foo.cmake`` option), the host-config file 
+initializes the CMake cache with the configuration contained in the file.
 
-We noted in the previous section that the uberenv script generates a
-host-config file for each item in the Spack spec list given to it.
-These files are generated by spack in the directory where the
-TPLs were installed. The name of each file contains information about the
-platform and spec.
+We noted earlier that the uberenv script generates a host-config file for each 
+item in the Spack spec list given to it. These files are generated by Spack in 
+the directory where the TPLs were installed. The name of each file contains 
+information about the platform and spec.
 
-For more information, see `BLT's host-config documentation <https://llnl-blt.readthedocs.io/en/develop/tutorial/host_configs.html>`_.
+For more information, see `BLT host-config documentation <https://llnl-blt.readthedocs.io/en/develop/tutorial/host_configs.html>`_.
 
 
 Python helper script
 ~~~~~~~~~~~~~~~~~~~~
 
-The easiest way to configure the code for compilation is to use the
-``config-build.py`` python script located in Axom's base directory;
-e.g.,::
+The easiest way to configure Axom for compilation is to use the
+``config-build.py`` Python script located in the Axom top-level directory::
 
-   $ ./config-build.py -hc {host-config path}
+   $ ./config-build.py -hc path/to/host-config/file/<host-config file name>
 
-This script requires that you pass it a *host-config* file. The script runs
-CMake and passes it the host-config.
+The script runs CMake and passes it the given host-config file.
 See :ref:`hostconfig-label` for more information.
 
-Running the script, as in the example above, will create two directories to
-hold the build and install contents for the platform and compiler specified
-in the name of the host-config file.
+Running the script, as above, will create two directories to hold the build 
+and install contents for the platform and compiler with names that match
+the name of the host-config file.
 
 To build the code and install the header files, libraries, and documentation
-in the install directory, go into the build directory and run ``make``; e.g.,::
+in the install directory, go into the build directory and run ``make`` and
+``make install``::
 
    $ cd {build directory}
    $ make
    $ make install
 
 .. caution :: When building on LC systems, please don't compile on login nodes.
+              You will incur the wrath of others and you really don't want that,
+              do you?
 
 .. tip :: Most make targets can be run in parallel by supplying the '-j' flag
-           along with the number of threads to use.
-           E.g. ``$ make -j8`` runs make using 8 threads.
+          along with the number of threads to use. For example::
 
-The python helper script accepts other arguments that allow you to specify
+            $ make -j 8 
+      
+          runs make using 8 threads.
+
+The Python helper script accepts other arguments that allow you to specify
 explicitly the build and install paths and build type. Following CMake
-conventions, we support three build types: 'Release', 'RelWithDebInfo', and
-'Debug'. To see the script options, run the script without any arguments;
-i.e.,::
+conventions, we support three build types: ``Release``, ``RelWithDebInfo``, and
+``Debug``. To see the script options, run the script without any arguments::
 
    $ ./config-build.py
 
-You can also pass extra CMake configuration variables through the script; e.g.,::
+You can also pass extra CMake configuration variables to the script. For 
+example::
 
-   $ ./config-build.py -hc {host-config file name}          \
+   $ ./config-build.py -hc path/to/host-config/<file name> \
                        -DBUILD_SHARED_LIBS=ON               \
                        -DENABLE_FORTRAN=OFF
 
-This will configure cmake to build shared libraries and disable fortran
+This will configure CMake to build shared libraries and disable Fortran
 for the generated configuration.
 
 
 Run CMake directly
 ~~~~~~~~~~~~~~~~~~
 
-You can also configure the code by running CMake directly and passing it the
+You can also configure Axom by running CMake directly and passing it the
 appropriate arguments. For example, to configure, build and install a release
 build with the gcc compiler, you could pass a host-config file to CMake::
 
@@ -276,9 +307,60 @@ directly to CMake; for example::
 
 
 CMake Configuration Options
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
-Here are the key build system options in Axom:
+The tables in this section summarize the main build system options in Axom.
+
+Axom components, tests, examples, etc.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++------------------------------+---------+----------------------------------------+
+| OPTION                       | Default | Description                            |
++==============================+=========+========================================+
+| AXOM_ENABLE_ALL_COMPONENTS   | ON      | Enable all components by default       |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_<FOO>            | ON      | Enable the Axom component named 'Foo'  |
+|                              |         |                                        |
+|                              |         | (e.g. AXOM_ENABLE_SIDRE)               |
+|                              |         | for the Sidre component.               |
+|                              |         |                                        |
+|                              |         | Overrides AXOM_ENABLE_ALL_COMPONENTS   |
+|                              |         | for the specified component.           |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_EXAMPLES         | ON      | Build Axom examples                    |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_TESTS            | ON      | Build Axom unit tests                  |
++------------------------------+---------+----------------------------------------+
+| ENABLE_BENCHMARKS            | OFF     | Build Axom benchmarks                  |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_DOCS             | ON      | Enable Axom documentation to be built  |
+|                              |         | as a make target                       |
++------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_TOOLS            | ON      | Enable Axom development tools          |
++------------------------------+---------+----------------------------------------+
+
+If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable a desired
+component (other than 'core', which is always enabled). Similarly, if 
+``AXOM_ENABLE_ALL_COMPONENTS`` is ON, you can disable individual components by
+setting ``AXOM_ENABLE_<FOO>`` to OFF for the component you want turned off. 
+
+See `Axom software documentation <../../../index.html>`_
+for a list of Axom components and their dependencies. Note that when enabling 
+an external dependency for an Axom component, the CMake variable ``BAR_DIR`` 
+must be set to a valid path to the dependency installation. See 
+:ref:`dependencies-label` for a complete listing of configuration variables 
+to specify paths to Axom external dependencies. 
+
+.. note:: ``AXOM_ENABLE_EXAMPLES``, ``AXOM_ENABLE_TESTS``, and 
+          ``AXOM_ENABLE_DOCS`` are *CMake-dependent options*. Thus, if a 
+          variable without the ``AXOM_`` prefix is ON, such as ``ENABLE_TESTS``,
+          tests can be enabled in other packages in a project build and turned 
+          off in Axom by setting the Axom prefix form ``AXOM_ENABLE_TESTS`` to 
+          OFF.
+
+
+Axom build options, compiler support, and parallelism
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +------------------------------+---------+----------------------------------------+
 | OPTION                       | Default | Description                            |
@@ -291,53 +373,80 @@ Here are the key build system options in Axom:
 |                              |         | but this can be overridden by setting  |
 |                              |         | `AXOM_DEBUG_DEFINE` to `ON` or `OFF`   |
 +------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_ALL_COMPONENTS   | ON      | Enable all components by default       |
+| ENABLE_ALL_WARNINGS          | ON      | Enable extra compiler warnings         |
+|                              |         | in all build targets                   |
 +------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_<FOO>            | ON      | Enables the axom component named 'foo' |
-|                              |         |                                        |
-|                              |         | (e.g. AXOM_ENABLE_SIDRE)               |
-|                              |         | for the sidre component                |
-+------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_DOCS             | ON      | Builds documentation                   |
-+------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_EXAMPLES         | ON      | Builds examples                        |
-+------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_TESTS            | ON      | Builds unit tests                      |
-+------------------------------+---------+----------------------------------------+
-| AXOM_ENABLE_TOOLS            | ON      | Builds tools                           |
+| ENABLE_WARNINGS_AS_ERRORS    | OFF     | Compiler warnings treated as errors    |
 +------------------------------+---------+----------------------------------------+
 | BUILD_SHARED_LIBS            | OFF     | Build shared libraries.                |
 |                              |         | Default is Static libraries            |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_ALL_WARNINGS          | ON      | Enable extra compiler warnings         |
-|                              |         | in all build targets                   |
-+------------------------------+---------+----------------------------------------+
-| ENABLE_BENCHMARKS            | OFF     | Enable google benchmark                |
-+------------------------------+---------+----------------------------------------+
-| ENABLE_CODECOV               | ON      | Enable code coverage via gcov          |
-+------------------------------+---------+----------------------------------------+
-| ENABLE_FORTRAN               | ON      | Enable Fortran compiler support        |
+| ENABLE_FORTRAN               | OFF     | Enable Fortran compiler support        |
 +------------------------------+---------+----------------------------------------+
 | ENABLE_MPI                   | OFF     | Enable MPI                             |
 +------------------------------+---------+----------------------------------------+
 | ENABLE_OPENMP                | OFF     | Enable OpenMP                          |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_WARNINGS_AS_ERRORS    | OFF     | Compiler warnings treated as errors    |
-|                              |         | errors.                                |
+| ENABLE_CUDA                  | OFF     | Enable CUDA                            |
++------------------------------+---------+----------------------------------------+
+| ENABLE_HIP                   | OFF     | Enable HIP                             |
 +------------------------------+---------+----------------------------------------+
 
-If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable the desired
-components (other than 'core', which is always enabled).
+Note that, in most Axom components, node-level parallelism features, enabled with 
+OpenMP, CUDA (NVIDIA GPUs), and HIP (AMD GPUs), are implemented using RAJA. See
+:ref:`dependencies-label` for instructions to set the directory location of a
+RAJA installation. In addition, enabling such features may require additional build 
+options to be provided, which are summarized in the following table.
 
-See `Axom software documentation <../../../index.html>`_
-for a list of Axom's components and their dependencies.
++------------------------------+------------------------------------------+
+| OPTION                       | Description                              |
++==============================+==========================================+
+| RAJA_DIR                     | RAJA installation directory as described |
+|                              | in :ref:`dependencies-label`.            |
+|                              |                                          |
+|                              | RAJA must be built with support enabled  |
+|                              | for OpenMP, CUDA, or HIP to use features |
+|                              | enabled by those parallel programming    |
+|                              | models in Axom.                          |
++------------------------------+------------------------------------------+
+| CUDA_TOOLKIT_ROOT_DIR        | Path to CUDA software stack installation |
++------------------------------+------------------------------------------+
+| CMAKE_CUDA_COMPILER          | Path to CUDA compiler (e.g. nvcc)        |
++------------------------------+------------------------------------------+
+| CMAKE_CUDA_ARCHITECTURES     | Target architecture(s) for CUDA          |
++------------------------------+------------------------------------------+
+| HIP_ROOT_DIR                 | Path to HIP software stack installation  |
++------------------------------+------------------------------------------+
+| CMAKE_HIP_ARCHITECTURES      | Target architecture(s) for HIP           |
++------------------------------+------------------------------------------+
 
 .. note :: To configure the version of the C++ standard, you can supply one of the
            following values for **BLT_CXX_STD**:  'c++11' or 'c++14'.
-           Axom requires at least 'c++11', the  default value.
+           Axom requires at least 'c++14', the  default value.
 
-See :ref:`dependencies-label` for configuration variables to specify paths
-to Axom's dependencies.
+
+Tools and features primarily intended for developers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++------------------------------------------+---------+----------------------------------------+
+| OPTION                                   | Default | Description                            |
++==========================================+=========+========================================+
+| ENABLE_CODECOV                           | ON      | Enable code coverage via gcov          |
++------------------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_ANNOTATIONS                  | OFF     | Enable source code annotations to      |
+|                                          |         | facilitate performance evaluation      |
++------------------------------------------+---------+----------------------------------------+
+| AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS | OFF     | Enable an expanded set of tests for    |
+|                                          |         | the Axom Quest component               |
++------------------------------------------+---------+----------------------------------------+
+
+Axom source code macro constants
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Axom developers, please note that Axom provides macro constants to control 
+conditionally-compiled code based on which built-in and third-party libraries 
+are being used and which Axom components are enabled. Please see
+:ref:`codemacros-conditional-label` for more information.
 
 
 Make targets
@@ -345,7 +454,7 @@ Make targets
 
 Our system provides a variety of make targets to build individual Axom
 components, documentation, run tests, examples, etc. After running CMake
-(using either the python helper script or directly), you can see a listing of
+(using either the Python helper script or directly), you can see a listing of
 all available targets by passing 'help' to make; i.e.,::
 
    $ make help

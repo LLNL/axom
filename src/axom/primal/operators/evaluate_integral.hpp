@@ -12,6 +12,8 @@
  * Line integrals are computed with 1D quadrature rules supplied
  * by MFEM. 2D area integrals computed with "Spectral Mesh-Free Quadrature for Planar 
  * Regions Bounded by Rational Parametric Curves" by David Gunderman et al.
+ * 
+ * \note This requires the MFEM third-party library
  */
 
 #ifndef PRIMAL_EVAL_INTEGRAL_HPP_

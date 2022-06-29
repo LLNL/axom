@@ -72,6 +72,7 @@ TEST(sidre_external, create_external_view)
       break;
     }
 
+    EXPECT_TRUE(view != nullptr);
     EXPECT_EQ(root->getNumViews(), i + 1);
 
     EXPECT_TRUE(view->isDescribed());
@@ -124,6 +125,7 @@ TEST(sidre_external, create_external_view_null)
       break;
     }
 
+    EXPECT_TRUE(view != nullptr);
     EXPECT_TRUE(view->isDescribed());
     EXPECT_FALSE(view->isAllocated());
     EXPECT_FALSE(view->isApplied());
@@ -164,6 +166,7 @@ TEST(sidre_external, transition_external_view_to_empty)
   }
 
   View* view = root->createView("data0", INT_ID, len)->setExternalDataPtr(idata);
+  EXPECT_TRUE(view != nullptr);
   EXPECT_TRUE(view->isExternal());
   EXPECT_EQ(idata, view->getVoidPtr());
 

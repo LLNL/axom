@@ -93,6 +93,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds a `CurvedPolygon` class to primal representing a polygon with `BezierCurve`s as edges
 - Adds functions to compute the moments (area, centroid) of a `CurvedPolygon`
 - Adds functions to evaluate integrals over `BezierCurve` and `CurvedPolygon` objects 
+- Adds a `ArrayViewIndirection` storage policy to Slam
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -146,6 +147,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
   for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
 - Renamed `primal::Polygon::centroid()` to `primal::Polygon::vertexMean()` because it was not actually computing the centroid.
+- `axom:sidre:IndexType` is now the same type as
+  `axom:IndexType`. Before, Sidre always used `int64_t`. Now it
+  respects the define `AXOM_USE_64BIT_INDEXTYPE`.
+- Mint now depends on the Slam component.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
@@ -165,6 +170,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed `axom::Array<T>` behavior on copy-construction when `T` is a non-trivial type
 - Replaced `using` statement in `SidreDataTypesIds.h` with `typedef`
   since C syntax is required in this file.
+- Fixed bug on two-dimensional `sidre::Array<T>` construction where the size is set to the underlying buffer
+  capacity, instead of the actual number of elements
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
