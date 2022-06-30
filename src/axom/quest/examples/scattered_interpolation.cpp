@@ -24,6 +24,7 @@
 #include "axom/CLI11.hpp"
 
 #include <memory>
+#include <cmath>
 
 namespace primal = axom::primal;
 namespace quest = axom::quest;
@@ -682,6 +683,101 @@ void initializeQueryMesh(const Input& params,
   }
 }
 
+/**
+ * Compares interpolation using ScatteredInterpolation::getInterpolationWeights()
+ * against results from ScattteredInterpolation::interpolateField().
+ * The latter stores its results in the blueprint mesh, while the former
+ * returns the interpolation weights and indexes for the user to apply themselves.
+ */
+template <int DIM>
+bool checkInterpolation(
+  std::unique_ptr<quest::ScatteredInterpolation<DIM>>& scattered_interp,
+  const internal::blueprint::PointMesh& inputMesh,
+  const internal::blueprint::PointMesh& queryMesh)
+{
+  using axom::utilities::isNearlyEqual;
+  using quest::detail::InterleavedOrStridedPoints;
+
+  using InterpIndices = primal::Point<axom::IndexType, DIM + 1>;
+  using InterpWeights = primal::Point<double, DIM + 1>;
+  using PointArray = InterleavedOrStridedPoints<DIM>;
+
+  constexpr double EPS = 1e-8;
+
+  bool interpolationsAgree = true;
+
+  // Get arrays over the input and query points
+  PointArray inputPts(inputMesh.coordsGroup()->getGroup("values"));
+  PointArray queryPts(queryMesh.coordsGroup()->getGroup("values"));
+
+  // Create temporary arrays of interpolation variables
+  const int nQueryPts = queryMesh.numPoints();
+  axom::Array<InterpIndices> interp_indices(nQueryPts, nQueryPts);
+  axom::Array<InterpWeights> interp_weights(nQueryPts, nQueryPts);
+  axom::Array<bool> interp_valid(nQueryPts, nQueryPts);
+  for(int i = 0; i < nQueryPts; ++i)
+  {
+    interp_valid[i] =
+      scattered_interp->getInterpolationWeights(queryPts[i],
+                                                interp_indices[i],
+                                                interp_weights[i]);
+  }
+
+  // Interpolate points on each field and check against previously interpolated values
+  for(const auto& fld : inputMesh.getFieldNames())
+  {
+    auto inputField = inputMesh.getNodalScalarField<double>(fld);
+    auto queryField = queryMesh.getNodalScalarField<double>(fld);
+
+    for(int i = 0; i < nQueryPts; ++i)
+    {
+      const double query_val = queryField[i];
+
+      if(!interp_valid[i])
+      {
+        if(!std::isnan(query_val))
+        {
+          SLIC_WARNING(axom::fmt::format(
+            "Bad interpolation: Query point {} had value {} for field `{}` "
+            "using `ScatteredInterpolation::interpolateField()` but was not "
+            "found for `ScatteredInterpolation::getInterpolationWeights()`",
+            i,
+            query_val,
+            fld));
+          interpolationsAgree = false;
+        }
+      }
+      else
+      {
+        auto& indices = interp_indices[i];
+        auto& weights = interp_weights[i];
+
+        double val = 0.;
+        for(int d = 0; d < indices.dimension(); ++d)
+        {
+          val += inputField[indices[d]] * weights[d];
+        }
+
+        if(!isNearlyEqual(query_val, val, EPS))
+        {
+          SLIC_WARNING(axom::fmt::format(
+            "Bad interpolation: Query point {} had value {} for field `{}` "
+            "using `ScatteredInterpolation::interpolateField()` but {} when "
+            "interpolating using "
+            "`ScatteredInterpolation::getInterpolationWeights()`",
+            i,
+            query_val,
+            fld,
+            val));
+          interpolationsAgree = false;
+        }
+      }
+    }
+  }
+
+  return interpolationsAgree;
+}
+
 int main(int argc, char** argv)
 {
   // Initialize the SLIC logger
@@ -858,6 +954,16 @@ int main(int argc, char** argv)
                       inputMesh.getFieldNames().size(),
                       queryMesh.numPoints() * inputMesh.getFieldNames().size() /
                         timer.elapsedTimeInSec()));
+
+  switch(params.dimension)
+  {
+  case 2:
+    checkInterpolation<2>(scattered_2d, inputMesh, queryMesh);
+    break;
+  case 3:
+    checkInterpolation<3>(scattered_3d, inputMesh, queryMesh);
+    break;
+  }
 
   // Write query mesh to file
   {
