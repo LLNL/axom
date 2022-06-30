@@ -749,15 +749,17 @@ bool checkInterpolation(
       }
       else
       {
+        // perform interpolation
+        double val = 0.;
         auto& indices = interp_indices[i];
         auto& weights = interp_weights[i];
-
-        double val = 0.;
         for(int d = 0; d < indices.dimension(); ++d)
         {
           val += inputField[indices[d]] * weights[d];
         }
 
+        // check against value computed via ScatteredInterpolation::interpolateField()
+        // stored in query mesh's blueprint fields
         if(!isNearlyEqual(query_val, val, EPS))
         {
           SLIC_WARNING(axom::fmt::format(
@@ -769,6 +771,26 @@ bool checkInterpolation(
             query_val,
             fld,
             val));
+          interpolationsAgree = false;
+        }
+
+        // Interpoate position and check against actual query point
+        primal::Point<double, DIM> interp_pt;
+        for(int d = 0; d < indices.dimension(); ++d)
+        {
+          interp_pt.array() += inputPts[indices[d]].array() * weights[d];
+        }
+
+        if(!isNearlyEqual(primal::squared_distance(interp_pt, queryPts[i]), EPS))
+        {
+          SLIC_WARNING(axom::fmt::format(
+            "Bad interpolation: When interpolating position of query point {} "
+            "@ {}, got {} with distance {}.",
+            i,
+            queryPts[i],
+            interp_pt,
+            sqrt(primal::squared_distance(interp_pt, queryPts[i]))));
+
           interpolationsAgree = false;
         }
       }
@@ -850,17 +872,17 @@ int main(int argc, char** argv)
     initializeQueryMesh<3>(params, queryMesh, inputMesh.getFieldNames());
     break;
   }
+  const int numQueryPts = queryMesh.numPoints();
+  const int numFields = inputMesh.getFieldNames().size();
+
+  // Convert blueprint meshes from Sidre to Conduit
+  conduit::Node bp_input, bp_query;
+  inputMesh.rootGroup()->createNativeLayout(bp_input);
+  queryMesh.rootGroup()->createNativeLayout(bp_query);
 
   /// Run the query
   std::unique_ptr<quest::ScatteredInterpolation<2>> scattered_2d;
   std::unique_ptr<quest::ScatteredInterpolation<3>> scattered_3d;
-
-  // Convert blueprint mesh from Sidre to Conduit
-  conduit::Node bp_input;
-  inputMesh.rootGroup()->createNativeLayout(bp_input);
-
-  conduit::Node bp_query;
-  queryMesh.rootGroup()->createNativeLayout(bp_query);
 
   // Initialize the ScatteredInterpolation instance (templated on the dimension)
   switch(params.dimension)
@@ -926,8 +948,8 @@ int main(int argc, char** argv)
     axom::fmt::format("It took {} seconds to locate {} points. Query rate of "
                       "{:.1f} points per second.",
                       timer.elapsedTimeInSec(),
-                      queryMesh.numPoints(),
-                      queryMesh.numPoints() / timer.elapsedTimeInSec()));
+                      numQueryPts,
+                      numQueryPts / timer.elapsedTimeInSec()));
 
   // Perform the interpolation on each of the fields
   timer.start();
@@ -947,14 +969,15 @@ int main(int argc, char** argv)
     break;
   }
   timer.stop();
-  SLIC_INFO(
-    axom::fmt::format("It took {} seconds to interpolate the data on {} "
-                      "fields. Interpolation rate of {:.1f} points per second.",
-                      timer.elapsedTimeInSec(),
-                      inputMesh.getFieldNames().size(),
-                      queryMesh.numPoints() * inputMesh.getFieldNames().size() /
-                        timer.elapsedTimeInSec()));
+  SLIC_INFO(axom::fmt::format(
+    "It took {} seconds to interpolate the data on {} fields. "
+    "Interpolation rate of {:.1f} points per second.",
+    timer.elapsedTimeInSec(),
+    numFields,
+    numQueryPts * numFields / timer.elapsedTimeInSec()));
 
+  // Check interpolation using local interpolation from weights
+  timer.start();
   switch(params.dimension)
   {
   case 2:
@@ -964,6 +987,13 @@ int main(int argc, char** argv)
     checkInterpolation<3>(scattered_3d, inputMesh, queryMesh);
     break;
   }
+  timer.stop();
+  SLIC_INFO(
+    axom::fmt::format("It took {} seconds to check interpolation values by "
+                      "interpolating from weights. "
+                      "Interpolation rate of {:.1f} points per second.",
+                      timer.elapsedTimeInSec(),
+                      numQueryPts * numFields / timer.elapsedTimeInSec()));
 
   // Write query mesh to file
   {
