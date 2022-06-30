@@ -187,19 +187,13 @@ public:
   /// \brief Returns a pointer to the dense 2d field set
   const ProductSetType* getDense2dFieldSet(DataLayout layout) const
   {
-    if(layout == DataLayout::CELL_DOM)
-      return &m_cellMatProdSet;
-    else
-      return &m_matCellProdSet;
+    return &m_denseBivarSet[(int) layout];
   }
 
   /// \brief Returns a pointer to the sparse 2d field set
   const RelationSetType* getSparse2dFieldSet(DataLayout layout) const
   {
-    if(layout == DataLayout::CELL_DOM)
-      return &m_cellMatNZSet;
-    else
-      return &m_matCellNZSet;
+    return &m_sparseBivarSet[(int) layout];
   }
 
   /**
@@ -598,13 +592,10 @@ private:
   axom::Array<StaticVariableRelationType> m_staticRelations;
   axom::Array<DynamicVariableRelationType> m_dynamicRelations;
 
-  //slam bivariateSet variables
-  //cell to mat versions
-  RelationSetType m_cellMatNZSet;   //for sparse layout
-  ProductSetType m_cellMatProdSet;  //for dense layout
-  //mat to cell vertions
-  RelationSetType m_matCellNZSet;   //for sparse layout
-  ProductSetType m_matCellProdSet;  //for dense layout
+  // sparse layout bivariate sets
+  axom::Array<RelationSetType> m_sparseBivarSet;
+  // dense layout bivariate sets
+  axom::Array<ProductSetType> m_denseBivarSet;
 
   //std::vector of information for each fields
   std::vector<std::string> m_fieldNameVec;
@@ -814,11 +805,7 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   if(fieldIdx < 0)
     throw std::invalid_argument("No field with this name is found");
 
-  ProductSetType* prod_set;
-  if(m_fieldDataLayoutVec[fieldIdx] == DataLayout::CELL_DOM)
-    prod_set = &m_cellMatProdSet;
-  else
-    prod_set = &m_matCellProdSet;
+  ProductSetType* prod_set = &getRelDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
   DenseField2D<T> typedBMap(*this,
                             prod_set,

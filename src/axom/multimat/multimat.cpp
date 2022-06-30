@@ -29,6 +29,8 @@ MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
   , m_sets(2)
   , m_staticRelations(2)
   , m_dynamicRelations(2)
+  , m_sparseBivarSet(2)
+  , m_denseBivarSet(2)
   , m_dynamic_mode(false)
 { }
 
@@ -95,12 +97,12 @@ MultiMat::RangeSetType& MultiMat::getRelSecondarySet(DataLayout layout)
 
 MultiMat::RelationSetType& MultiMat::getRelSparseSet(DataLayout layout)
 {
-  return (layout == DataLayout::CELL_DOM) ? m_cellMatNZSet : m_matCellNZSet;
+  return m_sparseBivarSet[(int) layout];
 }
 
 MultiMat::ProductSetType& MultiMat::getRelDenseSet(DataLayout layout)
 {
-  return (layout == DataLayout::CELL_DOM) ? m_cellMatProdSet : m_matCellProdSet;
+  return m_denseBivarSet[(int) layout];
 }
 
 bool MultiMat::hasValidStaticRelation(DataLayout layout) const
@@ -128,6 +130,8 @@ MultiMat::MultiMat(const MultiMat& other)
   , m_matCellRel_indicesVec(other.m_matCellRel_indicesVec)
   , m_staticRelations(other.m_staticRelations)
   , m_dynamicRelations(other.m_dynamicRelations)
+  , m_sparseBivarSet(other.m_sparseBivarSet)
+  , m_denseBivarSet(other.m_denseBivarSet)
   , m_fieldNameVec(other.m_fieldNameVec)
   , m_fieldMappingVec(other.m_fieldMappingVec)
   , m_dataTypeVec(other.m_dataTypeVec)
@@ -143,8 +147,8 @@ MultiMat::MultiMat(const MultiMat& other)
     cellMatRel.bindBeginOffsets(getCellSet().size(), &m_cellMatRel_beginsVec);
     cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
                            &m_cellMatRel_indicesVec);
-    m_cellMatNZSet = RelationSetType(&cellMatRel);
-    m_cellMatProdSet = ProductSetType(&getCellSet(), &getMatSet());
+    getRelSparseSet(DataLayout::CELL_DOM) = RelationSetType(&cellMatRel);
+    getRelDenseSet(DataLayout::CELL_DOM) = ProductSetType(&getCellSet(), &getMatSet());
   }
   if(other.hasValidStaticRelation(DataLayout::MAT_DOM))
   {
@@ -154,8 +158,8 @@ MultiMat::MultiMat(const MultiMat& other)
     matCellRel.bindBeginOffsets(getMatSet().size(), &m_matCellRel_beginsVec);
     matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
                            &m_matCellRel_indicesVec);
-    m_matCellNZSet = RelationSetType(&matCellRel);
-    m_matCellProdSet = ProductSetType(&getMatSet(), &getCellSet());
+    getRelSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
+    getRelDenseSet(DataLayout::MAT_DOM) = ProductSetType(&getMatSet(), &getCellSet());
   }
 
   for(unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
@@ -355,7 +359,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c, SparsityLayout sparsity
   else
   {
     SLIC_ASSERT(sparsity == SparsityLayout::DENSE);
-    int size2 = m_cellMatProdSet.secondSetSize();
+    int size2 = getRelDenseSet(DataLayout::MAT_DOM).secondSetSize();
     return RangeSetType(c * size2, (c + 1) * size2);
   }
 }
@@ -374,7 +378,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m, SparsityLayout sparsity)
   else
   {
     SLIC_ASSERT(sparsity == SparsityLayout::DENSE);
-    int size2 = m_matCellProdSet.secondSetSize();
+    int size2 = getRelDenseSet(DataLayout::MAT_DOM).secondSetSize();
     return RangeSetType::SetBuilder().range(m * size2, (m + 1) * size2 - 1);
   }
 }
