@@ -162,15 +162,42 @@ public:
   MultiMat(DataLayout data_layout = DataLayout::CELL_DOM,
            SparsityLayout sparsity_layout = SparsityLayout::SPARSE);
 
-  // TODO: Ideally, rule-of-zero the below by removing this class's pointer
-  //       members or replacing them with std::unique_ptr.
+  /*!
+   * \brief Copy constructor for a MultiMat object
+   *
+   * \param other The MultiMat object to copy from.
+   */
+  MultiMat(const MultiMat& other);
 
-  /** Destructor **/
+  /*!
+   * \brief Copy assignment operator for a MultiMat object
+   *
+   * \param other The MultiMat object to copy from.
+   */
+  MultiMat& operator=(const MultiMat& other)
+  {
+    if(this != &other)
+    {
+      MultiMat clone(other);
+      *this = std::move(clone);
+    }
+    return *this;
+  }
+
+  /*!
+   * \brief Move constructor for MultiMat, defaulted.
+   */
+  MultiMat(MultiMat&&) = default;
+
+  /*!
+   * \brief Move assignment operator for MultiMat, defaulted.
+   */
+  MultiMat& operator=(MultiMat&&) = default;
+
+  /*!
+   * \brief Destructor for MultiMat, defaulted.
+   */
   ~MultiMat() = default;
-  /** Copy constructor (Deep copy). **/
-  MultiMat(const MultiMat&);
-  /** Assignment operator **/
-  MultiMat& operator=(const MultiMat&) = delete;
 
   //Set-up functions
   /**
