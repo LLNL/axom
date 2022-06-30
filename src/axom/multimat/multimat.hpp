@@ -588,16 +588,15 @@ private:
   //slam relation variables (for sparse-layout fields)
   //Depending on the layout of the field, each field can be mapped to different Relations
   //Relation can be nullptr if no field is using said relation
-  //cell to mat relations
+  //cell to mat relation data
   std::vector<SetPosType> m_cellMatRel_beginsVec;
   std::vector<SetPosType> m_cellMatRel_indicesVec;
-  StaticVariableRelationType m_cellMatRel;
-  DynamicVariableRelationType m_cellMatRelDyn;
-  //mat to cell relations
+  //mat to cell relation data
   std::vector<SetPosType> m_matCellRel_beginsVec;
   std::vector<SetPosType> m_matCellRel_indicesVec;
-  StaticVariableRelationType m_matCellRel;
-  DynamicVariableRelationType m_matCellRelDyn;
+  //relation objects stored in unified memory
+  axom::Array<StaticVariableRelationType> m_staticRelations;
+  axom::Array<DynamicVariableRelationType> m_dynamicRelations;
 
   //slam bivariateSet variables
   //cell to mat versions

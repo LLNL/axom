@@ -27,6 +27,8 @@ MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
   : m_ncells(0)
   , m_nmats(0)
   , m_sets(2)
+  , m_staticRelations(2)
+  , m_dynamicRelations(2)
   , m_dynamic_mode(false)
 { }
 
@@ -73,12 +75,12 @@ std::vector<MultiMat::SetPosType>& MultiMat::getRelIndVec(DataLayout layout)
 
 MultiMat::StaticVariableRelationType& MultiMat::getRelStatic(DataLayout layout)
 {
-  return (layout == DataLayout::CELL_DOM) ? m_cellMatRel : m_matCellRel;
+  return m_staticRelations[(int)layout];
 }
 
 MultiMat::DynamicVariableRelationType& MultiMat::getRelDynamic(DataLayout layout)
 {
-  return (layout == DataLayout::CELL_DOM) ? m_cellMatRelDyn : m_matCellRelDyn;
+  return m_dynamicRelations[(int)layout];
 }
 
 MultiMat::RangeSetType& MultiMat::getRelDominantSet(DataLayout layout)
@@ -103,16 +105,14 @@ MultiMat::ProductSetType& MultiMat::getRelDenseSet(DataLayout layout)
 
 bool MultiMat::hasValidStaticRelation(DataLayout layout) const
 {
-  const StaticVariableRelationType& rel =
-    (layout == DataLayout::CELL_DOM) ? m_cellMatRel : m_matCellRel;
+  const StaticVariableRelationType& rel = m_staticRelations[(int)layout];
 
   return rel.hasFromSet() && rel.hasToSet();
 }
 
 bool MultiMat::hasValidDynamicRelation(DataLayout layout) const
 {
-  const DynamicVariableRelationType& rel =
-    (layout == DataLayout::CELL_DOM) ? m_cellMatRelDyn : m_matCellRelDyn;
+  const DynamicVariableRelationType& rel = m_dynamicRelations[(int)layout];
 
   return rel.hasFromSet() && rel.hasToSet();
 }
@@ -126,6 +126,8 @@ MultiMat::MultiMat(const MultiMat& other)
   , m_cellMatRel_indicesVec(other.m_cellMatRel_indicesVec)
   , m_matCellRel_beginsVec(other.m_matCellRel_beginsVec)
   , m_matCellRel_indicesVec(other.m_matCellRel_indicesVec)
+  , m_staticRelations(other.m_staticRelations)
+  , m_dynamicRelations(other.m_dynamicRelations)
   , m_fieldNameVec(other.m_fieldNameVec)
   , m_fieldMappingVec(other.m_fieldMappingVec)
   , m_dataTypeVec(other.m_dataTypeVec)
@@ -135,20 +137,24 @@ MultiMat::MultiMat(const MultiMat& other)
 {
   if(other.hasValidStaticRelation(DataLayout::CELL_DOM))
   {
-    m_cellMatRel = StaticVariableRelationType(&getCellSet(), &getMatSet());
-    m_cellMatRel.bindBeginOffsets(getCellSet().size(), &m_cellMatRel_beginsVec);
-    m_cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
-                             &m_cellMatRel_indicesVec);
-    m_cellMatNZSet = RelationSetType(&m_cellMatRel);
+    StaticVariableRelationType& cellMatRel = getRelStatic(DataLayout::CELL_DOM);
+
+    cellMatRel = StaticVariableRelationType(&getCellSet(), &getMatSet());
+    cellMatRel.bindBeginOffsets(getCellSet().size(), &m_cellMatRel_beginsVec);
+    cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
+                           &m_cellMatRel_indicesVec);
+    m_cellMatNZSet = RelationSetType(&cellMatRel);
     m_cellMatProdSet = ProductSetType(&getCellSet(), &getMatSet());
   }
   if(other.hasValidStaticRelation(DataLayout::MAT_DOM))
   {
-    m_matCellRel = StaticVariableRelationType(&getMatSet(), &getCellSet());
-    m_matCellRel.bindBeginOffsets(getMatSet().size(), &m_matCellRel_beginsVec);
-    m_matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
-                             &m_matCellRel_indicesVec);
-    m_matCellNZSet = RelationSetType(&m_matCellRel);
+    StaticVariableRelationType& matCellRel = getRelStatic(DataLayout::MAT_DOM);
+
+    matCellRel = StaticVariableRelationType(&getMatSet(), &getCellSet());
+    matCellRel.bindBeginOffsets(getMatSet().size(), &m_matCellRel_beginsVec);
+    matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
+                           &m_matCellRel_indicesVec);
+    m_matCellNZSet = RelationSetType(&matCellRel);
     m_matCellProdSet = ProductSetType(&getMatSet(), &getCellSet());
   }
 
@@ -316,14 +322,14 @@ MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
   SLIC_ASSERT(hasValidStaticRelation(DataLayout::CELL_DOM));
 
-  return m_cellMatRel[c];
+  return getRelStatic(DataLayout::CELL_DOM)[c];
 }
 
 MultiMat::IdSet MultiMat::getCellContainingMat(int m)
 {
   SLIC_ASSERT(hasValidStaticRelation(DataLayout::MAT_DOM));
 
-  return m_matCellRel[m];
+  return getRelStatic(DataLayout::MAT_DOM)[m];
 }
 
 MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx,
@@ -1138,18 +1144,17 @@ bool MultiMat::isValid(bool verboseOutput) const
       //Check Volfrac values match the relation value (if dense)
       if(volfrac_sparsity == SparsityLayout::DENSE && !m_dynamic_mode)
       {
-        const StaticVariableRelationType* relPtr =
-          (volfrac_layout == DataLayout::CELL_DOM ? &m_cellMatRel
-                                                  : &m_matCellRel);
+        const StaticVariableRelationType& relPtr =
+          m_staticRelations[(int)volfrac_layout];
 
         for(int i = 0; i < volfrac_map.firstSetSize(); ++i)
         {
-          auto rel_iter = relPtr->begin(i);
+          auto rel_iter = relPtr.begin(i);
           for(int j = 0; j < volfrac_map.secondSetSize(); ++j)
           {
             double volfrac = volfrac_map[i * volfrac_map.secondSetSize() + j];
             bool zero_volfrac = volfrac == 0.0;  //exact comp?
-            if(rel_iter != relPtr->end(i) && *rel_iter == j)
+            if(rel_iter != relPtr.end(i) && *rel_iter == j)
             {  //cellmat rel is present
               if(zero_volfrac)
               {
