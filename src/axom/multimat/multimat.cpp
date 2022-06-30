@@ -350,6 +350,7 @@ MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx,
 
 MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c, SparsityLayout sparsity)
 {
+  SLIC_ASSERT(hasValidStaticRelation(DataLayout::CELL_DOM));
   SLIC_ASSERT(0 <= c && c < (int)m_ncells);
 
   if(sparsity == SparsityLayout::SPARSE)
@@ -361,14 +362,14 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c, SparsityLayout sparsity
   else
   {
     SLIC_ASSERT(sparsity == SparsityLayout::DENSE);
-    int size2 = getRelDenseSet(DataLayout::MAT_DOM).secondSetSize();
+    int size2 = getRelDenseSet(DataLayout::CELL_DOM).secondSetSize();
     return RangeSetType(c * size2, (c + 1) * size2);
   }
 }
 
 MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m, SparsityLayout sparsity)
 {
-  //SLIC_ASSERT(m_dataLayout == DataLayout::MAT_DOM);
+  SLIC_ASSERT(hasValidStaticRelation(DataLayout::MAT_DOM));
   SLIC_ASSERT(0 <= m && m < (int)m_nmats);
 
   if(sparsity == SparsityLayout::SPARSE)
