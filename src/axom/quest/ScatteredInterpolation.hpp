@@ -429,6 +429,45 @@ public:
   }
 
   /**
+   * \brief Given a location in space, find the associated indices
+   * and interpolation weights with respect to the input mesh points
+   *
+   * \param [in]  query_pt The point at which we want to interpolate
+   * \param [out] indices The indices of the points from the input mesh in the support of \a query_pt
+   * \param [out] weights The interpolation weights associated with each input point in \a indices
+   *
+   * \returns true if \a query_pt is found within a cell of the Delaunay complex; false otherwise.
+   *  If true, the associated indices from points in the input mesh are returned in \a indices
+   *  and the interpolation weights for each point are returned in \a weights
+   */
+  bool getInterpolationWeights(const PointType& query_pt,
+                               primal::Point<axom::IndexType, NDIMS + 1>& indices,
+                               primal::Point<double, NDIMS + 1>& weights) const
+  {
+    constexpr bool warnOnInvalid = false;
+    constexpr auto INVALID_INDEX = DelaunayTriangulation::INVALID_INDEX;
+
+    const auto cell_id =
+      m_delaunay.findContainingElement(query_pt, warnOnInvalid);
+
+    if(cell_id != INVALID_INDEX)
+    {
+      // apply BRIO mapping to input vertex indices to match Delaunay insertion order
+      const auto verts = m_delaunay.getMeshData()->boundaryVertices(cell_id);
+      for(auto idx : verts.positions())
+      {
+        indices[idx] = m_brio[verts[idx]];
+      }
+      weights = m_delaunay.getBaryCoords(cell_id, query_pt);
+
+      return true;
+    }
+
+    // Cell not found
+    return false;
+  }
+
+  /**
    * \brief Interpolates a field from an \a input_mesh to one on a \a query_mesh
    *
    * \param [inout] query_mesh Root node of mesh (in blueprint format) containing field to generate
@@ -567,10 +606,6 @@ public:
   {
     return m_delaunay.getMeshData()->elements().size();
   }
-
-  /// TODO: Add a function that takes x,y,z coordinates
-  /// and returns the vertex indices and the barycentric coords
-  /// of the point w.r.t. its containing element
 
 private:
   DelaunayTriangulation m_delaunay;
