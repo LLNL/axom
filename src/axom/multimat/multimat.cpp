@@ -26,6 +26,7 @@ MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
                    SparsityLayout AXOM_UNUSED_PARAM(s))
   : m_ncells(0)
   , m_nmats(0)
+  , m_sets(2)
   , m_dynamic_mode(false)
 { }
 
@@ -82,12 +83,12 @@ MultiMat::DynamicVariableRelationType& MultiMat::getRelDynamic(DataLayout layout
 
 MultiMat::RangeSetType& MultiMat::getRelDominantSet(DataLayout layout)
 {
-  return (layout == DataLayout::CELL_DOM) ? m_cellSet : m_matSet;
+  return (layout == DataLayout::CELL_DOM) ? getCellSet() : getMatSet();
 }
 
 MultiMat::RangeSetType& MultiMat::getRelSecondarySet(DataLayout layout)
 {
-  return (layout == DataLayout::CELL_DOM) ? m_matSet : m_cellSet;
+  return (layout == DataLayout::CELL_DOM) ? getMatSet() : getCellSet();
 }
 
 MultiMat::RelationSetType& MultiMat::getRelSparseSet(DataLayout layout)
@@ -120,8 +121,7 @@ bool MultiMat::hasValidDynamicRelation(DataLayout layout) const
 MultiMat::MultiMat(const MultiMat& other)
   : m_ncells(other.m_ncells)
   , m_nmats(other.m_nmats)
-  , m_cellSet(0, other.m_ncells)
-  , m_matSet(0, other.m_nmats)
+  , m_sets(other.m_sets)
   , m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec)
   , m_cellMatRel_indicesVec(other.m_cellMatRel_indicesVec)
   , m_matCellRel_beginsVec(other.m_matCellRel_beginsVec)
@@ -135,21 +135,21 @@ MultiMat::MultiMat(const MultiMat& other)
 {
   if(other.hasValidStaticRelation(DataLayout::CELL_DOM))
   {
-    m_cellMatRel = StaticVariableRelationType(&m_cellSet, &m_matSet);
-    m_cellMatRel.bindBeginOffsets(m_cellSet.size(), &m_cellMatRel_beginsVec);
+    m_cellMatRel = StaticVariableRelationType(&getCellSet(), &getMatSet());
+    m_cellMatRel.bindBeginOffsets(getCellSet().size(), &m_cellMatRel_beginsVec);
     m_cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
                              &m_cellMatRel_indicesVec);
     m_cellMatNZSet = RelationSetType(&m_cellMatRel);
-    m_cellMatProdSet = ProductSetType(&m_cellSet, &m_matSet);
+    m_cellMatProdSet = ProductSetType(&getCellSet(), &getMatSet());
   }
   if(other.hasValidStaticRelation(DataLayout::MAT_DOM))
   {
-    m_matCellRel = StaticVariableRelationType(&m_matSet, &m_cellSet);
-    m_matCellRel.bindBeginOffsets(m_matSet.size(), &m_matCellRel_beginsVec);
+    m_matCellRel = StaticVariableRelationType(&getMatSet(), &getCellSet());
+    m_matCellRel.bindBeginOffsets(getMatSet().size(), &m_matCellRel_beginsVec);
     m_matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
                              &m_matCellRel_indicesVec);
     m_matCellNZSet = RelationSetType(&m_matCellRel);
-    m_matCellProdSet = ProductSetType(&m_matSet, &m_cellSet);
+    m_matCellProdSet = ProductSetType(&getMatSet(), &getCellSet());
   }
 
   for(unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
@@ -185,8 +185,8 @@ void MultiMat::setNumberOfMaterials(int n)
   SLIC_ASSERT(n > 0);
   m_nmats = n;
 
-  m_matSet = RangeSetType(0, m_nmats);
-  SLIC_ASSERT(m_matSet.isValid());
+  getMatSet() = RangeSetType(0, m_nmats);
+  SLIC_ASSERT(getMatSet().isValid());
 }
 
 void MultiMat::setNumberOfCells(int c)
@@ -194,8 +194,8 @@ void MultiMat::setNumberOfCells(int c)
   SLIC_ASSERT(c > 0);
   m_ncells = c;
 
-  m_cellSet = RangeSetType(0, m_ncells);
-  SLIC_ASSERT(m_cellSet.isValid());
+  getCellSet() = RangeSetType(0, m_ncells);
+  SLIC_ASSERT(getCellSet().isValid());
 }
 
 void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
@@ -1119,7 +1119,7 @@ bool MultiMat::isValid(bool verboseOutput) const
   bool bValid = true;
   std::stringstream errStr;
 
-  if(m_cellSet.size() > 0 && m_matSet.size() > 0)
+  if(getCellSet().size() > 0 && getMatSet().size() > 0)
   {
     //It's a non-empty MultiMat object.
     //Check Volfrac exists
@@ -1173,7 +1173,7 @@ bool MultiMat::isValid(bool verboseOutput) const
       }
 
       //Check Volfrac sums to up 1.0
-      std::vector<double> volfrac_sum(m_cellSet.size(), 0.0);
+      std::vector<double> volfrac_sum(getCellSet().size(), 0.0);
       for(int i = 0; i < volfrac_map.firstSetSize(); ++i)
       {
         const auto& submap = volfrac_map(i);
@@ -1215,10 +1215,10 @@ MultiMat::SetType* MultiMat::get_mapped_set(FieldMapping fm)
   switch(fm)
   {
   case FieldMapping::PER_CELL:
-    set_ptr = &m_cellSet;
+    set_ptr = &getCellSet();
     break;
   case FieldMapping::PER_MAT:
-    set_ptr = &m_matSet;
+    set_ptr = &getMatSet();
     break;
   case FieldMapping::PER_CELL_MAT:
     SLIC_ASSERT(false);
@@ -1238,10 +1238,10 @@ MultiMat::SetType* MultiMat::get_mapped_set(int field_idx)
   switch(m_fieldMappingVec[field_idx])
   {
   case FieldMapping::PER_CELL:
-    set_ptr = &m_cellSet;
+    set_ptr = &getCellSet();
     break;
   case FieldMapping::PER_MAT:
-    set_ptr = &m_matSet;
+    set_ptr = &getMatSet();
     break;
   case FieldMapping::PER_CELL_MAT:
     set_ptr = dynamic_cast<SetType*>(get_mapped_biSet(field_idx));

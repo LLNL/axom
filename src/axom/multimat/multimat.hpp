@@ -493,6 +493,18 @@ private:  //private functions
   MapUniquePtr helper_copyField(const MultiMat&, int map_i);
 
   /*!
+   * \brief Returns the associated cell set.
+   */
+  RangeSetType& getCellSet() { return m_sets[0]; }
+  const RangeSetType& getCellSet() const { return m_sets[0]; }
+
+  /*!
+   * \brief Returns the associated material set.
+   */
+  RangeSetType& getMatSet() { return m_sets[1]; }
+  const RangeSetType& getMatSet() const { return m_sets[1]; }
+
+  /*!
    * \brief Returns a reference to the corresponding array of offsets for a
    *        static relation corresponding to a layout.
    *
@@ -572,8 +584,7 @@ private:
   unsigned int m_ncells, m_nmats;
 
   //slam set variables
-  RangeSetType m_cellSet;
-  RangeSetType m_matSet;
+  axom::Array<RangeSetType> m_sets;
   //slam relation variables (for sparse-layout fields)
   //Depending on the layout of the field, each field can be mapped to different Relations
   //Relation can be nullptr if no field is using said relation
