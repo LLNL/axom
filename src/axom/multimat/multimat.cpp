@@ -431,10 +431,10 @@ void MultiMat::convertToDynamic()
     SLIC_ASSERT(getRelDynamic(layout).totalSize() == getRelStatic(layout).totalSize());
   }
 
-  m_cellMatRel = StaticVariableRelationType {};
-  m_cellMatNZSet = RelationSetType {};
-  m_matCellRel = StaticVariableRelationType {};
-  m_matCellNZSet = RelationSetType {};
+  getRelStatic(DataLayout::CELL_DOM) = StaticVariableRelationType {};
+  getRelSparseSet(DataLayout::CELL_DOM) = RelationSetType {};
+  getRelStatic(DataLayout::MAT_DOM) = StaticVariableRelationType {};
+  getRelSparseSet(DataLayout::MAT_DOM) = RelationSetType {};
 
   m_dynamic_mode = true;
 }
@@ -515,8 +515,9 @@ void MultiMat::convertToStatic()
   }
   m_layout_when_static.resize(0);
 
-  m_cellMatRelDyn = DynamicVariableRelationType {};
-  m_matCellRelDyn = DynamicVariableRelationType {};
+  // Unset the dynamic relations
+  getRelDynamic(DataLayout::CELL_DOM) = DynamicVariableRelationType {};
+  getRelDynamic(DataLayout::MAT_DOM) = DynamicVariableRelationType {};
 }
 
 bool MultiMat::addEntry(int cell_id, int mat_id)
