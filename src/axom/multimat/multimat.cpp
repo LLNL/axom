@@ -97,12 +97,12 @@ MultiMat::RangeSetType& MultiMat::getRelSecondarySet(DataLayout layout)
 
 MultiMat::RelationSetType& MultiMat::getRelSparseSet(DataLayout layout)
 {
-  return m_sparseBivarSet[(int) layout];
+  return m_sparseBivarSet[(int)layout];
 }
 
 MultiMat::ProductSetType& MultiMat::getRelDenseSet(DataLayout layout)
 {
-  return m_denseBivarSet[(int) layout];
+  return m_denseBivarSet[(int)layout];
 }
 
 bool MultiMat::hasValidStaticRelation(DataLayout layout) const
@@ -148,7 +148,8 @@ MultiMat::MultiMat(const MultiMat& other)
     cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
                            &m_cellMatRel_indicesVec);
     getRelSparseSet(DataLayout::CELL_DOM) = RelationSetType(&cellMatRel);
-    getRelDenseSet(DataLayout::CELL_DOM) = ProductSetType(&getCellSet(), &getMatSet());
+    getRelDenseSet(DataLayout::CELL_DOM) =
+      ProductSetType(&getCellSet(), &getMatSet());
   }
   if(other.hasValidStaticRelation(DataLayout::MAT_DOM))
   {
@@ -159,7 +160,8 @@ MultiMat::MultiMat(const MultiMat& other)
     matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
                            &m_matCellRel_indicesVec);
     getRelSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
-    getRelDenseSet(DataLayout::MAT_DOM) = ProductSetType(&getMatSet(), &getCellSet());
+    getRelDenseSet(DataLayout::MAT_DOM) =
+      ProductSetType(&getMatSet(), &getCellSet());
   }
 
   for(unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
@@ -438,7 +440,8 @@ void MultiMat::convertToDynamic()
     getRelDynamic(layout) = relDyn;
 
     SLIC_ASSERT(getRelDynamic(layout).isValid());
-    SLIC_ASSERT(getRelDynamic(layout).totalSize() == getRelStatic(layout).totalSize());
+    SLIC_ASSERT(getRelDynamic(layout).totalSize() ==
+                getRelStatic(layout).totalSize());
   }
 
   getRelStatic(DataLayout::CELL_DOM) = StaticVariableRelationType {};

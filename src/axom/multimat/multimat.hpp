@@ -214,13 +214,13 @@ public:
   /// \brief Returns a pointer to the dense 2d field set
   const ProductSetType* getDense2dFieldSet(DataLayout layout) const
   {
-    return &m_denseBivarSet[(int) layout];
+    return &m_denseBivarSet[(int)layout];
   }
 
   /// \brief Returns a pointer to the sparse 2d field set
   const RelationSetType* getSparse2dFieldSet(DataLayout layout) const
   {
-    return &m_sparseBivarSet[(int) layout];
+    return &m_sparseBivarSet[(int)layout];
   }
 
   /**
