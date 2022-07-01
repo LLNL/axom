@@ -192,7 +192,8 @@ def uberenv_build(prefix, spec, project_file, mirror_path):
 def build_and_test_host_config(test_root, host_config, 
                                report_to_stdout = False,
                                extra_cmake_options = "",
-                               build_type = "Debug"):
+                               build_type = "Debug",
+                               test_serial = False):
     host_config_root = get_host_config_root(host_config)
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
@@ -242,7 +243,8 @@ def build_and_test_host_config(test_root, host_config,
     print("[starting unit tests]")
     print("[log file: %s]" % tst_output_file)
 
-    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV \"" % build_dir
+    parallel_test = "" if test_serial else "-j16"
+    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV %s\"" % (build_dir, parallel_test)
 
     res = sexe(tst_cmd,
                output_file = tst_output_file,
@@ -387,7 +389,8 @@ def build_and_test_host_configs(prefix,
                                 use_generated_host_configs,
                                 report_to_stdout = False,
                                 extra_cmake_options = "",
-                                build_type = "Debug"):
+                                build_type = "Debug",
+                                test_serial = False):
     host_configs = get_host_configs_for_current_machine(prefix, use_generated_host_configs)
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
@@ -409,7 +412,8 @@ def build_and_test_host_configs(prefix,
         if build_and_test_host_config(test_root, host_config,
                                       report_to_stdout = report_to_stdout,
                                       extra_cmake_options=extra_cmake_options,
-                                      build_type = build_type) == 0:
+                                      build_type = build_type,
+                                      test_serial = test_serial) == 0:
             ok.append(host_config)
             log_success(build_dir, "[Success: Built host-config: {0}]".format(host_config), timestamp)
         else:
