@@ -252,7 +252,7 @@ private:
 
   using VertexSet = typename DelaunayTriangulation::IAMeshType::VertexSet;
   using VertexIndirectionSet =
-    slam::CoreArrayIndirectionSet<typename VertexSet::PositionType, axom::IndexType>;
+    slam::ArrayIndirectionSet<typename VertexSet::PositionType, axom::IndexType>;
 
 private:
   /**

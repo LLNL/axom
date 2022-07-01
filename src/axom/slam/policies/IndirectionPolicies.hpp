@@ -211,7 +211,7 @@ private:
  * \brief A policy class for sets with axom::Array-based indirection
  */
 template <typename PositionType, typename ElementType>
-struct CoreArrayIndirection
+struct ArrayIndirection
 {
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType&;
@@ -220,29 +220,27 @@ struct CoreArrayIndirection
   using IndirectionBufferType = VectorType;
   using IndirectionPtrType = IndirectionBufferType*;
 
-  CoreArrayIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
+  ArrayIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
   IndirectionBufferType*& data() { return m_vecBuf; }
   IndirectionBufferType* const& data() const { return m_vecBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
-    SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:CoreArrayIndirection -- Tried to dereference "
-                      << "a null vector in a vector based indirection set.");
-    //SLIC_ASSERT_MSG( pos < m_vecBuf->size(),
-    //  "SLAM::Set:CoreArrayIndirection -- "
-    //  << "Tried to access an out of bounds element at position "
-    //  << pos << " in vector with only " << m_vecBuf->size() << " elements.");
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayIndirection -- Tried to dereference "
+        << "a null vector in an axom::Array-based indirection set.");
 
     return (*m_vecBuf)[pos];
   }
 
   inline IndirectionResult indirection(PositionType pos)
   {
-    SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:CoreArrayIndirection -- Tried to dereference "
-                      << "a null vector in a vector based indirection set.");
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayIndirection -- Tried to dereference "
+        << "a null vector in an axom::Array-based indirection set.");
 
     return (*m_vecBuf)[pos];
   }
@@ -297,22 +295,20 @@ struct ArrayViewIndirection
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
-    SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
-                      << "a null vector in a vector based indirection set.");
-    //SLIC_ASSERT_MSG( pos < m_vecBuf->size(),
-    //  "SLAM::Set:ArrayViewIndirection -- "
-    //  << "Tried to access an out of bounds element at position "
-    //  << pos << " in vector with only " << m_vecBuf->size() << " elements.");
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
+        << "a null vector in an axom::ArrayView-based indirection set.");
 
     return m_vecBuf[pos];
   }
 
   inline IndirectionResult indirection(PositionType pos)
   {
-    SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
-                      << "a null vector in a vector based indirection set.");
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
+        << "a null vector in an axom::ArrayView-based indirection set.");
 
     return m_vecBuf[pos];
   }
@@ -443,10 +439,10 @@ bool STLVectorIndirection<PosType, ElemType>::isValid(PosType size,
 }
 
 template <typename PosType, typename ElemType>
-bool CoreArrayIndirection<PosType, ElemType>::isValid(PosType size,
-                                                      PosType offset,
-                                                      PosType stride,
-                                                      bool verboseOutput) const
+bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
+                                                  PosType offset,
+                                                  PosType stride,
+                                                  bool verboseOutput) const
 {
   AXOM_UNUSED_VAR(verboseOutput);
 
@@ -467,7 +463,7 @@ bool CoreArrayIndirection<PosType, ElemType>::isValid(PosType size,
   }
   else
   {
-    // Verify underlying vector has sufficient storage for all set elements
+    // Verify underlying array has sufficient storage for all set elements
     // Note: it is valid for the data buffer to have extra space
     PosType firstEltInd = offset;
     PosType lastEltInd = (size - 1) * stride + offset;
@@ -512,7 +508,7 @@ bool ArrayViewIndirection<PosType, ElemType>::isValid(PosType size,
   if(!hasIndirection())
   {
     SLIC_DEBUG_IF(verboseOutput,
-                  "Array-based indirection set with non-zero size "
+                  "ArrayView-based indirection set with non-zero size "
                     << "(size=" << size << ") requires a valid data buffer,"
                     << "but buffer pointer was null.");
 
@@ -520,7 +516,7 @@ bool ArrayViewIndirection<PosType, ElemType>::isValid(PosType size,
   }
   else
   {
-    // Verify underlying vector has sufficient storage for all set elements
+    // Verify underlying array has sufficient storage for all set elements
     // Note: it is valid for the data buffer to have extra space
     PosType firstEltInd = offset;
     PosType lastEltInd = (size - 1) * stride + offset;
@@ -533,7 +529,7 @@ bool ArrayViewIndirection<PosType, ElemType>::isValid(PosType size,
     {
       SLIC_DEBUG_IF(
         verboseOutput,
-        "Invalid array-based IndirectionSet -- Data buffer "
+        "Invalid ArrayView-based IndirectionSet -- Data buffer "
           << "must be large enough to hold all elements of the set. "
           << "Underlying buffer size is " << vecSize << "."
           << " Offset of " << offset << " leads to a first index of "

@@ -111,7 +111,7 @@ public:
 
   /**
    * Get a pointer to the data buffer
-   * Specialization for CoreArrayIndirection
+   * Specialization for ArrayIndirection
    * \pre index must be 0, 1 or 2
    */
   void getDataBuffer(axom::Array<ElemType>*& ptr, int index = 0)
@@ -120,6 +120,11 @@ public:
     ptr = &mDataArr[index];
   }
 
+  /**
+   * Get a pointer to the data buffer
+   * Specialization for ArrayViewIndirection
+   * \pre index must be 0, 1 or 2
+   */
   void getDataBuffer(axom::ArrayView<ElemType>& ptr, int index = 0)
   {
     checkIndex(index);
@@ -128,7 +133,7 @@ public:
   }
 
 private:
-  /** Check that the index is valid; fail test if not */
+  /// Check that the index is valid; fail test if not
   void checkIndex(int index)
   {
     ASSERT_GE(index, 0);
@@ -162,7 +167,7 @@ bool compareData(axom::ArrayView<ElemType> a, axom::ArrayView<ElemType> b)
 using MyTypes =
   ::testing::Types<slam::CArrayIndirectionSet<axom::int32, axom::int64>,
                    slam::VectorIndirectionSet<axom::int32, axom::int64>,
-                   slam::CoreArrayIndirectionSet<axom::int32, axom::int64>,
+                   slam::ArrayIndirectionSet<axom::int32, axom::int64>,
                    slam::ArrayViewIndirectionSet<axom::int32, axom::int64>>;
 
 TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
