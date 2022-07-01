@@ -897,6 +897,7 @@ int main(int argc, char** argv)
 
   // Generate the Delaunay complex
   int numVerts = 0, numSimps = 0;
+  std::string bboxStr;
   axom::utilities::Timer timer(true);
   switch(params.dimension)
   {
@@ -904,22 +905,26 @@ int main(int argc, char** argv)
     scattered_2d->buildTriangulation(bp_input, inputMesh.coordsName());
     numVerts = scattered_2d->numVertices();
     numSimps = scattered_2d->numSimplices();
+    bboxStr = axom::fmt::format("{}", scattered_2d->boundingBox());
     break;
   case 3:
     scattered_3d->buildTriangulation(bp_input, inputMesh.coordsName());
     numVerts = scattered_3d->numVertices();
     numSimps = scattered_3d->numSimplices();
+    bboxStr = axom::fmt::format("{}", scattered_3d->boundingBox());
     break;
   }
   timer.stop();
-  SLIC_INFO(axom::fmt::format(
-    "It took {} seconds to create a Delaunay complex with {} "
-    "points. Mesh has {} {}. Insertion rate of {:.1f} points per second.",
-    timer.elapsedTimeInSec(),
-    numVerts,
-    numSimps,
-    params.dimension == 2 ? "triangles" : "tetrahedra",
-    numVerts / timer.elapsedTimeInSec()));
+  SLIC_INFO(
+    axom::fmt::format("It took {} seconds to create a Delaunay complex with {} "
+                      "points, {} {} and bounding box {}. "
+                      "Insertion rate of {:.1f} points per second.",
+                      timer.elapsedTimeInSec(),
+                      numVerts,
+                      numSimps,
+                      params.dimension == 2 ? "triangles" : "tetrahedra",
+                      bboxStr,
+                      numVerts / timer.elapsedTimeInSec()));
 
   // Dump the Delaunay complex to disk as a vtk file
   switch(params.dimension)

@@ -144,8 +144,8 @@ struct InterleavedOrStridedPoints
 public:
   static constexpr int DIM = NDIMS;
   using CoordType = double;
-  using PointType = axom::primal::Point<CoordType, NDIMS>;
-  using StridedPoints = axom::primal::detail::ZipBase<PointType>;
+  using PointType = primal::Point<CoordType, NDIMS>;
+  using StridedPoints = primal::detail::ZipBase<PointType>;
   using InterleavedPoints = axom::ArrayView<PointType>;
 
   /// Constructor from a multi-component array Conduit node
@@ -366,20 +366,21 @@ public:
     const int npts = coords.size();
 
     // Compute the bounding box
-    BoundingBoxType bb;
+    m_bounding_box.clear();
     for(int i = 0; i < npts; ++i)
     {
-      bb.addPoint(coords[i]);
+      m_bounding_box.addPoint(coords[i]);
     }
-
-    // Scale the bounding box to ensure that all input points are contained
-    bb.scale(1.5);
 
     // Reorder the points according to the Biased Random Insertion Order (BRIO) algorithm
     // and store the mapping since we'll need to apply it during interpolation
-    m_brio_data = computeInsertionOrder(coords, bb);
+    m_brio_data = computeInsertionOrder(coords, m_bounding_box);
     m_brio = VertexIndirectionSet(
       typename VertexIndirectionSet::SetBuilder().size(npts).data(&m_brio_data));
+
+    // Scale the Delaunay bounding box to ensure that all input points are contained
+    BoundingBoxType bb = m_bounding_box;
+    bb.scale(1.5);
 
     m_delaunay.initializeBoundary(bb);
     for(int i = 0; i < npts; ++i)
@@ -607,11 +608,15 @@ public:
     return m_delaunay.getMeshData()->elements().size();
   }
 
+  /// Returns the bounding box of the input data points
+  const BoundingBoxType& boundingBox() const { return m_bounding_box; }
+
 private:
   DelaunayTriangulation m_delaunay;
 
   axom::Array<axom::IndexType> m_brio_data;
   VertexIndirectionSet m_brio;
+  BoundingBoxType m_bounding_box;
 };
 
 template <int NDIMS>
