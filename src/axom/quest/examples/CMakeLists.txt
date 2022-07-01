@@ -77,7 +77,7 @@ if(AXOM_ENABLE_TESTS)
     endforeach()
 endif()
 
-## Scattered interpolation example --------------------------------------------
+# Scattered interpolation example --------------------------------------------
 if(AXOM_ENABLE_SIDRE)
     blt_add_executable(
         NAME        quest_scattered_interpolation_ex
@@ -116,10 +116,10 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-# Add a test for the quest interface; Set up for MPI, when available
 set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+    # Add a test for the quest interface; Set up for MPI, when available
     if (ENABLE_MPI)
         axom_add_test(
             NAME quest_inout_interface_3D_mpi_test

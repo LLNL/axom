@@ -320,6 +320,7 @@ private:
     using MortonizerType =
       spin::Mortonizer<QuantizedCoordType, MortonIndexType, DIM>;
 
+    // Fit as many bits as possible per dimension into an int64, i.e. floor(63/DIM)
     constexpr int shift_bits = (DIM == 2) ? 31 : 21;
     primal::NumericArray<QuantizedCoordType, DIM> res(1 << shift_bits, DIM);
     auto quantizer =
