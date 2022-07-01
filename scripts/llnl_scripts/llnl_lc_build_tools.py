@@ -242,7 +242,7 @@ def build_and_test_host_config(test_root, host_config,
     print("[starting unit tests]")
     print("[log file: %s]" % tst_output_file)
 
-    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV -j16\"" % build_dir
+    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"--no-compress-output -T Test -VV \"" % build_dir
 
     res = sexe(tst_cmd,
                output_file = tst_output_file,
