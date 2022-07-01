@@ -609,7 +609,7 @@ void initializeInputMesh(Input& params, internal::blueprint::PointMesh& inputMes
 
     // recompute and reset bounding box based on input mesh
     const int nPts = inputMesh.numPoints();
-    auto coords = quest::detail::InterleavedOrStridedPoints<DIM>(
+    auto coords = quest::detail::InterleavedOrStridedPoints<double, DIM>(
       inputMesh.coordsGroup()->getGroup("values"));
 
     BBoxType bbox;
@@ -638,7 +638,7 @@ void initializeInputMesh(Input& params, internal::blueprint::PointMesh& inputMes
 
     // Extract coordinate positions as scalar fields
     const int nPts = inputMesh.numPoints();
-    auto coords = quest::detail::InterleavedOrStridedPoints<DIM>(
+    auto coords = quest::detail::InterleavedOrStridedPoints<double, DIM>(
       inputMesh.coordsGroup()->getGroup("values"));
 
     inputMesh.registerNodalScalarField<double>("pos_x");
@@ -700,7 +700,7 @@ bool checkInterpolation(
 
   using InterpIndices = primal::Point<axom::IndexType, DIM + 1>;
   using InterpWeights = primal::Point<double, DIM + 1>;
-  using PointArray = InterleavedOrStridedPoints<DIM>;
+  using PointArray = InterleavedOrStridedPoints<double, DIM>;
 
   constexpr double EPS = 1e-8;
 

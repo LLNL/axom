@@ -138,12 +138,12 @@ namespace detail
  * \brief Utility class to enable processing an array of points whose layout
  * is either interleaved or separated strided arrays
  */
-template <int NDIMS>
+template <typename T, int NDIMS>
 struct InterleavedOrStridedPoints
 {
 public:
   static constexpr int DIM = NDIMS;
-  using CoordType = double;
+  using CoordType = T;
   using PointType = primal::Point<CoordType, NDIMS>;
   using StridedPoints = primal::detail::ZipBase<PointType>;
   using InterleavedPoints = axom::ArrayView<PointType>;
@@ -167,9 +167,9 @@ public:
       SLIC_ASSERT(dim == NDIMS);
 
       m_strided = StridedPoints {
-        {static_cast<double*>(values["x"].data_ptr()),
-         dim >= 2 ? static_cast<double*>(values["y"].data_ptr()) : nullptr,
-         dim >= 3 ? static_cast<double*>(values["z"].data_ptr()) : nullptr}};
+        {static_cast<CoordType*>(values["x"].data_ptr()),
+         dim >= 2 ? static_cast<CoordType*>(values["y"].data_ptr()) : nullptr,
+         dim >= 3 ? static_cast<CoordType*>(values["z"].data_ptr()) : nullptr}};
     }
   }
 
@@ -194,9 +194,9 @@ public:
       SLIC_ASSERT(dim == NDIMS);
 
       m_strided = StridedPoints {
-        {static_cast<double*>(vals["x"].data_ptr()),
-         dim >= 2 ? static_cast<double*>(vals["y"].data_ptr()) : nullptr,
-         dim >= 3 ? static_cast<double*>(vals["z"].data_ptr()) : nullptr}};
+        {static_cast<CoordType*>(vals["x"].data_ptr()),
+         dim >= 2 ? static_cast<CoordType*>(vals["y"].data_ptr()) : nullptr,
+         dim >= 3 ? static_cast<CoordType*>(vals["z"].data_ptr()) : nullptr}};
     }
   }
 
@@ -246,6 +246,7 @@ public:
   using DelaunayTriangulation = Delaunay<DIM>;
   using PointType = typename DelaunayTriangulation::PointType;
   using BoundingBoxType = typename DelaunayTriangulation::BoundingBox;
+  using CoordType = typename PointType::CoordType;
 
 private:
   using MortonIndexType = axom::uint64;
@@ -297,7 +298,7 @@ private:
 
     const int npts = pts.size();
     const int nlevels =
-      axom::utilities::ceil(axom::utilities::log2<double>(npts));
+      axom::utilities::ceil(axom::utilities::log2<CoordType>(npts));
 
     // Each point has a 50% chance of being at the max level; of the remaining points
     // from the previous level, there's a 50% chance of being at the current level.
@@ -322,7 +323,7 @@ private:
     constexpr int shift_bits = (DIM == 2) ? 31 : 21;
     primal::NumericArray<QuantizedCoordType, DIM> res(1 << shift_bits, DIM);
     auto quantizer =
-      spin::rectangular_lattice_from_bounding_box<DIM, double, QuantizedCoordType>(
+      spin::rectangular_lattice_from_bounding_box<DIM, CoordType, QuantizedCoordType>(
         bb,
         res);
 
@@ -362,7 +363,8 @@ public:
     // Extract coordinates as ArrayView of PointType
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(mesh_node.has_path(valuesPath));
-    auto coords = detail::InterleavedOrStridedPoints<DIM>(mesh_node[valuesPath]);
+    auto coords =
+      detail::InterleavedOrStridedPoints<CoordType, DIM>(mesh_node[valuesPath]);
     const int npts = coords.size();
 
     // Compute the bounding box
@@ -409,7 +411,8 @@ public:
 
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(query_mesh.has_path(valuesPath));
-    auto coords = detail::InterleavedOrStridedPoints<DIM>(query_mesh[valuesPath]);
+    auto coords =
+      detail::InterleavedOrStridedPoints<CoordType, DIM>(query_mesh[valuesPath]);
     const int npts = coords.size();
 
     SLIC_ERROR_IF(!query_mesh.has_path("fields/cell_idx/values"),
@@ -443,7 +446,7 @@ public:
    */
   bool getInterpolationWeights(const PointType& query_pt,
                                primal::Point<axom::IndexType, NDIMS + 1>& indices,
-                               primal::Point<double, NDIMS + 1>& weights) const
+                               primal::Point<CoordType, NDIMS + 1>& weights) const
   {
     constexpr bool warnOnInvalid = false;
     constexpr auto INVALID_INDEX = DelaunayTriangulation::INVALID_INDEX;
@@ -508,7 +511,8 @@ public:
 
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(query_mesh.has_path(valuesPath));
-    auto coords = detail::InterleavedOrStridedPoints<DIM>(query_mesh[valuesPath]);
+    auto coords =
+      detail::InterleavedOrStridedPoints<CoordType, DIM>(query_mesh[valuesPath]);
 
     // Interpolate field at query points
     const int npts = coords.size();
