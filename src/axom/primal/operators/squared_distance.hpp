@@ -112,15 +112,16 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const BoundingBox<T, NDIMS>& A,
                                                 const BoundingBox<T, NDIMS>& B)
 {
-  if (A.isValid() && B.isValid()) {
-
+  if(A.isValid() && B.isValid())
+  {
     Vector<T, NDIMS> v(0.0);
-    for ( int d = 0; d < NDIMS; ++d ) {
-      if ( B.getMin()[d] > A.getMax()[d] )
+    for(int d = 0; d < NDIMS; ++d)
+    {
+      if(B.getMin()[d] > A.getMax()[d])
       {
         v[d] = B.getMin()[d] - A.getMax()[d];
       }
-      else if ( A.getMin()[d] > B.getMax()[d] )
+      else if(A.getMin()[d] > B.getMax()[d])
       {
         v[d] = A.getMin()[d] - B.getMax()[d];
       }

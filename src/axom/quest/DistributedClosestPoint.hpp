@@ -113,8 +113,8 @@ axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(conduit::Node& nod
  * \brief Put BoundingBox into a Conduit Node.
  */
 template <int NDIMS>
-void put_to_conduit_node( const primal::BoundingBox<double, NDIMS>& bb,
-                          conduit::Node& node)
+void put_to_conduit_node(const primal::BoundingBox<double, NDIMS>& bb,
+                         conduit::Node& node)
 {
   node["dim"].set(bb.dimension());
   node["lo"].set(bb.getMin().data(), bb.dimension());
@@ -125,16 +125,16 @@ void put_to_conduit_node( const primal::BoundingBox<double, NDIMS>& bb,
  * \brief Get BoundingBox from a Conduit Node.
  */
 template <int NDIMS>
-void get_from_conduit_node( primal::BoundingBox<double, NDIMS>& bb,
-                            const conduit::Node& node)
+void get_from_conduit_node(primal::BoundingBox<double, NDIMS>& bb,
+                           const conduit::Node& node)
 {
   int dim = node["dim"].as_int();
   SLIC_ASSERT(dim == NDIMS);
   const double* lo = node["lo"].as_double_ptr();
   const double* hi = node["hi"].as_double_ptr();
-  bb = primal::BoundingBox<double, NDIMS>(
-    primal::Point<double, NDIMS>(lo, NDIMS),
-    primal::Point<double, NDIMS>(hi, NDIMS));
+  bb =
+    primal::BoundingBox<double, NDIMS>(primal::Point<double, NDIMS>(lo, NDIMS),
+                                       primal::Point<double, NDIMS>(hi, NDIMS));
 }
 
 /// Helper function to extract the dimension from the coordinate values group
@@ -448,23 +448,28 @@ public:
   }
 
   /// Allgather one bounding box from each rank.
-  void gatherBoundingBoxes(const BoxType &aabb, BoxArray& all_aabbs) const
+  void gatherBoundingBoxes(const BoxType& aabb, BoxArray& all_aabbs) const
   {
     // Using MPI calls.  Should we change to Conduit relay MPI?
-    Array<double> sendbuf( 2*DIM );
+    Array<double> sendbuf(2 * DIM);
     aabb.getMin().to_array(&sendbuf[0]);
     aabb.getMax().to_array(&sendbuf[DIM]);
-    Array<double> recvbuf( m_nranks*sendbuf.size() );
-    int errf = MPI_Allgather(sendbuf.data(), 2*DIM, mpi_traits<double>::type,
-                             recvbuf.data(), 2*DIM, mpi_traits<double>::type,
+    Array<double> recvbuf(m_nranks * sendbuf.size());
+    int errf = MPI_Allgather(sendbuf.data(),
+                             2 * DIM,
+                             mpi_traits<double>::type,
+                             recvbuf.data(),
+                             2 * DIM,
+                             mpi_traits<double>::type,
                              MPI_COMM_WORLD);
     SLIC_ASSERT(errf == MPI_SUCCESS);
 
     all_aabbs.clear();
     all_aabbs.reserve(m_nranks);
-    for ( int i=0; i<m_nranks; ++i ) {
-      PointType lower( &recvbuf[i*2*DIM] );
-      PointType upper( &recvbuf[i*2*DIM+DIM] );
+    for(int i = 0; i < m_nranks; ++i)
+    {
+      PointType lower(&recvbuf[i * 2 * DIM]);
+      PointType upper(&recvbuf[i * 2 * DIM + DIM]);
       all_aabbs.emplace_back(BoxType(lower, upper));
     }
   }
@@ -697,7 +702,7 @@ public:
     }
   }
   void new_computeClosestPoints(conduit::Node& query_mesh,
-                            const std::string& coordset) const
+                                const std::string& coordset) const
   {
     SLIC_ASSERT_MSG(
       isBVHTreeInitialized(),
@@ -741,43 +746,46 @@ public:
       dumpNode(xfer_node, fmt::format("round_{}_r{}_begin.json", 0, m_rank));
     }
 
-    // arbitrary tags for sending data to other ranks and getting it back
+    // arbitrary tags for send/recv xfer_node.
     const int tag = 1234;
 
-    std::vector<relay::mpi::ISendRequest> isendRequests;
+    std::vector<relay::mpi::ISendRequest> isendRequests(m_nranks);
 
     for(int i = 0; i < m_nranks; ++i)
     {
-      SLIC_INFO_IF(m_isVerbose && m_rank == 0,
-                   fmt::format("=======  Starting round {}/{} =======", i, m_nranks));
+      SLIC_INFO_IF(
+        m_isVerbose && m_rank == 0,
+        fmt::format("=======  Starting round {}/{} =======", i, m_nranks));
 
-      if (!xfer_node.has_path("skip"))
+      if(!xfer_node.has_path("skip"))
       {
-
         get_from_conduit_node(queryPartitionBb, xfer_node["aabb"]);
 
         // Send xfer_node to the next rank within threshold.
         // Ranks beyond threshold, get a skip message instead.
         // No send if search circles back to local rank.
-        for ( int j=0; j<m_nranks-i; ++j ) {
+        for(int j = 0; j < m_nranks - i; ++j)
+        {
           const int next_dst = (m_rank + 1 + j) % m_nranks;
-
-          SLIC_INFO_IF(
-            m_isVerbose,
-            fmt::format("Rank {} -- sending to dst {}", m_rank, next_dst));
 
           if(m_isVerbose)
           {
-            dumpNode(xfer_node, fmt::format("round_{}_r{}_begin.json", i, m_rank));
+            dumpNode(xfer_node,
+                     fmt::format("round_{}_r{}_begin.json", i, m_rank));
           }
 
-          double sqDist = squared_distance( m_objectPartitionBbs[next_dst],
-                                            queryPartitionBb );
+          double sqDist =
+            squared_distance(m_objectPartitionBbs[next_dst], queryPartitionBb);
 
-          if (next_dst != m_rank) {
+          if(next_dst != m_rank)
+          {
+            SLIC_INFO_IF(
+              m_isVerbose,
+              fmt::format("Rank {} -- sending to dst {}", m_rank, next_dst));
 
-            if (sqDist <= m_sqDistanceThreshold ||
-                next_dst == xfer_node["src_rank"].as_int()) {
+            if(sqDist <= m_sqDistanceThreshold ||
+               next_dst == xfer_node["src_rank"].as_int())
+            {
               isend_using_schema(xfer_node,
                                  next_dst,
                                  tag,
@@ -785,7 +793,8 @@ public:
                                  &isendRequests[next_dst]);
               break;
             }
-            else {
+            else
+            {
               conduit::Node skip;
               // I think we can use an empty Node, but be explicit for now.
               skip["skip"] = true;
@@ -797,12 +806,10 @@ public:
                                  &isendRequests[next_dst]);
             }
           }
-
         }
       }
 
-      // FIXME: this needs to be protected in serial runs.
-      if (m_nranks > 1)
+      if(m_nranks > 1)
       {
         conduit::relay::mpi::recv_using_schema(xfer_node,
                                                MPI_ANY_SOURCE,
@@ -810,10 +817,8 @@ public:
                                                MPI_COMM_WORLD);
       }
 
-      if (!xfer_node.has_path("skip"))
+      if(!xfer_node.has_path("skip"))
       {
-        SLIC_ASSERT(xfer_node["src_rank"].as_int() != m_rank);
-
         // Distance search using local object partition and the xfer_node.
         switch(m_runtimePolicy)
         {
@@ -834,7 +839,7 @@ public:
           break;
         }
 
-        if (xfer_node["src_rank"].as_int() == m_rank)
+        if(xfer_node["src_rank"].as_int() == m_rank)
         {
           // This is the query partition we stared with.
           // Copy it back to query_mesh.
@@ -857,9 +862,10 @@ public:
             SLIC_ASSERT_MSG(
               conduit::blueprint::mcarray::is_interleaved(
                 query_mesh["fields/closest_point/values"]),
-              fmt::format("After copy on iteration {}, 'closest_point' field of "
-                          "'query_mesh' is not interleaved",
-                          i));
+              fmt::format(
+                "After copy on iteration {}, 'closest_point' field of "
+                "'query_mesh' is not interleaved",
+                i));
           }
         }
       }
@@ -869,10 +875,16 @@ public:
         dumpNode(xfer_node, fmt::format("round_{}_r{}_end.json", 0, m_rank));
       }
 
-    } // Loop through m_nranks
+    }  // Loop through m_nranks
 
-    SLIC_ASSERT_MSG(false, "Need to make one more exchange to get query partitions back to their original owners.");
-    SLIC_ASSERT_MSG(false, "Need to wait for all non-blocking sends to finish.");
+    std::vector<MPI_Request> allReqs;
+    allReqs.reserve(isendRequests.size());
+    for(const auto& isr : isendRequests)
+    {
+      allReqs.push_back(isr.mpi_request);
+    }
+    std::vector<MPI_Status> allStats(isendRequests.size());
+    MPI_Waitall(int(allReqs.size()), allReqs.data(), allStats.data());
 
     MPI_Barrier(MPI_COMM_WORLD);
     slic::flushStreams();
