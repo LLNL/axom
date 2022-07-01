@@ -86,10 +86,10 @@ struct NoIndirection
 };
 
 /**
- * \brief A policy class for sets with array-based indirection
+ * \brief A policy class for sets with C-style array-based indirection
  */
 template <typename PositionType, typename ElementType>
-struct ArrayIndirection
+struct CArrayIndirection
 {
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType&;
@@ -97,14 +97,14 @@ struct ArrayIndirection
   using IndirectionBufferType = ElementType;
   using IndirectionPtrType = IndirectionBufferType*;
 
-  ArrayIndirection(IndirectionBufferType* buf = nullptr) : m_arrBuf(buf) { }
+  CArrayIndirection(IndirectionBufferType* buf = nullptr) : m_arrBuf(buf) { }
 
   IndirectionBufferType*& data() { return m_arrBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
     SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:ArrayIndirection -- Tried to dereference "
+                    "SLAM::Set:CArrayIndirection -- Tried to dereference "
                       << " a null array in an array based indirection set.");
     return m_arrBuf[pos];
   }
@@ -112,7 +112,7 @@ struct ArrayIndirection
   inline IndirectionResult indirection(PositionType pos)
   {
     SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:ArrayIndirection -- Tried to dereference "
+                    "SLAM::Set:CArrayIndirection -- Tried to dereference "
                       << " a null array in an array based indirection set.");
     return m_arrBuf[pos];
   }
@@ -341,10 +341,10 @@ private:
 /// \}
 
 template <typename PosType, typename ElemType>
-bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
-                                                  PosType offset,
-                                                  PosType stride,
-                                                  bool verboseOutput) const
+bool CArrayIndirection<PosType, ElemType>::isValid(PosType size,
+                                                   PosType offset,
+                                                   PosType stride,
+                                                   bool verboseOutput) const
 {
   AXOM_UNUSED_VAR(verboseOutput);
 
@@ -366,9 +366,7 @@ bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
   else
   {
     // Check that none of the elements have negative indices within the array
-    // Note: We do not have sufficient information about the array to know its
-    // upper bound
-
+    // Note: We do not have sufficient information about the array to know its upper bound
     PosType firstEltInd = offset;
     PosType lastEltInd = (size - 1) * stride + offset;
 
@@ -377,7 +375,7 @@ bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
     {
       SLIC_DEBUG_IF(
         verboseOutput,
-        "Array-based indirection does not allow access "
+        "C-style array-based indirection does not allow access "
           << "to data with lower addresses than its underlying pointer."
           << " Offset of " << offset << " leads to a first index of "
           << firstEltInd << "."
