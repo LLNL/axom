@@ -39,7 +39,7 @@ using SetBase = slam::Set<SetPosition, SetElement>;
 using PositionSet = slam::PositionSet<SetPosition, SetElement>;
 using RangeSet = slam::RangeSet<SetPosition, SetElement>;
 using VectorSet = slam::VectorIndirectionSet<SetPosition, SetElement>;
-using ArraySet = slam::ArrayIndirectionSet<SetPosition, SetElement>;
+using CArraySet = slam::CArrayIndirectionSet<SetPosition, SetElement>;
 
 static const int SET_SIZE = 10;
 
@@ -72,11 +72,11 @@ VectorSet generateSet(std::vector<SetElement>& vec, int size)
   return VectorSet(VectorSet::SetBuilder().size(size).data(&vec));
 }
 
-/// Specialization of \a generateSet for \a ArraySet
+/// Specialization of \a generateSet for \a CArraySet
 template <>
-ArraySet generateSet(std::vector<SetElement>& vec, int size)
+CArraySet generateSet(std::vector<SetElement>& vec, int size)
 {
-  return ArraySet(ArraySet::SetBuilder().size(size).data(vec.data()));
+  return CArraySet(CArraySet::SetBuilder().size(size).data(vec.data()));
 }
 
 }  // end anonymous namespace
@@ -117,7 +117,7 @@ private:
 };
 
 // Tests several types of sets
-using MyTypes = ::testing::Types<PositionSet, RangeSet, VectorSet, ArraySet>;
+using MyTypes = ::testing::Types<PositionSet, RangeSet, VectorSet, CArraySet>;
 TYPED_TEST_SUITE(OrderedSetIteratorTester, MyTypes);
 
 TYPED_TEST(OrderedSetIteratorTester, basic_operations)

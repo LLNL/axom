@@ -397,7 +397,7 @@ public:
 
   /// \brief Find the index of the element that contains the query point, or the element closest to the point.
   IndexType findContainingElement(const PointType& query_pt,
-                                  bool warnOnInvalid = true)
+                                  bool warnOnInvalid = true) const
   {
     if(m_mesh.isEmpty())
     {
@@ -553,7 +553,7 @@ private:
      * \note Some bins might not point to a vertex, so users should check
      * that the returned index is a valid vertex, e.g. using \a mesh.isValidVertex(vertex_id)
      */
-    inline IndexType getNearbyVertex(const PointType& pt)
+    inline IndexType getNearbyVertex(const PointType& pt) const
     {
       const auto cell = m_lattice.gridCell(pt);
       return flatIndex(cell);
@@ -570,7 +570,14 @@ private:
     /// Returns a reference to the index in the array for the ND point with grid index \a cell
     inline IndexType& flatIndex(const typename LatticeType::GridCell& cell)
     {
-      IndexType idx =
+      const IndexType idx =
+        numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
+      return m_bins.flatIndex(idx);
+    }
+
+    inline const IndexType& flatIndex(const typename LatticeType::GridCell& cell) const
+    {
+      const IndexType idx =
         numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
       return m_bins.flatIndex(idx);
     }
