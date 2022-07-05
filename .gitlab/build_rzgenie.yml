@@ -43,13 +43,6 @@ rzgenie-gcc_8_1_0-src:
     HOST_CONFIG: "rzgenie-toss_3_x86_64_ib-${COMPILER}.cmake"
   extends: .src_build_on_rzgenie
 
-# disabled due to time limit
-# rzgenie-intel_18_0_2-src:
-#   variables:
-#     COMPILER: "intel@18.0.2"
-#     HOST_CONFIG: "rzgenie-toss_3_x86_64_ib-${COMPILER}.cmake"
-#   extends: .src_build_on_rzgenie
-
 rzgenie-intel_19_0_4-src:
   variables:
     COMPILER: "intel@19.0.4"
@@ -81,12 +74,6 @@ rzgenie-gcc_8_1_no_fortran-full:
   variables:
     COMPILER: "gcc@8.1_no_fortran"
     SPEC: "%${COMPILER}~fortran+mfem"
-  extends: .full_build_on_rzgenie
-
-rzgenie-intel_18_0_2-full:
-  variables:
-    COMPILER: "intel@18.0.2"
-    SPEC: "%${COMPILER}+mfem~cpp14"
   extends: .full_build_on_rzgenie
 
 rzgenie-intel_19_0_4-full:
