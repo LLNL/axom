@@ -532,7 +532,7 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  IndBufferType& getRelBeginVec(DataLayout layout);
+  IndBufferType& relBeginVec(DataLayout layout);
 
   /*!
    * \brief Returns a reference to the corresponding array of indices for
@@ -540,7 +540,7 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  IndBufferType& getRelIndVec(DataLayout layout);
+  IndBufferType& relIndVec(DataLayout layout);
 
   /*!
    * \brief Returns a reference to the static relation corresponding to a
@@ -548,7 +548,7 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  StaticVariableRelationType& getRelStatic(DataLayout layout);
+  StaticVariableRelationType& relStatic(DataLayout layout);
 
   /*!
    * \brief Returns a reference to the dynamic relation corresponding to a
@@ -556,7 +556,7 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  DynamicVariableRelationType& getRelDynamic(DataLayout layout);
+  DynamicVariableRelationType& relDynamic(DataLayout layout);
 
   /*!
    * \brief Returns a reference to the dominant set of elements in the relation
@@ -564,7 +564,7 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  RangeSetType& getRelDominantSet(DataLayout layout);
+  RangeSetType& relDominantSet(DataLayout layout);
 
   /*!
    * \brief Returns a reference to the secondary set of elements in the relation
@@ -572,21 +572,21 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  RangeSetType& getRelSecondarySet(DataLayout layout);
+  RangeSetType& relSecondarySet(DataLayout layout);
 
   /*!
    * \brief Returns a reference to a sparse set corresponding to a relation.
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  RelationSetType& getRelSparseSet(DataLayout layout);
+  RelationSetType& relSparseSet(DataLayout layout);
 
   /*!
    * \brief Returns a reference to a product set corresponding to a relation.
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  ProductSetType& getRelDenseSet(DataLayout layout);
+  ProductSetType& relDenseSet(DataLayout layout);
 
   /*!
    * \brief Returns true if the static relation corresponding to the given data
@@ -833,7 +833,7 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   if(fieldIdx < 0)
     throw std::invalid_argument("No field with this name is found");
 
-  ProductSetType* prod_set = &getRelDenseSet(m_fieldDataLayoutVec[fieldIdx]);
+  ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
   DenseField2D<T> typedBMap(*this,
                             prod_set,
