@@ -36,7 +36,8 @@ enum class ExecPolicy
 {
   CPU,
   OpenMP,
-  CUDA
+  CUDA,
+  HIP
 };
 
 const std::map<std::string, ExecPolicy> validExecPolicies {
@@ -46,6 +47,9 @@ const std::map<std::string, ExecPolicy> validExecPolicies {
 #endif
 #ifdef AXOM_USE_CUDA
   {"cuda", ExecPolicy::CUDA}
+#endif
+#ifdef AXOM_USE_HIP
+  {"hip", ExecPolicy::HIP}
 #endif
 };
 
@@ -347,7 +351,10 @@ struct Arguments
     pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
 #endif
 #ifdef AXOM_USE_CUDA
-    pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
+    pol_info += "\nSet to \'cuda\' to use a CUDA GPU execution policy.";
+#endif
+#ifdef AXOM_USE_HIP
+    pol_info += "\nSet to \'hip\' to use a HIP GPU execution policy.";
 #endif
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
       ->capture_default_str()
@@ -383,6 +390,13 @@ int main(int argc, char** argv)
   if(args.exec_space == ExecPolicy::CUDA)
   {
     using GPUExec = axom::CUDA_EXEC<256>;
+    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+  }
+#endif
+#ifdef AXOM_USE_HIP
+  if(args.exec_space == ExecPolicy::HIP)
+  {
+    using GPUExec = axom::HIP_EXEC<256>;
     axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
   }
 #endif
@@ -442,6 +456,18 @@ int main(int argc, char** argv)
                                                       candSecondPair,
                                                       firstPair,
                                                       secondPair);
+    break;
+  #endif
+  #ifdef AXOM_USE_HIP
+  case ExecPolicy::HIP:
+    find_collisions_broadphase<axom::HIP_EXEC<256>>(surface_mesh.get(),
+                                                    candFirstPair,
+                                                    candSecondPair);
+    find_collisions_narrowphase<axom::HIP_EXEC<256>>(surface_mesh.get(),
+                                                     candFirstPair,
+                                                     candSecondPair,
+                                                     firstPair,
+                                                     secondPair);
     break;
   #endif
 #endif

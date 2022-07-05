@@ -399,8 +399,7 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
 template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
 {
-#ifdef __CUDA_ARCH__
-  using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+#ifdef AXOM_DEVICE_CODE
 
   using FloatType = typename BBoxType::CoordType;
   using PointType = typename BBoxType::PointType;
@@ -456,7 +455,7 @@ AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
 
   return BBoxType {min_pt, max_pt};
 
-#else  // __CUDA_ARCH__
+#else  // AXOM_DEVICE_CODE
   std::atomic_thread_fence(std::memory_order_acquire);
   return box;
 #endif
@@ -471,10 +470,9 @@ template <typename ExecSpace, typename BBoxType>
 AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
                                                const BBoxType& value)
 {
-#if defined(__CUDA_ARCH__) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_RAJA)
   using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
 
-  using FloatType = typename BBoxType::CoordType;
   using PointType = typename BBoxType::PointType;
 
   constexpr int NDIMS = PointType::DIMENSION;
@@ -488,7 +486,7 @@ AXOM_HOST_DEVICE static inline void sync_store(BBoxType& box,
     RAJA::atomicExchange<atomic_policy>(&(min_pt[dim]), value.getMin()[dim]);
     RAJA::atomicExchange<atomic_policy>(&(max_pt[dim]), value.getMax()[dim]);
   }
-#else  // __CUDA_ARCH__
+#else  // __CUDA_ARCH__ || __HIP_DEVICE_COMPILE__
   box = value;
   std::atomic_thread_fence(std::memory_order_release);
 #endif

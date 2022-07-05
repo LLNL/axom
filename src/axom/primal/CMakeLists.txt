@@ -64,8 +64,8 @@ set( primal_headers
 
 set( primal_sources
 
-     ## operators
-     operators/detail/intersect_impl.cpp
+     ## Empty source file
+     dummy.cpp
    )
 
 blt_list_append(
