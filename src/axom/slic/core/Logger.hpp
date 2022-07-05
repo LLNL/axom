@@ -66,6 +66,13 @@ public:
   void setLoggingMsgLevel(message::Level level);
 
   /*!
+   * \brief Marks this rank as aborting.
+   * \param [in] val true for aborting, false for not.
+   * \param [in] level the logging level.
+   */
+  void setAbortFlag(bool val, message::Level level);
+
+  /*!
    * \brief Aborts and flushes on warning or error if corresponding AbortOnError
    *  or AbortOnWarning is set to true
    * \collective
@@ -255,6 +262,21 @@ public:
                   const std::string& fileName,
                   int line,
                   bool filter_duplicates = false);
+
+  /*!
+   * \brief Confirms ranks should flush and abort if a rank's abort flag was
+   *        set for a log level.
+   * \collective
+   */
+  // void determineAbortState();
+  /*!
+   * \brief Determines ranks should flush and abort if a rank's abort flag was
+   *        set.
+   * \param [in] level the level to confirm
+   * \return true if all ranks should flush and abort, else false.
+   * \collective
+   */
+  bool confirmAbortStreams(message::Level level);
 
   /*!
    * \brief Flushes all streams.

@@ -120,6 +120,41 @@ public:
    */
   virtual void push() {};
 
+  /*!
+   * \brief Marks the log stream as aborting. It's a NO-OP by default.
+   * \param [in] val true for aborting, false for not.
+   * \note The intent of this method is to be overridden by concrete
+   *  implementations. This is primarily useful for applications running
+   *  in a distributed MPI environment. Intended to be used with
+   *  determineAbortState().
+   */
+  virtual void setAbortFlag(bool /* val */) {};
+
+  /*!
+   * \brief Determines ranks should flush and abort if a rank's abort flag was
+   *        set. It's a NO-OP by default.
+   * \note The intent of this method is to be overridden by concrete
+   *  implementations. This is primarily useful for applications running
+   *  in a distributed MPI environment, where the
+   *  determineAbortState() is a collective
+   *  operation intended for a synchronization checkpoint.
+   *  Intended to be used with setAbortFlag().
+   */
+  // virtual void determineAbortState() {};
+
+  /*!
+   * \brief Confirms ranks should flush and abort if a rank's abort flag was
+   *        set. Default is to return true (non-MPI).
+   * \return true if all ranks should flush and abort, else false.
+   * \note The intent of this method is to be overridden by concrete
+   *  implementations. This is primarily useful for applications running
+   *  in a distributed MPI environment, where the
+   *  confirmAbort() is a collective
+   *  operation intended for a synchronization checkpoint.
+   *  Intended to be used with setAbortFlag().
+   */
+  virtual bool confirmAbort() { return true; };
+
 protected:
   /*!
    * \brief Returns the formatted message as a single string.

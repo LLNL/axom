@@ -297,14 +297,23 @@
  * \endcode
  *
  */
+  // TODO something here that labels rank as failed             \
+
+  // TODO something here that every rank must do, check values on each
+  // rank, if ok do nothing, if not, then we flush and then abort()
   #define SLIC_ASSERT(EXP)                                            \
     do                                                                \
     {                                                                 \
       if(!(EXP))                                                      \
       {                                                               \
+        axom::slic::setAbortFlag(true, axom::slic::message::Error);   \
         std::ostringstream __oss;                                     \
         __oss << "Failed Assert: " << #EXP << std::ends;              \
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
+      }                                                               \
+      else                                                            \
+      {                                                               \
+        axom::slic::abortIfEnabled(axom::slic::message::Error);       \
       }                                                               \
     } while(axom::slic::detail::false_value)
 

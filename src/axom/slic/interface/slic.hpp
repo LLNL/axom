@@ -65,6 +65,13 @@ bool isRoot();
 void setIsRoot(bool is_root);
 
 /*!
+ * \brief Marks this node as aborting.
+ * \param [in] val true for aborting, false for not.
+ * \param [in] level user-supplied level.
+ */
+void setAbortFlag(bool val, message::Level level);
+
+/*!
  * \brief Ensures the SLIC logging environment is initialized.
  *
  * If SLIC is not initialized when this method is called, initialize SLIC
@@ -225,6 +232,13 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
  * \param [in] level the logging level.
  */
 void abortIfEnabled(message::Level level);
+
+/*!
+ * \brief Determines ranks should flush and abort if a rank's abort flag was
+ *        set.
+ * \collective
+ */
+// void determineAbortState();
 
 /*!
  * \brief Logs the given message to all registered streams.

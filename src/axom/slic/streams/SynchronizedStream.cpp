@@ -47,6 +47,7 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm)
   : m_comm(comm)
   , m_cache(new MessageCache())
   , m_stream(stream)
+  , m_abort(false)
 { }
 
 //------------------------------------------------------------------------------
@@ -56,6 +57,7 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream,
   : m_comm(comm)
   , m_cache(new MessageCache)
   , m_stream(stream)
+  , m_abort(false)
 {
   this->setFormatString(format);
 }
@@ -133,6 +135,37 @@ void SynchronizedStream::flush()
     MPI_Isend(nullptr, 0, MPI_INT, nextrank, 0, m_comm, &null_request);
     MPI_Request_free(&null_request);
   }
+}
+
+//------------------------------------------------------------------------------
+void SynchronizedStream::setAbortFlag(bool val) { m_abort = val; }
+
+//------------------------------------------------------------------------------
+// void SynchronizedStream::determineAbortState()
+bool SynchronizedStream::confirmAbort()
+{
+  if(m_cache == nullptr)
+  {
+    std::cerr << "ERROR: NULL cache!\n";
+    return false;
+  }
+
+  if(m_comm == MPI_COMM_NULL)
+  {
+    std::cerr << "ERROR: NULL communicator!\n";
+    return false;
+  }
+
+  int rank = -1;
+  int nranks = 0;
+  MPI_Comm_rank(m_comm, &rank);
+  MPI_Comm_size(m_comm, &nranks);
+
+  bool rank_abort = m_abort;
+  bool all_abort = false;
+  MPI_Allreduce(&rank_abort, &all_abort, 1, MPI_C_BOOL, MPI_LOR, m_comm);
+
+  return all_abort;
 }
 
 } /* namespace slic */

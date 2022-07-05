@@ -88,6 +88,18 @@ message::Level getLoggingMsgLevel()
   return Logger::getActiveLogger()->getLoggingMsgLevel();
 }
 
+void setAbortFlag(bool val, message::Level level)
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->setAbortFlag(val, level);
+}
+
+//------------------------------------------------------------------------------
+// void determineAbortState()
+// {
+//   Logger::getActiveLogger()->determineAbortState();
+// }
+
 //------------------------------------------------------------------------------
 void abortIfEnabled(message::Level level)
 {
