@@ -698,6 +698,10 @@ def get_shared_libs_dir():
     return pjoin(get_shared_base_dir(), "libs")
 
 
+def get_shared_devtool_dir():
+    return pjoin(get_shared_collab_dir(), "devtools")
+
+
 def get_uberenv_path():
     return pjoin(get_script_dir(), "../uberenv/uberenv.py")
 
