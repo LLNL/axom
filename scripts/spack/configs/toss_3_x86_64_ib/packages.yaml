@@ -47,8 +47,6 @@ packages:
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.3.1
     - spec: mvapich2@2.3%gcc@8.1.0_no_fortran process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
-    - spec: mvapich2@2.3%intel@18.0.2 process_managers=slurm arch=linux-rhel7-ivybridge
-      prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
     - spec: mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
 
