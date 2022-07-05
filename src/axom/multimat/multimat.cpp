@@ -63,13 +63,13 @@ MultiMat::MapUniquePtr MultiMat::helper_copyField(const MultiMat& mm, int map_i)
   }
 }
 
-std::vector<MultiMat::SetPosType>& MultiMat::getRelBeginVec(DataLayout layout)
+MultiMat::IndBufferType& MultiMat::getRelBeginVec(DataLayout layout)
 {
   return (layout == DataLayout::CELL_DOM) ? m_cellMatRel_beginsVec
                                           : m_matCellRel_beginsVec;
 }
 
-std::vector<MultiMat::SetPosType>& MultiMat::getRelIndVec(DataLayout layout)
+MultiMat::IndBufferType& MultiMat::getRelIndVec(DataLayout layout)
 {
   return (layout == DataLayout::CELL_DOM) ? m_cellMatRel_indicesVec
                                           : m_matCellRel_indicesVec;
@@ -218,8 +218,8 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
   SLIC_ASSERT(vecarr.size() == m_ncells * m_nmats);  //Check it's dense
 
   StaticVariableRelationType& Rel_ptr = getRelStatic(layout);
-  std::vector<SetPosType>& Rel_beginsVec = getRelBeginVec(layout);
-  std::vector<SetPosType>& Rel_indicesVec = getRelIndVec(layout);
+  IndBufferType& Rel_beginsVec = getRelBeginVec(layout);
+  IndBufferType& Rel_indicesVec = getRelIndVec(layout);
 
   SLIC_ASSERT(!hasValidStaticRelation(layout));
 
@@ -477,8 +477,8 @@ void MultiMat::convertToStatic()
     RangeSetType& set1 = getRelDominantSet(layout);
     RangeSetType& set2 = getRelSecondarySet(layout);
 
-    std::vector<SetPosType>& rel_beginvec = getRelBeginVec(layout);
-    std::vector<SetPosType>& rel_indicesVec = getRelIndVec(layout);
+    IndBufferType& rel_beginvec = getRelBeginVec(layout);
+    IndBufferType& rel_indicesVec = getRelIndVec(layout);
 
     SLIC_ASSERT(SetPosType(rel_beginvec.size()) == set1.size() + 1);
     int rel_data_size = 0;
@@ -627,8 +627,8 @@ void MultiMat::makeOtherRelation(DataLayout layout)
     (layout == DataLayout::CELL_DOM ? DataLayout::MAT_DOM : DataLayout::CELL_DOM);
   StaticVariableRelationType& oldRel = getRelStatic(old_layout);
   StaticVariableRelationType& newRel = getRelStatic(layout);
-  std::vector<SetPosType>& newBeginVec = getRelBeginVec(layout);
-  std::vector<SetPosType>& newIndicesVec = getRelIndVec(layout);
+  IndBufferType& newBeginVec = getRelBeginVec(layout);
+  IndBufferType& newIndicesVec = getRelIndVec(layout);
 
   RangeSetType& set1 = *(oldRel.fromSet());
   RangeSetType& set2 = *(oldRel.toSet());
@@ -982,9 +982,9 @@ void MultiMat::transposeField_helper(int field_idx)
   if(m_fieldSparsityLayoutVec[field_idx] == SparsityLayout::SPARSE)
   {
     //copy begin vector for moving
-    std::vector<SetPosType> vec_idx =
+    IndBufferType vec_idx =
       getRelBeginVec(new_layout);  //a copy of the beginVec to keep track
-    const std::vector<SetPosType>& indicesVec = *oldRel.relationData();
+    const IndBufferType& indicesVec = *oldRel.relationData();
 
     arr_data.resize(oldRel.totalSize() * stride);
     for(int i = 0; i < oldRel.totalSize(); ++i)

@@ -76,6 +76,7 @@ protected:
   using SetType = slam::Set<SetPosType, SetElemType>;
   using RangeSetType = slam::RangeSet<SetPosType, SetElemType>;
   // SLAM Relation typedef
+  using IndBufferType = std::vector<SetPosType>;
   template <typename T>
   using IndPolicy = slam::policies::STLVectorIndirection<SetPosType, T>;
   using VariableCardinality =
@@ -531,7 +532,7 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  std::vector<SetPosType>& getRelBeginVec(DataLayout layout);
+  IndBufferType& getRelBeginVec(DataLayout layout);
 
   /*!
    * \brief Returns a reference to the corresponding array of indices for
@@ -539,7 +540,7 @@ private:  //private functions
    *
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
-  std::vector<SetPosType>& getRelIndVec(DataLayout layout);
+  IndBufferType& getRelIndVec(DataLayout layout);
 
   /*!
    * \brief Returns a reference to the static relation corresponding to a
@@ -610,11 +611,11 @@ private:
   //Depending on the layout of the field, each field can be mapped to different Relations
   //Relation can be nullptr if no field is using said relation
   //cell to mat relation data
-  std::vector<SetPosType> m_cellMatRel_beginsVec;
-  std::vector<SetPosType> m_cellMatRel_indicesVec;
+  IndBufferType m_cellMatRel_beginsVec;
+  IndBufferType m_cellMatRel_indicesVec;
   //mat to cell relation data
-  std::vector<SetPosType> m_matCellRel_beginsVec;
-  std::vector<SetPosType> m_matCellRel_indicesVec;
+  IndBufferType m_matCellRel_beginsVec;
+  IndBufferType m_matCellRel_indicesVec;
   //relation objects stored in unified memory
   axom::Array<StaticVariableRelationType> m_staticRelations;
   axom::Array<DynamicVariableRelationType> m_dynamicRelations;
