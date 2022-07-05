@@ -14,6 +14,7 @@ blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS blt::hip IF ENABLE_HIP)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
+# In/out octree containment example -------------------------------------------
 blt_add_executable(
     NAME        quest_containment_driver_ex
     SOURCES     containment_driver.cpp
@@ -22,6 +23,7 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
+# Shaping example -------------------------------------------------------------
 if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
               AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
               AND AXOM_ENABLE_KLEE)
@@ -34,6 +36,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         )
 endif()
 
+# Distributed closest point example -------------------------------------------
 if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
               AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     blt_add_executable(
@@ -45,6 +48,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             )
 endif()
 
+# Point in cell example -------------------------------------------------------
 if(MFEM_FOUND)
     blt_add_executable(
         NAME        quest_point_in_cell_benchmark_ex
@@ -55,6 +59,7 @@ if(MFEM_FOUND)
         )
 endif()
 
+# Delaunay triangulation example ----------------------------------------------
 blt_add_executable(
     NAME        quest_delaunay_triangulation_ex
     SOURCES     delaunay_triangulation.cpp
@@ -63,13 +68,16 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-foreach(d 2 3)
-    axom_add_test(
-        NAME quest_delaunay_${d}_test
-        COMMAND quest_delaunay_triangulation_ex -d ${d} -o delaunay_mesh_${d}d -n 100
-        )
-endforeach()
+if(AXOM_ENABLE_TESTS)
+    foreach(d 2 3)
+        axom_add_test(
+            NAME quest_delaunay_${d}_test
+            COMMAND quest_delaunay_triangulation_ex -d ${d} -o delaunay_mesh_${d}d -n 100
+            )
+    endforeach()
+endif()
 
+# Scattered interpolation example --------------------------------------------
 if(AXOM_ENABLE_SIDRE)
     blt_add_executable(
         NAME        quest_scattered_interpolation_ex
@@ -78,10 +86,19 @@ if(AXOM_ENABLE_SIDRE)
         DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
         )
+
+    if(AXOM_ENABLE_TESTS)
+        foreach(d 2 3)
+            axom_add_test(
+                NAME quest_scattered_interpolation_${d}_test
+                COMMAND quest_scattered_interpolation_ex -d ${d} -n 10000 -q 20000
+                )
+        endforeach()
+    endif()
 endif()
 
 
-## Quest interface examples
+# Quest signed distance and inout interface examples (C++ and Fortran) --------
 
 blt_add_executable(
     NAME       quest_signed_distance_interface_ex
@@ -99,10 +116,10 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-# Add a test for the quest interface; Set up for MPI, when available
 set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+    # Add a test for the quest interface; Set up for MPI, when available
     if (ENABLE_MPI)
         axom_add_test(
             NAME quest_inout_interface_3D_mpi_test

@@ -92,7 +92,7 @@ struct SimpleQuadMesh
   // _quadmesh_example_set_typedefs_end
 
   // _quadmesh_example_common_typedefs_start
-  using ArrayIndir = slam::policies::ArrayIndirection<PosType, ElemType>;
+  using ArrayIndir = slam::policies::CArrayIndirection<PosType, ElemType>;
   // _quadmesh_example_common_typedefs_end
 
   /// Type aliases for relations

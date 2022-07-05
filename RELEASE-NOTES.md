@@ -154,6 +154,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `axom:IndexType`. Before, Sidre always used `int64_t`. Now it
   respects the define `AXOM_USE_64BIT_INDEXTYPE`.
 - Mint now depends on the Slam component.
+- Renames indirection policies in slam: The c-array indirection policy was renamed from `ArrayIndirection` to `CArrayIndirection` 
+  and the axom::Array-based indirection policy was renamed from `CoreArrayIndirection` to `ArrayIndirection`.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s

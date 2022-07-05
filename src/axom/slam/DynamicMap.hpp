@@ -163,7 +163,7 @@ public:
   }
 
   /**
-   * \brief Insert vale \a value into position \a position in the map
+   * \brief Insert \a value into \a position in the map
    *
    * \note Increases the map size if position is out of range
    */
