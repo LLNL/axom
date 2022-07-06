@@ -86,9 +86,9 @@ public:
    * \param [in] status user-supplied flag.
    */
   void setAbortOnError(bool status)
-  { 
+  {
     m_abortOnError = status;
-    if (!status)
+    if(!status)
     {
       setAbortFlag(false, message::Error);
     }
@@ -106,7 +106,7 @@ public:
    * \post this->isAbortOnErrorsEnabled() == false.
    */
   void disableAbortOnError()
-  { 
+  {
     m_abortOnError = false;
     setAbortFlag(false, message::Error);
   };
@@ -123,9 +123,9 @@ public:
    * \param [in] status user-supplied flag.
    */
   void setAbortOnWarning(bool status)
-  { 
+  {
     m_abortOnWarning = status;
-    if (!status)
+    if(!status)
     {
       setAbortFlag(false, message::Warning);
     }
@@ -143,7 +143,7 @@ public:
    * \post this->isAbortOnWarningsEnabled() == false.
    */
   void disableAbortOnWarning()
-  { 
+  {
     m_abortOnWarning = false;
     setAbortFlag(false, message::Error);
   };

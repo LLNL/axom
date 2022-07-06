@@ -40,14 +40,6 @@ enum Level
 };
 
 /*!
- * \brief Array of strings corresponding to the Level enum.
- */
-static const std::string MessageLevelName[Num_Levels] = {"ERROR",
-                                                         "WARNING",
-                                                         "INFO",
-                                                         "DEBUG"};
-
-/*!
  * \brief Returns the string name representation of the given level.
  * \param [in] l the level in query.
  * \return name a string corresponding to the name of the given leve.
@@ -56,6 +48,10 @@ static const std::string MessageLevelName[Num_Levels] = {"ERROR",
  */
 static inline std::string getLevelAsString(Level l)
 {
+  const std::string MessageLevelName[Num_Levels] = {"ERROR",
+                                                    "WARNING",
+                                                    "INFO",
+                                                    "DEBUG"};
   if(l < 0 || l >= Num_Levels)
   {
     return ("UNKNOWN-LEVEL");

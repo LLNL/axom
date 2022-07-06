@@ -256,7 +256,7 @@ void Logger::logMessage(message::Level level,
   }
 
   if((m_abortOnError && (level == message::Error)) ||
-    (m_abortOnWarning && (level == message::Warning)))
+     (m_abortOnWarning && (level == message::Warning)))
   {
     setAbortFlag(true, level);
   }
@@ -319,6 +319,14 @@ void Logger::initialize()
 {
   Logger::createLogger("root");
   Logger::activateLogger("root");
+}
+
+//------------------------------------------------------------------------------
+std::map<std::string, Logger*>& Logger::getSLoggers()
+{
+  static std::map<std::string, Logger*>* s_loggers =
+    new std::map<std::string, Logger*>();
+  return *s_loggers;
 }
 
 //------------------------------------------------------------------------------

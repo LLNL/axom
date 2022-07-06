@@ -105,10 +105,7 @@ void check_line(const std::string& msg, int expected_line)
 
 //------------------------------------------------------------------------------
 bool has_aborted = false;
-void customAbortFunction()
-{ 
-  has_aborted = true;
-}
+void customAbortFunction() { has_aborted = true; }
 
 }  // end anonymous namespace
 
