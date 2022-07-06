@@ -121,14 +121,23 @@ public:
   virtual void push() {};
 
   /*!
-   * \brief Marks the log stream as aborting. It's a NO-OP by default.
-   * \param [in] val true for aborting, false for not.
+   * \brief Gets the aborting flag.
+   * \return true for aborting, false for not.
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment. Intended to be used with
    *  determineAbortState().
    */
-  virtual void setAbortFlag(bool /* val */) {};
+  virtual bool getAbortFlag() { return m_abort; };
+
+  /*!
+   * \brief Marks the log stream as aborting.
+   * \param [in] val true for aborting, false for not.
+   * \note The intent of this method is to be overridden by concrete
+   *  implementations. This is primarily useful for applications running
+   *  in a distributed MPI environment.
+   */
+  virtual void setAbortFlag(bool val) { m_abort = val; };
 
   /*!
    * \brief Determines ranks should flush and abort if a rank's abort flag was
@@ -144,16 +153,15 @@ public:
 
   /*!
    * \brief Confirms ranks should flush and abort if a rank's abort flag was
-   *        set. Default is to return true (non-MPI).
+   *        set. Default is to return value of m_abort flag.
    * \return true if all ranks should flush and abort, else false.
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment, where the
    *  confirmAbort() is a collective
    *  operation intended for a synchronization checkpoint.
-   *  Intended to be used with setAbortFlag().
    */
-  virtual bool confirmAbort() { return true; };
+  virtual bool confirmAbort() { return m_abort; };
 
 protected:
   /*!
@@ -183,6 +191,7 @@ protected:
 
 private:
   std::string m_formatString;
+  bool m_abort;
 
   /*!
    * \brief Replaces the given key in the message string with the given value.

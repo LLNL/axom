@@ -47,7 +47,6 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm)
   : m_comm(comm)
   , m_cache(new MessageCache())
   , m_stream(stream)
-  , m_abort(false)
 { }
 
 //------------------------------------------------------------------------------
@@ -57,7 +56,6 @@ SynchronizedStream::SynchronizedStream(std::ostream* stream,
   : m_comm(comm)
   , m_cache(new MessageCache)
   , m_stream(stream)
-  , m_abort(false)
 {
   this->setFormatString(format);
 }
@@ -138,9 +136,6 @@ void SynchronizedStream::flush()
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedStream::setAbortFlag(bool val) { m_abort = val; }
-
-//------------------------------------------------------------------------------
 // void SynchronizedStream::determineAbortState()
 bool SynchronizedStream::confirmAbort()
 {
@@ -161,7 +156,7 @@ bool SynchronizedStream::confirmAbort()
   MPI_Comm_rank(m_comm, &rank);
   MPI_Comm_size(m_comm, &nranks);
 
-  bool rank_abort = m_abort;
+  bool rank_abort = getAbortFlag();
   bool all_abort = false;
   MPI_Allreduce(&rank_abort, &all_abort, 1, MPI_C_BOOL, MPI_LOR, m_comm);
 

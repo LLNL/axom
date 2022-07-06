@@ -9,7 +9,7 @@
 
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
-#include "axom/slic/streams/GenericOutputStream.hpp"
+#include "axom/slic/streams/SynchronizedStream.hpp"
 
 #include "gtest/gtest.h"
 
@@ -600,7 +600,9 @@ int main(int argc, char* argv[])
   std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
 
   slic::addStreamToAllMsgLevels(
-    new slic::GenericOutputStream(&slic::internal::test_stream, msgfmt));
+    new slic::SynchronizedStream(&slic::internal::test_stream,
+                                 MPI_COMM_WORLD,
+                                 msgfmt));
 
   // finalized when exiting main scope
   result = RUN_ALL_TESTS();

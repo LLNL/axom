@@ -81,12 +81,6 @@ public:
   virtual void flush();
 
   /*!
-   * \brief Marks the stream as aborting.
-   * \param [in] val true for aborting, false for not.
-   */
-  virtual void setAbortFlag(bool val);
-
-  /*!
    * \brief Determines ranks should flush and abort if a rank's abort flag was
    *        set.
    * \collective
@@ -115,7 +109,6 @@ private:
   MPI_Comm m_comm;
   MessageCache* m_cache;
   std::ostream* m_stream;
-  bool m_abort;
   /// @}
 
   /*!
@@ -126,8 +119,7 @@ private:
   SynchronizedStream()
     : m_comm(MPI_COMM_NULL)
     , m_cache(static_cast<MessageCache*>(nullptr))
-    , m_stream(static_cast<std::ostream*>(nullptr))
-    , m_abort(false) {};
+    , m_stream(static_cast<std::ostream*>(nullptr)) {};
 
   DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
   DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);
