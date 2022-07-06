@@ -80,6 +80,11 @@ Logger::~Logger()
 //------------------------------------------------------------------------------
 void Logger::setAbortFlag(bool val, message::Level level)
 {
+  if(m_isEnabled[level] == false)
+  {
+    return;
+  }
+
   // Set flag for the given stream and level
   unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
   for(unsigned istream = 0; istream < nstreams; ++istream)
@@ -250,7 +255,16 @@ void Logger::logMessage(message::Level level,
       ->append(level, message, tagName, fileName, line, filter_duplicates);
   }
 
-  abortIfEnabled(level);
+  if((m_abortOnError && (level == message::Error)) ||
+    (m_abortOnWarning && (level == message::Warning)))
+  {
+    setAbortFlag(true, level);
+  }
+
+  if(level == message::Error || level == message::Warning)
+  {
+    abortIfEnabled(level);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -262,7 +276,6 @@ void Logger::flushStreams()
     for(unsigned istream = 0; istream < nstreams; ++istream)
     {
       m_logStreams[level][istream]->flush();
-
     }  // END for all streams
 
   }  // END for all levels
@@ -270,12 +283,16 @@ void Logger::flushStreams()
 
 bool Logger::confirmAbortStreams(message::Level level)
 {
+  bool ret = false;
+
   // This also needs to also consider message::Error and message::Warning, definitely.
   unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
   for(unsigned istream = 0; istream < nstreams; ++istream)
   {
-    return m_logStreams[level][istream]->confirmAbort();
+    ret |= m_logStreams[level][istream]->confirmAbort();
   }  // END for all streams
+
+  return ret;
 }
 
 //------------------------------------------------------------------------------

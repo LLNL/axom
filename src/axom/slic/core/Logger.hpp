@@ -81,10 +81,18 @@ public:
   void abortIfEnabled(message::Level level);
 
   /*!
-   * \brief Toggles the abort behavior for error messages. Default is false.
+   * \brief Toggles the abort behavior for error messages. Default is true.
+   *        Resets the abort flag for error streams if false.
    * \param [in] status user-supplied flag.
    */
-  void setAbortOnError(bool status) { m_abortOnError = status; };
+  void setAbortOnError(bool status)
+  { 
+    m_abortOnError = status;
+    if (!status)
+    {
+      setAbortFlag(false, message::Error);
+    }
+  };
 
   /*!
    * \brief Enables abort on error messages.
@@ -94,9 +102,14 @@ public:
 
   /*!
    * \brief Disables abort on error messages.
+   *        Resets the abort flag for error streams.
    * \post this->isAbortOnErrorsEnabled() == false.
    */
-  void disableAbortOnError() { m_abortOnError = false; };
+  void disableAbortOnError()
+  { 
+    m_abortOnError = false;
+    setAbortFlag(false, message::Error);
+  };
 
   /*!
    * \brief Checks the status of the abort behavior on error messages.
@@ -106,9 +119,17 @@ public:
 
   /*!
    * \brief Toggles the abort behavior for warning messages. Default is false.
+   *        Resets the abort flag for warning streams if false.
    * \param [in] status user-supplied flag.
    */
-  void setAbortOnWarning(bool status) { m_abortOnWarning = status; };
+  void setAbortOnWarning(bool status)
+  { 
+    m_abortOnWarning = status;
+    if (!status)
+    {
+      setAbortFlag(false, message::Warning);
+    }
+  };
 
   /*!
    * \brief Enables abort on warning messages.
@@ -118,9 +139,14 @@ public:
 
   /*!
    * \brief Disables abort on warnings messages.
+   *        Resets the abort flag for warning streams.
    * \post this->isAbortOnWarningsEnabled() == false.
    */
-  void disableAbortOnWarning() { m_abortOnWarning = false; };
+  void disableAbortOnWarning()
+  { 
+    m_abortOnWarning = false;
+    setAbortFlag(false, message::Error);
+  };
 
   /*!
    * \brief Checks the status of the abort behavior on warning messages.
