@@ -843,6 +843,7 @@ int main(int argc, char** argv)
   }
 
   // Write input mesh to file
+  if(params.verboseOutput)
   {
     std::string file = params.outputFile + "_input_mesh";
     SLIC_INFO(axom::fmt::format("Writing input mesh to '{}/{}'",
@@ -927,14 +928,17 @@ int main(int argc, char** argv)
                       numVerts / timer.elapsedTimeInSec()));
 
   // Dump the Delaunay complex to disk as a vtk file
-  switch(params.dimension)
+  if(params.verboseOutput)
   {
-  case 2:
-    scattered_2d->exportDelaunayComplex(bp_input, "delaunay_2d.vtk");
-    break;
-  case 3:
-    scattered_3d->exportDelaunayComplex(bp_input, "delaunay_3d.vtk");
-    break;
+    switch(params.dimension)
+    {
+    case 2:
+      scattered_2d->exportDelaunayComplex(bp_input, "delaunay_2d.vtk");
+      break;
+    case 3:
+      scattered_3d->exportDelaunayComplex(bp_input, "delaunay_3d.vtk");
+      break;
+    }
   }
 
   // Find the simplices containing each of the query points
@@ -1001,6 +1005,7 @@ int main(int argc, char** argv)
                       numQueryPts * numFields / timer.elapsedTimeInSec()));
 
   // Write query mesh to file
+  if(params.verboseOutput)
   {
     std::string file = params.outputFile + "_output_mesh";
     SLIC_INFO(axom::fmt::format("Writing interpolated point mesh to '{}/{}'",

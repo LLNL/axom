@@ -17,5 +17,6 @@
       "description": "conduit functionality for axom",
       "dependencies": ["conduit"]
     }
-  }
+  },
+  "supports": "!uwp"
 }

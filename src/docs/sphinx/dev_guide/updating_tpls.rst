@@ -350,7 +350,8 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    section there should be an entry of the form ``axom/tpls:clang-10_12-18-20_00h-10m``.
    Copy the name beginning with ``axom/tpls`` to the appropriate locations
    in ``azure-pipelines.yaml``. Repeat this with the names from each compiler
-   job used in the GitHub action.
+   job used in the GitHub action. 
+   Axom's docker images are hosted on our `DockerHub <https://hub.docker.com/r/axom/tpls/tags>`_ page.
 
 #. Make sure all changes in your branch are committed and pushed, and create
    a pull request for a merge to develop. If everything went well, all checks

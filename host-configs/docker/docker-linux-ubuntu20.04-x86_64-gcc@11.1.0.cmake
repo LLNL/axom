@@ -33,8 +33,6 @@ set(CMAKE_CXX_FLAGS "-pthread" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(BLT_CXX_STD "c++14" CACHE STRING "")
-
 #------------------------------------------------------------------------------
 # MPI
 #------------------------------------------------------------------------------
@@ -75,7 +73,7 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
 # C2C not built
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.2.0" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.4.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 

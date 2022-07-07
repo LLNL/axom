@@ -19,7 +19,6 @@ from llnl_lc_build_tools import *
 
 def main():
     shared_dirs = [get_shared_mirror_dir(),
-                   get_archive_base_dir(),
                    get_shared_devtool_dir(),
                    get_shared_libs_dir()]
 

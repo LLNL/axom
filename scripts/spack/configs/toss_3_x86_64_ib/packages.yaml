@@ -45,8 +45,6 @@ packages:
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
     - spec: mvapich2@2.3%gcc@8.3.1 process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.3.1
-    - spec: mvapich2@2.3%gcc@8.1.0_no_fortran process_managers=slurm arch=linux-rhel7-ivybridge
-      prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
     - spec: mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge
       prefix: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
 
@@ -202,9 +200,9 @@ packages:
   hdf5:
     variants: ~shared~mpi
   hypre:
-    version: [2.20.0]
+    version: [2.24.0]
   mfem:
-    version: [4.2.0]
+    version: [4.4.0]
   raja:
     variants: ~shared~examples~exercises
   umpire:
