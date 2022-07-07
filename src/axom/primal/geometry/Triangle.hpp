@@ -47,6 +47,7 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using SphereType = Sphere<T, NDIMS>;
 
+  static constexpr int DIM = NDIMS;
   static constexpr int NUM_TRI_VERTS = 3;
 
 public:
@@ -97,25 +98,18 @@ public:
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, VectorType>::type normal() const
   {
-    return VectorType::cross_product(VectorType(m_points[0], m_points[1]),
-                                     VectorType(m_points[0], m_points[2]));
+    return VectorType::cross_product(m_points[1] - m_points[0],
+                                     m_points[2] - m_points[0]);
   }
 
-  /*!
-   * \brief Returns the area of the triangle (3D specialization)
-   */
+  /// \brief Returns the area of the triangle (3D specialization)
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, double>::type area() const
   {
-    return 0.5 *
-      VectorType::cross_product(VectorType(m_points[0], m_points[1]),
-                                VectorType(m_points[0], m_points[2]))
-        .norm();
+    return 0.5 * normal().norm();
   }
 
-  /*!
-   * \brief Returns the area of the triangle (2D specialization)
-   */
+  /// \brief Returns the area of the triangle (2D specialization)
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type area() const
   {
@@ -141,6 +135,19 @@ public:
     return 0.5 * determinant(B[0]-A[0], C[0]-A[0],
                              B[1]-A[1], C[1]-A[1]);
     // clang-format on
+  }
+
+  /*!
+   * \brief Returns the volume of the triangle (synonym for area())
+   * \sa area()
+   */
+  AXOM_HOST_DEVICE double volume() const { return area(); }
+
+  /// \brief Returns the signed volume of a 2D triangle
+  template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedVolume() const
+  {
+    return signedArea();
   }
 
   /**
@@ -200,20 +207,20 @@ private:
   {
     /* This method returns double (instead of T) and explicitly specializes
        determinant() on type double to avoid confusion of deduced template types. */
-    const VectorType A(p, m_points[0]);
-    const VectorType B(p, m_points[1]);
-    const VectorType C(p, m_points[2]);
-
     if(NDIMS < 3)
     {
       return 0.;
     }
     else
     {
+      const VectorType pA = m_points[0] - p;
+      const VectorType pB = m_points[1] - p;
+      const VectorType pC = m_points[2] - p;
+
       // clang-format off
-      return numerics::determinant< double > ( A[0], A[1], A[2],
-                                               B[0], B[1], B[2],
-                                               C[0], C[1], C[2]);
+      return numerics::determinant< double > (pA[0], pA[1], pA[2],
+                                              pB[0], pB[1], pB[2],
+                                              pC[0], pC[1], pC[2]);
       // clang-format on
     }
   }
@@ -221,57 +228,60 @@ private:
 public:
   /*!
    * \brief Returns the barycentric coordinates of a point within a triangle
-   * \return The barycentric coordinates of the triangle inside a Point<T,3>
+   *
+   * \return The barycentric coordinates of the triangle
    * \pre The point lies in this triangle's plane.
    * \post The barycentric coordinates sum to 1.
    * Adapted from Real Time Collision Detection by Christer Ericson.
    */
   Point<double, 3> physToBarycentric(const PointType& p) const
   {
-    using axom::numerics::determinant;
+    // Query point needs to be in triangle's plane
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
     Point<double, 3> bary;
 
-    Vector<double, 3> u =
-      VectorType::cross_product(VectorType(m_points[0], m_points[1]),
-                                VectorType(m_points[0], m_points[2]));
-    const double x = std::abs(u[0]);
-    const double y = std::abs(u[1]);
-    const double z = std::abs(u[2]);
-
-    double ood = 1.0 / u[2];  // compute in xy plane by default
-    int c0 = 0;
-    int c1 = 1;
-
-    if(x >= y && x >= z)
-    {
-      // compute in yz plane
-      c0 = 1;
-      c1 = 2;
-      ood = 1.0 / u[0];
-    }
-    else if(y >= x && y >= z)
-    {
-      // compute in xz plane
-      c0 = 0;
-      c1 = 2;
-      ood = -1.0 / u[1];
-    }
+    auto triArea2D =
+      [](double x1, double y1, double x2, double y2, double x3, double y3)
+      -> double { return (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2); };
 
     // References to triangle vertices for convenience
     const PointType& A = m_points[0];
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
 
-    // Compute ood * area of each sub-triangle
-    // clang-format off
-    bary[0] = ood * determinant(p[c0]-B[c0], p[c1]-B[c1],
-                                B[c0]-C[c0], B[c1]-C[c1]);
-    bary[1] = ood * determinant(p[c0]-C[c0], p[c1]-C[c1],
-                                C[c0]-A[c0], C[c1]-A[c1]);
+    // unnormalized triangle normal
+    const auto u = VectorType::cross_product(B - A, C - A);
+
+    double ood;     // one over denomenator
+    double nu, nv;  // numerators for 2D projection
+
+    // Find best projection plane for computing weights: xy, yz, xz
+    const int projectionDim = DIM == 2 ? 2 : primal::abs(u.array()).argMax();
+    switch(projectionDim)
+    {
+    case 0:  // compute in yz plane
+      nu = triArea2D(p[1], p[2], B[1], B[2], C[1], C[2]);
+      nv = triArea2D(p[1], p[2], C[1], C[2], A[1], A[2]);
+      ood = 1.0 / u[0];
+      break;
+    case 1:  // compute in xz plane
+      nu = triArea2D(p[0], p[2], B[0], B[2], C[0], C[2]);
+      nv = triArea2D(p[0], p[2], C[0], C[2], A[0], A[2]);
+      ood = -1.0 / u[1];
+      break;
+    case 2:
+    default:  // compute in xy plane
+      nu = triArea2D(p[0], p[1], B[0], B[1], C[0], C[1]);
+      nv = triArea2D(p[0], p[1], C[0], C[1], A[0], A[1]);
+      ood = 1.0 / u[2];
+      break;
+    }
+
+    // Return barycentric coordinates: ood * area of each sub-triangle
+    bary[0] = ood * nu;
+    bary[1] = ood * nv;
     bary[2] = 1. - bary[0] - bary[1];
-    // clang-format on
 
     return bary;
   }
