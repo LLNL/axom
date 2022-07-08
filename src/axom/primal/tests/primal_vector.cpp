@@ -260,25 +260,85 @@ TEST(primal_vector, vector_inner_product)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_vector, vector_outer_product)
+TEST(primal_vector, vector3_outer_product)
 {
   static const int DIM = 3;
   using CoordType = double;
-  using QPoint = primal::Point<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 {3, 0};
-  QPoint p2 {0, 4};
+  {
+    QVec v1 {3, 0};
+    QVec v2 {0, 4};
 
-  QVec v1(p1);
-  QVec v2(p2);
+    QVec vRes {0, 0, 12};
 
-  QVec vRes;
-  vRes[2] = 12.;
+    EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  }
 
-  EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
-  EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
-  EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  {
+    QVec v1 {1, 1, 1};
+    QVec v2 {1, 1, 1};
+
+    QVec vRes {0, 0, 0};
+
+    EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  }
+
+  {
+    QVec v1 {1, -1, 1};
+    QVec v2 {-.125, .25, -.5};
+
+    QVec vRes {0.25, 0.375, 0.125};
+
+    EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_vector, vector2_outer_product)
+{
+  using CoordType = double;
+  using QVec2 = primal::Vector<CoordType, 2>;
+  using QVec3 = primal::Vector<CoordType, 3>;
+
+  {
+    QVec2 v1 {3, 0};
+    QVec2 v2 {0, 4};
+
+    QVec3 vRes {0, 0, 12};
+
+    EXPECT_EQ(QVec2::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec2::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec2::cross_product(v1, v2), -QVec2::cross_product(v2, v1));
+  }
+
+  {
+    QVec2 v1 {1, -1};
+    QVec2 v2 {.25, 4};
+
+    QVec3 vRes {0, 0, 4.25};
+
+    EXPECT_EQ(QVec2::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec2::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec2::cross_product(v1, v2), -QVec2::cross_product(v2, v1));
+  }
+
+  {
+    QVec2 v1 {1, 1};
+    QVec2 v2 {-1, -1};
+
+    QVec3 vRes {0, 0, 0};
+
+    EXPECT_EQ(QVec2::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec2::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec2::cross_product(v1, v2), -QVec2::cross_product(v2, v1));
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 #include "axom/primal/geometry/Point.hpp"
 
 // C/C++ includes
-#include <cmath>  // for sqrt()
+#include <cmath>
 
 namespace axom
 {
@@ -550,11 +550,7 @@ AXOM_HOST_DEVICE inline Vector<T, 3> Vector<T, NDIMS>::cross_product(
   const Vector<T, 2>& u,
   const Vector<T, 2>& v)
 {
-  Vector<T, 3> c;
-  c[0] = 0;
-  c[1] = 0;
-  c[2] = numerics::determinant(u[0], u[1], v[0], v[1]);
-  return (c);
+  return Vector<T, 3> {0, 0, numerics::determinant(u[0], u[1], v[0], v[1])};
 }
 
 //------------------------------------------------------------------------------
@@ -563,9 +559,10 @@ AXOM_HOST_DEVICE inline Vector<T, 3> Vector<T, NDIMS>::cross_product(
   const Vector<T, 3>& u,
   const Vector<T, 3>& v)
 {
-  Vector<T, 3> c;
-  numerics::cross_product(u.data(), v.data(), c.data());
-  return (c);
+  // note: u and v are transposed in second component
+  return Vector<T, 3> {numerics::determinant(u[1], u[2], v[1], v[2]),
+                       numerics::determinant(v[0], v[2], u[0], u[2]),
+                       numerics::determinant(u[0], u[1], v[0], v[1])};
 }
 
 ///  Free functions involving vectors
