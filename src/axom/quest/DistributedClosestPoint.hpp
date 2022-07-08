@@ -810,6 +810,7 @@ SLIC_ASSERT( npts == query_mesh["fields/closest_point/values/x"].dtype().number_
             }
             else
             {
+assert(false); // Temporary debug
               conduit::Node skip;
               // I think we can use an empty Node, but be explicit for now.
               skip["skip"] = true;
@@ -832,24 +833,26 @@ SLIC_ASSERT( npts == query_mesh["fields/closest_point/values/x"].dtype().number_
                                                MPI_COMM_WORLD);
       }
 
+assert(!xfer_node.has_path("skip")); // Temporary debug
       if(!xfer_node.has_path("skip"))
       {
+        bool is_first = i == 0;
         // Distance search using local object partition and the xfer_node.
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
-          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, true);
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, is_first);
           break;
 
         case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, true);
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, is_first);
 #endif
           break;
 
         case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, true);
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, is_first);
 #endif
           break;
         }
