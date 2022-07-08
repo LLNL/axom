@@ -540,8 +540,12 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::dot_product(const Vector<T, NDIMS>& u,
                                                         const Vector<T, NDIMS>& v)
 {
-  SLIC_ASSERT(u.dimension() == v.dimension());
-  return static_cast<T>(numerics::dot_product(u.data(), v.data(), NDIMS));
+  T res {};
+  for(int d = 0; d < NDIMS; ++d)
+  {
+    res += u[d] * v[d];
+  }
+  return res;
 }
 
 //------------------------------------------------------------------------------
