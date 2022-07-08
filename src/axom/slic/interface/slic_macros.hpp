@@ -134,10 +134,10 @@
         __oss << msg;                                                 \
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
       }                                                               \
-      else                                                            \
-      {                                                               \
-        axom::slic::abortIfEnabled(axom::slic::message::Error);       \
-      }                                                               \
+    }                                                                 \
+    else                                                              \
+    {                                                                 \
+      axom::slic::abortIfEnabled(axom::slic::message::Error);         \
     }                                                                 \
   } while(axom::slic::detail::false_value)
 
@@ -265,10 +265,10 @@
         __oss << msg;                                                   \
         axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
       }                                                                 \
-      else                                                              \
-      {                                                                 \
-        axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
-      }                                                                 \
+    }                                                                   \
+    else                                                                \
+    {                                                                   \
+      axom::slic::abortIfEnabled(axom::slic::message::Warning);         \
     }                                                                   \
   } while(axom::slic::detail::false_value)
 

@@ -96,12 +96,14 @@ void Logger::setAbortFlag(bool val, message::Level level)
 //------------------------------------------------------------------------------
 void Logger::abortIfEnabled(message::Level level)
 {
-  if(this->confirmAbortStreams(level) &&
-     ((m_abortOnError && (level == message::Error)) ||
-      (m_abortOnWarning && (level == message::Warning))))
+  if((m_abortOnError && (level == message::Error)) ||
+     (m_abortOnWarning && (level == message::Warning)))
   {
-    this->flushStreams();
-    m_abortFunction();
+    if(this->confirmAbortStreams(level))
+    {
+      this->flushStreams();
+      m_abortFunction();
+    }
   }
 }
 
@@ -259,10 +261,6 @@ void Logger::logMessage(message::Level level,
      (m_abortOnWarning && (level == message::Warning)))
   {
     setAbortFlag(true, level);
-  }
-
-  if(level == message::Error || level == message::Warning)
-  {
     abortIfEnabled(level);
   }
 }
