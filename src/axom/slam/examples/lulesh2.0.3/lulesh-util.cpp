@@ -68,13 +68,13 @@ namespace slamLulesh {
     if (myRank == 0)
     {
       SLIC_WARNING(message);
+    }
       axom::slic::flushStreams();
 #ifdef AXOM_USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
       exit(-1);
 #endif
-    }
   }
 
   void ParseCommandLineOptions(int argc, char *argv[],
@@ -285,12 +285,12 @@ namespace slamLulesh {
     Int_t gEdge = nx * domainsPerSide;
     if(resultCheckMap.find(gEdge) != resultCheckMap.end() )
     {
-      SLIC_ASSERT_MSG( resultCheckMap[gEdge].first == locDom.cycle(),
+      SLIC_CHECK_MSG( resultCheckMap[gEdge].first == locDom.cycle(),
           "Specs state that num cycles should be "
           << resultCheckMap[gEdge].first
           << " actual number of cycles was " << locDom.cycle() << "." );
 
-      SLIC_ASSERT_MSG(
+      SLIC_CHECK_MSG(
         axom::utilities::isNearlyEqualRelative( resultCheckMap[gEdge].second, locDom.e(ElemId)),
         "Specs state that final energy at origin must be "
         << resultCheckMap[gEdge].second

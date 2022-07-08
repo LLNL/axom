@@ -2846,7 +2846,6 @@ namespace slamLulesh {
 
 
 /******************************************/
-
 int main(int argc, char *argv[])
 {
   using namespace slamLulesh;
@@ -2923,9 +2922,9 @@ int main(int argc, char *argv[])
         << "\n\tTo write an output file for VisIt, use -v"
         << "\n\tSee help (-h) for more options"
         << "\n");
-
-    axom::slic::flushStreams();
   }
+
+  axom::slic::flushStreams();
 
   // Set up the mesh and decompose. Assumes regular cubes for now
   Int_t col, row, plane, side;
