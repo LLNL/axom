@@ -150,7 +150,7 @@ inline int extractDimension(const conduit::Node& values_node)
 inline int extractSize(const conduit::Node& values_node)
 {
   SLIC_ASSERT(values_node.has_child("x"));
-  return values_node["x"].dtype().number_of_elements();
+  return values_node["x"].dtype().number_of_elements(); // Why do we need dtype() here?  dtype() returns a conduit::DataType, which can describe strided arrays.
 }
 
 namespace relay
@@ -164,6 +164,9 @@ struct ISendRequest
   conduit::Schema node_schema;
   conduit::Schema msg_schema;
   conduit::Node msg_node;
+  ISendRequest()
+    : mpi_request(MPI_REQUEST_NULL)
+    {}
 };
 
 /**
@@ -539,6 +542,7 @@ public:
       auto& coords = mesh_node[fmt::format("coordsets/{}/values", coordset)];
       const int dim = internal::extractDimension(coords);
       const int npts = internal::extractSize(coords);
+      SLIC_ASSERT( npts == mesh_node["fields/cp_rank/values"].dtype().number_of_elements() );
 
       xfer_node["npts"] = npts;
       xfer_node["dim"] = dim;
@@ -673,6 +677,11 @@ public:
 
         // copy data to mesh_node from proc_node
         const int npts = proc_node["npts"].value();
+        SLIC_ASSERT_MSG(npts == xfer_node["npts"].as_int(),
+                        fmt::format("{} vs {}",
+                                    proc_node["npts"].as_int(),
+                                    xfer_node["npts"].as_int()));
+        // BTNG: These copies don't destroy existing data in xfer_node because they came from xfer_node, got updated remotely and sent back.
         axom::copy(xfer_node["cp_rank"].data_ptr(),
                    proc_node["cp_rank"].data_ptr(),
                    npts * sizeof(axom::IndexType));
@@ -717,6 +726,8 @@ public:
 
     BoxType queryPartitionBb = computeMeshBoundingBox(query_mesh, coordset);
 
+    const int qmNpts = internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]);
+
     // create conduit node containing data that has to xfer between ranks
     conduit::Node xfer_node;
     {
@@ -724,6 +735,10 @@ public:
       auto& coords = query_mesh[fmt::format("coordsets/{}/values", coordset)];
       const int dim = internal::extractDimension(coords);
       const int npts = internal::extractSize(coords);
+dumpNode(query_mesh, fmt::format("query_mesh_{}_r{}_incoming.json", 0, m_rank));
+SLIC_ASSERT( npts == query_mesh["fields/cp_rank/values"].dtype().number_of_elements() );
+SLIC_ASSERT( npts == query_mesh["fields/cp_index/values"].dtype().number_of_elements() );
+SLIC_ASSERT( npts == query_mesh["fields/closest_point/values/x"].dtype().number_of_elements() );
 
       xfer_node["npts"] = npts;
       xfer_node["dim"] = dim;
@@ -841,16 +856,28 @@ public:
 
         if(xfer_node["src_rank"].as_int() == m_rank)
         {
-          // This is the query partition we stared with.
+          // This is the query partition we started with.
           // Copy it back to query_mesh.
+          dumpNode(query_mesh, axom::fmt::format("query_mesh_round_{}_r{}.json", i, m_rank));
+          dumpNode(xfer_node, axom::fmt::format("xfer_node_round_{}_r{}.json", i, m_rank));
+          assert(!xfer_node.has_path("skip"));
           const int npts = xfer_node["npts"].value();
-          axom::copy(xfer_node["cp_rank"].data_ptr(),
+          assert( npts == qmNpts );
+          assert( npts == internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]) );
+          auto& qmcpr = query_mesh.fetch_existing("fields/cp_rank/values");
+          auto& qmcpi = query_mesh.fetch_existing("fields/cp_index/values");
+          auto& qmcpcp = query_mesh.fetch_existing("fields/closest_point/values/x");
+          // query_mesh doesn't have npts.
+          assert(xfer_node["fields/cp_rank"].data_ptr() != qmcpr.data_ptr());
+          assert(xfer_node["fields/cp_index"].data_ptr() != qmcpi.data_ptr());
+          assert(xfer_node["fields/closest_point"].data_ptr() != qmcpcp.data_ptr());
+          axom::copy(qmcpr.data_ptr(),
                      xfer_node["cp_rank"].data_ptr(),
                      npts * sizeof(axom::IndexType));
-          axom::copy(xfer_node["cp_index"].data_ptr(),
+          axom::copy(qmcpi.data_ptr(),
                      xfer_node["cp_index"].data_ptr(),
                      npts * sizeof(axom::IndexType));
-          axom::copy(xfer_node["closest_point"].data_ptr(),
+          axom::copy(qmcpcp.data_ptr(),
                      xfer_node["closest_point"].data_ptr(),
                      npts * sizeof(PointType));
 
@@ -877,6 +904,7 @@ public:
 
     }  // Loop through m_nranks
 
+    // Complete non-blocking sends.
     std::vector<MPI_Request> allReqs;
     allReqs.reserve(isendRequests.size());
     for(const auto& isr : isendRequests)
