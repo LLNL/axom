@@ -4,14 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
-
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
-#include "axom/primal/geometry/Sphere.hpp"
-#include "axom/primal/geometry/OrientationResult.hpp"
-#include "axom/primal/operators/squared_distance.hpp"
-
 #include "axom/slic.hpp"
+#include "axom/primal.hpp"
+
 #include "axom/fmt.hpp"
 
 #include "gtest/gtest.h"
@@ -22,8 +17,8 @@ namespace primal = axom::primal;
 
 TEST(primal_triangle, triangle_area_2D)
 {
-  const int DIM = 2;
-  const double EPS = 1e-12;
+  constexpr int DIM = 2;
+  constexpr double EPS = 1e-12;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
@@ -59,8 +54,8 @@ TEST(primal_triangle, triangle_area_2D)
 //------------------------------------------------------------------------------
 TEST(primal_triangle, triangle_area_3D)
 {
-  const int DIM = 3;
-  const double EPS = 1e-12;
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-12;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
@@ -92,8 +87,8 @@ TEST(primal_triangle, triangle_area_3D)
 //------------------------------------------------------------------------------
 TEST(primal_triangle, triangle_physical_to_bary)
 {
-  const int DIM = 3;
-  const double EPS = 1e-12;
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-12;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
@@ -154,8 +149,8 @@ TEST(primal_triangle, triangle_physical_to_bary)
 //------------------------------------------------------------------------------
 TEST(primal_triangle, triangle_bary_to_physical)
 {
-  const int DIM = 3;
-  const double EPS = 1e-12;
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-12;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
@@ -217,8 +212,8 @@ TEST(primal_triangle, triangle_bary_to_physical)
 //------------------------------------------------------------------------------
 TEST(primal_triangle, triangle_roundtrip_bary_to_physical)
 {
-  const int DIM = 2;
-  const double EPS = 1e-12;
+  constexpr int DIM = 2;
+  constexpr double EPS = 1e-12;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
@@ -270,7 +265,7 @@ TEST(primal_triangle, triangle_roundtrip_bary_to_physical)
 
   // test barycenter
   {
-    const double third = 1. / 3.;
+    constexpr double third = 1. / 3.;
     RPoint b_in[1] = {RPoint {third, third, third}};
 
     QPoint p_exp[1] = {
@@ -290,8 +285,8 @@ TEST(primal_triangle, triangle_roundtrip_bary_to_physical)
 //-----------------------------------------------------------------------------
 TEST(primal_triangle, triangle_2D_point_containment)
 {
-  const int DIM = 2;
-  const double EPS = 1e-12;
+  constexpr int DIM = 2;
+  constexpr double EPS = 1e-12;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
@@ -341,8 +336,8 @@ TEST(primal_triangle, triangle_2D_point_containment)
 //------------------------------------------------------------------------------
 TEST(primal_triangle, triangle_3D_point_containment)
 {
-  const int DIM = 3;
-  const double EPS = 1e-12;
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-12;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QTri = primal::Triangle<CoordType, DIM>;
@@ -395,8 +390,8 @@ TEST(primal_triangle, triangle_3D_point_containment)
 //------------------------------------------------------------------------------
 TEST(primal_triangle, triangle_2D_circumsphere)
 {
-  const int DIM = 2;
-  const double EPS = 1e-9;
+  constexpr int DIM = 2;
+  constexpr double EPS = 1e-9;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using BaryPoint = primal::Point<CoordType, DIM + 1>;
@@ -443,6 +438,51 @@ TEST(primal_triangle, triangle_2D_circumsphere)
       QPoint qpt = tri.baryToPhysical(BaryPoint {-1, 3, -1});
       EXPECT_EQ(ON_POSITIVE_SIDE, circumsphere.getOrientation(qpt, EPS));
     }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_triangle, triangle_3D_normal)
+{
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-9;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
+  using QTri = primal::Triangle<CoordType, DIM>;
+
+  // Define some points
+  QPoint o {0, 0, 0};
+  QPoint i {1, 0, 0};
+  QPoint j {0, 1, 0};
+  QPoint k {0, 0, 1};
+  QPoint ij {1, 1, 0};
+
+  // Check some easy normals
+  EXPECT_EQ(QTri(i, j, k).normal(), (QVec {1, 1, 1}));
+  EXPECT_EQ(QTri(i, k, j).normal(), (QVec {-1, -1, -1}));
+  EXPECT_EQ(QTri(o, i, j).normal(), (QVec {0, 0, 1}));
+  EXPECT_EQ(QTri(o, j, i).normal(), (QVec {0, 0, -1}));
+
+  EXPECT_EQ(QTri(i, j, k).normal(), -QTri(i, k, j).normal());
+
+  // More test triangles
+  std::vector<QTri> tris = {
+    QTri(i, j, k),
+    QTri(i, k, j),
+    QTri(o, i, ij),
+    QTri(o, i, j),
+    QTri(o, j, i),
+    QTri(i, j, i),
+    QTri(QPoint {2, 0, 0}, QPoint {0, 2, 0}, QPoint {0, 0, 2})};
+
+  // Check that length of normal is twice the triangle area
+  for(const auto& tri : tris)
+  {
+    auto normal = tri.normal();
+    SLIC_INFO(axom::fmt::format("Normal for triangle {} is {}", tri, normal));
+
+    EXPECT_NEAR(normal.norm() / 2., tri.area(), EPS);
   }
 }
 
