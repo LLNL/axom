@@ -458,11 +458,13 @@ public:
     using PointType = primal::Point<double, DIM>;
     using PointArray = axom::Array<PointType>;
 
-    PointArray pts(0, numPoints);
+    int localNumPoints = numPoints/m_mesh.getNumRanks() +
+      (m_mesh.getRank() > numPoints%m_mesh.getNumRanks());
+    PointArray pts(0, localNumPoints);
     const double thetaScale = 2. * M_PI / m_mesh.getNumRanks();
     const double thetaStart = m_mesh.getRank() * thetaScale;
     const double thetaEnd = (m_mesh.getRank() + 1) * thetaScale;
-    for(int i = 0; i < numPoints; ++i)
+    for(int i = 0; i < localNumPoints; ++i)
     {
       const double angleInRadians = random_real(thetaStart, thetaEnd, 0);
       const double rsinT = center[1] + radius * std::sin(angleInRadians);
