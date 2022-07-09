@@ -389,6 +389,22 @@ public:
   static Vector<T, 3> cross_product(const Vector<T, 3>& u, const Vector<T, 3>& v);
 
   /*!
+   * \brief Computes the 3-D scalar triple product of vectors u, v and w
+   *
+   * \param [in] u the first vector
+   * \param [in] v the second vector
+   * \param [in] w the third vector
+   * \return The scalar triple product of u, v and w
+   *
+   * The scalar triple product dot(u, v x w) is the signed volume 
+   * of the parallelepiped defined by the three 3D vectors
+   */
+  AXOM_HOST_DEVICE
+  static T scalar_triple_product(const Vector<T, 3>& u,
+                                 const Vector<T, 3>& v,
+                                 const Vector<T, 3>& w);
+
+  /*!
    * \brief Utility function to constructs a Vector with the given coordinates.
    * \param [in] x the x--coordinate of the vector.
    * \param [in] y the y--coordinate of the vector.
@@ -567,6 +583,17 @@ AXOM_HOST_DEVICE inline Vector<T, 3> Vector<T, NDIMS>::cross_product(
   return Vector<T, 3> {numerics::determinant(u[1], u[2], v[1], v[2]),
                        numerics::determinant(v[0], v[2], u[0], u[2]),
                        numerics::determinant(u[0], u[1], v[0], v[1])};
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE T inline Vector<T, NDIMS>::scalar_triple_product(
+  const Vector<T, 3>& u,
+  const Vector<T, 3>& v,
+  const Vector<T, 3>& w)
+{
+  return static_cast<T>(
+    numerics::determinant(u[0], u[1], u[2], v[0], v[1], v[2], w[0], w[1], w[2]));
 }
 
 ///  Free functions involving vectors

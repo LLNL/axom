@@ -342,6 +342,55 @@ TEST(primal_vector, vector2_outer_product)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_vector, scalar_triple_product)
+{
+  using CoordType = double;
+  using QVec = primal::Vector<CoordType, 3>;
+  using QVecTriple = std::array<QVec, 3>;
+
+  QVec o {0, 0, 0};
+  QVec e_0 {1, 0, 0};
+  QVec e_1 {0, 1, 0};
+  QVec e_2 {0, 0, 1};
+
+  // explicitly test some examples
+  EXPECT_EQ(1., QVec::scalar_triple_product(e_0, e_1, e_2));
+  EXPECT_EQ(-1., QVec::scalar_triple_product(e_0, e_2, e_1));
+  EXPECT_DOUBLE_EQ(-10, QVec::scalar_triple_product(-e_0, 2.5 * e_1, 4. * e_2));
+
+  // test properties for a few examples
+  std::vector<QVecTriple> data = {
+    QVecTriple {e_0, e_1, e_2},
+    QVecTriple {e_0, e_2, e_1},
+    QVecTriple {e_0, e_0, e_1},
+    QVecTriple {o, e_0, e_1},
+    QVecTriple {e_0, e_0 + e_1, e_0 + e_1 + e_2},
+    QVecTriple {-3.33 * e_0, 2.25 * e_1, .1111 * e_2}};
+
+  for(auto triplet : data)
+  {
+    const auto& i = triplet[0];
+    const auto& j = triplet[1];
+    const auto& k = triplet[2];
+
+    // check definition
+    EXPECT_EQ(QVec::dot_product(i, QVec::cross_product(j, k)),
+              QVec::scalar_triple_product(i, j, k));
+
+    // check rotations
+    EXPECT_EQ(QVec::scalar_triple_product(i, j, k),
+              QVec::scalar_triple_product(j, k, i));
+
+    EXPECT_EQ(QVec::scalar_triple_product(i, j, k),
+              QVec::scalar_triple_product(k, i, j));
+
+    // check swap permutation
+    EXPECT_EQ(-QVec::scalar_triple_product(i, j, k),
+              QVec::scalar_triple_product(i, k, j));
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_vector, vector_zero)
 {
   constexpr int DIM = 5;
