@@ -45,11 +45,11 @@ public:
   { }
 
   /*!
-   * \brief Custom Constructor. Creates a tetrahedron from the 4 points A,B,C,D.
-   * \param [in] A point instance corresponding to vertex A of the tetrahedron.
-   * \param [in] B point instance corresponding to vertex B of the tetrahedron.
-   * \param [in] C point instance corresponding to vertex C of the tetrahedron.
-   * \param [in] D point instance corresponding to vertex D of the tetrahedron.
+   * \brief Tetrahedron constructor from 4 points A,B,C,D.
+   * \param [in] A Vertex A of the tetrahedron
+   * \param [in] B Vertex B of the tetrahedron
+   * \param [in] C Vertex C of the tetrahedron
+   * \param [in] D Vertex D of the tetrahedron
    */
   AXOM_HOST_DEVICE
   Tetrahedron(const PointType& A,
@@ -93,7 +93,7 @@ public:
 
   /*!
    * \brief Returns the barycentric coordinates of a point within a tetrahedron
-   * \return The barycentric coordinates of the tetrahedron
+   *
    * \post The barycentric coordinates sum to 1.
    */
   Point<double, 4> physToBarycentric(const PointType& p) const
@@ -136,7 +136,6 @@ public:
   /*!
    * \brief Returns the physical coordinates of a barycentric point
    * \param [in] bary Barycentric coordinates relative to this tetrahedron
-   * \return Physical point represented by bary
    */
   PointType baryToPhysical(const Point<double, 4>& bary) const
   {
@@ -252,22 +251,11 @@ private:
   AXOM_HOST_DEVICE
   double ppedVolume() const
   {
-    if(NDIMS != 3)
-    {
-      return 0.;
-    }
-    else
-    {
-      const VectorType A(m_points[0], m_points[1]);
-      const VectorType B(m_points[0], m_points[2]);
-      const VectorType C(m_points[0], m_points[3]);
-
-      // clang-format off
-      return axom::numerics::determinant<double>(A[0], A[1], A[2],
-                                                 B[0], B[1], B[2],
-                                                 C[0], C[1], C[2]);
-      // clang-format on
-    }
+    return NDIMS != 3
+      ? 0.
+      : VectorType::scalar_triple_product(m_points[1] - m_points[0],
+                                          m_points[2] - m_points[0],
+                                          m_points[3] - m_points[0]);
   }
 
 private:
