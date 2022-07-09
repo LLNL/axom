@@ -147,6 +147,68 @@ TEST(primal_triangle, triangle_physical_to_bary)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_triangle, triangle_unnormalized_bary)
+{
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-12;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QTri = primal::Triangle<CoordType, DIM>;
+
+  QPoint pt[3] = {QPoint {1, 0, 0},  //
+                  QPoint {0, 1, 0},
+                  QPoint {0, 0, 1}};
+
+  QTri tri(pt[0], pt[1], pt[2]);
+
+  using TestVec = std::vector<std::pair<QPoint, QPoint>>;
+  TestVec testData;
+
+  // Test the three vertices
+  testData.push_back(std::make_pair(pt[0], QPoint {1., 0., 0.}));
+  testData.push_back(std::make_pair(pt[1], QPoint {0., 1., 0.}));
+  testData.push_back(std::make_pair(pt[2], QPoint {0., 0., 1.}));
+
+  // Test the three edge midpoints
+  testData.push_back(
+    std::make_pair(QPoint::midpoint(pt[0], pt[1]), QPoint {0.5, 0.5, 0.}));
+  testData.push_back(
+    std::make_pair(QPoint::midpoint(pt[0], pt[2]), QPoint {0.5, 0., 0.5}));
+  testData.push_back(
+    std::make_pair(QPoint::midpoint(pt[1], pt[2]), QPoint {0., 0.5, 0.5}));
+
+  // Test the triangle midpoint
+  testData.push_back(std::make_pair(
+    QPoint(1. / 3. * (pt[0].array() + pt[1].array() + pt[2].array())),
+    QPoint {1. / 3., 1. / 3., 1. / 3.}));
+
+  // Test a point outside the triangle
+  testData.push_back(std::make_pair(
+    QPoint(-0.4 * pt[0].array() + 1.2 * pt[1].array() + 0.2 * pt[2].array()),
+    QPoint {-0.4, 1.2, 0.2}));
+
+  // Now run the actual tests
+  for(TestVec::const_iterator it = testData.begin(); it != testData.end(); ++it)
+  {
+    const QPoint& query = it->first;
+    const QPoint& expBary = it->second;
+
+    QPoint bary = tri.physToBarycentric(query, false);
+    QPoint baryUnnormalized = tri.physToBarycentric(query, true);
+
+    // Since the weights are projected onto a coordinate axis, we don't know the scale,
+    // However, the unnormalized weights should be proportional to the normalized weights
+    const double areaScale = baryUnnormalized.array().sum();
+
+    for(int d = 0; d <= 2; ++d)
+    {
+      EXPECT_NEAR(bary[d] * areaScale, baryUnnormalized[d], EPS);
+      EXPECT_NEAR(expBary[d] * areaScale, baryUnnormalized[d], EPS);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_triangle, triangle_bary_to_physical)
 {
   constexpr int DIM = 3;

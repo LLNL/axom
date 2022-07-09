@@ -94,12 +94,18 @@ public:
   /*!
    * \brief Returns the barycentric coordinates of a point within a tetrahedron
    *
-   * \post The barycentric coordinates sum to 1.
+   * \param [in] p The point at which we want to compute barycentric coordinates
+   * \param [in] skipNormalization Determines if the result should be normalized
+   * by the volume of the tetrahedron. One might want to skip this if they were
+   * only interested in the relative weights rather than their actual amounts
+   * 
+   * \post The barycentric coordinates sum to 1 when \a skipNormalization is false
+   * Otherwise, the sum of coordinates will be proportional to volume of the tetrahedron
+   * (Specifically, they should sum to the parallelpiped volume, which is 6x the volume).
    */
-  Point<double, 4> physToBarycentric(const PointType& p) const
+  Point<double, 4> physToBarycentric(const PointType& p,
+                                     bool skipNormalization = false) const
   {
-    constexpr double EPS = 1.0e-50;
-
     Point<double, 4> bary;
 
     const PointType& A = m_points[0];
@@ -112,23 +118,35 @@ public:
     const auto pC = C - p;
     const auto pD = D - p;
 
-    const double vol = -VectorType::scalar_triple_product(B - A, C - A, D - A);
-    const double detA = -VectorType::scalar_triple_product(pB, pC, pD);
-    const double detB = VectorType::scalar_triple_product(pC, pD, pA);
-    const double detC = -VectorType::scalar_triple_product(pD, pA, pB);
-    const double detD = VectorType::scalar_triple_product(pA, pB, pC);
+    const double detA = VectorType::scalar_triple_product(pB, pC, pD);
+    const double detB = -VectorType::scalar_triple_product(pC, pD, pA);
+    const double detC = VectorType::scalar_triple_product(pD, pA, pB);
+    const double detD = -VectorType::scalar_triple_product(pA, pB, pC);
 
-    // We add a tiny amount to the volume to avoid dividing by zero
-    const double detScale = 1. / (vol + EPS);
-    bary[0] = detA * detScale;
-    bary[1] = detB * detScale;
-    bary[2] = detC * detScale;
-    bary[3] = detD * detScale;
+    if(!skipNormalization)
+    {
+      constexpr double EPS = 1.0e-50;
+      const double vol = VectorType::scalar_triple_product(B - A, C - A, D - A);
+      // Compute one over denomenator; add a tiny amount to avoid division by zero
+      const double ood = 1. / (vol - EPS);
 
-    // We replace the smallest entry with the difference of 1 from the sum of the others
-    const int amin = primal::abs(bary.array()).argMin();
-    bary[amin] = 0.;
-    bary[amin] = 1. - bary.array().sum();
+      bary[0] = detA * ood;
+      bary[1] = detB * ood;
+      bary[2] = detC * ood;
+      bary[3] = detD * ood;
+
+      // Replace the smallest entry with the difference of 1 from the sum of the others
+      const int amin = primal::abs(bary.array()).argMin();
+      bary[amin] = 0.;
+      bary[amin] = 1. - bary.array().sum();
+    }
+    else
+    {
+      bary[0] = detA;
+      bary[1] = detB;
+      bary[2] = detC;
+      bary[3] = detD;
+    }
 
     return bary;
   }

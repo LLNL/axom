@@ -229,12 +229,19 @@ public:
   /*!
    * \brief Returns the barycentric coordinates of a point within a triangle
    *
-   * \return The barycentric coordinates of the triangle
+   * \param [in] p The point at which we want to compute barycentric coordinates
+   * \param [in] skipNormalization Determines if the result should be normalized
+   * by the area of the triangle. One might want to skip this if they were
+   * only interested in the relative weights rather than their actual amounts
+   * 
    * \pre The point lies in this triangle's plane.
-   * \post The barycentric coordinates sum to 1.
-   * Adapted from Real Time Collision Detection by Christer Ericson.
+   * \post The barycentric coordinates sum to 1 when \a skipNormalization is false
+   * Otherwise, the sum of coordinates will be proportional to area of the triangle
+   *
+   * Algorithm adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point<double, 3> physToBarycentric(const PointType& p) const
+  Point<double, 3> physToBarycentric(const PointType& p,
+                                     bool skipNormalization = false) const
   {
     // Query point needs to be in triangle's plane
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
@@ -253,35 +260,53 @@ public:
     // unnormalized triangle normal
     const auto u = VectorType::cross_product(B - A, C - A);
 
-    double ood;     // one over denomenator
-    double nu, nv;  // numerators for 2D projection
+    double nu, nv, area;  // numerators for 2D projection
 
     // Find best projection plane for computing weights: xy, yz, xz
-    const int projectionDim = DIM == 2 ? 2 : primal::abs(u.array()).argMax();
-    switch(projectionDim)
+    // Use dimension from largest component of normal
+    const int pDim = (DIM == 2) ? 2 : primal::abs(u.array()).argMax();
+    switch(pDim)
     {
     case 0:  // compute in yz plane
       nu = triArea2D(p[1], p[2], B[1], B[2], C[1], C[2]);
       nv = triArea2D(p[1], p[2], C[1], C[2], A[1], A[2]);
-      ood = 1.0 / u[0];
+      area = u[0];
       break;
     case 1:  // compute in xz plane
       nu = triArea2D(p[0], p[2], B[0], B[2], C[0], C[2]);
       nv = triArea2D(p[0], p[2], C[0], C[2], A[0], A[2]);
-      ood = -1.0 / u[1];
+      area = -u[1];
       break;
     case 2:
     default:  // compute in xy plane
       nu = triArea2D(p[0], p[1], B[0], B[1], C[0], C[1]);
       nv = triArea2D(p[0], p[1], C[0], C[1], A[0], A[1]);
-      ood = 1.0 / u[2];
+      area = u[2];
       break;
     }
 
     // Return barycentric coordinates: ood * area of each sub-triangle
-    bary[0] = ood * nu;
-    bary[1] = ood * nv;
-    bary[2] = 1. - bary[0] - bary[1];
+    if(!skipNormalization)
+    {
+      // compute one over denomenator; add a tiny amount to avoid division by zero
+      constexpr double EPS = 1.0e-50;
+      const double ood = 1. / (area + EPS);
+
+      bary[0] = ood * nu;
+      bary[1] = ood * nv;
+      bary[2] = 1. - bary[0] - bary[1];
+    }
+    else
+    {
+      const double projArea = (pDim == 0)
+        ? triArea2D(A[1], A[2], B[1], B[2], C[1], C[2])
+        : (pDim == 1) ? triArea2D(A[0], A[2], B[0], B[2], C[0], C[2])
+                      : triArea2D(A[0], A[1], B[0], B[1], C[0], C[1]);
+
+      bary[0] = nu;
+      bary[1] = nv;
+      bary[2] = projArea - bary[0] - bary[1];
+    }
 
     return bary;
   }
