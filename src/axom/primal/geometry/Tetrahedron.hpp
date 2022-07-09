@@ -98,54 +98,37 @@ public:
    */
   Point<double, 4> physToBarycentric(const PointType& p) const
   {
-    using axom::numerics::determinant;
+    constexpr double EPS = 1.0e-50;
 
     Point<double, 4> bary;
 
-    const PointType& p0 = m_points[0];
-    const PointType& p1 = m_points[1];
-    const PointType& p2 = m_points[2];
-    const PointType& p3 = m_points[3];
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
+    const PointType& D = m_points[3];
 
-    double det0 = ppedVolume();
+    const auto pA = A - p;
+    const auto pB = B - p;
+    const auto pC = C - p;
+    const auto pD = D - p;
 
-    SLIC_CHECK_MSG(
-      !axom::utilities::isNearlyEqual(det0, 0.),
-      "Attempting to find barycentric coordinates of degenerate tetrahedron");
+    const double vol = -VectorType::scalar_triple_product(B - A, C - A, D - A);
+    const double detA = -VectorType::scalar_triple_product(pB, pC, pD);
+    const double detB = VectorType::scalar_triple_product(pC, pD, pA);
+    const double detC = -VectorType::scalar_triple_product(pD, pA, pB);
+    const double detD = VectorType::scalar_triple_product(pA, pB, pC);
 
-    const double detScale = 1. / det0;
+    // We add a tiny amount to the volume to avoid dividing by zero
+    const double detScale = 1. / (vol + EPS);
+    bary[0] = detA * detScale;
+    bary[1] = detB * detScale;
+    bary[2] = detC * detScale;
+    bary[3] = detD * detScale;
 
-    // clang-format off
-    const double det1 = determinant(1.0,  p[0],  p[1],  p[2],
-                                    1.0, p1[0], p1[1], p1[2],
-                                    1.0, p2[0], p2[1], p2[2],
-                                    1.0, p3[0], p3[1], p3[2]);
-
-    const double det2 = determinant(1.0, p0[0], p0[1], p0[2],
-                                    1.0,  p[0],  p[1],  p[2],
-                                    1.0, p2[0], p2[1], p2[2],
-                                    1.0, p3[0], p3[1], p3[2]);
-
-    const double det3 = determinant(1.0, p0[0], p0[1], p0[2],
-                                    1.0, p1[0], p1[1], p1[2],
-                                    1.0,  p[0],  p[1],  p[2],
-                                    1.0, p3[0], p3[1], p3[2]);
-
-    const double det4 = determinant(1.0, p0[0], p0[1], p0[2],
-                                    1.0, p1[0], p1[1], p1[2],
-                                    1.0, p2[0], p2[1], p2[2],
-                                    1.0,  p[0],  p[1],  p[2]);
-    // clang-format on
-
-    bary[0] = det1 * detScale;
-    bary[1] = det2 * detScale;
-    bary[2] = det3 * detScale;
-    bary[3] = det4 * detScale;
-
-    SLIC_CHECK_MSG(
-      axom::utilities::isNearlyEqual(bary[0] + bary[1] + bary[2] + bary[3], 1.),
-      "Barycentric coordinates should sum to 1. rather than "
-        << (bary[0] + bary[1] + bary[2] + bary[3]));
+    // We replace the smallest entry with the difference of 1 from the sum of the others
+    const int amin = primal::abs(bary.array()).argMin();
+    bary[amin] = 0.;
+    bary[amin] = 1. - bary.array().sum();
 
     return bary;
   }
