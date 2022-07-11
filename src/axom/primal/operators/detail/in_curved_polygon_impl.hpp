@@ -35,7 +35,6 @@ double closure_winding_number(BezierCurve<T, 2> c, Point2D q)
   return 0.5 * M_1_PI * T.angle(0) * ((T.signedArea() < 0) ? -1.0 : 1.0);
 }
 
-
 // Get the function to be passed into the evaluate integral function
 inline std::function<Vector2D(Point2D)> get_winding_func(Point2D p)
 {

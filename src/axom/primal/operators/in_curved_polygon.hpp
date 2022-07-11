@@ -52,7 +52,8 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
 
   for(int i = 0; i < cpoly.numEdges(); i++)
   {
-    ret_val += winding_number(cpoly[i], query, quadrature_nodes, this_depth, atol);
+    ret_val +=
+      winding_number(cpoly[i], query, quadrature_nodes, this_depth, atol);
     max_depth = std::max(max_depth, this_depth);
   }
 
@@ -62,17 +63,18 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
 // Base winding number function
 template <typename T>
 double winding_number(const CurvedPolygon<T, 2>& cpoly,
-                               const Point2D& q,
-                               int qnodes,
-                               int& max_depth,
-                               double atol = 1e-5)
+                      const Point2D& q,
+                      int qnodes,
+                      int& max_depth,
+                      double atol = 1e-5)
 {
   double ret_val = 0.0;
   int this_depth = 0;
 
   for(int i = 0; i < cpoly.numEdges(); i++)
   {
-    ret_val += detail::adaptive_winding_number(cpoly[i], q, qnodes, this_depth, atol);
+    ret_val +=
+      detail::adaptive_winding_number(cpoly[i], q, qnodes, this_depth, atol);
     max_depth = std::max(max_depth, this_depth);
   }
 
