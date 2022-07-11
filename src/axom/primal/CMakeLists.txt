@@ -53,7 +53,7 @@ set( primal_headers
      operators/detail/intersect_bounding_box_impl.hpp
      operators/detail/intersect_impl.hpp
      operators/detail/intersect_ray_impl.hpp
-
+     
      ## utils
      utils/ZipIndexable.hpp
      utils/ZipBoundingBox.hpp
@@ -71,7 +71,9 @@ set( primal_sources
 blt_list_append(
     TO       primal_headers 
     ELEMENTS operators/evaluate_integral.hpp
+             operators/in_curved_polygon.hpp
              operators/detail/evaluate_integral_impl.hpp
+             operators/detail/in_curved_polygon_impl.hpp
     IF       MFEM_FOUND 
                )
 
