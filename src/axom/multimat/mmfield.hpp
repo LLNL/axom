@@ -53,13 +53,6 @@ public:
             const DataType* data_arr = nullptr,
             int stride = 1);
 
-  /** Destructor **/
-  ~MMField2D() {};
-  /** Copy constructor (Deep copy). **/
-  MMField2D(const MMField2D&);
-  /** Assignment operator **/
-  //MMField2D& operator=(const MMField2D&);
-
   using BiVarMapType::operator();  //why is this needed?
 
   //subfield (instead of SubMap)
@@ -162,23 +155,7 @@ inline MMField2D<DataType, BiSet>::MMField2D(MultiMat& mm,
   m_mm = &mm;
 }
 
-//Copy constructor
-template <typename DataType, typename BiSet>
-inline MMField2D<DataType, BiSet>::MMField2D(const MMField2D& o)
-  : MMField2D(*o.m_mm,
-              o.set(),
-              o.m_field_name,
-              o.getMap()->data().data(),
-              o.stride())
-{ }
-
 //////////////////////// MMField2D Templated ////////////////////////////
-// Child class of MMField2D, typed with layout (cell/mat dom) and sparsity
-
-// basic template
-template <typename DataType, DataLayout DataLayoutT, typename BiSet = MultiMat::BivariateSetType>
-class MMField2DTemplated : public MMField2D<DataType, BiSet>
-{ };
 
 // A helping struct to map a bivariate set to the corresponding SparsityLayout
 template <typename Biset>
@@ -197,10 +174,9 @@ struct MMBiSet2Sparsity<MultiMat::RelationSetType>
   SparsityLayout sparsity = SparsityLayout::SPARSE;
 };
 
-// Cell-Dom specialization
-template <typename DataType, typename BiSet>
-class MMField2DTemplated<DataType, DataLayout::CELL_DOM, BiSet>
-  : public MMField2D<DataType, BiSet>
+// Child class of MMField2D, typed with layout (cell/mat dom) and sparsity
+template <typename DataType, DataLayout DataLayoutT, typename BiSet = MultiMat::BivariateSetType>
+class MMField2DTemplated : public MMField2D<DataType, BiSet>
 {
   using Field2DType = MMField2D<DataType, BiSet>;
 
@@ -210,28 +186,7 @@ public:
                      const DataType* data_arr = nullptr,
                      int stride = 1)
     : Field2DType(mm,
-                  (BiSet*)mm.get_mapped_biSet(DataLayout::CELL_DOM,
-                                              MMBiSet2Sparsity<BiSet>().sparsity),
-                  arr_name,
-                  data_arr,
-                  stride)
-  { }
-};
-
-// Mat-Dom specialization
-template <typename DataType, typename BiSet>
-class MMField2DTemplated<DataType, DataLayout::MAT_DOM, BiSet>
-  : public MMField2D<DataType, BiSet>
-{
-  using Field2DType = MMField2D<DataType, BiSet>;
-
-public:
-  MMField2DTemplated(MultiMat& mm,
-                     const std::string& arr_name = "unnamed",
-                     const DataType* data_arr = nullptr,
-                     int stride = 1)
-    : Field2DType(mm,
-                  (BiSet*)mm.get_mapped_biSet(DataLayout::MAT_DOM,
+                  (BiSet*)mm.get_mapped_biSet(DataLayoutT,
                                               MMBiSet2Sparsity<BiSet>().sparsity),
                   arr_name,
                   data_arr,

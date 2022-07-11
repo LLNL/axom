@@ -90,13 +90,6 @@ ruby-gcc_8_1_0_no_fortran-src:
   extends: .src_build_on_ruby
 
 # disabled due to time limit
-# ruby-intel_18_0_2-src:
-#   variables:
-#     COMPILER: "intel@18.0.2"
-#     HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
-#   extends: .src_build_on_ruby
-
-# disabled due to time limit
 # ruby-intel_19_0_4-src:
 #   variables:
 #     COMPILER: "intel@19.0.4"
@@ -128,12 +121,6 @@ ruby-gcc_8_1_0_no_fortran-full:
   variables:
     COMPILER: "gcc@8.1.0"
     SPEC: "%${COMPILER}~fortran+mfem"
-  extends: .full_build_on_ruby
-
-ruby-intel_18_0_2-full:
-  variables:
-    COMPILER: "intel@18.0.2"
-    SPEC: "%${COMPILER}+mfem~cpp14"
   extends: .full_build_on_ruby
 
 ruby-intel_19_0_4-full:

@@ -17,6 +17,7 @@
 #include <vector>
 #include <cassert>
 #include <stdexcept>
+#include <memory>
 
 namespace axom
 {
@@ -75,6 +76,7 @@ protected:
   using SetType = slam::Set<SetPosType, SetElemType>;
   using RangeSetType = slam::RangeSet<SetPosType, SetElemType>;
   // SLAM Relation typedef
+  using IndBufferType = std::vector<SetPosType>;
   template <typename T>
   using IndPolicy = slam::policies::STLVectorIndirection<SetPosType, T>;
   using VariableCardinality =
@@ -100,6 +102,8 @@ protected:
   // SLAM Map type
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
   using MapBaseType = slam::MapBase<SetPosType>;
+
+  using MapUniquePtr = std::unique_ptr<MapBaseType>;
 
   template <typename T>
   using MapType = slam::Map<T, RangeSetType, IndPolicy<T>, MapStrideType>;
@@ -159,15 +163,42 @@ public:
   MultiMat(DataLayout data_layout = DataLayout::CELL_DOM,
            SparsityLayout sparsity_layout = SparsityLayout::SPARSE);
 
-  // TODO: Ideally, rule-of-zero the below by removing this class's pointer
-  //       members or replacing them with std::unique_ptr.
+  /*!
+   * \brief Copy constructor for a MultiMat object
+   *
+   * \param other The MultiMat object to copy from.
+   */
+  MultiMat(const MultiMat& other);
 
-  /** Destructor **/
-  ~MultiMat();
-  /** Copy constructor (Deep copy). **/
-  MultiMat(const MultiMat&);
-  /** Assignment operator **/
-  MultiMat& operator=(const MultiMat&) = delete;
+  /*!
+   * \brief Copy assignment operator for a MultiMat object
+   *
+   * \param other The MultiMat object to copy from.
+   */
+  MultiMat& operator=(const MultiMat& other)
+  {
+    if(this != &other)
+    {
+      MultiMat clone(other);
+      *this = std::move(clone);
+    }
+    return *this;
+  }
+
+  /*!
+   * \brief Move constructor for MultiMat, defaulted.
+   */
+  MultiMat(MultiMat&&) = default;
+
+  /*!
+   * \brief Move assignment operator for MultiMat, defaulted.
+   */
+  MultiMat& operator=(MultiMat&&) = default;
+
+  /*!
+   * \brief Destructor for MultiMat, defaulted.
+   */
+  ~MultiMat() = default;
 
   //Set-up functions
   /**
@@ -184,19 +215,13 @@ public:
   /// \brief Returns a pointer to the dense 2d field set
   const ProductSetType* getDense2dFieldSet(DataLayout layout) const
   {
-    if(layout == DataLayout::CELL_DOM)
-      return m_cellMatProdSet;
-    else
-      return m_matCellProdSet;
+    return &m_denseBivarSet[(int)layout];
   }
 
   /// \brief Returns a pointer to the sparse 2d field set
   const RelationSetType* getSparse2dFieldSet(DataLayout layout) const
   {
-    if(layout == DataLayout::CELL_DOM)
-      return m_cellMatNZSet;
-    else
-      return m_matCellNZSet;
+    return &m_sparseBivarSet[(int)layout];
   }
 
   /**
@@ -475,7 +500,7 @@ protected:
 
 private:  //private functions
   //Given a relation (cell->mat or mat->cell), create the other relation
-  void makeOtherRelation();
+  void makeOtherRelation(DataLayout layout);
 
   //helper functions
   template <typename DataType>
@@ -487,40 +512,123 @@ private:  //private functions
   void transposeField_helper(int field_idx);
 
   template <typename T>
-  MapBaseType* helper_copyField(const MultiMat&, int map_i);
+  MapUniquePtr helper_copyField(const MultiMat&, int map_i);
+
+  /*!
+   * \brief Returns the associated cell set.
+   */
+  RangeSetType& getCellSet() { return m_sets[0]; }
+  const RangeSetType& getCellSet() const { return m_sets[0]; }
+
+  /*!
+   * \brief Returns the associated material set.
+   */
+  RangeSetType& getMatSet() { return m_sets[1]; }
+  const RangeSetType& getMatSet() const { return m_sets[1]; }
+
+  /*!
+   * \brief Returns a reference to the corresponding array of offsets for a
+   *        static relation corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  IndBufferType& relBeginVec(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the corresponding array of indices for
+   *        a static relation corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  IndBufferType& relIndVec(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the static relation corresponding to a
+   *        layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  StaticVariableRelationType& relStatic(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the dynamic relation corresponding to a
+   *        layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  DynamicVariableRelationType& relDynamic(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the dominant set of elements in the relation
+   *        corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  RangeSetType& relDominantSet(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to the secondary set of elements in the relation
+   *        corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  RangeSetType& relSecondarySet(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to a sparse set corresponding to a relation.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  RelationSetType& relSparseSet(DataLayout layout);
+
+  /*!
+   * \brief Returns a reference to a product set corresponding to a relation.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  ProductSetType& relDenseSet(DataLayout layout);
+
+  /*!
+   * \brief Returns true if the static relation corresponding to the given data
+   *        layout is valid.
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  bool hasValidStaticRelation(DataLayout layout) const;
+
+  /*!
+   * \brief Returns true if the dynamic relation corresponding to the given data
+   *        layout is valid.
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  bool hasValidDynamicRelation(DataLayout layout) const;
 
 private:
   unsigned int m_ncells, m_nmats;
 
   //slam set variables
-  RangeSetType m_cellSet;
-  RangeSetType m_matSet;
+  axom::Array<RangeSetType> m_sets;
   //slam relation variables (for sparse-layout fields)
   //Depending on the layout of the field, each field can be mapped to different Relations
   //Relation can be nullptr if no field is using said relation
-  //cell to mat relations
-  std::vector<SetPosType> m_cellMatRel_beginsVec;
-  std::vector<SetPosType> m_cellMatRel_indicesVec;
-  StaticVariableRelationType* m_cellMatRel;
-  DynamicVariableRelationType* m_cellMatRelDyn;
-  //mat to cell relations
-  std::vector<SetPosType> m_matCellRel_beginsVec;
-  std::vector<SetPosType> m_matCellRel_indicesVec;
-  StaticVariableRelationType* m_matCellRel;
-  DynamicVariableRelationType* m_matCellRelDyn;
+  //cell to mat relation data
+  IndBufferType m_cellMatRel_beginsVec;
+  IndBufferType m_cellMatRel_indicesVec;
+  //mat to cell relation data
+  IndBufferType m_matCellRel_beginsVec;
+  IndBufferType m_matCellRel_indicesVec;
+  //relation objects stored in unified memory
+  axom::Array<StaticVariableRelationType> m_staticRelations;
+  axom::Array<DynamicVariableRelationType> m_dynamicRelations;
 
-  //slam bivariateSet variables
-  //cell to mat versions
-  RelationSetType* m_cellMatNZSet;   //for sparse layout
-  ProductSetType* m_cellMatProdSet;  //for dense layout
-  //mat to cell vertions
-  RelationSetType* m_matCellNZSet;   //for sparse layout
-  ProductSetType* m_matCellProdSet;  //for dense layout
+  // sparse layout bivariate sets
+  axom::Array<RelationSetType> m_sparseBivarSet;
+  // dense layout bivariate sets
+  axom::Array<ProductSetType> m_denseBivarSet;
 
   //std::vector of information for each fields
   std::vector<std::string> m_fieldNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
-  std::vector<MapBaseType*> m_mapVec;
+  std::vector<MapUniquePtr> m_mapVec;
   std::vector<DataTypeSupported> m_dataTypeVec;
   std::vector<DataLayout> m_fieldDataLayoutVec;
   std::vector<SparsityLayout> m_fieldSparsityLayoutVec;
@@ -609,7 +717,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     Field2D<T>* new_map_ptr =
       new Field2D<T>(*this, s, field_name, data_arr, stride);
 
-    m_mapVec.push_back(new_map_ptr);
+    m_mapVec.push_back(MapUniquePtr {new_map_ptr});
   }
   else
   {
@@ -624,7 +732,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     for(auto iter = new_map_ptr->begin(); iter != new_map_ptr->end(); iter++)
       for(auto str = 0; str < stride; ++str) iter(str) = data_arr[i++];
 
-    m_mapVec.push_back(new_map_ptr);
+    m_mapVec.push_back(MapUniquePtr {new_map_ptr});
   }
 
   m_fieldNameVec.push_back(field_name);
@@ -663,7 +771,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
   if(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL ||
      m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
   {
-    return *dynamic_cast<Field1D<T>*>(m_mapVec[fieldIdx]);
+    return *dynamic_cast<Field1D<T>*>(m_mapVec[fieldIdx].get());
   }
   else
   {
@@ -672,7 +780,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
     //Right now we're allowing Field2D (BivariateMap) to be returned as
     // a Field1D (Map) so it can be accessed like a 1d array, but the
     // indexing information would be lost.
-    auto* map_2d = dynamic_cast<BivariateMapType<T>*>(m_mapVec[fieldIdx]);
+    auto* map_2d = dynamic_cast<BivariateMapType<T>*>(m_mapVec[fieldIdx].get());
     return *(map_2d->getMap());
   }
 }
@@ -687,7 +795,7 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 
   SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
 
-  return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
+  return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx].get());
 }
 
 template <typename T, typename BSetType>
@@ -725,11 +833,7 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   if(fieldIdx < 0)
     throw std::invalid_argument("No field with this name is found");
 
-  ProductSetType* prod_set;
-  if(m_fieldDataLayoutVec[fieldIdx] == DataLayout::CELL_DOM)
-    prod_set = m_cellMatProdSet;
-  else
-    prod_set = m_matCellProdSet;
+  ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
   DenseField2D<T> typedBMap(*this,
                             prod_set,

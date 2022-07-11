@@ -123,7 +123,7 @@ inline AXOM_HOST_DEVICE T lerp(T A, T B, T t)
  * \param [in] val The input value
  */
 template <typename T>
-inline T log2(T& val)
+inline T log2(T val)
 {
   return static_cast<T>(std::log2(val));
 }

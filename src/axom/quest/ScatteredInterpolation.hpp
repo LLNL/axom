@@ -9,6 +9,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
+#include "axom/spin.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
 
@@ -137,12 +138,14 @@ namespace detail
  * \brief Utility class to enable processing an array of points whose layout
  * is either interleaved or separated strided arrays
  */
-template <int NDIMS>
+template <typename T, int NDIMS>
 struct InterleavedOrStridedPoints
 {
 public:
-  using PointType = axom::primal::Point<double, NDIMS>;
-  using StridedPoints = axom::primal::detail::ZipBase<PointType>;
+  static constexpr int DIM = NDIMS;
+  using CoordType = T;
+  using PointType = primal::Point<CoordType, NDIMS>;
+  using StridedPoints = primal::detail::ZipBase<PointType>;
   using InterleavedPoints = axom::ArrayView<PointType>;
 
   /// Constructor from a multi-component array Conduit node
@@ -164,9 +167,9 @@ public:
       SLIC_ASSERT(dim == NDIMS);
 
       m_strided = StridedPoints {
-        {static_cast<double*>(values["x"].data_ptr()),
-         dim >= 2 ? static_cast<double*>(values["y"].data_ptr()) : nullptr,
-         dim >= 3 ? static_cast<double*>(values["z"].data_ptr()) : nullptr}};
+        {static_cast<CoordType*>(values["x"].data_ptr()),
+         dim >= 2 ? static_cast<CoordType*>(values["y"].data_ptr()) : nullptr,
+         dim >= 3 ? static_cast<CoordType*>(values["z"].data_ptr()) : nullptr}};
     }
   }
 
@@ -191,9 +194,9 @@ public:
       SLIC_ASSERT(dim == NDIMS);
 
       m_strided = StridedPoints {
-        {static_cast<double*>(vals["x"].data_ptr()),
-         dim >= 2 ? static_cast<double*>(vals["y"].data_ptr()) : nullptr,
-         dim >= 3 ? static_cast<double*>(vals["z"].data_ptr()) : nullptr}};
+        {static_cast<CoordType*>(vals["x"].data_ptr()),
+         dim >= 2 ? static_cast<CoordType*>(vals["y"].data_ptr()) : nullptr,
+         dim >= 3 ? static_cast<CoordType*>(vals["z"].data_ptr()) : nullptr}};
     }
   }
 
@@ -243,7 +246,110 @@ public:
   using DelaunayTriangulation = Delaunay<DIM>;
   using PointType = typename DelaunayTriangulation::PointType;
   using BoundingBoxType = typename DelaunayTriangulation::BoundingBox;
+  using CoordType = typename PointType::CoordType;
 
+private:
+  using MortonIndexType = axom::uint64;
+
+  using VertexSet = typename DelaunayTriangulation::IAMeshType::VertexSet;
+  using VertexIndirectionSet =
+    slam::ArrayIndirectionSet<typename VertexSet::PositionType, axom::IndexType>;
+
+private:
+  /**
+   *  \brief Helper struct for sorting input points in the Biased Randomized Incremental Order (BRIO)
+   *
+   *  BRIO helps improve worst-case performance on poorly ordered point sets.
+   *  It was introduced in the following paper:
+   *    N. Amenta, S. Choi, and G. Rote. "Incremental constructions con BRIO."
+   *    Proceedings of the 19th annual symposium on Computational geometry, 2003.
+   */
+  struct BrioComparator
+  {
+    axom::IndexType m_index;
+    int m_level;
+    MortonIndexType m_morton;
+
+    BrioComparator(IndexType index, int level, MortonIndexType morton)
+      : m_index(index)
+      , m_level(level)
+      , m_morton(morton)
+    { }
+
+    friend bool operator<(const BrioComparator& lhs, const BrioComparator& rhs)
+    {
+      return (lhs.m_level == rhs.m_level) ? lhs.m_morton < rhs.m_morton
+                                          : lhs.m_level < rhs.m_level;
+    }
+  };
+
+  /**
+   * \brief Generates a permutation of [0, pts.size()) following BRIO 
+   * 
+   * \sa BrioComparator
+   */
+  template <typename PointArray>
+  axom::Array<axom::IndexType> computeInsertionOrder(const PointArray& pts,
+                                                     const BoundingBoxType& bb)
+  {
+    // This function will compute a permutation of pts following BRIO.
+    // Each point gets a level from the computeLevel() lambda
+    // and a quantized Morton index from a rectangular lattice over the bounding box
+
+    const int npts = pts.size();
+    const int nlevels =
+      axom::utilities::ceil(axom::utilities::log2<CoordType>(npts));
+
+    // Each point has a 50% chance of being at the max level; of the remaining points
+    // from the previous level, there's a 50% chance of being at the current level.
+    // Any remaining points are at level 0.
+    auto computeLevel = [nlevels]() {
+      for(int level = nlevels; level > 0; --level)
+      {
+        if(axom::utilities::random_real(0., 1.) <= 0.5)
+        {
+          return level;
+        }
+      }
+      return 0;
+    };
+
+    // We use a Morton index, quantized over the mesh bounding box to
+    // order the points on each level
+    using QuantizedCoordType = axom::uint32;
+    using MortonizerType =
+      spin::Mortonizer<QuantizedCoordType, MortonIndexType, DIM>;
+
+    // Fit as many bits as possible per dimension into an int64, i.e. floor(63/DIM)
+    constexpr int shift_bits = (DIM == 2) ? 31 : 21;
+    primal::NumericArray<QuantizedCoordType, DIM> res(1 << shift_bits, DIM);
+    auto quantizer =
+      spin::rectangular_lattice_from_bounding_box<DIM, CoordType, QuantizedCoordType>(
+        bb,
+        res);
+
+    // Add points and sort following BRIO
+    axom::Array<BrioComparator> brio(0, npts);
+    for(int idx = 0; idx < npts; ++idx)
+    {
+      brio.emplace_back(BrioComparator(
+        idx,
+        computeLevel(),
+        MortonizerType::mortonize(quantizer.gridCell(pts[idx]))));
+    }
+    std::sort(brio.begin(), brio.end());
+
+    // extract and return the reordered points
+    axom::Array<axom::IndexType> reordered(0, npts);
+    for(int idx = 0; idx < npts; ++idx)
+    {
+      reordered.push_back(brio[idx].m_index);
+    }
+
+    return reordered;
+  }
+
+public:
   /**
    * \brief Builds a Delaunay triangulation over the point set from \a mesh_node
    *
@@ -258,22 +364,31 @@ public:
     // Extract coordinates as ArrayView of PointType
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(mesh_node.has_path(valuesPath));
-    auto coords = detail::InterleavedOrStridedPoints<DIM>(mesh_node[valuesPath]);
+    auto coords =
+      detail::InterleavedOrStridedPoints<CoordType, DIM>(mesh_node[valuesPath]);
     const int npts = coords.size();
 
     // Compute the bounding box
-    BoundingBoxType bb;
+    m_bounding_box.clear();
     for(int i = 0; i < npts; ++i)
     {
-      bb.addPoint(coords[i]);
+      m_bounding_box.addPoint(coords[i]);
     }
-    // Scale the bounding box to ensure that all input points are contained
+
+    // Reorder the points according to the Biased Random Insertion Order (BRIO) algorithm
+    // and store the mapping since we'll need to apply it during interpolation
+    m_brio_data = computeInsertionOrder(coords, m_bounding_box);
+    m_brio = VertexIndirectionSet(
+      typename VertexIndirectionSet::SetBuilder().size(npts).data(&m_brio_data));
+
+    // Scale the Delaunay bounding box to ensure that all input points are contained
+    BoundingBoxType bb = m_bounding_box;
     bb.scale(1.5);
 
     m_delaunay.initializeBoundary(bb);
     for(int i = 0; i < npts; ++i)
     {
-      m_delaunay.insertPoint(coords[i]);
+      m_delaunay.insertPoint(coords[m_brio[i]]);
     }
 
     m_delaunay.removeBoundary();
@@ -297,7 +412,8 @@ public:
 
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(query_mesh.has_path(valuesPath));
-    auto coords = detail::InterleavedOrStridedPoints<DIM>(query_mesh[valuesPath]);
+    auto coords =
+      detail::InterleavedOrStridedPoints<CoordType, DIM>(query_mesh[valuesPath]);
     const int npts = coords.size();
 
     SLIC_ERROR_IF(!query_mesh.has_path("fields/cell_idx/values"),
@@ -315,6 +431,45 @@ public:
       cell_idx[idx] =
         m_delaunay.findContainingElement(coords[idx], warnOnInvalid);
     }
+  }
+
+  /**
+   * \brief Given a location in space, find the associated indices
+   * and interpolation weights with respect to the input mesh points
+   *
+   * \param [in]  query_pt The point at which we want to interpolate
+   * \param [out] indices The indices of the points from the input mesh in the support of \a query_pt
+   * \param [out] weights The interpolation weights associated with each input point in \a indices
+   *
+   * \returns true if \a query_pt is found within a cell of the Delaunay complex; false otherwise.
+   *  If true, the associated indices from points in the input mesh are returned in \a indices
+   *  and the interpolation weights for each point are returned in \a weights
+   */
+  bool getInterpolationWeights(const PointType& query_pt,
+                               primal::Point<axom::IndexType, NDIMS + 1>& indices,
+                               primal::Point<CoordType, NDIMS + 1>& weights) const
+  {
+    constexpr bool warnOnInvalid = false;
+    constexpr auto INVALID_INDEX = DelaunayTriangulation::INVALID_INDEX;
+
+    const auto cell_id =
+      m_delaunay.findContainingElement(query_pt, warnOnInvalid);
+
+    if(cell_id != INVALID_INDEX)
+    {
+      // apply BRIO mapping to input vertex indices to match Delaunay insertion order
+      const auto verts = m_delaunay.getMeshData()->boundaryVertices(cell_id);
+      for(auto idx : verts.positions())
+      {
+        indices[idx] = m_brio[verts[idx]];
+      }
+      weights = m_delaunay.getBaryCoords(cell_id, query_pt);
+
+      return true;
+    }
+
+    // Cell not found
+    return false;
   }
 
   /**
@@ -357,7 +512,8 @@ public:
 
     const auto valuesPath = fmt::format("coordsets/{}/values", coordset);
     SLIC_ASSERT(query_mesh.has_path(valuesPath));
-    auto coords = detail::InterleavedOrStridedPoints<DIM>(query_mesh[valuesPath]);
+    auto coords =
+      detail::InterleavedOrStridedPoints<CoordType, DIM>(query_mesh[valuesPath]);
 
     // Interpolate field at query points
     const int npts = coords.size();
@@ -375,9 +531,9 @@ public:
         const auto verts = m_delaunay.getMeshData()->boundaryVertices(cell_id);
         for(auto it = verts.begin(); it < verts.end(); ++it)
         {
-          res += in_fld[*it] * baryCoords[it.index()];
+          // apply BRIO mapping to input vertex indices to match Delaunay insertion order
+          res += in_fld[m_brio[*it]] * baryCoords[it.index()];
         }
-
         out_fld[idx] = res;
       }
     }
@@ -393,7 +549,7 @@ public:
    */
   void exportDelaunayComplex(conduit::Node& mesh_node, std::string&& filename) const
   {
-    const auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
+    constexpr auto CELL_TYPE = DIM == 2 ? mint::TRIANGLE : mint::TET;
     mint::UnstructuredMesh<mint::SINGLE_SHAPE> mint_mesh(DIM, CELL_TYPE);
 
     const auto* iaMesh = m_delaunay.getMeshData();
@@ -430,7 +586,14 @@ public:
         if(node["values"].dtype().is_float64())
         {
           double* vals = node["values"].as_float64_ptr();
-          mint_mesh.createField(fieldName, mint::NODE_CENTERED, vals);
+          auto* fld =
+            mint_mesh.createField<double>(fieldName, mint::NODE_CENTERED);
+
+          for(auto idx : m_brio.positions())
+          {
+            // apply BRIO mapping to input vertex indices to match Delaunay insertion order
+            fld[idx] = vals[m_brio[idx]];
+          }
         }
       }
     }
@@ -438,12 +601,27 @@ public:
     mint::write_vtk(&mint_mesh, filename);
   }
 
-  /// TODO: Add a function that takes x,y,z coordinates
-  /// and returns the vertex indices and the barycentric coords
-  /// of the point w.r.t. its containing element
+  /// Returns the number of vertices in the underlying Deluanay complex
+  int numVertices() const
+  {
+    return m_delaunay.getMeshData()->vertices().size();
+  }
+
+  /// Returns the number of simplices (triangles/tetrahedra) in the underlying Deluanay complex
+  int numSimplices() const
+  {
+    return m_delaunay.getMeshData()->elements().size();
+  }
+
+  /// Returns the bounding box of the input data points
+  const BoundingBoxType& boundingBox() const { return m_bounding_box; }
 
 private:
   DelaunayTriangulation m_delaunay;
+
+  axom::Array<axom::IndexType> m_brio_data;
+  VertexIndirectionSet m_brio;
+  BoundingBoxType m_bounding_box;
 };
 
 template <int NDIMS>

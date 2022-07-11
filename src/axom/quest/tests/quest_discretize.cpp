@@ -198,7 +198,8 @@ void run_degen_segment_tests()
   // We don't know what order they'll be in, but we do know how many octahedra
   // will be in each generation.
 
-  Point2D* polyline = axom::allocate<Point2D>(2);
+  Point2D* polyline =
+    axom::allocate<Point2D>(2, axom::execution_space<ExecPolicy>::allocatorID());
 
   polyline[0] = {0., 0.};
   polyline[1] = {0., 0.};
@@ -280,7 +281,8 @@ void segment_test(const char* label, Point2D* polyline, int len)
 template <typename ExecPolicy>
 void run_single_segment_tests()
 {
-  Point2D* polyline = axom::allocate<Point2D>(2);
+  Point2D* polyline =
+    axom::allocate<Point2D>(2, axom::execution_space<ExecPolicy>::allocatorID());
 
   polyline[0] = Point2D {0.5, 0.};
   polyline[1] = Point2D {1.8, 0.8};
@@ -376,7 +378,9 @@ template <typename ExecPolicy>
 void run_multi_segment_tests()
 {
   constexpr int pointcount = 5;
-  Point2D* polyline = axom::allocate<Point2D>(pointcount);
+  Point2D* polyline =
+    axom::allocate<Point2D>(pointcount,
+                            axom::execution_space<ExecPolicy>::allocatorID());
 
   polyline[0] = Point2D {1.0, 0.5};
   polyline[1] = Point2D {1.6, 0.3};
@@ -674,6 +678,35 @@ TEST(quest_discretize, degenerate_segment_test)
     run_degen_segment_tests<axom::CUDA_EXEC<512>>();
   }
 #endif
+
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__HIPCC__)
+  SLIC_INFO("Discretizing with HIP");
+  {
+    SCOPED_TRACE("32-wide HIP execution");
+    run_degen_segment_tests<axom::HIP_EXEC<32>>();
+  }
+
+  {
+    SCOPED_TRACE("64-wide HIP execution");
+    run_degen_segment_tests<axom::HIP_EXEC<64>>();
+  }
+
+  {
+    SCOPED_TRACE("128-wide HIP execution");
+    run_degen_segment_tests<axom::HIP_EXEC<128>>();
+  }
+
+  {
+    SCOPED_TRACE("256-wide HIP execution");
+    run_degen_segment_tests<axom::HIP_EXEC<256>>();
+  }
+
+  {
+    SCOPED_TRACE("512-wide HIP execution");
+    run_degen_segment_tests<axom::HIP_EXEC<512>>();
+  }
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -721,6 +754,35 @@ TEST(quest_discretize, segment_test)
     run_single_segment_tests<axom::CUDA_EXEC<512>>();
   }
 #endif
+
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__HIPCC__)
+  SLIC_INFO("Discretizing with HIP");
+  {
+    SCOPED_TRACE("32-wide HIP execution");
+    run_single_segment_tests<axom::HIP_EXEC<32>>();
+  }
+
+  {
+    SCOPED_TRACE("64-wide HIP execution");
+    run_single_segment_tests<axom::HIP_EXEC<64>>();
+  }
+
+  {
+    SCOPED_TRACE("128-wide HIP execution");
+    run_single_segment_tests<axom::HIP_EXEC<128>>();
+  }
+
+  {
+    SCOPED_TRACE("256-wide HIP execution");
+    run_single_segment_tests<axom::HIP_EXEC<256>>();
+  }
+
+  {
+    SCOPED_TRACE("512-wide HIP execution");
+    run_single_segment_tests<axom::HIP_EXEC<512>>();
+  }
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -766,6 +828,35 @@ TEST(quest_discretize, multi_segment_test)
   {
     SCOPED_TRACE("512-wide CUDA execution");
     run_multi_segment_tests<axom::CUDA_EXEC<512>>();
+  }
+#endif
+
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__HIPCC__)
+  SLIC_INFO("Discretizing with HIP");
+  {
+    SCOPED_TRACE("32-wide HIP execution");
+    run_multi_segment_tests<axom::HIP_EXEC<32>>();
+  }
+
+  {
+    SCOPED_TRACE("64-wide HIP execution");
+    run_multi_segment_tests<axom::HIP_EXEC<64>>();
+  }
+
+  {
+    SCOPED_TRACE("128-wide HIP execution");
+    run_multi_segment_tests<axom::HIP_EXEC<128>>();
+  }
+
+  {
+    SCOPED_TRACE("256-wide HIP execution");
+    run_multi_segment_tests<axom::HIP_EXEC<256>>();
+  }
+
+  {
+    SCOPED_TRACE("512-wide HIP execution");
+    run_multi_segment_tests<axom::HIP_EXEC<512>>();
   }
 #endif
 }

@@ -45,6 +45,12 @@ using SignedDistance3DGPU = SignedDistance<3, ExecGPU>;
 using SignedDistance2DGPU = SignedDistance<2, ExecGPU>;
 #endif
 
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA)
+using ExecGPU = axom::HIP_EXEC<256>;
+using SignedDistance3DGPU = SignedDistance<3, ExecGPU>;
+using SignedDistance2DGPU = SignedDistance<2, ExecGPU>;
+#endif
+
 /*!
  * \brief Holds the options for the SignedDistance query.
  */
@@ -79,7 +85,7 @@ static SignedDistance3D* s_query = nullptr;
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 static SignedDistance3DOMP* s_query_omp = nullptr;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
 static SignedDistance3DGPU* s_query_gpu = nullptr;
 #endif
 static mint::Mesh* s_surface_mesh = nullptr;
@@ -210,7 +216,7 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
                                           allocatorID);
     break;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     if(allocatorID == -1)
     {
@@ -241,7 +247,7 @@ bool signed_distance_initialized()
   case SignedDistExec::OpenMP:
     return (s_query_omp != nullptr);
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     return (s_query_gpu != nullptr);
 #endif
@@ -343,7 +349,7 @@ void signed_distance_set_execution_space(SignedDistExec exec_space)
   }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   if(exec_space == SignedDistExec::GPU)
   {
     SLIC_ERROR("Signed distance query not compiled with GPU support");
@@ -371,7 +377,7 @@ double signed_distance_evaluate(double x, double y, double z)
     phi = s_query_omp->computeDistance(x, y, z);
     break;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     phi = s_query_gpu->computeDistance(x, y, z);
     break;
@@ -420,7 +426,7 @@ double signed_distance_evaluate(double x,
     phi = s_query_omp->computeDistance(query, closest_pt, normal);
     break;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     phi = s_query_gpu->computeDistance(query, closest_pt, normal);
     break;
@@ -471,7 +477,7 @@ void signed_distance_evaluate(const double* x,
     s_query_omp->computeDistances(npoints, it, phi);
     break;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     s_query_gpu->computeDistances(npoints, it, phi);
     break;
@@ -499,7 +505,7 @@ void signed_distance_finalize()
   }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   if(s_query_gpu != nullptr)
   {
     delete s_query_gpu;

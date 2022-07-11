@@ -292,12 +292,13 @@ mfem::Mesh* createBoxMesh(const Input& params)
       primal::BoundingBox<double, 2>(primal::Point<double, 2>(lo.data()),
                                      primal::Point<double, 2>(hi.data()))));
 
-    mesh = new mfem::Mesh(res[0],
-                          res[1],
-                          mfem::Element::QUADRILATERAL,
-                          false,
-                          hi[0] - lo[0],
-                          hi[1] - lo[1]);
+    mesh =
+      new mfem::Mesh(mfem::Mesh::MakeCartesian2D(res[0],
+                                                 res[1],
+                                                 mfem::Element::QUADRILATERAL,
+                                                 false,
+                                                 hi[0] - lo[0],
+                                                 hi[1] - lo[1]));
     break;
   case 3:
     SLIC_INFO(axom::fmt::format(
@@ -306,14 +307,14 @@ mfem::Mesh* createBoxMesh(const Input& params)
       primal::BoundingBox<double, 3>(primal::Point<double, 3>(lo.data()),
                                      primal::Point<double, 3>(hi.data()))));
 
-    mesh = new mfem::Mesh(res[0],
-                          res[1],
-                          res[2],
-                          mfem::Element::HEXAHEDRON,
-                          false,
-                          hi[0] - lo[0],
-                          hi[1] - lo[1],
-                          hi[2] - lo[2]);
+    mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian3D(res[0],
+                                                      res[1],
+                                                      res[2],
+                                                      mfem::Element::HEXAHEDRON,
+                                                      false,
+                                                      hi[0] - lo[0],
+                                                      hi[1] - lo[1],
+                                                      hi[2] - lo[2]));
     break;
   default:
     SLIC_ERROR("Only 2D and 3D meshes are currently supported.");

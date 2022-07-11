@@ -391,6 +391,24 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_nodeids)
     setDefaultAllocator(prev_allocator);
 #endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_cell_nodes<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
+    check_for_all_cell_nodes<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
+    check_for_all_cell_nodes<hip_exec, STRUCTURED_RECTILINEAR_MESH>(i);
+    check_for_all_cell_nodes<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(i);
+    check_for_all_cell_nodes<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(i);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
   }  // END for all dimensions
 }
 
@@ -432,6 +450,24 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_coords)
     check_for_all_cell_coords<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(i);
     check_for_all_cell_coords<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(i);
     check_for_all_cell_coords<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(i);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_cell_coords<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
+    check_for_all_cell_coords<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
+    check_for_all_cell_coords<hip_exec, STRUCTURED_RECTILINEAR_MESH>(i);
+    check_for_all_cell_coords<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(i);
+    check_for_all_cell_coords<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(i);
 
     setDefaultAllocator(prev_allocator);
 #endif
@@ -481,6 +517,24 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_faceids)
     setDefaultAllocator(prev_allocator);
 #endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_cell_faces<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
+    check_for_all_cell_faces<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
+    check_for_all_cell_faces<hip_exec, STRUCTURED_RECTILINEAR_MESH>(i);
+    check_for_all_cell_faces<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(i);
+    check_for_all_cell_faces<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(i);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
   }  // END for all dimensions
 }
 
@@ -517,6 +571,22 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_ij)
 
   setDefaultAllocator(prev_allocator);
 #endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+  using hip_exec = axom::HIP_EXEC<512>;
+
+  const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+  const int prev_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(exec_space_id);
+
+  check_for_all_cells_ij<hip_exec, STRUCTURED_UNIFORM_MESH>();
+  check_for_all_cells_ij<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
+  check_for_all_cells_ij<hip_exec, STRUCTURED_RECTILINEAR_MESH>();
+
+  setDefaultAllocator(prev_allocator);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -549,6 +619,22 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_ijk)
   check_for_all_cells_ijk<cuda_exec, STRUCTURED_UNIFORM_MESH>();
   check_for_all_cells_ijk<cuda_exec, STRUCTURED_CURVILINEAR_MESH>();
   check_for_all_cells_ijk<cuda_exec, STRUCTURED_RECTILINEAR_MESH>();
+
+  setDefaultAllocator(prev_allocator);
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+  using hip_exec = axom::HIP_EXEC<512>;
+
+  const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+  const int prev_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(exec_space_id);
+
+  check_for_all_cells_ijk<hip_exec, STRUCTURED_UNIFORM_MESH>();
+  check_for_all_cells_ijk<hip_exec, STRUCTURED_CURVILINEAR_MESH>();
+  check_for_all_cells_ijk<hip_exec, STRUCTURED_RECTILINEAR_MESH>();
 
   setDefaultAllocator(prev_allocator);
 #endif
@@ -593,6 +679,24 @@ AXOM_CUDA_TEST(mint_execution_cell_traversals, for_all_cells_index)
     check_for_all_cells_idx<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(i);
     check_for_all_cells_idx<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(i);
     check_for_all_cells_idx<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(i);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_cells_idx<hip_exec, STRUCTURED_UNIFORM_MESH>(i);
+    check_for_all_cells_idx<hip_exec, STRUCTURED_CURVILINEAR_MESH>(i);
+    check_for_all_cells_idx<hip_exec, STRUCTURED_RECTILINEAR_MESH>(i);
+    check_for_all_cells_idx<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(i);
+    check_for_all_cells_idx<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(i);
 
     setDefaultAllocator(prev_allocator);
 #endif

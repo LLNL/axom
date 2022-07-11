@@ -1,5 +1,3 @@
-vcpkg_fail_port_install(ON_TARGET "UWP")
-
 message(STATUS "Building dependencies for Axom")
 message(STATUS "CURRENT_INSTALLED_DIR -- ${CURRENT_INSTALLED_DIR}")
 message(STATUS "PORT -- ${PORT}")
@@ -39,15 +37,15 @@ set(_host-config_hdr [=[
 #         ../src
 #
 # Supported MSVC generators:
-#   For x86 MSVC builds, use "Visual Studio 2017" or "Visual Studio 2019"
-#   For x64 MSVC builds, use "Visual Studio 2017 Win64" or "Visual Studio 2019 -A x64"
-#   (note: msvc 2019 uses the -A flag to set the architecture)
+#   For x86 MSVC builds, use "Visual Studio 2022", "Visual Studio 2019" or "Visual Studio 2017"
+#   For x64 MSVC builds, use "Visual Studio 2022 -A x64", "Visual Studio 2019 -A x64" or "Visual Studio 2017 Win64"
+#   (note: msvc 2019 and later use the -A flag to set the architecture)
 #
 #
 # One can also use Axom's `config-build` script:
 #   cd <axom>
 #   config-build.py -hc @_hc_file@                   \
-#                   --msvc {2017,201764,2019,201964} \
+#                   --msvc {2017,201764,2019,201964,2022,202264} \
 #                   [other options]
 #
 #------------------------------------------------------------------------------
@@ -72,6 +70,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
 set(AXOM_ENABLE_TESTS ON CACHE BOOL "")
 set(AXOM_ENABLE_DOCS OFF CACHE BOOL "")
 set(AXOM_ENABLE_EXAMPLES ON CACHE BOOL "")
+
+if(VCPKG_TARGET_TRIPLET MATCHES "^x64")
+  set(AXOM_USE_64BIT_INDEXTYPE ON CACHE BOOL "")
+endif()
 
 # BLT options
 set(ENABLE_FORTRAN OFF CACHE BOOL "")

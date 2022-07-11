@@ -175,10 +175,10 @@ AXOM_FMT_END_NAMESPACE
 #if (AXOM_FMT_GCC_VERSION || AXOM_FMT_HAS_BUILTIN(__builtin_clzll)) && !AXOM_FMT_MSC_VER
 #  define AXOM_FMT_BUILTIN_CLZLL(n) __builtin_clzll(n)
 #endif
-#if (AXOM_FMT_GCC_VERSION || AXOM_FMT_HAS_BUILTIN(__builtin_ctz))
+#if (AXOM_FMT_GCC_VERSION || AXOM_FMT_HAS_BUILTIN(__builtin_ctz)) && !AXOM_FMT_MSC_VER
 #  define AXOM_FMT_BUILTIN_CTZ(n) __builtin_ctz(n)
 #endif
-#if (AXOM_FMT_GCC_VERSION || AXOM_FMT_HAS_BUILTIN(__builtin_ctzll))
+#if (AXOM_FMT_GCC_VERSION || AXOM_FMT_HAS_BUILTIN(__builtin_ctzll)) && !AXOM_FMT_MSC_VER
 #  define AXOM_FMT_BUILTIN_CTZLL(n) __builtin_ctzll(n)
 #endif
 
