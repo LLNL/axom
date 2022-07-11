@@ -261,7 +261,6 @@ void Logger::logMessage(message::Level level,
      (m_abortOnWarning && (level == message::Warning)))
   {
     setAbortFlag(true, level);
-    abortIfEnabled(level);
   }
 }
 
