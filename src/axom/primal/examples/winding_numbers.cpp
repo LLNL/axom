@@ -6,26 +6,31 @@
 #include "axom/config.hpp"
 
 #include "axom/primal.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/fmt.hpp"
 
 // C++ headers
 #include <cmath>
 #include <iostream>
+#include <fstream>
 
 namespace primal = axom::primal;
 using Point2D = primal::Point<double, 2>;
 using Vector2D = primal::Vector<double, 2>;
 
+using Segment = primal::Segment<double, 2>;
+using Triangle = primal::Triangle<double, 2>;
 using Bezier = primal::BezierCurve<double, 2>;
 using CPolygon = primal::CurvedPolygon<double, 2>;
 
-void parabola_test();
-void split_parabola_test();
-void square_test();
-void big_square_test();
-void segment_test();
-std::function<Vector2D(Point2D)> get_winding_func(Point2D p);
+using vector_field = std::function<Vector2D(Point2D)>;
+
+
+void winding_number_grid();
+
+CPolygon get_self_intersecting_shape();
+CPolygon get_large_shape();
 
 int main(int argc, char** argv)
 {
@@ -33,213 +38,125 @@ int main(int argc, char** argv)
   AXOM_UNUSED_VAR(argv);
 
   axom::slic::SimpleLogger logger;
-  //square_test();
-  parabola_test();
-  //split_parabola_test();
-  //segment_test();
+  winding_number_grid();
 
   return 0;
 }
 
-void segment_test()
+CPolygon get_self_intersecting_shape() 
+{ 
+  // self intersecting cubic
+  Point2D big_nodes[] = {Point2D {0.0, 0.0},
+                         Point2D {0.0, 2.0},
+                         Point2D {-3.0, -1.0},
+                         Point2D {1.5, -1.0},
+                         Point2D {1.5, 2.0},
+                         Point2D {-3.0, 2.0},
+                         Point2D {0.0, -1.0},
+                         Point2D {0.0, 1.0}};
+  Bezier super_intersecting(big_nodes, 7);
+
+  Point2D small_nodes[] = {Point2D {0.0, 1.0},
+                           Point2D {-2.0, 0.5},
+                           Point2D {0.0, 0.0}};
+
+  Bezier intersecting_closure(small_nodes, 2);
+  Bezier super_intersecting_nodes[] = {super_intersecting, intersecting_closure};
+  return CPolygon(super_intersecting_nodes, 2);
+}
+
+CPolygon get_large_shape() 
 {
-  Point2D segnodes[] = {Point2D {1.0, -1.0}, Point2D {1.0, 1.0}};
-  Bezier segment(segnodes, 1);
+  // self intersecting cubic
+  Point2D nodes1[] = {Point2D {0.0, 0.0},
+                      Point2D {2.0, 1.0},
+                      Point2D {-1.0, 1.0},
+                      Point2D {1.0, 0.0}};
+  Bezier self_intersecting_cubic(nodes1, 3);
 
-  int npts = 4;
-  for(int i = 0; i < 5; i++)
-  {
-    Point2D qpoint({1 - std::pow(10, -i), 0.0});
+  // kind-of circlish cubic
+  Point2D nodes2[] = {Point2D {1.0, 0.0},
+                      Point2D {2.0, 0.0},
+                      Point2D {2.0, -1.0},
+                      Point2D {1.0, -1.0}};
+  Bezier semicircleish_cubic(nodes2, 3);
 
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num =
-      evaluate_line_integral(segment, winding_func, npts);
+  // straight line segment
+  Point2D nodes3[] = {Point2D {1.0, -1.0}, Point2D {-1.0, -2.0}};
+  Bezier segment_linear(nodes3, 1);
 
-    std::cout << qpoint << ": " << winding_num << std::endl;
-  }
+  // parabola that intersects with the straight line
+  Point2D nodes4[] = {Point2D {-1.0, -2.0},
+                      Point2D {1.0, -3.0},
+                      Point2D {-1.0, -1.0}};
+  Bezier intersecting_parabola(nodes4, 2);
+
+  // semi-circleish parabola that closes the curve
+  Point2D nodes5[] = {Point2D {-1.0, -1.0},
+                      Point2D {-1.0, 0.0},
+                      Point2D {-0.1, 0.0}};
+  Bezier semicircleish_parabola(nodes5, 2);
+
+  Bezier pedges[] = {self_intersecting_cubic,
+                     semicircleish_cubic,
+                     segment_linear,
+                     intersecting_parabola,
+                     semicircleish_parabola};
+  return CPolygon(pedges, 5);
+}
+
+void winding_number_grid()
+{
+  CPolygon cpoly = get_self_intersecting_shape();
   
-  Point2D badpoint({1.0, 0.0});
+  // Get big ol grid of query points
+  Bezier::BoundingBoxType cpbb(cpoly.boundingBox().scale(1.1));
+  const int num_pts = 400;
+  double xpts[num_pts];
+  double ypts[num_pts];
 
-  auto bad_winding_func = get_winding_func(badpoint);
-  double bad_winding_num =
-    evaluate_line_integral(segment, bad_winding_func, npts);
+  axom::numerics::linspace(cpbb.getMin()[0], cpbb.getMax()[0], xpts, num_pts);
+  axom::numerics::linspace(cpbb.getMin()[1], cpbb.getMax()[1], ypts, num_pts);
+  //axom::numerics::linspace(-1.5, 1.0, xpts, num_pts);
+  //axom::numerics::linspace(-0.5, 1.5, ypts, num_pts);
+  //axom::numerics::linspace(-0.4, -0.2, xpts, num_pts);
+  //axom::numerics::linspace(-1.8, -1.6, ypts, num_pts);
+  //axom::numerics::linspace(0.0, 1.0, xpts, num_pts);
+  //axom::numerics::linspace(0.0, 1.0, ypts, num_pts);
 
-  std::cout << badpoint << ": " << bad_winding_num << std::endl;
-
-  for(int i = 4; i > 0; i--)
+  // Get file storage syntax
+  std::ofstream outfile(
+    "C:/Users/spainhour1/Documents/bezier_plotting/datafile.csv");
+  if(!outfile.good())
   {
-    Point2D qpoint({1 + std::pow(10, -i), 0.0});
-
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num =
-      evaluate_line_integral(segment, winding_func, npts);
-
-    std::cout << qpoint << ": " << winding_num << std::endl;
+    std::cout << "Could not write to the file" << std::endl;
+    return;
   }
+
+  // Store quadrature order
+  int qnodes = 15;
+
+  // Loop over each query point, store it and the computed winding number there
+  for(double& x : xpts)
+  {
+    for(double& y : ypts)
+    {
+      Point2D qpoint({x, y});
+      int max_depth = 0;
+      double winding_num =
+        winding_number(cpoly, qpoint, qnodes, max_depth);
+      // clang-format off
+      outfile << axom::fmt::format(
+        "{0},{1},{2},{3}\n",
+        qpoint[0],
+        qpoint[1],
+        winding_num, 
+        max_depth
+      );
+      // clang-format on
+    }
+    std::cout << ".";
+  }
+  std::cout << std::endl;
 }
 
-
-
-void parabola_test()
-{
-  SLIC_INFO("Parabola Test");
-  Point2D paranodes1[] = {Point2D {1.0, 0.0},
-                          Point2D {0.0, 2.0},
-                          Point2D {-1.0, 0.0}};
-  Bezier para1(paranodes1, 2);
-
-  Point2D paranodes2[] = {Point2D {-1.0, 0.0},
-                          Point2D {0.0, -2.0},
-                          Point2D {1.0, 0.0}};
-  Bezier para2(paranodes2, 2);
-
-  Bezier pedges[2] = {para1, para2};
-  CPolygon parabola_polygon(pedges, 2);
-  int npts = 5;
-
-  Bezier closer = para1.linear_closure();
-  std::cout << para1 << std::endl;
-  std::cout << closer << std::endl;
-
-  for(int i = 0; i < 5; i++)
-  {
-    Point2D qpoint({0.0, 1 - std::pow(10, -i)});
-    
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num = evaluate_line_integral(parabola_polygon, winding_func, npts);
-
-    std::cout << qpoint << ": " << winding_num << std::endl;
-  }
-
-  for(int i = 4; i > 0; i--)
-  {
-    Point2D qpoint({0.0, 1 + std::pow(10, -i)});
-
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num =
-      evaluate_line_integral(parabola_polygon, winding_func, npts);
-
-    std::cout << qpoint << ": " << winding_num << std::endl;
-  }
-}
-
-void split_parabola_test()
-{
-  SLIC_INFO("Split Parabola Test");
-  Point2D paranodes1[] = {Point2D {1.0, 0.0},
-                          Point2D {0.5, 1.0},
-                          Point2D {0.0, 1.0}};
-  Bezier para1(paranodes1, 2);
-
-  Point2D paranodes15[] = {Point2D { 0.0, 1.0},
-                           Point2D {-0.5, 1.0},
-                           Point2D {-1.0, 0.0}};
-  Bezier para15(paranodes15, 2);
-
-  Point2D paranodes2[] = {Point2D {-1.0, 0.0},
-                          Point2D {0.0, -2.0},
-                          Point2D {1.0, 0.0}};
-  Bezier para2(paranodes2, 2);
-
-  Bezier pedges[3] = {para1, para15, para2};
-  CPolygon parabola_polygon(pedges, 3);
-  int npts = 30;
-  
-  for(int i = 0; i < 5; i++)
-  {
-    Point2D qpoint({0.0, 1 + std::pow(10, -i)});
-
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num =
-      evaluate_line_integral(parabola_polygon, winding_func, npts);
-
-    std::cout << qpoint << ": " << winding_num << std::endl;
-  }
-
-  for(int i = 0; i < 5; i++)
-  {
-    Point2D qpoint({0.0, 1 - std::pow(10, -i)});
-
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num =
-      evaluate_line_integral(parabola_polygon, winding_func, npts);
-
-    std::cout << qpoint << ": " << winding_num << std::endl;
-  }
-}
-
-void square_test()
-{
-  SLIC_INFO("Square Test");
-  Point2D snodes1[] = {Point2D {-1.0, -1.0},
-                       Point2D { 1.0, -1.0}};
-  Bezier square1(snodes1, 1);
-
-  Point2D snodes2[] = {Point2D {1.0, -1.0}, Point2D {1.0, 1.0}};
-  Bezier square2(snodes2, 1);
-
-  Point2D snodes3[] = {Point2D {1.0, 1.0}, Point2D {-1.0, 1.0}};
-  Bezier square3(snodes3, 1);
-
-  Point2D snodes4[] = {Point2D {-1.0, 1.0}, Point2D {-1.0, -1.0}};
-  Bezier square4(snodes4, 1);
-
-  Bezier pedges[4] = {square1, square2, square3, square4};
-  CPolygon square_polygon(pedges, 4);
-  int npts = 15;
-
-  for(int i = 0; i < 5; i++)
-  {
-    double dist = std::pow(10, -i);
-    Point2D qpoint({1 - dist, 0.0});
-
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num =
-      evaluate_line_integral(square_polygon, winding_func, npts);
-
-    std::cout << qpoint << ": " << winding_num << std::endl;
-  }
-}
-
-void big_square_test()
-{
-  SLIC_INFO("Big Square Test");
-  Point2D snodes1[] = {Point2D {-2.0, -2.0}, Point2D {2.0, -2.0}};
-  Bezier square1(snodes1, 1);
-
-  Point2D snodes2[] = {Point2D {2.0, -2.0}, Point2D {2.0, 2.0}};
-  Bezier square2(snodes2, 1);
-
-  Point2D snodes3[] = {Point2D {2.0, 2.0}, Point2D {-2.0, 2.0}};
-  Bezier square3(snodes3, 1);
-
-  Point2D snodes4[] = {Point2D {-2.0, 2.0}, Point2D {-2.0, -2.0}};
-  Bezier square4(snodes4, 1);
-
-  Bezier pedges[4] = {square1, square2, square3, square4};
-  CPolygon square_polygon(pedges, 4);
-  int npts = 15;
-
-  for(int i = 0; i < 5; i++)
-  {
-    double dist = std::pow(10, -i);
-    Point2D qpoint({2 - 2*dist, 0.0});
-
-    auto winding_func = get_winding_func(qpoint);
-    double winding_num =
-      evaluate_line_integral(square_polygon, winding_func, npts);
-
-    std::cout << qpoint << ": " << winding_num << std::endl;
-  }
-}
-
-std::function<Vector2D(Point2D)> get_winding_func(Point2D p)
-{
-  return [p](Point2D x) -> Vector2D {
-    double denom =
-      2 * M_PI * ((x[0] - p[0]) * (x[0] - p[0]) + (x[1] - p[1]) * (x[1] - p[1]));
-    //std::cout << x << std::endl;
-    //std::cout << denom << std::endl;
-    return Vector2D({-(x[1] - p[1]) / denom, (x[0] - p[0]) / denom});
-  };
-}
