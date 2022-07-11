@@ -600,7 +600,7 @@ public:
       // TODO: Devise a more efficient algorithm to only send data to ranks with closer points
       for(int i = 1; i < m_nranks; ++i)
       {
-        SLIC_INFO_IF(m_isVerbose && m_rank == 0,
+        SLIC_INFO_IF(m_isVerbose,
                      fmt::format("=======  Round {}/{} =======", i, m_nranks));
 
         const int dst_rank = (m_rank + i) % m_nranks;
@@ -710,6 +710,7 @@ public:
       }
     }
   }
+#include <axom/core/utilities/WhereMacro.hpp>
   void new_computeClosestPoints(conduit::Node& query_mesh,
                                 const std::string& coordset) const
   {
@@ -766,27 +767,31 @@ SLIC_ASSERT( npts == query_mesh["fields/closest_point/values/x"].dtype().number_
 
     std::vector<relay::mpi::ISendRequest> isendRequests(m_nranks);
 
-    for(int i = 0; i < m_nranks; ++i)
+    for(int round = 0; round < m_nranks; ++round)
     {
+      // 1. If xfer_node isn't a skip message (it's real data, local or remote),
+      //    forward it along the ring.
+      // 2. Receive new xfer_node forwarded along the ring.
+      // 3. If xfer_node is a skip message, go to next round.
       SLIC_INFO_IF(
-        m_isVerbose && m_rank == 0,
-        fmt::format("=======  Starting round {}/{} =======", i, m_nranks));
+        m_isVerbose,
+        fmt::format("=======  Starting round {}/{} =======", round, m_nranks));
 
-      if(!xfer_node.has_path("skip"))
+      if(xfer_node.number_of_children() != 0)
       {
         get_from_conduit_node(queryPartitionBb, xfer_node["aabb"]);
 
         // Send xfer_node to the next rank within threshold.
         // Ranks beyond threshold, get a skip message instead.
         // No send if search circles back to local rank.
-        for(int j = 0; j < m_nranks - i; ++j)
+        for(int j = 0; j < m_nranks - round; ++j)
         {
           const int next_dst = (m_rank + 1 + j) % m_nranks;
 
           if(m_isVerbose)
           {
             dumpNode(xfer_node,
-                     fmt::format("round_{}_r{}_begin.json", i, m_rank));
+                     fmt::format("round_{}_r{}_begin.json", round, m_rank));
           }
 
           double sqDist =
@@ -801,20 +806,28 @@ SLIC_ASSERT( npts == query_mesh["fields/closest_point/values/x"].dtype().number_
             if(sqDist <= m_sqDistanceThreshold ||
                next_dst == xfer_node["src_rank"].as_int())
             {
+              xfer_node["sender_rank"] = m_rank;
+SLIC_INFO(fmt::format("at {}, {} sending {}'s data to {} in round {}", __WHERE, xfer_node["sender_rank"].as_int(), xfer_node["src_rank"].as_int(), next_dst, round));
+std::cout << fmt::format("at {}, {} sending {}'s data to {} in round {}", __WHERE, xfer_node["sender_rank"].as_int(), xfer_node["src_rank"].as_int(), next_dst, round) << std::endl;
               isend_using_schema(xfer_node,
                                  next_dst,
                                  tag,
                                  MPI_COMM_WORLD,
                                  &isendRequests[next_dst]);
+              assert(xfer_node.number_of_children() > 0);
+              xfer_node.reset();
+              assert(xfer_node.number_of_children() == 0);
               break;
             }
             else
             {
-assert(false); // Temporary debug
               conduit::Node skip;
               // I think we can use an empty Node, but be explicit for now.
               skip["skip"] = true;
               skip["src_rank"] = xfer_node["src_rank"];
+              skip["sender_rank"] = m_rank;
+SLIC_INFO(fmt::format("at {}, {} sending {}'s skip to {} in round {}", __WHERE, skip["sender_rank"].as_int(), skip["src_rank"].as_int(), next_dst, round));
+std::cout << fmt::format("at {}, {} sending {}'s skip to {} in round {}", __WHERE, skip["sender_rank"].as_int(), skip["src_rank"].as_int(), next_dst, round) << std::endl;
               isend_using_schema(skip,
                                  next_dst,
                                  tag,
@@ -822,21 +835,31 @@ assert(false); // Temporary debug
                                  &isendRequests[next_dst]);
             }
           }
-        }
-      }
+        } // j-loop
+      } // block to send xfer_node
 
-      if(m_nranks > 1)
+      if(xfer_node.number_of_children() == 0) // if(m_nranks > 1)
       {
+        // TODO: What if the local query mesh is still in xfer_node because it skipped the entire ring?
         conduit::relay::mpi::recv_using_schema(xfer_node,
                                                MPI_ANY_SOURCE,
                                                tag,
                                                MPI_COMM_WORLD);
+SLIC_INFO(fmt::format("at {}, {} received {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round));
+std::cout << fmt::format("at {}, {} received {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round) << std::endl;
+        if(xfer_node.has_path("skip"))
+        {
+SLIC_INFO(fmt::format("at {}, {} skipping {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round));
+std::cout << fmt::format("at {}, {} skipping {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round) << std::endl;
+          xfer_node.reset();
+        }
       }
 
-assert(!xfer_node.has_path("skip")); // Temporary debug
-      if(!xfer_node.has_path("skip"))
+      if(xfer_node.number_of_children() != 0)
       {
-        bool is_first = i == 0;
+SLIC_INFO(fmt::format("at {}, {} processing {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round));
+std::cout << fmt::format("at {}, {} processing {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round) << std::endl;
+        bool is_first = round == 0;
         // Distance search using local object partition and the xfer_node.
         switch(m_runtimePolicy)
         {
@@ -859,11 +882,12 @@ assert(!xfer_node.has_path("skip")); // Temporary debug
 
         if(xfer_node["src_rank"].as_int() == m_rank)
         {
+SLIC_INFO(fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round));
+std::cout << fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xfer_node["src_rank"].as_int(), xfer_node["sender_rank"].as_int(), round) << std::endl;
           // This is the query partition we started with.
           // Copy it back to query_mesh.
-          dumpNode(query_mesh, axom::fmt::format("query_mesh_round_{}_r{}.json", i, m_rank));
-          dumpNode(xfer_node, axom::fmt::format("xfer_node_round_{}_r{}.json", i, m_rank));
-          assert(!xfer_node.has_path("skip"));
+          dumpNode(query_mesh, axom::fmt::format("query_mesh_round_{}_r{}.json", round, m_rank));
+          dumpNode(xfer_node, axom::fmt::format("xfer_node_round_{}_r{}.json", round, m_rank));
           const int npts = xfer_node["npts"].value();
           assert( npts == qmNpts );
           assert( npts == internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]) );
@@ -887,7 +911,7 @@ assert(!xfer_node.has_path("skip")); // Temporary debug
           if(m_isVerbose)
           {
             dumpNode(query_mesh,
-                     axom::fmt::format("round_{}_r{}_end.json", i, m_rank));
+                     axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
 
             SLIC_ASSERT_MSG(
               conduit::blueprint::mcarray::is_interleaved(
@@ -895,17 +919,18 @@ assert(!xfer_node.has_path("skip")); // Temporary debug
               fmt::format(
                 "After copy on iteration {}, 'closest_point' field of "
                 "'query_mesh' is not interleaved",
-                i));
+                round));
           }
+          // Take xfer_node out of circulation,
+          // because it has completed its trip through the ring.
+          xfer_node.reset();
         }
-      }
+      } // Locally process xfer_node
 
-      if(m_isVerbose)
-      {
-        dumpNode(xfer_node, fmt::format("round_{}_r{}_end.json", 0, m_rank));
-      }
-
-    }  // Loop through m_nranks
+      SLIC_INFO_IF(
+        m_isVerbose,
+        fmt::format("=======  End of round {}/{} =======", round, m_nranks));
+    }  // round loop
 
     // Complete non-blocking sends.
     std::vector<MPI_Request> allReqs;
