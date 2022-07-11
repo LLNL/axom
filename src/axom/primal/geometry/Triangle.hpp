@@ -371,8 +371,9 @@ AXOM_HOST_DEVICE inline double Triangle<T, NDIMS>::angle(int idx) const
   const PointType& pt = m_points[idx];
   VectorType V1(pt, m_points[idx1]);
   VectorType V2(pt, m_points[idx2]);
-  V1 /= V1.norm();
-  V2 /= V2.norm();
+
+  V1 = V1.unitVector();
+  V2 = V2.unitVector();
 
   double dotprod = VectorType::dot_product(V1, V2);
   return (acos(dotprod));
