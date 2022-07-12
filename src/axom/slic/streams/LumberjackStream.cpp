@@ -145,6 +145,38 @@ void LumberjackStream::write()
 }
 
 //------------------------------------------------------------------------------
+bool LumberjackStream::confirmAbort()
+{
+  if(m_lj == nullptr)
+  {
+    std::cerr
+      << "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";
+    return false;
+  }
+
+  MPI_Comm comm = m_ljComm->comm();
+
+  if(comm == MPI_COMM_NULL)
+  {
+    std::cerr << "ERROR: NULL communicator!\n";
+    return false;
+  }
+
+  int rank = -1;
+  int nranks = 0;
+
+  MPI_Comm_rank(comm, &rank);
+  MPI_Comm_size(comm, &nranks);
+
+  bool rank_abort = getAbortFlag();
+  bool all_abort = false;
+
+  MPI_Allreduce(&rank_abort, &all_abort, 1, MPI_C_BOOL, MPI_LOR, comm);
+
+  return all_abort;
+}
+
+//------------------------------------------------------------------------------
 void LumberjackStream::initializeLumberjack(MPI_Comm comm, int ranksLimit)
 {
   m_ljComm = new axom::lumberjack::BinaryTreeCommunicator;

@@ -109,6 +109,16 @@ public:
    */
   virtual void write();
 
+  /*!
+   * \brief Confirms ranks should flush and abort if a rank's abort flag was
+   *        set.
+   * \return true if all ranks should flush and abort, else false.
+   * \collective
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
+   */
+  virtual bool confirmAbort();
+
 private:
   void initializeLumberjack(MPI_Comm comm, int ranksLimit);
   void finalizeLumberjack();
