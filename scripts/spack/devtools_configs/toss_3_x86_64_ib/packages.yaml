@@ -99,11 +99,6 @@ packages:
     externals:
     - spec: groff@1.22.2
       prefix: /usr
-  graphviz:
-    buildable: false
-    externals:
-    - spec: graphviz@2.30.1
-      prefix: /usr
   libtool:
     buildable: false
     externals:
