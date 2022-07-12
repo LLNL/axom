@@ -809,6 +809,7 @@ int main(int argc, char** argv)
   conduit::Node object_mesh_node;
   object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
 
+  // Put sidre data into Conduit Node query_mesh_node.
   conduit::Node query_mesh_node;
   query_mesh_wrapper.getBlueprintGroup()->createNativeLayout(query_mesh_node);
   query_mesh_node.fetch("fields/min_distance/values");
