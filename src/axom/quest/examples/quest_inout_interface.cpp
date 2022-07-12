@@ -95,6 +95,9 @@ void initializeLogger()
 #endif  // AXOM_USE_MPI
 
   slic::addStreamToAllMsgLevels(logStream);
+
+  // Prevents MPI from hanging on SLIC_ASSERT when logic branches
+  axom::slic::disableAbortOnError();
 }
 
 /*!

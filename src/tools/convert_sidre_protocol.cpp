@@ -388,6 +388,9 @@ void setupLogging()
   slic::addStreamToMsgLevel(diStream, slic::message::Info);
   slic::addStreamToMsgLevel(diStream, slic::message::Debug);
 
+  // Prevents MPI from hanging on SLIC_ASSERT when logic branches
+  axom::slic::disableAbortOnError();
+
   // the following is helpful for debugging
   // slic::debug::checksAreErrors = true;
 }

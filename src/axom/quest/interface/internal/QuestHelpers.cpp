@@ -479,6 +479,9 @@ void logger_init(bool& isInitialized, bool& mustFinalize, bool verbose, MPI_Comm
   slic::addStreamToAllMsgLevels(ls);
   slic::setLoggingMsgLevel((verbose) ? slic::message::Info
                                      : slic::message::Error);
+
+  // Prevents MPI from hanging on SLIC_ASSERT when logic branches
+  axom::slic::disableAbortOnError();
 }
 
 /*
