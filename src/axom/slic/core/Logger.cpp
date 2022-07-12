@@ -319,14 +319,6 @@ void Logger::initialize()
 }
 
 //------------------------------------------------------------------------------
-std::map<std::string, Logger*>& Logger::getSLoggers()
-{
-  static std::map<std::string, Logger*>* s_loggers =
-    new std::map<std::string, Logger*>();
-  return *s_loggers;
-}
-
-//------------------------------------------------------------------------------
 bool Logger::createLogger(const std::string& name, char imask)
 {
   Loggermap& loggers = getLoggers();

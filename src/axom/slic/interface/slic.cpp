@@ -52,7 +52,7 @@ void ensureInitialized()
     logMessage(
       message::Warning,
       "slic::initialize() must be called before any other calls to SLIC\n."
-      "The SLIC library called slic::initialize() for you and set up a minimal"
+      "The SLIC library called slic::initialize() for you and set up a minimal "
       "configuration\nto allow log messages to print.\n"
       "Please call slic::initialize() near the beginning of the code\n"
       "to fix this error and get rid of this message.\n"
