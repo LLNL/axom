@@ -532,7 +532,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
 
   SLIC_ERROR("SLIC_ERROR message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort for SLIC_ERROR";
   has_aborted = false;
   EXPECT_FALSE(slic::internal::is_stream_empty());
   check_level(slic::internal::test_stream.str(), "ERROR");
@@ -542,7 +542,8 @@ TEST(slic_macros_parallel, test_abort_error_macros)
   slic::internal::clear();
 
   SLIC_ERROR_IF(val == 42, "SLIC_ERROR_IF message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_ERROR_IF";
   has_aborted = false;
   if(val == 42)
   {
@@ -551,13 +552,14 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_msg(slic::internal::test_stream.str(),
               "SLIC_ERROR_IF message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 
   axom::slic::setIsRoot(rank == 0);
   SLIC_ERROR_ROOT("SLIC_ERROR_ROOT message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_ERROR_ROOT";
   has_aborted = false;
   if(rank == 0)
   {
@@ -566,12 +568,13 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_msg(slic::internal::test_stream.str(),
               "SLIC_ERROR_ROOT message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 
   SLIC_ERROR_ROOT_IF(val == 42, "SLIC_ERROR_ROOT_IF message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_ERROR_ROOT_IF";
   has_aborted = false;
   if(rank == 0)
   {
@@ -580,12 +583,12 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_msg(slic::internal::test_stream.str(),
               "SLIC_ERROR_ROOT_IF message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 
   SLIC_ASSERT(val < 0);
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort for SLIC_ASSERT";
   has_aborted = false;
   if(val >= 0)
   {
@@ -598,7 +601,8 @@ TEST(slic_macros_parallel, test_abort_error_macros)
   slic::internal::clear();
 
   SLIC_ASSERT_MSG(val < 0, "val should be negative!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_ASSERT_MSG";
   has_aborted = false;
   if(rank == 0)
   {
@@ -607,7 +611,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_msg(slic::internal::test_stream.str(),
               "Failed Assert: val < 0\nval should be negative!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 
@@ -638,18 +642,20 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
 
   SLIC_WARNING("SLIC_WARNING message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_WARNING";
   has_aborted = false;
   EXPECT_FALSE(slic::internal::is_stream_empty());
   check_level(slic::internal::test_stream.str(), "WARNING");
   check_msg(slic::internal::test_stream.str(),
             "SLIC_WARNING message is logged!");
   check_file(slic::internal::test_stream.str());
-  check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
+  check_line(slic::internal::test_stream.str(), (__LINE__ - 9));
   slic::internal::clear();
 
   SLIC_WARNING_IF(val == 42, "SLIC_WARNING_IF message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_WARNING_IF";
   has_aborted = false;
   if(val == 42)
   {
@@ -658,13 +664,14 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_msg(slic::internal::test_stream.str(),
               "SLIC_WARNING_IF message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 
   axom::slic::setIsRoot(rank == 0);
   SLIC_WARNING_ROOT("SLIC_WARNING_ROOT message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_WARNING_ROOT";
   has_aborted = false;
   if(rank == 0)
   {
@@ -673,12 +680,13 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_msg(slic::internal::test_stream.str(),
               "SLIC_WARNING_ROOT message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 
   SLIC_WARNING_ROOT_IF(val == 42, "SLIC_WARNING_ROOT_IF message is logged!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_WARNING_ROOT_IF";
   has_aborted = false;
   if(rank == 0)
   {
@@ -687,12 +695,12 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_msg(slic::internal::test_stream.str(),
               "SLIC_WARNING_ROOT_IF message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 
   SLIC_CHECK(val < 0);
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort for SLIC_CHECK";
   has_aborted = false;
   if(val >= 0)
   {
@@ -705,7 +713,8 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
   slic::internal::clear();
 
   SLIC_CHECK_MSG(val < 0, "val should be negative!");
-  EXPECT_TRUE(has_aborted) << "Rank " << rank << " did not abort";
+  EXPECT_TRUE(has_aborted) << "Rank " << rank
+                           << " did not abort for SLIC_CHECK_MSG";
   has_aborted = false;
   if(rank == 0)
   {
@@ -714,7 +723,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_msg(slic::internal::test_stream.str(),
               "Failed Check: val < 0\nval should be negative!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
   slic::internal::clear();
 

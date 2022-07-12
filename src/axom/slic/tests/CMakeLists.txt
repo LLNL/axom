@@ -35,6 +35,10 @@ if (ENABLE_MPI)
     set(parallel_slic_tests
         slic_macros_parallel.cpp )
 
+    if (AXOM_ENABLE_LUMBERJACK)
+      list(APPEND parallel_slic_tests slic_lumberjack_parallel.cpp)
+    endif()
+
     foreach(test ${parallel_slic_tests})
         get_filename_component( test_name ${test} NAME_WE )
         blt_add_executable(NAME       ${test_name}_test
