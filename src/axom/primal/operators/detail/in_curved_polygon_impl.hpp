@@ -41,8 +41,6 @@ inline std::function<Vector2D(Point2D)> get_winding_func(Point2D p)
   return [p](Point2D x) -> Vector2D {
     double denom =
       2 * M_PI * ((x[0] - p[0]) * (x[0] - p[0]) + (x[1] - p[1]) * (x[1] - p[1]));
-    //std::cout << x << std::endl;
-    //std::cout << denom << std::endl;
     return Vector2D({-(x[1] - p[1]) / denom, (x[0] - p[0]) / denom});
   };
 }
@@ -52,26 +50,27 @@ template <typename T>
 double adaptive_winding_number(const BezierCurve<T, 2>& c,
                                const Point2D& q,
                                int qnodes,
-                               int& depth,
-                               double atol)
+                               double itol,
+                               double ltol,
+                               int depth = 0)
 {
   auto winding_func = get_winding_func(q);
   double winding_num = evaluate_line_integral(c, winding_func, qnodes);
   double cl_winding_num = closure_winding_number(c, q);
   double closed_winding = winding_num + cl_winding_num;
 
-  // If the value is close to an integer, we solved it
-  if(std::abs(std::round(closed_winding) - closed_winding) < atol)
+  // If the value is close to an integer, we know our quadrature is accurate.
+  //  Return the value to machine precision.
+  if(std::abs(std::round(closed_winding) - closed_winding) < itol)
   {
-    //std::cout << depth << std::endl;
-    return winding_num;
+    return std::round(closed_winding) - cl_winding_num;
   }
-  // if the value is closed to a half-integer, we are likely on the curve.
-  //  In this case, return a value as if we are just barely on the interior
-  else if(std::abs(std::round(2 * closed_winding) - 2 * closed_winding) < atol)
+  // Or, if the curve is linear, then it has no loops and we only
+  //  need to know which side of the curve we are on.
+  //  Serves as the base case for our recursion
+  else if(c.isLinear(ltol))
   {
-    //std::cout << winding_num << ", " << cl_winding_num << std::endl;
-    return std::round(winding_num) + 0.5;
+    return std::round(closed_winding) - cl_winding_num;
   }
   // Otherwise, our quadrature didn't give us a good enough answer, so we try again
   else
@@ -79,13 +78,8 @@ double adaptive_winding_number(const BezierCurve<T, 2>& c,
     BezierCurve<double, 2> c1, c2;
     c.split(0.5, c1, c2);
 
-    int depth1 = depth + 1;
-    double wn1 = adaptive_winding_number(c1, q, qnodes, depth1, atol);
-
-    int depth2 = depth + 1;
-    double wn2 = adaptive_winding_number(c2, q, qnodes, depth2, atol);
-
-    depth = std::max(depth1, depth2);
+    double wn1 = adaptive_winding_number(c1, q, qnodes, itol, ltol, depth + 1);
+    double wn2 = adaptive_winding_number(c2, q, qnodes, itol, ltol, depth + 1);
     return wn1 + wn2;
   }
 }
