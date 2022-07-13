@@ -307,10 +307,6 @@
  * \endcode
  *
  */
-  // TODO something here that labels rank as failed             \
-
-  // TODO something here that every rank must do, check values on each
-  // rank, if ok do nothing, if not, then we flush and then abort()
   #define SLIC_ASSERT(EXP)                                            \
     do                                                                \
     {                                                                 \

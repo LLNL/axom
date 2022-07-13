@@ -218,13 +218,111 @@ void addStreamToAllMsgLevels(LogStream* ls);
  */
 void addStreamToAllMsgLevels(GenericOutputStream* ls);
 
+/*!
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ * \param [in] filter_duplicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
+ * \post Abort flag is set if level is Error and abort on Error messages is
+ * enabled.
+ * \post Abort flag is set if level is Warning and abort on Warning messages
+ * is enabled.
+ */
+void logMessage(message::Level level,
+                const std::string& message,
+                bool filter_duplicates = false);
+
+/*!
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ * \param [in] tag user-supplied associated with this message.
+ * \param [in] filter_duplicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
+ * \post Abort flag is set if level is Error and abort on Error messages is
+ * enabled.
+ * \post Abort flag is set if level is Warning and abort on Warning messages
+ * is enabled.
+ */
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& tag,
+                bool filter_duplicates = false);
+
+/*!
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file this message is logged.
+ * \param [in] filter_duplicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
+ * \post Abort flag is set if level is Error and abort on Error messages is
+ * enabled.
+ * \post Abort flag is set if level is Warning and abort on Warning messages
+ * is enabled.
+ */
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& fileName,
+                int line,
+                bool filter_duplicates = false);
+
+/*!
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ * \param [in] tag user-supplied tag associated with the message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file this message is logged.
+ * \param [in] filter_duplicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
+ * \post Abort flag is set if level is Error and abort on Error messages is
+ * enabled.
+ * \post Abort flag is set if level is Warning and abort on Warning messages
+ * is enabled.
+ */
+void logMessage(message::Level level,
+                const std::string& message,
+                const std::string& tag,
+                const std::string& fileName,
+                int line,
+                bool filter_duplicates = false);
+
+/*!
+ * \brief Convenience method to log an error message.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file that the message is logged.
+ * \post Abort flag is set if abort on Error messages is enabled.
+ */
+void logErrorMessage(const std::string& message,
+                     const std::string& fileName,
+                     int line);
+
+/*!
+ * \brief Convenience method to log warning messages.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file that the message is logged.
+ * \post Abort flag is set if abort on Warning messages is enabled.
+ */
+void logWarningMessage(const std::string& message,
+                       const std::string& fileName,
+                       int line);
+
 ///@{
 //! \name Collective Methods
 //!
 //! \attention These methods are collective operations.
 //! All ranks in the user-supplied communicator must call the method
 //! when used within an MPI distributed environment.
-//! The logMessage method is collective if either:
+//! The abortIfEnabled method is collective if either:
 //!  - Level of the given message is Error and slic::enableAbortOnError() is
 //!    called for the current active logger (default is enabled for loggers)
 //!  - Level of the given message is Warning and slic::enableAbortOnWarning()
@@ -244,92 +342,6 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
  * \param [in] level the logging level.
  */
 void abortIfEnabled(message::Level level);
-
-/*!
- * \brief Logs the given message to all registered streams.
- * \collective
- * \param [in] level the level of the message being logged.
- * \param [in] message user-supplied message.
- * \param [in] filter_duplicates optional parameter that indicates whether
- * duplicate messages resulting from running in parallel will be filtered out.
- * Default is false.
- */
-void logMessage(message::Level level,
-                const std::string& message,
-                bool filter_duplicates = false);
-
-/*!
- * \brief Logs the given message to all registered streams.
- * \collective
- * \param [in] level the level of the message being logged.
- * \param [in] message user-supplied message.
- * \param [in] tag user-supplied associated with this message.
- * \param [in] filter_duplicates optional parameter that indicates whether
- * duplicate messages resulting from running in parallel will be filtered out.
- * Default is false.
- */
-void logMessage(message::Level level,
-                const std::string& message,
-                const std::string& tag,
-                bool filter_duplicates = false);
-
-/*!
- * \brief Logs the given message to all registered streams.
- * \collective
- * \param [in] level the level of the message being logged.
- * \param [in] message user-supplied message.
- * \param [in] fileName the name of the file this message is logged from.
- * \param [in] line the line number within the file this message is logged.
- * \param [in] filter_duplicates optional parameter that indicates whether
- * duplicate messages resulting from running in parallel will be filtered out.
- * Default is false.
- */
-void logMessage(message::Level level,
-                const std::string& message,
-                const std::string& fileName,
-                int line,
-                bool filter_duplicates = false);
-
-/*!
- * \brief Logs the given message to all registered streams.
- * \collective
- * \param [in] level the level of the message being logged.
- * \param [in] message user-supplied message.
- * \param [in] tag user-supplied tag associated with the message.
- * \param [in] fileName the name of the file this message is logged from.
- * \param [in] line the line number within the file this message is logged.
- * \param [in] filter_duplicates optional parameter that indicates whether
- * duplicate messages resulting from running in parallel will be filtered out.
- * Default is false.
- */
-void logMessage(message::Level level,
-                const std::string& message,
-                const std::string& tag,
-                const std::string& fileName,
-                int line,
-                bool filter_duplicates = false);
-
-/*!
- * \brief Convenience method to log an error message.
- * \collective
- * \param [in] message user-supplied message.
- * \param [in] fileName the name of the file this message is logged from.
- * \param [in] line the line number within the file that the message is logged.
- */
-void logErrorMessage(const std::string& message,
-                     const std::string& fileName,
-                     int line);
-
-/*!
- * \brief Convenience method to log warning messages.
- * \collective
- * \param [in] message user-supplied message.
- * \param [in] fileName the name of the file this message is logged from.
- * \param [in] line the line number within the file that the message is logged.
- */
-void logWarningMessage(const std::string& message,
-                       const std::string& fileName,
-                       int line);
 
 /*!
  * \brief Flushes all streams.

@@ -84,15 +84,6 @@ public:
   void setAbortFlag(bool val, message::Level level);
 
   /*!
-   * \brief Aborts and flushes on warning or error if corresponding AbortOnError
-   *  or AbortOnWarning is set to true, and abort flag was set for at least
-   *  one rank with the corresponding message level.
-   * \collective
-   * \param [in] level the logging level.
-   */
-  void abortIfEnabled(message::Level level);
-
-  /*!
    * \brief Toggles the abort behavior for error messages. Default is true.
    *        Resets the abort flag for error streams if false.
    * \param [in] status user-supplied flag.
@@ -219,13 +210,89 @@ public:
    */
   LogStream* getStream(message::Level level, int i);
 
+  /*!
+   * \brief Logs the given message to all registered streams.
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] filter_duplicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
+   * \post Abort flag is set if level is Error and abort on Error messages is
+   * enabled.
+   * \post Abort flag is set if level is Warning and abort on Warning messages
+   * is enabled.
+   */
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  bool filter_duplicates = false);
+
+  /*!
+   * \brief Logs the given message to all registered streams.
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] tagName user-supplied tag to associated with the given message.
+   * \param [in] filter_duplicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
+   * \post Abort flag is set if level is Error and abort on Error messages is
+   * enabled.
+   * \post Abort flag is set if level is Warning and abort on Warning messages
+   * is enabled.
+   */
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  const std::string& tagName,
+                  bool filter_duplicates = false);
+
+  /*!
+   * \brief Logs the given message to all registered streams.
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] fileName name of the file this call is made from.
+   * \param [in] line line within the file that this call is made from.
+   * \param [in] filter_duplicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
+   * \post Abort flag is set if level is Error and abort on Error messages is
+   * enabled.
+   * \post Abort flag is set if level is Warning and abort on Warning messages
+   * is enabled.
+   */
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  const std::string& fileName,
+                  int line,
+                  bool filter_duplicates = false);
+
+  /*!
+   * \brief Logs the given message to all registered streams.
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] tagName user-supplied tag to associated with the given message.
+   * \param [in] fileName name of the file this call is made from.
+   * \param [in] line line within the file that this call is made from.
+   * \param [in] filter_duplicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
+   * \post Abort flag is set if level is Error and abort on Error messages is
+   * enabled.
+   * \post Abort flag is set if level is Warning and abort on Warning messages
+   * is enabled.
+   */
+  void logMessage(message::Level level,
+                  const std::string& message,
+                  const std::string& tagName,
+                  const std::string& fileName,
+                  int line,
+                  bool filter_duplicates = false);
+
   ///@{
   //! \name Collective Methods
   //!
   //! \attention These methods are collective operations.
   //! All ranks in the user-supplied communicator must call the method
   //! when used within an MPI distributed environment.
-  //! The logMessage method is collective if either:
+  //! The abortIfEnabled method is collective if either:
   //!  - Level of the given message is Error and slic::enableAbortOnError() is
   //!    called (default is enabled)
   //!  - Level of the given message is Warning and slic::enableAbortOnWarning()
@@ -238,68 +305,13 @@ public:
   //!
 
   /*!
-   * \brief Logs the given message to all registered streams.
+   * \brief Aborts and flushes on warning or error if corresponding AbortOnError
+   *  or AbortOnWarning is set to true, and abort flag was set for at least
+   *  one rank with the corresponding message level.
    * \collective
-   * \param [in] level the level of the given message.
-   * \param [in] message the user-supplied message to log.
-   * \param [in] filter_duplicates optional parameter that indicates whether
-   * duplicate messages resulting from running in parallel will be filtered out.
-   * Default is false.
+   * \param [in] level the logging level.
    */
-  void logMessage(message::Level level,
-                  const std::string& message,
-                  bool filter_duplicates = false);
-
-  /*!
-   * \brief Logs the given message to all registered streams.
-   * \collective
-   * \param [in] level the level of the given message.
-   * \param [in] message the user-supplied message to log.
-   * \param [in] tagName user-supplied tag to associated with the given message.
-   * \param [in] filter_duplicates optional parameter that indicates whether
-   * duplicate messages resulting from running in parallel will be filtered out.
-   * Default is false.
-   */
-  void logMessage(message::Level level,
-                  const std::string& message,
-                  const std::string& tagName,
-                  bool filter_duplicates = false);
-
-  /*!
-   * \brief Logs the given message to all registered streams.
-   * \collective
-   * \param [in] level the level of the given message.
-   * \param [in] message the user-supplied message to log.
-   * \param [in] fileName name of the file this call is made from.
-   * \param [in] line line within the file that this call is made from.
-   * \param [in] filter_duplicates optional parameter that indicates whether
-   * duplicate messages resulting from running in parallel will be filtered out.
-   * Default is false.
-   */
-  void logMessage(message::Level level,
-                  const std::string& message,
-                  const std::string& fileName,
-                  int line,
-                  bool filter_duplicates = false);
-
-  /*!
-   * \brief Logs the given message to all registered streams.
-   * \collective
-   * \param [in] level the level of the given message.
-   * \param [in] message the user-supplied message to log.
-   * \param [in] tagName user-supplied tag to associated with the given message.
-   * \param [in] fileName name of the file this call is made from.
-   * \param [in] line line within the file that this call is made from.
-   * \param [in] filter_duplicates optional parameter that indicates whether
-   * duplicate messages resulting from running in parallel will be filtered out.
-   * Default is false.
-   */
-  void logMessage(message::Level level,
-                  const std::string& message,
-                  const std::string& tagName,
-                  const std::string& fileName,
-                  int line,
-                  bool filter_duplicates = false);
+  void abortIfEnabled(message::Level level);
 
   /*!
    * \brief Confirms that abort flag(s) was set among all ranks.
