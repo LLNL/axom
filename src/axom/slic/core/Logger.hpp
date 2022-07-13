@@ -69,7 +69,7 @@ public:
    * \brief Gets the abort flag for the given level.
    * \param [in] level the logging level.
    * \return true if at least one stream has set the abort flag for the
-   *  given level, false if not.
+   *  given level, false if not. Always false for Info and Debug level.
    */
   bool getAbortFlag(message::Level level);
 
@@ -77,6 +77,9 @@ public:
    * \brief Sets the abort flag for all streams with the given level.
    * \param [in] val true for aborting, false for not.
    * \param [in] level the logging level.
+   * \note No-op if given level is Info or Debug.
+   *  If abort behavior is not toggled on for corresponding Warning or Error
+   *  level, is a no-op.
    */
   void setAbortFlag(bool val, message::Level level);
 
@@ -96,11 +99,11 @@ public:
    */
   void setAbortOnError(bool status)
   {
-    m_abortOnError = status;
     if(!status)
     {
       setAbortFlag(false, message::Error);
     }
+    m_abortOnError = status;
   };
 
   /*!
@@ -116,8 +119,8 @@ public:
    */
   void disableAbortOnError()
   {
-    m_abortOnError = false;
     setAbortFlag(false, message::Error);
+    m_abortOnError = false;
   };
 
   /*!
@@ -133,11 +136,11 @@ public:
    */
   void setAbortOnWarning(bool status)
   {
-    m_abortOnWarning = status;
     if(!status)
     {
       setAbortFlag(false, message::Warning);
     }
+    m_abortOnWarning = status;
   };
 
   /*!
@@ -153,8 +156,8 @@ public:
    */
   void disableAbortOnWarning()
   {
-    m_abortOnWarning = false;
     setAbortFlag(false, message::Error);
+    m_abortOnWarning = false;
   };
 
   /*!

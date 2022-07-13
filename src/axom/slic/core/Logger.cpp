@@ -82,6 +82,11 @@ bool Logger::getAbortFlag(message::Level level)
 {
   bool ret = false;
 
+  if(level == message::Info || level == message::Debug)
+  {
+    return ret;
+  }
+
   if(m_isEnabled[level] == false)
   {
     return ret;
@@ -105,6 +110,19 @@ bool Logger::getAbortFlag(message::Level level)
 void Logger::setAbortFlag(bool val, message::Level level)
 {
   if(m_isEnabled[level] == false)
+  {
+    return;
+  }
+
+  // No-op for Info and Debug level
+  if(level == message::Info || level == message::Debug)
+  {
+    return;
+  }
+
+  // No-op if corresponding abort is not enabled
+  if((!m_abortOnError && (level == message::Error)) ||
+     (!m_abortOnWarning && (level == message::Warning)))
   {
     return;
   }
