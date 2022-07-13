@@ -153,46 +153,40 @@ public:
   /**
    * \brief Returns the circumsphere (circumscribing circle) of the triangle
    *
-   * Implements formula from https://mathworld.wolfram.com/Circumcircle.html
+   * Derived from formula on https://mathworld.wolfram.com/Circumcircle.html
+   * but uses observation that radius can be derived from distance to a vertex
    * \note This function is only available for triangles in 2D
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 2, SphereType>::type circumsphere() const
   {
     using axom::numerics::determinant;
-    using axom::numerics::dot_product;
-    using axom::utilities::abs;
-    using NumericArrayType = primal::NumericArray<T, NDIMS>;
+    constexpr double EPS = 1.0e-50;
 
-    const PointType& A = m_points[0];
-    const PointType& B = m_points[1];
-    const PointType& C = m_points[2];
+    const PointType& p0 = m_points[0];
+    const PointType& p1 = m_points[1];
+    const PointType& p2 = m_points[2];
 
-    // clang-format off
-    const Point<T, 4> sq { dot_product(A.data(), A.data(), NDIMS),
-                           dot_product(B.data(), B.data(), NDIMS),
-                           dot_product(C.data(), C.data(), NDIMS)};
+    // It's useful to separate the x- and y- components of
+    // the difference vectors for p1 and p2 from p0
+    const VectorType vx {p1[0] - p0[0], p2[0] - p0[0]};
+    const VectorType vy {p1[1] - p0[1], p2[1] - p0[1]};
 
-    const double  a =  determinant(A[0], A[1], 1.,
-                                   B[0], B[1], 1.,
-                                   C[0], C[1], 1.);
+    // We also need their squared norms
+    const VectorType sq {vx[0] * vx[0] + vy[0] * vy[0],
+                         vx[1] * vx[1] + vy[1] * vy[1]};
 
-    const double bx = -determinant(sq[0], A[1], 1.,
-                                   sq[1], B[1], 1.,
-                                   sq[2], C[1], 1.);
+    // Compute one over denominator using a small value to avoid division by zero
+    // Note: a has opposite sign of signedArea()
+    const double a = determinant(vx[0], vx[1], vy[0], vy[1]);
+    const double ood = 1. / (2 * a - EPS);
 
-    const double by =  determinant(sq[0], A[0], 1.,
-                                   sq[1], B[0], 1.,
-                                   sq[2], C[0], 1.);
+    // Compute offset from p0 to center
+    const auto center_offset = ood *
+      VectorType {determinant(sq[0], sq[1], vy[0], vy[1]),
+                  -determinant(sq[0], sq[1], vx[0], vx[1])};
 
-    const double  c = -determinant(sq[0], A[0], A[1],
-                                   sq[1], B[0], B[1],
-                                   sq[2], C[0], C[1]);
-    // clang-format on
-
-    const auto center = NumericArrayType {-bx, -by} / (2 * a);
-    const T radius = sqrt(bx * bx + by * by - 4 * a * c) / (2 * abs(a));
-    return SphereType(center.data(), radius);
+    return SphereType(p0 + center_offset, center_offset.norm());
   }
 
 private:
@@ -288,7 +282,7 @@ public:
     // Return barycentric coordinates: ood * area of each sub-triangle
     if(!skipNormalization)
     {
-      // compute one over denomenator; add a tiny amount to avoid division by zero
+      // compute one over denominator; add a tiny amount to avoid division by zero
       constexpr double EPS = 1.0e-50;
       const double ood = 1. / (area + EPS);
 

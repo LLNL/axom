@@ -477,18 +477,22 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
   using primal::ON_NEGATIVE_SIDE;
   using primal::ON_POSITIVE_SIDE;
 
-  // Test tets
-  std::vector<QTet> tets = {this->getTet(0),
-                            this->getTet(1),
-                            this->getTet(2),
-                            this->getTet(3)};
-
-  // Compute circumsphere of test triangles and test some points
-  for(const auto& tet : tets)
+  // Compute circumsphere of test tetrahedra and test some points
+  for(int ti = 0; ti < this->numTetrahedra(); ++ti)
   {
+    QTet tet = this->getTet(ti);
     QSphere circumsphere = tet.circumsphere();
 
     SLIC_INFO("Circumsphere for tetrahedron: " << tet << " is " << circumsphere);
+
+    // check that each vertex is on the sphere
+    for(int i = 0; i < 4; ++i)
+    {
+      auto qpt = tet[i];
+      EXPECT_NEAR(circumsphere.getRadius(),
+                  sqrt(primal::squared_distance(qpt, circumsphere.getCenter())),
+                  EPS);
+    }
 
     // test vertices
     for(int i = 0; i < 4; ++i)
@@ -513,8 +517,8 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
 
     // test face centers
     {
-      const CoordType third = 1. / 3.;
-      const CoordType zero {0};
+      constexpr CoordType third = 1. / 3.;
+      constexpr CoordType zero {0};
       QPoint qpt[4] = {tet.baryToPhysical(RPoint {third, third, third, zero}),
                        tet.baryToPhysical(RPoint {third, third, zero, third}),
                        tet.baryToPhysical(RPoint {third, zero, third, third}),

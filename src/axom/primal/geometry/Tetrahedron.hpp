@@ -127,7 +127,7 @@ public:
     {
       constexpr double EPS = 1.0e-50;
       const double vol = VectorType::scalar_triple_product(B - A, C - A, D - A);
-      // Compute one over denomenator; add a tiny amount to avoid division by zero
+      // Compute one over denominator; add a tiny amount to avoid division by zero
       const double ood = 1. / (vol - EPS);
 
       bary[0] = detA * ood;
@@ -202,59 +202,45 @@ public:
   double volume() const { return axom::utilities::abs(signedVolume()); }
 
   /**
-   * \brief Returns the circumsphere of the tetrahedron
+   * \brief Returns the circumsphere (circumscribing sphere) of the tetrahedron
    *
-   * Implements formula from https://mathworld.wolfram.com/Circumsphere.html
+   * Derived from formula on https://mathworld.wolfram.com/Circumsphere.html
+   * but uses observation that radius can be derived from distance to a vertex
    * \note This function is only available for 3D tetrahedra in 3D
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 3, SphereType>::type circumsphere() const
   {
-    using axom::numerics::determinant;
-    using axom::numerics::dot_product;
-    using axom::utilities::abs;
-    using NumericArrayType = primal::NumericArray<T, NDIMS>;
+    constexpr double EPS = 1.0e-50;
 
     const PointType& p0 = m_points[0];
     const PointType& p1 = m_points[1];
     const PointType& p2 = m_points[2];
     const PointType& p3 = m_points[3];
 
-    // clang-format off
-    const Point<T, 4> sq { dot_product(p0.data(), p0.data(), NDIMS),
-                           dot_product(p1.data(), p1.data(), NDIMS),
-                           dot_product(p2.data(), p2.data(), NDIMS),
-                           dot_product(p3.data(), p3.data(), NDIMS)};
+    // It's useful to separate the x-, y- and z- components of
+    // the difference vectors for p1, p2, and p3 from p0
+    const VectorType vx {p1[0] - p0[0], p2[0] - p0[0], p3[0] - p0[0]};
+    const VectorType vy {p1[1] - p0[1], p2[1] - p0[1], p3[1] - p0[1]};
+    const VectorType vz {p1[2] - p0[2], p2[2] - p0[2], p3[2] - p0[2]};
 
-    const double  a =  determinant(p0[0], p0[1], p0[2], 1.,
-                                   p1[0], p1[1], p1[2], 1.,
-                                   p2[0], p2[1], p2[2], 1.,
-                                   p3[0], p3[1], p3[2], 1.);
+    // We also need their squared norms
+    const VectorType sq {vx[0] * vx[0] + vy[0] * vy[0] + vz[0] * vz[0],
+                         vx[1] * vx[1] + vy[1] * vy[1] + vz[1] * vz[1],
+                         vx[2] * vx[2] + vy[2] * vy[2] + vz[2] * vz[2]};
 
-    const double dx =  determinant(sq[0], p0[1], p0[2], 1.,
-                                   sq[1], p1[1], p1[2], 1.,
-                                   sq[2], p2[1], p2[2], 1.,
-                                   sq[3], p3[1], p3[2], 1.);
+    // Compute one over denominator using a small value to avoid division by zero
+    // Note: a has opposite sign of signedVolume()
+    const double a = VectorType::scalar_triple_product(vx, vy, vz);
+    const double ood = 1. / (2 * a - EPS);
 
-    const double dy = -determinant(sq[0], p0[0], p0[2], 1.,
-                                   sq[1], p1[0], p1[2], 1.,
-                                   sq[2], p2[0], p2[2], 1.,
-                                   sq[3], p3[0], p3[2], 1.);
+    // Compute offset from p0 to center
+    const auto center_offset = ood *
+      VectorType {VectorType::scalar_triple_product(sq, vy, vz),
+                  VectorType::scalar_triple_product(sq, vz, vx),
+                  VectorType::scalar_triple_product(sq, vx, vy)};
 
-    const double dz =  determinant(sq[0], p0[0], p0[1], 1.,
-                                   sq[1], p1[0], p1[1], 1.,
-                                   sq[2], p2[0], p2[1], 1.,
-                                   sq[3], p3[0], p3[1], 1.);
-
-    const double  c =  determinant(sq[0], p0[0], p0[1], p0[2],
-                                   sq[1], p1[0], p1[1], p1[2],
-                                   sq[2], p2[0], p2[1], p2[2],
-                                   sq[3], p3[0], p3[1], p3[2]);
-    // clang-format on
-
-    const auto center = NumericArrayType {dx, dy, dz} / (2 * a);
-    const T radius = sqrt(dx * dx + dy * dy + dz * dz - 4 * a * c) / (2 * abs(a));
-    return SphereType(center.data(), radius);
+    return SphereType(p0 + center_offset, center_offset.norm());
   }
 
 private:
@@ -278,7 +264,7 @@ private:
 
 private:
   PointType m_points[4];
-};  // namespace primal
+};
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Tetrahedron's operators

@@ -477,6 +477,15 @@ TEST(primal_triangle, triangle_2D_circumsphere)
 
     SLIC_INFO("Circumsphere for triangle: " << tri << " is " << circumsphere);
 
+    // check that each vertex is on the sphere
+    for(int i = 0; i < 3; ++i)
+    {
+      auto qpt = tri[i];
+      EXPECT_NEAR(circumsphere.getRadius(),
+                  sqrt(primal::squared_distance(qpt, circumsphere.getCenter())),
+                  EPS);
+    }
+
     for(int i = 0; i < 3; i++)
     {
       QPoint qpt = tri[i];
