@@ -376,7 +376,12 @@ AXOM_HOST_DEVICE inline double Triangle<T, NDIMS>::angle(int idx) const
   V2 = V2.unitVector();
 
   double dotprod = VectorType::dot_product(V1, V2);
-  return (acos(dotprod));
+
+  // Account for floating point error in (some) degenerate cases
+  //  Undefined behavior if two vertices are the same
+  if(dotprod >= 1) return 0;
+  if(dotprod > -1) return acos(dotprod);
+  return M_PI;
 }
 
 //------------------------------------------------------------------------------
