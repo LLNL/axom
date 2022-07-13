@@ -110,9 +110,8 @@ public:
   virtual void write();
 
   /*!
-   * \brief Confirms ranks should flush and abort if a rank's abort flag was
-   *        set.
-   * \return true if all ranks should flush and abort, else false.
+   * \brief Confirms that abort flag(s) was set among all ranks.
+   * \return true if abort flag was set for at least one rank, else false.
    * \collective
    * \note This method is a collective operation
    *  intended for a synchronization checkpoint.

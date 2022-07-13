@@ -65,7 +65,14 @@ bool isRoot();
 void setIsRoot(bool is_root);
 
 /*!
- * \brief Marks this node as aborting.
+ * \brief Gets this rank's abort flag.
+ * \param [in] level user-supplied level.
+ * \return true for aborting, false for not.
+ */
+bool getAbortFlag(message::Level level);
+
+/*!
+ * \brief Sets this rank's abort flag.
  * \param [in] val true for aborting, false for not.
  * \param [in] level user-supplied level.
  */
@@ -227,18 +234,12 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
 
 /*!
  * \brief Aborts and flushes on warning or error if corresponding AbortOnError
- * or AbortOnWarning is set to true
+ *  or AbortOnWarning is set to true, and abort flag was set for at least
+ *  one rank with the corresponding message level.
  * \collective
  * \param [in] level the logging level.
  */
 void abortIfEnabled(message::Level level);
-
-/*!
- * \brief Determines ranks should flush and abort if a rank's abort flag was
- *        set.
- * \collective
- */
-// void determineAbortState();
 
 /*!
  * \brief Logs the given message to all registered streams.

@@ -136,7 +136,6 @@ void SynchronizedStream::flush()
 }
 
 //------------------------------------------------------------------------------
-// void SynchronizedStream::determineAbortState()
 bool SynchronizedStream::confirmAbort()
 {
   if(m_cache == nullptr)

@@ -66,7 +66,15 @@ public:
   void setLoggingMsgLevel(message::Level level);
 
   /*!
-   * \brief Marks this rank as aborting.
+   * \brief Gets the abort flag for the given level.
+   * \param [in] level the logging level.
+   * \return true if at least one stream has set the abort flag for the
+   *  given level, false if not.
+   */
+  bool getAbortFlag(message::Level level);
+
+  /*!
+   * \brief Sets the abort flag for all streams with the given level.
    * \param [in] val true for aborting, false for not.
    * \param [in] level the logging level.
    */
@@ -74,7 +82,8 @@ public:
 
   /*!
    * \brief Aborts and flushes on warning or error if corresponding AbortOnError
-   *  or AbortOnWarning is set to true
+   *  or AbortOnWarning is set to true, and abort flag was set for at least
+   *  one rank with the corresponding message level.
    * \collective
    * \param [in] level the logging level.
    */
@@ -290,16 +299,9 @@ public:
                   bool filter_duplicates = false);
 
   /*!
-   * \brief Confirms ranks should flush and abort if a rank's abort flag was
-   *        set for a log level.
-   * \collective
-   */
-  // void determineAbortState();
-  /*!
-   * \brief Determines ranks should flush and abort if a rank's abort flag was
-   *        set.
+   * \brief Confirms that abort flag(s) was set among all ranks.
    * \param [in] level the level to confirm
-   * \return true if all ranks should flush and abort, else false.
+   * \return true if abort flag was set for at least one rank, else false.
    * \collective
    */
   bool confirmAbortStreams(message::Level level);

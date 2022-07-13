@@ -75,7 +75,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the MPI Communicator of this node
+   * \brief Returns the MPI_Comm of this node
    *****************************************************************************
    */
   virtual MPI_Comm comm() = 0;

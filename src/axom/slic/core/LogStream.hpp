@@ -121,40 +121,23 @@ public:
   virtual void push() {};
 
   /*!
-   * \brief Gets the aborting flag.
-   * \return true for aborting, false for not.
-   * \note The intent of this method is to be overridden by concrete
-   *  implementations. This is primarily useful for applications running
-   *  in a distributed MPI environment. Intended to be used with
-   *  determineAbortState().
+   * \brief Gets the abort flag.
+   * \return true if rank is aborting, false if not.
+   * \note Intended to be used with confirmAbort().
    */
   virtual bool getAbortFlag() { return m_abort; };
 
   /*!
-   * \brief Marks the log stream as aborting.
-   * \param [in] val true for aborting, false for not.
-   * \note The intent of this method is to be overridden by concrete
-   *  implementations. This is primarily useful for applications running
-   *  in a distributed MPI environment.
+   * \brief Sets the abort flag.
+   * \param [in] val true for rank is aborting, false for not.
+   * \note Intended to be used with confirmAbort().
    */
   virtual void setAbortFlag(bool val) { m_abort = val; };
 
   /*!
-   * \brief Determines ranks should flush and abort if a rank's abort flag was
-   *        set. It's a NO-OP by default.
-   * \note The intent of this method is to be overridden by concrete
-   *  implementations. This is primarily useful for applications running
-   *  in a distributed MPI environment, where the
-   *  determineAbortState() is a collective
-   *  operation intended for a synchronization checkpoint.
-   *  Intended to be used with setAbortFlag().
-   */
-  // virtual void determineAbortState() {};
-
-  /*!
-   * \brief Confirms ranks should flush and abort if a rank's abort flag was
-   *        set. Default is to return value of m_abort flag.
-   * \return true if all ranks should flush and abort, else false.
+   * \brief Confirms that abort flag(s) was set among all ranks.
+   *  Default is to return value of m_abort flag.
+   * \return true if abort flag was set for at least one rank, else false.
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment, where the
