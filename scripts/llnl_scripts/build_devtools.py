@@ -51,7 +51,7 @@ def main():
             os.makedirs(build_dir)
     else:
         if getpass.getuser() != "atk":
-            print "ERROR: Only shared user 'atk' can install into shared directory. Use -d option."
+            print("ERROR: Only shared user 'atk' can install into shared directory. Use -d option.")
             return 1
         build_dir = get_shared_devtool_dir()
     build_dir = os.path.abspath(build_dir)
