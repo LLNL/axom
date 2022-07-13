@@ -93,19 +93,19 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
 
 # Root directory for generated developer tools
 
-set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2020_08_21_21_29_26/gcc-8.3.1" CACHE PATH "")
+set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2022_07_12_11_54_06/gcc-8.3.1" CACHE PATH "")
 
 set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/clang/clang-10.0.0/bin/clang-format" CACHE PATH "")
 
-set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/python3.7" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.9.13/bin/python3.9" CACHE PATH "")
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 
-set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/py-sphinx-5.0.2/bin/sphinx-build" CACHE PATH "")
 
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/py-shroud-0.12.2/bin/shroud" CACHE PATH "")
 
-set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH "")
+set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-2.8/bin/cppcheck" CACHE PATH "")
 
 set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
 
