@@ -113,12 +113,14 @@ public:
   {
     SLIC_ASSERT(idx < static_cast<int>(m_edges.size()));
 
-    m_edges.insert(m_edges.begin() + idx + 1, 1, m_edges[idx]);
+    // This causes an error, but it really shouldn't?
+    BezierCurve<T, NDIMS> new_edge(m_edges[idx]);
+    m_edges.insert(m_edges.begin() + idx + 1, 1, new_edge);
     auto& csplit = m_edges[idx];
     csplit.split(t, m_edges[idx], m_edges[idx + 1]);
   }
 
-  std::vector<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
+  axom::Array<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
 
   /// @}
 
@@ -235,7 +237,7 @@ public:
   }
 
 private:
-  std::vector<BezierCurve<T, NDIMS>> m_edges;
+  axom::Array<BezierCurve<T, NDIMS>> m_edges;
 };
 
 //------------------------------------------------------------------------------
