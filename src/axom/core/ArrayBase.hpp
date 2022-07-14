@@ -858,11 +858,18 @@ struct ArrayOpsBase<T, false>
     if(src_begin < dst)
     {
       IndexType dst_last = dst + src_end - src_begin;
-      std::move_backward(array + src_begin, array + src_end, array + dst_last);
+      auto rbegin = std::make_reverse_iterator(array + src_end);
+      auto rend = std::make_reverse_iterator(array + src_begin);
+      auto rdest = std::make_reverse_iterator(array + dst_last);
+      std::uninitialized_copy(std::make_move_iterator(rbegin),
+                              std::make_move_iterator(rend),
+                              rdest);
     }
     else if(src_begin > dst)
     {
-      std::move(array + src_begin, array + src_end, array + dst);
+      std::uninitialized_copy(std::make_move_iterator(array + src_begin),
+                              std::make_move_iterator(array + src_end),
+                              array + dst);
     }
   }
 };
