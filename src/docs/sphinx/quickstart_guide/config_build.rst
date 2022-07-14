@@ -162,7 +162,7 @@ On Windows, ``uberenv.py`` takes analogous steps:
   * It clones the vcpkg repo from GitHub.
   * It specifies configuration details such as the "triplet," specifying
     compiler, 64 vs 32-bits, and any other options specific to Axom.
-  * It builds vcpkg and then invokes vcpkg to build a set of TPLs.  It
+  * It sets up vcpkg and then invokes vcpkg to build a set of TPLs.  It
     also generates a host-config file that includes configuration details
     and build dependencies.
 
