@@ -367,8 +367,8 @@ private:
   /// \name Static Members
   ///@{
 
-  static Logger* s_Logger;
-  static std::map<std::string, Logger*> s_loggers;
+  // extern Logger* s_Logger;
+  // extern std::map<std::string, Logger*> s_loggers;
 
   ///@}
 

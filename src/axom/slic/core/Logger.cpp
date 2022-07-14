@@ -16,8 +16,8 @@ namespace axom
 {
 namespace slic
 {
-Logger* Logger::s_Logger = nullptr;
-std::map<std::string, Logger*> Logger::s_loggers;
+Logger* s_Logger = nullptr;
+std::map<std::string, Logger*> s_loggers;
 
 //------------------------------------------------------------------------------
 Logger::Logger()
