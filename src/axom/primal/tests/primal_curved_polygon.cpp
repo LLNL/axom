@@ -228,6 +228,38 @@ TEST(primal_curvedpolygon, isClosed_BiGon)
 //----------------------------------------------------------------------------------
 TEST(primal_curvedpolygon, split_edge)
 {
+  axom::Array<double> a1({1.0, 1.1, 1.2});
+  axom::Array<double> a2({2.0, 2.1, 2.2});
+  axom::Array<double> a3({3.0, 3.1, 3.2});
+  axom::Array<double> a4({4.0, 4.1, 4.2});
+
+  std::vector<double> v1({1.0, 1.1, 1.2});
+  std::vector<double> v2({2.0, 2.1, 2.2});
+  std::vector<double> v3({3.0, 3.1, 3.2});
+  std::vector<double> v4({4.0, 4.1, 4.2});
+
+  axom::Array<std::vector<double>> array_vector({v1, v2, v3});
+  axom::Array<axom::Array<double>> array_array({a1, a2, a3});
+  std::vector<axom::Array<double>> vector_array({a1, a2, a3});
+
+  //array_vector.insert(0, v4);  // exception thrown in _Orphan_all_unlocked_v3
+  //array_vector.insert(1, v4);  // exception thrown in _Orphan_all_unlocked_v3
+  //array_vector.insert(3, v4);  // perfectly fine
+  //array_vector.insert(array_vector.begin(), v4);  // exception thrown in _Orphan_all_unlocked_v3
+  //array_vector.insert(array_vector.begin() + 1, v4);  // exception thrown in _Orphan_all_unlocked_v3
+  //array_vector.insert(array_vector.end(), v4);  // pefectly fine
+  
+  //array_array.insert(0, a4);  // exception thrown in deallocate
+  //array_array.insert(1, a4);  // exception thrown in deallocate
+  //array_array.insert(3, a4);  // perfectly fine
+  //array_array.insert(array_array.begin(), a4);  // exception thrown in deallocate
+  //array_array.insert(array_array.begin() + 1, a4);  // exception thrown in deallocate
+  //array_array.insert(array_array.end(), a4);  // perfctly fine
+
+  //vector_array.insert(vector_array.begin(), a4);  
+  //vector_array.insert(vector_array.begin() + 1, a4);
+  //vector_array.insert(vector_array.end(), a4);
+
   const int DIM = 2;
   using CoordType = double;
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
@@ -240,6 +272,12 @@ TEST(primal_curvedpolygon, split_edge)
                                PointType {0.3, 2.0},
                                PointType {0.0, 1.6},
                                PointType {0.6, 1.2}};
+
+  std::cout << CP << std::endl;
+  CP.insert(0, CP[0]);
+  std::cout << CP << std::endl;
+
+  return;
 
   axom::Array<int> orders32 = {1, 1, 1};
   CurvedPolygonType bPolygon32 = createPolygon(CP, orders32);
