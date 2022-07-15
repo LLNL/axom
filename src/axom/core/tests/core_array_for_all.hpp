@@ -542,10 +542,31 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_of_arrays)
     }
   }
 
-  // Insert an array at the beginning
+  // Insert a few subarrays
   // A move operation will be triggered to allocate a slot for the new
   // element
   arr_2d.insert(arr_2d.begin(), DynamicArray({0, 1, 2}));
+  arr_2d.insert(arr_2d.begin() + 3, DynamicArray({2, 3, 4}));
+  EXPECT_EQ(arr_2d.size(), 6);
+
+  // Check values on host
+  {
+    HostArrayOfArrays arr_2d_host = arr_2d;
+    for(int i = 0; i < arr_2d_host.size(); i++)
+    {
+      HostArray subarr_host = arr_2d_host[i];
+      EXPECT_EQ(subarr_host.size(), 3);
+      int offset = (i >= 3) ? -1 : 0;
+      for(int j = 0; j < subarr_host.size(); j++)
+      {
+        EXPECT_EQ(subarr_host[j], i + j + offset);
+      }
+    }
+  }
+
+  // Erase an element in the middle of the array
+  // A move operation will be triggered to compact the remaining elements
+  arr_2d.erase(arr_2d.begin() + 2);
   EXPECT_EQ(arr_2d.size(), 5);
 
   // Check values on host
@@ -558,26 +579,6 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_of_arrays)
       for(int j = 0; j < subarr_host.size(); j++)
       {
         EXPECT_EQ(subarr_host[j], i + j);
-      }
-    }
-  }
-
-  // Erase an element in the middle of the array
-  // A move operation will be triggered to compact the remaining elements
-  arr_2d.erase(arr_2d.begin() + 2);
-  EXPECT_EQ(arr_2d.size(), 4);
-
-  // Check values on host
-  {
-    HostArrayOfArrays arr_2d_host = arr_2d;
-    for(int i = 0; i < arr_2d_host.size(); i++)
-    {
-      HostArray subarr_host = arr_2d_host[i];
-      EXPECT_EQ(subarr_host.size(), 3);
-      int offset = (i >= 2) ? 1 : 0;
-      for(int j = 0; j < subarr_host.size(); j++)
-      {
-        EXPECT_EQ(subarr_host[j], i + j + offset);
       }
     }
   }
