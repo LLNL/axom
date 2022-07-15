@@ -499,6 +499,91 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_initializer_list)
 }
 
 //------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_of_arrays)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ArrayOfArrays =
+    typename TestFixture::template DynamicTArray<DynamicArray>;
+  using HostArrayOfArrays =
+    typename TestFixture::template HostTArray<DynamicArray>;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+
+  constexpr axom::IndexType N = 5;
+  ArrayOfArrays arr_2d(0, N, kernelAllocID);
+
+  // Insert some arrays
+  arr_2d.push_back(DynamicArray({1, 2, 3}, kernelAllocID));
+  arr_2d.push_back(DynamicArray({2, 3, 4}, kernelAllocID));
+  arr_2d.push_back(DynamicArray({3, 4, 5}, kernelAllocID));
+  arr_2d.push_back(DynamicArray({4, 5, 6}, kernelAllocID));
+
+  EXPECT_EQ(arr_2d.size(), 4);
+  // Check values on host
+  {
+    HostArrayOfArrays arr_2d_host = arr_2d;
+    for(int i = 0; i < arr_2d_host.size(); i++)
+    {
+      HostArray subarr_host = arr_2d_host[i];
+      EXPECT_EQ(subarr_host.size(), 3);
+      for(int j = 0; j < subarr_host.size(); j++)
+      {
+        EXPECT_EQ(subarr_host[j], i + j + 1);
+      }
+    }
+  }
+
+  // Insert an array at the beginning
+  // A move operation will be triggered to allocate a slot for the new
+  // element
+  arr_2d.insert(arr_2d.begin(), DynamicArray({0, 1, 2}));
+  EXPECT_EQ(arr_2d.size(), 5);
+
+  // Check values on host
+  {
+    HostArrayOfArrays arr_2d_host = arr_2d;
+    for(int i = 0; i < arr_2d_host.size(); i++)
+    {
+      HostArray subarr_host = arr_2d_host[i];
+      EXPECT_EQ(subarr_host.size(), 3);
+      for(int j = 0; j < subarr_host.size(); j++)
+      {
+        EXPECT_EQ(subarr_host[j], i + j);
+      }
+    }
+  }
+
+  // Erase an element in the middle of the array
+  // A move operation will be triggered to compact the remaining elements
+  arr_2d.erase(arr_2d.begin() + 2);
+  EXPECT_EQ(arr_2d.size(), 4);
+
+  // Check values on host
+  {
+    HostArrayOfArrays arr_2d_host = arr_2d;
+    for(int i = 0; i < arr_2d_host.size(); i++)
+    {
+      HostArray subarr_host = arr_2d_host[i];
+      EXPECT_EQ(subarr_host.size(), 3);
+      int offset = (i >= 2) ? 1 : 0;
+      for(int j = 0; j < subarr_host.size(); j++)
+      {
+        EXPECT_EQ(subarr_host[j], i + j + offset);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 constexpr int MAGIC_DEFAULT_CTOR = 222;
 
 struct NonTrivialDefaultCtor
