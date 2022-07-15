@@ -69,11 +69,11 @@ namespace slamLulesh {
     {
       SLIC_WARNING(message);
     }
-      axom::slic::flushStreams();
+    axom::slic::flushStreams();
 #ifdef AXOM_USE_MPI
-      MPI_Abort(MPI_COMM_WORLD, -1);
+    MPI_Abort(MPI_COMM_WORLD, -1);
 #else
-      exit(-1);
+    exit(-1);
 #endif
   }
 

@@ -314,7 +314,7 @@ public:
   void abortIfEnabled(message::Level level);
 
   /*!
-   * \brief Confirms that abort flag(s) was set among all ranks.
+   * \brief Confirms that abort flag(s) was set on one or more ranks.
    * \param [in] level the level to confirm
    * \return true if abort flag was set for at least one rank, else false.
    * \collective

@@ -135,7 +135,7 @@ public:
   virtual void setAbortFlag(bool val) { m_abort = val; };
 
   /*!
-   * \brief Confirms that abort flag(s) was set among all ranks.
+   * \brief Confirms that abort flag(s) was set on one or more ranks.
    *  Default is to return value of m_abort flag.
    * \return true if abort flag was set for at least one rank, else false.
    * \note The intent of this method is to be overridden by concrete

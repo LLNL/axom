@@ -110,7 +110,7 @@ public:
   virtual void write();
 
   /*!
-   * \brief Confirms that abort flag(s) was set among all ranks.
+   * \brief Confirms that abort flag(s) was set on one or more ranks.
    * \return true if abort flag was set for at least one rank, else false.
    * \collective
    * \note This method is a collective operation
