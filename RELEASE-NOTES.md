@@ -178,6 +178,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   since C syntax is required in this file.
 - Fixed bug on two-dimensional `sidre::Array<T>` construction where the size is set to the underlying buffer
   capacity, instead of the actual number of elements
+- Fixed `axom::Array<T>::insert` behavior with non-trivial types.
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
