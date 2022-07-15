@@ -43,6 +43,7 @@
   #endif
 #endif
 
+#include <axom/core/utilities/WhereMacro.hpp>
 namespace axom
 {
 namespace quest
@@ -447,6 +448,7 @@ public:
 #endif
     }
 
+std::cout << fmt::format("at {}, {} has objectBB {}", __WHERE, m_rank, local_bb) << std::endl;
     gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
   }
 
@@ -481,6 +483,26 @@ public:
   BoxType computeMeshBoundingBox(conduit::Node& mesh,
                                  const std::string& coordset) const
   {
+#if 1
+#if 0
+    auto dumpNode = [=](const conduit::Node& n,
+                        const std::string&& fname,
+                        const std::string& protocol = "json") {
+      conduit::relay::io::save(n, fname, protocol);
+    };
+    dumpNode(mesh, fmt::format("qmesh_r{}.json", m_rank));
+#endif
+    auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
+    SLIC_ASSERT( internal::extractDimension(coords) == NDIMS );
+    const int npts = internal::extractSize(coords);
+    BoxType rval;
+    ArrayView<PointType> queryPts = ArrayView_from_Node<PointType>(mesh.fetch_existing("coordsets/coords/values/x"), npts);
+    for(const auto &p : queryPts)
+    {
+      rval.addPoint(p);
+    }
+    return rval;
+#else
     // clang-format off
     auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
     SLIC_ASSERT( internal::extractDimension(coords) == NDIMS );
@@ -497,6 +519,7 @@ public:
     }
 
     return BoxType(lo, hi);
+#endif
   }
 
   /**
@@ -710,7 +733,6 @@ public:
       }
     }
   }
-#include <axom/core/utilities/WhereMacro.hpp>
   void new_computeClosestPoints(conduit::Node& query_mesh,
                                 const std::string& coordset) const
   {
@@ -726,6 +748,7 @@ public:
     };
 
     BoxType queryPartitionBb = computeMeshBoundingBox(query_mesh, coordset);
+    std::cout << fmt::format("at {}, {} has objectBB {}, queryBB{}", __WHERE, m_rank, m_objectPartitionBbs[m_rank], queryPartitionBb) << std::endl;
 
     const int qmNpts = internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]);
 
@@ -744,6 +767,7 @@ SLIC_ASSERT( npts == query_mesh.fetch_existing("fields/closest_point/values/x").
       xfer_node["npts"] = npts;
       xfer_node["dim"] = dim;
       xfer_node["src_rank"] = m_rank;
+      xfer_node["is_first"] = true;
       xfer_node["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * npts);
       xfer_node["cp_index"].set_external(internal::getPointer<axom::IndexType>(query_mesh.fetch_existing("fields/cp_index/values")), npts);
       xfer_node["cp_rank"].set_external(internal::getPointer<axom::IndexType>(query_mesh.fetch_existing("fields/cp_rank/values")), npts);
@@ -778,8 +802,8 @@ checkXferNode(xfer_node);
 
     std::vector<relay::mpi::ISendRequest> isendRequests(m_nranks);
 
-    int recvCount = 0;
-    bool is_first = true;
+    int toRecvCount = m_nranks - 1;
+    // bool is_first = true;
 
     for(int round = 0; round < m_nranks || xfer_node.number_of_children() != 0; ++round)
     {
@@ -801,12 +825,10 @@ std::cout << fmt::format("at {}, {} has {}'s data in round {}", __WHERE, m_rank,
         get_from_conduit_node(queryPartitionBb, xfer_node.fetch_existing("aabb"));
 
         // Send the current xfer_node so we can receive the next one.
-        int next_dst = m_rank;
+        int next_dst = (m_rank + 1) % m_nranks;
         get_from_conduit_node(queryPartitionBb, xfer_node["aabb"]);
-        while (xfer_node.number_of_children() != 0)
+        while (xfer_node.number_of_children() != 0 && next_dst != m_rank)
         {
-          next_dst = (next_dst + 1) % m_nranks;
-
           if(m_isVerbose)
           {
             dumpNode(xfer_node,
@@ -815,6 +837,7 @@ std::cout << fmt::format("at {}, {} has {}'s data in round {}", __WHERE, m_rank,
 
           double sqDist =
             squared_distance(m_objectPartitionBbs[next_dst], queryPartitionBb);
+std::cout << fmt::format("at {}, {} has sqDist {:.4f} between {}'s and object partition {} in round {}", __WHERE, m_rank, sqDist, xfer_node.fetch_existing("src_rank").as_int(), next_dst, round) << std::endl;
 
           if(next_dst != m_rank)
           {
@@ -822,9 +845,14 @@ std::cout << fmt::format("at {}, {} has {}'s data in round {}", __WHERE, m_rank,
               m_isVerbose,
               fmt::format("Rank {} -- sending to dst {}", m_rank, next_dst));
 
+            // TODO: We can also track the farthest distance partition is from
+            // found points.  If this is closer than sqDist, there's no point
+            // sending to next_dst.  This could save communication even without
+            // a user-specified threshold.
             if(sqDist <= m_sqDistanceThreshold ||
                next_dst == xfer_node.fetch_existing("src_rank").as_int())
             {
+              if(xfer_node.fetch_existing("src_rank").as_int() == m_rank) ++toRecvCount;
               xfer_node["sender_rank"] = m_rank;
 std::cout << fmt::format("at {}, {} sending {}'s data to {} in round {}", __WHERE, xfer_node.fetch_existing("sender_rank").as_int(), xfer_node.fetch_existing("src_rank").as_int(), next_dst, round) << std::endl;
 checkXferNode(xfer_node);
@@ -853,21 +881,23 @@ std::cout << fmt::format("at {}, {} sending {}'s skip to {} in round {}", __WHER
                                  &isendRequests[next_dst]);
             }
           }
-        } // j-loop
+
+          next_dst = (next_dst + 1) % m_nranks;
+        } // next_dst loop
       } // block to send xfer_node
       else
       {
 std::cout << fmt::format("at {}, {} has nothing in round {}", __WHERE, m_rank, round) << std::endl;
       }
 
-      if(xfer_node.number_of_children() == 0 && recvCount < m_nranks) // if(m_nranks > 1)
+      if(xfer_node.number_of_children() == 0 && toRecvCount > 0) // if(m_nranks > 1)
       {
         // TODO: What if the local query mesh is still in xfer_node because it skipped the entire ring?
         conduit::relay::mpi::recv_using_schema(xfer_node,
                                                MPI_ANY_SOURCE,
                                                tag,
                                                MPI_COMM_WORLD);
-        ++recvCount;
+        --toRecvCount;
 std::cout << fmt::format("at {}, {} received {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("src_rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
         if(xfer_node.has_path("skip"))
         {
@@ -881,7 +911,7 @@ else {
 
       if(xfer_node.number_of_children() != 0)
       {
-if (m_nranks > 1)
+        if (xfer_node.has_path("sender_rank"))
   std::cout << fmt::format("at {}, {} processing {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("src_rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
 else
   std::cout << fmt::format("at {}, {} processing {}'s data in round {}", __WHERE, m_rank, xfer_node.fetch_existing("src_rank").as_int(), round) << std::endl;
@@ -891,34 +921,33 @@ dumpNode(xfer_node, axom::fmt::format("xfer_{}_on_{}_A.json", xfer_node.fetch_ex
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
-          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, is_first);
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, xfer_node.has_path("is_first"));
           break;
 
         case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, is_first);
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, xfer_node.has_path("is_first"));
 #endif
           break;
 
         case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, is_first);
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, xfer_node.has_path("is_first"));
 #endif
           break;
         }
 dumpNode(xfer_node, axom::fmt::format("xfer_{}_on_{}_B.json", xfer_node.fetch_existing("src_rank").as_int(), m_rank));
-        is_first = false;
+if(xfer_node.has_path("is_first")) xfer_node.remove("is_first"); // is_first = false;
 // std::cout << fmt::format("rank {} is at {}", m_rank, __WHERE) << std::endl;
 
         if(xfer_node.fetch_existing("src_rank").as_int() == m_rank)
         {
-if (m_nranks > 1)
+if (xfer_node.has_path("sender_rank"))
   std::cout << fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("src_rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
 else
   std::cout << fmt::format("at {}, {} saving {}'s data in round {}", __WHERE, m_rank, xfer_node.fetch_existing("src_rank").as_int(), round) << std::endl;
           // This is the query partition we started with.
           // Copy it back to query_mesh.
-          dumpNode(xfer_node, axom::fmt::format("xfer_node_round_{}_r{}.json", round, m_rank));
           const int npts = xfer_node["npts"].value();
           assert( npts == qmNpts );
           assert( npts == internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]) );
@@ -1116,10 +1145,10 @@ public:
     // This deep-copies host memory in xfer_node to device memory.
     // TODO: Avoid copying arrays (here and at the end) if both are on the host
     // BTNG: This is probably a deep copy.
-    // xfer_node["cp_index"]           -view> cpIndexes  -deep> cp_idx   -view> query_inds     -deep> cpIndexes
-    // xfer_node["cp_rank"]            -view> cpRanks    -deep> cp_ranks -view> query_ranks    -deep> cpRanks
-    // xfer_node["closest_point"]      -view> closestPts -deep> cp_pos   -view> query_pos      -deep> closestPts
-    // xfer_node["debug/min_distance"] -view> minDist    -deep> cp_dist  -view> query_min_dist -deep> minDist
+    // xfer_node["cp_index"]           -view> cpIndexes  -devicecopy> cp_idx   -view> query_inds     -devicecopy> cpIndexes
+    // xfer_node["cp_rank"]            -view> cpRanks    -devicecopy> cp_ranks -view> query_ranks    -devicecopy> cpRanks
+    // xfer_node["closest_point"]      -view> closestPts -devicecopy> cp_pos   -view> query_pos      -devicecopy> closestPts
+    // xfer_node["debug/min_distance"] -view> minDist    -devicecopy> cp_dist  -view> query_min_dist -devicecopy> minDist
     auto cp_idx = is_first
       ? axom::Array<axom::IndexType>(npts, npts, m_allocatorID)
       : axom::Array<axom::IndexType>(cpIndexes, m_allocatorID);
@@ -1153,9 +1182,6 @@ public:
     auto query_inds = cp_idx.view();
     auto query_ranks = cp_ranks.view();
     auto query_pos = cp_pos.view();
-for ( axom::IndexType ii=0; ii<query_inds.size(); ++ii ) {
-  assert((query_ranks[ii] == -1) == (query_inds[ii] == -1)); // DBG
-}
 
     /// Create an ArrayView in ExecSpace that is compatible with queryPts
     PointArray execPoints(queryPts, m_allocatorID);
@@ -1253,9 +1279,6 @@ for ( axom::IndexType ii=0; ii<query_inds.size(); ++ii ) {
                                );
       // );
 
-for ( axom::IndexType ii=0; ii<query_inds.size(); ++ii ) {
-  assert((query_ranks[ii] == -1) == (query_inds[ii] == -1)); // DBG
-}
     // BTNG: copy args are (dst,src,numbytes)
     axom::copy(cpIndexes.data(),
                query_inds.data(),
