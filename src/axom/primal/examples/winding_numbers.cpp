@@ -23,6 +23,7 @@ using Segment = primal::Segment<double, 2>;
 using Triangle = primal::Triangle<double, 2>;
 using Bezier = primal::BezierCurve<double, 2>;
 using CPolygon = primal::CurvedPolygon<double, 2>;
+using Polygon = primal::Polygon<double, 2>;
 
 using vector_field = std::function<Vector2D(Point2D)>;
 
@@ -61,8 +62,8 @@ CPolygon get_split_square_shape()
   Point2D cross_nodes[] = {Point2D {0.0, 0.0}, Point2D {1.0, 1.0}};
   Bezier cross_segment(cross_nodes, 1);
 
-  Bezier square_shape[] = {cross_segment};
-  return CPolygon(square_shape, 1);
+  Bezier square_shape[] = {segment1, segment2, segment3, segment4};
+  return CPolygon(square_shape, 4);
 }
 
 CPolygon get_cusp_shape()
@@ -123,6 +124,9 @@ CPolygon get_self_intersecting_shape()
                          Point2D {0.0, 1.0}};
   Bezier super_intersecting(big_nodes, 7);
 
+  Point2D clll[] = {Point2D {0.0, 0.0}, Point2D {0.0, 1.0}};
+  Bezier closure_closure(clll, 1);
+
   Point2D small_nodes[] = {Point2D {0.0, 1.0},
                            Point2D {-2.0, 0.5},
                            Point2D {0.0, 0.0}};
@@ -174,22 +178,26 @@ CPolygon get_large_shape()
 
 void winding_number_grid()
 {
-  CPolygon cpoly = get_cusp_shape();
+  CPolygon cpoly = get_overlapping_shape();
 
   // Get big ol grid of query points
   Bezier::BoundingBoxType cpbb(cpoly.boundingBox().scale(1.1));
-  const int num_pts = 400;
+  const int num_pts = 101;
   double xpts[num_pts];
   double ypts[num_pts];
 
+  Point2D the_pt({-0.5, 0.5});
+  //Point2D the_({-0.134210526, 0.590977444});
+  double ran = 1e-2;
+
   //axom::numerics::linspace(cpbb.getMin()[0], cpbb.getMax()[0], xpts, num_pts);
   //axom::numerics::linspace(cpbb.getMin()[1], cpbb.getMax()[1], ypts, num_pts);
-  axom::numerics::linspace(-0.352 - 1e-4, -0.352 + 1e-4, xpts, num_pts);
-  axom::numerics::linspace(0.72 - 1e-4, 0.72 + 1e-4, ypts, num_pts);
-  //axom::numerics::linspace(-0.4, -0.2, xpts, num_pts);
-  //axom::numerics::linspace(-1.8, -1.6, ypts, num_pts);
-  //axom::numerics::linspace(0.0, 1.0, xpts, num_pts);
-  //axom::numerics::linspace(0.0, 1.0, ypts, num_pts);
+  //axom::numerics::linspace(-0.352 - 1e-4, -0.352 + 1e-4, xpts, num_pts);
+  //axom::numerics::linspace(0.72 - 1e-4, 0.72 + 1e-4, ypts, num_pts);
+  //axom::numerics::linspace(the_pt[0] - ran, the_pt[0] + ran, xpts, num_pts);
+  //axom::numerics::linspace(the_pt[1] - ran, the_pt[1] + ran, ypts, num_pts);
+  axom::numerics::linspace(-0.75, 0.75, xpts, num_pts);
+  axom::numerics::linspace(-0.5, 1.0, ypts, num_pts);
 
   // Get file storage syntax
   std::ofstream outfile(
@@ -201,7 +209,26 @@ void winding_number_grid()
   }
 
   // Store quadrature order
-  int qnodes = 16;
+  int qnodes = 30;
+
+  Point2D new_nodes[] = {Point2D {-0.1640625000, 0.5},
+                         Point2D {-0.1640625000, 0.71875},
+                         Point2D {-0.6562500000, 1.0},
+                         Point2D {-0.9375000000, 0.75},
+                         Point2D {-0.7500000000, 0.25},
+                         Point2D {0.0000000000, 0.0000000000},
+                         Point2D {0.0000000000, 1.0000000000}};
+  Bezier new_curve(new_nodes, 7);
+  double new_wn = winding_number(cpoly[0], the_pt, qnodes, 1e-10, 1e-10);
+
+  Polygon square({Point2D({0.0, 0.0}),
+                  Point2D({1.0, 0.0}),
+                  Point2D({1.0, 1.0}),
+                  Point2D({0.0, 1.0})});
+
+  Point2D poly_query({-5.0, 0.5});
+  std::cout << new_wn << std::endl;
+  //return;
 
   // Loop over each query point, store it and the computed winding number there
   for(double& x : xpts)
@@ -209,8 +236,7 @@ void winding_number_grid()
     for(double& y : ypts)
     {
       Point2D qpoint({x, y});
-      double winding_num =
-        winding_number(cpoly, qpoint, qnodes);
+      double winding_num = winding_number(cpoly, qpoint, qnodes, 1e-10, 1e-10);
       // clang-format off
       outfile << axom::fmt::format(
         "{0},{1},{2}\n",
