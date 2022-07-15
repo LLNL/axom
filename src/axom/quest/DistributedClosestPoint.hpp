@@ -151,7 +151,7 @@ inline int extractDimension(const conduit::Node& values_node)
 inline int extractSize(const conduit::Node& values_node)
 {
   SLIC_ASSERT(values_node.has_child("x"));
-  return values_node["x"].dtype().number_of_elements(); // Why do we need dtype() here?  dtype() returns a conduit::DataType, which can describe strided arrays.
+  return values_node["x"].dtype().number_of_elements();
 }
 
 namespace relay
@@ -483,15 +483,6 @@ std::cout << fmt::format("at {}, {} has objectBB {}", __WHERE, m_rank, local_bb)
   BoxType computeMeshBoundingBox(conduit::Node& mesh,
                                  const std::string& coordset) const
   {
-#if 1
-#if 0
-    auto dumpNode = [=](const conduit::Node& n,
-                        const std::string&& fname,
-                        const std::string& protocol = "json") {
-      conduit::relay::io::save(n, fname, protocol);
-    };
-    dumpNode(mesh, fmt::format("qmesh_r{}.json", m_rank));
-#endif
     auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
     SLIC_ASSERT( internal::extractDimension(coords) == NDIMS );
     const int npts = internal::extractSize(coords);
@@ -502,24 +493,6 @@ std::cout << fmt::format("at {}, {} has objectBB {}", __WHERE, m_rank, local_bb)
       rval.addPoint(p);
     }
     return rval;
-#else
-    // clang-format off
-    auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
-    SLIC_ASSERT( internal::extractDimension(coords) == NDIMS );
-    const int npts = internal::extractSize(coords);
-
-    PointType lo, hi;
-    const char *dirNames[] = {"x", "y", "z"};
-    for ( int d=0; d<NDIMS; ++d )
-    {
-      // Q: Safe to assume coordVals have stride 1?
-      auto coordVals = internal::getPointer<double>(coords[dirNames[d]]);
-      lo[d] = *std::min_element(coordVals, coordVals+npts);
-      hi[d] = *std::max_element(coordVals, coordVals+npts);
-    }
-
-    return BoxType(lo, hi);
-#endif
   }
 
   /**
@@ -748,7 +721,7 @@ std::cout << fmt::format("at {}, {} has objectBB {}", __WHERE, m_rank, local_bb)
     };
 
     BoxType queryPartitionBb = computeMeshBoundingBox(query_mesh, coordset);
-    std::cout << fmt::format("at {}, {} has objectBB {}, queryBB{}", __WHERE, m_rank, m_objectPartitionBbs[m_rank], queryPartitionBb) << std::endl;
+std::cout << fmt::format("at {}, {} has objectBB {}, queryBB{}", __WHERE, m_rank, m_objectPartitionBbs[m_rank], queryPartitionBb) << std::endl;
 
     const int qmNpts = internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]);
 
@@ -759,10 +732,6 @@ std::cout << fmt::format("at {}, {} has objectBB {}", __WHERE, m_rank, local_bb)
       auto& coords = query_mesh.fetch_existing(fmt::format("coordsets/{}/values", coordset));
       const int dim = internal::extractDimension(coords);
       const int npts = internal::extractSize(coords);
-dumpNode(query_mesh, fmt::format("query_mesh_{}_r{}_incoming.json", 0, m_rank));
-SLIC_ASSERT( npts == query_mesh.fetch_existing("fields/cp_rank/values").dtype().number_of_elements() );
-SLIC_ASSERT( npts == query_mesh.fetch_existing("fields/cp_index/values").dtype().number_of_elements() );
-SLIC_ASSERT( npts == query_mesh.fetch_existing("fields/closest_point/values/x").dtype().number_of_elements() );
 
       xfer_node["npts"] = npts;
       xfer_node["dim"] = dim;
@@ -911,12 +880,11 @@ else {
 
       if(xfer_node.number_of_children() != 0)
       {
-        if (xfer_node.has_path("sender_rank"))
+if (xfer_node.has_path("sender_rank"))
   std::cout << fmt::format("at {}, {} processing {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("src_rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
 else
   std::cout << fmt::format("at {}, {} processing {}'s data in round {}", __WHERE, m_rank, xfer_node.fetch_existing("src_rank").as_int(), round) << std::endl;
 
-dumpNode(xfer_node, axom::fmt::format("xfer_{}_on_{}_A.json", xfer_node.fetch_existing("src_rank").as_int(), m_rank));
         // Distance search using local object partition and the xfer_node.
         switch(m_runtimePolicy)
         {
@@ -936,9 +904,7 @@ dumpNode(xfer_node, axom::fmt::format("xfer_{}_on_{}_A.json", xfer_node.fetch_ex
 #endif
           break;
         }
-dumpNode(xfer_node, axom::fmt::format("xfer_{}_on_{}_B.json", xfer_node.fetch_existing("src_rank").as_int(), m_rank));
 if(xfer_node.has_path("is_first")) xfer_node.remove("is_first"); // is_first = false;
-// std::cout << fmt::format("rank {} is at {}", m_rank, __WHERE) << std::endl;
 
         if(xfer_node.fetch_existing("src_rank").as_int() == m_rank)
         {
@@ -991,7 +957,6 @@ else
           // because it has completed its trip through the ring.
           xfer_node.reset();
         }
-// std::cout << fmt::format("rank {} is at {}", m_rank, __WHERE) << std::endl;
       } // Locally process xfer_node
 
       SLIC_INFO_IF(
@@ -1116,7 +1081,6 @@ public:
   }
 
   /**
-   * TODO: is_first may be unnecessary and always equal to xfer_node["src_rank"] == m_rank.
    */
   template <typename BVHTreeType>
   void computeLocalClosestPoints(const BVHTreeType* bvh,
