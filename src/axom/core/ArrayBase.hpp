@@ -858,9 +858,9 @@ struct ArrayOpsBase<T, false>
     if(src_begin < dst)
     {
       IndexType dst_last = dst + src_end - src_begin;
-      auto rbegin = std::make_reverse_iterator(array + src_end);
-      auto rend = std::make_reverse_iterator(array + src_begin);
-      auto rdest = std::make_reverse_iterator(array + dst_last);
+      auto rbegin = std::reverse_iterator<T*>(array + src_end);
+      auto rend = std::reverse_iterator<T*>(array + src_begin);
+      auto rdest = std::reverse_iterator<T*>(array + dst_last);
       // Do an "uninitialized-move" in reverse order, to avoid overwriting
       // any existing elements.
       std::uninitialized_copy(std::make_move_iterator(rbegin),
