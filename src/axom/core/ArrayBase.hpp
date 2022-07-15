@@ -861,12 +861,16 @@ struct ArrayOpsBase<T, false>
       auto rbegin = std::make_reverse_iterator(array + src_end);
       auto rend = std::make_reverse_iterator(array + src_begin);
       auto rdest = std::make_reverse_iterator(array + dst_last);
+      // Do an "uninitialized-move" in reverse order, to avoid overwriting
+      // any existing elements.
       std::uninitialized_copy(std::make_move_iterator(rbegin),
                               std::make_move_iterator(rend),
                               rdest);
     }
     else if(src_begin > dst)
     {
+      // This substitutes for std::uninitialized_move(), which is only
+      // available in C++17.
       std::uninitialized_copy(std::make_move_iterator(array + src_begin),
                               std::make_move_iterator(array + src_end),
                               array + dst);
