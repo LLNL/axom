@@ -466,7 +466,8 @@ public:
     const double thetaEnd = (m_mesh.getRank() + 1) * thetaScale;
     for(int i = 0; i < localNumPoints; ++i)
     {
-      const double angleInRadians = random_real(thetaStart, thetaEnd, 0);
+      // const double angleInRadians = random_real(thetaStart, thetaEnd, 0);
+      const double angleInRadians = thetaStart + thetaScale*i/localNumPoints;
       const double rsinT = center[1] + radius * std::sin(angleInRadians);
       const double rcosT = center[0] + radius * std::cos(angleInRadians);
 
