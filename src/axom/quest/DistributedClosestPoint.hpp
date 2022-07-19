@@ -220,6 +220,23 @@ inline int isend_using_schema(conduit::Node& node,
   request->msg_node["schema"].set(snd_schema_json);
   request->msg_node["data"].update(node);
 
+  static const char* bbegin = nullptr;
+  static const char* bend = nullptr;
+  if (bbegin) {
+    assert((request->msg_node.data_ptr() >= bend) ||
+           (reinterpret_cast<char*>(request->msg_node.data_ptr())+request->msg_node.total_bytes_compact() <= bbegin));
+    bbegin = reinterpret_cast<char*>(request->msg_node.data_ptr());
+    bend = reinterpret_cast<char*>(request->msg_node.data_ptr()) + request->msg_node.total_bytes_compact();
+  }
+  static std::set<const ISendRequest*> pastRequests;
+  static std::set<const conduit::Node*> pastNodes;
+  assert(pastRequests.count(request) == 0);
+  assert(pastNodes.count(&node) == 0);
+  pastRequests.insert(request);
+  pastNodes.insert(&node);
+  assert(pastRequests.count(request) == 1);
+  assert(pastNodes.count(&node) == 1);
+
   auto msg_data_size = request->msg_node.total_bytes_compact();
   int mpi_error = MPI_Isend(const_cast<void*>(request->msg_node.data_ptr()),
                             static_cast<int>(msg_data_size),
@@ -232,6 +249,7 @@ inline int isend_using_schema(conduit::Node& node,
 int rank = 0;
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 std::cout << fmt::format("at {}, {} sent {} of {}'s ({}, {}) to {}", __WHERE, rank, msg_data_size, node.fetch_existing("Home_Rank").as_int(), (void*)&node, node.fetch_existing("myAddr").as_uint64(), dest) << std::endl;
+// if(rank==4) request->msg_node.print();
 }
 
   // Error checking -- Note: expansion of CONDUIT_CHECK_MPI_ERROR
@@ -297,6 +315,7 @@ if(1){
 int rank = 0;
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 std::cout << fmt::format("at {}, {} received {} of {}'s ({}, {}) from {}", __WHERE, rank, buffer_size, node.fetch_existing("Home_Rank").as_int(), (void*)&node, node.fetch_existing("myAddr").as_uint64(), status.MPI_SOURCE) << std::endl;
+// if(rank==0) n_msg.print();
 }
 
     return mpi_error;
@@ -789,6 +808,7 @@ public:
 
     const int qmNpts = internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]);
     std::map<int, std::shared_ptr<conduit::Node>> xfer_nodes;
+    std::list<std::shared_ptr<conduit::Node>> skip_nodes;
 
     // create conduit node containing data that has to xfer between ranks
     {
@@ -825,7 +845,8 @@ public:
     // arbitrary tags for send/recv xfer_node.
     const int tag = 987342;
 
-    std::vector<relay::mpi::ISendRequest> isendRequests(m_nranks);
+    // std::vector<relay::mpi::ISendRequest> isendRequests(m_nranks);
+    std::list<relay::mpi::ISendRequest> isendRequests;
 
     int toRecvCount = m_nranks - 1; // Expect data from each non-local process.
     std::vector<int> recvs; recvs.reserve(20); // For debugging
@@ -841,7 +862,7 @@ public:
       // or a skip message, both of which terminates progression on xfer_node.
       if(xferNodePtr && m_nranks > 1)
       {
-        // Send the current *xferNodePtr and receive another.
+        // If parallel, send the current *xferNodePtr and receive another.
         int next_dst = (m_rank + 1) % m_nranks;
         get_from_conduit_node(queryPartitionBb, xferNodePtr->fetch_existing("aabb"));
         while (xferNodePtr && next_dst != m_rank)
@@ -861,6 +882,8 @@ public:
               sqSearchDist = std::min(sqSearchDist, xferNodePtr->fetch_existing("maxMinSqDist").as_double());
             }
 #endif
+            isendRequests.emplace_back(relay::mpi::ISendRequest());
+            auto &req = isendRequests.back();
             if(sqDist <= sqSearchDist ||
                next_dst == xferNodePtr->fetch_existing("Home_Rank").as_int())
             {
@@ -870,16 +893,16 @@ public:
                                  next_dst,
                                  tag,
                                  MPI_COMM_WORLD,
-                                 &isendRequests[next_dst]);
+                                 &req);
 std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, xferNodePtr->fetch_existing("sender_rank").as_int(), xferNodePtr->fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
-              assert(xferNodePtr->number_of_children() > 0);
               xferNodePtr.reset(); // Don't touch this Node anymore.
               break;
             }
             else
             {
-              assert(false); // Disable skip in current debug
-              conduit::Node skip;
+assert(false); // Disable skip in current debug
+              skip_nodes.emplace_back(std::make_shared<conduit::Node>());
+              conduit::Node& skip = *skip_nodes.back();
               // I think we can use an empty Node, but be explicit for now.
               skip["skip"] = true;
               skip["Home_Rank"] = xferNodePtr->fetch_existing("Home_Rank");
@@ -888,8 +911,8 @@ std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, 
                                  next_dst,
                                  tag,
                                  MPI_COMM_WORLD,
-                                 &isendRequests[next_dst]);
-              std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, xferNodePtr->fetch_existing("sender_rank").as_int(), xferNodePtr->fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
+                                 &req);
+              std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, skip.fetch_existing("sender_rank").as_int(), skip.fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
             }
           }
 
@@ -897,27 +920,44 @@ std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, 
         } // next_dst loop
       } // block to send xfer_node
 
-      if(!xferNodePtr && toRecvCount > 0) // if(m_nranks > 1)
+      if(!xferNodePtr && toRecvCount > 0)
       {
         // Receive the next xfer_node
-        std::shared_ptr<conduit::Node> nextXferNodePtr = std::make_shared<conduit::Node>();
+        std::shared_ptr<conduit::Node> recvXferNodePtr = std::make_shared<conduit::Node>();
         int recvSource = m_rank > 0 ? m_rank-1 : m_nranks-1; // MPI_ANY_SOURCE;
         auto mpiError =
-          axom::quest::internal::relay::mpi::recv_using_schema(*nextXferNodePtr,
+          axom::quest::internal::relay::mpi::recv_using_schema(*recvXferNodePtr,
                                                                recvSource,
                                                                tag,
                                                                MPI_COMM_WORLD);
         --toRecvCount;
-        int tmpHr = nextXferNodePtr->fetch_existing("Home_Rank").as_int();
-        assert(xfer_nodes.count(tmpHr) == 0 || tmpHr == m_rank); // Better not have received this home rank yet, unless it's our data circling back.
+        int tmpHr = recvXferNodePtr->fetch_existing("Home_Rank").as_int();
+        assert(xfer_nodes.count(tmpHr) == 0 || tmpHr == m_rank); // Better not have seen this home rank before, unless it's our data circling back.
         assert(std::count(recvs.begin(), recvs.end(), tmpHr) == 0);
-        xferNodePtr = xfer_nodes[tmpHr] = nextXferNodePtr;
-        std::cout << fmt::format("at {}, {} received {}'s data from {} in round {} err {}", __WHERE, m_rank, xferNodePtr->fetch_existing("Home_Rank").as_int(), xferNodePtr->fetch_existing("sender_rank").as_int(), round, mpiError) << std::endl;
         recvs.push_back(tmpHr);
-        if(xferNodePtr->has_path("skip"))
+        if(recvXferNodePtr->has_path("skip"))
         {
           assert(false); // Should not be here while debugging.
-          std::cout << fmt::format("at {}, {} skipping {}'s data from {} in round {}", __WHERE, m_rank, xferNodePtr->fetch_existing("Home_Rank").as_int(), xferNodePtr->fetch_existing("sender_rank").as_int(), round) << std::endl;
+          std::cout << fmt::format("at {}, {} skipping {}'s data from {} in round {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round) << std::endl;
+          xferNodePtr.reset();
+          xfer_nodes[tmpHr].reset();
+        }
+        else
+        {
+          std::cout << fmt::format("at {}, {} received {}'s data from {} in round {} err {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round, mpiError) << std::endl;
+          xfer_nodes[tmpHr] = recvXferNodePtr;
+          xferNodePtr = recvXferNodePtr;
+        }
+      }
+
+      if(0){
+        if(isendRequests.back().mpi_request != MPI_REQUEST_NULL)
+        {
+          // I don't understand why this is necessary, but without it
+          // there is a race condition that causes data corruption in the
+          // above isend_using_scheme data.  This shouldn't be needed
+          // because I'm not touching that Node after the non-blocking send.
+          MPI_Wait(&isendRequests.back().mpi_request, MPI_STATUS_IGNORE);
         }
       }
 
@@ -925,35 +965,35 @@ std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, 
       {
         conduit::Node& xfer_node = *xferNodePtr;
 
-        // Distance search using local object partition and the *xferNodePtr.
+        // Distance search using local object partition and xfer_node.
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
-          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), *xferNodePtr, xferNodePtr->has_path("is_first"));
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xfer_node, xfer_node.has_path("is_first"));
           break;
 
         case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), *xferNodePtr, xferNodePtr->has_path("is_first"));
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xfer_node, xfer_node.has_path("is_first"));
 #endif
           break;
 
         case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), *xferNodePtr, xferNodePtr->has_path("is_first"));
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, xfer_node.has_path("is_first"));
 #endif
           break;
         }
-std::cout << fmt::format("at {}, {} processed {}'s data in round {}, maxMinSqDist {:.4f}", __WHERE, m_rank, xferNodePtr->fetch_existing("Home_Rank").as_int(), round, xferNodePtr->fetch_existing("maxMinSqDist").as_double()) << std::endl;
+std::cout << fmt::format("at {}, {} processed {}'s data in round {}, maxMinSqDist {:.4f}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round, xfer_node.fetch_existing("maxMinSqDist").as_double()) << std::endl;
 
-        if(xferNodePtr->has_path("is_first")) xferNodePtr->remove("is_first");
+        if(xfer_node.has_path("is_first")) xfer_node.remove("is_first");
 
-        if(xferNodePtr->fetch_existing("Home_Rank").as_int() == m_rank)
+        if(xfer_node.fetch_existing("Home_Rank").as_int() == m_rank)
         {
-          if (xferNodePtr->has_path("sender_rank"))
-            std::cout << fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xferNodePtr->fetch_existing("Home_Rank").as_int(), xferNodePtr->fetch_existing("sender_rank").as_int(), round) << std::endl;
+          if (xfer_node.has_path("sender_rank"))
+            std::cout << fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
           else
-            std::cout << fmt::format("at {}, {} saving {}'s data in round {}", __WHERE, m_rank, xferNodePtr->fetch_existing("Home_Rank").as_int(), round) << std::endl;
+            std::cout << fmt::format("at {}, {} saving {}'s data in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round) << std::endl;
           // This is the query partition we started with.
           // Copy it back to query_mesh.
           const int qPtCount = xfer_node.fetch_existing("qPtCount").value();
@@ -962,22 +1002,22 @@ std::cout << fmt::format("at {}, {} processed {}'s data in round {}, maxMinSqDis
           auto& qmcpr = query_mesh.fetch_existing("fields/cp_rank/values");
           auto& qmcpi = query_mesh.fetch_existing("fields/cp_index/values");
           auto& qmcpcp = query_mesh.fetch_existing("fields/closest_point/values/x");
-          if(xferNodePtr->fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
+          if(xfer_node.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
           {
             axom::copy(qmcpr.data_ptr(),
-                       xferNodePtr->fetch_existing("cp_rank").data_ptr(),
+                       xfer_node.fetch_existing("cp_rank").data_ptr(),
                        qPtCount * sizeof(axom::IndexType));
           }
-          if(xferNodePtr->fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
+          if(xfer_node.fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
           {
             axom::copy(qmcpi.data_ptr(),
-                       xferNodePtr->fetch_existing("cp_index").data_ptr(),
+                       xfer_node.fetch_existing("cp_index").data_ptr(),
                        qPtCount * sizeof(axom::IndexType));
           }
-          if(xferNodePtr->fetch_existing("closest_point").data_ptr() != qmcpcp.data_ptr())
+          if(xfer_node.fetch_existing("closest_point").data_ptr() != qmcpcp.data_ptr())
           {
             axom::copy(qmcpcp.data_ptr(),
-                       xferNodePtr->fetch_existing("closest_point").data_ptr(),
+                       xfer_node.fetch_existing("closest_point").data_ptr(),
                        qPtCount * sizeof(PointType));
           }
 
