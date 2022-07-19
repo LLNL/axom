@@ -21,7 +21,7 @@ static Logger* s_Logger = nullptr;
 using Loggermap = std::map<std::string, Logger*>;
 
 //------------------------------------------------------------------------------
-Loggermap & getLoggers()
+Loggermap& getLoggers()
 {
   static Loggermap s_loggers;
   return s_loggers;
@@ -278,7 +278,7 @@ void Logger::initialize()
 //------------------------------------------------------------------------------
 bool Logger::createLogger(const std::string& name, char imask)
 {
-  Loggermap & loggers = getLoggers();
+  Loggermap& loggers = getLoggers();
   if(loggers.find(name) != loggers.end())
   {
     std::cerr << "ERROR: " << name << " logger is duplicated!\n";
@@ -331,7 +331,7 @@ bool Logger::createLogger(const std::string& name, char imask)
 //------------------------------------------------------------------------------
 bool Logger::activateLogger(const std::string& name)
 {
-  Loggermap & loggers = getLoggers();
+  Loggermap& loggers = getLoggers();
   if(loggers.find(name) != loggers.end())
   {
     s_Logger = loggers[name];
@@ -344,7 +344,7 @@ bool Logger::activateLogger(const std::string& name)
 //------------------------------------------------------------------------------
 void Logger::finalize()
 {
-  Loggermap & loggers = getLoggers();
+  Loggermap& loggers = getLoggers();
   for(Loggermap::iterator it = loggers.begin(); it != loggers.end(); ++it)
   {
     it->second->flushStreams();
@@ -368,7 +368,7 @@ Logger* Logger::getActiveLogger() { return s_Logger; }
 //------------------------------------------------------------------------------
 Logger* Logger::getRootLogger()
 {
-  Loggermap & loggers = getLoggers();
+  Loggermap& loggers = getLoggers();
   if(loggers.find("root") == loggers.end())
   {
     // no root logger
