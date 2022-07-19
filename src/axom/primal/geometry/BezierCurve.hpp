@@ -22,8 +22,6 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
-#include "axom/primal/operators/squared_distance.hpp"
-
 #include <vector>
 #include <ostream>
 
@@ -378,22 +376,7 @@ public:
    * \return True if c1 is near-linear
    */
 
-  bool isLinear(double tol = 1E-8) const
-  {
-    const int ord = getOrder();
-    if(ord <= 1)
-    {
-      return true;
-    }
-
-    SegmentType seg(m_controlPoints[0], m_controlPoints[ord]);
-    double sqDist = 0.0;
-    for(int p = 1; p < ord && sqDist < tol; ++p)  // check interior control points
-    {
-      sqDist += squared_distance(m_controlPoints[p], seg);
-    }
-    return (sqDist < tol);
-  }
+  static bool isLinear(BezierCurve<T, NDIMS> curve, double tol = 1E-8);
 
   /*!
    * \brief Simple formatted print of a Bezier Curve instance
@@ -423,6 +406,9 @@ private:
 //------------------------------------------------------------------------------
 /// Free functions related to BezierCurve
 //------------------------------------------------------------------------------
+
+
+
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)
 {
