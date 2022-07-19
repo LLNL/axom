@@ -60,11 +60,32 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
   return !(std::round(ret_val) == 0);
 }
 
+// Split edges until each one has a convex control polygon.
+//  Will eventually be placed in CurvedPolygon.hpp
+template <typename T>
+void split_to_convex(CurvedPolygon<T, 2>& cpoly)
+{
+  int num_edges = cpoly.numEdges();
+
+  for(int i = 0; i < num_edges; i++)
+  {
+    Polygon<T, 2> controlPolygon = cpoly[i].getControlPolygon();
+
+    if(!detail::isConvex(controlPolygon))
+    {
+      cpoly.splitEdge(i, 0.5);
+      num_edges++;
+      i--;
+    }
+  }
+}
+
 // Base winding number function
 template <typename T>
 double winding_number(const CurvedPolygon<T, 2>& cpoly,
                       const Point2D& q,
                       int qnodes,
+                      int& total_depth,
                       double int_tol = 1e-5,
                       double linear_tol = 1e-8)
 {
@@ -72,7 +93,8 @@ double winding_number(const CurvedPolygon<T, 2>& cpoly,
   for(int i = 0; i < cpoly.numEdges(); i++)
   {
     double this_val =
-      detail::adaptive_winding_number(cpoly[i], q, qnodes, int_tol, linear_tol);
+      detail::adaptive_winding_number(cpoly[i], q, total_depth, linear_tol);
+    //double this_val = detail::quadrature_winding_number(cpoly[i], q, qnodes);
     ret_val += this_val;
   }
 
@@ -84,10 +106,11 @@ template <typename T>
 double winding_number(const BezierCurve<T, 2>& c,
                       const Point2D& q,
                       int qnodes,
-                      double int_tol = 1e-5,
+                      int& depth,
                       double linear_tol = 1e-8)
 {
-  return detail::adaptive_winding_number(c, q, qnodes, int_tol, linear_tol);
+  return detail::adaptive_winding_number(c, q, depth, linear_tol);
+  //return detail::quadrature_winding_number(c, q, qnodes);
 }
 
 }  // namespace primal
