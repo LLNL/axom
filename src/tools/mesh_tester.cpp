@@ -50,6 +50,13 @@ using seq_exec = axom::SEQ_EXEC;
   #else
     using cuda_exec = seq_exec;
   #endif
+
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+    constexpr int HIP_BLOCK_SIZE = 256;
+    using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
+  #else
+    using hip_exec = seq_exec;
+  #endif
 #endif
 // clang-format on
 
@@ -82,7 +89,8 @@ enum RuntimePolicy
   seq = 0,
   raja_seq = 1,
   raja_omp = 2,
-  raja_cuda = 3
+  raja_cuda = 3,
+  raja_hip = 4
 };
 
 struct Input
@@ -131,6 +139,9 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
     #ifdef AXOM_USE_CUDA
   , {"raja_cuda", raja_cuda}
     #endif
+    #ifdef AXOM_USE_HIP
+  , {"raja_hip", raja_hip}
+    #endif
   #endif
 });
 // clang-format on
@@ -169,6 +180,9 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
   #endif
   #ifdef AXOM_USE_CUDA
   pol_sstr << "\nSet to \'raja_cuda\' or 3 to use the RAJA CUDA policy.";
+  #endif
+  #ifdef AXOM_USE_HIP
+  pol_sstr << "\nSet to \'raja_hip\' or 4 to use the RAJA HIP policy.";
   #endif
 #endif
 
@@ -237,6 +251,9 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
           : "")
     << ((method == "naive" || method == "bvh") && policy == raja_cuda
           ? " (use RAJA CUDA policy)"
+          : "")
+    << ((method == "naive" || method == "bvh") && policy == raja_hip
+          ? " (use RAJA HIP policy)"
           : "")
     << "\n  weld threshold = " << weldThreshold << "\n  "
     << (skipWeld ? "" : "not ") << "skipping weld"
@@ -606,6 +623,14 @@ int main(int argc, char** argv)
   }
 #endif
 
+#ifdef AXOM_USE_HIP
+  if(params.policy == raja_hip)
+  {
+    using GPUExec = axom::HIP_EXEC<256>;
+    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+  }
+#endif
+
   // _read_stl_file_start
   // Read file
   SLIC_INFO("Reading file: '" << params.stlInput << "'...\n");
@@ -681,6 +706,14 @@ int main(int argc, char** argv)
                                                 params.intersectionThreshold);
         break;
   #endif
+  #ifdef AXOM_USE_HIP
+      case raja_hip:
+        collisions =
+          naiveIntersectionAlgorithm<hip_exec>(surface_mesh,
+                                                degenerate,
+                                                params.intersectionThreshold);
+        break;
+  #endif
 #endif  // AXOM_USE_RAJA && AXOM_USE_UMPIRE
 
       default:
@@ -724,6 +757,15 @@ int main(int argc, char** argv)
   #ifdef AXOM_USE_CUDA
       case raja_cuda:
         quest::findTriMeshIntersectionsBVH<cuda_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.intersectionThreshold);
+        break;
+  #endif
+  #ifdef AXOM_USE_HIP
+      case raja_hip:
+        quest::findTriMeshIntersectionsBVH<hip_exec, double>(
           surface_mesh,
           collisions,
           degenerate,
@@ -782,6 +824,16 @@ int main(int argc, char** argv)
           params.intersectionThreshold);
         break;
   #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+      case raja_hip:
+        quest::findTriMeshIntersectionsImplicitGrid<hip_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #endif
 #endif  // AXOM_USE_RAJA
       default:
         SLIC_ERROR("Unhandled runtime policy case " << params.policy);
@@ -824,6 +876,16 @@ int main(int argc, char** argv)
   #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case raja_cuda:
         quest::findTriMeshIntersectionsUniformGrid<cuda_exec, double>(
+          surface_mesh,
+          collisions,
+          degenerate,
+          params.resolution,
+          params.intersectionThreshold);
+        break;
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+      case raja_hip:
+        quest::findTriMeshIntersectionsUniformGrid<hip_exec, double>(
           surface_mesh,
           collisions,
           degenerate,
