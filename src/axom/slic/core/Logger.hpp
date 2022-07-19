@@ -364,14 +364,6 @@ private:
 
   ///@}
 
-  /// \name Static Members
-  ///@{
-
-  // extern Logger* s_Logger;
-  // extern std::map<std::string, Logger*> s_loggers;
-
-  ///@}
-
   DISABLE_COPY_AND_ASSIGNMENT(Logger);
   DISABLE_MOVE_AND_ASSIGNMENT(Logger);
 };
