@@ -342,7 +342,7 @@ public:
    *
    * \return The closing line segment.
    */
-  BezierCurve linear_closure() const
+  BezierCurve get_linear_closure() const
   {
     PointType nodes[2] = {m_controlPoints[getOrder()], m_controlPoints[0]};
     return BezierCurve(nodes, 1);
