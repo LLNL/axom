@@ -23,7 +23,7 @@ using Loggermap = std::map<std::string, Logger*>;
 //------------------------------------------------------------------------------
 Loggermap & getLoggers()
 {
-  static std::map<std::string, Logger*> s_loggers;
+  static Loggermap s_loggers;
   return s_loggers;
 }
 
