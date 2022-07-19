@@ -115,6 +115,10 @@ void demoAxomExecution()
     C[i] = 0;
   }
 
+  axom::deallocate(A);
+  axom::deallocate(B);
+  axom::deallocate(C);
+
 // _exebasic_end
 
 //Now, let's say we want to try out use of CUDA or HIP. We just change that execution space.
@@ -155,6 +159,10 @@ void demoAxomExecution()
     std::cout << C[i] << " ";
   }
   std::cout << std::endl;
+
+  axom::deallocate(A);
+  axom::deallocate(B);
+  axom::deallocate(C);
 // _deviceexebasic_end
 #endif
 }

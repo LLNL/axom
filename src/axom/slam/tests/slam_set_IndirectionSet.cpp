@@ -10,25 +10,22 @@
  * using the IndirectionSetTester class
  */
 
-#include <iterator>
-#include <sstream>    // for std::stringstream
-#include <algorithm>  // for std::next_permutation
-#include <iterator>   // for std::ostream_iterator
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
+
 #include "gtest/gtest.h"
 
-#include "axom/slic.hpp"
-
-#include "axom/slam/Utilities.hpp"
-#include "axom/slam/IndirectionSet.hpp"
-#include "axom/slam/RangeSet.hpp"  // for PositionSet
+#include <iterator>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 
 namespace slam = axom::slam;
 
 namespace
 {
 static const int MAX_SET_SIZE = 10;
-
-}  // end anonymous namespace
+}
 
 /**
  * Simple test class for IndirectionSets
@@ -67,6 +64,12 @@ public:
     {
       mDataVec[2].push_back(static_cast<ElemType>(i));
     }
+
+    for(int i = 0; i < 3; ++i)
+    {
+      mDataArr[i].resize(mDataVec[i].size());
+      std::copy(mDataVec[i].begin(), mDataVec[i].end(), mDataArr[i].begin());
+    }
   }
 
   /**
@@ -80,18 +83,18 @@ public:
     for(int i = 0; i < 1000; ++i)
     {
       std::next_permutation(mDataVec[index].begin(), mDataVec[index].end());
+      std::next_permutation(mDataArr[index].begin(), mDataArr[index].end());
     }
   }
 
   /**
    * Get a pointer to the data buffer
-   * Specialization for ArrayIndirection
+   * Specialization for CArrayIndirection
    * \pre index must be 0, 1 or 2
    */
   void getDataBuffer(ElemType*& ptr, int index = 0)
   {
     checkIndex(index);
-
     ptr = mDataVec[index].data();
   }
 
@@ -103,20 +106,34 @@ public:
   void getDataBuffer(std::vector<ElemType>*& ptr, int index = 0)
   {
     checkIndex(index);
-
     ptr = &mDataVec[index];
   }
 
+  /**
+   * Get a pointer to the data buffer
+   * Specialization for ArrayIndirection
+   * \pre index must be 0, 1 or 2
+   */
+  void getDataBuffer(axom::Array<ElemType>*& ptr, int index = 0)
+  {
+    checkIndex(index);
+    ptr = &mDataArr[index];
+  }
+
+  /**
+   * Get a pointer to the data buffer
+   * Specialization for ArrayViewIndirection
+   * \pre index must be 0, 1 or 2
+   */
   void getDataBuffer(axom::ArrayView<ElemType>& ptr, int index = 0)
   {
     checkIndex(index);
-
     ptr =
       axom::ArrayView<ElemType>(mDataVec[index].data(), mDataVec[index].size());
   }
 
 private:
-  /** Check that the index is valid; fail test if not */
+  /// Check that the index is valid; fail test if not
   void checkIndex(int index)
   {
     ASSERT_GE(index, 0);
@@ -125,6 +142,7 @@ private:
 
 private:
   std::vector<ElemType> mDataVec[3];
+  axom::Array<ElemType> mDataArr[3];
 };
 
 template <typename ElemType>
@@ -147,8 +165,9 @@ bool compareData(axom::ArrayView<ElemType> a, axom::ArrayView<ElemType> b)
 
 // Tests several types of indirection sets
 using MyTypes =
-  ::testing::Types<slam::ArrayIndirectionSet<axom::int32, axom::int64>,
+  ::testing::Types<slam::CArrayIndirectionSet<axom::int32, axom::int64>,
                    slam::VectorIndirectionSet<axom::int32, axom::int64>,
+                   slam::ArrayIndirectionSet<axom::int32, axom::int64>,
                    slam::ArrayViewIndirectionSet<axom::int32, axom::int64>>;
 
 TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
@@ -418,7 +437,7 @@ TEST(slam_set_indirectionset, compare_array_and_vector)
   using E = int;
 
   using VecSet = slam::VectorIndirectionSet<P, E>;
-  using ArrSet = slam::ArrayIndirectionSet<P, E>;
+  using CArrSet = slam::CArrayIndirectionSet<P, E>;
   using PosSet = slam::PositionSet<P, E>;
 
   const int SZ = MAX_SET_SIZE;
@@ -432,9 +451,9 @@ TEST(slam_set_indirectionset, compare_array_and_vector)
               .size(SZ)           //
               .data(&vVals));
 
-  ArrSet as(ArrSet::SetBuilder()  //
-              .size(SZ)           //
-              .data(aVals.data()));
+  CArrSet as(CArrSet::SetBuilder()  //
+               .size(SZ)            //
+               .data(aVals.data()));
 
   EXPECT_NE(vs, ps);
   EXPECT_NE(as, ps);
@@ -465,13 +484,13 @@ TEST(slam_set_indirectionset, negative_stride)
   using OffPol = policies::RuntimeOffset<SetPosition>;
   using StridePol = policies::RuntimeStride<SetPosition>;
   using VecIndPol = policies::STLVectorIndirection<SetPosition, SetElement>;
-  using ArrIndPol = policies::ArrayIndirection<SetPosition, SetElement>;
+  using CArrIndPol = policies::CArrayIndirection<SetPosition, SetElement>;
 
   using VecSet =
     slam::OrderedSet<SetPosition, SetElement, SizePol, OffPol, StridePol, VecIndPol>;
 
-  using ArrSet =
-    slam::OrderedSet<SetPosition, SetElement, SizePol, OffPol, StridePol, ArrIndPol>;
+  using CArrSet =
+    slam::OrderedSet<SetPosition, SetElement, SizePol, OffPol, StridePol, CArrIndPol>;
 
   // Set up data -- an array of incrementing integers
   std::vector<SetElement> intVec(MAX_SET_SIZE);
@@ -520,8 +539,7 @@ TEST(slam_set_indirectionset, negative_stride)
     EXPECT_FALSE(noDataVSet.isValid(bVerbose));
 
     VecSet outOfBoundsVSet(VecSet::SetBuilder()
-                             .size(setSize + 1)  // Note: This will cause the last
-                                                 // index to be out of bounds
+                             .size(setSize + 1)  // Note: last index is out of bounds
                              .offset(setOffset)
                              .stride(setStride)
                              .data(&intVec));
@@ -529,8 +547,7 @@ TEST(slam_set_indirectionset, negative_stride)
 
     VecSet outOfBoundsVSet2(VecSet::SetBuilder()
                               .size(setSize)
-                              .offset(-1)  // Note: This will cause the first index
-                                           // to be out of bounds
+                              .offset(-1)  // Note: first index is out of bounds
                               .stride(1)
                               .data(&intVec));
     EXPECT_FALSE(outOfBoundsVSet2.isValid(bVerbose));
@@ -545,28 +562,28 @@ TEST(slam_set_indirectionset, negative_stride)
     SLIC_DEBUG_IF(bVerbose, "--- Done.");
   }
 
-  // Setup the VectorIndirectionSet and test basic functionality
-  ArrSet aSet(ArrSet::SetBuilder()  //
-                .size(setSize)      //
-                .offset(setOffset)  //
-                .stride(setStride)  //
-                .data(intVec.data()));
+  // Setup the CArrayIndirectionSet and test basic functionality
+  CArrSet cSet(CArrSet::SetBuilder()  //
+                 .size(setSize)       //
+                 .offset(setOffset)   //
+                 .stride(setStride)   //
+                 .data(intVec.data()));
   {
-    EXPECT_TRUE(aSet.isValid());
-    EXPECT_FALSE(aSet.empty());
-    EXPECT_EQ(setSize, aSet.size());
-    EXPECT_TRUE(aSet.hasIndirection());
+    EXPECT_TRUE(cSet.isValid());
+    EXPECT_FALSE(cSet.empty());
+    EXPECT_EQ(setSize, cSet.size());
+    EXPECT_TRUE(cSet.hasIndirection());
 
-    EXPECT_EQ(intVec[setOffset], aSet[0]);
+    EXPECT_EQ(intVec[setOffset], cSet[0]);
 
     SLIC_INFO("Ordered array set has:"
-              << "{ size: " << aSet.size() << ", stride: " << aSet.stride()
-              << ", offset: " << aSet.offset() << ", first elt: " << aSet[0]
-              << ", last elt: " << aSet[aSet.size() - 1] << "}");
+              << "{ size: " << cSet.size() << ", stride: " << cSet.stride()
+              << ", offset: " << cSet.offset() << ", first elt: " << cSet[0]
+              << ", last elt: " << cSet[cSet.size() - 1] << "}");
 
-    for(int i = 0; i < aSet.size(); ++i)
+    for(int i = 0; i < cSet.size(); ++i)
     {
-      EXPECT_EQ(setOffset + setStride * i, aSet[i]);
+      EXPECT_EQ(setOffset + setStride * i, cSet[i]);
     }
 
     /// Several checks that sets with bad offsets and strides are invalid
@@ -574,40 +591,38 @@ TEST(slam_set_indirectionset, negative_stride)
                   "--- Checking isValid() on several sets with "
                     << "bad sizes, offsets and strides.");
 
-    ArrSet noDataASet(ArrSet::SetBuilder()  // Note: Missing a data pointer
-                        .size(setSize)
-                        .offset(setOffset)
-                        .stride(setStride));
-    EXPECT_FALSE(noDataASet.isValid(bVerbose));
+    CArrSet noDataCSet(CArrSet::SetBuilder()  // Note: Missing a data pointer
+                         .size(setSize)
+                         .offset(setOffset)
+                         .stride(setStride));
+    EXPECT_FALSE(noDataCSet.isValid(bVerbose));
 
-    ArrSet outOfBoundsASet1(ArrSet::SetBuilder()
-                              .size(setSize + 1)  // Note: This will cause the last
-                                                  // index to be out of bounds
-                              .offset(setOffset)
-                              .stride(setStride)
-                              .data(intVec.data()));
-    EXPECT_FALSE(outOfBoundsASet1.isValid(bVerbose));
+    CArrSet outOfBoundsCSet1(CArrSet::SetBuilder()
+                               .size(setSize + 1)  // Note: last index is out of bounds
+                               .offset(setOffset)
+                               .stride(setStride)
+                               .data(intVec.data()));
+    EXPECT_FALSE(outOfBoundsCSet1.isValid(bVerbose));
 
-    ArrSet outOfBoundsASet2(ArrSet::SetBuilder()
-                              .size(setSize)
-                              .offset(-1)  // Note: This will cause the first index
-                                           // to be out of bounds
-                              .stride(1)
-                              .data(intVec.data()));
-    EXPECT_FALSE(outOfBoundsASet2.isValid(bVerbose));
+    CArrSet outOfBoundsCSet2(CArrSet::SetBuilder()
+                               .size(setSize)
+                               .offset(-1)  // Note: first index is out of bounds
+                               .stride(1)
+                               .data(intVec.data()));
+    EXPECT_FALSE(outOfBoundsCSet2.isValid(bVerbose));
 
-    ArrSet zeroStrideASet(ArrSet::SetBuilder()
-                            .size(setSize)
-                            .offset(setOffset)
-                            .stride(0)  // Note: A stride of zero is not valid
-                            .data(intVec.data()));
-    EXPECT_FALSE(zeroStrideASet.isValid(bVerbose));
+    CArrSet zeroStrideCSet(CArrSet::SetBuilder()
+                             .size(setSize)
+                             .offset(setOffset)
+                             .stride(0)  // Note: stride of zero is not valid
+                             .data(intVec.data()));
+    EXPECT_FALSE(zeroStrideCSet.isValid(bVerbose));
 
     SLIC_DEBUG_IF(bVerbose, "--- Done.");
   }
 
-  // check that vset and aset are equivalent
-  EXPECT_EQ(vSet, aSet);
+  // check that vset and cset are equivalent
+  EXPECT_EQ(vSet, cSet);
 }
 
 //----------------------------------------------------------------------
@@ -616,7 +631,6 @@ int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();

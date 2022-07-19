@@ -74,7 +74,7 @@ public:
   using BinBitMap =
     slam::Map<BitsetType,
               slam::Set<IndexType, IndexType>,
-              slam::policies::CoreArrayIndirection<IndexType, BitsetType>,
+              slam::policies::ArrayIndirection<IndexType, BitsetType>,
               slam::policies::StrideOne<IndexType>>;
 
   struct QueryObject;
@@ -205,7 +205,6 @@ public:
     for(int i = 0; i < NDIMS; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i]);
       m_binData[i] =
         BinBitMap(&m_bins[i], BitsetType(numElts, allocatorID), 1, allocatorID);
 
@@ -618,10 +617,7 @@ namespace axom
 {
 namespace spin
 {
-/*!
- * \brief Device-copyable query object for running implicit grid queries on the
- *  GPU.
- */
+/// Device-copyable query object for running implicit grid queries on the GPU
 template <int NDIMS, typename ExecSpace, typename IndexType>
 struct ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject
 {
@@ -635,7 +631,7 @@ public:
   using BinBitMap =
     slam::Map<BitsetType,
               slam::Set<IndexType, IndexType>,
-              slam::policies::CoreArrayIndirection<IndexType, BitsetType>,
+              slam::policies::ArrayIndirection<IndexType, BitsetType>,
               slam::policies::StrideOne<IndexType>>;
 
   QueryObject(const SpatialBoundingBox& spaceBb,

@@ -24,6 +24,7 @@
 #include "axom/CLI11.hpp"
 
 #include <memory>
+#include <cmath>
 
 namespace primal = axom::primal;
 namespace quest = axom::quest;
@@ -608,7 +609,7 @@ void initializeInputMesh(Input& params, internal::blueprint::PointMesh& inputMes
 
     // recompute and reset bounding box based on input mesh
     const int nPts = inputMesh.numPoints();
-    auto coords = quest::detail::InterleavedOrStridedPoints<DIM>(
+    auto coords = quest::detail::InterleavedOrStridedPoints<double, DIM>(
       inputMesh.coordsGroup()->getGroup("values"));
 
     BBoxType bbox;
@@ -637,7 +638,7 @@ void initializeInputMesh(Input& params, internal::blueprint::PointMesh& inputMes
 
     // Extract coordinate positions as scalar fields
     const int nPts = inputMesh.numPoints();
-    auto coords = quest::detail::InterleavedOrStridedPoints<DIM>(
+    auto coords = quest::detail::InterleavedOrStridedPoints<double, DIM>(
       inputMesh.coordsGroup()->getGroup("values"));
 
     inputMesh.registerNodalScalarField<double>("pos_x");
@@ -680,6 +681,123 @@ void initializeQueryMesh(const Input& params,
   {
     queryMesh.registerNodalScalarField<double>(fld);
   }
+}
+
+/**
+ * Compares interpolation using ScatteredInterpolation::getInterpolationWeights()
+ * against results from ScattteredInterpolation::interpolateField().
+ * The latter stores its results in the blueprint mesh, while the former
+ * returns the interpolation weights and indexes for the user to apply themselves.
+ */
+template <int DIM>
+bool checkInterpolation(
+  std::unique_ptr<quest::ScatteredInterpolation<DIM>>& scattered_interp,
+  const internal::blueprint::PointMesh& inputMesh,
+  const internal::blueprint::PointMesh& queryMesh)
+{
+  using axom::utilities::isNearlyEqual;
+  using quest::detail::InterleavedOrStridedPoints;
+
+  using InterpIndices = primal::Point<axom::IndexType, DIM + 1>;
+  using InterpWeights = primal::Point<double, DIM + 1>;
+  using PointArray = InterleavedOrStridedPoints<double, DIM>;
+
+  constexpr double EPS = 1e-8;
+
+  bool interpolationsAgree = true;
+
+  // Get arrays over the input and query points
+  PointArray inputPts(inputMesh.coordsGroup()->getGroup("values"));
+  PointArray queryPts(queryMesh.coordsGroup()->getGroup("values"));
+
+  // Create temporary arrays of interpolation variables
+  const int nQueryPts = queryMesh.numPoints();
+  axom::Array<InterpIndices> interp_indices(nQueryPts, nQueryPts);
+  axom::Array<InterpWeights> interp_weights(nQueryPts, nQueryPts);
+  axom::Array<bool> interp_valid(nQueryPts, nQueryPts);
+  for(int i = 0; i < nQueryPts; ++i)
+  {
+    interp_valid[i] =
+      scattered_interp->getInterpolationWeights(queryPts[i],
+                                                interp_indices[i],
+                                                interp_weights[i]);
+  }
+
+  // Interpolate points on each field and check against previously interpolated values
+  for(const auto& fld : inputMesh.getFieldNames())
+  {
+    auto inputField = inputMesh.getNodalScalarField<double>(fld);
+    auto queryField = queryMesh.getNodalScalarField<double>(fld);
+
+    for(int i = 0; i < nQueryPts; ++i)
+    {
+      const double query_val = queryField[i];
+
+      if(!interp_valid[i])
+      {
+        if(!std::isnan(query_val))
+        {
+          SLIC_WARNING(axom::fmt::format(
+            "Bad interpolation: Query point {} had value {} for field `{}` "
+            "using `ScatteredInterpolation::interpolateField()` but was not "
+            "found for `ScatteredInterpolation::getInterpolationWeights()`",
+            i,
+            query_val,
+            fld));
+          interpolationsAgree = false;
+        }
+      }
+      else
+      {
+        // perform interpolation
+        double val = 0.;
+        auto& indices = interp_indices[i];
+        auto& weights = interp_weights[i];
+        for(int d = 0; d < indices.dimension(); ++d)
+        {
+          val += inputField[indices[d]] * weights[d];
+        }
+
+        // check against value computed via ScatteredInterpolation::interpolateField()
+        // stored in query mesh's blueprint fields
+        if(!isNearlyEqual(query_val, val, EPS))
+        {
+          SLIC_WARNING(axom::fmt::format(
+            "Bad interpolation: Query point {} had value {} for field `{}` "
+            "using `ScatteredInterpolation::interpolateField()` but {} when "
+            "interpolating using "
+            "`ScatteredInterpolation::getInterpolationWeights()`",
+            i,
+            query_val,
+            fld,
+            val));
+          interpolationsAgree = false;
+        }
+
+        // Interpoate position and check against actual query point
+        primal::Point<double, DIM> interp_pt;
+        for(int d = 0; d < indices.dimension(); ++d)
+        {
+          interp_pt.array() += inputPts[indices[d]].array() * weights[d];
+        }
+
+        if(!isNearlyEqual(primal::squared_distance(interp_pt, queryPts[i]), EPS))
+        {
+          SLIC_WARNING(axom::fmt::format(
+            "Bad interpolation: When interpolating position of query point {} "
+            "@ {}, got {} with distance {}.",
+            i,
+            queryPts[i],
+            interp_pt,
+            sqrt(primal::squared_distance(interp_pt, queryPts[i]))));
+
+          interpolationsAgree = false;
+        }
+      }
+    }
+  }
+
+  return interpolationsAgree;
 }
 
 int main(int argc, char** argv)
@@ -725,9 +843,12 @@ int main(int argc, char** argv)
   }
 
   // Write input mesh to file
+  if(params.verboseOutput)
   {
     std::string file = params.outputFile + "_input_mesh";
-    SLIC_INFO(axom::fmt::format("Writing input mesh to '{}'", file));
+    SLIC_INFO(axom::fmt::format("Writing input mesh to '{}/{}'",
+                                axom::utilities::filesystem::getCWD(),
+                                file));
     inputMesh.saveMesh(file, params.outputProtocol);
   }
 
@@ -752,53 +873,145 @@ int main(int argc, char** argv)
     initializeQueryMesh<3>(params, queryMesh, inputMesh.getFieldNames());
     break;
   }
+  const int numQueryPts = queryMesh.numPoints();
+  const int numFields = inputMesh.getFieldNames().size();
+
+  // Convert blueprint meshes from Sidre to Conduit
+  conduit::Node bp_input, bp_query;
+  inputMesh.rootGroup()->createNativeLayout(bp_input);
+  queryMesh.rootGroup()->createNativeLayout(bp_query);
 
   /// Run the query
   std::unique_ptr<quest::ScatteredInterpolation<2>> scattered_2d;
   std::unique_ptr<quest::ScatteredInterpolation<3>> scattered_3d;
 
-  // Convert blueprint mesh from Sidre to Conduit
-  conduit::Node bp_input;
-  inputMesh.rootGroup()->createNativeLayout(bp_input);
-
-  conduit::Node bp_query;
-  queryMesh.rootGroup()->createNativeLayout(bp_query);
-
-  // Initialize the mesh points
+  // Initialize the ScatteredInterpolation instance (templated on the dimension)
   switch(params.dimension)
   {
   case 2:
-    scattered_2d = std::unique_ptr<quest::ScatteredInterpolation<2>>(
-      new quest::ScatteredInterpolation<2>);
+    scattered_2d = std::make_unique<quest::ScatteredInterpolation<2>>();
+    break;
+  case 3:
+    scattered_3d = std::make_unique<quest::ScatteredInterpolation<3>>();
+    break;
+  }
+
+  // Generate the Delaunay complex
+  int numVerts = 0, numSimps = 0;
+  std::string bboxStr;
+  axom::utilities::Timer timer(true);
+  switch(params.dimension)
+  {
+  case 2:
     scattered_2d->buildTriangulation(bp_input, inputMesh.coordsName());
-    scattered_2d->exportDelaunayComplex(bp_input, "delaunay_2d.vtk");
+    numVerts = scattered_2d->numVertices();
+    numSimps = scattered_2d->numSimplices();
+    bboxStr = axom::fmt::format("{}", scattered_2d->boundingBox());
+    break;
+  case 3:
+    scattered_3d->buildTriangulation(bp_input, inputMesh.coordsName());
+    numVerts = scattered_3d->numVertices();
+    numSimps = scattered_3d->numSimplices();
+    bboxStr = axom::fmt::format("{}", scattered_3d->boundingBox());
+    break;
+  }
+  timer.stop();
+  SLIC_INFO(
+    axom::fmt::format("It took {} seconds to create a Delaunay complex with {} "
+                      "points, {} {} and bounding box {}. "
+                      "Insertion rate of {:.1f} points per second.",
+                      timer.elapsedTimeInSec(),
+                      numVerts,
+                      numSimps,
+                      params.dimension == 2 ? "triangles" : "tetrahedra",
+                      bboxStr,
+                      numVerts / timer.elapsedTimeInSec()));
 
+  // Dump the Delaunay complex to disk as a vtk file
+  if(params.verboseOutput)
+  {
+    switch(params.dimension)
+    {
+    case 2:
+      scattered_2d->exportDelaunayComplex(bp_input, "delaunay_2d.vtk");
+      break;
+    case 3:
+      scattered_3d->exportDelaunayComplex(bp_input, "delaunay_3d.vtk");
+      break;
+    }
+  }
+
+  // Find the simplices containing each of the query points
+  timer.start();
+  switch(params.dimension)
+  {
+  case 2:
     scattered_2d->locatePoints(bp_query, query_coords_name);
+    break;
+  case 3:
+    scattered_3d->locatePoints(bp_query, query_coords_name);
+    break;
+  }
+  timer.stop();
+  SLIC_INFO(
+    axom::fmt::format("It took {} seconds to locate {} points. Query rate of "
+                      "{:.1f} points per second.",
+                      timer.elapsedTimeInSec(),
+                      numQueryPts,
+                      numQueryPts / timer.elapsedTimeInSec()));
 
+  // Perform the interpolation on each of the fields
+  timer.start();
+  switch(params.dimension)
+  {
+  case 2:
     for(const auto& fld : inputMesh.getFieldNames())
     {
       scattered_2d->interpolateField(bp_query, query_coords_name, bp_input, fld, fld);
     }
     break;
   case 3:
-    scattered_3d = std::unique_ptr<quest::ScatteredInterpolation<3>>(
-      new quest::ScatteredInterpolation<3>);
-    scattered_3d->buildTriangulation(bp_input, inputMesh.coordsName());
-    scattered_3d->exportDelaunayComplex(bp_input, "delaunay_3d.vtk");
-
-    scattered_3d->locatePoints(bp_query, query_coords_name);
-
     for(const auto& fld : inputMesh.getFieldNames())
     {
       scattered_3d->interpolateField(bp_query, query_coords_name, bp_input, fld, fld);
     }
     break;
   }
+  timer.stop();
+  SLIC_INFO(axom::fmt::format(
+    "It took {} seconds to interpolate the data on {} fields. "
+    "Interpolation rate of {:.1f} points per second.",
+    timer.elapsedTimeInSec(),
+    numFields,
+    numQueryPts * numFields / timer.elapsedTimeInSec()));
+
+  // Check interpolation using local interpolation from weights
+  timer.start();
+  switch(params.dimension)
+  {
+  case 2:
+    checkInterpolation<2>(scattered_2d, inputMesh, queryMesh);
+    break;
+  case 3:
+    checkInterpolation<3>(scattered_3d, inputMesh, queryMesh);
+    break;
+  }
+  timer.stop();
+  SLIC_INFO(
+    axom::fmt::format("It took {} seconds to check interpolation values by "
+                      "interpolating from weights. "
+                      "Interpolation rate of {:.1f} points per second.",
+                      timer.elapsedTimeInSec(),
+                      numQueryPts * numFields / timer.elapsedTimeInSec()));
 
   // Write query mesh to file
+  if(params.verboseOutput)
   {
     std::string file = params.outputFile + "_output_mesh";
-    SLIC_INFO(axom::fmt::format("Writing interpolated point mesh to '{}'", file));
+    SLIC_INFO(axom::fmt::format("Writing interpolated point mesh to '{}/{}'",
+                                axom::utilities::filesystem::getCWD(),
+                                file));
+
     queryMesh.saveMesh(file, params.outputProtocol);
   }
 

@@ -18,15 +18,14 @@
       "clang@10.0.0+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
       "gcc@8.3.1+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
       "gcc@8.1.0~fortran+devtools~mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
-      "intel@18.0.2~openmp+devtools+mfem+c2c~lua",
       "intel@19.0.4~openmp+devtools+mfem+c2c" ],
 
     "toss_4_x86_64_ib":
     [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx906 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
-    "__comment__":"# Use amdgpu_target=gfx90a for rzvernal                                       ",
+    "__comment__":"# Use amdgpu_target=gfx90a for tioga/rzvernal; and gfx908 for rznevada",
     "toss_4_x86_64_ib_cray":
-    [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx908 ^raja~openmp+rocm ^umpire~openmp+rocm" ],
+    [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
     "blueos_3_ppc64le_ib_p9":
     [ "clang@9.0.0~openmp+devtools+mfem+c2c",

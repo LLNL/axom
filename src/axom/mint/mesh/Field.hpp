@@ -241,7 +241,7 @@ inline T* Field::getDataPtr(Field* field)
   SLIC_ASSERT(field != nullptr);
 
   // check type
-  int type = field_traits<T>::type();
+  constexpr int type = field_traits<T>::type();
   int ftype = field->getType();
   SLIC_ERROR_IF(
     (type == UNDEFINED_FIELD_TYPE),

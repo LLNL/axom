@@ -182,19 +182,24 @@ struct FlatGridStorage
 
   void initialize(axom::ArrayView<const IndexType> binSizes)
   {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_GPU)
     if(m_executeOnDevice)
     {
-      using exec_pol =
-        typename axom::execution_space<CUDA_EXEC<256>>::loop_policy;
-      using reduce_pol =
-        typename axom::execution_space<CUDA_EXEC<256>>::reduce_policy;
-      RAJA::exclusive_scan<exec_pol>(
+  #ifdef AXOM_USE_CUDA
+      using gpu_exec = axom::CUDA_EXEC<256>;
+  #else
+      using gpu_exec = axom::HIP_EXEC<256>;
+  #endif
+
+      using loop_pol = typename axom::execution_space<gpu_exec>::loop_policy;
+      using reduce_pol = typename axom::execution_space<gpu_exec>::reduce_policy;
+
+      RAJA::exclusive_scan<loop_pol>(
         RAJA::make_span(binSizes.data(), binSizes.size()),
         RAJA::make_span(m_binOffsets.data(), binSizes.size()),
         RAJA::operators::plus<IndexType> {});
       RAJA::ReduceSum<reduce_pol, IndexType> total_elems(0);
-      for_all<CUDA_EXEC<256>>(
+      for_all<gpu_exec>(
         binSizes.size(),
         AXOM_LAMBDA(IndexType idx) { total_elems += binSizes[idx]; });
       m_binData.resize(total_elems.get());

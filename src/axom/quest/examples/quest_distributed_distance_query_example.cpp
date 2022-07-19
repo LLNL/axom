@@ -80,6 +80,9 @@ private:
   #ifdef AXOM_USE_CUDA
     , {"cuda", RuntimePolicy::cuda}
   #endif
+  #ifdef AXOM_USE_HIP
+    , {"hip", RuntimePolicy::hip}
+  #endif
 #endif
   };
   // clang-format on

@@ -44,9 +44,9 @@ using SetElement = slam::DefaultElementType;
 
 using RangeSetType = slam::RangeSet<SetPosition, SetElement>;
 
-const SetPosition FROMSET_SIZE = 5;
-const SetPosition TOSET_SIZE = 6;
-const SetPosition ELEM_STRIDE = 5;
+constexpr SetPosition FROMSET_SIZE = 5;
+constexpr SetPosition TOSET_SIZE = 6;
+constexpr SetPosition ELEM_STRIDE = 5;
 
 using CTStride = policies::CompileTimeStride<SetPosition, ELEM_STRIDE>;
 using RTStride = policies::RuntimeStride<SetPosition>;
@@ -57,7 +57,7 @@ using ConstantCardinalityRT =
   policies::ConstantCardinality<SetPosition, RTStride>;
 
 using STLIndirection = policies::STLVectorIndirection<SetPosition, SetElement>;
-using ArrayIndirection = policies::ArrayIndirection<SetPosition, SetElement>;
+using CArrayIndirection = policies::CArrayIndirection<SetPosition, SetElement>;
 
 using IndexVec = std::vector<SetPosition>;
 
@@ -432,16 +432,16 @@ TEST(slam_relation_static_constant, runtime_stride_STLIndirection)
   iterateRelation_range(builderRel);
 }
 
-TEST(slam_relation_static_constant, runtime_stride_ArrayIndirection)
+TEST(slam_relation_static_constant, runtime_stride_CArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation "
-            << " with runtime stride and array Indirection");
+            << " with runtime stride and C-array Indirection");
 
   using StaticConstantRelation_RT_Array =
     slam::StaticRelation<SetPosition,
                          SetElement,
                          ConstantCardinalityRT,
-                         ArrayIndirection,
+                         CArrayIndirection,
                          RangeSetType,
                          RangeSetType>;
 
@@ -492,16 +492,16 @@ TEST(slam_relation_static_constant, runtime_stride_ArrayIndirection)
   iterateRelation_range(builderRel);
 }
 
-TEST(slam_relation_static_constant, compileTime_stride_ArrayIndirection)
+TEST(slam_relation_static_constant, compileTime_stride_CArrayIndirection)
 {
   SLIC_INFO("Tests for Static Relation with "
-            << " runtime stride and array Indirection");
+            << " runtime stride and C-array Indirection");
 
   using StaticConstantRelation_CT_Array =
     slam::StaticRelation<SetPosition,
                          SetElement,
                          ConstantCardinalityCT,
-                         ArrayIndirection,
+                         CArrayIndirection,
                          RangeSetType,
                          RangeSetType>;
 
@@ -524,7 +524,7 @@ TEST(slam_relation_static_constant, compileTime_stride_ArrayIndirection)
   relation.bindIndices(relIndices.size(), data);
 
   // Note: Since the striding is a compile time constant,
-  //       we don't need to set the striding,
+  //       we don't need to set the striding
   EXPECT_TRUE(relation.isValid(true));
 
   //        .. but we can, if we'd like to
