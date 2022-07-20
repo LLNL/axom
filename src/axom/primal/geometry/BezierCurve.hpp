@@ -324,7 +324,7 @@ public:
           dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
         }
       }
-      val[i] = ord * (ord - 1) * (dCarray[2] + 2 * dCarray[1] - dCarray[0]);
+      val[i] = ord * (ord - 1) * (dCarray[2] - 2 * dCarray[1] + dCarray[0]);
     }
 
     return val;
@@ -376,7 +376,6 @@ public:
    * \return True if c1 is near-linear
    */
 
-  static bool isLinear(BezierCurve<T, NDIMS> curve, double tol = 1E-8);
 
   /*!
    * \brief Simple formatted print of a Bezier Curve instance
@@ -406,9 +405,6 @@ private:
 //------------------------------------------------------------------------------
 /// Free functions related to BezierCurve
 //------------------------------------------------------------------------------
-
-
-
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)
 {
