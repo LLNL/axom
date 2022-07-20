@@ -19,6 +19,8 @@
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
+#include "axom/primal/geometry/BezierCurve.hpp"
+
 namespace axom
 {
 namespace primal
@@ -245,6 +247,51 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 
   const auto v = VectorType(sphere.getCenter(), P).unitVector();
   return sphere.getCenter() + sphere.getRadius() * v;
+}
+
+template <typename T, int NDIMS>
+inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
+                                     const BezierCurve<T, NDIMS>& curve,
+                                     double& min_param)
+{
+  using VectorType = Vector<T, NDIMS>;
+
+  const int NS = 10;
+  double seeds[NS];
+  axom::numerics::linspace(0.0, 1.0, seeds, NS);
+  min_param = seeds[0];
+
+  auto F = [&](double t) -> double {
+    VectorType pos(P, curve.evaluate(t));
+    return VectorType::dot_product(pos, curve.dt(t));
+  };
+
+  auto Fprime = [&](double t) -> double {
+    Vector2D pos(P, curve.evaluate(t));
+    return curve.dt(t).squared_norm() + Vector2D::dot_product(pos, curve.dtdt(t));
+  };
+
+  // 25 iterations of newton's method at each seed
+  for(int s = 1; s < NS-1; s++)
+    for(int i = 0; i < 5; i++)
+    {
+      seeds[s] = seeds[s] - F(seeds[s]) / Fprime(seeds[s]);
+    }
+
+  //Vector<T, NDIMS> min_vec(curve.evaluate(seeds[0]), P);
+  double min_dist = VectorType(curve.evaluate(seeds[0]), P).squared_norm();
+
+  for(int i = 1; i < NS; i++)
+  {
+    double this_dist = VectorType(curve.evaluate(seeds[i]), P).squared_norm();
+    if(this_dist < min_dist && seeds[i] >= 0 && seeds[i] <= 1)
+    {
+      min_param = seeds[i];
+      min_dist = this_dist;
+    }
+  }
+
+  return curve.evaluate(min_param);
 }
 
 }  // namespace primal
