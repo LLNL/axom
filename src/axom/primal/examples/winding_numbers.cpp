@@ -148,7 +148,7 @@ CPolygon get_figure_shape()
                          Point2D {-2.0, 2.0}};
   Bezier super_intersecting(big_nodes, 2);
 
-  Point2D clll[] = {Point2D {-2.25, 2.0},
+  Point2D clll[] = {Point2D {-2.0, 2.0},
                     Point2D {-4.5, 4.0},
                     Point2D {-2.0, -2.0}};
   Bezier closure_closure(clll, 2);
@@ -205,7 +205,7 @@ CPolygon get_large_shape()
 
 void winding_number_grid()
 {
-  CPolygon cpoly_pre = get_self_intersecting_shape();
+  CPolygon cpoly_pre = get_figure_shape();
   split_to_convex(cpoly_pre);
   Bezier pedges[] = {cpoly_pre[0], cpoly_pre[0].get_linear_closure()};
   CPolygon cpoly(pedges, 2);
@@ -224,12 +224,12 @@ void winding_number_grid()
   //axom::numerics::linspace(cpbb.getMin()[1], cpbb.getMax()[1], ypts, num_pts);
   //axom::numerics::linspace(-0.352 - 1e-4, -0.352 + 1e-4, xpts, num_pts);
   //axom::numerics::linspace(0.72 - 1e-4, 0.72 + 1e-4, ypts, num_pts);
-  //axom::numerics::linspace(the_pt[0] - ran, the_pt[0] + ran, xpts, num_pts);
-  //axom::numerics::linspace(the_pt[1] + ran / 3, the_pt[1] + ran, ypts, num_pts);
+  axom::numerics::linspace(the_pt[0] - ran, the_pt[0] + ran, xpts, num_pts);
+  axom::numerics::linspace(the_pt[1] - ran, the_pt[1] + ran, ypts, num_pts);
   //axom::numerics::linspace(-1.0, 0.5, xpts, num_pts);
   //axom::numerics::linspace(-0.75, 0.75, ypts, num_pts);
-  axom::numerics::linspace(-1.0, 0.0, xpts, num_pts);
-  axom::numerics::linspace(0.0, 1.0, ypts, num_pts);
+  //axom::numerics::linspace(-1.0, 0.0, xpts, num_pts);
+  //axom::numerics::linspace(0.0, 1.0, ypts, num_pts);
 
   // Get file storage syntax
   std::ofstream outfile(
