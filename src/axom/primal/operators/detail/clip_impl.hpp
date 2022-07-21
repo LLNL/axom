@@ -399,61 +399,30 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
 }
 
 /*!
- * \brief Finds the clipped intersection Polyhedron between Octahedron
- *        oct and Tetrahedron tet.
+ * \brief Finds the clipped intersection Polyhedron between Polyhedron
+ *        poly and an Array of Plane planes.
  *
- * \param [in] oct The octahedron
- * \param [in] tet The tetrahedron
+ * \param [in] poly The polyhedron
+ * \param [in] planes The Array of planes
  * \param [in] eps The tolerance for plane point orientation.
- * \return The Polyhedron formed from clipping the octahedron with a tetrahedron.
+ * \return The Polyhedron formed from clipping the polyhedron with a set of planes.
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
-  const Octahedron<T, NDIMS>& oct,
-  const Tetrahedron<T, NDIMS>& tet,
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
+  Polyhedron<T, NDIMS>& poly,
+  const axom::ArrayView<const Plane<T,NDIMS>>& planes,
   double eps = 1.e-10)
 {
   using PointType = Point<T, NDIMS>;
   using BoxType = BoundingBox<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
 
-  // Initialize our polyhedron to return
-  Polyhedron<T, NDIMS> poly;
-
-  poly.addVertex(oct[0]);
-  poly.addVertex(oct[1]);
-  poly.addVertex(oct[2]);
-  poly.addVertex(oct[3]);
-  poly.addVertex(oct[4]);
-  poly.addVertex(oct[5]);
-
-  poly.addNeighbors(0, {1, 5, 4, 2});
-  poly.addNeighbors(1, {0, 2, 3, 5});
-  poly.addNeighbors(2, {0, 4, 3, 1});
-  poly.addNeighbors(3, {1, 2, 4, 5});
-  poly.addNeighbors(4, {0, 5, 3, 2});
-  poly.addNeighbors(5, {0, 1, 3, 4});
-
-  // Reverses order of vertices 1,2 and 4,5 if volume is negative
-  if(poly.volume() < 0)
-  {
-    axom::utilities::swap<PointType>(poly[1], poly[2]);
-    axom::utilities::swap<PointType>(poly[4], poly[5]);
-  }
-
   //Bounding Box of Polyhedron
-  BoxType polyBox(&oct[0], 6);
-
-  // Initialize planes from tetrahedron vertices
-  // (Ordering here matters to get the correct winding)
-  PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
-                         make_plane(tet[0], tet[2], tet[3]),
-                         make_plane(tet[0], tet[3], tet[1]),
-                         make_plane(tet[0], tet[1], tet[2])};
+  BoxType polyBox(&poly[0], poly.numVertices());
 
   //Clip octahedron by each plane
-  for(int planeIndex = 0; planeIndex < 4; planeIndex++)
+  for(int planeIndex = 0; planeIndex < planes.size(); planeIndex++)
   {
     PlaneType plane = planes[planeIndex];
 
@@ -508,6 +477,62 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   }
 
   return poly;
+}
+
+/*!
+ * \brief Finds the clipped intersection Polyhedron between Octahedron
+ *        oct and Tetrahedron tet.
+ *
+ * \param [in] oct The octahedron
+ * \param [in] tet The tetrahedron
+ * \param [in] eps The tolerance for plane point orientation.
+ * \return The Polyhedron formed from clipping the octahedron with a tetrahedron.
+ *
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
+  const Octahedron<T, NDIMS>& oct,
+  const Tetrahedron<T, NDIMS>& tet,
+  double eps = 1.e-10)
+{
+  using PointType = Point<T, NDIMS>;
+  using PlaneType = Plane<T, NDIMS>;
+
+  // Initialize our polyhedron to return
+  Polyhedron<T, NDIMS> poly;
+
+  poly.addVertex(oct[0]);
+  poly.addVertex(oct[1]);
+  poly.addVertex(oct[2]);
+  poly.addVertex(oct[3]);
+  poly.addVertex(oct[4]);
+  poly.addVertex(oct[5]);
+
+  poly.addNeighbors(0, {1, 5, 4, 2});
+  poly.addNeighbors(1, {0, 2, 3, 5});
+  poly.addNeighbors(2, {0, 4, 3, 1});
+  poly.addNeighbors(3, {1, 2, 4, 5});
+  poly.addNeighbors(4, {0, 5, 3, 2});
+  poly.addNeighbors(5, {0, 1, 3, 4});
+
+  // Reverses order of vertices 1,2 and 4,5 if volume is negative
+  if(poly.volume() < 0)
+  {
+    axom::utilities::swap<PointType>(poly[1], poly[2]);
+    axom::utilities::swap<PointType>(poly[4], poly[5]);
+  }
+
+  // Initialize planes from tetrahedron vertices
+  // (Ordering here matters to get the correct winding)
+
+  PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
+                         make_plane(tet[0], tet[2], tet[3]),
+                         make_plane(tet[0], tet[3], tet[1]),
+                         make_plane(tet[0], tet[1], tet[2])};
+
+  const ArrayView< const PlaneType> planes_view(planes, 4);
+
+  return clipPolyhedron(poly, planes_view, eps);
 }
 
 }  // namespace detail
