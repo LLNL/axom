@@ -19,6 +19,7 @@
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 
 #include <vector>
 #include <ostream>
@@ -118,6 +119,24 @@ public:
     m_edges.insert(m_edges.begin() + idx + 1, 1, new_edge);
     auto& csplit = m_edges[idx];
     csplit.split(t, m_edges[idx], m_edges[idx + 1]);
+  }
+
+  // Split edges until each one has a convex control polygon.
+  void split_to_convex()
+  {
+    int num_edges = m_edges.size();
+
+    for(int i = 0; i < num_edges; i++)
+    {
+      Polygon<T, 2> controlPolygon = m_edges[i].getControlPolygon();
+
+      if(!controlPolygon.isConvex())
+      {
+        this->splitEdge(i, 0.5);
+        num_edges++;
+        i--;
+      }
+    }
   }
 
   axom::Array<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
