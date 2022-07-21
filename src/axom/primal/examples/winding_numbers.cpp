@@ -206,7 +206,7 @@ CPolygon get_large_shape()
 void winding_number_grid()
 {
   CPolygon cpoly_pre = get_self_intersecting_shape();
-  split_to_convex(cpoly_pre);
+  cpoly_pre.split_to_convex();
   Bezier pedges[] = {cpoly_pre[0], cpoly_pre[0].get_linear_closure()};
   CPolygon cpoly(pedges, 2);
 
@@ -267,7 +267,7 @@ void winding_number_grid()
       Point2D qpoint({x, y});
       // clang-format off
       //double winding_num = winding_number(cpoly, qpoint, qnodes, total_depth, 1e-10);
-      double winding_num = winding_number(cpoly_pre, qpoint, qnodes, total_depth, 1e-10);
+      double winding_num = winding_number_convex(cpoly_pre, qpoint, qnodes, total_depth, 1e-10);
       outfile << axom::fmt::format(
         "{0},{1},{2},{3}\n",
         qpoint[0],
