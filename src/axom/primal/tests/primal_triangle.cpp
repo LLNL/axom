@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 
 #include <cmath>
+#include <vector>
 
 namespace primal = axom::primal;
 
@@ -360,7 +361,7 @@ TEST(primal_triangle, triangle_2D_point_containment)
 
   QTri tri(pt[0], pt[1], pt[2]);
 
-  typedef std::vector<QPoint> TestVec;
+  using TestVec = std::vector<QPoint>;
   TestVec successes, failures;
 
   // Tests that should succeed:
@@ -411,7 +412,7 @@ TEST(primal_triangle, triangle_3D_point_containment)
 
   QTri tri(pt[0], pt[1], pt[2]);
 
-  typedef std::vector<QPoint> TestVec;
+  using TestVec = std::vector<QPoint>;
   TestVec successes, failures;
 
   // Tests that should succeed:

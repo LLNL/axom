@@ -12,7 +12,9 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
-using namespace axom;
+#include <array>
+
+namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
@@ -39,7 +41,7 @@ void check_vector_policy()
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_constructors)
 {
-  static const int DIM = 5;
+  constexpr int DIM = 5;
   using CoordType = double;
   using QArray = primal::NumericArray<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
@@ -124,7 +126,7 @@ TEST(primal_vector, vector_constructors)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_from_points_constructor)
 {
-  static const int DIM = 5;
+  constexpr int DIM = 5;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
@@ -159,7 +161,7 @@ TEST(primal_vector, vector_from_points_constructor)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_normalize)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
@@ -182,7 +184,7 @@ TEST(primal_vector, vector_normalize)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_norm)
 {
-  static const int DIM = 2;
+  constexpr int DIM = 2;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
@@ -196,7 +198,7 @@ TEST(primal_vector, vector_norm)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_arithmetic)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
@@ -238,7 +240,7 @@ TEST(primal_vector, vector_arithmetic)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_inner_product)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
@@ -262,7 +264,7 @@ TEST(primal_vector, vector_inner_product)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector3_outer_product)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using QVec = primal::Vector<CoordType, DIM>;
 
