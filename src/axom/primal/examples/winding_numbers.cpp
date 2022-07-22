@@ -153,7 +153,7 @@ CPolygon get_figure_shape()
                     Point2D {-2.0, -2.0}};
   Bezier closure_closure(clll, 2);
 
-  Point2D small_nodes[] = {Point2D {-2.0, -2.0},
+  Point2D small_nodes[] = {Point2D {-2.25, -2.0},
                            Point2D {0.0, 0.0}};
 
   Bezier intersecting_closure(small_nodes, 1);
@@ -205,14 +205,11 @@ CPolygon get_large_shape()
 
 void winding_number_grid()
 {
-  CPolygon cpoly_pre = get_self_intersecting_shape();
-  cpoly_pre.split_to_convex();
-  Bezier pedges[] = {cpoly_pre[0], cpoly_pre[0].get_linear_closure()};
-  CPolygon cpoly(pedges, 2);
+  CPolygon cpoly = get_figure_shape();
 
   // Get big ol grid of query points
   Bezier::BoundingBoxType cpbb(cpoly.boundingBox().scale(1.1));
-  const int num_pts = 300;
+  const int num_pts = 400;
   double xpts[num_pts];
   double ypts[num_pts];
 
@@ -224,12 +221,12 @@ void winding_number_grid()
   //axom::numerics::linspace(cpbb.getMin()[1], cpbb.getMax()[1], ypts, num_pts);
   //axom::numerics::linspace(-0.352 - 1e-4, -0.352 + 1e-4, xpts, num_pts);
   //axom::numerics::linspace(0.72 - 1e-4, 0.72 + 1e-4, ypts, num_pts);
-  //axom::numerics::linspace(the_pt[0] - ran, the_pt[0] + ran, xpts, num_pts);
-  //axom::numerics::linspace(the_pt[1] + ran / 3, the_pt[1] + ran, ypts, num_pts);
+  axom::numerics::linspace(the_pt[0] - ran, the_pt[0] + ran, xpts, num_pts);
+  axom::numerics::linspace(the_pt[1] - ran, the_pt[1] + ran, ypts, num_pts);
   //axom::numerics::linspace(-1.0, 0.5, xpts, num_pts);
   //axom::numerics::linspace(-0.75, 0.75, ypts, num_pts);
-  axom::numerics::linspace(-1.0, 0.0, xpts, num_pts);
-  axom::numerics::linspace(0.0, 1.0, ypts, num_pts);
+  //axom::numerics::linspace(-1.1, 0.1, xpts, num_pts);
+  //axom::numerics::linspace(-0.1, 1.1, ypts, num_pts);
 
   // Get file storage syntax
   std::ofstream outfile(
@@ -267,7 +264,7 @@ void winding_number_grid()
       Point2D qpoint({x, y});
       // clang-format off
       //double winding_num = winding_number(cpoly, qpoint, qnodes, total_depth, 1e-10);
-      double winding_num = winding_number_convex(cpoly_pre, qpoint, qnodes, total_depth, 1e-10);
+      double winding_num = winding_number(qpoint, cpoly[2], 1e-10);
       outfile << axom::fmt::format(
         "{0},{1},{2},{3}\n",
         qpoint[0],
