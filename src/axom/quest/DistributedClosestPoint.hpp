@@ -220,6 +220,20 @@ inline int isend_using_schema(conduit::Node& node,
   request->msg_node["schema"].set(snd_schema_json);
   request->msg_node["data"].update(node);
 
+  auto msg_data_size = request->msg_node.total_bytes_compact();
+  int mpi_error = MPI_Isend(const_cast<void*>(request->msg_node.data_ptr()),
+                            static_cast<int>(msg_data_size),
+                            MPI_BYTE,
+                            dest,
+                            tag,
+                            comm,
+                            &(request->mpi_request));
+if(0){
+int rank = 0;
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+std::cout << fmt::format("at {}, {} sent {} of {}'s ({}, {}) to {}", __WHERE, rank, msg_data_size, node.fetch_existing("Home_Rank").as_int(), (void*)&node, node.fetch_existing("myAddr").as_uint64(), dest) << std::endl;
+// if(rank==4) request->msg_node.print();
+
   static const char* bbegin = nullptr;
   static const char* bend = nullptr;
   if (bbegin) {
@@ -229,27 +243,9 @@ inline int isend_using_schema(conduit::Node& node,
     bend = reinterpret_cast<char*>(request->msg_node.data_ptr()) + request->msg_node.total_bytes_compact();
   }
   static std::set<const ISendRequest*> pastRequests;
-  static std::set<const conduit::Node*> pastNodes;
   assert(pastRequests.count(request) == 0);
-  assert(pastNodes.count(&node) == 0);
   pastRequests.insert(request);
-  pastNodes.insert(&node);
   assert(pastRequests.count(request) == 1);
-  assert(pastNodes.count(&node) == 1);
-
-  auto msg_data_size = request->msg_node.total_bytes_compact();
-  int mpi_error = MPI_Isend(const_cast<void*>(request->msg_node.data_ptr()),
-                            static_cast<int>(msg_data_size),
-                            MPI_BYTE,
-                            dest,
-                            tag,
-                            comm,
-                            &(request->mpi_request));
-{
-int rank = 0;
-MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-std::cout << fmt::format("at {}, {} sent {} of {}'s ({}, {}) to {}", __WHERE, rank, msg_data_size, node.fetch_existing("Home_Rank").as_int(), (void*)&node, node.fetch_existing("myAddr").as_uint64(), dest) << std::endl;
-// if(rank==4) request->msg_node.print();
 }
 
   // Error checking -- Note: expansion of CONDUIT_CHECK_MPI_ERROR
@@ -311,7 +307,7 @@ inline int recv_using_schema(conduit::Node &node, int src, int tag, MPI_Comm com
 
     // copy out to our result node
     node.update(n_msg["data"]);
-if(1){
+if(0){
 int rank = 0;
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 std::cout << fmt::format("at {}, {} received {} of {}'s ({}, {}) from {}", __WHERE, rank, buffer_size, node.fetch_existing("Home_Rank").as_int(), (void*)&node, node.fetch_existing("myAddr").as_uint64(), status.MPI_SOURCE) << std::endl;
@@ -858,8 +854,8 @@ public:
         m_isVerbose,
         fmt::format("=======  Starting round {}/{} =======", round, m_nranks));
 
-      // Empty xfer_node means the previous round received our own data back
-      // or a skip message, both of which terminates progression on xfer_node.
+      // Null xferNodePtr means the previous round received our own data back
+      // or a skip message, both of which terminates progression on xferNodePtr.
       if(xferNodePtr && m_nranks > 1)
       {
         // If parallel, send the current *xferNodePtr and receive another.
@@ -869,6 +865,7 @@ public:
         {
           double sqDist =
             squared_distance(m_objectPartitionBbs[next_dst], queryPartitionBb);
+          const int homeRank = xferNodePtr->fetch_existing("Home_Rank").as_int();
 
           if(next_dst != m_rank)
           {
@@ -884,23 +881,21 @@ public:
 #endif
             isendRequests.emplace_back(relay::mpi::ISendRequest());
             auto &req = isendRequests.back();
-            if(sqDist <= sqSearchDist ||
-               next_dst == xferNodePtr->fetch_existing("Home_Rank").as_int())
+            if(sqDist <= sqSearchDist || next_dst == homeRank)
             {
-              if(xferNodePtr->fetch_existing("Home_Rank").as_int() == m_rank) ++toRecvCount; // Expect our data to circle back.
+              if(homeRank == m_rank) ++toRecvCount; // Expect our data to circle back.
               xferNodePtr->fetch("sender_rank").set(m_rank);
               isend_using_schema(*xferNodePtr,
                                  next_dst,
                                  tag,
                                  MPI_COMM_WORLD,
                                  &req);
-std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, xferNodePtr->fetch_existing("sender_rank").as_int(), xferNodePtr->fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
+// std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, xferNodePtr->fetch_existing("sender_rank").as_int(), xferNodePtr->fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
               xferNodePtr.reset(); // Don't touch this Node anymore.
               break;
             }
             else
             {
-assert(false); // Disable skip in current debug
               skip_nodes.emplace_back(std::make_shared<conduit::Node>());
               conduit::Node& skip = *skip_nodes.back();
               // I think we can use an empty Node, but be explicit for now.
@@ -912,7 +907,7 @@ assert(false); // Disable skip in current debug
                                  tag,
                                  MPI_COMM_WORLD,
                                  &req);
-              std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, skip.fetch_existing("sender_rank").as_int(), skip.fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
+// std::cout << fmt::format("at {}, {} sent {}'s skip to {} in round {}", __WHERE, skip.fetch_existing("sender_rank").as_int(), skip.fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
             }
           }
 
@@ -924,12 +919,11 @@ assert(false); // Disable skip in current debug
       {
         // Receive the next xfer_node
         std::shared_ptr<conduit::Node> recvXferNodePtr = std::make_shared<conduit::Node>();
-        int recvSource = m_rank > 0 ? m_rank-1 : m_nranks-1; // MPI_ANY_SOURCE;
-        auto mpiError =
-          axom::quest::internal::relay::mpi::recv_using_schema(*recvXferNodePtr,
-                                                               recvSource,
-                                                               tag,
-                                                               MPI_COMM_WORLD);
+        int recvSource = MPI_ANY_SOURCE; // m_rank > 0 ? m_rank-1 : m_nranks-1; // MPI_ANY_SOURCE;
+        axom::quest::internal::relay::mpi::recv_using_schema(*recvXferNodePtr,
+                                                             recvSource,
+                                                             tag,
+                                                             MPI_COMM_WORLD);
         --toRecvCount;
         int tmpHr = recvXferNodePtr->fetch_existing("Home_Rank").as_int();
         assert(xfer_nodes.count(tmpHr) == 0 || tmpHr == m_rank); // Better not have seen this home rank before, unless it's our data circling back.
@@ -937,27 +931,19 @@ assert(false); // Disable skip in current debug
         recvs.push_back(tmpHr);
         if(recvXferNodePtr->has_path("skip"))
         {
-          assert(false); // Should not be here while debugging.
-          std::cout << fmt::format("at {}, {} skipping {}'s data from {} in round {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round) << std::endl;
+// std::cout << fmt::format("at {}, {} skipping {}'s data from {} in round {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round) << std::endl;
           xferNodePtr.reset();
           xfer_nodes[tmpHr].reset();
         }
         else
         {
-          std::cout << fmt::format("at {}, {} received {}'s data from {} in round {} err {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round, mpiError) << std::endl;
+// std::cout << fmt::format("at {}, {} received {}'s data from {} in round {} into {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round, recvXferNodePtr) << std::endl;
+          for(auto &mi : xfer_nodes) {
+            assert(tmpHr != mi.first || tmpHr == m_rank);
+            assert(mi.second != recvXferNodePtr);
+          }
           xfer_nodes[tmpHr] = recvXferNodePtr;
           xferNodePtr = recvXferNodePtr;
-        }
-      }
-
-      if(0){
-        if(isendRequests.back().mpi_request != MPI_REQUEST_NULL)
-        {
-          // I don't understand why this is necessary, but without it
-          // there is a race condition that causes data corruption in the
-          // above isend_using_scheme data.  This shouldn't be needed
-          // because I'm not touching that Node after the non-blocking send.
-          MPI_Wait(&isendRequests.back().mpi_request, MPI_STATUS_IGNORE);
         }
       }
 
@@ -984,16 +970,20 @@ assert(false); // Disable skip in current debug
 #endif
           break;
         }
-std::cout << fmt::format("at {}, {} processed {}'s data in round {}, maxMinSqDist {:.4f}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round, xfer_node.fetch_existing("maxMinSqDist").as_double()) << std::endl;
+// std::cout << fmt::format("at {}, {} processed {}'s data in round {}, maxMinSqDist {:.4f}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round, xfer_node.fetch_existing("maxMinSqDist").as_double()) << std::endl;
 
         if(xfer_node.has_path("is_first")) xfer_node.remove("is_first");
 
         if(xfer_node.fetch_existing("Home_Rank").as_int() == m_rank)
         {
-          if (xfer_node.has_path("sender_rank"))
-            std::cout << fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
-          else
-            std::cout << fmt::format("at {}, {} saving {}'s data in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round) << std::endl;
+if (xfer_node.has_path("sender_rank"))
+{
+// std::cout << fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
+}
+else
+{
+  // std::cout << fmt::format("at {}, {} saving {}'s data in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round) << std::endl;
+}
           // This is the query partition we started with.
           // Copy it back to query_mesh.
           const int qPtCount = xfer_node.fetch_existing("qPtCount").value();
@@ -1053,6 +1043,7 @@ std::cout << fmt::format("at {}, {} processed {}'s data in round {}, maxMinSqDis
       allReqs.push_back(isr.mpi_request);
     }
     std::vector<MPI_Status> allStats(isendRequests.size());
+    // TODO: Cyrus said to use Conduit's wait all, but first, switch to conduit::relay::mpi::Request.
     MPI_Waitall(int(allReqs.size()), allReqs.data(), allStats.data());
 
     MPI_Barrier(MPI_COMM_WORLD);
