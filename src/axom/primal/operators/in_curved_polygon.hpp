@@ -17,19 +17,11 @@
 
 // Axom includes
 #include "axom/config.hpp"
-#include "axom/primal.hpp"
 
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/geometry/CurvedPolygon.hpp"
 #include "axom/primal/operators/detail/in_curved_polygon_impl.hpp"
-
-// C++ includes
-#include <cmath>
-
-// MFEM includes
-#ifdef AXOM_USE_MFEM
-  #include "mfem.hpp"
-#else
-  #error "Primal's in/out functions for CurvedPolygon require mfem library."
-#endif
 
 namespace axom
 {
@@ -37,45 +29,30 @@ namespace primal
 {
 
 /*!
- * \brief Robustly tests whether a query point lies inside curved polygon
+ * \brief Robustly tests whether a query point lies inside curved polygon.
+ * Basically boolean interface for winding_number
  */
 template <typename T>
 inline bool in_curved_polygon(const Point<T, 2>& query,
                               const CurvedPolygon<T, 2>& cpoly,
-                              double atol = 1e-5)
+                              const double EPS = 1e-8)
 {
-  const quadrature_nodes = 15;
-  int max_depth = 0;
-
-  double ret_val = 0.0;
-  int this_depth = 0;
-
-  for(int i = 0; i < cpoly.numEdges(); i++)
-  {
-    ret_val +=
-      winding_number(cpoly[i], query, quadrature_nodes, this_depth, atol);
-    max_depth = std::max(max_depth, this_depth);
-  }
+  double ret_val = winding_number(query, cpoly, EPS);
 
   return !(std::round(ret_val) == 0);
 }
 
-
-
-// Base winding number function. Assumes convex input?
+// Base winding number function.
 template <typename T>
-double winding_number_convex(const CurvedPolygon<T, 2>& cpoly,
-                      const Point2D& q,
-                      int qnodes,
-                      int& total_depth, // temporary value to store depth
-                      double int_tol = 1e-5,
-                      double linear_tol = 1e-8)
+double winding_number(const Point<T, 2>& q,
+                      const CurvedPolygon<T, 2>& cpoly,
+                      const double EPS = 1e-8)
 {
   double ret_val = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
   {
     double this_val =
-      detail::adaptive_winding_number(cpoly[i], q, total_depth, linear_tol);
+      detail::adaptive_winding_number(q, cpoly[i], total_depth, EPS);
     ret_val += this_val;
   }
 
@@ -85,13 +62,11 @@ double winding_number_convex(const CurvedPolygon<T, 2>& cpoly,
 // Overload for single bezier curve.
 //  Assumes c has a convex bounding box
 template <typename T>
-double winding_number_convex(const BezierCurve<T, 2>& c,
-                      const Point2D& q,
-                      int qnodes,
-                      int& depth,
-                      double linear_tol = 1e-8)
+double winding_number(const Point<T, 2>& q,
+                      const BezierCurve<T, 2>& c,
+                      const double EPS = 1e-8)
 {
-  return detail::adaptive_winding_number(c, q, depth, linear_tol);
+  return detail::adaptive_winding_number(q, c, EPS);
 }
 
 }  // namespace primal
