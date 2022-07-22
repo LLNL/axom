@@ -106,79 +106,9 @@ public:
     return sum;
   }
 
-  // Algortihm adapted from [Maa 99].
-  // Checks if the polygon is convex.
-  // Only defined if NDIMS = 2
-  bool isConvex()
-  {
-    int n = m_vertices.size() - 1;
-    if(n + 1 < 3) return true;  // Triangles and lines are convex
+  
 
-    for(int i = 1; i < n; i++)
-    {
-      // For each non-endpoint, check if that point and one of the endpoints
-      //  are on the same side as the segment connecting the adjacent nodes
-      Segment<T, 2> seg(m_vertices[i - 1], m_vertices[i + 1]);
-      int res1 = orientation(m_vertices[i], seg);
-
-      // Edge case
-      if(res1 == primal::ON_BOUNDARY) continue;
-
-      if(i < n / 2)
-      {
-        if(res1 == orientation(m_vertices[n], seg)) return false;
-      }
-      else
-      {
-        if(res1 == orientation(m_vertices[0], seg)) return false;
-      }
-    }
-
-    return true;
-  }
-
-  // Check if point is interior to polygon.
-  // Only possible in 2D
-  bool containsPoint(const Point<T, 2>& p, const double EPS = 1e-8)
-  {
-    Ray<T, 2> the_ray(p, Vector<T, 2>({1, 0}));
-    double ray_param = -1, seg_param = -1;
-    int n = m_vertices.size() - 1;
-
-    Segment<T, 2> the_seg(m_vertices[n], m_vertices[0]);
-
-    // To avoid double counting vertices, let the segment be open at origin
-    int num_intersects =
-      (detail::intersect_ray(the_ray, the_seg, ray_param, seg_param, EPS) &&
-       seg_param > EPS);
-
-    // If the ray intersects the segment at its endpoint, then the query point
-    //  is on the polygon. Interpret this as "inside." Allow for tolerance
-    //  consistent with intersect_ray
-    if(num_intersects == 1 && ray_param < EPS) return true;
-
-    for(int i = 0; i < n; i++)
-    {
-      bool this_intersect =
-        detail::intersect_ray(the_ray,
-                              Segment<T, 2>(m_vertices[i], m_vertices[i + 1]),
-                              ray_param,
-                              seg_param,
-                              EPS);
-
-      if(this_intersect == true && seg_param > EPS)
-      {
-        if(ray_param < EPS)
-          return true;
-        else
-          ++num_intersects;
-      }
-    }
-
-    // Return true if num_intersects is odd
-    return (num_intersects % 2) == 1;
-  }
-
+  
   /*!
    * \brief Simple formatted print of a polygon instance
    *

@@ -20,7 +20,6 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
 #include "axom/primal/operators/squared_distance.hpp"
@@ -61,7 +60,6 @@ public:
   using SegmentType = Segment<T, NDIMS>;
   using CoordsVec = axom::Array<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
-  using PolygonType = Polygon<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
 
   AXOM_STATIC_ASSERT_MSG((NDIMS == 2) || (NDIMS == 3),
@@ -191,8 +189,6 @@ public:
 
   /// Returns a copy of the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
-
-  PolygonType getControlPolygon() const { return Polygon<T, NDIMS>(m_controlPoints); }
 
   /// Reverses the order of the Bezier curve's control points
   void reverseOrientation()
@@ -331,21 +327,6 @@ public:
     }
 
     return;
-  }
-
-  /*!
-   * \brief Return the line segment that closes the calling object
-   *
-   * This function returns the segment (first order Bezier curve) that 
-   * connects the last control node to the first, closing the shape
-   * into a closed curved polygon.
-   *
-   * \return The closing line segment.
-   */
-  BezierCurve get_linear_closure() const
-  {
-    PointType nodes[2] = {m_controlPoints[getOrder()], m_controlPoints[0]};
-    return BezierCurve(nodes, 1);
   }
 
   /*!
