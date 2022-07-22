@@ -34,9 +34,9 @@ using ElementType = slam::DefaultElementType;
 
 using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
-const PositionType FROMSET_SIZE = 5;
-const PositionType TOSET_SIZE = 6;
-const PositionType ELEM_STRIDE = 6;
+constexpr PositionType FROMSET_SIZE = 5;
+constexpr PositionType TOSET_SIZE = 6;
+constexpr PositionType ELEM_STRIDE = 6;
 
 using CTStride = policies::CompileTimeStride<PositionType, ELEM_STRIDE>;
 using RTStride = policies::RuntimeStride<PositionType>;
@@ -47,7 +47,6 @@ using ConstantCardinalityRT =
   policies::ConstantCardinality<PositionType, RTStride>;
 
 using STLIndirection = policies::STLVectorIndirection<PositionType, ElementType>;
-using ArrayIndirection = policies::ArrayIndirection<PositionType, ElementType>;
 
 using IndexVec = std::vector<PositionType>;
 using RelationType =

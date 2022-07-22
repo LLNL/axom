@@ -16,8 +16,23 @@ namespace axom
 {
 namespace slic
 {
-Logger* Logger::s_Logger = nullptr;
-std::map<std::string, Logger*> Logger::s_loggers;
+using Loggermap = std::map<std::string, Logger*>;
+
+//------------------------------------------------------------------------------
+// This is a singleton, scope-limited to this file.
+Loggermap& getLoggers()
+{
+  static Loggermap s_loggers;
+  return s_loggers;
+}
+
+//------------------------------------------------------------------------------
+// This is a singleton, scope-limited to this file.
+Logger*& getLogger()
+{
+  static Logger* s_Logger = nullptr;
+  return s_Logger;
+}
 
 //------------------------------------------------------------------------------
 Logger::Logger()
@@ -270,13 +285,14 @@ void Logger::initialize()
 //------------------------------------------------------------------------------
 bool Logger::createLogger(const std::string& name, char imask)
 {
-  if(s_loggers.find(name) != s_loggers.end())
+  Loggermap& loggers = getLoggers();
+  if(loggers.find(name) != loggers.end())
   {
     std::cerr << "ERROR: " << name << " logger is duplicated!\n";
     return false;
   }
 
-  s_loggers[name] = new Logger(name);
+  loggers[name] = new Logger(name);
 
   if(imask == inherit::nothing)
   {
@@ -305,7 +321,7 @@ bool Logger::createLogger(const std::string& name, char imask)
     {
       for(int istream = 0; istream < nstreams; ++istream)
       {
-        s_loggers[name]->addStreamToMsgLevel(
+        loggers[name]->addStreamToMsgLevel(
           rootLogger->getStream(current_level, istream),
           current_level,
           /* pass_ownership */ false);
@@ -322,9 +338,10 @@ bool Logger::createLogger(const std::string& name, char imask)
 //------------------------------------------------------------------------------
 bool Logger::activateLogger(const std::string& name)
 {
-  if(s_loggers.find(name) != s_loggers.end())
+  Loggermap& loggers = getLoggers();
+  if(loggers.find(name) != loggers.end())
   {
-    s_Logger = s_loggers[name];
+    getLogger() = loggers[name];
     return true;
   }
 
@@ -334,37 +351,39 @@ bool Logger::activateLogger(const std::string& name)
 //------------------------------------------------------------------------------
 void Logger::finalize()
 {
-  std::map<std::string, Logger*>::iterator it;
-  for(it = s_loggers.begin(); it != s_loggers.end(); ++it)
+  Loggermap& loggers = getLoggers();
+  for(Loggermap::iterator it = loggers.begin(); it != loggers.end(); ++it)
   {
     it->second->flushStreams();
   }
 
-  for(it = s_loggers.begin(); it != s_loggers.end(); ++it)
+  for(Loggermap::iterator it = loggers.begin(); it != loggers.end(); ++it)
   {
     delete it->second;
   }
 
-  s_loggers.clear();
-  s_Logger = nullptr;
+  loggers.clear();
+
+  getLogger() = nullptr;
 }
 
 //------------------------------------------------------------------------------
-std::string Logger::getActiveLoggerName() { return s_Logger->getName(); }
+std::string Logger::getActiveLoggerName() { return getLogger()->getName(); }
 
 //------------------------------------------------------------------------------
-Logger* Logger::getActiveLogger() { return s_Logger; }
+Logger* Logger::getActiveLogger() { return getLogger(); }
 
 //------------------------------------------------------------------------------
 Logger* Logger::getRootLogger()
 {
-  if(s_loggers.find("root") == s_loggers.end())
+  Loggermap& loggers = getLoggers();
+  if(loggers.find("root") == loggers.end())
   {
     // no root logger
     return nullptr;
   }
 
-  return (s_loggers["root"]);
+  return (loggers["root"]);
 }
 
 } /* namespace slic */

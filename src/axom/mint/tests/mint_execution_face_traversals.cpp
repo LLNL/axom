@@ -286,6 +286,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_nodeids)
     setDefaultAllocator(prev_allocator);
 #endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_face_nodes<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
   }  // END for all dimensions
 }
 
@@ -326,6 +344,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_coords)
     check_for_all_face_coords<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_coords<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_coords<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_face_coords<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_face_coords<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_face_coords<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_face_coords<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_face_coords<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
     setDefaultAllocator(prev_allocator);
 #endif
@@ -374,6 +410,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_cellids)
     setDefaultAllocator(prev_allocator);
 #endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_face_cells<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_face_cells<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_face_cells<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
   }  // END for all dimensions
 }
 
@@ -415,6 +469,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_faces_index)
     check_for_all_faces<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_faces<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_faces<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_faces<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_faces<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_faces<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_faces<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_faces<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
     setDefaultAllocator(prev_allocator);
 #endif

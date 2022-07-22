@@ -14,7 +14,7 @@ class Axomdevtools(BundlePackage):
 
     depends_on("python")
     depends_on("doxygen")
-    depends_on("cppcheck")
+    depends_on("cppcheck+rules+htmlreport")
     depends_on("graphviz")
     depends_on("py-sphinx")
     depends_on("py-shroud")

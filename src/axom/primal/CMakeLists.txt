@@ -20,6 +20,7 @@ set( primal_headers
      ## geometry
      geometry/BezierCurve.hpp
      geometry/BoundingBox.hpp
+     geometry/CurvedPolygon.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
      geometry/NumericArray.hpp
@@ -42,14 +43,16 @@ set( primal_headers
      operators/orientation.hpp
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
+     operators/compute_moments.hpp
      operators/in_sphere.hpp
      operators/split.hpp
 
      operators/detail/clip_impl.hpp
+     operators/detail/compute_moments_impl.hpp
      operators/detail/intersect_bezier_impl.hpp
-     operators/detail/intersect_ray_impl.hpp
      operators/detail/intersect_bounding_box_impl.hpp
      operators/detail/intersect_impl.hpp
+     operators/detail/intersect_ray_impl.hpp
 
      ## utils
      utils/ZipIndexable.hpp
@@ -61,9 +64,16 @@ set( primal_headers
 
 set( primal_sources
 
-     ## operators
-     operators/detail/intersect_impl.cpp
+     ## Empty source file
+     dummy.cpp
    )
+
+blt_list_append(
+    TO       primal_headers 
+    ELEMENTS operators/evaluate_integral.hpp
+             operators/detail/evaluate_integral_impl.hpp
+    IF       MFEM_FOUND 
+               )
 
 #------------------------------------------------------------------------------
 # Build and install the library
@@ -75,6 +85,7 @@ set( primal_dependencies
 
 blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 blt_list_append( TO primal_dependencies ELEMENTS blt::hip_runtime IF ENABLE_HIP )
+blt_list_append( TO primal_dependencies ELEMENTS mfem IF MFEM_FOUND )
 
 blt_add_library(
     NAME                  primal

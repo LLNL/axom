@@ -32,7 +32,7 @@
 #endif
 #include "mpi.h"
 
-// Add some helper preprocessor defines for using OPENMP and CUDA policies
+// Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
 // within the distributed closest point query.
 // These are only used when building with RAJA and Umpire
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -41,6 +41,9 @@
   #endif
   #ifdef AXOM_USE_CUDA
     #define _AXOM_DCP_USE_CUDA
+  #endif
+  #ifdef AXOM_USE_HIP
+    #define _AXOM_DCP_USE_HIP
   #endif
 #endif
 
@@ -54,7 +57,8 @@ enum class DistributedClosestPointRuntimePolicy
 {
   seq = 0,
   omp = 1,
-  cuda = 2
+  cuda = 2,
+  hip = 3
 };
 
 namespace internal
@@ -281,7 +285,7 @@ inline void send_and_recv_node(conduit::Node& send_node,
 
 /**
  * \brief Implements the DistributedClosestPoint query for a specified dimension
- * using a provided execution policy (e.g. sequential, openmp, cuda)
+ * using a provided execution policy (e.g. sequential, openmp, cuda, hip)
  *
  * \tparam NDIMS The dimension of the object mesh and query points
  */
@@ -302,6 +306,9 @@ public:
 #endif
 #ifdef _AXOM_DCP_USE_CUDA
   using CudaBVHTree = spin::BVH<DIM, axom::CUDA_EXEC<256>>;
+#endif
+#ifdef _AXOM_DCP_USE_HIP
+  using HipBVHTree = spin::BVH<DIM, axom::HIP_EXEC<256>>;
 #endif
 
 private:
@@ -383,6 +390,12 @@ public:
 #else
       break;
 #endif
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      return m_bvh_hip.get() != nullptr;
+#else
+      break;
+#endif
     }
 
     return false;
@@ -414,6 +427,14 @@ public:
 #ifdef _AXOM_DCP_USE_CUDA
       m_bvh_cuda = std::unique_ptr<CudaBVHTree>(new CudaBVHTree);
       return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
+#else
+      break;
+#endif
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      m_bvh_hip = std::unique_ptr<HipBVHTree>(new HipBVHTree);
+      return generateBVHTreeImpl<HipBVHTree>(m_bvh_hip.get());
 #else
       break;
 #endif
@@ -583,6 +604,12 @@ public:
       computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xfer_node, true);
 #endif
       break;
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), xfer_node, true);
+#endif
+      break;
     }
 
     if(m_isVerbose)
@@ -649,6 +676,12 @@ public:
         case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
           computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), rec_node, false);
+#endif
+          break;
+
+        case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+          computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), rec_node, false);
 #endif
           break;
         }
@@ -973,6 +1006,12 @@ private:
       m_allocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
 #endif
       break;
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      m_allocatorID = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+#endif
+      break;
     }
   }
 
@@ -1015,11 +1054,12 @@ public:
     const int npts = m_points.size();
     axom::Array<BoxType> boxesArray(npts, npts, m_allocatorID);
     auto boxesView = boxesArray.view();
+    auto pointsView = m_points.view();
 
     /// GOT TO HERE -- fix for templated ExecSpace!
     axom::for_all<ExecSpace>(
       npts,
-      AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {m_points[i]}; });
+      AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {pointsView[i]}; });
 
     // Build bounding volume hierarchy
     bvh->setAllocatorID(m_allocatorID);
@@ -1041,10 +1081,10 @@ public:
     using axom::primal::squared_distance;
     using int32 = axom::int32;
 
-    // Extract the dimension and number of query points from the coordinate values group
+    // Check dimension and extract the number of points
     const int dim = xfer_node.fetch_existing("dim").value();
-    const int qPtCount = xfer_node.fetch_existing("qPtCount").value();
     SLIC_ASSERT(dim == NDIMS);
+    const int qPtCount = xfer_node.fetch_existing("qPtCount").value();
 
     /// Extract fields from the input node as ArrayViews
     auto queryPts =
@@ -1101,6 +1141,12 @@ public:
     auto it = bvh->getTraverser();
     const int rank = m_rank;
 
+    double* sqDistThresh =
+      axom::allocate<double>(1, axom::execution_space<ExecSpace>::allocatorID());
+    *sqDistThresh = m_sqDistanceThreshold;
+
+    auto pointsView = m_points.view();
+
     AXOM_PERF_MARK_SECTION(
       "ComputeClosestPoints",
       axom::for_all<ExecSpace>(
@@ -1118,7 +1164,7 @@ public:
 
           auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
             const int candidate_idx = leaf_nodes[current_node];
-            const PointType candidate_pt = m_points[candidate_idx];
+            const PointType candidate_pt = pointsView[candidate_idx];
             const double sq_dist = squared_distance(qpt, candidate_pt);
 
             if(sq_dist < curr_min.minSqDist)
@@ -1132,8 +1178,7 @@ public:
           auto traversePredicate = [&](const PointType& p,
                                        const BoxType& bb) -> bool {
             auto sqDist = squared_distance(p, bb);
-            return sqDist <= curr_min.minSqDist &&
-              sqDist <= m_sqDistanceThreshold;
+            return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
           };
 
           // Traverse the tree, searching for the point with minimum distance.
@@ -1144,7 +1189,7 @@ public:
           {
             query_inds[idx] = curr_min.minElem;
             query_ranks[idx] = curr_min.minRank;
-            query_pos[idx] = m_points[curr_min.minElem];
+            query_pos[idx] = pointsView[curr_min.minElem];
 
             //DEBUG
             if(has_min_distance)
@@ -1174,6 +1219,7 @@ public:
                  query_min_dist.data(),
                  minDist.size() * sizeof(double));
     }
+    axom::deallocate(sqDistThresh);
   }
 
 private:
@@ -1195,6 +1241,10 @@ private:
 
 #ifdef _AXOM_DCP_USE_CUDA
   std::unique_ptr<CudaBVHTree> m_bvh_cuda;
+#endif
+
+#ifdef _AXOM_DCP_USE_HIP
+  std::unique_ptr<HipBVHTree> m_bvh_hip;
 #endif
 };
 
@@ -1260,6 +1310,12 @@ public:
 
     case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
+      return true;
+#else
+      return false;
+#endif
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
       return true;
 #else
       return false;
@@ -1452,5 +1508,6 @@ private:
 // Cleanup local #defines
 #undef _AXOM_DCP_USE_OPENMP
 #undef _AXOM_DCP_USE_CUDA
+#undef _AXOM_DCP_USE_HIP
 
 #endif  //  QUEST_DISTRIBUTED_CLOSEST_POINT_H_

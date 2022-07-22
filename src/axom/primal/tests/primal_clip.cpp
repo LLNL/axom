@@ -43,16 +43,18 @@ TEST(primal_clip, simple_clip)
   bbox.addPoint(PointType::ones());
 
   PointType points[] = {
-    PointType::make_point(2, 2, 2),
-    PointType::make_point(2, 2, 4),
-    PointType::make_point(2, 4, 2),
-    PointType::make_point(-100, -100, 0.5),
-    PointType::make_point(-100, 100, 0.5),
-    PointType::make_point(100, 0, 0.5),
-    PointType::make_point(0.25, 0.25, 0.5),
-    PointType::make_point(0.75, 0.25, 0.5),
-    PointType::make_point(0.66, 0.5, 0.5),
-    PointType::make_point(1.5, 0.5, 0.5),
+    PointType {2, 2, 2},
+    PointType {2, 2, 4},
+    PointType {2, 4, 2},
+
+    PointType {-100, -100, 0.5},
+    PointType {-100, 100, 0.5},
+    PointType {100, 0, 0.5},
+
+    PointType {0.25, 0.25, 0.5},
+    PointType {0.75, 0.25, 0.5},
+    PointType {0.66, 0.5, 0.5},
+    PointType {1.5, 0.5, 0.5},
   };
 
   {
@@ -78,7 +80,7 @@ TEST(primal_clip, simple_clip)
     PolygonType poly = axom::primal::clip(tri, bbox);
     EXPECT_EQ(4, poly.numVertices());
 
-    EXPECT_EQ(PointType(.5), poly.centroid());
+    EXPECT_EQ(PointType(.5), poly.vertexMean());
 
     SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
                                           << " is polygon" << poly);
@@ -101,12 +103,12 @@ TEST(primal_clip, unit_simplex)
   double delta = 1e-5;
 
   // Test the "unit simplex", and a jittered version
-  PointType points[] = {PointType::make_point(1, 0, 0),
-                        PointType::make_point(0, 1, 0),
-                        PointType::make_point(0, 0, 1),
-                        PointType::make_point(1 + delta, delta, delta),
-                        PointType::make_point(delta, 1 + delta, delta),
-                        PointType::make_point(delta, delta, 1 + delta)};
+  PointType points[] = {PointType {1, 0, 0},
+                        PointType {0, 1, 0},
+                        PointType {0, 0, 1},
+                        PointType {1 + delta, delta, delta},
+                        PointType {delta, 1 + delta, delta},
+                        PointType {delta, delta, 1 + delta}};
 
   BoundingBoxType bbox;
   bbox.addPoint(PointType::zero());
@@ -150,25 +152,25 @@ TEST(primal_clip, boundingBoxOptimization)
   PointType midpoint = PointType::zero();
 
   PointType points[] = {
-    PointType::make_point(VAL1, VAL2, 0),
-    PointType::make_point(-VAL1, VAL2, 0),
-    PointType::make_point(VAL1, -VAL2, 0),
-    PointType::make_point(-VAL1, -VAL2, 0),
+    PointType {VAL1, VAL2, 0},
+    PointType {-VAL1, VAL2, 0},
+    PointType {VAL1, -VAL2, 0},
+    PointType {-VAL1, -VAL2, 0},
 
-    PointType::make_point(VAL1, 0, VAL2),
-    PointType::make_point(-VAL1, 0, VAL2),
-    PointType::make_point(VAL1, 0, -VAL2),
-    PointType::make_point(-VAL1, 0, -VAL2),
+    PointType {VAL1, 0, VAL2},
+    PointType {-VAL1, 0, VAL2},
+    PointType {VAL1, 0, -VAL2},
+    PointType {-VAL1, 0, -VAL2},
 
-    PointType::make_point(0, VAL2, VAL1),
-    PointType::make_point(0, VAL2, -VAL1),
-    PointType::make_point(0, -VAL2, VAL1),
-    PointType::make_point(0, -VAL2, -VAL1),
+    PointType {0, VAL2, VAL1},
+    PointType {0, VAL2, -VAL1},
+    PointType {0, -VAL2, VAL1},
+    PointType {0, -VAL2, -VAL1},
 
-    PointType::make_point(0, VAL1, VAL2),
-    PointType::make_point(0, -VAL1, VAL2),
-    PointType::make_point(0, VAL1, -VAL2),
-    PointType::make_point(0, -VAL1, -VAL2),
+    PointType {0, VAL1, VAL2},
+    PointType {0, -VAL1, VAL2},
+    PointType {0, VAL1, -VAL2},
+    PointType {0, -VAL1, -VAL2},
   };
 
   for(int i = 0; i < 16; i += 2)
@@ -187,20 +189,20 @@ TEST(primal_clip, experimentalData)
   const double EPS = 1e-8;
 
   // Triangle 248 from sphere mesh
-  TriangleType tri(PointType::make_point(0.405431, 3.91921, 3.07821),
-                   PointType::make_point(1.06511, 3.96325, 2.85626),
-                   PointType::make_point(0.656002, 4.32465, 2.42221));
+  TriangleType tri(PointType {0.405431, 3.91921, 3.07821},
+                   PointType {1.06511, 3.96325, 2.85626},
+                   PointType {0.656002, 4.32465, 2.42221});
 
   // Block index {grid pt: (19,29,24); level: 5} from InOutOctree
-  BoundingBoxType box12(PointType::make_point(0.937594, 4.06291, 2.50025),
-                        PointType::make_point(1.25012, 4.37544, 2.81278));
+  BoundingBoxType box12(PointType {0.937594, 4.06291, 2.50025},
+                        PointType {1.25012, 4.37544, 2.81278});
 
   PolygonType poly = axom::primal::clip(tri, box12);
   EXPECT_EQ(3, poly.numVertices());
 
   SLIC_INFO("Intersection of triangle "
             << tri << " \n\t and bounding box " << box12 << " \n\t is polygon"
-            << poly << " with centroid " << poly.centroid());
+            << poly << " with centroid " << poly.vertexMean());
 
   // Check that the polygon vertices are on the triangle
   for(int i = 0; i < poly.numVertices(); ++i)
@@ -226,7 +228,7 @@ TEST(primal_clip, experimentalData)
 
   // Check that the polygon centroid is on the triangle
   {
-    PointType centroid = poly.centroid();
+    PointType centroid = poly.vertexMean();
     PointType bary = tri.physToBarycentric(centroid);
     PointType reconstructed = tri.baryToPhysical(bary);
 

@@ -12,7 +12,7 @@
 # Note: Mint also optionally depends on Sidre when AXOM_MINT_USE_SIDRE=ON
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Mint
-                        COMPONENTS SLIC)
+                        COMPONENTS SLIC SLAM)
 
 #------------------------------------------------------------------------------
 # Add mint options
@@ -61,7 +61,6 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
     ## Internal implementation
-    mesh/internal/ConnectivityArray_indirection.hpp
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp
@@ -88,6 +87,7 @@ set( mint_headers
     ## utils
     utils/vtk_utils.hpp
     utils/su2_utils.hpp
+    utils/ExternalArray.hpp
    )
 
 blt_list_append(TO mint_headers ELEMENTS deprecated/SidreMCArray.hpp IF AXOM_MINT_USE_SIDRE)

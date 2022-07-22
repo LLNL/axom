@@ -3,8 +3,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/* /file primal_bezier_intersect.cpp
- * /brief This file tests the Bezier curve intersection routines
+/*!
+ * \file primal_bezier_intersect.cpp
+ * \brief This file tests the Bezier curve intersection routines
  */
 
 #include "gtest/gtest.h"
@@ -31,15 +32,16 @@ namespace primal = axom::primal;
  * Param \a shouldPrintIntersections is used for debugging and for generating
  * the initial array of expected intersections.
  */
-template <typename CoordType, int DIM>
-void checkIntersections(const primal::BezierCurve<CoordType, DIM>& curve1,
-                        const primal::BezierCurve<CoordType, DIM>& curve2,
+template <typename CoordType>
+void checkIntersections(const primal::BezierCurve<CoordType, 2>& curve1,
+                        const primal::BezierCurve<CoordType, 2>& curve2,
                         const std::vector<CoordType>& exp_s,
                         const std::vector<CoordType>& exp_t,
                         double eps,
                         double test_eps,
                         bool shouldPrintIntersections = false)
 {
+  constexpr int DIM = 2;
   using Array = std::vector<CoordType>;
 
   // Check validity of input data exp_s and exp_t.
@@ -127,13 +129,11 @@ TEST(primal_bezier_inter, linear_bezier)
   {
     SCOPED_TRACE("linear bezier simple");
 
-    PointType data1[order + 1] = {PointType::make_point(0.0, 0.0),
-                                  PointType::make_point(1.0, 1.0)};
+    PointType data1[order + 1] = {PointType {0.0, 0.0}, PointType {1.0, 1.0}};
 
     BezierCurveType curve1(data1, order);
 
-    PointType data2[order + 1] = {PointType::make_point(0.0, 1.0),
-                                  PointType::make_point(1.0, 0.0)};
+    PointType data2[order + 1] = {PointType {0.0, 1.0}, PointType {1.0, 0.0}};
     BezierCurveType curve2(data2, order);
 
     std::vector<CoordType> exp_intersections1 = {0.5};
@@ -152,13 +152,11 @@ TEST(primal_bezier_inter, linear_bezier)
   {
     SCOPED_TRACE("linear bezier endpoints");
 
-    PointType data1[order + 1] = {PointType::make_point(1.0, 1.0),
-                                  PointType::make_point(0.0, 0.0)};
+    PointType data1[order + 1] = {PointType {1.0, 1.0}, PointType {0.0, 0.0}};
 
     BezierCurveType curve1(data1, order);
 
-    PointType data2[order + 1] = {PointType::make_point(1.0, 1.0),
-                                  PointType::make_point(2.0, 0.0)};
+    PointType data2[order + 1] = {PointType {1.0, 1.0}, PointType {2.0, 0.0}};
     BezierCurveType curve2(data2, order);
 
     std::vector<CoordType> exp_intersections1 = {0.0};
@@ -177,13 +175,11 @@ TEST(primal_bezier_inter, linear_bezier)
   {
     SCOPED_TRACE("linear bezier non-midpoint");
 
-    PointType data1[order + 1] = {PointType::make_point(0.0, 0.0),
-                                  PointType::make_point(4.0, 2.0)};
+    PointType data1[order + 1] = {PointType {0.0, 0.0}, PointType {4.0, 2.0}};
 
     BezierCurveType curve1(data1, order);
 
-    PointType data2[order + 1] = {PointType::make_point(-2.0, 2.0),
-                                  PointType::make_point(2.0, 0.0)};
+    PointType data2[order + 1] = {PointType {-2.0, 2.0}, PointType {2.0, 0.0}};
     BezierCurveType curve2(data2, order);
 
     std::vector<CoordType> exp_intersections1 = {.25};
@@ -201,7 +197,7 @@ TEST(primal_bezier_inter, linear_bezier)
 
 TEST(primal_bezier_inter, linear_bezier_interp_params)
 {
-  static const int DIM = 2;
+  constexpr int DIM = 2;
 
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
@@ -225,12 +221,10 @@ TEST(primal_bezier_inter, linear_bezier_interp_params)
       sstr << "linear bezier perpendicular (s,t) = (" << s << "," << t << ")";
       SCOPED_TRACE(sstr.str());
 
-      PointType data1[order + 1] = {PointType::make_point(0.0, s),
-                                    PointType::make_point(1.0, s)};
+      PointType data1[order + 1] = {PointType {0.0, s}, PointType {1.0, s}};
       BezierCurveType curve1(data1, order);
 
-      PointType data2[order + 1] = {PointType::make_point(t, 0.0),
-                                    PointType::make_point(t, 1.0)};
+      PointType data2[order + 1] = {PointType {t, 0.0}, PointType {t, 1.0}};
       BezierCurveType curve2(data2, order);
 
       std::vector<CoordType> exp_intersections1 = {t};
@@ -269,18 +263,18 @@ TEST(primal_bezier_inter, no_intersections_bezier)
   const int order = 3;
 
   // cubic line
-  PointType data1[order + 1] = {PointType::make_point(0.0, 0.0),
-                                PointType::make_point(1.0, 0.0),
-                                PointType::make_point(2.0, 0.0),
-                                PointType::make_point(3.0, 0.0)};
+  PointType data1[order + 1] = {PointType {0.0, 0.0},
+                                PointType {1.0, 0.0},
+                                PointType {2.0, 0.0},
+                                PointType {3.0, 0.0}};
 
   BezierCurveType curve1(data1, order);
 
   // Cubic curve
-  PointType data2[order + 1] = {PointType::make_point(0.0, 0.5),
-                                PointType::make_point(1.0, 1.0),
-                                PointType::make_point(2.0, 3.0),
-                                PointType::make_point(3.0, 1.5)};
+  PointType data2[order + 1] = {PointType {0.0, 0.5},
+                                PointType {1.0, 1.0},
+                                PointType {2.0, 3.0},
+                                PointType {3.0, 1.5}};
   BezierCurveType curve2(data2, order);
 
   std::vector<CoordType> exp_intersections;
@@ -316,10 +310,10 @@ TEST(primal_bezier_inter, cubic_quadratic_bezier)
   curve1[0] = data1;
 
   // Cubic curve
-  PointType data2[order2 + 1] = {PointType::make_point(0.0, 0.5),
-                                 PointType::make_point(1.0, -1.0),
-                                 PointType::make_point(2.0, 1.0),
-                                 PointType::make_point(3.0, -0.5)};
+  PointType data2[order2 + 1] = {PointType {0.0, 0.5},
+                                 PointType {1.0, -1.0},
+                                 PointType {2.0, 1.0},
+                                 PointType {3.0, -0.5}};
   BezierCurveType curve2(data2, order2);
 
   // Note: same intersection params for curve and line
@@ -337,7 +331,7 @@ TEST(primal_bezier_inter, cubic_quadratic_bezier)
     {
       curve1[i][0] = curve1[i][0] * (otherorder - 1) / (1.0 * otherorder);
     }
-    curve1[otherorder] = PointType::make_point(3.0, 0);
+    curve1[otherorder] = PointType {3.0, 0};
     SLIC_INFO("Testing w/ order 3 and " << otherorder);
 
     std::stringstream sstr;
@@ -366,18 +360,18 @@ TEST(primal_bezier_inter, cubic_bezier_varying_eps)
   const int order = 3;
 
   // cubic line
-  PointType data1[order + 1] = {PointType::make_point(0.0, 0.0),
-                                PointType::make_point(1.0, 0.0),
-                                PointType::make_point(2.0, 0.0),
-                                PointType::make_point(3.0, 0.0)};
+  PointType data1[order + 1] = {PointType {0.0, 0.0},
+                                PointType {1.0, 0.0},
+                                PointType {2.0, 0.0},
+                                PointType {3.0, 0.0}};
 
   BezierCurveType curve1(data1, order);
 
   // Cubic curve
-  PointType data2[order + 1] = {PointType::make_point(0.0, 0.5),
-                                PointType::make_point(1.0, -1.0),
-                                PointType::make_point(2.0, 1.0),
-                                PointType::make_point(3.0, -0.5)};
+  PointType data2[order + 1] = {PointType {0.0, 0.5},
+                                PointType {1.0, -1.0},
+                                PointType {2.0, 1.0},
+                                PointType {3.0, -0.5}};
   BezierCurveType curve2(data2, order);
 
   // Note: same intersection params for curve and line
@@ -415,17 +409,17 @@ TEST(primal_bezier_inter, cubic_bezier_nine_intersections)
 
   // A configuration of two cubic bezier curves that intersect at nine points
   const int order = 3;
-  PointType data1[order + 1] = {PointType::make_point(100, 90),
-                                PointType::make_point(125, 260),
-                                PointType::make_point(125, 0),
-                                PointType::make_point(140, 145)};
+  PointType data1[order + 1] = {PointType {100, 90},
+                                PointType {125, 260},
+                                PointType {125, 0},
+                                PointType {140, 145}};
 
   BezierCurveType curve1(data1, order);
 
-  PointType data2[order + 1] = {PointType::make_point(75, 110),
-                                PointType::make_point(265, 120),
-                                PointType::make_point(0, 130),
-                                PointType::make_point(145, 135)};
+  PointType data2[order + 1] = {PointType {75, 110},
+                                PointType {265, 120},
+                                PointType {0, 130},
+                                PointType {145, 135}};
   BezierCurveType curve2(data2, order);
 
   const double eps = 1E-16;

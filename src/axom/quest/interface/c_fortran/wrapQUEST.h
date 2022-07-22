@@ -118,7 +118,17 @@ void QUEST_signed_distance_use_shared_memory(bool status);
 
 void QUEST_signed_distance_set_execution_space(int execSpace);
 
-double QUEST_signed_distance_evaluate(double x, double y, double z);
+double QUEST_signed_distance_evaluate_0(double x, double y, double z);
+
+double QUEST_signed_distance_evaluate_1(double x,
+                                        double y,
+                                        double z,
+                                        double* cp_x,
+                                        double* cp_y,
+                                        double* cp_z,
+                                        double* n_x,
+                                        double* n_y,
+                                        double* n_z);
 
 void QUEST_signed_distance_finalize(void);
 

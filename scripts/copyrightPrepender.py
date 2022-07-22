@@ -27,12 +27,12 @@ axom_copyright_begin_str = "Copyright (c) 2017-2022, Lawrence Livermore National
 def checkAndAddCopyrightHeader(filename, testOnly=False):
 
   with open(filename, "r+") as f:
-    first_line = f.readline()   # First line is only a c-style comment opener
-    second_line = f.readline()  # So, we check the second line
+    first_line = f.readline()   # First line might be a c-style comment opener
+    second_line = f.readline()  # So, we also check the second line
     
     print "  Processing file:", filename,
     
-    if not axom_copyright_begin_str in second_line:
+    if not axom_copyright_begin_str in first_line and not axom_copyright_begin_str in second_line:
         if testOnly:
             print "\t missing copyright statement."
         else:

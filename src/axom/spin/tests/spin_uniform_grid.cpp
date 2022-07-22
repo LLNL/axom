@@ -53,7 +53,16 @@ TEST(spin_uniform_grid, indexing)
   const int resolution = 100;
   int res[DIM] = {resolution, resolution, resolution};
 
-  axom::spin::UniformGrid<int, DIM> valid(p_min, p_max, res);
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  using execSpace = axom::HIP_EXEC<256>;
+#elif defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE)
+  using execSpace = axom::CUDA_EXEC<256>;
+#else
+  using execSpace = axom::SEQ_EXEC;
+#endif
+
+  axom::spin::UniformGrid<int, DIM, execSpace> valid(p_min, p_max, res);
 
   // valid has 100 bins in each dimension, and each bin has a
   // width of 1.0.  The bins are laid out in row-major order.

@@ -8,7 +8,7 @@
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 #include "axom/quest/SignedDistance.hpp"
 
-// Mint includes
+#include "axom/primal.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
 
 #include "axom/slic/interface/slic.hpp"
@@ -41,6 +41,12 @@ using SignedDistance2DOMP = SignedDistance<2, ExecOMP>;
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 using ExecGPU = axom::CUDA_EXEC<256>;
+using SignedDistance3DGPU = SignedDistance<3, ExecGPU>;
+using SignedDistance2DGPU = SignedDistance<2, ExecGPU>;
+#endif
+
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA)
+using ExecGPU = axom::HIP_EXEC<256>;
 using SignedDistance3DGPU = SignedDistance<3, ExecGPU>;
 using SignedDistance2DGPU = SignedDistance<2, ExecGPU>;
 #endif
@@ -79,7 +85,7 @@ static SignedDistance3D* s_query = nullptr;
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 static SignedDistance3DOMP* s_query_omp = nullptr;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
 static SignedDistance3DGPU* s_query_gpu = nullptr;
 #endif
 static mint::Mesh* s_surface_mesh = nullptr;
@@ -210,7 +216,7 @@ int signed_distance_init(const mint::Mesh* m, MPI_Comm comm)
                                           allocatorID);
     break;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     if(allocatorID == -1)
     {
@@ -241,7 +247,7 @@ bool signed_distance_initialized()
   case SignedDistExec::OpenMP:
     return (s_query_omp != nullptr);
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     return (s_query_gpu != nullptr);
 #endif
@@ -343,7 +349,7 @@ void signed_distance_set_execution_space(SignedDistExec exec_space)
   }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   if(exec_space == SignedDistExec::GPU)
   {
     SLIC_ERROR("Signed distance query not compiled with GPU support");
@@ -371,7 +377,7 @@ double signed_distance_evaluate(double x, double y, double z)
     phi = s_query_omp->computeDistance(x, y, z);
     break;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     phi = s_query_gpu->computeDistance(x, y, z);
     break;
@@ -380,6 +386,64 @@ double signed_distance_evaluate(double x, double y, double z)
     SLIC_ERROR("Unsupported execution space");
     break;
   }
+  return (phi);
+}
+
+//------------------------------------------------------------------------------
+double signed_distance_evaluate(double x,
+                                double y,
+                                double z,
+                                double& cp_x,
+                                double& cp_y,
+                                double& cp_z,
+                                double& n_x,
+                                double& n_y,
+                                double& n_z)
+{
+  SLIC_ERROR_IF(
+    !signed_distance_initialized(),
+    "signed distance query must be initialized prior to calling evaluate()!");
+
+  SLIC_ERROR_IF(Parameters.dimension != 3,
+                "This overload of signed_distance_evaluate is only available "
+                "for 3D queries");
+
+  using PointType = primal::Point<double, 3>;
+  using VectorType = primal::Vector<double, 3>;
+
+  const PointType query {x, y, z};
+  PointType closest_pt;
+  VectorType normal;
+
+  double phi = 0.0;
+  switch(Parameters.exec_space)
+  {
+  case SignedDistExec::CPU:
+    phi = s_query->computeDistance(query, closest_pt, normal);
+    break;
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+  case SignedDistExec::OpenMP:
+    phi = s_query_omp->computeDistance(query, closest_pt, normal);
+    break;
+#endif
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
+  case SignedDistExec::GPU:
+    phi = s_query_gpu->computeDistance(query, closest_pt, normal);
+    break;
+#endif
+  default:
+    SLIC_ERROR("Unsupported execution space");
+    break;
+  }
+
+  // copy result back to the output parameters
+  cp_x = closest_pt[0];
+  cp_y = closest_pt[1];
+  cp_z = closest_pt[2];
+  n_x = normal[0];
+  n_y = normal[1];
+  n_z = normal[2];
+
   return (phi);
 }
 
@@ -413,7 +477,7 @@ void signed_distance_evaluate(const double* x,
     s_query_omp->computeDistances(npoints, it, phi);
     break;
 #endif
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   case SignedDistExec::GPU:
     s_query_gpu->computeDistances(npoints, it, phi);
     break;
@@ -441,7 +505,7 @@ void signed_distance_finalize()
   }
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_RAJA)
   if(s_query_gpu != nullptr)
   {
     delete s_query_gpu;

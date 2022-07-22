@@ -796,7 +796,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
         int count = counts_view[i];
         if(count > 0)
         {
-  #ifndef __CUDA_ARCH__
+  #ifndef AXOM_DEVICE_CODE
           std::sort(candidates_view.begin() + startIdx,
                     candidates_view.begin() + startIdx + count);
   #endif

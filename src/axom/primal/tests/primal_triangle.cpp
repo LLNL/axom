@@ -32,8 +32,8 @@ TEST(primal_triangle, triangle_area_2D)
   for(CoordType scale : {.333, 1., 2.5, 3.})
   {
     QPoint pt[3] = {QPoint {0, 0},  //
-                    QPoint {0, scale},
-                    QPoint {scale, 0}};
+                    QPoint {scale, 0},
+                    QPoint {0, scale}};
 
     const CoordType exp_area = scale * scale / 2;
 

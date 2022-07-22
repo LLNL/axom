@@ -56,7 +56,7 @@ public:
   using BivariateSetType::INVALID_POS;
 
 public:
-  RelationSet() { }
+  RelationSet() = default;
 
   /**
    * \brief Constructor taking in the relation this BivariateSet is based on.

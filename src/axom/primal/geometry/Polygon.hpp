@@ -12,12 +12,10 @@
 #ifndef AXOM_PRIMAL_POLYGON_HPP_
 #define AXOM_PRIMAL_POLYGON_HPP_
 
+#include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 
-#include <vector>
-#include <ostream>  // for std::ostream
+#include <ostream>
 
 namespace axom
 {
@@ -45,11 +43,6 @@ class Polygon
 {
 public:
   using PointType = Point<T, NDIMS>;
-  using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
-
-private:
-  using Coords = std::vector<PointType>;
 
 public:
   /*! Default constructor for an empty polygon   */
@@ -84,26 +77,25 @@ public:
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
 
   /*!
-   * \brief Computes the centroid as the average of the polygon's vertex
-   *  positions
+   * \brief Computes the average of the polygon's vertex positions
    *
-   * \return The centroid of the polygon's vertices
-   *
+   * \return A point at the mean of the polygon's vertices
    * \pre  polygon.isValid() is true
    */
-  PointType centroid() const
+  PointType vertexMean() const
   {
     SLIC_ASSERT(isValid());
 
-    NumArrayType sum;
+    PointType sum;
 
-    for(int i = 0; i < numVertices(); ++i)
+    const int sz = numVertices();
+    for(int i = 0; i < sz; ++i)
     {
-      sum += m_vertices[i].array();
+      sum.array() += m_vertices[i].array();
     }
-    sum /= numVertices();
+    sum.array() /= sz;
 
-    return PointType(sum);
+    return sum;
   }
 
   /*!
@@ -139,7 +131,7 @@ public:
   bool isValid() const { return m_vertices.size() >= 3; }
 
 private:
-  Coords m_vertices;
+  axom::Array<PointType> m_vertices;
 };
 
 //------------------------------------------------------------------------------

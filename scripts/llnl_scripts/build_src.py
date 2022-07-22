@@ -38,6 +38,12 @@ def parse_args():
                       default="Debug",
                       choices = ("Debug", "RelWithDebInfo", "Release", "MinSizeRel"),
                       help="The CMake build type to use")
+    # Run unit tests serially (MPI Bug on El Capitan)
+    parser.add_option("--test-serial",
+                      action="store_true",
+                      dest="testserial",
+                      default=False,
+                      help="Run unit tests serially")
     # Extra cmake options to pass to config build
     parser.add_option("--extra-cmake-options",
                       dest="extra_cmake_options",
@@ -99,7 +105,8 @@ def main():
             res = build_and_test_host_configs(repo_dir, timestamp, False,
                                               report_to_stdout = opts["verbose"],
                                               extra_cmake_options = opts["extra_cmake_options"],
-                                              build_type = opts["buildtype"])
+                                              build_type = opts["buildtype"],
+                                              test_serial = opts["testserial"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
@@ -151,7 +158,8 @@ def main():
             res = build_and_test_host_config(test_root, hostconfig_path,
                                              report_to_stdout = opts["verbose"],
                                              extra_cmake_options = opts["extra_cmake_options"],
-                                             build_type = opts["buildtype"])
+                                             build_type = opts["buildtype"],
+                                             test_serial = opts["testserial"])
 
     finally:
         os.chdir(original_wd)

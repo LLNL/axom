@@ -335,6 +335,7 @@ void write_vector_data(const Field* field, std::ofstream& file)
 {
   SLIC_ASSERT(field != nullptr);
   const int num_components = field->getNumComponents();
+  AXOM_UNUSED_VAR(num_components);  // silence warning in release configs
   SLIC_ASSERT(num_components == 2 || num_components == 3);
 
   switch(field->getType())
