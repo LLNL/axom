@@ -16,8 +16,6 @@ namespace axom
 {
 namespace slic
 {
-static Logger* s_Logger = nullptr;
-
 using Loggermap = std::map<std::string, Logger*>;
 
 //------------------------------------------------------------------------------
@@ -25,6 +23,13 @@ Loggermap& getLoggers()
 {
   static Loggermap s_loggers;
   return s_loggers;
+}
+
+//------------------------------------------------------------------------------
+Logger*& getLogger()
+{
+  static Logger* s_Logger = nullptr;
+  return s_Logger;
 }
 
 //------------------------------------------------------------------------------
@@ -334,7 +339,8 @@ bool Logger::activateLogger(const std::string& name)
   Loggermap& loggers = getLoggers();
   if(loggers.find(name) != loggers.end())
   {
-    s_Logger = loggers[name];
+    Logger*& logger = getLogger();
+    logger = loggers[name];
     return true;
   }
 
@@ -356,14 +362,24 @@ void Logger::finalize()
   }
 
   loggers.clear();
-  s_Logger = nullptr;
+
+  Logger*& logger = getLogger();
+  logger = nullptr;
 }
 
 //------------------------------------------------------------------------------
-std::string Logger::getActiveLoggerName() { return s_Logger->getName(); }
+std::string Logger::getActiveLoggerName()
+{
+  Logger*& logger = getLogger();
+  return logger->getName();
+}
 
 //------------------------------------------------------------------------------
-Logger* Logger::getActiveLogger() { return s_Logger; }
+Logger* Logger::getActiveLogger()
+{
+  Logger*& logger = getLogger();
+  return logger;
+}
 
 //------------------------------------------------------------------------------
 Logger* Logger::getRootLogger()
