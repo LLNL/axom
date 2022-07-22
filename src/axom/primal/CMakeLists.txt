@@ -47,6 +47,7 @@ set( primal_headers
      operators/in_curved_polygon.hpp
      operators/in_polygon.hpp
      operators/in_sphere.hpp
+     operators/is_convex.hpp
      operators/split.hpp
 
      operators/detail/clip_impl.hpp

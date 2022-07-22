@@ -68,8 +68,8 @@ bool in_polygon(const Point<T, 2>& p, const Polygon<T, 2>& poly, const double EP
     }
   }
 
-  // Return true if num_intersects not zero
-  return !(num_intersects == 0);
+  // Return true if num_intersects is odd
+  return (num_intersects % 2 == 1);
 }
 
 }  // namespace primal
