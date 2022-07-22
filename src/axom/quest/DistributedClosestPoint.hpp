@@ -454,7 +454,7 @@ public:
 #endif
     }
 
-// std::cout << fmt::format("at {}, {} has objectBB {}", __WHERE, m_rank, local_bb) << std::endl;
+// std::cout << fmt::format("{} has objectBB {}", m_rank, local_bb) << std::endl;
     gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
   }
 
@@ -795,10 +795,6 @@ public:
             // Send query partition to another rank to continue search.
             // But don't bother if that rank's object partition is too far from this mesh partition.
             double sqSearchDist = m_sqDistanceThreshold;
-            if(xferNodePtr->has_path("maxMinSqDist"))
-            {
-              sqSearchDist = std::min(sqSearchDist, xferNodePtr->fetch_existing("maxMinSqDist").as_double());
-            }
             isendRequests.emplace_back(conduit::relay::mpi::Request());
             auto &req = isendRequests.back();
             if(sqDist <= sqSearchDist || next_dst == homeRank)
@@ -842,8 +838,9 @@ public:
                                                tag,
                                                MPI_COMM_WORLD);
         --toRecvCount;
-        int homeRank = recvXferNodePtr->fetch_existing("Home_Rank").as_int();
-        if(recvXferNodePtr->has_path("skip"))
+        const int homeRank = recvXferNodePtr->fetch_existing("Home_Rank").as_int();
+        const bool skip = recvXferNodePtr->has_path("skip");
+        if(skip)
         {
           xferNodePtr.reset();
           xfer_nodes[homeRank].reset();
@@ -1101,8 +1098,6 @@ public:
     // Get a device-useable iterator
     auto it = bvh->getTraverser();
     const int rank = m_rank;
-    double maxMinSqDist = is_first ? 0.0 : xfer_node.fetch_existing("maxMinSqDist").as_double();
-    double *maxMinSqDist_ptr = &maxMinSqDist; // QUESTION: Will this work if computing on GPU?
 
     AXOM_PERF_MARK_SECTION(
       "ComputeClosestPoints",
@@ -1155,10 +1150,6 @@ public:
               query_min_dist[idx] = sqrt(curr_min.minSqDist);
             }
 
-            if(*maxMinSqDist_ptr < curr_min.minSqDist)
-            {
-              *maxMinSqDist_ptr = curr_min.minSqDist;
-            }
           }
         }
                                );
@@ -1173,7 +1164,6 @@ public:
     axom::copy(closestPts.data(),
                query_pos.data(),
                closestPts.size() * sizeof(PointType));
-    xfer_node["maxMinSqDist"] = maxMinSqDist;
 
     // DEBUG
     if(has_min_distance)
