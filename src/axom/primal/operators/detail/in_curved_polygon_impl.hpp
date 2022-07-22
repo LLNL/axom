@@ -23,7 +23,20 @@ namespace primal
 namespace detail
 {
 
-// Close the bezier curve linearly, compute winding number of that closure.
+
+/*!
+ * \brief Compute the "closure winding number" for a Bezier curve
+ *
+ * \param [in] query The query point to test
+ * \param [in] cpoly The CurvedPolygon object to close
+ *
+ * A possible "closure" of a Bezier curve is a straight line segment 
+ * connecting its two endpoints. The "closure winding number" is the 
+ * winding number of the query point with respect to this segment, which
+ * has a direct formula.
+ * 
+ * \return 
+ */
 template <typename T>
 double closure_winding_number(const Point<T, 2>& q, const BezierCurve<T, 2>& c)
 {
@@ -39,7 +52,7 @@ double adaptive_winding_number(const Point2D& q,
                                double linear_tol)
 {
   double cl_winding_num = closure_winding_number(q, c);
-
+  
   // Base case for recursion
   if(c.isLinear(linear_tol)) return -cl_winding_num;
   

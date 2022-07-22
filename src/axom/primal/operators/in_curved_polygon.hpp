@@ -29,8 +29,18 @@ namespace primal
 {
 
 /*!
- * \brief Robustly tests whether a query point lies inside curved polygon.
- * Basically boolean interface for winding_number
+ * \brief Robustly determine if query point is interior to a curved polygon
+ *
+ * \param [in] query The query point to test
+ * \param [in] cpoly The CurvedPolygon object to test for containment
+ * \param [in] EPS The tolerance level at which a Bezier curve is linear
+ *
+ * Determines contianment using the (rounded) winding number with respect
+ * to the given curved polygon. If this value is nonzero, the query point 
+ * is interior. This algorithm is robust, as the winding number is rounded 
+ * in the final in/out determination. 
+ * 
+ * \return A boolean value indicating containment.
  */
 template <typename T>
 inline bool in_curved_polygon(const Point<T, 2>& query,
@@ -39,10 +49,22 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
 {
   double ret_val = winding_number(query, cpoly, EPS);
 
-  return !(std::round(ret_val) == 0);
+  return (std::round(ret_val) != 0);
 }
 
-// Base winding number function.
+/*!
+ * \brief Computes the generalized winding number for a curved polygon
+ *
+ * \param [in] query The query point to test
+ * \param [in] cpoly The CurvedPolygon object 
+ * \param [in] EPS The tolerance level at which a Bezier curve is linear
+ *
+ * Computes the winding number using a recursive, bisection algorithm.
+ * Iterates over the edges of a curved polygon object, and uses nearly-linear 
+ * Bezier curves as a base case.
+ * 
+ * \return float the generalized winding number.
+ */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const CurvedPolygon<T, 2>& cpoly,
@@ -50,17 +72,23 @@ double winding_number(const Point<T, 2>& q,
 {
   double ret_val = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
-  {
-    double this_val =
-      detail::adaptive_winding_number(q, cpoly[i], total_depth, EPS);
-    ret_val += this_val;
-  }
+    ret_val += detail::adaptive_winding_number(q, cpoly[i], EPS);
 
   return ret_val;
 }
 
-// Overload for single bezier curve.
-//  Assumes c has a convex bounding box
+/*!
+ * \brief Computes the generalized winding number for a single Bezier curve
+ *
+ * \param [in] query The query point to test
+ * \param [in] cpoly The Bezier curve object 
+ * \param [in] EPS The tolerance level at which a Bezier curve is linear
+ *
+ * Computes the winding number using a recursive, bisection algorithm,
+ * using nearly-linear Bezier curves as a base case.
+ * 
+ * \return float the generalized winding number.
+ */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const BezierCurve<T, 2>& c,
