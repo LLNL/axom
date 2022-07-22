@@ -165,17 +165,6 @@ namespace relay
 {
 namespace mpi
 {
-/// Struct to hold state related to the isend_using_schema function
-struct ISendRequest
-{
-  MPI_Request mpi_request;
-  conduit::Schema node_schema;
-  conduit::Schema msg_schema;
-  conduit::Node msg_node;
-  ISendRequest()
-    : mpi_request(MPI_REQUEST_NULL)
-    {}
-};
 
 /**
  * \brief Sends a conduit node along with its schema using MPI_Isend
@@ -184,49 +173,59 @@ struct ISendRequest
  * \param [in] dest ID of MPI rank to send to
  * \param [in] tag tag for MPI message
  * \param [in] comm MPI communicator to use
- * \param [in] request An instance of ISendRequest that holds state for the sent data
+ * \param [in] request object holding state for the sent data
  * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend to use
  * non-blocking \a MPI_Isend instead of blocking \a MPI_Send
+ * \note This probably should be in conduit, per conversation with Cyrus.
  */
 inline int isend_using_schema(conduit::Node& node,
                               int dest,
                               int tag,
                               MPI_Comm comm,
-                              ISendRequest* request)
+                              conduit::relay::mpi::Request* request)
 {
+  conduit::Schema s_data_compact;
+
   // schema will only be valid if compact and contig
   if(node.is_compact() && node.is_contiguous())
   {
-    request->node_schema = node.schema();
+    s_data_compact = node.schema();
   }
   else
   {
-    node.schema().compact_to(request->node_schema);
+    node.schema().compact_to(s_data_compact);
   }
-  const std::string snd_schema_json = request->node_schema.to_json();
+  const std::string snd_schema_json = s_data_compact.to_json();
 
-  // create a compact schema to use
   conduit::Schema s_msg;
   s_msg["schema_len"].set(conduit::DataType::int64());
   s_msg["schema"].set(conduit::DataType::char8_str(snd_schema_json.size() + 1));
-  s_msg["data"].set(request->node_schema);
-  s_msg.compact_to(request->msg_schema);
-  request->msg_node.reset();
-  request->msg_node.set_schema(request->msg_schema);
+  s_msg["data"].set(s_data_compact);
+
+  // create a compact schema to use
+  conduit::Schema s_msg_compact;
+  s_msg.compact_to(s_msg_compact);
+  request->m_buffer.reset();
+  request->m_buffer.set_schema(s_msg_compact);
 
   // set up the message's node using this schema
-  request->msg_node["schema_len"].set((int64)snd_schema_json.length());
-  request->msg_node["schema"].set(snd_schema_json);
-  request->msg_node["data"].update(node);
+  request->m_buffer["schema_len"].set((int64)snd_schema_json.length());
+  request->m_buffer["schema"].set(snd_schema_json);
+  request->m_buffer["data"].update(node);
 
-  auto msg_data_size = request->msg_node.total_bytes_compact();
-  int mpi_error = MPI_Isend(const_cast<void*>(request->msg_node.data_ptr()),
+  // for wait_all,  this must always be NULL except for
+  // the irecv cases where copy out is necessary
+  // isend case must always be NULL
+  request->m_rcv_ptr = nullptr;
+
+  auto msg_data_size = request->m_buffer.total_bytes_compact();
+  int mpi_error = MPI_Isend(const_cast<void*>(request->m_buffer.data_ptr()),
                             static_cast<int>(msg_data_size),
                             MPI_BYTE,
                             dest,
                             tag,
                             comm,
-                            &(request->mpi_request));
+                            &(request->m_request));
 
   // Error checking -- Note: expansion of CONDUIT_CHECK_MPI_ERROR
   if(static_cast<int>(mpi_error) != MPI_SUCCESS)
@@ -265,7 +264,7 @@ inline void send_and_recv_node(conduit::Node& send_node,
                                int tag,
                                MPI_Comm comm)
 {
-  ISendRequest req;
+  conduit::relay::mpi::Request req;
 
   // non-blocking send
   isend_using_schema(send_node, send_rank, tag, comm, &req);
@@ -274,7 +273,7 @@ inline void send_and_recv_node(conduit::Node& send_node,
   conduit::relay::mpi::recv_using_schema(recv_node, recv_rank, tag, comm);
 
   // sender blocks until receiver is done
-  MPI_Wait(&(req.mpi_request), MPI_STATUS_IGNORE);
+  MPI_Wait(&(req.m_request), MPI_STATUS_IGNORE);
 }
 
 }  // namespace mpi
@@ -767,7 +766,7 @@ public:
     // arbitrary tags for send/recv xfer_node.
     const int tag = 987342;
 
-    std::list<relay::mpi::ISendRequest> isendRequests;
+    std::list<conduit::relay::mpi::Request> isendRequests;
 
     int toRecvCount = m_nranks - 1; // Expect data from each non-local process.
 
@@ -800,13 +799,13 @@ public:
             {
               sqSearchDist = std::min(sqSearchDist, xferNodePtr->fetch_existing("maxMinSqDist").as_double());
             }
-            isendRequests.emplace_back(relay::mpi::ISendRequest());
+            isendRequests.emplace_back(conduit::relay::mpi::Request());
             auto &req = isendRequests.back();
             if(sqDist <= sqSearchDist || next_dst == homeRank)
             {
               if(homeRank == m_rank) ++toRecvCount; // Expect our data to circle back.
               xferNodePtr->fetch("sender_rank").set(m_rank);
-              isend_using_schema(*xferNodePtr,
+              relay::mpi::isend_using_schema(*xferNodePtr,
                                  next_dst,
                                  tag,
                                  MPI_COMM_WORLD,
@@ -821,7 +820,7 @@ public:
               skip["skip"] = true;
               skip["Home_Rank"] = xferNodePtr->fetch_existing("Home_Rank");
               skip["sender_rank"] = m_rank;
-              isend_using_schema(skip,
+              relay::mpi::isend_using_schema(skip,
                                  next_dst,
                                  tag,
                                  MPI_COMM_WORLD,
@@ -934,15 +933,19 @@ public:
     }  // round loop
 
     // Complete non-blocking sends.
+    // Cyrus recommends using conduit's wait_all, but that requires a
+    // C array of conduit::relay::mpi::Request.  We have a list, which
+    // we can copy to a vector, but that's a deep copy of many Nodes.
     std::vector<MPI_Request> allReqs;
     allReqs.reserve(isendRequests.size());
     for(const auto& isr : isendRequests)
     {
-      allReqs.push_back(isr.mpi_request);
+      allReqs.push_back(isr.m_request);
     }
-    std::vector<MPI_Status> allStats(isendRequests.size());
-    // TODO: Cyrus said to use Conduit's wait all, but first, switch to conduit::relay::mpi::Request.
-    MPI_Waitall(int(allReqs.size()), allReqs.data(), allStats.data());
+    std::vector<MPI_Status> allStats(allReqs.size());
+    MPI_Waitall(int(allReqs.size()),
+                allReqs.data(),
+                allStats.data());
 
     MPI_Barrier(MPI_COMM_WORLD);
     slic::flushStreams();
