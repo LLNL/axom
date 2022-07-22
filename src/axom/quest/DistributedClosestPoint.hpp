@@ -194,7 +194,6 @@ inline int isend_using_schema(conduit::Node& node,
                               MPI_Comm comm,
                               ISendRequest* request)
 {
-  node["myAddr"] = (uint64_t)&node;
   // schema will only be valid if compact and contig
   if(node.is_compact() && node.is_contiguous())
   {
@@ -228,25 +227,6 @@ inline int isend_using_schema(conduit::Node& node,
                             tag,
                             comm,
                             &(request->mpi_request));
-if(0){
-int rank = 0;
-MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-std::cout << fmt::format("at {}, {} sent {} of {}'s ({}, {}) to {}", __WHERE, rank, msg_data_size, node.fetch_existing("Home_Rank").as_int(), (void*)&node, node.fetch_existing("myAddr").as_uint64(), dest) << std::endl;
-// if(rank==4) request->msg_node.print();
-
-  static const char* bbegin = nullptr;
-  static const char* bend = nullptr;
-  if (bbegin) {
-    assert((request->msg_node.data_ptr() >= bend) ||
-           (reinterpret_cast<char*>(request->msg_node.data_ptr())+request->msg_node.total_bytes_compact() <= bbegin));
-    bbegin = reinterpret_cast<char*>(request->msg_node.data_ptr());
-    bend = reinterpret_cast<char*>(request->msg_node.data_ptr()) + request->msg_node.total_bytes_compact();
-  }
-  static std::set<const ISendRequest*> pastRequests;
-  assert(pastRequests.count(request) == 0);
-  pastRequests.insert(request);
-  assert(pastRequests.count(request) == 1);
-}
 
   // Error checking -- Note: expansion of CONDUIT_CHECK_MPI_ERROR
   if(static_cast<int>(mpi_error) != MPI_SUCCESS)
@@ -262,59 +242,6 @@ std::cout << fmt::format("at {}, {} sent {} of {}'s ({}, {}) to {}", __WHERE, ra
   }
 
   return mpi_error;
-}
-inline int recv_using_schema(conduit::Node &node, int src, int tag, MPI_Comm comm)
-{
-    MPI_Status status;
-
-    int mpi_error = MPI_Probe(src, tag, comm, &status);
-
-    assert(mpi_error == MPI_SUCCESS);
-
-    int buffer_size = 0;
-    MPI_Get_count(&status, MPI_BYTE, &buffer_size);
-
-    conduit::Node n_buffer(conduit::DataType::uint8(buffer_size));
-
-    mpi_error = MPI_Recv(n_buffer.data_ptr(),
-                         buffer_size,
-                         MPI_BYTE,
-                         src,
-                         tag,
-                         comm,
-                         &status);
-    assert(mpi_error == MPI_SUCCESS);
-
-    uint8 *n_buff_ptr = (uint8*)n_buffer.data_ptr();
-
-    conduit::Node n_msg;
-    // length of the schema is sent as a 64-bit signed int
-    // NOTE: we aren't using this value  ...
-    n_msg["schema_len"].set_external((int64*)n_buff_ptr);
-    n_buff_ptr +=8;
-    // wrap the schema string
-    n_msg["schema"].set_external_char8_str((char*)(n_buff_ptr));
-    // create the schema
-    conduit::Schema rcv_schema;
-    conduit::Generator gen(n_msg["schema"].as_char8_str());
-    gen.walk(rcv_schema);
-
-    // advance by the schema length
-    n_buff_ptr += n_msg["schema"].total_bytes_compact();
-
-    // apply the schema to the data
-    n_msg["data"].set_external(rcv_schema,n_buff_ptr);
-
-    // copy out to our result node
-    node.update(n_msg["data"]);
-if(0){
-int rank = 0;
-MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-std::cout << fmt::format("at {}, {} received {} of {}'s ({}, {}) from {}", __WHERE, rank, buffer_size, node.fetch_existing("Home_Rank").as_int(), (void*)&node, node.fetch_existing("myAddr").as_uint64(), status.MPI_SOURCE) << std::endl;
-// if(rank==0) n_msg.print();
-}
-
-    return mpi_error;
 }
 
 /**
@@ -802,7 +729,6 @@ public:
 
     BoxType queryPartitionBb = computeMeshBoundingBox(query_mesh, coordset);
 
-    const int qmNpts = internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]);
     std::map<int, std::shared_ptr<conduit::Node>> xfer_nodes;
     std::list<std::shared_ptr<conduit::Node>> skip_nodes;
 
@@ -841,11 +767,9 @@ public:
     // arbitrary tags for send/recv xfer_node.
     const int tag = 987342;
 
-    // std::vector<relay::mpi::ISendRequest> isendRequests(m_nranks);
     std::list<relay::mpi::ISendRequest> isendRequests;
 
     int toRecvCount = m_nranks - 1; // Expect data from each non-local process.
-    std::vector<int> recvs; recvs.reserve(20); // For debugging
 
     auto xferNodePtr = xfer_nodes.at(m_rank);
     for(int round = 0; round < m_nranks || xferNodePtr; ++round)
@@ -872,13 +796,10 @@ public:
             // Send query partition to another rank to continue search.
             // But don't bother if that rank's object partition is too far from this mesh partition.
             double sqSearchDist = m_sqDistanceThreshold;
-#if 0
-            // Temporary disable for debugging.
             if(xferNodePtr->has_path("maxMinSqDist"))
             {
               sqSearchDist = std::min(sqSearchDist, xferNodePtr->fetch_existing("maxMinSqDist").as_double());
             }
-#endif
             isendRequests.emplace_back(relay::mpi::ISendRequest());
             auto &req = isendRequests.back();
             if(sqDist <= sqSearchDist || next_dst == homeRank)
@@ -890,7 +811,6 @@ public:
                                  tag,
                                  MPI_COMM_WORLD,
                                  &req);
-// std::cout << fmt::format("at {}, {} sent {}'s data to {} in round {}", __WHERE, xferNodePtr->fetch_existing("sender_rank").as_int(), xferNodePtr->fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
               xferNodePtr.reset(); // Don't touch this Node anymore.
               break;
             }
@@ -898,7 +818,6 @@ public:
             {
               skip_nodes.emplace_back(std::make_shared<conduit::Node>());
               conduit::Node& skip = *skip_nodes.back();
-              // I think we can use an empty Node, but be explicit for now.
               skip["skip"] = true;
               skip["Home_Rank"] = xferNodePtr->fetch_existing("Home_Rank");
               skip["sender_rank"] = m_rank;
@@ -907,7 +826,7 @@ public:
                                  tag,
                                  MPI_COMM_WORLD,
                                  &req);
-// std::cout << fmt::format("at {}, {} sent {}'s skip to {} in round {}", __WHERE, skip.fetch_existing("sender_rank").as_int(), skip.fetch_existing("Home_Rank").as_int(), next_dst, round) << std::endl;
+// std::cout << axom::fmt::format("{} skipping {}'s past {}", m_rank, homeRank, next_dst) << std::endl;
             }
           }
 
@@ -919,30 +838,20 @@ public:
       {
         // Receive the next xfer_node
         std::shared_ptr<conduit::Node> recvXferNodePtr = std::make_shared<conduit::Node>();
-        int recvSource = MPI_ANY_SOURCE; // m_rank > 0 ? m_rank-1 : m_nranks-1; // MPI_ANY_SOURCE;
-        axom::quest::internal::relay::mpi::recv_using_schema(*recvXferNodePtr,
-                                                             recvSource,
-                                                             tag,
-                                                             MPI_COMM_WORLD);
+        conduit::relay::mpi::recv_using_schema(*recvXferNodePtr,
+                                               MPI_ANY_SOURCE,
+                                               tag,
+                                               MPI_COMM_WORLD);
         --toRecvCount;
-        int tmpHr = recvXferNodePtr->fetch_existing("Home_Rank").as_int();
-        assert(xfer_nodes.count(tmpHr) == 0 || tmpHr == m_rank); // Better not have seen this home rank before, unless it's our data circling back.
-        assert(std::count(recvs.begin(), recvs.end(), tmpHr) == 0);
-        recvs.push_back(tmpHr);
+        int homeRank = recvXferNodePtr->fetch_existing("Home_Rank").as_int();
         if(recvXferNodePtr->has_path("skip"))
         {
-// std::cout << fmt::format("at {}, {} skipping {}'s data from {} in round {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round) << std::endl;
           xferNodePtr.reset();
-          xfer_nodes[tmpHr].reset();
+          xfer_nodes[homeRank].reset();
         }
         else
         {
-// std::cout << fmt::format("at {}, {} received {}'s data from {} in round {} into {}", __WHERE, m_rank, recvXferNodePtr->fetch_existing("Home_Rank").as_int(), recvXferNodePtr->fetch_existing("sender_rank").as_int(), round, recvXferNodePtr) << std::endl;
-          for(auto &mi : xfer_nodes) {
-            assert(tmpHr != mi.first || tmpHr == m_rank);
-            assert(mi.second != recvXferNodePtr);
-          }
-          xfer_nodes[tmpHr] = recvXferNodePtr;
+          xfer_nodes[homeRank] = recvXferNodePtr;
           xferNodePtr = recvXferNodePtr;
         }
       }
@@ -970,25 +879,14 @@ public:
 #endif
           break;
         }
-// std::cout << fmt::format("at {}, {} processed {}'s data in round {}, maxMinSqDist {:.4f}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round, xfer_node.fetch_existing("maxMinSqDist").as_double()) << std::endl;
 
         if(xfer_node.has_path("is_first")) xfer_node.remove("is_first");
 
         if(xfer_node.fetch_existing("Home_Rank").as_int() == m_rank)
         {
-if (xfer_node.has_path("sender_rank"))
-{
-// std::cout << fmt::format("at {}, {} saving {}'s data from {} in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), xfer_node.fetch_existing("sender_rank").as_int(), round) << std::endl;
-}
-else
-{
-  // std::cout << fmt::format("at {}, {} saving {}'s data in round {}", __WHERE, m_rank, xfer_node.fetch_existing("Home_Rank").as_int(), round) << std::endl;
-}
           // This is the query partition we started with.
           // Copy it back to query_mesh.
           const int qPtCount = xfer_node.fetch_existing("qPtCount").value();
-          assert( qPtCount == qmNpts );
-          assert( qPtCount == internal::extractSize(query_mesh[fmt::format("coordsets/{}/values", coordset)]) );
           auto& qmcpr = query_mesh.fetch_existing("fields/cp_rank/values");
           auto& qmcpi = query_mesh.fetch_existing("fields/cp_index/values");
           auto& qmcpcp = query_mesh.fetch_existing("fields/closest_point/values/x");
@@ -1024,8 +922,8 @@ else
                 "'query_mesh' is not interleaved",
                 round));
           }
-          // Take xfer_node out of circulation,
-          // because it has completed its trip through the ring.
+          // Take xfer_node out of circulation.
+          // It has completed its trip through the ring.
           xferNodePtr.reset();
         }
       } // Locally process *xferNodePtr
@@ -1159,11 +1057,6 @@ public:
     /// Create ArrayViews in ExecSpace that are compatible with fields
     // This deep-copies host memory in xfer_node to device memory.
     // TODO: Avoid copying arrays (here and at the end) if both are on the host
-    // BTNG: This is probably a deep copy.
-    // xfer_node["cp_index"]           -view> cpIndexes  -devicecopy> cp_idx   -view> query_inds     -devicecopy> cpIndexes
-    // xfer_node["cp_rank"]            -view> cpRanks    -devicecopy> cp_ranks -view> query_ranks    -devicecopy> cpRanks
-    // xfer_node["closest_point"]      -view> closestPts -devicecopy> cp_pos   -view> query_pos      -devicecopy> closestPts
-    // xfer_node["debug/min_distance"] -view> minDist    -devicecopy> cp_dist  -view> query_min_dist -devicecopy> minDist
     auto cp_idx = is_first
       ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
       : axom::Array<axom::IndexType>(cpIndexes, m_allocatorID);
@@ -1208,12 +1101,11 @@ public:
     double maxMinSqDist = is_first ? 0.0 : xfer_node.fetch_existing("maxMinSqDist").as_double();
     double *maxMinSqDist_ptr = &maxMinSqDist; // QUESTION: Will this work if computing on GPU?
 
-          // AXOM_PERF_MARK_SECTION(
-            // "ComputeClosestPoints",
+    AXOM_PERF_MARK_SECTION(
+      "ComputeClosestPoints",
       axom::for_all<ExecSpace>(
         qPtCount,
         AXOM_LAMBDA(int32 idx) mutable {
-          assert((query_ranks[idx] == -1) == (query_inds[idx] == -1)); // DBG
           PointType qpt = query_pts[idx];
 
           MinCandidate curr_min {};
@@ -1263,14 +1155,12 @@ public:
             if(*maxMinSqDist_ptr < curr_min.minSqDist)
             {
               *maxMinSqDist_ptr = curr_min.minSqDist;
-// std::cout << __WHERE << maxMinSqDist << ' ' << *maxMinSqDist_ptr << ' ' << &rank << ' ' << &query_ranks[0] << std::endl;
             }
           }
         }
                                );
-      // );
+      );
 
-    // BTNG: copy args are (dst,src,numbytes)
     axom::copy(cpIndexes.data(),
                query_inds.data(),
                cpIndexes.size() * sizeof(axom::IndexType));
@@ -1280,7 +1170,6 @@ public:
     axom::copy(closestPts.data(),
                query_pos.data(),
                closestPts.size() * sizeof(PointType));
-// std::cout << __WHERE << maxMinSqDist << ' ' << &maxMinSqDist << ' ' << &rank << ' ' << &query_ranks[0] << std::endl;
     xfer_node["maxMinSqDist"] = maxMinSqDist;
 
     // DEBUG
