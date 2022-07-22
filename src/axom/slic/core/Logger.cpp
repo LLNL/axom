@@ -19,6 +19,7 @@ namespace slic
 using Loggermap = std::map<std::string, Logger*>;
 
 //------------------------------------------------------------------------------
+// This is a singleton, scope-limited to this file.
 Loggermap& getLoggers()
 {
   static Loggermap s_loggers;
@@ -26,6 +27,7 @@ Loggermap& getLoggers()
 }
 
 //------------------------------------------------------------------------------
+// This is a singleton, scope-limited to this file.
 Logger*& getLogger()
 {
   static Logger* s_Logger = nullptr;
@@ -339,8 +341,7 @@ bool Logger::activateLogger(const std::string& name)
   Loggermap& loggers = getLoggers();
   if(loggers.find(name) != loggers.end())
   {
-    Logger*& logger = getLogger();
-    logger = loggers[name];
+    getLogger() = loggers[name];
     return true;
   }
 
@@ -363,23 +364,14 @@ void Logger::finalize()
 
   loggers.clear();
 
-  Logger*& logger = getLogger();
-  logger = nullptr;
+  getLogger() = nullptr;
 }
 
 //------------------------------------------------------------------------------
-std::string Logger::getActiveLoggerName()
-{
-  Logger*& logger = getLogger();
-  return logger->getName();
-}
+std::string Logger::getActiveLoggerName() { return getLogger()->getName(); }
 
 //------------------------------------------------------------------------------
-Logger* Logger::getActiveLogger()
-{
-  Logger*& logger = getLogger();
-  return logger;
-}
+Logger* Logger::getActiveLogger() { return getLogger(); }
 
 //------------------------------------------------------------------------------
 Logger* Logger::getRootLogger()
