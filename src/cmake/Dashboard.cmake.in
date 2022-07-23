@@ -31,10 +31,17 @@ set(CTEST_CONFIGURE_COMMAND  "cmake ../src")
 set(CTEST_BUILD_NAME         "test")
 
 # build options
-set(OPTION_BUILD             "-j4")
+if(ENV{CTEST_PARALLEL_LEVEL})
+    set(_n $ENV{CTEST_PARALLEL_LEVEL})
+else()
+    set(_n 16)
+endif()
+
+set(CTEST_BUILD_FLAGS -j${_n})
+set(ctest_test_args ${ctest_test_args} PARALLEL_LEVEL ${_n})
 
 # how to build
-set(CTEST_BUILD_COMMAND      "make")
+set(CTEST_BUILD_COMMAND      "make -j${_n}")
 
 # default max time each tests can run (in seconds)
 set(CTEST_TIMEOUT            "7200")
