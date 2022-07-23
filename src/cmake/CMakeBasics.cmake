@@ -210,11 +210,34 @@ endif()
 #------------------------------------------------------------------------------
 # Configure our CTest Dashboard Driver Script
 #------------------------------------------------------------------------------
-#
 # To use this script to build and submit a dashboard
 # result, run the following command in the build dir:
 # > ctest -S Dashboard.cmake 
-#
+#------------------------------------------------------------------------------
+
+# Build up an AXOM_CONFIG_NAME if not already provided
+if(NOT DEFINED AXOM_CONFIG_NAME)
+    set(_config "")
+    if(DEFINED ENV{SYS_TYPE})
+        blt_list_append(TO _config ELEMENTS $ENV{SYS_TYPE})
+    endif()
+    if(DEFINED ENV{SYS_TYPE})
+        blt_list_append(TO _config ELEMENTS $ENV{SLURM_CLUSTER_NAME})
+    endif()
+    blt_list_append(TO _config ELEMENTS ${CMAKE_CXX_COMPILER_ID})    
+    blt_list_append(TO _config ELEMENTS ${CMAKE_Fortran_COMPILER_ID} IF CMAKE_Fortran_COMPILER_ID)
+    if(NOT CMAKE_CONFIGURATION_TYPES)
+        blt_list_append(TO _config ELEMENTS ${CMAKE_BUILD_TYPE})
+    endif()
+    blt_list_append(TO _config ELEMENTS "shared" IF BUILD_SHARED_LIBS)
+    blt_list_append(TO _config ELEMENTS "cuda" IF ENABLE_CUDA)
+    blt_list_append(TO _config ELEMENTS "mpi" IF ENABLE_MPI)
+    blt_list_append(TO _config ELEMENTS "openmp" IF ENABLE_OPENMP)
+    string(REPLACE ";" "-" AXOM_CONFIG_NAME "${_config}")
+    
+    message(STATUS "AXOM_CONFIG_NAME: '${AXOM_CONFIG_NAME}'")
+endif()
+
 configure_file("cmake/Dashboard.cmake.in" 
                "${PROJECT_BINARY_DIR}/Dashboard.cmake"
                @ONLY)
