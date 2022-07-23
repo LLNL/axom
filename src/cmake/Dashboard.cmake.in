@@ -1,4 +1,19 @@
-set(CTEST_SITE "Axom")
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+
+#------------------------------------------------------------------------------
+# Sets up variables for building and testing a configuration
+# and reporting the results to CDash
+#------------------------------------------------------------------------------
+
+if(DEFINED ENV{SYS_TYPE})
+    set(CTEST_SITE "LC gitlab $ENV{SYS_TYPE}")
+else()
+    set(CTEST_SITE "LC gitlab")
+endif()
+
 site_name(CTEST_SITE)
 
 set(CTEST_PROJECT_NAME "Axom")
@@ -31,7 +46,7 @@ set(CTEST_CONFIGURE_COMMAND  "cmake ../src")
 set(CTEST_BUILD_NAME         "test")
 
 # build options
-if(ENV{CTEST_PARALLEL_LEVEL})
+if(DEFINED ENV{CTEST_PARALLEL_LEVEL})
     set(_n $ENV{CTEST_PARALLEL_LEVEL})
 else()
     set(_n 16)
