@@ -178,6 +178,35 @@ public:
   }
 
   /**
+   * \brief Constructor for Map using a Set passed by-value and data passed in
+   *        by-value.
+   *
+   * \param theSet  A reference to the map's set
+   * \param data    Pointer to the externally-owned data
+   * \param stride  (Optional) The stride. The number of DataType that
+   *                each element in the set will be mapped to.
+   *                When using a \a RuntimeStridePolicy, the default is 1.
+   * \note  When using a compile time StridePolicy, \a stride must be equal to
+   *        \a stride(), when provided.
+   */
+  template <typename USet,
+            typename TSet = SetType,
+            typename Enable = typename std::enable_if<
+              !std::is_abstract<TSet>::value && std::is_base_of<TSet, USet>::value>::type>
+  Map(const USet& theSet,
+      OrderedMap data,
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+    : StridePolicyType(stride)
+    , m_set(theSet)
+    , m_data(std::move(data))
+  {
+    static_assert(std::is_same<SetType, USet>::value,
+                  "Argument set is of a more-derived type than the Map's set "
+                  "type. This may lead to object slicing. Use Map's pointer "
+                  "constructor instead to store polymorphic sets.");
+  }
+
+  /**
    * \brief Constructor for Map using a MapBuilder
    */
   Map(const MapBuilder& builder)
