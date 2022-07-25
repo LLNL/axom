@@ -76,7 +76,7 @@ struct NoIndirection
     return indirection(pos);
   }
 
-  IndirectionBufferType* data() { return nullptr; }
+  IndirectionBufferType* ptr() { return nullptr; }
 
   bool hasIndirection() const { return false; }
   inline bool isValid(PositionType, PositionType, PositionType, bool) const
@@ -99,7 +99,7 @@ struct CArrayIndirection
 
   CArrayIndirection(IndirectionBufferType* buf = nullptr) : m_arrBuf(buf) { }
 
-  IndirectionBufferType*& data() { return m_arrBuf; }
+  IndirectionBufferType*& ptr() { return m_arrBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
@@ -150,11 +150,16 @@ struct STLVectorIndirection
   using VectorType = std::vector<ElementType>;
   using IndirectionBufferType = VectorType;
   using IndirectionPtrType = IndirectionBufferType*;
+  using IndirectionRefType = IndirectionBufferType&;
+  using IndirectionConstRefType = const IndirectionBufferType&;
 
   STLVectorIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
-  IndirectionBufferType*& data() { return m_vecBuf; }
-  IndirectionBufferType* const& data() const { return m_vecBuf; }
+  IndirectionBufferType& data() { return *m_vecBuf; }
+  IndirectionBufferType const& data() const { return *m_vecBuf; }
+
+  IndirectionPtrType& ptr() { return m_vecBuf; }
+  IndirectionPtrType const& ptr() const { return m_vecBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
@@ -219,11 +224,16 @@ struct ArrayIndirection
   using VectorType = axom::Array<ElementType>;
   using IndirectionBufferType = VectorType;
   using IndirectionPtrType = IndirectionBufferType*;
+  using IndirectionRefType = IndirectionBufferType&;
+  using IndirectionConstRefType = const IndirectionBufferType&;
 
   ArrayIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
-  IndirectionBufferType*& data() { return m_vecBuf; }
-  IndirectionBufferType* const& data() const { return m_vecBuf; }
+  IndirectionBufferType& data() { return *m_vecBuf; }
+  IndirectionBufferType const& data() const { return *m_vecBuf; }
+
+  IndirectionPtrType& ptr() { return m_vecBuf; }
+  IndirectionPtrType const& ptr() const { return m_vecBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
@@ -287,11 +297,16 @@ struct ArrayViewIndirection
   using VectorType = axom::ArrayView<ElementType>;
   using IndirectionBufferType = VectorType;
   using IndirectionPtrType = IndirectionBufferType;
+  using IndirectionRefType = IndirectionBufferType;
+  using IndirectionConstRefType = const IndirectionBufferType;
 
   ArrayViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
 
-  IndirectionBufferType& data() { return m_vecBuf; }
-  const IndirectionBufferType& data() const { return m_vecBuf; }
+  IndirectionBufferType data() { return m_vecBuf; }
+  const IndirectionBufferType data() const { return m_vecBuf; }
+
+  IndirectionBufferType& ptr() { return m_vecBuf; }
+  const IndirectionBufferType& ptr() const { return m_vecBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
