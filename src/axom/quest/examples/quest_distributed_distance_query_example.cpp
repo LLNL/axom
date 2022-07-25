@@ -57,8 +57,8 @@ struct Input
 {
 public:
   std::string meshFile;
-  std::string distanceFile{"closest_point"};
-  std::string objectFile{"object_mesh"};
+  std::string distanceFile {"closest_point"};
+  std::string objectFile {"object_mesh"};
 
   double circleRadius {1.0};
   std::vector<double> circleCenter {0.0, 0.0};
@@ -112,13 +112,11 @@ public:
       ->required();
 
     app.add_option("-s,--distance-file", distanceFile)
-      ->description(
-        "Name of output mesh file containing closest distance.")
+      ->description("Name of output mesh file containing closest distance.")
       ->capture_default_str();
 
     app.add_option("-o,--object-file", objectFile)
-      ->description(
-        "Name of output file containing object mesh.")
+      ->description("Name of output file containing object mesh.")
       ->capture_default_str();
 
     app.add_flag("-v,--verbose,!--no-verbose", m_verboseOutput)
@@ -463,19 +461,20 @@ public:
 
     int rank = m_mesh.getRank();
     int nranks = m_mesh.getNumRanks();
-    if(numPoints < rank) numPoints = rank;  // Test code requires all ranks to have points.
+    if(numPoints < rank)
+      numPoints = rank;  // Test code requires all ranks to have points.
     int ptsPerRank = numPoints / nranks;
     int ranksWithExtraPt = numPoints % nranks;
 
     int iBegin = rank * ptsPerRank + std::min(rank, ranksWithExtraPt);
-    int iEnd = (rank+1) * ptsPerRank + std::min((rank+1), ranksWithExtraPt);
+    int iEnd = (rank + 1) * ptsPerRank + std::min((rank + 1), ranksWithExtraPt);
     int localNumPoints = iEnd - iBegin;
     PointArray pts(0, localNumPoints);
     const double avgAng = 2. * M_PI / numPoints;
-    for(int i=iBegin; i<iEnd; ++i)
+    for(int i = iBegin; i < iEnd; ++i)
     {
       // const double ang = random_real(avgAng*iBegin, avgAng*iEnd, 0);  // Random spacing
-      const double ang = i*avgAng; // Regular spacing
+      const double ang = i * avgAng;  // Regular spacing
       const double rsinT = center[1] + radius * std::sin(ang);
       const double rcosT = center[0] + radius * std::cos(ang);
       pts.push_back(PointType {rcosT, rsinT});
@@ -504,8 +503,9 @@ private:
 class QueryMeshWrapper
 {
 public:
-  QueryMeshWrapper(const std::string &cpFilename="closest_point")
-    : m_dc(cpFilename, nullptr, true) { }
+  QueryMeshWrapper(const std::string& cpFilename = "closest_point")
+    : m_dc(cpFilename, nullptr, true)
+  { }
 
   // Returns a pointer to the MFEMSidreDataCollection
   sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }

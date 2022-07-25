@@ -169,7 +169,6 @@ namespace relay
 {
 namespace mpi
 {
-
 /**
  * \brief Sends a conduit node along with its schema using MPI_Isend
  *
@@ -510,11 +509,13 @@ public:
                                  const std::string& coordset) const
   {
     auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
-    SLIC_ASSERT( internal::extractDimension(coords) == NDIMS );
+    SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
     const int npts = internal::extractSize(coords);
     BoxType rval;
-    ArrayView<PointType> queryPts = ArrayView_from_Node<PointType>(mesh.fetch_existing("coordsets/coords/values/x"), npts);
-    for(const auto &p : queryPts)
+    ArrayView<PointType> queryPts = ArrayView_from_Node<PointType>(
+      mesh.fetch_existing("coordsets/coords/values/x"),
+      npts);
+    for(const auto& p : queryPts)
     {
       rval.addPoint(p);
     }
@@ -808,7 +809,7 @@ public:
 
     std::list<conduit::relay::mpi::Request> isendRequests;
 
-    int toRecvCount = m_nranks - 1; // Expect data for each non-local process.
+    int toRecvCount = m_nranks - 1;  // Expect data for each non-local process.
 
     auto xferNodePtr = xferNodes.at(m_rank);
     for(int round = 0; round < m_nranks || xferNodePtr; ++round)
@@ -821,8 +822,9 @@ public:
       {
         // Send data in xferNodePtr to make room for another.
         int nextDst = (m_rank + 1) % m_nranks;
-        get_from_conduit_node(queryPartitionBb, xferNodePtr->fetch_existing("aabb"));
-        while (xferNodePtr && nextDst != m_rank)
+        get_from_conduit_node(queryPartitionBb,
+                              xferNodePtr->fetch_existing("aabb"));
+        while(xferNodePtr && nextDst != m_rank)
         {
           double sqDist =
             squared_distance(m_objectPartitionBbs[nextDst], queryPartitionBb);
@@ -834,16 +836,17 @@ public:
             // But don't bother if that rank's object partition is too far from this mesh partition.
             double sqSearchDist = m_sqDistanceThreshold;
             isendRequests.emplace_back(conduit::relay::mpi::Request());
-            auto &req = isendRequests.back();
+            auto& req = isendRequests.back();
             if(sqDist <= sqSearchDist || nextDst == homeRank)
             {
-              if(homeRank == m_rank) ++toRecvCount; // Expect our data to circle back.
+              if(homeRank == m_rank)
+                ++toRecvCount;  // Expect our data to circle back.
               relay::mpi::isend_using_schema(*xferNodePtr,
-                                 nextDst,
-                                 tag,
-                                 MPI_COMM_WORLD,
-                                 &req);
-              xferNodePtr.reset(); // Don't touch this Node anymore.
+                                             nextDst,
+                                             tag,
+                                             MPI_COMM_WORLD,
+                                             &req);
+              xferNodePtr.reset();  // Don't touch this Node anymore.
               break;
             }
             else
@@ -861,13 +864,14 @@ public:
           }
 
           nextDst = (nextDst + 1) % m_nranks;
-        } // nextDst loop
-      } // block to send xferNode
+        }  // nextDst loop
+      }    // block to send xferNode
 
       if(!xferNodePtr && toRecvCount > 0)
       {
         // Receive the next xferNode
-        std::shared_ptr<conduit::Node> recvXferNodePtr = std::make_shared<conduit::Node>();
+        std::shared_ptr<conduit::Node> recvXferNodePtr =
+          std::make_shared<conduit::Node>();
         conduit::relay::mpi::recv_using_schema(*recvXferNodePtr,
                                                MPI_ANY_SOURCE,
                                                tag,
@@ -895,18 +899,24 @@ public:
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
-          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xferNode, xferNode.has_path("is_first"));
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(),
+                                                xferNode,
+                                                xferNode.has_path("is_first"));
           break;
 
         case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xferNode, xferNode.has_path("is_first"));
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(),
+                                                xferNode,
+                                                xferNode.has_path("is_first"));
 #endif
           break;
 
         case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xferNode, xferNode.has_path("is_first"));
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(),
+                                                 xferNode,
+                                                 xferNode.has_path("is_first"));
 #endif
           break;
         }
@@ -920,7 +930,8 @@ public:
           const int qPtCount = xferNode.fetch_existing("qPtCount").value();
           auto& qmcpr = queryMesh.fetch_existing("fields/cp_rank/values");
           auto& qmcpi = queryMesh.fetch_existing("fields/cp_index/values");
-          auto& qmcpcp = queryMesh.fetch_existing("fields/closest_point/values/x");
+          auto& qmcpcp =
+            queryMesh.fetch_existing("fields/closest_point/values/x");
           if(xferNode.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
           {
             axom::copy(qmcpr.data_ptr(),
@@ -933,7 +944,8 @@ public:
                        xferNode.fetch_existing("cp_index").data_ptr(),
                        qPtCount * sizeof(axom::IndexType));
           }
-          if(xferNode.fetch_existing("closest_point").data_ptr() != qmcpcp.data_ptr())
+          if(xferNode.fetch_existing("closest_point").data_ptr() !=
+             qmcpcp.data_ptr())
           {
             axom::copy(qmcpcp.data_ptr(),
                        xferNode.fetch_existing("closest_point").data_ptr(),
@@ -957,7 +969,7 @@ public:
           // It has completed its trip through the ring.
           xferNodePtr.reset();
         }
-      } // Locally process *xferNodePtr
+      }  // Locally process *xferNodePtr
 
       SLIC_INFO_IF(
         m_isVerbose,
@@ -975,9 +987,7 @@ public:
       allReqs.push_back(isr.m_request);
     }
     std::vector<MPI_Status> allStats(allReqs.size());
-    MPI_Waitall(int(allReqs.size()),
-                allReqs.data(),
-                allStats.data());
+    MPI_Waitall(int(allReqs.size()), allReqs.data(), allStats.data());
 
     MPI_Barrier(MPI_COMM_WORLD);
     slic::flushStreams();
@@ -1088,13 +1098,17 @@ public:
 
     /// Extract fields from the input node as ArrayViews
     auto queryPts =
-      ArrayView_from_Node<PointType>(xfer_node.fetch_existing("coords"), qPtCount);
+      ArrayView_from_Node<PointType>(xfer_node.fetch_existing("coords"),
+                                     qPtCount);
     auto cpIndexes =
-      ArrayView_from_Node<axom::IndexType>(xfer_node.fetch_existing("cp_index"), qPtCount);
+      ArrayView_from_Node<axom::IndexType>(xfer_node.fetch_existing("cp_index"),
+                                           qPtCount);
     auto cpRanks =
-      ArrayView_from_Node<axom::IndexType>(xfer_node.fetch_existing("cp_rank"), qPtCount);
+      ArrayView_from_Node<axom::IndexType>(xfer_node.fetch_existing("cp_rank"),
+                                           qPtCount);
     auto closestPts =
-      ArrayView_from_Node<PointType>(xfer_node.fetch_existing("closest_point"), qPtCount);
+      ArrayView_from_Node<PointType>(xfer_node.fetch_existing("closest_point"),
+                                     qPtCount);
 
     /// Create ArrayViews in ExecSpace that are compatible with fields
     // This deep-copies host memory in xfer_node to device memory.
@@ -1108,13 +1122,16 @@ public:
 
     /// PROBLEM: The striding does not appear to be retained by conduit relay
     ///          We might need to transform it? or to use a single array w/ pointers into it?
-    auto cp_pos = is_first ? axom::Array<PointType>(qPtCount, qPtCount, m_allocatorID)
-                           : axom::Array<PointType>(closestPts, m_allocatorID);
+    auto cp_pos = is_first
+      ? axom::Array<PointType>(qPtCount, qPtCount, m_allocatorID)
+      : axom::Array<PointType>(closestPts, m_allocatorID);
 
     // DEBUG
     const bool has_min_distance = xfer_node.has_path("debug/min_distance");
     auto minDist = has_min_distance
-      ? ArrayView_from_Node<double>(xfer_node.fetch_existing("debug/min_distance"), qPtCount)
+      ? ArrayView_from_Node<double>(
+          xfer_node.fetch_existing("debug/min_distance"),
+          qPtCount)
       : ArrayView<double>();
 
     auto cp_dist = has_min_distance
@@ -1196,11 +1213,8 @@ public:
             {
               query_min_dist[idx] = sqrt(curr_min.minSqDist);
             }
-
           }
-        }
-                               );
-      );
+        }););
 
     axom::copy(cpIndexes.data(),
                query_inds.data(),
