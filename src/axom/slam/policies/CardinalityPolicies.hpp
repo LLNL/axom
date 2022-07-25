@@ -104,9 +104,9 @@ struct ConstantCardinality
     return m_begins[fromPos];
   }
 
-  IndirectionPtrType offsetData() { return m_begins.data(); }
+  IndirectionPtrType offsetData() { return m_begins.ptr(); }
 
-  const IndirectionPtrType offsetData() const { return m_begins.data(); }
+  const IndirectionPtrType offsetData() const { return m_begins.ptr(); }
 
   void bindBeginOffsets(ElementType fromSetSize, ElementType stride)
   {

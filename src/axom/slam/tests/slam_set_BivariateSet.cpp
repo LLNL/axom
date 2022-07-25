@@ -153,7 +153,7 @@ private:
     {
       setIndices1.resize(SET_SIZE_1);
       m_iset1 = new ISet1(SET_SIZE_1);
-      m_iset1->data() = &setIndices1;
+      m_iset1->ptr() = &setIndices1;
       for(auto idx : m_iset1->positions())
       {
         (*m_iset1)[idx] = 2 * idx;
@@ -166,7 +166,7 @@ private:
     {
       setIndices2.resize(SET_SIZE_2);
       m_iset2 = new ISet2(SET_SIZE_2);
-      m_iset2->data() = &setIndices2;
+      m_iset2->ptr() = &setIndices2;
       for(auto idx : m_iset2->positions())
       {
         (*m_iset2)[idx] = 3 * idx;

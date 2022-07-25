@@ -160,7 +160,7 @@ public:
     return SetBuilder()
       .size(CardinalityPolicy::size(fromSetInd))
       .offset(CardinalityPolicy::offset(fromSetInd))
-      .data(m_relationIndices.data());
+      .data(m_relationIndices.ptr());
   }
 
   RelationSubset operator[](SetPosition fromSetInd)
@@ -171,7 +171,7 @@ public:
     return SetBuilder()
       .size(CardinalityPolicy::size(fromSetInd))
       .offset(CardinalityPolicy::offset(fromSetInd))
-      .data(m_relationIndices.data());
+      .data(m_relationIndices.ptr());
   }
 
   bool isValid(bool verboseOutput = false) const;
@@ -231,10 +231,10 @@ public:
 
   const IndirectionPtrType relationData() const
   {
-    return m_relationIndices.data();
+    return m_relationIndices.ptr();
   }
 
-  IndirectionPtrType relationData() { return m_relationIndices.data(); }
+  IndirectionPtrType relationData() { return m_relationIndices.ptr(); }
 
 private:
   FromSetType* m_fromSet;
