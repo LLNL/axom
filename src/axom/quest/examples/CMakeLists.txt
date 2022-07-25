@@ -209,3 +209,23 @@ if (ENABLE_FORTRAN)
         endif()
     endif()
 endif()
+
+if(MFEM_FOUND)
+    blt_add_executable(
+        NAME       quest_high_order_remap_ex
+        SOURCES    quest_high_order_remap.cpp
+        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${quest_example_depends} mfem
+        FOLDER      axom/quest/examples
+    )    
+
+    #string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
+
+    #if (ENABLE_CUDA)
+    #    set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
+    #endif()
+
+    #blt_add_target_compile_flags( TO quest_high_order_remap_ex FLAGS "${MFEM_COMPILE_FLAGS}" )
+
+endif()
+
