@@ -200,7 +200,7 @@ public:
   /*! 
    * \brief Move constructor for an Array instance 
    */
-  Array(Array&& other);
+  Array(Array&& other) noexcept;
 
   /*!
    * \brief Constructor for transferring between memory spaces
@@ -278,7 +278,7 @@ public:
   /*! 
    * \brief Move assignment operator for Array
    */
-  Array& operator=(Array&& other)
+  Array& operator=(Array&& other) noexcept
   {
     if(this != &other)
     {
@@ -924,7 +924,7 @@ Array<T, DIM, SPACE>::Array(const Array& other)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-Array<T, DIM, SPACE>::Array(Array&& other)
+Array<T, DIM, SPACE>::Array(Array&& other) noexcept
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
