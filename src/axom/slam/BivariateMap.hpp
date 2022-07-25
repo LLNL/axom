@@ -209,6 +209,26 @@ public:
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a stride(), when provided.
    */
+  BivariateMap(const BivariateSetType* bSet,
+               typename MapType::OrderedMap data,
+               SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+    : StridePolicyType(stride)
+    , m_bset(bSet)
+    , m_map(SetType(bSet->size()), data, stride)
+  { }
+
+  /**
+   * \brief Constructor for BivariateMap using a BivariateSet passed by-value
+   *        and data passed in by-value.
+   *
+   * \param bSet    A reference to the map's associated bivariate set
+   * \param data    The data buffer to set the map's data to.
+   * \param stride  (Optional) The stride. The number of DataType that
+   *                each element in the set will be mapped to.
+   *                When using a \a RuntimeStridePolicy, the default is 1.
+   * \note  When using a compile time StridePolicy, \a stride must be equal to
+   *        \a stride(), when provided.
+   */
   template <typename UBSet,
             typename TBSet = BivariateSetType,
             typename Enable =
