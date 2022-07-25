@@ -74,6 +74,7 @@ public:
 
   /*!
    * \brief Dumps the messages to the console in rank-order.
+   *
    * \collective
    * \note This method is a collective operation
    *  intended for a synchronization checkpoint.
@@ -82,6 +83,7 @@ public:
 
   /*!
    * \brief Confirms that abort flag(s) was set on one or more ranks.
+   *
    * \return true if abort flag was set for at least one rank, else false.
    * \collective
    * \note This method is a collective operation

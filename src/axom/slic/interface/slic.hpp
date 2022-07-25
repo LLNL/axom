@@ -43,6 +43,7 @@ void initialize(bool is_root = true);
 
 /*!
  * \brief Checks if the SLIC logging environment is initialized.
+ *
  * \return status true if initialized, else, false.
  */
 bool isInitialized();
@@ -60,13 +61,16 @@ bool isRoot();
 /*!
  * \brief Marks this node as root and enables the selective root logging filtering
  * used in the SLIC_*_ROOT_* macros.
+ *
  * \param [in] is_root Enables selective logging macros based on root.
  */
 void setIsRoot(bool is_root);
 
 /*!
  * \brief Gets this rank's abort flag.
+ *
  * \param [in] level user-supplied level.
+ *
  * \return true for aborting, false for not.
  * Always false for Info and Debug level.
  */
@@ -74,8 +78,10 @@ bool getAbortFlag(message::Level level);
 
 /*!
  * \brief Sets this rank's abort flag.
+ *
  * \param [in] val true for aborting, false for not.
  * \param [in] level user-supplied level.
+ *
  * \note No-op if given level is Info or Debug.
  *  If abort behavior is not toggled on for corresponding Warning or Error
  *  level, is a no-op.
@@ -93,27 +99,33 @@ void ensureInitialized();
 
 /*!
  * \brief Creates a new logger associated with the given name.
+ *
  * \param [in] name the name to associate with the new logger.
  * \param [in] imask inheritance mask, indicates the log level streams that
+ *
  *  will be inherited from the "root" logger. By default, nothing is inherited.
  */
 void createLogger(const std::string& name, char imask = inherit::nothing);
 
 /*!
  * \brief Activates the logger associated with the given name.
+ *
  * \param [in] name the name of the logger to activate.
+ *
  * \return True if the named logger was activated, False otherwise
  */
 bool activateLogger(const std::string& name);
 
 /*!
  * \brief Returns the name of the active logger.
+ *
  * \return s a string corresponding to the name of the active logger.
  */
 std::string getActiveLoggerName();
 
 /*!
  * \brief Sets desired logging level.
+ *
  * \param [in] level user-supplied level to log.
  */
 void setLoggingMsgLevel(message::Level level);
@@ -125,12 +137,14 @@ message::Level getLoggingMsgLevel();
 
 /*!
  * \brief Toggles the abort behavior for errors on the current active logger.
+ *
  * \param [in] status user-supplied flag.
  */
 void setAbortOnError(bool status);
 
 /*!
  * \brief Enables aborts on error messages for the current active logger.
+ *
  * \note This is equivalent to calling slic::setAbortOnError( true )
  * \post slic::isAbortOnErrorsEnabled() == true.
  * \pre slic::isInitialized() == true
@@ -139,6 +153,7 @@ void enableAbortOnError();
 
 /*!
  * \brief Disables aborts on error messages for the current active logger.
+ *
  * \note this is equivalent to calling slic::setAbortOnError( false )
  * \post slic::isAbortOnErrorsEnabled() == false.
  * \pre slic::isInitialized() == true
@@ -147,19 +162,23 @@ void disableAbortOnError();
 
 /*!
  * \brief Checks whether aborts on errors are enabled for the current logger.
+ *
  * \return status true if aborts on errors are enabled, otherwise, false.
+ *
  * \pre slic::isInitialized() == true.
  */
 bool isAbortOnErrorsEnabled();
 
 /*!
  * \brief Toggles the abort behavior for warnings on the current active logger.
+ *
  * \param [in] status user-supplied flag.
  */
 void setAbortOnWarning(bool status);
 
 /*!
  * \brief Enables aborts on warnings messages for the current active logger.
+ *
  * \note This is equivalent to calling slic::setAbortOnWarning( true )
  * \post slic::isAbortOnWarningsEnabled() == true.
  * \pre slic::isInitialized() == true.
@@ -168,6 +187,7 @@ void enableAbortOnWarning();
 
 /*!
  * \brief Disables aborts on warnings messages for the current active logger.
+ *
  * \note This is equivalent to calling slic::setAbortOnWarnings( false )
  * \post slic::isAbortOnWarnigsEnabled() == true.
  * \pre slic::isInitialized() == true.
@@ -176,6 +196,7 @@ void disableAbortOnWarning();
 
 /*!
  * \brief Checks whether aborts on warnings are enabled for the current logger.
+ *
  * \return status true if aborts on warnings are enabled, otherwise, false.
  * \pre slic::isInitialized() == true.
  */
@@ -183,6 +204,7 @@ bool isAbortOnWarningsEnabled();
 
 /*!
  * \brief Sets the function to call when program abort is requested
+ *
  * \param [in] abort_func The user-specified function to call
  * \pre slic::isInitialized() == true.
  */
@@ -190,6 +212,7 @@ void setAbortFunction(AbortFunctionPtr abort_func);
 
 /*!
  * \brief Adds the given stream to the given level.
+ *
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
  * \pre ls != nullptr
@@ -198,6 +221,7 @@ void addStreamToMsgLevel(LogStream* ls, message::Level level);
 
 /*!
  * \brief Adds the given GenericOutputStream to the given level.
+ *
  * \param [in] ls pointer to the GenericOutputStream.
  * \param [in] level the level to log.
  * \pre ls != nullptr
@@ -206,6 +230,7 @@ void addStreamToMsgLevel(GenericOutputStream* ls, message::Level level);
 
 /*!
  * \brief Adds the given stream to all levels.
+ *
  * \param [in] ls pointer to the log stream.
  * \pre ls != nullptr.
  */
@@ -213,6 +238,7 @@ void addStreamToAllMsgLevels(LogStream* ls);
 
 /*!
  * \brief Adds the given GenericOutputStream to all levels.
+ *
  * \param [in] ls pointer to the GenericOutputStream.
  * \pre ls != nullptr.
  */
@@ -220,6 +246,7 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
 
 /*!
  * \brief Logs the given message to all registered streams.
+ *
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] filter_duplicates optional parameter that indicates whether
@@ -236,6 +263,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ *
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied associated with this message.
@@ -254,6 +282,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ *
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
@@ -274,6 +303,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Logs the given message to all registered streams.
+ *
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied tag associated with the message.
@@ -296,6 +326,7 @@ void logMessage(message::Level level,
 
 /*!
  * \brief Convenience method to log an error message.
+ *
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
@@ -307,6 +338,7 @@ void logErrorMessage(const std::string& message,
 
 /*!
  * \brief Convenience method to log warning messages.
+ *
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
@@ -338,13 +370,16 @@ void logWarningMessage(const std::string& message,
  * \brief Aborts and flushes on warning or error if corresponding AbortOnError
  *  or AbortOnWarning is set to true, and abort flag was set for at least
  *  one rank with the corresponding message level.
+ *
  * \collective
+ *
  * \param [in] level the logging level.
  */
 void abortIfEnabled(message::Level level);
 
 /*!
  * \brief Flushes all streams.
+ *
  * \collective
  * \see Logger::flushStreams.
  * \note When used within an MPI distributed environment, flushStreams is
@@ -355,6 +390,7 @@ void flushStreams();
 
 /*!
  * \brief Pushes all streams.
+ *
  * \collective
  * \see Logger::pushStreams.
  * \note When used within an MPI distributed environment, pushStreams is
@@ -365,6 +401,7 @@ void pushStreams();
 
 /*!
  * \brief Finalizes the slic logging environment.
+ *
  * \collective
  */
 void finalize();
@@ -373,6 +410,7 @@ void finalize();
 
 /*!
  * \brief Uses glibc's backtrace() functionality to return a stacktrace
+ *
  * \returns a string corresponding to the stacktrace.
  */
 std::string stacktrace();

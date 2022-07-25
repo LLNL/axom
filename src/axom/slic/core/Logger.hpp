@@ -61,13 +61,16 @@ public:
    * \brief Sets the logging level to the given level. This controls which
    *  messages are logged based on severity. All messages with equal or higher
    *  severity to the given level will be logged.
+   *
    * \param [in] level the logging level.
    */
   void setLoggingMsgLevel(message::Level level);
 
   /*!
    * \brief Gets the abort flag for the given level.
+   *
    * \param [in] level the logging level.
+   *
    * \return true if at least one stream has set the abort flag for the
    *  given level, false if not. Always false for Info and Debug level.
    */
@@ -75,8 +78,10 @@ public:
 
   /*!
    * \brief Sets the abort flag for all streams with the given level.
+   *
    * \param [in] val true for aborting, false for not.
    * \param [in] level the logging level.
+   *
    * \note No-op if given level is Info or Debug.
    *  If abort behavior is not toggled on for corresponding Warning or Error
    *  level, is a no-op.
@@ -86,6 +91,7 @@ public:
   /*!
    * \brief Toggles the abort behavior for error messages. Default is true.
    *        Resets the abort flag for error streams if false.
+   *
    * \param [in] status user-supplied flag.
    */
   void setAbortOnError(bool status)
@@ -116,6 +122,7 @@ public:
 
   /*!
    * \brief Checks the status of the abort behavior on error messages.
+   *
    * \return status true if the code will abort on errors, otherwise, false.
    */
   bool isAbortOnErrorsEnabled() const { return m_abortOnError; };
@@ -123,6 +130,7 @@ public:
   /*!
    * \brief Toggles the abort behavior for warning messages. Default is false.
    *        Resets the abort flag for warning streams if false.
+   *
    * \param [in] status user-supplied flag.
    */
   void setAbortOnWarning(bool status)
@@ -153,18 +161,21 @@ public:
 
   /*!
    * \brief Checks the status of the abort behavior on warning messages.
+   *
    * \return status true if the code will abort on warnings, otherwise, false.
    */
   bool isAbortOnWarningsEnabled() const { return m_abortOnWarning; };
 
   /*!
    * \brief Sets the function to call when program abort is requested
+   *
    * \param [in] abort_func The user-specified function to call
    */
   void setAbortFunction(AbortFunctionPtr abort_func);
 
   /*!
    * \brief Returns the name of this logger instance.
+   *
    * \return s a string corresponding to the name of this logger instance.
    * \post s.length() > 0
    */
@@ -172,11 +183,13 @@ public:
 
   /*!
    * \brief Binds the given stream to the given level for this Logger instance.
+   *
    * \param [in] ls pointer to the user-supplied LogStream object.
    * \param [in] level the level that this stream will be associated with.
    * \param [in] pass_ownership flag that indicates whether the given logger
    *  instance owns the supplied LogStream object. This parameter is optional.
    *  Default is true.
+   *
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
@@ -186,7 +199,9 @@ public:
 
   /*!
    * \brief Binds the given stream to all the levels for this Logger instance.
+   *
    * \param [in] ls pointer to the user-supplied LogStream object.
+   *
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    */
@@ -194,7 +209,9 @@ public:
 
   /*!
    * \brief Returns the number of streams at the given level.
+   *
    * \param [in] level the level in query.
+   *
    * \return N the number of streams at the given level.
    * \post N >= 0
    */
@@ -202,8 +219,10 @@ public:
 
   /*!
    * \brief Returns the ith stream at the given level.
+   *
    * \param [in] level the level in query.
    * \param [in] i the index of the stream in query.
+   *
    * \return stream_ptr pointer to the stream.
    * \pre i >= 0 && i < this->getNumStreamsAtLevel( level )
    * \post stream_ptr != NULL.
@@ -212,11 +231,13 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   *
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   *
    * \post Abort flag is set if level is Error and abort on Error messages is
    * enabled.
    * \post Abort flag is set if level is Warning and abort on Warning messages
@@ -228,12 +249,14 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   *
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   *
    * \post Abort flag is set if level is Error and abort on Error messages is
    * enabled.
    * \post Abort flag is set if level is Warning and abort on Warning messages
@@ -246,6 +269,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   *
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] fileName name of the file this call is made from.
@@ -253,6 +277,7 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   *
    * \post Abort flag is set if level is Error and abort on Error messages is
    * enabled.
    * \post Abort flag is set if level is Warning and abort on Warning messages
@@ -266,6 +291,7 @@ public:
 
   /*!
    * \brief Logs the given message to all registered streams.
+   *
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
@@ -274,6 +300,7 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
+   *
    * \post Abort flag is set if level is Error and abort on Error messages is
    * enabled.
    * \post Abort flag is set if level is Warning and abort on Warning messages
@@ -315,7 +342,9 @@ public:
 
   /*!
    * \brief Confirms that abort flag(s) was set on one or more ranks.
+   *
    * \param [in] level the level to confirm
+   *
    * \return true if abort flag was set for at least one rank, else false.
    * \collective
    */
@@ -346,9 +375,11 @@ public:
 
   /*!
    * \brief Creates a new logger associated with the given name.
+   *
    * \param [in] name the name to associate with the new logger.
    * \param [in] imask inheritance mask, indicates the log level(s), which will
    *  be inherited from the "root" logger. By default, nothing is inherited.
+   *
    * \return status return status, true if the logger is created, else false.
    * \note False is returned if a logger associated with the given name
    *  already exists.
@@ -358,7 +389,9 @@ public:
 
   /*!
    * \brief Activates the logger with the associate name.
+   *
    * \param [in] name the name of the logger to activate.
+   *
    * \return status return status, true if the logger is activated, else false.
    * \note False is returned if the logger with the given name does not exist.
    */
@@ -366,6 +399,7 @@ public:
 
   /*!
    * \brief Finalizes the logging environment.
+   *
    * \collective
    * \post Logger::getActiveLogger() == NULL.
    * \attention This method is a collective operation.
@@ -376,6 +410,7 @@ public:
 
   /*!
    * \brief Returns the name of the currently active logger instance.
+   *
    * \return s a string corresponding to the name of the active logger.
    * \post s.length() > 0
    */
@@ -383,6 +418,7 @@ public:
 
   /*!
    * \brief Returns a pointer to the logger instance.
+   *
    * \return logger pointer to the logger instance.
    * \pre s_Logger != NULL
    * \post logger != NULL
@@ -391,6 +427,7 @@ public:
 
   /*!
    * \brief Returns the root logger
+   *
    * \return logger pointer to the root logger instance.
    */
   static Logger* getRootLogger();
@@ -406,6 +443,7 @@ private:
   /*!
    * \brief Custom constructor. Constructs a Logger instance with the given
    *  name.
+   *
    * \param [in] name the name associated with the logger.
    */
   Logger(const std::string& name);

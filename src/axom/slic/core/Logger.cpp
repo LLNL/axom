@@ -93,10 +93,6 @@ bool Logger::getAbortFlag(message::Level level)
   }
 
   unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
-  if(nstreams == 0)
-  {
-    return ret;
-  }
 
   for(unsigned istream = 0; istream < nstreams; ++istream)
   {

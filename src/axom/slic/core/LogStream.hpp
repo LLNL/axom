@@ -48,7 +48,9 @@ public:
 
   /*!
    * \brief Sets the format string.
+   *
    * \param format a format string
+   *
    * \note The following keywords in the format string are replaced:
    *  <ul>
    *    <li> <LEVEL> with the message type, e.g, ERROR, FATAL, etc. </li>
@@ -103,6 +105,7 @@ public:
 
   /*!
    * \brief Flushes the log stream. It's a NO-OP by default.
+   *
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment, where the flush is a collective
@@ -112,6 +115,7 @@ public:
 
   /*!
    * \brief Pushes messages incrementally up the log stream. NO-OP by default.
+   *
    * \note The intent of this method is to be overridden by concrete
    *  implementations that need to be incrementally advanced. This is primarily
    *  useful for applications running in a distributed MPI environment, where
@@ -122,6 +126,7 @@ public:
 
   /*!
    * \brief Gets the abort flag.
+   *
    * \return true if rank is aborting, false if not.
    * \note Intended to be used with confirmAbort().
    */
@@ -129,6 +134,7 @@ public:
 
   /*!
    * \brief Sets the abort flag.
+   *
    * \param [in] val true for rank is aborting, false for not.
    * \note Intended to be used with confirmAbort().
    */
@@ -137,7 +143,9 @@ public:
   /*!
    * \brief Confirms that abort flag(s) was set on one or more ranks.
    *  Default is to return value of m_abort flag.
+   *
    * \return true if abort flag was set for at least one rank, else false.
+   *
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment, where the
@@ -149,6 +157,7 @@ public:
 protected:
   /*!
    * \brief Returns the formatted message as a single string.
+   *
    * \param [in] msgLevel the level of the given message.
    * \param [in] message the user-supplied message.
    * \param [in] tagName user-supplied tag, may be MSG_IGNORE_TAG
@@ -156,6 +165,7 @@ protected:
    *  MSG_IGNORE_FILE to ignore this field.
    * \param [in] line the line number within the file where the message is
    *  logged. Likewise, may be set to MSG_IGNORE_LINE to ignore this field.
+   *
    * \return str the formatted message string.
    * \post str != "".
    */
@@ -168,6 +178,7 @@ protected:
 
   /*!
    * \brief Returns a time-stamp.
+   *
    * \return str a textual representation of the current time.
    */
   std::string getTimeStamp();
@@ -178,6 +189,7 @@ private:
 
   /*!
    * \brief Replaces the given key in the message string with the given value.
+   *
    * \param [in,out] msg the message string that will be modified.
    * \param [in] key the key in the message that will be replace.
    * \param [in] value the value to replace it with.
