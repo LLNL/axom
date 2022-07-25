@@ -47,7 +47,6 @@
   #endif
 #endif
 
-#include <axom/core/utilities/WhereMacro.hpp>
 namespace axom
 {
 namespace quest
@@ -510,7 +509,7 @@ public:
    * The code will use this field if it is present in \a query_mesh.
    */
   void computeClosestPoints(conduit::Node& queryMesh,
-                                const std::string& coordset) const
+                            const std::string& coordset) const
   {
     SLIC_ASSERT_MSG(
       isBVHTreeInitialized(),

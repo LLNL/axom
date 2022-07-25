@@ -473,8 +473,9 @@ public:
     const double avgAng = 2. * M_PI / numPoints;
     for(int i = iBegin; i < iEnd; ++i)
     {
-      // const double ang = random_real(avgAng*iBegin, avgAng*iEnd, 0);  // Random spacing
-      const double ang = i * avgAng;  // Regular spacing
+      const double ang =
+        random_real(avgAng * iBegin, avgAng * iEnd, 0);  // Random spacing
+      // const double ang = i * avgAng;  // Regular spacing
       const double rsinT = center[1] + radius * std::sin(ang);
       const double rcosT = center[0] + radius * std::cos(ang);
       pts.push_back(PointType {rcosT, rsinT});
@@ -830,10 +831,8 @@ int main(int argc, char** argv)
   // Run the distributed closest point query over the nodes of the computational mesh
   SLIC_INFO(query_str);
   queryTimer.start();
-#if 1
   query.computeClosestPoints(query_mesh_node,
                              query_mesh_wrapper.getCoordsetName());
-#endif
   queryTimer.stop();
 
   auto getMinMax =
