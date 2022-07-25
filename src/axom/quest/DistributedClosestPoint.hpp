@@ -1102,7 +1102,7 @@ public:
     auto cp_idx = is_first
       ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
       : axom::Array<axom::IndexType>(cpIndexes, m_allocatorID);
-    auto cp_ranks = is_first
+    auto cp_rank = is_first
       ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
       : axom::Array<axom::IndexType>(cpRanks, m_allocatorID);
 
@@ -1126,11 +1126,11 @@ public:
 
     if(is_first)
     {
-      cp_ranks.fill(-1);
+      cp_rank.fill(-1);
       cp_idx.fill(-1);
     }
     auto query_inds = cp_idx.view();
-    auto query_ranks = cp_ranks.view();
+    auto query_ranks = cp_rank.view();
     auto query_pos = cp_pos.view();
 
     /// Create an ArrayView in ExecSpace that is compatible with queryPts
