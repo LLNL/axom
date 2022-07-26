@@ -109,7 +109,7 @@ double convex_endpoint_winding_number(bool is_init, const BezierCurve<T, 2>& c)
  *             to be exactly on the Bezier curve
  *
  * Use a recursive algorithm that checks if the query point is exterior to
- * the control polygon of a Bezier curve, in which case we have a direct formula
+ * the convex control polygon of a Bezier curve, in which case we have a direct formula
  * for the winding number. If not, we bisect our curve and run the algorithm on 
  * each half. Use the proximity of the query point to endpoints and approximate
  * linearity of the Bezier curve as base cases.
@@ -140,7 +140,7 @@ double adaptive_winding_number(const Point2D& q,
       return -cl_winding_num;
   }
   // Indicates point is far enough away to ensure we are outside the closure
-  else if(!in_polygon(q, controlPolygon, edge_tol))
+  else if(!in_polygon(q, controlPolygon, edge_tol) && is_convex(controlPolygon))
     return -cl_winding_num;
   // Otherwise, our quadrature didn't give us a good enough answer, so we try again
   else

@@ -53,14 +53,16 @@ CPolygon get_split_square_shape()
   Point2D nodes2[] = {Point2D {1.0, 0.0}, Point2D {1.0, 1.0}};
   Bezier segment2(nodes2, 1);
 
-  Point2D nodes3[] = {Point2D {1.0, 1.0}, Point2D {0.0, 1.0}};
+  Point2D nodes3[] = {Point2D {0.0, 1.0}, Point2D {1.0, 1.0}};
   Bezier segment3(nodes3, 1);
 
-  Point2D nodes4[] = {Point2D {0.0, 1.0}, Point2D {0.0, 0.0}};
+  Point2D nodes4[] = {Point2D {0.0, 0.0}, Point2D {0.0, 1.0}};
   Bezier segment4(nodes4, 1);
 
-  Point2D cross_nodes[] = {Point2D {0.0, 0.0}, Point2D {1.0, 1.0}};
-  Bezier cross_segment(cross_nodes, 1);
+  Point2D cross_nodes[] = {Point2D {0.8, 0.8},
+                           Point2D {0.25, 0.75},
+                           Point2D {0.2, 0.2}};
+  Bezier cross_segment(cross_nodes, 2);
 
   Bezier square_shape[] = {segment1, segment2, segment3, segment4, cross_segment};
   return CPolygon(square_shape, 5);
@@ -128,9 +130,6 @@ CPolygon get_self_intersecting_shape()
                          Point2D {0.0, 1.0}};
   Bezier super_intersecting(big_nodes, 7);
 
-  Point2D clll[] = {Point2D {0.0, 0.0}, Point2D {0.0, 1.0}};
-  Bezier closure_closure(clll, 1);
-
   Point2D small_nodes[] = {Point2D {0.0, 1.0},
                            Point2D {-2.0, 0.5},
                            Point2D {0.0, 0.0}};
@@ -148,13 +147,12 @@ CPolygon get_figure_shape()
                          Point2D {-2.0, 2.0}};
   Bezier super_intersecting(big_nodes, 2);
 
-  Point2D clll[] = {Point2D {-2.25, 2.0},
+  Point2D clll[] = {Point2D {-2.0, 2.0},
                     Point2D {-4.5, 4.0},
                     Point2D {-2.0, -2.0}};
   Bezier closure_closure(clll, 2);
 
-  Point2D small_nodes[] = {Point2D {-2.25, -2.0},
-                           Point2D {0.0, 0.0}};
+  Point2D small_nodes[] = {Point2D {-2.0, -2.0}, Point2D {0.0, 0.0}};
 
   Bezier intersecting_closure(small_nodes, 1);
   Bezier super_intersecting_nodes[] = {super_intersecting,
@@ -205,15 +203,15 @@ CPolygon get_large_shape()
 
 void winding_number_grid()
 {
-  CPolygon cpoly = get_figure_shape();
+  CPolygon cpoly = get_self_intersecting_shape();
 
   // Get big ol grid of query points
-  Bezier::BoundingBoxType cpbb(cpoly.boundingBox().scale(1.1));
+  Bezier::BoundingBoxType cpbb(cpoly.boundingBox().scale(1.2));
   const int num_pts = 400;
   double xpts[num_pts];
   double ypts[num_pts];
 
-  Point2D the_pt({-1.5, 0});
+  Point2D the_pt({-0.4, 0.5});
   //Point2D the_({-0.134210526, 0.590977444});
   double ran = 3;
 
@@ -221,12 +219,12 @@ void winding_number_grid()
   //axom::numerics::linspace(cpbb.getMin()[1], cpbb.getMax()[1], ypts, num_pts);
   //axom::numerics::linspace(-0.352 - 1e-4, -0.352 + 1e-4, xpts, num_pts);
   //axom::numerics::linspace(0.72 - 1e-4, 0.72 + 1e-4, ypts, num_pts);
-  axom::numerics::linspace(the_pt[0] - ran, the_pt[0] + ran, xpts, num_pts);
-  axom::numerics::linspace(the_pt[1] - ran, the_pt[1] + ran, ypts, num_pts);
+  //axom::numerics::linspace(the_pt[0] - ran, the_pt[0] + ran, xpts, num_pts);
+  //axom::numerics::linspace(the_pt[1] - ran, the_pt[1] + ran, ypts, num_pts);
   //axom::numerics::linspace(-1.0, 0.5, xpts, num_pts);
   //axom::numerics::linspace(-0.75, 0.75, ypts, num_pts);
-  //axom::numerics::linspace(-1.1, 0.1, xpts, num_pts);
-  //axom::numerics::linspace(-0.1, 1.1, ypts, num_pts);
+  axom::numerics::linspace(-1.1, 0.1, xpts, num_pts);
+  axom::numerics::linspace(-0.1, 1.1, ypts, num_pts);
 
   // Get file storage syntax
   std::ofstream outfile(
@@ -236,9 +234,6 @@ void winding_number_grid()
     std::cout << "Could not write to the file" << std::endl;
     return;
   }
-
-  // Store quadrature order
-  int qnodes = 50;
 
   Point2D new_nodes[] = {Point2D {-0.1640625000, 0.5},
                          Point2D {-0.1640625000, 0.71875},
@@ -264,7 +259,7 @@ void winding_number_grid()
       Point2D qpoint({x, y});
       // clang-format off
       //double winding_num = winding_number(cpoly, qpoint, qnodes, total_depth, 1e-10);
-      double winding_num = winding_number(qpoint, cpoly[2], 1e-10);
+      double winding_num = winding_number(qpoint, cpoly);
       outfile << axom::fmt::format(
         "{0},{1},{2},{3}\n",
         qpoint[0],
