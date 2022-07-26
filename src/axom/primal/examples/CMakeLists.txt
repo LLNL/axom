@@ -10,12 +10,6 @@ set( primal_examples
     primal_introduction.cpp
    )
 
-blt_list_append( 
-   TO       primal_examples 
-   ELEMENTS lambda_function_issues.cpp 
-            winding_numbers.cpp
-   IF       MFEM_FOUND )
-
 set(primal_example_depends
         axom
         fmt
