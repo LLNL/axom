@@ -507,6 +507,11 @@ public:
    *
    * \note We're temporarily also using a min_distance field while debugging this class.
    * The code will use this field if it is present in \a query_mesh.
+   *
+   * We use non-blocking sends for performance and deadlock avoidance.
+   * The worst case could incur nranks^2 sends.  To avoid excessive
+   * buffer usage, we occasionally check the sends for completion,
+   * using check_send_requests().
    */
   void computeClosestPoints(conduit::Node& queryMesh,
                             const std::string& coordset) const
@@ -592,6 +597,12 @@ public:
           double sqDist =
             squared_distance(m_objectPartitionBbs[nextDst], queryPartitionBb);
           const int homeRank = xferNodePtr->fetch_existing("homeRank").as_int();
+
+          // Check non-blocking sends to release buffers.
+          if(!isendRequests.empty())
+          {
+            check_send_requests(isendRequests, false);
+          }
 
           if(nextDst != m_rank)
           {
@@ -740,23 +751,50 @@ public:
     }  // round loop
 
     // Complete non-blocking sends.
-    // Cyrus recommends using conduit's wait_all, but that requires a
-    // C array of conduit::relay::mpi::Request.  We have a list, which
-    // we can copy to a vector, but that's a deep copy of many Nodes.
-    std::vector<MPI_Request> allReqs;
-    allReqs.reserve(isendRequests.size());
-    for(const auto& isr : isendRequests)
+    while(!isendRequests.empty())
     {
-      allReqs.push_back(isr.m_request);
+      check_send_requests(isendRequests, true);
     }
-    std::vector<MPI_Status> allStats(allReqs.size());
-    MPI_Waitall(int(allReqs.size()), allReqs.data(), allStats.data());
 
     MPI_Barrier(MPI_COMM_WORLD);
     slic::flushStreams();
   }
 
 private:
+  /// Wait for 0 or at least 1 non-blocking sends (if any) to finish.
+  void check_send_requests(std::list<conduit::relay::mpi::Request>& isendRequests,
+                           bool atLeastOne) const
+  {
+    std::vector<MPI_Request> reqs;
+    for(auto& isr : isendRequests) reqs.push_back(isr.m_request);
+
+    int inCount = static_cast<int>(reqs.size());
+    int outCount = 0;
+    std::vector<int> indices(reqs.size(), -1);
+    if(atLeastOne)
+      MPI_Waitsome(inCount,
+                   reqs.data(),
+                   &outCount,
+                   indices.data(),
+                   MPI_STATUSES_IGNORE);
+    else
+      MPI_Testsome(inCount,
+                   reqs.data(),
+                   &outCount,
+                   indices.data(),
+                   MPI_STATUSES_IGNORE);
+    indices.resize(outCount);
+
+    auto reqIter = isendRequests.begin();
+    int prevIdx = 0;
+    for(const int idx : indices)
+    {
+      for(; prevIdx < idx; ++prevIdx) ++reqIter;
+      reqIter = isendRequests.erase(reqIter);
+      ++prevIdx;
+    }
+  }
+
   /// Sets the allocator ID to the default associated with the execution policy
   void setAllocatorID()
   {
