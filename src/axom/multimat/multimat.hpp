@@ -878,6 +878,25 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   return typedBMap;
 }
 
+template <typename T>
+MultiMat::SparseField2D<T> MultiMat::getSparse2dField(const std::string& field_name)
+{
+  // Get a reference to the unspecialized BMap
+  auto& bmap = get2dField<T>(field_name);
+
+  //create instance of that map
+  int fieldIdx = getFieldIdx(field_name);
+
+  if(fieldIdx < 0)
+    throw std::invalid_argument("No field with this name is found");
+
+  RelationSetType* rel_set = &relSparseSet(m_fieldDataLayoutVec[fieldIdx]);
+
+  SparseField2D<T> typedBMap(*this, rel_set, field_name, bmap.getMap()->data());
+
+  return typedBMap;
+}
+
 template <typename T, DataLayout D, typename B>
 MultiMat::Field2DTemplated<T, D, B> MultiMat::getTemplated2DField(
   const std::string& field_name)
