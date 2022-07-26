@@ -204,6 +204,9 @@ public:
                   "Argument set is of a more-derived type than the Map's set "
                   "type. This may lead to object slicing. Use Map's pointer "
                   "constructor instead to store polymorphic sets.");
+
+    checkBackingSize(
+      std::integral_constant<bool, IndirectionPolicy::IsMutableBuffer> {});
   }
 
   /**
@@ -485,6 +488,24 @@ private:
   {
     SLIC_ASSERT_MSG(false,
                     "Stride should not be changed after construction of map.");
+  }
+
+  // If we can resize the underlying buffer, do so if the buffer is not large
+  // enough to correspond to the size of the set.
+  void checkBackingSize(std::true_type)
+  {
+    IndexType neededSize = size() * numComp();
+    if(m_data.size() < neededSize)
+    {
+      m_data.resize(neededSize);
+    }
+  }
+
+  void checkBackingSize(std::false_type)
+  {
+    IndexType neededSize = size() * numComp();
+    SLIC_ASSERT_MSG(m_data.size() == neededSize,
+                    "Not enough elements in buffer passed to Map constructor.");
   }
 
 private:
