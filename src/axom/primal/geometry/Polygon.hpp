@@ -14,6 +14,9 @@
 
 #include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/operators/orientation.hpp"
+#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 #include <ostream>
 
@@ -61,6 +64,11 @@ public:
     SLIC_ASSERT(numExpectedVerts >= 0);
     m_vertices.reserve(numExpectedVerts);
   }
+
+  /*!
+   * \brief Constructor for a polygon with the given vertices
+   */
+  Polygon(const axom::Array<PointType>& vertices) { m_vertices = vertices; }
 
   /*! Return the number of vertices in the polygon */
   int numVertices() const { return static_cast<int>(m_vertices.size()); }

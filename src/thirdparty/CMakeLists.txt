@@ -122,32 +122,8 @@ mark_as_advanced(FMT_FOUND)
 
 if (AXOM_ENABLE_SPARSEHASH)
 
-  include(CheckIncludeFileCXX)
-
-  # Try to find the necessary include and namespace for hash functions
-  # This depends on the compiler and C++ standard library version
-  
-  set(_found_hash FALSE)
-
-  set(_hdr <functional>)
-  set(_ns  std)
-  set(_src "#include ${_hdr} \n int main() { int h = ${_ns}::hash<int>()(5)\; return 0\;}")
-  axom_check_code_compiles(SOURCE_STRING "${_src}" CODE_COMPILES _found_hash)
- 
-  if(NOT ${_found_hash})
-    set(_hdr <tr1/functional>)
-    set(_ns  std::tr1)
-    set(_src "#include ${_hdr} \n int main() { int h = ${_ns}::hash<int>()(5)\; return 0\;}")
-    axom_check_code_compiles(SOURCE_STRING "${_src}" CODE_COMPILES _found_hash)
-
-  endif()
-    
-  # Set up sparsehash, if we've found it
-  if(${_found_hash})
-    message(STATUS "Sparsehash configured with '${_hdr}' header")
-    
-    set(SPARSEHASH_HASHFUN_HEADER ${_hdr} CACHE INTERNAL "")
-    set(SPARSEHASH_HASHFUN_NAMESPACE ${_ns} CACHE INTERNAL "")
+    set(SPARSEHASH_HASHFUN_HEADER <functional> CACHE INTERNAL "")
+    set(SPARSEHASH_HASHFUN_NAMESPACE std CACHE INTERNAL "")
     set(SPARSEHASH_FOUND TRUE CACHE INTERNAL "")
 
     mark_as_advanced(
@@ -203,10 +179,6 @@ if (AXOM_ENABLE_SPARSEHASH)
             DESTINATION include/axom)
 
     install(EXPORT axom-targets DESTINATION lib/cmake)
-
-  else()
-    message(STATUS "Could not configure sparsehash")
-  endif()
 endif()
 
 #------------------------------------------------------------------------------

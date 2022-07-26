@@ -138,8 +138,8 @@ public:
     const PointType& C = m_points[2];
 
     // clang-format off
-    return 0.5 * determinant(C[0]-A[0], C[1]-A[1],
-                             B[0]-A[0], B[1]-A[1]);
+    return 0.5 * determinant(B[0]-A[0], C[0]-A[0],
+                             B[1]-A[1], C[1]-A[1]);
     // clang-format on
   }
 
@@ -371,11 +371,17 @@ AXOM_HOST_DEVICE inline double Triangle<T, NDIMS>::angle(int idx) const
   const PointType& pt = m_points[idx];
   VectorType V1(pt, m_points[idx1]);
   VectorType V2(pt, m_points[idx2]);
-  V1 /= V1.norm();
-  V2 /= V2.norm();
+
+  V1 = V1.unitVector();
+  V2 = V2.unitVector();
 
   double dotprod = VectorType::dot_product(V1, V2);
-  return (acos(dotprod));
+
+  // Account for floating point error in (some) degenerate cases
+  //  Undefined behavior if two vertices are the same
+  if(dotprod >= 1) return 0;
+  if(dotprod > -1) return acos(dotprod);
+  return M_PI;
 }
 
 //------------------------------------------------------------------------------

@@ -9,8 +9,6 @@
 
 #include "gtest/gtest.h"
 
-#include <iostream>
-
 namespace primal = axom::primal;
 
 TEST(primal_integral, evaluate_area_integral)

@@ -9,6 +9,7 @@
 set( primal_examples 
     primal_introduction.cpp
     primal_projection.cpp
+    winding_numbers.cpp
    )
 
 set(primal_example_depends

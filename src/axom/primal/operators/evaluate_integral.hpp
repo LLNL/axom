@@ -61,7 +61,7 @@ double evaluate_line_integral(const axom::Array<primal::BezierCurve<double, 2>>&
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
   //  Quadrature order is equal to 2*N - 1
-  static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
   const mfem::IntegrationRule& quad =
     my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
@@ -96,7 +96,7 @@ double evaluate_line_integral(const primal::CurvedPolygon<double, 2> cpoly,
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
   //  Quadrature order is equal to 2*N - 1
-  static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
   const mfem::IntegrationRule& quad =
     my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
@@ -131,8 +131,8 @@ double evaluate_line_integral(const primal::BezierCurve<double, 2>& c,
 {
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
-  //  Quadrature order is equal to 2*N - 1
-  static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
+  //  Gaussian quadrature order is equal to 2*Npts - 1
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
   const mfem::IntegrationRule& quad =
     my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
@@ -162,7 +162,7 @@ double evaluate_area_integral(const axom::Array<primal::BezierCurve<double, 2>>&
 {
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
-  static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
 
   if(npts_P <= 0) npts_P = npts_Q;
 
@@ -213,7 +213,7 @@ double evaluate_area_integral(const primal::CurvedPolygon<double, 2> cpoly,
 {
   // Generate quadrature library, defaulting to GaussLegendre quadrature.
   //  Use the same one for every curve in the polygon
-  static mfem::IntegrationRules my_IntRules(mfem::Quadrature1D::GaussLegendre);
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
 
   if(npts_P <= 0) npts_P = npts_Q;
 

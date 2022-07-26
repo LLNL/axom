@@ -311,10 +311,10 @@ mfem::Mesh* createBoxMesh(const Input& params)
                                                       res[1],
                                                       res[2],
                                                       mfem::Element::HEXAHEDRON,
-                                                      false,
                                                       hi[0] - lo[0],
                                                       hi[1] - lo[1],
-                                                      hi[2] - lo[2]));
+                                                      hi[2] - lo[2],
+                                                      false));
     break;
   default:
     SLIC_ERROR("Only 2D and 3D meshes are currently supported.");
