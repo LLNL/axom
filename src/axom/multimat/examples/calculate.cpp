@@ -38,7 +38,7 @@ template <DataLayout D, typename B>
 using Field2DTempT = MultiMat::Field2DTemplated<double, D, B>;
 
 template <typename B>
-using BiVarMapT = slam::BivariateMap<double, B>;
+using BiVarMapT = slam::BivariateMap<double, B, MultiMat::IndViewPolicy<double>>;
 
 template <typename FieldTypeT>
 using GetFieldFunType = FieldTypeT (MultiMat::*)(const std::string&);
@@ -1866,10 +1866,15 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   auto& nmatconsts = mm.get1dField<double>("nmatconsts");
 
   // Store result in a dense field
+  {
+    // this field may have been converted to sparse along with the other fields
+    const int fieldIdx = mm.getFieldIdx("Pressurefrac");
+    mm.convertFieldToDense(fieldIdx);
+  }
   using DenseFieldSet = typename MultiMat::ProductSetType;
-  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
-
-  DenseField Pressurefrac(mm, mm.getDense2dFieldSet(DataLayout::MAT_DOM));
+  auto Pressurefrac =
+    mm.getTemplated2DField<double, DataLayout::MAT_DOM, DenseFieldSet>(
+      "Pressurefrac");
 
   timer.reset();
 
@@ -1934,12 +1939,15 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
 
   // Store result in a dense field
+  {
+    // this field may have been converted to sparse along with the other fields
+    const int fieldIdx = mm.getFieldIdx("Pressurefrac");
+    mm.convertFieldToDense(fieldIdx);
+  }
   using DenseFieldSet = typename MultiMat::ProductSetType;
-  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
-  DenseField Pressurefrac(mm, mm.getDense2dFieldSet(DataLayout::MAT_DOM));
-
-  //this field needs to be dense, but the other fields can be sparse, so not this:
-  //auto Pressurefrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Pressurefrac");
+  auto Pressurefrac =
+    mm.getTemplated2DField<double, DataLayout::MAT_DOM, DenseFieldSet>(
+      "Pressurefrac");
 
   timer.reset();
 
@@ -2003,12 +2011,15 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
 
   // Store result in a dense field
+  {
+    // this field may have been converted to sparse along with the other fields
+    const int fieldIdx = mm.getFieldIdx("Pressurefrac");
+    mm.convertFieldToDense(fieldIdx);
+  }
   using DenseFieldSet = typename MultiMat::ProductSetType;
-  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
-  DenseField Pressurefrac(mm, mm.getDense2dFieldSet(DataLayout::MAT_DOM));
-
-  //this field needs to be dense, but the other fields can be sparse, so not this:
-  //auto Pressurefrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Pressurefrac");
+  auto Pressurefrac =
+    mm.getTemplated2DField<double, DataLayout::MAT_DOM, DenseFieldSet>(
+      "Pressurefrac");
 
   timer.reset();
 
