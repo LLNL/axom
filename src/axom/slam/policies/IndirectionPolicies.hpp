@@ -153,6 +153,8 @@ struct STLVectorIndirection
   using IndirectionRefType = IndirectionBufferType&;
   using IndirectionConstRefType = const IndirectionBufferType&;
 
+  static constexpr bool IsMutableBuffer = true;
+
   STLVectorIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
   IndirectionBufferType& data() { return *m_vecBuf; }
@@ -227,6 +229,8 @@ struct ArrayIndirection
   using IndirectionRefType = IndirectionBufferType&;
   using IndirectionConstRefType = const IndirectionBufferType&;
 
+  static constexpr bool IsMutableBuffer = true;
+
   ArrayIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
   IndirectionBufferType& data() { return *m_vecBuf; }
@@ -299,6 +303,8 @@ struct ArrayViewIndirection
   using IndirectionPtrType = IndirectionBufferType;
   using IndirectionRefType = IndirectionBufferType;
   using IndirectionConstRefType = const IndirectionBufferType;
+
+  static constexpr bool IsMutableBuffer = false;
 
   ArrayViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
 

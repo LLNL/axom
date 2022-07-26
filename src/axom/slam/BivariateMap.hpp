@@ -236,8 +236,6 @@ public:
                   "Argument set is of a more-derived type than the Map's set "
                   "type. This may lead to object slicing. Use Map's pointer "
                   "constructor instead to store polymorphic sets.");
-
-    SLIC_ASSERT(m_map.data().size() == size() * numComp());
   }
 
   // (KW) Problem -- does not work with RelationSet
