@@ -22,6 +22,27 @@
 using namespace std;
 using namespace axom::multimat;
 
+template <>
+axom::Array<unsigned char>& MultiMat::FieldBacking::getArray<unsigned char>()
+{
+  return m_ucharData;
+}
+template <>
+axom::Array<int>& MultiMat::FieldBacking::getArray<int>()
+{
+  return m_intData;
+}
+template <>
+axom::Array<float>& MultiMat::FieldBacking::getArray<float>()
+{
+  return m_floatData;
+}
+template <>
+axom::Array<double>& MultiMat::FieldBacking::getArray<double>()
+{
+  return m_dblData;
+}
+
 MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
                    SparsityLayout AXOM_UNUSED_PARAM(s))
   : m_ncells(0)

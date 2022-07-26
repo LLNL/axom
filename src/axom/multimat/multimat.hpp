@@ -641,27 +641,6 @@ private:
 
     template <typename T>
     axom::Array<T>& getArray();
-
-    template <>
-    axom::Array<unsigned char>& getArray<unsigned char>()
-    {
-      return m_ucharData;
-    }
-    template <>
-    axom::Array<int>& getArray<int>()
-    {
-      return m_intData;
-    }
-    template <>
-    axom::Array<float>& getArray<float>()
-    {
-      return m_floatData;
-    }
-    template <>
-    axom::Array<double>& getArray<double>()
-    {
-      return m_dblData;
-    }
   };
 
   //std::vector of information for each fields
