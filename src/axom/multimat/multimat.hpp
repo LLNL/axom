@@ -871,6 +871,12 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   if(fieldIdx < 0)
     throw std::invalid_argument("No field with this name is found");
 
+  SLIC_CHECK_MSG(
+    bmap.isDense(),
+    "Attempting to get sparse field \""
+      << field_name << "\" as a "
+      << "dense field. Convert the field to a sparse field first.");
+
   ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
   DenseField2D<T> typedBMap(*this, prod_set, field_name, bmap.getMap()->data());
@@ -889,6 +895,12 @@ MultiMat::SparseField2D<T> MultiMat::getSparse2dField(const std::string& field_n
 
   if(fieldIdx < 0)
     throw std::invalid_argument("No field with this name is found");
+
+  SLIC_CHECK_MSG(
+    bmap.isSparse(),
+    "Attempting to get dense field \""
+      << field_name << "\" as a "
+      << "sparse field. Convert the field to a dense field first.");
 
   RelationSetType* rel_set = &relSparseSet(m_fieldDataLayoutVec[fieldIdx]);
 
