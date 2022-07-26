@@ -39,7 +39,7 @@ template <DataLayout D, typename B>
 using Field2DTempT = MultiMat::Field2DTemplated<double, D, B>;
 
 template <typename B>
-using BiVarMapT = slam::BivariateMap<double, B>;
+using BiVarMapT = slam::BivariateMap<double, B, MultiMat::IndViewPolicy<double>>;
 
 enum class MMFieldMethod
 {
@@ -146,7 +146,7 @@ struct FieldGetter<MMFieldMethod::FullyTemplatedField, BSet, Layout>
 template <typename BSet, DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
 {
-  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
 
   static SlamBMap get(MultiMat& mm, const std::string& fieldName)
   {

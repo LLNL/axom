@@ -60,6 +60,39 @@ struct Value_Checker
       }
     }
   }
+  void check(axom::ArrayView<double> vec, double EPS = 1e-8)
+  {
+    if(values.empty())
+    {
+      values = std::vector<double>(vec.begin(), vec.end());
+    }
+    else
+    {
+      if(values.size() != vec.size())
+      {
+        SLIC_ERROR(
+          axom::fmt::format("Sizes of arrays are different. 'values' has {} "
+                            "elements; 'vec' has {} elements",
+                            values.size(),
+                            vec.size()));
+      }
+      else
+      {
+        using axom::utilities::isNearlyEqual;
+        bool equivalent = true;
+        const int SZ = values.size();
+        for(int i = 0; i < SZ; ++i)
+        {
+          if(!isNearlyEqual(values[i], vec[i], EPS))
+          {
+            equivalent = false;
+          }
+        }
+
+        SLIC_ERROR_IF(!equivalent, "Calculated values are not the same!");
+      }
+    }
+  }
 };
 
 struct multirun_timer
