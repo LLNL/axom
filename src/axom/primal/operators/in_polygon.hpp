@@ -28,7 +28,6 @@ namespace axom
 {
 namespace primal
 {
-
 /*!
  * \brief Determine if query point is interior to a polygon
  *

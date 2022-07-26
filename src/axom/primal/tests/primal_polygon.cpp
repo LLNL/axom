@@ -37,11 +37,11 @@ TEST(primal_polygon, polygon_containment)
   EXPECT_TRUE(in_polygon(PointType({0.5, 0.5}), poly));
   EXPECT_TRUE(in_polygon(PointType({0, 0}), poly));
 
-  // Test strict inclusion 
+  // Test strict inclusion
   EXPECT_FALSE(in_polygon(PointType({0, 0.5}), poly, true));
   EXPECT_FALSE(in_polygon(PointType({0.5, 0.5}), poly, true));
   EXPECT_FALSE(in_polygon(PointType({0, 0}), poly, true));
-  
+
   // Corner cases, where edge is aligned with casted ray
   vertices = axom::Array<PointType>({PointType {0, 0},
                                      PointType {0.5, 0},

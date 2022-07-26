@@ -14,7 +14,6 @@ namespace axom
 {
 namespace primal
 {
-
 // Algorithm adapted from [Maa 99].
 // Checks if the polygon is convex.
 // Only defined if NDIMS = 2
@@ -47,7 +46,7 @@ bool is_convex(const Polygon<T, 2>& poly)
   return true;
 }
 
-} // end namespace axom
-} // end namespace primal
+}  // namespace primal
+}  // namespace axom
 
 #endif

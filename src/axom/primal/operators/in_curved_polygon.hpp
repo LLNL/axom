@@ -27,7 +27,6 @@ namespace axom
 {
 namespace primal
 {
-
 /*!
  * \brief Robustly determine if query point is interior to a curved polygon
  *

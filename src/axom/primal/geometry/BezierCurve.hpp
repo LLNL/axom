@@ -355,7 +355,6 @@ public:
     return (sqDist < tol);
   }
 
- 
   /*!
    * \brief Simple formatted print of a Bezier Curve instance
    *

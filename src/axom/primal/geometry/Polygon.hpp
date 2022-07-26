@@ -106,9 +106,6 @@ public:
     return sum;
   }
 
-  
-
-  
   /*!
    * \brief Simple formatted print of a polygon instance
    *

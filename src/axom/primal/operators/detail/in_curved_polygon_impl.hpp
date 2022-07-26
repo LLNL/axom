@@ -24,7 +24,6 @@ namespace primal
 {
 namespace detail
 {
-
 template <typename T>
 int sgn(T val)
 {

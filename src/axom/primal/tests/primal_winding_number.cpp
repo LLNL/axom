@@ -170,7 +170,7 @@ TEST(primal_winding_number, corner_cases)
                       Point2D {-1.0, 0.0}};
   Bezier cubic(nodes2, 3);
 
-  // Query points exactly on the curve will return a value 
+  // Query points exactly on the curve will return a value
   // between 0 and 1 that depends on the incident angle of the
   // tangent lines
 
@@ -187,7 +187,6 @@ TEST(primal_winding_number, corner_cases)
     winding_number(Point2D({1.0, 1.0}), linear, 0, edge_tol),
     0.0,
     abs_tol);
-  
 
   EXPECT_NEAR(  // Query on initial endpoint of cubic
     winding_number(Point2D({-1.0, 0.0}), cubic, 0, edge_tol),

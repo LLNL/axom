@@ -94,7 +94,6 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
   seg_param =
     numerics::determinant(ray_dir[0], sol[0], ray_dir[1], sol[1]) / denom;
 
-
   // STEP 5: Necessary and sufficient criteria for an intersection between
   // ray, R(t0),  and a finite segment S(t1) are:
   // 1. ray_param >= tlow w.r.t. the ray R(ray_param).
