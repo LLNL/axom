@@ -95,7 +95,7 @@ void SynchronizedStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedStream::flush()
+void SynchronizedStream::flush(bool single_rank)
 {
   if(m_cache == nullptr)
   {
@@ -109,29 +109,39 @@ void SynchronizedStream::flush()
     return;
   }
 
-  int rank = -1;
-  int nranks = 0;
-  MPI_Comm_rank(m_comm, &rank);
-  MPI_Comm_size(m_comm, &nranks);
-
-  const int prevrank = rank - 1;
-  const int nextrank = rank + 1;
-
-  if(rank > 0)
+  // Single rank flush
+  if(single_rank)
   {
-    // wait for signal from previous rank
-    MPI_Recv(nullptr, 0, MPI_INT, prevrank, MPI_ANY_TAG, m_comm, MPI_STATUSES_IGNORE);
+    // print messages for this rank
+    m_cache->printMessages(m_stream);
   }
-
-  // print messages for this rank
-  m_cache->printMessages(m_stream);
-
-  // signal next rank
-  if(nranks > 1 && nextrank < nranks)
+  // Collective flush
+  else
   {
-    MPI_Request null_request = MPI_REQUEST_NULL;
-    MPI_Isend(nullptr, 0, MPI_INT, nextrank, 0, m_comm, &null_request);
-    MPI_Request_free(&null_request);
+    int rank = -1;
+    int nranks = 0;
+    MPI_Comm_rank(m_comm, &rank);
+    MPI_Comm_size(m_comm, &nranks);
+
+    const int prevrank = rank - 1;
+    const int nextrank = rank + 1;
+
+    if(rank > 0)
+    {
+      // wait for signal from previous rank
+      MPI_Recv(nullptr, 0, MPI_INT, prevrank, MPI_ANY_TAG, m_comm, MPI_STATUSES_IGNORE);
+    }
+
+    // print messages for this rank
+    m_cache->printMessages(m_stream);
+
+    // signal next rank
+    if(nranks > 1 && nextrank < nranks)
+    {
+      MPI_Request null_request = MPI_REQUEST_NULL;
+      MPI_Isend(nullptr, 0, MPI_INT, nextrank, 0, m_comm, &null_request);
+      MPI_Request_free(&null_request);
+    }
   }
 }
 

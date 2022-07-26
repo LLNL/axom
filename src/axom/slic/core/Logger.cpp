@@ -137,12 +137,27 @@ void Logger::abortIfEnabled(message::Level level)
   if((m_abortOnError && (level == message::Error)) ||
      (m_abortOnWarning && (level == message::Warning)))
   {
-    if(this->confirmAbortStreams(level))
-    {
-      this->flushStreams();
-      m_abortFunction();
-    }
+    // if(this->confirmAbortStreams(level))
+    // {
+    this->flushStream();
+    m_abortFunction();
+    // }
   }
+}
+
+//------------------------------------------------------------------------------
+void Logger::flushStream()
+{
+  for(int level = message::Error; level < message::Num_Levels; ++level)
+  {
+    unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
+    for(unsigned istream = 0; istream < nstreams; ++istream)
+    {
+      m_logStreams[level][istream]->flush(true);
+
+    }  // END for all streams
+
+  }  // END for all levels
 }
 
 //------------------------------------------------------------------------------

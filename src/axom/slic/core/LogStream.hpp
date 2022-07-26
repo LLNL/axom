@@ -106,12 +106,16 @@ public:
   /*!
    * \brief Flushes the log stream. It's a NO-OP by default.
    *
+   * \param [in] single_rank If true, only current rank is flushing,
+   *             If false, all ranks are flushing.
+   *             Default is false.
+   *
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment, where the flush is a collective
    *  operation intended for a synchronization checkpoint.
    */
-  virtual void flush() {};
+  virtual void flush(bool AXOM_UNUSED_PARAM(single_rank) = false) {};
 
   /*!
    * \brief Pushes messages incrementally up the log stream. NO-OP by default.

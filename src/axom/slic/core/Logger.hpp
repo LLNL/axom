@@ -453,6 +453,13 @@ private:
    */
   ~Logger();
 
+  /*!
+   * \brief Flushes stream for current rank
+   *
+   * \note Called by abortIfEnabled() to flush current stream before aborting
+   */
+  void flushStream();
+
   /// \name Private class members
   ///@{
 

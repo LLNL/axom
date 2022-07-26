@@ -2873,9 +2873,6 @@ int main(int argc, char *argv[])
     std::string fmt_we = "[<LEVEL> (<FILE>:<LINE>)]:>\n\t<MESSAGE>\n";
     axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
-    // Prevents MPI from hanging when building the main data structure
-    axom::slic::disableAbortOnError();
-
     axom::slic::LogStream *weStream, *idStream;
 
 #ifdef AXOM_USE_MPI

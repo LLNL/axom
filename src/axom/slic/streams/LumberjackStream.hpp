@@ -81,14 +81,19 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Pushes all messages to the output node according to Lumberjack's
+   * \brief Pushes all messages or just the messages from the current rank
+   *  to the output node according to Lumberjack's
    *  Communication scheme. Then writes it to the given stream.
+   *
+   * \param [in] single_rank true if only current rank is flushing,
+   *             false if all ranks are flushing. Default is false.
    *
    * \collective
    * \note This method is a collective operation
-   *  intended for a synchronization checkpoint.
+   *  intended for a synchronization checkpoint
+   *  when single_rank is false (default).
    */
-  virtual void flush();
+  virtual void flush(bool single_rank = false);
 
   /*!
    * \brief Pushes all messages once to their parent node according to
@@ -103,11 +108,17 @@ public:
   virtual void push();
 
   /*!
-   * \brief Writes the messages that are at the output node to the given stream.
+   * \brief Writes the messages to the given stream that are at the output node
+   *  or at the current node if single_rank is true
+   *
+   *  param [in] single_rank If true, writes out messages at the current node.
+   *             If false, only writes out messages at the output node.
+   *             Default is false.
+   *
    *  It does not flush any messages and not all messages are guaranteed to be
    *  at the output node.
    */
-  virtual void write();
+  virtual void write(bool single_rank = false);
 
   /*!
    * \brief Confirms that abort flag(s) was set on one or more ranks.

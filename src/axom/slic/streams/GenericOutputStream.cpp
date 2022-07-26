@@ -78,7 +78,10 @@ void GenericOutputStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void GenericOutputStream::flush() { m_stream->flush(); }
+void GenericOutputStream::flush(bool AXOM_UNUSED_PARAM(single_rank))
+{
+  m_stream->flush();
+}
 
 } /* namespace slic */
 

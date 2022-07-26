@@ -73,13 +73,18 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Dumps the messages to the console in rank-order.
+   * \brief Dumps the messages to the console in rank-order for all ranks,
+   *        or just the current rank
+   *
+   * \param [in] single_rank true if only current rank is flushing,
+   *             false if all ranks are flushing. Default is false.
    *
    * \collective
    * \note This method is a collective operation
-   *  intended for a synchronization checkpoint.
+   *  intended for a synchronization checkpoint
+   *  when single_rank is false (default).
    */
-  virtual void flush();
+  virtual void flush(bool single_rank = false);
 
   /*!
    * \brief Confirms that abort flag(s) was set on one or more ranks.

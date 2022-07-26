@@ -85,7 +85,7 @@ void LumberjackStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void LumberjackStream::flush()
+void LumberjackStream::flush(bool single_rank)
 {
   if(m_lj == nullptr)
   {
@@ -94,8 +94,17 @@ void LumberjackStream::flush()
     return;
   }
 
-  m_lj->pushMessagesFully();
-  this->write();
+  //Non-collective write to stream
+  if(single_rank)
+  {
+    this->write();
+  }
+  // Collective push of messages to output node followed by write to stream
+  else
+  {
+    m_lj->pushMessagesFully();
+    this->write();
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -111,7 +120,7 @@ void LumberjackStream::push()
 }
 
 //------------------------------------------------------------------------------
-void LumberjackStream::write()
+void LumberjackStream::write(bool single_rank)
 {
   if(m_lj == nullptr)
   {
@@ -120,7 +129,7 @@ void LumberjackStream::write()
     return;
   }
 
-  if(m_lj->isOutputNode())
+  if(m_lj->isOutputNode() || single_rank)
   {
     std::vector<axom::lumberjack::Message*> messages = m_lj->getMessages();
 
