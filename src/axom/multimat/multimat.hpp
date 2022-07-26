@@ -79,6 +79,9 @@ protected:
   using IndBufferType = std::vector<SetPosType>;
   template <typename T>
   using IndPolicy = slam::policies::STLVectorIndirection<SetPosType, T>;
+  template <typename T>
+  using IndViewPolicy = slam::policies::ArrayViewIndirection<SetPosType, T>;
+
   using VariableCardinality =
     slam::policies::VariableCardinality<SetPosType, IndPolicy<SetElemType>>;
   using StaticVariableRelationType = slam::StaticRelation<SetPosType,
@@ -106,15 +109,15 @@ protected:
   using MapUniquePtr = std::unique_ptr<MapBaseType>;
 
   template <typename T>
-  using MapType = slam::Map<T, RangeSetType, IndPolicy<T>, MapStrideType>;
+  using MapType = slam::Map<T, RangeSetType, IndViewPolicy<T>, MapStrideType>;
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapType =  //this one has runtime stride
-    slam::BivariateMap<T, BSet, IndPolicy<T>, MapStrideType>;
+    slam::BivariateMap<T, BSet, IndViewPolicy<T>, MapStrideType>;
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapTypeStrideOne =  //this one has compile time stride 1
-    slam::BivariateMap<T, BSet>;
+    slam::BivariateMap<T, BSet, IndViewPolicy<T>>;
 
 public:
   using SparseRelationType = StaticVariableRelationType;
@@ -340,7 +343,7 @@ public:
   Field2DTemplated<T, D, B> getTemplated2DField(const std::string& field_name);
 
   template <typename T, typename BSetType>
-  slam::BivariateMap<T, BSetType> get2dFieldAsSlamBivarMap(
+  slam::BivariateMap<T, BSetType, IndViewPolicy<T>> get2dFieldAsSlamBivarMap(
     const std::string& field_name);
 
   /**
@@ -625,9 +628,42 @@ private:
   // dense layout bivariate sets
   axom::Array<ProductSetType> m_denseBivarSet;
 
+  struct FieldBacking
+  {
+    axom::Array<unsigned char> m_ucharData;
+    axom::Array<int> m_intData;
+    axom::Array<float> m_floatData;
+    axom::Array<double> m_dblData;
+
+    template <typename T>
+    axom::Array<T>& getArray();
+
+    template <>
+    axom::Array<unsigned char>& getArray<unsigned char>()
+    {
+      return m_ucharData;
+    }
+    template <>
+    axom::Array<int>& getArray<int>()
+    {
+      return m_intData;
+    }
+    template <>
+    axom::Array<float>& getArray<float>()
+    {
+      return m_floatData;
+    }
+    template <>
+    axom::Array<double>& getArray<double>()
+    {
+      return m_dblData;
+    }
+  };
+
   //std::vector of information for each fields
   std::vector<std::string> m_fieldNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
+  std::vector<FieldBacking> m_fieldBackingVec;
   std::vector<MapUniquePtr> m_mapVec;
   std::vector<DataTypeSupported> m_dataTypeVec;
   std::vector<DataLayout> m_fieldDataLayoutVec;
@@ -706,37 +742,10 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
 {
   unsigned int new_arr_idx = m_mapVec.size();
 
-  if(field_mapping == FieldMapping::PER_CELL_MAT)
-  {
-    BivariateSetType* s = get_mapped_biSet(data_layout, sparsity_layout);
-    SLIC_ASSERT(s != nullptr);
-
-    //old field2d
-    //Field2D<T>* new_map_ptr = new Field2D<T>(s, T(), stride);
-    //new_map_ptr->copy(data_arr);
-    Field2D<T>* new_map_ptr =
-      new Field2D<T>(*this, s, field_name, data_arr, stride);
-
-    m_mapVec.push_back(MapUniquePtr {new_map_ptr});
-  }
-  else
-  {
-    SLIC_ASSERT(field_mapping == FieldMapping::PER_CELL ||
-                field_mapping == FieldMapping::PER_MAT);
-    const RangeSetType& s =
-      *static_cast<RangeSetType*>(get_mapped_set(field_mapping));
-    Field1D<T>* new_map_ptr = new Field1D<T>(s, T(), stride);
-
-    //copy data
-    int i = 0;
-    for(auto iter = new_map_ptr->begin(); iter != new_map_ptr->end(); iter++)
-      for(auto str = 0; str < stride; ++str) iter(str) = data_arr[i++];
-
-    m_mapVec.push_back(MapUniquePtr {new_map_ptr});
-  }
-
   m_fieldNameVec.push_back(field_name);
   m_fieldMappingVec.push_back(field_mapping);
+  m_fieldBackingVec.push_back({});
+  m_mapVec.push_back(nullptr);
   m_fieldDataLayoutVec.push_back(data_layout);
   m_fieldSparsityLayoutVec.push_back(sparsity_layout);
 
@@ -756,6 +765,37 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   SLIC_ASSERT(m_mapVec.size() == m_fieldMappingVec.size());
   SLIC_ASSERT(m_mapVec.size() == m_fieldDataLayoutVec.size());
   SLIC_ASSERT(m_mapVec.size() == m_fieldSparsityLayoutVec.size());
+
+  if(field_mapping == FieldMapping::PER_CELL_MAT)
+  {
+    BivariateSetType* s = get_mapped_biSet(data_layout, sparsity_layout);
+    SLIC_ASSERT(s != nullptr);
+
+    axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
+    array.insert(0, s->size() * stride, data_arr);
+
+    //old field2d
+    //Field2D<T>* new_map_ptr = new Field2D<T>(s, T(), stride);
+    //new_map_ptr->copy(data_arr);
+    Field2D<T>* new_map_ptr =
+      new Field2D<T>(*this, s, field_name, array.view(), stride);
+
+    m_mapVec.back().reset(new_map_ptr);
+  }
+  else
+  {
+    SLIC_ASSERT(field_mapping == FieldMapping::PER_CELL ||
+                field_mapping == FieldMapping::PER_MAT);
+    const RangeSetType& s =
+      *static_cast<RangeSetType*>(get_mapped_set(field_mapping));
+
+    axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
+    array.insert(0, s.size() * stride, data_arr);
+
+    Field1D<T>* new_map_ptr = new Field1D<T>(s, array.view(), stride);
+
+    m_mapVec.back().reset(new_map_ptr);
+  }
 
   return new_arr_idx;
 }
@@ -813,10 +853,7 @@ MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_nam
     (BSetType*)this->get_mapped_biSet(m_fieldDataLayoutVec[fi],
                                       m_fieldSparsityLayoutVec[fi]);
 
-  Field2D<T, BSetType> typedBMap(*this,
-                                 bi_set,
-                                 field_name,
-                                 bmap.getMap()->data().data());
+  Field2D<T, BSetType> typedBMap(*this, bi_set, field_name, bmap.getMap()->data());
 
   return typedBMap;
 }
@@ -835,10 +872,7 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
 
   ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
-  DenseField2D<T> typedBMap(*this,
-                            prod_set,
-                            field_name,
-                            bmap.getMap()->data().data());
+  DenseField2D<T> typedBMap(*this, prod_set, field_name, bmap.getMap()->data());
 
   return typedBMap;
 }
@@ -849,17 +883,15 @@ MultiMat::Field2DTemplated<T, D, B> MultiMat::getTemplated2DField(
 {
   // Get a reference to the unspecialized BMap
   auto& bmap = get2dField<T>(field_name);
-  Field2DTemplated<T, D, B> typedBMap(*this,
-                                      field_name,
-                                      bmap.getMap()->data().data());
+  Field2DTemplated<T, D, B> typedBMap(*this, field_name, bmap.getMap()->data());
 
   return typedBMap;
 }
 
 // Warning: The return type uses a compile time stride of one!
 template <typename T, typename BSetType>
-slam::BivariateMap<T, BSetType> MultiMat::get2dFieldAsSlamBivarMap(
-  const std::string& field_name)
+slam::BivariateMap<T, BSetType, MultiMat::IndViewPolicy<T>>
+MultiMat::get2dFieldAsSlamBivarMap(const std::string& field_name)
 {
   // Get a reference to the unspecialized BMap
   auto& bmap = get2dField<T>(field_name);
@@ -867,12 +899,9 @@ slam::BivariateMap<T, BSetType> MultiMat::get2dFieldAsSlamBivarMap(
   const BSetType* pBset = static_cast<const BSetType*>(bmap.set());
 
   // Create instance of templated BivariateMap
-  slam::BivariateMap<T, BSetType> typedBMap(pBset);
-
-  // Copy data from original map to templated map
-  // WARNING: Map and BMap should take a pointer to the data
-  // instead of copying it!
-  typedBMap.copy(bmap.getMap()->data().data());
+  slam::BivariateMap<T, BSetType, IndViewPolicy<T>> typedBMap(
+    pBset,
+    bmap.getMap()->data());
 
   return typedBMap;
 }

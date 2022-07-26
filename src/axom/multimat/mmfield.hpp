@@ -50,7 +50,7 @@ public:
   MMField2D(MultiMat& mm,
             const BiSet*,
             const std::string& arr_name = "unnamed",
-            const DataType* data_arr = nullptr,
+            axom::ArrayView<DataType> data_arr = {},
             int stride = 1);
 
   using BiVarMapType::operator();  //why is this needed?
@@ -114,16 +114,14 @@ template <typename DataType, typename BiSet>
 inline MMField2D<DataType, BiSet>::MMField2D(MultiMat& mm,
                                              const BiSet* biset,
                                              const std::string& arr_name,
-                                             const DataType* data_arr,
+                                             axom::ArrayView<DataType> data_arr,
                                              int stride)
   :  //call Bivariate map constructor
-  BiVarMapType(biset, DataType(), stride)
+  BiVarMapType(biset, data_arr, stride)
   , m_mm(&mm)
   , m_field_name(arr_name)
 {
   SLIC_ASSERT(stride > 0);
-
-  if(data_arr != nullptr) this->copy(data_arr);
 
   if(biset == mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::DENSE))
   {
@@ -183,7 +181,7 @@ class MMField2DTemplated : public MMField2D<DataType, BiSet>
 public:
   MMField2DTemplated(MultiMat& mm,
                      const std::string& arr_name = "unnamed",
-                     const DataType* data_arr = nullptr,
+                     axom::ArrayView<DataType> data_arr = {},
                      int stride = 1)
     : Field2DType(mm,
                   (BiSet*)mm.get_mapped_biSet(DataLayoutT,
