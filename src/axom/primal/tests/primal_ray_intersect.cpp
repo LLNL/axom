@@ -385,6 +385,52 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
 #undef TEST_BOX3D
 }
 
+TEST(primal_ray_intersect, ray_segment_edge_cases)
+{
+  using namespace primal::detail;
+
+  using PointType = primal::Point<double, 2>;
+  using SegmentType = primal::Segment<double, 2>;
+  using VectorType = primal::Vector<double, 2>;
+  using RayType = primal::Ray<double, 2>;
+
+  RayType the_ray(PointType({0.0, 0.0}), VectorType({1, 0}));
+  double ray_param = -1, seg_param = -1;
+  const double EPS = 1e-8;
+
+  // Check segments oriented in same direction as ray
+  //  and in opposite direction
+  SegmentType intersecting_segs[] = {
+    SegmentType(PointType({1, 0}), PointType({2, 0})),
+    SegmentType(PointType({0, 0}), PointType({1, 0})),
+    SegmentType(PointType({-1, 0}), PointType({1, 0})),
+    SegmentType(PointType({-1, 0}), PointType({0, 0})),
+    SegmentType(PointType({2, 0}), PointType({1, 0})),
+    SegmentType(PointType({1, 0}), PointType({0, 0})),
+    SegmentType(PointType({1, 0}), PointType({-1, 0})),
+    SegmentType(PointType({0, 0}), PointType({-1, 0}))};
+
+  for(auto& seg : intersecting_segs)
+  {
+    EXPECT_TRUE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
+    EXPECT_GE(ray_param, 0);
+    EXPECT_GE(seg_param, 0);
+    EXPECT_LE(seg_param, 1);
+  }
+
+  // Check that parallel, but not colinear segments do not intersect
+  SegmentType not_intersecting_segs[] = {
+    SegmentType(PointType({-2, 0}), PointType({-1, 0})),
+    SegmentType(PointType({-2, 1}), PointType({-1, 1})),
+    SegmentType(PointType({0, 1}), PointType({1, 1})),
+    SegmentType(PointType({-1, 0}), PointType({-2, 0})),
+    SegmentType(PointType({-1, 1}), PointType({-2, 1})),
+    SegmentType(PointType({1, 1}), PointType({0, 1}))};
+
+  for(auto& seg : not_intersecting_segs)
+    EXPECT_FALSE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {

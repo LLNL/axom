@@ -37,6 +37,32 @@ TEST(primal_polygon, polygon_containment)
   EXPECT_TRUE(in_polygon(PointType({0.5, 0.5}), poly));
   EXPECT_TRUE(in_polygon(PointType({0, 0}), poly));
 
+  // Test strict inclusion 
+  EXPECT_FALSE(in_polygon(PointType({0, 0.5}), poly, true));
+  EXPECT_FALSE(in_polygon(PointType({0.5, 0.5}), poly, true));
+  EXPECT_FALSE(in_polygon(PointType({0, 0}), poly, true));
+  
+  // Corner cases, where edge is aligned with casted ray
+  vertices = axom::Array<PointType>({PointType {0, 0},
+                                     PointType {0.5, 0},
+                                     PointType {1, 0},
+                                     PointType {1, 1},
+                                     PointType {0, 1}});
+  poly = PolygonType(vertices);
+
+  EXPECT_TRUE(in_polygon(PointType({0, 0}), poly));
+  EXPECT_TRUE(in_polygon(PointType({0.5, 0}), poly));
+  EXPECT_TRUE(in_polygon(PointType({0, 1}), poly));
+  EXPECT_TRUE(in_polygon(PointType({1, 0}), poly));
+  EXPECT_TRUE(in_polygon(PointType({0, 1}), poly));
+
+  // Test strict inclusion
+  EXPECT_FALSE(in_polygon(PointType({0, 0}), poly, true));
+  EXPECT_FALSE(in_polygon(PointType({0.5, 0}), poly, true));
+  EXPECT_FALSE(in_polygon(PointType({0, 1}), poly, true));
+  EXPECT_FALSE(in_polygon(PointType({1, 0}), poly, true));
+  EXPECT_FALSE(in_polygon(PointType({0, 1}), poly, true));
+
   // Verify invariance to orientation
   vertices = axom::Array<PointType>(
     {PointType {0, 1}, PointType {1, 0}, PointType {1, 1}, PointType {0, 0}});
@@ -86,10 +112,8 @@ TEST(primal_polygon, polygon_convexity)
   EXPECT_TRUE(is_convex(poly));
 
   // Duplicate points should not affect convexity
-  vertices = axom::Array<PointType>({PointType {0, 0},
-                                     PointType {0, 1},
-                                     PointType {1, 1},
-                                     PointType {1, 0}});
+  vertices = axom::Array<PointType>(
+    {PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
   poly.clear();
   for(int i = 0; i < 4; i++)
     for(int j = 0; j < 3; j++)  // Duplicate each element 3 times
@@ -104,8 +128,7 @@ TEST(primal_polygon, polygon_convexity)
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
-    for(int j = 0; j < 4; j++)
-      poly.addVertex(vertices[(j + i) % 4]);
+    for(int j = 0; j < 4; j++) poly.addVertex(vertices[(j + i) % 4]);
     EXPECT_FALSE(is_convex(poly));
   }
 
@@ -115,8 +138,7 @@ TEST(primal_polygon, polygon_convexity)
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
-    for(int j = 0; j < 4; j++)
-      poly.addVertex(vertices[(j + i) % 4]);
+    for(int j = 0; j < 4; j++) poly.addVertex(vertices[(j + i) % 4]);
     EXPECT_TRUE(is_convex(poly));
   }
 }
