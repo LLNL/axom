@@ -489,6 +489,61 @@ public:
     return rval;
   }
 
+  /// Copy parts of query mesh partition to a conduit::Node for
+  /// computation and communication.
+  void copy_query_node_to_xfer_node(conduit::Node& queryNode,
+                                    conduit::Node& xferNode,
+                                    const std::string& coordset) const
+  {
+    // clang-format off
+    auto& coords = queryNode.fetch_existing(fmt::format("coordsets/{}/values", coordset));
+    const int dim = internal::extractDimension(coords);
+    const int qPtCount = internal::extractSize(coords);
+
+    xferNode["qPtCount"] = qPtCount;
+    xferNode["dim"] = dim;
+    xferNode["homeRank"] = m_rank;
+    xferNode["is_first"] = true;
+    xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
+    xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
+    xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
+    xferNode["closest_point"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
+
+    if(queryNode.has_path("fields/min_distance"))
+    {
+      xferNode["debug/min_distance"].set_external(internal::getPointer<double>(queryNode["fields/min_distance/values"]), qPtCount);
+    }
+    // clang-format on
+  }
+
+  /// Copy xferNode back to query mesh partition.
+  void copy_xfer_node_to_query_node(const conduit::Node& xferNode,
+                                    conduit::Node& queryNode) const
+  {
+    const int qPtCount = xferNode.fetch_existing("qPtCount").value();
+    auto& qmcpr = queryNode.fetch_existing("fields/cp_rank/values");
+    auto& qmcpi = queryNode.fetch_existing("fields/cp_index/values");
+    auto& qmcpcp = queryNode.fetch_existing("fields/closest_point/values/x");
+    if(xferNode.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
+    {
+      axom::copy(qmcpr.data_ptr(),
+                 xferNode.fetch_existing("cp_rank").data_ptr(),
+                 qPtCount * sizeof(axom::IndexType));
+    }
+    if(xferNode.fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
+    {
+      axom::copy(qmcpi.data_ptr(),
+                 xferNode.fetch_existing("cp_index").data_ptr(),
+                 qPtCount * sizeof(axom::IndexType));
+    }
+    if(xferNode.fetch_existing("closest_point").data_ptr() != qmcpcp.data_ptr())
+    {
+      axom::copy(qmcpcp.data_ptr(),
+                 xferNode.fetch_existing("closest_point").data_ptr(),
+                 qPtCount * sizeof(PointType));
+    }
+  }
+
   /**
    * \brief Computes the closest point within the objects for each query point
    * in the provided particle mesh, provided in the mesh blueprint rooted at \a query_mesh
@@ -530,31 +585,12 @@ public:
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
-
-      // clang-format off
-      auto& coords = queryMesh.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-      const int dim = internal::extractDimension(coords);
-      const int qPtCount = internal::extractSize(coords);
-
-      xferNode["qPtCount"] = qPtCount;
-      xferNode["dim"] = dim;
-      xferNode["homeRank"] = m_rank;
-      xferNode["is_first"] = true;
-      xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
-      xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryMesh.fetch_existing("fields/cp_index/values")), qPtCount);
-      xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryMesh.fetch_existing("fields/cp_rank/values")), qPtCount);
-      xferNode["closest_point"].set_external(internal::getPointer<double>(queryMesh.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
-      put_bounding_box_to_conduit_node(queryPartitionBb, xferNode["aabb"]);
-
-      if(queryMesh.has_path("fields/min_distance"))
-      {
-        xferNode["debug/min_distance"].set_external(internal::getPointer<double>(queryMesh["fields/min_distance/values"]), qPtCount);
-      }
-      // clang-format on
+      copy_query_node_to_xfer_node(queryMesh, xferNode, coordset);
 
       if(m_isVerbose)
       {
-        internal::dump_node(xferNode, fmt::format("round_{}_r{}_begin.json", 0, m_rank));
+        internal::dump_node(xferNode,
+                            fmt::format("round_{}_r{}_begin.json", 0, m_rank));
       }
     }
 
@@ -608,7 +644,9 @@ public:
             if(sqDist <= sqSearchDist || nextDst == homeRank)
             {
               if(homeRank == m_rank)
-                ++toRecvCount;  // Expect our data to circle back.
+              {
+                ++toRecvCount;
+              }  // Expect our data to circle back.
               relay::mpi::isend_using_schema(*xferNodePtr,
                                              nextDst,
                                              tag,
@@ -693,37 +731,16 @@ public:
 
         if(xferNode.fetch_existing("homeRank").as_int() == m_rank)
         {
-          // This is the query partition we started with.
-          // Copy it back to queryMesh.
-          const int qPtCount = xferNode.fetch_existing("qPtCount").value();
-          auto& qmcpr = queryMesh.fetch_existing("fields/cp_rank/values");
-          auto& qmcpi = queryMesh.fetch_existing("fields/cp_index/values");
-          auto& qmcpcp =
-            queryMesh.fetch_existing("fields/closest_point/values/x");
-          if(xferNode.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
-          {
-            axom::copy(qmcpr.data_ptr(),
-                       xferNode.fetch_existing("cp_rank").data_ptr(),
-                       qPtCount * sizeof(axom::IndexType));
-          }
-          if(xferNode.fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
-          {
-            axom::copy(qmcpi.data_ptr(),
-                       xferNode.fetch_existing("cp_index").data_ptr(),
-                       qPtCount * sizeof(axom::IndexType));
-          }
-          if(xferNode.fetch_existing("closest_point").data_ptr() !=
-             qmcpcp.data_ptr())
-          {
-            axom::copy(qmcpcp.data_ptr(),
-                       xferNode.fetch_existing("closest_point").data_ptr(),
-                       qPtCount * sizeof(PointType));
-          }
+          // This is the query partition we started with, completing
+          // its trip around the ring.  Copy it back to queryMesh.
+          copy_xfer_node_to_query_node(xferNode, queryMesh);
+          xferNodePtr.reset();
 
           if(m_isVerbose)
           {
-            internal::dump_node(queryMesh,
-                                axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
+            internal::dump_node(
+              queryMesh,
+              axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
 
             SLIC_ASSERT_MSG(
               conduit::blueprint::mcarray::is_interleaved(
@@ -733,9 +750,6 @@ public:
                 "'queryMesh' is not interleaved",
                 round));
           }
-          // Take xferNode out of circulation.
-          // It has completed its trip through the ring.
-          xferNodePtr.reset();
         }
       }  // Locally process *xferNodePtr
 
