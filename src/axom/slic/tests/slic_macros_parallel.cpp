@@ -31,7 +31,7 @@ std::ostringstream test_stream;
 
 bool is_stream_empty() { return test_stream.str().empty(); }
 
-void clear()
+void clear_stream()
 {
   test_stream.clear();
   test_stream.str("");
@@ -105,8 +105,13 @@ void check_line(const std::string& msg, int expected_line)
 
 //------------------------------------------------------------------------------
 bool has_aborted = false;
-void customAbortFunction() { has_aborted = true; }
+void custom_abort_function() { has_aborted = true; }
 
+void reset_state()
+{
+  axom::slic::internal::clear_stream();
+  has_aborted = false;
+}
 }  // end anonymous namespace
 
 //------------------------------------------------------------------------------
@@ -125,7 +130,7 @@ TEST(slic_macros_parallel, test_error_macros)
   check_msg(slic::internal::test_stream.str(), "test error message");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   SLIC_ERROR_IF(false, "this message should not be logged!");
   slic::flushStreams();
@@ -138,7 +143,7 @@ TEST(slic_macros_parallel, test_error_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // Check selective filtering based on root == false
   axom::slic::setIsRoot(false);
@@ -155,7 +160,7 @@ TEST(slic_macros_parallel, test_error_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // is root, but conditional is false -> no message
   axom::slic::setIsRoot(true);
@@ -185,7 +190,7 @@ TEST(slic_macros_parallel, test_error_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // Check for more than one rank being root
   axom::slic::setIsRoot((rank % 2) == 0);
@@ -203,7 +208,7 @@ TEST(slic_macros_parallel, test_error_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 }
 
 //------------------------------------------------------------------------------
@@ -220,7 +225,7 @@ TEST(slic_macros_parallel, test_warning_macros)
   check_msg(slic::internal::test_stream.str(), "test warning message");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   SLIC_WARNING_IF(false, "this message should not be logged!");
   slic::flushStreams();
@@ -233,7 +238,7 @@ TEST(slic_macros_parallel, test_warning_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // Check selective filtering based on root == false
   axom::slic::setIsRoot(false);
@@ -250,7 +255,7 @@ TEST(slic_macros_parallel, test_warning_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // is root, but conditional is false -> no message
   axom::slic::setIsRoot(true);
@@ -280,7 +285,7 @@ TEST(slic_macros_parallel, test_warning_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // Check for more than one rank being root
   axom::slic::setIsRoot((rank % 2) == 0);
@@ -298,7 +303,7 @@ TEST(slic_macros_parallel, test_warning_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 }
 
 //------------------------------------------------------------------------------
@@ -315,7 +320,7 @@ TEST(slic_macros_parallel, test_info_macros)
   check_msg(slic::internal::test_stream.str(), "test info message");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), __LINE__ - 6);
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   SLIC_INFO_IF(false, "this message should not be logged!");
   slic::flushStreams();
@@ -328,7 +333,7 @@ TEST(slic_macros_parallel, test_info_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // Check selective filtering based on root == false
   axom::slic::setIsRoot(false);
@@ -345,7 +350,7 @@ TEST(slic_macros_parallel, test_info_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // is root, but conditional is false -> no message
   axom::slic::setIsRoot(true);
@@ -375,7 +380,7 @@ TEST(slic_macros_parallel, test_info_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 
   // Check for more than one rank being root
   axom::slic::setIsRoot((rank % 2) == 0);
@@ -393,7 +398,7 @@ TEST(slic_macros_parallel, test_info_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 }
 
 //------------------------------------------------------------------------------
@@ -411,7 +416,7 @@ TEST(slic_macros_parallel, test_debug_macros)
   check_msg(slic::internal::test_stream.str(), "test debug message");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
@@ -429,7 +434,7 @@ TEST(slic_macros_parallel, test_debug_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
@@ -451,7 +456,7 @@ TEST(slic_macros_parallel, test_debug_macros)
   check_msg(slic::internal::test_stream.str(), "this message is logged!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
@@ -486,7 +491,7 @@ TEST(slic_macros_parallel, test_debug_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
@@ -509,7 +514,7 @@ TEST(slic_macros_parallel, test_debug_macros)
   {
     EXPECT_TRUE(slic::internal::is_stream_empty());
   }
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
@@ -526,7 +531,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
   MPI_Comm_size(MPI_COMM_WORLD, &nranks);
 
   slic::enableAbortOnError(); /* enable abort for testing purposes */
-  slic::setAbortFunction(customAbortFunction);
+  slic::setAbortFunction(custom_abort_function);
 
   EXPECT_TRUE(slic::internal::is_stream_empty());
 
@@ -546,9 +551,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
   }
-
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   SLIC_ERROR_IF(val == 42, "SLIC_ERROR_IF message is logged!");
 
@@ -563,9 +566,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
-
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   axom::slic::setIsRoot(rank == 0);
   SLIC_ERROR_ROOT("SLIC_ERROR_ROOT message is logged!");
@@ -581,9 +582,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
-
-  slic::internal::clear();
-  has_aborted = false;
+  reset_state();
 
   SLIC_ERROR_ROOT_IF(val == 42, "SLIC_ERROR_ROOT_IF message is logged!");
   if(rank == 0)
@@ -597,9 +596,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
   }
-
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   if(val > 0)
   {
@@ -612,9 +609,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
   }
-
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   SLIC_ASSERT_MSG(val < 0, "val should be negative!");
   if(rank == 0)
@@ -628,9 +623,7 @@ TEST(slic_macros_parallel, test_abort_error_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
   }
-
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   axom::slic::setIsRoot(true);
 #else
@@ -650,7 +643,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   slic::enableAbortOnWarning(); /* enable abort for testing purposes */
-  slic::setAbortFunction(customAbortFunction);
+  slic::setAbortFunction(custom_abort_function);
 
   EXPECT_TRUE(slic::internal::is_stream_empty());
 
@@ -663,15 +656,14 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     SLIC_WARNING("SLIC_WARNING message is logged!");
     EXPECT_TRUE(has_aborted)
       << "Rank " << rank << " did not abort for SLIC_WARNING";
-    has_aborted = false;
     EXPECT_FALSE(slic::internal::is_stream_empty());
     check_level(slic::internal::test_stream.str(), "WARNING");
     check_msg(slic::internal::test_stream.str(),
               "SLIC_WARNING message is logged!");
     check_file(slic::internal::test_stream.str());
-    check_line(slic::internal::test_stream.str(), (__LINE__ - 9));
-    slic::internal::clear();
+    check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
   }
+  reset_state();
 
   SLIC_WARNING_IF(val == 42, "SLIC_WARNING_IF message is logged!");
 
@@ -686,8 +678,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 11));
   }
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   axom::slic::setIsRoot(rank == 0);
   SLIC_WARNING_ROOT("SLIC_WARNING_ROOT message is logged!");
@@ -702,8 +693,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
   }
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   SLIC_WARNING_ROOT_IF(val == 42, "SLIC_WARNING_ROOT_IF message is logged!");
   if(rank == 0)
@@ -717,8 +707,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
   }
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   SLIC_CHECK(val < 0);
   if(val >= 0)
@@ -731,8 +720,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 9));
   }
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   SLIC_CHECK_MSG(val < 0, "val should be negative!");
   if(rank == 0)
@@ -746,8 +734,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
     check_file(slic::internal::test_stream.str());
     check_line(slic::internal::test_stream.str(), (__LINE__ - 10));
   }
-  has_aborted = false;
-  slic::internal::clear();
+  reset_state();
 
   axom::slic::setIsRoot(true);
 
@@ -764,7 +751,7 @@ TEST(slic_macros_parallel, test_abort_warning_macros)
 //------------------------------------------------------------------------------
 TEST(slic_macros_parallel, test_assert_macros)
 {
-  slic::internal::clear();
+  slic::internal::clear_stream();
   EXPECT_TRUE(slic::internal::is_stream_empty());
 
   constexpr int val = 42;
@@ -776,7 +763,7 @@ TEST(slic_macros_parallel, test_assert_macros)
   check_msg(slic::internal::test_stream.str(), "Failed Assert: val < 0");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
@@ -796,7 +783,7 @@ TEST(slic_macros_parallel, test_assert_macros)
             "Failed Assert: val < 0\nval should be negative!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
@@ -818,7 +805,7 @@ TEST(slic_macros_parallel, test_check_macros)
   check_msg(slic::internal::test_stream.str(), "Failed Check: val < 0");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
@@ -838,7 +825,7 @@ TEST(slic_macros_parallel, test_check_macros)
             "Failed Check: val < 0\nval should be negative!");
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
-  slic::internal::clear();
+  slic::internal::clear_stream();
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
