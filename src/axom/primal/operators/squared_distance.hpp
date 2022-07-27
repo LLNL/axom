@@ -105,6 +105,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
  * \brief Computes the minimum squared distance between 2 axis-aligned boxes.
  * \param [in] A the first axis-aligned bounding box.
  * \param [in] B the second axis-aligned bounding box.
+ * If the boxes overlap, the minimum distance is zero.
  * \return the squared distance between the closest points on A and B
  * or NaN if either box is invalid.
  */

@@ -62,12 +62,14 @@ enum class DistributedClosestPointRuntimePolicy
 
 namespace internal
 {
+// Utility function to dump a conduit node on each rank, e.g. for debugging
 void dump_node(const conduit::Node& n,
                const std::string&& fname,
                const std::string& protocol = "json")
 {
   conduit::relay::io::save(n, fname, protocol);
 };
+
 /**
  * \brief Utility function to get a typed pointer to the beginning of an array
  * stored by a conduit::Node
@@ -124,8 +126,8 @@ axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(conduit::Node& nod
  * \brief Put BoundingBox into a Conduit Node.
  */
 template <int NDIMS>
-void put_to_conduit_node(const primal::BoundingBox<double, NDIMS>& bb,
-                         conduit::Node& node)
+void put_bounding_box_to_conduit_node(const primal::BoundingBox<double, NDIMS>& bb,
+                                      conduit::Node& node)
 {
   node["dim"].set(bb.dimension());
   node["lo"].set(bb.getMin().data(), bb.dimension());
@@ -136,8 +138,8 @@ void put_to_conduit_node(const primal::BoundingBox<double, NDIMS>& bb,
  * \brief Get BoundingBox from a Conduit Node.
  */
 template <int NDIMS>
-void get_from_conduit_node(primal::BoundingBox<double, NDIMS>& bb,
-                           const conduit::Node& node)
+void get_bounding_box_from_conduit_node(primal::BoundingBox<double, NDIMS>& bb,
+                                        const conduit::Node& node)
 {
   int dim = node.fetch_existing("dim").as_int();
   SLIC_ASSERT(dim == NDIMS);
@@ -178,7 +180,6 @@ namespace mpi
  * \param [in] request object holding state for the sent data
  * \note Adapted from conduit's relay::mpi's \a send_using_schema and \a isend to use
  * non-blocking \a MPI_Isend instead of blocking \a MPI_Send
- * \note This probably should be in conduit, per conversation with Cyrus.
  */
 inline int isend_using_schema(conduit::Node& node,
                               int dest,
@@ -446,11 +447,11 @@ public:
   /// Allgather one bounding box from each rank.
   void gatherBoundingBoxes(const BoxType& aabb, BoxArray& all_aabbs) const
   {
-    // Using MPI calls.  Should we change to Conduit relay MPI?
-    Array<double> sendbuf(2 * DIM);
+    axom::Array<double> sendbuf(2 * DIM);
     aabb.getMin().to_array(&sendbuf[0]);
     aabb.getMax().to_array(&sendbuf[DIM]);
-    Array<double> recvbuf(m_nranks * sendbuf.size());
+    axom::Array<double> recvbuf(m_nranks * sendbuf.size());
+    // Note: Using axom::Array<double,2> may reduce clutter a tad.
     int errf = MPI_Allgather(sendbuf.data(),
                              2 * DIM,
                              mpi_traits<double>::type,
@@ -520,13 +521,6 @@ public:
       isBVHTreeInitialized(),
       "BVH tree must be initialized before calling 'computeClosestPoints");
 
-    // Utility function to dump a conduit node on each rank, e.g. for debugging
-    auto dumpNode = [=](const conduit::Node& n,
-                        const std::string&& fname,
-                        const std::string& protocol = "json") {
-      conduit::relay::io::save(n, fname, protocol);
-    };
-
     BoxType queryPartitionBb = computeMeshBoundingBox(queryMesh, coordset);
 
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
@@ -550,7 +544,7 @@ public:
       xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryMesh.fetch_existing("fields/cp_index/values")), qPtCount);
       xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryMesh.fetch_existing("fields/cp_rank/values")), qPtCount);
       xferNode["closest_point"].set_external(internal::getPointer<double>(queryMesh.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
-      put_to_conduit_node(queryPartitionBb, xferNode["aabb"]);
+      put_bounding_box_to_conduit_node(queryPartitionBb, xferNode["aabb"]);
 
       if(queryMesh.has_path("fields/min_distance"))
       {
@@ -560,7 +554,7 @@ public:
 
       if(m_isVerbose)
       {
-        dumpNode(xferNode, fmt::format("round_{}_r{}_begin.json", 0, m_rank));
+        internal::dump_node(xferNode, fmt::format("round_{}_r{}_begin.json", 0, m_rank));
       }
     }
 
@@ -568,7 +562,7 @@ public:
       Send query partition to other processes for searches.  When it
       returns, search against local object partition.  Query partitions
       are sent in a ring pattern.  If an object partition is farther
-      than the thresshold distance from the query partition, skip over
+      than the threshold distance from the query partition, skip over
       that rank.
     */
 
@@ -590,8 +584,8 @@ public:
       {
         // Send data in xferNodePtr to make room for another.
         int nextDst = (m_rank + 1) % m_nranks;
-        get_from_conduit_node(queryPartitionBb,
-                              xferNodePtr->fetch_existing("aabb"));
+        get_bounding_box_from_conduit_node(queryPartitionBb,
+                                           xferNodePtr->fetch_existing("aabb"));
         while(xferNodePtr && nextDst != m_rank)
         {
           double sqDist =
@@ -728,8 +722,8 @@ public:
 
           if(m_isVerbose)
           {
-            dumpNode(queryMesh,
-                     axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
+            internal::dump_node(queryMesh,
+                                axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
 
             SLIC_ASSERT_MSG(
               conduit::blueprint::mcarray::is_interleaved(
@@ -867,7 +861,6 @@ public:
     auto boxesView = boxesArray.view();
     auto pointsView = m_points.view();
 
-    /// GOT TO HERE -- fix for templated ExecSpace!
     axom::for_all<ExecSpace>(
       npts,
       AXOM_LAMBDA(axom::IndexType i) { boxesView[i] = BoxType {pointsView[i]}; });
