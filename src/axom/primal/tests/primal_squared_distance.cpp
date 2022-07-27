@@ -9,6 +9,7 @@
 #include "axom/primal/operators/squared_distance.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 using namespace axom;
 
@@ -166,4 +167,28 @@ TEST(primal_squared_distance, point_to_segment)
   primal::Point<double, 2> q2(-1.0);
   dist = primal::squared_distance(q2, S);
   EXPECT_DOUBLE_EQ(primal::squared_distance(q2, A), dist);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_squared_distance, bbox_to_bbox)
+{
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVector = primal::Vector<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
+
+  const QBBox middle(QPoint {0.0, 0.0, 0.0}, QPoint {1.0, 1.0, 1.0});
+  const QBBox north(QPoint {0., 10., 0.}, QPoint {1., 11., 1.});
+  const QBBox east(QPoint {10., 0., 0.}, QPoint {11., 1., 1.});
+  const QBBox northeast(QPoint {10., 10., 0.}, QPoint {11., 11., 1.});
+  const QBBox northeastup(QPoint {10., 10., 10.}, QPoint {11., 11., 11.});
+  QBBox touching(middle);
+  touching.shift(QVector::make_vector(0.9, 0.99, 0.999));
+
+  EXPECT_DOUBLE_EQ(squared_distance(middle, north), 81.);
+  EXPECT_DOUBLE_EQ(squared_distance(middle, east), 81.);
+  EXPECT_DOUBLE_EQ(squared_distance(middle, northeast), 162.);
+  EXPECT_DOUBLE_EQ(squared_distance(middle, northeastup), 243.);
+  EXPECT_DOUBLE_EQ(squared_distance(middle, touching), 0.);
 }
