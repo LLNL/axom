@@ -62,30 +62,29 @@ MultiMat::MapUniquePtr MultiMat::helper_copyField(const MultiMat& mm, int map_i)
   if(mm.getFieldMapping(map_i) == FieldMapping::PER_CELL_MAT)
   {
     //BivariateSetType* biSetPtr = get_mapped_biSet(map_i);
-    Field2D<T>* typed_ptr = dynamic_cast<Field2D<T>*>(other_map_ptr);
+    const Field2D<T>& typed_field =
+      dynamic_cast<VirtualField2D<T>*>(other_map_ptr)->get();
 
     //old field2d with variable stride
     //Field2D<T>* new_ptr = new Field2D<T>(biSetPtr, T(), typed_ptr->stride());
     //new_ptr->copy(typed_ptr->getMap()->data().data());
 
     //fixed strideOne (in the definition of Field2D)
-    Field2D<T>* new_ptr = new Field2D<T>(*this,
-                                         get_mapped_biSet(map_i),
-                                         m_fieldNameVec[map_i],
-                                         m_fieldBackingVec[map_i].getArray<T>(),
-                                         typed_ptr->stride());
-
-    return MapUniquePtr {new_ptr};
+    return slam::makeVirtualMap(Field2D<T>(*this,
+                                           get_mapped_biSet(map_i),
+                                           m_fieldNameVec[map_i],
+                                           m_fieldBackingVec[map_i].getArray<T>(),
+                                           typed_field.stride()));
   }
   else
   {
     const RangeSetType& setPtr =
       *static_cast<RangeSetType*>(get_mapped_set(map_i));
-    Field1D<T>* typed_ptr = dynamic_cast<Field1D<T>*>(other_map_ptr);
-    Field1D<T>* new_ptr = new Field1D<T>(setPtr,
-                                         m_fieldBackingVec[map_i].getArray<T>(),
-                                         typed_ptr->stride());
-    return MapUniquePtr {new_ptr};
+    const Field1D<T>& typed_field =
+      dynamic_cast<VirtualField1D<T>*>(other_map_ptr)->get();
+    return slam::makeVirtualMap(Field1D<T>(setPtr,
+                                           m_fieldBackingVec[map_i].getArray<T>(),
+                                           typed_field.stride()));
   }
 }
 
@@ -358,7 +357,7 @@ int MultiMat::setVolfracField(double* arr,
 
 MultiMat::Field2D<double>& MultiMat::getVolfracField()
 {
-  return *dynamic_cast<Field2D<double>*>(m_mapVec[0].get());
+  return dynamic_cast<VirtualField2D<double>*>(m_mapVec[0].get())->get();
 }
 
 int MultiMat::getFieldIdx(const std::string& field_name) const
@@ -908,7 +907,8 @@ void MultiMat::convertToSparse_helper(int map_i)
 
   StaticVariableRelationType* Rel = getRel(map_i);
 
-  Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
+  Field2D<DataType>& old_map =
+    dynamic_cast<VirtualField2D<DataType>*>(mapPtr)->get();
   int stride = old_map.stride();
   axom::Array<DataType> arr_data(Rel->totalSize() * stride);
   int idx = 0;
@@ -934,13 +934,10 @@ void MultiMat::convertToSparse_helper(int map_i)
   auto& backingArray = m_fieldBackingVec[map_i].getArray<DataType>();
   backingArray = std::move(arr_data);
 
-  Field2D<DataType>* new_field = new Field2D<DataType>(*this,
-                                                       nz_set,
-                                                       old_map.getName(),
-                                                       backingArray.view(),
-                                                       stride);
+  auto new_field = slam::makeVirtualMap(
+    Field2D<DataType>(*this, nz_set, old_map.getName(), backingArray.view(), stride));
 
-  m_mapVec[map_i].reset(new_field);
+  m_mapVec[map_i] = std::move(new_field);
 }
 
 template <typename DataType>
@@ -955,7 +952,8 @@ void MultiMat::convertToDense_helper(int map_i)
 
   ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[map_i]);
 
-  Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
+  Field2D<DataType>& old_map =
+    dynamic_cast<VirtualField2D<DataType>*>(mapPtr)->get();
   int stride = old_map.stride();
   axom::Array<DataType> arr_data(prod_set->size() * stride);
   for(int i = 0; i < old_map.firstSetSize(); ++i)
@@ -979,13 +977,10 @@ void MultiMat::convertToDense_helper(int map_i)
   BivariateSetType* vset =
     relVirtualSet(m_fieldDataLayoutVec[map_i], SparsityLayout::DENSE).get();
 
-  Field2D<DataType>* new_field = new Field2D<DataType>(*this,
-                                                       vset,
-                                                       old_map.getName(),
-                                                       backingArray.view(),
-                                                       stride);
+  auto new_field = slam::makeVirtualMap(
+    Field2D<DataType>(*this, vset, old_map.getName(), backingArray.view(), stride));
 
-  m_mapVec[map_i].reset(new_field);
+  m_mapVec[map_i] = std::move(new_field);
 }
 
 DataLayout MultiMat::getFieldDataLayout(int field_idx)
@@ -1012,7 +1007,8 @@ void MultiMat::transposeField_helper(int field_idx)
   //Skip if no volume fraction array is set-up
   if(field_idx == 0 && oldMapPtr == nullptr) return;
 
-  Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(oldMapPtr);
+  Field2D<DataType>& old_map =
+    dynamic_cast<VirtualField2D<DataType>*>(oldMapPtr)->get();
   int stride = old_map.stride();
 
   DataLayout oldDataLayout = getFieldDataLayout(field_idx);
@@ -1042,7 +1038,6 @@ void MultiMat::transposeField_helper(int field_idx)
   int set1Size = set1.size();
   int set2Size = set2.size();
 
-  Field2D<DataType>* new_map = nullptr;
   axom::Array<DataType> arr_data;
   if(m_fieldSparsityLayoutVec[field_idx] == SparsityLayout::SPARSE)
   {
@@ -1064,11 +1059,8 @@ void MultiMat::transposeField_helper(int field_idx)
 
     //old
     //new_map = new Field2D<DataType>(newNZSet, DataType(), stride);
-    new_map = new Field2D<DataType>(*this,
-                                    newNZSet,
-                                    old_map.getName(),
-                                    arr_data.view(),
-                                    stride);
+    m_mapVec[field_idx] = slam::makeVirtualMap(
+      Field2D<DataType>(*this, newNZSet, old_map.getName(), arr_data.view(), stride));
   }
   else  //dense
   {
@@ -1085,16 +1077,16 @@ void MultiMat::transposeField_helper(int field_idx)
       }
     }
     //new_map = new Field2D<DataType>(newProdSet, DataType(), stride);
-    new_map = new Field2D<DataType>(*this,
-                                    newProdSet,
-                                    old_map.getName(),
-                                    arr_data.view(),
-                                    stride);
+    m_mapVec[field_idx] =
+      slam::makeVirtualMap(Field2D<DataType>(*this,
+                                             newProdSet,
+                                             old_map.getName(),
+                                             arr_data.view(),
+                                             stride));
   }
 
   //new_map->copy(arr_data.data());
   m_fieldBackingVec[field_idx].getArray<DataType>() = std::move(arr_data);
-  m_mapVec[field_idx].reset(new_map);
   m_fieldDataLayoutVec[field_idx] = new_layout;
 }
 
@@ -1211,7 +1203,7 @@ bool MultiMat::isValid(bool verboseOutput) const
     else
     {
       const auto& volfrac_map =
-        *dynamic_cast<Field2D<double>*>(m_mapVec[0].get());
+        dynamic_cast<VirtualField2D<double>*>(m_mapVec[0].get())->get();
       auto volfrac_sparsity = m_fieldSparsityLayoutVec[0];
       auto volfrac_layout = m_fieldDataLayoutVec[0];
 

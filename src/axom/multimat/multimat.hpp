@@ -153,6 +153,14 @@ public:
   using IndexSet = RangeSetType;  //For returning set of SparseIndex
   using IdSet = OrderedSetType;   //For returning set of DenseIndex
 
+protected:
+  template <typename T>
+  using VirtualField1D = slam::MapVirtualProxy<Field1D<T>>;
+
+  template <typename T>
+  using VirtualField2D = slam::MapVirtualProxy<Field2D<T>>;
+
+public:
   //Constructors
 
   /**
@@ -803,10 +811,10 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     //old field2d
     //Field2D<T>* new_map_ptr = new Field2D<T>(s, T(), stride);
     //new_map_ptr->copy(data_arr);
-    Field2D<T>* new_map_ptr =
-      new Field2D<T>(*this, s, field_name, array.view(), stride);
+    auto new_map_ptr = slam::makeVirtualMap(
+      Field2D<T>(*this, s, field_name, array.view(), stride));
 
-    m_mapVec.back().reset(new_map_ptr);
+    m_mapVec.back() = std::move(new_map_ptr);
   }
   else
   {
@@ -818,9 +826,9 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
     array.insert(0, s.size() * stride, data_arr);
 
-    Field1D<T>* new_map_ptr = new Field1D<T>(s, array.view(), stride);
+    auto new_map_ptr = slam::makeVirtualMap(Field1D<T>(s, array.view(), stride));
 
-    m_mapVec.back().reset(new_map_ptr);
+    m_mapVec.back() = std::move(new_map_ptr);
   }
 
   return new_arr_idx;
@@ -837,7 +845,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
   if(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL ||
      m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
   {
-    return *dynamic_cast<Field1D<T>*>(m_mapVec[fieldIdx].get());
+    return dynamic_cast<VirtualField1D<T>*>(m_mapVec[fieldIdx].get())->get();
   }
   else
   {
@@ -846,8 +854,10 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
     //Right now we're allowing Field2D (BivariateMap) to be returned as
     // a Field1D (Map) so it can be accessed like a 1d array, but the
     // indexing information would be lost.
-    auto* map_2d = dynamic_cast<BivariateMapType<T>*>(m_mapVec[fieldIdx].get());
-    return *(map_2d->getMap());
+    auto& map_2d =
+      dynamic_cast<VirtualField2D<T>*>(m_mapVec[fieldIdx].get())->get();
+    auto& map_2d_rtstride = dynamic_cast<BivariateMapType<T>&>(map_2d);
+    return *(map_2d_rtstride.getMap());
   }
 }
 
@@ -861,7 +871,7 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 
   SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
 
-  return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx].get());
+  return dynamic_cast<VirtualField2D<T>*>(m_mapVec[fieldIdx].get())->get();
 }
 
 template <typename T, typename BSetType>

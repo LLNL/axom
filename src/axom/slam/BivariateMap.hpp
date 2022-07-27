@@ -83,7 +83,7 @@ template <typename T,
           typename IndPol =
             policies::STLVectorIndirection<typename BSet::PositionType, T>,
           typename StrPol = policies::StrideOne<typename BSet::PositionType>>
-class BivariateMap : public MapBase<typename BSet::PositionType>, public StrPol
+class BivariateMap : public StrPol
 {
 public:
   using DataType = T;
@@ -613,7 +613,7 @@ public:
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 
-  virtual bool isValid(bool verboseOutput = false) const override
+  virtual bool isValid(bool verboseOutput = false) const
   {
     return set()->isValid(verboseOutput) && m_map.isValid(verboseOutput);
   }
@@ -623,7 +623,7 @@ public:
   ///
 
   /** \brief Returns the BivariateSet size. */
-  SetPosition size() const override { return set()->size(); }
+  SetPosition size() const { return set()->size(); }
   /** \brief Returns the BivariateSet size. */
   SetPosition totalSize() const { return set()->size(); }
 
@@ -665,7 +665,7 @@ private:
   }
 
   /** \brief Check the given ElementFlatIndex is valid.  */
-  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const override
+  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const
   {
     SLIC_ASSERT_MSG(pos >= 0 && pos < SetPosition(m_map.size()),
                     "Attempted to access element "

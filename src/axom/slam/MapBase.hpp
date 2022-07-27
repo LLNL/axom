@@ -52,13 +52,38 @@ public:
    * \return   True if valid, false otherwise.
    */
   virtual bool isValid(bool verboseOutput) const = 0;
+};
+
+template <typename MapType>
+class MapVirtualProxy : public MapBase<typename MapType::SetPosition>
+{
+public:
+  using SetPosition = typename MapType::SetPosition;
+
+public:
+  MapVirtualProxy(MapType inst) : m_impl(std::move(inst)) { }
+
+  SetPosition size() const override { return m_impl.size(); }
+
+  bool isValid(bool verboseOutput) const override
+  {
+    return m_impl.isValid(verboseOutput);
+  }
+
+  const MapType& get() const { return m_impl; }
+  MapType& get() { return m_impl; }
 
 private:
-  /**
-   * \brief Verifies that the provided SetPosition is in a valid range.
-   */
-  virtual void verifyPosition(SetPosition) const = 0;
+  MapType m_impl;
 };
+
+template <typename DerivedMap, typename SetPositionType = typename DerivedMap::SetPosition>
+std::unique_ptr<MapBase<SetPositionType>> makeVirtualMap(DerivedMap value)
+{
+  auto* vptr = new MapVirtualProxy<DerivedMap>(std::move(value));
+  std::unique_ptr<MapBase<SetPositionType>> ret(vptr);
+  return ret;
+}
 
 }  // end namespace slam
 }  // end namespace axom

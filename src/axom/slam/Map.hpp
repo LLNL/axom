@@ -66,7 +66,7 @@ template <typename T,
           typename IndPol =
             policies::STLVectorIndirection<typename S::PositionType, T>,
           typename StrPol = policies::StrideOne<typename S::PositionType>>
-class Map : public MapBase<typename S::PositionType>, public StrPol
+class Map : public StrPol
 {
 public:
   using DataType = T;
