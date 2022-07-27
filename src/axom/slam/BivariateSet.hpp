@@ -92,7 +92,7 @@ public:
                policies::StrideOne<PositionType>,
                policies::STLVectorIndirection<PositionType, ElementType>>;
 
-  using SubSetType = Set<PositionType, ElementType>;
+  using SubSetType = OrderedSetType;
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
@@ -274,7 +274,15 @@ public:
   using OrderedSetType = typename BivariateSet<Set1, Set2>::OrderedSetType;
 
 public:
-  BivariateSetProxy(WrappedType bset) : m_impl(std::move(bset)) { }
+  BivariateSetProxy(WrappedType bset) : m_impl(std::move(bset))
+  {
+    if(!std::is_same<OrderedSetType, typename WrappedType::SubSetType>::value &&
+       m_impl.getSecondSet() != nullptr)
+    {
+      m_rowset_data.resize(m_impl.secondSetSize());
+      std::iota(m_rowset_data.begin(), m_rowset_data.end(), 0);
+    }
+  }
 
   /**
    * \brief Searches for the SparseIndex of the element given its DenseIndex.
@@ -388,7 +396,7 @@ public:
    */
   virtual const OrderedSetType getElements(PositionType s1) const override
   {
-    return m_impl.getElements(s1);
+    return convertSubset(m_impl.getElements(s1));
   }
 
   virtual void verifyPosition(PositionType s1, PositionType s2) const override
@@ -402,7 +410,22 @@ public:
   }
 
 private:
+  using SubSetNoData =
+    PositionSet<typename Set1::PositionType, typename Set2::PositionType>;
+
+  OrderedSetType convertSubset(OrderedSetType value) const { return value; }
+
+  OrderedSetType convertSubset(SubSetNoData value) const
+  {
+    AXOM_UNUSED_VAR(value);
+    return typename OrderedSetType::SetBuilder()
+      .size(m_impl.secondSetSize())
+      .offset(0)
+      .data(&m_rowset_data);
+  }
+
   WrappedType m_impl;
+  mutable std::vector<PositionType> m_rowset_data;
 };
 
 template <typename DerivedBset,

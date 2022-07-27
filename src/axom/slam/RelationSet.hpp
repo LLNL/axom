@@ -51,7 +51,7 @@ public:
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
-  using OrderedSetType = typename BivariateSetType::OrderedSetType;
+  using SubSetType = typename BivariateSetType::OrderedSetType;
 
   using BaseClass = BivariateSetBase<SetType1, SetType2, RelationSet>;
 
@@ -151,7 +151,7 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  const OrderedSetType getElements(PositionType s1) const
+  const SubSetType getElements(PositionType s1) const
   {
     return (*m_relation)[s1];
   }

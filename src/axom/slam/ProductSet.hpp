@@ -47,7 +47,6 @@ public:
   using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
   using PositionType = typename BivariateSetType::PositionType;
   using ElementType = typename BivariateSetType::ElementType;
-  using OrderedSetType = typename BivariateSetType::OrderedSetType;
   using ProductSetType = ProductSet<SetType1, SetType2>;
   using SubSetType =
     PositionSet<typename SetType1::PositionType, typename SetType2::PositionType>;
@@ -71,23 +70,7 @@ public:
     : RangeSetType(set1->size() * set2->size())
     , m_firstSet(set1)
     , m_secondSet(set2)
-  {
-    //fill in the row data now for getElements(i) function,
-    //since every row is the same, a call to getElements() returns the same set.
-    //
-    // HACK -- this should actually be returning a PositionSet since it always
-    //         goes from 0 to secondSetSize()
-    // This requires a change to the return type of BivariateSet::getElements()
-    auto size2 = this->secondSetSize();
-    m_rowSet_data.resize(size2);
-    for(int s2 = 0; s2 < size2; ++s2)
-    {
-      m_rowSet_data[s2] = s2;
-    }
-
-    m_rowSet = typename OrderedSetType::SetBuilder().size(size2).offset(0).data(
-      &m_rowSet_data);
-  }
+  { }
 
   /**
    * \brief Return the element SparseIndex. Since ProductSet is the full
@@ -143,11 +126,11 @@ public:
    *
    * \return  An OrderedSet of the elements in the row.
    */
-  const OrderedSetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const
+  SubSetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < this->firstSetSize());
 
-    return m_rowSet;
+    return SubSetType(this->secondSetSize());
   }
 
   ElementType at(PositionType pos) const { return pos % this->secondSetSize(); }
@@ -221,8 +204,6 @@ private:
 private:
   const FirstSetType* m_firstSet;
   const SecondSetType* m_secondSet;
-  std::vector<PositionType> m_rowSet_data;
-  OrderedSetType m_rowSet;
 };
 
 }  // end namespace slam
