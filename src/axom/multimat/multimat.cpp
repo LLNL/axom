@@ -131,6 +131,20 @@ MultiMat::ProductSetType& MultiMat::relDenseSet(DataLayout layout)
   return m_denseBivarSet[(int)layout];
 }
 
+std::unique_ptr<MultiMat::BivariateSetType>& MultiMat::relVirtualSet(
+  DataLayout layout,
+  SparsityLayout sparsity)
+{
+  if(sparsity == SparsityLayout::DENSE)
+  {
+    return m_denseBivarSetVirtual[(int)layout];
+  }
+  else
+  {
+    return m_sparseBivarSetVirtual[(int)layout];
+  }
+}
+
 bool MultiMat::hasValidStaticRelation(DataLayout layout) const
 {
   const StaticVariableRelationType& rel = m_staticRelations[(int)layout];
@@ -177,6 +191,7 @@ MultiMat::MultiMat(const MultiMat& other)
     relSparseSet(DataLayout::CELL_DOM) = RelationSetType(&cellMatRel);
     relDenseSet(DataLayout::CELL_DOM) =
       ProductSetType(&getCellSet(), &getMatSet());
+    rebindVirtualSets(DataLayout::CELL_DOM);
   }
   if(other.hasValidStaticRelation(DataLayout::MAT_DOM))
   {
@@ -189,6 +204,7 @@ MultiMat::MultiMat(const MultiMat& other)
     relSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
     relDenseSet(DataLayout::MAT_DOM) =
       ProductSetType(&getMatSet(), &getCellSet());
+    rebindVirtualSets(DataLayout::MAT_DOM);
   }
 
   for(unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
@@ -285,6 +301,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
   //Set-up both dense and sparse BivariateSets.
   relSparseSet(layout) = RelationSetType(&Rel_ptr);
   relDenseSet(layout) = ProductSetType(&set1, &set2);
+  rebindVirtualSets(layout);
 
   //Create a field for VolFrac as the 0th field
   m_mapVec.emplace_back(nullptr);
@@ -478,6 +495,8 @@ void MultiMat::convertToDynamic()
   relSparseSet(DataLayout::CELL_DOM) = RelationSetType {};
   relStatic(DataLayout::MAT_DOM) = StaticVariableRelationType {};
   relSparseSet(DataLayout::MAT_DOM) = RelationSetType {};
+  rebindVirtualSets(DataLayout::CELL_DOM);
+  rebindVirtualSets(DataLayout::MAT_DOM);
 
   m_dynamic_mode = true;
 }
@@ -541,6 +560,7 @@ void MultiMat::convertToStatic()
     RelationSetType& nzSet = relSparseSet(layout);
     SLIC_ASSERT(nzSet.getRelation() == nullptr);
     nzSet = RelationSetType(&rel);
+    rebindVirtualSets(layout);
     SLIC_ASSERT(nzSet.isValid());
   }
 
@@ -709,6 +729,7 @@ void MultiMat::makeOtherRelation(DataLayout layout)
 
   relSparseSet(layout) = RelationSetType(&newRel);
   relDenseSet(layout) = ProductSetType(&set2, &set1);
+  rebindVirtualSets(layout);
 }
 
 void MultiMat::convertLayoutToCellDominant()
@@ -905,7 +926,8 @@ void MultiMat::convertToSparse_helper(int map_i)
   }
   SLIC_ASSERT(idx == Rel->totalSize() * stride);
 
-  RelationSetType* nz_set = &relSparseSet(m_fieldDataLayoutVec[map_i]);
+  BivariateSetType* nz_set =
+    relVirtualSet(m_fieldDataLayoutVec[map_i], SparsityLayout::SPARSE).get();
   //old field2d
   //Field2D<DataType>* new_field = new Field2D<DataType>(nz_set, DataType(), stride);
   //new_field->copy(arr_data.data());
@@ -954,8 +976,11 @@ void MultiMat::convertToDense_helper(int map_i)
   auto& backingArray = m_fieldBackingVec[map_i].getArray<DataType>();
   backingArray = std::move(arr_data);
 
+  BivariateSetType* vset =
+    relVirtualSet(m_fieldDataLayoutVec[map_i], SparsityLayout::DENSE).get();
+
   Field2D<DataType>* new_field = new Field2D<DataType>(*this,
-                                                       prod_set,
+                                                       vset,
                                                        old_map.getName(),
                                                        backingArray.view(),
                                                        stride);
@@ -1006,8 +1031,10 @@ void MultiMat::transposeField_helper(int field_idx)
   {
     makeOtherRelation(new_layout);
   }
-  RelationSetType* newNZSet = &relSparseSet(new_layout);
-  ProductSetType* newProdSet = &relDenseSet(new_layout);
+  BivariateSetType* newNZSet =
+    relVirtualSet(new_layout, SparsityLayout::SPARSE).get();
+  BivariateSetType* newProdSet =
+    relVirtualSet(new_layout, SparsityLayout::DENSE).get();
 
   auto& set1 = *(oldRel.fromSet());
   auto& set2 = *(oldRel.toSet());
@@ -1305,21 +1332,110 @@ MultiMat::SetType* MultiMat::get_mapped_set(int field_idx)
   return set_ptr;
 }
 
-MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(DataLayout layout,
-                                                       SparsityLayout sparsity)
+template <>
+MultiMat::BivariateSetType* MultiMat::get_mapped_biSet<MultiMat::BivariateSetType>(
+  DataLayout layout,
+  SparsityLayout sparsity)
 {
-  BivariateSetType* set_ptr = nullptr;
-
-  if(sparsity == SparsityLayout::SPARSE)
-  {
-    set_ptr = &relSparseSet(layout);
-  }
-  else if(sparsity == SparsityLayout::DENSE)
-  {
-    set_ptr = &relDenseSet(layout);
-  }
+  BivariateSetType* set_ptr = relVirtualSet(layout, sparsity).get();
 
   return set_ptr;
+}
+
+template <>
+MultiMat::ProductSetType* MultiMat::get_mapped_biSet<MultiMat::ProductSetType>(
+  DataLayout layout,
+  SparsityLayout sparsity)
+{
+  SLIC_ASSERT_MSG(sparsity == SparsityLayout::DENSE,
+                  "Sparse layout is not a slam::ProductSet.");
+
+  return &relDenseSet(layout);
+}
+
+template <>
+MultiMat::RelationSetType* MultiMat::get_mapped_biSet<MultiMat::RelationSetType>(
+  DataLayout layout,
+  SparsityLayout sparsity)
+{
+  SLIC_ASSERT_MSG(sparsity == SparsityLayout::SPARSE,
+                  "Dense layout is not a slam::RelationSet.");
+
+  return &relSparseSet(layout);
+}
+
+template <>
+std::pair<DataLayout, SparsityLayout>
+MultiMat::getLayoutFromBset<MultiMat::BivariateSetType>(const BivariateSetType* bset)
+{
+  std::pair<DataLayout, SparsityLayout> ret;
+  if(bset == get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::DENSE))
+  {
+    ret.first = DataLayout::CELL_DOM;
+    ret.second = SparsityLayout::DENSE;
+  }
+  else if(bset == get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::SPARSE))
+  {
+    ret.first = DataLayout::CELL_DOM;
+    ret.second = SparsityLayout::SPARSE;
+  }
+  else if(bset == get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::DENSE))
+  {
+    ret.first = DataLayout::MAT_DOM;
+    ret.second = SparsityLayout::DENSE;
+  }
+  else if(bset == get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::SPARSE))
+  {
+    ret.first = DataLayout::MAT_DOM;
+    ret.second = SparsityLayout::SPARSE;
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
+  return ret;
+}
+
+template <>
+std::pair<DataLayout, SparsityLayout>
+MultiMat::getLayoutFromBset<MultiMat::ProductSetType>(const ProductSetType* bset)
+{
+  std::pair<DataLayout, SparsityLayout> ret;
+  ret.second = SparsityLayout::DENSE;
+  if(bset == getDense2dFieldSet(DataLayout::CELL_DOM))
+  {
+    ret.first = DataLayout::CELL_DOM;
+  }
+  else if(bset == getDense2dFieldSet(DataLayout::MAT_DOM))
+  {
+    ret.first = DataLayout::MAT_DOM;
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
+  return ret;
+}
+
+template <>
+std::pair<DataLayout, SparsityLayout>
+MultiMat::getLayoutFromBset<MultiMat::RelationSetType>(const RelationSetType* bset)
+{
+  std::pair<DataLayout, SparsityLayout> ret;
+  ret.second = SparsityLayout::SPARSE;
+  if(bset == getSparse2dFieldSet(DataLayout::CELL_DOM))
+  {
+    ret.first = DataLayout::CELL_DOM;
+  }
+  else if(bset == getSparse2dFieldSet(DataLayout::MAT_DOM))
+  {
+    ret.first = DataLayout::MAT_DOM;
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
+  return ret;
 }
 
 MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(int field_idx)
@@ -1331,7 +1447,7 @@ MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(int field_idx)
   DataLayout layout = m_fieldDataLayoutVec[field_idx];
   SparsityLayout sparsity = m_fieldSparsityLayoutVec[field_idx];
 
-  return get_mapped_biSet(layout, sparsity);
+  return get_mapped_biSet<>(layout, sparsity);
 }
 
 MultiMat::StaticVariableRelationType* MultiMat::getRel(int field_idx)

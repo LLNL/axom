@@ -496,10 +496,14 @@ protected:
   SetType* get_mapped_set(FieldMapping);
   SetType* get_mapped_set(int field_idx);
   //Return the BivariateSet used for the specified layouts or the field
-  BivariateSetType* get_mapped_biSet(DataLayout, SparsityLayout);
+  template <typename BiSetType = BivariateSetType>
+  BiSetType* get_mapped_biSet(DataLayout, SparsityLayout);
   BivariateSetType* get_mapped_biSet(int field_idx);
   //Return the relation for the specified field idx or the mapping
   StaticVariableRelationType* getRel(int field_idx);
+
+  template <typename BiSetType = BivariateSetType>
+  std::pair<DataLayout, SparsityLayout> getLayoutFromBset(const BiSetType* bset);
 
 private:  //private functions
   //Given a relation (cell->mat or mat->cell), create the other relation
@@ -592,6 +596,15 @@ private:  //private functions
   ProductSetType& relDenseSet(DataLayout layout);
 
   /*!
+   * \brief Returns a reference to a bivariate set corresponding to a relation.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   * \param sparsity The sparsity type of the relation (sparse or dense)
+   */
+  std::unique_ptr<BivariateSetType>& relVirtualSet(DataLayout layout,
+                                                   SparsityLayout sparsity);
+
+  /*!
    * \brief Returns true if the static relation corresponding to the given data
    *        layout is valid.
    * \param layout The layout type of the relation (cell- or mat-dominant)
@@ -604,6 +617,38 @@ private:  //private functions
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
   bool hasValidDynamicRelation(DataLayout layout) const;
+
+  void rebindVirtualSets(DataLayout layout)
+  {
+    if(!relVirtualSet(layout, SparsityLayout::SPARSE))
+    {
+      // allocate a new virtual wrapper
+      relVirtualSet(layout, SparsityLayout::SPARSE) =
+        slam::makeVirtualBset(relSparseSet(layout));
+    }
+    else
+    {
+      using SparseRelProxy =
+        slam::BivariateSetProxy<SetType, SetType, RelationSetType>;
+      auto* wrapper = static_cast<SparseRelProxy*>(
+        relVirtualSet(layout, SparsityLayout::SPARSE).get());
+      *wrapper = SparseRelProxy(relSparseSet(layout));
+    }
+    if(!relVirtualSet(layout, SparsityLayout::DENSE))
+    {
+      // allocate a new virtual wrapper
+      relVirtualSet(layout, SparsityLayout::DENSE) =
+        slam::makeVirtualBset(relDenseSet(layout));
+    }
+    else
+    {
+      using DenseRelProxy =
+        slam::BivariateSetProxy<SetType, SetType, ProductSetType>;
+      auto* wrapper = static_cast<DenseRelProxy*>(
+        relVirtualSet(layout, SparsityLayout::DENSE).get());
+      *wrapper = DenseRelProxy(relDenseSet(layout));
+    }
+  }
 
 private:
   unsigned int m_ncells, m_nmats;
@@ -625,8 +670,10 @@ private:
 
   // sparse layout bivariate sets
   axom::Array<RelationSetType> m_sparseBivarSet;
+  std::unique_ptr<BivariateSetType> m_sparseBivarSetVirtual[2];
   // dense layout bivariate sets
   axom::Array<ProductSetType> m_denseBivarSet;
+  std::unique_ptr<BivariateSetType> m_denseBivarSetVirtual[2];
 
   struct FieldBacking
   {
@@ -747,7 +794,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
 
   if(field_mapping == FieldMapping::PER_CELL_MAT)
   {
-    BivariateSetType* s = get_mapped_biSet(data_layout, sparsity_layout);
+    BivariateSetType* s = get_mapped_biSet<>(data_layout, sparsity_layout);
     SLIC_ASSERT(s != nullptr);
 
     axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
@@ -829,8 +876,8 @@ MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_nam
   if(fi < 0) throw std::invalid_argument("No field with this name is found");
 
   BSetType* bi_set =
-    (BSetType*)this->get_mapped_biSet(m_fieldDataLayoutVec[fi],
-                                      m_fieldSparsityLayoutVec[fi]);
+    this->get_mapped_biSet<BSetType>(m_fieldDataLayoutVec[fi],
+                                     m_fieldSparsityLayoutVec[fi]);
 
   Field2D<T, BSetType> typedBMap(*this, bi_set, field_name, bmap.getMap()->data());
 
@@ -906,7 +953,11 @@ MultiMat::get2dFieldAsSlamBivarMap(const std::string& field_name)
   // Get a reference to the unspecialized BMap
   auto& bmap = get2dField<T>(field_name);
 
-  const BSetType* pBset = static_cast<const BSetType*>(bmap.set());
+  // Get templated bivariate set pointer
+  int fi = getFieldIdx(field_name);
+  const BSetType* pBset =
+    get_mapped_biSet<BSetType>(m_fieldDataLayoutVec[fi],
+                               m_fieldSparsityLayoutVec[fi]);
 
   // Create instance of templated BivariateMap
   slam::BivariateMap<T, BSetType, IndViewPolicy<T>> typedBMap(

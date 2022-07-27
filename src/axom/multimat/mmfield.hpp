@@ -123,32 +123,9 @@ inline MMField2D<DataType, BiSet>::MMField2D(MultiMat& mm,
 {
   SLIC_ASSERT(stride > 0);
 
-  if(biset == mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(biset ==
-          mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else if(biset == mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(biset ==
-          mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else
-  {
-    SLIC_ASSERT(false);
-  }
+  auto layout = mm.getLayoutFromBset(biset);
+  m_data_layout = layout.first;
+  m_sparsity_layout = layout.second;
 
   m_mm = &mm;
 }
@@ -163,13 +140,13 @@ struct MMBiSet2Sparsity
 template <>
 struct MMBiSet2Sparsity<MultiMat::ProductSetType>
 {
-  SparsityLayout sparsity = SparsityLayout::DENSE;
+  static constexpr SparsityLayout sparsity = SparsityLayout::DENSE;
 };
 
 template <>
 struct MMBiSet2Sparsity<MultiMat::RelationSetType>
 {
-  SparsityLayout sparsity = SparsityLayout::SPARSE;
+  static constexpr SparsityLayout sparsity = SparsityLayout::SPARSE;
 };
 
 // Child class of MMField2D, typed with layout (cell/mat dom) and sparsity
@@ -184,8 +161,8 @@ public:
                      axom::ArrayView<DataType> data_arr = {},
                      int stride = 1)
     : Field2DType(mm,
-                  (BiSet*)mm.get_mapped_biSet(DataLayoutT,
-                                              MMBiSet2Sparsity<BiSet>().sparsity),
+                  mm.get_mapped_biSet<BiSet>(DataLayoutT,
+                                             MMBiSet2Sparsity<BiSet>::sparsity),
                   arr_name,
                   data_arr,
                   stride)
