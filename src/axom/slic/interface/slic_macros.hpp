@@ -47,7 +47,11 @@
     std::ostringstream __oss;                                     \
     __oss << msg;                                                 \
     axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
-    axom::slic::abortIfEnabled(axom::slic::message::Error);       \
+    if(axom::slic::isAbortOnErrorsEnabled())                      \
+    {                                                             \
+      axom::slic::flushStreams(true);                             \
+      axom::slic::abort();                                        \
+    }                                                             \
   } while(axom::slic::detail::false_value)
 
 /*!
@@ -74,7 +78,11 @@
       std::ostringstream __oss;                                     \
       __oss << msg;                                                 \
       axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
-      axom::slic::abortIfEnabled(axom::slic::message::Error);       \
+      if(axom::slic::isAbortOnErrorsEnabled())                      \
+      {                                                             \
+        axom::slic::flushStreams(true);                             \
+        axom::slic::abort();                                        \
+      }                                                             \
     }                                                               \
   } while(axom::slic::detail::false_value)
 
@@ -104,7 +112,11 @@
       std::ostringstream __oss;                                     \
       __oss << msg;                                                 \
       axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
-      axom::slic::abortIfEnabled(axom::slic::message::Error);       \
+      if(axom::slic::isAbortOnErrorsEnabled())                      \
+      {                                                             \
+        axom::slic::flushStreams(true);                             \
+        axom::slic::abort();                                        \
+      }                                                             \
     }                                                               \
   } while(axom::slic::detail::false_value)
 
@@ -136,7 +148,11 @@
         std::ostringstream __oss;                                     \
         __oss << msg;                                                 \
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
-        axom::slic::abortIfEnabled(axom::slic::message::Error);       \
+        if(axom::slic::isAbortOnErrorsEnabled())                      \
+        {                                                             \
+          axom::slic::flushStreams(true);                             \
+          axom::slic::abort();                                        \
+        }                                                             \
       }                                                               \
     }                                                                 \
   } while(axom::slic::detail::false_value)
@@ -180,7 +196,11 @@
     std::ostringstream __oss;                                       \
     __oss << msg;                                                   \
     axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
-    axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
+    if(axom::slic::isAbortOnWarningsEnabled())                      \
+    {                                                               \
+      axom::slic::flushStreams(true);                               \
+      axom::slic::abort();                                          \
+    }                                                               \
   } while(axom::slic::detail::false_value)
 
 /*!
@@ -207,7 +227,11 @@
       std::ostringstream __oss;                                       \
       __oss << msg;                                                   \
       axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
-      axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
+      if(axom::slic::isAbortOnWarningsEnabled())                      \
+      {                                                               \
+        axom::slic::flushStreams(true);                               \
+        axom::slic::abort();                                          \
+      }                                                               \
     }                                                                 \
   } while(axom::slic::detail::false_value)
 
@@ -236,7 +260,11 @@
       std::ostringstream __oss;                                       \
       __oss << msg;                                                   \
       axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
-      axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
+      if(axom::slic::isAbortOnWarningsEnabled())                      \
+      {                                                               \
+        axom::slic::flushStreams(true);                               \
+        axom::slic::abort();                                          \
+      }                                                               \
     }                                                                 \
   } while(axom::slic::detail::false_value)
 
@@ -268,7 +296,11 @@
         std::ostringstream __oss;                                       \
         __oss << msg;                                                   \
         axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
-        axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
+        if(axom::slic::isAbortOnWarningsEnabled())                      \
+        {                                                               \
+          axom::slic::flushStreams(true);                               \
+          axom::slic::abort();                                          \
+        }                                                               \
       }                                                                 \
     }                                                                   \
   } while(axom::slic::detail::false_value)
@@ -317,7 +349,11 @@
         std::ostringstream __oss;                                     \
         __oss << "Failed Assert: " << #EXP << std::ends;              \
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
-        axom::slic::abortIfEnabled(axom::slic::message::Error);       \
+        if(axom::slic::isAbortOnErrorsEnabled())                      \
+        {                                                             \
+          axom::slic::flushStreams(true);                             \
+          axom::slic::abort();                                        \
+        }                                                             \
       }                                                               \
     } while(axom::slic::detail::false_value)
 
@@ -346,7 +382,11 @@
         std::ostringstream __oss;                                            \
         __oss << "Failed Assert: " << #EXP << std::endl << msg << std::ends; \
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);        \
-        axom::slic::abortIfEnabled(axom::slic::message::Error);              \
+        if(axom::slic::isAbortOnErrorsEnabled())                             \
+        {                                                                    \
+          axom::slic::flushStreams(true);                                    \
+          axom::slic::abort();                                               \
+        }                                                                    \
       }                                                                      \
     } while(axom::slic::detail::false_value)
 
@@ -401,12 +441,20 @@
         if(axom::slic::debug::checksAreErrors)                            \
         {                                                                 \
           axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);   \
-          axom::slic::abortIfEnabled(axom::slic::message::Error);         \
+          if(axom::slic::isAbortOnErrorsEnabled())                        \
+          {                                                               \
+            axom::slic::flushStreams(true);                               \
+            axom::slic::abort();                                          \
+          }                                                               \
         }                                                                 \
         else                                                              \
         {                                                                 \
           axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
-          axom::slic::abortIfEnabled(axom::slic::message::Warning);       \
+          if(axom::slic::isAbortOnWarningsEnabled())                      \
+          {                                                               \
+            axom::slic::flushStreams(true);                               \
+            axom::slic::abort();                                          \
+          }                                                               \
         }                                                                 \
       }                                                                   \
     } while(axom::slic::detail::false_value)
@@ -437,12 +485,20 @@
         if(axom::slic::debug::checksAreErrors)                              \
         {                                                                   \
           axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);     \
-          axom::slic::abortIfEnabled(axom::slic::message::Error);           \
+          if(axom::slic::isAbortOnErrorsEnabled())                          \
+          {                                                                 \
+            axom::slic::flushStreams(true);                                 \
+            axom::slic::abort();                                            \
+          }                                                                 \
         }                                                                   \
         else                                                                \
         {                                                                   \
           axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__);   \
-          axom::slic::abortIfEnabled(axom::slic::message::Warning);         \
+          if(axom::slic::isAbortOnWarningsEnabled())                        \
+          {                                                                 \
+            axom::slic::flushStreams(true);                                 \
+            axom::slic::abort();                                            \
+          }                                                                 \
         }                                                                   \
       }                                                                     \
     } while(axom::slic::detail::false_value)

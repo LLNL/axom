@@ -145,18 +145,20 @@ public:
   virtual void setAbortFlag(bool val) { m_abort = val; };
 
   /*!
-   * \brief Confirms that abort flag(s) was set on one or more ranks.
+   * \brief Checks that abort flag(s) was raised on one or more ranks.
    *  Default is to return value of m_abort flag.
    *
-   * \return true if abort flag was set for at least one rank, else false.
+   * \return true if abort flag was raised for at least one rank, else false.
    *
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment, where the
    *  confirmAbort() is a collective
    *  operation intended for a synchronization checkpoint.
+   *
+   * \collective
    */
-  virtual bool confirmAbort() { return m_abort; };
+  virtual bool checkAbort() { return m_abort; };
 
 protected:
   /*!

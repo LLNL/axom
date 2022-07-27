@@ -89,10 +89,17 @@ message::Level getLoggingMsgLevel()
 }
 
 //------------------------------------------------------------------------------
-void abortIfEnabled(message::Level level)
+void abort()
 {
   ensureInitialized();
-  Logger::getActiveLogger()->abortIfEnabled(level);
+  Logger::getActiveLogger()->abort();
+}
+
+//------------------------------------------------------------------------------
+bool checkAbortRaised(message::Level level)
+{
+  ensureInitialized();
+  return Logger::getActiveLogger()->checkAbortRaised(level);
 }
 
 //------------------------------------------------------------------------------
@@ -259,10 +266,10 @@ void logWarningMessage(const std::string& message,
 }
 
 //------------------------------------------------------------------------------
-void flushStreams()
+void flushStreams(bool single_rank)
 {
   ensureInitialized();
-  Logger::getActiveLogger()->flushStreams();
+  Logger::getActiveLogger()->flushStreams(single_rank);
 }
 
 //------------------------------------------------------------------------------

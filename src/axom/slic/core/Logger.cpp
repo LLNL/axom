@@ -132,33 +132,7 @@ void Logger::setAbortFlag(bool val, message::Level level)
 }
 
 //------------------------------------------------------------------------------
-void Logger::abortIfEnabled(message::Level level)
-{
-  if((m_abortOnError && (level == message::Error)) ||
-     (m_abortOnWarning && (level == message::Warning)))
-  {
-    // if(this->confirmAbortStreams(level))
-    // {
-    this->flushStream();
-    m_abortFunction();
-    // }
-  }
-}
-
-//------------------------------------------------------------------------------
-void Logger::flushStream()
-{
-  for(int level = message::Error; level < message::Num_Levels; ++level)
-  {
-    unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
-    for(unsigned istream = 0; istream < nstreams; ++istream)
-    {
-      m_logStreams[level][istream]->flush(true);
-
-    }  // END for all streams
-
-  }  // END for all levels
-}
+void Logger::abort() { m_abortFunction(); }
 
 //------------------------------------------------------------------------------
 void Logger::setAbortFunction(AbortFunctionPtr abort_func)
@@ -318,14 +292,14 @@ void Logger::logMessage(message::Level level,
 }
 
 //------------------------------------------------------------------------------
-void Logger::flushStreams()
+void Logger::flushStreams(bool single_rank)
 {
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
     for(unsigned istream = 0; istream < nstreams; ++istream)
     {
-      m_logStreams[level][istream]->flush();
+      m_logStreams[level][istream]->flush(single_rank);
 
     }  // END for all streams
 
@@ -333,14 +307,21 @@ void Logger::flushStreams()
 }
 
 //------------------------------------------------------------------------------
-bool Logger::confirmAbortStreams(message::Level level)
+bool Logger::checkAbortRaised(message::Level level)
 {
   bool ret = false;
+
+  // Do not raise abort if not enabled
+  if((!m_abortOnError && (level == message::Error)) ||
+     (!m_abortOnWarning && (level == message::Warning)))
+  {
+    return ret;
+  }
 
   unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
   for(unsigned istream = 0; istream < nstreams; ++istream)
   {
-    ret |= m_logStreams[level][istream]->confirmAbort();
+    ret |= m_logStreams[level][istream]->checkAbort();
   }  // END for all streams
 
   return ret;

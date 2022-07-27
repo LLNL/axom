@@ -146,7 +146,7 @@ void SynchronizedStream::flush(bool single_rank)
 }
 
 //------------------------------------------------------------------------------
-bool SynchronizedStream::confirmAbort()
+bool SynchronizedStream::checkAbort()
 {
   if(m_cache == nullptr)
   {

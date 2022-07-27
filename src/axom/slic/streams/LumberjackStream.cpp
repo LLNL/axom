@@ -154,7 +154,7 @@ void LumberjackStream::write(bool single_rank)
 }
 
 //------------------------------------------------------------------------------
-bool LumberjackStream::confirmAbort()
+bool LumberjackStream::checkAbort()
 {
   if(m_lj == nullptr)
   {

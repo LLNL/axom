@@ -319,7 +319,7 @@ public:
   //! \attention These methods are collective operations.
   //! All ranks in the user-supplied communicator must call the method
   //! when used within an MPI distributed environment.
-  //! The abortIfEnabled method is collective if either:
+  //! The checkAbortRaised method is collective if either:
   //!  - Level of the given message is Error and slic::enableAbortOnError() is
   //!    called (default is enabled)
   //!  - Level of the given message is Warning and slic::enableAbortOnWarning()
@@ -332,29 +332,37 @@ public:
   //!
 
   /*!
-   * \brief Aborts and flushes on warning or error if corresponding AbortOnError
-   *  or AbortOnWarning is set to true, and abort flag was set for at least
-   *  one rank with the corresponding message level.
+   * \brief Calls abort function. Default is abort() or MPI_Abort() in a
+   *        MPI distributed environment.
+   *
    * \collective
-   * \param [in] level the logging level.
    */
-  void abortIfEnabled(message::Level level);
+  void abort();
 
   /*!
-   * \brief Confirms that abort flag(s) was set on one or more ranks.
+   * \brief Checks that abort flag(s) was raised on one or more ranks.
    *
-   * \param [in] level the level to confirm
+   * \param [in] level the level to check
    *
-   * \return true if abort flag was set for at least one rank, else false.
+   * \return true if abort flag was raised for at least one rank, else false.
    * \collective
    */
-  bool confirmAbortStreams(message::Level level);
+  bool checkAbortRaised(message::Level level);
 
   /*!
-   * \brief Flushes all streams.
+   * \brief Flushes all streams for all ranks or current rank.
+   *
+   * \param [in] single_rank  If true, flushes all streams for current rank.
+   *                          If false, flushes all streams for all ranks.
+   *                          Default is false.
+   *
+   * \note When used within an MPI distributed environment, flushStreams is
+   *  a collective operation when single_rank is true. All ranks in the
+   *  user-supplied communicator must call this method.
+   *
    * \collective
    */
-  void flushStreams();
+  void flushStreams(bool single_rank = false);
 
   /*!
    * \brief Pushes messages incrementally up all streams.
@@ -452,13 +460,6 @@ private:
    * \brief Destructor.
    */
   ~Logger();
-
-  /*!
-   * \brief Flushes stream for current rank
-   *
-   * \note Called by abortIfEnabled() to flush current stream before aborting
-   */
-  void flushStream();
 
   /// \name Private class members
   ///@{

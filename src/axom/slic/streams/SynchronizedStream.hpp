@@ -87,14 +87,15 @@ public:
   virtual void flush(bool single_rank = false);
 
   /*!
-   * \brief Confirms that abort flag(s) was set on one or more ranks.
+   * \brief Checks that abort flag(s) was raised on one or more ranks.
    *
-   * \return true if abort flag was set for at least one rank, else false.
+   * \return true if abort flag was raised for at least one rank, else false.
+   *
    * \collective
    * \note This method is a collective operation
    *  intended for a synchronization checkpoint.
    */
-  virtual bool confirmAbort();
+  virtual bool checkAbort();
 
 private:
   /// Forward declarations
