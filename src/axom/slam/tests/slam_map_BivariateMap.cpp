@@ -88,6 +88,7 @@ void constructAndTestCartesianMap(int stride)
   SetType s1(MAX_SET_SIZE1);
   SetType s2(MAX_SET_SIZE2);
   ProductSetType s(&s1, &s2);
+  auto virtBset = slam::makeVirtualBset(s);
 
   EXPECT_EQ(s.size(), MAX_SET_SIZE1 * MAX_SET_SIZE2);
   EXPECT_TRUE(s.isValid());
@@ -95,7 +96,7 @@ void constructAndTestCartesianMap(int stride)
   SLIC_INFO("Creating " << slam::util::TypeToString<T>::to_string()
                         << " map on the set ");
 
-  BMapType m(&s, static_cast<T>(0), stride);
+  BMapType m(virtBset.get(), static_cast<T>(0), stride);
 
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(s.size(), m.totalSize());
@@ -206,6 +207,7 @@ void constructAndTestRelationSetMap(int stride)
   rel.bindBeginOffsets(MAX_SET_SIZE1, &begin_vec);
   rel.bindIndices(indice_vec.size(), &indice_vec);
   RelationSetType s(&rel);
+  auto virtBset = slam::makeVirtualBset(s);
 
   const SetPosition indice_size = indice_vec.size();
   EXPECT_EQ(indice_size, s.totalSize());
@@ -214,7 +216,7 @@ void constructAndTestRelationSetMap(int stride)
   SLIC_INFO("Creating " << slam::util::TypeToString<T>::to_string()
                         << " map on the set ");
 
-  MapType m(&s, (T)0, stride);
+  MapType m(virtBset.get(), (T)0, stride);
 
   EXPECT_TRUE(m.isValid(true));
   EXPECT_EQ(indice_size, m.totalSize());
@@ -329,13 +331,14 @@ void constructAndTestBivariateMapIterator(int stride)
   SetType s1(MAX_SET_SIZE1);
   SetType s2(MAX_SET_SIZE2);
   ProductSetType s(&s1, &s2);
+  auto virtBset = slam::makeVirtualBset(s);
 
   EXPECT_EQ(s.size(), MAX_SET_SIZE1 * MAX_SET_SIZE2);
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO("Creating " << slam::util::TypeToString<DataType>::to_string()
                         << " map on the set ");
-  MapType m(&s, 0.0, stride);
+  MapType m(virtBset.get(), 0.0, stride);
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(s.size(), m.totalSize());
   EXPECT_EQ(m.stride(), stride);
@@ -422,6 +425,7 @@ void testScopedCopyBehavior(int stride)
   SetType s1(MAX_SET_SIZE1);
   SetType s2(MAX_SET_SIZE2);
   ProductSetType s(&s1, &s2);
+  auto virtBset = slam::makeVirtualBset(s);
 
   EXPECT_EQ(s.size(), MAX_SET_SIZE1 * MAX_SET_SIZE2);
   EXPECT_TRUE(s.isValid());
@@ -431,7 +435,7 @@ void testScopedCopyBehavior(int stride)
 
   BMapType m;
   {
-    BMapType m_inner(&s, static_cast<T>(0), stride);
+    BMapType m_inner(virtBset.get(), static_cast<T>(0), stride);
 
     EXPECT_TRUE(m_inner.isValid());
     EXPECT_EQ(s.size(), m_inner.totalSize());

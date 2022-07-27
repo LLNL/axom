@@ -33,7 +33,7 @@ template <typename Relation,
           typename SetType2 = slam::Set<>>
 class RelationSet final
   : public OrderedSet<typename Relation::SetPosition, typename Relation::SetElement>,
-    public BivariateSet<SetType1, SetType2>
+    public BivariateSetBase<SetType1, SetType2, RelationSet<Relation, SetType1, SetType2>>
 {
 public:
   using FirstSetType = SetType1;
@@ -53,7 +53,9 @@ public:
   using RelationSubset = typename RelationType::RelationSubset;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
-  using BivariateSetType::INVALID_POS;
+  using BaseClass = BivariateSetBase<SetType1, SetType2, RelationSet>;
+
+  using BaseClass::INVALID_POS;
 
 public:
   RelationSet() = default;
@@ -62,12 +64,7 @@ public:
    * \brief Constructor taking in the relation this BivariateSet is based on.
    * \pre relation pointer must not be a null pointer
    */
-  RelationSet(RelationType* relation)
-    : BivariateSetType(relation ? relation->fromSet()
-                                : (FirstSetType*)&BivariateSetType::s_nullSet,
-                       relation ? relation->toSet()
-                                : (SecondSetType*)&BivariateSetType::s_nullSet)
-    , m_relation(relation)
+  RelationSet(RelationType* relation) : m_relation(relation)
   {
     SLIC_ASSERT(relation != nullptr);
   }
@@ -90,7 +87,7 @@ public:
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
 
-  PositionType findElementIndex(PositionType pos1, PositionType pos2) const override
+  PositionType findElementIndex(PositionType pos1, PositionType pos2) const
   {
     RelationSubset ls = (*m_relation)[pos1];
     for(PositionType i = 0; i < ls.size(); i++)
@@ -111,7 +108,7 @@ public:
    * \return  The element's FlatIndex
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
-  PositionType findElementFlatIndex(PositionType s1, PositionType s2) const override
+  PositionType findElementFlatIndex(PositionType s1, PositionType s2) const
   {
     RelationSubset ls = (*m_relation)[s1];
     for(PositionType i = 0; i < ls.size(); i++)
@@ -131,7 +128,7 @@ public:
    *
    * \return  The FlatIndex of the first existing to-set element.
    */
-  PositionType findElementFlatIndex(PositionType pos1) const override
+  PositionType findElementFlatIndex(PositionType pos1) const
   {
     RelationSubset ls = (*m_relation)[pos1];
 
@@ -140,7 +137,7 @@ public:
     return BivariateSetType::INVALID_POS;
   }
 
-  RangeSetType elementRangeSet(PositionType pos1) const override
+  RangeSetType elementRangeSet(PositionType pos1) const
   {
     return typename RangeSetType::SetBuilder()
       .size(m_relation->size(pos1))
@@ -154,12 +151,12 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  const OrderedSetType getElements(PositionType s1) const override
+  const OrderedSetType getElements(PositionType s1) const
   {
     return (*m_relation)[s1];
   }
 
-  ElementType at(PositionType pos) const override
+  ElementType at(PositionType pos) const
   {
     verifyPositionImpl(pos);
     return (*m_relation->relationData())[pos];
@@ -182,12 +179,14 @@ public:
    *
    * \param pos The from-set position.
    */
-  PositionType size(PositionType pos) const override
-  {
-    return m_relation->size(pos);
-  }
+  PositionType size(PositionType pos) const { return m_relation->size(pos); }
 
-  bool isValid(bool verboseOutput = false) const override
+  /** \brief Returns pointer to the first set.   */
+  const FirstSetType* getFirstSet() const { return m_relation->fromSet(); }
+  /** \brief Returns pointer to the second set.   */
+  const SecondSetType* getSecondSet() const { return m_relation->toSet(); }
+
+  bool isValid(bool verboseOutput = false) const
   {
     if(m_relation == nullptr)
     {
@@ -207,9 +206,19 @@ public:
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
   // KW -- made this public to use from BivariateMap
-  PositionType size() const override
+  PositionType size() const
   {
     return PositionType(m_relation->relationData()->size());
+  }
+
+  void verifyPosition(PositionType sPos) const
+  {  //override function from RangeSet, overloading to avoid warning in compiler
+    verifyPositionImpl(sPos);
+  }
+
+  void verifyPosition(PositionType s1, PositionType s2) const
+  {
+    verifyPositionImpl(s1, s2);
   }
 
 private:
@@ -220,22 +229,12 @@ private:
       s2 < m_relation->size(s1);
   }
 
-  void verifyPosition(PositionType sPos) const override
-  {  //override function from RangeSet, overloading to avoid warning in compiler
-    verifyPositionImpl(sPos);
-  }
-
   void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(sPos)) const
   {
     SLIC_ASSERT_MSG(
       sPos >= 0 && sPos < size(),
       "SLAM::RelationSet -- requested out-of-range element at position "
         << sPos << ", but set only has " << size() << " elements.");
-  }
-
-  void verifyPosition(PositionType s1, PositionType s2) const override
-  {
-    verifyPositionImpl(s1, s2);
   }
 
   void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(s1),

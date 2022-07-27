@@ -73,7 +73,6 @@ namespace slam
  *   `[idx = 3] = d`\n
  *
  */
-
 template <typename Set1 = slam::Set<>, typename Set2 = slam::Set<>>
 class BivariateSet
 {
@@ -93,26 +92,15 @@ public:
                policies::StrideOne<PositionType>,
                policies::STLVectorIndirection<PositionType, ElementType>>;
 
+  using SubSetType = Set<PositionType, ElementType>;
+
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
 public:
-  static const PositionType INVALID_POS = PositionType(-1);
+  static constexpr PositionType INVALID_POS = PositionType(-1);
   static const NullSetType s_nullSet;
 
 public:
-  /**
-   * \brief Constructor taking pointers to the two sets that defines the range
-   *        of the indices of the BivariateSet.
-   *
-   * \param set1  Pointer to the first Set.
-   * \param set2  Pointer to the second Set.
-   */
-  BivariateSet(const Set1* set1 = policies::EmptySetTraits<Set1>::emptySet(),
-               const Set2* set2 = policies::EmptySetTraits<Set2>::emptySet())
-    : m_set1(set1)
-    , m_set2(set2)
-  { }
-
   /**
    * \brief Default virtual destructor
    *
@@ -181,20 +169,14 @@ public:
   virtual PositionType size(PositionType pos1) const = 0;  //size of a row
 
   /** \brief Size of the first set.   */
-  inline PositionType firstSetSize() const
-  {
-    return getSize<FirstSetType>(m_set1);
-  }
+  virtual PositionType firstSetSize() const = 0;
   /** \brief Size of the second set.   */
-  inline PositionType secondSetSize() const
-  {
-    return getSize<SecondSetType>(m_set2);
-  }
+  virtual PositionType secondSetSize() const = 0;
 
   /** \brief Returns pointer to the first set.   */
-  const FirstSetType* getFirstSet() const { return m_set1; }
+  virtual const FirstSetType* getFirstSet() const = 0;
   /** \brief Returns pointer to the second set.   */
-  const SecondSetType* getSecondSet() const { return m_set2; }
+  virtual const SecondSetType* getSecondSet() const = 0;
 
   /** \brief Returns the element at the given FlatIndex \a pos */
   virtual ElementType at(PositionType pos) const = 0;
@@ -208,9 +190,56 @@ public:
    */
   virtual const OrderedSetType getElements(PositionType s1) const = 0;
 
-  virtual bool isValid(bool verboseOutput = false) const;
+  virtual bool isValid(bool verboseOutput = false) const = 0;
 
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
+};
+
+/**
+ * \class BivariateSetBase
+ *
+ * \brief CRTP class for set types modeling the BivariateSet concept.
+ */
+template <typename Set1, typename Set2, typename Derived>
+class BivariateSetBase
+{
+public:
+  using FirstSetType = Set1;
+  using SecondSetType = Set2;
+
+  using PositionType = typename FirstSetType::PositionType;
+  using ElementType = typename FirstSetType::ElementType;
+  static constexpr PositionType INVALID_POS = PositionType(-1);
+
+public:
+  /** \brief Size of the first set.   */
+  inline PositionType firstSetSize() const
+  {
+    const Derived* impl = static_cast<const Derived*>(this);
+    return getSize<FirstSetType>(impl->getFirstSet());
+  }
+  /** \brief Size of the second set.   */
+  inline PositionType secondSetSize() const
+  {
+    const Derived* impl = static_cast<const Derived*>(this);
+    return getSize<SecondSetType>(impl->getSecondSet());
+  }
+
+  bool isValid(bool verboseOutput) const
+  {
+    const Derived* impl = static_cast<const Derived*>(this);
+    if(impl->getFirstSet() == nullptr || impl->getSecondSet() == nullptr)
+    {
+      if(verboseOutput)
+      {
+        SLIC_INFO("BivariateSet is not valid: "
+                  << " Set pointers should not be null.");
+      }
+      return false;
+    }
+    return impl->getFirstSet()->isValid(verboseOutput) &&
+      impl->getSecondSet()->isValid(verboseOutput);
+  }
 
 private:
   template <typename SetType>
@@ -228,29 +257,166 @@ private:
     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
     return static_cast<SetType>(*s).size();
   }
-
-protected:
-  const FirstSetType* m_set1;
-  const SecondSetType* m_set2;
 };
+
+template <typename Set1, typename Set2, typename WrappedType>
+class BivariateSetProxy : public BivariateSet<Set1, Set2>
+{
+public:
+  using FirstSetType = Set1;
+  using SecondSetType = Set2;
+
+  using PositionType = typename FirstSetType::PositionType;
+  using ElementType = typename FirstSetType::ElementType;
+
+  using RangeSetType = RangeSet<PositionType, ElementType>;
+
+  using OrderedSetType = typename BivariateSet<Set1, Set2>::OrderedSetType;
+
+public:
+  BivariateSetProxy(WrappedType bset) : m_impl(std::move(bset)) { }
+
+  /**
+   * \brief Searches for the SparseIndex of the element given its DenseIndex.
+   * \detail If the element (i,j) is the k<sup>th</sup> non-zero in the row,
+   *         then `findElementIndex(i,j)` returns `k`. If `element (i,j)` does
+   *         not exist (such as the case of a zero in a sparse matrix), then
+   *         `INVALID_POS` is returned.
+   *
+   * \param pos1  The first set position.
+   * \param pos2  The second set position.
+   * \return  The DenseIndex of the given element, or INVALID_POS if such
+   *          element is missing from the set.
+   * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
+   */
+  virtual PositionType findElementIndex(PositionType pos1,
+                                        PositionType pos2) const override
+  {
+    return m_impl.findElementIndex(pos1, pos2);
+  }
+
+  /**
+   * \brief Search for the FlatIndex of the element given its DenseIndex.
+   *
+   * \param pos1  The first set position.
+   * \param pos2  The second set position.
+   *
+   * \return  The element's FlatIndex
+   * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
+   */
+  virtual PositionType findElementFlatIndex(PositionType pos1,
+                                            PositionType pos2) const override
+  {
+    return m_impl.findElementFlatIndex(pos1, pos2);
+  }
+
+  /**
+   * \brief Searches for the first existing element given the row index (first
+   *        set position).
+   *
+   * \param pos1  The first set position.
+   *
+   * \return  The found element's FlatIndex.
+   * \pre   0 <= pos1 <= set1.size()
+   */
+  virtual PositionType findElementFlatIndex(PositionType pos1) const override
+  {
+    return m_impl.findElementFlatIndex(pos1);
+  }
+
+  /**
+   * \brief Finds the range of indices of valid elements in the second set,
+   *        given the index of an element in the first set.
+   * \param Position of the element in the first set
+   *
+   * \return A range set of the positions in the second set
+   */
+  virtual RangeSetType elementRangeSet(PositionType pos1) const override
+  {
+    return m_impl.elementRangeSet(pos1);
+  }
+  /**
+   * \brief Size of the BivariateSet, which is the number of non-zero entries
+   *        in the BivariateSet.
+   */
+  virtual PositionType size() const override { return m_impl.size(); }
+
+  /**
+   * \brief Number of elements of the BivariateSet whose first index is \a pos
+   *
+   * \pre  0 <= pos1 <= set1.size()
+   */
+  virtual PositionType size(PositionType pos1) const override
+  {
+    return m_impl.size(pos1);
+  }
+
+  /** \brief Size of the first set.   */
+  virtual PositionType firstSetSize() const override
+  {
+    return m_impl.firstSetSize();
+  }
+  /** \brief Size of the second set.   */
+  virtual PositionType secondSetSize() const override
+  {
+    return m_impl.secondSetSize();
+  }
+
+  /** \brief Returns pointer to the first set.   */
+  virtual const FirstSetType* getFirstSet() const override
+  {
+    return m_impl.getFirstSet();
+  }
+  /** \brief Returns pointer to the second set.   */
+  virtual const SecondSetType* getSecondSet() const override
+  {
+    return m_impl.getSecondSet();
+  }
+
+  /** \brief Returns the element at the given FlatIndex \a pos */
+  virtual ElementType at(PositionType pos) const override
+  {
+    return m_impl.at(pos);
+  }
+
+  /**
+   * \brief A set of elements with the given first set index.
+   *
+   * \param s1  The first set index.
+   * \return  An OrderedSet containing the elements
+   * \pre  0 <= pos1 <= set1.size()
+   */
+  virtual const OrderedSetType getElements(PositionType s1) const override
+  {
+    return m_impl.getElements(s1);
+  }
+
+  virtual void verifyPosition(PositionType s1, PositionType s2) const override
+  {
+    return m_impl.verifyPosition(s1, s2);
+  }
+
+  virtual bool isValid(bool verboseOutput = false) const override
+  {
+    return m_impl.isValid(verboseOutput);
+  }
+
+private:
+  WrappedType m_impl;
+};
+
+template <typename DerivedBset,
+          typename Set1 = typename DerivedBset::FirstSetType,
+          typename Set2 = typename DerivedBset::SecondSetType>
+std::unique_ptr<BivariateSet<Set1, Set2>> makeVirtualBset(DerivedBset value)
+{
+  auto* vptr = new BivariateSetProxy<Set1, Set2, DerivedBset>(std::move(value));
+  std::unique_ptr<BivariateSet<Set1, Set2>> ret(vptr);
+  return ret;
+}
 
 template <typename Set1, typename Set2>
 const typename BivariateSet<Set1, Set2>::NullSetType BivariateSet<Set1, Set2>::s_nullSet;
-
-template <typename Set1, typename Set2>
-bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
-{
-  if(m_set1 == nullptr || m_set2 == nullptr)
-  {
-    if(verboseOutput)
-    {
-      SLIC_INFO("BivariateSet is not valid: "
-                << " Set pointers should not be null.");
-    }
-    return false;
-  }
-  return m_set1->isValid(verboseOutput) && m_set2->isValid(verboseOutput);
-}
 
 /**
  * \class NullBivariateSet
@@ -300,6 +466,25 @@ public:
   PositionType size() const override { return PositionType(); }
 
   PositionType size(PositionType) const override { return PositionType(); }
+
+  virtual PositionType firstSetSize() const override { return 0; }
+
+  virtual PositionType secondSetSize() const override { return 0; }
+
+  virtual const FirstSetType* getFirstSet() const override
+  {
+    return policies::EmptySetTraits<FirstSetType>::emptySet();
+  }
+
+  virtual const SecondSetType* getSecondSet() const override
+  {
+    return policies::EmptySetTraits<SecondSetType>::emptySet();
+  }
+
+  virtual bool isValid(bool verboseOutput = false) const override
+  {
+    return true;
+  }
 
   const OrderedSetType getElements(PositionType) const override
   {

@@ -36,7 +36,7 @@ namespace slam
  */
 template <typename SetType1 = slam::Set<>, typename SetType2 = slam::Set<>>
 class ProductSet final
-  : public BivariateSet<SetType1, SetType2>,
+  : public BivariateSetBase<SetType1, SetType2, ProductSet<SetType1, SetType2>>,
     RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
 {
 public:
@@ -49,9 +49,16 @@ public:
   using ElementType = typename BivariateSetType::ElementType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
   using ProductSetType = ProductSet<SetType1, SetType2>;
+  using SubSetType =
+    PositionSet<typename SetType1::PositionType, typename SetType2::PositionType>;
+
+  using BaseClass = BivariateSetBase<SetType1, SetType2, ProductSet>;
 
   /** \brief Default constructor */
-  ProductSet() { }
+  ProductSet()
+    : m_firstSet(policies::EmptySetTraits<FirstSetType>::emptySet())
+    , m_secondSet(policies::EmptySetTraits<SecondSetType>::emptySet())
+  { }
 
   /**
    * \brief Constructor taking in pointers of two Sets.
@@ -61,8 +68,9 @@ public:
    */
 
   ProductSet(const FirstSetType* set1, const SecondSetType* set2)
-    : BivariateSetType(set1, set2)
-    , RangeSetType(set1->size() * set2->size())
+    : RangeSetType(set1->size() * set2->size())
+    , m_firstSet(set1)
+    , m_secondSet(set2)
   {
     //fill in the row data now for getElements(i) function,
     //since every row is the same, a call to getElements() returns the same set.
@@ -91,7 +99,7 @@ public:
    *
    * \return  The element's SparseIndex, which is the same as pos2
    */
-  PositionType findElementIndex(PositionType pos1, PositionType pos2) const override
+  PositionType findElementIndex(PositionType pos1, PositionType pos2) const
   {
     verifyPositionImpl(pos1, pos2);
     return pos2;
@@ -107,8 +115,7 @@ public:
    *
    * \return  The element's FlatIndex.
    */
-  PositionType findElementFlatIndex(PositionType pos1,
-                                    PositionType pos2) const override
+  PositionType findElementFlatIndex(PositionType pos1, PositionType pos2) const
   {
     verifyPositionImpl(pos1, pos2);
     PositionType size2 = this->secondSetSize();
@@ -123,7 +130,7 @@ public:
    *
    * \param pos1  The first set position that specifies the row.
    */
-  PositionType findElementFlatIndex(PositionType pos1) const override
+  PositionType findElementFlatIndex(PositionType pos1) const
   {
     return findElementFlatIndex(pos1, 0);
   }
@@ -136,29 +143,28 @@ public:
    *
    * \return  An OrderedSet of the elements in the row.
    */
-  const OrderedSetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const override
+  const OrderedSetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < this->firstSetSize());
 
     return m_rowSet;
   }
 
-  ElementType at(PositionType pos) const override
-  {
-    return pos % this->secondSetSize();
-  }
+  ElementType at(PositionType pos) const { return pos % this->secondSetSize(); }
 
-  PositionType size() const override
+  PositionType size() const
   {
     return this->firstSetSize() * this->secondSetSize();
   }
 
-  PositionType size(PositionType) const override
-  {
-    return this->secondSetSize();
-  }
+  PositionType size(PositionType) const { return this->secondSetSize(); }
 
-  RangeSetType elementRangeSet(PositionType pos1) const override
+  /** \brief Returns pointer to the first set.   */
+  const FirstSetType* getFirstSet() const { return m_firstSet; }
+  /** \brief Returns pointer to the second set.   */
+  const SecondSetType* getSecondSet() const { return m_secondSet; }
+
+  RangeSetType elementRangeSet(PositionType pos1) const
   {
     const auto sz = this->secondSetSize();
     return typename RangeSetType::SetBuilder().size(sz).offset(sz * pos1);
@@ -171,19 +177,26 @@ public:
     return s1 >= 0 && s1 < size1 && s2 >= 0 && s2 < size2;
   }
 
-  bool isValid(bool verboseOutput = false) const override
+  bool isValid(bool verboseOutput = false) const
   {
-    return BivariateSetType::isValid(verboseOutput) &&
+    return BaseClass::isValid(verboseOutput) &&
       RangeSetType::isValid(verboseOutput);
   }
 
-private:
   /** \brief verify the FlatIndex \a pos is within the valid range. */
-  void verifyPosition(PositionType pos) const override
+  void verifyPosition(PositionType pos) const
   {  //from RangeSet, overloading to avoid warning in compiler
     verifyPositionImpl(pos);
   }
 
+  /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
+   *         within the valid range. */
+  void verifyPosition(PositionType pos1, PositionType pos2) const
+  {
+    verifyPositionImpl(pos1, pos2);
+  }
+
+private:
   /** \brief implementation for verifyPosition */
   inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos)) const
   {  //from RangeSet, overloading to avoid warning in compiler
@@ -191,13 +204,6 @@ private:
       pos >= 0 && pos < size(),
       "SLAM::ProductSet -- requested out-of-range element at position "
         << pos << ", but set only has " << size() << " elements.");
-  }
-
-  /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
-   *         within the valid range. */
-  void verifyPosition(PositionType pos1, PositionType pos2) const override
-  {
-    verifyPositionImpl(pos1, pos2);
   }
 
   /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
@@ -213,6 +219,8 @@ private:
   }
 
 private:
+  const FirstSetType* m_firstSet;
+  const SecondSetType* m_secondSet;
   std::vector<PositionType> m_rowSet_data;
   OrderedSetType m_rowSet;
 };

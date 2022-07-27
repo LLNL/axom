@@ -316,13 +316,12 @@ TYPED_TEST_SUITE(BivariateSetTester, MyTypes);
 
 TYPED_TEST(BivariateSetTester, smoke)
 {
-  using BSet = typename TestFixture::BivariateSetType;
   using S1 = typename TestFixture::FirstSetType;
   using S2 = typename TestFixture::SecondSetType;
 
   // Test a default-constructed BivariateSet
   {
-    BSet* bset = new slam::ProductSet<S1, S2>();
+    auto bset = slam::makeVirtualBset(slam::ProductSet<S1, S2>());
 
     // We expect this object to be valid when the types of both S1 and S2 are
     // abstract slam::Sets, but not if either is specialized.
@@ -330,22 +329,21 @@ TYPED_TEST(BivariateSetTester, smoke)
     bool isSet2Abstract = std::is_abstract<S2>::value;
 
     EXPECT_EQ(isSet1Abstract && isSet2Abstract, bset->isValid(true));
-    delete bset;
   }
 
   // Test a non-default-constructed BivariateSet
   {
-    BSet* bset = new slam::ProductSet<S1, S2>(this->m_set1, this->m_set2);
+    auto bset =
+      slam::makeVirtualBset(slam::ProductSet<S1, S2>(this->m_set1, this->m_set2));
     EXPECT_TRUE(bset->isValid(true));
-    delete bset;
   }
 }
 
 //-----------------------------------------------------------------------------
 
 // Tests BivariateSet::firstSetSize(), secondSetSize()
-template <typename S1, typename S2>
-void bSetSizesTest(slam::BivariateSet<S1, S2>* bset)
+template <typename BSet>
+void bSetSizesTest(BSet* bset)
 {
   const auto firstSetSize = bset->firstSetSize();
   const auto secondSetSize = bset->secondSetSize();
@@ -369,7 +367,7 @@ TYPED_TEST(BivariateSetTester, sizes)
     PSet pset = PSet(this->m_set1, this->m_set2);
     EXPECT_TRUE(pset.isValid(true));
 
-    bSetSizesTest<S1, S2>(&pset);
+    bSetSizesTest(&pset);
   }
 
   // Test the size functions for a RelationSet
@@ -380,7 +378,7 @@ TYPED_TEST(BivariateSetTester, sizes)
     RSet rset = RSet(&this->modRelation);
     EXPECT_TRUE(rset.isValid(true));
 
-    bSetSizesTest<S1, S2>(&rset);
+    bSetSizesTest(&rset);
   }
 }
 
@@ -388,8 +386,8 @@ TYPED_TEST(BivariateSetTester, sizes)
 
 // Tests BivariateSet::getFirstSet(), getSecondSet(), getElements(idx)
 // and the ability to operate and iterate on the resulting sets
-template <typename S1, typename S2>
-void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
+template <typename BSet>
+void bSetTraverseTest(BSet* bset, bool shouldCheckMod)
 {
   const auto firstSetSize = bset->firstSetSize();
 
@@ -434,7 +432,7 @@ TYPED_TEST(BivariateSetTester, traverse)
     EXPECT_TRUE(pset.isValid(true));
 
     bool checkMod = false;
-    bSetTraverseTest<S1, S2>(&pset, checkMod);
+    bSetTraverseTest(&pset, checkMod);
   }
 
   // Test traversal functions for a RelationSet
@@ -449,7 +447,7 @@ TYPED_TEST(BivariateSetTester, traverse)
     EXPECT_TRUE(rset.isValid(true));
 
     bool checkMod = true;
-    bSetTraverseTest<S1, S2>(&rset, checkMod);
+    bSetTraverseTest(&rset, checkMod);
   }
 }
 
