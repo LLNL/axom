@@ -81,6 +81,10 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 NUM_MPI_TASKS ${_nranks}
             )
 
+            if(${_pol} STREQUAL "omp")
+                set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
+            endif()
+
             # This test depends on the generated mesh from the previous test
             set_tests_properties(${_test} PROPERTIES DEPENDS quest_distributed_closest_point_generate_mesh_2D)
         endforeach()
