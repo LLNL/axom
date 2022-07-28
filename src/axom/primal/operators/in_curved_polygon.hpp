@@ -36,21 +36,26 @@ namespace primal
  * \param [in] edge_tol The tolerance level at which the query point is on the curve
  * 
  * Determines contianment using the (rounded) winding number with respect
- * to the given curved polygon. If this value is nonzero, the query point 
- * is interior. This algorithm is robust, as the winding number is rounded 
+ * to the given curved polygon. This algorithm is robust, as the winding number is rounded 
  * in the final in/out determination. 
- * 
+ * Uses different protocols to determine containment from the winding number.
+ *   nonzero (true): If the winding number is nonzero, the point is interior.
+ *   evenodd (false): If the winding number is odd, it is interior. Exterior otherwise.
+ *
  * \return A boolean value indicating containment.
  */
 template <typename T>
 inline bool in_curved_polygon(const Point<T, 2>& query,
                               const CurvedPolygon<T, 2>& cpoly,
+                              const bool nonzero = true,
                               const double linear_tol = 1e-8,
                               const double edge_tol = 1e-8)
 {
   double ret_val = winding_number(query, cpoly, linear_tol, edge_tol);
 
-  return (std::round(ret_val) != 0);
+  if(nonzero == true) return std::round(ret_val) != 0;
+  // else, use evenodd rule
+  return std::lround(ret_val) % 2) == 1;
 }
 
 /*!
@@ -75,7 +80,8 @@ double winding_number(const Point<T, 2>& q,
 {
   double ret_val = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
-    ret_val += detail::adaptive_winding_number(q, cpoly[i], linear_tol, edge_tol);
+    ret_val +=
+      detail::adaptive_winding_number(q, cpoly[i], false, linear_tol, edge_tol);
 
   return ret_val;
 }
@@ -99,7 +105,7 @@ double winding_number(const Point<T, 2>& q,
                       const double linear_tol = 1e-8,
                       const double edge_tol = 1e-8)
 {
-  return detail::adaptive_winding_number(q, c, linear_tol, edge_tol);
+  return detail::adaptive_winding_number(q, c, false, linear_tol, edge_tol);
 }
 
 }  // namespace primal
