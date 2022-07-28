@@ -52,7 +52,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         axom_add_test(
             NAME    quest_distributed_closest_point_generate_mesh_2D
             COMMAND $<TARGET_FILE:data_collection_util>
-                        --min -1.5 -1.5 --max 1.5 1.5 --res 30 30
+                        --min -2.5 -2.75 --max 1.325 1.5 --res 34 47
                         --polynomial-order 1
                         --dimension 2
                         --output-name dcp_box_2D
@@ -71,7 +71,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 NAME    ${_test}
                 COMMAND quest_distributed_distance_query_ex
                             --mesh-file dcp_box_2D.root
-                            --num-samples 100
+                            --num-samples 500
                             --dist-threshold .45
                             --policy ${_pol}
                             --object-file dcp_object_mesh_2d_${_pol}
