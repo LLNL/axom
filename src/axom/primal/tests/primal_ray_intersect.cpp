@@ -413,9 +413,7 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
   for(auto& seg : intersecting_segs)
   {
     EXPECT_TRUE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
-    EXPECT_GE(ray_param, 0);
-    EXPECT_GE(seg_param, 0);
-    EXPECT_LE(seg_param, 1);
+    EXPECT_TRUE(the_ray.at(ray_param) == seg.at(seg_param));
   }
 
   // Check that parallel, but not colinear segments do not intersect
