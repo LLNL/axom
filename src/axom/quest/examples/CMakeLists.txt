@@ -46,6 +46,43 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             DEPENDS_ON  ${quest_example_depends} mfem mpi
             FOLDER      axom/quest/examples
             )
+
+    if(AXOM_ENABLE_TOOLS AND AXOM_ENABLE_TESTS AND TARGET data_collection_util)
+        # Generate a 2D Cartesian mesh for distributed closest point example on 3 ranks
+        axom_add_test(
+            NAME    quest_distributed_closest_point_generate_mesh_2D
+            COMMAND $<TARGET_FILE:data_collection_util>
+                        --min -1.5 -1.5 --max 1.5 1.5 --res 30 30
+                        --polynomial-order 1
+                        --dimension 2
+                        --output-name dcp_box_2D
+            NUM_MPI_TASKS 3
+        )
+
+        # Run the distributed closest point example on 3 ranks for each enabled policy
+        set(_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+        foreach(_pol ${_policies})
+            set(_test "quest_distributed_closest_point_run_2D_${_pol}")
+
+            axom_add_test(
+                NAME    ${_test}
+                COMMAND quest_distributed_distance_query_ex
+                            --mesh-file dcp_box_2D.root
+                            --num-samples 100
+                            --dist-threshold .45
+                            --policy ${_pol}
+                            --object-file dcp_object_mesh_2d_${_pol}
+                            --distance-file dcp_closest_point_2d_${_pol}
+                NUM_MPI_TASKS 3
+            )
+
+            # This test depends on the generated mesh from the previous test
+            set_tests_properties(${_test} PROPERTIES DEPENDS quest_distributed_closest_point_generate_mesh_2D)
+        endforeach()
+    endif()
 endif()
 
 # Point in cell example -------------------------------------------------------
