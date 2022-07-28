@@ -19,9 +19,11 @@ namespace primal
  * 
  * \param [in] poly The polygon
  * 
- * Uses algorithm adapted from [Maa 99], which uses dot products to detect
- * whether vertices extend in the "convex" direction. 
- *
+ * Uses dot products to detect whether vertices extend in the "convex" direction. 
+ * Algorithm adapted from:
+ * Y. L. Ma, W.T. Hewitt. "Point inversion and projection for NURBS curve 
+ * and surface: Control polygon approach"
+ * Computer Aided Geometric Design 20(2):79-99, May 2003.
  * \note Only defined in 2D
  * 
  * \return A boolean value indicating convexity
@@ -42,11 +44,9 @@ bool is_convex(const Polygon<T, 2>& poly)
     // Edge case
     if(res1 == primal::ON_BOUNDARY) continue;
 
-    if(i < n / 2)
-      if(res1 == orientation(poly[n], seg))
-        return false;
-      else if(res1 == orientation(poly[0], seg))
-        return false;
+    // Ensure other point to check against isn't adjacent
+    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg))
+      return false;
   }
 
   return true;
