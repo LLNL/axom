@@ -47,8 +47,10 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             FOLDER      axom/quest/examples
             )
 
-    if(AXOM_ENABLE_TOOLS AND AXOM_ENABLE_TESTS AND TARGET data_collection_util)
-        # Generate a 2D Cartesian mesh for distributed closest point example on 3 ranks
+    if(AXOM_ENABLE_TOOLS AND AXOM_ENABLE_TESTS)
+        set(_nranks 3)
+
+        # Generate a 2D Cartesian mesh for this example on N ranks
         axom_add_test(
             NAME    quest_distributed_closest_point_generate_mesh_2D
             COMMAND $<TARGET_FILE:data_collection_util>
@@ -56,10 +58,10 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                         --polynomial-order 1
                         --dimension 2
                         --output-name dcp_box_2D
-            NUM_MPI_TASKS 3
+            NUM_MPI_TASKS ${_nranks}
         )
 
-        # Run the distributed closest point example on 3 ranks for each enabled policy
+        # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")
         blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
         blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
@@ -76,13 +78,16 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             --policy ${_pol}
                             --object-file dcp_object_mesh_2d_${_pol}
                             --distance-file dcp_closest_point_2d_${_pol}
-                NUM_MPI_TASKS 3
+                NUM_MPI_TASKS ${_nranks}
             )
 
             # This test depends on the generated mesh from the previous test
             set_tests_properties(${_test} PROPERTIES DEPENDS quest_distributed_closest_point_generate_mesh_2D)
         endforeach()
-    endif()
+        unset(_nranks)
+        unset(_policies)
+        unset(_test)
+endif()
 endif()
 
 # Point in cell example -------------------------------------------------------
