@@ -45,8 +45,7 @@ bool is_convex(const Polygon<T, 2>& poly)
     if(res1 == primal::ON_BOUNDARY) continue;
 
     // Ensure other point to check against isn't adjacent
-    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg))
-      return false;
+    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg)) return false;
   }
 
   return true;

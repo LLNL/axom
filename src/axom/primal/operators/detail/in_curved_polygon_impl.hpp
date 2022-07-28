@@ -24,7 +24,6 @@ namespace primal
 {
 namespace detail
 {
-
 /*
  * \brief Compute the "closure winding number" for a Bezier curve
  *
