@@ -14,6 +14,8 @@ blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS blt::hip IF ENABLE_HIP)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
+set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
+
 # In/out octree containment example -------------------------------------------
 blt_add_executable(
     NAME        quest_containment_driver_ex
@@ -47,19 +49,8 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             FOLDER      axom/quest/examples
             )
 
-    if(AXOM_ENABLE_TOOLS AND AXOM_ENABLE_TESTS)
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         set(_nranks 3)
-
-        # Generate a 2D Cartesian mesh for this example on N ranks
-        axom_add_test(
-            NAME    quest_distributed_closest_point_generate_mesh_2D
-            COMMAND $<TARGET_FILE:data_collection_util>
-                        --min -2.5 -2.75 --max 1.325 1.5 --res 34 47
-                        --polynomial-order 1
-                        --dimension 2
-                        --output-name dcp_box_2D
-            NUM_MPI_TASKS ${_nranks}
-        )
 
         # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")
@@ -72,26 +63,23 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             axom_add_test(
                 NAME    ${_test}
                 COMMAND quest_distributed_distance_query_ex
-                            --mesh-file dcp_box_2D.root
+                            --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
                             --num-samples 500
                             --dist-threshold .45
                             --policy ${_pol}
                             --object-file dcp_object_mesh_2d_${_pol}
                             --distance-file dcp_closest_point_2d_${_pol}
-                NUM_MPI_TASKS ${_nranks}
-            )
+                NUM_MPI_TASKS ${_nranks})
 
             if(${_pol} STREQUAL "omp")
                 set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
             endif()
-
-            # This test depends on the generated mesh from the previous test
-            set_tests_properties(${_test} PROPERTIES DEPENDS quest_distributed_closest_point_generate_mesh_2D)
         endforeach()
+
         unset(_nranks)
         unset(_policies)
         unset(_test)
-endif()
+    endif()
 endif()
 
 # Point in cell example -------------------------------------------------------
@@ -161,8 +149,6 @@ blt_add_executable(
     DEPENDS_ON  ${quest_example_depends}
     FOLDER      axom/quest/examples
     )
-
-set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     # Add a test for the quest interface; Set up for MPI, when available
