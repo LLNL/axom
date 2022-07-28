@@ -14,9 +14,6 @@
 
 #include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Segment.hpp"
-#include "axom/primal/operators/orientation.hpp"
-#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 #include <ostream>
 
@@ -71,7 +68,7 @@ public:
   Polygon(const axom::Array<PointType>& vertices) { m_vertices = vertices; }
 
   /*! Return the number of vertices in the polygon */
-  int numVertices() const { return static_cast<int>(m_vertices.size()); }
+  const int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
   /*! Appends a vertex to the list of vertices */
   void addVertex(const PointType& pt) { m_vertices.push_back(pt); }

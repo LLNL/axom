@@ -369,19 +369,13 @@ AXOM_HOST_DEVICE inline double Triangle<T, NDIMS>::angle(int idx) const
   const int idx2 = (idx + 2) % NUM_TRI_VERTS;
 
   const PointType& pt = m_points[idx];
-  VectorType V1(pt, m_points[idx1]);
-  VectorType V2(pt, m_points[idx2]);
-
-  V1 = V1.unitVector();
-  V2 = V2.unitVector();
+  VectorType V1 = (m_points[idx1] - pt).unitVector();
+  VectorType V2 = (m_points[idx2] - pt).unitVector();
 
   double dotprod = VectorType::dot_product(V1, V2);
 
-  // Account for floating point error in (some) degenerate cases
-  //  Undefined behavior if two vertices are the same
-  if(dotprod >= 1) return 0;
-  if(dotprod > -1) return acos(dotprod);
-  return M_PI;
+  // Account for floating point error in (rare) degenerate cases
+  return acos(axom::utilities::clampVal(dotprod, -1.0, 1.0));
 }
 
 //------------------------------------------------------------------------------
