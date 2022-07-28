@@ -19,72 +19,130 @@
 #include "axom/config.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Segment.hpp"
-#include "axom/primal/geometry/Ray.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
-#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
+
+// C++ includes
+#include <cmath>
 
 namespace axom
 {
 namespace primal
 {
 /*!
- * \brief Determine if query point is interior to a polygon
+ * \brief Computes the winding number for a point and a polygon
  *
- * \param [in] query The query point to test
- * \param [in] cpoly The CurvedPolygon object to test for containment
- * \param [in] EPS The tolerance level at which a Bezier curve is linear
+ * \param [in] R The query point to test
+ * \param [in] P The Polygon object to test for containment
  * \param [in[ strict If true, check for strict inclusion
+ * \param [in] EPS The tolerance level for collinearity
  * 
- * Determines contianment using a ray casting appraoch built from primal 
- * primaltives. Checks intersection of ray with origin at query in the 
- * direction [1, 0] with each edge of the polygon. If the number of 
- * intersections is odd, it is in the interior.
+ * Uses an adapted ray-casting approach that counts quarter-rotation
+ * of vertices around the query point. 
+ *
+ * Directly uses algorithm in 
+ * Kai Hormann, Alexander Agathos, "The point in polygon problem for arbitrary polygons"
+ * Computational Geometry, Volume 20, Issue 3, 2001,
  * 
- * \return A boolean value indicating containment.
+ * \return The integer winding number
  */
 template <typename T>
-bool in_polygon(const Point<T, 2>& p,
-                const Polygon<T, 2>& poly,
-                const double EPS = 1e-8,
-                const bool strict = false)
+int winding_number(const Point<T, 2>& R,
+                   const Polygon<T, 2>& P,
+                   const bool strict = false,
+                   const double EPS = 1e-8)
 {
-  Ray<T, 2> the_ray(p, Vector<T, 2>({1, 0}));
-  double ray_param = -1, seg_param = -1;
-  int n = poly.numVertices() - 1;
+  const int nverts = P.numVertices();
 
-  Segment<T, 2> the_seg(poly[n], poly[0]);
+  // If the query is a vertex, return a value interpreted
+  //  as "inside" by evenodd or nonzero protocols
+  if(R == P[0]) return !strict;
 
-  // To avoid double counting vertices, interpret the segment as open at origin
-  int num_intersects =
-    (detail::intersect_ray(the_ray, the_seg, ray_param, seg_param, EPS) &&
-     seg_param > EPS);
-
-  // If the ray intersects the segment at its origin, then the query point
-  //  is on the boundary of the polygon. Allow for tolerance
-  //  consistent with intersect_ray
-  if(num_intersects == 1 && ray_param < EPS) return (strict) ? false : true;
-
-  for(int i = 0; i < n; i++)
+  int winding_num = 0;
+  for(int i = 0; i < nverts; i++)
   {
-    bool this_intersect =
-      detail::intersect_ray(the_ray,
-                            Segment<T, 2>(poly[i], poly[i + 1]),
-                            ray_param,
-                            seg_param,
-                            EPS);
+    int j = (i == nverts - 1) ? 0 : i + 1;
 
-    if(this_intersect == true && seg_param > EPS)
+    if(P[j][1] == R[1])
     {
-      if(ray_param < EPS)
-        return (strict) ? false : true;
+      if(P[j][0] == R[0])
+        return !strict;  // On vertex
+      else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
+        return !strict;  // On horizontal edge
+    }
+
+    // Check if edge crosses horizontal line
+    if((P[i][1] < R[1]) != (P[j][1] < R[1]))
+    {
+      double det;
+      if(P[i][0] >= R[0])
+      {
+        if(P[j][0] > R[0])
+          winding_num += 2 * (P[j][1] > P[i][1]) - 1;
+        else
+        {
+          // clang-format off
+          det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
+                                            P[i][1] - R[1], P[j][1] - R[1]);
+          // clang-format on
+
+          // On edge
+          if(axom::utilities::isNearlyEqual(det, 0.0, EPS)) return !strict;
+
+          // Check if edge intersects horitonal ray to the right of R
+          if((det > 0) == (P[j][1] > P[i][1]))
+            winding_num += 2 * (P[j][1] > P[i][1]) - 1;
+        }
+      }
       else
-        ++num_intersects;
+      {
+        if(P[j][0] > R[0])
+        {
+          // clang-format off
+          det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
+                                          P[i][1] - R[1], P[j][1] - R[1]);
+          // clang-format on
+
+          // On edge
+          if(axom::utilities::isNearlyEqual(det, 0.0, EPS)) return !strict;
+
+          // Check if edge intersects horitonal ray to the right of R
+          if((det > 0) == (P[j][1] > P[i][1]))
+            winding_num += 2 * (P[j][1] > P[i][1]) - 1;
+        }
+      }
     }
   }
 
-  // Return true if num_intersects is odd
-  return (num_intersects % 2 == 1);
+  return winding_num;
+}
+
+/*!
+ * \brief Determines containment for a point in a polygon
+ *
+ * \param [in] query The query point to test
+ * \param [in] poly The Polygon object to test for containment
+ * \param [in] nonzero If false, use even/odd protocol for inclusion
+ * \param [in] strict If true, check for strict inclusion
+ * \param [in] EPS The tolerance level for collinearity
+ * 
+ * Determines contianment using the winding number with respect to the 
+ * given polygon. 
+ * Uses different protocols to determine containment from the winding number.
+ *   nonzero (true): If the winding number is nonzero, the point is interior.
+ *   evenodd (false): If the winding number is odd, it is interior. Exterior otherwise.
+ 
+ * \return boolean value indicating containment.
+ */
+template <typename T>
+bool in_polygon(const Point<T, 2>& query,
+                const Polygon<T, 2>& poly,
+                const bool nonzero = true,
+                const bool strict = false,
+                const double EPS = 1e-8)
+{
+  if(nonzero == true) return winding_number(query, poly, strict, EPS) != 0;
+  // else, use evenodd rule
+  return (winding_number(query, poly, strict, EPS) % 2) == 1;
 }
 
 }  // namespace primal
