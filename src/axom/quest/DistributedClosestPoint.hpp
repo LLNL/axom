@@ -250,64 +250,63 @@ inline int isend_using_schema(conduit::Node& node,
 // This version works correctly when src is MPI_ANY_SOURCE
 // and tag is MPI_ANY_TAG.  When conduit supports this,
 // this version can be removed.
-int
-recv_using_schema(conduit::Node &node, int src, int tag, MPI_Comm comm)
+int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm comm)
 {
-    MPI_Status status;
+  MPI_Status status;
 
-    int mpi_error = MPI_Probe(src, tag, comm, &status);
+  int mpi_error = MPI_Probe(src, tag, comm, &status);
 
-    // CONDUIT_CHECK_MPI_ERROR(mpi_error);
-    // Expand the conduit macro:
-    if(static_cast<int>(mpi_error) != MPI_SUCCESS)
-    {
-      char check_mpi_err_str_buff[MPI_MAX_ERROR_STRING];
-      int check_mpi_err_str_len = 0;
-      MPI_Error_string(mpi_error, check_mpi_err_str_buff, &check_mpi_err_str_len);
+  // CONDUIT_CHECK_MPI_ERROR(mpi_error);
+  // Expand the conduit macro:
+  if(static_cast<int>(mpi_error) != MPI_SUCCESS)
+  {
+    char check_mpi_err_str_buff[MPI_MAX_ERROR_STRING];
+    int check_mpi_err_str_len = 0;
+    MPI_Error_string(mpi_error, check_mpi_err_str_buff, &check_mpi_err_str_len);
 
-      SLIC_ERROR(
-        fmt::format("MPI call failed: error code = {} error message = {}",
-                    mpi_error,
-                    check_mpi_err_str_buff));
-    }
+    SLIC_ERROR(
+      fmt::format("MPI call failed: error code = {} error message = {}",
+                  mpi_error,
+                  check_mpi_err_str_buff));
+  }
 
-    int buffer_size = 0;
-    MPI_Get_count(&status, MPI_BYTE, &buffer_size);
+  int buffer_size = 0;
+  MPI_Get_count(&status, MPI_BYTE, &buffer_size);
 
-    conduit::Node n_buffer(conduit::DataType::uint8(buffer_size));
+  conduit::Node n_buffer(conduit::DataType::uint8(buffer_size));
 
-    mpi_error = MPI_Recv(n_buffer.data_ptr(),
-                         buffer_size,
-                         MPI_BYTE,
-                         status.MPI_SOURCE,
-                         status.MPI_TAG,
-                         comm,
-                         &status);
+  mpi_error = MPI_Recv(n_buffer.data_ptr(),
+                       buffer_size,
+                       MPI_BYTE,
+                       status.MPI_SOURCE,
+                       status.MPI_TAG,
+                       comm,
+                       &status);
 
-    uint8 *n_buff_ptr = (uint8*)n_buffer.data_ptr();
+  uint8* n_buff_ptr = (uint8*)n_buffer.data_ptr();
 
-    conduit::Node n_msg;
-    // length of the schema is sent as a 64-bit signed int
-    // NOTE: we aren't using this value  ...
-    n_msg["schema_len"].set_external((int64*)n_buff_ptr);
-    n_buff_ptr +=8;
-    // wrap the schema string
-    n_msg["schema"].set_external_char8_str((char*)(n_buff_ptr));
-    // create the schema
-    conduit::Schema rcv_schema;
-    conduit::Generator gen(n_msg["schema"].as_char8_str());
-    gen.walk(rcv_schema);
+  conduit::Node n_msg;
+  // length of the schema is sent as a 64-bit signed int
+  // NOTE: we aren't using this value  ...
+  n_msg["schema_len"].set_external((int64*)n_buff_ptr);
+  n_buff_ptr += 8;
+  // wrap the schema string
+  n_msg["schema"].set_external_char8_str((char*)(n_buff_ptr));
+  // create the schema
+  conduit::Schema rcv_schema;
+  conduit::Generator gen(n_msg["schema"].as_char8_str());
+  gen.walk(rcv_schema);
 
-    // advance by the schema length
-    n_buff_ptr += n_msg["schema"].total_bytes_compact();
+  // advance by the schema length
+  n_buff_ptr += n_msg["schema"].total_bytes_compact();
 
-    // apply the schema to the data
-    n_msg["data"].set_external(rcv_schema,n_buff_ptr);
+  // apply the schema to the data
+  n_msg["data"].set_external(rcv_schema, n_buff_ptr);
 
-    // copy out to our result node
-    node.update(n_msg["data"]);
+  // copy out to our result node
+  node.update(n_msg["data"]);
 
-    return mpi_error;
+  return mpi_error;
 }
 
 }  // namespace mpi
