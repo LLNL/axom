@@ -394,21 +394,21 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
   using VectorType = primal::Vector<double, 2>;
   using RayType = primal::Ray<double, 2>;
 
-  RayType the_ray(PointType({0.0, 0.0}), VectorType({1, 0}));
+  RayType the_ray(PointType({0.0, 0.0}), VectorType({1, 2}));
   double ray_param = -1, seg_param = -1;
   const double EPS = 1e-8;
 
   // Check segments oriented in same direction as ray
   //  and in opposite direction
   SegmentType intersecting_segs[] = {
-    SegmentType(PointType({1, 0}), PointType({2, 0})),
-    SegmentType(PointType({0, 0}), PointType({1, 0})),
-    SegmentType(PointType({-1, 0}), PointType({1, 0})),
-    SegmentType(PointType({-1, 0}), PointType({0, 0})),
-    SegmentType(PointType({2, 0}), PointType({1, 0})),
-    SegmentType(PointType({1, 0}), PointType({0, 0})),
-    SegmentType(PointType({1, 0}), PointType({-1, 0})),
-    SegmentType(PointType({0, 0}), PointType({-1, 0}))};
+    SegmentType(PointType({1, 2}), PointType({2, 4})),
+    SegmentType(PointType({0, 0}), PointType({1, 2})),
+    SegmentType(PointType({-1, -2}), PointType({1, 2})),
+    SegmentType(PointType({-1, -2}), PointType({0, 0})),
+    SegmentType(PointType({2, 4}), PointType({1, 2})),
+    SegmentType(PointType({1, 2}), PointType({0, 0})),
+    SegmentType(PointType({1, 2}), PointType({-1, -2})),
+    SegmentType(PointType({0, 0}), PointType({-1, -2}))};
 
   for(auto& seg : intersecting_segs)
   {
@@ -418,12 +418,12 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
 
   // Check that parallel, but not colinear segments do not intersect
   SegmentType not_intersecting_segs[] = {
-    SegmentType(PointType({-2, 0}), PointType({-1, 0})),
-    SegmentType(PointType({-2, 1}), PointType({-1, 1})),
-    SegmentType(PointType({0, 1}), PointType({1, 1})),
-    SegmentType(PointType({-1, 0}), PointType({-2, 0})),
-    SegmentType(PointType({-1, 1}), PointType({-2, 1})),
-    SegmentType(PointType({1, 1}), PointType({0, 1}))};
+    SegmentType(PointType({-2, -4}), PointType({-1, -2})),
+    SegmentType(PointType({-2, -3}), PointType({-1, -1})),
+    SegmentType(PointType({-2, -3}), PointType({1, 3})),
+    SegmentType(PointType({-1, -2}), PointType({-2, -4})),
+    SegmentType(PointType({-1, -1}), PointType({-2, -3})),
+    SegmentType(PointType({1, 3}), PointType({-2, -3}))};
 
   for(auto& seg : not_intersecting_segs)
     EXPECT_FALSE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
