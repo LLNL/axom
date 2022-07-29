@@ -11,7 +11,7 @@ variables:
   DO_CLEAN: 'no'
   CLANG10_IMAGENAME: 'axom/tpls:clang-10_06-24-22_05h-21m'
   GCC11_IMAGENAME: 'axom/tpls:gcc-11_06-24-22_05h-21m'
-  system.debug: true
+  system.debug: false
 
 jobs:
 - job: Build_and_Test
