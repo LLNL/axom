@@ -32,8 +32,9 @@ namespace detail
  *
  * A possible "closure" of a Bezier curve is a straight line segment 
  * connecting its two endpoints. The "closure winding number" is the 
- * winding number of the query point with respect to this segment, which
- * has a direct formula.
+ * winding number of the query point with respect to this segment. This
+ * is calculated directly by measuring the angle spanned by lines connecting
+ * the query point to each endpoint of the Bezier curve.
  * 
  * \return 
  */

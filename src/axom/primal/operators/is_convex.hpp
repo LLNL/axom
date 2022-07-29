@@ -19,7 +19,9 @@ namespace primal
  * 
  * \param [in] poly The polygon
  * 
- * Uses dot products to detect whether vertices extend in the "convex" direction. 
+ * Uses dot products to detect whether vertices extend in the "convex" direction
+ * using the edge P[0]P[N] as a reference.
+ * 
  * Algorithm adapted from:
  * Y. L. Ma, W.T. Hewitt. "Point inversion and projection for NURBS curve 
  * and surface: Control polygon approach"

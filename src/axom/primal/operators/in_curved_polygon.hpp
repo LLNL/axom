@@ -55,7 +55,7 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
 
   if(nonzero == true) return std::round(ret_val) != 0;
   // else, use evenodd rule
-  return std::lround(ret_val) % 2) == 1;
+  return (std::lround(ret_val) % 2) == 1;
 }
 
 /*!
