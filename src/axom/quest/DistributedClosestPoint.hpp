@@ -586,6 +586,7 @@ public:
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
       copy_query_node_to_xfer_node(queryMesh, xferNode, coordset);
+      put_bounding_box_to_conduit_node(queryPartitionBb, xferNode["aabb"]);
 
       if(m_isVerbose)
       {
