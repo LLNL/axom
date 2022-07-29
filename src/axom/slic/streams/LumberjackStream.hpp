@@ -120,16 +120,6 @@ public:
    */
   virtual void write(bool single_rank = false);
 
-  /*!
-   * \brief Checks that abort flag(s) was raised on one or more ranks.
-   *
-   * \return true if abort flag was raised for at least one rank, else false.
-   * \collective
-   * \note This method is a collective operation
-   *  intended for a synchronization checkpoint.
-   */
-  virtual bool checkAbort();
-
 private:
   void initializeLumberjack(MPI_Comm comm, int ranksLimit);
   void finalizeLumberjack();

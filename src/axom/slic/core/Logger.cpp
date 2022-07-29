@@ -78,60 +78,6 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-bool Logger::getAbortFlag(message::Level level)
-{
-  bool ret = false;
-
-  if(level == message::Info || level == message::Debug)
-  {
-    return ret;
-  }
-
-  if(m_isEnabled[level] == false)
-  {
-    return ret;
-  }
-
-  unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
-
-  for(unsigned istream = 0; istream < nstreams; ++istream)
-  {
-    ret |= m_logStreams[level][istream]->getAbortFlag();
-  }
-
-  return ret;
-}
-
-//------------------------------------------------------------------------------
-void Logger::setAbortFlag(bool val, message::Level level)
-{
-  if(m_isEnabled[level] == false)
-  {
-    return;
-  }
-
-  // No-op for Info and Debug level
-  if(level == message::Info || level == message::Debug)
-  {
-    return;
-  }
-
-  // No-op if corresponding abort is not enabled
-  if((!m_abortOnError && (level == message::Error)) ||
-     (!m_abortOnWarning && (level == message::Warning)))
-  {
-    return;
-  }
-
-  // Set flag for all streams with the given level
-  unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
-  for(unsigned istream = 0; istream < nstreams; ++istream)
-  {
-    m_logStreams[level][istream]->setAbortFlag(val);
-  }
-}
-
-//------------------------------------------------------------------------------
 void Logger::abort() { m_abortFunction(); }
 
 //------------------------------------------------------------------------------
@@ -283,12 +229,6 @@ void Logger::logMessage(message::Level level,
     m_logStreams[level][istream]
       ->append(level, message, tagName, fileName, line, filter_duplicates);
   }
-
-  if((m_abortOnError && (level == message::Error)) ||
-     (m_abortOnWarning && (level == message::Warning)))
-  {
-    setAbortFlag(true, level);
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -304,27 +244,6 @@ void Logger::flushStreams(bool single_rank)
     }  // END for all streams
 
   }  // END for all levels
-}
-
-//------------------------------------------------------------------------------
-bool Logger::checkAbortRaised(message::Level level)
-{
-  bool ret = false;
-
-  // Do not raise abort if not enabled
-  if((!m_abortOnError && (level == message::Error)) ||
-     (!m_abortOnWarning && (level == message::Warning)))
-  {
-    return ret;
-  }
-
-  unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
-  for(unsigned istream = 0; istream < nstreams; ++istream)
-  {
-    ret |= m_logStreams[level][istream]->checkAbort();
-  }  // END for all streams
-
-  return ret;
 }
 
 //------------------------------------------------------------------------------

@@ -35,9 +35,9 @@ if (ENABLE_MPI)
     set(parallel_slic_tests
         slic_macros_parallel.cpp )
 
-    if (AXOM_ENABLE_LUMBERJACK)
-      list(APPEND parallel_slic_tests slic_lumberjack_parallel.cpp)
-    endif()
+    blt_list_append(TO parallel_slic_tests
+                    ELEMENTS slic_lumberjack_parallel.cpp
+                    IF AXOM_ENABLE_LUMBERJACK)
 
     foreach(test ${parallel_slic_tests})
         get_filename_component( test_name ${test} NAME_WE )

@@ -67,41 +67,11 @@ public:
   void setLoggingMsgLevel(message::Level level);
 
   /*!
-   * \brief Gets the abort flag for the given level.
-   *
-   * \param [in] level the logging level.
-   *
-   * \return true if at least one stream has set the abort flag for the
-   *  given level, false if not. Always false for Info and Debug level.
-   */
-  bool getAbortFlag(message::Level level);
-
-  /*!
-   * \brief Sets the abort flag for all streams with the given level.
-   *
-   * \param [in] val true for aborting, false for not.
-   * \param [in] level the logging level.
-   *
-   * \note No-op if given level is Info or Debug.
-   *  If abort behavior is not toggled on for corresponding Warning or Error
-   *  level, is a no-op.
-   */
-  void setAbortFlag(bool val, message::Level level);
-
-  /*!
    * \brief Toggles the abort behavior for error messages. Default is true.
-   *        Resets the abort flag for error streams if false.
    *
    * \param [in] status user-supplied flag.
    */
-  void setAbortOnError(bool status)
-  {
-    if(!status)
-    {
-      setAbortFlag(false, message::Error);
-    }
-    m_abortOnError = status;
-  };
+  void setAbortOnError(bool status) { m_abortOnError = status; };
 
   /*!
    * \brief Enables abort on error messages.
@@ -111,14 +81,9 @@ public:
 
   /*!
    * \brief Disables abort on error messages.
-   *        Resets the abort flag for error streams.
    * \post this->isAbortOnErrorsEnabled() == false.
    */
-  void disableAbortOnError()
-  {
-    setAbortFlag(false, message::Error);
-    m_abortOnError = false;
-  };
+  void disableAbortOnError() { m_abortOnError = false; };
 
   /*!
    * \brief Checks the status of the abort behavior on error messages.
@@ -129,18 +94,10 @@ public:
 
   /*!
    * \brief Toggles the abort behavior for warning messages. Default is false.
-   *        Resets the abort flag for warning streams if false.
    *
    * \param [in] status user-supplied flag.
    */
-  void setAbortOnWarning(bool status)
-  {
-    if(!status)
-    {
-      setAbortFlag(false, message::Warning);
-    }
-    m_abortOnWarning = status;
-  };
+  void setAbortOnWarning(bool status) { m_abortOnWarning = status; };
 
   /*!
    * \brief Enables abort on warning messages.
@@ -150,14 +107,9 @@ public:
 
   /*!
    * \brief Disables abort on warnings messages.
-   *        Resets the abort flag for warning streams.
    * \post this->isAbortOnWarningsEnabled() == false.
    */
-  void disableAbortOnWarning()
-  {
-    setAbortFlag(false, message::Error);
-    m_abortOnWarning = false;
-  };
+  void disableAbortOnWarning() { m_abortOnWarning = false; };
 
   /*!
    * \brief Checks the status of the abort behavior on warning messages.
@@ -237,11 +189,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   *
-   * \post Abort flag is set if level is Error and abort on Error messages is
-   * enabled.
-   * \post Abort flag is set if level is Warning and abort on Warning messages
-   * is enabled.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -256,11 +203,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   *
-   * \post Abort flag is set if level is Error and abort on Error messages is
-   * enabled.
-   * \post Abort flag is set if level is Warning and abort on Warning messages
-   * is enabled.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -277,11 +219,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   *
-   * \post Abort flag is set if level is Error and abort on Error messages is
-   * enabled.
-   * \post Abort flag is set if level is Warning and abort on Warning messages
-   * is enabled.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -300,11 +237,6 @@ public:
    * \param [in] filter_duplicates optional parameter that indicates whether
    * duplicate messages resulting from running in parallel will be filtered out.
    * Default is false.
-   *
-   * \post Abort flag is set if level is Error and abort on Error messages is
-   * enabled.
-   * \post Abort flag is set if level is Warning and abort on Warning messages
-   * is enabled.
    */
   void logMessage(message::Level level,
                   const std::string& message,
@@ -338,16 +270,6 @@ public:
    * \collective
    */
   void abort();
-
-  /*!
-   * \brief Checks that abort flag(s) was raised on one or more ranks.
-   *
-   * \param [in] level the level to check
-   *
-   * \return true if abort flag was raised for at least one rank, else false.
-   * \collective
-   */
-  bool checkAbortRaised(message::Level level);
 
   /*!
    * \brief Flushes all streams for all ranks or current rank.

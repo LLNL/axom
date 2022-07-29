@@ -67,28 +67,6 @@ bool isRoot();
 void setIsRoot(bool is_root);
 
 /*!
- * \brief Gets this rank's abort flag.
- *
- * \param [in] level user-supplied level.
- *
- * \return true for aborting, false for not.
- * Always false for Info and Debug level.
- */
-bool getAbortFlag(message::Level level);
-
-/*!
- * \brief Sets this rank's abort flag.
- *
- * \param [in] val true for aborting, false for not.
- * \param [in] level user-supplied level.
- *
- * \note No-op if given level is Info or Debug.
- *  If abort behavior is not toggled on for corresponding Warning or Error
- *  level, is a no-op.
- */
-void setAbortFlag(bool val, message::Level level);
-
-/*!
  * \brief Ensures the SLIC logging environment is initialized.
  *
  * If SLIC is not initialized when this method is called, initialize SLIC

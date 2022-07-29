@@ -96,31 +96,10 @@ void abort()
 }
 
 //------------------------------------------------------------------------------
-bool checkAbortRaised(message::Level level)
-{
-  ensureInitialized();
-  return Logger::getActiveLogger()->checkAbortRaised(level);
-}
-
-//------------------------------------------------------------------------------
 void setLoggingMsgLevel(message::Level level)
 {
   ensureInitialized();
   Logger::getActiveLogger()->setLoggingMsgLevel(level);
-}
-
-//------------------------------------------------------------------------------
-bool getAbortFlag(message::Level level)
-{
-  ensureInitialized();
-  return Logger::getActiveLogger()->getAbortFlag(level);
-}
-
-//------------------------------------------------------------------------------
-void setAbortFlag(bool val, message::Level level)
-{
-  ensureInitialized();
-  Logger::getActiveLogger()->setAbortFlag(val, level);
 }
 
 //------------------------------------------------------------------------------

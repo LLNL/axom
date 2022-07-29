@@ -128,38 +128,6 @@ public:
    */
   virtual void push() {};
 
-  /*!
-   * \brief Gets the abort flag.
-   *
-   * \return true if rank is aborting, false if not.
-   * \note Intended to be used with confirmAbort().
-   */
-  virtual bool getAbortFlag() { return m_abort; };
-
-  /*!
-   * \brief Sets the abort flag.
-   *
-   * \param [in] val true for rank is aborting, false for not.
-   * \note Intended to be used with confirmAbort().
-   */
-  virtual void setAbortFlag(bool val) { m_abort = val; };
-
-  /*!
-   * \brief Checks that abort flag(s) was raised on one or more ranks.
-   *  Default is to return value of m_abort flag.
-   *
-   * \return true if abort flag was raised for at least one rank, else false.
-   *
-   * \note The intent of this method is to be overridden by concrete
-   *  implementations. This is primarily useful for applications running
-   *  in a distributed MPI environment, where the
-   *  confirmAbort() is a collective
-   *  operation intended for a synchronization checkpoint.
-   *
-   * \collective
-   */
-  virtual bool checkAbort() { return m_abort; };
-
 protected:
   /*!
    * \brief Returns the formatted message as a single string.
