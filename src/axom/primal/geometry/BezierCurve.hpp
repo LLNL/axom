@@ -58,7 +58,7 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using NumArrayType = NumericArray<T, NDIMS>;
   using SegmentType = Segment<T, NDIMS>;
-  using CoordsVec = std::vector<PointType>;
+  using CoordsVec = axom::Array<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
 
@@ -143,7 +143,7 @@ public:
    * \pre order is greater than or equal to zero
    *
    */
-  BezierCurve(const std::vector<PointType>& pts, int ord)
+  BezierCurve(const axom::Array<PointType>& pts, int ord)
   {
     SLIC_ASSERT(ord >= 0);
 
@@ -230,7 +230,7 @@ public:
     PointType ptval;
 
     const int ord = getOrder();
-    std::vector<T> dCarray(ord + 1);
+    axom::Array<T> dCarray(ord + 1);
 
     // Run de Casteljau algorithm on each dimension
     for(int i = 0; i < NDIMS; ++i)
@@ -268,7 +268,7 @@ public:
     VectorType val;
 
     const int ord = getOrder();
-    std::vector<T> dCarray(ord + 1);
+    axom::Array<T> dCarray(ord + 1);
 
     // Run de Casteljau algorithm on each dimension
     for(int i = 0; i < NDIMS; ++i)
@@ -338,7 +338,6 @@ public:
    * \param [in] tol Threshold for sum of squared distances
    * \return True if c1 is near-linear
    */
-
   bool isLinear(double tol = 1E-8) const
   {
     const int ord = getOrder();

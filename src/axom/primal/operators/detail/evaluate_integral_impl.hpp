@@ -39,7 +39,7 @@ namespace detail
  */
 inline double evaluate_line_integral_component(
   const primal::BezierCurve<double, 2>& c,
-  std::function<double(Point2D)> integrand,
+  std::function<double(Point2D)> scalar_integrand,
   const mfem::IntegrationRule& quad)
 {
   // Store/compute quadrature result
@@ -51,7 +51,8 @@ inline double evaluate_line_integral_component(
     auto x_q = c.evaluate(quad.IntPoint(q).x);
     auto dx_q = c.dt(quad.IntPoint(q).x);
 
-    full_quadrature += quad.IntPoint(q).weight * integrand(x_q) * dx_q.norm();
+    full_quadrature +=
+      quad.IntPoint(q).weight * scalar_integrand(x_q) * dx_q.norm();
   }
 
   return full_quadrature;

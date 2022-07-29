@@ -38,7 +38,12 @@ set( primal_tests
     primal_zip.cpp
    )
 
-blt_list_append( TO primal_tests ELEMENTS primal_integral.cpp IF MFEM_FOUND )
+blt_list_append(
+    TO       primal_tests 
+    ELEMENTS primal_integral.cpp 
+             primal_winding_number.cpp
+    IF       MFEM_FOUND 
+               )
 
 set(primal_test_depends axom fmt gtest)
 

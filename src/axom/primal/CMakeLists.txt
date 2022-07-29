@@ -44,16 +44,20 @@ set( primal_headers
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
      operators/compute_moments.hpp
+     operators/in_curved_polygon.hpp
+     operators/in_polygon.hpp
      operators/in_sphere.hpp
+     operators/is_convex.hpp
      operators/split.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/compute_moments_impl.hpp
+     operators/detail/in_curved_polygon_impl.hpp
      operators/detail/intersect_bezier_impl.hpp
      operators/detail/intersect_bounding_box_impl.hpp
      operators/detail/intersect_impl.hpp
      operators/detail/intersect_ray_impl.hpp
-
+     
      ## utils
      utils/ZipIndexable.hpp
      utils/ZipBoundingBox.hpp

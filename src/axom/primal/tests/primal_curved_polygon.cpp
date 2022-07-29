@@ -53,8 +53,8 @@ void checkMoments(const primal::CurvedPolygon<CoordType, 2>& bPolygon,
  */
 template <typename CoordType, int DIM>
 primal::CurvedPolygon<CoordType, DIM> createPolygon(
-  const std::vector<primal::Point<CoordType, DIM>> ControlPoints,
-  const std::vector<int> orders)
+  const axom::Array<primal::Point<CoordType, DIM>> ControlPoints,
+  const axom::Array<int> orders)
 {
   using PointType = primal::Point<CoordType, DIM>;
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
@@ -74,13 +74,14 @@ primal::CurvedPolygon<CoordType, DIM> createPolygon(
   int iter = 0;
   for(int j = 0; j < num_edges; ++j)
   {
-    std::vector<PointType> subCP;
-    subCP.assign(ControlPoints.begin() + iter,
-                 ControlPoints.begin() + iter + orders[j] + 1);
+    axom::Array<PointType> subCP(orders[j] + 1);
+    for(int i = 0; i < orders[j] + 1; i++) subCP[i] = ControlPoints[i + iter];
+
     BezierCurveType addCurve(subCP, orders[j]);
     bPolygon.addEdge(addCurve);
     iter += (orders[j]);
   }
+
   return bPolygon;
 }
 
@@ -99,7 +100,7 @@ TEST(primal_curvedpolygon, constructor)
     int expNumEdges = 0;
     EXPECT_EQ(expNumEdges, bPolygon.numEdges());
     EXPECT_EQ(expNumEdges, bPolygon.getEdges().size());
-    EXPECT_EQ(std::vector<BezierCurveType>(), bPolygon.getEdges());
+    EXPECT_EQ(axom::Array<BezierCurveType>(), bPolygon.getEdges());
   }
 
   {
@@ -164,15 +165,15 @@ TEST(primal_curvedpolygon, isClosed)
     EXPECT_FALSE(bPolygon.isClosed());
   }
 
-  std::vector<PointType> CP = {PointType {0.6, 1.2},
+  axom::Array<PointType> CP = {PointType {0.6, 1.2},
                                PointType {0.3, 2.0},
                                PointType {0.0, 1.6},
                                PointType {0.6, 1.2}};
-  std::vector<int> orders = {1, 1, 1};
+  axom::Array<int> orders = {1, 1, 1};
 
   {
-    std::vector<PointType> subCP = {PointType {0.6, 1.2}, PointType {0.3, 2.0}};
-    std::vector<int> suborders = {1};
+    axom::Array<PointType> subCP = {PointType {0.6, 1.2}, PointType {0.3, 2.0}};
+    axom::Array<int> suborders = {1};
     CurvedPolygonType subPolygon = createPolygon(subCP, suborders);
     EXPECT_FALSE(subPolygon.isClosed());
   }
@@ -209,11 +210,11 @@ TEST(primal_curvedpolygon, isClosed_BiGon)
   EXPECT_FALSE(bPolygon.isClosed());
 
   // Bi-gon defined by a quadratic edge and a straight line
-  std::vector<PointType> CP = {PointType {0.8, .25},
+  axom::Array<PointType> CP = {PointType {0.8, .25},
                                PointType {2.0, .50},
                                PointType {0.8, .75},
                                PointType {0.8, .25}};
-  std::vector<int> orders = {2, 1};
+  axom::Array<int> orders = {2, 1};
 
   CurvedPolygonType poly = createPolygon(CP, orders);
   EXPECT_TRUE(poly.isClosed());
@@ -235,18 +236,20 @@ TEST(primal_curvedpolygon, split_edge)
 
   SLIC_INFO("Test checking CurvedPolygon edge split.");
 
-  std::vector<PointType> CP = {PointType {0.6, 1.2},
+  axom::Array<PointType> CP = {PointType {0.6, 1.2},
                                PointType {0.3, 2.0},
                                PointType {0.0, 1.6},
                                PointType {0.6, 1.2}};
 
-  std::vector<int> orders32 = {1, 1, 1};
+  axom::Array<int> orders32 = {1, 1, 1};
   CurvedPolygonType bPolygon32 = createPolygon(CP, orders32);
-  std::cout << "Got here!! " << std::endl;
-  std::vector<PointType> subCP;
 
-  subCP.assign(CP.begin(), CP.begin() + 2);
+  // Needs to be std::vector to use .assign
+  axom::Array<PointType> subCP = {PointType {0.6, 1.2}, PointType {0.3, 2.0}};
+
   BezierCurveType bCurve(subCP, 1);
+  //std::cout << "Got here!! " << std::endl;
+  //std::cout << bPolygon32 << std::endl;
   bPolygon32.splitEdge(0, .5);
 
   BezierCurveType bCurve2;
@@ -309,12 +312,12 @@ TEST(primal_curvedpolygon, moments_triangle_linear)
   using PointType = primal::Point<CoordType, DIM>;
 
   SLIC_INFO("Test moment computation of a linear triangle");
-  std::vector<PointType> CP = {PointType {0.6, 1.2},
+  axom::Array<PointType> CP = {PointType {0.6, 1.2},
                                PointType {0.3, 2.0},
                                PointType {0.0, 1.6},
                                PointType {0.6, 1.2}};
 
-  std::vector<int> orders = {1, 1, 1};
+  axom::Array<int> orders = {1, 1, 1};
   CurvedPolygonType bPolygon = createPolygon(CP, orders);
 
   CoordType trueA = -.18;
@@ -333,7 +336,7 @@ TEST(primal_curvedpolygon, moments_triangle_quadratic)
 
   SLIC_INFO("Test moment computation of quadratic triangle");
 
-  std::vector<PointType> CP = {PointType {0.6, 1.2},
+  axom::Array<PointType> CP = {PointType {0.6, 1.2},
                                PointType {0.4, 1.3},
                                PointType {0.3, 2.0},
                                PointType {0.27, 1.5},
@@ -341,7 +344,7 @@ TEST(primal_curvedpolygon, moments_triangle_quadratic)
                                PointType {0.1, 1.5},
                                PointType {0.6, 1.2}};
 
-  std::vector<int> orders = {2, 2, 2};
+  axom::Array<int> orders = {2, 2, 2};
   CurvedPolygonType bPolygon = createPolygon(CP, orders);
 
   CoordType trueA = -0.097333333333333;
@@ -361,14 +364,14 @@ TEST(primal_curvedpolygon, moments_triangle_mixed_order)
   SLIC_INFO(
     "Test moment computation for curved triangle with mixed order edges");
 
-  std::vector<PointType> CP = {PointType {0.6, 1.2},
+  axom::Array<PointType> CP = {PointType {0.6, 1.2},
                                PointType {0.4, 1.3},
                                PointType {0.3, 2.0},
                                PointType {0.27, 1.5},
                                PointType {0.0, 1.6},
                                PointType {0.6, 1.2}};
 
-  std::vector<int> orders = {2, 2, 1};
+  axom::Array<int> orders = {2, 2, 1};
   CurvedPolygonType bPolygon = createPolygon(CP, orders);
 
   CoordType trueA = -.0906666666666666666666;
@@ -386,13 +389,13 @@ TEST(primal_curvedpolygon, moments_quad_all_orders)
   using PointType = primal::Point<CoordType, DIM>;
 
   SLIC_INFO("Test moment computation for quads of different orders");
-  std::vector<PointType> CPorig = {PointType {0.0, 0.0},
+  axom::Array<PointType> CPorig = {PointType {0.0, 0.0},
                                    PointType {0.0, 1.0},
                                    PointType {1.0, 1.0},
                                    PointType {1.0, 0.0},
                                    PointType {0.0, 0.0}};
 
-  std::vector<int> orders = {1, 1, 1, 1};
+  axom::Array<int> orders = {1, 1, 1, 1};
   CurvedPolygonType bPolygon = createPolygon(CPorig, orders);
 
   CoordType trueA = 1.0;
@@ -401,7 +404,7 @@ TEST(primal_curvedpolygon, moments_quad_all_orders)
   checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-15);
   for(int p = 2; p < 11; ++p)
   {
-    std::vector<PointType> CP = CPorig;
+    axom::Array<PointType> CP = CPorig;
     for(int side = 0; side < 4; ++side)
     {
       for(int i = 1; i < p; ++i)
