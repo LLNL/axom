@@ -128,8 +128,8 @@ template <typename T>
 double adaptive_winding_number(const Point2D& q,
                                const BezierCurve<T, 2>& c,
                                bool convex_cp,
-                               double linear_tol,
-                               double edge_tol)
+                               double linear_tol = 1e-8,
+                               double edge_tol = 1e-8)
 {
   const int ord = c.getOrder();
 

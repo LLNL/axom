@@ -33,7 +33,7 @@ namespace primal
  *
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
- * \param [in[ strict If true, points on the boundary are considered exterior.
+ * \param [in] strict If true, points on the boundary are considered exterior.
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
@@ -123,7 +123,7 @@ int winding_number(const Point<T, 2>& R,
  *
  * \param [in] query The query point to test
  * \param [in] poly The Polygon object to test for containment
- * \param [in] nonzero If false, use even/odd protocol for inclusion
+ * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
  * \param [in] strict If true, points on the boundary are considered exterior.
  * \param [in] EPS The tolerance level for collinearity
  * 
