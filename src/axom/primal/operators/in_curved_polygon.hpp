@@ -35,7 +35,7 @@ namespace primal
  * \param [in] linear_tol The tolerance level at which a Bezier curve is linear
  * \param [in] edge_tol The tolerance level at which the query point is on the curve
  * 
- * Determines contianment using the (rounded) winding number with respect
+ * Determines containment using the (rounded) winding number with respect
  * to the given curved polygon. This algorithm is robust, as the winding number is rounded 
  * in the final in/out determination. 
  * Different protocols determine containment from the winding number differently.
