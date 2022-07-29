@@ -54,7 +54,7 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
   double winding_num = winding_number(query, cpoly, linear_tol, edge_tol);
 
   // Else, use EvenOdd rule
-  return useNonzeroRule ? std::round(winding_num)
+  return useNonzeroRule ? (std::lround(winding_num) != 0)
                         : (std::lround(winding_num) % 2) == 1;
 }
 
