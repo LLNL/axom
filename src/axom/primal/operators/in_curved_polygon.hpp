@@ -38,24 +38,24 @@ namespace primal
  * Determines contianment using the (rounded) winding number with respect
  * to the given curved polygon. This algorithm is robust, as the winding number is rounded 
  * in the final in/out determination. 
- * Uses different protocols to determine containment from the winding number.
- *   nonzero (true): If the winding number is nonzero, the point is interior.
- *   evenodd (false): If the winding number is odd, it is interior. Exterior otherwise.
+ * Different protocols determine containment from the winding number differently.
+ *   Nonzero Rule:  If the winding number is nonzero, the point is interior.
+ *   Even/Odd rule: If the winding number is odd, it is interior. Exterior otherwise.
  *
  * \return A boolean value indicating containment.
  */
 template <typename T>
 inline bool in_curved_polygon(const Point<T, 2>& query,
                               const CurvedPolygon<T, 2>& cpoly,
-                              const bool nonzero = true,
+                              const bool useNonzeroRule = true,
                               const double linear_tol = 1e-8,
                               const double edge_tol = 1e-8)
 {
-  double ret_val = winding_number(query, cpoly, linear_tol, edge_tol);
+  double winding_num = winding_number(query, cpoly, linear_tol, edge_tol);
 
-  if(nonzero == true) return std::round(ret_val) != 0;
-  // else, use evenodd rule
-  return (std::lround(ret_val) % 2) == 1;
+  // Else, use EvenOdd rule
+  return useNonzeroRule ? std::round(winding_num)
+                        : (std::lround(winding_num) % 2) == 1;
 }
 
 /*!

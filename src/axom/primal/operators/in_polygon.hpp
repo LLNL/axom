@@ -55,16 +55,18 @@ int winding_number(const Point<T, 2>& R,
 
   // If the query is a vertex, return a value interpreted
   //  as "inside" by evenodd or nonzero protocols
-  if(R == P[0]) return !strict;
+  if(axom::utilities::isNearlyEqual(P[0][0], R[1], EPS) &&
+     axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
+    return !strict;
 
   int winding_num = 0;
   for(int i = 0; i < nverts; i++)
   {
     int j = (i == nverts - 1) ? 0 : i + 1;
 
-    if(P[j][1] == R[1])
+    if(axom::utilities::isNearlyEqual(P[j][1], R[1], EPS))
     {
-      if(P[j][0] == R[0])
+      if(axom::utilities::isNearlyEqual(P[j][0], R[0], EPS))
         return !strict;  // On vertex
       else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
         return !strict;  // On horizontal edge
@@ -125,24 +127,24 @@ int winding_number(const Point<T, 2>& R,
  * \param [in] strict If true, points on the boundary are considered exterior.
  * \param [in] EPS The tolerance level for collinearity
  * 
- * Determines contianment using the winding number with respect to the 
+ * Determines containment using the winding number with respect to the 
  * given polygon. 
- * Uses different protocols to determine containment from the winding number.
- *   nonzero (true): If the winding number is nonzero, the point is interior.
- *   evenodd (false): If the winding number is odd, it is interior. Exterior otherwise.
- 
+ * Different protocols determine containment from the winding number differently.
+ *   Nonzero Rule:  If the winding number is nonzero, the point is interior.
+ *   Even/Odd rule: If the winding number is odd, it is interior. Exterior otherwise.
+ *
  * \return boolean value indicating containment.
  */
 template <typename T>
 bool in_polygon(const Point<T, 2>& query,
                 const Polygon<T, 2>& poly,
-                const bool nonzero = true,
+                const bool useNonzeroRule = true,
                 const bool strict = false,
                 const double EPS = 1e-8)
 {
-  if(nonzero == true) return winding_number(query, poly, strict, EPS) != 0;
-  // else, use evenodd rule
-  return (winding_number(query, poly, strict, EPS) % 2) == 1;
+  // Else, use EvenOdd rule
+  return useNonzeroRule ? winding_number(query, poly, strict, EPS) != 0
+                        : (winding_number(query, poly, strict, EPS) % 2) == 1;
 }
 
 }  // namespace primal
