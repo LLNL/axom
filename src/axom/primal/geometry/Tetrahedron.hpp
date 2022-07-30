@@ -52,6 +52,10 @@ public:
    * \param [in] B Vertex B of the tetrahedron
    * \param [in] C Vertex C of the tetrahedron
    * \param [in] D Vertex D of the tetrahedron
+   * 
+   * \note The orientation of the tetrahedron is determined from the 
+   * scalar triple product of the vectors from B, C and D to A, respectively,
+   * i.e. \f$ dot(B-A, cross(C-A, D-A)) \f$.
    */
   AXOM_HOST_DEVICE
   Tetrahedron(const PointType& A,
