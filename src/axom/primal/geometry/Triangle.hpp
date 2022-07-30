@@ -179,7 +179,8 @@ public:
     // Compute one over denominator using a small value to avoid division by zero
     // Note: a has opposite sign of signedArea()
     const double a = determinant(vx[0], vx[1], vy[0], vy[1]);
-    const double ood = 1. / (2 * a - EPS);
+    const double offset = a >= 0 ? EPS : -EPS;
+    const double ood = 1. / (2 * a + offset);
 
     // Compute offset from p0 to center
     const auto center_offset = ood *
@@ -284,7 +285,8 @@ public:
     {
       // compute one over denominator; add a tiny amount to avoid division by zero
       constexpr double EPS = 1.0e-50;
-      const double ood = 1. / (area + EPS);
+      const double offset = area >= 0 ? EPS : -EPS;
+      const double ood = 1. / (area + offset);
 
       bary[0] = ood * nu;
       bary[1] = ood * nv;

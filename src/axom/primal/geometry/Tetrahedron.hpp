@@ -14,6 +14,7 @@
 #include "axom/primal/geometry/Sphere.hpp"
 
 #include "axom/slic/interface/slic.hpp"
+#include "axom/fmt.hpp"
 
 #include <ostream>
 
@@ -127,8 +128,10 @@ public:
     {
       constexpr double EPS = 1.0e-50;
       const double vol = VectorType::scalar_triple_product(B - A, C - A, D - A);
-      // Compute one over denominator; add a tiny amount to avoid division by zero
-      const double ood = 1. / (vol - EPS);
+      const double offset = vol >= 0 ? EPS : -EPS;
+
+      // Compute one over denominator; offset by a tiny amount to avoid division by zero
+      const double ood = 1. / (vol + offset);
 
       bary[0] = detA * ood;
       bary[1] = detB * ood;
@@ -229,10 +232,10 @@ public:
                          vx[1] * vx[1] + vy[1] * vy[1] + vz[1] * vz[1],
                          vx[2] * vx[2] + vy[2] * vy[2] + vz[2] * vz[2]};
 
-    // Compute one over denominator using a small value to avoid division by zero
-    // Note: a has opposite sign of signedVolume()
+    // Compute one over denominator using a small offset to avoid division by zero
     const double a = VectorType::scalar_triple_product(vx, vy, vz);
-    const double ood = 1. / (2 * a - EPS);
+    const double offset = a >= 0 ? EPS : -EPS;
+    const double ood = 1. / (2 * a + offset);
 
     // Compute offset from p0 to center
     const auto center_offset = ood *
