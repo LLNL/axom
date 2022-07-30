@@ -13,6 +13,7 @@
 #include "axom/core/utilities/Utilities.hpp"
 
 // Primal includes
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
@@ -488,12 +489,10 @@ AXOM_HOST_DEVICE inline double Vector<T, NDIMS>::norm() const
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
 {
-  constexpr double EPS = 1.0e-50;
-
   Vector v(*this);
 
   const double len_sq = squared_norm();
-  if(len_sq >= EPS)
+  if(len_sq >= primal::PTINY)
   {
     v /= (std::sqrt(len_sq));
   }

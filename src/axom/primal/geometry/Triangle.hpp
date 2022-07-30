@@ -10,6 +10,7 @@
 #include "axom/core.hpp"
 #include "axom/slic/interface/slic.hpp"
 
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
@@ -161,7 +162,6 @@ public:
   typename std::enable_if<TDIM == 2, SphereType>::type circumsphere() const
   {
     using axom::numerics::determinant;
-    constexpr double EPS = 1.0e-50;
 
     const PointType& p0 = m_points[0];
     const PointType& p1 = m_points[1];
@@ -177,10 +177,9 @@ public:
                          vx[1] * vx[1] + vy[1] * vy[1]};
 
     // Compute one over denominator using a small value to avoid division by zero
-    // Note: a has opposite sign of signedArea()
     const double a = determinant(vx[0], vx[1], vy[0], vy[1]);
-    const double offset = a >= 0 ? EPS : -EPS;
-    const double ood = 1. / (2 * a + offset);
+    const double EPS = (a >= 0) ? primal::PTINY : -primal::PTINY;
+    const double ood = 1. / (2 * a + EPS);
 
     // Compute offset from p0 to center
     const auto center_offset = ood *
@@ -284,9 +283,8 @@ public:
     if(!skipNormalization)
     {
       // compute one over denominator; add a tiny amount to avoid division by zero
-      constexpr double EPS = 1.0e-50;
-      const double offset = area >= 0 ? EPS : -EPS;
-      const double ood = 1. / (area + offset);
+      const double EPS = (area >= 0) ? primal::PTINY : -primal::PTINY;
+      const double ood = 1. / (area + EPS);
 
       bary[0] = ood * nu;
       bary[1] = ood * nv;
@@ -343,7 +341,7 @@ public:
    * \return true iff P is in the triangle
    * \see primal::Point
    */
-  bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const
+  bool checkInTriangle(const PointType& p, double eps = 1e-8) const
   {
     if(!axom::utilities::isNearlyEqual(ppedVolume(p), 0., eps))
     {
@@ -381,8 +379,8 @@ private:
   PointType m_points[3];
 };
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 //  Triangle implementation
