@@ -11,6 +11,7 @@ variables:
   DO_CLEAN: 'no'
   CLANG10_IMAGENAME: 'axom/tpls:clang-10_06-24-22_05h-21m'
   GCC11_IMAGENAME: 'axom/tpls:gcc-11_06-24-22_05h-21m'
+  system.debug: false
 
 jobs:
 - job: Build_and_Test
@@ -40,7 +41,7 @@ jobs:
         TEST_TARGET: 'linux_clang10'
         HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-clang@10.0.0'
       osx_gcc:
-        VM_ImageName: 'macos-1015'
+        VM_ImageName: 'macos-11'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
         TEST_TARGET: 'osx_gcc'
       windows:

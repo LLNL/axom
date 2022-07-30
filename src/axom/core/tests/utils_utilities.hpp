@@ -29,7 +29,7 @@ void check_random_real(int offset)
   {
     T val = axom::utilities::random_real(curr_min, curr_max);
     EXPECT_GE(val, curr_min);
-    EXPECT_LT(val, curr_max);
+    EXPECT_LE(val, curr_max);
   }
 }
 
@@ -95,7 +95,7 @@ TEST(utils_utilities, random_real_with_seed)
   {
     const double real = axom::utilities::random_real(a, b, seed);
     EXPECT_GE(real, a);
-    EXPECT_LT(real, b);
+    EXPECT_LE(real, b);
   }
 }
 
