@@ -118,7 +118,7 @@ public:
     csplit.split(t, m_edges[idx], m_edges[idx + 1]);
   }
 
-  std::vector<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
+  axom::Array<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
 
   /// @}
 
@@ -235,7 +235,7 @@ public:
   }
 
 private:
-  std::vector<BezierCurve<T, NDIMS>> m_edges;
+  axom::Array<BezierCurve<T, NDIMS>> m_edges;
 };
 
 //------------------------------------------------------------------------------

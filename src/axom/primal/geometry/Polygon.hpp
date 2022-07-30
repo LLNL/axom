@@ -62,8 +62,13 @@ public:
     m_vertices.reserve(numExpectedVerts);
   }
 
+  /*!
+   * \brief Constructor for a polygon with the given vertices
+   */
+  Polygon(const axom::Array<PointType>& vertices) { m_vertices = vertices; }
+
   /*! Return the number of vertices in the polygon */
-  int numVertices() const { return static_cast<int>(m_vertices.size()); }
+  const int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
   /*! Appends a vertex to the list of vertices */
   void addVertex(const PointType& pt) { m_vertices.push_back(pt); }

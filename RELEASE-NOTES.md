@@ -97,6 +97,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds set accessor methods to `slam::DynamicVariableRelation`
 - Adds a new component to Axom, `multimat`, to simplify the handing of multi-material meshes and
   fields.
+- Adds functions to compute winding numbers and in/out queries for `Polygon` and `CurvedPolygon` objects.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -157,6 +158,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Renames indirection policies in slam: The c-array indirection policy was renamed from `ArrayIndirection` to `CArrayIndirection`
   and the axom::Array-based indirection policy was renamed from `CoreArrayIndirection` to `ArrayIndirection`.
 - Mfem dependency updated to 4.4
+- `primal::detail::intersect_ray` now correctly identifies intersections between collinear `Segment` and `Ray` objects.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s

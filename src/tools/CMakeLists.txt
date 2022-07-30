@@ -107,10 +107,19 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
             COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
             NUM_MPI_TASKS 2
         )
+        axom_add_test(
+            NAME    data_collection_util_box3D
+            COMMAND data_collection_util --min -1 -1 -1 --max 1 1 1 --res 16 16 16 -p 1
+            NUM_MPI_TASKS 2
+        )
     else()
         axom_add_test(
             NAME    data_collection_util_box2D
             COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
+        )
+        axom_add_test(
+            NAME    data_collection_util_box3D
+            COMMAND data_collection_util --min -1 -1 -1 --max 1 1 1 --res 16 16 16 -p 1
         )
     endif()
 
