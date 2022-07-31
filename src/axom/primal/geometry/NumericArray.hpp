@@ -374,6 +374,9 @@ public:
    */
   int argMin() const;
 
+  /// \brief Computes the sum of the components
+  T sum() const;
+
 private:
   AXOM_HOST_DEVICE
   void verifyIndex(int AXOM_DEBUG_PARAM(idx)) const
@@ -679,6 +682,19 @@ inline int NumericArray<T, SIZE>::argMin() const
   }
 
   return idx;
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int SIZE>
+inline T NumericArray<T, SIZE>::sum() const
+{
+  T result {};
+  for(int i = 0; i < SIZE; ++i)
+  {
+    result += this->m_components[i];
+  }
+
+  return result;
 }
 
 //------------------------------------------------------------------------------

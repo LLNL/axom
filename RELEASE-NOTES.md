@@ -98,6 +98,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds a new component to Axom, `multimat`, to simplify the handing of multi-material meshes and
   fields.
 - Adds functions to compute winding numbers and in/out queries for `Polygon` and `CurvedPolygon` objects.
+- Adds `constants.hpp` to primal to track geometric constants. Initially includes
+  a value for `primal::PTINY`, a small constant that can be added to 
+  denominators to avoid division by zero.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -159,6 +162,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and the axom::Array-based indirection policy was renamed from `CoreArrayIndirection` to `ArrayIndirection`.
 - Mfem dependency updated to 4.4
 - `primal::detail::intersect_ray` now correctly identifies intersections between collinear `Segment` and `Ray` objects.
+- Improved efficiency and robustness of barycentric coordinate
+  and circumsphere computation for Triangles and Tetrahedra.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s

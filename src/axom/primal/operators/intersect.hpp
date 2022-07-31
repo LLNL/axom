@@ -16,6 +16,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Plane.hpp"
@@ -147,8 +148,7 @@ bool intersect(const Triangle<T, 3>& tri,
   if(retval)
   {
     // Add a small EPS to avoid dividing by zero
-    const double EPS = 1e-80;
-    double normalizer = p[0] + p[1] + p[2] + EPS;
+    double normalizer = p[0] + p[1] + p[2] + primal::PTINY;
     p.array() *= 1. / normalizer;
   }
 
@@ -208,8 +208,7 @@ bool intersect(const Triangle<T, 3>& tri,
   if(retval)
   {
     // Add a small EPS to avoid dividing by zero
-    const double EPS = 1e-80;
-    double normalizer = p[0] + p[1] + p[2] + EPS;
+    double normalizer = p[0] + p[1] + p[2] + primal::PTINY;
     p.array() *= 1. / normalizer;
   }
 
