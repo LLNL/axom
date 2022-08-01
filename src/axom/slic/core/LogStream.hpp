@@ -159,7 +159,6 @@ protected:
 
 private:
   std::string m_formatString;
-  bool m_abort;
 
   /*!
    * \brief Replaces the given key in the message string with the given value.

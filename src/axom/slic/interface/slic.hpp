@@ -230,10 +230,6 @@ void addStreamToAllMsgLevels(GenericOutputStream* ls);
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \post Abort flag is set if level is Error and abort on Error messages is
- * enabled.
- * \post Abort flag is set if level is Warning and abort on Warning messages
- * is enabled.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -248,10 +244,6 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \post Abort flag is set if level is Error and abort on Error messages is
- * enabled.
- * \post Abort flag is set if level is Warning and abort on Warning messages
- * is enabled.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -268,10 +260,6 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \post Abort flag is set if level is Error and abort on Error messages is
- * enabled.
- * \post Abort flag is set if level is Warning and abort on Warning messages
- * is enabled.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -290,10 +278,6 @@ void logMessage(message::Level level,
  * \param [in] filter_duplicates optional parameter that indicates whether
  * duplicate messages resulting from running in parallel will be filtered out.
  * Default is false.
- * \post Abort flag is set if level is Error and abort on Error messages is
- * enabled.
- * \post Abort flag is set if level is Warning and abort on Warning messages
- * is enabled.
  */
 void logMessage(message::Level level,
                 const std::string& message,
@@ -308,7 +292,6 @@ void logMessage(message::Level level,
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
- * \post Abort flag is set if abort on Error messages is enabled.
  */
 void logErrorMessage(const std::string& message,
                      const std::string& fileName,
@@ -320,7 +303,6 @@ void logErrorMessage(const std::string& message,
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file that the message is logged.
- * \post Abort flag is set if abort on Warning messages is enabled.
  */
 void logWarningMessage(const std::string& message,
                        const std::string& fileName,
@@ -332,11 +314,6 @@ void logWarningMessage(const std::string& message,
 //! \attention These methods are collective operations.
 //! All ranks in the user-supplied communicator must call the method
 //! when used within an MPI distributed environment.
-//! The checkAbortRaised method is collective if either:
-//!  - Level of the given message is Error and slic::enableAbortOnError() is
-//!    called for the current active logger (default is enabled for loggers)
-//!  - Level of the given message is Warning and slic::enableAbortOnWarning()
-//!    is called for the current active logger (default is disabled for loggers)
 //!
 //! \sa axom::slic::isAbortOnErrorsEnabled()
 //! \sa axom::slic::setAbortOnError(bool status)
@@ -352,16 +329,6 @@ void logWarningMessage(const std::string& message,
  *
  */
 void abort();
-
-/*!
- * \brief Checks that abort flag(s) was raised on one or more ranks.
- *
- * \param [in] level the level to check
- *
- * \return true if abort flag was raised for at least one rank, else false.
- * \collective
- */
-bool checkAbortRaised(message::Level level);
 
 /*!
  * \brief Flushes all streams for all ranks or current rank.

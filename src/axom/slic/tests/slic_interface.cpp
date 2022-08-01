@@ -6,7 +6,6 @@
 #include "gtest/gtest.h"
 
 #include "axom/slic/interface/slic.hpp"
-#include "axom/slic/streams/GenericOutputStream.hpp"
 
 TEST(slic_interface, initialize_finalize)
 {
