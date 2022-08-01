@@ -97,7 +97,7 @@ void LumberjackStream::flush(bool single_rank)
   //Non-collective write to stream
   if(single_rank)
   {
-    this->write();
+    this->write(true);
   }
   // Collective push of messages to output node followed by write to stream
   else
