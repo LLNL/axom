@@ -165,8 +165,8 @@ public:
     // Options that are always available
     app.add_option("-o, --output-name", dcName)
       ->description(
-        "Name of the output mesh. Defaults to box{2,3}d for box meshes, and "
-        "the mfem mesh name when loading from an mfem file");
+        "Name of the output mesh. Defaults to box_{2,3}d for box meshes, "
+        "and the mfem mesh name when loading from an mfem file");
 
     app.add_flag("-v,--verbose", m_verboseOutput)
       ->description("Enable/disable verbose output")

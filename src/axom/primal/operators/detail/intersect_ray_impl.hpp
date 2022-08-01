@@ -42,26 +42,23 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
-  // STEP 0: Find the parameterized direction of the segment.
-  //         efine lower/upper threshold
+  // Find the parameterized direction of the segment.
   const auto seg_dir = primal::Vector<T, 2>(S.source(), S.target());
   const auto& ray_dir = R.direction();
 
-  // STEP 1: Define lower/upper threshold
+  // Define lower/upper threshold
   const double tlow = 0.0 - EPS;
   const double thigh = 1.0 + EPS;
 
-  // Step 2: Equating R(ray_param)=S(seg_param) yields a system of two equations and
+  // Equating R(ray_param)=S(seg_param) yields a system of two equations and
   // two unknowns, namely, t0 and t1. We can solve this system directly using Cramer's Rule.
   const double denom =
     numerics::determinant(ray_dir[0], -seg_dir[0], ray_dir[1], -seg_dir[1]);
 
-  // STEP 3: if denom is (nearly) zero (within tolerance EPS), the system is singular
+  // If denom is (nearly) zero (within tolerance EPS), the ray and segment are parallel
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
   {
-    // ray and segment are parallel
-
-    // STEP 3.1: Check if ray and segment are collinear
+    // Check if ray and segment are collinear
     const auto col = S.source().array() - R.origin().array();
 
     const double cross =
@@ -69,11 +66,11 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
 
     if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
     {
-      // Step 3.2: Check orientation of segment relative to ray
+      // Check orientation of segment relative to ray
       const double t0 = col[0] * ray_dir[0] + col[1] * ray_dir[1];
-      const double t1 = t0 + seg_dir[0] * ray_dir[0] + seg_dir[1] * ray_dir[1];
+      const double t1 = t0 + seg_dir.dot(ray_dir);
 
-      // Step 3.3: Assign (nonunique) parameters
+      // Assign (nonunique) parameters
       ray_param = (t1 > t0) ? t1 : t0;
       seg_param = (t1 > t0) ? 1.0 : 0.0;
 
@@ -83,7 +80,7 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
       return false;
   }
 
-  // STEP 4: Solve for the ray_param and seg_param directly using cramer's rule
+  // Solve for the ray_param and seg_param directly using Cramer's rule
   const auto sol = S.source().array() - R.origin().array();
 
   // Note: ray_param is an OUT parameter of this function
@@ -94,7 +91,7 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
   seg_param =
     numerics::determinant(ray_dir[0], sol[0], ray_dir[1], sol[1]) / denom;
 
-  // STEP 5: Necessary and sufficient criteria for an intersection between
+  // Necessary and sufficient criteria for an intersection between
   // ray, R(t0),  and a finite segment S(t1) are:
   // 1. ray_param >= tlow w.r.t. the ray R(ray_param).
   // 2. tlow >= seg_param >= thigh w.r.t. the segment S(seg_param).

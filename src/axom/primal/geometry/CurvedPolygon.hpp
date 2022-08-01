@@ -113,9 +113,7 @@ public:
   {
     SLIC_ASSERT(idx < static_cast<int>(m_edges.size()));
 
-    // This causes an error, but it really shouldn't?
-    BezierCurve<T, NDIMS> new_edge(m_edges[idx]);
-    m_edges.insert(m_edges.begin() + idx + 1, 1, new_edge);
+    m_edges.insert(m_edges.begin() + idx + 1, 1, m_edges[idx]);
     auto& csplit = m_edges[idx];
     csplit.split(t, m_edges[idx], m_edges[idx + 1]);
   }

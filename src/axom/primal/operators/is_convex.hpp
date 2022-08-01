@@ -14,9 +14,23 @@ namespace axom
 {
 namespace primal
 {
-// Algorithm adapted from [Maa 99].
-// Checks if the polygon is convex.
-// Only defined if NDIMS = 2
+/*!
+ * \brief Determines if a polygon defined by ordered vertices is convex
+ * 
+ * \param [in] poly The polygon
+ * 
+ * Uses dot products to detect whether vertices extend in the "convex" direction.
+ * Uses the edge P[0]P[N] as a reference, meaning its adjacent edges are
+ * always considered to be oriented correctly.
+ * 
+ * Algorithm adapted from:
+ * Y. L. Ma, W.T. Hewitt. "Point inversion and projection for NURBS curve 
+ * and surface: Control polygon approach"
+ * Computer Aided Geometric Design 20(2):79-99, May 2003.
+ * \note Only defined in 2D
+ * 
+ * \return A boolean value indicating convexity
+ */
 template <typename T>
 bool is_convex(const Polygon<T, 2>& poly)
 {
@@ -33,14 +47,8 @@ bool is_convex(const Polygon<T, 2>& poly)
     // Edge case
     if(res1 == primal::ON_BOUNDARY) continue;
 
-    if(i < n / 2)
-    {
-      if(res1 == orientation(poly[n], seg)) return false;
-    }
-    else
-    {
-      if(res1 == orientation(poly[0], seg)) return false;
-    }
+    // Ensure other point to check against isn't adjacent
+    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg)) return false;
   }
 
   return true;

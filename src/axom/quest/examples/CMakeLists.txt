@@ -14,6 +14,8 @@ blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS blt::hip IF ENABLE_HIP)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
+set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
+
 # In/out octree containment example -------------------------------------------
 blt_add_executable(
     NAME        quest_containment_driver_ex
@@ -46,6 +48,38 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             DEPENDS_ON  ${quest_example_depends} mfem mpi
             FOLDER      axom/quest/examples
             )
+
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        set(_nranks 3)
+
+        # Run the distributed closest point example on N ranks for each enabled policy
+        set(_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+        foreach(_pol ${_policies})
+            set(_test "quest_distributed_closest_point_run_2D_${_pol}")
+
+            axom_add_test(
+                NAME    ${_test}
+                COMMAND quest_distributed_distance_query_ex
+                            --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
+                            --num-samples 500
+                            --dist-threshold .45
+                            --policy ${_pol}
+                            --object-file dcp_object_mesh_2d_${_pol}
+                            --distance-file dcp_closest_point_2d_${_pol}
+                NUM_MPI_TASKS ${_nranks})
+
+            if(${_pol} STREQUAL "omp")
+                set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
+            endif()
+        endforeach()
+
+        unset(_nranks)
+        unset(_policies)
+        unset(_test)
+    endif()
 endif()
 
 # Point in cell example -------------------------------------------------------
@@ -115,8 +149,6 @@ blt_add_executable(
     DEPENDS_ON  ${quest_example_depends}
     FOLDER      axom/quest/examples
     )
-
-set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     # Add a test for the quest interface; Set up for MPI, when available

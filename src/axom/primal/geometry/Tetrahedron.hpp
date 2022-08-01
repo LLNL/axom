@@ -8,12 +8,14 @@
 
 #include "axom/core.hpp"
 
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 
 #include "axom/slic/interface/slic.hpp"
+#include "axom/fmt.hpp"
 
 #include <ostream>
 
@@ -45,11 +47,15 @@ public:
   { }
 
   /*!
-   * \brief Custom Constructor. Creates a tetrahedron from the 4 points A,B,C,D.
-   * \param [in] A point instance corresponding to vertex A of the tetrahedron.
-   * \param [in] B point instance corresponding to vertex B of the tetrahedron.
-   * \param [in] C point instance corresponding to vertex C of the tetrahedron.
-   * \param [in] D point instance corresponding to vertex D of the tetrahedron.
+   * \brief Tetrahedron constructor from 4 points A,B,C,D.
+   * \param [in] A Vertex A of the tetrahedron
+   * \param [in] B Vertex B of the tetrahedron
+   * \param [in] C Vertex C of the tetrahedron
+   * \param [in] D Vertex D of the tetrahedron
+   * 
+   * \note The orientation of the tetrahedron is determined from the 
+   * scalar triple product of the vectors from B, C and D to A, respectively,
+   * i.e. \f$ dot(B-A, cross(C-A, D-A)) \f$.
    */
   AXOM_HOST_DEVICE
   Tetrahedron(const PointType& A,
@@ -93,59 +99,61 @@ public:
 
   /*!
    * \brief Returns the barycentric coordinates of a point within a tetrahedron
-   * \return The barycentric coordinates of the tetrahedron
-   * \post The barycentric coordinates sum to 1.
+   *
+   * \param [in] p The point at which we want to compute barycentric coordinates
+   * \param [in] skipNormalization Determines if the result should be normalized
+   * by the volume of the tetrahedron. One might want to skip this if they were
+   * only interested in the relative weights rather than their actual amounts
+   * 
+   * \post The barycentric coordinates sum to 1 when \a skipNormalization is false
+   * Otherwise, the sum of coordinates will be proportional to volume of the tetrahedron
+   * (Specifically, they should sum to the parallelpiped volume, which is 6x the volume).
    */
-  Point<double, 4> physToBarycentric(const PointType& p) const
+  Point<double, 4> physToBarycentric(const PointType& p,
+                                     bool skipNormalization = false) const
   {
-    using axom::numerics::determinant;
-
     Point<double, 4> bary;
 
-    const PointType& p0 = m_points[0];
-    const PointType& p1 = m_points[1];
-    const PointType& p2 = m_points[2];
-    const PointType& p3 = m_points[3];
+    const PointType& A = m_points[0];
+    const PointType& B = m_points[1];
+    const PointType& C = m_points[2];
+    const PointType& D = m_points[3];
 
-    double det0 = ppedVolume();
+    const auto pA = A - p;
+    const auto pB = B - p;
+    const auto pC = C - p;
+    const auto pD = D - p;
 
-    SLIC_CHECK_MSG(
-      !axom::utilities::isNearlyEqual(det0, 0.),
-      "Attempting to find barycentric coordinates of degenerate tetrahedron");
+    const double detA = VectorType::scalar_triple_product(pB, pC, pD);
+    const double detB = -VectorType::scalar_triple_product(pC, pD, pA);
+    const double detC = VectorType::scalar_triple_product(pD, pA, pB);
+    const double detD = -VectorType::scalar_triple_product(pA, pB, pC);
 
-    const double detScale = 1. / det0;
+    if(!skipNormalization)
+    {
+      const double vol = VectorType::scalar_triple_product(B - A, C - A, D - A);
+      const double EPS = vol >= 0 ? primal::PTINY : -primal::PTINY;
 
-    // clang-format off
-    const double det1 = determinant(1.0,  p[0],  p[1],  p[2],
-                                    1.0, p1[0], p1[1], p1[2],
-                                    1.0, p2[0], p2[1], p2[2],
-                                    1.0, p3[0], p3[1], p3[2]);
+      // Compute one over denominator; offset by a tiny amount to avoid division by zero
+      const double ood = 1. / (vol + EPS);
 
-    const double det2 = determinant(1.0, p0[0], p0[1], p0[2],
-                                    1.0,  p[0],  p[1],  p[2],
-                                    1.0, p2[0], p2[1], p2[2],
-                                    1.0, p3[0], p3[1], p3[2]);
+      bary[0] = detA * ood;
+      bary[1] = detB * ood;
+      bary[2] = detC * ood;
+      bary[3] = detD * ood;
 
-    const double det3 = determinant(1.0, p0[0], p0[1], p0[2],
-                                    1.0, p1[0], p1[1], p1[2],
-                                    1.0,  p[0],  p[1],  p[2],
-                                    1.0, p3[0], p3[1], p3[2]);
-
-    const double det4 = determinant(1.0, p0[0], p0[1], p0[2],
-                                    1.0, p1[0], p1[1], p1[2],
-                                    1.0, p2[0], p2[1], p2[2],
-                                    1.0,  p[0],  p[1],  p[2]);
-    // clang-format on
-
-    bary[0] = det1 * detScale;
-    bary[1] = det2 * detScale;
-    bary[2] = det3 * detScale;
-    bary[3] = det4 * detScale;
-
-    SLIC_CHECK_MSG(
-      axom::utilities::isNearlyEqual(bary[0] + bary[1] + bary[2] + bary[3], 1.),
-      "Barycentric coordinates should sum to 1. rather than "
-        << (bary[0] + bary[1] + bary[2] + bary[3]));
+      // Replace the smallest entry with the difference of 1 from the sum of the others
+      const int amin = primal::abs(bary.array()).argMin();
+      bary[amin] = 0.;
+      bary[amin] = 1. - bary.array().sum();
+    }
+    else
+    {
+      bary[0] = detA;
+      bary[1] = detB;
+      bary[2] = detC;
+      bary[3] = detD;
+    }
 
     return bary;
   }
@@ -153,7 +161,6 @@ public:
   /*!
    * \brief Returns the physical coordinates of a barycentric point
    * \param [in] bary Barycentric coordinates relative to this tetrahedron
-   * \return Physical point represented by bary
    */
   PointType baryToPhysical(const Point<double, 4>& bary) const
   {
@@ -202,59 +209,43 @@ public:
   double volume() const { return axom::utilities::abs(signedVolume()); }
 
   /**
-   * \brief Returns the circumsphere of the tetrahedron
+   * \brief Returns the circumsphere (circumscribing sphere) of the tetrahedron
    *
-   * Implements formula from https://mathworld.wolfram.com/Circumsphere.html
+   * Derived from formula on https://mathworld.wolfram.com/Circumsphere.html
+   * but uses observation that radius can be derived from distance to a vertex
    * \note This function is only available for 3D tetrahedra in 3D
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 3, SphereType>::type circumsphere() const
   {
-    using axom::numerics::determinant;
-    using axom::numerics::dot_product;
-    using axom::utilities::abs;
-    using NumericArrayType = primal::NumericArray<T, NDIMS>;
-
     const PointType& p0 = m_points[0];
     const PointType& p1 = m_points[1];
     const PointType& p2 = m_points[2];
     const PointType& p3 = m_points[3];
 
-    // clang-format off
-    const Point<T, 4> sq { dot_product(p0.data(), p0.data(), NDIMS),
-                           dot_product(p1.data(), p1.data(), NDIMS),
-                           dot_product(p2.data(), p2.data(), NDIMS),
-                           dot_product(p3.data(), p3.data(), NDIMS)};
+    // It's useful to separate the x-, y- and z- components of
+    // the difference vectors for p1, p2, and p3 from p0
+    const VectorType vx {p1[0] - p0[0], p2[0] - p0[0], p3[0] - p0[0]};
+    const VectorType vy {p1[1] - p0[1], p2[1] - p0[1], p3[1] - p0[1]};
+    const VectorType vz {p1[2] - p0[2], p2[2] - p0[2], p3[2] - p0[2]};
 
-    const double  a =  determinant(p0[0], p0[1], p0[2], 1.,
-                                   p1[0], p1[1], p1[2], 1.,
-                                   p2[0], p2[1], p2[2], 1.,
-                                   p3[0], p3[1], p3[2], 1.);
+    // We also need their squared norms
+    const VectorType sq {vx[0] * vx[0] + vy[0] * vy[0] + vz[0] * vz[0],
+                         vx[1] * vx[1] + vy[1] * vy[1] + vz[1] * vz[1],
+                         vx[2] * vx[2] + vy[2] * vy[2] + vz[2] * vz[2]};
 
-    const double dx =  determinant(sq[0], p0[1], p0[2], 1.,
-                                   sq[1], p1[1], p1[2], 1.,
-                                   sq[2], p2[1], p2[2], 1.,
-                                   sq[3], p3[1], p3[2], 1.);
+    // Compute one over denominator using a small offset to avoid division by zero
+    const double a = VectorType::scalar_triple_product(vx, vy, vz);
+    const double EPS = (a >= 0) ? primal::PTINY : -primal::PTINY;
+    const double ood = 1. / (2 * a + EPS);
 
-    const double dy = -determinant(sq[0], p0[0], p0[2], 1.,
-                                   sq[1], p1[0], p1[2], 1.,
-                                   sq[2], p2[0], p2[2], 1.,
-                                   sq[3], p3[0], p3[2], 1.);
+    // Compute offset from p0 to center
+    const auto center_offset = ood *
+      VectorType {VectorType::scalar_triple_product(sq, vy, vz),
+                  VectorType::scalar_triple_product(sq, vz, vx),
+                  VectorType::scalar_triple_product(sq, vx, vy)};
 
-    const double dz =  determinant(sq[0], p0[0], p0[1], 1.,
-                                   sq[1], p1[0], p1[1], 1.,
-                                   sq[2], p2[0], p2[1], 1.,
-                                   sq[3], p3[0], p3[1], 1.);
-
-    const double  c =  determinant(sq[0], p0[0], p0[1], p0[2],
-                                   sq[1], p1[0], p1[1], p1[2],
-                                   sq[2], p2[0], p2[1], p2[2],
-                                   sq[3], p3[0], p3[1], p3[2]);
-    // clang-format on
-
-    const auto center = NumericArrayType {dx, dy, dz} / (2 * a);
-    const T radius = sqrt(dx * dx + dy * dy + dz * dz - 4 * a * c) / (2 * abs(a));
-    return SphereType(center.data(), radius);
+    return SphereType(p0 + center_offset, center_offset.norm());
   }
 
 private:
@@ -269,27 +260,16 @@ private:
   AXOM_HOST_DEVICE
   double ppedVolume() const
   {
-    if(NDIMS != 3)
-    {
-      return 0.;
-    }
-    else
-    {
-      const VectorType A(m_points[0], m_points[1]);
-      const VectorType B(m_points[0], m_points[2]);
-      const VectorType C(m_points[0], m_points[3]);
-
-      // clang-format off
-      return axom::numerics::determinant<double>(A[0], A[1], A[2],
-                                                 B[0], B[1], B[2],
-                                                 C[0], C[1], C[2]);
-      // clang-format on
-    }
+    return NDIMS != 3
+      ? 0.
+      : VectorType::scalar_triple_product(m_points[1] - m_points[0],
+                                          m_points[2] - m_points[0],
+                                          m_points[3] - m_points[0]);
   }
 
 private:
   PointType m_points[4];
-};  // namespace primal
+};
 
 //------------------------------------------------------------------------------
 /// Free functions implementing Tetrahedron's operators

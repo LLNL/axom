@@ -241,12 +241,6 @@ TEST(primal_curvedpolygon, split_edge)
                                PointType {0.0, 1.6},
                                PointType {0.6, 1.2}};
 
-  std::cout << CP << std::endl;
-  CP.insert(0, CP[0]);
-  std::cout << CP << std::endl;
-
-  return;
-
   axom::Array<int> orders32 = {1, 1, 1};
   CurvedPolygonType bPolygon32 = createPolygon(CP, orders32);
 

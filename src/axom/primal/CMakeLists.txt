@@ -17,24 +17,26 @@ axom_component_requires(NAME       PRIMAL
 #------------------------------------------------------------------------------
 set( primal_headers
 
-     ## geometry
-     geometry/BezierCurve.hpp
-     geometry/BoundingBox.hpp
-     geometry/CurvedPolygon.hpp
-     geometry/OrientedBoundingBox.hpp
-     geometry/OrientationResult.hpp
-     geometry/NumericArray.hpp
-     geometry/Plane.hpp
-     geometry/Point.hpp
-     geometry/Polygon.hpp
-     geometry/Ray.hpp
-     geometry/Segment.hpp
-     geometry/Sphere.hpp
-     geometry/Polyhedron.hpp
-     geometry/Tetrahedron.hpp
-     geometry/Octahedron.hpp
-     geometry/Triangle.hpp
-     geometry/Vector.hpp
+    constants.hpp
+
+    ## geometry
+    geometry/BezierCurve.hpp
+    geometry/BoundingBox.hpp
+    geometry/CurvedPolygon.hpp
+    geometry/OrientedBoundingBox.hpp
+    geometry/OrientationResult.hpp
+    geometry/NumericArray.hpp
+    geometry/Plane.hpp
+    geometry/Point.hpp
+    geometry/Polygon.hpp
+    geometry/Ray.hpp
+    geometry/Segment.hpp
+    geometry/Sphere.hpp
+    geometry/Polyhedron.hpp
+    geometry/Tetrahedron.hpp
+    geometry/Octahedron.hpp
+    geometry/Triangle.hpp
+    geometry/Vector.hpp
 
      ## operators
      operators/clip.hpp
@@ -51,20 +53,20 @@ set( primal_headers
      operators/is_convex.hpp
      operators/split.hpp
 
-     operators/detail/clip_impl.hpp
-     operators/detail/compute_moments_impl.hpp
-     operators/detail/in_curved_polygon_impl.hpp
-     operators/detail/intersect_bezier_impl.hpp
-     operators/detail/intersect_bounding_box_impl.hpp
-     operators/detail/intersect_impl.hpp
-     operators/detail/intersect_ray_impl.hpp
+    operators/detail/clip_impl.hpp
+    operators/detail/compute_moments_impl.hpp
+    operators/detail/in_curved_polygon_impl.hpp
+    operators/detail/intersect_bezier_impl.hpp
+    operators/detail/intersect_bounding_box_impl.hpp
+    operators/detail/intersect_impl.hpp
+    operators/detail/intersect_ray_impl.hpp
      
-     ## utils
-     utils/ZipIndexable.hpp
-     utils/ZipBoundingBox.hpp
-     utils/ZipPoint.hpp
-     utils/ZipRay.hpp
-     utils/ZipVector.hpp
+    ## utils
+    utils/ZipIndexable.hpp
+    utils/ZipBoundingBox.hpp
+    utils/ZipPoint.hpp
+    utils/ZipRay.hpp
+    utils/ZipVector.hpp
    )
 
 set( primal_sources

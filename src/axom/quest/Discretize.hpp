@@ -7,7 +7,7 @@
 #define QUEST_DISCRETIZE_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"  // for axom macros
+#include "axom/core/Macros.hpp"
 
 // Geometry
 #include "axom/primal/geometry/Sphere.hpp"
@@ -118,4 +118,4 @@ int mesh_from_discretized_polyline(const OctType* octs,
 
 #include "detail/Discretize_detail.hpp"
 
-#endif /* QUEST_DISCRETIZE_HPP_ */
+#endif  // QUEST_DISCRETIZE_HPP_

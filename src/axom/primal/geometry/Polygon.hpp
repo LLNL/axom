@@ -14,9 +14,6 @@
 
 #include "axom/core/Array.hpp"
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Segment.hpp"
-#include "axom/primal/operators/orientation.hpp"
-#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 #include <ostream>
 
@@ -28,7 +25,7 @@ namespace primal
 template <typename T, int NDIMS>
 class Polygon;
 
-/*! \brief Overloaded output operator for polygons */
+/// \brief Overloaded output operator for polygons
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS>& poly);
 
@@ -48,7 +45,7 @@ public:
   using PointType = Point<T, NDIMS>;
 
 public:
-  /*! Default constructor for an empty polygon   */
+  /// Default constructor for an empty polygon
   Polygon() { }
 
   /*!
@@ -65,23 +62,21 @@ public:
     m_vertices.reserve(numExpectedVerts);
   }
 
-  /*!
-   * \brief Constructor for a polygon with the given vertices
-   */
+  /// \brief Constructor for a polygon with the given vertices
   Polygon(const axom::Array<PointType>& vertices) { m_vertices = vertices; }
 
-  /*! Return the number of vertices in the polygon */
+  /// Return the number of vertices in the polygon
   int numVertices() const { return static_cast<int>(m_vertices.size()); }
 
-  /*! Appends a vertex to the list of vertices */
+  /// Appends a vertex to the list of vertices
   void addVertex(const PointType& pt) { m_vertices.push_back(pt); }
 
-  /*! Clears the list of vertices */
+  /// Clears the list of vertices
   void clear() { m_vertices.clear(); }
 
-  /*! Retrieves the vertex at index idx */
+  /// Retrieves the vertex at index idx
   PointType& operator[](int idx) { return m_vertices[idx]; }
-  /*! Retrieves the vertex at index idx */
+  /// Retrieves the vertex at index idx
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
 
   /*!

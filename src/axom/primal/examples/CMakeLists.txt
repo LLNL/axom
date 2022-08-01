@@ -25,7 +25,7 @@ foreach ( example ${primal_examples} )
 
     blt_add_executable(
         NAME        ${example_name}_ex
-        SOURCES     ${example_name}
+        SOURCES     ${example}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${primal_example_depends}
         FOLDER      axom/primal/examples
