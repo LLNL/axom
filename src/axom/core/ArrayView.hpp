@@ -167,7 +167,7 @@ using MCArrayView = ArrayView<T, 2>;
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
-  : ArrayView(data, {args...})
+  : ArrayView(data, StackArray<IndexType, DIM>{static_cast<IndexType>(args)...})
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
