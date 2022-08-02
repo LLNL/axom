@@ -694,8 +694,12 @@ public:
   {
     static_assert(sizeof...(Args) == DIM,
                   "Array size must match number of dimensions");
+    static_assert(std::is_default_constructible<T>::value,
+                  "Cannot call Array<T>::resize() when T is non-trivially-"
+                  "constructible. Use Array<T>::reserve() and emplace_back()"
+                  "instead.");
     const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
-    resize(dims, true);
+    resize(dims, true, T());
   }
 
   /// \overload
@@ -704,8 +708,23 @@ public:
   {
     static_assert(sizeof...(Args) == DIM,
                   "Array size must match number of dimensions");
+    static_assert(std::is_default_constructible<T>::value,
+                  "Cannot call Array<T>::resize() when T is non-trivially-"
+                  "constructible. Use Array<T>::reserve() and emplace_back()"
+                  "instead.");
     const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
-    resize(dims, false);
+    resize(dims, false, T());
+  }
+
+  template <int Dims = DIM, typename Enable = std::enable_if_t<Dims == 1>>
+  void resize(IndexType size, const T& value)
+  {
+    resize({size}, true, value);
+  }
+
+  void resize(const StackArray<IndexType, DIM>& size, const T& value)
+  {
+    resize(size, true, value);
   }
 
   /*!
@@ -783,10 +802,13 @@ protected:
    * \brief Updates the number of elements stored in the data array.
    *
    * \param [in] dims the number of elements to allocate in each dimension
-   * \param [in] default_construct if true, default-constructs any new elements
-   *  in the array
+   * \param [in] construct_with_values if true, sets new elements in the array
+   *             to a specified value
+   * \param [in] value the value to fill new elements in the array with
    */
-  void resize(const StackArray<IndexType, DIM>& dims, bool default_construct);
+  void resize(const StackArray<IndexType, DIM>& dims,
+              bool construct_with_values,
+              const T& value);
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
@@ -1251,7 +1273,8 @@ inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 inline void Array<T, DIM, SPACE>::resize(const StackArray<IndexType, DIM>& dims,
-                                         bool default_construct)
+                                         bool construct_with_values,
+                                         const T& value)
 {
   assert(detail::allNonNegative(dims.m_data));
   const auto new_num_elements = detail::packProduct(dims.m_data);
@@ -1266,13 +1289,14 @@ inline void Array<T, DIM, SPACE>::resize(const StackArray<IndexType, DIM>& dims,
     dynamicRealloc(new_num_elements);
   }
 
-  if(prev_num_elements < new_num_elements && default_construct)
+  if(prev_num_elements < new_num_elements && construct_with_values)
   {
     // Default-initialize the new elements
-    OpHelper::init(m_data,
+    OpHelper::fill(m_data,
                    prev_num_elements,
                    new_num_elements - prev_num_elements,
-                   m_allocator_id);
+                   m_allocator_id,
+                   value);
   }
   else if(prev_num_elements > new_num_elements)
   {
