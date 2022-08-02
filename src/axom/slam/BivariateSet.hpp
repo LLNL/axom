@@ -84,15 +84,7 @@ public:
   using ElementType = typename FirstSetType::ElementType;
   using NullSetType = NullSet<PositionType, ElementType>;
 
-  using OrderedSetType =
-    OrderedSet<PositionType,
-               ElementType,
-               policies::RuntimeSize<PositionType>,
-               policies::RuntimeOffset<PositionType>,
-               policies::StrideOne<PositionType>,
-               policies::STLVectorIndirection<PositionType, ElementType>>;
-
-  using SubSetType = OrderedSetType;
+  using RelationSubset = slam::Set<PositionType, ElementType>;
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
@@ -188,7 +180,7 @@ public:
    * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual const OrderedSetType getElements(PositionType s1) const = 0;
+  virtual const RelationSubset& getElements(PositionType s1) const = 0;
 
   virtual bool isValid(bool verboseOutput = false) const = 0;
 
@@ -271,17 +263,14 @@ public:
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
-  using OrderedSetType = typename BivariateSet<Set1, Set2>::OrderedSetType;
+  using RelationSubset = typename WrappedType::RelationSubset;
 
 public:
   BivariateSetProxy(WrappedType bset) : m_impl(std::move(bset))
   {
-    if(!std::is_same<OrderedSetType, typename WrappedType::SubSetType>::value &&
-       m_impl.getSecondSet() != nullptr)
-    {
-      m_rowset_data.resize(m_impl.secondSetSize());
-      std::iota(m_rowset_data.begin(), m_rowset_data.end(), 0);
-    }
+    using ConstSubset = RangeSet<PositionType, ElementType>;
+
+    initSubsetField(std::is_same<ConstSubset, RelationSubset> {});
   }
 
   /**
@@ -394,9 +383,10 @@ public:
    * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual const OrderedSetType getElements(PositionType s1) const override
+  virtual const RelationSubset& getElements(PositionType s1) const override
   {
-    return convertSubset(m_impl.getElements(s1));
+    using ConstSubset = RangeSet<PositionType, ElementType>;
+    return getElementsImpl(s1, std::is_same<ConstSubset, RelationSubset> {});
   }
 
   virtual void verifyPosition(PositionType s1, PositionType s2) const override
@@ -410,22 +400,31 @@ public:
   }
 
 private:
-  using SubSetNoData =
-    PositionSet<typename Set1::PositionType, typename Set2::PositionType>;
-
-  OrderedSetType convertSubset(OrderedSetType value) const { return value; }
-
-  OrderedSetType convertSubset(SubSetNoData value) const
+  const RelationSubset& getElementsImpl(PositionType, std::true_type) const
   {
-    AXOM_UNUSED_VAR(value);
-    return typename OrderedSetType::SetBuilder()
-      .size(m_impl.secondSetSize())
-      .offset(0)
-      .data(&m_rowset_data);
+    return m_constSubset;
   }
 
+  const RelationSubset& getElementsImpl(PositionType s1, std::false_type) const
+  {
+    return m_impl.getElements(s1);
+  }
+
+  void initSubsetField(std::true_type)
+  {
+    using ConstSubset = RangeSet<PositionType, ElementType>;
+
+    if(m_impl.isValid())
+    {
+      // store fixed result of ProductSet::getElements()
+      m_constSubset = ConstSubset(m_impl.secondSetSize());
+    }
+  }
+
+  void initSubsetField(std::false_type) { }
+
   WrappedType m_impl;
-  mutable std::vector<PositionType> m_rowset_data;
+  RelationSubset m_constSubset;
 };
 
 template <typename DerivedBset,
@@ -455,11 +454,23 @@ public:
   using BSet = BivariateSet<FirstSetType, SecondSetType>;
   using PositionType = typename BSet::PositionType;
   using ElementType = typename BSet::ElementType;
-  using OrderedSetType = typename BSet::OrderedSetType;
+  using RelationSubsetType = typename BSet::RelationSubset;
   using RangeSetType = typename BSet::RangeSetType;
 
+  using OrderedSetType =
+    OrderedSet<PositionType,
+               ElementType,
+               policies::RuntimeSize<PositionType>,
+               policies::RuntimeOffset<PositionType>,
+               policies::StrideOne<PositionType>,
+               policies::STLVectorIndirection<PositionType, ElementType>>;
+
 public:
-  NullBivariateSet() = default;
+  NullBivariateSet()
+  {
+    using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
+    m_nullSubset = OrderedSetBuilder();
+  }
 
   PositionType findElementIndex(PositionType pos1,
                                 PositionType pos2 = 0) const override
@@ -506,13 +517,14 @@ public:
 
   virtual bool isValid(bool verboseOutput = false) const override
   {
+    AXOM_UNUSED_VAR(verboseOutput);
+
     return true;
   }
 
-  const OrderedSetType getElements(PositionType) const override
+  const RelationSubsetType& getElements(PositionType) const override
   {
-    using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
-    return OrderedSetBuilder();
+    return m_nullSubset;
   }
 
 private:
@@ -524,6 +536,8 @@ private:
                       << "\n\tAttempted to access item at index " << pos1 << ","
                       << pos2 << ".");
   }
+
+  OrderedSetType m_nullSubset;
 };
 
 }  // end namespace slam

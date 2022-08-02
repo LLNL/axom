@@ -51,7 +51,6 @@ public:
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
-  using SubSetType = typename BivariateSetType::OrderedSetType;
 
   using BaseClass = BivariateSetBase<SetType1, SetType2, RelationSet>;
 
@@ -151,7 +150,7 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  const SubSetType getElements(PositionType s1) const
+  RelationSubset getElements(PositionType s1) const
   {
     return (*m_relation)[s1];
   }
@@ -159,7 +158,7 @@ public:
   ElementType at(PositionType pos) const
   {
     verifyPositionImpl(pos);
-    return (*m_relation->relationData())[pos];
+    return getRelationBuf(m_relation->relationData())[pos];
   }
 
   /** \brief Returns the relation pointer   */
@@ -170,7 +169,7 @@ public:
   /** \brief Return the size of the relation   */
   PositionType totalSize() const
   {
-    return PositionType(m_relation->relationData()->size());
+    return PositionType(getRelationBuf(m_relation->relationData()).size());
   }
 
   /**
@@ -208,7 +207,7 @@ public:
   // KW -- made this public to use from BivariateMap
   PositionType size() const
   {
-    return PositionType(m_relation->relationData()->size());
+    return PositionType(getRelationBuf(m_relation->relationData()).size());
   }
 
   void verifyPosition(PositionType sPos) const
@@ -246,6 +245,14 @@ private:
         << s1 << "," << s2 << "), but set only has " << this->firstSetSize()
         << "x" << this->secondSetSize() << " elements.");
   }
+
+  using RelationBuf = typename RelationType::IndirectionBufferType;
+
+  static const RelationBuf& getRelationBuf(const RelationBuf* ptr)
+  {
+    return *ptr;
+  }
+  static RelationBuf getRelationBuf(RelationBuf value) { return value; }
 
 private:
   RelationType* m_relation;  //the relation that this set is based off of

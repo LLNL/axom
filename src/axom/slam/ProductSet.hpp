@@ -48,8 +48,8 @@ public:
   using PositionType = typename BivariateSetType::PositionType;
   using ElementType = typename BivariateSetType::ElementType;
   using ProductSetType = ProductSet<SetType1, SetType2>;
-  using SubSetType =
-    PositionSet<typename SetType1::PositionType, typename SetType2::PositionType>;
+  using RelationSubset =
+    RangeSet<typename SetType1::PositionType, typename SetType2::PositionType>;
 
   using BaseClass = BivariateSetBase<SetType1, SetType2, ProductSet>;
 
@@ -126,11 +126,11 @@ public:
    *
    * \return  An OrderedSet of the elements in the row.
    */
-  SubSetType getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const
+  RelationSubset getElements(PositionType AXOM_DEBUG_PARAM(pos1)) const
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < this->firstSetSize());
 
-    return SubSetType(this->secondSetSize());
+    return RelationSubset(this->secondSetSize());
   }
 
   ElementType at(PositionType pos) const { return pos % this->secondSetSize(); }

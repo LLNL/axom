@@ -96,7 +96,7 @@ public:
 
   using SetType = slam::RangeSet<SetPosition, SetElement>;
   using MapType = Map<DataType, SetType, IndPol, StrPol>;
-  using SubSetType = typename BSet::SubSetType;
+  using SubSetType = typename BSet::RelationSubset;
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
@@ -383,7 +383,10 @@ public:
    * \param s1 the first set index
    * \return OrderedSet containing the elements
    */
-  SubSetType indexSet(SetPosition s1) const { return set()->getElements(s1); }
+  const SubSetType& indexSet(SetPosition s1) const
+  {
+    return set()->getElements(s1);
+  }
 
   /**
    * \brief Search for the FlatIndex of an element given its DenseIndex in the
