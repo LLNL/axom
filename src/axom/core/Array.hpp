@@ -813,13 +813,14 @@ Array<T, DIM, SPACE>::Array()
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(Args... args)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
+      StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  const IndexType tmp_args[] = {args...};
+  const IndexType tmp_args[] = {static_cast<IndexType>(args)...};
   assert(detail::allNonNegative(tmp_args));
   initialize(detail::packProduct(tmp_args), 0);
 }
@@ -828,13 +829,14 @@ Array<T, DIM, SPACE>::Array(Args... args)
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
+      StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
                 "Array size must match number of dimensions");
   // Intel hits internal compiler error when casting as part of function call
-  const IndexType tmp_args[] = {args...};
+  const IndexType tmp_args[] = {static_cast<IndexType>(args)...};
   assert(detail::allNonNegative(tmp_args));
   initialize(detail::packProduct(tmp_args), 0, false);
 }
