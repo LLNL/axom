@@ -235,7 +235,7 @@ if(NOT DEFINED AXOM_CONFIG_NAME)
     blt_list_append(TO _config ELEMENTS "hip" IF ENABLE_HIP)
     blt_list_append(TO _config ELEMENTS "mpi" IF ENABLE_MPI)
     blt_list_append(TO _config ELEMENTS "openmp" IF ENABLE_OPENMP)
-    string(REPLACE ";" "-" AXOM_CONFIG_NAME "${_config}")
+    list(JOIN _config "-" AXOM_CONFIG_NAME)
     
     message(STATUS "AXOM_CONFIG_NAME: '${AXOM_CONFIG_NAME}'")
 endif()
