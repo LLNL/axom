@@ -632,6 +632,42 @@ public:
   ConstArrayIterator end() const { return ConstArrayIterator(size(), this); }
 
   /*!
+   * \brief Returns a reference to the first element in the Array.
+   *
+   * \pre array.empty() == false
+   */
+  T& front()
+  {
+    assert(!empty());
+    return *begin();
+  }
+
+  /// \overload
+  const T& front() const
+  {
+    assert(!empty());
+    return *begin();
+  }
+
+  /*!
+   * \brief Returns a reference to the last element in the Array.
+   *
+   * \pre array.size() > 0
+   */
+  T& back()
+  {
+    assert(!empty());
+    return *(end() - 1);
+  }
+
+  /// \overload
+  const T& back() const
+  {
+    assert(!empty());
+    return *(end() - 1);
+  }
+
+  /*!
    * \brief Shrink the capacity to be equal to the size.
    */
   void shrink() { setCapacity(m_num_elements); }
