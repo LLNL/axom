@@ -171,9 +171,10 @@ MultiMat::MultiMat(const MultiMat& other)
     StaticVariableRelationType& cellMatRel = relStatic(DataLayout::CELL_DOM);
 
     cellMatRel = StaticVariableRelationType(&getCellSet(), &getMatSet());
-    cellMatRel.bindBeginOffsets(getCellSet().size(), &m_cellMatRel_beginsVec);
+    cellMatRel.bindBeginOffsets(getCellSet().size(),
+                                m_cellMatRel_beginsVec.view());
     cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
-                           &m_cellMatRel_indicesVec);
+                           m_cellMatRel_indicesVec.view());
     relSparseSet(DataLayout::CELL_DOM) = RelationSetType(&cellMatRel);
     relDenseSet(DataLayout::CELL_DOM) =
       ProductSetType(&getCellSet(), &getMatSet());
@@ -183,9 +184,10 @@ MultiMat::MultiMat(const MultiMat& other)
     StaticVariableRelationType& matCellRel = relStatic(DataLayout::MAT_DOM);
 
     matCellRel = StaticVariableRelationType(&getMatSet(), &getCellSet());
-    matCellRel.bindBeginOffsets(getMatSet().size(), &m_matCellRel_beginsVec);
+    matCellRel.bindBeginOffsets(getMatSet().size(),
+                                m_matCellRel_beginsVec.view());
     matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
-                           &m_matCellRel_indicesVec);
+                           m_matCellRel_indicesVec.view());
     relSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
     relDenseSet(DataLayout::MAT_DOM) =
       ProductSetType(&getMatSet(), &getCellSet());
@@ -277,8 +279,8 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
   Rel_beginsVec[set1.size()] = curIdx;
 
   Rel_ptr = StaticVariableRelationType(&set1, &set2);
-  Rel_ptr.bindBeginOffsets(set1.size(), &Rel_beginsVec);
-  Rel_ptr.bindIndices(Rel_indicesVec.size(), &Rel_indicesVec);
+  Rel_ptr.bindBeginOffsets(set1.size(), Rel_beginsVec.view());
+  Rel_ptr.bindIndices(Rel_indicesVec.size(), Rel_indicesVec.view());
 
   SLIC_ASSERT(Rel_ptr.isValid());
 
@@ -533,8 +535,8 @@ void MultiMat::convertToStatic()
     StaticVariableRelationType& rel = relStatic(layout);
 
     rel = StaticVariableRelationType(&set1, &set2);
-    rel.bindBeginOffsets(set1.size(), &rel_beginvec);
-    rel.bindIndices(rel_indicesVec.size(), &rel_indicesVec);
+    rel.bindBeginOffsets(set1.size(), rel_beginvec.view());
+    rel.bindIndices(rel_indicesVec.size(), rel_indicesVec.view());
 
     SLIC_ASSERT(rel.isValid());
 
@@ -704,8 +706,8 @@ void MultiMat::makeOtherRelation(DataLayout layout)
   }
 
   newRel = StaticVariableRelationType(&set2, &set1);
-  newRel.bindBeginOffsets(set2.size(), &newBeginVec);
-  newRel.bindIndices(newIndicesVec.size(), &newIndicesVec);
+  newRel.bindBeginOffsets(set2.size(), newBeginVec.view());
+  newRel.bindIndices(newIndicesVec.size(), newIndicesVec.view());
 
   relSparseSet(layout) = RelationSetType(&newRel);
   relDenseSet(layout) = ProductSetType(&set2, &set1);

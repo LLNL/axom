@@ -169,7 +169,8 @@ void various_traversal_methods(int nmats,
     SLIC_ASSERT(ncomp == map2d.numComp());
     for(int i = 0; i < map2d.firstSetSize(); i++)
     {
-      MultiMat::IdSet rel_set = map2d.indexSet(i);
+      const MultiMat::IdSet& rel_set =
+        static_cast<const MultiMat::IdSet&>(map2d.indexSet(i));
       auto submap = map2d(i);
       SLIC_ASSERT(rel_set.size() == submap.size());
       for(int k = 0; k < submap.size(); k++)
