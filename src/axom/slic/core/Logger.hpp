@@ -245,6 +245,11 @@ public:
                   int line,
                   bool filter_duplicates = false);
 
+  /*!
+   * \brief Flushes all streams for current rank.
+   */
+  void flushLocalStreams();
+
   ///@{
   //! \name Collective Methods
   //!
@@ -267,19 +272,15 @@ public:
   void abort();
 
   /*!
-   * \brief Flushes all streams for all ranks or current rank.
-   *
-   * \param [in] single_rank  If true, flushes all streams for current rank.
-   *                          If false, flushes all streams for all ranks.
-   *                          Default is false.
+   * \brief Flushes all streams for all ranks.
    *
    * \note When used within an MPI distributed environment, flushStreams is
-   *  a collective operation when single_rank is true. All ranks in the
+   *  a collective operation. All ranks in the
    *  user-supplied communicator must call this method.
    *
    * \collective
    */
-  void flushStreams(bool single_rank = false);
+  void flushStreams();
 
   /*!
    * \brief Pushes messages incrementally up all streams.

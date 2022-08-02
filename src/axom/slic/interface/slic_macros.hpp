@@ -49,7 +49,6 @@
     axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
     if(axom::slic::isAbortOnErrorsEnabled())                      \
     {                                                             \
-      axom::slic::flushStreams(true);                             \
       axom::slic::abort();                                        \
     }                                                             \
   } while(axom::slic::detail::false_value)
@@ -80,7 +79,6 @@
       axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
       if(axom::slic::isAbortOnErrorsEnabled())                      \
       {                                                             \
-        axom::slic::flushStreams(true);                             \
         axom::slic::abort();                                        \
       }                                                             \
     }                                                               \
@@ -114,7 +112,6 @@
       axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
       if(axom::slic::isAbortOnErrorsEnabled())                      \
       {                                                             \
-        axom::slic::flushStreams(true);                             \
         axom::slic::abort();                                        \
       }                                                             \
     }                                                               \
@@ -150,7 +147,6 @@
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
         if(axom::slic::isAbortOnErrorsEnabled())                      \
         {                                                             \
-          axom::slic::flushStreams(true);                             \
           axom::slic::abort();                                        \
         }                                                             \
       }                                                               \
@@ -198,7 +194,6 @@
     axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
     if(axom::slic::isAbortOnWarningsEnabled())                      \
     {                                                               \
-      axom::slic::flushStreams(true);                               \
       axom::slic::abort();                                          \
     }                                                               \
   } while(axom::slic::detail::false_value)
@@ -229,7 +224,6 @@
       axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
       if(axom::slic::isAbortOnWarningsEnabled())                      \
       {                                                               \
-        axom::slic::flushStreams(true);                               \
         axom::slic::abort();                                          \
       }                                                               \
     }                                                                 \
@@ -262,7 +256,6 @@
       axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
       if(axom::slic::isAbortOnWarningsEnabled())                      \
       {                                                               \
-        axom::slic::flushStreams(true);                               \
         axom::slic::abort();                                          \
       }                                                               \
     }                                                                 \
@@ -298,7 +291,6 @@
         axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
         if(axom::slic::isAbortOnWarningsEnabled())                      \
         {                                                               \
-          axom::slic::flushStreams(true);                               \
           axom::slic::abort();                                          \
         }                                                               \
       }                                                                 \
@@ -351,7 +343,6 @@
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__); \
         if(axom::slic::isAbortOnErrorsEnabled())                      \
         {                                                             \
-          axom::slic::flushStreams(true);                             \
           axom::slic::abort();                                        \
         }                                                             \
       }                                                               \
@@ -384,7 +375,6 @@
         axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);        \
         if(axom::slic::isAbortOnErrorsEnabled())                             \
         {                                                                    \
-          axom::slic::flushStreams(true);                                    \
           axom::slic::abort();                                               \
         }                                                                    \
       }                                                                      \
@@ -443,7 +433,6 @@
           axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);   \
           if(axom::slic::isAbortOnErrorsEnabled())                        \
           {                                                               \
-            axom::slic::flushStreams(true);                               \
             axom::slic::abort();                                          \
           }                                                               \
         }                                                                 \
@@ -452,7 +441,6 @@
           axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__); \
           if(axom::slic::isAbortOnWarningsEnabled())                      \
           {                                                               \
-            axom::slic::flushStreams(true);                               \
             axom::slic::abort();                                          \
           }                                                               \
         }                                                                 \
@@ -487,7 +475,6 @@
           axom::slic::logErrorMessage(__oss.str(), __FILE__, __LINE__);     \
           if(axom::slic::isAbortOnErrorsEnabled())                          \
           {                                                                 \
-            axom::slic::flushStreams(true);                                 \
             axom::slic::abort();                                            \
           }                                                                 \
         }                                                                   \
@@ -496,7 +483,6 @@
           axom::slic::logWarningMessage(__oss.str(), __FILE__, __LINE__);   \
           if(axom::slic::isAbortOnWarningsEnabled())                        \
           {                                                                 \
-            axom::slic::flushStreams(true);                                 \
             axom::slic::abort();                                            \
           }                                                                 \
         }                                                                   \

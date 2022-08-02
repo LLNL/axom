@@ -95,7 +95,7 @@ void SynchronizedStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedStream::flush(bool single_rank)
+void SynchronizedStream::localFlush()
 {
   if(m_cache == nullptr)
   {
@@ -109,39 +109,49 @@ void SynchronizedStream::flush(bool single_rank)
     return;
   }
 
-  // Single rank flush
-  if(single_rank)
+  // print messages for this rank
+  m_cache->printMessages(m_stream);
+}
+
+//------------------------------------------------------------------------------
+void SynchronizedStream::flush()
+{
+  if(m_cache == nullptr)
   {
-    // print messages for this rank
-    m_cache->printMessages(m_stream);
+    std::cerr << "ERROR: NULL cache!\n";
+    return;
   }
-  // Collective flush
-  else
+
+  if(m_comm == MPI_COMM_NULL)
   {
-    int rank = -1;
-    int nranks = 0;
-    MPI_Comm_rank(m_comm, &rank);
-    MPI_Comm_size(m_comm, &nranks);
+    std::cerr << "ERROR: NULL communicator!\n";
+    return;
+  }
 
-    const int prevrank = rank - 1;
-    const int nextrank = rank + 1;
+  // Collective flush
+  int rank = -1;
+  int nranks = 0;
+  MPI_Comm_rank(m_comm, &rank);
+  MPI_Comm_size(m_comm, &nranks);
 
-    if(rank > 0)
-    {
-      // wait for signal from previous rank
-      MPI_Recv(nullptr, 0, MPI_INT, prevrank, MPI_ANY_TAG, m_comm, MPI_STATUSES_IGNORE);
-    }
+  const int prevrank = rank - 1;
+  const int nextrank = rank + 1;
 
-    // print messages for this rank
-    m_cache->printMessages(m_stream);
+  if(rank > 0)
+  {
+    // wait for signal from previous rank
+    MPI_Recv(nullptr, 0, MPI_INT, prevrank, MPI_ANY_TAG, m_comm, MPI_STATUSES_IGNORE);
+  }
 
-    // signal next rank
-    if(nranks > 1 && nextrank < nranks)
-    {
-      MPI_Request null_request = MPI_REQUEST_NULL;
-      MPI_Isend(nullptr, 0, MPI_INT, nextrank, 0, m_comm, &null_request);
-      MPI_Request_free(&null_request);
-    }
+  // print messages for this rank
+  m_cache->printMessages(m_stream);
+
+  // signal next rank
+  if(nranks > 1 && nextrank < nranks)
+  {
+    MPI_Request null_request = MPI_REQUEST_NULL;
+    MPI_Isend(nullptr, 0, MPI_INT, nextrank, 0, m_comm, &null_request);
+    MPI_Request_free(&null_request);
   }
 }
 

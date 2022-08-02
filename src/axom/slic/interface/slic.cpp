@@ -245,10 +245,17 @@ void logWarningMessage(const std::string& message,
 }
 
 //------------------------------------------------------------------------------
-void flushStreams(bool single_rank)
+void flushLocalStreams()
 {
   ensureInitialized();
-  Logger::getActiveLogger()->flushStreams(single_rank);
+  Logger::getActiveLogger()->flushLocalStreams();
+}
+
+//------------------------------------------------------------------------------
+void flushStreams()
+{
+  ensureInitialized();
+  Logger::getActiveLogger()->flushStreams();
 }
 
 //------------------------------------------------------------------------------

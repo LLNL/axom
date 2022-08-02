@@ -105,6 +105,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   have empty object meshes and/or empty query meshes 
 - 'BezierCurve' objects now support Rational Bezier curve functionality
 - Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and another `Tetrahedron` as a `Polyhedron`
+- Added `slic::flushLocalStreams()` to flush messages from the current rank for MPI-enabled LogStreams.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.

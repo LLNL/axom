@@ -308,6 +308,11 @@ void logWarningMessage(const std::string& message,
                        const std::string& fileName,
                        int line);
 
+/*!
+ * \brief Flushes all streams for current rank.
+ */
+void flushLocalStreams();
+
 ///@{
 //! \name Collective Methods
 //!
@@ -331,19 +336,15 @@ void logWarningMessage(const std::string& message,
 void abort();
 
 /*!
- * \brief Flushes all streams for all ranks or current rank.
- *
- * \param [in] single_rank If true, flushes all streams for current rank.
- *                         If false, flushes all streams for all ranks.
- *                         Default is false.
+ * \brief Flushes all streams for all ranks.
  *
  * \collective
  * \see Logger::flushStreams.
  * \note When used within an MPI distributed environment, flushStreams is
- *  a collective operation when single_rank is true. All ranks in the
+ *  a collective operation. All ranks in the
  *  user-supplied communicator must call this method.
  */
-void flushStreams(bool single_rank = false);
+void flushStreams();
 
 /*!
  * \brief Pushes all streams.

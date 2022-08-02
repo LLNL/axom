@@ -78,7 +78,11 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-void Logger::abort() { m_abortFunction(); }
+void Logger::abort()
+{
+  flushLocalStreams();
+  m_abortFunction();
+}
 
 //------------------------------------------------------------------------------
 void Logger::setAbortFunction(AbortFunctionPtr abort_func)
@@ -232,14 +236,29 @@ void Logger::logMessage(message::Level level,
 }
 
 //------------------------------------------------------------------------------
-void Logger::flushStreams(bool single_rank)
+void Logger::flushLocalStreams()
 {
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
     for(unsigned istream = 0; istream < nstreams; ++istream)
     {
-      m_logStreams[level][istream]->flush(single_rank);
+      m_logStreams[level][istream]->localFlush();
+
+    }  // END for all streams
+
+  }  // END for all levels
+}
+
+//------------------------------------------------------------------------------
+void Logger::flushStreams()
+{
+  for(int level = message::Error; level < message::Num_Levels; ++level)
+  {
+    unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
+    for(unsigned istream = 0; istream < nstreams; ++istream)
+    {
+      m_logStreams[level][istream]->flush();
 
     }  // END for all streams
 

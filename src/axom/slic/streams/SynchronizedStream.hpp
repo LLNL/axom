@@ -73,18 +73,20 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Dumps the messages to the console in rank-order for all ranks,
-   *        or just the current rank
+   * \brief Dumps the messages to the console in rank-order for
+   *        just the current rank
    *
-   * \param [in] single_rank true if only current rank is flushing,
-   *             false if all ranks are flushing. Default is false.
+   */
+  virtual void localFlush();
+
+  /*!
+   * \brief Dumps the messages to the console in rank-order for all ranks.
    *
    * \collective
    * \note This method is a collective operation
-   *  intended for a synchronization checkpoint
-   *  when single_rank is false (default).
+   *  intended for a synchronization checkpoint.
    */
-  virtual void flush(bool single_rank = false);
+  virtual void flush();
 
 private:
   /// Forward declarations

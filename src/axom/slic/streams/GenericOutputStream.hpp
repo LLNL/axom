@@ -89,10 +89,13 @@ public:
 
   /*!
    * \brief Flushes the log stream.
-   *
-   * param [in] single_rank unused param by GenericOutputStream
    */
-  virtual void flush(bool single_rank);
+  virtual void localFlush();
+
+  /*!
+   * \brief Flushes the log stream.
+   */
+  virtual void flush();
 
 private:
   std::ostream* m_stream;
