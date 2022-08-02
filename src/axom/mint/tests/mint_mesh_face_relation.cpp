@@ -1104,13 +1104,13 @@ bool verifyFaceNodesTypes(int fcount,
 void runMeshFaceTest(internal::MeshFaceTest *t)
 {
   IndexType facecount = -1;
-  IndexType *f2c = nullptr;
-  IndexType *c2f = nullptr;
-  IndexType *c2n = nullptr;
-  IndexType *c2foffsets = nullptr;
-  IndexType *f2n = nullptr;
-  IndexType *f2noffsets = nullptr;
-  CellType *f2ntypes = nullptr;
+  Array<IndexType> f2c;
+  Array<IndexType> c2f;
+  Array<IndexType> c2n;
+  Array<IndexType> c2foffsets;
+  Array<IndexType> f2n;
+  Array<IndexType> f2noffsets;
+  Array<CellType> f2ntypes;
 
   bool initresult = internal::initFaces(t->mesh,
                                         facecount,
@@ -1134,14 +1134,6 @@ void runMeshFaceTest(internal::MeshFaceTest *t)
   }
   else if(initresult && !(t->initShouldSucceed))
   {
-    delete[] f2c;
-    delete[] c2f;
-    delete[] c2n;
-    delete[] c2foffsets;
-    delete[] f2n;
-    delete[] f2noffsets;
-    delete[] f2ntypes;
-
     FAIL() << "test mesh \"" << t->name
            << "\" call to initFaces() succeeded but should have failed.";
   }
@@ -1194,22 +1186,14 @@ void runMeshFaceTest(internal::MeshFaceTest *t)
     // do all faces have the type and nodes we expect?
     std::string errmesg;
     bool faceNodeTypeMatched = verifyFaceNodesTypes(facecount,
-                                                    f2n,
-                                                    f2noffsets,
-                                                    f2ntypes,
+                                                    f2n.data(),
+                                                    f2noffsets.data(),
+                                                    f2ntypes.data(),
                                                     t->totalFaceCount,
                                                     t->faceNodes.data(),
                                                     t->faceTypes.data(),
                                                     errmesg);
     EXPECT_TRUE(faceNodeTypeMatched) << errmesg;
-
-    delete[] f2c;
-    delete[] c2f;
-    delete[] c2n;
-    delete[] c2foffsets;
-    delete[] f2n;
-    delete[] f2noffsets;
-    delete[] f2ntypes;
   }
 }
 

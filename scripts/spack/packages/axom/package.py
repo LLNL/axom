@@ -216,7 +216,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         if "+fortran" in spec:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", True))
-            if is_fortran_compiler("gfortran") and "clang" in self.compiler.cxx:
+            if self.is_fortran_compiler("gfortran") and "clang" in self.compiler.cxx:
                 libdir = pjoin(os.path.dirname(
                                os.path.dirname(self.compiler.cxx)), "lib")
                 flags = ""
@@ -301,7 +301,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             if "+fortran" in spec:
                 # Flags for crayftn
-                if is_fortran_compiler("crayftn"):
+                if self.is_fortran_compiler("crayftn"):
                     # Fix for working around CMake adding implicit link directories
                     # returned by the Cray crayftn compiler to link executables with
                     # non-system default stdlib
@@ -314,7 +314,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     hip_link_flags = "-Wl,--disable-new-dtags -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -L/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/13.0.1/cce/x86_64/lib:/opt/cray/pe/cce/13.0.1/cce/x86_64/lib -lmodules -lquadmath -lfi -lcraymath -lf -lu -lcsup"
 
                 # Flags for amdflang
-                if is_fortran_compiler("amdflang"):
+                if self.is_fortran_compiler("amdflang"):
                     hip_link_flags = "-Wl,--disable-new-dtags -L{0}/../llvm/lib -L{0}/lib -Wl,-rpath,{0}/../llvm/lib:{0}/lib -lpgmath -lflang -lflangrti -lompstub -lamdhip64".format(hip_root)
 
             # Additional libraries for TOSS4
@@ -336,7 +336,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             not spec.satisfies('+cuda target=ppc64le:')
         ))
 
-        if "+fortran" in spec and is_fortran_compiler("xlf"):
+        if "+fortran" in spec and self.is_fortran_compiler("xlf"):
             # Grab lib directory for the current fortran compiler
             libdir = pjoin(os.path.dirname(
                            os.path.dirname(self.compiler.fc)),
@@ -489,11 +489,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries.append(cmake_cache_option("ENABLE_DOCS", enable_docs))
 
         if spec.satisfies('^py-sphinx'):
-            python_bin_dir = get_spec_path(spec, "python",
+            sphinx_bin_dir = get_spec_path(spec, "py-sphinx",
                                            path_replacements,
                                            use_bin=True)
             entries.append(cmake_cache_path("SPHINX_EXECUTABLE",
-                                            pjoin(python_bin_dir,
+                                            pjoin(sphinx_bin_dir,
                                                   "sphinx-build")))
 
         if spec.satisfies('^py-shroud'):

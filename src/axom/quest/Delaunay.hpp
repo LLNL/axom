@@ -395,20 +395,22 @@ public:
     return valid;
   }
 
-private:
   /// \brief Find the index of the element that contains the query point, or the element closest to the point.
-  IndexType findContainingElement(const PointType& query_pt)
+  IndexType findContainingElement(const PointType& query_pt,
+                                  bool warnOnInvalid = true) const
   {
     if(m_mesh.isEmpty())
     {
-      SLIC_ERROR(
+      SLIC_ERROR_IF(
+        warnOnInvalid,
         "Attempting to insert point into empty Delaunay triangulation."
         "Delaunay::initializeBoundary() needs to be called first");
       return INVALID_INDEX;
     }
     if(!m_bounding_box.contains(query_pt))
     {
-      SLIC_WARNING(
+      SLIC_WARNING_IF(
+        warnOnInvalid,
         "Attempting to locate element at location outside valid domain");
       return INVALID_INDEX;
     }
@@ -451,15 +453,23 @@ private:
       // Logically, this should never happen.
       if(!m_mesh.isValidElement(element_i))
       {
-        SLIC_WARNING(fmt::format(
-          "Entered invalid element in "
-          "Delaunay::findContainingElement(). Underlying mesh {} valid",
-          m_mesh.isValid() ? "is" : "is not"));
+        SLIC_WARNING_IF(
+          warnOnInvalid,
+          fmt::format(
+            "Entered invalid element in "
+            "Delaunay::findContainingElement(). Underlying mesh {} valid",
+            m_mesh.isValid() ? "is" : "is not"));
         return INVALID_INDEX;
       }
     }
   }
 
+  /**
+   * \brief helper function to retrieve the barycentric coordinate of the query point in the element
+   */
+  BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt) const;
+
+private:
   /// \brief Predicate for when to compact internal mesh data structures after removing elements
   bool shouldCompactMesh() const
   {
@@ -484,11 +494,6 @@ private:
   void generateInitialMesh(std::vector<DataType>& points,
                            std::vector<IndexType>& elem,
                            const BoundingBox& bb);
-
-  /**
-   * \brief helper function to retrieve the barycentric coordinate of the query point in the element
-   */
-  BaryCoordType getBaryCoords(IndexType element_idx, const PointType& q_pt) const;
 
 private:
   /// Helper struct to find the first element near a point to be inserted
@@ -548,7 +553,7 @@ private:
      * \note Some bins might not point to a vertex, so users should check
      * that the returned index is a valid vertex, e.g. using \a mesh.isValidVertex(vertex_id)
      */
-    inline IndexType getNearbyVertex(const PointType& pt)
+    inline IndexType getNearbyVertex(const PointType& pt) const
     {
       const auto cell = m_lattice.gridCell(pt);
       return flatIndex(cell);
@@ -565,7 +570,14 @@ private:
     /// Returns a reference to the index in the array for the ND point with grid index \a cell
     inline IndexType& flatIndex(const typename LatticeType::GridCell& cell)
     {
-      IndexType idx =
+      const IndexType idx =
+        numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
+      return m_bins.flatIndex(idx);
+    }
+
+    inline const IndexType& flatIndex(const typename LatticeType::GridCell& cell) const
+    {
+      const IndexType idx =
         numerics::dot_product(cell.data(), m_bins.strides().begin(), DIM);
       return m_bins.flatIndex(idx);
     }

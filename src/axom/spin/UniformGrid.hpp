@@ -796,7 +796,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
         int count = counts_view[i];
         if(count > 0)
         {
-  #ifndef __CUDA_ARCH__
+  #ifndef AXOM_DEVICE_CODE
           std::sort(candidates_view.begin() + startIdx,
                     candidates_view.begin() + startIdx + count);
   #endif
@@ -898,11 +898,12 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename ExecSpace, typename StoragePolicy>
-typename UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::GridCell
-UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getClampedGridCell(
-  const LatticeType& lattice,
-  const primal::NumericArray<int, NDIMS>& resolution,
-  const PointType& pt)
+AXOM_HOST_DEVICE
+  typename UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::GridCell
+  UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getClampedGridCell(
+    const LatticeType& lattice,
+    const primal::NumericArray<int, NDIMS>& resolution,
+    const PointType& pt)
 {
   GridCell cell = lattice.gridCell(pt);
 

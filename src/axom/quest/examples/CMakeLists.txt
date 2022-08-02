@@ -8,10 +8,15 @@
 
 set(quest_example_depends axom fmt cli11)
 
+blt_list_append(TO quest_example_depends ELEMENTS mpi IF ENABLE_MPI)
+blt_list_append(TO quest_example_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS blt::hip IF ENABLE_HIP)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
+set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
+
+# In/out octree containment example -------------------------------------------
 blt_add_executable(
     NAME        quest_containment_driver_ex
     SOURCES     containment_driver.cpp
@@ -20,6 +25,7 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
+# Shaping example -------------------------------------------------------------
 if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
               AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
               AND AXOM_ENABLE_KLEE)
@@ -32,6 +38,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         )
 endif()
 
+# Distributed closest point example -------------------------------------------
 if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
               AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     blt_add_executable(
@@ -41,8 +48,41 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             DEPENDS_ON  ${quest_example_depends} mfem mpi
             FOLDER      axom/quest/examples
             )
+
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        set(_nranks 3)
+
+        # Run the distributed closest point example on N ranks for each enabled policy
+        set(_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+        foreach(_pol ${_policies})
+            set(_test "quest_distributed_closest_point_run_2D_${_pol}")
+
+            axom_add_test(
+                NAME    ${_test}
+                COMMAND quest_distributed_distance_query_ex
+                            --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
+                            --num-samples 500
+                            --dist-threshold .45
+                            --policy ${_pol}
+                            --object-file dcp_object_mesh_2d_${_pol}
+                            --distance-file dcp_closest_point_2d_${_pol}
+                NUM_MPI_TASKS ${_nranks})
+
+            if(${_pol} STREQUAL "omp")
+                set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
+            endif()
+        endforeach()
+
+        unset(_nranks)
+        unset(_policies)
+        unset(_test)
+    endif()
 endif()
 
+# Point in cell example -------------------------------------------------------
 if(MFEM_FOUND)
     blt_add_executable(
         NAME        quest_point_in_cell_benchmark_ex
@@ -53,6 +93,7 @@ if(MFEM_FOUND)
         )
 endif()
 
+# Delaunay triangulation example ----------------------------------------------
 blt_add_executable(
     NAME        quest_delaunay_triangulation_ex
     SOURCES     delaunay_triangulation.cpp
@@ -61,15 +102,37 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-foreach(d 2 3)
-    axom_add_test(
-        NAME quest_delaunay_${d}_test
-        COMMAND quest_delaunay_triangulation_ex -d ${d} -o delaunay_mesh_${d}d -n 100
+if(AXOM_ENABLE_TESTS)
+    foreach(d 2 3)
+        axom_add_test(
+            NAME quest_delaunay_${d}_test
+            COMMAND quest_delaunay_triangulation_ex -d ${d} -o delaunay_mesh_${d}d -n 100
+            )
+    endforeach()
+endif()
+
+# Scattered interpolation example --------------------------------------------
+if(AXOM_ENABLE_SIDRE)
+    blt_add_executable(
+        NAME        quest_scattered_interpolation_ex
+        SOURCES     scattered_interpolation.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends}
+        FOLDER      axom/quest/examples
         )
-endforeach()
+
+    if(AXOM_ENABLE_TESTS)
+        foreach(d 2 3)
+            axom_add_test(
+                NAME quest_scattered_interpolation_${d}_test
+                COMMAND quest_scattered_interpolation_ex -d ${d} -n 10000 -q 20000
+                )
+        endforeach()
+    endif()
+endif()
 
 
-## Quest interface examples
+# Quest signed distance and inout interface examples (C++ and Fortran) --------
 
 blt_add_executable(
     NAME       quest_signed_distance_interface_ex
@@ -87,10 +150,8 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-# Add a test for the quest interface; Set up for MPI, when available
-set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
-
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+    # Add a test for the quest interface; Set up for MPI, when available
     if (ENABLE_MPI)
         axom_add_test(
             NAME quest_inout_interface_3D_mpi_test

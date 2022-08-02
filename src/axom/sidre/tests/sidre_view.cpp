@@ -4,10 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
-#include "axom/slic.hpp"
 #include "axom/core/Types.hpp"
-
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/slic.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::CHAR8_STR_ID;
@@ -712,7 +711,7 @@ TEST(sidre_view, int_alloc_view)
   dv->allocate();
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
-  dv = root->createView("v1", INT_ID, 1, shape);
+  dv = root->createViewWithShape("v1", INT_ID, 1, shape);
   EXPECT_TRUE(checkViewValues(dv, EMPTY, true, false, false, BLEN));
   dv->allocate();
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
@@ -725,7 +724,7 @@ TEST(sidre_view, int_alloc_view)
   dv = root->createViewAndAllocate("a0", INT_ID, BLEN);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
-  dv = root->createViewAndAllocate("a1", INT_ID, 1, shape);
+  dv = root->createViewWithShapeAndAllocate("a1", INT_ID, 1, shape);
   EXPECT_TRUE(checkViewValues(dv, BUFFER, true, true, true, BLEN));
 
   dv = root->createViewAndAllocate("a2", DataType::c_int(BLEN));
@@ -1899,7 +1898,7 @@ TEST_P(UmpireTest, allocate_default)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate)
 {
-  #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -1930,7 +1929,7 @@ TEST_P(UmpireTest, reallocate)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate_zero)
 {
-  #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -1969,7 +1968,7 @@ TEST_P(UmpireTest, reallocate_zero)
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
 
-  #ifdef AXOM_USE_CUDA
+  #ifdef AXOM_USE_GPU
 
     #ifdef UMPIRE_ENABLE_PINNED
     ,
@@ -1991,7 +1990,7 @@ const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
     #endif
 
-  #endif /* AXOM_USE_CUDA */
+  #endif /* defined(AXOM_USE_GPU) */
 
 };
 

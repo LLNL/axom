@@ -34,12 +34,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Add `const` versions of `begin()` and `end()` for `Array` and `ArrayView`
 - Add support for passing compatible custom allocator IDs to `axom::Array` with explicitly specified
   memory space
-- Adds constructor overloads to `axom::Array` that uses both uninitialized data (`ArrayOptions::Uninitialized`) 
+- Adds constructor overloads to `axom::Array` that uses both uninitialized data (`ArrayOptions::Uninitialized`)
   and custom allocators
 - Adds a comparison operator (`operator<()`) to `StackArray`. This allows it to be used as a key for `std::map`
 - Use compiler intrinsics for axom's bit utility functions: `popCount()`, `trailingZeros()` and `leadingZeros()`
 - Adds a random-access iterator to `slam::DynamicSet`
-- Adds an overload to `ImpicitGrid::getCandidates()` from a grid cell of the lattice. 
+- Adds an overload to `ImpicitGrid::getCandidates()` from a grid cell of the lattice.
   This makes it easier to iterate over the bins of the spatial index.
 - Defines iterator traits on `axom::Array<T>`/`ArrayView<T>` iterators, to allow passing iterator
   pairs to standard library functions
@@ -68,6 +68,39 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   without constructing or initializing new elements
 - Adds examples and tests for using Slic interface in Fortran
 - Adds examples for using the BVH device traversal API
+- Adds a `ScatteredInterpolation` query to quest, which enables interpolating scalar fields at arbitrary
+  points from a given 2D or 3D point mesh in the Mesh Blueprint format. The current implementation
+  generates a Deluanay complex over the points and performs linear interpolation over the
+  triangle/tetrahedron at the query points.
+- Adds a HIP execution policy for device kernels to run on AMD GPU hardware
+- Adds new Slic macros that allow you to selectively print messages only on root ranks. For example,
+  `SLIC_ERROR_ROOT(msg)` and `SLIC_ERROR_ROOT_IF(EXP, msg)`. This can be set via
+  `slic::initialize(bool is_root = true)` or `slic::setIsRoot()`.
+- Adds forward iterators to the `View`s and `Group`s of a `sidre::Group`.
+  These can be accessed via the range-for syntax as `for(auto& view: grp.views()){...}`,
+  Or using the iterator syntax as
+  `for(auto& it = grp.views().begin(), itEnd = grp.views().end(); it ! itEnd ; ++it) {...}`, and similarly for the groups of a group.
+- Adds forward iterators to the `Attribute`s and `Buffers`s of a `sidre::DataStore`,
+  with a similar syntax, e.g. `for(auto& buf : datastore.buffers()){...}`.
+- Adds an overload of `ImplicitGrid::getCandidatesAsArray()` to accept query points/bounding boxes
+  as an `axom::ArrayView`.
+- Adds a `primal::closest_point(point,sphere)` overload to find the closest point on a sphere to a given point
+- Adds an overload to quest's `SignedDistance` query to return the closest point on the surface
+  to the query point and the surface normal at that point. Also exposes this functionality
+  in quest's signed_distance C API.
+- Adds utility function for linear interpolation (`lerp`) of two numbers
+- Adds utility function to compute binomial coefficients
+- Adds a `CurvedPolygon` class to primal representing a polygon with `BezierCurve`s as edges
+- Adds functions to compute the moments (area, centroid) of a `CurvedPolygon`
+- Adds functions to evaluate integrals over `BezierCurve` and `CurvedPolygon` objects
+- Adds a `ArrayViewIndirection` storage policy to Slam
+- Adds set accessor methods to `slam::DynamicVariableRelation`
+- Adds a new component to Axom, `multimat`, to simplify the handing of multi-material meshes and
+  fields.
+- Adds functions to compute winding numbers and in/out queries for `Polygon` and `CurvedPolygon` objects.
+- Adds `constants.hpp` to primal to track geometric constants. Initially includes
+  a value for `primal::PTINY`, a small constant that can be added to 
+  denominators to avoid division by zero.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -83,13 +116,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   corresponding range/set of valid values are now included in the error message
 - IOManager::write now allows the calling code to pass in the full name of
   the root file that it will produce
-- Improved consistency of orientation operations in `primal::Plane`, `primal::Sphere`, `primal::orientation()` 
+- Improved consistency of orientation operations in `primal::Plane`, `primal::Sphere`, `primal::orientation()`
   and `primal::in_sphere()`
-- Improved efficiency for `primal::in_sphere()` -- the computations are now based on `(D+1)x(D+1)` determinants 
-  instead of `(D+2)x(D+2)` determinants for `D`-dimensional spheres 
+- Improved efficiency for `primal::in_sphere()` -- the computations are now based on `(D+1)x(D+1)` determinants
+  instead of `(D+2)x(D+2)` determinants for `D`-dimensional spheres
 - Improved efficiency for (signed) area/volume functions of `primal::Segment`, `primal::Triangle` and `primal::Tetrahedron`
 - Updates interface for `primal::Sphere` to use more of `primal`, e.g. uses `primal::Point` instead of `T*` to represent points
-- Adds `circumsphere()` functions to `primal::Triangle` and `primal::Tetrahedron` to return the `Sphere` 
+- Adds `circumsphere()` functions to `primal::Triangle` and `primal::Tetrahedron` to return the `Sphere`
   that circumscribes the triangle/tetrahedron's vertices
 - Adds operator overloads to subtract a `primal::Vector` from a `primal::Point` to yield a new `primal::Point`
 - Consolidates `quest::findTriMeshIntersections*()` implementations for `BVH` and `ImplicitGrid`
@@ -108,6 +141,29 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   This is an advanced feature that could cause users to break an input file state after verification. This also alows us
   to not expose `axom/sol.hpp` to all users of Inlet. This greatly reduces compile times. Using this feature requires
   both a derived class and including `axom/sol.hpp` in the user code.
+- Renamed some overloads of function `createView` of
+  `axom::sidre::Group` which accept `int ndims, IndexType *shape`
+  arguments to be `createViewWithShape` or `createViewWithShapeAndAllocate`.
+- Replaced an unused older incarnation of iterators in sidre with a new `std`-compliant
+  implementation
+- Removed an out-of-date manually-generated header file in sidre `sidre/core/sidre.hpp`.
+  We recommend using the automatically generated header file `axom/sidre.hpp` to include
+  sidre functionality.
+- Removed functions from `sidre::ItemCollection` base class that were not common to all derived classes
+  and added a new derived class `sidre::IndexedCollection`
+- Spin: `BVH::findPoints/Rays/BoundingBoxes()` candidate search methods now accept an `axom::ArrayView<IndexType>`
+  for the `offsets` and `counts` output arrays, and return `candidates` as an `axom::Array<IndexType>`.
+- Renamed `primal::Polygon::centroid()` to `primal::Polygon::vertexMean()` because it was not actually computing the centroid.
+- `axom:sidre:IndexType` is now the same type as
+  `axom:IndexType`. Before, Sidre always used `int64_t`. Now it
+  respects the define `AXOM_USE_64BIT_INDEXTYPE`.
+- Mint now depends on the Slam component.
+- Renames indirection policies in slam: The c-array indirection policy was renamed from `ArrayIndirection` to `CArrayIndirection`
+  and the axom::Array-based indirection policy was renamed from `CoreArrayIndirection` to `ArrayIndirection`.
+- Mfem dependency updated to 4.4
+- `primal::detail::intersect_ray` now correctly identifies intersections between collinear `Segment` and `Ray` objects.
+- Improved efficiency and robustness of barycentric coordinate
+  and circumsphere computation for Triangles and Tetrahedra.
 
 ###  Fixed
 - Fixed a bug relating to swap and assignment operations for multidimensional `axom::Array`s
@@ -125,6 +181,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug in axom::Path that ignored the leading delimiter character if one was present
 - Fixed gcc compiler errors in configurations without RAJA or Umpire
 - Fixed `axom::Array<T>` behavior on copy-construction when `T` is a non-trivial type
+- Replaced `using` statement in `SidreDataTypesIds.h` with `typedef`
+  since C syntax is required in this file.
+- Fixed bug on two-dimensional `sidre::Array<T>` construction where the size is set to the underlying buffer
+  capacity, instead of the actual number of elements
+- Fixed `axom::Array<T>::insert` behavior with non-trivial types.
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
@@ -167,10 +228,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   portion of the segment contained within the BoundingBox (when the intersection exists)
 - Generalizes Quest's `InOutOctree` class to work with 2D line segment meshes. Previously,
   it only worked with 3D triangle meshes
-- Added support for reading `c2c` ".contour" files in Quest. Contours that enclose a 2D region can be linearized 
+- Added support for reading `c2c` ".contour" files in Quest. Contours that enclose a 2D region can be linearized
   into line segment meshes and loaded into Quest's `InOutOctree` for in/out queries.
 - Updated the Quest `inout` C API to support 2D queries using the `c2c` library, when Axom is configured with `c2c`
-- Updated the C++ Quest "containment" example to support 2D in/out queries 
+- Updated the C++ Quest "containment" example to support 2D in/out queries
   (in addition to the already supported 3D queries)
 - Added `axom::Array` modeled after `std::vector`. Previous `axom::Array` renamed to `axom::MCArray`. Future changes to both arrays are expected.
 - Added a `data_collection_util` tool to generate Mesh Blueprint compliant high order distributed meshes from
@@ -224,14 +285,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   enables signed-distance queries to run on the GPU, as specified via a new template
   parameter.
 - Spin: Removed `BVHTree` class in favor of `BVH`.
-- Quest's `signed_distance` C API: Removed functions related to old `BVHTree` class 
+- Quest's `signed_distance` C API: Removed functions related to old `BVHTree` class
   and added functions related to `BVH` class
     * Removed: `void signed_distance_set_max_levels( int maxLevels )`
     * Removed: `void signed_distance_set_max_occupancy( int maxOccupancy )`
     * Added: `void signed_distance_set_allocator( int allocatorID )`
     * Added: `void signed_distance_set_execution_space( SignedDistExec execSpace )`
 - All built-in third-party libraries (`fmt`, `cli11`, `sol`, and `sparsehash`) have been guarded to allow downstream users to
-  have their own versions. This includes moving their headers under `include/axom` instead of `include/` and 
+  have their own versions. This includes moving their headers under `include/axom` instead of `include/` and
   moving their C++ namespace under `axom` (eg. `fmt` to `axom::fmt`).  If you don't use our built-n TPLs this has no
   affect on you, but if you do these are some the changes you will need to make:
 
@@ -241,7 +302,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
     | sol        | `sol::` &rarr; `axom::sol::`      | `#include "sol/sol.hpp"` &rarr; `#include "axom/sol.hpp"`       |
     | sparsehash | `google::` &rarr; `axom::google::`| `#include "sparsehash` &rarr; `#include "axom/sparsehash`       |
     | cli11      | `CLI::` &rarr; `axom::CLI::`      | `#include "CLI11/CLI11.hpp"` &rarr; `#include "axom/CLI11.hpp"` |
-    
+
 - Moved `axom::MCArray` and the `sidre::Array` it was based on into `mint`
   as `axom::deprecated::MCArray` and `sidre::deprecated::MCArray`, respectively.
   `sidre::Array` is now based on `axom::Array`.
@@ -249,7 +310,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Inlet's string utilities were moved to Core, and `splitLastNTokens` was renamed to `rsplitN`
 - `axom::Array`-related classes have been moved into individual files.
 - RAJA dependency updated to 0.14.0
-- Umpire dependency updated to 0.6.0. Support for versions prior to v2.1.0 was removed. 
+- Umpire dependency updated to 0.6.0. Support for versions prior to v2.1.0 was removed.
 - Conduit dependency updated to 0.7.2+ (develop as of Sept 13, 2021). This was required because Spack
   is now using `HDF5`'s CMake build system.
 - Internal BLT dependency updated to 0.4.1
@@ -257,7 +318,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Fixed
 - Fixed Primal's `intersect(Ray, Segment)` calculation for Segments that do not have unit length
-- Fixed problem with Cray Fortran compiler not recognizing MSVC pragmas in `axom/config.hpp`. 
+- Fixed problem with Cray Fortran compiler not recognizing MSVC pragmas in `axom/config.hpp`.
   The latter are now only added in MSVC configurations.
 - Fixed bug in `Mint`'s VTK output for fields of type `int64` and `float`
 - Improved loading of data collections in `MFEMSidreDataCollection`
@@ -317,7 +378,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Changed
 - Converted [Uberenv] to a git submodule. We previously vendored a copy of this script.
-- The Sidre Datastore no longer rewires Conduit's error handlers to Slic by default. 
+- The Sidre Datastore no longer rewires Conduit's error handlers to Slic by default.
   It can be  explicitly rewired using the static
   `DataStore::setConduitSLICMessageHandlers()` method.
 - Inlet: Changed `SchemaCreator` to an abstract class and added missing functions
@@ -390,37 +451,37 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added new component, Inlet, to assist in retrieving and storing data from
   an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
-  BVH. This allows the application to use a device allocator for the BVH and 
-  avoid use of Unified Memory (UM) on the GPU, which can hinder perfomrmance, 
+  BVH. This allows the application to use a device allocator for the BVH and
+  avoid use of Unified Memory (UM) on the GPU, which can hinder perfomrmance,
   or use a pool allocator to mitigate the latencies associated with allocation/deallocation.
   The allocator ID is specified as an optional argument to the BVH constructor.
-- Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
+- Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code
   annotations in Axom. Default is OFF.
 - Added Axom annotation macros. The macros can be used to annotate functions,
   using the `AXOM_PERF_MARK_FUNCTION` macro, or at a more fine grain level,
   different sections of code can be annotated by wrapping them within an
   `AXOM_PERF_MARK_SECTION` block. As a first cut, this works with NVTX tools.
-  However, the hooks are in place to add support for Caliper in the future. 
+  However, the hooks are in place to add support for Caliper in the future.
 - Added a simple interface to NVTX that allows an application to set the color
   and category for NVTX ranges corresponding to annotated code in Axom. The
-  application can now call `axom::nvtx:set_color()` and 
-  `axom::nvtx::set_category()` to set the corresponding parameters respectively. 
-  This facilitates in the performance evaluation by allowing developers to easily 
+  application can now call `axom::nvtx:set_color()` and
+  `axom::nvtx::set_category()` to set the corresponding parameters respectively.
+  This facilitates in the performance evaluation by allowing developers to easily
   filter out calls by category or visually by setting a different color to use
   in GUI tools, such as, NVVP and NSight.
-- Added a portable floating_point_limits traits class, to return min(), max(), lowest() 
-  and epsilon() of a `float` or `double` type. The functionality is equivalent to that provided by 
+- Added a portable floating_point_limits traits class, to return min(), max(), lowest()
+  and epsilon() of a `float` or `double` type. The functionality is equivalent to that provided by
   std::numeric_limits, but, the code is host/device decorated accordingly such that it
   can also be called on the device.
-- Added initial support for ray queries using the BVH. The caller may now supply a set of rays to 
+- Added initial support for ray queries using the BVH. The caller may now supply a set of rays to
   a BVH and the BVH will return a set of candidate BVH bins that intersect each ray.
 - Added initial support for bounding box queries using the BVH. The caller may
-  now supply a set of bounding boxes to a BVH and the BVH will return a set of 
+  now supply a set of bounding boxes to a BVH and the BVH will return a set of
   candidate BVH bins that intersect each bounding box.
 - Added an `axom-config.cmake` file to axom's installation to streamline incorporating axom
   into user applications. See `<axom-install>/examples/axom` for example usages.
 - Added [Sol] as a built-in TPL for fast and simple `C++` and `Lua` binding.
-  Sol is automatically enabled when `LUA_DIR` is found. 
+  Sol is automatically enabled when `LUA_DIR` is found.
   The version of Sol used in this release is `v2.20.6`, which requires `C++14`.
 
 ### Removed
@@ -440,7 +501,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
 - Modified the API for the BVH to accomodate different query types. The queries are now
   more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
-- Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
+- Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of
   passing an `umpire::Allocator` object to specify an allocator, we now use the corresponding
   integer ID associated with the allocator.
 - All names in the C API now preserve the case of the C++ function.
@@ -454,7 +515,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Fixed
 - Fixed a bug in `primal::intersect(Segment, BoundingBox)` and added regression tests.
-- Spin's octrees can now be used with 64-bit indexes. This allows octrees 
+- Spin's octrees can now be used with 64-bit indexes. This allows octrees
   with up to 64 levels of resolution when using a 64-bit index type.
 - Resolved issue with `AXOM_USE_64BIT_INDEXTYPE` configurations. Axom can once again
   be configured with 64-bit index types.
@@ -463,14 +524,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
   L1 cache that could result in some data corruption in the BVH. The code now
   calls ``__threadfence_system()`` after the parent is computed and stored back
-  to global memory to ensure that the *write*  is visible to all threads. 
+  to global memory to ensure that the *write*  is visible to all threads.
 - Fixed issue in Mint that would cause the clang@9.0.0 compiler to segfault. The
   `mint_cell_types.cpp` test was causing a segfault in the compiler. The main
   issue triggering this compiler bug was the use of `constexpr` when defining the
   static `cell_info` array of structs. The code has been modified to use `const`
   instead.
 - Fixed issue in Quest's Signed Distance query that would prevent consecutive
-  calls to Quest when MPI-3 shared memory is enabled due to not properly 
+  calls to Quest when MPI-3 shared memory is enabled due to not properly
   nullifying internal pointers when finalize is called.
 - Fixed issue where the BVH would dispatch to the CPU sort() routine when the
   specified execution policy was CUDA_EXEC async. Now, when the execution policy
@@ -493,7 +554,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   workaround for the IBM XL compiler is provided.
 - There is a known bug in MVAPICH that prevents consecutive creation/deletion
   of MPI windows. This was encountered on LC platforms when enabling shared
-  memory in the Signed Distance Query. See the corresponding 
+  memory in the Signed Distance Query. See the corresponding
   [Github Issue](https://github.com/LLNL/axom/issues/257) for details.
 
 ## [Version 0.3.3] - Release date 2020-01-31
@@ -510,7 +571,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Conduit to v0.5.1
 - Updated RAJA to v0.11.0
 - Updated Umpire to v2.1.0, which, natively handles zero byte re-allocations consistently. Workaround
-  for older releases of Umpire is in place for backwards compatibility. 
+  for older releases of Umpire is in place for backwards compatibility.
 - Updated BLT to develop (f0ab9a4) as of Jan 15, 2020
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
 - Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.

@@ -46,18 +46,18 @@ inline bool in_sphere(const Point<T, 2>& q,
                       const Point<T, 2>& p2,
                       double EPS = 1e-8)
 {
-  const Point<T, 2> a(p0.array() - q.array());
-  const Point<T, 2> b(p1.array() - q.array());
-  const Point<T, 2> c(p2.array() - q.array());
+  const auto ba = p1 - p0;
+  const auto ca = p2 - p0;
+  const auto qa = q - p0;
 
   // clang-format off
   const double det = axom::numerics::determinant(
-    a[0], a[1], (a[0]*a[0] + a[1]*a[1]),
-    b[0], b[1], (b[0]*b[0] + b[1]*b[1]),
-    c[0], c[1], (c[0]*c[0] + c[1]*c[1]));
+    ba[0], ba[1], ba.squared_norm(),
+    ca[0], ca[1], ca.squared_norm(),
+    qa[0], qa[1], qa.squared_norm());
   // clang-format on
 
-  return axom::utilities::isNearlyEqual(det, 0., EPS) ? false : (det > 0);
+  return axom::utilities::isNearlyEqual(det, 0., EPS) ? false : (det < 0);
 }
 
 /*!
@@ -100,17 +100,17 @@ inline bool in_sphere(const Point<T, 3>& q,
                       const Point<T, 3>& p3,
                       double EPS = 1e-8)
 {
-  const Point<T, 3> a(p0.array() - q.array());
-  const Point<T, 3> b(p1.array() - q.array());
-  const Point<T, 3> c(p2.array() - q.array());
-  const Point<T, 3> d(p3.array() - q.array());
+  const auto ba = p1 - p0;
+  const auto ca = p2 - p0;
+  const auto da = p3 - p0;
+  const auto qa = q - p0;
 
   // clang-format off
   const double det = axom::numerics::determinant(
-    a[0], a[1], a[2], (a[0]*a[0] + a[1]*a[1] + a[2]*a[2]),
-    b[0], b[1], b[2], (b[0]*b[0] + b[1]*b[1] + b[2]*b[2]),
-    c[0], c[1], c[2], (c[0]*c[0] + c[1]*c[1] + c[2]*c[2]),
-    d[0], d[1], d[2], (d[0]*d[0] + d[1]*d[1] + d[2]*d[2]));
+    ba[0], ba[1], ba[2], ba.squared_norm(),
+    ca[0], ca[1], ca[2], ca.squared_norm(),
+    da[0], da[1], da[2], da.squared_norm(),
+    qa[0], qa[1], qa[2], qa.squared_norm());
   // clang-format on
 
   return axom::utilities::isNearlyEqual(det, 0., EPS) ? false : (det < 0);

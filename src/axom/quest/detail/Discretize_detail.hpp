@@ -6,6 +6,8 @@
 #ifndef AXOM_QUEST_DISCRETIZE_DETAIL_
 #define AXOM_QUEST_DISCRETIZE_DETAIL_
 
+#include "axom/primal/constants.hpp"
+
 namespace
 {
 enum
@@ -17,8 +19,6 @@ enum
   T,
   U
 };
-
-constexpr double PTINY = 1e-80;
 
 using SphereType = axom::quest::SphereType;
 using OctType = axom::quest::OctType;
@@ -84,11 +84,10 @@ inline int count_segment_prisms(int levels)
 AXOM_HOST_DEVICE
 Point3D rescale_YZ(const Point3D &p, double new_dst)
 {
-  double cur_dst = sqrt(p[1] * p[1] + p[2] * p[2]);
-  if(cur_dst < PTINY)
-  {
-    cur_dst = PTINY;
-  }
+  const double cur_dst =
+    axom::utilities::clampLower(sqrt(p[1] * p[1] + p[2] * p[2]),
+                                axom::primal::PTINY);
+
   Point3D retval;
   retval[0] = p[0];
   retval[1] = p[1] * new_dst / cur_dst;
@@ -157,11 +156,11 @@ int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int 
   SLIC_ASSERT(b[1] >= 0);
 
   // Deal with degenerate segments
-  if(b[0] - a[0] < PTINY)
+  if(b[0] - a[0] < axom::primal::PTINY)
   {
     return 0;
   }
-  if(a[1] < PTINY && b[1] < PTINY)
+  if(a[1] < axom::primal::PTINY && b[1] < axom::primal::PTINY)
   {
     return 0;
   }
@@ -262,6 +261,7 @@ bool discretize(Point2D *&polyline,
                 OctType *&out,
                 int &octcount)
 {
+  int allocId = axom::execution_space<ExecSpace>::allocatorID();
   // Check for invalid input.  If any segment is invalid, exit returning false.
   bool stillValid = true;
   int segmentcount = pointcount - 1;
@@ -289,7 +289,7 @@ bool discretize(Point2D *&polyline,
   // That was the octahedron count for one segment.  Multiply by the number
   // of segments we will compute.
   int totaloctcount = segoctcount * segmentcount;
-  out = axom::allocate<OctType>(totaloctcount);
+  out = axom::allocate<OctType>(totaloctcount, allocId);
   octcount = 0;
 
   for(int seg = 0; seg < segmentcount; ++seg)

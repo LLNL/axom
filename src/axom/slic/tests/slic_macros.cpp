@@ -129,6 +129,31 @@ TEST(slic_macros, test_error_macros)
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 5));
   slic::internal::clear();
+
+  // Check selective filtering based on root == false
+  axom::slic::setIsRoot(false);
+  SLIC_ERROR_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // Check selective filter based on root == true
+  axom::slic::setIsRoot(true);
+  SLIC_ERROR_ROOT_IF(true, "this message is logged!");
+  EXPECT_FALSE(slic::internal::is_stream_empty());
+  check_level(slic::internal::test_stream.str(), "ERROR");
+  check_msg(slic::internal::test_stream.str(), "this message is logged!");
+  check_file(slic::internal::test_stream.str());
+  check_line(slic::internal::test_stream.str(), (__LINE__ - 5));
+  slic::internal::clear();
+
+  // is root, but conditional is false -> no message
+  axom::slic::setIsRoot(true);
+  SLIC_ERROR_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // is not root, and conditional is true -> no message
+  axom::slic::setIsRoot(false);
+  SLIC_ERROR_ROOT_IF(true, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
 }
 
 //------------------------------------------------------------------------------
@@ -153,6 +178,31 @@ TEST(slic_macros, test_warning_macros)
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 5));
   slic::internal::clear();
+
+  // Check selective filtering based on root == false
+  axom::slic::setIsRoot(false);
+  SLIC_WARNING_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // Check selective filter based on root == true
+  axom::slic::setIsRoot(true);
+  SLIC_WARNING_ROOT_IF(true, "this message is logged!");
+  EXPECT_FALSE(slic::internal::is_stream_empty());
+  check_level(slic::internal::test_stream.str(), "WARNING");
+  check_msg(slic::internal::test_stream.str(), "this message is logged!");
+  check_file(slic::internal::test_stream.str());
+  check_line(slic::internal::test_stream.str(), (__LINE__ - 5));
+  slic::internal::clear();
+
+  // is root, but conditional is false -> no message
+  axom::slic::setIsRoot(true);
+  SLIC_WARNING_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // is not root, and conditional is true -> no message
+  axom::slic::setIsRoot(false);
+  SLIC_WARNING_ROOT_IF(true, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
 }
 
 //------------------------------------------------------------------------------
@@ -177,6 +227,16 @@ TEST(slic_macros, test_info_macros)
   check_file(slic::internal::test_stream.str());
   check_line(slic::internal::test_stream.str(), (__LINE__ - 5));
   slic::internal::clear();
+
+  // is root, but conditional is false -> no message
+  axom::slic::setIsRoot(true);
+  SLIC_INFO_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // is not root, and conditional is true -> no message
+  axom::slic::setIsRoot(false);
+  SLIC_INFO_ROOT_IF(true, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
 }
 
 //------------------------------------------------------------------------------
@@ -211,6 +271,36 @@ TEST(slic_macros, test_debug_macros)
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
+
+  // Check selective filtering based on root == false
+  axom::slic::setIsRoot(false);
+  SLIC_DEBUG_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // Check selective filter based on root == true
+  axom::slic::setIsRoot(true);
+  SLIC_DEBUG_ROOT_IF(true, "this message is logged!");
+#ifdef AXOM_DEBUG
+  EXPECT_FALSE(slic::internal::is_stream_empty());
+  check_level(slic::internal::test_stream.str(), "DEBUG");
+  check_msg(slic::internal::test_stream.str(), "this message is logged!");
+  check_file(slic::internal::test_stream.str());
+  check_line(slic::internal::test_stream.str(), (__LINE__ - 6));
+  slic::internal::clear();
+#else
+  // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+#endif
+
+  // is root, but conditional is false -> no message
+  axom::slic::setIsRoot(true);
+  SLIC_DEBUG_ROOT_IF(false, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
+
+  // is not root, and conditional is true -> no message
+  axom::slic::setIsRoot(false);
+  SLIC_DEBUG_ROOT_IF(true, "this message should not be logged!");
+  EXPECT_TRUE(slic::internal::is_stream_empty());
 }
 
 //------------------------------------------------------------------------------

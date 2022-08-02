@@ -1,22 +1,21 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 25cf0a6..118f4b5 100644
+index 7b159ff..e178687 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -444,6 +444,13 @@ set(MFEM_INSTALL_DIR ${CMAKE_INSTALL_PREFIX} CACHE PATH
+@@ -529,6 +529,12 @@ endif()
+ set_target_properties(mfem PROPERTIES VERSION "${mfem_VERSION}")
+ set_target_properties(mfem PROPERTIES SOVERSION "${mfem_VERSION}")
  
- # Declaring the library
- add_library(mfem ${SOURCES} ${HEADERS} ${MASTER_HEADERS})
-+
 +# Generate export symbols and add to list of header files
 +include(GenerateExportHeader)
 +set(_export_header ${CMAKE_CURRENT_SOURCE_DIR}/mfem_export.h)
 +generate_export_header(mfem EXPORT_FILE_NAME ${_export_header})
 +list(APPEND ${HEADERS} ${_export_header})
 +
- # message(STATUS "TPL_LIBRARIES = ${TPL_LIBRARIES}")
- if (CMAKE_VERSION VERSION_GREATER 2.8.11)
-   target_link_libraries(mfem PUBLIC ${TPL_LIBRARIES})
-@@ -582,7 +589,7 @@ foreach(Header mfem.hpp mfem-performance.hpp)
+ # If building out-of-source, define MFEM_CONFIG_FILE to point to the config file
+ # inside the build directory.
+ if (NOT ("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}"))
+@@ -669,7 +675,7 @@ foreach(Header mfem.hpp mfem-performance.hpp)
    install(FILES ${PROJECT_BINARY_DIR}/InstallHeaders/${Header}
      DESTINATION ${INSTALL_INCLUDE_DIR})
  endforeach()
@@ -26,7 +25,7 @@ index 25cf0a6..118f4b5 100644
  # Install the headers; currently, the miniapps headers are excluded
  install(DIRECTORY ${MFEM_SOURCE_DIRS}
 diff --git a/fem/fe.hpp b/fem/fe.hpp
-index bbd956c..4c55f97 100644
+index 5de8ee5..3738007 100644
 --- a/fem/fe.hpp
 +++ b/fem/fe.hpp
 @@ -13,6 +13,7 @@
@@ -36,8 +35,12 @@ index bbd956c..4c55f97 100644
 +#include "../mfem_export.h"
  #include "../general/array.hpp"
  #include "../linalg/linalg.hpp"
- #include "intrules.hpp"
-@@ -1994,7 +1995,7 @@ public:
+ 
+diff --git a/fem/fe/fe_base.hpp b/fem/fe/fe_base.hpp
+index 0d6d440..1774791 100644
+--- a/fem/fe/fe_base.hpp
++++ b/fem/fe/fe_base.hpp
+@@ -1146,7 +1146,7 @@ public:
     ~Poly_1D();
  };
  
@@ -47,7 +50,7 @@ index bbd956c..4c55f97 100644
  
  /// An element defined as an ND tensor product of 1D elements on a segment,
 diff --git a/fem/geom.hpp b/fem/geom.hpp
-index 6a4dfce..df7fcab 100644
+index bdcf6cc..599a28c 100644
 --- a/fem/geom.hpp
 +++ b/fem/geom.hpp
 @@ -13,6 +13,7 @@
@@ -58,7 +61,7 @@ index 6a4dfce..df7fcab 100644
  #include "../linalg/densemat.hpp"
  #include "intrules.hpp"
  
-@@ -106,7 +107,7 @@ public:
+@@ -126,7 +127,7 @@ public:
     int NumBdr(int GeomType) { return NumBdrArray[GeomType]; }
  };
  
@@ -67,7 +70,7 @@ index 6a4dfce..df7fcab 100644
  {
     static const int Dimension = 0;
     static const int NumVert = 1;
-@@ -116,7 +117,7 @@ template <> struct Geometry::Constants<Geometry::POINT>
+@@ -136,7 +137,7 @@ template <> struct Geometry::Constants<Geometry::POINT>
     static const int InvOrient[NumOrient];
  };
  
@@ -76,7 +79,7 @@ index 6a4dfce..df7fcab 100644
  {
     static const int Dimension = 1;
     static const int NumVert = 2;
-@@ -128,7 +129,7 @@ template <> struct Geometry::Constants<Geometry::SEGMENT>
+@@ -148,7 +149,7 @@ template <> struct Geometry::Constants<Geometry::SEGMENT>
     static const int InvOrient[NumOrient];
  };
  
@@ -85,7 +88,7 @@ index 6a4dfce..df7fcab 100644
  {
     static const int Dimension = 2;
     static const int NumVert = 3;
-@@ -154,7 +155,7 @@ template <> struct Geometry::Constants<Geometry::TRIANGLE>
+@@ -174,7 +175,7 @@ template <> struct Geometry::Constants<Geometry::TRIANGLE>
     static const int InvOrient[NumOrient];
  };
  
@@ -94,7 +97,7 @@ index 6a4dfce..df7fcab 100644
  {
     static const int Dimension = 2;
     static const int NumVert = 4;
-@@ -174,7 +175,7 @@ template <> struct Geometry::Constants<Geometry::SQUARE>
+@@ -194,7 +195,7 @@ template <> struct Geometry::Constants<Geometry::SQUARE>
     static const int InvOrient[NumOrient];
  };
  
@@ -103,7 +106,7 @@ index 6a4dfce..df7fcab 100644
  {
     static const int Dimension = 3;
     static const int NumVert = 4;
-@@ -196,7 +197,7 @@ template <> struct Geometry::Constants<Geometry::TETRAHEDRON>
+@@ -216,7 +217,7 @@ template <> struct Geometry::Constants<Geometry::TETRAHEDRON>
     static const int InvOrient[NumOrient];
  };
  
@@ -112,7 +115,7 @@ index 6a4dfce..df7fcab 100644
  {
     static const int Dimension = 3;
     static const int NumVert = 8;
-@@ -214,7 +215,7 @@ template <> struct Geometry::Constants<Geometry::CUBE>
+@@ -234,7 +235,7 @@ template <> struct Geometry::Constants<Geometry::CUBE>
     };
  };
  
@@ -121,16 +124,25 @@ index 6a4dfce..df7fcab 100644
  {
     static const int Dimension = 3;
     static const int NumVert = 6;
-@@ -233,7 +234,7 @@ template <> struct Geometry::Constants<Geometry::PRISM>
+@@ -252,7 +253,7 @@ template <> struct Geometry::Constants<Geometry::PRISM>
+    };
  };
  
- // Defined in fe.cpp to ensure construction after 'mfem::WedgeFE'.
+-template <> struct Geometry::Constants<Geometry::PYRAMID>
++template <> struct MFEM_EXPORT Geometry::Constants<Geometry::PYRAMID>
+ {
+    static const int Dimension = 3;
+    static const int NumVert = 5;
+@@ -272,7 +273,7 @@ template <> struct Geometry::Constants<Geometry::PYRAMID>
+ 
+ // Defined in fe.cpp to ensure construction after 'mfem::TriangleFE' and
+ // `mfem::TetrahedronFE`.
 -extern Geometry Geometries;
 +MFEM_EXPORT extern Geometry Geometries;
  
  
  class RefinedGeometry
-@@ -282,7 +283,7 @@ public:
+@@ -321,7 +322,7 @@ public:
     ~GeometryRefiner();
  };
  
@@ -140,7 +152,7 @@ index 6a4dfce..df7fcab 100644
  }
  
 diff --git a/fem/intrules.hpp b/fem/intrules.hpp
-index 49c33a1..f11210a 100644
+index 3545701..fd68a9a 100644
 --- a/fem/intrules.hpp
 +++ b/fem/intrules.hpp
 @@ -13,6 +13,7 @@
@@ -151,7 +163,7 @@ index 49c33a1..f11210a 100644
  #include "../general/array.hpp"
  
  namespace mfem
-@@ -375,10 +376,10 @@ public:
+@@ -376,10 +377,10 @@ public:
  };
  
  /// A global object with all integration rules (defined in intrules.cpp)
@@ -164,8 +176,33 @@ index 49c33a1..f11210a 100644
  
  }
  
+diff --git a/general/device.cpp b/general/device.cpp
+index 0f8d607..858473a 100644
+--- a/general/device.cpp
++++ b/general/device.cpp
+@@ -61,7 +61,6 @@ static const char *backend_name[Backend::NUM_BACKENDS] =
+ 
+ 
+ // Initialize the unique global Device variable.
+-Device Device::device_singleton;
+ bool Device::device_env = false;
+ bool Device::mem_host_env = false;
+ bool Device::mem_device_env = false;
+@@ -177,6 +176,12 @@ Device::~Device()
+    Get().device_mem_class = MemoryClass::HOST;
+ }
+ 
++Device& Device::Get() 
++{ 
++   static Device device_singleton;
++   return device_singleton; 
++}
++
+ void Device::Configure(const std::string &device, const int device_id)
+ {
+    // If a device was configured via the environment, skip the configuration,
 diff --git a/general/device.hpp b/general/device.hpp
-index 1c702c8..b4b8a59 100644
+index 456d3cc..e2b75b3 100644
 --- a/general/device.hpp
 +++ b/general/device.hpp
 @@ -12,6 +12,8 @@
@@ -177,17 +214,27 @@ index 1c702c8..b4b8a59 100644
  #include "globals.hpp"
  #include "mem_manager.hpp"
  
-@@ -115,7 +117,7 @@ struct Backend
-       priority order is used to select a specific backend from the list of
-       configured backends. See the Backend class and the Configure() method in
-       this class for details. */
--class Device
-+MFEM_EXPORT class Device
- {
- private:
-    friend class MemoryManager;
+@@ -125,7 +127,6 @@ private:
+    enum MODES {SEQUENTIAL, ACCELERATED};
+ 
+    static bool device_env, mem_host_env, mem_device_env, mem_types_set;
+-   static Device device_singleton;
+ 
+    MODES mode = Device::SEQUENTIAL;
+    int dev = 0;   ///< Device ID of the configured device.
+@@ -147,7 +148,9 @@ private:
+    char *device_option = NULL;
+    Device(Device const&);
+    void operator=(Device const&);
+-   static Device& Get() { return device_singleton; }
++
++   /// Return unique global Device variable 
++   static Device& Get();
+ 
+    /// Setup switcher based on configuration settings
+    void Setup(const int device_id = 0);
 diff --git a/general/globals.hpp b/general/globals.hpp
-index 9b14b53..f2efd8e 100644
+index c21b869..d860fbf 100644
 --- a/general/globals.hpp
 +++ b/general/globals.hpp
 @@ -13,6 +13,7 @@
@@ -214,7 +261,7 @@ index 9b14b53..f2efd8e 100644
  
  /** @brief Construct a string of the form "<prefix><myid><suffix>" where the
 diff --git a/general/mem_manager.hpp b/general/mem_manager.hpp
-index 5661d33..dfb3cd2 100644
+index d73bb18..7d3337d 100644
 --- a/general/mem_manager.hpp
 +++ b/general/mem_manager.hpp
 @@ -12,6 +12,8 @@
@@ -226,7 +273,7 @@ index 5661d33..dfb3cd2 100644
  #include "globals.hpp"
  #include "error.hpp"
  #include <cstring> // std::memcpy
-@@ -474,7 +476,7 @@ private:
+@@ -553,7 +555,7 @@ private:
  /** The MFEM memory manager class. Host-side pointers are inserted into this
      manager which keeps track of the associated device pointer, and where the
      data currently resides. */
@@ -234,4 +281,13 @@ index 5661d33..dfb3cd2 100644
 +class MFEM_EXPORT MemoryManager
  {
  private:
+ 
+@@ -1226,7 +1228,7 @@ inline int Memory<T>::CompareHostAndDevice(int size) const
+ 
+ 
+ /// The (single) global memory manager object
+-extern MemoryManager mm;
++extern MFEM_EXPORT MemoryManager mm;
+ 
+ } // namespace mfem
  

@@ -17,9 +17,6 @@ namespace axom
 {
 namespace quest
 {
-/// returns the linear interpolation of \a A and \a B at \a t. i.e. (1-t)A+tB
-inline double lerp(double A, double B, double t) { return (1 - t) * A + t * B; }
-
 /*!
  * \brief Helper class for interpolating points on a NURBS curve
  *
@@ -35,8 +32,12 @@ struct NURBSInterpolator
   NURBSInterpolator(const c2c::NURBSData& curve, double EPS = 1E-9)
     : m_curve(curve)
   {
-    int p = m_curve.order - 1;
-    int knotSize = m_curve.knots.size();
+    const int p = m_curve.order - 1;
+    const int knotSize = m_curve.knots.size();
+
+    AXOM_UNUSED_VAR(p);  // silence warnings in release configs
+    AXOM_UNUSED_VAR(knotSize);
+
     SLIC_ASSERT(p >= 1);
     SLIC_ASSERT(knotSize >= 2 * p);
     computeSpanIntervals(EPS);
@@ -278,6 +279,8 @@ void C2CReader::log()
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                               int segmentsPerKnotSpan)
 {
+  using axom::utilities::lerp;
+
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
   SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");

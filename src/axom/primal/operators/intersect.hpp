@@ -12,9 +12,11 @@
 #ifndef AXOM_PRIMAL_INTERSECT_HPP_
 #define AXOM_PRIMAL_INTERSECT_HPP_
 
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Plane.hpp"
@@ -146,8 +148,7 @@ bool intersect(const Triangle<T, 3>& tri,
   if(retval)
   {
     // Add a small EPS to avoid dividing by zero
-    const double EPS = 1e-80;
-    double normalizer = p[0] + p[1] + p[2] + EPS;
+    double normalizer = p[0] + p[1] + p[2] + primal::PTINY;
     p.array() *= 1. / normalizer;
   }
 
@@ -207,8 +208,7 @@ bool intersect(const Triangle<T, 3>& tri,
   if(retval)
   {
     // Add a small EPS to avoid dividing by zero
-    const double EPS = 1e-80;
-    double normalizer = p[0] + p[1] + p[2] + EPS;
+    double normalizer = p[0] + p[1] + p[2] + primal::PTINY;
     p.array() *= 1. / normalizer;
   }
 
@@ -505,9 +505,9 @@ bool intersect(const OrientedBoundingBox<T, 3>& b1,
  * contain their first endpoint, but not their last endpoint. Thus, the
  * curves do not intersect at \f$ s==1 \f$ or at \f$ t==1 \f$.
  */
-template <typename T, int NDIMS>
-bool intersect(const BezierCurve<T, NDIMS>& c1,
-               const BezierCurve<T, NDIMS>& c2,
+template <typename T>
+bool intersect(const BezierCurve<T, 2>& c1,
+               const BezierCurve<T, 2>& c2,
                std::vector<T>& sp,
                std::vector<T>& tp,
                double tol = 1E-8)

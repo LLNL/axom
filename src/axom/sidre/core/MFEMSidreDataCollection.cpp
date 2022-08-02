@@ -17,6 +17,9 @@
   #include "axom/fmt.hpp"
 
   #include "MFEMSidreDataCollection.hpp"
+  #ifdef AXOM_USE_MPI
+    #include "axom/sidre/spio/IOManager.hpp"
+  #endif
 
   #include "axom/core/utilities/StringUtilities.hpp"
   #include "axom/core/utilities/Utilities.hpp"
@@ -1093,13 +1096,37 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
       num_files = m_num_files;
       num_files = axom::utilities::clampUpper(num_files, num_procs);
     }
-    writer.write(temp_root, num_files, file_path, protocol);
+
+    // Specifying the tree pattern helps visit display our data.
+    std::string tree_pattern = "datagroup";
+    if(num_files != num_procs)
+    {
+      tree_pattern = "datagroup_%07d";
+    }
+    writer.write(temp_root, num_files, file_path, protocol, tree_pattern);
 
     // Now that we've written the data, we can delete the temporary group
     temp_root->getParent()->destroyGroup("_sidre_tmp_save");
 
     if(myid == 0)
     {
+      // 'state/number_of_domains` may have been previously set to an incorrect
+      // value before this object had access to the MPI communicator. Here
+      // we reset to the correct value, or create a View to hold the value if
+      // one does not already exist.
+      if(m_bp_index_grp->hasView("state/number_of_domains"))
+      {
+        View* num_domains =
+          m_bp_index_grp->getView("state/number_of_domains")->setScalar(num_procs);
+        SLIC_ASSERT_MSG(num_domains,
+                        "Failed to reset View 'state/number_of_domains' "
+                        "in blueprint index to correct number of domains.");
+      }
+      else
+      {
+        m_bp_index_grp->createViewScalar("state/number_of_domains", num_procs);
+      }
+
       if(protocol == "sidre_hdf5")
       {
         writer.writeGroupToRootFile(blueprint_indicies_grp, file_path + ".root");

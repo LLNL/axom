@@ -44,7 +44,7 @@ if (CAMP_DIR)
     # Note: camp sets a compile feature that is not available on XL
     set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
 else()
-    message(STATUS "Umpire support is OFF")
+    message(STATUS "Camp support is OFF")
     set(CAMP_FOUND FALSE CACHE BOOL "")
 endif()
 
@@ -137,7 +137,12 @@ endif()
 #------------------------------------------------------------------------------
 # MFEM
 #------------------------------------------------------------------------------
-if (MFEM_DIR)
+if (TARGET mfem)
+    # Case: included axom in project that also creates an mfem target, no need to recreate mfem
+    message(STATUS "MFEM support is ON, using existing mfem target")
+    blt_list_append(TO TPL_DEPS ELEMENTS mfem)
+    set(MFEM_FOUND TRUE CACHE BOOL "" FORCE)
+elseif (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
     # If the CMake build system was used, a CMake target for mfem already exists
     if (NOT TARGET mfem)

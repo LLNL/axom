@@ -120,7 +120,8 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-Ray<T, NDIMS>::Ray(const PointType& origin, const VectorType& direction)
+AXOM_HOST_DEVICE Ray<T, NDIMS>::Ray(const PointType& origin,
+                                    const VectorType& direction)
   : m_origin(origin)
   , m_direction(direction.unitVector())
 {
@@ -138,7 +139,7 @@ Ray<T, NDIMS>::Ray(const SegmentType& S)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Point<T, NDIMS> Ray<T, NDIMS>::at(const T& t) const
+AXOM_HOST_DEVICE inline Point<T, NDIMS> Ray<T, NDIMS>::at(const T& t) const
 {
   PointType p;
   for(int i = 0; i < NDIMS; ++i)

@@ -71,24 +71,17 @@ struct FaceTypeCellsNodes
 //------------------------------------------------------------------------------
 bool initFaces(Mesh* mesh,
                IndexType& facecount,
-               IndexType*& f2c,
-               IndexType*& c2f,
-               IndexType*& c2n,
-               IndexType*& c2foffsets,
-               IndexType*& f2n,
-               IndexType*& f2noffsets,
-               CellType*& f2ntypes)
+               Array<IndexType>& f2c,
+               Array<IndexType>& c2f,
+               Array<IndexType>& c2n,
+               Array<IndexType>& c2foffsets,
+               Array<IndexType>& f2n,
+               Array<IndexType>& f2noffsets,
+               Array<CellType>& f2ntypes)
 {
   bool success = true;
 
   facecount = 0;
-  f2c = nullptr;
-  c2f = nullptr;
-  c2n = nullptr;
-  c2foffsets = nullptr;
-  f2n = nullptr;
-  f2noffsets = nullptr;
-  f2ntypes = nullptr;
 
   using IDtoKeyType = std::unordered_map<IndexType, std::vector<IndexType>>;
   using FaceBuilderType = std::map<std::vector<IndexType>,
@@ -150,7 +143,7 @@ bool initFaces(Mesh* mesh,
   IndexType faceID = 0;
   IndexType faceNodeTotal = 0;
   IDtoKeyType keys;
-  f2c = new IndexType[2 * workface.size()];
+  f2c.resize(2 * workface.size());
   for(FaceBuilderType::value_type v : workface)
   {
     FaceTypeCellsNodes theFace = v.second;
@@ -177,8 +170,7 @@ bool initFaces(Mesh* mesh,
   // clean up and return failure.  We won't do any more work here.
   if(!success)
   {
-    delete[] f2c;
-    f2c = nullptr;
+    f2c.clear();
     return success;
   }
 
@@ -187,15 +179,15 @@ bool initFaces(Mesh* mesh,
 
   // Now that we have a count of all the face-nodes, and we know we have no
   // faces with more than two nodes, record the face-node relations.
-  f2n = new IndexType[faceNodeTotal];
-  f2noffsets = new IndexType[facecount + 1];
-  f2ntypes = new CellType[facecount];
+  f2n.resize(faceNodeTotal);
+  f2noffsets.resize(facecount + 1);
+  f2ntypes.resize(facecount);
   int faceNodeOffset = 0;
   for(int fidx = 0; fidx < facecount; ++fidx)
   {
     FaceTypeCellsNodes theFace = workface[keys[fidx]];
     std::vector<IndexType>& faceNodes = theFace.facenodes;
-    std::copy(faceNodes.begin(), faceNodes.end(), f2n + faceNodeOffset);
+    std::copy(faceNodes.begin(), faceNodes.end(), f2n.begin() + faceNodeOffset);
     f2noffsets[fidx] = faceNodeOffset;
     f2ntypes[fidx] = theFace.facetype;
     faceNodeOffset += static_cast<int>(faceNodes.size());
@@ -223,9 +215,9 @@ bool initFaces(Mesh* mesh,
   }
 
   // Step 4b. Put cell-to-face relation into output arrays.
-  c2f = new IndexType[cellFaceCount];
-  c2n = new IndexType[cellFaceCount];
-  c2foffsets = new IndexType[cellcount + 1];
+  c2f.resize(cellFaceCount);
+  c2n.resize(cellFaceCount);
+  c2foffsets.resize(cellcount + 1);
   cellFaceCount = 0;
 
   for(IndexType cellID = 0; cellID < cellcount; ++cellID)

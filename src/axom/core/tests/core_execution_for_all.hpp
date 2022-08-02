@@ -111,3 +111,22 @@ TEST(core_execution_for_all, cuda_exec_async)
 }
 
 #endif
+
+//------------------------------------------------------------------------------
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+
+TEST(core_execution_for_all, hip_exec)
+{
+  constexpr int BLOCK_SIZE = 256;
+  check_for_all<axom::HIP_EXEC<BLOCK_SIZE>>();
+}
+
+//------------------------------------------------------------------------------
+TEST(core_execution_for_all, hip_exec_async)
+{
+  constexpr int BLOCK_SIZE = 256;
+  check_for_all<axom::HIP_EXEC<BLOCK_SIZE, axom::ASYNC>>();
+}
+
+#endif

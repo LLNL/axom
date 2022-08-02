@@ -43,7 +43,9 @@ public:
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
-  LinearBVHTraverser(BoxType* bboxes, int32* inner_node_children, int32* leaf_nodes)
+  LinearBVHTraverser(axom::ArrayView<const BoxType> bboxes,
+                     axom::ArrayView<const int32> inner_node_children,
+                     axom::ArrayView<const int32> leaf_nodes)
     : m_inner_nodes(bboxes)
     , m_inner_node_children(inner_node_children)
     , m_leaf_nodes(leaf_nodes)
@@ -92,9 +94,9 @@ public:
   }
 
 private:
-  BoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
-  int32* m_inner_node_children {nullptr};
-  int32* m_leaf_nodes {nullptr};  // leaf data
+  axom::ArrayView<const BoxType> m_inner_nodes;  // BVH bins including leafs
+  axom::ArrayView<const int32> m_inner_node_children;
+  axom::ArrayView<const int32> m_leaf_nodes;  // leaf data
 };
 
 /*!
@@ -115,7 +117,6 @@ public:
   using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   LinearBVH() = default;
-  ~LinearBVH() { deallocate(); }
 
   /*!
    * \brief Builds a linear BVH with the given bounding boxes as leaf nodes.
@@ -143,13 +144,13 @@ public:
    * \return total_count the total count of candidates for all query primitives.
    */
   template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
-  IndexType findCandidatesImpl(Predicate&& predicate,
-                               IndexType* offsets,
-                               IndexType* counts,
-                               IndexType*& candidates,
-                               IndexType numObjs,
-                               PrimitiveIndexable objs,
-                               int allocatorID) const;
+  axom::Array<IndexType> findCandidatesImpl(
+    Predicate&& predicate,
+    const axom::ArrayView<IndexType> offsets,
+    const axom::ArrayView<IndexType> counts,
+    IndexType numObjs,
+    PrimitiveIndexable objs,
+    int allocatorID) const;
 
   void writeVtkFileImpl(const std::string& fileName) const;
 
@@ -157,29 +158,32 @@ public:
 
   TraverserType getTraverserImpl() const
   {
-    return TraverserType(m_inner_nodes, m_inner_node_children, m_leaf_nodes);
+    return TraverserType(m_inner_nodes.view(),
+                         m_inner_node_children.view(),
+                         m_leaf_nodes.view());
   }
 
 private:
   void allocate(int32 size, int allocID)
   {
     AXOM_PERF_MARK_FUNCTION("LinearBVH::allocate");
-    m_inner_nodes = axom::allocate<BoundingBoxType>((size - 1) * 2, allocID);
-    m_inner_node_children = axom::allocate<int32>((size - 1) * 2, allocID);
-    m_leaf_nodes = axom::allocate<int32>(size, allocID);
+    IndexType numInnerNodes = (size - 1) * 2;
+    // Need to allocate this uninitialized, since primal::BoundingBox is
+    // considered non-trivially-copyable on GCC 4.9.3
+    m_inner_nodes =
+      axom::Array<BoundingBoxType>(axom::ArrayOptions::Uninitialized {},
+                                   numInnerNodes,
+                                   numInnerNodes,
+                                   allocID);
+    m_inner_node_children =
+      axom::Array<int32>(numInnerNodes, numInnerNodes, allocID);
+    m_leaf_nodes = axom::Array<int32>(size, size, allocID);
   }
 
-  void deallocate()
-  {
-    AXOM_PERF_MARK_FUNCTION("LinearBVH::deallocate");
-    axom::deallocate(m_inner_nodes);
-    axom::deallocate(m_inner_node_children);
-    axom::deallocate(m_leaf_nodes);
-  }
-
-  BoundingBoxType* m_inner_nodes {nullptr};  // BVH bins including leafs
-  int32* m_inner_node_children {nullptr};
-  int32* m_leaf_nodes {nullptr};  // leaf data
+  bool m_initialized {false};
+  axom::Array<BoundingBoxType> m_inner_nodes;  // BVH bins including leafs
+  axom::Array<int32> m_inner_node_children;
+  axom::Array<int32> m_leaf_nodes;  // leaf data
   primal::BoundingBox<FloatType, NDIMS> m_bounds;
 };
 
@@ -209,17 +213,18 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
 
   // STEP 3: emit the BVH
   const int32 size = radix_tree.m_size;
+  AXOM_UNUSED_VAR(size);
   const int32 inner_size = radix_tree.m_inner_size;
   SLIC_ASSERT(inner_size == size - 1);
 
-  const int32* lchildren_ptr = radix_tree.m_left_children;
-  const int32* rchildren_ptr = radix_tree.m_right_children;
+  const auto lchildren_ptr = radix_tree.m_left_children.view();
+  const auto rchildren_ptr = radix_tree.m_right_children.view();
 
-  const BoundingBoxType* leaf_aabb_ptr = radix_tree.m_leaf_aabbs;
-  const BoundingBoxType* inner_aabb_ptr = radix_tree.m_inner_aabbs;
+  const auto leaf_aabb_ptr = radix_tree.m_leaf_aabbs.view();
+  const auto inner_aabb_ptr = radix_tree.m_inner_aabbs.view();
 
-  primal::BoundingBox<FloatType, NDIMS>* bvh_inner_nodes = m_inner_nodes;
-  int32* bvh_inner_node_children = m_inner_node_children;
+  const auto bvh_inner_nodes = m_inner_nodes.view();
+  const auto bvh_inner_node_children = m_inner_node_children.view();
 
   AXOM_PERF_MARK_SECTION("emit_bvh_parents",
                          for_all<ExecSpace>(
@@ -261,25 +266,17 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                              bvh_inner_node_children[out_offset + 1] = rchild;
                            }););
 
-  int32* radix_tree_leafs = radix_tree.m_leafs;
-  int32* bvh_leafs = m_leaf_nodes;
+  m_leaf_nodes = std::move(radix_tree.m_leafs);
 
-  AXOM_PERF_MARK_SECTION(
-    "emit_bvh_leafs",
-    for_all<ExecSpace>(
-      size,
-      AXOM_LAMBDA(int32 i) { bvh_leafs[i] = radix_tree_leafs[i]; }););
-
-  radix_tree.deallocate();
+  m_initialized = true;
 }
 
 template <typename FloatType, int NDIMS, typename ExecSpace>
 template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
-IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
+axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   Predicate&& predicate,
-  IndexType* offsets,
-  IndexType* counts,
-  IndexType*& candidates,
+  const axom::ArrayView<IndexType> offsets,
+  const axom::ArrayView<IndexType> counts,
   IndexType numObjs,
   PrimitiveIndexable objs,
   int allocatorID) const
@@ -287,15 +284,14 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
 {
   AXOM_PERF_MARK_FUNCTION("LinearBVH::findCandidatesImpl");
 
-  SLIC_ERROR_IF(offsets == nullptr, "supplied null pointer for offsets!");
-  SLIC_ERROR_IF(counts == nullptr, "supplied null value for counts!");
+  SLIC_ERROR_IF(offsets.size() != numObjs,
+                "offsets length not equal to numObjs");
+  SLIC_ERROR_IF(counts.size() != numObjs, "counts length not equal to numObjs");
+  SLIC_ASSERT(m_initialized);
 
-  const BoundingBoxType* inner_nodes = m_inner_nodes;
-  const int32* inner_node_children = m_inner_node_children;
-  const int32* leaf_nodes = m_leaf_nodes;
-  SLIC_ASSERT(inner_nodes != nullptr);
-  SLIC_ASSERT(inner_node_children != nullptr);
-  SLIC_ASSERT(leaf_nodes != nullptr);
+  const auto inner_nodes = m_inner_nodes.view();
+  const auto inner_node_children = m_inner_node_children.view();
+  const auto leaf_nodes = m_leaf_nodes.view();
 
   auto noTraversePref = [] AXOM_HOST_DEVICE(const BoundingBoxType&,
                                             const BoundingBoxType&,
@@ -337,16 +333,20 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
   AXOM_PERF_MARK_SECTION(
     "exclusive_scan",
-    RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts, numObjs),
-                                      RAJA::make_span(offsets, numObjs),
+    RAJA::exclusive_scan<exec_policy>(RAJA::make_span(counts.data(), numObjs),
+                                      RAJA::make_span(offsets.data(), numObjs),
                                       RAJA::operators::plus<IndexType> {}););
 
   IndexType total_candidates = total_count_reduce.get();
 
   // STEP 3: allocate memory for all candidates
-  AXOM_PERF_MARK_SECTION(
-    "allocate_candidates",
-    candidates = axom::allocate<IndexType>(total_candidates, allocatorID););
+  axom::Array<IndexType> candidates;
+  {
+    AXOM_PERF_MARK_FUNCTION("allocate_candidates");
+    candidates =
+      axom::Array<IndexType>(total_candidates, total_candidates, allocatorID);
+  }
+  const auto candidates_v = candidates.view();
 
   // STEP 4: fill in candidates for each point
   AXOM_PERF_MARK_SECTION("PASS[2]:fill_traversal",
@@ -356,10 +356,10 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                              int32 offset = offsets[i];
 
                              PrimitiveType obj {objs[i]};
-                             auto leafAction = [&offset, candidates](
+                             auto leafAction = [&offset, candidates_v](
                                                  int32 current_node,
                                                  const int32* leafs) {
-                               candidates[offset] = leafs[current_node];
+                               candidates_v[offset] = leafs[current_node];
                                offset++;
                              };
 
@@ -371,10 +371,10 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
                                                 leafAction,
                                                 noTraversePref);
                            }););
-  return total_candidates;
+  return candidates;
 #else  // CPU-only and no RAJA: do single traversal
 
-  std::vector<int> search_candidates;
+  axom::Array<IndexType> search_candidates;
   int current_offset = 0;
 
   // STEP 1: do single-pass traversal with std::vector for candidates
@@ -402,14 +402,7 @@ IndexType LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
 
   SLIC_ASSERT(current_offset == static_cast<IndexType>(search_candidates.size()));
 
-  // STEP 2: allocate memory for all candidates
-  AXOM_PERF_MARK_SECTION(
-    "allocate_candidates", IndexType total_candidates = search_candidates.size();
-    candidates = axom::allocate<IndexType>(total_candidates, allocatorID););
-
-  // STEP 3: copy candiates to destination array
-  std::copy(search_candidates.begin(), search_candidates.end(), candidates);
-  return search_candidates.size();
+  return search_candidates;
 #endif
 }
 

@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core.hpp"
+#include "axom/sidre.hpp"
 
 #include "gtest/gtest.h"
 
@@ -658,6 +658,158 @@ TEST(sidre_group, iterate_groups)
   EXPECT_EQ(4, groupcount);
 
   delete ds;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group, iterate_groups_with_iterator)
+{
+  using axom::utilities::string::endsWith;
+
+  axom::sidre::DataStore ds;
+  auto* foo_group = ds.getRoot()->createGroup("foo");
+  foo_group->createGroup("bar_group");
+  foo_group->createGroup("bar_group/child_1");
+  foo_group->createGroup("bar_group/child_2");
+
+  foo_group->createGroup("baz_group");
+  foo_group->createGroup("baz_group/child_1");
+  foo_group->createGroup("baz_group/child_2");
+  foo_group->createGroup("baz_group/child_3");
+
+  foo_group->createGroup("qux_group");
+  foo_group->createGroup("qux_group/child_1");
+
+  foo_group->createView("bar_view");
+  foo_group->createView("baz_view");
+  foo_group->createView("qux_view");
+  foo_group->createView("quux_view");
+
+  constexpr int numExpGroups = 3;
+  constexpr int numExpViews = 4;
+
+  // iterate through groups and views of 'foo' using range-for syntax
+  {
+    int nGroups = 0;
+    for(auto& group : foo_group->groups())
+    {
+      EXPECT_EQ(foo_group, group.getParent());
+      EXPECT_TRUE(endsWith(group.getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(auto& view : foo_group->views())
+    {
+      EXPECT_EQ(foo_group, view.getOwningGroup());
+      EXPECT_TRUE(endsWith(view.getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
+  }
+
+  // const iterate through groups and views of 'foo' using range-for syntax
+  // starting from a non-const group
+  {
+    int nGroups = 0;
+    for(const auto& group : foo_group->groups())
+    {
+      EXPECT_EQ(foo_group, group.getParent());
+      EXPECT_TRUE(endsWith(group.getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(const auto& view : foo_group->views())
+    {
+      EXPECT_EQ(foo_group, view.getOwningGroup());
+      EXPECT_TRUE(endsWith(view.getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
+  }
+
+  // iterate through groups and views of 'foo' using range-for syntax
+  // starting from a const group
+  {
+    const auto* cfoo_group = ds.getRoot()->getGroup("foo");
+
+    int nGroups = 0;
+    for(const auto& group : cfoo_group->groups())
+    {
+      EXPECT_EQ(foo_group, group.getParent());
+      EXPECT_TRUE(endsWith(group.getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(const auto& view : foo_group->views())
+    {
+      EXPECT_EQ(foo_group, view.getOwningGroup());
+      EXPECT_TRUE(endsWith(view.getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
+  }
+
+  // iterate though groups and views of 'foo' using iterator syntax
+  {
+    int nGroups = 0;
+    for(auto it = foo_group->groups().begin(), itEnd = foo_group->groups().end();
+        it != itEnd;
+        ++it)
+    {
+      auto& grp = *it;
+      EXPECT_EQ(grp.getPath(), it->getPath());
+
+      EXPECT_EQ(foo_group, it->getParent());
+      EXPECT_TRUE(endsWith(it->getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(auto it = foo_group->views().begin(), itEnd = foo_group->views().end();
+        it != itEnd;
+        ++it)
+    {
+      auto& view = *it;
+      EXPECT_EQ(view.getPath(), it->getPath());
+
+      EXPECT_EQ(foo_group, it->getOwningGroup());
+      EXPECT_TRUE(endsWith(it->getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
+  }
+
+  // iterate though groups and views of 'foo' using const iterator syntax
+  {
+    int nGroups = 0;
+    for(auto it = foo_group->groups().cbegin(),
+             itEnd = foo_group->groups().cend();
+        it != itEnd;
+        ++it)
+    {
+      EXPECT_EQ(foo_group, it->getParent());
+      EXPECT_TRUE(endsWith(it->getName(), "_group"));
+      ++nGroups;
+    }
+    EXPECT_EQ(numExpGroups, nGroups);
+
+    int nViews = 0;
+    for(auto it = foo_group->views().cbegin(), itEnd = foo_group->views().cend();
+        it != itEnd;
+        ++it)
+    {
+      EXPECT_EQ(foo_group, it->getOwningGroup());
+      EXPECT_TRUE(endsWith(it->getName(), "_view"));
+      ++nViews;
+    }
+    EXPECT_EQ(numExpViews, nViews);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -1781,7 +1933,7 @@ TEST(sidre_group, save_restore_external_data)
   // XXX this falls into createView(name, type, ndims, shape)
   // root1->createView("empty_array", INT_ID, nfoo, NULL);
   root1->createView("external_undescribed")->setExternalDataPtr(foo4);
-  root1->createView("int2d", INT_ID, 2, shape, int2d1);
+  root1->createViewWithShape("int2d", INT_ID, 2, shape, int2d1);
 
   for(int i = 0; i < nprotocols; ++i)
   {
@@ -2043,9 +2195,10 @@ TEST(sidre_group, save_restore_other)
 
   root1->createView("empty_view");
   root1->createView("empty_described", INT_ID, ndata);
-  root1->createView("empty_shape", INT_ID, 2, shape1);
+  root1->createViewWithShape("empty_shape", INT_ID, 2, shape1);
 
-  auto* view = root1->createViewAndAllocate("buffer_shape", INT_ID, 2, shape1);
+  auto* view =
+    root1->createViewWithShapeAndAllocate("buffer_shape", INT_ID, 2, shape1);
 
   // fill the data
   {
@@ -2725,7 +2878,8 @@ TEST_P(UmpireTest, allocate)
 
   {
     IndexType shape[] = {1, SIZE, 1};
-    View* view = root->createViewAndAllocate("v", INT_ID, 3, shape, allocID);
+    View* view =
+      root->createViewWithShapeAndAllocate("v", INT_ID, 3, shape, allocID);
 
     ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
     root->destroyViewAndData("v");
@@ -2755,7 +2909,7 @@ TEST_P(UmpireTest, allocate_default)
 
   {
     IndexType shape[] = {1, SIZE, 1};
-    View* view = root->createViewAndAllocate("v", INT_ID, 3, shape);
+    View* view = root->createViewWithShapeAndAllocate("v", INT_ID, 3, shape);
 
     ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
     root->destroyViewAndData("v");
@@ -2773,7 +2927,7 @@ TEST_P(UmpireTest, allocate_default)
 
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
-  #ifdef AXOM_USE_CUDA
+  #ifdef AXOM_USE_GPU
 
     #ifdef UMPIRE_ENABLE_PINNED
     ,
@@ -2795,7 +2949,7 @@ const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
     #endif
 
-  #endif /* AXOM_USE_CUDA */
+  #endif /* defined(AXOM_USE_GPU) */
 };
 
 INSTANTIATE_TEST_SUITE_P(sidre_group, UmpireTest, ::testing::ValuesIn(allocators));

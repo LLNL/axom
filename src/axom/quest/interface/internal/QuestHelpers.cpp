@@ -13,8 +13,12 @@
   #include "axom/quest/readers/PSTLReader.hpp"
 #endif
 
-#if defined(AXOM_USE_MPI) && defined(AXOM_USE_C2C)
-  #include "axom/quest/readers/PC2CReader.hpp"
+#if defined(AXOM_USE_C2C)
+  #if defined(AXOM_USE_MPI)
+    #include "axom/quest/readers/PC2CReader.hpp"
+  #else
+    #include "axom/quest/readers/C2CReader.hpp"
+  #endif
 #endif
 
 #include <limits>
@@ -370,7 +374,7 @@ int read_c2c_mesh(const std::string& file,
   m = new SegmentMesh(DIMENSION, mint::SEGMENT);
 
   // STEP 2: construct C2C reader
-  #ifdef AXOM_USE_MPI
+  #if defined(AXOM_USE_MPI) && defined(AXOM_USE_C2C)
   quest::PC2CReader reader(comm);
   #else
   AXOM_UNUSED_VAR(comm);

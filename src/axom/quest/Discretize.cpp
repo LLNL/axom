@@ -6,6 +6,8 @@
 #include "axom/quest/Discretize.hpp"
 
 #include "axom/core.hpp"
+
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -13,9 +15,10 @@
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 #include "axom/primal/operators/split.hpp"
+
 #include "axom/mint/config.hpp"
-#include "axom/mint/mesh/Mesh.hpp"             /* for Mesh base class */
-#include "axom/mint/mesh/UnstructuredMesh.hpp" /* for UnstructuredMesh */
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 
 #include <cmath>
@@ -32,7 +35,7 @@ Point3D project_to_shape(const Point3D& p, const SphereType& sphere)
   const auto& ctr = sphere.getCenter();
   const double dist2 = primal::squared_distance(ctr, p);
   const double dist = sqrt(dist2);
-  const double drat = sphere.getRadius() * dist / (dist2 + PTINY);
+  const double drat = sphere.getRadius() * dist / (dist2 + primal::PTINY);
 
   return Point3D::lerp(ctr, p, drat);
 }
@@ -115,7 +118,7 @@ bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcou
     return false;
   }
   // Zero radius: return true without generating octahedra.
-  if(sphere.getRadius() < PTINY)
+  if(sphere.getRadius() < primal::PTINY)
   {
     octcount = 0;
     return true;
@@ -222,9 +225,8 @@ int mesh_from_discretized_polyline(const OctType* octs,
   const int tetcount = 8 * octcount;
   const int vertcount = 4 * tetcount;
   int octPerSeg = octcount / segcount;
-  int remainderOcts = octcount % segcount;
   SLIC_ASSERT_MSG(
-    remainderOcts == 0,
+    (octcount % segcount) == 0,  // remainderOcts
     "Total octahedron count is not evenly divisible by segment count");
 
   // Step 0: create the UnstructuredMesh

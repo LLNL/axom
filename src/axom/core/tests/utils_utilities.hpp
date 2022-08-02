@@ -29,7 +29,7 @@ void check_random_real(int offset)
   {
     T val = axom::utilities::random_real(curr_min, curr_max);
     EXPECT_GE(val, curr_min);
-    EXPECT_LT(val, curr_max);
+    EXPECT_LE(val, curr_max);
   }
 }
 
@@ -95,7 +95,7 @@ TEST(utils_utilities, random_real_with_seed)
   {
     const double real = axom::utilities::random_real(a, b, seed);
     EXPECT_GE(real, a);
-    EXPECT_LT(real, b);
+    EXPECT_LE(real, b);
   }
 }
 
@@ -156,5 +156,141 @@ TEST(utils_utilities, floor_ceil)
     double val = -5.0;
     EXPECT_EQ(-5.0, axom::utilities::floor(val));
     EXPECT_EQ(-5.0, axom::utilities::ceil(val));
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(utils_utilities, binomial_coefficient)
+{
+  std::cout << "Testing binomial coefficient function." << std::endl;
+
+  // test n less than zero
+  {
+    const int n = -1;
+    const int exp = 0;
+    for(int k = -1; k < 10; ++k)
+    {
+      auto binom_k_n = axom::utilities::binomialCoefficient(n, k);
+      EXPECT_EQ(exp, binom_k_n);
+    }
+  }
+
+  // test n := 0
+  {
+    const int n = 0;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, -1));
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, 1));
+  }
+
+  // test n := 1
+  {
+    const int n = 1;
+
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, -1));
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 1));
+
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, 2));
+  }
+
+  // test n := 2
+  {
+    const int n = 2;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(2, axom::utilities::binomialCoefficient(n, 1));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 2));
+  }
+
+  // test n := 3
+  {
+    const int n = 3;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(3, axom::utilities::binomialCoefficient(n, 1));
+    EXPECT_EQ(3, axom::utilities::binomialCoefficient(n, 2));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 3));
+  }
+
+  // test n := 4
+  {
+    const int n = 4;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(4, axom::utilities::binomialCoefficient(n, 1));
+    EXPECT_EQ(6, axom::utilities::binomialCoefficient(n, 2));
+    EXPECT_EQ(4, axom::utilities::binomialCoefficient(n, 3));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 4));
+  }
+
+  // test recurrence relation  nCk = (n-1)C(k-1) + (n-1)C(k)
+  {
+    for(int n = 1; n < 10; ++n)
+    {
+      for(int k = 1; k <= n; ++k)
+      {
+        auto binom_n_k = axom::utilities::binomialCoefficient(n, k);
+        auto binom_n1_k1 = axom::utilities::binomialCoefficient(n - 1, k - 1);
+        auto binom_n1_k = axom::utilities::binomialCoefficient(n - 1, k);
+
+        EXPECT_EQ(binom_n_k, binom_n1_k1 + binom_n1_k);
+      }
+    }
+  }
+}
+
+TEST(utils_utilities, lerp)
+{
+  std::cout << "Testing lerp function." << std::endl;
+
+  {
+    double A = 0.;
+    double B = 1.;
+
+    EXPECT_DOUBLE_EQ(0., axom::utilities::lerp(A, B, 0.));
+    EXPECT_DOUBLE_EQ(1., axom::utilities::lerp(A, B, 1.));
+    EXPECT_DOUBLE_EQ(.5, axom::utilities::lerp(A, B, .5));
+
+    for(double t = -2.0; t < 2.0; t += 0.05)
+    {
+      EXPECT_DOUBLE_EQ(t, axom::utilities::lerp(A, B, t));
+    }
+  }
+
+  // Test endpoint interpolation
+  {
+    const double lower = -.23;  // Arbitrary end points
+    const double upper = 5.73;
+    for(int i = 0; i < 100; ++i)
+    {
+      double A = axom::utilities::random_real(lower, upper);
+      double B = axom::utilities::random_real(lower, upper);
+
+      EXPECT_DOUBLE_EQ(A, axom::utilities::lerp(A, B, 0.));
+      EXPECT_DOUBLE_EQ(B, axom::utilities::lerp(B, A, 0.));
+      EXPECT_DOUBLE_EQ(B, axom::utilities::lerp(A, B, 1.));
+      EXPECT_DOUBLE_EQ(A, axom::utilities::lerp(B, A, 1.));
+    }
+  }
+
+  // Compute using different form
+  {
+    const double lower = -.23;  // Arbitrary end points
+    const double upper = 5.73;
+    for(int i = 0; i < 100; ++i)
+    {
+      double A = axom::utilities::random_real(lower, upper);
+      double B = axom::utilities::random_real(lower, upper);
+
+      // Test interpolation and also extrapolation beyond endpoints.
+      double t = axom::utilities::random_real(-1.5, 1.5);
+
+      double exp = A + (B - A) * t;
+      EXPECT_NEAR(exp, axom::utilities::lerp(A, B, t), 1e-12);
+    }
   }
 }

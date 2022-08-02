@@ -33,6 +33,7 @@ namespace axom
 namespace sidre
 {
 class DataStore;
+class Group;
 class View;
 
 /*!

@@ -14,18 +14,17 @@
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
 
+#include "axom/sidre/interface/SidreTypes.h"
 #ifdef AXOM_USE_MPI
   #include "mpi.h"
 #endif
 #include "typesSidre.h"
 #ifdef __cplusplus
   #include <cstddef>
-  #include <cstdint>
   #include "axom/sidre/core/SidreTypes.hpp"
 #else
   #include <stdbool.h>
   #include <stddef.h>
-  #include "axom/sidre/interface/SidreTypes.h"
 #endif
 
 // splicer begin class.DataStore.CXX_declarations
@@ -54,7 +53,7 @@ SIDRE_Buffer* SIDRE_DataStore_create_buffer_empty(SIDRE_DataStore* self,
                                                   SIDRE_Buffer* SHC_rv);
 
 SIDRE_Buffer* SIDRE_DataStore_create_buffer_from_type(SIDRE_DataStore* self,
-                                                      int type,
+                                                      SIDRE_TypeID type,
                                                       SIDRE_IndexType num_elems,
                                                       SIDRE_Buffer* SHC_rv);
 

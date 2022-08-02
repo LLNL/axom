@@ -88,7 +88,7 @@ function group_create_array_view_{typename}{nd}(grp, name, value) result(rv)
     integer(C_INT) :: lname
     type(SidreView) :: rv
     integer(SIDRE_IndexType) :: {extents_decl}
-    integer(C_INT), parameter :: type = {sidre_type}
+    integer(TypeID), parameter :: type = {sidre_type}
     type(C_PTR) addr, viewptr
 
     lname = len_trim(name)

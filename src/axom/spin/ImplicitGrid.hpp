@@ -74,7 +74,7 @@ public:
   using BinBitMap =
     slam::Map<BitsetType,
               slam::Set<IndexType, IndexType>,
-              slam::policies::CoreArrayIndirection<IndexType, BitsetType>,
+              slam::policies::ArrayIndirection<IndexType, BitsetType>,
               slam::policies::StrideOne<IndexType>>;
 
   struct QueryObject;
@@ -205,7 +205,6 @@ public:
     for(int i = 0; i < NDIMS; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i]);
       m_binData[i] =
         BinBitMap(&m_bins[i], BitsetType(numElts, allocatorID), 1, allocatorID);
 
@@ -245,7 +244,18 @@ public:
    */
   void insert(const SpatialBoundingBox& bbox, IndexType idx)
   {
-    insert(1, &bbox, idx);
+    if(axom::execution_space<ExecSpace>::onDevice())
+    {
+      int deviceAllocId = axom::execution_space<ExecSpace>::allocatorID();
+      // Copy host box to device array
+      ArrayView<const SpatialBoundingBox> bbox_host(&bbox, 1);
+      Array<SpatialBoundingBox> bbox_device(bbox_host, deviceAllocId);
+      insert(1, bbox_device.data(), idx);
+    }
+    else
+    {
+      insert(1, &bbox, idx);
+    }
   }
 
   /*!
@@ -446,11 +456,12 @@ public:
    * \param [in] queryObjs The array of query objects, of length qsize
    * \param [out] outOffsets Offsets into the candidates array for each query
    *  object
-   * \param [out] out counts The number of candidates for each query object
-   * \param [out] candidates The candidate IDs for each query object
+   * \param [out] outCounts The number of candidates for each query object
+   * \param [out] outCandidates The candidate IDs for each query object
    *
-   * \note The output arrays are allocated inside the function, using the given
-   *  allocator ID passed in during implicit grid initialization.
+   * \note outOffsets and outCounts should point to arrays allocated in a
+   *  memory space accessible from the given execution space, and be of
+   *  length qsize.
    *
    * \note Upon completion, the ith query point has:
    *  * counts[ i ] candidates
@@ -460,9 +471,35 @@ public:
   template <typename QueryGeom>
   void getCandidatesAsArray(axom::IndexType qsize,
                             const QueryGeom* queryObjs,
-                            axom::Array<IndexType>& outOffsets,
-                            axom::Array<IndexType>& outCounts,
-                            axom::Array<IndexType>& outCandidates);
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const;
+
+  /// \overload
+  void getCandidatesAsArray(axom::ArrayView<const SpacePoint> queryObjs,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const
+  {
+    getCandidatesAsArray(queryObjs.size(),
+                         queryObjs.data(),
+                         outOffsets,
+                         outCounts,
+                         outCandidates);
+  }
+
+  /// \overload
+  void getCandidatesAsArray(axom::ArrayView<const SpatialBoundingBox> queryObjs,
+                            axom::ArrayView<IndexType> outOffsets,
+                            axom::ArrayView<IndexType> outCounts,
+                            axom::Array<IndexType>& outCandidates) const
+  {
+    getCandidatesAsArray(queryObjs.size(),
+                         queryObjs.data(),
+                         outOffsets,
+                         outCounts,
+                         outCandidates);
+  }
 
   /*!
    * Tests whether grid cell gridPt indexes the element with index idx
@@ -580,10 +617,7 @@ namespace axom
 {
 namespace spin
 {
-/*!
- * \brief Device-copyable query object for running implicit grid queries on the
- *  GPU.
- */
+/// Device-copyable query object for running implicit grid queries on the GPU
 template <int NDIMS, typename ExecSpace, typename IndexType>
 struct ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject
 {
@@ -597,7 +631,7 @@ public:
   using BinBitMap =
     slam::Map<BitsetType,
               slam::Set<IndexType, IndexType>,
-              slam::policies::CoreArrayIndirection<IndexType, BitsetType>,
+              slam::policies::ArrayIndirection<IndexType, BitsetType>,
               slam::policies::StrideOne<IndexType>>;
 
   QueryObject(const SpatialBoundingBox& spaceBb,
@@ -611,9 +645,9 @@ public:
     for(int idim = 0; idim < NDIMS; idim++)
     {
       m_highestBins[idim] = binData[idim].set()->size() - 1;
-      m_binData[idim] = binData[idim].data().data();
-      m_minBlkBin[idim] = minBlkBins[idim].data();
-      m_maxBlkBin[idim] = maxBlkBins[idim].data();
+      m_binData[idim] = binData[idim].data().view();
+      m_minBlkBin[idim] = minBlkBins[idim].view();
+      m_maxBlkBin[idim] = maxBlkBins[idim].view();
     }
   }
 
@@ -772,13 +806,13 @@ private:
   IndexType m_highestBins[NDIMS];
 
   //! The data associated with each bin
-  const BitsetType* m_binData[NDIMS];
+  axom::ArrayView<const BitsetType> m_binData[NDIMS];
 
   //! The lowest word index in each bin with at least one bit set
-  const IndexType* m_minBlkBin[NDIMS];
+  axom::ArrayView<const IndexType> m_minBlkBin[NDIMS];
 
   //! The highest word index in each bin with at least one bit set
-  const IndexType* m_maxBlkBin[NDIMS];
+  axom::ArrayView<const IndexType> m_maxBlkBin[NDIMS];
 };
 
 template <int NDIMS, typename ExecSpace, typename IndexType>
@@ -797,51 +831,50 @@ template <typename QueryGeom>
 void ImplicitGrid<NDIMS, ExecSpace, IndexType>::getCandidatesAsArray(
   axom::IndexType qsize,
   const QueryGeom* queryObjs,
-  axom::Array<IndexType>& outOffsets,
-  axom::Array<IndexType>& outCounts,
-  axom::Array<IndexType>& outCandidates)
+  axom::ArrayView<IndexType> outOffsets,
+  axom::ArrayView<IndexType> outCounts,
+  axom::Array<IndexType>& outCandidates) const
 {
+  SLIC_ERROR_IF(outOffsets.size() < qsize,
+                "outOffsets must have at least qsize elements");
+  SLIC_ERROR_IF(outCounts.size() < qsize,
+                "outCounts must have at least qsize elements");
   auto gridQuery = getQueryObject();
 
-  outCounts = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
-  outOffsets = axom::Array<IndexType>(qsize, qsize, m_allocatorId);
 #ifdef AXOM_USE_RAJA
-  IndexType* countsPtr = outCounts.data();
-  IndexType* offsetsPtr = outOffsets.data();
-
   using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<reduce_pol, IndexType> totalCountReduce(0);
   // Step 1: count number of candidate intersections for each point
   for_all<ExecSpace>(
     qsize,
     AXOM_LAMBDA(IndexType i) {
-      countsPtr[i] = gridQuery.countCandidates(queryObjs[i]);
-      totalCountReduce += countsPtr[i];
+      outCounts[i] = gridQuery.countCandidates(queryObjs[i]);
+      totalCountReduce += outCounts[i];
     });
 
   // Step 2: exclusive scan for offsets in candidate array
   using exec_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(countsPtr, qsize),
-                                    RAJA::make_span(offsetsPtr, qsize),
+  RAJA::exclusive_scan<exec_policy>(RAJA::make_span(outCounts.data(), qsize),
+                                    RAJA::make_span(outOffsets.data(), qsize),
                                     RAJA::operators::plus<IndexType> {});
 
   axom::IndexType totalCount = totalCountReduce.get();
 
   // Step 3: allocate memory for all candidates
   outCandidates = axom::Array<IndexType>(totalCount, totalCount, m_allocatorId);
-  IndexType* candidatesPtr = outCandidates.data();
+  const auto candidates_v = outCandidates.view();
 
   // Step 4: fill candidate array for each query box
   for_all<ExecSpace>(
     qsize,
     AXOM_LAMBDA(IndexType i) {
-      int startIdx = offsetsPtr[i];
+      int startIdx = outOffsets[i];
       int currCount = 0;
       auto onCandidate = [&](int candidateIdx) -> bool {
-        candidatesPtr[startIdx] = candidateIdx;
+        candidates_v[startIdx] = candidateIdx;
         currCount++;
         startIdx++;
-        return currCount >= countsPtr[i];
+        return currCount >= outCounts[i];
       };
       gridQuery.visitCandidates(queryObjs[i], onCandidate);
     });

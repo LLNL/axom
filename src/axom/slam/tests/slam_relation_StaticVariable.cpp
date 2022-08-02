@@ -39,11 +39,10 @@ using RelationType = slam::Relation<SetPosition, SetElement>;
 
 using IndexVec = std::vector<SetPosition>;
 
-const SetPosition FROMSET_SIZE = 7;
-const SetPosition TOSET_SIZE = 8;
+constexpr SetPosition FROMSET_SIZE = 7;
+constexpr SetPosition TOSET_SIZE = 8;
 
 using STLIndirection = policies::STLVectorIndirection<SetPosition, SetElement>;
-using ArrayIndirection = policies::ArrayIndirection<SetPosition, SetElement>;
 
 using VariableCardinality =
   policies::VariableCardinality<SetPosition, STLIndirection>;

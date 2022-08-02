@@ -12,6 +12,9 @@
 #ifndef AXOM_PRIMAL_CLIP_IMPL_HPP_
 #define AXOM_PRIMAL_CLIP_IMPL_HPP_
 
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -223,7 +226,8 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
         // Insert new vertex to polyhedron, where edge intersects plane.
         if(neighborOrientation == ON_POSITIVE_SIDE)
         {
-          int expectedVertexIndex = poly.numVertices();
+          const int expectedVertexIndex = poly.numVertices();
+          AXOM_UNUSED_VAR(expectedVertexIndex);  // silence warning in release configs
 
           T lerp_val;
           SegmentType seg(poly[i], poly[neighborIndex]);
@@ -451,16 +455,16 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   //Clip octahedron by each plane
   for(int planeIndex = 0; planeIndex < 4; planeIndex++)
   {
-    // Each bit value indicates if that Polyhedron vertex is formed from
-    // Octahedron clipping with a plane.
-    unsigned int clipped = 0;
-
     PlaneType plane = planes[planeIndex];
 
     // Check that plane intersects Polyhedron
     if(intersect(plane, polyBox, true, eps))
     {
       int numVerts = poly.numVertices();
+
+      // Each bit value indicates if that Polyhedron vertex is formed from
+      // Octahedron clipping with a plane.
+      unsigned int clipped = 0;
 
       // Clip polyhedron against current plane, generating extra vertices
       // where edges meet the plane.

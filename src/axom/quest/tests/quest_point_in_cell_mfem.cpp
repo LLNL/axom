@@ -92,6 +92,18 @@ struct ExecTraits<axom::CUDA_EXEC<BLK_SZ>>
 };
 #endif
 
+#ifdef AXOM_USE_HIP
+template <int BLK_SZ>
+struct ExecTraits<axom::HIP_EXEC<BLK_SZ>>
+{
+  static int getAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+};
+#endif
+
 /*!
  * Test fixture for PointInCell tests on MFEM meshes
  */
@@ -206,6 +218,8 @@ public:
     bool keepBdry = true;
     if(keepBdry)
     {
+      EXPECT_TRUE(mesh->HasBoundaryElements());
+
       mfem::Array<int> vdofs;
       for(int i = 0; i < fespace->GetNBE(); i++)
       {
@@ -379,6 +393,9 @@ public:
   /*! Tests PointInCell class using isoparametric points within each cell */
   void testIsoGridPointsOnMesh(const std::string& meshTypeStr)
   {
+    int devAllocID = axom::execution_space<ExecSpace>::allocatorID();
+    int hostAllocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
     std::string filename =
       axom::fmt::format("quest_point_in_cell_{}_quad", meshTypeStr);
 
@@ -396,9 +413,18 @@ public:
     axom::Array<SpacePt> isoPts = generateIsoParTestPoints(::TEST_GRID_RES);
 
     const auto SZ = isoPts.size();
+#ifdef AXOM_USE_HIP
+    axom::Array<SpacePt> spacePts(SZ, SZ, m_allocatorID);
+    axom::Array<SpacePt> foundIso(SZ, SZ, m_allocatorID);
+    axom::Array<IndexType> foundIDs(SZ, SZ, m_allocatorID);
+#else
     axom::Array<SpacePt> spacePts(SZ, SZ);
     axom::Array<SpacePt> foundIso(SZ, SZ);
     axom::Array<IndexType> foundIDs(SZ, SZ);
+#endif
+
+    axom::Array<SpacePt> foundIsoDevice(SZ, SZ, devAllocID);
+    axom::Array<IndexType> foundIDsDevice(SZ, SZ, devAllocID);
 
     axom::utilities::Timer queryTimer2(true);
     SpacePt foundIsoPar;
@@ -413,7 +439,27 @@ public:
       }
 
       // locate the reconstructed points (using EXEC space)
-      spatialIndex.locatePoints(spacePts.view(), foundIDs.data(), foundIso.data());
+      if(axom::execution_space<ExecSpace>::onDevice())
+      {
+        int devAllocID = axom::execution_space<ExecSpace>::allocatorID();
+        // copy query points to device
+        axom::Array<SpacePt> spacePtsDevice(spacePts, devAllocID);
+
+        // run device query
+        spatialIndex.locatePoints(spacePtsDevice.view(),
+                                  foundIDsDevice.data(),
+                                  foundIsoDevice.data());
+
+        // copy results back to host
+        foundIso = axom::Array<SpacePt>(foundIsoDevice, hostAllocID);
+        foundIDs = axom::Array<IndexType>(foundIDsDevice, hostAllocID);
+      }
+      else
+      {
+        spatialIndex.locatePoints(spacePts.view(),
+                                  foundIDs.data(),
+                                  foundIso.data());
+      }
 
       // check results
       for(int idx = 0; idx < SZ; ++idx)
@@ -531,7 +577,11 @@ protected:
         "1"                 "\n"
         "1 3 0 1 2 3"     "\n\n"
         "boundary"          "\n"
-        "0"               "\n\n";
+        "4"                 "\n"
+        "1 1 0 1"           "\n"
+        "2 1 1 2"           "\n"
+        "3 1 2 3"           "\n"
+        "4 1 3 0"         "\n\n";
 
     // Vertex positions for a single element quad mesh
     //   -- a diamond with verts at +-(VAL0,0) and +-(0, VAL0)
@@ -739,7 +789,13 @@ protected:
         "1"                         "\n"
         "1 5 0 1 2 3 4 5 6 7"     "\n\n"
         "boundary"                  "\n"
-        "0"                       "\n\n";
+        "6"                         "\n"
+        "1 3 3 2 1 0"               "\n"
+        "2 3 4 5 6 7"               "\n"
+        "3 3 1 2 6 5"               "\n"
+        "4 3 4 7 3 0"               "\n"
+        "5 3 0 1 5 4"               "\n"
+        "6 3 7 6 2 3"             "\n\n";
 
     // Vertex positions for a single element hexahedral mesh
     //   -- a cube with verts at (+-VAL,+-VAL, +-VAL)
@@ -998,6 +1054,9 @@ using ExecTypes = ::testing::Types<
 #endif
 #ifdef AXOM_USE_CUDA
   axom::CUDA_EXEC<256>,
+#endif
+#ifdef AXOM_USE_HIP
+  axom::HIP_EXEC<256>,
 #endif
   axom::SEQ_EXEC>;
 

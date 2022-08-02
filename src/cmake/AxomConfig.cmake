@@ -13,7 +13,7 @@ message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 ## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code. We
 ## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
-set(TPL_DEPS C2C CAMP CLI11 CONDUIT CUDA FMT HDF5 LUA MFEM MPI OPENMP RAJA SCR SOL SPARSEHASH UMPIRE )
+set(TPL_DEPS C2C CAMP CLI11 CONDUIT CUDA FMT HIP HDF5 LUA MFEM MPI OPENMP RAJA SCR SOL SPARSEHASH UMPIRE )
 foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
@@ -160,6 +160,7 @@ set(_axom_exported_targets axom)
 
 blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
 blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF ENABLE_HIP)
+blt_list_append(TO _axom_exported_targets ELEMENTS mfem IF MFEM_FOUND)
 
 set(_optional_targets cli11 fmt hdf5 lua openmp sol sparsehash)
 foreach(_tar ${_optional_targets})

@@ -318,36 +318,6 @@ public:
     return m_strides;
   }
 
-  /*!
-   * \brief Appends an Array to the end of the calling object
-   *
-   * \param [in] other The Array to append
-   * 
-   * \pre The shapes of the calling Array and @a other are the same
-   * (excluding the leading dimension), i.e., shape()[1:] == other.shape()[1:]
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  template <typename OtherArrayType>
-  void insert(IndexType pos, const ArrayBase<T, DIM, OtherArrayType>& other)
-  {
-#ifdef AXOM_DEBUG
-    if(!std::equal(m_dims.begin() + 1, m_dims.end(), other.shape().begin() + 1))
-    {
-      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
-      utilities::processAbort();
-    }
-#endif
-
-    // First update the dimensions - we're adding only to the leading dimension
-    m_dims[0] += other.shape()[0];
-    // Then add the raw data to the buffer
-    asDerived().insert(pos,
-                       static_cast<const OtherArrayType&>(other).size(),
-                       static_cast<const OtherArrayType&>(other).data());
-    updateStrides();
-  }
-
 protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
@@ -371,6 +341,25 @@ protected:
     {
       m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
     }
+  }
+
+  /*!
+   * \brief Updates the internal dimensions and striding based on the insertion
+   *  of a range of elements.
+   *  Intended to be called after the insertion of a multidimensional subslice.
+   */
+  void updateShapeOnInsert(const StackArray<IndexType, DIM>& range_shape)
+  {
+#ifdef AXOM_DEBUG
+    if(!std::equal(m_dims.begin() + 1, m_dims.end(), range_shape.begin() + 1))
+    {
+      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
+      utilities::processAbort();
+    }
+#endif
+    // First update the dimensions - we're adding only to the leading dimension
+    m_dims[0] += range_shape[0];
+    updateStrides();
   }
 
 private:
@@ -529,26 +518,18 @@ public:
   /// No member data, so this is a no-op
   void swap(ArrayBase&) { }
 
-  /*!
-   * \brief Appends an Array to the end of the calling object
-   *
-   * \param [in] other The Array to append
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   */
-  template <typename OtherArrayType>
-  void insert(IndexType pos, const ArrayBase<T, 1, OtherArrayType>& other)
-  {
-    asDerived().insert(pos,
-                       static_cast<const OtherArrayType&>(other).size(),
-                       static_cast<const OtherArrayType&>(other).data());
-  }
-
 protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    */
   IndexType blockSize() const { return 1; }
+
+  /*!
+   * \brief Updates the internal dimensions and striding based on the insertion
+   *  of a range of elements.
+   *  No-op, since we don't keep any shape information in this specialization.
+   */
+  void updateShapeOnInsert(const StackArray<IndexType, 1>&) { }
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
@@ -804,7 +785,7 @@ struct ArrayOpsBase<T, false>
                          const T* values,
                          MemorySpace space)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     if(TriviallyCopyable<T>::value)
     {
       axom::copy(array + begin, values, sizeof(T) * nelems);
@@ -877,20 +858,35 @@ struct ArrayOpsBase<T, false>
     if(src_begin < dst)
     {
       IndexType dst_last = dst + src_end - src_begin;
-      std::move_backward(array + src_begin, array + src_end, array + dst_last);
+      auto rbegin = std::reverse_iterator<T*>(array + src_end);
+      auto rend = std::reverse_iterator<T*>(array + src_begin);
+      auto rdest = std::reverse_iterator<T*>(array + dst_last);
+      // Do an "uninitialized-move" in reverse order, to avoid overwriting
+      // any existing elements.
+      std::uninitialized_copy(std::make_move_iterator(rbegin),
+                              std::make_move_iterator(rend),
+                              rdest);
     }
     else if(src_begin > dst)
     {
-      std::move(array + src_begin, array + src_end, array + dst);
+      // This substitutes for std::uninitialized_move(), which is only
+      // available in C++17.
+      std::uninitialized_copy(std::make_move_iterator(array + src_begin),
+                              std::make_move_iterator(array + src_end),
+                              array + dst);
     }
   }
 };
 
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
 template <typename T>
 struct ArrayOpsBase<T, true>
 {
+  #if defined(__CUDACC__)
   using ExecSpace = axom::CUDA_EXEC<256>;
+  #else
+  using ExecSpace = axom::HIP_EXEC<256>;
+  #endif
 
   static constexpr bool InitOnDevice = HasTrivialDefaultCtor<T>::value;
   static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
@@ -1134,7 +1130,7 @@ template <typename T, MemorySpace SPACE>
 struct ArrayOps
 {
 private:
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
   constexpr static bool IsDevice = (SPACE == MemorySpace::Device);
 #else
   constexpr static bool IsDevice = false;
@@ -1207,14 +1203,14 @@ struct ArrayOps<T, MemorySpace::Dynamic>
 {
 private:
   using Base = ArrayOpsBase<T, false>;
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
   using BaseDevice = ArrayOpsBase<T, true>;
 #endif
 
 public:
   static void init(T* array, IndexType begin, IndexType nelems, int allocId)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1234,7 +1230,7 @@ public:
                    int allocId,
                    const T& value)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1255,7 +1251,7 @@ public:
                          const T* values,
                          MemorySpace valueSpace)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1276,7 +1272,7 @@ public:
     {
       return;
     }
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1300,7 +1296,7 @@ public:
     {
       return;
     }
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)
@@ -1317,7 +1313,7 @@ public:
   template <typename... Args>
   static void emplace(T* array, IndexType dst, IndexType allocId, Args&&... args)
   {
-#if defined(__CUDACC__) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
     MemorySpace space = getAllocatorSpace(allocId);
 
     if(space == MemorySpace::Device)

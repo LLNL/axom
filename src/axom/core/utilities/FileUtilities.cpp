@@ -94,7 +94,7 @@ int makeDirsForPath(const std::string& path)
 #ifdef WIN32
     err = _mkdir(dir_name.c_str());
 #else
-    mode_t mode = 0770;  // user and group rwx permissions
+    mode_t mode = 0777;  // rwx permissions for everyone
     err = mkdir(dir_name.c_str(), mode);
 #endif
     err = (err && (errno != EEXIST)) ? 1 : 0;

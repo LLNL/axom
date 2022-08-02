@@ -66,6 +66,14 @@ public:
   void setLoggingMsgLevel(message::Level level);
 
   /*!
+   * \brief Aborts and flushes on warning or error if corresponding AbortOnError
+   *  or AbortOnWarning is set to true
+   * \collective
+   * \param [in] level the logging level.
+   */
+  void abortIfEnabled(message::Level level);
+
+  /*!
    * \brief Toggles the abort behavior for error messages. Default is false.
    * \param [in] status user-supplied flag.
    */
@@ -353,14 +361,6 @@ private:
   bool m_isEnabled[message::Num_Levels];
   std::map<LogStream*, LogStream*> m_streamObjectsManager;
   std::vector<LogStream*> m_logStreams[message::Num_Levels];
-
-  ///@}
-
-  /// \name Static Members
-  ///@{
-
-  static Logger* s_Logger;
-  static std::map<std::string, Logger*> s_loggers;
 
   ///@}
 

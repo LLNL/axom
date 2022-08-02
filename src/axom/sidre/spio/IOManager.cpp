@@ -175,6 +175,13 @@ void IOManager::write(sidre::Group* datagroup,
   SLIC_ERROR_IF(m_use_scr && num_files != m_comm_size,
                 "SCR requires a file per process");
 
+  std::string test_file_base(broadcastString(file_base, m_mpi_comm, m_my_rank));
+
+  SLIC_WARNING_IF(test_file_base != file_base,
+                  "IOManager::write() file_base argument is not identical "
+                    << "on all ranks. This may cause the output files to be "
+                    << "incompatible with a call to IOManager::read().");
+
   std::string output_base =
     createRootFile(file_base, num_files, protocol, tree_pattern);
   MPI_Barrier(m_mpi_comm);

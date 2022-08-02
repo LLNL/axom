@@ -598,6 +598,14 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
+#ifdef AXOM_USE_CUDA
+  if(params.policy == raja_cuda)
+  {
+    using GPUExec = axom::CUDA_EXEC<256>;
+    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
+  }
+#endif
+
   // _read_stl_file_start
   // Read file
   SLIC_INFO("Reading file: '" << params.stlInput << "'...\n");

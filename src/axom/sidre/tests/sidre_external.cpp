@@ -9,7 +9,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::DataStore;
 using axom::sidre::DOUBLE_ID;
@@ -57,11 +57,11 @@ TEST(sidre_external, create_external_view)
       break;
 
     case 4:
-      view = root->createView("data4", INT_ID, ndims, shape, idata);
+      view = root->createViewWithShape("data4", INT_ID, ndims, shape, idata);
       break;
     case 5:
-      view =
-        root->createView("data5", INT_ID, ndims, shape)->setExternalDataPtr(idata);
+      view = root->createViewWithShape("data5", INT_ID, ndims, shape)
+               ->setExternalDataPtr(idata);
       break;
     case 6:
       view =
@@ -72,6 +72,7 @@ TEST(sidre_external, create_external_view)
       break;
     }
 
+    EXPECT_TRUE(view != nullptr);
     EXPECT_EQ(root->getNumViews(), i + 1);
 
     EXPECT_TRUE(view->isDescribed());
@@ -124,6 +125,7 @@ TEST(sidre_external, create_external_view_null)
       break;
     }
 
+    EXPECT_TRUE(view != nullptr);
     EXPECT_TRUE(view->isDescribed());
     EXPECT_FALSE(view->isAllocated());
     EXPECT_FALSE(view->isApplied());
@@ -164,6 +166,7 @@ TEST(sidre_external, transition_external_view_to_empty)
   }
 
   View* view = root->createView("data0", INT_ID, len)->setExternalDataPtr(idata);
+  EXPECT_TRUE(view != nullptr);
   EXPECT_TRUE(view->isExternal());
   EXPECT_EQ(idata, view->getVoidPtr());
 

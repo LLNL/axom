@@ -60,10 +60,10 @@ endif()
 
 #------------------------------------------------------------------------------
 # Smoke test for hdf5 third party library
+# Note: we rely on conduit for hdf5 functionality
 #------------------------------------------------------------------------------
-if( HDF5_FOUND)
+if( HDF5_FOUND AND CONDUIT_FOUND)
 
-    # we rely on conduit for hdf5 functionality
     set( hdf5_smoke_dependencies conduit::conduit gtest )
 
     blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)

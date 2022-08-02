@@ -10,7 +10,7 @@ Core acceleration
 Axom's `core` component provides several utilities for user applications that 
 support execution on hardware accelerators. Axom lets users control the execution 
 space (i.e. *where* code runs) using RAJA and movement between memory spaces using Umpire. 
-As noted in the `RAJA documentation <https://raja.readthedocs.io/en/main/index.html>`_,
+As noted in the `RAJA documentation`_,
 developers of high-performance computing applications have many options for 
 running code: on the CPU, using OpenMP, or on GPU hardware accelerators, and 
 the options are constantly evolving.
@@ -28,7 +28,7 @@ The memory management API allows users to leverage either C++ memory functions
 or Umpire, depending on the availability of Umpire at compilation. It supports 
 a simple operation set: allocate, deallocate, reallocate, and copy. If Umpire 
 is used, an allocator can be specified -- 
-see `Umpire documentation <https://readthedocs.org/projects/umpire>`_ 
+see `Umpire documentation`_ 
 for details. Note that the fall-back to C++ memory functions is automatic, 
 so the same piece of code can handle standard C++ or C++ with Umpire. However, 
 to use advanced features, such as accessing unified memory, Umpire must be 
@@ -53,13 +53,16 @@ Here is an Axom example showing sequential execution:
    :end-before: _exebasic_end
    :language: C++
 
-Here's the same loop from the above snippet, this time with CUDA:
+Here's the same loop from the above snippet, this time with CUDA or HIP:
 
 .. literalinclude:: ../../examples/core_acceleration.cpp
-   :start-after: _cudaexebasic_start
-   :end-before: _cudaexebasic_end
+   :start-after: _deviceexebasic_start
+   :end-before: _deviceexebasic_end
    :language: C++
 
 For more advanced functionality, users can directly call RAJA and Umpire.
-See the `RAJA documentation <https://raja.readthedocs.io>`_
-and the `Umpire documentation <https://umpire.readthedocs.io>`_.
+See the `RAJA documentation`_
+and the `Umpire documentation`_.
+
+.. _RAJA documentation: https://raja.readthedocs.io/en/main/index.html
+.. _Umpire documentation: https://umpire.readthedocs.io
