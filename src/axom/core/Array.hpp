@@ -789,7 +789,8 @@ Array<T, DIM, SPACE>::Array()
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(Args... args)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(StackArray<IndexType, sizeof ... (args)>{args...})
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
+      StackArray<IndexType, sizeof...(args)> {args...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
@@ -804,7 +805,8 @@ Array<T, DIM, SPACE>::Array(Args... args)
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
 Array<T, DIM, SPACE>::Array(ArrayOptions::Uninitialized, Args... args)
-  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>({args...})
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
+      StackArray<IndexType, sizeof...(args)> {args...})
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
   static_assert(sizeof...(Args) == DIM,
