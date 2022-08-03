@@ -403,16 +403,17 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
  *        poly and an Array of Plane planes.
  *
  * \param [in] poly The polyhedron
- * \param [in] planes The Array of planes
+ * \param [in] planes The planes
+ * \param [in] numPlanes The number of planes
  * \param [in] eps The tolerance for plane point orientation.
  * \return The Polyhedron formed from clipping the polyhedron with a set of planes.
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
-  Polyhedron<T, NDIMS>& poly,
-  const axom::ArrayView<const Plane<T,NDIMS>>& planes,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
+                                                     const Plane<T, NDIMS>* planes,
+                                                     unsigned int numPlanes,
+                                                     double eps = 1.e-10)
 {
   using PointType = Point<T, NDIMS>;
   using BoxType = BoundingBox<T, NDIMS>;
@@ -422,7 +423,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   BoxType polyBox(&poly[0], poly.numVertices());
 
   //Clip octahedron by each plane
-  for(int planeIndex = 0; planeIndex < planes.size(); planeIndex++)
+  for(unsigned int planeIndex = 0; planeIndex < numPlanes; planeIndex++)
   {
     PlaneType plane = planes[planeIndex];
 
@@ -530,9 +531,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
                          make_plane(tet[0], tet[3], tet[1]),
                          make_plane(tet[0], tet[1], tet[2])};
 
-  const ArrayView< const PlaneType> planes_view(planes, 4);
-
-  return clipPolyhedron(poly, planes_view, eps);
+  return clipPolyhedron(poly, planes, 4, eps);
 }
 
 }  // namespace detail
