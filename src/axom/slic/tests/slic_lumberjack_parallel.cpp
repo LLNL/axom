@@ -311,14 +311,13 @@ TEST(slic_lumberjack_parallel, test_abort_warning_macros)
         check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
         reset_state();
 
-        SLIC_WARNING_ROOT_IF(val == 42,
-                             "SLIC_WARNING_ROOT_IF message is logged!");
+        SLIC_WARNING_ROOT_IF(val == 42, "SLIC_WARNING_ROOT_IF msg logged!");
         slic::flushLocalStreams();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
         check_msg(slic::internal::test_stream.str(),
-                  "SLIC_WARNING_ROOT_IF message is logged!");
+                  "SLIC_WARNING_ROOT_IF msg logged!");
         check_file(slic::internal::test_stream.str());
         check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
         reset_state();
