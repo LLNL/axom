@@ -566,7 +566,7 @@ public:
     xferNode["qPtCount"] = qPtCount;
     xferNode["dim"] = dim;
     xferNode["homeRank"] = m_rank;
-    xferNode["is_first"] = true;
+    xferNode["is_first"] = 1;
     xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
     xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
     xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
@@ -769,29 +769,27 @@ public:
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
-          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(),
-                                                xferNode,
-                                                xferNode.has_path("is_first"));
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xferNode);
           break;
 
         case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(),
-                                                xferNode,
-                                                xferNode.has_path("is_first"));
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xferNode);
 #endif
           break;
 
         case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(),
-                                                 xferNode,
-                                                 xferNode.has_path("is_first"));
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xferNode);
+#endif
+          break;
+
+        case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+          computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), xferNode);
 #endif
           break;
         }
-
-        if(xferNode.has_path("is_first")) xferNode.remove("is_first");
 
         if(xferNode.fetch_existing("homeRank").as_int() == m_rank)
         {
@@ -956,18 +954,18 @@ public:
    */
   template <typename BVHTreeType>
   void computeLocalClosestPoints(const BVHTreeType* bvh,
-                                 conduit::Node& xfer_node,
-                                 bool is_first) const
+                                 conduit::Node& xfer_node) const
   {
     using ExecSpace = typename BVHTreeType::ExecSpaceType;
     using axom::primal::squared_distance;
     using int32 = axom::int32;
 
     const bool hasObjectPoints = m_points.size() > 0;
+    const bool is_first = xfer_node.has_path("is_first");
 
     // Check for early return
     // Note: There is some additional computation the first time this function
-    // is called, even if the local object mesh is empty
+    // is called for a xfer_node, even if the local object mesh is empty
     if(!hasObjectPoints && !is_first)
     {
       return;
@@ -1100,6 +1098,7 @@ public:
               }
             }
           }););
+
       axom::deallocate(sqDistThresh);
     }
 
@@ -1112,6 +1111,12 @@ public:
     axom::copy(closestPts.data(),
                query_pos.data(),
                closestPts.size() * sizeof(PointType));
+
+    // Data has now been initialized
+    if(is_first)
+    {
+      xfer_node.remove_child("is_first");
+    }
 
     // DEBUG
     if(has_min_distance)
