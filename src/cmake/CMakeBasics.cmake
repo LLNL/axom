@@ -206,3 +206,42 @@ endif()
 if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
+
+#------------------------------------------------------------------------------
+# Configure our CTest Dashboard Driver Script
+#------------------------------------------------------------------------------
+# To use this script to build and submit a dashboard
+# result, run the following command in the build dir:
+# > ctest -S Dashboard.cmake 
+#------------------------------------------------------------------------------
+
+# Build up an AXOM_CONFIG_NAME if not already provided
+if(NOT DEFINED AXOM_CONFIG_NAME)
+    set(_config "")
+    if(DEFINED ENV{SYS_TYPE})
+        blt_list_append(TO _config ELEMENTS $ENV{SYS_TYPE})
+    endif()
+    if(DEFINED ENV{LCSCHEDCLUSTER})
+        blt_list_append(TO _config ELEMENTS $ENV{LCSCHEDCLUSTER})
+    endif()
+    blt_list_append(TO _config ELEMENTS ${CMAKE_CXX_COMPILER_ID})
+    # Note: the second condition is required since CMAKE_BUILD_TYPE might be empty
+    # e.g. in our MacOS CI AppleClang configuration
+    if(NOT CMAKE_CONFIGURATION_TYPES AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
+        blt_list_append(TO _config ELEMENTS ${CMAKE_BUILD_TYPE})
+    endif()
+    blt_list_append(TO _config ELEMENTS "shared" IF BUILD_SHARED_LIBS)
+    blt_list_append(TO _config ELEMENTS "cuda" IF ENABLE_CUDA)
+    blt_list_append(TO _config ELEMENTS "hip" IF ENABLE_HIP)
+    blt_list_append(TO _config ELEMENTS "mpi" IF ENABLE_MPI)
+    blt_list_append(TO _config ELEMENTS "openmp" IF ENABLE_OPENMP)
+    list(JOIN _config "-" AXOM_CONFIG_NAME)
+    
+    message(STATUS "AXOM_CONFIG_NAME: '${AXOM_CONFIG_NAME}'")
+endif()
+
+configure_file("cmake/Dashboard.cmake.in" 
+               "${PROJECT_BINARY_DIR}/Dashboard.cmake"
+               @ONLY)
+
+
