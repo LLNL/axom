@@ -211,7 +211,7 @@ def build_and_test_host_config(test_root, host_config,
                echo=True)
 
     if report_to_stdout:
-        with open(cfg_output_file, 'r') as build_out:
+        with open(cfg_output_file, 'r', encoding='utf8') as build_out:
             print(build_out.read())
 
     if res != 0:
@@ -231,7 +231,7 @@ def build_and_test_host_config(test_root, host_config,
                 echo=True)
 
     if report_to_stdout:
-        with open(bld_output_file, 'r') as build_out:
+        with open(bld_output_file, 'r', encoding='utf8') as build_out:
             print(build_out.read())
 
     if res != 0:
@@ -251,7 +251,7 @@ def build_and_test_host_config(test_root, host_config,
                echo=True)
 
     if report_to_stdout:
-        with open(tst_output_file, 'r') as test_out:
+        with open(tst_output_file, 'r', encoding='utf8') as test_out:
             print(test_out.read())
 
     # Convert CTest output to JUnit, do not overwrite previous res
@@ -284,7 +284,7 @@ def build_and_test_host_config(test_root, host_config,
                echo=True)
 
     if report_to_stdout:
-        with open(docs_output_file, 'r') as docs_out:
+        with open(docs_output_file, 'r', encoding='utf8') as docs_out:
             print(docs_out.read())
 
     if res != 0:
