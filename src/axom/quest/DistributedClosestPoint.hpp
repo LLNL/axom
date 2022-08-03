@@ -441,12 +441,12 @@ public:
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
-      m_bvh_seq = std::unique_ptr<SeqBVHTree>(new SeqBVHTree);
+      m_bvh_seq = std::make_unique<SeqBVHTree>();
       return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
 
     case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-      m_bvh_omp = std::unique_ptr<OmpBVHTree>(new OmpBVHTree);
+      m_bvh_omp = std::make_unique<OmpBVHTree>();
       return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
 #else
       break;
@@ -454,7 +454,7 @@ public:
 
     case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-      m_bvh_cuda = std::unique_ptr<CudaBVHTree>(new CudaBVHTree);
+      m_bvh_cuda = std::make_unique<CudaBVHTree>();
       return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
 #else
       break;
@@ -462,7 +462,7 @@ public:
 
     case RuntimePolicy::hip:
 #ifdef _AXOM_DCP_USE_HIP
-      m_bvh_hip = std::unique_ptr<HipBVHTree>(new HipBVHTree);
+      m_bvh_hip = std::make_unique<HipBVHTree>();
       return generateBVHTreeImpl<HipBVHTree>(m_bvh_hip.get());
 #else
       break;
@@ -1343,15 +1343,15 @@ private:
     switch(m_dimension)
     {
     case 2:
-      m_dcp_2 = std::unique_ptr<internal::DistributedClosestPointImpl<2>>(
-        new internal::DistributedClosestPointImpl<2>(m_runtimePolicy,
-                                                     m_isVerbose));
+      m_dcp_2 = std::make_unique<internal::DistributedClosestPointImpl<2>>(
+        m_runtimePolicy,
+        m_isVerbose);
       m_objectMeshCreated = true;
       break;
     case 3:
-      m_dcp_3 = std::unique_ptr<internal::DistributedClosestPointImpl<3>>(
-        new internal::DistributedClosestPointImpl<3>(m_runtimePolicy,
-                                                     m_isVerbose));
+      m_dcp_3 = std::make_unique<internal::DistributedClosestPointImpl<3>>(
+        m_runtimePolicy,
+        m_isVerbose);
       m_objectMeshCreated = true;
       break;
     }
