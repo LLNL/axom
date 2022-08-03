@@ -70,6 +70,7 @@ public:
 
 private:
   bool m_verboseOutput {false};
+  double m_emptyRankProbability {0.};
 
   // clang-format off
   const std::map<std::string, RuntimePolicy> s_validPolicies
@@ -91,6 +92,7 @@ private:
 
 public:
   bool isVerbose() const { return m_verboseOutput; }
+  double percentEmptyRanks() const { return m_emptyRankProbability; }
 
   std::string getDCMeshName() const
   {
@@ -121,6 +123,13 @@ public:
 
     app.add_flag("-v,--verbose,!--no-verbose", m_verboseOutput)
       ->description("Enable/disable verbose output")
+      ->capture_default_str();
+
+    app.add_option("--empty-rank-probability", m_emptyRankProbability)
+      ->description(
+        "Probability that a rank's data is empty "
+        "(tests code's ability to handle empty ranks)")
+      ->check(axom::CLI::Range(0., 1.))
       ->capture_default_str();
 
     app.add_option("-r,--radius", circleRadius)
@@ -191,7 +200,7 @@ public:
   /// Returns true if points have been added to the particle mesh
   bool hasPoints() const
   {
-    return m_coordsGroup != nullptr && m_coordsGroup->hasGroup("values");
+    return m_coordsGroup != nullptr && m_coordsGroup->hasView("values/x");
   }
 
   /// Returns the number of points in the particle mesh
@@ -200,16 +209,7 @@ public:
     return hasPoints() ? m_coordsGroup->getView("values/x")->getNumElements() : 0;
   }
 
-  int dimension() const
-  {
-    if(hasPoints())
-    {
-      return m_coordsGroup->hasView("values/z")
-        ? 3
-        : (m_coordsGroup->hasView("values/y") ? 2 : 1);
-    }
-    return 0;
-  }
+  int dimension() const { return m_dimension; }
 
   /**
    * Sets the parent group for the entire mesh and sets up the blueprint stubs
@@ -238,28 +238,45 @@ public:
 
     const int SZ = pts.size();
 
-    // create views into a shared buffer for the coordinates, with stride NDIMS
-    auto* buf =
-      m_group->getDataStore()->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)->allocate();
-    switch(NDIMS)
-    {
-    case 3:
-      m_coordsGroup->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, NDIMS);
-      m_coordsGroup->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, NDIMS);
-      m_coordsGroup->createView("values/z")->attachBuffer(buf)->apply(SZ, 2, NDIMS);
-      break;
-    case 2:
-      m_coordsGroup->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, NDIMS);
-      m_coordsGroup->createView("values/y")->attachBuffer(buf)->apply(SZ, 1, NDIMS);
-      break;
-    default:
-      m_coordsGroup->createView("values/x")->attachBuffer(buf)->apply(SZ, 0, NDIMS);
-      break;
-    }
+    m_dimension = NDIMS;
 
-    // copy coordinate data into the buffer
-    const std::size_t nbytes = sizeof(double) * SZ * NDIMS;
-    axom::copy(buf->getVoidPtr(), pts.data(), nbytes);
+    // lamda to create a strided view into the buffer
+    // uses workaround for empty meshes since apply() requires size > 0
+    auto createAndApplyView = [=](sidre::Group* grp,
+                                  const std::string& path,
+                                  sidre::Buffer* buf,
+                                  int dim,
+                                  int sz) {
+      if(sz > 0)
+      {
+        grp->createView(path)->attachBuffer(buf)->apply(sz, dim, NDIMS);
+      }
+      else
+      {
+        grp->createViewAndAllocate(path, sidre::DOUBLE_ID, 0);
+      }
+    };
+
+    // create views into a shared buffer for the coordinates, with stride NDIMS
+    {
+      auto* buf = m_group->getDataStore()
+                    ->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)
+                    ->allocate();
+
+      createAndApplyView(m_coordsGroup, "values/x", buf, 0, SZ);
+      if(NDIMS > 1)
+      {
+        createAndApplyView(m_coordsGroup, "values/y", buf, 1, SZ);
+      }
+      if(NDIMS > 2)
+      {
+        createAndApplyView(m_coordsGroup, "values/z", buf, 2, SZ);
+      }
+
+      // copy coordinate data into the buffer
+      const std::size_t nbytes = sizeof(double) * SZ * NDIMS;
+      axom::copy(buf->getVoidPtr(), pts.data(), nbytes);
+    }
 
     // set the default connectivity
     sidre::Array<int> arr(m_topoGroup->createView("elements/connectivity"), SZ, SZ);
@@ -364,7 +381,12 @@ public:
   bool isValid() const
   {
     conduit::Node mesh_node;
-    m_group->createNativeLayout(mesh_node);
+
+    // use an empty conduit node for meshes with 0 elements
+    if(numPoints() > 0)
+    {
+      m_group->createNativeLayout(mesh_node);
+    }
 
     bool success = true;
     conduit::Node info;
@@ -422,6 +444,7 @@ private:
 
   int m_rank;
   int m_nranks;
+  int m_dimension {-1};
 };
 
 /**
@@ -444,11 +467,16 @@ public:
     return m_mesh.coordsGroup()->getName();
   }
 
+  int numPoints() const { return m_mesh.numPoints(); }
+
   /**
    * Generates a collection of \a numPoints points along a circle
    * of radius \a radius centered at the origin
    */
-  void generateCircleMesh(double radius, std::vector<double>& center, int numPoints)
+  void generateCircleMesh(double radius,
+                          std::vector<double>& center,
+                          bool rankHasPoints,
+                          int totalNumPoints)
   {
     using axom::utilities::random_real;
 
@@ -459,25 +487,79 @@ public:
     using PointType = primal::Point<double, DIM>;
     using PointArray = axom::Array<PointType>;
 
-    int rank = m_mesh.getRank();
-    int nranks = m_mesh.getNumRanks();
-    if(numPoints < rank)
-      numPoints = rank;  // Test code requires all ranks to have points.
-    int ptsPerRank = numPoints / nranks;
-    int ranksWithExtraPt = numPoints % nranks;
+    // compute start and stop angle, allowing for some empty ranks
+    double thetaStart, thetaEnd;
+    int numPoints = 0;
 
-    int iBegin = rank * ptsPerRank + std::min(rank, ranksWithExtraPt);
-    int iEnd = (rank + 1) * ptsPerRank + std::min((rank + 1), ranksWithExtraPt);
-    int localNumPoints = iEnd - iBegin;
-    PointArray pts(0, localNumPoints);
-    const double avgAng = 2. * M_PI / numPoints;
-    for(int i = iBegin; i < iEnd; ++i)
+    // perform scan on ranks to compute numPoints, thetaStart and thetaEnd
     {
-      const double ang =
-        random_real(avgAng * iBegin, avgAng * iEnd, 0);  // Random spacing
-      // const double ang = i * avgAng;  // Regular spacing
-      const double rsinT = center[1] + radius * std::sin(ang);
-      const double rcosT = center[0] + radius * std::cos(ang);
+      int hasPoints = rankHasPoints ? 1 : 0;
+      int myRank = m_mesh.getRank();
+      int numRanks = m_mesh.getNumRanks();
+
+      axom::Array<int> arr(numRanks, numRanks);
+      arr.fill(-1);
+      MPI_Allgather(&hasPoints, 1, MPI_INT, arr.data(), 1, MPI_INT, MPI_COMM_WORLD);
+
+      SLIC_DEBUG(
+        axom::fmt::format("After all gather: [{}]", axom::fmt::join(arr, ",")));
+
+      axom::Array<int> sums(numRanks + 1, numRanks + 1);
+      sums[0] = 0;
+      for(int i = 1; i <= numRanks; ++i)
+      {
+        sums[i] = sums[i - 1] + arr[i - 1];
+      }
+
+      SLIC_DEBUG(
+        axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
+
+      const int numNonEmpty = sums[numRanks];
+
+      if(numNonEmpty > 0)
+      {
+        const double thetaScale = 2. * M_PI / numNonEmpty;
+        thetaStart = sums[myRank] * thetaScale;
+        thetaEnd = sums[myRank + 1] * thetaScale;
+        numPoints = rankHasPoints ? totalNumPoints / numNonEmpty : 0;
+      }
+      else
+      {
+        if(myRank < numRanks - 1)
+        {
+          thetaStart = 0.;
+          thetaEnd = 0.;
+          numPoints = 0;
+        }
+        else
+        {
+          thetaStart = 0.;
+          thetaEnd = 2. * M_PI;
+          numPoints = totalNumPoints;
+        }
+      }
+
+      SLIC_DEBUG(
+        axom::fmt::format("Rank {}, start angle {}, stop angle {}, num "
+                          "non-empty {}, num points {}",
+                          myRank,
+                          thetaStart,
+                          thetaEnd,
+                          numNonEmpty,
+                          numPoints));
+
+      axom::slic::flushStreams();
+    }
+
+    PointArray pts(0, numPoints);
+
+    for(int i = 0; i < numPoints; ++i)
+    {
+      const double angleInRadians =
+        (thetaStart < thetaEnd) ? random_real(thetaStart, thetaEnd) : thetaStart;
+      const double rsinT = center[1] + radius * std::sin(angleInRadians);
+      const double rcosT = center[0] + radius * std::cos(angleInRadians);
+
       pts.push_back(PointType {rcosT, rsinT});
     }
 
@@ -770,9 +852,17 @@ int main(int argc, char** argv)
   ObjectMeshWrapper object_mesh_wrapper(
     objectDS.getRoot()->createGroup("object_mesh"));
 
+  const double prob = axom::utilities::random_real(0., 1.);
+  const bool rankHasPoints = prob < (1. - params.percentEmptyRanks());
   object_mesh_wrapper.generateCircleMesh(params.circleRadius,
                                          params.circleCenter,
+                                         rankHasPoints,
                                          params.circlePoints);
+
+  SLIC_INFO(axom::fmt::format("Object mesh has {} points",
+                              object_mesh_wrapper.numPoints()));
+  slic::flushStreams();
+
   object_mesh_wrapper.saveMesh(params.objectFile);
 
   //---------------------------------------------------------------------------
@@ -807,7 +897,10 @@ int main(int argc, char** argv)
 
   // Convert blueprint representation from sidre to conduit
   conduit::Node object_mesh_node;
-  object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
+  if(object_mesh_wrapper.numPoints() > 0)
+  {
+    object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
+  }
 
   // Put sidre data into Conduit Node query_mesh_node.
   conduit::Node query_mesh_node;
