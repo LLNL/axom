@@ -963,6 +963,16 @@ public:
     using axom::primal::squared_distance;
     using int32 = axom::int32;
 
+    const bool hasObjectPoints = m_points.size() > 0;
+
+    // Check for early return
+    // Note: There is some additional computation the first time this function
+    // is called, even if the local object mesh is empty
+    if(!hasObjectPoints && !is_first)
+    {
+      return;
+    }
+
     // Check dimension and extract the number of points
     const int dim = xfer_node.fetch_existing("dim").value();
     SLIC_ASSERT(dim == NDIMS);
@@ -1026,67 +1036,72 @@ public:
     PointArray execPoints(queryPts, m_allocatorID);
     auto query_pts = execPoints.view();
 
-    // Get a device-useable iterator
-    auto it = bvh->getTraverser();
-    const int rank = m_rank;
+    if(hasObjectPoints)
+    {
+      // Get a device-useable iterator
+      auto it = bvh->getTraverser();
+      const int rank = m_rank;
 
-    double* sqDistThresh =
-      axom::allocate<double>(1, axom::execution_space<ExecSpace>::allocatorID());
-    *sqDistThresh = m_sqDistanceThreshold;
+      double* sqDistThresh =
+        axom::allocate<double>(1,
+                               axom::execution_space<ExecSpace>::allocatorID());
+      *sqDistThresh = m_sqDistanceThreshold;
 
-    auto pointsView = m_points.view();
+      auto pointsView = m_points.view();
 
-    AXOM_PERF_MARK_SECTION(
-      "ComputeClosestPoints",
-      axom::for_all<ExecSpace>(
-        qPtCount,
-        AXOM_LAMBDA(int32 idx) mutable {
-          PointType qpt = query_pts[idx];
+      AXOM_PERF_MARK_SECTION(
+        "ComputeClosestPoints",
+        axom::for_all<ExecSpace>(
+          qPtCount,
+          AXOM_LAMBDA(int32 idx) mutable {
+            PointType qpt = query_pts[idx];
 
-          MinCandidate curr_min {};
-          if(query_ranks[idx] >= 0)  // i.e. we've already found a candidate closest
-          {
-            curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
-            curr_min.minElem = query_inds[idx];
-            curr_min.minRank = query_ranks[idx];
-          }
-
-          auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
-            const int candidate_idx = leaf_nodes[current_node];
-            const PointType candidate_pt = pointsView[candidate_idx];
-            const double sq_dist = squared_distance(qpt, candidate_pt);
-
-            if(sq_dist < curr_min.minSqDist)
+            MinCandidate curr_min {};
+            if(query_ranks[idx] >= 0)  // i.e. we've already found a candidate closest
             {
-              curr_min.minSqDist = sq_dist;
-              curr_min.minElem = candidate_idx;
-              curr_min.minRank = rank;
+              curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
+              curr_min.minElem = query_inds[idx];
+              curr_min.minRank = query_ranks[idx];
             }
-          };
 
-          auto traversePredicate = [&](const PointType& p,
-                                       const BoxType& bb) -> bool {
-            auto sqDist = squared_distance(p, bb);
-            return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
-          };
+            auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
+              const int candidate_idx = leaf_nodes[current_node];
+              const PointType candidate_pt = pointsView[candidate_idx];
+              const double sq_dist = squared_distance(qpt, candidate_pt);
 
-          // Traverse the tree, searching for the point with minimum distance.
-          it.traverse_tree(qpt, checkMinDist, traversePredicate);
+              if(sq_dist < curr_min.minSqDist)
+              {
+                curr_min.minSqDist = sq_dist;
+                curr_min.minElem = candidate_idx;
+                curr_min.minRank = rank;
+              }
+            };
 
-          // If modified, update the fields that changed
-          if(curr_min.minRank == rank)
-          {
-            query_inds[idx] = curr_min.minElem;
-            query_ranks[idx] = curr_min.minRank;
-            query_pos[idx] = pointsView[curr_min.minElem];
+            auto traversePredicate = [&](const PointType& p,
+                                         const BoxType& bb) -> bool {
+              auto sqDist = squared_distance(p, bb);
+              return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
+            };
 
-            //DEBUG
-            if(has_min_distance)
+            // Traverse the tree, searching for the point with minimum distance.
+            it.traverse_tree(qpt, checkMinDist, traversePredicate);
+
+            // If modified, update the fields that changed
+            if(curr_min.minRank == rank)
             {
-              query_min_dist[idx] = sqrt(curr_min.minSqDist);
+              query_inds[idx] = curr_min.minElem;
+              query_ranks[idx] = curr_min.minRank;
+              query_pos[idx] = pointsView[curr_min.minElem];
+
+              //DEBUG
+              if(has_min_distance)
+              {
+                query_min_dist[idx] = sqrt(curr_min.minSqDist);
+              }
             }
-          }
-        }););
+          }););
+      axom::deallocate(sqDistThresh);
+    }
 
     axom::copy(cpIndexes.data(),
                query_inds.data(),
@@ -1105,7 +1120,6 @@ public:
                  query_min_dist.data(),
                  minDist.size() * sizeof(double));
     }
-    axom::deallocate(sqDistThresh);
   }
 
 private:
@@ -1245,35 +1259,49 @@ public:
    * \param [in] mesh_node Conduit node for the object mesh
    * \param [in] coordset The name of the coordset for the object mesh's coordinates
    *
-   * \pre \a mesh_node must follow the mesh blueprint convention
+   * \pre \a mesh_node must follow the mesh blueprint convention. If this node
+   * is empty, the rank has no data
    * \pre Dimension of the mesh must be 2D or 3D
    */
   void setObjectMesh(const conduit::Node& mesh_node, const std::string& coordset)
   {
     // Perform some simple error checking
     SLIC_ASSERT(this->isValidBlueprint(mesh_node));
-
-    // Extract the dimension and number of points from the coordinate values group
     auto valuesPath = fmt::format("coordsets/{}/values", coordset);
-    SLIC_ASSERT(mesh_node.has_path(valuesPath));
-    auto& values = mesh_node[valuesPath];
 
-    const int dim = internal::extractDimension(values);
-    setDimension(dim);
+    const bool rankIsEmpty = mesh_node.dtype().is_empty();
+
+    // Extract the dimension from the coordinate values group
+    // use allreduce since some ranks might be empty
+    {
+      int localDim = -1;
+      if(!rankIsEmpty)
+      {
+        SLIC_ASSERT(mesh_node.has_path(valuesPath));
+        auto& values = mesh_node[valuesPath];
+        localDim = internal::extractDimension(values);
+      }
+      int dim = -1;
+      MPI_Allreduce(&localDim, &dim, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      setDimension(dim);
+    }
 
     allocateQueryInstance();
 
-    const int N = internal::extractSize(values);
-
-    // dispatch to implementation class over dimension
-    switch(m_dimension)
+    // dispatch mesh import to dimension-specific implementation class
+    if(!rankIsEmpty)
     {
-    case 2:
-      m_dcp_2->importObjectPoints(values, N);
-      break;
-    case 3:
-      m_dcp_3->importObjectPoints(values, N);
-      break;
+      auto& values = mesh_node[valuesPath];
+      const int N = internal::extractSize(values);
+      switch(m_dimension)
+      {
+      case 2:
+        m_dcp_2->importObjectPoints(values, N);
+        break;
+      case 3:
+        m_dcp_3->importObjectPoints(values, N);
+        break;
+      }
     }
   }
 
