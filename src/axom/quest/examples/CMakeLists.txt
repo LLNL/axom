@@ -52,6 +52,10 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         set(_nranks 3)
 
+        # Bugfix: Serialize ordering of DCP tests as workaround for MPI issues 
+        # encountered when these tests ran in parallel
+        set(_dcp_previous_test)
+
         # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")
         blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
@@ -74,6 +78,11 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
             endif()
 
+            if(_dcp_previous_test)
+                set_tests_properties(${_test} PROPERTIES DEPENDS ${_dcp_previous_test})
+            endif()
+            set(_dcp_previous_test ${_test})
+
             # Add test with data on a subset of the ranks
             set(_test "quest_distributed_closest_point_run_2D_empty_ranks_${_pol}")
             axom_add_test(
@@ -90,12 +99,16 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             if(${_pol} STREQUAL "omp")
                 set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
             endif()
+
+            set_tests_properties(${_test} PROPERTIES DEPENDS ${_dcp_previous_test})
+            set(_dcp_previous_test ${_test})
     
         endforeach()
 
         unset(_nranks)
         unset(_policies)
         unset(_test)
+        unset(_dcp_previous_test)
     endif()
 endif()
 
