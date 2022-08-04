@@ -252,14 +252,12 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
 template <typename T, int NDIMS>
 inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
                                      const BezierCurve<T, NDIMS>& curve,
-                                     double& min_param)
+                                     double& min_param,
+                                     int nseeds = -1)
 {
   using VectorType = Vector<T, NDIMS>;
 
-  const int NS = 10;
-  double seeds[NS];
-  axom::numerics::linspace(0.0, 1.0, seeds, NS);
-  min_param = seeds[0];
+  if(nseeds <= 0) nseeds = 5 * curve.getOrder();
 
   auto F = [&](double t) -> double {
     VectorType pos(P, curve.evaluate(t));
@@ -271,26 +269,53 @@ inline Point<T, NDIMS> closest_point(const Point<T, NDIMS>& P,
     return curve.dt(t).squared_norm() + Vector2D::dot_product(pos, curve.dtdt(t));
   };
 
-  // 25 iterations of newton's method at each seed
-  for(int s = 1; s < NS-1; s++)
-    for(int i = 0; i < 5; i++)
-    {
-      seeds[s] = seeds[s] - F(seeds[s]) / Fprime(seeds[s]);
-    }
+  min_param = 0;
+  double min_dist = VectorType(curve[0], P).squared_norm();
 
-  //Vector<T, NDIMS> min_vec(curve.evaluate(seeds[0]), P);
-  double min_dist = VectorType(curve.evaluate(seeds[0]), P).squared_norm();
-
-  for(int i = 1; i < NS; i++)
+  // Find the minimum function value at each seed
+  for(double i = 1; i <= nseeds; i++)
   {
-    double this_dist = VectorType(curve.evaluate(seeds[i]), P).squared_norm();
-    if(this_dist < min_dist && seeds[i] >= 0 && seeds[i] <= 1)
+    double this_dist =
+      VectorType(curve.evaluate(i / nseeds), P).squared_norm();
+    if(this_dist < min_dist)
     {
-      min_param = seeds[i];
+      min_param = i / nseeds;
       min_dist = this_dist;
     }
   }
 
+  // Run 25 iterations of newton's method at the minimum seed
+  for(int i = 0; i < 25; i++)
+    min_param = min_param - F(min_param) / Fprime(min_param);
+
+  min_dist = VectorType(curve.evaluate(min_param), P).squared_norm();
+
+
+  if(min_param < 0)
+  {
+    min_param = 0;
+    min_dist = VectorType(curve[0], P).squared_norm();
+  }
+  if(min_param > 1) 
+  {
+    min_param = 1;
+    min_dist = VectorType(curve[curve.getOrder()], P).squared_norm();
+  }
+
+  /*
+  // Compare this value against the other endpoints
+  if(VectorType(curve[0], P).squared_norm() < min_dist)
+  {
+    min_param = 0;
+    min_dist = VectorType(curve[0], P).squared_norm();
+  }
+
+  if(VectorType(curve[curve.getOrder()], P).squared_norm() < min_dist)
+  {
+    min_param = 0;
+    min_dist = VectorType(curve[curve.getOrder()], P).squared_norm();
+  }
+  */
   return curve.evaluate(min_param);
 }
 
