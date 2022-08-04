@@ -55,7 +55,7 @@ int winding_number(const Point<T, 2>& R,
 
   // If the query is a vertex, return a value interpreted
   //  as "inside" by evenodd or nonzero protocols
-  if(axom::utilities::isNearlyEqual(P[0][0], R[1], EPS) &&
+  if(axom::utilities::isNearlyEqual(P[0][0], R[0], EPS) &&
      axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
     return !strict;
 
