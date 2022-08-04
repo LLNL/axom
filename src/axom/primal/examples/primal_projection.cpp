@@ -78,7 +78,7 @@ CPolygon get_cusp_shape()
   Point2D bot_nodes[] = {Point2D {-1.0, 0.0},
                          Point2D {-1.0, -1.0},
                          Point2D {0.0, -1.0},
-                         Point2D {0.0, 0.0}};
+                         Point2D {0.0, 1.0}};
   Bezier bot_curve(bot_nodes, 3);
   Bezier cusp_shape[] = {top_curve, bot_curve};
   return CPolygon(cusp_shape, 2);
@@ -178,7 +178,8 @@ void projection_grid()
   //cpoly.splitEdge(0, 0.5);
   //cpoly.splitEdge(0, 0.5);
   Bezier the_curve = cpoly[0];
-  std::cout << the_curve << std::endl;
+
+  std::cout << the_curve.dt(1) << std::endl;
 
   // Get big ol grid of query points
   Bezier::BoundingBoxType cpbb(the_curve.boundingBox().scale(2.0));
@@ -192,8 +193,8 @@ void projection_grid()
   //axom::numerics::linspace(0.72 - 1e-4, 0.72 + 1e-4, ypts, num_pts);
   //axom::numerics::linspace(-0.4, -0.2, xpts, num_pts);
   //axom::numerics::linspace(-1.8, -1.6, ypts, num_pts);
-  axom::numerics::linspace(-0.005 + 0.02, 0.005 + 0.02, xpts, num_pts);
-  axom::numerics::linspace(-0.005, 0.005, ypts, num_pts);
+  axom::numerics::linspace(0 + 0.02, 0 - 0.02, xpts, num_pts);
+  axom::numerics::linspace(-0.02, 0.02, ypts, num_pts);
 
   // Get file storage syntax
   std::ofstream outfile(
@@ -204,36 +205,35 @@ void projection_grid()
     return;
   }
 
-  Point2D the_point({-0.028, 0.318});
+  Point2D the_point({0.01, 0.0});
 
-    // Loop over each query point, store the signed distance from the curve
+  // Loop over each query point, store the signed distance from the curve
   for(double& x : xpts)
   {
     for(double& y : ypts)
     {
       Point2D qpoint({x, y});
 
-      //qpoint = the_point;
+      qpoint = the_point;
 
       double min_param = 0;
-      Point2D min_point = closest_point(qpoint, the_curve, min_param);
-      
+      Point2D min_point = closest_point(qpoint, the_curve, min_param, 15);
+
       Vector2D normal(min_point, qpoint);
       bool pos_side =
         Vector2D::cross_product(normal, the_curve.dt(min_param))[2] >= 0;
 
-      //std::cout << min_param << ": " << min_point << std::endl;
-      //std::cout << pos_side << std::endl;
+      std::cout << min_param << ": " << min_point << std::endl;
+      std::cout << pos_side << std::endl;
 
       // clang-format off
       outfile << axom::fmt::format(
         "{0},{1},{2}\n",
         qpoint[0],
         qpoint[1],
-        squared_distance( qpoint, min_point ) * (pos_side ? 1 : -1)
-                                  );
+        squared_distance( qpoint, min_point ) );
       // clang-format on
-      //return;
+      return;
     }
     std::cout << ".";
   }
