@@ -852,12 +852,16 @@ int main(int argc, char** argv)
   ObjectMeshWrapper object_mesh_wrapper(
     objectDS.getRoot()->createGroup("object_mesh"));
 
-  const double prob = axom::utilities::random_real(0., 1.);
-  const bool rankHasPoints = prob < (1. - params.percentEmptyRanks());
-  object_mesh_wrapper.generateCircleMesh(params.circleRadius,
-                                         params.circleCenter,
-                                         rankHasPoints,
-                                         params.circlePoints);
+  // Generate the object mesh, optionally allowing some ranks to be empty.
+  // This better approximates how users will run the query.
+  {
+    const double prob = axom::utilities::random_real(0., 1.);
+    const bool rankHasObjectPoints = prob < (1. - params.percentEmptyRanks());
+    object_mesh_wrapper.generateCircleMesh(params.circleRadius,
+                                           params.circleCenter,
+                                           rankHasObjectPoints,
+                                           params.circlePoints);
+  }
 
   SLIC_INFO(axom::fmt::format("Object mesh has {} points",
                               object_mesh_wrapper.numPoints()));
@@ -875,9 +879,17 @@ int main(int argc, char** argv)
   query_mesh_wrapper.printMeshInfo();
   query_mesh_wrapper.setupParticleMesh();
 
+  const bool rankHasQueryPoints =
+    axom::utilities::random_real(0., 1.) < (1. - params.percentEmptyRanks());
+
   // Copy mesh nodes into qpts array
   auto qPts = query_mesh_wrapper.getVertexPositions<PointArray>();
-  const int nQueryPts = qPts.size();
+  const int nMeshPoints = qPts.size();
+  const int nQueryPts = rankHasQueryPoints ? nMeshPoints : 0;
+
+  SLIC_INFO(
+    axom::fmt::format("Query mesh has {} points on rank {}", nQueryPts, my_rank));
+  slic::flushStreams();
 
   //---------------------------------------------------------------------------
   // Initialize spatial index for querying points, and run query
@@ -902,10 +914,12 @@ int main(int argc, char** argv)
     object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
   }
 
-  // Put sidre data into Conduit Node query_mesh_node.
+  // Put sidre data into Conduit query_mesh_node.
   conduit::Node query_mesh_node;
-  query_mesh_wrapper.getBlueprintGroup()->createNativeLayout(query_mesh_node);
-  query_mesh_node.fetch("fields/min_distance/values");
+  if(rankHasQueryPoints)
+  {
+    query_mesh_wrapper.getBlueprintGroup()->createNativeLayout(query_mesh_node);
+  }
 
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
@@ -965,7 +979,7 @@ int main(int argc, char** argv)
     query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
       "cp_index");
 
-  if(params.isVerbose())
+  if(params.isVerbose() && rankHasQueryPoints)
   {
     auto cpRank =
       query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
@@ -1003,16 +1017,18 @@ int main(int argc, char** argv)
   }
 
   mfem::Array<int> dofs;
-  const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
+  PointType nowhere(std::numeric_limits<double>::signaling_NaN());
   const double nodist = std::numeric_limits<double>::signaling_NaN();
-  for(auto idx : IndexSet(nQueryPts))
+  for(auto idx : IndexSet(nMeshPoints))
   {
-    const auto& cp = cpIndices[idx] >= 0 ? cpPositions[idx] : nowhere;
-    (*distances)(idx) =
-      cpIndices[idx] >= 0 ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
-    primal::Vector<double, DIM> dir(qPts[idx], cp);
+    const bool has_cp = rankHasQueryPoints && cpIndices[idx] >= 0;
+    const auto& cp = has_cp ? cpPositions[idx] : nowhere;
+
+    (*distances)(idx) = has_cp ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
+
     directions->FESpace()->GetVertexVDofs(idx, dofs);
-    directions->SetSubVector(dofs, dir.data());
+    directions->SetSubVector(dofs,
+                             has_cp ? (cp - qPts[idx]).data() : nowhere.data());
   }
 
   //---------------------------------------------------------------------------
