@@ -133,7 +133,6 @@ double adaptive_winding_number(const Point2D& q,
 {
   const int ord = c.getOrder();
 
-  double cl_winding_num = closure_winding_number(q, c);
   Polygon<T, 2> controlPolygon(c.getControlPoints());
 
   // Use linearity as base case for recursion
@@ -142,12 +141,12 @@ double adaptive_winding_number(const Point2D& q,
     if(squared_distance(q, Segment<T, 2>(c[0], c[ord])) <= edge_tol)
       return 0;
     else
-      return -cl_winding_num;
+      return -closure_winding_number(q, c);
   }
 
   // If outside control polygon (with nonzero protocol)
   if(!in_polygon(q, controlPolygon, true, false, edge_tol))
-    return -cl_winding_num;
+    return -closure_winding_number(q, c);
 
   // Check if our new curve is convex, if we have to
   if(!convex_cp) convex_cp = is_convex(controlPolygon);
