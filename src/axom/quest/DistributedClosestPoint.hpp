@@ -538,16 +538,21 @@ public:
   BoxType computeMeshBoundingBox(conduit::Node& mesh,
                                  const std::string& coordset) const
   {
-    auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
-    SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
-    const int npts = internal::extractSize(coords);
     BoxType rval;
-    ArrayView<PointType> queryPts = ArrayView_from_Node<PointType>(
-      mesh.fetch_existing("coordsets/coords/values/x"),
-      npts);
-    for(const auto& p : queryPts)
+
+    const bool has_query_points = mesh.has_child("coordsets");
+    if(has_query_points)
     {
-      rval.addPoint(p);
+      auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
+      SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
+      const int npts = internal::extractSize(coords);
+      ArrayView<PointType> queryPts = ArrayView_from_Node<PointType>(
+        mesh.fetch_existing("coordsets/coords/values/x"),
+        npts);
+      for(const auto& p : queryPts)
+      {
+        rval.addPoint(p);
+      }
     }
     return rval;
   }
@@ -558,25 +563,34 @@ public:
                                     conduit::Node& xferNode,
                                     const std::string& coordset) const
   {
-    // clang-format off
-    auto& coords = queryNode.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-    const int dim = internal::extractDimension(coords);
-    const int qPtCount = internal::extractSize(coords);
+    const bool has_query_points = queryNode.has_child("coordsets");
 
-    xferNode["qPtCount"] = qPtCount;
-    xferNode["dim"] = dim;
-    xferNode["homeRank"] = m_rank;
-    xferNode["is_first"] = 1;
-    xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
-    xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
-    xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
-    xferNode["closest_point"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
-
-    if(queryNode.has_path("fields/min_distance"))
+    if(has_query_points)
     {
-      xferNode["debug/min_distance"].set_external(internal::getPointer<double>(queryNode["fields/min_distance/values"]), qPtCount);
+      // clang-format off
+      auto& coords = queryNode.fetch_existing(fmt::format("coordsets/{}/values", coordset));
+      const int dim = internal::extractDimension(coords);
+      const int qPtCount = internal::extractSize(coords);
+
+      xferNode["qPtCount"] = qPtCount;
+      xferNode["dim"] = dim;
+      xferNode["homeRank"] = m_rank;
+      xferNode["is_first"] = 1;
+      xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
+      xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
+      xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
+      xferNode["closest_point"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
+
+      if(queryNode.has_path("fields/min_distance"))
+      {
+        xferNode["debug/min_distance"].set_external(internal::getPointer<double>(queryNode["fields/min_distance/values"]), qPtCount);
+      }
+      // clang-format on
     }
-    // clang-format on
+    else
+    {
+      xferNode["homeRank"] = m_rank;
+    }
   }
 
   /// Copy xferNode back to query mesh partition.
@@ -612,11 +626,11 @@ public:
    * in the provided particle mesh, provided in the mesh blueprint rooted at \a query_mesh
    *
    * \param query_mesh The root node of a mesh blueprint for the query points
+   * Can be empty if there are no query points for the calling rank
    * \param coordset The coordinate set for the query points
    *
-   * Uses the \a coordset coordinate set of the provided blueprint mesh
-   *
-   * The particle mesh must contain the following fields:
+   * When the query mesh contains query points, it uses the \a coordset coordinate set 
+   * of the provided blueprint mesh and  contains the following fields:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
    *   - cp_index: Will hold the index of the object point containing the closest point
    *   - closest_point: Will hold the position of the closest point
@@ -644,7 +658,8 @@ public:
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
     std::list<std::shared_ptr<conduit::Node>> skipNodes;
 
-    // create conduit node containing data that has to xfer between ranks
+    // create conduit node containing data that has to xfer between ranks.
+    // The node will be mostly empty if there are no query points on this rank
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
@@ -793,24 +808,28 @@ public:
 
         if(xferNode.fetch_existing("homeRank").as_int() == m_rank)
         {
-          // This is the query partition we started with, completing
-          // its trip around the ring.  Copy it back to queryMesh.
-          copy_xfer_node_to_query_node(xferNode, queryMesh);
-          xferNodePtr.reset();
-
-          if(m_isVerbose)
+          // This is the query partition we started with, completing its trip
+          // around the ring.  Copy it back to queryMesh, if necessary
+          const bool should_copy = xferNode.has_child("qPtCount");
+          if(should_copy)
           {
-            internal::dump_node(
-              queryMesh,
-              axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
+            copy_xfer_node_to_query_node(xferNode, queryMesh);
+            xferNodePtr.reset();
 
-            SLIC_ASSERT_MSG(
-              conduit::blueprint::mcarray::is_interleaved(
-                queryMesh["fields/closest_point/values"]),
-              fmt::format(
-                "After copy on iteration {}, 'closest_point' field of "
-                "'queryMesh' is not interleaved",
-                round));
+            if(m_isVerbose)
+            {
+              internal::dump_node(
+                queryMesh,
+                axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
+
+              SLIC_ASSERT_MSG(
+                conduit::blueprint::mcarray::is_interleaved(
+                  queryMesh["fields/closest_point/values"]),
+                fmt::format(
+                  "After copy on iteration {}, 'closest_point' field of "
+                  "'queryMesh' is not interleaved",
+                  round));
+            }
           }
         }
       }  // Locally process *xferNodePtr
@@ -960,16 +979,26 @@ public:
     using axom::primal::squared_distance;
     using int32 = axom::int32;
 
+    // --- Checks for early return:
+    // First check: empty query node
+    if(!xfer_node.has_path("qPtCount"))
+    {
+      return;
+    }
+
+    // Second check: empty object node
+    // Note: There is some additional computation the first time this function
+    // is called for a query node, even if the local object mesh is empty
     const bool hasObjectPoints = m_points.size() > 0;
     const bool is_first = xfer_node.has_path("is_first");
-
-    // Check for early return
-    // Note: There is some additional computation the first time this function
-    // is called for a xfer_node, even if the local object mesh is empty
     if(!hasObjectPoints && !is_first)
     {
       return;
     }
+
+    // --- Set up arrays and views in the execution space
+    // Arrays are initialized in that execution space the first time they are processed
+    // and are copied in during subsequent processing
 
     // Check dimension and extract the number of points
     const int dim = xfer_node.fetch_existing("dim").value();
