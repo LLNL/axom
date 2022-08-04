@@ -52,6 +52,13 @@ namespace numerics = axom::numerics;
 
 using RuntimePolicy = axom::quest::DistributedClosestPoint::RuntimePolicy;
 
+// converts the input string into an 80 character string
+// padded on both sides with '=' symbols
+std::string banner(const std::string& str)
+{
+  return axom::fmt::format("{:=^80}", str);
+}
+
 /// Struct to parse and store the input parameters
 struct Input
 {
@@ -469,6 +476,8 @@ public:
 
   int numPoints() const { return m_mesh.numPoints(); }
 
+  void setVerbosity(bool verbose) { m_verbose = verbose; }
+
   /**
    * Generates a collection of \a numPoints points along a circle
    * of radius \a radius centered at the origin
@@ -501,7 +510,8 @@ public:
       arr.fill(-1);
       MPI_Allgather(&hasPoints, 1, MPI_INT, arr.data(), 1, MPI_INT, MPI_COMM_WORLD);
 
-      SLIC_DEBUG(
+      SLIC_DEBUG_IF(
+        m_verbose,
         axom::fmt::format("After all gather: [{}]", axom::fmt::join(arr, ",")));
 
       axom::Array<int> sums(numRanks + 1, numRanks + 1);
@@ -511,7 +521,8 @@ public:
         sums[i] = sums[i - 1] + arr[i - 1];
       }
 
-      SLIC_DEBUG(
+      SLIC_DEBUG_IF(
+        m_verbose,
         axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
 
       const int numNonEmpty = sums[numRanks];
@@ -539,7 +550,8 @@ public:
         }
       }
 
-      SLIC_DEBUG(
+      SLIC_DEBUG_IF(
+        m_verbose,
         axom::fmt::format("Rank {}, start angle {}, stop angle {}, num "
                           "non-empty {}, num points {}",
                           myRank,
@@ -571,16 +583,16 @@ public:
   /// Outputs the object mesh to disk
   void saveMesh(const std::string& outputMesh = "object_mesh")
   {
-    SLIC_INFO(axom::fmt::format(
-      "{:=^80}",
+    SLIC_INFO(banner(
       axom::fmt::format("Saving particle mesh '{}' to disk", outputMesh)));
 
     m_mesh.saveMesh(outputMesh);
   }
 
 private:
-  sidre::Group* m_group;
+  sidre::Group* m_group {nullptr};
   BlueprintParticleMesh m_mesh;
+  bool m_verbose {false};
 };
 
 class QueryMeshWrapper
@@ -622,10 +634,8 @@ public:
   /// Saves the data collection to disk
   void saveMesh()
   {
-    SLIC_INFO(
-      axom::fmt::format("{:=^80}",
-                        axom::fmt::format("Saving query mesh '{}' to disk",
-                                          m_dc.GetCollectionName())));
+    SLIC_INFO(banner(axom::fmt::format("Saving query mesh '{}' to disk",
+                                       m_dc.GetCollectionName())));
 
     m_dc.Save();
   }
@@ -668,8 +678,7 @@ public:
    */
   void setupMesh(const std::string& fileName, const std::string meshFile)
   {
-    SLIC_INFO(axom::fmt::format("{:=^80}",
-                                axom::fmt::format("Loading '{}' mesh", fileName)));
+    SLIC_INFO(banner(axom::fmt::format("Loading '{}' mesh", fileName)));
 
     sidre::MFEMSidreDataCollection originalMeshDC(fileName, nullptr, false);
     {
@@ -851,6 +860,7 @@ int main(int argc, char** argv)
   sidre::DataStore objectDS;
   ObjectMeshWrapper object_mesh_wrapper(
     objectDS.getRoot()->createGroup("object_mesh"));
+  object_mesh_wrapper.setVerbosity(params.isVerbose());
 
   // Generate the object mesh, optionally allowing some ranks to be empty.
   // This better approximates how users will run the query.
@@ -863,11 +873,12 @@ int main(int argc, char** argv)
                                            params.circlePoints);
   }
 
-  SLIC_INFO(axom::fmt::format("Object mesh has {} points",
-                              object_mesh_wrapper.numPoints()));
-  slic::flushStreams();
+  SLIC_INFO_IF(params.isVerbose(),
+               axom::fmt::format("Object mesh has {} points",
+                                 object_mesh_wrapper.numPoints()));
 
   object_mesh_wrapper.saveMesh(params.objectFile);
+  slic::flushStreams();
 
   //---------------------------------------------------------------------------
   // Load computational mesh and generate a particle mesh over its nodes
@@ -887,7 +898,8 @@ int main(int argc, char** argv)
   const int nMeshPoints = qPts.size();
   const int nQueryPts = rankHasQueryPoints ? nMeshPoints : 0;
 
-  SLIC_INFO(
+  SLIC_INFO_IF(
+    params.isVerbose(),
     axom::fmt::format("Query mesh has {} points on rank {}", nQueryPts, my_rank));
   slic::flushStreams();
 
@@ -896,12 +908,10 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
 
   auto init_str =
-    axom::fmt::format("{:=^80}",
-                      axom::fmt::format("Initializing BVH tree over {} points",
-                                        params.circlePoints));
+    banner(axom::fmt::format("Initializing BVH tree over {} points",
+                             params.circlePoints));
 
-  auto query_str = axom::fmt::format(
-    "{:=^80}",
+  auto query_str = banner(
     axom::fmt::format("Computing closest points for {} query points", nQueryPts));
 
   axom::utilities::Timer initTimer(false);
@@ -931,12 +941,14 @@ int main(int argc, char** argv)
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
+  slic::flushStreams();
   initTimer.start();
   query.generateBVHTree();
   initTimer.stop();
 
   // Run the distributed closest point query over the nodes of the computational mesh
   SLIC_INFO(query_str);
+  slic::flushStreams();
   queryTimer.start();
   query.computeClosestPoints(query_mesh_node,
                              query_mesh_wrapper.getCoordsetName());
@@ -970,6 +982,7 @@ int main(int argc, char** argv)
       minQuery,
       maxQuery));
   }
+  slic::flushStreams();
 
   auto cpPositions =
     query_mesh_wrapper.getParticleMesh().getNodalVectorField<PointType>(
@@ -1014,6 +1027,7 @@ int main(int argc, char** argv)
                         minPts,
                         maxPts,
                         sumPts / num_ranks));
+    slic::flushStreams();
   }
 
   mfem::Array<int> dofs;
