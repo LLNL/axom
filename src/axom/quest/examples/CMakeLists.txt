@@ -58,8 +58,8 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
         blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
         foreach(_pol ${_policies})
+            # Add test with data on all ranks
             set(_test "quest_distributed_closest_point_run_2D_${_pol}")
-
             axom_add_test(
                 NAME    ${_test}
                 COMMAND quest_distributed_distance_query_ex
@@ -70,10 +70,27 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             --object-file dcp_object_mesh_2d_${_pol}
                             --distance-file dcp_closest_point_2d_${_pol}
                 NUM_MPI_TASKS ${_nranks})
-
             if(${_pol} STREQUAL "omp")
                 set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
             endif()
+
+            # Add test with data on a subset of the ranks
+            set(_test "quest_distributed_closest_point_run_2D_empty_ranks_${_pol}")
+            axom_add_test(
+                NAME    ${_test}
+                COMMAND quest_distributed_distance_query_ex
+                            --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
+                            --num-samples 500
+                            --dist-threshold .45
+                            --policy ${_pol}
+                            --object-file dcp_object_mesh_2d_${_pol}
+                            --distance-file dcp_closest_point_2d_${_pol}
+                            --empty-rank-probability .5
+                NUM_MPI_TASKS ${_nranks})
+            if(${_pol} STREQUAL "omp")
+                set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
+            endif()
+    
         endforeach()
 
         unset(_nranks)
