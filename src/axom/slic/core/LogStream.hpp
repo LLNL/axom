@@ -108,7 +108,8 @@ public:
    *
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
-   *  in a distributed MPI environment.
+   *  in a distributed MPI environment. This function is not intended to be
+   *  collective.
    */
   virtual void localFlush() {};
 

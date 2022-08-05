@@ -73,9 +73,7 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Dumps the messages to the console in rank-order for
-   *        just the current rank
-   *
+   * \brief Dumps the current rank's messages to the console (non-collectively)
    */
   virtual void localFlush();
 

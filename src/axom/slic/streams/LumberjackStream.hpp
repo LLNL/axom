@@ -81,8 +81,8 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Pushes the messages from the current rank
-   *  to the output node. Then writes it to the given stream.
+   * \brief Pushes the messages from the current rank to the
+   *        given stream (non-collectively)
    */
   virtual void localFlush();
 
