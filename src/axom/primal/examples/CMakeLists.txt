@@ -15,6 +15,12 @@ set(primal_example_depends
         fmt
         )
 
+blt_list_append(
+    TO       primal_examples
+    ELEMENTS winding_numbers.cpp
+    IF       MFEM_FOUND 
+               )
+
 blt_list_append( TO primal_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach ( example ${primal_examples} )
