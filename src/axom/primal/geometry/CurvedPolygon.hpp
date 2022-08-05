@@ -87,6 +87,8 @@ public:
     }
   }
 
+  CurvedPolygon(axom::Array<BezierCurveType>& curves) { m_edges = curves; }
+
   /// Clears the list of edges
   void clear() { m_edges.clear(); }
 
@@ -117,6 +119,8 @@ public:
     auto& csplit = m_edges[idx];
     csplit.split(t, m_edges[idx], m_edges[idx + 1]);
   }
+
+  void splitToConvex() { }
 
   axom::Array<BezierCurve<T, NDIMS>> getEdges() const { return m_edges; }
 
