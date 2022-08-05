@@ -671,6 +671,124 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
 }
 
+// Tetrahedron does not clip tetrahedron.
+TEST(primal_clip, tet_tet_clip_nonintersect)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({-1, -1, -1}),
+                       PointType({-1, 0, 0}),
+                       PointType({-1, -1, 0}),
+                       PointType({0, 0, 0}));
+
+  TetrahedronType tet2(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron is adjacent to tetrahedron
+TEST(primal_clip, tet_tet_clip_adjacent)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({1, 0, 1}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 0}),
+                       PointType({0, 0, 0}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron clips tetrahedron at a single vertex
+TEST(primal_clip, tet_tet_clip_point)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({0, 1, 0}),
+                       PointType({0, 0, 0}),
+                       PointType({-1, 0, 0}),
+                       PointType({0, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedrons are the same
+TEST(primal_clip, tet_tet_equal)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({1, 0, 0}),
+                      PointType({1, 1, 0}),
+                      PointType({0, 1, 0}),
+                      PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet, tet);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Tetrahedron is encapsulated inside the other tetrahedron
+TEST(primal_clip, tet_tet_encapsulate)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({3, 0, 0}),
+                       PointType({0, 3, 0}),
+                       PointType({-3, 0, 0}),
+                       PointType({0, 0, 3}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Half of the tetrahedron is clipped by the other tetrahedron
+TEST(primal_clip, tet_tet_half)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 1, 1}));
+
+  TetrahedronType tet2(PointType({0, 0, 0}),
+                       PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({1, 1, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+
+  // Expected result should be 0.666 / 4 / 2 = 0.0833, volume of tet.
+  EXPECT_NEAR(0.0833, poly.volume(), EPS);
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {

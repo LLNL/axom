@@ -400,12 +400,13 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
 
 /*!
  * \brief Finds the clipped intersection Polyhedron between Polyhedron
- *        poly and an Array of Plane planes.
+ *        poly and a collection of Planes.
  *
  * \param [in] poly The polyhedron
  * \param [in] planes The planes
  * \param [in] numPlanes The number of planes
  * \param [in] eps The tolerance for plane point orientation.
+ *
  * \return The Polyhedron formed from clipping the polyhedron with a set of planes.
  *
  */
@@ -525,11 +526,58 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
 
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
-
   PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
                          make_plane(tet[0], tet[2], tet[3]),
                          make_plane(tet[0], tet[3], tet[1]),
                          make_plane(tet[0], tet[1], tet[2])};
+
+  return clipPolyhedron(poly, planes, 4, eps);
+}
+
+/*!
+ * \brief Finds the clipped intersection Polyhedron between Tetrahedron
+ *        tet1 and Tetrahedron tet2.
+ *
+ * \param [in] tet1 The tetrahedron to clip
+ * \param [in] tet2 TThe tetrahedron to clip against
+ * \param [in] eps The tolerance for plane point orientation.
+ * \return The Polyhedron formed from clipping the tetrahedron with a tetrahedron.
+ *
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
+  const Tetrahedron<T, NDIMS>& tet1,
+  const Tetrahedron<T, NDIMS>& tet2,
+  double eps = 1.e-10)
+{
+  using PointType = Point<T, NDIMS>;
+  using PlaneType = Plane<T, NDIMS>;
+
+  // Initialize our polyhedron to return
+  Polyhedron<T, NDIMS> poly;
+
+  poly.addVertex(tet1[0]);
+  poly.addVertex(tet1[1]);
+  poly.addVertex(tet1[2]);
+  poly.addVertex(tet1[3]);
+
+  poly.addNeighbors(0, {1, 3, 2});
+  poly.addNeighbors(1, {0, 2, 3});
+  poly.addNeighbors(2, {0, 3, 1});
+  poly.addNeighbors(3, {0, 1, 2});
+
+  // Reverses order of vertices 1,2 if volume is negative
+  if(poly.volume() < 0)
+  {
+    axom::utilities::swap<PointType>(poly[1], poly[2]);
+  }
+
+  // Initialize planes from tetrahedron vertices
+  // (Ordering here matters to get the correct winding)
+  PlaneType planes[4] = {make_plane(tet2[1], tet2[3], tet2[2]),
+                         make_plane(tet2[0], tet2[2], tet2[3]),
+                         make_plane(tet2[0], tet2[3], tet2[1]),
+                         make_plane(tet2[0], tet2[1], tet2[2])};
 
   return clipPolyhedron(poly, planes, 4, eps);
 }
