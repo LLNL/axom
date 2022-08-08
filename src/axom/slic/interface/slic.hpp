@@ -311,9 +311,10 @@ void logWarningMessage(const std::string& message,
 /*!
  * \brief Flushes all streams for current rank.
  *
- * \note This call is not collective.
- *       flushStreams() is preferred over this function,
- *       as flushLocalStreams() may put LogStreams in an undesirable state.
+ * \warning flushLocalStreams() is used before a rank aborts.
+ *          flushStreams() is preferred over this function,
+ *          as flushLocalStreams() may put LogStreams in an undesirable state.
+ *          This call is not collective.
  */
 void flushLocalStreams();
 

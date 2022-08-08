@@ -74,6 +74,8 @@ public:
 
   /*!
    * \brief Dumps the current rank's messages to the console (non-collectively)
+   *
+   * \warning This method is being called before slic aborts.
    */
   virtual void localFlush();
 

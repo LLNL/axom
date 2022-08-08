@@ -110,6 +110,8 @@ public:
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment. This function is not intended to be
    *  collective.
+   *
+   * \warning This method is being called before slic aborts.
    */
   virtual void localFlush() {};
 

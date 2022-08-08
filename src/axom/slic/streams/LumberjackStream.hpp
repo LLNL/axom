@@ -83,6 +83,8 @@ public:
   /*!
    * \brief Pushes the messages from the current rank to the
    *        given stream (non-collectively)
+   *
+   * \warning This method is being called before slic aborts.
    */
   virtual void localFlush();
 
