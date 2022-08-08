@@ -138,9 +138,14 @@ endif()
 # MFEM
 #------------------------------------------------------------------------------
 if (TARGET mfem)
-    # Case: included axom in project that also creates an mfem target, no need to recreate mfem
+    # Case: Axom included in project that also creates an mfem target, no need to recreate mfem
+    # Note - white238: I can't seem to get this to pass install testing due to mfem being included
+    # in multiple export sets
     message(STATUS "MFEM support is ON, using existing mfem target")
-    blt_list_append(TO TPL_DEPS ELEMENTS mfem)
+    # Add it to this export set but don't prefix it with axom::
+    install(TARGETS              mfem
+            EXPORT               axom-targets
+            DESTINATION          lib)
     set(MFEM_FOUND TRUE CACHE BOOL "" FORCE)
 elseif (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)

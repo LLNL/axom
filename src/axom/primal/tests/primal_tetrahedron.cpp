@@ -263,6 +263,98 @@ TEST_F(TetrahedronTest, barycentric)
 }
 
 //------------------------------------------------------------------------------
+TEST_F(TetrahedronTest, barycentric_skipNormalization)
+{
+  using CoordType = TetrahedronTest::CoordType;
+  using QPoint = TetrahedronTest::QPoint;
+  using RPoint = primal::Point<CoordType, 4>;
+  using TestVec = std::vector<std::pair<QPoint, RPoint>>;
+
+  for(int i = 0; i < this->numTetrahedra(); ++i)
+  {
+    const auto tet = this->getTet(i);
+    QPoint pt[4] = {tet[0], tet[1], tet[2], tet[3]};
+
+    TestVec testData;
+
+    // Test the four vertices
+    testData.push_back(std::make_pair(pt[0], RPoint {1., 0., 0., 0.}));
+    testData.push_back(std::make_pair(pt[1], RPoint {0., 1., 0., 0.}));
+    testData.push_back(std::make_pair(pt[2], RPoint {0., 0., 1., 0.}));
+    testData.push_back(std::make_pair(pt[3], RPoint {0., 0., 0., 1.}));
+
+    // Test the edge midpoints
+    testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[1]),
+                                      RPoint {0.5, 0.5, 0., 0.}));
+    testData.push_back(std::make_pair(QPoint::midpoint(pt[1], pt[2]),
+                                      RPoint {0., 0.5, 0.5, 0.}));
+    testData.push_back(std::make_pair(QPoint::midpoint(pt[2], pt[3]),
+                                      RPoint {0., 0., 0.5, 0.5}));
+    testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[2]),
+                                      RPoint {0.5, 0., 0.5, 0.}));
+    testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[3]),
+                                      RPoint {0.5, 0., 0., 0.5}));
+    testData.push_back(std::make_pair(QPoint::midpoint(pt[1], pt[3]),
+                                      RPoint {0., 0.5, 0., 0.5}));
+
+    // Test the face midpoints
+    constexpr double one_third = 1. / 3.;
+    testData.push_back(std::make_pair(
+      QPoint(one_third * (pt[0].array() + pt[1].array() + pt[2].array())),
+      RPoint {one_third, one_third, one_third, 0.}));
+    testData.push_back(std::make_pair(
+      QPoint(one_third * (pt[0].array() + pt[1].array() + pt[3].array())),
+      RPoint {one_third, one_third, 0., one_third}));
+    testData.push_back(std::make_pair(
+      QPoint(one_third * (pt[0].array() + pt[2].array() + pt[3].array())),
+      RPoint {one_third, 0., one_third, one_third}));
+    testData.push_back(std::make_pair(
+      QPoint(one_third * (pt[1].array() + pt[2].array() + pt[3].array())),
+      RPoint {0., one_third, one_third, one_third}));
+
+    // Test the centroid
+    testData.push_back(std::make_pair(
+      QPoint(.25 * (pt[0].array() + pt[1].array() + pt[2].array() + pt[3].array())),
+      RPoint {.25, .25, .25, .25}));
+
+    // Test a point outside the tetrahedron
+    testData.push_back(std::make_pair(
+      QPoint(-0.4 * pt[0].array() + 1.2 * pt[1].array() + 0.2 * pt[2].array()),
+      RPoint {-0.4, 1.2, 0.2, 0.}));
+
+    // Now run the actual tests
+    for(const auto& data : testData)
+    {
+      const QPoint& query = data.first;
+      const RPoint& expBary = data.second;
+      RPoint bary = tet.physToBarycentric(query, false);
+      RPoint baryUnnormalized = tet.physToBarycentric(query, true);
+
+      // The unnormalized weights are proportional to the actual barycentric weights
+      // The factor of 6 is due to the use of parallelepiped volumes instead of tet volumes
+      const double volumeScale = 6 * tet.signedVolume();
+
+      SLIC_INFO(axom::fmt::format(
+        "For tet {} and point {} "
+        "-- barycentric coods {} (unnormalized barycentric {})"
+        "-- signed volume {}",
+        tet,
+        query,
+        bary,
+        baryUnnormalized,
+        tet.signedVolume()));
+
+      EXPECT_NEAR(volumeScale, baryUnnormalized.array().sum(), this->EPS);
+      for(int d = 0; d <= 3; ++d)
+      {
+        EXPECT_NEAR(bary[d] * volumeScale, baryUnnormalized[d], this->EPS);
+        EXPECT_NEAR(expBary[d] * volumeScale, baryUnnormalized[d], this->EPS);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST_F(TetrahedronTest, tetrahedron_roundtrip_bary_to_physical)
 {
   const double EPS = 1e-12;
@@ -385,18 +477,22 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
   using primal::ON_NEGATIVE_SIDE;
   using primal::ON_POSITIVE_SIDE;
 
-  // Test tets
-  std::vector<QTet> tets = {this->getTet(0),
-                            this->getTet(1),
-                            this->getTet(2),
-                            this->getTet(3)};
-
-  // Compute circumsphere of test triangles and test some points
-  for(const auto& tet : tets)
+  // Compute circumsphere of test tetrahedra and test some points
+  for(int ti = 0; ti < this->numTetrahedra(); ++ti)
   {
+    QTet tet = this->getTet(ti);
     QSphere circumsphere = tet.circumsphere();
 
     SLIC_INFO("Circumsphere for tetrahedron: " << tet << " is " << circumsphere);
+
+    // check that each vertex is on the sphere
+    for(int i = 0; i < 4; ++i)
+    {
+      auto qpt = tet[i];
+      EXPECT_NEAR(circumsphere.getRadius(),
+                  sqrt(primal::squared_distance(qpt, circumsphere.getCenter())),
+                  EPS);
+    }
 
     // test vertices
     for(int i = 0; i < 4; ++i)
@@ -421,8 +517,8 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
 
     // test face centers
     {
-      const CoordType third = 1. / 3.;
-      const CoordType zero {0};
+      constexpr CoordType third = 1. / 3.;
+      constexpr CoordType zero {0};
       QPoint qpt[4] = {tet.baryToPhysical(RPoint {third, third, third, zero}),
                        tet.baryToPhysical(RPoint {third, third, zero, third}),
                        tet.baryToPhysical(RPoint {third, zero, third, third}),

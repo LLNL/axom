@@ -10,6 +10,7 @@
 #include "axom/core.hpp"
 #include "axom/slic/interface/slic.hpp"
 
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
@@ -47,6 +48,7 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using SphereType = Sphere<T, NDIMS>;
 
+  static constexpr int DIM = NDIMS;
   static constexpr int NUM_TRI_VERTS = 3;
 
 public:
@@ -97,25 +99,18 @@ public:
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, VectorType>::type normal() const
   {
-    return VectorType::cross_product(VectorType(m_points[0], m_points[1]),
-                                     VectorType(m_points[0], m_points[2]));
+    return VectorType::cross_product(m_points[1] - m_points[0],
+                                     m_points[2] - m_points[0]);
   }
 
-  /*!
-   * \brief Returns the area of the triangle (3D specialization)
-   */
+  /// \brief Returns the area of the triangle (3D specialization)
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, double>::type area() const
   {
-    return 0.5 *
-      VectorType::cross_product(VectorType(m_points[0], m_points[1]),
-                                VectorType(m_points[0], m_points[2]))
-        .norm();
+    return 0.5 * normal().norm();
   }
 
-  /*!
-   * \brief Returns the area of the triangle (2D specialization)
-   */
+  /// \brief Returns the area of the triangle (2D specialization)
   template <int TDIM = NDIMS>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type area() const
   {
@@ -143,49 +138,55 @@ public:
     // clang-format on
   }
 
+  /*!
+   * \brief Returns the volume of the triangle (synonym for area())
+   * \sa area()
+   */
+  AXOM_HOST_DEVICE double volume() const { return area(); }
+
+  /// \brief Returns the signed volume of a 2D triangle
+  template <int TDIM = NDIMS>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, double>::type signedVolume() const
+  {
+    return signedArea();
+  }
+
   /**
    * \brief Returns the circumsphere (circumscribing circle) of the triangle
    *
-   * Implements formula from https://mathworld.wolfram.com/Circumcircle.html
+   * Derived from formula on https://mathworld.wolfram.com/Circumcircle.html
+   * but uses observation that radius can be derived from distance to a vertex
    * \note This function is only available for triangles in 2D
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 2, SphereType>::type circumsphere() const
   {
     using axom::numerics::determinant;
-    using axom::numerics::dot_product;
-    using axom::utilities::abs;
-    using NumericArrayType = primal::NumericArray<T, NDIMS>;
 
-    const PointType& A = m_points[0];
-    const PointType& B = m_points[1];
-    const PointType& C = m_points[2];
+    const PointType& p0 = m_points[0];
+    const PointType& p1 = m_points[1];
+    const PointType& p2 = m_points[2];
 
-    // clang-format off
-    const Point<T, 4> sq { dot_product(A.data(), A.data(), NDIMS),
-                           dot_product(B.data(), B.data(), NDIMS),
-                           dot_product(C.data(), C.data(), NDIMS)};
+    // It's useful to separate the x- and y- components of
+    // the difference vectors for p1 and p2 from p0
+    const VectorType vx {p1[0] - p0[0], p2[0] - p0[0]};
+    const VectorType vy {p1[1] - p0[1], p2[1] - p0[1]};
 
-    const double  a =  determinant(A[0], A[1], 1.,
-                                   B[0], B[1], 1.,
-                                   C[0], C[1], 1.);
+    // We also need their squared norms
+    const VectorType sq {vx[0] * vx[0] + vy[0] * vy[0],
+                         vx[1] * vx[1] + vy[1] * vy[1]};
 
-    const double bx = -determinant(sq[0], A[1], 1.,
-                                   sq[1], B[1], 1.,
-                                   sq[2], C[1], 1.);
+    // Compute one over denominator using a small value to avoid division by zero
+    const double a = determinant(vx[0], vx[1], vy[0], vy[1]);
+    const double EPS = (a >= 0) ? primal::PTINY : -primal::PTINY;
+    const double ood = 1. / (2 * a + EPS);
 
-    const double by =  determinant(sq[0], A[0], 1.,
-                                   sq[1], B[0], 1.,
-                                   sq[2], C[0], 1.);
+    // Compute offset from p0 to center
+    const auto center_offset = ood *
+      VectorType {determinant(sq[0], sq[1], vy[0], vy[1]),
+                  -determinant(sq[0], sq[1], vx[0], vx[1])};
 
-    const double  c = -determinant(sq[0], A[0], A[1],
-                                   sq[1], B[0], B[1],
-                                   sq[2], C[0], C[1]);
-    // clang-format on
-
-    const auto center = NumericArrayType {-bx, -by} / (2 * a);
-    const T radius = sqrt(bx * bx + by * by - 4 * a * c) / (2 * abs(a));
-    return SphereType(center.data(), radius);
+    return SphereType(p0 + center_offset, center_offset.norm());
   }
 
 private:
@@ -200,20 +201,20 @@ private:
   {
     /* This method returns double (instead of T) and explicitly specializes
        determinant() on type double to avoid confusion of deduced template types. */
-    const VectorType A(p, m_points[0]);
-    const VectorType B(p, m_points[1]);
-    const VectorType C(p, m_points[2]);
-
     if(NDIMS < 3)
     {
       return 0.;
     }
     else
     {
+      const VectorType pA = m_points[0] - p;
+      const VectorType pB = m_points[1] - p;
+      const VectorType pC = m_points[2] - p;
+
       // clang-format off
-      return numerics::determinant< double > ( A[0], A[1], A[2],
-                                               B[0], B[1], B[2],
-                                               C[0], C[1], C[2]);
+      return numerics::determinant< double > (pA[0], pA[1], pA[2],
+                                              pB[0], pB[1], pB[2],
+                                              pC[0], pC[1], pC[2]);
       // clang-format on
     }
   }
@@ -221,57 +222,85 @@ private:
 public:
   /*!
    * \brief Returns the barycentric coordinates of a point within a triangle
-   * \return The barycentric coordinates of the triangle inside a Point<T,3>
+   *
+   * \param [in] p The point at which we want to compute barycentric coordinates
+   * \param [in] skipNormalization Determines if the result should be normalized
+   * by the area of the triangle. One might want to skip this if they were
+   * only interested in the relative weights rather than their actual amounts
+   * 
    * \pre The point lies in this triangle's plane.
-   * \post The barycentric coordinates sum to 1.
-   * Adapted from Real Time Collision Detection by Christer Ericson.
+   * \post The barycentric coordinates sum to 1 when \a skipNormalization is false
+   * Otherwise, the sum of coordinates will be proportional to area of the triangle
+   *
+   * Algorithm adapted from Real Time Collision Detection by Christer Ericson.
    */
-  Point<double, 3> physToBarycentric(const PointType& p) const
+  Point<double, 3> physToBarycentric(const PointType& p,
+                                     bool skipNormalization = false) const
   {
-    using axom::numerics::determinant;
+    // Query point needs to be in triangle's plane
     SLIC_CHECK(axom::utilities::isNearlyEqual(ppedVolume(p), 0.));
 
     Point<double, 3> bary;
 
-    Vector<double, 3> u =
-      VectorType::cross_product(VectorType(m_points[0], m_points[1]),
-                                VectorType(m_points[0], m_points[2]));
-    const double x = std::abs(u[0]);
-    const double y = std::abs(u[1]);
-    const double z = std::abs(u[2]);
-
-    double ood = 1.0 / u[2];  // compute in xy plane by default
-    int c0 = 0;
-    int c1 = 1;
-
-    if(x >= y && x >= z)
-    {
-      // compute in yz plane
-      c0 = 1;
-      c1 = 2;
-      ood = 1.0 / u[0];
-    }
-    else if(y >= x && y >= z)
-    {
-      // compute in xz plane
-      c0 = 0;
-      c1 = 2;
-      ood = -1.0 / u[1];
-    }
+    auto triArea2D =
+      [](double x1, double y1, double x2, double y2, double x3, double y3)
+      -> double { return (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2); };
 
     // References to triangle vertices for convenience
     const PointType& A = m_points[0];
     const PointType& B = m_points[1];
     const PointType& C = m_points[2];
 
-    // Compute ood * area of each sub-triangle
-    // clang-format off
-    bary[0] = ood * determinant(p[c0]-B[c0], p[c1]-B[c1],
-                                B[c0]-C[c0], B[c1]-C[c1]);
-    bary[1] = ood * determinant(p[c0]-C[c0], p[c1]-C[c1],
-                                C[c0]-A[c0], C[c1]-A[c1]);
-    bary[2] = 1. - bary[0] - bary[1];
-    // clang-format on
+    // unnormalized triangle normal
+    const auto u = VectorType::cross_product(B - A, C - A);
+
+    double nu, nv, area;  // numerators for 2D projection
+
+    // Find best projection plane for computing weights: xy, yz, xz
+    // Use dimension from largest component of normal
+    const int pDim = (DIM == 2) ? 2 : primal::abs(u.array()).argMax();
+    switch(pDim)
+    {
+    case 0:  // compute in yz plane
+      nu = triArea2D(p[1], p[2], B[1], B[2], C[1], C[2]);
+      nv = triArea2D(p[1], p[2], C[1], C[2], A[1], A[2]);
+      area = u[0];
+      break;
+    case 1:  // compute in xz plane
+      nu = triArea2D(p[0], p[2], B[0], B[2], C[0], C[2]);
+      nv = triArea2D(p[0], p[2], C[0], C[2], A[0], A[2]);
+      area = -u[1];
+      break;
+    case 2:
+    default:  // compute in xy plane
+      nu = triArea2D(p[0], p[1], B[0], B[1], C[0], C[1]);
+      nv = triArea2D(p[0], p[1], C[0], C[1], A[0], A[1]);
+      area = u[2];
+      break;
+    }
+
+    // Return barycentric coordinates: ood * area of each sub-triangle
+    if(!skipNormalization)
+    {
+      // compute one over denominator; add a tiny amount to avoid division by zero
+      const double EPS = (area >= 0) ? primal::PTINY : -primal::PTINY;
+      const double ood = 1. / (area + EPS);
+
+      bary[0] = ood * nu;
+      bary[1] = ood * nv;
+      bary[2] = 1. - bary[0] - bary[1];
+    }
+    else
+    {
+      const double projArea = (pDim == 0)
+        ? triArea2D(A[1], A[2], B[1], B[2], C[1], C[2])
+        : (pDim == 1) ? triArea2D(A[0], A[2], B[0], B[2], C[0], C[2])
+                      : triArea2D(A[0], A[1], B[0], B[1], C[0], C[1]);
+
+      bary[0] = nu;
+      bary[1] = nv;
+      bary[2] = projArea - bary[0] - bary[1];
+    }
 
     return bary;
   }
@@ -312,7 +341,7 @@ public:
    * \return true iff P is in the triangle
    * \see primal::Point
    */
-  bool checkInTriangle(const PointType& p, double eps = 1.0e-8) const
+  bool checkInTriangle(const PointType& p, double eps = 1e-8) const
   {
     if(!axom::utilities::isNearlyEqual(ppedVolume(p), 0., eps))
     {
@@ -350,8 +379,8 @@ private:
   PointType m_points[3];
 };
 
-} /* namespace primal */
-} /* namespace axom */
+}  // namespace primal
+}  // namespace axom
 
 //------------------------------------------------------------------------------
 //  Triangle implementation

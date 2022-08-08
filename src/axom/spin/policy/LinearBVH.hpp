@@ -373,6 +373,7 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
                            }););
   return candidates;
 #else  // CPU-only and no RAJA: do single traversal
+  AXOM_UNUSED_VAR(allocatorID);
 
   axom::Array<IndexType> search_candidates;
   int current_offset = 0;
