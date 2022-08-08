@@ -13,11 +13,12 @@
 #include "axom/core/utilities/Utilities.hpp"
 
 // Primal includes
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 // C/C++ includes
-#include <cmath>  // for sqrt()
+#include <cmath>
 
 namespace axom
 {
@@ -389,6 +390,22 @@ public:
   static Vector<T, 3> cross_product(const Vector<T, 3>& u, const Vector<T, 3>& v);
 
   /*!
+   * \brief Computes the 3-D scalar triple product of vectors u, v and w
+   *
+   * \param [in] u the first vector
+   * \param [in] v the second vector
+   * \param [in] w the third vector
+   * \return The scalar triple product of u, v and w
+   *
+   * The scalar triple product dot(u, v x w) is the signed volume 
+   * of the parallelepiped defined by the three 3D vectors
+   */
+  AXOM_HOST_DEVICE
+  static T scalar_triple_product(const Vector<T, 3>& u,
+                                 const Vector<T, 3>& v,
+                                 const Vector<T, 3>& w);
+
+  /*!
    * \brief Utility function to constructs a Vector with the given coordinates.
    * \param [in] x the x--coordinate of the vector.
    * \param [in] y the y--coordinate of the vector.
@@ -472,12 +489,10 @@ AXOM_HOST_DEVICE inline double Vector<T, NDIMS>::norm() const
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
 {
-  constexpr double EPS = 1.0e-50;
-
   Vector v(*this);
 
   const double len_sq = squared_norm();
-  if(len_sq >= EPS)
+  if(len_sq >= primal::PTINY)
   {
     v /= (std::sqrt(len_sq));
   }
@@ -540,8 +555,12 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::dot_product(const Vector<T, NDIMS>& u,
                                                         const Vector<T, NDIMS>& v)
 {
-  SLIC_ASSERT(u.dimension() == v.dimension());
-  return static_cast<T>(numerics::dot_product(u.data(), v.data(), NDIMS));
+  T res {};
+  for(int d = 0; d < NDIMS; ++d)
+  {
+    res += u[d] * v[d];
+  }
+  return res;
 }
 
 //------------------------------------------------------------------------------
@@ -550,11 +569,7 @@ AXOM_HOST_DEVICE inline Vector<T, 3> Vector<T, NDIMS>::cross_product(
   const Vector<T, 2>& u,
   const Vector<T, 2>& v)
 {
-  Vector<T, 3> c;
-  c[0] = 0;
-  c[1] = 0;
-  c[2] = numerics::determinant(u[0], u[1], v[0], v[1]);
-  return (c);
+  return Vector<T, 3> {0, 0, numerics::determinant(u[0], u[1], v[0], v[1])};
 }
 
 //------------------------------------------------------------------------------
@@ -563,9 +578,21 @@ AXOM_HOST_DEVICE inline Vector<T, 3> Vector<T, NDIMS>::cross_product(
   const Vector<T, 3>& u,
   const Vector<T, 3>& v)
 {
-  Vector<T, 3> c;
-  numerics::cross_product(u.data(), v.data(), c.data());
-  return (c);
+  // note: u and v are transposed in second component
+  return Vector<T, 3> {numerics::determinant(u[1], u[2], v[1], v[2]),
+                       numerics::determinant(v[0], v[2], u[0], u[2]),
+                       numerics::determinant(u[0], u[1], v[0], v[1])};
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE T inline Vector<T, NDIMS>::scalar_triple_product(
+  const Vector<T, 3>& u,
+  const Vector<T, 3>& v,
+  const Vector<T, 3>& w)
+{
+  return static_cast<T>(
+    numerics::determinant(u[0], u[1], u[2], v[0], v[1], v[2], w[0], w[1], w[2]));
 }
 
 ///  Free functions involving vectors

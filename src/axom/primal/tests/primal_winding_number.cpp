@@ -207,7 +207,6 @@ TEST(primal_winding_number, corner_cases)
   using Bezier = primal::BezierCurve<double, 2>;
 
   double abs_tol = 1e-8;
-  double lin_tol = 1e-8;
   double edge_tol = 1e-8;
 
   // Line segment
@@ -265,7 +264,6 @@ TEST(primal_winding_number, self_intersecting_cases)
   using Bezier = primal::BezierCurve<double, 2>;
 
   double abs_tol = 1e-8;
-  double lin_tol = 1e-8;
   double edge_tol = 1e-8;
 
   // Cubic curve with cusp

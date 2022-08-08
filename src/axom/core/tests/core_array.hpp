@@ -1901,4 +1901,26 @@ TEST(core_array, checkConstConversion)
   // v_double_2d_view_copy(0,0) = 1.1; // Fails to compile as it should
 }
 
+//------------------------------------------------------------------------------
+
+TEST(core_array, checkVariadicCtors)
+{
+  int i = 5;
+  size_t s = 6;
+
+  Array<int, 2> arr1(i, i);
+  Array<int, 2> arr2(i, s);
+  Array<int, 2> arr3(s, i);
+  Array<int, 2> arr4(s, s);
+
+  Array<int, 3> arr5(i, i, i);
+  Array<int, 3> arr6(i, i, s);
+  Array<int, 3> arr7(i, s, i);
+  Array<int, 3> arr8(i, s, s);
+  Array<int, 3> arr9(s, i, i);
+  Array<int, 3> arr10(s, i, s);
+  Array<int, 3> arr11(s, s, i);
+  Array<int, 3> arr12(s, s, s);
+}
+
 } /* end namespace axom */
