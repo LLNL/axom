@@ -116,6 +116,58 @@ TEST(primal_winding_number, simple_cases)
               abs_tol);
 }
 
+TEST(primal_winding_number, rational_cases)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Bezier = primal::BezierCurve<double, 2>;
+  using CPolygon = primal::CurvedPolygon<double, 2>;
+
+  double abs_tol = 1e-8;
+  double lin_tol = 0;
+  double edge_tol = 0;
+
+  // Simple cubic shape
+  Point2D circle_nodes[] = {Point2D {1.0, 0.0},
+                            Point2D {1.0, 1.0},
+                            Point2D {0.0, 1.0}};
+  double weights[] = {2.0, 1.0, 1.0};
+  Bezier circle_arc(circle_nodes, weights, 2);
+
+  Point2D leg1_nodes[] = {Point2D {0.0, 1.0}, {0.0, 0.0}};
+  Bezier leg1(leg1_nodes, 1);
+
+  Point2D leg2_nodes[] = {Point2D {0.0, 0.0}, {1.0, 0.0}};
+  Bezier leg2(leg2_nodes, 1);
+
+  CPolygon quarter_circle;
+  quarter_circle.addEdge(circle_arc);
+  quarter_circle.addEdge(leg1);
+  quarter_circle.addEdge(leg2);
+
+  for(double theta = 0.01; theta < 1.5; theta += 0.05)
+    for(int i = 1; i < 9; i++)
+    {
+      double ri = 1.0 - std::pow(10, -i);
+      double ro = 1.0 + std::pow(10, -i);
+
+      EXPECT_NEAR(
+        winding_number(Point2D({ri * std::cos(theta), ri * std::sin(theta)}),
+                       quarter_circle,
+                       lin_tol,
+                       edge_tol),
+        1.0,
+        abs_tol);
+
+      EXPECT_NEAR(
+        winding_number(Point2D({ro * std::cos(theta), ro * std::sin(theta)}),
+                       quarter_circle,
+                       lin_tol,
+                       edge_tol),
+        0.0,
+        abs_tol);
+    }
+}
+
 TEST(primal_winding_number, edge_cases)
 {
   // Check the edge cases for the winding number closure formulation
