@@ -167,7 +167,7 @@ TEST(primal_beziercurve, evaluate)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_beziercurve_, tangent)
+TEST(primal_beziercurve, tangent)
 {
   SLIC_INFO("Testing Bezier tangent calculation");
 
@@ -492,7 +492,103 @@ TEST(primal_beziercurve, reverseOrientation)
   }
 }
 
+TEST(primal_beziercurve, rational_bezier)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+  using CoordsVec = BezierCurveType::CoordsVec;
+
+  {
+    SLIC_INFO("Testing rational BezierCurve constructor ");
+
+    using Point3D = primal::Point<double, 3>;
+    axom::Array<Point3D> nodes(
+      {Point3D({0.0, 0.0, 0.0}), Point3D({1.0, 1.0, 1.0})});
+    axom::Array<double> weights({1.0, 2.0});
+
+    BezierCurveType bCurve(nodes, weights, 1);
+    int expOrder = 1;
+    EXPECT_EQ(expOrder, bCurve.getOrder());
+    EXPECT_EQ(expOrder + 1, static_cast<int>(bCurve.getControlPoints().size()));
+    EXPECT_EQ(expOrder + 1, static_cast<int>(bCurve.getWeights().size()));
+    EXPECT_TRUE(bCurve.isRational());
+  }
+
+  SLIC_INFO("Testing Bezier evaluation");
+}
+
+TEST(primal_beziercurve, rational_evaluate)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int order = 3;
+  PointType data[order + 1] = {PointType {0.6, 1.2},
+                               PointType {1.3, 1.6},
+                               PointType {2.9, 2.4},
+                               PointType {3.2, 3.5}};
+
+  CoordType weights[order + 1] = {1, 2, 3, 4};
+
+  BezierCurveType b2Curve(data, weights, order);
+
+  PointType midtval {2.365, 2.32};
+
+  // Evaluate the curve at several parameter values
+  // Curve should interpolate endpoints
+  PointType eval0 = b2Curve.evaluate(0.0);
+  PointType eval1 = b2Curve.evaluate(1.0);
+  PointType evalMid = b2Curve.evaluate(0.5);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_DOUBLE_EQ(b2Curve[0][i], eval0[i]);
+    EXPECT_DOUBLE_EQ(b2Curve[order][i], eval1[i]);
+    EXPECT_DOUBLE_EQ(midtval[i], evalMid[i]);
+  }
+}
+
 //------------------------------------------------------------------------------
+TEST(primal_beziercurve, rational_tangent)
+{
+  SLIC_INFO("Testing Bezier tangent calculation");
+
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int order = 3;
+  PointType data[order + 1] = {PointType {0.6, 1.2},
+                               PointType {1.3, 1.6},
+                               PointType {2.9, 2.4},
+                               PointType {3.2, 3.5}};
+
+  CoordType weights[order + 1] = {1, 2, 3, 4};
+
+  BezierCurveType b2Curve(data, weights, order);
+
+  VectorType midtval = VectorType {2.652, 2.256};
+  VectorType starttval = VectorType {4.2, 2.4};
+  VectorType endtval = VectorType {0.675, 2.475};
+
+  // Evaluate the curve at several parameter values
+  // Curve should be tangent to control net at endpoints
+  VectorType eval0 = b2Curve.dt(0.0);
+  VectorType eval1 = b2Curve.dt(1.0);
+  VectorType evalMid = b2Curve.dt(0.5);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_NEAR(starttval[i], eval0[i], 1e-14);
+    EXPECT_NEAR(endtval[i], eval1[i], 1e-14);
+    EXPECT_NEAR(midtval[i], evalMid[i], 1e-14);
+  }
+}
 
 int main(int argc, char* argv[])
 {

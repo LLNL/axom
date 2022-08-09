@@ -49,6 +49,9 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * The order of a Bezier curve with N+1 control points is N.
  * The curve is approximated by the control points,
  * parametrized from t=0 to t=1.
+ * 
+ * Contains an array of weights to represent a rational Bezier curve.
+ * An ordinary Bezier curve MUST have this array equal to [-1.0]
  */
 template <typename T, int NDIMS>
 class BezierCurve
@@ -81,6 +84,9 @@ public:
     SLIC_ASSERT(ord >= -1);
     const int sz = utilities::max(-1, ord + 1);
     m_controlPoints.resize(sz);
+
+    m_weights.resize(1);
+    m_weights[0] = -1.0;
   }
 
   /*!
@@ -111,6 +117,9 @@ public:
         pt[j] = pts[j * (ord + 1) + p];
       }
     }
+
+    m_weights.resize(1);
+    m_weights[0] = -1.0;
   }
 
   /*!
@@ -133,6 +142,35 @@ public:
     {
       m_controlPoints[p] = pts[p];
     }
+
+    m_weights.resize(1);
+    m_weights[0] = -1.0;
+  }
+
+  /*!
+   * \brief Constructor for a Bezier Curve from an array of coordinates
+   *
+   * \param [in] pts a vector with ord+1 control points
+   * \param [in] weights a vector with ord+1 positive weights
+   * \param [in] ord The Curve's polynomial order
+   * \pre order is greater than or equal to zero
+   *
+   */
+  BezierCurve(PointType* pts, T* weights, int ord)
+  {
+    SLIC_ASSERT(pts != nullptr);
+    SLIC_ASSERT(weights != nullptr);
+    SLIC_ASSERT(ord >= 0);
+
+    const int sz = utilities::max(0, ord + 1);
+    m_controlPoints.resize(sz);
+    m_weights.resize(sz);
+
+    for(int p = 0; p <= ord; ++p)
+    {
+      m_controlPoints[p] = pts[p];
+      m_weights[p] = weights[p];
+    }
   }
 
   /*!
@@ -150,6 +188,35 @@ public:
     const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
     m_controlPoints = pts;
+
+    m_weights.resize(1);
+    m_weights[0] = -1.0;
+  }
+
+  /*!
+   * \brief Constructor for a Rational Bezier Curve from an vector 
+   * of coordinates and weights
+   *
+   * \param [in] pts a vector with ord+1 control points
+   * \param [in] weights a vector with ord+1 positive weights
+   * \param [in] ord The Curve's polynomial order
+   * \pre order is greater than or equal to zero
+   *
+   */
+  BezierCurve(const axom::Array<PointType>& pts,
+              const axom::Array<T>& weights,
+              int ord)
+  {
+    SLIC_ASSERT(ord >= 0);
+    SLIC_ASSERT(pts.size() == weights.size());
+    for(auto& weight : weights) SLIC_ASSERT(weight > 0);
+
+    const int sz = utilities::max(0, ord + 1);
+    m_controlPoints.resize(sz);
+    m_weights.resize(sz);
+
+    m_controlPoints = pts;
+    m_weights = weights;
   }
 
   /// Sets the order of the Bezier Curve
@@ -157,6 +224,32 @@ public:
 
   /// Returns the order of the Bezier Curve
   int getOrder() const { return static_cast<int>(m_controlPoints.size()) - 1; }
+
+  /// Make trivially rational
+  void makeRational()
+  {
+    if(m_weights[0] <= 0)
+    {
+      const int ord = getOrder();
+      m_weights.resize(ord + 1);
+      for(int i = 0; i < ord + 1; i++) m_weights[i] = 1;
+    }
+  }
+
+  /// Change specific weight
+  void setWeight(int idx, T weight) const { m_weights[idx] = weight; };
+
+  /// Get specific weight
+  const T& getWeight(int idx) const { return m_weights[idx]; }
+
+  /// Sets an array of weights
+  void setWeights(axom::Array<T> weights)
+  {
+    SLIC_ASSERT(m_controlPoints.size() == weights.size());
+    for(auto& weight : weights) SLIC_ASSERT(weight > 0);
+
+    m_weights = weights;
+  }
 
   /// Clears the list of control points
   void clear()
@@ -178,7 +271,8 @@ public:
   friend inline bool operator==(const BezierCurve<T, NDIMS>& lhs,
                                 const BezierCurve<T, NDIMS>& rhs)
   {
-    return lhs.m_controlPoints == rhs.m_controlPoints;
+    return (lhs.m_controlPoints == rhs.m_controlPoints) &&
+      (lhs.m_weights == rhs.m_weights);
   }
 
   friend inline bool operator!=(const BezierCurve<T, NDIMS>& lhs,
@@ -190,6 +284,9 @@ public:
   /// Returns a copy of the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
+  /// Returns a copy of the Bezier curve's control points
+  axom::Array<T> getWeights() const { return m_weights; }
+
   /// Reverses the order of the Bezier curve's control points
   void reverseOrientation()
   {
@@ -199,6 +296,12 @@ public:
     {
       axom::utilities::swap(m_controlPoints[i], m_controlPoints[ord - i]);
     }
+
+    if(m_weights[0] > 0)
+      for(int i = 0; i < mid; ++i)
+      {
+        axom::utilities::swap(m_weights[i], m_weights[ord - i]);
+      }
   }
 
   /// Returns an axis-aligned bounding box containing the Bezier curve
@@ -232,26 +335,57 @@ public:
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 
-    // Run de Casteljau algorithm on each dimension
-    for(int i = 0; i < NDIMS; ++i)
+    // If curve is rational
+    if(m_weights[0] > 0)
     {
-      for(int p = 0; p <= ord; ++p)
-      {
-        dCarray[p] = m_controlPoints[p][i];
-      }
+      axom::Array<T> dWarray(ord + 1);
 
-      for(int p = 1; p <= ord; ++p)
+      // Run algorithm from Farin '83 on each dimension
+      for(int i = 0; i < NDIMS; ++i)
       {
-        const int end = ord - p;
-        for(int k = 0; k <= end; ++k)
+        for(int p = 0; p <= ord; ++p)
         {
-          dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          dCarray[p] = m_controlPoints[p][i] * m_weights[p];
+          dWarray[p] = m_weights[p];
         }
-      }
-      ptval[i] = dCarray[0];
-    }
 
-    return ptval;
+        for(int p = 1; p <= ord; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+            dWarray[k] = lerp(dWarray[k], dWarray[k + 1], t);
+          }
+        }
+        ptval[i] = dCarray[0] / dWarray[0];
+      }
+
+      return ptval;
+    }
+    else  // If ordinary Bezier curve
+    {
+      // Run de Casteljau algorithm on each dimension
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord; ++p)
+        {
+          dCarray[p] = m_controlPoints[p][i];
+        }
+
+        for(int p = 1; p <= ord; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          }
+        }
+        ptval[i] = dCarray[0];
+      }
+
+      return ptval;
+    }
   }
 
   /*!
@@ -270,29 +404,61 @@ public:
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 
-    // Run de Casteljau algorithm on each dimension
-    for(int i = 0; i < NDIMS; ++i)
+    if(m_weights[0] > 0)
     {
-      for(int p = 0; p <= ord; ++p)
-      {
-        dCarray[p] = m_controlPoints[p][i];
-      }
+      axom::Array<T> dWarray(ord + 1);
 
-      // stop one step early and take difference of last two values
-      for(int p = 1; p <= ord - 1; ++p)
+      // Run algorithm from Farin '83 on each dimension
+      for(int i = 0; i < NDIMS; ++i)
       {
-        const int end = ord - p;
-        for(int k = 0; k <= end; ++k)
+        for(int p = 0; p <= ord; ++p)
         {
-          dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          dCarray[p] = m_controlPoints[p][i] * m_weights[p];
+          dWarray[p] = m_weights[p];
         }
+
+        for(int p = 1; p <= ord - 1; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+            dWarray[k] = lerp(dWarray[k], dWarray[k + 1], t);
+          }
+        }
+
+        val[i] = ord * (dWarray[0] * dCarray[1] - dWarray[1] * dCarray[0]);
+        dWarray[0] = lerp(dWarray[0], dWarray[1], t);
+        val[i] /= dWarray[0] * dWarray[0];
       }
-      val[i] = ord * (dCarray[1] - dCarray[0]);
+
+      return val;
     }
+    else
+    {
+      // Run de Casteljau algorithm on each dimension
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        for(int p = 0; p <= ord; ++p)
+        {
+          dCarray[p] = m_controlPoints[p][i];
+        }
 
-    return val;
+        // stop one step early and take difference of last two values
+        for(int p = 1; p <= ord - 1; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            dCarray[k] = lerp(dCarray[k], dCarray[k + 1], t);
+          }
+        }
+        val[i] = ord * (dCarray[1] - dCarray[0]);
+      }
+
+      return val;
+    }
   }
-
   /*!
    * \brief Splits a Bezier curve into two Bezier curves at a given parameter value
    *
@@ -314,16 +480,23 @@ public:
     c1.setOrder(ord);
     c1[0] = c2[0];
 
-    // Run de Casteljau algorithm
-    // After each iteration, save the first control point into c1
-    for(int p = 1; p <= ord; ++p)
+    if(m_weights[0] > 0)
     {
-      const int end = ord - p;
-      for(int k = 0; k <= end; ++k)
+      
+    }
+    else
+    {
+      // Run de Casteljau algorithm
+      // After each iteration, save the first control point into c1
+      for(int p = 1; p <= ord; ++p)
       {
-        c2[k] = PointType::lerp(c2[k], c2[k + 1], t);
+        const int end = ord - p;
+        for(int k = 0; k <= end; ++k)
+        {
+          c2[k] = PointType::lerp(c2[k], c2[k + 1], t);
+        }
+        c1[p] = c2[0];
       }
-      c1[p] = c2[0];
     }
 
     return;
@@ -355,6 +528,7 @@ public:
     return (sqDist < tol);
   }
 
+  bool isRational() const { return m_weights[0] > 0; }
   /*!
    * \brief Simple formatted print of a Bezier Curve instance
    *
@@ -378,6 +552,7 @@ public:
 
 private:
   CoordsVec m_controlPoints;
+  axom::Array<T> m_weights;
 };
 
 //------------------------------------------------------------------------------
