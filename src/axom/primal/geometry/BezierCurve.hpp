@@ -237,7 +237,7 @@ public:
   }
 
   /// Change specific weight
-  void setWeight(int idx, T weight) const { m_weights[idx] = weight; };
+  void setWeight(int idx, T weight) { m_weights[idx] = weight; };
 
   /// Get specific weight
   const T& getWeight(int idx) const { return m_weights[idx]; }
@@ -478,13 +478,41 @@ public:
     c2 = *this;
 
     c1.setOrder(ord);
-    c1[0] = c2[0];
+    c1[0] = m_controlPoints[0];
 
     if(m_weights[0] > 0)
     {
-      
+      c1.makeRational();
+      c1.setWeight(0, c2.getWeight(0));
+
+      // After each iteration, save the first control point and weight into c1
+      for(int i = 0; i < NDIMS; ++i)
+      {
+        c2.setWeights(m_weights);
+         
+        for(int p = 1; p <= ord; ++p)
+        {
+          const int end = ord - p;
+          for(int k = 0; k <= end; ++k)
+          {
+            // Do weighted interpolation on nodes
+            c2[k][i] = axom::utilities::lerp(c2.getWeight(k) * c2[k][i],
+                                             c2.getWeight(k + 1) * c2[k + 1][i],
+                                             t);
+
+            // Do linear interpolation on weights
+            c2.setWeight(
+              k,
+              axom::utilities::lerp(c2.getWeight(k), c2.getWeight(k + 1), t));
+            c2[k][i] /= c2.getWeight(k);
+          }
+
+          c1[p][i] = c2[0][i];
+          c1.setWeight(p, c2.getWeight(0));
+        }
+      }
     }
-    else
+    else  // Code can be simpler if not rational Bezier curves
     {
       // Run de Casteljau algorithm
       // After each iteration, save the first control point into c1
@@ -545,7 +573,11 @@ public:
     {
       os << m_controlPoints[p] << (p < ord ? "," : "");
     }
+    
+    if (m_weights[0] > 0)
+      os << ", weights " << m_weights;
     os << "}";
+
 
     return os;
   }
