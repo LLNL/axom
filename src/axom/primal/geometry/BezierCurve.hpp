@@ -582,7 +582,7 @@ public:
     if(m_weights[0] > 0)
     {
       os << ", weights [";
-      for( int p = 0; p <= ord; ++p )
+      for(int p = 0; p <= ord; ++p)
         os << m_weights[p] << (p < ord ? ", " : "]");
     }
     os << "}";

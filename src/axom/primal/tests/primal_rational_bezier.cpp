@@ -307,8 +307,8 @@ TEST(primal_beziercurve, isLinear)
 
     SegmentType s(curve[2], curve[0]);
     SLIC_INFO("Sq dist: " << primal::squared_distance(curve[1], s));
-    
-    for(int i = 1; i < 128; i = i*2 )
+
+    for(int i = 1; i < 128; i = i * 2)
     {
       curve.setWeight(1, i);
 
