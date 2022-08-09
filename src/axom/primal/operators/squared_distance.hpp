@@ -22,6 +22,8 @@
 
 #include "axom/slic/interface/slic.hpp"
 
+#include <limits>
+
 namespace axom
 {
 namespace primal
@@ -97,6 +99,39 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
 
   // return squared distance to the closest point
   return squared_distance(P, cp);
+}
+
+/*!
+ * \brief Computes the minimum squared distance between 2 axis-aligned boxes.
+ * \param [in] A the first axis-aligned bounding box.
+ * \param [in] B the second axis-aligned bounding box.
+ * If the boxes overlap, the minimum distance is zero.
+ * \return the squared distance between the closest points on A and B
+ * or NaN if either box is invalid.
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline double squared_distance(const BoundingBox<T, NDIMS>& A,
+                                                const BoundingBox<T, NDIMS>& B)
+{
+  if(A.isValid() && B.isValid())
+  {
+    Vector<T, NDIMS> v(0.0);
+    for(int d = 0; d < NDIMS; ++d)
+    {
+      if(B.getMin()[d] > A.getMax()[d])
+      {
+        v[d] = B.getMin()[d] - A.getMax()[d];
+      }
+      else if(A.getMin()[d] > B.getMax()[d])
+      {
+        v[d] = A.getMin()[d] - B.getMax()[d];
+      }
+    }
+
+    return v.squared_norm();
+  }
+
+  return std::numeric_limits<T>::quiet_NaN();
 }
 
 /*!

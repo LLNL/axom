@@ -459,16 +459,25 @@ public:
     using PointType = primal::Point<double, DIM>;
     using PointArray = axom::Array<PointType>;
 
-    PointArray pts(0, numPoints);
-    const double thetaScale = 2. * M_PI / m_mesh.getNumRanks();
-    const double thetaStart = m_mesh.getRank() * thetaScale;
-    const double thetaEnd = (m_mesh.getRank() + 1) * thetaScale;
-    for(int i = 0; i < numPoints; ++i)
-    {
-      const double angleInRadians = random_real(thetaStart, thetaEnd);
-      const double rsinT = center[1] + radius * std::sin(angleInRadians);
-      const double rcosT = center[0] + radius * std::cos(angleInRadians);
+    int rank = m_mesh.getRank();
+    int nranks = m_mesh.getNumRanks();
+    if(numPoints < rank)
+      numPoints = rank;  // Test code requires all ranks to have points.
+    int ptsPerRank = numPoints / nranks;
+    int ranksWithExtraPt = numPoints % nranks;
 
+    int iBegin = rank * ptsPerRank + std::min(rank, ranksWithExtraPt);
+    int iEnd = (rank + 1) * ptsPerRank + std::min((rank + 1), ranksWithExtraPt);
+    int localNumPoints = iEnd - iBegin;
+    PointArray pts(0, localNumPoints);
+    const double avgAng = 2. * M_PI / numPoints;
+    for(int i = iBegin; i < iEnd; ++i)
+    {
+      const double ang =
+        random_real(avgAng * iBegin, avgAng * iEnd, 0);  // Random spacing
+      // const double ang = i * avgAng;  // Regular spacing
+      const double rsinT = center[1] + radius * std::sin(ang);
+      const double rcosT = center[0] + radius * std::cos(ang);
       pts.push_back(PointType {rcosT, rsinT});
     }
 
@@ -800,8 +809,10 @@ int main(int argc, char** argv)
   conduit::Node object_mesh_node;
   object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
 
+  // Put sidre data into Conduit Node query_mesh_node.
   conduit::Node query_mesh_node;
   query_mesh_wrapper.getBlueprintGroup()->createNativeLayout(query_mesh_node);
+  query_mesh_node.fetch("fields/min_distance/values");
 
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
