@@ -17,11 +17,6 @@
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 
-#include "axom/primal/geometry/BezierCurve.hpp"
-#include "axom/primal/geometry/Polygon.hpp"
-#include "axom/primal/geometry/CurvedPolygon.hpp"
-#include "axom/primal/operators/is_convex.hpp"
-
 #include "axom/slic.hpp"
 
 // perhaps #include split_impl.hpp here
@@ -82,53 +77,6 @@ void split(const Octahedron<Tp, NDIMS>& oct,
   out.push_back(Tet(oct[P], oct[T], oct[R], C));
   out.push_back(Tet(oct[Q], oct[S], oct[U], C));
 };
-
-/*!
- * \brief Splits a BezierCurve object into convex Bezier Curves
- *
- * \param [in] c BezierCurve to split
- * \param [out] out The \a axom::Array of BezierCurve objects; a set of convex
- *              components of c are appended to out.
- *
- * \pre NDIMS == 2
- *
- * Uses a bisection method, splitting the curve recursively until each section
- * is convex.
- * 
- */
-template <typename Tp, int NDIMS = 2>
-void split_to_convex(const BezierCurve<Tp, NDIMS>& c,
-                     axom::Array<BezierCurve<Tp, NDIMS>>& out)
-{
-  // Implemented for two dimensions
-  SLIC_ASSERT(NDIMS == 2);
-
-  using Poly = Polygon<Tp, NDIMS>;
-  using Bez = BezierCurve<Tp, NDIMS>;
-
-  if(is_convex(Poly(c.getControlPoints())))
-    out.push_back(Bez(c));
-  else
-  {
-    Bez c1, c2;
-    c.split(0.5, c1, c2);
-    split_to_convex(c1, out);
-    split_to_convex(c2, out);
-  }
-}
-
-template <typename Tp, int NDIMS = 2>
-void split_to_convex(const CurvedPolygon<Tp, NDIMS>& cpoly,
-                     axom::Array<BezierCurve<Tp, NDIMS>>& out)
-{
-  // Implemented for two dimensions
-  SLIC_ASSERT(NDIMS == 2);
-
-  using Poly = Polygon<Tp, NDIMS>;
-  using Bez = BezierCurve<Tp, NDIMS>;
-
-  for(int i = 0; i < cpoly.numEdges(); i++) split_to_convex(cpoly[i], out);
-}
 
 }  // namespace primal
 }  // namespace axom
