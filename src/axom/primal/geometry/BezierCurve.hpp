@@ -51,7 +51,10 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * parametrized from t=0 to t=1.
  * 
  * Contains an array of weights to represent a rational Bezier curve.
- * An ordinary Bezier curve MUST have this array equal to [-1.0]
+ * Nonrational Bezier curves are identified by a nonpositive element in this first index.
+ * Algorithms for Rational Bezier curves derived from 
+ * Gerald Farin, "Algorithms for ratioal Bezier curves"
+ * Computer-Aided Design, Volume 15, Number 2, 1983,
  */
 template <typename T, int NDIMS>
 class BezierCurve
@@ -209,7 +212,6 @@ public:
   {
     SLIC_ASSERT(ord >= 0);
     SLIC_ASSERT(pts.size() == weights.size());
-    for(auto& weight : weights) SLIC_ASSERT(weight > 0);
 
     const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
@@ -225,7 +227,7 @@ public:
   /// Returns the order of the Bezier Curve
   int getOrder() const { return static_cast<int>(m_controlPoints.size()) - 1; }
 
-  /// Make trivially rational
+  /// Make trivially rational. If already rational, do nothing
   void makeRational()
   {
     if(m_weights[0] <= 0)
@@ -236,22 +238,14 @@ public:
     }
   }
 
-  /// Change specific weight
-  void setWeight(int idx, T weight) { m_weights[idx] = weight; };
-
-  /// Get specific weight
-  const T& getWeight(int idx) const { return m_weights[idx]; }
-
-  /// Sets an array of weights
-  void setWeights(axom::Array<T> weights)
+  /// Make nonrational by shrinking array of weights
+  void makeNonrational()
   {
-    SLIC_ASSERT(m_controlPoints.size() == weights.size());
-    for(auto& weight : weights) SLIC_ASSERT(weight > 0);
-
-    m_weights = weights;
+    m_weights.resize(1);
+    m_weights[0] = -1.0;
   }
 
-  /// Clears the list of control points
+  /// Clears the list of control points, make nonrational
   void clear()
   {
     const int ord = getOrder();
@@ -259,6 +253,9 @@ public:
     {
       m_controlPoints[p] = PointType();
     }
+
+    m_weights.resize(1);
+    m_weights[0] = -1.0;
   }
 
   /// Retrieves the control point at index \a idx
@@ -266,6 +263,12 @@ public:
 
   /// Retrieves the control point at index \a idx
   const PointType& operator[](int idx) const { return m_controlPoints[idx]; }
+
+  /// Get specific weight
+  const T& getWeight(int idx) const { return m_weights[idx]; }
+
+  /// Change specific weight
+  void setWeight(int idx, T weight) { m_weights[idx] = weight; };
 
   /// Checks equality of two Bezier Curve
   friend inline bool operator==(const BezierCurve<T, NDIMS>& lhs,
@@ -287,7 +290,7 @@ public:
   /// Returns a copy of the Bezier curve's control points
   axom::Array<T> getWeights() const { return m_weights; }
 
-  /// Reverses the order of the Bezier curve's control points
+  /// Reverses the order of the Bezier curve's control points and weights
   void reverseOrientation()
   {
     const int ord = getOrder();
@@ -417,6 +420,7 @@ public:
           dWarray[p] = m_weights[p];
         }
 
+        // stop one step early and do calculation on last two values
         for(int p = 1; p <= ord - 1; ++p)
         {
           const int end = ord - p;
@@ -459,6 +463,7 @@ public:
       return val;
     }
   }
+
   /*!
    * \brief Splits a Bezier curve into two Bezier curves at a given parameter value
    *
@@ -486,28 +491,27 @@ public:
       c1.setWeight(0, c2.getWeight(0));
 
       // After each iteration, save the first control point and weight into c1
-      for(int i = 0; i < NDIMS; ++i)
+      for(int p = 1; p <= ord; ++p)
       {
-        c2.setWeights(m_weights);
-         
-        for(int p = 1; p <= ord; ++p)
+        const int end = ord - p;
+        for(int k = 0; k <= end; ++k)
         {
-          const int end = ord - p;
-          for(int k = 0; k <= end; ++k)
+          // Do linear interpolation on weights
+          double temp_weight =
+            axom::utilities::lerp(c2.getWeight(k), c2.getWeight(k + 1), t);
+
+          for(int i = 0; i < NDIMS; ++i)
           {
             // Do weighted interpolation on nodes
             c2[k][i] = axom::utilities::lerp(c2.getWeight(k) * c2[k][i],
                                              c2.getWeight(k + 1) * c2[k + 1][i],
-                                             t);
-
-            // Do linear interpolation on weights
-            c2.setWeight(
-              k,
-              axom::utilities::lerp(c2.getWeight(k), c2.getWeight(k + 1), t));
-            c2[k][i] /= c2.getWeight(k);
+                                             t) /
+              temp_weight;
           }
 
-          c1[p][i] = c2[0][i];
+          c2.setWeight(k, temp_weight);
+
+          c1[p] = c2[0];
           c1.setWeight(p, c2.getWeight(0));
         }
       }
@@ -556,14 +560,15 @@ public:
     return (sqDist < tol);
   }
 
+  /// Use first element of array as flag for rationality
   bool isRational() const { return m_weights[0] > 0; }
+
   /*!
    * \brief Simple formatted print of a Bezier Curve instance
    *
    * \param os The output stream to write to
    * \return A reference to the modified ostream
    */
-
   std::ostream& print(std::ostream& os) const
   {
     const int ord = getOrder();
@@ -573,11 +578,14 @@ public:
     {
       os << m_controlPoints[p] << (p < ord ? "," : "");
     }
-    
-    if (m_weights[0] > 0)
-      os << ", weights " << m_weights;
-    os << "}";
 
+    if(m_weights[0] > 0)
+    {
+      os << ", weights [";
+      for( int p = 0; p <= ord; ++p )
+        os << m_weights[p] << (p < ord ? ", " : "]");
+    }
+    os << "}";
 
     return os;
   }
