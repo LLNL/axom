@@ -359,27 +359,16 @@ void check_oct_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA or HIP policy, set to Unified)
-  umpire::Allocator allocator =
-    rm.getAllocator(axom::execution_space<ExecPolicy>::allocatorID());
-
-  // Set new default to device
-  axom::setDefaultAllocator(allocator.getId());
+  // Set new default to device if available
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
 
   // Allocate memory for shapes
   TetrahedronType* tet = axom::allocate<TetrahedronType>(1);
   OctahedronType* oct = axom::allocate<OctahedronType>(1);
-
-  PolyhedronType* res = (axom::execution_space<ExecPolicy>::onDevice()
-                           ? axom::allocate<PolyhedronType>(
-                               1,
-                               rm.getAllocator(umpire::resource::Unified).getId())
-                           : axom::allocate<PolyhedronType>(1));
+  PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
   tet[0] = TetrahedronType(PointType({1, 0, 0}),
                            PointType({1, 1, 0}),
@@ -411,27 +400,16 @@ void check_tet_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA or HIP policy, set to Unified)
-  umpire::Allocator allocator =
-    rm.getAllocator(axom::execution_space<ExecPolicy>::allocatorID());
-
-  // Set new default to device
-  axom::setDefaultAllocator(allocator.getId());
+  // Set new default to device if available
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
 
   // Allocate memory for shapes
   TetrahedronType* tet1 = axom::allocate<TetrahedronType>(1);
   TetrahedronType* tet2 = axom::allocate<TetrahedronType>(1);
-
-  PolyhedronType* res = (axom::execution_space<ExecPolicy>::onDevice()
-                           ? axom::allocate<PolyhedronType>(
-                               1,
-                               rm.getAllocator(umpire::resource::Unified).getId())
-                           : axom::allocate<PolyhedronType>(1));
+  PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
   tet1[0] = TetrahedronType(PointType({1, 0, 0}),
                             PointType({1, 1, 0}),

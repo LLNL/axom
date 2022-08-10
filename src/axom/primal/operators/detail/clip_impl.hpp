@@ -423,7 +423,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
   //Bounding Box of Polyhedron
   BoxType polyBox(&poly[0], poly.numVertices());
 
-  //Clip octahedron by each plane
+  //Clip Polyhedron by each plane
   for(unsigned int planeIndex = 0; planeIndex < numPlanes; planeIndex++)
   {
     PlaneType plane = planes[planeIndex];
@@ -434,7 +434,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
       int numVerts = poly.numVertices();
 
       // Each bit value indicates if that Polyhedron vertex is formed from
-      // Octahedron clipping with a plane.
+      // Polyhedron clipping with a plane.
       unsigned int clipped = 0;
 
       // Clip polyhedron against current plane, generating extra vertices

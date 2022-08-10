@@ -130,7 +130,7 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
 }
 
 /*!
- * \brief Clips a 3D tetrahedron against a tetrahedron in 3D, returning
+ * \brief Clips a 3D tetrahedron against another tetrahedron in 3D, returning
  *        the geometric intersection as a polyhedron
  *
  *  This function clips the first tetrahedron by the 4 planes obtained from the
@@ -146,7 +146,8 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
  * \param [in] tet1 The tetrahedron to clip
  * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The epsilon value
- * \return A polyhedron of the tetrahedron clipped against the tetrahedron.
+ * \return A polyhedron of the tetrahedron clipped against
+ *         the other tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
