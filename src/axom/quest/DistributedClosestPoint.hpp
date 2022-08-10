@@ -63,9 +63,9 @@ enum class DistributedClosestPointRuntimePolicy
 namespace internal
 {
 // Utility function to dump a conduit node on each rank, e.g. for debugging
-void dump_node(const conduit::Node& n,
-               const std::string&& fname,
-               const std::string& protocol = "json")
+inline void dump_node(const conduit::Node& n,
+                      const std::string&& fname,
+                      const std::string& protocol = "json")
 {
   conduit::relay::io::save(n, fname, protocol);
 };
@@ -98,8 +98,9 @@ axom::ArrayView<T> ArrayView_from_Node(conduit::Node& node, int sz)
  * \warning Assumes the underlying data is an MCArray with stride 2 access
  */
 template <>
-axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(conduit::Node& node,
-                                                              int sz)
+inline axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(
+  conduit::Node& node,
+  int sz)
 {
   using PointType = primal::Point<double, 2>;
 
@@ -113,8 +114,9 @@ axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(conduit::Node& nod
  * \warning Assumes the underlying data is an MCArray with stride 3 access
  */
 template <>
-axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(conduit::Node& node,
-                                                              int sz)
+inline axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(
+  conduit::Node& node,
+  int sz)
 {
   using PointType = primal::Point<double, 3>;
 
@@ -130,8 +132,11 @@ void put_bounding_box_to_conduit_node(const primal::BoundingBox<double, NDIMS>& 
                                       conduit::Node& node)
 {
   node["dim"].set(bb.dimension());
-  node["lo"].set(bb.getMin().data(), bb.dimension());
-  node["hi"].set(bb.getMax().data(), bb.dimension());
+  if(bb.isValid())
+  {
+    node["lo"].set(bb.getMin().data(), bb.dimension());
+    node["hi"].set(bb.getMax().data(), bb.dimension());
+  }
 }
 
 /**
@@ -141,13 +146,17 @@ template <int NDIMS>
 void get_bounding_box_from_conduit_node(primal::BoundingBox<double, NDIMS>& bb,
                                         const conduit::Node& node)
 {
-  int dim = node.fetch_existing("dim").as_int();
-  SLIC_ASSERT(dim == NDIMS);
-  const double* lo = node.fetch_existing("lo").as_double_ptr();
-  const double* hi = node.fetch_existing("hi").as_double_ptr();
-  bb =
-    primal::BoundingBox<double, NDIMS>(primal::Point<double, NDIMS>(lo, NDIMS),
-                                       primal::Point<double, NDIMS>(hi, NDIMS));
+  using PointType = primal::Point<double, NDIMS>;
+
+  SLIC_ASSERT(NDIMS == node.fetch_existing("dim").as_int());
+
+  bb.clear();
+
+  if(node.has_child("lo"))
+  {
+    bb.addPoint(PointType(node.fetch_existing("lo").as_double_ptr(), NDIMS));
+    bb.addPoint(PointType(node.fetch_existing("hi").as_double_ptr(), NDIMS));
+  }
 }
 
 /// Helper function to extract the dimension from the coordinate values group
@@ -441,12 +450,12 @@ public:
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
-      m_bvh_seq = std::unique_ptr<SeqBVHTree>(new SeqBVHTree);
+      m_bvh_seq = std::make_unique<SeqBVHTree>();
       return generateBVHTreeImpl<SeqBVHTree>(m_bvh_seq.get());
 
     case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-      m_bvh_omp = std::unique_ptr<OmpBVHTree>(new OmpBVHTree);
+      m_bvh_omp = std::make_unique<OmpBVHTree>();
       return generateBVHTreeImpl<OmpBVHTree>(m_bvh_omp.get());
 #else
       break;
@@ -454,7 +463,7 @@ public:
 
     case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-      m_bvh_cuda = std::unique_ptr<CudaBVHTree>(new CudaBVHTree);
+      m_bvh_cuda = std::make_unique<CudaBVHTree>();
       return generateBVHTreeImpl<CudaBVHTree>(m_bvh_cuda.get());
 #else
       break;
@@ -462,7 +471,7 @@ public:
 
     case RuntimePolicy::hip:
 #ifdef _AXOM_DCP_USE_HIP
-      m_bvh_hip = std::unique_ptr<HipBVHTree>(new HipBVHTree);
+      m_bvh_hip = std::make_unique<HipBVHTree>();
       return generateBVHTreeImpl<HipBVHTree>(m_bvh_hip.get());
 #else
       break;
@@ -502,6 +511,13 @@ public:
 #else
       break;
 #endif
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      local_bb = m_bvh_hip->getBounds();
+#else
+      break;
+#endif
     }
 
     gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
@@ -538,16 +554,20 @@ public:
   BoxType computeMeshBoundingBox(conduit::Node& mesh,
                                  const std::string& coordset) const
   {
-    auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
-    SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
-    const int npts = internal::extractSize(coords);
     BoxType rval;
-    ArrayView<PointType> queryPts = ArrayView_from_Node<PointType>(
-      mesh.fetch_existing("coordsets/coords/values/x"),
-      npts);
-    for(const auto& p : queryPts)
+
+    const bool has_query_points = mesh.has_child("coordsets");
+    if(has_query_points)
     {
-      rval.addPoint(p);
+      auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
+      SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
+      const int npts = internal::extractSize(coords);
+      ArrayView<PointType> queryPts =
+        ArrayView_from_Node<PointType>(coords.fetch_existing("x"), npts);
+      for(const auto& p : queryPts)
+      {
+        rval.addPoint(p);
+      }
     }
     return rval;
   }
@@ -558,25 +578,34 @@ public:
                                     conduit::Node& xferNode,
                                     const std::string& coordset) const
   {
-    // clang-format off
-    auto& coords = queryNode.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-    const int dim = internal::extractDimension(coords);
-    const int qPtCount = internal::extractSize(coords);
+    const bool has_query_points = queryNode.has_child("coordsets");
 
-    xferNode["qPtCount"] = qPtCount;
-    xferNode["dim"] = dim;
-    xferNode["homeRank"] = m_rank;
-    xferNode["is_first"] = true;
-    xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
-    xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
-    xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
-    xferNode["closest_point"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
-
-    if(queryNode.has_path("fields/min_distance"))
+    if(has_query_points)
     {
-      xferNode["debug/min_distance"].set_external(internal::getPointer<double>(queryNode["fields/min_distance/values"]), qPtCount);
+      // clang-format off
+      auto& coords = queryNode.fetch_existing(fmt::format("coordsets/{}/values", coordset));
+      const int dim = internal::extractDimension(coords);
+      const int qPtCount = internal::extractSize(coords);
+
+      xferNode["qPtCount"] = qPtCount;
+      xferNode["dim"] = dim;
+      xferNode["homeRank"] = m_rank;
+      xferNode["is_first"] = 1;
+      xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
+      xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
+      xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
+      xferNode["closest_point"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
+
+      if(queryNode.has_path("fields/min_distance"))
+      {
+        xferNode["debug/min_distance"].set_external(internal::getPointer<double>(queryNode["fields/min_distance/values"]), qPtCount);
+      }
+      // clang-format on
     }
-    // clang-format on
+    else
+    {
+      xferNode["homeRank"] = m_rank;
+    }
   }
 
   /// Copy xferNode back to query mesh partition.
@@ -612,11 +641,11 @@ public:
    * in the provided particle mesh, provided in the mesh blueprint rooted at \a query_mesh
    *
    * \param query_mesh The root node of a mesh blueprint for the query points
+   * Can be empty if there are no query points for the calling rank
    * \param coordset The coordinate set for the query points
    *
-   * Uses the \a coordset coordinate set of the provided blueprint mesh
-   *
-   * The particle mesh must contain the following fields:
+   * When the query mesh contains query points, it uses the \a coordset coordinate set 
+   * of the provided blueprint mesh and  contains the following fields:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
    *   - cp_index: Will hold the index of the object point containing the closest point
    *   - closest_point: Will hold the position of the closest point
@@ -644,7 +673,8 @@ public:
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
     std::list<std::shared_ptr<conduit::Node>> skipNodes;
 
-    // create conduit node containing data that has to xfer between ranks
+    // create conduit node containing data that has to xfer between ranks.
+    // The node will be mostly empty if there are no query points on this rank
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
@@ -686,9 +716,12 @@ public:
         int nextDst = (m_rank + 1) % m_nranks;
         get_bounding_box_from_conduit_node(queryPartitionBb,
                                            xferNodePtr->fetch_existing("aabb"));
+
         while(xferNodePtr && nextDst != m_rank)
         {
-          double sqDist =
+          const bool isValidDistance = queryPartitionBb.isValid() &&
+            m_objectPartitionBbs[nextDst].isValid();
+          const double sqDist =
             squared_distance(m_objectPartitionBbs[nextDst], queryPartitionBb);
           const int homeRank = xferNodePtr->fetch_existing("homeRank").as_int();
 
@@ -702,10 +735,14 @@ public:
           {
             // Send query partition to another rank to continue search.
             // But don't bother if that rank's object partition is too far from this mesh partition.
-            double sqSearchDist = m_sqDistanceThreshold;
             isendRequests.emplace_back(conduit::relay::mpi::Request());
             auto& req = isendRequests.back();
-            if(sqDist <= sqSearchDist || nextDst == homeRank)
+
+            const bool shouldSend =
+              (isValidDistance && sqDist <= m_sqDistanceThreshold) ||
+              nextDst == homeRank;
+
+            if(shouldSend)
             {
               if(homeRank == m_rank)
               {
@@ -769,51 +806,53 @@ public:
         switch(m_runtimePolicy)
         {
         case RuntimePolicy::seq:
-          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(),
-                                                xferNode,
-                                                xferNode.has_path("is_first"));
+          computeLocalClosestPoints<SeqBVHTree>(m_bvh_seq.get(), xferNode);
           break;
 
         case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
-          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(),
-                                                xferNode,
-                                                xferNode.has_path("is_first"));
+          computeLocalClosestPoints<OmpBVHTree>(m_bvh_omp.get(), xferNode);
 #endif
           break;
 
         case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(),
-                                                 xferNode,
-                                                 xferNode.has_path("is_first"));
+          computeLocalClosestPoints<CudaBVHTree>(m_bvh_cuda.get(), xferNode);
+#endif
+          break;
+
+        case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+          computeLocalClosestPoints<HipBVHTree>(m_bvh_hip.get(), xferNode);
 #endif
           break;
         }
 
-        if(xferNode.has_path("is_first")) xferNode.remove("is_first");
-
         if(xferNode.fetch_existing("homeRank").as_int() == m_rank)
         {
-          // This is the query partition we started with, completing
-          // its trip around the ring.  Copy it back to queryMesh.
-          copy_xfer_node_to_query_node(xferNode, queryMesh);
-          xferNodePtr.reset();
-
-          if(m_isVerbose)
+          // This is the query partition we started with, completing its trip
+          // around the ring.  Copy it back to queryMesh, if necessary
+          const bool should_copy = xferNode.has_child("qPtCount");
+          if(should_copy)
           {
-            internal::dump_node(
-              queryMesh,
-              axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
+            copy_xfer_node_to_query_node(xferNode, queryMesh);
 
-            SLIC_ASSERT_MSG(
-              conduit::blueprint::mcarray::is_interleaved(
-                queryMesh["fields/closest_point/values"]),
-              fmt::format(
-                "After copy on iteration {}, 'closest_point' field of "
-                "'queryMesh' is not interleaved",
-                round));
+            if(m_isVerbose)
+            {
+              internal::dump_node(
+                queryMesh,
+                axom::fmt::format("round_{}_r{}_end.json", round, m_rank));
+
+              SLIC_ASSERT_MSG(
+                conduit::blueprint::mcarray::is_interleaved(
+                  queryMesh["fields/closest_point/values"]),
+                fmt::format(
+                  "After copy on iteration {}, 'closest_point' field of "
+                  "'queryMesh' is not interleaved",
+                  round));
+            }
           }
+          xferNodePtr.reset();
         }
       }  // Locally process *xferNodePtr
 
@@ -956,12 +995,32 @@ public:
    */
   template <typename BVHTreeType>
   void computeLocalClosestPoints(const BVHTreeType* bvh,
-                                 conduit::Node& xfer_node,
-                                 bool is_first) const
+                                 conduit::Node& xfer_node) const
   {
     using ExecSpace = typename BVHTreeType::ExecSpaceType;
     using axom::primal::squared_distance;
     using int32 = axom::int32;
+
+    // --- Checks for early return:
+    // First check: empty query node
+    if(!xfer_node.has_path("qPtCount"))
+    {
+      return;
+    }
+
+    // Second check: empty object node
+    // Note: There is some additional computation the first time this function
+    // is called for a query node, even if the local object mesh is empty
+    const bool hasObjectPoints = m_points.size() > 0;
+    const bool is_first = xfer_node.has_path("is_first");
+    if(!hasObjectPoints && !is_first)
+    {
+      return;
+    }
+
+    // --- Set up arrays and views in the execution space
+    // Arrays are initialized in that execution space the first time they are processed
+    // and are copied in during subsequent processing
 
     // Check dimension and extract the number of points
     const int dim = xfer_node.fetch_existing("dim").value();
@@ -1026,67 +1085,73 @@ public:
     PointArray execPoints(queryPts, m_allocatorID);
     auto query_pts = execPoints.view();
 
-    // Get a device-useable iterator
-    auto it = bvh->getTraverser();
-    const int rank = m_rank;
+    if(hasObjectPoints)
+    {
+      // Get a device-useable iterator
+      auto it = bvh->getTraverser();
+      const int rank = m_rank;
 
-    double* sqDistThresh =
-      axom::allocate<double>(1, axom::execution_space<ExecSpace>::allocatorID());
-    *sqDistThresh = m_sqDistanceThreshold;
+      double* sqDistThresh =
+        axom::allocate<double>(1,
+                               axom::execution_space<ExecSpace>::allocatorID());
+      *sqDistThresh = m_sqDistanceThreshold;
 
-    auto pointsView = m_points.view();
+      auto pointsView = m_points.view();
 
-    AXOM_PERF_MARK_SECTION(
-      "ComputeClosestPoints",
-      axom::for_all<ExecSpace>(
-        qPtCount,
-        AXOM_LAMBDA(int32 idx) mutable {
-          PointType qpt = query_pts[idx];
+      AXOM_PERF_MARK_SECTION(
+        "ComputeClosestPoints",
+        axom::for_all<ExecSpace>(
+          qPtCount,
+          AXOM_LAMBDA(int32 idx) mutable {
+            PointType qpt = query_pts[idx];
 
-          MinCandidate curr_min {};
-          if(query_ranks[idx] >= 0)  // i.e. we've already found a candidate closest
-          {
-            curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
-            curr_min.minElem = query_inds[idx];
-            curr_min.minRank = query_ranks[idx];
-          }
-
-          auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
-            const int candidate_idx = leaf_nodes[current_node];
-            const PointType candidate_pt = pointsView[candidate_idx];
-            const double sq_dist = squared_distance(qpt, candidate_pt);
-
-            if(sq_dist < curr_min.minSqDist)
+            MinCandidate curr_min {};
+            if(query_ranks[idx] >= 0)  // i.e. we've already found a candidate closest
             {
-              curr_min.minSqDist = sq_dist;
-              curr_min.minElem = candidate_idx;
-              curr_min.minRank = rank;
+              curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
+              curr_min.minElem = query_inds[idx];
+              curr_min.minRank = query_ranks[idx];
             }
-          };
 
-          auto traversePredicate = [&](const PointType& p,
-                                       const BoxType& bb) -> bool {
-            auto sqDist = squared_distance(p, bb);
-            return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
-          };
+            auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
+              const int candidate_idx = leaf_nodes[current_node];
+              const PointType candidate_pt = pointsView[candidate_idx];
+              const double sq_dist = squared_distance(qpt, candidate_pt);
 
-          // Traverse the tree, searching for the point with minimum distance.
-          it.traverse_tree(qpt, checkMinDist, traversePredicate);
+              if(sq_dist < curr_min.minSqDist)
+              {
+                curr_min.minSqDist = sq_dist;
+                curr_min.minElem = candidate_idx;
+                curr_min.minRank = rank;
+              }
+            };
 
-          // If modified, update the fields that changed
-          if(curr_min.minRank == rank)
-          {
-            query_inds[idx] = curr_min.minElem;
-            query_ranks[idx] = curr_min.minRank;
-            query_pos[idx] = pointsView[curr_min.minElem];
+            auto traversePredicate = [&](const PointType& p,
+                                         const BoxType& bb) -> bool {
+              auto sqDist = squared_distance(p, bb);
+              return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
+            };
 
-            //DEBUG
-            if(has_min_distance)
+            // Traverse the tree, searching for the point with minimum distance.
+            it.traverse_tree(qpt, checkMinDist, traversePredicate);
+
+            // If modified, update the fields that changed
+            if(curr_min.minRank == rank)
             {
-              query_min_dist[idx] = sqrt(curr_min.minSqDist);
+              query_inds[idx] = curr_min.minElem;
+              query_ranks[idx] = curr_min.minRank;
+              query_pos[idx] = pointsView[curr_min.minElem];
+
+              //DEBUG
+              if(has_min_distance)
+              {
+                query_min_dist[idx] = sqrt(curr_min.minSqDist);
+              }
             }
-          }
-        }););
+          }););
+
+      axom::deallocate(sqDistThresh);
+    }
 
     axom::copy(cpIndexes.data(),
                query_inds.data(),
@@ -1098,6 +1163,12 @@ public:
                query_pos.data(),
                closestPts.size() * sizeof(PointType));
 
+    // Data has now been initialized
+    if(is_first)
+    {
+      xfer_node.remove_child("is_first");
+    }
+
     // DEBUG
     if(has_min_distance)
     {
@@ -1105,7 +1176,6 @@ public:
                  query_min_dist.data(),
                  minDist.size() * sizeof(double));
     }
-    axom::deallocate(sqDistThresh);
   }
 
 private:
@@ -1245,35 +1315,49 @@ public:
    * \param [in] mesh_node Conduit node for the object mesh
    * \param [in] coordset The name of the coordset for the object mesh's coordinates
    *
-   * \pre \a mesh_node must follow the mesh blueprint convention
+   * \pre \a mesh_node must follow the mesh blueprint convention. If this node
+   * is empty, the rank has no data
    * \pre Dimension of the mesh must be 2D or 3D
    */
   void setObjectMesh(const conduit::Node& mesh_node, const std::string& coordset)
   {
     // Perform some simple error checking
     SLIC_ASSERT(this->isValidBlueprint(mesh_node));
-
-    // Extract the dimension and number of points from the coordinate values group
     auto valuesPath = fmt::format("coordsets/{}/values", coordset);
-    SLIC_ASSERT(mesh_node.has_path(valuesPath));
-    auto& values = mesh_node[valuesPath];
 
-    const int dim = internal::extractDimension(values);
-    setDimension(dim);
+    const bool rankIsEmpty = mesh_node.dtype().is_empty();
+
+    // Extract the dimension from the coordinate values group
+    // use allreduce since some ranks might be empty
+    {
+      int localDim = -1;
+      if(!rankIsEmpty)
+      {
+        SLIC_ASSERT(mesh_node.has_path(valuesPath));
+        auto& values = mesh_node[valuesPath];
+        localDim = internal::extractDimension(values);
+      }
+      int dim = -1;
+      MPI_Allreduce(&localDim, &dim, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      setDimension(dim);
+    }
 
     allocateQueryInstance();
 
-    const int N = internal::extractSize(values);
-
-    // dispatch to implementation class over dimension
-    switch(m_dimension)
+    // dispatch mesh import to dimension-specific implementation class
+    if(!rankIsEmpty)
     {
-    case 2:
-      m_dcp_2->importObjectPoints(values, N);
-      break;
-    case 3:
-      m_dcp_3->importObjectPoints(values, N);
-      break;
+      auto& values = mesh_node[valuesPath];
+      const int N = internal::extractSize(values);
+      switch(m_dimension)
+      {
+      case 2:
+        m_dcp_2->importObjectPoints(values, N);
+        break;
+      case 3:
+        m_dcp_3->importObjectPoints(values, N);
+        break;
+      }
     }
   }
 
@@ -1343,15 +1427,15 @@ private:
     switch(m_dimension)
     {
     case 2:
-      m_dcp_2 = std::unique_ptr<internal::DistributedClosestPointImpl<2>>(
-        new internal::DistributedClosestPointImpl<2>(m_runtimePolicy,
-                                                     m_isVerbose));
+      m_dcp_2 = std::make_unique<internal::DistributedClosestPointImpl<2>>(
+        m_runtimePolicy,
+        m_isVerbose);
       m_objectMeshCreated = true;
       break;
     case 3:
-      m_dcp_3 = std::unique_ptr<internal::DistributedClosestPointImpl<3>>(
-        new internal::DistributedClosestPointImpl<3>(m_runtimePolicy,
-                                                     m_isVerbose));
+      m_dcp_3 = std::make_unique<internal::DistributedClosestPointImpl<3>>(
+        m_runtimePolicy,
+        m_isVerbose);
       m_objectMeshCreated = true;
       break;
     }
