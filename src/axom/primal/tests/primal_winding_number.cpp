@@ -224,10 +224,6 @@ TEST(primal_winding_number, corner_cases)
                       Point2D {-1.0, 0.0}};
   Bezier cubic(nodes2, 3);
 
-  // Query points exactly on the curve will return a value
-  // between 0 and 1 that depends on the incident angle of the
-  // tangent lines
-
   // At any point on a line, returns 0
   EXPECT_NEAR(  // Query on linear curve
     winding_number(Point2D({0.45, 0.45}), linear, edge_tol, EPS),
@@ -260,6 +256,49 @@ TEST(primal_winding_number, corner_cases)
   EXPECT_NEAR(winding_number(cubic.evaluate(0.4), cubic, edge_tol, EPS),
               0.310998027957,
               abs_tol);
+
+  // Extra tests if initial and terminal tangent lines are colinear
+  Point2D nodes3[] = {Point2D {0.1, 0.0},
+                      Point2D {1.0, 0.0},
+                      Point2D {0.0, 1.0},
+                      Point2D {-1.0, 0.0},
+                      Point2D {-0.1, 0.0}};
+  Bezier quartic(nodes3, 4);
+
+  // Bugs out because endpoint tangent lines point in opposite directions
+  EXPECT_NEAR(winding_number(Point2D({0.1, 0}), quartic, edge_tol, EPS),
+              0.5,
+              abs_tol);
+  EXPECT_NEAR(winding_number(Point2D({-0.1, 0}), quartic, edge_tol, EPS),
+              0.5,
+              abs_tol);
+
+  // Flip the curve vertically
+  quartic[2] = Point2D({0.0, -1.0});
+  EXPECT_NEAR(winding_number(Point2D({0.1, 0}), quartic, edge_tol, EPS),
+              -0.5,
+              abs_tol);
+  EXPECT_NEAR(winding_number(Point2D({-0.1, 0}), quartic, edge_tol, EPS),
+              -0.5,
+              abs_tol);
+
+  // Flip one of the tangent lines
+  quartic[1] = Point2D({0.0, 0.0});
+  EXPECT_NEAR(winding_number(Point2D({0.1, 0}), quartic, edge_tol, EPS),
+              0,
+              abs_tol);
+  EXPECT_NEAR(winding_number(Point2D({-0.1, 0}), quartic, edge_tol, EPS),
+              -0.5,
+              abs_tol);
+
+  // Flip vertically again
+  quartic[2] = Point2D({0.0, 1.0});
+  EXPECT_NEAR(winding_number(Point2D({0.1, 0}), quartic, edge_tol, EPS),
+              0,
+              abs_tol);
+  EXPECT_NEAR(winding_number(Point2D({-0.1, 0}), quartic, edge_tol, EPS),
+              0.5,
+              abs_tol);
 }
 
 TEST(primal_winding_number, self_intersecting_cases)
@@ -281,6 +320,8 @@ TEST(primal_winding_number, self_intersecting_cases)
   EXPECT_NEAR(winding_number(Point2D({0.5, 0.5}), cubic_cusp, edge_tol, EPS),
               -0.75,
               abs_tol);
+
+  // Bugs out because it has a duplicate endpoint after one split.
   EXPECT_NEAR(winding_number(Point2D({0.5, 0.75}), cubic_cusp, edge_tol, EPS),
               0.18716704181099889,
               abs_tol);
@@ -310,6 +351,16 @@ TEST(primal_winding_number, self_intersecting_cases)
   EXPECT_NEAR(winding_number(Point2D({0.0, 0.0}), cubic_closed, edge_tol, EPS),
               0.301208191175,
               abs_tol);
+}
+
+TEST(primal_winding_number, degenerate_cases)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Bezier = primal::BezierCurve<double, 2>;
+
+  double abs_tol = 1e-4;
+  double edge_tol = 1e-8;
+  double EPS = 1e-50;
 
   // Backtracking quadratic curve
   Point2D bt_nodes[] = {Point2D {0.0, 0.0},
@@ -332,7 +383,7 @@ TEST(primal_winding_number, self_intersecting_cases)
               -0.25,
               abs_tol);
 
-  // Very degenerate curve
+  // empty curve, high order. Gets caught by isLinear
   Point2D empty_nodes[] = {Point2D {0.0, 0.0},
                            Point2D {0.0, 0.0},
                            Point2D {0.0, 0.0},
@@ -357,6 +408,26 @@ TEST(primal_winding_number, self_intersecting_cases)
     pt[0] *= -1;
     EXPECT_NEAR(winding_number(pt, empty_curve, edge_tol, EPS), 0, abs_tol);
   }
+
+  // Cubic curve
+  Point2D cubic_nodes[] = {Point2D {0.0, 0.0},
+                           Point2D {0.0, 0.0},
+                           Point2D {0.0, 0.0},
+                           Point2D {0.0, 1.0},
+                           Point2D {-1.0, 1.0},
+                           Point2D {-1.0, 0.0},
+                           Point2D {-1.0, 0.0},
+                           Point2D {-1.0, 0.0}};
+  Bezier cubic(cubic_nodes, 7);
+
+  EXPECT_NEAR(  // Query on initial endpoint of cubic
+    winding_number(Point2D({-1.0, 0.0}), cubic, edge_tol, EPS),
+    0.25,
+    abs_tol);
+  EXPECT_NEAR(  // Query on terminal endpoint of cubic
+    winding_number(Point2D({-1.0, 0.0}), cubic, edge_tol, EPS),
+    0.25,
+    abs_tol);
 }
 
 int main(int argc, char** argv)
