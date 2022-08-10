@@ -51,7 +51,7 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * parametrized from t=0 to t=1.
  * 
  * Contains an array of weights to represent a rational Bezier curve.
- * Nonrational Bezier curves are identified by a nonpositive element in this first index.
+ * Nonrational Bezier curves are identified by an empty weights array.
  * Algorithms for Rational Bezier curves derived from 
  * Gerald Farin, "Algorithms for ratioal Bezier curves"
  * Computer-Aided Design, Volume 15, Number 2, 1983,
@@ -88,8 +88,7 @@ public:
     const int sz = utilities::max(-1, ord + 1);
     m_controlPoints.resize(sz);
 
-    m_weights.resize(1);
-    m_weights[0] = -1.0;
+    makeNonrational();
   }
 
   /*!
@@ -121,8 +120,7 @@ public:
       }
     }
 
-    m_weights.resize(1);
-    m_weights[0] = -1.0;
+    makeNonrational();
   }
 
   /*!
@@ -146,8 +144,7 @@ public:
       m_controlPoints[p] = pts[p];
     }
 
-    m_weights.resize(1);
-    m_weights[0] = -1.0;
+    makeNonrational();
   }
 
   /*!
@@ -162,17 +159,17 @@ public:
   BezierCurve(PointType* pts, T* weights, int ord)
   {
     SLIC_ASSERT(pts != nullptr);
-    SLIC_ASSERT(weights != nullptr);
     SLIC_ASSERT(ord >= 0);
 
     const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
-    m_weights.resize(sz);
 
-    for(int p = 0; p <= ord; ++p)
+    if(weights == nullptr)
+      m_weights.resize(0);
+    else
     {
-      m_controlPoints[p] = pts[p];
-      m_weights[p] = weights[p];
+      m_weights.resize(sz);
+      for(int p = 0; p <= ord; ++p) m_weights[p] = weights[p];
     }
   }
 
@@ -192,8 +189,7 @@ public:
     m_controlPoints.resize(sz);
     m_controlPoints = pts;
 
-    m_weights.resize(1);
-    m_weights[0] = -1.0;
+    makeNonrational();
   }
 
   /*!
@@ -230,7 +226,7 @@ public:
   /// Make trivially rational. If already rational, do nothing
   void makeRational()
   {
-    if(m_weights[0] <= 0)
+    if(!isRational())
     {
       const int ord = getOrder();
       m_weights.resize(ord + 1);
@@ -239,11 +235,10 @@ public:
   }
 
   /// Make nonrational by shrinking array of weights
-  void makeNonrational()
-  {
-    m_weights.resize(1);
-    m_weights[0] = -1.0;
-  }
+  void makeNonrational() { m_weights.resize(0); }
+
+  /// Use array size as flag for rationality
+  bool isRational() const { return (m_weights.size() != 0); }
 
   /// Clears the list of control points, make nonrational
   void clear()
@@ -254,8 +249,7 @@ public:
       m_controlPoints[p] = PointType();
     }
 
-    m_weights.resize(1);
-    m_weights[0] = -1.0;
+    makeNonrational();
   }
 
   /// Retrieves the control point at index \a idx
@@ -300,7 +294,7 @@ public:
       axom::utilities::swap(m_controlPoints[i], m_controlPoints[ord - i]);
     }
 
-    if(m_weights[0] > 0)
+    if(isRational())
       for(int i = 0; i < mid; ++i)
       {
         axom::utilities::swap(m_weights[i], m_weights[ord - i]);
@@ -338,8 +332,7 @@ public:
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 
-    // If curve is rational
-    if(m_weights[0] > 0)
+    if(isRational())
     {
       axom::Array<T> dWarray(ord + 1);
 
@@ -407,7 +400,7 @@ public:
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 
-    if(m_weights[0] > 0)
+    if(isRational())
     {
       axom::Array<T> dWarray(ord + 1);
 
@@ -485,7 +478,7 @@ public:
     c1.setOrder(ord);
     c1[0] = m_controlPoints[0];
 
-    if(m_weights[0] > 0)
+    if(isRational())
     {
       c1.makeRational();
       c1.setWeight(0, c2.getWeight(0));
@@ -560,9 +553,6 @@ public:
     return (sqDist < tol);
   }
 
-  /// Use first element of array as flag for rationality
-  bool isRational() const { return m_weights[0] > 0; }
-
   /*!
    * \brief Simple formatted print of a Bezier Curve instance
    *
@@ -579,7 +569,7 @@ public:
       os << m_controlPoints[p] << (p < ord ? "," : "");
     }
 
-    if(m_weights[0] > 0)
+    if(isRational())
     {
       os << ", weights [";
       for(int p = 0; p <= ord; ++p)
