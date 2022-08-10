@@ -248,7 +248,9 @@ public:
   /// Check that the weights used are valid
   bool isValid() const
   {
-    if(isRational) return true;
+    if(isRational()) return true;
+    
+    const int ord = getOrder();
     for(int i = 0; i < ord; ++i)
       if(m_weights[i] <= 0) return false;
 

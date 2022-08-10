@@ -17,6 +17,8 @@
 #include "axom/slic.hpp"
 #include "axom/fmt.hpp"
 
+#include <iomanip>
+
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
@@ -496,6 +498,52 @@ TEST(primal_rationalbezier, rational_evaluate_integral)
   EXPECT_NEAR(evaluate_line_integral(quarter_ellipse, conservative_field, npts),
               0,
               abs_tol);
+}
+
+TEST(primal_rationalbezier, rational_intersection)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Bezier = primal::BezierCurve<double, 2>;
+  using CPolygon = primal::CurvedPolygon<double, 2>;
+  double abs_tol = 1e-8;
+
+  // Intersecting of rational, circular arc shapes
+  Point2D bot_nodes[] = {Point2D {1.0, 0.0},
+                         Point2D {1.0, 1.0},
+                         Point2D {0.0, 1.0}};
+
+  Point2D top_nodes[] = {Point2D {1.3, 0.3},
+                         Point2D {0.3, 0.3},
+                         Point2D {0.3, 1.3}};
+
+  double weights[] = {2.0, 1.0, 1.0};
+
+  Bezier bottom_arc(bot_nodes, weights, 2);
+  Bezier top_arc(top_nodes, weights, 2);
+
+  std::vector<double> sp, tp;
+  EXPECT_TRUE(intersect(bottom_arc, top_arc, sp, tp));
+
+  EXPECT_NEAR(bottom_arc.evaluate(sp[0])[0], top_arc.evaluate(tp[0])[0], abs_tol);
+  EXPECT_NEAR(bottom_arc.evaluate(sp[0])[1], top_arc.evaluate(tp[0])[1], abs_tol);
+
+  EXPECT_NEAR(bottom_arc.evaluate(sp[1])[0], top_arc.evaluate(tp[1])[0], abs_tol);
+  EXPECT_NEAR(bottom_arc.evaluate(sp[1])[1], top_arc.evaluate(tp[1])[1], abs_tol);
+
+
+  // Check intersection of nonrational and rational curve
+  Point2D line_nodes[] = {Point2D {1.3, 0}, Point2D {0, 1.3}};
+  Bezier line(line_nodes, 1);
+
+  sp.clear();
+  tp.clear();
+  EXPECT_TRUE(intersect(bottom_arc, line, sp, tp));
+
+  EXPECT_NEAR(bottom_arc.evaluate(sp[0])[0], line.evaluate(tp[0])[0], abs_tol);
+  EXPECT_NEAR(bottom_arc.evaluate(sp[0])[1], line.evaluate(tp[0])[1], abs_tol);
+
+  EXPECT_NEAR(bottom_arc.evaluate(sp[1])[0], line.evaluate(tp[1])[0], abs_tol);
+  EXPECT_NEAR(bottom_arc.evaluate(sp[1])[1], line.evaluate(tp[1])[1], abs_tol);
 }
 
 int main(int argc, char* argv[])
