@@ -5,13 +5,13 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/operators/squared_distance.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
-#include "axom/primal/geometry/Segment.hpp"
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
+#include "axom/primal.hpp"
 
-using namespace axom;
+#include <cmath>
+
+namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
 TEST(primal_squared_distance, array_to_array)
@@ -170,6 +170,45 @@ TEST(primal_squared_distance, point_to_segment)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_squared_distance, point_to_bbox)
+{
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-12;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QBBox = primal::BoundingBox<CoordType, DIM>;
+
+  const QBBox cube(QPoint {-1, -1, -1}, QPoint {1, 1, 1});
+  const QBBox empty;
+
+  for(int i = -1; i <= 1; ++i)
+  {
+    for(int j = -1; j <= 1; ++j)
+    {
+      for(int k = -1; k <= 1; ++k)
+      {
+        const QPoint pt {i * 3., j * 3., k * 3.};
+        if(i == 0 && j == 0 && k == 0)
+        {
+          EXPECT_NEAR(0., primal::squared_distance(pt, cube), EPS);
+        }
+        else
+        {
+          // if a coordinate is outside the bounding box,
+          // it adds 4 == (3-1)^2 units to the squared distance
+          const double sqsum =
+            (i == 0 ? 0 : 4) + (j == 0 ? 0 : 4) + (k == 0 ? 0 : 4);
+          EXPECT_NEAR(sqsum, primal::squared_distance(pt, cube), EPS);
+        }
+
+        EXPECT_EQ(std::numeric_limits<double>::max(),
+                  squared_distance(pt, empty));
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_squared_distance, bbox_to_bbox)
 {
   constexpr int DIM = 3;
@@ -191,4 +230,21 @@ TEST(primal_squared_distance, bbox_to_bbox)
   EXPECT_DOUBLE_EQ(squared_distance(middle, northeast), 162.);
   EXPECT_DOUBLE_EQ(squared_distance(middle, northeastup), 243.);
   EXPECT_DOUBLE_EQ(squared_distance(middle, touching), 0.);
+
+  // check that squared distances for empty/invalid boxes is max double
+  const QBBox empty;
+  EXPECT_EQ(std::numeric_limits<double>::max(), squared_distance(middle, empty));
+  EXPECT_EQ(std::numeric_limits<double>::max(), squared_distance(empty, middle));
+  EXPECT_EQ(std::numeric_limits<double>::max(), squared_distance(empty, empty));
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
+
+  int result = RUN_ALL_TESTS();
+  return result;
 }

@@ -101,6 +101,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds `constants.hpp` to primal to track geometric constants. Initially includes
   a value for `primal::PTINY`, a small constant that can be added to 
   denominators to avoid division by zero.
+- `DistributedClosestPoint` query now supports "domain underloading" -- ranks that are passed in can 
+  have empty object meshes and/or empty query meshes 
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
