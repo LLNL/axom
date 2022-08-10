@@ -21,7 +21,6 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
-#include "axom/primal/operators/split.hpp"
 #include "axom/primal/operators/detail/in_curved_polygon_impl.hpp"
 
 namespace axom
@@ -106,62 +105,6 @@ double winding_number(const Point<T, 2>& q,
                       const double EPS = 1e-8)
 {
   return detail::adaptive_winding_number(q, c, false, edge_tol, EPS);
-}
-
-
-template <typename T>
-double winding_number_quad(const Point<T, 2>& q,
-                           const BezierCurve<T, 2>& c,
-                           const int n_qpts = 15,
-                           const double edge_tol = 1e-8)
-{
-  CurvedPolygon<T, 2> cpoly;
-  cpoly.addEdge(c);
-
-  axom::Array<BezierCurve<T, 2>> cvx_components;
-  split_to_convex(cpoly, cvx_components);
-  axom::Array<int> orientations(detail::convex_orientation(cvx_components));
-
-  // Get quadrature nodes from MFEM
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule& quad =
-    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * n_qpts - 1);
-
-  double ret_val = 0;
-  for(int i = 0; i < cvx_components.size(); i++)
-    ret_val += detail::convex_winding_number(q,
-                                             cvx_components[i],
-                                             orientations[i],
-                                             quad,
-                                             edge_tol);
-
-  return ret_val;
-}
-
-template <typename T>
-double winding_number_quad(const Point<T, 2>& q,
-                           const CurvedPolygon<T, 2>& cpoly,
-                           const int n_qpts = 15,
-                           const double edge_tol = 1e-8)
-{
-  axom::Array<BezierCurve<T, 2>> cvx_components;
-  split_to_convex(cpoly, cvx_components);
-  axom::Array<int> orientations(detail::convex_orientation(cvx_components));
-
-  // Get quadrature nodes from MFEM
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule& quad =
-    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * n_qpts - 1);
-
-  double ret_val = 0;
-  for(int i = 0; i < cvx_components.size(); i++)
-    ret_val += detail::convex_winding_number(q,
-                                             cvx_components[i],
-                                             orientations[i],
-                                             quad,
-                                             edge_tol);
-
-  return ret_val;
 }
 
 }  // namespace primal

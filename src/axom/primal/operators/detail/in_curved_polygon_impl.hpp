@@ -14,18 +14,9 @@
 #include "axom/primal/operators/in_polygon.hpp"
 #include "axom/primal/operators/is_convex.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
-#include "axom/primal/operators/evaluate_integral.hpp"
-
-// MFEM includes
-#ifdef AXOM_USE_MFEM
-  #include "mfem.hpp"
-#else
-  #error "Primal's in/out functions for CurvedPolygon require mfem library."
-#endif
 
 // C++ includes
 #include <cmath>
-#include <iomanip>
 
 namespace axom
 {
@@ -96,17 +87,15 @@ double convex_endpoint_winding_number(bool is_init,
   if(ord == 1) return 0;
 
   Vector<T, 2> V1, V2;
-  // Using 1e-16 and 1 - 1e-16 is a shortgap measure until
-  //  we can get those tangent lines efficiently.
   if(is_init)  // Query point is on initial endpoint
   {
-    V1 = c.dt(1e-16);
+    V1 = c.dt(0);
     V2 = Vector<T, 2>(c[0], c[ord]);
   }
   else  // Query point is on terminal endpoint
   {
     V1 = Vector<T, 2>(c[ord], c[0]);
-    V2 = -c.dt(1 - 1e-16);
+    V2 = -c.dt(1);
   }
 
   // clang-format off
@@ -116,9 +105,7 @@ double convex_endpoint_winding_number(bool is_init,
 
   // If the tangent lines are parallel, winding number is 0
   if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
-  {
     return 0;
-  }
 
   double dotprod = axom::utilities::clampVal(
     Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()),
@@ -155,8 +142,11 @@ double adaptive_winding_number(const Point2D& q,
                                double EPS = 1e-8)
 {
   const int ord = c.getOrder();
+  if(ord <= 0) return 0.0; // Catch degenerate cases
 
-  //std::cout << std::setprecision(16) << q << ", x_n = [";
+  Polygon<T, 2> controlPolygon(c.getControlPoints());
+  
+  //std::cout << q << ", x_n = [";
   //for(int p = 0; p <= ord; ++p)
   //{
   //  std::cout << c[p][0] << (p < ord ? "," : "");
@@ -167,8 +157,6 @@ double adaptive_winding_number(const Point2D& q,
   //  std::cout << c[p][1] << (p < ord ? "," : "");
   //}
   //std::cout << "]" << std::endl;
-
-  Polygon<T, 2> controlPolygon(c.getControlPoints());
 
   // Use linearity as base case for recursion
   if(c.isLinear(EPS)) return -closure_winding_number(q, c, edge_tol);
@@ -201,114 +189,6 @@ double adaptive_winding_number(const Point2D& q,
 
   return adaptive_winding_number(q, c1, convex_cp, edge_tol, EPS) +
     adaptive_winding_number(q, c2, convex_cp, edge_tol, EPS);
-}
-
-// Get the function to be passed into the evaluate integral function
-inline std::function<Vector2D(Point2D)> get_winding_func(Point2D p)
-{
-  return [p](Point2D x) -> Vector2D {
-    double denom =
-      2 * M_PI * ((x[0] - p[0]) * (x[0] - p[0]) + (x[1] - p[1]) * (x[1] - p[1]));
-    return Vector2D({-(x[1] - p[1]) / 1.0, (x[0] - p[0]) / denom});
-  };
-}
-
-template <typename T>
-axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs)
-{
-  axom::Array<int> orientations;
-  for(int i = 0; i < cvxs.size(); i++)
-  {
-    const BezierCurve<T, 2>& c = cvxs[i];
-
-    if(c.isLinear())
-    {
-      orientations.push_back(0);
-      break;
-    }
-
-    // Loop over each interior node of the Bezier curve
-    int j;
-    for(j = 1; j < c.getOrder() - 1; j++)
-    {
-      Vector<T, 2> V1(c[0], c[j]);
-      Vector<T, 2> V2(c[0], c[c.getOrder()]);
-
-      // clang-format off
-      double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
-                                                  V1[1] - V2[1], V2[1]);
-      // clang-format on
-
-      if(!axom::utilities::isNearlyEqual(orient, 0.0))
-      {
-        // Because we are convex, a single non-colinear vertex tells us the orientation
-        orientations.push_back((orient > 0) ? 1 : -1);
-        break;
-      }
-      // else, need to try another internal node
-    }
-
-    // If we make it through the loop, every node is colinear
-    if( j == c.getOrder() - 1 )
-      orientations.push_back(0);
-  }
-
-  return orientations;
-}
-
-// Get total winding number with respect to each curve
-template <typename T>
-double convex_winding_number(const Point<T, 2>& q,
-                             const BezierCurve<T, 2>& cvx,
-                             const int& cvx_orient,
-                             const mfem::IntegrationRule& quad,
-                             const double edge_tol = 1e-8)
-{
-  // Zero orientation indicates the curve is flat
-  if(cvx.isLinear(0)) return -closure_winding_number(q, cvx, edge_tol);
-
-  const int ord = cvx.getOrder();
-
-  //std::cout << std::setprecision(16) << q << ", x_n = [";
-  //for(int p = 0; p <= ord; ++p)
-  //{
-  //  std::cout << cvx[p][0] << (p < ord ? "," : "");
-  //}
-  //std::cout << "], y_n = [";
-  //for(int p = 0; p <= ord; ++p)
-  //{
-  //  std::cout << cvx[p][1] << (p < ord ? "," : "");
-  //}
-  //std::cout << "]" << std::endl;
-
-  double quad_result = 0;
-
-  for(int k = 0; k < quad.GetNPoints(); k++)
-  {
-    Point<T, 2> x_q = cvx.evaluate(quad.IntPoint(k).x);
-    Vector<T, 2> dx_q = cvx.dt(quad.IntPoint(k).x);
-
-    // Denominator for quadrature
-    double q_dist = squared_distance(x_q, q);
-    if(q_dist <= edge_tol * edge_tol)
-      return cvx_orient * 0.5 - closure_winding_number(q, cvx, edge_tol);
-
-    // Numerator for quadrature
-    // clang-format off
-    double q_orient = axom::numerics::determinant(x_q[0] - q[0], dx_q[0],
-                                                  x_q[1] - q[1], dx_q[1]);
-    // clang-format on
-    if(q_orient < 0) return -closure_winding_number(q, cvx, edge_tol);
-
-    quad_result += quad.IntPoint(k).weight * q_orient / q_dist;
-  }
-
-  double closure_number = closure_winding_number(q, cvx, edge_tol);
-
-  // Make a call based off of the quadrature
-  if((0.5 * M_1_PI * quad_result) + closure_number >= 0.5)
-    return 1.0 - closure_number;
-  return 0.0 - closure_number;
 }
 
 }  // end namespace detail
