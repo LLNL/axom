@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * Contains an array of weights to represent a rational Bezier curve.
  * Nonrational Bezier curves are identified by an empty weights array.
  * Algorithms for Rational Bezier curves derived from 
- * Gerald Farin, "Algorithms for ratioal Bezier curves"
+ * Gerald Farin, "Algorithms for rational Bezier curves"
  * Computer-Aided Design, Volume 15, Number 2, 1983,
  */
 template <typename T, int NDIMS>
@@ -259,11 +259,30 @@ public:
   /// Retrieves the control point at index \a idx
   const PointType& operator[](int idx) const { return m_controlPoints[idx]; }
 
-  /// Get specific weight
-  const T& getWeight(int idx) const { return m_weights[idx]; }
+  /*!
+   * \brief Get a specific weight
+   *
+   * \param [in] idx The index of the weight
+   * \pre Requires that the curve be rational
+   */
+  const T& getWeight(int idx) const
+  {
+    SLIC_ASSERT(isRational());
+    return m_weights[idx];
+  }
 
-  /// Change specific weight
-  void setWeight(int idx, T weight) { m_weights[idx] = weight; };
+  /*!
+   * \brief Set the weight at a specific index
+   *
+   * \param [in] idx The index of the weight
+   * \param [in] weight The updated value of the weight
+   * \pre Requires that the curve be rational
+   */
+  void setWeight(int idx, T weight)
+  {
+    SLIC_ASSERT(isRational());
+    m_weights[idx] = weight;
+  };
 
   /// Checks equality of two Bezier Curve
   friend inline bool operator==(const BezierCurve<T, NDIMS>& lhs,
@@ -397,7 +416,7 @@ public:
   {
     using axom::utilities::lerp;
     VectorType val;
-    
+
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 

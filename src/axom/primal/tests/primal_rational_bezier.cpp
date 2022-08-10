@@ -245,15 +245,15 @@ TEST(primal_rationalbezier, split_linear)
     BezierCurveType c1, c2;
     b.split(0.5, c1, c2);
 
-    EXPECT_DOUBLE_EQ(-1., c1[0][0]);
-    EXPECT_DOUBLE_EQ(-5., c1[0][1]);
-    EXPECT_DOUBLE_EQ(0.6, c1[1][0]);
-    EXPECT_DOUBLE_EQ(3.0, c1[1][1]);
+    EXPECT_NEAR(-1., c1[0][0], 1e-12);
+    EXPECT_NEAR(-5., c1[0][1], 1e-12);
+    EXPECT_NEAR(0.6, c1[1][0], 1e-12);
+    EXPECT_NEAR(3.0, c1[1][1], 1e-12);
 
-    EXPECT_DOUBLE_EQ(0.6, c2[0][0]);
-    EXPECT_DOUBLE_EQ(3.0, c2[0][1]);
-    EXPECT_DOUBLE_EQ(1.0, c2[1][0]);
-    EXPECT_DOUBLE_EQ(5.0, c2[1][1]);
+    EXPECT_NEAR(0.6, c2[0][0], 1e-12);
+    EXPECT_NEAR(3.0, c2[0][1], 1e-12);
+    EXPECT_NEAR(1.0, c2[1][0], 1e-12);
+    EXPECT_NEAR(5.0, c2[1][1], 1e-12);
   }
 
   {
@@ -262,15 +262,15 @@ TEST(primal_rationalbezier, split_linear)
 
     for(int i = 0; i < DIM; ++i)
     {
-      EXPECT_DOUBLE_EQ(-1., c1[0][0]);
-      EXPECT_DOUBLE_EQ(-5., c1[0][1]);
-      EXPECT_DOUBLE_EQ(0.0, c1[1][0]);
-      EXPECT_DOUBLE_EQ(0.0, c1[1][1]);
+      EXPECT_NEAR(-1., c1[0][0], 1e-12);
+      EXPECT_NEAR(-5., c1[0][1], 1e-12);
+      EXPECT_NEAR(0.0, c1[1][0], 1e-12);
+      EXPECT_NEAR(0.0, c1[1][1], 1e-12);
 
-      EXPECT_DOUBLE_EQ(0.0, c2[0][0]);
-      EXPECT_DOUBLE_EQ(0.0, c2[0][1]);
-      EXPECT_DOUBLE_EQ(1.0, c2[1][0]);
-      EXPECT_DOUBLE_EQ(5.0, c2[1][1]);
+      EXPECT_NEAR(0.0, c2[0][0], 1e-12);
+      EXPECT_NEAR(0.0, c2[0][1], 1e-12);
+      EXPECT_NEAR(1.0, c2[1][0], 1e-12);
+      EXPECT_NEAR(5.0, c2[1][1], 1e-12);
     }
   }
 }
