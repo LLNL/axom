@@ -259,7 +259,7 @@ inline int isend_using_schema(conduit::Node& node,
 // This version works correctly when src is MPI_ANY_SOURCE
 // and tag is MPI_ANY_TAG.  When conduit supports this,
 // this version can be removed.
-int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm comm)
+inline int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm comm)
 {
   MPI_Status status;
 
