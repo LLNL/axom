@@ -148,7 +148,7 @@ bool intersect(const Triangle<T, 3>& tri,
   if(retval)
   {
     // Add a small EPS to avoid dividing by zero
-    double normalizer = p[0] + p[1] + p[2] + primal::PTINY;
+    double normalizer = p[0] + p[1] + p[2] + primal::PRIMAL_TINY;
     p.array() *= 1. / normalizer;
   }
 
@@ -208,7 +208,7 @@ bool intersect(const Triangle<T, 3>& tri,
   if(retval)
   {
     // Add a small EPS to avoid dividing by zero
-    double normalizer = p[0] + p[1] + p[2] + primal::PTINY;
+    double normalizer = p[0] + p[1] + p[2] + primal::PRIMAL_TINY;
     p.array() *= 1. / normalizer;
   }
 
