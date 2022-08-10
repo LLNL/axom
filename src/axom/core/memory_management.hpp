@@ -26,6 +26,7 @@ namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
+// _memory_space_start
 /*! 
  * \brief Memory spaces supported by Array-like types
  *
@@ -44,6 +45,7 @@ enum class MemorySpace
   Constant
 #endif
 };
+// _memory_space_end
 
 /// \name Memory Management Routines
 /// @{
