@@ -63,9 +63,9 @@ enum class DistributedClosestPointRuntimePolicy
 namespace internal
 {
 // Utility function to dump a conduit node on each rank, e.g. for debugging
-void dump_node(const conduit::Node& n,
-               const std::string&& fname,
-               const std::string& protocol = "json")
+inline void dump_node(const conduit::Node& n,
+                      const std::string&& fname,
+                      const std::string& protocol = "json")
 {
   conduit::relay::io::save(n, fname, protocol);
 };
@@ -98,8 +98,9 @@ axom::ArrayView<T> ArrayView_from_Node(conduit::Node& node, int sz)
  * \warning Assumes the underlying data is an MCArray with stride 2 access
  */
 template <>
-axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(conduit::Node& node,
-                                                              int sz)
+inline axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(
+  conduit::Node& node,
+  int sz)
 {
   using PointType = primal::Point<double, 2>;
 
@@ -113,8 +114,9 @@ axom::ArrayView<primal::Point<double, 2>> ArrayView_from_Node(conduit::Node& nod
  * \warning Assumes the underlying data is an MCArray with stride 3 access
  */
 template <>
-axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(conduit::Node& node,
-                                                              int sz)
+inline axom::ArrayView<primal::Point<double, 3>> ArrayView_from_Node(
+  conduit::Node& node,
+  int sz)
 {
   using PointType = primal::Point<double, 3>;
 
