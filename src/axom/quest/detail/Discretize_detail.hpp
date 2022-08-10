@@ -86,7 +86,7 @@ Point3D rescale_YZ(const Point3D &p, double new_dst)
 {
   const double cur_dst =
     axom::utilities::clampLower(sqrt(p[1] * p[1] + p[2] * p[2]),
-                                axom::primal::PTINY);
+                                axom::primal::PRIMAL_TINY);
 
   Point3D retval;
   retval[0] = p[0];
@@ -156,11 +156,11 @@ int discrSeg(const Point2D &a, const Point2D &b, int levels, OctType *&out, int 
   SLIC_ASSERT(b[1] >= 0);
 
   // Deal with degenerate segments
-  if(b[0] - a[0] < axom::primal::PTINY)
+  if(b[0] - a[0] < axom::primal::PRIMAL_TINY)
   {
     return 0;
   }
-  if(a[1] < axom::primal::PTINY && b[1] < axom::primal::PTINY)
+  if(a[1] < axom::primal::PRIMAL_TINY && b[1] < axom::primal::PRIMAL_TINY)
   {
     return 0;
   }

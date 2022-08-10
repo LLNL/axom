@@ -48,8 +48,8 @@ namespace spin
  * and a grid spacing (a SpaceVector).
  *
  * \note Grid spacing coordinates that are really small (magnitude less
- * than primal::PTINY := 1e-50) are snapped to zero to avoid division by zero.
- * \sa primal::PTINY
+ * than primal::PRIMAL_TINY := 1e-50) are snapped to zero to avoid division by zero.
+ * \sa primal::PRIMAL_TINY
  */
 template <int NDIMS, typename SpaceCoordType = double, typename CellCoordType = int>
 class RectangularLattice
@@ -91,7 +91,7 @@ public:
    * \param spacing The lattice's spacing
    *
    * \note The magnitude of the spacing coordinates should be greater than zero.
-   * If they are less than primal::PTINY, the lattice will be degenerate in
+   * If they are less than primal::PRIMAL_TINY, the lattice will be degenerate in
    * that dimension.
    */
   RectangularLattice(const SpacePoint& origin, const SpaceVector& spacing)
@@ -117,8 +117,8 @@ public:
    * \note Spacing will be set to vector or ones if pointer is NULL
    *
    * \note The magnitude of the spacing coordinates should be greater than zero.
-   * If they are less than EPS = primal::PTINY, the lattice will be degenerate in
-   * that dimension.
+   * If they are less than EPS = primal::PRIMAL_TINY, the lattice will be 
+   * degenerate in that dimension.
    */
   RectangularLattice(SpaceCoordType* origin_data, SpaceCoordType* spacing_data)
   {
@@ -194,7 +194,7 @@ private:
    * spacing to zero and to initialize the inverted spacing.
    *
    * A spacing coordinate is considered really small when its magnitude
-   * is less than primal::PTINY.
+   * is less than primal::PRIMAL_TINY.
    *
    * For each coordinate i, the inverted coordinate will be:
    *     m_invSpacing[i] = 1. / m_spacing[i]
@@ -203,7 +203,7 @@ private:
    */
   void initializeSpacingAndInvSpacing()
   {
-    constexpr SpaceCoordType EPS = primal::PTINY;
+    constexpr SpaceCoordType EPS = primal::PRIMAL_TINY;
     constexpr SpaceCoordType ZERO = SpaceCoordType(0.);
     constexpr SpaceCoordType ONE = SpaceCoordType(1.);
 
@@ -240,7 +240,7 @@ private:
  * minimum corner position.
  *
  * \note If the bounding box range along a dimension is near zero (i.e. smaller
- * than primal::PTINY, the grid resolution in that dimension will be 
+ * than primal::PRIMAL_TINY, the grid resolution in that dimension will be 
  * set to zero in that dimension.
  */
 template <int NDIMS, typename SpaceCoordType, typename CellCoordType>
