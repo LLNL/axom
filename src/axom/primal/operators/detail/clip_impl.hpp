@@ -400,21 +400,20 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
 
 /*!
  * \brief Finds the clipped intersection Polyhedron between Polyhedron
- *        poly and a collection of Planes.
+ *        poly and an array of Planes.
  *
  * \param [in] poly The polyhedron
- * \param [in] planes The planes
- * \param [in] numPlanes The number of planes
+ * \param [in] planes The array of planes
  * \param [in] eps The tolerance for plane point orientation.
  *
  * \return The Polyhedron formed from clipping the polyhedron with a set of planes.
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
-                                                     const Plane<T, NDIMS>* planes,
-                                                     unsigned int numPlanes,
-                                                     double eps = 1.e-10)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
+  Polyhedron<T, NDIMS>& poly,
+  axom::ArrayView<Plane<T, NDIMS>> planes,
+  double eps)
 {
   using PointType = Point<T, NDIMS>;
   using BoxType = BoundingBox<T, NDIMS>;
@@ -424,10 +423,8 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(Polyhedron<T, NDIMS>& poly,
   BoxType polyBox(&poly[0], poly.numVertices());
 
   //Clip Polyhedron by each plane
-  for(unsigned int planeIndex = 0; planeIndex < numPlanes; planeIndex++)
+  for(PlaneType plane : planes)
   {
-    PlaneType plane = planes[planeIndex];
-
     // Check that plane intersects Polyhedron
     if(intersect(plane, polyBox, true, eps))
     {
@@ -495,7 +492,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   const Octahedron<T, NDIMS>& oct,
   const Tetrahedron<T, NDIMS>& tet,
-  double eps = 1.e-10)
+  double eps)
 {
   using PointType = Point<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
@@ -531,7 +528,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
                          make_plane(tet[0], tet[3], tet[1]),
                          make_plane(tet[0], tet[1], tet[2])};
 
-  return clipPolyhedron(poly, planes, 4, eps);
+  axom::StackArray<IndexType, 1> planeSize = {4};
+  axom::ArrayView<PlaneType> planesView(planes, planeSize);
+
+  return clipPolyhedron(poly, planesView, eps);
 }
 
 /*!
@@ -548,7 +548,7 @@ template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   const Tetrahedron<T, NDIMS>& tet1,
   const Tetrahedron<T, NDIMS>& tet2,
-  double eps = 1.e-10)
+  double eps)
 {
   using PointType = Point<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
@@ -579,7 +579,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
                          make_plane(tet2[0], tet2[3], tet2[1]),
                          make_plane(tet2[0], tet2[1], tet2[2])};
 
-  return clipPolyhedron(poly, planes, 4, eps);
+  axom::StackArray<IndexType, 1> planeSize = {4};
+  axom::ArrayView<PlaneType> planesView(planes, planeSize);
+
+  return clipPolyhedron(poly, planesView, eps);
 }
 
 }  // namespace detail

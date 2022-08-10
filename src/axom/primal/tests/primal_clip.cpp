@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Plane.hpp"
 
 #include "axom/primal/operators/clip.hpp"
+#include "axom/primal/operators/split.hpp"
 
 #include <limits>
 
@@ -839,6 +840,47 @@ TEST(primal_clip, tet_tet_half)
 
   // Expected result should be 0.666 / 4 / 2 = 0.0833, volume of tet.
   EXPECT_NEAR(0.0833, poly.volume(), EPS);
+}
+
+// Half of the octahedron is clipped by the tetrahedron.
+// Then, we split the octahedron into 8 tetrahedrons,
+// and verify the total volume from clipping the 8 split tetrahedrons
+// by the starting tetrahedron are the same as with the octahedron.
+TEST(primal_clip, tet_tet_clip_split)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({0.5, 0.5, 2}),
+                      PointType({2, -1, 0}),
+                      PointType({-1, -1, 0}),
+                      PointType({-1, 2, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  // Expected result should be 0.3333, half the volume of oct.
+  EXPECT_NEAR(0.3333, poly.volume(), EPS);
+
+  // Split the octahedron into 8 tetrahedrons
+  double tet_volumes = 0.0;
+
+  axom::Array<TetrahedronType> split_tets(8);
+
+  axom::primal::split(oct, split_tets);
+
+  for(int i = 0; i < split_tets.size(); i++)
+  {
+    tet_volumes += (axom::primal::clip(split_tets[i], tet)).volume();
+  }
+
+  // Expected result should still be 0.3333
+  EXPECT_NEAR(0.3333, tet_volumes, EPS);
 }
 
 //------------------------------------------------------------------------------
