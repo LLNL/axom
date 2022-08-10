@@ -130,8 +130,11 @@ void put_bounding_box_to_conduit_node(const primal::BoundingBox<double, NDIMS>& 
                                       conduit::Node& node)
 {
   node["dim"].set(bb.dimension());
-  node["lo"].set(bb.getMin().data(), bb.dimension());
-  node["hi"].set(bb.getMax().data(), bb.dimension());
+  if(bb.isValid())
+  {
+    node["lo"].set(bb.getMin().data(), bb.dimension());
+    node["hi"].set(bb.getMax().data(), bb.dimension());
+  }
 }
 
 /**
@@ -141,13 +144,17 @@ template <int NDIMS>
 void get_bounding_box_from_conduit_node(primal::BoundingBox<double, NDIMS>& bb,
                                         const conduit::Node& node)
 {
-  int dim = node.fetch_existing("dim").as_int();
-  SLIC_ASSERT(dim == NDIMS);
-  const double* lo = node.fetch_existing("lo").as_double_ptr();
-  const double* hi = node.fetch_existing("hi").as_double_ptr();
-  bb =
-    primal::BoundingBox<double, NDIMS>(primal::Point<double, NDIMS>(lo, NDIMS),
-                                       primal::Point<double, NDIMS>(hi, NDIMS));
+  using PointType = primal::Point<double, NDIMS>;
+
+  SLIC_ASSERT(NDIMS == node.fetch_existing("dim").as_int());
+
+  bb.clear();
+
+  if(node.has_child("lo"))
+  {
+    bb.addPoint(PointType(node.fetch_existing("lo").as_double_ptr(), NDIMS));
+    bb.addPoint(PointType(node.fetch_existing("hi").as_double_ptr(), NDIMS));
+  }
 }
 
 /// Helper function to extract the dimension from the coordinate values group
@@ -502,6 +509,13 @@ public:
 #else
       break;
 #endif
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      local_bb = m_bvh_hip->getBounds();
+#else
+      break;
+#endif
     }
 
     gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
@@ -546,9 +560,8 @@ public:
       auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
       SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
       const int npts = internal::extractSize(coords);
-      ArrayView<PointType> queryPts = ArrayView_from_Node<PointType>(
-        mesh.fetch_existing("coordsets/coords/values/x"),
-        npts);
+      ArrayView<PointType> queryPts =
+        ArrayView_from_Node<PointType>(coords.fetch_existing("x"), npts);
       for(const auto& p : queryPts)
       {
         rval.addPoint(p);
@@ -701,9 +714,12 @@ public:
         int nextDst = (m_rank + 1) % m_nranks;
         get_bounding_box_from_conduit_node(queryPartitionBb,
                                            xferNodePtr->fetch_existing("aabb"));
+
         while(xferNodePtr && nextDst != m_rank)
         {
-          double sqDist =
+          const bool isValidDistance = queryPartitionBb.isValid() &&
+            m_objectPartitionBbs[nextDst].isValid();
+          const double sqDist =
             squared_distance(m_objectPartitionBbs[nextDst], queryPartitionBb);
           const int homeRank = xferNodePtr->fetch_existing("homeRank").as_int();
 
@@ -717,10 +733,14 @@ public:
           {
             // Send query partition to another rank to continue search.
             // But don't bother if that rank's object partition is too far from this mesh partition.
-            double sqSearchDist = m_sqDistanceThreshold;
             isendRequests.emplace_back(conduit::relay::mpi::Request());
             auto& req = isendRequests.back();
-            if(sqDist <= sqSearchDist || nextDst == homeRank)
+
+            const bool shouldSend =
+              (isValidDistance && sqDist <= m_sqDistanceThreshold) ||
+              nextDst == homeRank;
+
+            if(shouldSend)
             {
               if(homeRank == m_rank)
               {
@@ -814,7 +834,6 @@ public:
           if(should_copy)
           {
             copy_xfer_node_to_query_node(xferNode, queryMesh);
-            xferNodePtr.reset();
 
             if(m_isVerbose)
             {
@@ -831,6 +850,7 @@ public:
                   round));
             }
           }
+          xferNodePtr.reset();
         }
       }  // Locally process *xferNodePtr
 
