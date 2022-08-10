@@ -103,9 +103,29 @@ double convex_endpoint_winding_number(bool is_init,
                                               V1[1] - V2[1], V2[1]);
   // clang-format on
 
-  // If the tangent lines are parallel, winding number is 0
+  // This means the tangent lines are anti-parallel.
+  //  Parallel tangents can't happen with nontrivial convex control polygons
   if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
+  {
+    V1 = Vector<T, 2>(c[0], c[1]);
+
+    for(int i = 1; i < ord - 1; ++i)
+    {
+      V2 = Vector<T, 2>(c[0], c[i]);
+
+      // clang-format off
+      double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
+                                                  V1[1] - V2[1], V2[1]);
+      // clang-format on
+
+      // Because we are convex, a single non-colinear vertex tells us the orientation
+      if(!axom::utilities::isNearlyEqual(orient, 0.0))
+        return (orient > 0) ? 0.5 : -0.5;
+    }
+
+    // If all vectors are parallel, the curve is linear and return 0
     return 0;
+  }
 
   double dotprod = axom::utilities::clampVal(
     Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()),
@@ -142,24 +162,12 @@ double adaptive_winding_number(const Point2D& q,
                                double EPS = 1e-8)
 {
   const int ord = c.getOrder();
-  if(ord <= 0) return 0.0; // Catch degenerate cases
-
-  Polygon<T, 2> controlPolygon(c.getControlPoints());
-  
-  //std::cout << q << ", x_n = [";
-  //for(int p = 0; p <= ord; ++p)
-  //{
-  //  std::cout << c[p][0] << (p < ord ? "," : "");
-  //}
-  //std::cout << "], y_n = [";
-  //for(int p = 0; p <= ord; ++p)
-  //{
-  //  std::cout << c[p][1] << (p < ord ? "," : "");
-  //}
-  //std::cout << "]" << std::endl;
+  if(ord <= 0) return 0.0;  // Catch degenerate cases
 
   // Use linearity as base case for recursion
   if(c.isLinear(EPS)) return -closure_winding_number(q, c, edge_tol);
+
+  Polygon<T, 2> controlPolygon(c.getControlPoints());
 
   // If outside control polygon (with nonzero protocol)
   if(!in_polygon(q, controlPolygon, true, false, EPS))
