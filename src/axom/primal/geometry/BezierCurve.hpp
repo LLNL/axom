@@ -163,6 +163,7 @@ public:
 
     const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
+    for(int p = 0; p <= ord; ++p) m_controlPoints[p] = pts[p];
 
     if(weights == nullptr)
       m_weights.resize(0);
@@ -281,7 +282,7 @@ public:
   /// Returns a copy of the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
-  /// Returns a copy of the Bezier curve's control points
+  /// Returns a copy of the Bezier curve's weights
   axom::Array<T> getWeights() const { return m_weights; }
 
   /// Reverses the order of the Bezier curve's control points and weights
@@ -396,7 +397,7 @@ public:
   {
     using axom::utilities::lerp;
     VectorType val;
-
+    
     const int ord = getOrder();
     axom::Array<T> dCarray(ord + 1);
 
