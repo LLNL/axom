@@ -59,7 +59,7 @@ T sector_area(const primal::BezierCurve<T, 2>& curve)
 }
 
 /*!
-   * \brief Calculates the sector centroid of a planar Bezier Curve
+   * \brief Calculates the sector centroid of a planar, nonrational Bezier Curve
    *
    * This is the centroid of the region between the curve and the origin.
    * The equation and derivation are generalizations of:
@@ -110,7 +110,7 @@ T area(const primal::CurvedPolygon<T, 2>& poly, double tol = 1e-8)
     for(int ed = 0; ed < ngon; ++ed)
     {
       // Algorithm works only on nonrational Bezier curves
-      SLIC_ASSERT(!ed.isRational());
+      SLIC_ASSERT(!poly[ed].isRational());
 
       A += primal::sector_area(poly[ed]);
     }
@@ -142,7 +142,7 @@ primal::Point<T, 2> centroid(const primal::CurvedPolygon<T, 2>& poly,
       for(int ed = 0; ed < ngon; ++ed)
       {
         // Algorithm works only on nonrational Bezier curves
-        SLIC_ASSERT(!ed.isRational());
+        SLIC_ASSERT(!poly[ed].isRational());
 
         M.array() += primal::sector_centroid(poly[ed]).array();
       }

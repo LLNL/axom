@@ -50,7 +50,7 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * The curve is approximated by the control points,
  * parametrized from t=0 to t=1.
  * 
- * Contains an array of weights to represent a rational Bezier curve.
+ * Contains an array of positive weights to represent a rational Bezier curve.
  * Nonrational Bezier curves are identified by an empty weights array.
  * Algorithms for Rational Bezier curves derived from 
  * Gerald Farin, "Algorithms for rational Bezier curves"

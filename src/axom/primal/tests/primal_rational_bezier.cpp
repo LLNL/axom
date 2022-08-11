@@ -413,8 +413,9 @@ TEST(primal_rationalbezier, winding_number)
   for(double theta = 0.01; theta < 1.5; theta += 0.05)
     for(int i = 1; i < 9; i++)
     {
-      double ri = 1.0 - std::pow(10, -i);
-      double ro = 1.0 + std::pow(10, -i);
+      const double offset = std::pow(10, -i);
+      const double ri = 1.0 - offset;
+      const double ro = 1.0 + offset;
 
       EXPECT_NEAR(
         winding_number(Point2D({ri * std::cos(theta), ri * std::sin(theta)}),
