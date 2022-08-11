@@ -53,8 +53,8 @@ namespace primal
  * \param [in] npts the number of Gaussian quadrature nodes for each component
  * \return the value of the integral
  */
-template <class Lambda, typename T, int NDIMS>
-double evaluate_line_integral(const axom::Array<primal::BezierCurve<T, NDIMS>>& cs,
+template <class Lambda>
+double evaluate_line_integral(const axom::Array<primal::BezierCurve<double, 2>>& cs,
                               Lambda&& integrand,
                               int npts)
 {
@@ -88,8 +88,8 @@ double evaluate_line_integral(const axom::Array<primal::BezierCurve<T, NDIMS>>& 
  * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
  * \return the value of the integral
  */
-template <class Lambda, typename T, int NDIMS>
-double evaluate_line_integral(const primal::CurvedPolygon<T, NDIMS> cpoly,
+template <class Lambda>
+double evaluate_line_integral(const primal::CurvedPolygon<double, 2> cpoly,
                               Lambda&& integrand,
                               int npts)
 {
@@ -124,8 +124,8 @@ double evaluate_line_integral(const primal::CurvedPolygon<T, NDIMS> cpoly,
  * \param [in] npts the number of quadrature nodes
  * \return the value of the integral
  */
-template <class Lambda, typename T, int NDIMS>
-double evaluate_line_integral(const primal::BezierCurve<T, NDIMS>& c,
+template <class Lambda>
+double evaluate_line_integral(const primal::BezierCurve<double, 2>& c,
                               Lambda&& integrand,
                               int npts)
 {
@@ -154,8 +154,8 @@ double evaluate_line_integral(const primal::BezierCurve<T, NDIMS>& c,
  * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
  * \return the value of the integral
  */
-template <class Lambda, typename T>
-double evaluate_area_integral(const axom::Array<primal::BezierCurve<T, 2>>& cs,
+template <class Lambda>
+double evaluate_area_integral(const axom::Array<primal::BezierCurve<double, 2>>& cs,
                               Lambda&& integrand,
                               int npts_Q,
                               int npts_P = 0)
@@ -205,8 +205,8 @@ double evaluate_area_integral(const axom::Array<primal::BezierCurve<T, 2>>& cs,
  * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
  * \return the value of the integral
  */
-template <class Lambda, typename T>
-double evaluate_area_integral(const primal::CurvedPolygon<T, 2> cpoly,
+template <class Lambda>
+double evaluate_area_integral(const primal::CurvedPolygon<double, 2> cpoly,
                               Lambda&& integrand,
                               int npts_Q,
                               int npts_P = 0)
