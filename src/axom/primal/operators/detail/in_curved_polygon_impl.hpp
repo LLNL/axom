@@ -25,27 +25,26 @@ namespace primal
 namespace detail
 {
 /*
- * \brief Compute the "closure winding number" for a Bezier curve
+ * \brief Compute the winding number with respect to a line segment
  *
- * \param [in] query The query point to test
- * \param [in] c The BezierCurve object to close
+ * \param [in] q The query point to test
+ * \param [in] c0 The initial point of the line segment
+ * \param [in] c1 The terminal point of the line segment
+ * \param [in] edge_tol The tolerance at which a point is on the line
  *
- * A possible "closure" of a Bezier curve is a straight line segment 
- * connecting its two endpoints. The "closure winding number" is the 
- * winding number of the query point with respect to this segment. This
- * is calculated directly by measuring the angle spanned by lines connecting
- * the query point to each endpoint of the Bezier curve.
- * 
+ * The winding number for a point with respect to a straight line
+ * is the signed angle subtended by the query point to each endpoint.
+ *
  * \return 
  */
 template <typename T>
-double closure_winding_number(const Point<T, 2>& q,
-                              const BezierCurve<T, 2>& c,
-                              const double edge_tol)
+double linear_winding_number(const Point<T, 2>& q,
+                             const Point<T, 2>& c0,
+                             const Point<T, 2>& c1,
+                             const double edge_tol)
 {
-  const int ord = c.getOrder();
-  Vector<T, 2> V1 = Vector<T, 2>(q, c[0]);
-  Vector<T, 2> V2 = Vector<T, 2>(q, c[ord]);
+  Vector<T, 2> V1 = Vector<T, 2>(q, c0);
+  Vector<T, 2> V2 = Vector<T, 2>(q, c1);
 
   // clang-format off
   double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
@@ -94,20 +93,22 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   int i;
   Vector<T, 2> V1, V2;
 
+  // Need to find vectors that subtend the entire curve.
+  //   We must ignore duplicate nodes
   for(i = 0; i <= ord; ++i)
     if(squared_distance(q, c[i]) > edge_tol * edge_tol) break;
   V1 = Vector<T, 2>(q, c[i]);
 
   for(i = ord; i >= 0; --i)
     if(squared_distance(q, c[i]) > edge_tol * edge_tol) break;
-  V2 = Vector<T, 2>(c[0], q);
+  V2 = Vector<T, 2>(q, c[i]);
 
   // clang-format off
   double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
                                               V1[1] - V2[1], V2[1]);
   // clang-format on
 
-  // This means the tangent lines are anti-parallel.
+  // This means the bounding vectors are anti-parallel.
   //  Parallel tangents can't happen with nontrivial convex control polygons
   if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
   {
@@ -169,15 +170,17 @@ double adaptive_winding_number(const Point2D& q,
   if(ord <= 0) return 0.0;  // Catch degenerate cases
 
   // Use linearity as base case for recursion
-  if(c.isLinear(EPS)) return -closure_winding_number(q, c, edge_tol);
+  if(c.isLinear(EPS))
+    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
 
   Polygon<T, 2> controlPolygon(c.getControlPoints());
 
-  // If outside control polygon (with nonzero protocol)
+  // If outside polygon, winding number for the closed shape is 0
   if(!in_polygon(q, controlPolygon, true, false, EPS))
-    return -closure_winding_number(q, c, edge_tol);
+    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
 
-  // Check if our new curve is convex, if we have to
+  // Check if our new curve is convex.
+  //  If so, all subcurves will be convex as well
   if(!convex_cp) convex_cp = is_convex(controlPolygon);
 
   // If the query point is at either endpoint, use direct formula
@@ -187,7 +190,7 @@ double adaptive_winding_number(const Point2D& q,
       (squared_distance(q, c[ord]) <= edge_tol * edge_tol)))
     return convex_endpoint_winding_number(q, c, edge_tol, EPS);
 
-  // Otherwise, our quadrature didn't give us a good enough answer, so we try again
+  // Recursively split curve until query is outside each control polygon
   BezierCurve<T, 2> c1, c2;
   c.split(0.5, c1, c2);
 
