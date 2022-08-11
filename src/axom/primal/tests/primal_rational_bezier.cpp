@@ -531,7 +531,6 @@ TEST(primal_rationalbezier, rational_intersection)
   EXPECT_NEAR(bottom_arc.evaluate(sp[1])[0], top_arc.evaluate(tp[1])[0], abs_tol);
   EXPECT_NEAR(bottom_arc.evaluate(sp[1])[1], top_arc.evaluate(tp[1])[1], abs_tol);
 
-
   // Check intersection of nonrational and rational curve
   Point2D line_nodes[] = {Point2D {1.3, 0}, Point2D {0, 1.3}};
   Bezier line(line_nodes, 1);

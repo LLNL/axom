@@ -167,7 +167,7 @@ TEST(primal_beziercurve, evaluate)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_beziercurve, tangent)
+TEST(primal_beziercurve_, tangent)
 {
   SLIC_INFO("Testing Bezier tangent calculation");
 
@@ -491,6 +491,8 @@ TEST(primal_beziercurve, reverseOrientation)
     }
   }
 }
+
+//------------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
