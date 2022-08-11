@@ -71,7 +71,7 @@ double linear_winding_number(const Point<T, 2>& q,
  * \param [in] c The BezierCurve object to compute the winding number along
  * \param [in] edge_tol The tolerance at which control nodes are indistinguishable
  * \param [in] EPS Tolerance for isNearlyZero
- * \pre 
+ * \pre Control polygon for c must be convex
  *
  * The winding number for a Bezier curve with a convex control polygon is
  * given by the signed angle between the tangent vector at that endpoint and
@@ -109,7 +109,9 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 
   // This means the bounding vectors are anti-parallel.
   //  Parallel tangents can't happen with nontrivial convex control polygons
-  if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
+  if(ord <= 3)
+    return 0;
+  else if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
   {
     for(int i = 1; i < ord; ++i)
     {
