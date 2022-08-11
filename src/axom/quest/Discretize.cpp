@@ -35,7 +35,7 @@ Point3D project_to_shape(const Point3D& p, const SphereType& sphere)
   const auto& ctr = sphere.getCenter();
   const double dist2 = primal::squared_distance(ctr, p);
   const double dist = sqrt(dist2);
-  const double drat = sphere.getRadius() * dist / (dist2 + primal::PTINY);
+  const double drat = sphere.getRadius() * dist / (dist2 + primal::PRIMAL_TINY);
 
   return Point3D::lerp(ctr, p, drat);
 }
@@ -118,7 +118,7 @@ bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcou
     return false;
   }
   // Zero radius: return true without generating octahedra.
-  if(sphere.getRadius() < primal::PTINY)
+  if(sphere.getRadius() < primal::PRIMAL_TINY)
   {
     octcount = 0;
     return true;

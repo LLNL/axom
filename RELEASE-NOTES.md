@@ -99,8 +99,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   fields.
 - Adds functions to compute winding numbers and in/out queries for `Polygon` and `CurvedPolygon` objects.
 - Adds `constants.hpp` to primal to track geometric constants. Initially includes
-  a value for `primal::PTINY`, a small constant that can be added to 
+  a value for `PRIMAL_TINY`, a small constant that can be added to 
   denominators to avoid division by zero.
+- `DistributedClosestPoint` query now supports "domain underloading" -- ranks that are passed in can 
+  have empty object meshes and/or empty query meshes 
+- 'BezierCurve' objects now support Rational Bezier curve functionality
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.

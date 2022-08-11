@@ -10,7 +10,7 @@
  * \file compute_moments.hpp
  *
  * \brief Consists of a set of methods to compute areas/volumes and centroids 
- * for Polygons and CurvedPolygons composed of BezierCurves
+ * for Polygon and CurvedPolygon objects composed of nonrational BezierCurve objects
  */
 
 #include "axom/config.hpp"
@@ -28,7 +28,7 @@ namespace axom
 namespace primal
 {
 /*!
-   * \brief Calculates the sector area of a planar Bezier Curve
+   * \brief Calculates the sector area of a planar, nonrational Bezier Curve
    *
    * The sector area is the area between the curve and the origin.
    * The equation and derivation is described in:
@@ -38,6 +38,9 @@ namespace primal
 template <typename T>
 T sector_area(const primal::BezierCurve<T, 2>& curve)
 {
+  // Algorithm works only on nonrational Bezier curves
+  SLIC_ASSERT(!curve.isRational());
+
   // Weights for each polynomial order are precomputed and memoized
   static detail::MemoizedSectorAreaWeights<T> s_weights;
 
@@ -56,7 +59,7 @@ T sector_area(const primal::BezierCurve<T, 2>& curve)
 }
 
 /*!
-   * \brief Calculates the sector centroid of a planar Bezier Curve
+   * \brief Calculates the sector centroid of a planar, nonrational Bezier Curve
    *
    * This is the centroid of the region between the curve and the origin.
    * The equation and derivation are generalizations of:
@@ -66,6 +69,9 @@ T sector_area(const primal::BezierCurve<T, 2>& curve)
 template <typename T>
 primal::Point<T, 2> sector_centroid(const primal::BezierCurve<T, 2>& curve)
 {
+  // Algorithm works only on nonrational Bezier curves
+  SLIC_ASSERT(!curve.isRational());
+
   // Weights for each polynomial order's centroid are precomputed and memoized
   static detail::MemoizedSectorCentroidWeights<T> s_weights;
 
@@ -103,6 +109,9 @@ T area(const primal::CurvedPolygon<T, 2>& poly, double tol = 1e-8)
   {
     for(int ed = 0; ed < ngon; ++ed)
     {
+      // Algorithm works only on nonrational Bezier curves
+      SLIC_ASSERT(!poly[ed].isRational());
+
       A += primal::sector_area(poly[ed]);
     }
     return A;
@@ -132,6 +141,9 @@ primal::Point<T, 2> centroid(const primal::CurvedPolygon<T, 2>& poly,
     {
       for(int ed = 0; ed < ngon; ++ed)
       {
+        // Algorithm works only on nonrational Bezier curves
+        SLIC_ASSERT(!poly[ed].isRational());
+
         M.array() += primal::sector_centroid(poly[ed]).array();
       }
       M.array() /= A;
