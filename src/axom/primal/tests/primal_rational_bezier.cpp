@@ -382,6 +382,46 @@ TEST(primal_beziercurve, reverseOrientation)
   }
 }
 
+TEST(primal_beziercurve, isRational)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const double abs_tol = 1e-8;
+
+  const int order = 3;
+  PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
+                               PointType {1.3, 1.6, 1.8},
+                               PointType {2.9, 2.4, 2.3},
+                               PointType {3.2, 3.5, 3.0}};
+
+  BezierCurveType bCurve(data, order);
+
+  BezierCurveType rCurve(data, order);
+  
+  EXPECT_FALSE(rCurve.isRational());
+  rCurve.makeRational();
+  EXPECT_TRUE(rCurve.isRational());
+  
+
+  // Verify that makeRational makes curve trivially rational
+  for(int i = 1; i <= order; i++)
+    EXPECT_TRUE(rCurve.getWeight(0), rCurve.getWeight(i));
+
+  // Verify that trivially rational Bezier curve is identical
+  //  to polynomial Bezier curve
+  for(double t = 0; t <= 1; t += 0.5)
+  {
+    EXPECT_NEAR(bCurve.evaluate(t)[0], rCurve.evaluate(t)[0], abs_tol);
+    EXPECT_NEAR(bCurve.evaluate(t)[1], rCurve.evaluate(t)[1], abs_tol);
+  }
+
+  rCurve.makeNonrational();
+  EXPECT_FALSE(rCurve.isRational());
+}
+
 TEST(primal_rationalbezier, winding_number)
 {
   using Point2D = primal::Point<double, 2>;
