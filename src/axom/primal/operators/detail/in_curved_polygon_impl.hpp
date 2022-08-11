@@ -52,6 +52,7 @@ double closure_winding_number(const Point<T, 2>& q,
                                               V1[1] - V2[1], V2[1]);
   // clang-format on
 
+  // Compute distance from line connecting endpoints to query
   if(orient * orient / (V1 - V2).squared_norm() <= edge_tol * edge_tol)
     return 0;
 
@@ -64,11 +65,14 @@ double closure_winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Directly compute the winding number at an endpoint of a 
+ * \brief Directly compute the winding number at either endpoint of a 
  *        Bezier curve with a convex control polygon
  *
  * \param [in] is_init Boolean value indicating endpoint is at t=0
  * \param [in] c The BezierCurve object to compute the winding number along
+ * \param [in] edge_tol The tolerance at which control nodes are indistinguishable
+ * \param [in] EPS Tolerance for isNearlyZero
+ * \pre 
  *
  * The winding number for a Bezier curve with a convex control polygon is
  * given by the signed angle between the tangent vector at that endpoint and
@@ -78,25 +82,25 @@ double closure_winding_number(const Point<T, 2>& q,
  * \return 
  */
 template <typename T>
-double convex_endpoint_winding_number(bool is_init,
+double convex_endpoint_winding_number(const Point<T, 2>& q,
                                       const BezierCurve<T, 2>& c,
+                                      const double edge_tol,
                                       const double EPS)
 {
   const int ord = c.getOrder();
 
   if(ord == 1) return 0;
 
+  int i;
   Vector<T, 2> V1, V2;
-  if(is_init)  // Query point is on initial endpoint
-  {
-    V1 = c.dt(0);
-    V2 = Vector<T, 2>(c[0], c[ord]);
-  }
-  else  // Query point is on terminal endpoint
-  {
-    V1 = Vector<T, 2>(c[ord], c[0]);
-    V2 = -c.dt(1);
-  }
+
+  for(i = 0; i <= ord; ++i)
+    if(squared_distance(q, c[i]) > edge_tol * edge_tol) break;
+  V1 = Vector<T, 2>(q, c[i]);
+
+  for(i = ord; i >= 0; --i)
+    if(squared_distance(q, c[i]) > edge_tol * edge_tol) break;
+  V2 = Vector<T, 2>(c[0], q);
 
   // clang-format off
   double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
@@ -109,7 +113,7 @@ double convex_endpoint_winding_number(bool is_init,
   {
     V1 = Vector<T, 2>(c[0], c[1]);
 
-    for(int i = 1; i < ord - 1; ++i)
+    for(int i = 1; i < ord; ++i)
     {
       V2 = Vector<T, 2>(c[0], c[i]);
 
@@ -176,20 +180,12 @@ double adaptive_winding_number(const Point2D& q,
   // Check if our new curve is convex, if we have to
   if(!convex_cp) convex_cp = is_convex(controlPolygon);
 
-  // Can't use endpoint formulas if not convex
-  if(convex_cp)
-  {
-    // Check if we are close to an endpoint
-    bool at_init_endpoint = (squared_distance(q, c[0]) <= edge_tol * edge_tol);
-    bool at_final_endpoint = (squared_distance(q, c[ord]) <= edge_tol * edge_tol);
-
-    // Use direct formula if at either endpoint.
-    if(at_init_endpoint && !at_final_endpoint)
-      return convex_endpoint_winding_number(true, c, EPS);
-    if(at_final_endpoint && !at_init_endpoint)
-      return convex_endpoint_winding_number(false, c, EPS);
-    // If at both endpoints, do a split and avoid a headache
-  }
+  // If the query point is at either endpoint, use direct formula
+  //   Can only use formula if the control polygon is convex
+  if(convex_cp &&
+     ((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
+      (squared_distance(q, c[ord]) <= edge_tol * edge_tol)))
+    return convex_endpoint_winding_number(q, c, edge_tol, EPS);
 
   // Otherwise, our quadrature didn't give us a good enough answer, so we try again
   BezierCurve<T, 2> c1, c2;
