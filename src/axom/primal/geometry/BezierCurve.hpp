@@ -171,9 +171,8 @@ public:
     {
       m_weights.resize(sz);
       for(int p = 0; p <= ord; ++p) m_weights[p] = weights[p];
+      SLIC_ASSERT(isValidRational());
     }
-
-    SLIC_ASSERT(isValid());
   }
 
   /*!
@@ -219,7 +218,7 @@ public:
     m_controlPoints = pts;
     m_weights = weights;
 
-    SLIC_ASSERT(isValid());
+    SLIC_ASSERT(isValidRational());
   }
 
   /// Sets the order of the Bezier Curve
@@ -235,7 +234,7 @@ public:
     {
       const int ord = getOrder();
       m_weights.resize(ord + 1);
-      for(int i = 0; i < ord + 1; i++) m_weights[i] = 1.0;
+      for(int i = 0; i <= ord; i++) m_weights[i] = 1.0;
     }
   }
 
@@ -245,13 +244,17 @@ public:
   /// Use array size as flag for rationality
   bool isRational() const { return (m_weights.size() != 0); }
 
-  /// Check that the weights used are valid
-  bool isValid() const
+  /// Check that the weights used are positive, and
+  ///  that there is one for each control node
+  bool isValidRational() const
   {
-    if(isRational()) return true;
+    if(!isRational()) return true;
 
     const int ord = getOrder();
-    for(int i = 0; i < ord; ++i)
+
+    if(m_weights.size() != (ord + 1)) return false;
+
+    for(int i = 0; i <= ord; ++i)
       if(m_weights[i] <= 0) return false;
 
     return true;

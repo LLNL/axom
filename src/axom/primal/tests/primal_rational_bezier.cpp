@@ -350,7 +350,7 @@ TEST(primal_beziercurve, reverseOrientation)
       for(int i = 0; i <= order; ++i)
       {
         pts[i] = PointType(i);
-        weights[i] = i;
+        weights[i] = i+1;
       }
       BezierCurveType curve(pts.data(), weights.data(), order);
 
