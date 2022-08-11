@@ -103,6 +103,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   denominators to avoid division by zero.
 - `DistributedClosestPoint` query now supports "domain underloading" -- ranks that are passed in can 
   have empty object meshes and/or empty query meshes 
+- 'BezierCurve' objects now support Rational Bezier curve functionality
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.

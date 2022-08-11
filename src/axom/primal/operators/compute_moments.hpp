@@ -10,7 +10,7 @@
  * \file compute_moments.hpp
  *
  * \brief Consists of a set of methods to compute areas/volumes and centroids 
- * for Polygons and CurvedPolygons composed of nonrational BezierCurves
+ * for Polygon and CurvedPolygon objects composed of nonrational BezierCurve objects
  */
 
 #include "axom/config.hpp"
