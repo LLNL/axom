@@ -68,6 +68,10 @@ public:
 
   double distThreshold {std::numeric_limits<double>::max()};
 
+  bool checkResults {false};
+
+  bool randomSpacing {true};
+
 private:
   bool m_verboseOutput {false};
 
@@ -134,6 +138,10 @@ public:
       ->description("Center for object (x,y[,z])")
       ->expected(2, 3);
 
+    app.add_flag("--random-spacing,!--no-random-spacing", randomSpacing)
+      ->description("Enable/disable random spacing of circle points")
+      ->capture_default_str();
+
     app.add_option("-d,--dist-threshold", distThreshold)
       ->check(axom::CLI::NonNegativeNumber)
       ->description("Distance threshold to search")
@@ -147,6 +155,11 @@ public:
       ->description("Set runtime policy for point query method")
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+
+    app.add_flag("-c,--check-results,!--no-check-results", checkResults)
+      ->description(
+        "Enable/disable checking results against analytical solution")
+      ->capture_default_str();
 
     app.get_formatter()->column_width(60);
 
@@ -431,6 +444,8 @@ private:
 class ObjectMeshWrapper
 {
 public:
+  using Circle = primal::Sphere<double, 2>;
+
   ObjectMeshWrapper(sidre::Group* group) : m_group(group), m_mesh(m_group)
   {
     SLIC_ASSERT(m_group != nullptr);
@@ -448,7 +463,7 @@ public:
    * Generates a collection of \a numPoints points along a circle
    * of radius \a radius centered at the origin
    */
-  void generateCircleMesh(double radius, std::vector<double>& center, int numPoints)
+  void generateCircleMesh(const Circle& circle, int numPoints)
   {
     using axom::utilities::random_real;
 
@@ -459,6 +474,8 @@ public:
     using PointType = primal::Point<double, DIM>;
     using PointArray = axom::Array<PointType>;
 
+    double radius = circle.getRadius();
+    const auto& center = circle.getCenter();
     PointArray pts(0, numPoints);
     const double thetaScale = 2. * M_PI / m_mesh.getNumRanks();
     const double thetaStart = m_mesh.getRank() * thetaScale;
@@ -469,6 +486,52 @@ public:
       const double rsinT = center[1] + radius * std::sin(angleInRadians);
       const double rcosT = center[0] + radius * std::cos(angleInRadians);
 
+      pts.push_back(PointType {rcosT, rsinT});
+    }
+
+    m_mesh.setPoints(pts);
+
+    SLIC_ASSERT(m_mesh.isValid());
+  }
+  /**
+   * Generates a collection of \a numPoints points along a circle.
+   * Point spacing can be random (default) or uniform.
+   */
+  void generateCircleMesh(const Circle& circle,
+                          int numPoints,
+                          bool randomSpacing = true)
+  {
+    using axom::utilities::random_real;
+
+    // Check that we're starting with a valid group
+    SLIC_ASSERT(m_group != nullptr);
+
+    constexpr int DIM = 2;
+    using PointType = primal::Point<double, DIM>;
+    using PointArray = axom::Array<PointType>;
+
+    int rank = m_mesh.getRank();
+    int nranks = m_mesh.getNumRanks();
+    if(numPoints < rank)
+      numPoints = rank;  // Test code requires all ranks to have points.
+    int ptsPerRank = numPoints / nranks;
+    int ranksWithExtraPt = numPoints % nranks;
+
+    double radius = circle.getRadius();
+    const auto& center = circle.getCenter();
+
+    int iBegin = rank * ptsPerRank + std::min(rank, ranksWithExtraPt);
+    int iEnd = (rank + 1) * ptsPerRank + std::min((rank + 1), ranksWithExtraPt);
+    int localNumPoints = iEnd - iBegin;
+    PointArray pts(0, localNumPoints);
+    const double avgAng = 2. * M_PI / numPoints;
+    for(int i = iBegin; i < iEnd; ++i)
+    {
+      const double ang = randomSpacing
+        ? random_real(avgAng * iBegin, avgAng * iEnd, 0)
+        : i * avgAng;
+      const double rsinT = center[1] + radius * std::sin(ang);
+      const double rcosT = center[0] + radius * std::cos(ang);
       pts.push_back(PointType {rcosT, rsinT});
     }
 
@@ -495,6 +558,8 @@ private:
 class QueryMeshWrapper
 {
 public:
+  using Circle = primal::Sphere<double, 2>;
+
   QueryMeshWrapper(const std::string& cpFilename = "closest_point")
     : m_dc(cpFilename, nullptr, true)
   { }
@@ -573,7 +638,7 @@ public:
 
   /**
    * Loads the mesh as an MFEMSidreDataCollection with
-   * the following fields: "positions", "distances", "directions"
+   * the following fields: "positions", "distance", "direction"
    */
   void setupMesh(const std::string& fileName, const std::string meshFile)
   {
@@ -616,6 +681,18 @@ public:
     mfem::GridFunction* directions = new mfem::GridFunction(vfes);
     directions->MakeOwner(vfec);
     m_dc.RegisterField("direction", directions);
+
+    // Register the "error_flag" grid function
+    auto* efec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
+    mfem::FiniteElementSpace* efes = new mfem::FiniteElementSpace(cpMesh, efec);
+    mfem::GridFunction* errFlags = new mfem::GridFunction(efes);
+    errFlags->MakeOwner(efec);
+    m_dc.RegisterField("error_flag", errFlags);
+    // Initialize errorFlag to zeroes.  Is there a better way do do this?
+    for(auto i : slam::PositionSet<>(errFlags->Size()))
+    {
+      (*errFlags)[i] = 0;
+    }
   }
 
   /// Prints some info about the mesh
@@ -630,6 +707,127 @@ public:
       printMeshInfo<3>();
       break;
     }
+  }
+
+  /**
+   * Return number of errors found on the local mesh partition.
+   * Populate "error_flag" field with the number of errors, for
+   * visualization.  Randomized circle points (--random-spacing
+   * switch) can cause false positives, so when on, distance
+   * inaccuracy is a warning (not an error) for the purpose of
+   * checking.
+   */
+  template <int NDIMS>
+  int checkClosestPoints(const Circle& circle, const Input& params)
+  {
+    using PointType = Circle::PointType;
+    using PointArray = axom::Array<PointType>;
+    using SegmentType = primal::Segment<double, NDIMS>;
+    using IndexSet = slam::PositionSet<>;
+
+    auto queryPts = getVertexPositions<PointArray>();
+
+    auto cpPositions =
+      getParticleMesh().getNodalVectorField<PointType>("closest_point");
+
+    auto cpIndices =
+      getParticleMesh().getNodalScalarField<axom::IndexType>("cp_index");
+
+    assert(queryPts.size() == cpPositions.size());
+    assert(queryPts.size() == cpIndices.size());
+
+    SLIC_INFO(axom::fmt::format("Closest points ({}):", cpPositions.size()));
+
+    /*
+      Allowable slack is half the distance between 2 adjacent circle
+      points.  A query point on the circle can correctly have that
+      closest-distance, even though the analytical distance is zero.
+      If spacing is random, distance between adjacent points is
+      unpredictable.
+    */
+    const double avgObjectRes =
+      2 * M_PI * params.circleRadius / params.circlePoints;
+    const double allowableSlack = avgObjectRes / 2;
+
+    int sumErrCount = 0;
+    int sumWarningCount = 0;
+    auto& errorFlag = *getDC()->GetField("error_flag");
+    for(auto i : IndexSet(queryPts.size()))
+    {
+      const auto& qPt = queryPts[i];
+      const auto& cpPos = cpPositions[i];
+      double analyticalDist = std::fabs(circle.computeSignedDistance(qPt));
+      if(cpIndices[i] == -1)
+      {
+        if(analyticalDist < params.distThreshold - allowableSlack)
+        {
+          SLIC_INFO(
+            axom::fmt::format("***Error: Query point {} ({}) is within "
+                              "threshold by {} but lacks closest point.",
+                              i,
+                              qPt,
+                              params.distThreshold - analyticalDist));
+          errorFlag[i] = true;
+        }
+      }
+      else
+      {
+        if(analyticalDist >= params.distThreshold + allowableSlack)
+        {
+          errorFlag[i] = 1;
+          SLIC_INFO(
+            axom::fmt::format("***Error: Query point {} ({}) is outside "
+                              "threshold by {} but has closest point at {}.",
+                              i,
+                              qPt,
+                              analyticalDist - params.distThreshold,
+                              cpPos));
+        }
+
+        if(!axom::utilities::isNearlyEqual(circle.computeSignedDistance(cpPos),
+                                           0.0))
+        {
+          errorFlag[i] = true;
+          SLIC_INFO(axom::fmt::format(
+            "***Error: Closest point ({}) for index {} is not on the circle.",
+            cpPositions[i],
+            i));
+        }
+
+        SegmentType separation(qPt, cpPos);
+        double dist = separation.length();
+        if(!axom::utilities::isNearlyEqual(dist, analyticalDist, allowableSlack))
+        {
+          if(params.randomSpacing)
+          {
+            ++sumWarningCount;
+            SLIC_INFO(axom::fmt::format(
+              "***Warning: Closest distance for index {} is {}, off by {}.",
+              i,
+              dist,
+              dist - analyticalDist));
+          }
+          else
+          {
+            errorFlag[i] = true;
+            SLIC_INFO(
+              axom::fmt::format("***Error: Closest distance for index {} is "
+                                "{}, off by {}.",
+                                i,
+                                dist,
+                                dist - analyticalDist));
+          }
+        }
+      }
+      sumErrCount += errorFlag[i];
+    }
+
+    SLIC_INFO(axom::fmt::format(
+      "Local partition has {} errors, {} warnings in closest distance results.",
+      sumErrCount,
+      sumWarningCount));
+
+    return sumErrCount;
   }
 
 private:
@@ -748,22 +946,37 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
+  // Issue warning about result-checking requiring good resolution.
+  if(params.checkResults &&
+     (params.circlePoints < 100 ||
+      (params.randomSpacing && params.circlePoints < 500)))
+  {
+    SLIC_INFO(axom::fmt::format(
+      "***Warning: Result-checking may yield false positive when circle lacks "
+      "sufficient resolution.  We recommend at least 100 point, or 500 if "
+      "random spacing is used."));
+  }
+
   constexpr int DIM = 2;
 
   using PointType = primal::Point<double, DIM>;
   using PointArray = axom::Array<PointType>;
   using IndexSet = slam::PositionSet<>;
+  using Circle = primal::Sphere<double, DIM>;
 
   //---------------------------------------------------------------------------
   // Load/generate object mesh
   //---------------------------------------------------------------------------
+  const Circle circle(
+    PointType(params.circleCenter.data(), params.circleCenter.size()),
+    params.circleRadius);
   sidre::DataStore objectDS;
   ObjectMeshWrapper object_mesh_wrapper(
     objectDS.getRoot()->createGroup("object_mesh"));
 
-  object_mesh_wrapper.generateCircleMesh(params.circleRadius,
-                                         params.circleCenter,
-                                         params.circlePoints);
+  object_mesh_wrapper.generateCircleMesh(circle,
+                                         params.circlePoints,
+                                         params.randomSpacing);
   object_mesh_wrapper.saveMesh(params.objectFile);
 
   //---------------------------------------------------------------------------
@@ -861,6 +1074,7 @@ int main(int argc, char** argv)
     query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
       "cp_index");
 
+  assert(nQueryPts == cpPositions.size());
   if(params.isVerbose())
   {
     auto cpRank =
@@ -876,6 +1090,14 @@ int main(int argc, char** argv)
                                   cpIndices[i],
                                   cpPositions[i]));
     }
+  }
+
+  int errCount = 0;
+  if(params.checkResults)
+  {
+    int localErrCount =
+      query_mesh_wrapper.checkClosestPoints<DIM>(circle, params);
+    MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
   }
 
   //---------------------------------------------------------------------------
@@ -919,5 +1141,5 @@ int main(int argc, char** argv)
   finalizeLogger();
   MPI_Finalize();
 
-  return 0;
+  return errCount != 0;
 }
