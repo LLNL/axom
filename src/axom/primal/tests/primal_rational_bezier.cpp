@@ -428,8 +428,8 @@ TEST(primal_rationalbezier, winding_number)
   using CPolygon = primal::CurvedPolygon<double, 2>;
 
   double abs_tol = 1e-8;
-  double lin_tol = 0;
   double edge_tol = 0;
+  double EPS = 0;
 
   // Simple quarter circle shape
   Point2D circle_nodes[] = {Point2D {1.0, 0.0},
@@ -459,16 +459,16 @@ TEST(primal_rationalbezier, winding_number)
       EXPECT_NEAR(
         winding_number(Point2D({ri * std::cos(theta), ri * std::sin(theta)}),
                        quarter_circle,
-                       lin_tol,
-                       edge_tol),
+                       edge_tol,
+                       EPS),
         1.0,
         abs_tol);
 
       EXPECT_NEAR(
         winding_number(Point2D({ro * std::cos(theta), ro * std::sin(theta)}),
                        quarter_circle,
-                       lin_tol,
-                       edge_tol),
+                       edge_tol,
+                       EPS),
         0.0,
         abs_tol);
     }
