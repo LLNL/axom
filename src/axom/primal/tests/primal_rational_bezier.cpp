@@ -400,15 +400,14 @@ TEST(primal_beziercurve, isRational)
   BezierCurveType bCurve(data, order);
 
   BezierCurveType rCurve(data, order);
-  
+
   EXPECT_FALSE(rCurve.isRational());
   rCurve.makeRational();
   EXPECT_TRUE(rCurve.isRational());
-  
 
   // Verify that makeRational makes curve trivially rational
   for(int i = 1; i <= order; i++)
-    EXPECT_TRUE(rCurve.getWeight(0), rCurve.getWeight(i));
+    EXPECT_DOUBLE_EQ(rCurve.getWeight(0), rCurve.getWeight(i));
 
   // Verify that trivially rational Bezier curve is identical
   //  to polynomial Bezier curve
