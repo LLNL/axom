@@ -139,8 +139,88 @@ private:
    * \brief Utility function to verify that the given SetPosition is in a valid
    * range.
    */
-  virtual void verifyPosition(PositionType) const = 0;
+  //virtual void verifyPosition(PositionType) const = 0;
 };
+
+template <typename SetType>
+class SetVirtualProxy
+  : public Set<typename SetType::PositionType, typename SetType::ElementType>
+{
+public:
+  using PositionType = typename SetType::PositionType;
+  using ElementType = typename SetType::ElementType;
+
+public:
+  SetVirtualProxy(SetType inst) : m_impl(std::move(inst)) { }
+
+  /**
+   * \brief Random access to the entities of the set
+   * \param The index of the desired element
+   * \return The value of the element at the given position
+   * \pre The position must be less than the number of elements in the set (
+   * size() )
+   * \note Concrete realizations of Set also support subscript operator --
+   * operator[].
+   * \note How are we planning to handle indexes that are out or range
+   *(accidentally)?
+   *       Are we planning to handle indexes that are intentionally out of range
+   *       (e.g. to indicate a problem, or a missing element etc..)?
+   */
+  ElementType at(PositionType pos) const override { return m_impl.at(pos); }
+
+  /**
+   * \brief Get the number of entities in the set
+   * \return The number of entities in the set.
+   */
+  virtual PositionType size() const override { return m_impl.size(); }
+
+  /**
+   * \brief Determines if the Set is a Subset of another set.
+   * \return true if the set is a subset of another set, otherwise false.
+   */
+  virtual bool isSubset() const override { return m_impl.isSubset(); }
+
+  /**
+   * \brief Checks whether the set is valid.
+   * \return true if the underlying indices are valid, false otherwise.
+   */
+  virtual bool isValid(bool verboseOutput = false) const override
+  {
+    return m_impl.isValid(verboseOutput);
+  }
+
+  /**
+   * \brief Checks if there are any elements in the set -- equivalent to:
+   * set.size() == 0
+   */
+  virtual bool empty() const override { return m_impl.empty(); }
+
+#if 0
+  /**
+   * \brief Returns true if the set contains the given element.
+   *
+   * Alternatively, we can return the position in the set containing the
+   * element,
+   * with some value for not containing the element
+   */
+  virtual bool          contains(const SetElement & elt) const = 0;
+
+  //Possible other useful functions
+  void                  reset(size_type) { throw NotImplementedException(); }
+#endif
+
+private:
+  SetType m_impl;
+};
+
+template <typename DerivedSet,
+          typename PosType = typename DerivedSet::PositionType,
+          typename ElemType = typename DerivedSet::ElementType>
+std::unique_ptr<Set<PosType, ElemType>> makeVirtualSet(DerivedSet value)
+{
+  auto* vptr = new SetVirtualProxy<DerivedSet>(std::move(value));
+  return std::unique_ptr<Set<PosType, ElemType>>(vptr);
+}
 
 /**
  * \brief General equality operator for two sets.

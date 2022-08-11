@@ -383,7 +383,17 @@ public:
    * \param s1 the first set index
    * \return OrderedSet containing the elements
    */
-  const SubSetType& indexSet(SetPosition s1) const
+  template <typename Ret = SubSetType,
+            typename Enable = std::enable_if_t<std::is_abstract<Ret>::value>>
+  std::unique_ptr<SubSetType> indexSet(SetPosition s1) const
+  {
+    return set()->getElements(s1);
+  }
+
+  /// \overload
+  template <typename Ret = SubSetType,
+            typename Enable = std::enable_if_t<!std::is_abstract<Ret>::value>>
+  const SubSetType indexSet(SetPosition s1) const
   {
     return set()->getElements(s1);
   }
