@@ -90,18 +90,17 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 
   if(ord == 1) return 0;
 
-  int i;
-  Vector<T, 2> V1, V2;
+  int idx;
 
   // Need to find vectors that subtend the entire curve.
   //   We must ignore duplicate nodes
-  for(i = 0; i <= ord; ++i)
-    if(squared_distance(q, c[i]) > edge_tol * edge_tol) break;
-  V1 = Vector<T, 2>(q, c[i]);
+  for(idx = 0; idx <= ord; ++idx)
+    if(squared_distance(q, c[idx]) > edge_tol * edge_tol) break;
+  Vector<T, 2> V1(q, c[idx]);
 
-  for(i = ord; i >= 0; --i)
-    if(squared_distance(q, c[i]) > edge_tol * edge_tol) break;
-  V2 = Vector<T, 2>(q, c[i]);
+  for(idx = ord; idx >= 0; --idx)
+    if(squared_distance(q, c[idx]) > edge_tol * edge_tol) break;
+  Vector<T, 2> V2(q, c[idx]);
 
   // clang-format off
   double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
@@ -112,11 +111,10 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   //  Parallel tangents can't happen with nontrivial convex control polygons
   if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
   {
-    V1 = Vector<T, 2>(c[0], c[1]);
-
     for(int i = 1; i < ord; ++i)
     {
-      V2 = Vector<T, 2>(c[0], c[i]);
+      // Need to find the first non-parallel control node
+      V2 = Vector<T, 2>(q, c[i]);
 
       // clang-format off
       double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
