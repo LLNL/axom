@@ -244,22 +244,6 @@ public:
   /// Use array size as flag for rationality
   bool isRational() const { return (m_weights.size() != 0); }
 
-  /// Check that the weights used are positive, and
-  ///  that there is one for each control node
-  bool isValidRational() const
-  {
-    if(!isRational()) return true;
-
-    const int ord = getOrder();
-
-    if(m_weights.size() != (ord + 1)) return false;
-
-    for(int i = 0; i <= ord; ++i)
-      if(m_weights[i] <= 0) return false;
-
-    return true;
-  }
-
   /// Clears the list of control points, make nonrational
   void clear()
   {
@@ -623,6 +607,22 @@ public:
   }
 
 private:
+  /// Check that the weights used are positive, and
+  ///  that there is one for each control node
+  bool isValidRational() const
+  {
+    if(!isRational()) return true;
+
+    const int ord = getOrder();
+
+    if(m_weights.size() != (ord + 1)) return false;
+
+    for(int i = 0; i <= ord; ++i)
+      if(m_weights[i] <= 0) return false;
+
+    return true;
+  }
+
   CoordsVec m_controlPoints;
   axom::Array<T> m_weights;
 };
