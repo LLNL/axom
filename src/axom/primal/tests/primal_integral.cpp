@@ -92,6 +92,7 @@ TEST(primal_integral, evaluate_line_integral_scalar)
 {
   using Point2D = primal::Point<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
+  using CPolygon = primal::CurvedPolygon<double, 2>;
   double abs_tol = 1e-10;
 
   // Quadrature nodes. Should be sufficiently high to pass tests
@@ -113,16 +114,19 @@ TEST(primal_integral, evaluate_line_integral_scalar)
   // Compare against hand computed/high-precision calculated values.
 
   // Constant integrand line integral is equivalent to arc-length calculation
-  EXPECT_NEAR(evaluate_line_integral(parabola_segment, const_integrand, npts),
-              6.12572661998,
-              abs_tol);
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(parabola_segment, const_integrand, npts),
+    6.12572661998,
+    abs_tol);
 
-  EXPECT_NEAR(evaluate_line_integral(parabola_segment, poly_integrand, npts),
-              37.8010703669,
-              abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(parabola_segment, transc_integrand, npts),
-              0.495907795678,
-              abs_tol);
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(parabola_segment, poly_integrand, npts),
+    37.8010703669,
+    abs_tol);
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(parabola_segment, transc_integrand, npts),
+    0.495907795678,
+    abs_tol);
 
   // Test on a collection of Bezier curves
   Point2D segnodes1[] = {Point2D {-1.0, -1.0},
@@ -139,29 +143,40 @@ TEST(primal_integral, evaluate_line_integral_scalar)
                          Point2D {-1.0, 2.0}};
   Bezier quadratic_segment(segnodes3, 2);
 
-  axom::Array<Bezier> connected_curve(
-    {cubic_segment, linear_segment, quadratic_segment});
-  EXPECT_NEAR(evaluate_line_integral(connected_curve, const_integrand, npts),
-              8.28968500196,
-              abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(connected_curve, poly_integrand, npts),
-              -5.97565740064,
-              abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(connected_curve, transc_integrand, npts),
-              -0.574992518405,
-              abs_tol);
+  Bezier connected_curve_edges[] = {cubic_segment,
+                                    linear_segment,
+                                    quadratic_segment};
+  CPolygon connected_curve(connected_curve_edges, 3);
+
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(connected_curve, const_integrand, npts),
+    8.28968500196,
+    abs_tol);
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(connected_curve, poly_integrand, npts),
+    -5.97565740064,
+    abs_tol);
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(connected_curve, transc_integrand, npts),
+    -0.574992518405,
+    abs_tol);
 
   // Test algorithm on disconnected curves
-  axom::Array<Bezier> disconnected_curve({cubic_segment, quadratic_segment});
-  EXPECT_NEAR(evaluate_line_integral(disconnected_curve, const_integrand, npts),
-              6.05361702446,
-              abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(disconnected_curve, poly_integrand, npts),
-              -6.34833539689,
-              abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(disconnected_curve, transc_integrand, npts),
-              -0.914161242161,
-              abs_tol);
+  Bezier disconnected_curve_edges[] = {cubic_segment, quadratic_segment};
+  CPolygon disconnected_curve(disconnected_curve_edges, 2);
+
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(disconnected_curve, const_integrand, npts),
+    6.05361702446,
+    abs_tol);
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(disconnected_curve, poly_integrand, npts),
+    -6.34833539689,
+    abs_tol);
+  EXPECT_NEAR(
+    evaluate_scalar_line_integral(disconnected_curve, transc_integrand, npts),
+    -0.914161242161,
+    abs_tol);
 }
 
 TEST(primal_integral, evaluate_line_integral_vector)
@@ -169,6 +184,7 @@ TEST(primal_integral, evaluate_line_integral_vector)
   using Point2D = primal::Point<double, 2>;
   using Vector2D = primal::Vector<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
+  using CPolygon = primal::CurvedPolygon<double, 2>;
   double abs_tol = 1e-10;
 
   // Quadrature nodes. Should be sufficiently high to pass tests
@@ -183,7 +199,7 @@ TEST(primal_integral, evaluate_line_integral_vector)
   Bezier linear_segment(segnodes, 1);
 
   // Compare against hand computed values
-  EXPECT_NEAR(evaluate_line_integral(linear_segment, vec_field, npts),
+  EXPECT_NEAR(evaluate_vector_line_integral(linear_segment, vec_field, npts),
               -1079.0 / 2.0,
               abs_tol);
 
@@ -209,20 +225,22 @@ TEST(primal_integral, evaluate_line_integral_vector)
                           Point2D {1.0, 0.0}};
   Bezier para2(paranodes2, 2);
 
-  axom::Array<Bezier> parabola_shape({para1, para2});
+  Bezier parabola_shape_edges[] = {para1, para2};
+  CPolygon parabola_shape(parabola_shape_edges, 2);
 
   // This vector field calculates the area of the region
-  EXPECT_NEAR(evaluate_line_integral(parabola_shape, area_field, npts),
+  EXPECT_NEAR(evaluate_vector_line_integral(parabola_shape, area_field, npts),
               8.0 / 3.0,
               abs_tol);
 
   // This vector field is conservative, so it should evaluate to zero
-  EXPECT_NEAR(evaluate_line_integral(parabola_shape, conservative_field, npts),
-              0.0,
-              abs_tol);
+  EXPECT_NEAR(
+    evaluate_vector_line_integral(parabola_shape, conservative_field, npts),
+    0.0,
+    abs_tol);
 
   // This vector field is generated by a in/out query, should return 1 (inside)
-  EXPECT_NEAR(evaluate_line_integral(parabola_shape, winding_field, npts),
+  EXPECT_NEAR(evaluate_vector_line_integral(parabola_shape, winding_field, npts),
               1.0,
               abs_tol);
 
@@ -231,20 +249,64 @@ TEST(primal_integral, evaluate_line_integral_vector)
                                   Point2D {0.0, -3.0},
                                   Point2D {1.0, -1.0}};
   Bezier para2_shift(paranodes2_shifted, 2);
-  axom::Array<Bezier> disconnected_parabola_shape({para1, para2_shift});
+
+  Bezier disconnected_parabola_edges[] = {para1, para2_shift};
+  CPolygon disconnected_parabola_shape(disconnected_parabola_edges, 2);
 
   EXPECT_NEAR(
-    evaluate_line_integral(disconnected_parabola_shape, area_field, npts),
+    evaluate_vector_line_integral(disconnected_parabola_shape, area_field, npts),
     11.0 / 3.0,
     abs_tol);
-  EXPECT_NEAR(
-    evaluate_line_integral(disconnected_parabola_shape, conservative_field, npts),
-    0.0,
-    abs_tol);
-  EXPECT_NEAR(
-    evaluate_line_integral(disconnected_parabola_shape, winding_field, npts),
-    0.75,
-    abs_tol);
+  EXPECT_NEAR(evaluate_vector_line_integral(disconnected_parabola_shape,
+                                            conservative_field,
+                                            npts),
+              0.0,
+              abs_tol);
+  EXPECT_NEAR(evaluate_vector_line_integral(disconnected_parabola_shape,
+                                            winding_field,
+                                            npts),
+              0.75,
+              abs_tol);
+}
+
+TEST(primal_rationalbezier, evaluate_integral_3D)
+{
+  using Point3D = primal::Point<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+  using Bezier = primal::BezierCurve<double, 3>;
+  double abs_tol = 1e-10;
+
+  // Quadrature nodes. Should be sufficiently high to pass tests
+  int npts = 30;
+
+  const int order = 3;
+  Point3D data[order + 1] = {Point3D {0.6, 1.2, 1.0},
+                             Point3D {1.3, 1.6, 1.8},
+                             Point3D {2.9, 2.4, 2.3},
+                             Point3D {3.2, 3.5, 3.0}};
+  Bezier spatial_arc(data, 3);
+
+  auto const_integrand = [](Point3D /*x*/) -> double { return 1.0; };
+  auto transc_integrand = [](Point3D x) -> double {
+    return std::sin(x[0] * x[1] * x[2]);
+  };
+
+  auto vector_field = [](Point3D x) -> Vector3D {
+    return Vector3D({4 * x[1] * x[1], 8 * x[0] * x[1], 1.0});
+  };
+
+  // Test line integral on scalar domain
+  EXPECT_NEAR(evaluate_scalar_line_integral(spatial_arc, const_integrand, npts),
+              4.09193268998,
+              abs_tol);
+  EXPECT_NEAR(evaluate_scalar_line_integral(spatial_arc, transc_integrand, npts),
+              0.515093324547,
+              abs_tol);
+
+  // Test line integral on vector domain
+  EXPECT_NEAR(evaluate_vector_line_integral(spatial_arc, vector_field, npts),
+              155.344,
+              abs_tol);
 }
 
 TEST(primal_rationalbezier, evaluate_integral_rational)
@@ -297,20 +359,21 @@ TEST(primal_rationalbezier, evaluate_integral_rational)
               abs_tol);
 
   // Test line integral on scalar domain
-  EXPECT_NEAR(evaluate_line_integral(ellipse_arc, const_integrand, npts),
+  EXPECT_NEAR(evaluate_scalar_line_integral(ellipse_arc, const_integrand, npts),
               2.42211205514,
               abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(ellipse_arc, transc_integrand, npts),
+  EXPECT_NEAR(evaluate_scalar_line_integral(ellipse_arc, transc_integrand, npts),
               1.38837959326,
               abs_tol);
 
   // Test line integral on vector domain
-  EXPECT_NEAR(evaluate_line_integral(ellipse_arc, area_field, npts),
+  EXPECT_NEAR(evaluate_vector_line_integral(ellipse_arc, area_field, npts),
               M_PI * 2 * 1 / 4.0,
               abs_tol);
-  EXPECT_NEAR(evaluate_line_integral(quarter_ellipse, conservative_field, npts),
-              0,
-              abs_tol);
+  EXPECT_NEAR(
+    evaluate_vector_line_integral(quarter_ellipse, conservative_field, npts),
+    0,
+    abs_tol);
 }
 
 int main(int argc, char* argv[])
