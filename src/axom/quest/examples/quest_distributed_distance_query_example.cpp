@@ -877,7 +877,6 @@ public:
       sumErrCount += errorFlag[i];
     }
 
-    slic::flushStreams();
     SLIC_INFO(axom::fmt::format(
       "Local partition has {} errors, {} warnings in closest distance results.",
       sumErrCount,
@@ -1180,12 +1179,13 @@ int main(int argc, char** argv)
   }
 
   int errCount = 0;
-  if(params.checkResults)
+  int localErrCount = 0;
+  if(params.checkResults && rankHasQueryPoints)
   {
-    int localErrCount =
+    localErrCount =
       query_mesh_wrapper.checkClosestPoints<DIM>(circle, params);
-    MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
   }
+  MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
   //---------------------------------------------------------------------------
   // Transform closest points to distances and directions
