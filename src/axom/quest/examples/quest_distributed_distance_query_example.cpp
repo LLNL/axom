@@ -533,14 +533,14 @@ public:
         sums[i] = sums[i - 1] + arr[i];
       }
       // If no rank has any points, force last one have points.
-      if(sums[nranks-1] == 0) {
-        sums[nranks-1] = 1;
-        if(rank == nranks-1)
+      if(sums[nranks - 1] == 0)
+      {
+        sums[nranks - 1] = 1;
+        if(rank == nranks - 1)
         {
           rankHasPoints = true;
         }
       }
-
     }
 
     SLIC_DEBUG_IF(
@@ -549,10 +549,12 @@ public:
 
     if(rankHasPoints)
     {
-      // Renumber ranks with empty ranks omitted, and denote by "X".
-      // sums provides mapping to renumbered ranks.
-      // If totalNumPoints is not divisible by nranksX, some ranks have an extra point.
-      int nranksX = sums[nranks-1];
+      /*
+        Renumber ranks with empty ranks omitted, and denote by "X".
+        sums provides mapping to renumbered ranks.  If totalNumPoints
+        is not divisible by nranksX, some ranks have an extra point.
+      */
+      int nranksX = sums[nranks - 1];
       int rankX = sums[rank] - 1;
       int ptsPerRankX = totalNumPoints / nranksX;
       int ranksWithExtraPtX = totalNumPoints % nranksX;
@@ -562,7 +564,8 @@ public:
       const double avgAng = 2. * M_PI / totalNumPoints;
 
       int iBegin = rankX * ptsPerRankX + std::min(rankX, ranksWithExtraPtX);
-      int iEnd = (rankX + 1) * ptsPerRankX + std::min((rankX + 1), ranksWithExtraPtX);
+      int iEnd =
+        (rankX + 1) * ptsPerRankX + std::min((rankX + 1), ranksWithExtraPtX);
       int localNumPoints = iEnd - iBegin;
       PointArray pts(0, localNumPoints);
 
@@ -583,15 +586,14 @@ public:
         axom::fmt::format("Rank {}, start angle {}, stop angle {}, num "
                           "non-empty {}, num points {}",
                           rank,
-                          iBegin*avgAng,
-                          iEnd*avgAng,
-                          sums[nranks-1],
+                          iBegin * avgAng,
+                          iEnd * avgAng,
+                          sums[nranks - 1],
                           localNumPoints));
-
     }
     else
     {
-      m_mesh.setPoints(PointArray(0,0));
+      m_mesh.setPoints(PointArray(0, 0));
     }
 
     axom::slic::flushStreams();
@@ -794,11 +796,12 @@ public:
     SLIC_INFO(axom::fmt::format("Closest points ({}):", cpPositions.size()));
 
     /*
-      Allowable slack is half the distance between 2 adjacent circle
+      Allowable slack is half the arclength between 2 adjacent circle
       points.  A query point on the circle can correctly have that
       closest-distance, even though the analytical distance is zero.
-      If spacing is random, distance between adjacent points is
-      unpredictable.
+      If spacing is random, distance between adjacent points is not
+      predictable, leading to false positives.  We don't claim errors
+      for this in when using random.
     */
     const double avgObjectRes =
       2 * M_PI * params.circleRadius / params.circlePoints;
@@ -1182,8 +1185,7 @@ int main(int argc, char** argv)
   int localErrCount = 0;
   if(params.checkResults && rankHasQueryPoints)
   {
-    localErrCount =
-      query_mesh_wrapper.checkClosestPoints<DIM>(circle, params);
+    localErrCount = query_mesh_wrapper.checkClosestPoints<DIM>(circle, params);
   }
   MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
