@@ -97,6 +97,9 @@ public:
   using SetType = slam::RangeSet<SetPosition, SetElement>;
   using MapType = Map<DataType, SetType, IndPol, StrPol>;
   using SubSetType = typename BSet::RelationSubset;
+  using IndexSubset = std::conditional_t<std::is_abstract<SubSetType>::value,
+                                         std::unique_ptr<SubSetType>,
+                                         SubSetType>;
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
@@ -383,20 +386,7 @@ public:
    * \param s1 the first set index
    * \return OrderedSet containing the elements
    */
-  template <typename Ret = SubSetType,
-            typename Enable = std::enable_if_t<std::is_abstract<Ret>::value>>
-  std::unique_ptr<SubSetType> indexSet(SetPosition s1) const
-  {
-    return set()->getElements(s1);
-  }
-
-  /// \overload
-  template <typename Ret = SubSetType,
-            typename Enable = std::enable_if_t<!std::is_abstract<Ret>::value>>
-  const SubSetType indexSet(SetPosition s1) const
-  {
-    return set()->getElements(s1);
-  }
+  IndexSubset indexSet(SetPosition s1) const { return set()->getElements(s1); }
 
   /**
    * \brief Search for the FlatIndex of an element given its DenseIndex in the
