@@ -32,7 +32,8 @@ namespace primal
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The CurvedPolygon object to test for containment
- * \param [in] edge_tol The physical distance level which objects are indistinguishable
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  * 
  * Determines containment using the (rounded) winding number with respect
@@ -63,7 +64,8 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The CurvedPolygon object
- * \param [in] edge_tol The physical distance level which objects are indistinguishable
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number using a recursive, bisection algorithm.
@@ -90,7 +92,8 @@ double winding_number(const Point<T, 2>& q,
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The Bezier curve object 
- * \param [in] edge_tol The physical distance level which objects are indistinguishable
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number using a recursive, bisection algorithm,

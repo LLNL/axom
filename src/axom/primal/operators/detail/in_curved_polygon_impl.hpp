@@ -188,7 +188,7 @@ double adaptive_winding_number(const Point<T, 2>& q,
 
   Polygon<T, 2> controlPolygon(c.getControlPoints());
 
-  // If q is outside the control polygon, for an open Bezier curve, the winding 
+  // If q is outside the control polygon, for an open Bezier curve, the winding
   //  number for the shape connected at the endpoints with straight lines is zero.
   //  We then subtract the contribution of this line segment.
   if(!in_polygon(q, controlPolygon, true, false, EPS))

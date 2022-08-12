@@ -60,7 +60,7 @@ TEST(primal_winding_number, simple_cases)
 
   double abs_tol = 1e-8;
   double edge_tol = 1e-8;
-  double EPS = 1e-50;
+  double EPS = primal::PRIMAL_TINY;
 
   // Simple closed shape with cubic edges
   Point2D top_nodes[] = {Point2D {0.0, 0.0},
@@ -122,7 +122,7 @@ TEST(primal_winding_number, closure_edge_cases)
 
   double abs_tol = 1e-8;
   double edge_tol = 1e-8;
-  double EPS = 1e-50;
+  double EPS = primal::PRIMAL_TINY;
 
   // Test on linear cases
   Point2D linear_nodes[] = {Point2D {0.0, 0.0}, Point2D {1.0, 1.0}};
@@ -135,7 +135,7 @@ TEST(primal_winding_number, closure_edge_cases)
               0.0,
               abs_tol);
 
-  // Extra tests if initial and terminal tangent lines are colinear
+  // Extra tests if initial and terminal tangent lines are collinear
   Point2D quartic_nodes[] = {Point2D {0.1, 0.0},
                              Point2D {1.0, 0.0},
                              Point2D {0.0, 1.0},
@@ -193,7 +193,7 @@ TEST(primal_winding_number, closure_edge_cases)
 
 TEST(primal_winding_number, corner_cases)
 {
-  // Tests for when query is identically on either endpoint of theBezier curve.
+  // Tests for when query is identically on either endpoint of the Bezier curve.
   //  Conventionally undefined mathematically, we return the limiting value,
   //  which depends on tangent lines at the query point
   using Point2D = primal::Point<double, 2>;
@@ -201,7 +201,7 @@ TEST(primal_winding_number, corner_cases)
 
   double abs_tol = 1e-8;
   double edge_tol = 1e-8;
-  double EPS = 1e-50;
+  double EPS = primal::PRIMAL_TINY;
 
   // Line segment
   Point2D linear_nodes[] = {Point2D {0.0, 0.0}, Point2D {1.0, 1.0}};
@@ -247,7 +247,7 @@ TEST(primal_winding_number, corner_cases)
               0.301208191175,
               abs_tol);
 
-  // Extra tests if initial and terminal tangent lines are colinear
+  // Extra tests if initial and terminal tangent lines are collinear
   Point2D quartic_nodes[] = {Point2D {0.1, 0.0},
                              Point2D {1.0, 0.0},
                              Point2D {0.0, 1.0},
@@ -300,7 +300,7 @@ TEST(primal_winding_number, edge_cases)
 
   double abs_tol = 1e-4;
   double edge_tol = 1e-8;
-  double EPS = 1e-50;
+  double EPS = primal::PRIMAL_TINY;
 
   // Line segment
   Point2D linear_nodes[] = {Point2D {0.0, 0.0}, Point2D {1.0, 1.0}};
@@ -351,7 +351,7 @@ TEST(primal_winding_number, degenerate_cases)
 
   double abs_tol = 1e-8;
   double edge_tol = 1e-8;
-  double EPS = 1e-50;
+  double EPS = primal::PRIMAL_TINY;
 
   // Flat curve with anti-parallel tangent lines
   Point2D double_bt_nodes[] = {Point2D {0.0, 1.0},
