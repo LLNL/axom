@@ -355,7 +355,7 @@ void average_density_cell_dom_mm_direct(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells);
 
@@ -412,7 +412,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells);
 
@@ -461,9 +461,9 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm)
   SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
-  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
-  auto& Volfrac = mm.get2dField<double>("Volfrac");
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto Volfrac = mm.get2dField<double>("Volfrac");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells);
 
@@ -510,9 +510,9 @@ void average_density_cell_dom_mm_flatiter(MultiMat& mm)
                                 << mm.getFieldSparsityLayoutAsString(0));
 
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -564,9 +564,9 @@ void average_density_cell_dom_mm_iter(MultiMat& mm)
   SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -732,7 +732,7 @@ void average_density_mat_dom_mm_direct(MultiMat& mm)
 
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -796,7 +796,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -851,9 +851,9 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -906,9 +906,9 @@ void average_density_mat_dom_mm_iter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -961,9 +961,9 @@ void average_density_mat_dom_mm_flatiter(MultiMat& mm)
                                 << mm.getFieldSparsityLayoutAsString(0));
 
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -1171,7 +1171,7 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
   auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1292,11 +1292,10 @@ void calculate_pressure_cell_dom_full_mm_iter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1355,11 +1354,10 @@ void calculate_pressure_cell_dom_full_mm_flatiter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1528,7 +1526,7 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
   auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1592,7 +1590,7 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
   auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
 
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   // Store result in a dense field
   {
@@ -1657,11 +1655,10 @@ void calculate_pressure_mat_dom_full_mm_iter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1720,11 +1717,10 @@ void calculate_pressure_mat_dom_full_mm_flatiter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -2140,8 +2136,8 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
 
   std::vector<double> MatDensity_average(ncells * nmats, 0);
 
@@ -2322,7 +2318,7 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
   //MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
 
   std::vector<double> MatDensity_average(ncells * nmats, 0);
@@ -2420,7 +2416,7 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
 
   std::vector<double> MatDensity_average(ncells * nmats, 0);
 
@@ -2851,8 +2847,8 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
 
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
@@ -3037,7 +3033,7 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
   //MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
 
   const std::vector<double>& cen = data.cen;
@@ -3129,7 +3125,7 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
 
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;

@@ -130,8 +130,8 @@ void various_traversal_methods(int nmats,
   //Different accessing methods ...
 
   //get the volfrac field
-  MultiMat::Field2D<double>& volfrac_map = mm.getVolfracField();
-  MultiMat::Field2D<double>& volfrac_map2 = mm.get2dField<double>("Volfrac");
+  auto volfrac_map = mm.getVolfracField();
+  auto volfrac_map2 = mm.get2dField<double>("Volfrac");
   SLIC_ASSERT(&volfrac_map == &volfrac_map2);
   //volfrac field is access the same way as a regular Field2d
   AXOM_UNUSED_VAR(volfrac_map);
@@ -143,7 +143,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
+    MultiMat::Field1D<double> map = mm.get1dField<double>("Cell Array");
     SLIC_ASSERT(ncomp == map.stride());
     SLIC_ASSERT(ncomp == map.numComp());
     for(int i = 0; i < mm.getNumberOfCells(); i++)
@@ -164,7 +164,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     SLIC_ASSERT(ncomp == map2d.stride());
     SLIC_ASSERT(ncomp == map2d.numComp());
     for(int i = 0; i < map2d.firstSetSize(); i++)
@@ -201,7 +201,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
+    auto map = mm.get2dField<double>("CellMat Array");
 
     for(int i = 0; i < mm.getNumberOfCells(); i++)
     {
@@ -232,7 +232,7 @@ void various_traversal_methods(int nmats,
       // a Map pointer to point to a bivariateMap object
       //MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
 
-      MultiMat::Field2D<double>& map = mm.get2dField<double>("CellMat Array");
+      auto map = mm.get2dField<double>("CellMat Array");
 
       for(int i = 0; i < mm.getNumberOfCells(); i++)
       {
@@ -268,7 +268,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
+    auto map = mm.get1dField<double>("Cell Array");
     for(MultiMat::Field1D<double>::iterator iter = map.begin(); iter != map.end();
         iter++)
     {
@@ -284,7 +284,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < map2d.firstSetSize(); i++)
     {
       auto submap = map2d(i);
@@ -311,7 +311,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells() /*map2d.firstSetSize()*/; i++)
     {
       for(auto iter = map2d.begin(i); iter != map2d.end(i); iter++)
@@ -339,7 +339,7 @@ void various_traversal_methods(int nmats,
     timer.reset();
     timer.start();
 
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells(); i++)
     {
       for(double val : map2d(i))
@@ -359,7 +359,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
-    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    auto map2d = mm.get2dField<double>("CellMat Array");
     for(auto iter = map2d.begin(); iter != map2d.end(); ++iter)
     {
       //get the indices

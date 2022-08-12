@@ -310,7 +310,7 @@ public:
    * \return Field1D<T>& the field reference
    */
   template <typename T>
-  Field1D<T>& get1dField(const std::string& field_name);
+  Field1D<T> get1dField(const std::string& field_name);
 
   /**
    * \brief Search for and return the field given the field name.
@@ -323,7 +323,7 @@ public:
    * \return Field1D<T>& the field reference
    */
   template <typename T>
-  Field2D<T>& get2dField(const std::string& field_name);
+  Field2D<T> get2dField(const std::string& field_name);
 
   template <typename T, typename BSetType>
   Field2D<T, BSetType> get2dField(const std::string& field_name);
@@ -344,7 +344,7 @@ public:
   /**
    * \brief Get the volume fraction field
    */
-  Field2D<double>& getVolfracField();
+  Field2D<double> getVolfracField();
 
   /**
    * \brief Get a set of index for a Subfield.
@@ -775,7 +775,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
 }
 
 template <typename T>
-MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
+MultiMat::Field1D<T> MultiMat::get1dField(const std::string& field_name)
 {
   int fieldIdx = getFieldIdx(field_name);
 
@@ -797,7 +797,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
 }
 
 template <typename T>
-MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
+MultiMat::Field2D<T> MultiMat::get2dField(const std::string& field_name)
 {
   int fieldIdx = getFieldIdx(field_name);
 
@@ -813,7 +813,7 @@ template <typename T, typename BSetType>
 MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_name)
 {
   // Get a reference to the unspecialized BMap
-  auto& bmap = get2dField<T>(field_name);
+  auto bmap = get2dField<T>(field_name);
 
   //create instance of that map
   int fi = getFieldIdx(field_name);
@@ -833,7 +833,7 @@ template <typename T>
 MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_name)
 {
   // Get a reference to the unspecialized BMap
-  auto& bmap = get2dField<T>(field_name);
+  auto bmap = get2dField<T>(field_name);
 
   //create instance of that map
   int fieldIdx = getFieldIdx(field_name);
@@ -858,7 +858,7 @@ template <typename T>
 MultiMat::SparseField2D<T> MultiMat::getSparse2dField(const std::string& field_name)
 {
   // Get a reference to the unspecialized BMap
-  auto& bmap = get2dField<T>(field_name);
+  auto bmap = get2dField<T>(field_name);
 
   //create instance of that map
   int fieldIdx = getFieldIdx(field_name);
@@ -884,7 +884,7 @@ MultiMat::Field2DTemplated<T, D, B> MultiMat::getTemplated2DField(
   const std::string& field_name)
 {
   // Get a reference to the unspecialized BMap
-  auto& bmap = get2dField<T>(field_name);
+  auto bmap = get2dField<T>(field_name);
   Field2DTemplated<T, D, B> typedBMap(*this, field_name, bmap.getMap()->data());
 
   return typedBMap;
@@ -896,7 +896,7 @@ slam::BivariateMap<T, BSetType, MultiMat::IndViewPolicy<T>>
 MultiMat::get2dFieldAsSlamBivarMap(const std::string& field_name)
 {
   // Get a reference to the unspecialized BMap
-  auto& bmap = get2dField<T>(field_name);
+  auto bmap = get2dField<T>(field_name);
 
   const BSetType* pBset = static_cast<const BSetType*>(bmap.set());
 
