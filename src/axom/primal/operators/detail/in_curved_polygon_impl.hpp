@@ -41,7 +41,7 @@ template <typename T>
 double linear_winding_number(const Point<T, 2>& q,
                              const Point<T, 2>& c0,
                              const Point<T, 2>& c1,
-                             const double edge_tol)
+                             double edge_tol)
 {
   Vector<T, 2> V1 = Vector<T, 2>(q, c0);
   Vector<T, 2> V2 = Vector<T, 2>(q, c1);
@@ -55,6 +55,7 @@ double linear_winding_number(const Point<T, 2>& q,
   if(orient * orient / (V1 - V2).squared_norm() <= edge_tol * edge_tol)
     return 0;
 
+  // Compute signed angle between vectors
   double dotprod = axom::utilities::clampVal(
     Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()),
     -1.0,
@@ -69,22 +70,24 @@ double linear_winding_number(const Point<T, 2>& q,
  *
  * \param [in] is_init Boolean value indicating endpoint is at t=0
  * \param [in] c The BezierCurve object to compute the winding number along
- * \param [in] edge_tol The tolerance at which control nodes are indistinguishable
- * \param [in] EPS Tolerance for isNearlyZero
+ * \param [in] edge_tol The physical distance level which objects are indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance for isNearlyZero
  * \pre Control polygon for c must be convex
  *
  * The winding number for a Bezier curve with a convex control polygon is
  * given by the signed angle between the tangent vector at that endpoint and
- * the vector in the direction of the other endpoint. The query can be located
- * on both endpoints if it is closed.
+ * the vector in the direction of the other endpoint. 
+ * 
+ * The query can be located on both endpoints if it is closed, in which case
+ * the angle is that between the tangent lines at both endpoints
  * 
  * \return 
  */
 template <typename T>
 double convex_endpoint_winding_number(const Point<T, 2>& q,
                                       const BezierCurve<T, 2>& c,
-                                      const double edge_tol,
-                                      const double EPS)
+                                      double edge_tol,
+                                      double EPS)
 {
   const int ord = c.getOrder();
 
@@ -109,9 +112,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
 
   // This means the bounding vectors are anti-parallel.
   //  Parallel tangents can't happen with nontrivial convex control polygons
-  if(ord <= 3)
-    return 0;
-  else if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
+  if(axom::utilities::isNearlyEqual(orient, 0.0, EPS))
   {
     for(int i = 1; i < ord; ++i)
     {
@@ -124,7 +125,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
       // clang-format on
 
       // Because we are convex, a single non-colinear vertex tells us the orientation
-      if(!axom::utilities::isNearlyEqual(orient, 0.0))
+      if(!axom::utilities::isNearlyEqual(orient, 0.0, EPS))
         return (orient > 0) ? 0.5 : -0.5;
     }
 
@@ -132,6 +133,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
     return 0;
   }
 
+  // Compute signed angle between vectors
   double dotprod = axom::utilities::clampVal(
     Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()),
     -1.0,
@@ -145,12 +147,11 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  *
  * \param [in] q The query point at which to compute winding number
  * \param [in] c The BezierCurve object along which to compute the winding number
- * \param [in] convex_cp Boolean flag if the input Bezier curve is already convex
- * \param [in] linear_tol The tolerance level at which a BezierCurve object is to
- *             be interpreted as linear.
- * \param [in] edge_tol The tolerance level at which we consider a query point
- *             to be exactly on the Bezier curve
- *
+ * \param [in] isConvex Boolean flag if the input Bezier curve is already convex
+ * \param [in] edge_tol The physical distance level which objects are indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance for nonphysical distances, used in
+ *   isLinear, isNearlyZero, in_polygon, is_convex
+ * 
  * Use a recursive algorithm that checks if the query point is exterior to
  * the convex control polygon of a Bezier curve, in which case we have a direct formula
  * for the winding number. If not, we bisect our curve and run the algorithm on 
@@ -160,9 +161,9 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  * \return double The winding number.
  */
 template <typename T>
-double adaptive_winding_number(const Point2D& q,
+double adaptive_winding_number(const Point<T, 2>& q,
                                const BezierCurve<T, 2>& c,
-                               bool convex_cp,
+                               bool isConvexControlPolygon,
                                double edge_tol = 1e-8,
                                double EPS = 1e-8)
 {
@@ -181,11 +182,12 @@ double adaptive_winding_number(const Point2D& q,
 
   // Check if our new curve is convex.
   //  If so, all subcurves will be convex as well
-  if(!convex_cp) convex_cp = is_convex(controlPolygon);
+  if(!isConvexControlPolygon)
+    isConvexControlPolygon = is_convex(controlPolygon, EPS);
 
   // If the query point is at either endpoint, use direct formula
   //   Can only use formula if the control polygon is convex
-  if(convex_cp &&
+  if(isConvexControlPolygon &&
      ((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
       (squared_distance(q, c[ord]) <= edge_tol * edge_tol)))
     return convex_endpoint_winding_number(q, c, edge_tol, EPS);
@@ -194,8 +196,8 @@ double adaptive_winding_number(const Point2D& q,
   BezierCurve<T, 2> c1, c2;
   c.split(0.5, c1, c2);
 
-  return adaptive_winding_number(q, c1, convex_cp, edge_tol, EPS) +
-    adaptive_winding_number(q, c2, convex_cp, edge_tol, EPS);
+  return adaptive_winding_number(q, c1, isConvexControlPolygon, edge_tol, EPS) +
+    adaptive_winding_number(q, c2, isConvexControlPolygon, edge_tol, EPS);
 }
 
 }  // end namespace detail
