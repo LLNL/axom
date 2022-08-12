@@ -689,11 +689,9 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  template <typename... Args>
+  template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
   void resize(Args... args)
   {
-    static_assert(sizeof...(Args) == DIM,
-                  "Array size must match number of dimensions");
     static_assert(std::is_default_constructible<T>::value,
                   "Cannot call Array<T>::resize() when T is non-trivially-"
                   "constructible. Use Array<T>::reserve() and emplace_back()"
@@ -703,11 +701,9 @@ public:
   }
 
   /// \overload
-  template <typename... Args>
+  template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
   void resize(ArrayOptions::Uninitialized, Args... args)
   {
-    static_assert(sizeof...(Args) == DIM,
-                  "Array size must match number of dimensions");
     static_assert(std::is_default_constructible<T>::value,
                   "Cannot call Array<T>::resize() when T is non-trivially-"
                   "constructible. Use Array<T>::reserve() and emplace_back()"
