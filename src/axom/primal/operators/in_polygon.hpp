@@ -33,7 +33,7 @@ namespace primal
  *
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
- * \param [in] strict If true, points on the boundary are considered exterior.
+ * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
@@ -48,16 +48,16 @@ namespace primal
 template <typename T>
 int winding_number(const Point<T, 2>& R,
                    const Polygon<T, 2>& P,
-                   const bool strict = false,
-                   const double EPS = 1e-8)
+                   bool useStrictInclusion = false,
+                   double EPS = 1e-8)
 {
   const int nverts = P.numVertices();
 
   // If the query is a vertex, return a value interpreted
   //  as "inside" by evenodd or nonzero protocols
-  if(axom::utilities::isNearlyEqual(P[0][0], R[1], EPS) &&
+  if(axom::utilities::isNearlyEqual(P[0][0], R[0], EPS) &&
      axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
-    return !strict;
+    return !useStrictInclusion;
 
   int winding_num = 0;
   for(int i = 0; i < nverts; i++)
@@ -67,9 +67,9 @@ int winding_number(const Point<T, 2>& R,
     if(axom::utilities::isNearlyEqual(P[j][1], R[1], EPS))
     {
       if(axom::utilities::isNearlyEqual(P[j][0], R[0], EPS))
-        return !strict;  // On vertex
+        return !useStrictInclusion;  // On vertex
       else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
-        return !strict;  // On horizontal edge
+        return !useStrictInclusion;  // On horizontal edge
     }
 
     // Check if edge crosses horizontal line
@@ -88,7 +88,8 @@ int winding_number(const Point<T, 2>& R,
           // clang-format on
 
           // On edge
-          if(axom::utilities::isNearlyEqual(det, 0.0, EPS)) return !strict;
+          if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
+            return !useStrictInclusion;
 
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
@@ -101,11 +102,12 @@ int winding_number(const Point<T, 2>& R,
         {
           // clang-format off
           det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
-                                          P[i][1] - R[1], P[j][1] - R[1]);
+                                            P[i][1] - R[1], P[j][1] - R[1]);
           // clang-format on
 
           // On edge
-          if(axom::utilities::isNearlyEqual(det, 0.0, EPS)) return !strict;
+          if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
+            return !useStrictInclusion;
 
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
@@ -124,7 +126,7 @@ int winding_number(const Point<T, 2>& R,
  * \param [in] query The query point to test
  * \param [in] poly The Polygon object to test for containment
  * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
- * \param [in] strict If true, points on the boundary are considered exterior.
+ * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Determines containment using the winding number with respect to the 
@@ -138,9 +140,9 @@ int winding_number(const Point<T, 2>& R,
 template <typename T>
 bool in_polygon(const Point<T, 2>& query,
                 const Polygon<T, 2>& poly,
-                const bool useNonzeroRule = true,
-                const bool strict = false,
-                const double EPS = 1e-8)
+                bool useNonzeroRule = true,
+                bool strict = false,
+                double EPS = 1e-8)
 {
   // Else, use EvenOdd rule
   return useNonzeroRule ? winding_number(query, poly, strict, EPS) != 0

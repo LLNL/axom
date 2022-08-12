@@ -572,11 +572,11 @@ public:
 
     SegmentType seg(m_controlPoints[0], m_controlPoints[ord]);
     double sqDist = 0.0;
-    for(int p = 1; p < ord && sqDist < tol; ++p)  // check interior control points
+    for(int p = 1; p < ord && sqDist <= tol; ++p)  // check interior control points
     {
       sqDist += squared_distance(m_controlPoints[p], seg);
     }
-    return (sqDist < tol);
+    return (sqDist <= tol);
   }
 
   /*!
