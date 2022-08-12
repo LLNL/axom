@@ -296,7 +296,7 @@ template <typename DataType>
 void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& data)
 {
   auto map_i = mm.getFieldIdx(arr_name);
-  MultiMat::Field2D<DataType>& map = mm.get2dField<DataType>(arr_name);
+  MultiMat::Field2D<DataType> map = mm.get2dField<DataType>(arr_name);
   EXPECT_TRUE(map.isValid());
   EXPECT_EQ(data.stride, map.stride());
 
@@ -569,8 +569,8 @@ TEST(multimat, test_dynamic_multimat_1_array)
       SLIC_INFO("Convert to dynamic...");
       mm.convertToDynamic();
 
-      auto& volfrac_field = mm.getVolfracField();
-      auto& arr = mm.get2dField<double>(array_name);
+      auto volfrac_field = mm.getVolfracField();
+      auto arr = mm.get2dField<double>(array_name);
 
       SLIC_INFO("Removing every other entries...");
       for(int ci = 0; ci < data.num_cells; ci++)

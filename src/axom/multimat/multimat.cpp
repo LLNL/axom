@@ -357,7 +357,7 @@ int MultiMat::setVolfracField(double* arr,
   return 0;
 }
 
-MultiMat::Field2D<double>& MultiMat::getVolfracField()
+MultiMat::Field2D<double> MultiMat::getVolfracField()
 {
   return dynamic_cast<VirtualField2D<double>*>(m_mapVec[0].get())->get();
 }
