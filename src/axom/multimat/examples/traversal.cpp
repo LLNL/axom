@@ -132,7 +132,7 @@ void various_traversal_methods(int nmats,
   //get the volfrac field
   auto volfrac_map = mm.getVolfracField();
   auto volfrac_map2 = mm.get2dField<double>("Volfrac");
-  SLIC_ASSERT(&volfrac_map == &volfrac_map2);
+  SLIC_ASSERT(volfrac_map == volfrac_map2);
   //volfrac field is access the same way as a regular Field2d
   AXOM_UNUSED_VAR(volfrac_map);
   AXOM_UNUSED_VAR(volfrac_map2);

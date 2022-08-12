@@ -53,6 +53,12 @@ public:
             axom::ArrayView<DataType> data_arr = {},
             int stride = 1);
 
+  bool operator==(const MMField2D& other) const
+  {
+    return ((m_mm == other.m_mm) && (this->set() == other.set()) &&
+            (this->getMap()->data() == other.getMap()->data()));
+  }
+
   using BiVarMapType::operator();  //why is this needed?
 
   //subfield (instead of SubMap)
