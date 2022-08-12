@@ -32,7 +32,7 @@ namespace primal
  * \return A boolean value indicating convexity
  */
 template <typename T>
-bool is_convex(const Polygon<T, 2>& poly)
+bool is_convex(const Polygon<T, 2>& poly, double EPS)
 {
   int n = poly.numVertices() - 1;
   if(n + 1 < 3) return true;  // Triangles and lines are convex
@@ -42,13 +42,13 @@ bool is_convex(const Polygon<T, 2>& poly)
     // For each non-endpoint, check if that point and one of the endpoints
     //  are on the same side as the segment connecting the adjacent nodes
     Segment<T, 2> seg(poly[i - 1], poly[i + 1]);
-    int res1 = orientation(poly[i], seg);
+    int res1 = orientation(poly[i], seg, EPS);
 
     // Edge case
     if(res1 == primal::ON_BOUNDARY) continue;
 
     // Ensure other point to check against isn't adjacent
-    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg)) return false;
+    if(res1 == orientation(poly[(i < n / 2) ? n : 0], seg, EPS)) return false;
   }
 
   return true;
