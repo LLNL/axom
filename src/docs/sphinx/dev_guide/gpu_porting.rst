@@ -266,7 +266,7 @@ General, Rough Porting Tips
     until all the complaints are gone.
   * Most of the C++ standard library is not available on device. Your options
     are Axom's equivalent functions/classes if it exists, or to add your
-    own / rewrite the code to not use std library.
+    own / rewrite the code to not use standard library.
 
 * With no more decorating complaints from the compiler, write the logically
   correct kernel.
@@ -274,7 +274,7 @@ General, Rough Porting Tips
   * If at this point your kernel is not working/segfaulting, it's hopefully a
     logical error, and you can debug the kernel without diving into debugging
     tools.
-  * ``printf()`` is your best friend
+  * ``printf()`` for output
   * Try using the ``SEQ_EXEC`` execution space
 
 .. _Macros header file: https://github.com/LLNL/axom/blob/develop/src/axom/core/Macros.hpp
