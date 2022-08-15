@@ -98,12 +98,14 @@ public:
   /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
    */
+  AXOM_HOST_DEVICE
   ArrayViewIterator begin() const { return ArrayViewIterator(0, this); }
 
   /*!
    * \brief Returns an ArrayViewIterator to the element following the last
    *  element of the Array.
    */
+  AXOM_HOST_DEVICE
   ArrayViewIterator end() const { return ArrayViewIterator(size(), this); }
 
   /*!
