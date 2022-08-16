@@ -31,13 +31,9 @@ endforeach()
 #
 # Parallel Unit Tests
 #
-if (ENABLE_MPI)
+if (ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
     set(parallel_slic_tests
         slic_macros_parallel.cpp )
-
-    blt_list_append(TO parallel_slic_tests
-                    ELEMENTS slic_lumberjack_parallel.cpp
-                    IF AXOM_ENABLE_LUMBERJACK)
 
     foreach(test ${parallel_slic_tests})
         get_filename_component( test_name ${test} NAME_WE )

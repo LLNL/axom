@@ -10,12 +10,13 @@
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
 #include "axom/slic/streams/LumberjackStream.hpp"
+#include "axom/slic/streams/SynchronizedStream.hpp"
 
 #include "gtest/gtest.h"
 
 #include <string>
 #include <sstream>
-
+#include <iostream>
 #include "mpi.h"
 
 // namespace alias
@@ -115,11 +116,50 @@ void reset_state()
 
 }  // end anonymous namespace
 
+class ParallelTest : public ::testing::TestWithParam<std::string>
+{
+public:
+  void SetUp() override
+  {
+    stream_type = GetParam();
+
+    const int RLIMIT = 8;
+
+    // initialize slic
+    slic::initialize();
+    slic::setLoggingMsgLevel(slic::message::Debug);
+    slic::disableAbortOnError(); /* disable abort for testing purposes */
+
+    std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
+
+    if(stream_type == "Lumberjack")
+    {
+      slic::addStreamToAllMsgLevels(
+        new slic::LumberjackStream(&slic::internal::test_stream,
+                                   MPI_COMM_WORLD,
+                                   RLIMIT,
+                                   msgfmt));
+    }
+
+    if(stream_type == "Synchronized")
+    {
+      slic::addStreamToAllMsgLevels(
+        new slic::SynchronizedStream(&slic::internal::test_stream,
+                                     MPI_COMM_WORLD,
+                                     msgfmt));
+    }
+  }
+
+  void TearDown() override { slic::finalize(); }
+
+  std::string stream_type;
+};
+
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-TEST(slic_lumberjack_parallel, test_abort_error_macros)
+TEST_P(ParallelTest, test_abort_error_macros)
 {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -238,7 +278,7 @@ TEST(slic_lumberjack_parallel, test_abort_error_macros)
 }
 
 //------------------------------------------------------------------------------
-TEST(slic_lumberjack_parallel, test_abort_warning_macros)
+TEST_P(ParallelTest, test_abort_warning_macros)
 {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -359,35 +399,25 @@ TEST(slic_lumberjack_parallel, test_abort_warning_macros)
   slic::setAbortFunction(axom::utilities::processAbort);
 }
 
+const std::string parallel_streams[] = {"Lumberjack",
+                                        "Lumberjack",
+                                        "Synchronized",
+                                        "Synchronized"};
+INSTANTIATE_TEST_SUITE_P(core_memory_management,
+                         ParallelTest,
+                         ::testing::ValuesIn(parallel_streams));
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-  const int RLIMIT = 8;
-
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
 
   MPI_Init(&argc, &argv);
 
-  // initialize slic
-  slic::initialize();
-  slic::setLoggingMsgLevel(slic::message::Debug);
-  slic::disableAbortOnError(); /* disable abort for testing purposes */
-
-  std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
-
-  slic::addStreamToAllMsgLevels(
-    new slic::LumberjackStream(&slic::internal::test_stream,
-                               MPI_COMM_WORLD,
-                               RLIMIT,
-                               msgfmt));
-
   // finalized when exiting main scope
   result = RUN_ALL_TESTS();
-
-  // Finalize slic
-  slic::finalize();
 
   MPI_Finalize();
 
