@@ -23,7 +23,7 @@ For the user's guide on using GPU utilities, see also
 Macros 
 ===============
 
-Link to Axom's `Macros header file`_
+Link to Axom's `Macros header file`_ (axom/core/Macros.hpp)
 
 Most of the GPU-related macros are used to guard device code before compilation
 time or for ``__host__ __device__`` decoration of functions/lambdas.
@@ -68,6 +68,7 @@ Memory
 ===============
 
 Link to Axom's `memory management header file`_
+(axom/core/memory_management.hpp)
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -77,8 +78,8 @@ Memory Management Routines
 Umpire has the concept of "allocators" associated with each
 `memory resource type`_ (``umpire::resource::MemoryResourceType``)
 
-To allocate memory on a particular resource, you use the ID associated with the
-allocator associated with the MemoryResourceType.
+To allocate memory on a particular resource, you use the ID for the allocator
+associated with the MemoryResourceType.
 
 You are able to set a default allocator, where all your memory allocations will
 go on the resource associated with the allocator unless otherwise specified::
@@ -149,7 +150,7 @@ Kernels
 axom::for_all
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Link to Axom's `for all header file`_
+Link to Axom's `for all header file`_ (axom/core/execution/for_all.hpp)
 
 ``axom::for_all`` is a wrapper around `RAJA forall`_, a simple for loop.
 
@@ -184,6 +185,7 @@ Execution Spaces & Policies
 ================================
 
 Link to Axom's `execution space traits class`_
+(axom/core/execution/execution_space.hpp)
 
 Axom's execution spaces are derived from an execution_space traits class,
 containing RAJA execution policies and default Umpire memory allocators
@@ -230,7 +232,8 @@ Each execution space (``axom::execution_space<ExecSpace>``) provides:
   * ``valid()`` - Is the execution space valid? (True)
   * ``async()`` - Is the execution space asynchronous? (True/False)
 
-There is also a set of `nested execution policies`_ to be used with
+There is also a set of `nested execution policies`_
+(axom/mint/execution/internal/structured_exec.hpp) to be used with
 ``RAJA::kernel``, and are used primarily for iterating over mint meshes.
 
 
