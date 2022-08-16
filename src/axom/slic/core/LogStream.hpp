@@ -104,16 +104,19 @@ public:
                       bool filter_duplicates) = 0;
 
   /*!
-   * \brief Flushes the log stream on current rank. It's a NO-OP by default.
+   * \brief Outputs the log stream on the current rank to the console.
+   *        It's a NO-OP by default.
    *
    * \note The intent of this method is to be overridden by concrete
    *  implementations. This is primarily useful for applications running
    *  in a distributed MPI environment. This function is not intended to be
-   *  collective.
+   *  collective. The function outputs messages stored by the stream
+   *  directly to the console, skipping the intermediate synchronization
+   *  checkpoint that a flush() performs.
    *
    * \warning This method is being called before slic aborts.
    */
-  virtual void localFlush() {};
+  virtual void outputLocal() {};
 
   /*!
    * \brief Flushes the log stream on all ranks. It's a NO-OP by default.

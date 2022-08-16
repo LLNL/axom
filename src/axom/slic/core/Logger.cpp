@@ -80,7 +80,7 @@ Logger::~Logger()
 //------------------------------------------------------------------------------
 void Logger::abort()
 {
-  flushLocalStreams();
+  outputLocalMessages();
   m_abortFunction();
 }
 
@@ -236,14 +236,14 @@ void Logger::logMessage(message::Level level,
 }
 
 //------------------------------------------------------------------------------
-void Logger::flushLocalStreams()
+void Logger::outputLocalMessages()
 {
   for(int level = message::Error; level < message::Num_Levels; ++level)
   {
     unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
     for(unsigned istream = 0; istream < nstreams; ++istream)
     {
-      m_logStreams[level][istream]->localFlush();
+      m_logStreams[level][istream]->outputLocal();
 
     }  // END for all streams
 

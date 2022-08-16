@@ -81,16 +81,16 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Pushes the messages from the current rank to the
-   *        given stream (non-collectively)
+   * \brief Pushes the messages from the current rank directly to the
+   *        console (non-collectively).
    *
    * \warning This method is being called before slic aborts.
    */
-  virtual void localFlush();
+  virtual void outputLocal();
 
   /*!
    * \brief Pushes all messages to the output node according to Lumberjack's
-   *  Communication scheme. Then writes it to the given stream.
+   *  Communication scheme. Then writes it to the console.
    *
    * \collective
    * \note This method is a collective operation

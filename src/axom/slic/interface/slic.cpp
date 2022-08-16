@@ -245,10 +245,10 @@ void logWarningMessage(const std::string& message,
 }
 
 //------------------------------------------------------------------------------
-void flushLocalStreams()
+void outputLocalMessages()
 {
   ensureInitialized();
-  Logger::getActiveLogger()->flushLocalStreams();
+  Logger::getActiveLogger()->outputLocalMessages();
 }
 
 //------------------------------------------------------------------------------

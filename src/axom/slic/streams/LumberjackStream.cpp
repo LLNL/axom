@@ -85,7 +85,7 @@ void LumberjackStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void LumberjackStream::localFlush()
+void LumberjackStream::outputLocal()
 {
   if(m_lj == nullptr)
   {
@@ -94,7 +94,7 @@ void LumberjackStream::localFlush()
     return;
   }
 
-  //Non-collective write to stream
+  //Non-collective write to console
   this->write(true);
 }
 
@@ -108,7 +108,7 @@ void LumberjackStream::flush()
     return;
   }
 
-  // Collective push of messages to output node followed by write to stream
+  // Collective push of messages to output node followed by write to console
   m_lj->pushMessagesFully();
   this->write();
 }

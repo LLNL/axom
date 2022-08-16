@@ -284,6 +284,15 @@ The following code snippet illustrates how to register a
    the application must call ``slic::flushStreams()`` explicitly, which, in
    this context is a collective call.
 
+.. warning::
+
+  In the event of an abort in :ref:`SynchronizedStream`, SLIC calls
+  ``slic::outputLocalMessages()``, which will output the locally stored
+  messages to the output destination for log messages (file or console) and
+  then SLIC calls ``MPI_Abort()``. The call to ``slic::outputLocalMessages()``
+  is non-collective, and does not guarantee all locally stored messages
+  will be outputted by all ranks.
+
 .. _LumberjackStream:
 
 Lumberjack Stream
@@ -323,6 +332,14 @@ object with Slic to log messages to ``std::cout``.
    the application must call ``slic::flushStreams()`` explicitly, which, in
    this context is a collective call.
 
+.. warning::
+
+  In the event of an abort in :ref:`LumberjackStream`, SLIC calls
+  ``slic::outputLocalMessages()``, which will output the locally stored
+  messages to the output destination for log messages (file or console) and
+  then SLIC calls ``MPI_Abort()``. The call to ``slic::outputLocalMessages()``
+  is non-collective, and does not guarantee all locally stored messages
+  will be outputted by all ranks.
 
 .. _addACustomLogStream:
 

@@ -88,9 +88,9 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Flushes the log stream.
+   * \brief Outputs the log stream to the console.
    */
-  virtual void localFlush();
+  virtual void outputLocal();
 
   /*!
    * \brief Flushes the log stream.

@@ -73,11 +73,12 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Dumps the current rank's messages to the console (non-collectively)
+   * \brief Dumps the messages from the current rank directly to the
+   *        console (non-collectively).
    *
    * \warning This method is being called before slic aborts.
    */
-  virtual void localFlush();
+  virtual void outputLocal();
 
   /*!
    * \brief Dumps the messages to the console in rank-order for all ranks.

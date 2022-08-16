@@ -95,7 +95,7 @@ void SynchronizedStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedStream::localFlush()
+void SynchronizedStream::outputLocal()
 {
   if(m_cache == nullptr)
   {

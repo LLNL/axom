@@ -633,7 +633,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
       if(rank == i)
       {
         SLIC_ERROR("SLIC_ERROR message is logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         check_level(slic::internal::test_stream.str(), "ERROR");
         check_msg(slic::internal::test_stream.str(),
@@ -643,7 +643,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         reset_state();
 
         SLIC_ERROR_IF(val == 42, "SLIC_ERROR_IF message is logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
@@ -654,7 +654,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         reset_state();
 
         SLIC_ERROR_ROOT("SLIC_ERROR_ROOT message is logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
@@ -665,7 +665,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         reset_state();
 
         SLIC_ERROR_ROOT_IF(val == 42, "SLIC_ERROR_ROOT_IF message is logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
@@ -676,7 +676,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         reset_state();
 
         SLIC_ASSERT(val < 0);
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
@@ -686,7 +686,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         reset_state();
 
         SLIC_ASSERT_MSG(val < 0, "val should be negative!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "ERROR");
@@ -746,7 +746,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
       if(rank == i)
       {
         SLIC_WARNING("SLIC_WARNING message is logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
@@ -757,7 +757,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         reset_state();
 
         SLIC_WARNING_IF(val == 42, "SLIC_WARNING_IF message is logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
@@ -768,7 +768,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         reset_state();
 
         SLIC_WARNING_ROOT("SLIC_WARNING_ROOT message is logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
@@ -779,7 +779,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         reset_state();
 
         SLIC_WARNING_ROOT_IF(val == 42, "SLIC_WARNING_ROOT_IF msg logged!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
@@ -790,7 +790,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         reset_state();
 
         SLIC_CHECK(val < 0);
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");
@@ -800,7 +800,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         reset_state();
 
         SLIC_CHECK_MSG(val < 0, "val should be negative!");
-        slic::flushLocalStreams();
+        slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
         EXPECT_FALSE(slic::internal::is_stream_empty());
         check_level(slic::internal::test_stream.str(), "WARNING");

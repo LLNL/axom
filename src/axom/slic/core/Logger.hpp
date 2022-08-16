@@ -246,14 +246,15 @@ public:
                   bool filter_duplicates = false);
 
   /*!
-   * \brief Flushes all streams for current rank.
+   * \brief For the current rank, outputs messages from all streams to the
+   *        console
    *
-   * \warning flushLocalStreams() is used before a rank aborts.
+   * \warning outputLocalMessages() is used before a rank aborts.
    *          flushStreams() is preferred over this function,
-   *          as flushLocalStreams() may put LogStreams in an undesirable
+   *          as outputLocalMessages() may put LogStreams in an undesirable
    *          state. This call is not collective.
    */
-  void flushLocalStreams();
+  void outputLocalMessages();
 
   ///@{
   //! \name Collective Methods

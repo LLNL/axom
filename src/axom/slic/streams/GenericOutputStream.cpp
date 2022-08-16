@@ -78,7 +78,7 @@ void GenericOutputStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void GenericOutputStream::localFlush() { m_stream->flush(); }
+void GenericOutputStream::outputLocal() { m_stream->flush(); }
 
 //------------------------------------------------------------------------------
 void GenericOutputStream::flush() { m_stream->flush(); }
