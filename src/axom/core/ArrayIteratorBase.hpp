@@ -44,6 +44,7 @@ public:
 
   ArrayIteratorBase() : BaseType(0) { }
 
+  AXOM_HOST_DEVICE
   ArrayIteratorBase(IndexType pos, ArrayPointerType arr)
     : BaseType(pos)
     , m_arrayPtr(arr)
@@ -52,6 +53,7 @@ public:
   /**
    * \brief Returns the current iterator value
    */
+  AXOM_HOST_DEVICE
   ValueType& operator*() const
   {
     return m_arrayPtr->flatIndex(BaseType::m_pos);
@@ -59,6 +61,7 @@ public:
 
 protected:
   /** Implementation of advance() as required by IteratorBase */
+  AXOM_HOST_DEVICE
   void advance(IndexType n) { BaseType::m_pos += n; }
 
 protected:

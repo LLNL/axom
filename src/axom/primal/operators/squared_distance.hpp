@@ -20,7 +20,11 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/operators/closest_point.hpp"
 
+#include "axom/core/utilities/Utilities.hpp"
+
 #include "axom/slic/interface/slic.hpp"
+
+#include <limits>
 
 namespace axom
 {
@@ -67,36 +71,67 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& A,
  *  given axis-aligned bounding box B.
  * \param [in] P the query point.
  * \param [in] B the axis-aligned bounding box.
- * \return the squared distance from P to the closest point on box B.
+ * \return the squared distance from P to the closest point on box \a B
+ * or std::numeric_limits<T>::max() if \a B is invalid. 
  */
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
                                                 const BoundingBox<T, NDIMS>& B)
 {
+  using axom::utilities::clampVal;
+
+  if(!B.isValid())
+  {
+    return std::numeric_limits<double>::max();
+  }
+
   if(B.contains(P))
   {
-    /* short-circuit */
-    return 0.0f;
+    return 0;
   }
 
   // compute closest point to the box
   Point<T, NDIMS> cp;
   for(int i = 0; i < NDIMS; ++i)
   {
-    cp[i] = P[i];
-    if(cp[i] < B.getMin()[i])
-    {
-      cp[i] = B.getMin()[i];
-    }
-
-    if(cp[i] > B.getMax()[i])
-    {
-      cp[i] = B.getMax()[i];
-    }
+    cp[i] = clampVal(P[i], B.getMin()[i], B.getMax()[i]);
   }
 
   // return squared distance to the closest point
   return squared_distance(P, cp);
+}
+
+/*!
+ * \brief Computes the minimum squared distance between 2 axis-aligned boxes.
+ * \param [in] A the first axis-aligned bounding box.
+ * \param [in] B the second axis-aligned bounding box.
+ * If the boxes overlap, the minimum distance is zero.
+ * \return the squared distance between the closest points on A and B
+ * or std::numeric_limits<T>::max() if either box is invalid.
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE inline double squared_distance(const BoundingBox<T, NDIMS>& A,
+                                                const BoundingBox<T, NDIMS>& B)
+{
+  if(A.isValid() && B.isValid())
+  {
+    Vector<T, NDIMS> v(0.0);
+    for(int d = 0; d < NDIMS; ++d)
+    {
+      if(B.getMin()[d] > A.getMax()[d])
+      {
+        v[d] = B.getMin()[d] - A.getMax()[d];
+      }
+      else if(A.getMin()[d] > B.getMax()[d])
+      {
+        v[d] = A.getMin()[d] - B.getMax()[d];
+      }
+    }
+
+    return v.squared_norm();
+  }
+
+  return std::numeric_limits<T>::max();
 }
 
 /*!

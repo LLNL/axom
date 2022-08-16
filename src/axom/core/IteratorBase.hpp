@@ -51,6 +51,8 @@ class IteratorBase
 
 protected:
   IteratorBase() : m_pos(PosType()) { }
+
+  AXOM_HOST_DEVICE
   explicit IteratorBase(PosType pos) : m_pos(pos) { }
 
 private:
@@ -60,6 +62,7 @@ private:
    */
   struct accessor : IterType
   {
+    AXOM_HOST_DEVICE
     static void adv(IterType& derived, PosType n)
     {
       void (IterType::*fn)(PosType) = &accessor::advance;
@@ -69,6 +72,7 @@ private:
 
 private:
   /// Call the derived iterator's advance() function
+  AXOM_HOST_DEVICE
   void adv(IterType& derived, PosType n) const { accessor::adv(derived, n); }
 
 public:
@@ -83,6 +87,7 @@ public:
     return lhs.m_pos == rhs.m_pos;
   }
   /// Inequality operator
+  AXOM_HOST_DEVICE
   friend bool operator!=(const iterator& lhs, const iterator& rhs)
   {
     return lhs.m_pos != rhs.m_pos;
@@ -114,6 +119,7 @@ public:
   /// \{
 
   /// Pre-increment operator
+  AXOM_HOST_DEVICE
   IterType& operator++()
   {
     adv(getIter(), 1);
@@ -186,8 +192,11 @@ public:
 
 private:
   /// Accessor to derived class
+  AXOM_HOST_DEVICE
   IterType& getIter() { return *static_cast<IterType*>(this); }
+
   /// Const accessor to derived class
+  AXOM_HOST_DEVICE
   const IterType& getIter() const
   {
     return *static_cast<const IterType*>(this);

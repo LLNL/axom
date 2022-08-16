@@ -25,6 +25,7 @@ set( primal_tests
     primal_point.cpp
     primal_polygon.cpp
     primal_polyhedron.cpp
+    primal_rational_bezier.cpp
     primal_ray_intersect.cpp
     primal_bounding_box_intersect.cpp
     primal_segment.cpp

@@ -16,7 +16,7 @@ namespace axom
 namespace primal
 {
 /// Small constant that can be useful for e.g. offsetting denominators to avoid division by zero
-static constexpr double PTINY = 1e-50;
+static constexpr double PRIMAL_TINY = 1e-50;
 }  // namespace primal
 }  // namespace axom
 
