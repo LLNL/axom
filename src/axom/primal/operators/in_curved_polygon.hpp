@@ -32,8 +32,9 @@ namespace primal
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The CurvedPolygon object to test for containment
- * \param [in] linear_tol The tolerance level at which a Bezier curve is linear
- * \param [in] edge_tol The tolerance level at which the query point is on the curve
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  * 
  * Determines containment using the (rounded) winding number with respect
  * to the given curved polygon. This algorithm is robust, as the winding number is rounded 
@@ -47,9 +48,9 @@ namespace primal
 template <typename T>
 inline bool in_curved_polygon(const Point<T, 2>& query,
                               const CurvedPolygon<T, 2>& cpoly,
-                              const bool useNonzeroRule = true,
-                              const double edge_tol = 1e-8,
-                              const double EPS = 1e-8)
+                              bool useNonzeroRule = true,
+                              double edge_tol = 1e-8,
+                              double EPS = 1e-8)
 {
   double winding_num = winding_number(query, cpoly, edge_tol, EPS);
 
@@ -62,9 +63,10 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
  * \brief Computes the generalized winding number for a curved polygon
  *
  * \param [in] query The query point to test
- * \param [in] cpoly The CurvedPolygon object 
- * \param [in] linear_tol The tolerance level at which a Bezier curve is linear
- * \param [in] edge_tol The tolerance level at which the query point is on the curve
+ * \param [in] cpoly The CurvedPolygon object
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number using a recursive, bisection algorithm.
  * Iterates over the edges of a curved polygon object, and uses nearly-linear 
@@ -75,8 +77,8 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
 template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const CurvedPolygon<T, 2>& cpoly,
-                      const double edge_tol = 1e-8,
-                      const double EPS = 1e-8)
+                      double edge_tol = 1e-8,
+                      double EPS = 1e-8)
 {
   double ret_val = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
@@ -90,8 +92,9 @@ double winding_number(const Point<T, 2>& q,
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The Bezier curve object 
- * \param [in] linear_tol The tolerance level at which a Bezier curve is linear
- * \param [in] edge_tol The tolerance level at which the query point is on the curve
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number using a recursive, bisection algorithm,
  * using nearly-linear Bezier curves as a base case.
@@ -101,8 +104,8 @@ double winding_number(const Point<T, 2>& q,
 template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const BezierCurve<T, 2>& c,
-                      const double edge_tol = 1e-8,
-                      const double EPS = 1e-8)
+                      double edge_tol = 1e-8,
+                      double EPS = 1e-8)
 {
   return detail::adaptive_winding_number(q, c, false, edge_tol, EPS);
 }
