@@ -19,3 +19,5 @@ uberenv_libs
 *_build*
 .idea
 *.opendb
+.vs
+src/out/build/x64-Debug
