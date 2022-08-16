@@ -51,7 +51,6 @@ namespace primal
  * \param [in] scalar_integrand the lambda function representing the integrand. 
  * Must accept a Point<T, NDIM> as input and return a double
  * \param [in] npts the number of quadrature points to evaluate the line integral
- * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
  * \return the value of the integral
  */
 template <typename Lambda, typename T, int NDIMS>
@@ -115,7 +114,6 @@ double evaluate_scalar_line_integral(const primal::BezierCurve<T, NDIMS>& c,
  * \param [in] vector_integrand the lambda function representing the integrand. 
  * Must accept a Point<T, NDIM> as input and return a Vector<double, NDIM>
  * \param [in] npts the number of quadrature points to evaluate the line integral
- * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
  * \return the value of the integral
  */
 template <typename Lambda, typename T, int NDIMS>
