@@ -934,6 +934,7 @@ int main(int argc, char** argv)
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
   query.setRuntimePolicy(params.policy);
+  query.setMpiCommunicator(MPI_COMM_WORLD, true);
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
