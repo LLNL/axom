@@ -774,11 +774,7 @@ public:
               conduit::Node& skipNode = *skipNodes.back();
               skipNode["skip"] = true;
               skipNode["homeRank"] = xferNodePtr->fetch_existing("homeRank");
-              relay::mpi::isend_using_schema(skipNode,
-                                             nextDst,
-                                             tag,
-                                             m_mpiComm,
-                                             &req);
+              relay::mpi::isend_using_schema(skipNode, nextDst, tag, m_mpiComm, &req);
             }
           }
 
@@ -1253,8 +1249,8 @@ public:
 
 public:
   DistributedClosestPoint()
-  : m_mpiComm(MPI_COMM_WORLD)
-  , m_mpiCommIsPrivate(false)
+    : m_mpiComm(MPI_COMM_WORLD)
+    , m_mpiCommIsPrivate(false)
   {
     setMpiCommunicator(MPI_COMM_WORLD);
   }
@@ -1321,7 +1317,7 @@ public:
    * \param mpiComm The MPI communicator to use.
    * \param duplicate Whether to duplicate mpiComm for exclusive use
    */
-  void setMpiCommunicator(MPI_Comm mpiComm, bool duplicate=false)
+  void setMpiCommunicator(MPI_Comm mpiComm, bool duplicate = false)
   {
     if(m_mpiCommIsPrivate)
     {
