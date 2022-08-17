@@ -32,36 +32,17 @@ time or for ``__host__ __device__`` decoration of functions/lambdas.
 
 For guarding device code:
 
-* ``AXOM_USE_GPU`` - Defined if Axom is built with CUDA or HIP
+.. literalinclude:: ../../../axom/core/Macros.hpp
+   :start-after:  _guarding_macros_start
+   :end-before:  _guarding_macros_end
+   :language: C++
 
-	* ``AXOM_USE_CUDA`` - Defined if Axom is built with CUDA
-	* ``AXOM_USE_HIP`` - Defined if Axom is built with HIP
+For ``__host__`` or `` __device__`` decoration, or both:
 
-* ``AXOM_DEVICE_CODE`` - Denotes code will be compiled on device
-* ``AXOM_GPUCC`` - Denotes code will be compiled with HIP or CUDA compiler
-
-For ``__host__`` or `` __device__`` decoration, or both::
-
-  //---------------------------------------------------------------------------
-  // Functions
-  //---------------------------------------------------------------------------
-
-  #define AXOM_DEVICE __device__
-
-  #define AXOM_HOST_DEVICE __host__ __device__
-
-  #define AXOM_HOST __host__
-
-  //---------------------------------------------------------------------------
-  // Lambdas
-  //---------------------------------------------------------------------------
-
-  #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
-
-  #define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
-
-  #define AXOM_HOST_LAMBDA [=] AXOM_HOST
-
+.. literalinclude:: ../../../axom/core/Macros.hpp
+   :start-after:  _decorating_macros_start
+   :end-before:  _decorating_macros_end
+   :language: C++
 
 .. _gpu-memory-label:
 
