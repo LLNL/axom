@@ -122,6 +122,9 @@ public:
    * \brief Sets the function to call when program abort is requested
    *
    * \param [in] abort_func The user-specified function to call
+   *
+   * \warning No collective calls should be made in the given function.
+   *          Collective calls may cause the program to hang on abort.
    */
   void setAbortFunction(AbortFunctionPtr abort_func);
 

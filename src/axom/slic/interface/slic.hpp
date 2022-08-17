@@ -185,6 +185,9 @@ bool isAbortOnWarningsEnabled();
  *
  * \param [in] abort_func The user-specified function to call
  * \pre slic::isInitialized() == true.
+ *
+ * \warning No collective calls should be made in the given function.
+ *          Collective calls may cause the program to hang on abort.
  */
 void setAbortFunction(AbortFunctionPtr abort_func);
 
