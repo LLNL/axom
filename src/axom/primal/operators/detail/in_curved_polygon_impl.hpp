@@ -190,7 +190,6 @@ double adaptive_winding_number(const Point<T, 2>& q,
   const int ord = c.getOrder();
   if(ord <= 0) return 0.0;  // Catch degenerate cases
 
-
   // Use linearity as base case for recursion
   if(c.isLinear(EPS))
     return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
@@ -234,7 +233,8 @@ inline std::function<Vector2D(Point2D)> get_winding_func(Point2D p)
 }
 
 template <typename T>
-axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs)
+axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs,
+                                    double EPS)
 {
   axom::Array<int> orientations;
   for(int i = 0; i < cvxs.size(); i++)
@@ -259,7 +259,7 @@ axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs)
                                                   V1[1] - V2[1], V2[1]);
       // clang-format on
 
-      if(!axom::utilities::isNearlyEqual(orient, 0.0))
+      if(!axom::utilities::isNearlyEqual(orient, 0.0, EPS))
       {
         // Because we are convex, a single non-colinear vertex tells us the orientation
         orientations.push_back((orient > 0) ? 1 : -1);
@@ -269,8 +269,7 @@ axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs)
     }
 
     // If we make it through the loop, every node is colinear
-    if( j == c.getOrder() - 1 )
-      orientations.push_back(0);
+    if(j == c.getOrder() - 1) orientations.push_back(0);
   }
 
   return orientations;
@@ -282,24 +281,14 @@ double convex_winding_number(const Point<T, 2>& q,
                              const BezierCurve<T, 2>& cvx,
                              const int& cvx_orient,
                              const mfem::IntegrationRule& quad,
-                             const double edge_tol = 1e-8)
+                             double edge_tol,
+                             double EPS)
 {
   // Zero orientation indicates the curve is flat
-  if(cvx.isLinear(0)) return -closure_winding_number(q, cvx, edge_tol);
+  if(cvx.isLinear(EPS))
+    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
 
   const int ord = cvx.getOrder();
-
-  //std::cout << std::setprecision(16) << q << ", x_n = [";
-  //for(int p = 0; p <= ord; ++p)
-  //{
-  //  std::cout << cvx[p][0] << (p < ord ? "," : "");
-  //}
-  //std::cout << "], y_n = [";
-  //for(int p = 0; p <= ord; ++p)
-  //{
-  //  std::cout << cvx[p][1] << (p < ord ? "," : "");
-  //}
-  //std::cout << "]" << std::endl;
 
   double quad_result = 0;
 
@@ -311,19 +300,20 @@ double convex_winding_number(const Point<T, 2>& q,
     // Denominator for quadrature
     double q_dist = squared_distance(x_q, q);
     if(q_dist <= edge_tol * edge_tol)
-      return cvx_orient * 0.5 - closure_winding_number(q, cvx, edge_tol);
+      return cvx_orient * 0.5 - linear_winding_number(q, cvx[0], cvx[ord], edge_tol);
 
     // Numerator for quadrature
     // clang-format off
     double q_orient = axom::numerics::determinant(x_q[0] - q[0], dx_q[0],
                                                   x_q[1] - q[1], dx_q[1]);
     // clang-format on
-    if(q_orient < 0) return -closure_winding_number(q, cvx, edge_tol);
+    if(q_orient < 0)
+      return 0.0 - linear_winding_number(q, cvx[0], cvx[ord], edge_tol);
 
     quad_result += quad.IntPoint(k).weight * q_orient / q_dist;
   }
 
-  double closure_number = closure_winding_number(q, cvx, edge_tol);
+  double closure_number = linear_winding_number(q, cvx[0], cvx[ord], edge_tol);
 
   // Make a call based off of the quadrature
   if((0.5 * M_1_PI * quad_result) + closure_number >= 0.5)
