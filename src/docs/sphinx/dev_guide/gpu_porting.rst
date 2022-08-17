@@ -10,8 +10,9 @@ GPU Porting in Axom
 *******************************
 
 Axom uses RAJA and Umpire as the main workhorses for GPU porting,
-with a set of convenience macros, `axom`-namespaced wrappers around commonly
-used functions, and preset execution spaces for host/device execution.
+with a set of convenience macros and `axom`-namespaced wrappers encapsulating
+commonly used RAJA and Umpire functions, and preset execution spaces for
+host/device execution.
 
 For the user's guide on using GPU utilities, see also
 :ref:`Core Acceleration<core-acceleration>`
@@ -23,10 +24,10 @@ For the user's guide on using GPU utilities, see also
 Macros 
 ===============
 
-Axom's macros can be found in
+Axom's macros can be found in file
 `axom/core/Macros.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/Macros.hpp>`_
 
-Most of the GPU-related macros are used to guard device code before compilation
+Most of the GPU-related macros are used to guard device code for compilation
 time or for ``__host__ __device__`` decoration of functions/lambdas.
 
 For guarding device code:
@@ -39,7 +40,7 @@ For guarding device code:
 * ``AXOM_DEVICE_CODE`` - Denotes code will be compiled on device
 * ``AXOM_GPUCC`` - Denotes code will be compiled with HIP or CUDA compiler
 
-For ``__host__ __device__`` decoration::
+For ``__host__`` or `` __device__`` decoration, or both::
 
   //---------------------------------------------------------------------------
   // Functions
@@ -68,7 +69,7 @@ For ``__host__ __device__`` decoration::
 Memory 
 ===============
 
-Axom's memory management functionality can be found in
+Axom's memory management routines can be found in the file
 `axom/core/memory_management.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/memory_management.hpp>`_
 
 
@@ -82,8 +83,9 @@ Umpire has the concept of "allocators" associated with each
 To allocate memory on a particular resource, you use the ID for the allocator
 associated with the MemoryResourceType.
 
-You are able to set a default allocator, where all your memory allocations will
-go on the resource associated with the allocator unless otherwise specified::
+You are able to set a default allocator, whereby all your memory allocations
+will go on the resource associated with the allocator unless otherwise
+specified::
 
   //---------------------------------------------------------------------------
   // Getters and Setters for Allocators and ID
@@ -121,9 +123,10 @@ go on the resource associated with the allocator unless otherwise specified::
 
 .. note::
 
-  When Axom is built without Umpire, the getters and setters become no-ops or
-  are undefined, while the memory allocation functions default to
-  C++ standard library functions with only allocation on the host (CPU):
+  When Axom is built without Umpire, the getters and setters shown above
+  become no-ops or are undefined, while the memory allocation functions
+  default to C++ standard library functions with only allocation on the
+  host (CPU):
 
   * ``axom::allocate`` calls ``std::malloc``
   * ``axom::deallocate`` calls ``std::free``
@@ -306,7 +309,7 @@ General, Rough Porting Tips
   * Utilize ``printf()`` for debugging output
   * Try using the ``SEQ_EXEC`` execution space
 
-.. _memory resource type: https://github.com/LLNL/Umpire/blob/develop/src/umpire/resource/MemoryResourceTypes.hpp
+.. _memory resource type: https://github.com/LLNL/Umpire/blob/develop/src/umpire/resource/MemoryResourceTypes.hpp#L63
 .. _Umpire Tutorial: https://umpire.readthedocs.io/en/develop/sphinx/tutorial.html
 .. _RAJA forall: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/loop_basic.html#simple-loops-raja-forall
 .. _few unit tests: https://github.com/LLNL/axom/search?q=RAJA%3A%3Akernel
