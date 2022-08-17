@@ -532,7 +532,7 @@ public:
       {
         sums[i] = sums[i - 1] + arr[i];
       }
-      // If no rank has any points, force last one have points.
+      // If no rank has any points, force last one to have points.
       if(sums[nranks - 1] == 0)
       {
         sums[nranks - 1] = 1;
@@ -745,11 +745,8 @@ public:
     mfem::GridFunction* errFlags = new mfem::GridFunction(efes);
     errFlags->MakeOwner(efec);
     m_dc.RegisterField("error_flag", errFlags);
-    // Initialize errorFlag to zeroes.  Is there a better way do do this?
-    for(auto i : slam::PositionSet<>(errFlags->Size()))
-    {
-      (*errFlags)[i] = 0;
-    }
+    // Initialize errorFlag to zeroes.
+    *errFlags = 0;
   }
 
   /// Prints some info about the mesh
@@ -767,19 +764,25 @@ public:
   }
 
   /**
+   * Check for error in the search.
+   * - check that points within threshold have a closest point
+   *   on the object.
+   * - check that found closest-point is near its corresponding
+   *   closest point on the circle (within tolerance)
+   *
    * Return number of errors found on the local mesh partition.
    * Populate "error_flag" field with the number of errors, for
-   * visualization.  Randomized circle points (--random-spacing
-   * switch) can cause false positives, so when on, distance
-   * inaccuracy is a warning (not an error) for the purpose of
-   * checking.
+   * visualization.
+   *
+   * Randomized circle points (--random-spacing switch) can cause
+   * false positives, so when it's on, distance inaccuracy is a warning
+   * (not an error) for the purpose of checking.
    */
   template <int NDIMS>
   int checkClosestPoints(const Circle& circle, const Input& params)
   {
     using PointType = Circle::PointType;
     using PointArray = axom::Array<PointType>;
-    using SegmentType = primal::Segment<double, NDIMS>;
     using IndexSet = slam::PositionSet<>;
 
     auto queryPts = getVertexPositions<PointArray>();
@@ -790,10 +793,13 @@ public:
     auto cpIndices =
       getParticleMesh().getNodalScalarField<axom::IndexType>("cp_index");
 
-    assert(queryPts.size() == cpPositions.size());
-    assert(queryPts.size() == cpIndices.size());
+    SLIC_ASSERT(queryPts.size() == cpPositions.size());
+    SLIC_ASSERT(queryPts.size() == cpIndices.size());
 
-    SLIC_INFO(axom::fmt::format("Closest points ({}):", cpPositions.size()));
+    if(params.isVerbose())
+    {
+      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpPositions.size()));
+    }
 
     /*
       Allowable slack is half the arclength between 2 adjacent circle
@@ -815,24 +821,25 @@ public:
       const auto& qPt = queryPts[i];
       const auto& cpPos = cpPositions[i];
       double analyticalDist = std::fabs(circle.computeSignedDistance(qPt));
-      if(cpIndices[i] == -1)
+      const bool closestPointFound = (cpIndices[i] == -1);
+      if(closestPointFound)
       {
         if(analyticalDist < params.distThreshold - allowableSlack)
         {
+          errorFlag[i] = true;
           SLIC_INFO(
             axom::fmt::format("***Error: Query point {} ({}) is within "
                               "threshold by {} but lacks closest point.",
                               i,
                               qPt,
                               params.distThreshold - analyticalDist));
-          errorFlag[i] = true;
         }
       }
       else
       {
         if(analyticalDist >= params.distThreshold + allowableSlack)
         {
-          errorFlag[i] = 1;
+          errorFlag[i] = true;
           SLIC_INFO(
             axom::fmt::format("***Error: Query point {} ({}) is outside "
                               "threshold by {} but has closest point at {}.",
@@ -852,8 +859,7 @@ public:
             i));
         }
 
-        SegmentType separation(qPt, cpPos);
-        double dist = separation.length();
+        double dist = sqrt(primal::squared_distance(qPt, cpPos));
         if(!axom::utilities::isNearlyEqual(dist, analyticalDist, allowableSlack))
         {
           if(params.randomSpacing)
@@ -1005,14 +1011,12 @@ int main(int argc, char** argv)
   }
 
   // Issue warning about result-checking requiring good resolution.
-  if(params.checkResults &&
-     (params.circlePoints < 100 ||
-      (params.randomSpacing && params.circlePoints < 500)))
+  if(params.checkResults && params.randomSpacing)
   {
     SLIC_INFO(axom::fmt::format(
-      "***Warning: Result-checking may yield false positive when circle lacks "
-      "sufficient resolution.  We recommend at least 100 point, or 500 if "
-      "random spacing is used."));
+      "***Warning: Result-checking may yield false positive (warnings) when "
+      "circle points have random spacing.  High resolution helps limit this."
+      "We recommend at least 500 points for each radius length unit."));
   }
 
   constexpr int DIM = 2;
