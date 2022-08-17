@@ -15,6 +15,7 @@ TEST(primal_integral, evaluate_area_integral)
 {
   using Point2D = primal::Point<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
+  using CPolygon = primal::CurvedPolygon<double, 2>;
   double abs_tol = 1e-10;
 
   // Quadrature nodes. Should be sufficiently high to pass tests
@@ -37,7 +38,8 @@ TEST(primal_integral, evaluate_area_integral)
   Point2D trinodes3[] = {Point2D {0.0, 1.0}, Point2D {0.0, 0.0}};
   Bezier tri3(trinodes3, 1);
 
-  axom::Array<Bezier> triangle({tri1, tri2, tri3});
+  Bezier triangle_edges[] = {tri1, tri2, tri3};
+  CPolygon triangle(triangle_edges, 3);
 
   // Compare against hand computed/high-precision calculated values
   EXPECT_NEAR(evaluate_area_integral(triangle, const_integrand, npts),
@@ -61,7 +63,8 @@ TEST(primal_integral, evaluate_area_integral)
                           Point2D {2.0, 0.0}};
   Bezier para2(paranodes2, 2);
 
-  axom::Array<Bezier> parabola_shape({para1, para2});
+  Bezier parabola_edges[] = {para1, para2};
+  CPolygon parabola_shape(parabola_edges, 2);
 
   // Compare against hand computed/high-precision calculated values
   EXPECT_NEAR(evaluate_area_integral(parabola_shape, const_integrand, npts),
@@ -295,7 +298,7 @@ TEST(primal_rationalbezier, evaluate_integral_3D)
     return Vector3D({4 * x[1] * x[1], 8 * x[0] * x[1], 1.0});
   };
 
-  // Test line integral on scalar domain
+  // Test line integral on scalar domain againt values computed with external software
   EXPECT_NEAR(evaluate_scalar_line_integral(spatial_arc, const_integrand, npts),
               4.09193268998,
               abs_tol);
@@ -303,7 +306,7 @@ TEST(primal_rationalbezier, evaluate_integral_3D)
               0.515093324547,
               abs_tol);
 
-  // Test line integral on vector domain
+  // Test line integral on vector domain againt values computed with external software
   EXPECT_NEAR(evaluate_vector_line_integral(spatial_arc, vector_field, npts),
               155.344,
               abs_tol);
@@ -350,7 +353,7 @@ TEST(primal_rationalbezier, evaluate_integral_rational)
     return Vector2D({2 * x[0] * x[1] * x[1], 2 * x[0] * x[0] * x[1]});
   };
 
-  // Test area integrals with scalar integrand
+  // Test area integrals with scalar integrand againt values computed with external software
   EXPECT_NEAR(evaluate_area_integral(quarter_ellipse, const_integrand, npts),
               M_PI * 2 * 1 / 4.0,
               abs_tol);
@@ -358,7 +361,7 @@ TEST(primal_rationalbezier, evaluate_integral_rational)
               0.472951736306,
               abs_tol);
 
-  // Test line integral on scalar domain
+  // Test line integral on scalar domain againt values computed with external software
   EXPECT_NEAR(evaluate_scalar_line_integral(ellipse_arc, const_integrand, npts),
               2.42211205514,
               abs_tol);
@@ -366,7 +369,7 @@ TEST(primal_rationalbezier, evaluate_integral_rational)
               1.38837959326,
               abs_tol);
 
-  // Test line integral on vector domain
+  // Test line integral on vector domain againt values computed with external software
   EXPECT_NEAR(evaluate_vector_line_integral(ellipse_arc, area_field, npts),
               M_PI * 2 * 1 / 4.0,
               abs_tol);
