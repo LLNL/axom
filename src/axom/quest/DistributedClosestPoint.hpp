@@ -1222,7 +1222,7 @@ private:
  *
  * The object mesh and the query mesh are provided as conduit nodes
  * using the mesh blueprint schema.  Each of these are distributed
- * over the same MPI Communicator.  Ranks are allowed to have zero
+ * over the same MPI rank space.  Ranks are allowed to have zero
  * object and/or query points.  This class orchestrates passing the
  * query points to all ranks whose object meshes might contain a
  * closest point.
@@ -1241,6 +1241,9 @@ private:
  * \note The implementation currently assumes that the coordinates for the positions and vector field
  * data are interleaved (i.e. xyzxyzxyz....). We will relax this assumption in the future to support both
  * interleaved and strided data.
+ *
+ * \note To prevent mixing unrelated MPI communications, you can set a
+ * custom MPI Communicator using setMpiCommunicator().
  */
 class DistributedClosestPoint
 {
