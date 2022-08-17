@@ -572,7 +572,7 @@ public:
       for(int i = iBegin; i < iEnd; ++i)
       {
         const double ang = randomSpacing
-          ? random_real(avgAng * iBegin, avgAng * iEnd, 0)
+          ? random_real(avgAng * iBegin, avgAng * iEnd)
           : i * avgAng;
         const double rsinT = center[1] + radius * std::sin(ang);
         const double rcosT = center[0] + radius * std::cos(ang);
