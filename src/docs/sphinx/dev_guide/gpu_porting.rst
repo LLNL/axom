@@ -10,7 +10,7 @@ GPU Porting in Axom
 *******************************
 
 Axom uses RAJA and Umpire as the main workhorses for GPU porting,
-with a set of convenience macros, Axom name-spaced wrappers around commonly
+with a set of convenience macros, `axom`-namespaced wrappers around commonly
 used functions, and preset execution spaces for host/device execution.
 
 For the user's guide on using GPU utilities, see also
@@ -23,7 +23,8 @@ For the user's guide on using GPU utilities, see also
 Macros 
 ===============
 
-Link to Axom's `Macros header file`_ (axom/core/Macros.hpp)
+Axom's macros can be found in
+`axom/core/Macros.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/Macros.hpp>`_
 
 Most of the GPU-related macros are used to guard device code before compilation
 time or for ``__host__ __device__`` decoration of functions/lambdas.
@@ -67,8 +68,8 @@ For ``__host__ __device__`` decoration::
 Memory 
 ===============
 
-Link to Axom's `memory management header file`_
-(axom/core/memory_management.hpp)
+Axom's memory management functionality can be found in
+`axom/core/memory_management.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/memory_management.hpp>`_
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -118,6 +119,17 @@ go on the resource associated with the allocator unless otherwise specified::
   // Copies numbytes from src to dst
   axom::copy(void* dst, const void* src, std::size_t numbytes)
 
+.. note::
+
+  When Axom is built without Umpire, the getters and setters become no-ops or
+  are undefined, while the memory allocation functions default to
+  C++ standard library functions with only allocation on the host (CPU):
+
+  * ``axom::allocate`` calls ``std::malloc``
+  * ``axom::deallocate`` calls ``std::free``
+  * ``axom::reallocate`` calls ``std::realloc``
+  * ``axom::copy`` calls ``std::memcpy``
+
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 MemorySpace
@@ -150,7 +162,8 @@ Kernels
 axom::for_all
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Link to Axom's `for all header file`_ (axom/core/execution/for_all.hpp)
+``axom::for_all`` can be found in
+`axom/core/execution/for_all.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/for_all.hpp>`_
 
 ``axom::for_all`` is a wrapper around `RAJA forall`_, a simple for loop.
 
@@ -162,6 +175,11 @@ on device::
 
   template <typename ExecSpace, typename KernelType>
   void axom::for_all(const IndexType& begin, const IndexType& end, KernelType&& kernel)
+
+.. note::
+
+  When Axom is built without RAJA, ``axom::for_all`` becomes a for loop on
+  host (CPU).
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA::kernel
@@ -184,8 +202,8 @@ Useful Links
 Execution Spaces & Policies
 ================================
 
-Link to Axom's `execution space traits class`_
-(axom/core/execution/execution_space.hpp)
+Axom's execution spaces can be found in
+`axom/core/execution/execution_space.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/execution_space.hpp>`_
 
 Axom's execution spaces are derived from an execution_space traits class,
 containing RAJA execution policies and default Umpire memory allocators
@@ -232,9 +250,17 @@ Each execution space (``axom::execution_space<ExecSpace>``) provides:
   * ``valid()`` - Is the execution space valid? (True)
   * ``async()`` - Is the execution space asynchronous? (True/False)
 
-There is also a set of `nested execution policies`_
-(axom/mint/execution/internal/structured_exec.hpp) to be used with
-``RAJA::kernel``, and are used primarily for iterating over mint meshes.
+The mint component also provides a set of nested execution policies
+located at
+`axom/mint/execution/internal/structured_exec.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/mint/execution/internal/structured_exec.hpp>`_
+to be used with
+``RAJA::kernel`` e.g. for iterating over mint meshes.
+
+.. note::
+
+  When Axom is built without RAJA, only ``SEQ_EXEC`` is available
+  for host (CPU) execution. When Axom is built without Umpire, only
+  ``SEQ_EXEC`` and ``OMP_EXEC`` is available for host (CPU) execution.
 
 
 .. _gpu-tips-label:
@@ -277,21 +303,16 @@ General, Rough Porting Tips
   * If at this point your kernel is not working/segfaulting, it's hopefully a
     logical error, and you can debug the kernel without diving into debugging
     tools.
-  * ``printf()`` for output
+  * Utilize ``printf()`` for debugging output
   * Try using the ``SEQ_EXEC`` execution space
 
-.. _Macros header file: https://github.com/LLNL/axom/blob/develop/src/axom/core/Macros.hpp
-.. _memory management header file: https://github.com/LLNL/axom/blob/develop/src/axom/core/memory_management.hpp
 .. _memory resource type: https://github.com/LLNL/Umpire/blob/develop/src/umpire/resource/MemoryResourceTypes.hpp
 .. _Umpire Tutorial: https://umpire.readthedocs.io/en/develop/sphinx/tutorial.html
-.. _for all header file: https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/for_all.hpp
 .. _RAJA forall: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/loop_basic.html#simple-loops-raja-forall
 .. _few unit tests: https://github.com/LLNL/axom/search?q=RAJA%3A%3Akernel
 .. _RAJA Loops: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/loop_basic.html#elements-of-loop-execution
-.. _execution space traits class: https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/execution_space.hpp
 .. _4 execution spaces: https://github.com/LLNL/axom/tree/develop/src/axom/core/execution/internal
 .. _RAJA scans: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/scan.html#scans
 .. _RAJA reduction types: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/reduction.html#reduction-operations
 .. _RAJA atomic operations: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/atomic.html#atomics
 .. _synchronize: https://github.com/LLNL/axom/blob/482749b322057ca7ef9a6d786e948692d9f72246/src/axom/core/execution/synchronize.hpp
-.. _nested execution policies: https://github.com/LLNL/axom/blob/develop/src/axom/mint/execution/internal/structured_exec.hpp
