@@ -696,7 +696,7 @@ public:
 
   /**
    * Loads the mesh as an MFEMSidreDataCollection with
-   * the following fields: "positions", "distance", "direction"
+   * the following fields: "position", "distance", "direction"
    */
   void setupMesh(const std::string& fileName, const std::string meshFile)
   {
@@ -716,7 +716,7 @@ public:
     // Create the data collection
     mfem::Mesh* cpMesh = nullptr;
     {
-      m_dc.SetMeshNodesName("positions");
+      m_dc.SetMeshNodesName("position");
 
       auto* pmesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC.GetMesh());
       cpMesh = (pmesh != nullptr) ? new mfem::ParMesh(*pmesh)
