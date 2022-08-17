@@ -1467,13 +1467,13 @@ public:
     {
     case 2:
       m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-      m_dcp_2->computeClosestPoints(query_node, cooordset);
       m_dcp_2->setMpiCommunicator(m_mpiComm);
+      m_dcp_2->computeClosestPoints(query_node, cooordset);
       break;
     case 3:
       m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-      m_dcp_3->computeClosestPoints(query_node, cooordset);
       m_dcp_3->setMpiCommunicator(m_mpiComm);
+      m_dcp_3->computeClosestPoints(query_node, cooordset);
       break;
     }
   }
