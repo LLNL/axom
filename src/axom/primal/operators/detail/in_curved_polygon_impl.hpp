@@ -51,9 +51,8 @@ double linear_winding_number(const Point<T, 2>& q,
                              const Point<T, 2>& c1,
                              double edge_tol)
 {
-  const int ord = c.getOrder();
-  Vector<T, 2> V1(q, c[0]);
-  Vector<T, 2> V2(q, c[ord]);
+  Vector<T, 2> V1(q, c0);
+  Vector<T, 2> V2(q, c1);
 
   // clang-format off
   // Measures the signed area of the triangle with vertices q, c0, c1
@@ -220,8 +219,8 @@ double adaptive_winding_number(const Point<T, 2>& q,
   BezierCurve<T, 2> c1, c2;
   c.split(0.5, c1, c2);
 
-  return adaptive_winding_number(q, c1, convex_cp, edge_tol, EPS) +
-    adaptive_winding_number(q, c2, convex_cp, edge_tol, EPS);
+  return adaptive_winding_number(q, c1, isConvexControlPolygon, edge_tol, EPS) +
+    adaptive_winding_number(q, c2, isConvexControlPolygon, edge_tol, EPS);
 }
 
 // Get the function to be passed into the evaluate integral function
