@@ -70,6 +70,8 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
                             --num-samples 500
                             --dist-threshold .45
+                            --random-spacing
+                            --check-results
                             --policy ${_pol}
                             --object-file dcp_object_mesh_2d_${_pol}
                             --distance-file dcp_closest_point_2d_${_pol}
@@ -91,6 +93,8 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                             --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
                             --num-samples 500
                             --dist-threshold .45
+                            --random-spacing
+                            --check-results
                             --policy ${_pol}
                             --object-file dcp_object_mesh_2d_${_pol}
                             --distance-file dcp_closest_point_2d_${_pol}
