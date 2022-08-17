@@ -83,7 +83,7 @@ double evaluate_scalar_line_integral(const primal::CurvedPolygon<T, NDIMS> cpoly
  * \brief Evaluate a line integral on a single Bezier curve on a scalar field
  *
  * \param [in] c the Bezier curve object
- * \param [in] integrand the lambda function representing the integrand. 
+ * \param [in] scalar_integrand the lambda function representing the integrand. 
  * Must accept a Point<T, NDIMS> as input, and return a double.
  * \param [in] npts the number of quadrature nodes
  * \return the value of the integral
