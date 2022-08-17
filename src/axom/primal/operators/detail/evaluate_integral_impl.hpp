@@ -110,8 +110,8 @@ inline double evaluate_vector_line_integral_component(
  * \param [in] quad_P the quadrature rule for the antiderivative
  * \return the value of the integral, which is mathematically meaningless.
  */
-template <class Lambda>
-double evaluate_area_integral_component(const primal::BezierCurve<double, 2>& c,
+template <class Lambda, typename T>
+double evaluate_area_integral_component(const primal::BezierCurve<T, 2>& c,
                                         Lambda&& integrand,
                                         double int_lb,
                                         const mfem::IntegrationRule& quad_Q,

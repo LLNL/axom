@@ -51,6 +51,7 @@ namespace primal
  * \param [in] scalar_integrand the lambda function representing the integrand. 
  * Must accept a Point<T, NDIM> as input and return a double
  * \param [in] npts the number of quadrature points to evaluate the line integral
+ *                  on each edge of the CurvedPolygon
  * \return the value of the integral
  */
 template <typename Lambda, typename T, int NDIMS>
@@ -114,6 +115,7 @@ double evaluate_scalar_line_integral(const primal::BezierCurve<T, NDIMS>& c,
  * \param [in] vector_integrand the lambda function representing the integrand. 
  * Must accept a Point<T, NDIM> as input and return a Vector<double, NDIM>
  * \param [in] npts the number of quadrature points to evaluate the line integral
+ *                  on each edge of the CurvedPolygon
  * \return the value of the integral
  */
 template <typename Lambda, typename T, int NDIMS>
@@ -166,60 +168,6 @@ double evaluate_vector_line_integral(const primal::BezierCurve<T, NDIMS>& c,
 }
 
 /*!
- * \brief Evaluate an integral across a 2D domain bounded by Bezier curves.
- *
- * Assumes that the array of Bezier curves is closed and connected. Will compute
- * the integral regardless, but the result will be meaningless.
- * Uses a Spectral Mesh-Free Quadrature derived from Green's theorem, evaluating
- * the area integral as a line integral of the antiderivative over the curve.
- *
- * \param [in] cs the array of Bezier curve objects that bound the region
- * \param [in] integrand the lambda function representing the integrand. 
- * Must accept a 2D point as input and return a double
- * \param [in] npts_Q the number of quadrature points to evaluate the line integral
- * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
- * \return the value of the integral
- */
-template <class Lambda, typename T, int NDIMS>
-double evaluate_area_integral(const axom::Array<primal::BezierCurve<T, NDIMS>>& cs,
-                              Lambda&& integrand,
-                              int npts_Q,
-                              int npts_P = 0)
-{
-  // Generate quadrature library, defaulting to GaussLegendre quadrature.
-  //  Use the same one for every curve in the polygon
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-
-  if(npts_P <= 0) npts_P = npts_Q;
-
-  // Get the quadrature for the line integral.
-  //  Quadrature order is equal to 2*N - 1
-  const mfem::IntegrationRule& quad_Q =
-    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_Q - 1);
-  const mfem::IntegrationRule& quad_P =
-    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts_P - 1);
-
-  // Use minimum y-coord of control nodes as lower bound for integration
-  double int_lb = cs[0][0][1];
-  for(int i = 0; i < cs.size(); i++)
-    for(int j = 1; j < cs[i].getOrder() + 1; j++)
-      int_lb = std::min(int_lb, cs[i][j][1]);
-
-  // Evaluate the antiderivative line integral along each component
-  double total_integral = 0.0;
-  for(const auto& curve : cs)
-  {
-    total_integral += detail::evaluate_area_integral_component(curve,
-                                                               integrand,
-                                                               int_lb,
-                                                               quad_Q,
-                                                               quad_P);
-  }
-
-  return total_integral;
-}
-
-/*!
  * \brief Evaluate an integral on the interior of a CurvedPolygon object.
  *
  * See above definition for details.
@@ -231,8 +179,8 @@ double evaluate_area_integral(const axom::Array<primal::BezierCurve<T, NDIMS>>& 
  * \param [in] npts_P the number of quadrature points to evaluate the antiderivative
  * \return the value of the integral
  */
-template <class Lambda>
-double evaluate_area_integral(const primal::CurvedPolygon<double, 2> cpoly,
+template <class Lambda, typename T>
+double evaluate_area_integral(const primal::CurvedPolygon<T, 2> cpoly,
                               Lambda&& integrand,
                               int npts_Q,
                               int npts_P = 0)
