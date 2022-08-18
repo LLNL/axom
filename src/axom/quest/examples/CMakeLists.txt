@@ -73,8 +73,8 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                                 --no-random-spacing
                                 --check-results
                                 --policy ${_pol}
-                                --object-file dcp_object_mesh_2d_${_pol}
-                                --distance-file dcp_closest_point_2d_${_pol}
+                                --object-file dcp_object_mesh_2d_${_pol}_${_emptyRankProb}
+                                --distance-file dcp_closest_point_2d_${_pol}_${_emptyRankProb}
                                 --empty-rank-probability ${_emptyRankProb}
                     NUM_MPI_TASKS ${_nranks})
                 if(${_pol} STREQUAL "omp")
