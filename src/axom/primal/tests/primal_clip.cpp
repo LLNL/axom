@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Plane.hpp"
 
 #include "axom/primal/operators/clip.hpp"
+#include "axom/primal/operators/split.hpp"
 
 #include <limits>
 
@@ -359,27 +360,16 @@ void check_oct_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA or HIP policy, set to Unified)
-  umpire::Allocator allocator =
-    rm.getAllocator(axom::execution_space<ExecPolicy>::allocatorID());
-
-  // Set new default to device
-  axom::setDefaultAllocator(allocator.getId());
+  // Set new default to device if available
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
 
   // Allocate memory for shapes
   TetrahedronType* tet = axom::allocate<TetrahedronType>(1);
   OctahedronType* oct = axom::allocate<OctahedronType>(1);
-
-  PolyhedronType* res = (axom::execution_space<ExecPolicy>::onDevice()
-                           ? axom::allocate<PolyhedronType>(
-                               1,
-                               rm.getAllocator(umpire::resource::Unified).getId())
-                           : axom::allocate<PolyhedronType>(1));
+  PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
   tet[0] = TetrahedronType(PointType({1, 0, 0}),
                            PointType({1, 1, 0}),
@@ -406,6 +396,45 @@ void check_oct_tet_clip(double EPS)
   axom::setDefaultAllocator(current_allocator);
 }
 
+template <typename ExecPolicy>
+void check_tet_tet_clip(double EPS)
+{
+  using namespace Primal3D;
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Set new default to device if available
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
+
+  // Allocate memory for shapes
+  TetrahedronType* tet1 = axom::allocate<TetrahedronType>(1);
+  TetrahedronType* tet2 = axom::allocate<TetrahedronType>(1);
+  PolyhedronType* res = axom::allocate<PolyhedronType>(1);
+
+  tet1[0] = TetrahedronType(PointType({1, 0, 0}),
+                            PointType({1, 1, 0}),
+                            PointType({0, 1, 0}),
+                            PointType({1, 1, 1}));
+
+  tet2[0] = TetrahedronType(PointType({0, 0, 0}),
+                            PointType({1, 0, 0}),
+                            PointType({1, 1, 0}),
+                            PointType({1, 1, 1}));
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(tet1[i], tet2[i]); });
+
+  EXPECT_NEAR(0.0833, res[0].volume(), EPS);
+
+  axom::deallocate(tet1);
+  axom::deallocate(tet2);
+  axom::deallocate(res);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
 TEST(primal_clip, unit_poly_clip_vertices_sequential)
 {
   unit_check_poly_clip<axom::SEQ_EXEC>();
@@ -415,6 +444,12 @@ TEST(primal_clip, clip_oct_tet_sequential)
 {
   const double EPS = 1e-4;
   check_oct_tet_clip<axom::SEQ_EXEC>(EPS);
+}
+
+TEST(primal_clip, clip_tet_tet_sequential)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::SEQ_EXEC>(EPS);
 }
 
   #ifdef AXOM_USE_OPENMP
@@ -427,6 +462,12 @@ TEST(primal_clip, clip_oct_tet_omp)
 {
   const double EPS = 1e-4;
   check_oct_tet_clip<axom::OMP_EXEC>(EPS);
+}
+
+TEST(primal_clip, clip_tet_tet_omp)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::OMP_EXEC>(EPS);
 }
   #endif /* AXOM_USE_OPENMP */
 
@@ -441,6 +482,12 @@ AXOM_CUDA_TEST(primal_clip, clip_oct_tet_cuda)
   const double EPS = 1e-4;
   check_oct_tet_clip<axom::CUDA_EXEC<256>>(EPS);
 }
+
+TEST(primal_clip, clip_tet_tet_cuda)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::CUDA_EXEC<256>>(EPS);
+}
   #endif /* AXOM_USE_CUDA */
 
   #if defined(AXOM_USE_HIP)
@@ -453,6 +500,12 @@ TEST(primal_clip, clip_oct_tet_hip)
 {
   const double EPS = 1e-4;
   check_oct_tet_clip<axom::HIP_EXEC<256>>(EPS);
+}
+
+TEST(primal_clip, clip_tet_tet_hip)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::HIP_EXEC<256>>(EPS);
 }
   #endif /* AXOM_USE_HIP */
 
@@ -669,6 +722,165 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
+}
+
+// Tetrahedron does not clip tetrahedron.
+TEST(primal_clip, tet_tet_clip_nonintersect)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({-1, -1, -1}),
+                       PointType({-1, 0, 0}),
+                       PointType({-1, -1, 0}),
+                       PointType({0, 0, 0}));
+
+  TetrahedronType tet2(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron is adjacent to tetrahedron
+TEST(primal_clip, tet_tet_clip_adjacent)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({1, 0, 1}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 0}),
+                       PointType({0, 0, 0}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron clips tetrahedron at a single vertex
+TEST(primal_clip, tet_tet_clip_point)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({0, 1, 0}),
+                       PointType({0, 0, 0}),
+                       PointType({-1, 0, 0}),
+                       PointType({0, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedrons are the same
+TEST(primal_clip, tet_tet_equal)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({1, 0, 0}),
+                      PointType({1, 1, 0}),
+                      PointType({0, 1, 0}),
+                      PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet, tet);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Tetrahedron is encapsulated inside the other tetrahedron
+TEST(primal_clip, tet_tet_encapsulate)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({3, 0, 0}),
+                       PointType({0, 3, 0}),
+                       PointType({-3, 0, 0}),
+                       PointType({0, 0, 3}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Half of the tetrahedron is clipped by the other tetrahedron
+TEST(primal_clip, tet_tet_half)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 1, 1}));
+
+  TetrahedronType tet2(PointType({0, 0, 0}),
+                       PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({1, 1, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+
+  // Expected result should be 0.666 / 4 / 2 = 0.0833, volume of tet.
+  EXPECT_NEAR(0.0833, poly.volume(), EPS);
+}
+
+// Half of the octahedron is clipped by the tetrahedron.
+// Then, we split the octahedron into 8 tetrahedrons,
+// and verify the total volume from clipping the 8 split tetrahedrons
+// by the starting tetrahedron are the same as with the octahedron.
+TEST(primal_clip, tet_tet_clip_split)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({0.5, 0.5, 2}),
+                      PointType({2, -1, 0}),
+                      PointType({-1, -1, 0}),
+                      PointType({-1, 2, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  // Expected result should be 0.3333, half the volume of oct.
+  EXPECT_NEAR(0.3333, poly.volume(), EPS);
+
+  // Split the octahedron into 8 tetrahedrons
+  double tet_volumes = 0.0;
+
+  axom::Array<TetrahedronType> split_tets(8);
+
+  axom::primal::split(oct, split_tets);
+
+  for(int i = 0; i < split_tets.size(); i++)
+  {
+    tet_volumes += (axom::primal::clip(split_tets[i], tet)).volume();
+  }
+
+  // Expected result should still be 0.3333
+  EXPECT_NEAR(0.3333, tet_volumes, EPS);
 }
 
 //------------------------------------------------------------------------------
