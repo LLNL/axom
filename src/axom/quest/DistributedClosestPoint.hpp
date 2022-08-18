@@ -1397,8 +1397,7 @@ public:
    *
    * \pre query_node must follow the conduit mesh blueprint convention
    */
-  void computeClosestPoints(conduit::Node& query_node,
-                            const std::string& cooordset)
+  void computeClosestPoints(conduit::Node& query_node, const std::string& coordset)
   {
     SLIC_ASSERT_MSG(m_objectMeshCreated,
                     "Must call 'setObjectMesh' before calling generateBVHTree");
@@ -1410,11 +1409,11 @@ public:
     {
     case 2:
       m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-      m_dcp_2->computeClosestPoints(query_node, cooordset);
+      m_dcp_2->computeClosestPoints(query_node, coordset);
       break;
     case 3:
       m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
-      m_dcp_3->computeClosestPoints(query_node, cooordset);
+      m_dcp_3->computeClosestPoints(query_node, coordset);
       break;
     }
   }
