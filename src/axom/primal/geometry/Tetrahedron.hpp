@@ -132,7 +132,7 @@ public:
     if(!skipNormalization)
     {
       const double vol = VectorType::scalar_triple_product(B - A, C - A, D - A);
-      const double EPS = vol >= 0 ? primal::PTINY : -primal::PTINY;
+      const double EPS = vol >= 0 ? primal::PRIMAL_TINY : -primal::PRIMAL_TINY;
 
       // Compute one over denominator; offset by a tiny amount to avoid division by zero
       const double ood = 1. / (vol + EPS);
@@ -236,7 +236,7 @@ public:
 
     // Compute one over denominator using a small offset to avoid division by zero
     const double a = VectorType::scalar_triple_product(vx, vy, vz);
-    const double EPS = (a >= 0) ? primal::PTINY : -primal::PTINY;
+    const double EPS = (a >= 0) ? primal::PRIMAL_TINY : -primal::PRIMAL_TINY;
     const double ood = 1. / (2 * a + EPS);
 
     // Compute offset from p0 to center

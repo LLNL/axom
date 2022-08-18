@@ -178,7 +178,7 @@ public:
 
     // Compute one over denominator using a small value to avoid division by zero
     const double a = determinant(vx[0], vx[1], vy[0], vy[1]);
-    const double EPS = (a >= 0) ? primal::PTINY : -primal::PTINY;
+    const double EPS = (a >= 0) ? primal::PRIMAL_TINY : -primal::PRIMAL_TINY;
     const double ood = 1. / (2 * a + EPS);
 
     // Compute offset from p0 to center
@@ -283,7 +283,7 @@ public:
     if(!skipNormalization)
     {
       // compute one over denominator; add a tiny amount to avoid division by zero
-      const double EPS = (area >= 0) ? primal::PTINY : -primal::PTINY;
+      const double EPS = (area >= 0) ? primal::PRIMAL_TINY : -primal::PRIMAL_TINY;
       const double ood = 1. / (area + EPS);
 
       bary[0] = ood * nu;

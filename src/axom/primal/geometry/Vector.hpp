@@ -492,7 +492,7 @@ AXOM_HOST_DEVICE inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
   Vector v(*this);
 
   const double len_sq = squared_norm();
-  if(len_sq >= primal::PTINY)
+  if(len_sq >= primal::PRIMAL_TINY)
   {
     v /= (std::sqrt(len_sq));
   }

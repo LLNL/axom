@@ -79,6 +79,7 @@ TEST(primal_polygon, polygon_containment)
   EXPECT_FALSE(in_polygon(PointType({1.25, -0.25}), poly));
   EXPECT_FALSE(in_polygon(PointType({0.0, 1.25}), poly));
   EXPECT_FALSE(in_polygon(PointType({0.0, -0.25}), poly));
+  EXPECT_FALSE(in_polygon(PointType({-1.0, 0.0}), poly));
   EXPECT_FALSE(in_polygon(PointType({1.0, 1.25}), poly));
   EXPECT_FALSE(in_polygon(PointType({1.0, -0.25}), poly));
 
