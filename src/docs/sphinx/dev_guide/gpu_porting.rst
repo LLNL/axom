@@ -9,13 +9,22 @@
 GPU Porting in Axom
 *******************************
 
-Axom uses RAJA and Umpire as the main workhorses for GPU porting,
-with a set of convenience macros and `axom`-namespaced wrappers encapsulating
-commonly used RAJA and Umpire functions, and preset execution spaces for
-host/device execution.
+Axom uses the following two libraries as the main workhorses for GPU porting:
+
+  * `RAJA <https://github.com/LLNL/RAJA>`_:
+    Handles software abstractions that enable architecture and programming
+    model portability for HPC applications
+  * `Umpire <https://github.com/LLNL/Umpire>`_:
+    Resource management library that allows the discovery, provision, and
+    management of memory on machines with multiple memory devices like NUMA
+    and GPUs.
+
+From RAJA and Umpire, Axom derives a set of convenience macros and
+``axom``-namespaced wrappers encapsulating commonly used RAJA and Umpire
+functions, and preset execution spaces for host/device execution.
 
 For the user's guide on using GPU utilities, see also
-:ref:`Core Acceleration<core-acceleration>`
+:ref:`Core Acceleration<core-acceleration>`.
 
 
 .. _gpu-macros-label:
@@ -24,11 +33,10 @@ For the user's guide on using GPU utilities, see also
 Macros 
 ===============
 
-Axom's macros can be found in file
-`axom/core/Macros.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/Macros.hpp>`_
+Axom's macros can be found in the file
+`axom/core/Macros.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/Macros.hpp>`_.
 
-Most of the GPU-related macros are used to guard device code for compilation
-time or for ``__host__ __device__`` decoration of functions/lambdas.
+Most of the GPU-related macros are used to guard device code for compilation.
 
 For guarding device code:
 
@@ -37,7 +45,14 @@ For guarding device code:
    :end-before:  _guarding_macros_end
    :language: C++
 
-For ``__host__`` or `` __device__`` decoration, or both:
+.. note::
+
+  * Functions called in CUDA or HIP GPU device code require the ``__device__``
+    annotation.
+  * Functions that will be called in device code *and* CPU host code require
+    the ``__host__ __device__`` annotation.
+
+The following code shows the macros used in Axom to apply these annotations:
 
 .. literalinclude:: ../../../axom/core/Macros.hpp
    :start-after:  _decorating_macros_start
@@ -51,7 +66,7 @@ Memory
 ===============
 
 Axom's memory management routines can be found in the file
-`axom/core/memory_management.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/memory_management.hpp>`_
+`axom/core/memory_management.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/memory_management.hpp>`_.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -59,14 +74,16 @@ Memory Management Routines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Umpire has the concept of "allocators" associated with each
-`memory resource type`_ (``umpire::resource::MemoryResourceType``)
+`memory resource type`_ (``umpire::resource::MemoryResourceType``).
 
 To allocate memory on a particular resource, you use the ID for the allocator
-associated with the MemoryResourceType.
+associated with the ``umpire::resource::MemoryResourceType``.
 
 You are able to set a default allocator, whereby all your memory allocations
 will go on the resource associated with the allocator unless otherwise
-specified::
+specified:
+
+.. code-block:: c
 
   //---------------------------------------------------------------------------
   // Getters and Setters for Allocators and ID
@@ -123,8 +140,9 @@ MemorySpace
    :end-before:  _memory_space_end
    :language: C++
 
-These ``axom::MemorySpace`` enum values are used to define where in memory
-``axom::Array`` and ``axom::ArrayView`` types are defined.
+Axom provides the ``axom::MemorySpace`` enum type to define values indicating
+the memory space where data in
+``axom::Array`` and ``axom::ArrayView`` lives.
 
 ``Dynamic`` allows you to define the location at runtime, with some caveats
 (see :ref:`Core Containers<core-containers>` for more details and examples).
@@ -133,7 +151,7 @@ These ``axom::MemorySpace`` enum values are used to define where in memory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Useful Links
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-`Umpire Tutorial`_ - 1st two sections cover Allocators and Resources
+`Umpire Tutorial`_ - First two sections cover ``Allocators`` and ``Resources``.
 
 
 .. _gpu-kernels-label:
@@ -146,13 +164,14 @@ Kernels
 axom::for_all
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``axom::for_all`` can be found in
-`axom/core/execution/for_all.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/for_all.hpp>`_
+``axom::for_all`` can be found in the file
+`axom/core/execution/for_all.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/for_all.hpp>`_.
 
-``axom::for_all`` is a wrapper around `RAJA forall`_, a simple for loop.
+``axom::for_all`` is a wrapper around `RAJA forall`_, which is used to execute
+simple for-loop kernels.
 
-This is used the most in Axom, from unit tests to example drivers for loops
-on device::
+This is used in Axom to execute for-loop style kernels that will be run on a
+GPU device, or on both a GPU device and a CPU host. For example::
 
   template <typename ExecSpace, typename KernelType>
   void axom::for_all(const IndexType& N, KernelType&& kernel)
@@ -162,13 +181,13 @@ on device::
 
 .. note::
 
-  When Axom is built without RAJA, ``axom::for_all`` becomes a for loop on
+  When Axom is built without RAJA, ``axom::for_all`` becomes a ``for``-loop on
   host (CPU).
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA::kernel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-``RAJA::kernel`` is for more complex and/or nested loops.
+``RAJA::kernel`` is used to execute kernels implemented using nested loops.
 
 This is used infrequently, mainly seen only in a `few unit tests`_.
 
@@ -177,7 +196,8 @@ Your general go-to will be ``axom::for_all``.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Useful Links
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-`RAJA Loops`_ - Covers for_all, kernel, and other loops
+`RAJA Loops`_ - Covers ``RAJA::forall``, ``RAJA::kernel``, ``RAJA::launch``
+kernel execution methods.
 
 
 .. _gpu-execution-spaces-label:
@@ -186,21 +206,21 @@ Useful Links
 Execution Spaces & Policies
 ================================
 
-Axom's execution spaces can be found in
-`axom/core/execution/execution_space.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/execution_space.hpp>`_
+Axom's execution spaces can be found in the file
+`axom/core/execution/execution_space.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/execution_space.hpp>`_.
 
-Axom's execution spaces are derived from an execution_space traits class,
+Axom's execution spaces are derived from an ``execution_space`` traits class
 containing RAJA execution policies and default Umpire memory allocators
 associated with each space.
 
-Axom currently supports `4 execution spaces`_:
+Axom currently supports `four execution spaces`_:
 
 * ``SEQ_EXEC`` - Sequential execution policies on host
 * ``OMP_EXEC`` -  OpenMP execution policies on host
 * ``CUDA_EXEC`` - CUDA execution policies in Unified Memory (host + device)
 * ``HIP_EXEC`` - HIP execution policies in Unified Memory (host + device)
 
-Additionally, ``HIP_EXEC`` and ``CUDA_EXEC`` are templated by the
+Additionally, ``HIP_EXEC`` and ``CUDA_EXEC`` policies are templated by the
 number of threads and SYNCHRONOUS or ASYNC execution.
 
 .. literalinclude:: ../../../axom/core/execution/internal/cuda_exec.hpp
@@ -234,7 +254,7 @@ Each execution space (``axom::execution_space<ExecSpace>``) provides:
   * ``valid()`` - Is the execution space valid? (True)
   * ``async()`` - Is the execution space asynchronous? (True/False)
 
-The mint component also provides a set of nested execution policies
+The :doc:`Mint <../../../axom/mint/docs/sphinx/index>` component also provides a set of nested execution policies
 located at
 `axom/mint/execution/internal/structured_exec.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/mint/execution/internal/structured_exec.hpp>`_
 to be used with
@@ -243,7 +263,8 @@ to be used with
 .. note::
 
   When Axom is built without RAJA, only ``SEQ_EXEC`` is available
-  for host (CPU) execution. When Axom is built without Umpire, only
+  for host (CPU) execution. When Axom is built with RAJA but without
+  Umpire for memory management on device, only
   ``SEQ_EXEC`` and ``OMP_EXEC`` is available for host (CPU) execution.
 
 
@@ -253,10 +274,11 @@ to be used with
 General, Rough Porting Tips
 ================================
 
-* Start with figuring out what memory you need on device, and use Axom's Array
-  class and memory_managment functions to do the allocations.
-* Using a barebones Axom's for_all kernel with a device policy, attempt to
-  access/ manipulate the memory on device.
+* Start with figuring out what memory you need on device, and use
+  ``axom::Array`` class and :ref:`memory_managment routines<gpu-memory-label>`
+  to do the allocations.
+* Using a ``axom::for_all`` kernel with a device policy, attempt to
+  access and/or manipulate the memory on device.
 
   * This does not have to be logically correct, you are just making sure you
     have done the allocation correctly (e.g. not segfaulting).
@@ -267,8 +289,8 @@ General, Rough Porting Tips
 
 * When you attempt to recompile your code, unless you have already done the
   ``__host__ __device__`` decoration correctly already, the compiler should
-  complain about what functions are not yet compiling on device, and that you
-  need to add ``__host__ __device__`` decorators::
+  complain about what functions are not yet compiling for the device, and that
+  you need to add ``__host__ __device__`` decorators::
 
     error: calling a __host__ function("XXX") from a __host__ __device__ function("YYY") is not allowed
 
@@ -279,7 +301,7 @@ General, Rough Porting Tips
     until all the complaints are gone.
   * Most of the C++ standard library is not available on device. Your options
     are Axom's equivalent functions/classes if it exists, or to add your
-    own / rewrite the code to not use standard library.
+    own or rewrite the code to not use standard library.
 
 * With no more decorating complaints from the compiler, write the logically
   correct kernel.
@@ -295,7 +317,7 @@ General, Rough Porting Tips
 .. _RAJA forall: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/loop_basic.html#simple-loops-raja-forall
 .. _few unit tests: https://github.com/LLNL/axom/search?q=RAJA%3A%3Akernel
 .. _RAJA Loops: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/loop_basic.html#elements-of-loop-execution
-.. _4 execution spaces: https://github.com/LLNL/axom/tree/develop/src/axom/core/execution/internal
+.. _four execution spaces: https://github.com/LLNL/axom/tree/develop/src/axom/core/execution/internal
 .. _RAJA scans: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/scan.html#scans
 .. _RAJA reduction types: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/reduction.html#reduction-operations
 .. _RAJA atomic operations: https://raja.readthedocs.io/en/develop/sphinx/user_guide/feature/atomic.html#atomics
