@@ -365,11 +365,23 @@ public:
     : m_runtimePolicy(runtimePolicy)
     , m_isVerbose(isVerbose)
     , m_sqDistanceThreshold(std::numeric_limits<double>::max())
+    , m_mpiComm(MPI_COMM_NULL)
+    , m_rank(-1)
+    , m_nranks(-1)
   {
     setAllocatorID();
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
+    setMpiCommunicator(MPI_COMM_WORLD);
+  }
+
+  /**
+   * \brief Set the MPI communicator.
+   */
+  void setMpiCommunicator(MPI_Comm mpiComm)
+  {
+    m_mpiComm = mpiComm;
+    MPI_Comm_rank(m_mpiComm, &m_rank);
+    MPI_Comm_size(m_mpiComm, &m_nranks);
   }
 
   /**
@@ -537,7 +549,7 @@ public:
                              recvbuf.data(),
                              2 * DIM,
                              mpi_traits<double>::type,
-                             MPI_COMM_WORLD);
+                             m_mpiComm);
     SLIC_ASSERT(errf == MPI_SUCCESS);
 
     all_aabbs.clear();
@@ -751,7 +763,7 @@ public:
               relay::mpi::isend_using_schema(*xferNodePtr,
                                              nextDst,
                                              tag,
-                                             MPI_COMM_WORLD,
+                                             m_mpiComm,
                                              &req);
               xferNodePtr.reset();  // Don't touch this Node anymore.
               break;
@@ -762,11 +774,7 @@ public:
               conduit::Node& skipNode = *skipNodes.back();
               skipNode["skip"] = true;
               skipNode["homeRank"] = xferNodePtr->fetch_existing("homeRank");
-              relay::mpi::isend_using_schema(skipNode,
-                                             nextDst,
-                                             tag,
-                                             MPI_COMM_WORLD,
-                                             &req);
+              relay::mpi::isend_using_schema(skipNode, nextDst, tag, m_mpiComm, &req);
             }
           }
 
@@ -782,7 +790,7 @@ public:
         relay::mpi::recv_using_schema(*recvXferNodePtr,
                                       MPI_ANY_SOURCE,
                                       tag,
-                                      MPI_COMM_WORLD);
+                                      m_mpiComm);
         --toRecvCount;
         const int homeRank = recvXferNodePtr->fetch_existing("homeRank").as_int();
         const bool skip = recvXferNodePtr->has_path("skip");
@@ -867,7 +875,7 @@ public:
       check_send_requests(isendRequests, true);
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(m_mpiComm);
     slic::flushStreams();
   }
 
@@ -1183,6 +1191,8 @@ private:
   bool m_isVerbose {false};
   double m_sqDistanceThreshold;
   int m_allocatorID;
+  MPI_Comm m_mpiComm;
+  bool m_mpiCommIsPrivate;
   int m_rank;
   int m_nranks;
 
@@ -1210,14 +1220,12 @@ private:
  * \brief Encapsulated the Distributed closest point query for a collection of query points
  * over an "object mesh"
  *
- * The object mesh and the query mesh are provided as conduit nodes using the mesh blueprint schema.
- * Each of these are distributed over the problem's mpi ranks. This class orchestrates passing
- * the query points to all ranks whose object meshes might contain a closest point.
- *
- * \note This class assumes that the object mesh and the query mesh are decomposed over the same
- * number of mpi ranks.
- * \warning This class will need to support cases where some ranks have zero object points.
- * This is not currently supported.
+ * The object mesh and the query mesh are provided as conduit nodes
+ * using the mesh blueprint schema.  Each of these are distributed
+ * over the same MPI rank space.  Ranks are allowed to have zero
+ * object and/or query points.  This class orchestrates passing the
+ * query points to all ranks whose object meshes might contain a
+ * closest point.
  *
  * \note The class currently supports object meshes that are comprised of a collection of points.
  * In the future, we'd like to consider more general object meshes, e.g. triangle meshes.
@@ -1233,6 +1241,9 @@ private:
  * \note The implementation currently assumes that the coordinates for the positions and vector field
  * data are interleaved (i.e. xyzxyzxyz....). We will relax this assumption in the future to support both
  * interleaved and strided data.
+ *
+ * \note To prevent mixing unrelated MPI communications, you can set a
+ * custom MPI Communicator using setMpiCommunicator().
  */
 class DistributedClosestPoint
 {
@@ -1240,6 +1251,26 @@ public:
   using RuntimePolicy = DistributedClosestPointRuntimePolicy;
 
 public:
+  DistributedClosestPoint()
+    : m_mpiComm(MPI_COMM_WORLD)
+    , m_mpiCommIsPrivate(false)
+  {
+    setMpiCommunicator(MPI_COMM_WORLD);
+  }
+
+  ~DistributedClosestPoint()
+  {
+    if(m_mpiCommIsPrivate)
+    {
+      int mpiIsFinalized = 0;
+      MPI_Finalized(&mpiIsFinalized);
+      if(!mpiIsFinalized)
+      {
+        MPI_Comm_free(&m_mpiComm);
+      }
+    }
+  }
+
   /// Set the runtime execution policy for the query
   void setRuntimePolicy(RuntimePolicy policy)
   {
@@ -1279,6 +1310,32 @@ public:
     }
 
     return false;
+  }
+
+  /**
+   * \brief Set the MPI communicator.
+   *
+   * By default, the communicator is MPI_COMM_WORLD.
+   *
+   * \param mpiComm The MPI communicator to use.
+   * \param duplicate Whether to duplicate mpiComm for exclusive use
+   */
+  void setMpiCommunicator(MPI_Comm mpiComm, bool duplicate = false)
+  {
+    if(m_mpiCommIsPrivate)
+    {
+      MPI_Comm_free(&m_mpiComm);
+    }
+
+    if(duplicate)
+    {
+      MPI_Comm_dup(mpiComm, &m_mpiComm);
+    }
+    else
+    {
+      m_mpiComm = mpiComm;
+    }
+    m_mpiCommIsPrivate = duplicate;
   }
 
   /**
@@ -1338,7 +1395,7 @@ public:
         localDim = internal::extractDimension(values);
       }
       int dim = -1;
-      MPI_Allreduce(&localDim, &dim, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&localDim, &dim, 1, MPI_INT, MPI_MAX, m_mpiComm);
       setDimension(dim);
     }
 
@@ -1409,10 +1466,12 @@ public:
     {
     case 2:
       m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
+      m_dcp_2->setMpiCommunicator(m_mpiComm);
       m_dcp_2->computeClosestPoints(query_node, coordset);
       break;
     case 3:
       m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
+      m_dcp_3->setMpiCommunicator(m_mpiComm);
       m_dcp_3->computeClosestPoints(query_node, coordset);
       break;
     }
@@ -1449,7 +1508,7 @@ private:
   {
     bool success = true;
     conduit::Node info;
-    if(!conduit::blueprint::mpi::verify("mesh", mesh_node, info, MPI_COMM_WORLD))
+    if(!conduit::blueprint::mpi::verify("mesh", mesh_node, info, m_mpiComm))
     {
       SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
       success = false;
@@ -1460,6 +1519,8 @@ private:
 
 private:
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
+  MPI_Comm m_mpiComm;
+  bool m_mpiCommIsPrivate;
   int m_dimension {-1};
   bool m_isVerbose {false};
   double m_sqDistanceThreshold {std::numeric_limits<double>::max()};
