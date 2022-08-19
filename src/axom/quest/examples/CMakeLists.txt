@@ -189,63 +189,49 @@ endif()
 
 if (ENABLE_FORTRAN)
 
+    set(quest_fortran_examples quest_signed_distance_interface)
+    
+    # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
+    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(_has_inout_fortran_example FALSE)
+    else()
+        set(_has_inout_fortran_example TRUE)
+        blt_list_append(TO quest_fortran_examples ELEMENTS quest_inout_interface)
+    endif()
+
     blt_list_append(TO quest_example_fortran_depends ELEMENTS mpi IF ENABLE_MPI)
 
-    blt_add_executable(
-        NAME       quest_signed_distance_interface_F_ex
-        SOURCES    quest_signed_distance_interface.F
-        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_example_depends} ${quest_example_fortran_depends}
-        FOLDER     axom/quest/examples
-        )
-
-    # This target fails to compile with hipcc/amdflang in debug configurations
-    if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    foreach(_t ${quest_fortran_examples})
+        set(_example_name "${_t}_F_ex")
         blt_add_executable(
-            NAME        quest_inout_interface_F_ex
-            SOURCES     quest_inout_interface.F
-            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
-            FOLDER      axom/quest/examples
-            )
+            NAME       ${_example_name}
+            SOURCES    ${_t}.F
+            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON ${quest_example_depends} ${quest_example_fortran_depends}
+            FOLDER     axom/quest/examples)
 
-        if (NOT ENABLE_CUDA)
+        # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
+        if(NOT ENABLE_CUDA)
             if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
-                set_target_properties(quest_inout_interface_F_ex
+                set_target_properties(${_example_name}
                                       PROPERTIES LINKER_LANGUAGE Fortran)
             else()
-                set_target_properties(quest_inout_interface_F_ex
+                set_target_properties(${_example_name}
                                       PROPERTIES LINKER_LANGUAGE CXX)
             endif()
         endif()
-    endif()
+    endforeach()
 
-    # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
-    if (NOT ENABLE_CUDA)
-        # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly.
-        if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
-            set_target_properties( quest_signed_distance_interface_F_ex
-                                   PROPERTIES LINKER_LANGUAGE Fortran)
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND ${_has_inout_fortran_example})
+        if (ENABLE_MPI)
+            axom_add_test(
+                NAME quest_inout_interface_mpi_F_test
+                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                NUM_MPI_TASKS 2)
         else()
-            set_target_properties( quest_signed_distance_interface_F_ex
-                                   PROPERTIES LINKER_LANGUAGE CXX)
-        endif()
-    endif()
-
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
-        if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-            if (ENABLE_MPI)
-                axom_add_test(
-                    NAME quest_inout_interface_mpi_F_test
-                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                    NUM_MPI_TASKS 2
-                    )
-            else()
-                axom_add_test(
-                    NAME quest_inout_interface_F_test
-                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                    )
-            endif()
+            axom_add_test(
+                NAME quest_inout_interface_F_test
+                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl)
         endif()
     endif()
 endif()
