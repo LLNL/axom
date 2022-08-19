@@ -199,7 +199,7 @@ if (ENABLE_FORTRAN)
         FOLDER     axom/quest/examples
         )
 
-    # This target fails to compile with hipcc/amdflang on debugs
+    # This target fails to compile with hipcc/amdflang in debug configurations
     if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         blt_add_executable(
             NAME        quest_inout_interface_F_ex
@@ -210,7 +210,7 @@ if (ENABLE_FORTRAN)
             )
 
         if (NOT ENABLE_CUDA)
-            if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
+            if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
                 set_target_properties(quest_inout_interface_F_ex
                                       PROPERTIES LINKER_LANGUAGE Fortran)
             else()
@@ -223,7 +223,7 @@ if (ENABLE_FORTRAN)
     # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
     if (NOT ENABLE_CUDA)
         # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly.
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
+        if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
             set_target_properties( quest_signed_distance_interface_F_ex
                                    PROPERTIES LINKER_LANGUAGE Fortran)
         else()
