@@ -478,8 +478,7 @@ TEST(primal_rationalbezier, rational_intersection)
 {
   using Point2D = primal::Point<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
-  using CPolygon = primal::CurvedPolygon<double, 2>;
-  double abs_tol = 1e-8;
+  constexpr double abs_tol = 1e-8;
 
   // Intersecting of rational, circular arc shapes
   Point2D bot_nodes[] = {Point2D {1.0, 0.0},
