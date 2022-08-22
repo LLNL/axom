@@ -150,7 +150,7 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  const RelationSubset getElements(PositionType s1) const
+  RelationSubset getElements(PositionType s1) const
   {
     return (*m_relation)[s1];
   }

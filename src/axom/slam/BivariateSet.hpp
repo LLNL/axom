@@ -180,7 +180,7 @@ public:
    * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual std::unique_ptr<RelationSubset> getElements(PositionType s1) const = 0;
+  virtual const RelationSubset& getElements(PositionType s1) const = 0;
 
   virtual bool isValid(bool verboseOutput = false) const = 0;
 
@@ -263,10 +263,15 @@ public:
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
-  using RelationSubset = typename BivariateSet<Set1, Set2>::RelationSubset;
+  using RelationSubset = typename WrappedType::RelationSubset;
 
 public:
-  BivariateSetProxy(WrappedType bset) : m_impl(std::move(bset)) { }
+  BivariateSetProxy(WrappedType bset) : m_impl(std::move(bset))
+  {
+    using ConstSubset = RangeSet<PositionType, ElementType>;
+
+    initSubsetField(std::is_same<ConstSubset, RelationSubset> {});
+  }
 
   /**
    * \brief Searches for the SparseIndex of the element given its DenseIndex.
@@ -378,9 +383,10 @@ public:
    * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual std::unique_ptr<RelationSubset> getElements(PositionType s1) const override
+  virtual const RelationSubset& getElements(PositionType s1) const override
   {
-    return makeVirtualSet(m_impl.getElements(s1));
+    using ConstSubset = RangeSet<PositionType, ElementType>;
+    return getElementsImpl(s1, std::is_same<ConstSubset, RelationSubset> {});
   }
 
   virtual void verifyPosition(PositionType s1, PositionType s2) const override
@@ -394,7 +400,31 @@ public:
   }
 
 private:
+  const RelationSubset& getElementsImpl(PositionType, std::true_type) const
+  {
+    return m_constSubset;
+  }
+
+  const RelationSubset& getElementsImpl(PositionType s1, std::false_type) const
+  {
+    return m_impl.getElements(s1);
+  }
+
+  void initSubsetField(std::true_type)
+  {
+    using ConstSubset = RangeSet<PositionType, ElementType>;
+
+    if(m_impl.isValid())
+    {
+      // store fixed result of ProductSet::getElements()
+      m_constSubset = ConstSubset(m_impl.secondSetSize());
+    }
+  }
+
+  void initSubsetField(std::false_type) { }
+
   WrappedType m_impl;
+  RelationSubset m_constSubset;
 };
 
 template <typename DerivedBset,
@@ -492,9 +522,9 @@ public:
     return true;
   }
 
-  std::unique_ptr<RelationSubsetType> getElements(PositionType) const override
+  const RelationSubsetType& getElements(PositionType) const override
   {
-    return makeVirtualSet(m_nullSubset);
+    return m_nullSubset;
   }
 
 private:
