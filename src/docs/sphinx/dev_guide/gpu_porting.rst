@@ -283,7 +283,7 @@ General, Rough Porting Tips
     using TriangleType = axom::primal::Triangle<double, 2>;
     axom::Array<Triangle> tris (100, axom::execution_space<cuda_exec>::allocatorID()));
 
-    // Sum of Triangle areas
+    // Allocate the sum of Triangle areas
     using reduce_pol = typename axom::execution_space<cuda_exec>::reduce_policy;
     RAJA::ReduceSum<reduce_pol, double> totalArea(0);
 
@@ -295,6 +295,7 @@ General, Rough Porting Tips
       axom::for_all<cuda_exec>(
       100,
       AXOM_LAMBDA(int idx) {
+        // Set values on device
         tris[idx] = Triangle();
         totalArea = 0;
       });
@@ -311,6 +312,8 @@ General, Rough Porting Tips
       AXOM_LAMBDA(int idx) {
         tris[idx] = Triangle();
         totalArea = 0;
+
+        // Call area() method on device
         double area = tris[idx].area();
       });
 
@@ -340,7 +343,7 @@ General, Rough Porting Tips
 
   .. code-block:: c
 
-      // Computes the total area of a 100
+      // Computes the total area of a 100 triangles
       axom::for_all<cuda_exec>(
         100,
         AXOM_LAMBDA(int idx) {
