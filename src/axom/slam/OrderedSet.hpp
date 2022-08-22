@@ -110,8 +110,28 @@ public:
     , SubsettingPolicyType(builder.m_parent)
   { }
 
-  OrderedSet(const OrderedSet& oset) = default;
+  template <typename OtherIndirectionPolicy>
+  OrderedSet(const OrderedSet<PosType,
+                              ElemType,
+                              SizePolicyType,
+                              OffsetPolicyType,
+                              StridePolicyType,
+                              OtherIndirectionPolicy,
+                              SubsettingPolicyType>& other)
+    : SizePolicyType(other)
+    , OffsetPolicyType(other)
+    , StridePolicyType(other)
+    , IndirectionPolicyType(other)
+    , SubsettingPolicyType(other)
+  { }
+
+  OrderedSet(const OrderedSet& other) = default;
   OrderedSet& operator=(const OrderedSet& other) = default;
+
+  OrderedSet(OrderedSet&& other) = default;
+  OrderedSet& operator=(OrderedSet&& other) = default;
+
+  ~OrderedSet() = default;
 
 public:
   /**
