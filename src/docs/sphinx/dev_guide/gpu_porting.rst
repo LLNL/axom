@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security,con LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -83,41 +83,10 @@ You are able to set a default allocator, whereby all your memory allocations
 will go on the resource associated with the allocator unless otherwise
 specified:
 
-.. code-block:: c
-
-  //---------------------------------------------------------------------------
-  // Getters and Setters for Allocators and ID
-  //---------------------------------------------------------------------------
-
-  // Gets the allocator ID associated with the given MemoryResourceType
-  int axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType resource_type)
-
-  // Sets the default allocator associated with the given MemoryResourceType
-  void axom::setDefaultAllocator(umpire::resource::MemoryResourceType resource_type)
-
-  // Sets the default allocator associated with the given allocator ID
-  void axom::setDefaultAllocator(int allocId)
-
-  // Returns the current default allocator ID
-  int axom::getDefaultAllocatorID()
-
-  //---------------------------------------------------------------------------
-  // Memory Allocation Functions
-  //---------------------------------------------------------------------------
-
-  // Allocates n number of T elements in the memory space with the given
-  // allocator ID. If no ID provided, uses the current default
-  T* axom::allocate(std::size_t n, int allocID = getDefaultAllocatorID())
-
-  //  Deallocates the given pointer
-  void axom::deallocate(T*& p)
-
-  // Reallocates pointer to given size and with the given allocator ID.
-  // If no ID provided, uses the current default.
-  T* axom::reallocate(T* p, std::size_t n, int allocID = getDefaultAllocatorID())
-
-  // Copies numbytes from src to dst
-  axom::copy(void* dst, const void* src, std::size_t numbytes)
+.. literalinclude:: ../../../axom/core/memory_management.hpp
+   :start-after:  _memory_management_routines_start
+   :end-before:  _memory_management_routines_end
+   :language: C++
 
 .. note::
 
@@ -209,18 +178,19 @@ Execution Spaces & Policies
 Axom's execution spaces can be found in the file
 `axom/core/execution/execution_space.hpp <https://github.com/LLNL/axom/blob/develop/src/axom/core/execution/execution_space.hpp>`_.
 
-Axom's execution spaces are derived from an ``execution_space`` traits class
-containing RAJA execution policies and default Umpire memory allocators
-associated with each space.
+Axom's execution spaces are derived from an ``axom::execution_space<ExecSpace>``
+traits class containing RAJA execution policies and default Umpire memory
+allocators associated with each space.
 
-Axom currently supports `four execution spaces`_:
+Axom currently supports `four execution spaces`_, each one a type with the
+following specialiation of the ``execution_space`` class:
 
 * ``SEQ_EXEC`` - Sequential execution policies on host
 * ``OMP_EXEC`` -  OpenMP execution policies on host
 * ``CUDA_EXEC`` - CUDA execution policies in Unified Memory (host + device)
 * ``HIP_EXEC`` - HIP execution policies in Unified Memory (host + device)
 
-Additionally, ``HIP_EXEC`` and ``CUDA_EXEC`` policies are templated by the
+Additionally, ``HIP_EXEC`` and ``CUDA_EXEC`` types are templated by the
 number of threads and SYNCHRONOUS or ASYNC execution.
 
 .. literalinclude:: ../../../axom/core/execution/internal/cuda_exec.hpp
@@ -228,17 +198,37 @@ number of threads and SYNCHRONOUS or ASYNC execution.
    :end-before:  _cuda_exec_end
    :language: C++
 
-Each execution space (``axom::execution_space<ExecSpace>``) provides:
+Each execution space provides:
 
 * Axom policies that are type aliases of RAJA policies to be used with kernels,
   RAJA types, and RAJA operations
 
   * ``loop_policy`` - For `RAJA scans`_ and other operations; ``axom::for_all``
     uses the loop_policy from the templated execution space.
-  * ``reduce_policy`` - For  `RAJA reduction types`_
-  * ``atomic_policy`` - For `RAJA atomic operations`_
+  * ``reduce_policy`` - For  `RAJA reduction types`_ that perform reduction
+    operations.
+
+  .. literalinclude:: ../../../axom/core/examples/core_acceleration.cpp
+     :start-after:  _gpu_reduce_start
+     :end-before:  _gpu_reduce_end
+     :language: C++
+
+  * ``atomic_policy`` - For `RAJA atomic operations`_ that avoid race
+    conditions when updating data values.
+
+  .. literalinclude:: ../../../axom/core/examples/core_acceleration.cpp
+     :start-after:  _gpu_atomic_start
+     :end-before:  _gpu_atomic_end
+     :language: C++
+
   * ``sync_policy`` - For Axom's `synchronize`_ function, which is a wrapper
-    around ``RAJA::synchronize()``
+    around ``RAJA::synchronize()``. Synchronizes execution threads when using
+    an asynchronous ``loop_policy``.
+
+  .. literalinclude:: ../../../axom/core/execution/synchronize.hpp
+     :start-after:  _gpu_synchronize_start
+     :end-before:  _gpu_synchronize_end
+     :language: C++
 
 * Umpire allocator defaults
 
@@ -311,6 +301,27 @@ General, Rough Porting Tips
     tools.
   * Utilize ``printf()`` for debugging output
   * Try using the ``SEQ_EXEC`` execution space
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Useful Links
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* List of debugging tools:
+
+  * `Totalview <https://help.totalview.io/>`_ (CUDA)
+  * `Nvidia Nsight Developer Tools <https://developer.nvidia.com/tools-overview>`_ (CUDA)
+
+    * `LLNL Guide for Sierra <https://lc.llnl.gov/confluence/display/SIERRA/NVIDIA+Nsight+Developer+Tools>`_
+
+    * ORNL Guides for `Nsight Compute <https://www.olcf.ornl.gov/wp-content/uploads/2020/02/OLCF-Webinar-Nsight-Compute.pdf>`_
+      and `Nsight Systems <https://www.olcf.ornl.gov/wp-content/uploads/2020/02/Summit-Nsight-Systems-Introduction.pdf>`_
+
+  * `HPCToolkit <https://github.com/HPCToolkit/hpctoolkit>`_ (CUDA, HIP)
+  * `ROCprof <https://rocmdocs.amd.com/en/latest/ROCm_Tools/ROCm-Tools.html>`_ (HIP)
+  * `ROCgdb <https://rocmdocs.amd.com/en/latest/ROCm_Tools/ROCgdb.html>`_ (HIP)
+* `ORNL Training Archives <https://docs.olcf.ornl.gov/training/training_archive.html>`_
+* `LLNL HPC Tutorials <https://hpc.llnl.gov/documentation/tutorials>`_
+
+
 
 .. _memory resource type: https://github.com/LLNL/Umpire/blob/develop/src/umpire/resource/MemoryResourceTypes.hpp#L63
 .. _Umpire Tutorial: https://umpire.readthedocs.io/en/develop/sphinx/tutorial.html

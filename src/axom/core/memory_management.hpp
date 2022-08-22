@@ -47,6 +47,7 @@ enum class MemorySpace
 };
 // _memory_space_end
 
+// _memory_management_routines_start
 /// \name Memory Management Routines
 /// @{
 
@@ -174,6 +175,7 @@ inline T* reallocate(T* p,
 inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept;
 
 /// @}
+// _memory_management_routines_end
 
 //------------------------------------------------------------------------------
 //                        IMPLEMENTATION
