@@ -148,6 +148,7 @@ AXOM_HOST_DEVICE inline int popCount(axom::uint64 word)
   /* clang-format off */
 }
 
+// gpu_macros_example_start
 /*!
  * \brief Counts the number of leading zeros in \a word
  * \accelerated
@@ -177,6 +178,7 @@ AXOM_HOST_DEVICE inline axom::int32 leadingZeros(axom::int32 word)
 #endif
   /* clang-format off */
 }
+// gpu_macros_example_end
 
 }  // namespace utilities
 }  // namespace axom

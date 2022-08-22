@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,8 +19,8 @@ Axom uses the following two libraries as the main workhorses for GPU porting:
     management of memory on machines with multiple memory devices like NUMA
     and GPUs.
 
-From RAJA and Umpire, Axom derives a set of convenience macros and
-``axom``-namespaced wrappers encapsulating commonly used RAJA and Umpire
+From RAJA and Umpire, Axom derives a set of convenience macros and function
+wrappers in the ``axom`` namespace encapsulating commonly-used RAJA and Umpire
 functions, and preset execution spaces for host/device execution.
 
 For the user's guide on using GPU utilities, see also
@@ -57,6 +57,14 @@ The following code shows the macros used in Axom to apply these annotations:
 .. literalinclude:: ../../../axom/core/Macros.hpp
    :start-after:  _decorating_macros_start
    :end-before:  _decorating_macros_end
+   :language: C++
+
+Below is a function that uses Axom macros to apply a ``__host__ __device__``
+annotation and guard the use of a CUDA intrinsic to inside a kernel:
+
+.. literalinclude:: ../../../axom/core/utilities/BitUtilities.hpp
+   :start-after:  gpu_macros_example_start
+   :end-before:  gpu_macros_example_end
    :language: C++
 
 .. _gpu-memory-label:
@@ -266,35 +274,78 @@ General, Rough Porting Tips
 
 * Start with figuring out what memory you need on device, and use
   ``axom::Array`` class and :ref:`memory_managment routines<gpu-memory-label>`
-  to do the allocations.
+  to do the allocations:
+
+  .. code-block:: c
+
+    // Allocate 100 2D Triangles in unified memory
+    using cuda_exec = axom::CUDA_EXEC<256>;
+    using TriangleType = axom::primal::Triangle<double, 2>;
+    axom::Array<Triangle> tris (100, axom::execution_space<cuda_exec>::allocatorID()));
+
+    // Sum of Triangle areas
+    using reduce_pol = typename axom::execution_space<cuda_exec>::reduce_policy;
+    RAJA::ReduceSum<reduce_pol, double> totalArea(0);
+
 * Using a ``axom::for_all`` kernel with a device policy, attempt to
-  access and/or manipulate the memory on device.
+  access and/or manipulate the memory on device:
+
+  .. code-block:: c
+
+      axom::for_all<cuda_exec>(
+      100,
+      AXOM_LAMBDA(int idx) {
+        tris[idx] = Triangle();
+        totalArea = 0;
+      });
 
   * This does not have to be logically correct, you are just making sure you
     have done the allocation correctly (e.g. not segfaulting).
 
 * Add the functions you want to call on device to the ``axom::for_all`` kernel.
 
+  .. code-block:: c
+
+      axom::for_all<cuda_exec>(
+      100,
+      AXOM_LAMBDA(int idx) {
+        tris[idx] = Triangle();
+        totalArea = 0;
+        double area = tris[idx].area();
+      });
+
   * Does not have to be logically correct.
 
-* When you attempt to recompile your code, unless you have already done the
-  ``__host__ __device__`` decoration correctly already, the compiler should
-  complain about what functions are not yet compiling for the device, and that
-  you need to add ``__host__ __device__`` decorators::
+* Apply a ``__host__ __device__`` annotation to your functions if you see the
+  following error or similar::
 
-    error: calling a __host__ function("XXX") from a __host__ __device__ function("YYY") is not allowed
+    error: reference to __host__ function 'area' in __host__ __device__ function
 
-  * Even after you add the decorators to the functions the compiler complains
-    about, it is likely recompiling will introduce complaints about more
+  * Recompiling will likely introduce complaints about more
     functions (the functions being the non-decorated functions your
-    newly-decorated functions are calling). You will want to keep decorating
-    until all the complaints are gone.
+    newly-decorated functions are calling)::
+
+      error: reference to __host__ function 'abs<double>' in __host__ __device__ function
+
+      error: reference to __host__ function 'signedArea<2>' in __host__ __device__ function
+
+    You will want to keep decorating until all the complaints are gone.
+
   * Most of the C++ standard library is not available on device. Your options
     are Axom's equivalent functions/classes if it exists, or to add your
     own or rewrite the code to not use standard library.
 
 * With no more decorating complaints from the compiler, write the logically
-  correct kernel.
+  correct kernel:
+
+  .. code-block:: c
+
+      // Computes the total area of a 100
+      axom::for_all<cuda_exec>(
+      100,
+      AXOM_LAMBDA(int idx) {
+        totalArea += tris[idx].area();
+      });
 
   * If at this point your kernel is not working/segfaulting, it's hopefully a
     logical error, and you can debug the kernel without diving into debugging
