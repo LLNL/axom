@@ -191,7 +191,7 @@ traits class containing RAJA execution policies and default Umpire memory
 allocators associated with each space.
 
 Axom currently supports `four execution spaces`_, each one a type with the
-following specialiation of the ``execution_space`` class:
+following specialization of the ``execution_space`` class:
 
 * ``SEQ_EXEC`` - Sequential execution policies on host
 * ``OMP_EXEC`` -  OpenMP execution policies on host
@@ -199,7 +199,7 @@ following specialiation of the ``execution_space`` class:
 * ``HIP_EXEC`` - HIP execution policies in Unified Memory (host + device)
 
 Additionally, ``HIP_EXEC`` and ``CUDA_EXEC`` types are templated by the
-number of threads and SYNCHRONOUS or ASYNC execution.
+number of threads and SYNCHRONOUS or ASYNC execution:
 
 .. literalinclude:: ../../../axom/core/execution/internal/cuda_exec.hpp
    :start-after:  _cuda_exec_start
@@ -214,7 +214,7 @@ Each execution space provides:
   * ``loop_policy`` - For `RAJA scans`_ and other operations; ``axom::for_all``
     uses the loop_policy from the templated execution space.
   * ``reduce_policy`` - For  `RAJA reduction types`_ that perform reduction
-    operations.
+    operations:
 
   .. literalinclude:: ../../../axom/core/examples/core_acceleration.cpp
      :start-after:  _gpu_reduce_start
@@ -222,7 +222,7 @@ Each execution space provides:
      :language: C++
 
   * ``atomic_policy`` - For `RAJA atomic operations`_ that avoid race
-    conditions when updating data values.
+    conditions when updating data values:
 
   .. literalinclude:: ../../../axom/core/examples/core_acceleration.cpp
      :start-after:  _gpu_atomic_start
@@ -231,7 +231,7 @@ Each execution space provides:
 
   * ``sync_policy`` - For Axom's `synchronize`_ function, which is a wrapper
     around ``RAJA::synchronize()``. Synchronizes execution threads when using
-    an asynchronous ``loop_policy``.
+    an asynchronous ``loop_policy``:
 
   .. literalinclude:: ../../../axom/core/execution/synchronize.hpp
      :start-after:  _gpu_synchronize_start
@@ -287,7 +287,7 @@ General, Rough Porting Tips
     using reduce_pol = typename axom::execution_space<cuda_exec>::reduce_policy;
     RAJA::ReduceSum<reduce_pol, double> totalArea(0);
 
-* Using a ``axom::for_all`` kernel with a device policy, attempt to
+* Using an ``axom::for_all`` kernel with a device policy, attempt to
   access and/or manipulate the memory on device:
 
   .. code-block:: c
@@ -302,7 +302,7 @@ General, Rough Porting Tips
   * This does not have to be logically correct, you are just making sure you
     have done the allocation correctly (e.g. not segfaulting).
 
-* Add the functions you want to call on device to the ``axom::for_all`` kernel.
+* Add the functions you want to call on device to the ``axom::for_all`` kernel:
 
   .. code-block:: c
 
@@ -342,9 +342,9 @@ General, Rough Porting Tips
 
       // Computes the total area of a 100
       axom::for_all<cuda_exec>(
-      100,
-      AXOM_LAMBDA(int idx) {
-        totalArea += tris[idx].area();
+        100,
+        AXOM_LAMBDA(int idx) {
+          totalArea += tris[idx].area();
       });
 
   * If at this point your kernel is not working/segfaulting, it's hopefully a
