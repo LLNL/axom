@@ -110,42 +110,6 @@ public:
 private:
   static const NullBivariateSetType s_nullBiSet;
 
-  template <typename USet = BivariateSetType,
-            bool HasValue = !std::is_abstract<USet>::value>
-  struct BSetContainer;
-
-  template <typename USet>
-  struct BSetContainer<USet, false>
-  {
-    BSetContainer(const USet* set) : m_pSet(set) { }
-
-    const USet* get() const { return m_pSet; }
-
-    const USet* m_pSet;
-  };
-
-  template <typename USet>
-  struct BSetContainer<USet, true>
-  {
-    BSetContainer(const USet* set) : m_pSet(set) { }
-    BSetContainer(const USet& set) : m_set(set) { }
-
-    const USet* get() const
-    {
-      if(m_pSet)
-      {
-        return m_pSet;
-      }
-      else
-      {
-        return &m_set;
-      }
-    }
-
-    const USet* m_pSet {nullptr};
-    USet m_set;
-  };
-
 public:
   /**
    * \brief Constructor for a BivariateMap
@@ -168,26 +132,6 @@ public:
     , m_map(SetType(bSet->size()), defaultValue, stride, allocatorID)
   { }
 
-  /// \overload
-  template <typename UBSet,
-            typename TBSet = BivariateSetType,
-            typename Enable =
-              typename std::enable_if<!std::is_abstract<TBSet>::value &&
-                                      std::is_base_of<TBSet, UBSet>::value>::type>
-  BivariateMap(const UBSet& bSet,
-               DataType defaultValue = DataType(),
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE,
-               int allocatorID = axom::getDefaultAllocatorID())
-    : StridePolicyType(stride)
-    , m_bset(bSet)
-    , m_map(SetType(bSet->size()), defaultValue, stride, allocatorID)
-  {
-    static_assert(std::is_same<BivariateSetType, UBSet>::value,
-                  "Argument set is of a more-derived type than the Map's set "
-                  "type. This may lead to object slicing. Use Map's pointer "
-                  "constructor instead to store polymorphic sets.");
-  }
-
   /**
    * \brief Constructor for BivariateMap using a BivariateSet passed by-value
    *        and data passed in by-value.
@@ -207,36 +151,6 @@ public:
     , m_bset(bSet)
     , m_map(SetType(bSet->size()), data, stride)
   { }
-
-  /**
-   * \brief Constructor for BivariateMap using a BivariateSet passed by-value
-   *        and data passed in by-value.
-   *
-   * \param bSet    A reference to the map's associated bivariate set
-   * \param data    The data buffer to set the map's data to.
-   * \param stride  (Optional) The stride. The number of DataType that
-   *                each element in the set will be mapped to.
-   *                When using a \a RuntimeStridePolicy, the default is 1.
-   * \note  When using a compile time StridePolicy, \a stride must be equal to
-   *        \a stride(), when provided.
-   */
-  template <typename UBSet,
-            typename TBSet = BivariateSetType,
-            typename Enable =
-              typename std::enable_if<!std::is_abstract<TBSet>::value &&
-                                      std::is_base_of<TBSet, UBSet>::value>::type>
-  BivariateMap(const UBSet& bSet,
-               typename MapType::OrderedMap data,
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE)
-    : StridePolicyType(stride)
-    , m_bset(bSet)
-    , m_map(SetType(bSet->size()), data, stride)
-  {
-    static_assert(std::is_same<BivariateSetType, UBSet>::value,
-                  "Argument set is of a more-derived type than the Map's set "
-                  "type. This may lead to object slicing. Use Map's pointer "
-                  "constructor instead to store polymorphic sets.");
-  }
 
   // (KW) Problem -- does not work with RelationSet
   template <typename BivariateSetRetType, typename RelType = void>
@@ -290,7 +204,7 @@ public:
   const ConstSubMapType operator()(SetPosition firstIdx) const
   {
     verifyFirstSetIndex(firstIdx);
-    auto s = set()->elementRangeSet(firstIdx);
+    auto s = m_bset->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return ConstSubMapType(this, s, hasInd);
   }
@@ -298,7 +212,7 @@ public:
   SubMapType operator()(SetPosition firstIdx)
   {
     verifyFirstSetIndex(firstIdx);
-    auto s = set()->elementRangeSet(firstIdx);
+    auto s = m_bset->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return SubMapType(this, s, hasInd);
   }
@@ -609,7 +523,7 @@ public:
   SubMapIterator end(int i) { return (*this)(i).end(); }
 
 public:
-  const BivariateSetType* set() const { return m_bset.get(); }
+  const BivariateSetType* set() const { return m_bset; }
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 
@@ -682,7 +596,7 @@ private:
   }
 
 private:
-  BSetContainer<> m_bset;
+  const BivariateSetType* m_bset;
   MapType m_map;
 };  //end BivariateMap
 
