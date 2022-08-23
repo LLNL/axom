@@ -78,14 +78,10 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-void Logger::abortIfEnabled(message::Level level)
+void Logger::abort()
 {
-  if((m_abortOnError && (level == message::Error)) ||
-     (m_abortOnWarning && (level == message::Warning)))
-  {
-    this->flushStreams();
-    m_abortFunction();
-  }
+  outputLocalMessages();
+  m_abortFunction();
 }
 
 //------------------------------------------------------------------------------
@@ -237,8 +233,21 @@ void Logger::logMessage(message::Level level,
     m_logStreams[level][istream]
       ->append(level, message, tagName, fileName, line, filter_duplicates);
   }
+}
 
-  abortIfEnabled(level);
+//------------------------------------------------------------------------------
+void Logger::outputLocalMessages()
+{
+  for(int level = message::Error; level < message::Num_Levels; ++level)
+  {
+    unsigned nstreams = static_cast<unsigned>(m_logStreams[level].size());
+    for(unsigned istream = 0; istream < nstreams; ++istream)
+    {
+      m_logStreams[level][istream]->outputLocal();
+
+    }  // END for all streams
+
+  }  // END for all levels
 }
 
 //------------------------------------------------------------------------------

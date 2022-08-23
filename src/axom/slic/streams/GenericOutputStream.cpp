@@ -78,6 +78,9 @@ void GenericOutputStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
+void GenericOutputStream::outputLocal() { m_stream->flush(); }
+
+//------------------------------------------------------------------------------
 void GenericOutputStream::flush() { m_stream->flush(); }
 
 } /* namespace slic */

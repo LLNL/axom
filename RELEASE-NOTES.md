@@ -105,6 +105,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   have empty object meshes and/or empty query meshes 
 - 'BezierCurve' objects now support Rational Bezier curve functionality
 - Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and another `Tetrahedron` as a `Polyhedron`
+- Added `slic::outputLocalMessages()` to output messages from the current rank to the console for MPI-enabled LogStreams.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -190,6 +191,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug on two-dimensional `sidre::Array<T>` construction where the size is set to the underlying buffer
   capacity, instead of the actual number of elements
 - Fixed `axom::Array<T>::insert` behavior with non-trivial types.
+- Fixed bug in Slic macros for MPI-based LogStreams not aborting when using collective Error or Warning
+  macros
 
 ## [Version 0.6.1] - Release date 2021-11-17
 

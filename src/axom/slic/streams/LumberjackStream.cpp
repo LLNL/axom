@@ -85,6 +85,20 @@ void LumberjackStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
+void LumberjackStream::outputLocal()
+{
+  if(m_lj == nullptr)
+  {
+    std::cerr
+      << "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
+    return;
+  }
+
+  //Non-collective write to console
+  this->write(true);
+}
+
+//------------------------------------------------------------------------------
 void LumberjackStream::flush()
 {
   if(m_lj == nullptr)
@@ -94,6 +108,7 @@ void LumberjackStream::flush()
     return;
   }
 
+  // Collective push of messages to output node followed by write to console
   m_lj->pushMessagesFully();
   this->write();
 }
@@ -111,7 +126,7 @@ void LumberjackStream::push()
 }
 
 //------------------------------------------------------------------------------
-void LumberjackStream::write()
+void LumberjackStream::write(bool local)
 {
   if(m_lj == nullptr)
   {
@@ -120,7 +135,7 @@ void LumberjackStream::write()
     return;
   }
 
-  if(m_lj->isOutputNode())
+  if(m_lj->isOutputNode() || local)
   {
     std::vector<axom::lumberjack::Message*> messages = m_lj->getMessages();
 
