@@ -266,11 +266,6 @@ public:
   //! All ranks in the user-supplied communicator must call the method
   //! when used within an MPI distributed environment.
   //!
-  //! \sa axom::slic::Logger::isAbortOnErrorsEnabled()
-  //! \sa axom::slic::Logger::setAbortOnError(bool status)
-  //! \sa axom::slic::Logger::isAbortOnWarningsEnabled()
-  //! \sa axom::slic::Logger::setAbortOnWarning(bool status)
-  //!
 
   /*!
    * \brief Calls abort function. Default is abort() or MPI_Abort() in a
