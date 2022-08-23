@@ -100,25 +100,6 @@ public:
     , m_indicesHaveIndirection(indicesHaveIndirection)
   { }
 
-  /** Copy Constructor */
-  SubMap(const SubMap& otherMap)
-    : StridePolicyType(otherMap)
-    , m_superMap(otherMap.m_superMap)
-    , m_subsetIdx(otherMap.m_subsetIdx)
-    , m_indicesHaveIndirection(otherMap.m_indicesHaveIndirection)
-  { }
-
-  /** Assignment Operator */
-  SubMap& operator=(const SubMap& otherMap)
-  {
-    StridePolicyType::operator=(otherMap);
-    m_superMap = otherMap.m_superMap;
-    m_subsetIdx = otherMap.m_subsetIdx;
-    m_indicesHaveIndirection = otherMap.m_indicesHaveIndirection;
-
-    return *this;
-  }
-
   /// \name SubMap individual access functions
   /// @{
   ///
