@@ -305,6 +305,14 @@ public:
   int getFieldIdx(const std::string& field_name) const;
 
   /**
+   * \brief Return the name of the field given its index.
+   *
+   * \param field_idx the index of the field
+   * \return if found, the name of the field; otherwise, the empty string
+   */
+  std::string getFieldName(int field_idx) const;
+
+  /**
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field1D, containing an entry for each cell
    * or material. To retrieve a field of type Field2D, use get2dField().

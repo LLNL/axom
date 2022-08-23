@@ -83,7 +83,7 @@ public:
     return BiVarMapType::operator()(firstIdx);
   }
 
-  std::string getName() { return m_field_name; };
+  std::string getName() { return m_mm->getFieldName(m_fieldIdx); };
 
   MultiMat::IndexSet getSubfieldIndexingSet(int idx)
   {
@@ -101,7 +101,7 @@ private:
   DataLayout m_data_layout;
   SparsityLayout m_sparsity_layout;
 
-  std::string m_field_name;
+  int m_fieldIdx;
 };
 
 //////////////////////// Implementation of MMField2D ////////////////////////////
@@ -125,7 +125,7 @@ inline MMField2D<DataType, BiSet>::MMField2D(MultiMat& mm,
   :  //call Bivariate map constructor
   BiVarMapType(biset, data_arr, stride)
   , m_mm(&mm)
-  , m_field_name(arr_name)
+  , m_fieldIdx(m_mm->getFieldIdx(arr_name))
 {
   SLIC_ASSERT(stride > 0);
 

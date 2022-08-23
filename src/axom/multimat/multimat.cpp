@@ -372,6 +372,15 @@ int MultiMat::getFieldIdx(const std::string& field_name) const
   return -1;
 }
 
+std::string MultiMat::getFieldName(int field_idx) const
+{
+  if (field_idx < 0 || field_idx >= m_fieldNameVec.size())
+  {
+    return "";
+  }
+  return m_fieldNameVec[field_idx];
+}
+
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
   SLIC_ASSERT(hasValidStaticRelation(DataLayout::CELL_DOM));
