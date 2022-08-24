@@ -313,9 +313,8 @@ def build_and_test_host_config(test_root, host_config,
     # test the installation using installed cmake examples
     # TODO: enable tests for installed examples in device configurations
     # TODO: enable tests for installed makefile-based example
-    is_device_build = True
-    should_test_installed_cmake_example = not is_device_build
-    should_test_installed_blt_example = not is_device_build
+    should_test_installed_cmake_example = True
+    should_test_installed_blt_example = True
     should_test_installed_make_example = False
 
     if should_test_installed_cmake_example:
