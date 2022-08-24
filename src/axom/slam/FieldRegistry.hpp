@@ -44,12 +44,14 @@ public:
     return m_maps.find(key) != m_maps.end();
   }
 
-  MapType& addField(KeyType key, const SetType* theSet)
+  template <typename USetType>
+  MapType& addField(KeyType key, const USetType* theSet)
   {
     return m_maps[key] = MapType(theSet);
   }
 
-  MapType& addNamelessField(const SetType* theSet)
+  template <typename USetType>
+  MapType& addNamelessField(const USetType* theSet)
   {
     static int cnt = 0;
     std::stringstream key;

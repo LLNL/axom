@@ -23,6 +23,7 @@
 #include "axom/slam/MapBase.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/NullSet.hpp"
+#include "axom/slam/PolyValue.hpp"
 
 #include "axom/core/IteratorBase.hpp"
 
@@ -96,32 +97,21 @@ private:
   template <typename USet>
   struct SetContainer<USet, false>
   {
-    SetContainer(const USet* set) : m_pSet(set) { }
+    SetContainer(const PolyValue<USet>& set) : m_set(set) { }
 
-    const USet* get() const { return m_pSet; }
+    const USet* get() const { return m_set.get(); }
 
-    const USet* m_pSet;
+    PolyValue<USet> m_set;
   };
 
   template <typename USet>
   struct SetContainer<USet, true>
   {
-    SetContainer(const USet* set) : m_pSet(set) { }
+    SetContainer(const PolyValue<USet>& set) : m_set(*set) { }
     SetContainer(const USet& set) : m_set(set) { }
 
-    const USet* get() const
-    {
-      if(m_pSet)
-      {
-        return m_pSet;
-      }
-      else
-      {
-        return &m_set;
-      }
-    }
+    const USet* get() const { return &m_set; }
 
-    const USet* m_pSet {nullptr};
     USet m_set;
   };
 
@@ -138,8 +128,9 @@ public:
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a stride(), when provided.
    */
-
-  Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
+  template <typename TSet = SetType,
+            typename Enable = std::enable_if_t<std::is_abstract<TSet>::value>>
+  Map(PolyValue<SetType> theSet = policies::EmptySetTraits<SetType>::emptySet(),
       DataType defaultValue = DataType(),
       SetPosition stride = StridePolicyType::DEFAULT_VALUE,
       int allocatorID = axom::getDefaultAllocatorID())
@@ -151,11 +142,11 @@ public:
   }
 
   /// \overload
-  template <typename USet,
-            typename TSet = SetType,
-            typename Enable = typename std::enable_if<
-              !std::is_abstract<TSet>::value && std::is_base_of<TSet, USet>::value>::type>
-  Map(const USet& theSet,
+  template <typename USet = SetType,
+            typename Enable =
+              typename std::enable_if<!std::is_abstract<USet>::value &&
+                                      std::is_base_of<SetType, USet>::value>::type>
+  Map(USet theSet = {},
       DataType defaultValue = DataType(),
       SetPosition stride = StridePolicyType::DEFAULT_VALUE,
       int allocatorID = axom::getDefaultAllocatorID())
@@ -183,10 +174,10 @@ public:
    *        \a stride(), when provided.
    */
   template <typename USet,
-            typename TSet = SetType,
-            typename Enable = typename std::enable_if<
-              !std::is_abstract<TSet>::value && std::is_base_of<TSet, USet>::value>::type>
-  Map(const USet& theSet,
+            typename Enable =
+              typename std::enable_if<!std::is_abstract<USet>::value &&
+                                      std::is_base_of<SetType, USet>::value>::type>
+  Map(USet theSet,
       OrderedMap data,
       SetPosition stride = StridePolicyType::DEFAULT_VALUE)
     : StridePolicyType(stride)
@@ -345,7 +336,7 @@ public:
     MapBuilder() : m_set(policies::EmptySetTraits<SetType>::emptySet()) { }
 
     /** \brief Provide the Set to be used by the Map */
-    MapBuilder& set(const SetType* set)
+    MapBuilder& set(const PolyValue<SetType>& set)
     {
       m_set = set;
       return *this;
@@ -368,7 +359,7 @@ public:
     }
 
   private:
-    const SetType* m_set;
+    PolyValue<SetType> m_set;
     StridePolicyType m_stride;
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();

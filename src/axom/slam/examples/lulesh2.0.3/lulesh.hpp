@@ -418,14 +418,16 @@ namespace slamLulesh {
     /**
      * \brief Returns a const reference to the corner set when threading (omp) is enabled, otherwise, a ref to a NullSet (with no elements).
      */
-    const SetBase&      threadingCornerSet()  const {
 #ifdef AXOM_USE_OPENMP
+    const CornerSet&      threadingCornerSet()  const {
       return m_cornerSet;
+    }
 #else
+    const NullSet&      threadingCornerSet()  const {
       static const NullSet s_nullSet;
       return s_nullSet;
-#endif
     }
+#endif
 
     /**
      * Returns a const reference to the corner set.

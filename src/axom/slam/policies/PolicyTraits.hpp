@@ -91,7 +91,7 @@ struct EmptySetTraits<slam::Set<P, E>>
 {
   using EmptySetType = slam::Set<P, E>;
 
-  static EmptySetType* emptySet()
+  static slam::NullSet<P, E>* emptySet()
   {
     static slam::NullSet<P, E> s_nullSet;
     return &s_nullSet;

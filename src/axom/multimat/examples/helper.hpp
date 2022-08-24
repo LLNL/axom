@@ -872,7 +872,7 @@ struct Robey_data
           .indices(BuildInd().size(slam_nbr_ind.size()).data(&slam_nbr_ind));
 
       // Initialize map over centroids
-      slam_centroids = CentroidMap(&slam_elems);
+      slam_centroids = CentroidMap(slam_elems);
       std::copy(cen.begin(), cen.end(), slam_centroids.data().begin());
     }
 
