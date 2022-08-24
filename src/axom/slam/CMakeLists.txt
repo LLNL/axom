@@ -27,6 +27,7 @@ set(slam_headers
     Utilities.hpp
     FieldRegistry.hpp
     ModularInt.hpp
+    PolyValue.hpp
 
     #SRM policies
     policies/CardinalityPolicies.hpp
