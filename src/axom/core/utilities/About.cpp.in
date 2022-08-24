@@ -40,8 +40,29 @@ void about(std::ostream &oss)
 
   oss << "Compiler Settings: " << std::endl
       << "   C++ Standard: " << AXOM_CXX_STD << std::endl
+      << "   MPI support: "
+#ifdef AXOM_USE_MPI
+      << "ENABLED"
+#else
+      << "DISABLED"
+#endif
+      << std::endl
       << "   OpenMP support: "
 #ifdef AXOM_USE_OPENMP
+      << "ENABLED"
+#else
+      << "DISABLED"
+#endif
+      << std::endl
+      << "   CUDA support: "
+#ifdef AXOM_USE_CUDA
+      << "ENABLED"
+#else
+      << "DISABLED"
+#endif
+      << std::endl
+      << "   HIP support: "
+#ifdef AXOM_USE_HIP
       << "ENABLED"
 #else
       << "DISABLED"

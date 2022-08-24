@@ -35,6 +35,22 @@ if (ENABLE_CUDA)
     enable_language(CUDA)
 endif()
 
+if (ENABLE_HIP)
+    if (NOT ROCM_PATH)
+        find_path(ROCM_PATH
+            hip
+            ENV{ROCM_DIR}
+            ENV{ROCM_PATH}
+            ENV{HIP_PATH}
+            ${HIP_PATH}/..
+            ${HIP_ROOT_DIR}/../
+            ${ROCM_ROOT_DIR}
+            /opt/rocm)
+    endif()
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${ROCM_PATH}")
+    find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH})
+endif()
+
 # Required to create Conduit's MPI dependencies
 if (ENABLE_MPI)
     find_package(MPI REQUIRED)
@@ -47,6 +63,9 @@ find_package(axom REQUIRED
 # BEGIN FIXME:
 # Create fake empty target, this stops CMake from adding -lcuda_runtime to the link line
 add_library(cuda_runtime INTERFACE)
+
+# Create fake empty target, this stops CMake from adding -lblt_hip_runtime to the link line
+add_library(blt_hip_runtime INTERFACE)
 # END FIXME
 
 #------------------------------------------------------------------------------

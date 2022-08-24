@@ -311,7 +311,6 @@ def build_and_test_host_config(test_root, host_config,
     sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
 
     # test the installation using installed cmake examples
-    # TODO: enable tests for installed examples in device configurations
     # TODO: enable tests for installed makefile-based example
     should_test_installed_cmake_example = True
     should_test_installed_blt_example = True
