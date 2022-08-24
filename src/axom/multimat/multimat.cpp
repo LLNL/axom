@@ -374,7 +374,7 @@ int MultiMat::getFieldIdx(const std::string& field_name) const
 
 std::string MultiMat::getFieldName(int field_idx) const
 {
-  if (field_idx < 0 || field_idx >= m_fieldNameVec.size())
+  if(field_idx < 0 || field_idx >= m_fieldNameVec.size())
   {
     return "";
   }
