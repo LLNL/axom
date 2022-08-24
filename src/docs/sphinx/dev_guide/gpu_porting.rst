@@ -300,9 +300,6 @@ General, Rough Porting Tips
         totalArea = 0;
       });
 
-  * This does not have to be logically correct, you are just making sure you
-    have done the allocation correctly (e.g. not segfaulting).
-
 * Add the functions you want to call on device to the ``axom::for_all`` kernel:
 
   .. code-block:: c
@@ -317,8 +314,6 @@ General, Rough Porting Tips
         double area = tris[idx].area();
       });
 
-  * Does not have to be logically correct.
-
 * Apply a ``__host__ __device__`` annotation to your functions if you see the
   following error or similar::
 
@@ -332,7 +327,7 @@ General, Rough Porting Tips
 
       error: reference to __host__ function 'signedArea<2>' in __host__ __device__ function
 
-    You will want to keep decorating until all the complaints are gone.
+    Keep decorating until all the complaints are gone.
 
   * Most of the C++ standard library is not available on device. Your options
     are Axom's equivalent functions/classes if it exists, or to add your
@@ -350,7 +345,7 @@ General, Rough Porting Tips
           totalArea += tris[idx].area();
       });
 
-  * If at this point your kernel is not working/segfaulting, it's hopefully a
+  * If at this point your kernel is not working/segfaulting, it is hopefully a
     logical error, and you can debug the kernel without diving into debugging
     tools.
   * Utilize ``printf()`` for debugging output
