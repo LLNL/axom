@@ -18,6 +18,7 @@
 #include <type_traits>  // for std::common_type
 
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/slam/PolyValue.hpp"
 #include "axom/slam/Utilities.hpp"
 
 namespace axom
@@ -220,6 +221,15 @@ std::unique_ptr<Set<PosType, ElemType>> makeVirtualSet(DerivedSet value)
 {
   auto* vptr = new SetVirtualProxy<DerivedSet>(std::move(value));
   return std::unique_ptr<Set<PosType, ElemType>>(vptr);
+}
+
+template <typename DerivedSet,
+          typename PosType = typename DerivedSet::PositionType,
+          typename ElemType = typename DerivedSet::ElementType>
+PolyValue<Set<PosType, ElemType>> makePolySet(DerivedSet value)
+{
+  using PolyType = PolyValue<Set<PosType, ElemType>>;
+  return PolyType(SetVirtualProxy<DerivedSet>(std::move(value)));
 }
 
 /**

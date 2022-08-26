@@ -35,8 +35,8 @@ template <typename T>
 struct PolyValue
 {
 public:
-  template <typename U>
-  PolyValue(std::remove_pointer_t<U> value)
+  template <typename U, typename Enable = std::enable_if_t<!std::is_pointer<U>::value>>
+  PolyValue(U value)
     : m_poly(new U(std::move(value)))
     , m_copier(&detail::copy_construct_impl<U, T>::construct)
   {
