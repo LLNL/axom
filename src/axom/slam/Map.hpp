@@ -90,35 +90,6 @@ public:
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
 
-private:
-  template <typename USet = SetType, bool HasValue = !std::is_abstract<USet>::value>
-  struct SetContainer;
-
-  template <typename USet>
-  struct SetContainer<USet, false>
-  {
-    SetContainer() = default;
-    template <typename OtherSet>
-    SetContainer(const OtherSet& set) : m_set(makePolySet(set))
-    { }
-
-    const USet* get() const { return m_set.get(); }
-
-    PolyValue<USet> m_set {
-      makePolySet(*policies::EmptySetTraits<USet>::emptySet())};
-  };
-
-  template <typename USet>
-  struct SetContainer<USet, true>
-  {
-    SetContainer() = default;
-    SetContainer(const USet& set) : m_set(set) { }
-
-    const USet* get() const { return &m_set; }
-
-    USet m_set;
-  };
-
 public:
   Map() : StridePolicyType(StridePolicyType::DEFAULT_VALUE) { }
 
@@ -135,36 +106,31 @@ public:
    *        \a stride(), when provided.
    */
   template <typename USet = SetType>
-  Map(const USet* theSet,
-      DataType defaultValue = DataType(),
-      SetPosition stride = StridePolicyType::DEFAULT_VALUE,
-      int allocatorID = axom::getDefaultAllocatorID())
-    : StridePolicyType(stride)
-  {
-    static_assert(!std::is_abstract<USet>::value,
-                  "Must pass in a concrete set instance.");
-    if(theSet != nullptr)
-    {
-      m_set = SetContainer<>(*theSet);
-    }
-    m_data =
-      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
-  }
-
-  /// \overload
-  template <typename USet = SetType,
-            typename Enable = std::enable_if_t<!std::is_pointer<USet>::value>>
-  Map(USet theSet,
+  Map(const USet* theSet = policies::EmptySetTraits<SetType>::emptySet(),
       DataType defaultValue = DataType(),
       SetPosition stride = StridePolicyType::DEFAULT_VALUE,
       int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    static_assert(std::is_same<SetType, USet>::value,
-                  "Argument set is of a more-derived type than the Map's set "
-                  "type. This may lead to object slicing. Use Map's pointer "
-                  "constructor instead to store polymorphic sets.");
+    static_assert(!std::is_abstract<USet>::value,
+                  "Must pass in a concrete set instance.");
+    m_data =
+      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
+  }
+
+  /// \overload
+  template <typename USet,
+            typename Enable = std::enable_if_t<!std::is_pointer<USet>::value>>
+  Map(const USet& theSet,
+      DataType defaultValue = DataType(),
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+      int allocatorID = axom::getDefaultAllocatorID())
+    : StridePolicyType(stride)
+    , m_set(&theSet)
+  {
+    static_assert(!std::is_abstract<USet>::value,
+                  "Must pass in a concrete set instance.");
     m_data =
       IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
@@ -181,19 +147,17 @@ public:
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a stride(), when provided.
    */
-  template <typename USet = SetType,
+  template <typename USet,
             typename Enable = std::enable_if_t<!std::is_pointer<USet>::value>>
-  Map(USet theSet,
+  Map(const USet& theSet,
       OrderedMap data,
       SetPosition stride = StridePolicyType::DEFAULT_VALUE)
     : StridePolicyType(stride)
-    , m_set(theSet)
+    , m_set(&theSet)
     , m_data(std::move(data))
   {
-    static_assert(std::is_same<SetType, USet>::value,
-                  "Argument set is of a more-derived type than the Map's set "
-                  "type. This may lead to object slicing. Use Map's pointer "
-                  "constructor instead to store polymorphic sets.");
+    static_assert(!std::is_abstract<USet>::value,
+                  "Must pass in a concrete set instance.");
 
     checkBackingSize(
       std::integral_constant<bool, IndirectionPolicy::IsMutableBuffer> {});
@@ -343,21 +307,13 @@ public:
   public:
     friend class Map;
 
-    MapBuilder() : m_set()
-    {
-      if(policies::EmptySetTraits<SetType>::emptySet())
-      {
-        m_set = SetContainer<>(*policies::EmptySetTraits<SetType>::emptySet());
-      }
-    }
+    MapBuilder() : m_set(policies::EmptySetTraits<SetType>::emptySet()) { }
 
     /** \brief Provide the Set to be used by the Map */
-    template <typename USet>
-    MapBuilder& set(const USet* set)
+    template <typename USetType>
+    MapBuilder& set(const USetType* set)
     {
-      static_assert(!std::is_abstract<USet>::value,
-                    "Must pass in a concrete set instance.");
-      m_set = SetContainer<>(*set);
+      m_set = SetContainer<SetType>(set);
       return *this;
     }
 
@@ -378,7 +334,7 @@ public:
     }
 
   private:
-    SetContainer<> m_set;
+    SetContainer<SetType> m_set;
     StridePolicyType m_stride;
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();
@@ -512,7 +468,7 @@ private:
   }
 
 private:
-  SetContainer<> m_set;
+  SetContainer<SetType> m_set;
   OrderedMap m_data;
 };
 

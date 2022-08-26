@@ -232,6 +232,33 @@ PolyValue<Set<PosType, ElemType>> makePolySet(DerivedSet value)
   return PolyType(SetVirtualProxy<DerivedSet>(std::move(value)));
 }
 
+template <typename SetType, bool HasValue = !std::is_abstract<SetType>::value>
+struct SetContainer;
+
+template <typename SetType>
+struct SetContainer<SetType, false>
+{
+  SetContainer() = default;
+  template <typename OtherSet>
+  SetContainer(const OtherSet* set) : m_set(makePolySet(*set))
+  { }
+
+  const SetType* get() const { return m_set.get(); }
+
+  PolyValue<SetType> m_set {nullptr};
+};
+
+template <typename SetType>
+struct SetContainer<SetType, true>
+{
+  SetContainer() = default;
+  SetContainer(const SetType* set) : m_set(*set) { }
+
+  const SetType* get() const { return &m_set; }
+
+  SetType m_set;
+};
+
 /**
  * \brief General equality operator for two sets.
  * \details Two sets are considered equal if they have the same number of
