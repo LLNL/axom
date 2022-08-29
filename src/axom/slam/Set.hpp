@@ -244,6 +244,16 @@ struct SetContainer<SetType, false>
   { }
 
   const SetType* get() const { return m_set.get(); }
+  SetType* get() { return m_set.get(); }
+
+  const SetType* operator->() const { return m_set.get(); }
+  SetType* operator->() { return m_set.get(); }
+
+  const SetType& operator*() const { return *m_set; }
+  SetType& operator*() { return *m_set; }
+
+  operator const SetType*() const { return m_set.get(); }
+  operator SetType*() { return m_set.get(); }
 
   PolyValue<SetType> m_set {nullptr};
 };
@@ -252,9 +262,25 @@ template <typename SetType>
 struct SetContainer<SetType, true>
 {
   SetContainer() = default;
-  SetContainer(const SetType* set) : m_set(*set) { }
+  SetContainer(const SetType* set)
+  {
+    if(set)
+    {
+      m_set = SetType(*set);
+    }
+  }
 
   const SetType* get() const { return &m_set; }
+  SetType* get() { return &m_set; }
+
+  const SetType* operator->() const { return &m_set; }
+  SetType* operator->() { return &m_set; }
+
+  const SetType& operator*() const { return m_set; }
+  SetType& operator*() { return m_set; }
+
+  operator const SetType*() const { return &m_set; }
+  operator SetType*() { return &m_set; }
 
   SetType m_set;
 };
