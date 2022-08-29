@@ -110,6 +110,24 @@ public:
 private:
   static const NullBivariateSetType s_nullBiSet;
 
+  // abstract -> concrete set conversion
+  template <typename SetRetType, typename SetFromType>
+  const SetRetType* getSetImpl(SetFromType* src, std::true_type) const
+  {
+    // Try to unwrap from constituent SetVirtualProxy
+    using VirtualType = SetVirtualProxy<SetRetType>;
+    const VirtualType* wrap = dynamic_cast<const VirtualType*>(src);
+    SLIC_ASSERT(wrap != nullptr);
+    return &(wrap->getValue());
+  }
+
+  template <typename SetRetType, typename SetFromType>
+  const SetRetType* getSetImpl(typename BSet::FirstSetType* src,
+                               std::false_type) const
+  {
+    return src;
+  }
+
 public:
   /**
    * \brief Constructor for a BivariateMap
@@ -158,10 +176,25 @@ public:
                           BivariateSetRetType>::type
   getBivariateSet() const
   {
-    using OuterSet = const typename BivariateSetRetType::FirstSetType;
-    using InnerSet = const typename BivariateSetRetType::SecondSetType;
-    OuterSet* outer = dynamic_cast<OuterSet*>(set()->getFirstSet());
-    InnerSet* inner = dynamic_cast<InnerSet*>(set()->getSecondSet());
+    using OuterSet = typename BivariateSetRetType::FirstSetType;
+    using InnerSet = typename BivariateSetRetType::SecondSetType;
+
+    using FromOuterSet = typename BivariateSetType::FirstSetType;
+    using FromInnerSet = typename BivariateSetType::SecondSetType;
+
+    constexpr bool UnwrapOuterSet = std::is_abstract<FromOuterSet>::value &&
+      !std::is_abstract<OuterSet>::value;
+
+    constexpr bool UnwrapInnerSet = std::is_abstract<FromInnerSet>::value &&
+      !std::is_abstract<InnerSet>::value;
+
+    // Use tag dispatch to conditionally unwrap the virtual set
+    const OuterSet* outer =
+      getSetImpl<OuterSet>(set()->getFirstSet(),
+                           std::integral_constant<bool, UnwrapOuterSet> {});
+    const InnerSet* inner =
+      getSetImpl<InnerSet>(set()->getSecondSet(),
+                           std::integral_constant<bool, UnwrapInnerSet> {});
 
     return BivariateSetRetType(outer, inner);
   }

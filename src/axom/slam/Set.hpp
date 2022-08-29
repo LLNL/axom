@@ -196,6 +196,8 @@ public:
    */
   virtual bool empty() const override { return m_impl.empty(); }
 
+  const SetType& getValue() const { return m_impl; }
+
 #if 0
   /**
    * \brief Returns true if the set contains the given element.
