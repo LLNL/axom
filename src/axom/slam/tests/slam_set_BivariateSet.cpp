@@ -89,9 +89,7 @@ public:
   using ISet2 = ::IndirSetType<SecondSetType>;
 
   BivariateSetTester()
-    : m_set1(nullptr)
-    , m_set2(nullptr)
-    , m_pset1(nullptr)
+    : m_pset1(nullptr)
     , m_pset2(nullptr)
     , m_rset1(nullptr)
     , m_rset2(nullptr)
@@ -103,20 +101,15 @@ public:
   {
     constructSets();
 
-    m_set1 = getFirstSet<FirstSetType>();
-    EXPECT_TRUE(m_set1->isValid(true));
+    EXPECT_TRUE(getConcreteFirstSet()->isValid(true));
 
-    m_set2 = getSecondSet<SecondSetType>();
-    EXPECT_TRUE(m_set2->isValid(true));
+    EXPECT_TRUE(getConcreteSecondSet()->isValid(true));
 
     constructRelation();
   }
 
   virtual void TearDown()
   {
-    m_set1 = nullptr;
-    m_set2 = nullptr;
-
     deleteSet(m_pset1);
     deleteSet(m_pset2);
 
@@ -190,14 +183,17 @@ private:
     relationBegins.clear();
     relationIndices.clear();
 
-    for(int i = 0; i < m_set1->size(); ++i)
+    auto* pset1 = getConcreteFirstSet();
+    auto* pset2 = getConcreteSecondSet();
+
+    for(int i = 0; i < pset1->size(); ++i)
     {
-      auto outer = m_set1->at(i);
+      auto outer = pset1->at(i);
       relationBegins.push_back(relationIndices.size());
 
-      for(int j = 0; j < m_set2->size(); ++j)
+      for(int j = 0; j < pset2->size(); ++j)
       {
-        auto inner = m_set2->at(j);
+        auto inner = pset2->at(j);
         if(modCheck(outer, inner))
         {
           relationIndices.push_back(j);
@@ -209,8 +205,8 @@ private:
     // Construct the relation using this data
     using RelationBuilder = typename RelationType::RelationBuilder;
     modRelation = RelationBuilder()
-                    .fromSet(m_set1)
-                    .toSet(m_set2)
+                    .fromSet(pset1)
+                    .toSet(pset2)
                     .begins(typename RelationBuilder::BeginsSetBuilder()
                               .size(relationBegins.size())
                               .data(&relationBegins))
@@ -276,10 +272,32 @@ private:
     return m_pset2;
   }
 
-protected:
-  FirstSetType* m_set1;
-  SecondSetType* m_set2;
+public:
+  template <typename S = FirstSetType>
+  std::enable_if_t<std::is_abstract<S>::value, PSet1*> getConcreteFirstSet()
+  {
+    return m_pset1;
+  }
 
+  template <typename S = FirstSetType>
+  std::enable_if_t<!std::is_abstract<S>::value, FirstSetType*> getConcreteFirstSet()
+  {
+    return getFirstSet<S>();
+  }
+
+  template <typename S = SecondSetType>
+  std::enable_if_t<std::is_abstract<S>::value, PSet2*> getConcreteSecondSet()
+  {
+    return m_pset2;
+  }
+
+  template <typename S = SecondSetType>
+  std::enable_if_t<!std::is_abstract<S>::value, SecondSetType*> getConcreteSecondSet()
+  {
+    return getSecondSet<S>();
+  }
+
+protected:
   PSet1* m_pset1;
   PSet2* m_pset2;
 
@@ -323,18 +341,23 @@ TYPED_TEST(BivariateSetTester, smoke)
   {
     auto bset = slam::makeVirtualBset(slam::ProductSet<S1, S2>());
 
+    // TODO: identify if we should keep the below behavior
+#if 0
     // We expect this object to be valid when the types of both S1 and S2 are
     // abstract slam::Sets, but not if either is specialized.
     bool isSet1Abstract = std::is_abstract<S1>::value;
     bool isSet2Abstract = std::is_abstract<S2>::value;
 
     EXPECT_EQ(isSet1Abstract && isSet2Abstract, bset->isValid(true));
+#endif
+    EXPECT_TRUE(bset->isValid(true));
   }
 
   // Test a non-default-constructed BivariateSet
   {
-    auto bset =
-      slam::makeVirtualBset(slam::ProductSet<S1, S2>(this->m_set1, this->m_set2));
+    auto bset = slam::makeVirtualBset(
+      slam::ProductSet<S1, S2>(this->getConcreteFirstSet(),
+                               this->getConcreteSecondSet()));
     EXPECT_TRUE(bset->isValid(true));
   }
 }
@@ -364,7 +387,7 @@ TYPED_TEST(BivariateSetTester, sizes)
   {
     using PSet = slam::ProductSet<S1, S2>;
 
-    PSet pset = PSet(this->m_set1, this->m_set2);
+    PSet pset = PSet(this->getConcreteFirstSet(), this->getConcreteSecondSet());
     EXPECT_TRUE(pset.isValid(true));
 
     bSetSizesTest(&pset);
@@ -428,7 +451,7 @@ TYPED_TEST(BivariateSetTester, traverse)
   {
     using PSet = slam::ProductSet<S1, S2>;
 
-    PSet pset = PSet(this->m_set1, this->m_set2);
+    PSet pset = PSet(this->getConcreteFirstSet(), this->getConcreteSecondSet());
     EXPECT_TRUE(pset.isValid(true));
 
     bool checkMod = false;

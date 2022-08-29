@@ -112,27 +112,29 @@ public:
       , m_toSet(policies::EmptySetTraits<ToSetType>::emptySet())
     { }
 
-    RelationBuilder& fromSet(FromSetType* pFromSet)
+    template <typename UFromSet>
+    RelationBuilder& fromSet(UFromSet* pFromSet)
     {
-      m_fromSet = pFromSet;
+      m_fromSet = SetContainer<FromSetType>(pFromSet);
       if(m_cardPolicy.totalSize() == 0 &&
-         !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
+         !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet.get()))
       {
         m_cardPolicy = CardinalityPolicy(m_fromSet->size());
       }
       return *this;
     }
 
-    RelationBuilder& toSet(ToSetType* pToSet)
+    template <typename UToSet>
+    RelationBuilder& toSet(UToSet* pToSet)
     {
-      m_toSet = pToSet;
+      m_toSet = SetContainer<ToSetType>(pToSet);
       return *this;
     }
 
     RelationBuilder& begins(BeginsSetBuilder& beginsBuilder)
     {
       SLIC_ASSERT_MSG(
-        !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet),
+        !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet.get()),
         "Must set the 'fromSet' pointer before setting the begins set");
 
       m_cardPolicy = CardinalityPolicy(m_fromSet->size(), beginsBuilder);
@@ -145,8 +147,8 @@ public:
     }
 
   private:
-    FromSetType* m_fromSet;
-    ToSetType* m_toSet;
+    SetContainer<FromSetType> m_fromSet;
+    SetContainer<ToSetType> m_toSet;
     CardinalityPolicy m_cardPolicy;
     IndicesSetBuilder m_indBuilder;
   };
@@ -208,17 +210,17 @@ public:
 
   bool hasFromSet() const
   {
-    return !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
+    return !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet.get());
   }
-  FromSetType* fromSet() { return m_fromSet; }
-  const FromSetType* fromSet() const { return m_fromSet; }
+  FromSetType* fromSet() { return m_fromSet.get(); }
+  const FromSetType* fromSet() const { return m_fromSet.get(); }
 
   bool hasToSet() const
   {
-    return !policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
+    return !policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet.get());
   }
-  ToSetType* toSet() { return m_toSet; }
-  const ToSetType* toSet() const { return m_toSet; }
+  ToSetType* toSet() { return m_toSet.get(); }
+  const ToSetType* toSet() const { return m_toSet.get(); }
 
   SetPosition fromSetSize() { return m_fromSet->size(); }
 
@@ -237,8 +239,8 @@ public:
   IndirectionPtrType relationData() { return m_relationIndices.ptr(); }
 
 private:
-  FromSetType* m_fromSet;
-  ToSetType* m_toSet;
+  SetContainer<FromSetType> m_fromSet;
+  SetContainer<ToSetType> m_toSet;
 
   IndicesSet m_relationIndices;
 };
@@ -276,8 +278,9 @@ bool StaticRelation<PosType,
   bool relationdataIsValid = true;
 
   // Step 1: Check if the sets are valid
-  bool isFromSetNull = policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
-  bool isToSetNull = policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
+  bool isFromSetNull =
+    policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet.get());
+  bool isToSetNull = policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet.get());
 
   if(isFromSetNull || isToSetNull)
   {
@@ -296,7 +299,7 @@ bool StaticRelation<PosType,
   // Step 2: Check if the cardinality is valid
   if(setsAreValid)
   {
-    if(!CardinalityPolicy::isValid(m_fromSet, verboseOutput))
+    if(!CardinalityPolicy::isValid(m_fromSet.get(), verboseOutput))
     {
       if(verboseOutput)
       {

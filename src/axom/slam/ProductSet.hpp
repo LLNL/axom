@@ -65,12 +65,17 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-
-  ProductSet(const FirstSetType* set1, const SecondSetType* set2)
+  template <typename UFirstSet, typename USecondSet>
+  ProductSet(const UFirstSet* set1, const USecondSet* set2)
     : RangeSetType(set1->size() * set2->size())
     , m_firstSet(set1)
     , m_secondSet(set2)
-  { }
+  {
+    static_assert(!std::is_abstract<UFirstSet>::value,
+                  "Must pass in a concrete set instance.");
+    static_assert(!std::is_abstract<USecondSet>::value,
+                  "Must pass in a concrete set instance.");
+  }
 
   /**
    * \brief Return the element SparseIndex. Since ProductSet is the full
@@ -202,8 +207,8 @@ private:
   }
 
 private:
-  const FirstSetType* m_firstSet;
-  const SecondSetType* m_secondSet;
+  SetContainer<FirstSetType> m_firstSet;
+  SetContainer<SecondSetType> m_secondSet;
 };
 
 }  // end namespace slam
