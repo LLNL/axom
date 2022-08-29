@@ -38,8 +38,8 @@ set(CMAKE_CUDA_FLAGS           "@CMAKE_CUDA_FLAGS@"           CACHE STRING "")
 
 # HIP
 set(ENABLE_HIP                @ENABLE_HIP@                  CACHE BOOL "")
-set(HIP_ROOT_DIR              "@HIP_ROOT_DIR@"              CACHE STRING "")
-set(HIP_CLANG_PATH            "@HIP_CLANG_PATH@"            CACHE STRING "")
+set(HIP_ROOT_DIR              "@HIP_ROOT_DIR@"              CACHE PATH "")
+set(HIP_CLANG_PATH            "@HIP_CLANG_PATH@"            CACHE PATH "")
 set(CMAKE_HIP_ARCHITECTURES   "@CMAKE_HIP_ARCHITECTURES@"   CACHE STRING "")
 set(CMAKE_EXE_LINKER_FLAGS    "@CMAKE_EXE_LINKER_FLAGS@"    CACHE STRING "")
 
