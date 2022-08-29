@@ -91,7 +91,14 @@ public:
   using iterator_pair = const_iterator_pair;
 
 public:
-  Map() : StridePolicyType(StridePolicyType::DEFAULT_VALUE) { }
+  Map() : StridePolicyType(StridePolicyType::DEFAULT_VALUE)
+  {
+    if(policies::EmptySetTraits<SetType>::emptySet())
+    {
+      m_set =
+        SetContainer<SetType>(policies::EmptySetTraits<SetType>::emptySet());
+    }
+  }
 
   /**
    * \brief Constructor for Map using a Set pointer
