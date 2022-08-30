@@ -105,11 +105,16 @@ public:
    *  The code ensures that the bounds are valid, if shouldFixBounds is true.
    */
   AXOM_HOST_DEVICE
-  BoundingBox(const PointType& lowerPt, const PointType& upperPt, bool shouldFixBounds = true)
+  BoundingBox(const PointType& lowerPt,
+              const PointType& upperPt,
+              bool shouldFixBounds = true)
     : m_min(lowerPt)
     , m_max(upperPt)
   {
-    if(shouldFixBounds) { this->checkAndFixBounds(); }
+    if(shouldFixBounds)
+    {
+      this->checkAndFixBounds();
+    }
   }
 
   /*!
