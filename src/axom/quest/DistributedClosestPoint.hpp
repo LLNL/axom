@@ -533,7 +533,6 @@ public:
     }
 
     gatherBoundingBoxes(local_bb, m_objectPartitionBbs);
-// std::cout << __LINE__ << " m_objectPartitionsBbs:"; for(const auto &bb : m_objectPartitionBbs) std::cout << bb; std::cout << std::endl;
   }
 
   /// Allgather one bounding box from each rank.
@@ -563,7 +562,7 @@ public:
       // Correct the auto-correction in the BoundingBox constructor.
       if(lower[0] > upper[0])
       {
-        all_aabbs[all_aabbs.size()-1] = BoxType();
+        all_aabbs[all_aabbs.size() - 1] = BoxType();
       }
     }
   }
@@ -862,17 +861,15 @@ public:
     slic::flushStreams();
   }
   void new_computeClosestPoints(conduit::Node& queryMesh,
-                            const std::string& coordset) const
+                                const std::string& coordset) const
   {
     SLIC_ASSERT_MSG(
       isBVHTreeInitialized(),
       "BVH tree must be initialized before calling 'computeClosestPoints");
 
     BoxType myQueryBb = computeMeshBoundingBox(queryMesh, coordset);
-// std::cout << __LINE__ << " r" << m_rank << " myQueryBb: " << myQueryBb << std::endl;
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
-// std::cout << __LINE__ << " r" << m_rank << " allQueryBbs:"; for(const auto &bb : allQueryBbs) std::cout << bb; std::cout << std::endl;
 
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
 
@@ -893,19 +890,19 @@ public:
 
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
     std::set<int> remainingRecvs;
-    for(int r=0; r<m_nranks; ++r)
+    for(int r = 0; r < m_nranks; ++r)
     {
       if(r != m_rank)
       {
         const auto& otherQueryBb = allQueryBbs[r];
-        double sqDistance = axom::primal::squared_distance(otherQueryBb, myObjectBb);
+        double sqDistance =
+          axom::primal::squared_distance(otherQueryBb, myObjectBb);
         if(sqDistance <= m_sqDistanceThreshold)
         {
           remainingRecvs.insert(r);
         }
       }
     }
-// std::cout << __LINE__ << " r" << m_rank << " remainingRecvs: "; for(const auto &i : remainingRecvs) std::cout << ' ' << i; std::cout << std::endl;
 
     // arbitrary tags for send/recv xferNode.
     const int tag = 987342;
@@ -944,13 +941,12 @@ public:
         remainingRecvs.insert(m_rank);
       }
     }
-std::cout << __LINE__ << " r" << m_rank << " remainingRecvs: "; for(const auto &i : remainingRecvs) std::cout << ' ' << i; std::cout << std::endl;
 
     while(!remainingRecvs.empty())
     {
-      SLIC_INFO_IF(
-        m_isVerbose,
-        fmt::format("=======  {} receives remaining =======", remainingRecvs.size()));
+      SLIC_INFO_IF(m_isVerbose,
+                   fmt::format("=======  {} receives remaining =======",
+                               remainingRecvs.size()));
 
       // Receive the next xferNode
       std::shared_ptr<conduit::Node> recvXferNodePtr =
@@ -961,7 +957,6 @@ std::cout << __LINE__ << " r" << m_rank << " remainingRecvs: "; for(const auto &
                                     m_mpiComm);
 
       const int homeRank = recvXferNodePtr->fetch_existing("homeRank").as_int();
-std::cout << __LINE__ << " r" << m_rank << " received homeRank " << homeRank << std::endl;
       remainingRecvs.erase(homeRank);
       xferNodes[homeRank] = recvXferNodePtr;
       conduit::Node& xferNode = *xferNodes[homeRank];
@@ -1044,14 +1039,15 @@ private:
     int homeRank = xferNode.fetch_existing("homeRank").value();
     BoxType bb;
     get_bounding_box_from_conduit_node(bb, xferNode.fetch_existing("aabb"));
-    for(int i=1; i<m_nranks; ++i)
+    for(int i = 1; i < m_nranks; ++i)
     {
-      int maybeNextRecip = (m_rank + i)%m_nranks;
+      int maybeNextRecip = (m_rank + i) % m_nranks;
       if(maybeNextRecip == homeRank)
       {
         return maybeNextRecip;
       }
-      double sqDistance = primal::squared_distance(bb, m_objectPartitionBbs[maybeNextRecip]);
+      double sqDistance =
+        primal::squared_distance(bb, m_objectPartitionBbs[maybeNextRecip]);
       if(sqDistance <= m_sqDistanceThreshold)
       {
         return maybeNextRecip;
