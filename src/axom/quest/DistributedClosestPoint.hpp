@@ -730,7 +730,8 @@ public:
     {
       /*
         Send local query mesh to next rank with close-enough object
-        partition, if any.  Otherwise, all done with local query mesh.
+        partition, if any.  Increase remainingRecvs, because this data
+        will come back.
       */
       int firstRecipForMyQuery = next_recipient(*xferNodes[m_rank]);
       if(m_nranks == 1)
@@ -1025,7 +1026,7 @@ public:
     // and are copied in during subsequent processing
 
     // Check dimension and extract the number of points
-    SLIC_ASSERT(xfer_node.fetch_existing("dim").value() == NDIMS);
+    SLIC_ASSERT(xfer_node.fetch_existing("dim").as_int() == NDIMS);
     const int qPtCount = xfer_node.fetch_existing("qPtCount").value();
 
     /// Extract fields from the input node as ArrayViews
