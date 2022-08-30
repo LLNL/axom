@@ -889,7 +889,7 @@ public:
     }
 
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
-    std::set<int> remainingRecvs;
+    int remainingRecvs = 0;
     for(int r = 0; r < m_nranks; ++r)
     {
       if(r != m_rank)
@@ -899,7 +899,7 @@ public:
           axom::primal::squared_distance(otherQueryBb, myObjectBb);
         if(sqDistance <= m_sqDistanceThreshold)
         {
-          remainingRecvs.insert(r);
+          ++remainingRecvs;
         }
       }
     }
@@ -938,15 +938,15 @@ public:
                                        tag,
                                        m_mpiComm,
                                        &req);
-        remainingRecvs.insert(m_rank);
+        ++remainingRecvs;
       }
     }
 
-    while(!remainingRecvs.empty())
+    while(remainingRecvs > 0)
     {
       SLIC_INFO_IF(m_isVerbose,
                    fmt::format("=======  {} receives remaining =======",
-                               remainingRecvs.size()));
+                               remainingRecvs));
 
       // Receive the next xferNode
       std::shared_ptr<conduit::Node> recvXferNodePtr =
@@ -957,7 +957,7 @@ public:
                                     m_mpiComm);
 
       const int homeRank = recvXferNodePtr->fetch_existing("homeRank").as_int();
-      remainingRecvs.erase(homeRank);
+      --remainingRecvs;
       xferNodes[homeRank] = recvXferNodePtr;
       conduit::Node& xferNode = *xferNodes[homeRank];
 
