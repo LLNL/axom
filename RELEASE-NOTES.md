@@ -19,7 +19,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-## [Version 0.7.0] - Release date 2022-8-30
+## [Version 0.7.0] - Release date 2022-08-30
 
 ###  Added
 - Adds a `view()` method to `axom::Array` class to simplify creation of a corresponding `axom::ArrayView`
