@@ -558,12 +558,7 @@ public:
     {
       PointType lower(&recvbuf[i * 2 * DIM]);
       PointType upper(&recvbuf[i * 2 * DIM + DIM]);
-      all_aabbs.emplace_back(BoxType(lower, upper));
-      // Correct the auto-correction in the BoundingBox constructor.
-      if(lower[0] > upper[0])
-      {
-        all_aabbs[all_aabbs.size() - 1] = BoxType();
-      }
+      all_aabbs.emplace_back(BoxType(lower, upper, false));
     }
   }
 
