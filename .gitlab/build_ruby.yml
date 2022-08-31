@@ -117,14 +117,14 @@ ruby-gcc_8_3_1-full:
     SPEC: "%${COMPILER}+mfem"
   extends: .full_build_on_ruby
 
-ruby-gcc_8_1_0_no_fortran-full:
+ruby-gcc_8_1_no_fort-full:
   variables:
     COMPILER: "gcc@8.1.0"
     SPEC: "%${COMPILER}~fortran+mfem"
   extends: .full_build_on_ruby
 
-ruby-intel_19_0_4-full:
+ruby-intel_19-full:
   variables:
     COMPILER: "intel@19.0.4"
-    SPEC: "%${COMPILER}+mfem~cpp14"
+    SPEC: "%${COMPILER}~openmp+mfem"
   extends: .full_build_on_ruby
