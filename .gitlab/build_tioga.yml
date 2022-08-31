@@ -42,7 +42,7 @@ tioga-clang_14_0_0_hip-src:
 
 ####
 # Full Build jobs
-tioga-clang_14_0_0_hip-full:
+tioga-clang_14-full:
   variables:
     COMPILER: "clang@14.0.0"
     SPEC: "%${COMPILER}~openmp+rocm+mfem+c2c"
