@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,12 +27,11 @@ set(sidre_headers
     core/Attribute.hpp
     core/AttrValues.hpp
     core/ItemCollection.hpp
-    core/Iterator.hpp
+    core/IndexedCollection.hpp
     core/ListCollection.hpp
     core/MapCollection.hpp
     core/SidreTypes.hpp
-    core/SidreDataTypeIds.h
-    core/sidre.hpp )
+    core/SidreDataTypeIds.h )
 
 set(sidre_sources
     core/Buffer.cpp
@@ -40,8 +39,7 @@ set(sidre_sources
     core/DataStore.cpp
     core/View.cpp
     core/Attribute.cpp
-    core/AttrValues.cpp
-    core/Iterator.cpp )
+    core/AttrValues.cpp )
 
 # Add spio headers and sources when MPI is available
 if(ENABLE_MPI)

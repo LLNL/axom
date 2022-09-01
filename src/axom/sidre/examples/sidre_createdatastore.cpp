@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,6 +23,10 @@
  *
  * access_datastore           -- Exercises access methods that get data from
  *                               the DataStore created by create_datastore
+ *
+ * iterate_datastore          -- Exercises iterator methods for views, groups,
+ *                               buffers and attributes in the DataStore
+ *                               created by create_datastore
  *
  * save_as_blueprint          -- Generates a blueprint index and writes data
  *                               to file using direct calls to conduit
@@ -68,6 +72,7 @@
 // Axom headers
 #include "axom/core.hpp"
 #include "axom/sidre.hpp"
+#include "axom/fmt.hpp"
 
 // Conduit headers
 #include "conduit.hpp"
@@ -199,6 +204,69 @@ void access_datastore(DataStore* ds)
   AXOM_UNUSED_VAR(y);
   AXOM_UNUSED_VAR(temp);
   AXOM_UNUSED_VAR(region);
+}
+
+void iterate_datastore(DataStore* ds)
+{
+  const std::string fill_line = fmt::format("{:=^80}", "");
+
+  std::cout << fill_line << std::endl;
+
+  // iterate through the attributes in ds
+  std::cout << "The datastore has the following attributes:\n";
+  for(auto& attr : ds->attributes())
+  {
+    std::cout << fmt::format("  * [{}] '{}' of type {} and default value: {}\n",
+                             attr.getIndex(),
+                             attr.getName(),
+                             conduit::DataType::id_to_name(attr.getTypeID()),
+                             attr.getDefaultNodeRef().to_yaml());
+  }
+
+  std::cout << fill_line << std::endl;
+
+  // iterate through the buffers in ds
+  std::cout << "The datastore has the following buffers:\n";
+  for(auto& buff : ds->buffers())
+  {
+    std::cout << fmt::format(
+      "  * [{}] {} buffer with {} elements of type {} with {} views\n",
+      buff.getIndex(),
+      buff.isAllocated() ? "Allocated" : "Unallocated",
+      buff.getNumElements(),
+      conduit::DataType::id_to_name(buff.getTypeID()),
+      buff.getNumViews());
+  }
+
+  std::cout << fill_line << std::endl;
+
+  // iterate through the groups of the root group
+  std::cout << "The root group has the following groups:\n";
+  for(auto& grp : ds->getRoot()->groups())
+  {
+    std::cout << fmt::format("  * [{}] '{}' with {} groups and {} views\n",
+                             grp.getIndex(),
+                             grp.getName(),
+                             grp.getNumGroups(),
+                             grp.getNumViews());
+  }
+
+  std::cout << fill_line << std::endl;
+
+  // iterate through the views of the 'state' group
+  std::cout << "The 'state' group has the following views:\n";
+  for(auto& view : ds->getRoot()->getGroup("state")->views())
+  {
+    std::cout << fmt::format(
+      "  * [{}] '{}' -- {} view of type {} and {} elements\n",
+      view.getIndex(),
+      view.getName(),
+      view.isAllocated() ? "Allocated" : "Unallocated",
+      conduit::DataType::id_to_name(view.getTypeID()),
+      view.getNumElements());
+  }
+
+  std::cout << fill_line << std::endl;
 }
 
 DataStore* create_tiny_datastore()
@@ -730,6 +798,7 @@ int main(int argc, char** argv)
 
   DataStore* ds = create_datastore(region);
   access_datastore(ds);
+  iterate_datastore(ds);
 
   DataStore* tds = create_tiny_datastore();
   save_as_blueprint(tds);

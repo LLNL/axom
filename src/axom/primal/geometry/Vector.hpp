@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,11 +13,12 @@
 #include "axom/core/utilities/Utilities.hpp"
 
 // Primal includes
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 // C/C++ includes
-#include <cmath>  // for sqrt()
+#include <cmath>
 
 namespace axom
 {
@@ -62,6 +63,16 @@ AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Point<T, NDIMS>& P,
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
                                            const Point<T, NDIMS>& P);
+
+/*!
+ * \brief Subtracts vector \a V from point \a P and stores the result into a new point
+ * \param [in] P point on the left-hand side.
+ * \param [in] V vector on the right-hand side.
+ * \return resulting point, \f$ p'_i = p_i + v_i \forall i \f$
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator-(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V);
 
 /*!
  * \brief Subtracts vectors A, B and stores the result into a new vector C
@@ -206,6 +217,7 @@ public:
    * vector. If the size is not the same as the size of this vector, this
    * behaves the same way as the constructor which takes a pointer and size.
    */
+  AXOM_HOST_DEVICE
   Vector(std::initializer_list<T> values)
     : Vector {values.begin(), static_cast<int>(values.size())}
   { }
@@ -378,6 +390,22 @@ public:
   static Vector<T, 3> cross_product(const Vector<T, 3>& u, const Vector<T, 3>& v);
 
   /*!
+   * \brief Computes the 3-D scalar triple product of vectors u, v and w
+   *
+   * \param [in] u the first vector
+   * \param [in] v the second vector
+   * \param [in] w the third vector
+   * \return The scalar triple product of u, v and w
+   *
+   * The scalar triple product dot(u, v x w) is the signed volume 
+   * of the parallelepiped defined by the three 3D vectors
+   */
+  AXOM_HOST_DEVICE
+  static T scalar_triple_product(const Vector<T, 3>& u,
+                                 const Vector<T, 3>& v,
+                                 const Vector<T, 3>& w);
+
+  /*!
    * \brief Utility function to constructs a Vector with the given coordinates.
    * \param [in] x the x--coordinate of the vector.
    * \param [in] y the y--coordinate of the vector.
@@ -411,7 +439,7 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)
 {
   m_components *= scalar;
   return *this;
@@ -419,7 +447,7 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator*=(T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator/=(T scalar)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator/=(T scalar)
 {
   m_components /= scalar;
   return *this;
@@ -427,7 +455,8 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator/=(T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator+=(const Vector<T, NDIMS>& v)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator+=(
+  const Vector<T, NDIMS>& v)
 {
   m_components += v.array();
   return *this;
@@ -435,7 +464,8 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator+=(const Vector<T, NDIMS>& v)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator-=(const Vector<T, NDIMS>& v)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator-=(
+  const Vector<T, NDIMS>& v)
 {
   m_components -= v.array();
   return *this;
@@ -443,28 +473,26 @@ inline Vector<T, NDIMS>& Vector<T, NDIMS>::operator-=(const Vector<T, NDIMS>& v)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline double Vector<T, NDIMS>::squared_norm() const
+AXOM_HOST_DEVICE inline double Vector<T, NDIMS>::squared_norm() const
 {
   return dot(*this);
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline double Vector<T, NDIMS>::norm() const
+AXOM_HOST_DEVICE inline double Vector<T, NDIMS>::norm() const
 {
   return std::sqrt(squared_norm());
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
 {
-  constexpr double EPS = 1.0e-50;
-
   Vector v(*this);
 
   const double len_sq = squared_norm();
-  if(len_sq >= EPS)
+  if(len_sq >= primal::PRIMAL_TINY)
   {
     v /= (std::sqrt(len_sq));
   }
@@ -479,7 +507,7 @@ inline Vector<T, NDIMS> Vector<T, NDIMS>::unitVector() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline void Vector<T, NDIMS>::negate()
+AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::negate()
 {
   for(int i = 0; i < NDIMS; ++i)
   {
@@ -489,7 +517,7 @@ inline void Vector<T, NDIMS>::negate()
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline bool Vector<T, NDIMS>::is_zero() const
+AXOM_HOST_DEVICE inline bool Vector<T, NDIMS>::is_zero() const
 {
   for(int i = 0; i < NDIMS; ++i)
   {
@@ -503,7 +531,7 @@ inline bool Vector<T, NDIMS>::is_zero() const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline T Vector<T, NDIMS>::dot(const Vector<T, NDIMS>& vec) const
+AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::dot(const Vector<T, NDIMS>& vec) const
 {
   return dot_product(*this, vec);
 }
@@ -524,40 +552,55 @@ std::ostream& Vector<T, NDIMS>::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline T Vector<T, NDIMS>::dot_product(const Vector<T, NDIMS>& u,
-                                       const Vector<T, NDIMS>& v)
+AXOM_HOST_DEVICE inline T Vector<T, NDIMS>::dot_product(const Vector<T, NDIMS>& u,
+                                                        const Vector<T, NDIMS>& v)
 {
-  SLIC_ASSERT(u.dimension() == v.dimension());
-  return static_cast<T>(numerics::dot_product(u.data(), v.data(), NDIMS));
+  T res {};
+  for(int d = 0; d < NDIMS; ++d)
+  {
+    res += u[d] * v[d];
+  }
+  return res;
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, 3> Vector<T, NDIMS>::cross_product(const Vector<T, 2>& u,
-                                                    const Vector<T, 2>& v)
+AXOM_HOST_DEVICE inline Vector<T, 3> Vector<T, NDIMS>::cross_product(
+  const Vector<T, 2>& u,
+  const Vector<T, 2>& v)
 {
-  Vector<T, 3> c;
-  c[0] = 0;
-  c[1] = 0;
-  c[2] = numerics::determinant(u[0], u[1], v[0], v[1]);
-  return (c);
+  return Vector<T, 3> {0, 0, numerics::determinant(u[0], u[1], v[0], v[1])};
 }
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, 3> Vector<T, NDIMS>::cross_product(const Vector<T, 3>& u,
-                                                    const Vector<T, 3>& v)
+AXOM_HOST_DEVICE inline Vector<T, 3> Vector<T, NDIMS>::cross_product(
+  const Vector<T, 3>& u,
+  const Vector<T, 3>& v)
 {
-  Vector<T, 3> c;
-  numerics::cross_product(u.data(), v.data(), c.data());
-  return (c);
+  // note: u and v are transposed in second component
+  return Vector<T, 3> {numerics::determinant(u[1], u[2], v[1], v[2]),
+                       numerics::determinant(v[0], v[2], u[0], u[2]),
+                       numerics::determinant(u[0], u[1], v[0], v[1])};
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE T inline Vector<T, NDIMS>::scalar_triple_product(
+  const Vector<T, 3>& u,
+  const Vector<T, 3>& v,
+  const Vector<T, 3>& w)
+{
+  return static_cast<T>(
+    numerics::determinant(u[0], u[1], u[2], v[0], v[1], v[2], w[0], w[1], w[2]));
 }
 
 ///  Free functions involving vectors
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec,
+                                                   const T scalar)
 {
   Vector<T, NDIMS> result(vec);
   result *= scalar;
@@ -566,7 +609,8 @@ inline Vector<T, NDIMS> operator*(const Vector<T, NDIMS>& vec, const T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator*(const T scalar, const Vector<T, NDIMS>& vec)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator*(const T scalar,
+                                                   const Vector<T, NDIMS>& vec)
 {
   Vector<T, NDIMS> result(vec);
   result *= scalar;
@@ -575,8 +619,8 @@ inline Vector<T, NDIMS> operator*(const T scalar, const Vector<T, NDIMS>& vec)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& vec1,
-                                  const Vector<T, NDIMS>& vec2)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator+(const Vector<T, NDIMS>& vec1,
+                                                   const Vector<T, NDIMS>& vec2)
 {
   Vector<T, NDIMS> result(vec1);
   result += vec2;
@@ -600,6 +644,15 @@ AXOM_HOST_DEVICE Point<T, NDIMS> operator+(const Vector<T, NDIMS>& V,
   return P + V;
 }
 
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Point<T, NDIMS> operator-(const Point<T, NDIMS>& P,
+                                           const Vector<T, NDIMS>& V)
+{
+  Point<T, NDIMS> result(P);
+  result.array() -= V.array();
+  return result;
+}
+
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar)
@@ -611,8 +664,8 @@ inline Vector<T, NDIMS> operator/(const Vector<T, NDIMS>& vec, const T scalar)
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1,
-                                  const Vector<T, NDIMS>& vec2)
+AXOM_HOST_DEVICE inline Vector<T, NDIMS> operator-(const Vector<T, NDIMS>& vec1,
+                                                   const Vector<T, NDIMS>& vec2)
 {
   Vector<T, NDIMS> result(vec1);
   result -= vec2;

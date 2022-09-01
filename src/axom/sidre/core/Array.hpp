@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -426,7 +426,7 @@ Array<T, DIM>::Array(View* view) : axom::Array<T, 2>()
                   << "is not a multiple of the number of components "
                   << "(" << this->m_dims[1] << ").");
   this->m_capacity = buffer_size;
-  this->m_num_elements = buffer_size;
+  this->m_num_elements = this->m_dims[0] * this->m_dims[1];
 
   SLIC_ERROR_IF(this->m_dims[0] < 0,
                 "Number of tuples (" << this->m_dims[0] << ") "

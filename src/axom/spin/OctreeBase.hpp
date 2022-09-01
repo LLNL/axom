@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -144,8 +144,7 @@ public:
   using OctreeLevels = slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
-  using LeafIndicesLevelMap =
-    slam::Map<slam::Set<CoordType, CoordType>, OctreeLevelType*>;
+  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*>;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.

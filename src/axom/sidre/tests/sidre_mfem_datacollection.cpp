@@ -1,21 +1,19 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
 #include "axom/slic.hpp"
+#include "axom/sidre.hpp"
+#include "axom/fmt.hpp"
 
 #ifndef AXOM_USE_MFEM
   #error This file requires MFEM
 #endif
 
 #include "mfem.hpp"
-
 #include "gtest/gtest.h"
-
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/core/MFEMSidreDataCollection.hpp"
 
 #ifdef AXOM_USE_MPI
   #include "mpi.h"
@@ -40,7 +38,7 @@ TEST(sidre_datacollection, dc_alloc_no_mesh)
 TEST(sidre_datacollection, dc_alloc_owning_mesh)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   bool owns_mesh = true;
   MFEMSidreDataCollection sdc(testName(), &mesh, owns_mesh);
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
@@ -49,7 +47,7 @@ TEST(sidre_datacollection, dc_alloc_owning_mesh)
 TEST(sidre_datacollection, dc_alloc_nonowning_mesh)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   bool owns_mesh = false;
   MFEMSidreDataCollection sdc(testName(), &mesh, owns_mesh);
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
@@ -66,7 +64,7 @@ TEST(sidre_datacollection, dc_register_empty_field)
 TEST(sidre_datacollection, dc_register_partial_field)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   mfem::H1_FECollection fec(2);
   mfem::FiniteElementSpace fes(&mesh, &fec);
   mfem::GridFunction gf(&fes);
@@ -79,7 +77,7 @@ TEST(sidre_datacollection, dc_register_partial_field)
 TEST(sidre_datacollection, dc_update_state)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
 
   // Arbitrary values for the "state" part of blueprint
@@ -95,7 +93,7 @@ TEST(sidre_datacollection, dc_update_state)
 TEST(sidre_datacollection, dc_save)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -107,11 +105,57 @@ TEST(sidre_datacollection, dc_save)
   EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, dc_save_single_file)
+{
+  // 1D mesh divided into 10 segments
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
+  MFEMSidreDataCollection sdc(testName(), &mesh);
+
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc.SetComm(MPI_COMM_WORLD);
+  sdc.SetNumFiles(1);
+#endif
+
+  sdc.Save();
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_save_two_files)
+{
+  // 1D mesh divided into 10 segments
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
+  MFEMSidreDataCollection sdc(testName());
+
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc.SetMesh(MPI_COMM_WORLD, &mesh);
+
+  // Try to go from N ranks to 2 files if we are running with more than 2 ranks
+  int num_procs;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+  if(num_procs >= 2)
+  {
+    sdc.SetNumFiles(2);
+  }
+  else
+  {
+    sdc.SetNumFiles(1);
+  }
+#else
+  // Just save the single file when not using MPI
+  sdc.SetMesh(&mesh);
+#endif
+
+  sdc.Save();
+
+  EXPECT_TRUE(sdc.verifyMeshBlueprint());
+}
+
 TEST(sidre_datacollection, dc_reload_gf)
 {
   const std::string field_name = "test_field";
   // 2D mesh divided into triangles
-  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  auto mesh = mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::TRIANGLE);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
 
@@ -123,6 +167,7 @@ TEST(sidre_datacollection, dc_reload_gf)
 
   // Register to allocate storage internally, then write to it
   sdc_writer.RegisterField(field_name, &gf_write);
+  EXPECT_TRUE(sdc_writer.HasField(field_name));
 
   mfem::ConstantCoefficient three_and_a_half(3.5);
   gf_write.ProjectCoefficient(three_and_a_half);
@@ -144,6 +189,7 @@ TEST(sidre_datacollection, dc_reload_gf)
 #endif
 
   sdc_reader.Load();
+  EXPECT_TRUE(sdc_reader.HasField(field_name));
 
   // No need to reregister, it already exists
   auto gf_read = sdc_reader.GetField(field_name);
@@ -159,7 +205,7 @@ TEST(sidre_datacollection, dc_reload_gf_vdim)
   const std::string field_name = "test_field";
   const int vdim = 2;
   // 2D mesh divided into triangles
-  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  auto mesh = mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::TRIANGLE);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec, vdim, mfem::Ordering::byVDIM);
 
@@ -208,7 +254,7 @@ TEST(sidre_datacollection, dc_reload_mesh)
 {
   const std::string field_name = "test_field";
   // 2D mesh divided into triangles
-  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  auto mesh = mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::TRIANGLE);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
 
@@ -249,7 +295,8 @@ TEST(sidre_datacollection, dc_reload_mesh)
 TEST(sidre_datacollection, dc_reload_qf)
 {
   //Set up a small mesh and a couple of grid function on that mesh
-  mfem::Mesh mesh(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
+  auto mesh =
+    mfem::Mesh::MakeCartesian2D(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
   mfem::LinearFECollection fec;
   mfem::FiniteElementSpace fes(&mesh, &fec);
 
@@ -302,9 +349,8 @@ TEST(sidre_datacollection, dc_reload_qf)
   mfem::QuadratureFunction* reader_qv = sdc_reader.GetQField("qv");
 
   // order_qs should also equal order_qv in this trivial case
-  // FIXME: QF order can be retrieved directly as of MFEM 4.3
-  EXPECT_EQ(reader_qs->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
-  EXPECT_EQ(reader_qv->GetSpace()->GetElementIntRule(0).GetOrder(), intOrder);
+  EXPECT_EQ(reader_qs->GetSpace()->GetOrder(), intOrder);
+  EXPECT_EQ(reader_qv->GetSpace()->GetOrder(), intOrder);
 
   EXPECT_EQ(reader_qs->GetVDim(), qs_vdim);
   EXPECT_EQ(reader_qv->GetVDim(), qv_vdim);
@@ -339,7 +385,7 @@ void checkReferentialEquality(axom::sidre::Group* grp,
 TEST(sidre_datacollection, create_matset)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
   sdc.AssociateMaterialSet("volume_fraction", "matset");
 
@@ -364,7 +410,7 @@ TEST(sidre_datacollection, create_matset)
 TEST(sidre_datacollection, create_matset_multi_fraction)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
   sdc.AssociateMaterialSet("volume_fraction", "matset");
 
@@ -395,7 +441,7 @@ TEST(sidre_datacollection, create_matset_multi_fraction)
 TEST(sidre_datacollection, create_specset)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
@@ -438,7 +484,7 @@ TEST(sidre_datacollection, create_specset)
 TEST(sidre_datacollection, create_specset_multi_fraction)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
@@ -503,7 +549,7 @@ TEST(sidre_datacollection, create_specset_multi_fraction)
 TEST(sidre_datacollection, create_material_dependent_field)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
@@ -541,7 +587,7 @@ TEST(sidre_datacollection, create_material_dependent_field)
 TEST(sidre_datacollection, create_material_dependent_field_multi_fraction)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   MFEMSidreDataCollection sdc(testName(), &mesh);
   mfem::H1_FECollection fec(1, mesh.Dimension());
   mfem::FiniteElementSpace fes(&mesh, &fec);
@@ -594,7 +640,7 @@ TEST(sidre_datacollection, create_material_dependent_field_multi_fraction)
 TEST(sidre_datacollection, dc_alloc_owning_parmesh)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
   bool owns_mesh = true;
   MFEMSidreDataCollection sdc(testName(), &parmesh, owns_mesh);
@@ -604,7 +650,7 @@ TEST(sidre_datacollection, dc_alloc_owning_parmesh)
 TEST(sidre_datacollection, dc_alloc_nonowning_parmesh)
 {
   // 1D mesh divided into 10 segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
   bool owns_mesh = false;
   MFEMSidreDataCollection sdc(testName(), &parmesh, owns_mesh);
@@ -723,8 +769,8 @@ static void testParallelMeshReload(mfem::Mesh& base_mesh,
  */
 static void testParallelMeshReloadAllPartitionings(mfem::Mesh& base_mesh)
 {
-  static constexpr int MAX_PART_METHOD =
-    5;  // MFEM supports partition methods [0, 5]
+  // MFEM supports partition methods [0, 5]
+  static constexpr int MAX_PART_METHOD = 5;
   for(int part_method = 0; part_method <= MAX_PART_METHOD; part_method++)
   {
     testParallelMeshReload(base_mesh, part_method);
@@ -735,7 +781,7 @@ TEST(sidre_datacollection, dc_par_reload_gf)
 {
   const std::string field_name = "test_field";
   // 3D tet mesh
-  mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
+  auto mesh = mfem::Mesh::MakeCartesian3D(2, 2, 2, mfem::Element::TETRAHEDRON);
   mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
 
   mfem::H1_FECollection fec(1, mesh.Dimension());
@@ -774,24 +820,239 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+TEST(sidre_datacollection, dc_par_reload_gf_ordering)
+{
+  const std::string first_field_name = "test_field_1";
+  const std::string second_field_name = "test_field_2";
+  const std::string third_field_name = "test_field_3";
+
+  // 3D tet mesh
+  auto mesh = mfem::Mesh::MakeCartesian3D(2, 2, 2, mfem::Element::TETRAHEDRON);
+  mfem::ParMesh parmesh(MPI_COMM_WORLD, mesh);
+
+  mfem::H1_FECollection fec(1, mesh.Dimension());
+  mfem::ParFiniteElementSpace first_parfes(&parmesh,
+                                           &fec,
+                                           1,
+                                           mfem::Ordering::byNODES);
+  mfem::ParFiniteElementSpace second_parfes(&parmesh,
+                                            &fec,
+                                            3,
+                                            mfem::Ordering::byVDIM);
+  mfem::ParFiniteElementSpace third_parfes(&parmesh,
+                                           &fec,
+                                           3,
+                                           mfem::Ordering::byNODES);
+
+  // The mesh must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &parmesh, owns_mesh);
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  mfem::ParGridFunction first_gf_write(&first_parfes,
+                                       static_cast<double*>(nullptr));
+  mfem::ParGridFunction second_gf_write(&second_parfes,
+                                        static_cast<double*>(nullptr));
+  mfem::ParGridFunction third_gf_write(&third_parfes,
+                                       static_cast<double*>(nullptr));
+
+  // Register to allocate storage internally, then write to it
+  sdc_writer.RegisterField(first_field_name, &first_gf_write);
+  sdc_writer.RegisterField(second_field_name, &second_gf_write);
+  sdc_writer.RegisterField(third_field_name, &third_gf_write);
+
+  mfem::ConstantCoefficient three_and_a_half(3.5);
+  first_gf_write.ProjectCoefficient(three_and_a_half);
+
+  mfem::ConstantCoefficient five_and_a_half(5.5);
+  second_gf_write.ProjectCoefficient(five_and_a_half);
+
+  mfem::ConstantCoefficient seven_and_a_half(5.5);
+  third_gf_write.ProjectCoefficient(seven_and_a_half);
+
+  sdc_writer.SetCycle(0);
+  sdc_writer.Save();
+
+  MFEMSidreDataCollection sdc_reader(testName());
+
+  // Needs to be set "manually" in order for everything to be loaded in properly
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+  sdc_reader.Load();
+
+  auto first_gf_read = sdc_reader.GetField(first_field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(first_gf_read));
+  auto second_gf_read = sdc_reader.GetField(second_field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(second_gf_read));
+  auto third_gf_read = sdc_reader.GetField(third_field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(third_gf_read));
+
+  EXPECT_EQ(first_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byNODES);
+  EXPECT_EQ(second_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byVDIM);
+  EXPECT_EQ(third_gf_read->FESpace()->GetOrdering(), mfem::Ordering::byNODES);
+
+  // Make sure the gridfunction was actually read in
+  EXPECT_LT(first_gf_read->ComputeL2Error(three_and_a_half), EPSILON);
+  EXPECT_LT(second_gf_read->ComputeL2Error(five_and_a_half), EPSILON);
+  EXPECT_LT(third_gf_read->ComputeL2Error(seven_and_a_half), EPSILON);
+
+  EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_par_reload_multi_datastore)
+{
+  const std::string first_coll_name = testName() + "first";
+  const std::string second_coll_name = testName() + "second";
+  const std::string field_name = "test_field";
+  const std::string useless_view_name = "useless_view";
+  // 3D tet mesh
+  auto mesh = mfem::Mesh::MakeCartesian3D(2, 2, 2, mfem::Element::TETRAHEDRON);
+  mfem::ParMesh first_parmesh(MPI_COMM_WORLD, mesh);
+  mfem::ParMesh second_parmesh(MPI_COMM_WORLD, mesh);
+
+  mfem::H1_FECollection fec(1, first_parmesh.Dimension());
+
+  mfem::ParFiniteElementSpace first_parfes(&first_parmesh, &fec);
+  mfem::ParFiniteElementSpace second_parfes(&second_parmesh, &fec);
+
+  axom::sidre::DataStore ds_write;
+
+  // We want to make sure this isn't restored
+  ds_write.getRoot()->createViewString(useless_view_name, "useless_data");
+
+  auto first_global_grp =
+    ds_write.getRoot()->createGroup(first_coll_name + "_global");
+  auto first_bp_index_grp =
+    first_global_grp->createGroup("blueprint_index/" + first_coll_name);
+  auto first_domain_grp = ds_write.getRoot()->createGroup(first_coll_name);
+
+  auto second_global_grp =
+    ds_write.getRoot()->createGroup(second_coll_name + "_global");
+  auto second_bp_index_grp =
+    second_global_grp->createGroup("blueprint_index/" + second_coll_name);
+  auto second_domain_grp = ds_write.getRoot()->createGroup(second_coll_name);
+
+  // The mesh must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  bool owns_mesh = true;
+  MFEMSidreDataCollection first_sdc_writer(first_coll_name,
+                                           first_bp_index_grp,
+                                           first_domain_grp,
+                                           owns_mesh);
+  first_sdc_writer.SetComm(MPI_COMM_WORLD);
+  first_sdc_writer.SetMesh(&first_parmesh);
+
+  MFEMSidreDataCollection second_sdc_writer(second_coll_name,
+                                            second_bp_index_grp,
+                                            second_domain_grp,
+                                            owns_mesh);
+  second_sdc_writer.SetComm(MPI_COMM_WORLD);
+  second_sdc_writer.SetMesh(&second_parmesh);
+
+  // The mesh and field(s) must be owned by Sidre to properly manage data in case of
+  // a simulated restart (save -> load)
+  mfem::ParGridFunction first_gf_write(&first_parfes,
+                                       static_cast<double*>(nullptr));
+  mfem::ParGridFunction second_gf_write(&second_parfes,
+                                        static_cast<double*>(nullptr));
+
+  // Register to allocate storage internally, then write to it
+  first_sdc_writer.RegisterField(field_name, &first_gf_write);
+  second_sdc_writer.RegisterField(field_name, &second_gf_write);
+
+  mfem::ConstantCoefficient three_and_a_half(3.5);
+  first_gf_write.ProjectCoefficient(three_and_a_half);
+
+  mfem::ConstantCoefficient five_and_a_half(5.5);
+  second_gf_write.ProjectCoefficient(five_and_a_half);
+
+  first_sdc_writer.SetCycle(0);
+  first_sdc_writer.Save();
+
+  second_sdc_writer.SetCycle(0);
+  second_sdc_writer.Save();
+
+  axom::sidre::DataStore ds_read;
+
+  first_global_grp = ds_read.getRoot()->createGroup(first_coll_name + "_global");
+  first_bp_index_grp =
+    first_global_grp->createGroup("blueprint_index/" + first_coll_name);
+  first_domain_grp = ds_read.getRoot()->createGroup(first_coll_name);
+
+  second_global_grp =
+    ds_read.getRoot()->createGroup(second_coll_name + "_global");
+  second_bp_index_grp =
+    second_global_grp->createGroup("blueprint_index/" + second_coll_name);
+  second_domain_grp = ds_read.getRoot()->createGroup(second_coll_name);
+
+  MFEMSidreDataCollection first_sdc_reader(first_coll_name,
+                                           first_bp_index_grp,
+                                           first_domain_grp,
+                                           owns_mesh);
+  MFEMSidreDataCollection second_sdc_reader(second_coll_name,
+                                            second_bp_index_grp,
+                                            second_domain_grp,
+                                            owns_mesh);
+
+  // Needs to be set "manually" in order for everything to be loaded in properly
+  first_sdc_reader.SetComm(MPI_COMM_WORLD);
+  first_sdc_reader.Load();
+
+  // Make sure that the useless view wasn't read back in
+  EXPECT_FALSE(ds_read.getRoot()->hasView(useless_view_name));
+
+  first_sdc_reader.SetGroupPointers(
+    ds_read.getRoot()->getGroup(first_coll_name + "_global/blueprint_index/" +
+                                first_coll_name),
+    ds_read.getRoot()->getGroup(first_coll_name));
+
+  first_sdc_reader.UpdateStateFromDS();
+  first_sdc_reader.UpdateMeshAndFieldsFromDS();
+
+  second_sdc_reader.SetComm(MPI_COMM_WORLD);
+  second_sdc_reader.Load();
+
+  second_sdc_reader.SetGroupPointers(
+    ds_read.getRoot()->getGroup(second_coll_name + "_global/blueprint_index/" +
+                                second_coll_name),
+    ds_read.getRoot()->getGroup(second_coll_name));
+
+  second_sdc_reader.UpdateStateFromDS();
+  second_sdc_reader.UpdateMeshAndFieldsFromDS();
+
+  auto first_gf_read = first_sdc_reader.GetField(field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(first_gf_read));
+
+  auto second_gf_read = second_sdc_reader.GetField(field_name);
+  EXPECT_TRUE(dynamic_cast<mfem::ParGridFunction*>(second_gf_read));
+
+  // Make sure the gridfunction was actually read in
+  EXPECT_LT(first_gf_read->ComputeL2Error(three_and_a_half), EPSILON);
+  EXPECT_LT(second_gf_read->ComputeL2Error(five_and_a_half), EPSILON);
+
+  EXPECT_TRUE(first_sdc_reader.verifyMeshBlueprint());
+  EXPECT_TRUE(second_sdc_reader.verifyMeshBlueprint());
+}
+
 TEST(sidre_datacollection, dc_par_reload_mesh_1D_small)
 {
   // 1D mesh divided into segments
-  mfem::Mesh mesh(10);
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_small)
 {
   // 2D mesh divided into triangles
-  mfem::Mesh mesh(10, 10, mfem::Element::TRIANGLE);
+  auto mesh = mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::TRIANGLE);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
 {
   // 2D mesh divided into triangles
-  mfem::Mesh mesh(100, 100, mfem::Element::TRIANGLE);
+  auto mesh = mfem::Mesh::MakeCartesian2D(100, 100, mfem::Element::TRIANGLE);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
@@ -800,14 +1061,12 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
 {
   // periodic 2D mesh divided into triangles
-  mfem::Mesh base_mesh(10, 10, mfem::Element::Type::QUADRILATERAL, false, 1.0, 1.0);
-  // FIXME: MFEM 4.3
-  // mfem::Mesh::MakeCartesian2D(10,
-  //                             10,
-  //                             mfem::Element::Type::QUADRILATERAL,
-  //                             false,
-  //                             1.0,
-  //                             1.0);
+  auto base_mesh = mfem::Mesh::MakeCartesian2D(10,
+                                               10,
+                                               mfem::Element::Type::QUADRILATERAL,
+                                               false,
+                                               1.0,
+                                               1.0);
   std::vector<mfem::Vector> translations = {mfem::Vector({1.0, 0.0}),
                                             mfem::Vector({0.0, 1.0})};
   auto vertex_map = base_mesh.CreatePeriodicVertexMapping(translations);
@@ -819,28 +1078,28 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 {
   // 3D mesh divided into tetrahedra
-  mfem::Mesh mesh(2, 2, 2, mfem::Element::TETRAHEDRON);
+  auto mesh = mfem::Mesh::MakeCartesian3D(2, 2, 2, mfem::Element::TETRAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_tet)
 {
   // 3D mesh divided into tetrahedra
-  mfem::Mesh mesh(10, 10, 10, mfem::Element::TETRAHEDRON);
+  auto mesh = mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::TETRAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_hex)
 {
   // 3D mesh divided into hexahedra
-  mfem::Mesh mesh(3, 3, 3, mfem::Element::HEXAHEDRON);
+  auto mesh = mfem::Mesh::MakeCartesian3D(3, 3, 3, mfem::Element::HEXAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_hex)
 {
   // 3D mesh divided into hexahedra
-  mfem::Mesh mesh(10, 10, 10, mfem::Element::HEXAHEDRON);
+  auto mesh = mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::HEXAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
 }
 #endif  // defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -851,8 +1110,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
 
 #ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);

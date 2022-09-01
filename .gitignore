@@ -1,3 +1,4 @@
+
 build-
 install-
 .cproject
@@ -17,3 +18,5 @@ tpl_dirs_summary.json
 uberenv_libs
 *_build*
 .idea
+*.opendb
+scripts/make_local_branch_from_fork_pr.sh

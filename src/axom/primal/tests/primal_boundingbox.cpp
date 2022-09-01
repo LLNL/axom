@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,9 +6,10 @@
 #include <limits>
 
 #include "gtest/gtest.h"
+#include "axom/slic.hpp"
 
-#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
-#include "axom/core/execution/for_all.hpp"          // for_all()
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -652,21 +653,23 @@ AXOM_CUDA_TEST(primal_boundingBox, bb_check_policies)
 
   check_bb_policy<cuda_exec>();
 #endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+  using hip_exec = axom::HIP_EXEC<512>;
+
+  check_bb_policy<hip_exec>();
+#endif
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

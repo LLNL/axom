@@ -1,13 +1,12 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file UnstructMeshField.cpp
  *
- * \brief Simple example that uses Slam for generating and processing a simple
- *  3D mesh.
+ * \brief Example that uses Slam for generating and processing a simple 3D mesh
  *
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone
  *  relation and does simple mesh processing.
@@ -17,8 +16,7 @@
  */
 
 #include "axom/config.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
@@ -34,76 +32,7 @@ namespace slam = axom::slam;
 namespace slamUnstructuredHex
 {
 using DataType = double;
-
-/** Simple point class for this example */
-struct Point
-{
-  Point(const DataType& x, const DataType& y, const DataType& z)
-    : m_x(x)
-    , m_y(y)
-    , m_z(z)
-  { }
-  Point() : m_x(DataType()), m_y(DataType()), m_z(DataType()) { }
-
-  DataType radius() const
-  {
-    return std::sqrt(m_x * m_x + m_y * m_y + m_z * m_z);
-  }
-
-  Point& operator+=(const Point& pt)
-  {
-    m_x += pt.m_x;
-    m_y += pt.m_y;
-    m_z += pt.m_z;
-    return *this;
-  }
-
-  Point& operator*=(const DataType& sc)
-  {
-    m_x *= sc;
-    m_y *= sc;
-    m_z *= sc;
-    return *this;
-  }
-
-  template <typename T>
-  Point& operator/=(const T& sc)
-  {
-    return operator*=(1. / sc);
-  }
-
-  DataType m_x, m_y, m_z;
-};
-
-/// Some operations on Points
-Point operator+(const Point& pt1, const Point& pt2)
-{
-  Point pt(pt1);
-  pt += pt2;
-  return pt;
-}
-
-Point operator*(const Point& pt1, const DataType& sc)
-{
-  Point pt(pt1);
-  pt *= sc;
-  return pt;
-}
-
-Point operator*(const DataType& sc, const Point& pt1)
-{
-  Point pt(pt1);
-  pt *= sc;
-  return pt;
-}
-
-template <typename T>
-Point operator/(const Point& pt1, const T& sc)
-{
-  Point pt(pt1);
-  pt *= (1. / sc);
-  return pt;
-}
+using Point3 = slam::util::Point3<DataType>;
 
 /**
  * \brief Simple hex mesh for this example.
@@ -145,10 +74,10 @@ public:
 
   /// types for maps
   using BaseSet = axom::slam::Set<PositionType, ElementType>;
-  using NodalPositions = slam::Map<BaseSet, Point>;
-  using ZonalPositions = slam::Map<BaseSet, Point>;
-  using NodeField = slam::Map<BaseSet, DataType>;
-  using ZoneField = slam::Map<BaseSet, DataType>;
+  using NodalPositions = slam::Map<Point3>;
+  using ZonalPositions = slam::Map<Point3>;
+  using NodeField = slam::Map<DataType>;
+  using ZoneField = slam::Map<DataType>;
 
 public:
   /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -182,8 +111,8 @@ struct Repository
   using SetType = axom::slam::Set<>;
   using IntsRegistry = slam::FieldRegistry<SetType, SetType::ElementType>;
   using RealsRegistry = slam::FieldRegistry<SetType, double>;
-  using IntField = slam::Map<SetType, SetType::ElementType>;
-  using RealField = slam::Map<SetType, double>;
+  using IntField = slam::Map<int>;
+  using RealField = slam::Map<double>;
 
   static IntsRegistry intsRegistry;
   static RealsRegistry realsRegistry;
@@ -252,10 +181,8 @@ public:
 
     SLIC_INFO("-- Number of zones: " << numZones);
 
-    // Note: The VTK format has an extra value per zone for the number of
-    // indices
-    // This is constant since we're assuming a Hex mesh.  General meshes can be
-    // different.
+    // Note: The VTK format has an extra value per zone for the number of indices
+    // This is constant since we're assuming a Hex mesh.  General meshes can be different.
     SLIC_ASSERT_MSG(
       (listSize - numZones) == numNodeZoneIndices,
       axom::fmt::format(
@@ -317,7 +244,7 @@ void readHexMesh(std::string fileName, HexMesh* mesh)
     Repository::realsRegistry.getBuffer("node_positions").begin();
   for(PositionType idx = 0; idx < mesh->numNodes(); ++idx)
   {
-    mesh->nodePosition[idx] = Point(*ptIt++, *ptIt++, *ptIt++);
+    mesh->nodePosition[idx] = Point3(*ptIt++, *ptIt++, *ptIt++);
   }
 
   /// Create the topological incidence relation from zones to nodes
@@ -342,8 +269,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
   using RelationSubset = HexMesh::ZoneToNodeRelation::RelationSubset;
   using PositionType = HexMesh::PositionType;
 
-  /// Step 1: Compute the cardinalities of each node by looping through zone to
-  // node relation
+  /// Step 1: Compute the cardinalities of each node by looping through zone to node relation
   IndexBuf& nzBegins = Repository::intsRegistry.addBuffer("node_zone_begins",
                                                           mesh->nodes.size() + 1);
   for(PositionType zIdx = 0; zIdx < mesh->numZones(); ++zIdx)
@@ -356,8 +282,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
   }
 
   /// Step 2: Compute begin offsets for each node based on cardinalities
-  // Strategy: perform (inplace) exclusive prefix sum of cardinalities in
-  // nzBegins
+  // Strategy: perform (inplace) exclusive prefix sum of cardinalities in nzBegins
   PositionType prevVal = nzBegins[0];
   nzBegins[0] = 0;
   for(int i = 1; i <= mesh->numNodes(); ++i)
@@ -367,8 +292,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
     prevVal = nextVal;
   }
 
-  /// Step 3: Invert the zone_node relation, use nzBegins[node_index] as offset
-  // for next zone
+  /// Step 3: Invert the zone_node relation, use nzBegins[node_index] as offset for next zone
   IndexBuf& zIndices =
     Repository::intsRegistry.addBuffer("node_zone_indices",
                                        nzBegins[mesh->numNodes()]);
@@ -414,7 +338,7 @@ void computeZoneBarycenters(HexMesh* mesh)
   // Outer loop over each zone in the mesh
   for(PositionType zIdx = 0; zIdx < mesh->numZones(); ++zIdx)
   {
-    Point zonePos;
+    Point3 zonePos;
 
     // Inner loop over each node of the zone
     const NodeSet& nodeSet = mesh->zoneToNodeRelation[zIdx];

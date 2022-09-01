@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,6 +32,10 @@ using IndexType = axom::IndexType;
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
 constexpr int NUM_BLOCKS = 512;
 using ExecPolicy = axom::CUDA_EXEC<NUM_BLOCKS>;
+#elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(AXOM_USE_UMPIRE)
+constexpr int NUM_BLOCKS = 512;
+using ExecPolicy = axom::HIP_EXEC<NUM_BLOCKS>;
 #elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
 using ExecPolicy = axom::OMP_EXEC;
 #else
@@ -65,7 +69,7 @@ int main(int argc, char** argv)
   parse_args(argc, argv);
 
   // sphinx_tutorial_walkthrough_set_memory_start
-  // NOTE: use unified memory if we are using CUDA
+  // NOTE: use unified memory if we are using CUDA or HIP
   const int allocID = axom::execution_space<ExecPolicy>::allocatorID();
   axom::setDefaultAllocator(allocID);
   // sphinx_tutorial_walkthrough_set_memory_end

@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,7 +29,7 @@ Axom's Github project is also configured to require pull requests to pass checks
 from our LC GitLab CI (as described below).
 
 
-.. _bamboo-label:
+.. _gitlab-label:
 
 ==========
 LC GitLab 

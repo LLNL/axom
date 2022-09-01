@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,8 +56,8 @@ public:
   using SpaceVector = primal::Vector<double, DIM>;
   using GeometricBoundingBox = primal::BoundingBox<double, DIM>;
 
-  using VertexIndexMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
-  using VertexPositionMap = slam::Map<slam::Set<VertexIndex>, SpacePt>;
+  using VertexIndexMap = slam::Map<VertexIndex>;
+  using VertexPositionMap = slam::Map<SpacePt>;
 
   /// Always DIM verts since we're representing a d-dimensional simplicial mesh in dimension d
   static constexpr int NUM_CELL_VERTS = DIM;
@@ -342,7 +342,7 @@ public:
                             double segmentParameter,
                             const CellIndexSet& otherCells) const
   {
-    SpaceVector vec = this->cellPositions(cidx).template normal<2>();
+    SpaceVector vec = this->cellPositions(cidx).normal();
 
     // Check if the point is at the first vertex of the segment
     if(axom::utilities::isNearlyEqual(segmentParameter, 0.))
@@ -353,7 +353,7 @@ public:
         auto vidx = cellVertexIndices(cidx)[0];
         if(idx != cidx && incidentInVertex(cellVertexIndices(idx), vidx))
         {
-          vec += this->cellPositions(idx).template normal<2>().unitVector();
+          vec += this->cellPositions(idx).normal().unitVector();
         }
       }
     }
@@ -366,7 +366,7 @@ public:
         auto vidx = cellVertexIndices(cidx)[1];
         if(idx != cidx && incidentInVertex(cellVertexIndices(idx), vidx))
         {
-          vec += this->cellPositions(idx).template normal<2>().unitVector();
+          vec += this->cellPositions(idx).normal().unitVector();
         }
       }
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -286,6 +286,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_nodeids)
     setDefaultAllocator(prev_allocator);
 #endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_face_nodes<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
   }  // END for all dimensions
 }
 
@@ -330,6 +348,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_coords)
     setDefaultAllocator(prev_allocator);
 #endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_face_coords<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_face_coords<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_face_coords<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_face_coords<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_face_coords<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
   }  // END for all dimensions
 }
 
@@ -370,6 +406,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_face_cellids)
     check_for_all_face_cells<cuda_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
     check_for_all_face_nodes<cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
     check_for_all_face_nodes<cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_face_cells<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_face_cells<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_face_cells<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_face_nodes<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
 
     setDefaultAllocator(prev_allocator);
 #endif
@@ -419,6 +473,24 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_faces_index)
     setDefaultAllocator(prev_allocator);
 #endif
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+    using hip_exec = axom::HIP_EXEC<512>;
+
+    const int exec_space_id = axom::execution_space<hip_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator(exec_space_id);
+
+    check_for_all_faces<hip_exec, STRUCTURED_UNIFORM_MESH>(dim);
+    check_for_all_faces<hip_exec, STRUCTURED_CURVILINEAR_MESH>(dim);
+    check_for_all_faces<hip_exec, STRUCTURED_RECTILINEAR_MESH>(dim);
+    check_for_all_faces<hip_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE>(dim);
+    check_for_all_faces<hip_exec, UNSTRUCTURED_MESH, MIXED_SHAPE>(dim);
+
+    setDefaultAllocator(prev_allocator);
+#endif
+
   }  // END for all dimensions
 }
 
@@ -426,18 +498,12 @@ AXOM_CUDA_TEST(mint_execution_face_traversals, for_all_faces_index)
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

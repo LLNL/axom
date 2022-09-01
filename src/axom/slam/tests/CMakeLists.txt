@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,6 +20,7 @@ set(gtest_slam_tests
     slam_set_BitSet.cpp
     slam_set_DynamicSet.cpp
     slam_set_Iterator.cpp
+    slam_set_BivariateSet.cpp    
 
     # test relations
     slam_relation_StaticVariable.cpp
@@ -28,7 +29,7 @@ set(gtest_slam_tests
     slam_relation_DynamicConstant.cpp
 
     # test maps
-    slam_Map.cpp
+    slam_map_Map.cpp
     slam_map_SubMap.cpp
     slam_map_BivariateMap.cpp
     slam_map_DynamicMap.cpp
@@ -38,10 +39,17 @@ set(gtest_slam_tests
 
     # aux tests
     slam_ModularInt.cpp
+    
+    #mesh structure test
+    slam_IA.cpp
     )
 
 
 set(slam_tests_depends_on axom gtest)
+
+# hipErrorNoBinaryForGpu without hip dependency
+blt_list_append( TO slam_tests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
+
 
 #------------------------------------------------------------------------------
 # Add gtest based tests

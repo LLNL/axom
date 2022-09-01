@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,7 +42,7 @@ using Schema = conduit::Schema;
  * \brief IndexType is used for any labeling of a sidre object by an
  *        integer identifier.
  */
-using IndexType = SIDRE_IndexType;
+using IndexType = axom::IndexType;
 
 /*!
  * \brief Common invalid index identifier used in sidre.

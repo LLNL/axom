@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,8 +6,9 @@
 #include "axom/config.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
-#include "axom/core/numerics/Matrix.hpp"     // for numerics::Matrix
-#include "axom/core/numerics/matvecops.hpp"  // for matrix-vector operators
+#include "axom/core/numerics/Matrix.hpp"
+#include "axom/core/numerics/matvecops.hpp"
+#include "axom/slic.hpp"
 
 #include "gtest/gtest.h"
 
@@ -384,19 +385,58 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
 #undef TEST_BOX3D
 }
 
-//------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
+TEST(primal_ray_intersect, ray_segment_edge_cases)
+{
+  using namespace primal::detail;
 
+  using PointType = primal::Point<double, 2>;
+  using SegmentType = primal::Segment<double, 2>;
+  using VectorType = primal::Vector<double, 2>;
+  using RayType = primal::Ray<double, 2>;
+
+  RayType the_ray(PointType({0.0, 0.1}), VectorType({1, 2}));
+  double ray_param = -1, seg_param = -1;
+  const double EPS = 1e-8;
+
+  // Check segments oriented in same direction as ray
+  //  and in opposite direction
+  SegmentType intersecting_segs[] = {
+    SegmentType(PointType({1, 2.1}), PointType({2, 4.1})),
+    SegmentType(PointType({0, 0.1}), PointType({1, 2.1})),
+    SegmentType(PointType({-1, -1.9}), PointType({1, 2.1})),
+    SegmentType(PointType({-1, -1.9}), PointType({0, 0.1})),
+    SegmentType(PointType({2, 4.1}), PointType({1, 2.1})),
+    SegmentType(PointType({1, 2.1}), PointType({0, 0.1})),
+    SegmentType(PointType({1, 2.1}), PointType({-1, -1.9})),
+    SegmentType(PointType({0, 0.1}), PointType({-1, -1.9}))};
+
+  for(auto& seg : intersecting_segs)
+  {
+    EXPECT_TRUE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
+    EXPECT_NEAR(the_ray.at(ray_param)[0], seg.at(seg_param)[0], EPS);
+    EXPECT_NEAR(the_ray.at(ray_param)[1], seg.at(seg_param)[1], EPS);
+  }
+
+  // Check that parallel, but not colinear segments do not intersect
+  SegmentType not_intersecting_segs[] = {
+    SegmentType(PointType({-2, -3.9}), PointType({-1, -1.9})),
+    SegmentType(PointType({-2, -2.9}), PointType({-1, -0.9})),
+    SegmentType(PointType({-2, -2.9}), PointType({1, 3.1})),
+    SegmentType(PointType({-1, -1.9}), PointType({-2, -3.9})),
+    SegmentType(PointType({-1, -0.9}), PointType({-2, -2.9})),
+    SegmentType(PointType({1, 3.1}), PointType({-2, -2.9}))};
+
+  for(auto& seg : not_intersecting_segs)
+    EXPECT_FALSE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

@@ -228,7 +228,8 @@ TAB_SIZE               = 4
 # "Side Effects:". You can put \n's in the value part of an alias to insert
 # newlines.
 
-ALIASES                = "accelerated=\xrefitem accelerated_list \"\"\"\"" 
+ALIASES                = "accelerated=\xrefitem accelerated_list \"\"\"\"" \
+                         "collective=\xrefitem collective_list \"\"\"\""
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
@@ -791,6 +792,8 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/mint/mesh \
                          @PROJECT_SOURCE_DIR@/axom/mint/utils \
                          @PROJECT_SOURCE_DIR@/axom/mint/execution \
+                         @PROJECT_SOURCE_DIR@/axom/multimat/doxygen_mainpage.md \
+                         @PROJECT_SOURCE_DIR@/axom/multimat \
                          @PROJECT_SOURCE_DIR@/axom/primal/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/primal/geometry \
                          @PROJECT_SOURCE_DIR@/axom/primal/operators \
@@ -805,6 +808,7 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/slam/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/slam/policies \
                          @PROJECT_SOURCE_DIR@/axom/slic/doxygen_mainpage.md \
+                         @PROJECT_SOURCE_DIR@/axom/slic/docs/doxygen_collective_list.doc \
                          @PROJECT_SOURCE_DIR@/axom/slic/core \
                          @PROJECT_SOURCE_DIR@/axom/slic/interface \
                          @PROJECT_SOURCE_DIR@/axom/slic/streams \
@@ -1010,7 +1014,7 @@ STRIP_CODE_COMMENTS    = NO
 # function all documented functions referencing it will be listed.
 # The default value is: NO.
 
-REFERENCED_BY_RELATION = YES
+REFERENCED_BY_RELATION = NO
 
 # If the REFERENCES_RELATION tag is set to YES then for each documented function
 # all documented entities called/used by that function will be listed.
@@ -2076,7 +2080,8 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             = MINT_USE_SIDRE
+PREDEFINED             = MINT_USE_SIDRE \
+                         AXOM_DEBUG
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

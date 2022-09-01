@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,10 +50,12 @@ endif()
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
+        interface/c_fortran/wrapGenericOutputStream.h
         interface/c_fortran/typesSLIC.h
     )
     list(APPEND slic_sources
         interface/c_fortran/wrapSLIC.cpp
+        interface/c_fortran/wrapGenericOutputStream.cpp
         interface/c_fortran/wrapfslic.f
     )
 endif()

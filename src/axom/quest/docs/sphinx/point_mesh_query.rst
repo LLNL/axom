@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -110,6 +110,7 @@ Before initialization, a code can set some parameters for the distance query.
   and "below" (negative distance).
 - ``quest::signed_distance_set_execution_space()`` allows setting the execution
   space to run the signed distance query in. The following values are accepted:
+  
    - ``quest::SignedDistExec::CPU`` runs the signed distance query on the CPU.
    - ``quest::SignedDistExec::OpenMP`` runs the signed distance query with multiple
      threads on the CPU using OpenMP. Requires building Axom with OpenMP support.

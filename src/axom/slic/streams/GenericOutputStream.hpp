@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,6 +17,7 @@
 
 // C/C++ includes
 #include <iostream>  // for ostream
+#include <fstream>   // for ofstream
 
 namespace axom
 {
@@ -42,6 +43,16 @@ public:
   GenericOutputStream(std::ostream* os);
 
   /*!
+   * \brief Constructs a GenericOutputStream instance specified by the given
+   *  string. The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   */
+  GenericOutputStream(const std::string& stream);
+
+  /*!
    * \brief Constructs a GenericOutputStream instance with the given stream and
    *  message formatting.
    * \param [in] os pointer to a user-supplied ostream instance.
@@ -49,6 +60,19 @@ public:
    * \see LogStream::setFormatString for the format string.
    */
   GenericOutputStream(std::ostream* os, const std::string& format);
+
+  /*!
+   * \brief Constructs a GenericOutputStream instance specified by the given
+   *  string  and message formatting.
+   *  The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   * \param [in] format the format string.
+   * \see LogStream::setFormatString for the format string.
+   */
+  GenericOutputStream(const std::string& stream, const std::string& format);
 
   /*!
    * \brief Destructor.
@@ -62,6 +86,16 @@ public:
                       const std::string& fileName,
                       int line,
                       bool filter_duplicates);
+
+  /*!
+   * \brief Outputs the log stream to the console.
+   */
+  virtual void outputLocal();
+
+  /*!
+   * \brief Flushes the log stream.
+   */
+  virtual void flush();
 
 private:
   std::ostream* m_stream;

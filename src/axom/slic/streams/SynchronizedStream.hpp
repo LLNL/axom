@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -73,7 +73,19 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Dumps the messages to the console in rank-order.
+   * \brief Dumps the messages from the current rank directly to the
+   *        console (non-collectively).
+   *
+   * \warning This method is being called before slic aborts.
+   */
+  virtual void outputLocal();
+
+  /*!
+   * \brief Dumps the messages to the console in rank-order for all ranks.
+   *
+   * \collective
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
    */
   virtual void flush();
 

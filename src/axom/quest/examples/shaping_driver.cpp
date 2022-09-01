@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -62,7 +62,8 @@ enum RuntimePolicy
 {
   seq = 0,
   omp = 1,
-  cuda = 2
+  cuda = 2,
+  hip = 3
 };
 
 /// Struct to parse and store the input parameters
@@ -96,6 +97,9 @@ private:
       #endif
       #ifdef AXOM_USE_CUDA
     , {"cuda", cuda}
+      #endif
+      #ifdef AXOM_USE_HIP
+    , {"hip", hip}
       #endif
     #endif
   };
@@ -203,6 +207,9 @@ public:
   #endif
   #ifdef AXOM_USE_CUDA
     pol_sstr << "\nSet to \'cuda\' or 2 to use the RAJA CUDA policy.";
+  #endif
+  #ifdef AXOM_USE_HIP
+    pol_sstr << "\nSet to \'hip\' or 3 to use the RAJA HIP policy.";
   #endif
 #endif
 

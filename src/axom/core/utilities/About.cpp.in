@@ -1,0 +1,207 @@
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+#include "axom/config.hpp"
+#include "axom/core/utilities/About.hpp"
+
+#include <algorithm>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <iterator>
+
+namespace axom
+{
+
+std::string gitSHA()
+{
+  // Note: This is generated at configure time so that
+  // when the sha changes it doesn't force a full rebuild
+  // of Axom. Do not add it to the config header.
+
+  return "@AXOM_GIT_SHA@";
+}
+
+void about() { about(std::cout); }
+
+void about(std::ostream &oss)
+{
+  oss << "Axom information:" << std::endl << std::endl;
+
+  oss << "AXOM_VERSION_FULL: " << AXOM_VERSION_FULL << std::endl;
+  oss << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
+  oss << "AXOM_VERSION_MINOR: " << AXOM_VERSION_MINOR << std::endl;
+  oss << "AXOM_VERSION_PATCH: " << AXOM_VERSION_PATCH << std::endl;
+
+  oss << "AXOM_GIT_SHA: " << gitSHA() << std::endl;
+
+  oss << "Compiler Settings: " << std::endl
+      << "   C++ Standard: " << AXOM_CXX_STD << std::endl
+      << "   MPI support: "
+#ifdef AXOM_USE_MPI
+      << "ENABLED"
+#else
+      << "DISABLED"
+#endif
+      << std::endl
+      << "   OpenMP support: "
+#ifdef AXOM_USE_OPENMP
+      << "ENABLED"
+#else
+      << "DISABLED"
+#endif
+      << std::endl
+      << "   CUDA support: "
+#ifdef AXOM_USE_CUDA
+      << "ENABLED"
+#else
+      << "DISABLED"
+#endif
+      << std::endl
+      << "   HIP support: "
+#ifdef AXOM_USE_HIP
+      << "ENABLED"
+#else
+      << "DISABLED"
+#endif
+      << std::endl;
+
+  oss << "Available components: " << std::endl;
+
+  std::vector<std::string> comps;
+
+  comps.push_back("core");
+
+#ifdef AXOM_USE_INLET
+  comps.push_back("inlet");
+#endif
+
+#ifdef AXOM_USE_KLEE
+  comps.push_back("klee");
+#endif
+
+#ifdef AXOM_USE_LUMBERJACK
+  comps.push_back("lumberjack");
+#endif
+
+#ifdef AXOM_USE_MINT
+  comps.push_back("mint");
+#endif
+
+#ifdef AXOM_USE_PRIMAL
+  comps.push_back("primal");
+#endif
+
+#ifdef AXOM_USE_QUEST
+  comps.push_back("quest");
+#endif
+
+#ifdef AXOM_USE_SIDRE
+  comps.push_back("sidre");
+#endif
+
+#ifdef AXOM_USE_SLAM
+  comps.push_back("slam");
+#endif
+
+#ifdef AXOM_USE_SLIC
+  comps.push_back("slic");
+#endif
+
+#ifdef AXOM_USE_SPIN
+  comps.push_back("spin");
+#endif
+
+  std::stringstream sstr;
+  std::copy(comps.begin(),
+            comps.end(),
+            std::ostream_iterator<std::string>(sstr, "; "));
+  oss << " { " << sstr.str() << "}" << std::endl;
+
+  oss << "Active Dependencies: " << std::endl;
+
+  std::vector<std::string> libs;
+
+#ifdef AXOM_USE_C2C
+  libs.push_back("c2c");
+#endif
+
+#ifdef AXOM_USE_CAMP
+  libs.push_back("camp");
+#endif
+
+#ifdef AXOM_USE_CLI11
+  libs.push_back("CLI11");
+#endif
+
+#ifdef AXOM_USE_CONDUIT
+  libs.push_back("conduit");
+#endif
+
+#ifdef AXOM_USE_FMT
+  libs.push_back("fmt");
+#endif
+
+#ifdef AXOM_USE_HDF5
+  libs.push_back("hdf5");
+#endif
+
+#ifdef AXOM_USE_LUA
+  libs.push_back("lua");
+#endif
+
+#ifdef AXOM_USE_MFEM
+  libs.push_back("mfem");
+#endif
+
+#ifdef AXOM_USE_MPI
+  libs.push_back("mpi");
+#endif
+
+#ifdef AXOM_USE_SCR
+  libs.push_back("scr");
+#endif
+
+#ifdef AXOM_USE_SOL
+  libs.push_back("sol");
+#endif
+
+#ifdef AXOM_USE_SPARSEHASH
+  libs.push_back("sparsehash");
+#endif
+
+#ifdef AXOM_USE_RAJA
+  libs.push_back("raja");
+#endif
+
+#ifdef AXOM_USE_UMPIRE
+  libs.push_back("umpire");
+#endif
+
+  // reset sstr
+  sstr.str("");
+  std::copy(libs.begin(),
+            libs.end(),
+            std::ostream_iterator<std::string>(sstr, "; "));
+  oss << " { " << sstr.str() << "}" << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+std::string getVersion()
+{
+  std::ostringstream oss;
+  oss << AXOM_VERSION_FULL;
+
+  // Add git sha to version if not empty
+  std::string sha = gitSHA();
+  if (!sha.empty()) {
+    oss << "-" << sha;
+  }
+
+  return oss.str();
+}
+
+}  // end namespace axom

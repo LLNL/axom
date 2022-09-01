@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,8 +7,7 @@
 
 #include "axom/config.hpp"      // for AXOM_USE_HDF5
 #include "axom/core/Types.hpp"  // for common::int64
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/spio/IOManager.hpp"
+#include "axom/sidre.hpp"
 #include <list>
 
 #include "mpi.h"
@@ -175,4 +174,50 @@ TEST(spio_serial, write_read_write)
   //      minor: Unable to open file
   IOManager writer_b(MPI_COMM_WORLD);
   writer_b.write(ds_r.getRoot(), num_files, filename, PROTOCOL);
+}
+
+//------------------------------------------------------------------------------
+TEST(spio_serial, rootfile_suffix)
+{
+  // This test verifies the usage of the string passed to writer.write() to
+  // control the names of the root file and the output files. The usual
+  // case is that the suffix ".root" is appended to the string to name the
+  // root file, and the given string is used to name the subdirectory holding
+  // the data files. The exception is if the string already has the suffix
+  // ".root", it is used unchanged to name the root file, and the suffix is
+  // removed to create a base string to name the subdirectory and the data
+  // files.
+
+  int my_rank, num_ranks;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  int num_files = num_ranks;
+
+  std::string suffix_name = "hassuffix" + ROOT_EXT;
+  std::string nosuffix_name = "nosuffix";
+
+  // Initialize a datastore and dump to disk
+  DataStore* ds = new DataStore();
+  ds->getRoot()->createViewScalar<int>("grp/i", 2);
+  IOManager writer(MPI_COMM_WORLD);
+
+  // Write output to two file locations, with and without root suffix
+  writer.write(ds->getRoot(), num_files, suffix_name, "sidre_hdf5");
+  writer.write(ds->getRoot(), num_files, nosuffix_name, "sidre_hdf5");
+
+  // Create two more DataStores to read in the both outputs
+  DataStore ds_suffix, ds_nosuffix;
+  IOManager reader(MPI_COMM_WORLD);
+  reader.read(ds_suffix.getRoot(), suffix_name);
+  reader.read(ds_nosuffix.getRoot(), nosuffix_name + ROOT_EXT);
+
+  EXPECT_TRUE(ds_suffix.getRoot()->isEquivalentTo(ds_nosuffix.getRoot()));
+
+  // Check that the scalar View in ds_suffix holds the same value
+  // as both the original DataStore and ds_nosuffix
+  EXPECT_EQ(ds_suffix.getRoot()->getView("grp/i")->getData<int>(),
+            ds->getRoot()->getView("grp/i")->getData<int>());
+  EXPECT_EQ(ds_suffix.getRoot()->getView("grp/i")->getData<int>(),
+            ds_nosuffix.getRoot()->getView("grp/i")->getData<int>());
 }

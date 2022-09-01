@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,7 +6,7 @@
 .. _release-label:
 
 *******************************************
-Axom Release Process
+Release Process
 *******************************************
 
 The Axom team decides as a group when the code is ready for a release.
@@ -57,6 +57,12 @@ release changes can be reviewed. Such changes include:
 #. Update the release notes in ``axom/RELEASE-NOTES.md`` by adding the
    release version number and release date in the heading, as well as,
    the corresponding link to the version on Github.
+
+#. Update the mail map in ``axom/.mailmap`` by adding the names and emails
+   of new contributors since the last release.
+
+#. Update the citations in ``axom/CITATION.cff`` by adding the names
+   of new LLNL contributors since the last release.
 
 #. Test the code by running it through all continuous integration tests
    and builds. This will ensure that all build configurations are working

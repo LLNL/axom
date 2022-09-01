@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,10 +9,12 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
-#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
-#include "axom/core/execution/for_all.hpp"          // for_all()
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
 
-using namespace axom;
+#include <array>
+
+namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
@@ -39,10 +41,10 @@ void check_vector_policy()
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_constructors)
 {
-  static const int DIM = 5;
-  typedef double CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 5;
+  using CoordType = double;
+  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
   QVec vec1;
   EXPECT_EQ(vec1.dimension(), DIM);
@@ -124,10 +126,10 @@ TEST(primal_vector, vector_constructors)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_from_points_constructor)
 {
-  static const int DIM = 5;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 5;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
   const double aVal = 12;
   const double bVal = 5;
@@ -159,15 +161,15 @@ TEST(primal_vector, vector_from_points_constructor)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_normalize)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
   EXPECT_DOUBLE_EQ(QVec().unitVector().norm(), 1.0);
 
   // Find the norm of an arbitrary point
-  QPoint p = QPoint::make_point(543.5435, 1566.423532, -432.4);
+  QPoint p {543.5435, 1566.423532, -432.4};
   QVec vec2(QPoint(), p);
   EXPECT_DOUBLE_EQ(vec2.unitVector().norm(), 1.0);
 
@@ -182,13 +184,13 @@ TEST(primal_vector, vector_normalize)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_norm)
 {
-  static const int DIM = 2;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 2;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0);
-  QPoint p2 = QPoint::make_point(0, 4);
+  QPoint p1 {3, 0};
+  QPoint p2 {0, 4};
   QVec vec(p1, p2);
   EXPECT_DOUBLE_EQ(vec.norm(), 5.0);
 }
@@ -196,18 +198,18 @@ TEST(primal_vector, vector_norm)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_arithmetic)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0, 1.2);
-  QPoint p2 = QPoint::make_point(0, 4, 1.2);
-  QPoint pSum = QPoint::make_point(3, 4, 2.4);
-  QPoint pDiff = QPoint::make_point(-3, 4, 0);
+  QPoint p1 {3, 0, 1.2};
+  QPoint p2 {0, 4, 1.2};
+  QPoint pSum {3, 4, 2.4};
+  QPoint pDiff {-3, 4, 0};
 
   CoordType scalar = 5.3;
-  QPoint pScalar = QPoint::make_point(scalar * 3, scalar * 4, scalar * 2.4);
+  QPoint pScalar {scalar * 3, scalar * 4, scalar * 2.4};
 
   QVec v1(p1);
   QVec v2(p2);
@@ -238,13 +240,13 @@ TEST(primal_vector, vector_arithmetic)
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_inner_product)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0, 1.2);
-  QPoint p2 = QPoint::make_point(0, 4, 1.2);
+  QPoint p1 {3, 0, 1.2};
+  QPoint p2 {0, 4, 1.2};
 
   CoordType expDot = 1.2 * 1.2;
 
@@ -260,32 +262,142 @@ TEST(primal_vector, vector_inner_product)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_vector, vector_outer_product)
+TEST(primal_vector, vector3_outer_product)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Vector<CoordType, DIM> QVec;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QVec = primal::Vector<CoordType, DIM>;
 
-  QPoint p1 = QPoint::make_point(3, 0);
-  QPoint p2 = QPoint::make_point(0, 4);
+  {
+    QVec v1 {3, 0};
+    QVec v2 {0, 4};
 
-  QVec v1(p1);
-  QVec v2(p2);
+    QVec vRes {0, 0, 12};
 
-  QVec vRes;
-  vRes[2] = 12.;
+    EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  }
 
-  EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
-  EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
-  EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  {
+    QVec v1 {1, 1, 1};
+    QVec v2 {1, 1, 1};
+
+    QVec vRes {0, 0, 0};
+
+    EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  }
+
+  {
+    QVec v1 {1, -1, 1};
+    QVec v2 {-.125, .25, -.5};
+
+    QVec vRes {0.25, 0.375, 0.125};
+
+    EXPECT_EQ(QVec::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec::cross_product(v1, v2), -QVec::cross_product(v2, v1));
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_vector, vector2_outer_product)
+{
+  using CoordType = double;
+  using QVec2 = primal::Vector<CoordType, 2>;
+  using QVec3 = primal::Vector<CoordType, 3>;
+
+  {
+    QVec2 v1 {3, 0};
+    QVec2 v2 {0, 4};
+
+    QVec3 vRes {0, 0, 12};
+
+    EXPECT_EQ(QVec2::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec2::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec2::cross_product(v1, v2), -QVec2::cross_product(v2, v1));
+  }
+
+  {
+    QVec2 v1 {1, -1};
+    QVec2 v2 {.25, 4};
+
+    QVec3 vRes {0, 0, 4.25};
+
+    EXPECT_EQ(QVec2::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec2::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec2::cross_product(v1, v2), -QVec2::cross_product(v2, v1));
+  }
+
+  {
+    QVec2 v1 {1, 1};
+    QVec2 v2 {-1, -1};
+
+    QVec3 vRes {0, 0, 0};
+
+    EXPECT_EQ(QVec2::cross_product(v1, v2), vRes);
+    EXPECT_EQ(QVec2::cross_product(v2, v1), -vRes);
+    EXPECT_EQ(QVec2::cross_product(v1, v2), -QVec2::cross_product(v2, v1));
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_vector, scalar_triple_product)
+{
+  using CoordType = double;
+  using QVec = primal::Vector<CoordType, 3>;
+  using QVecTriple = std::array<QVec, 3>;
+
+  QVec o {0, 0, 0};
+  QVec e_0 {1, 0, 0};
+  QVec e_1 {0, 1, 0};
+  QVec e_2 {0, 0, 1};
+
+  // explicitly test some examples
+  EXPECT_EQ(1., QVec::scalar_triple_product(e_0, e_1, e_2));
+  EXPECT_EQ(-1., QVec::scalar_triple_product(e_0, e_2, e_1));
+  EXPECT_DOUBLE_EQ(-10, QVec::scalar_triple_product(-e_0, 2.5 * e_1, 4. * e_2));
+
+  // test properties for a few examples
+  std::vector<QVecTriple> data = {
+    QVecTriple {e_0, e_1, e_2},
+    QVecTriple {e_0, e_2, e_1},
+    QVecTriple {e_0, e_0, e_1},
+    QVecTriple {o, e_0, e_1},
+    QVecTriple {e_0, e_0 + e_1, e_0 + e_1 + e_2},
+    QVecTriple {-3.33 * e_0, 2.25 * e_1, .1111 * e_2}};
+
+  for(auto triplet : data)
+  {
+    const auto& i = triplet[0];
+    const auto& j = triplet[1];
+    const auto& k = triplet[2];
+
+    // check definition
+    EXPECT_EQ(QVec::dot_product(i, QVec::cross_product(j, k)),
+              QVec::scalar_triple_product(i, j, k));
+
+    // check rotations
+    EXPECT_EQ(QVec::scalar_triple_product(i, j, k),
+              QVec::scalar_triple_product(j, k, i));
+
+    EXPECT_EQ(QVec::scalar_triple_product(i, j, k),
+              QVec::scalar_triple_product(k, i, j));
+
+    // check swap permutation
+    EXPECT_EQ(-QVec::scalar_triple_product(i, j, k),
+              QVec::scalar_triple_product(i, k, j));
+  }
 }
 
 //------------------------------------------------------------------------------
 TEST(primal_vector, vector_zero)
 {
   constexpr int DIM = 5;
-  typedef primal::Vector<double, DIM> QVec;
+  using QVec = primal::Vector<double, DIM>;
+
   QVec zero {0.0};
   EXPECT_TRUE(zero.is_zero());
 
@@ -344,6 +456,8 @@ TEST(primal_vector, subtract_points)
 
     EXPECT_EQ(oneVec, onePt - zeroPt);
     EXPECT_EQ(-oneVec, zeroPt - onePt);
+
+    EXPECT_EQ(onePt - oneVec, zeroPt);
   }
 
   {
@@ -358,6 +472,7 @@ TEST(primal_vector, subtract_points)
     {
       EXPECT_DOUBLE_EQ(exp[i], diff[i]);
       EXPECT_DOUBLE_EQ(ctor[i], diff[i]);
+      EXPECT_DOUBLE_EQ((head - diff)[i], tail[i]);
     }
   }
 }
@@ -382,6 +497,14 @@ AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
   using cuda_exec = axom::CUDA_EXEC<512>;
 
   check_vector_policy<cuda_exec>();
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+  using hip_exec = axom::HIP_EXEC<512>;
+
+  check_vector_policy<hip_exec>();
 #endif
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,23 +64,23 @@ Container::Container(const std::string& name,
         {
           m_containerChildren.emplace(
             childName,
-            cpp11_compat::make_unique<Container>(childName,
-                                                 "",
-                                                 m_reader,
-                                                 m_sidreRootGroup,
-                                                 m_unexpectedNames,
-                                                 m_docEnabled,
-                                                 true));
+            std::make_unique<Container>(childName,
+                                        "",
+                                        m_reader,
+                                        m_sidreRootGroup,
+                                        m_unexpectedNames,
+                                        m_docEnabled,
+                                        true));
         }
         else if(inletType == "Field")
         {
           // FIXME: We probably need to write the type to the datastore
           m_fieldChildren.emplace(
             childName,
-            cpp11_compat::make_unique<Field>(group,
-                                             m_sidreRootGroup,
-                                             sidre::DataTypeId::NO_TYPE_ID,
-                                             m_docEnabled));
+            std::make_unique<Field>(group,
+                                    m_sidreRootGroup,
+                                    sidre::DataTypeId::NO_TYPE_ID,
+                                    m_docEnabled));
         }
       }
     }
@@ -145,12 +145,12 @@ Container& Container::addContainer(const std::string& name,
       // or do we need std::piecewise_construct/std::forward_as_tuple?
       const auto& emplaceResult = currContainer->m_containerChildren.emplace(
         currContainerName,
-        cpp11_compat::make_unique<Container>(currContainerName,
-                                             currDescr,
-                                             m_reader,
-                                             m_sidreRootGroup,
-                                             m_unexpectedNames,
-                                             m_docEnabled));
+        std::make_unique<Container>(currContainerName,
+                                    currDescr,
+                                    m_reader,
+                                    m_sidreRootGroup,
+                                    m_unexpectedNames,
+                                    m_docEnabled));
       // emplace_result is a pair whose first element is an iterator to the inserted element
       currContainer = emplaceResult.first->second.get();
     }
@@ -312,10 +312,7 @@ Field& Container::addField(axom::sidre::Group* sidreGroup,
   }
   const auto& emplace_result = currContainer->m_fieldChildren.emplace(
     fullName,
-    cpp11_compat::make_unique<Field>(sidreGroup,
-                                     m_sidreRootGroup,
-                                     type,
-                                     m_docEnabled));
+    std::make_unique<Field>(sidreGroup, m_sidreRootGroup, type, m_docEnabled));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }
@@ -334,9 +331,7 @@ Function& Container::addFunctionInternal(axom::sidre::Group* sidreGroup,
   }
   const auto& emplace_result = currContainer->m_functionChildren.emplace(
     fullName,
-    cpp11_compat::make_unique<Function>(sidreGroup,
-                                        m_sidreRootGroup,
-                                        std::move(func)));
+    std::make_unique<Function>(sidreGroup, m_sidreRootGroup, std::move(func)));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }
@@ -1110,18 +1105,27 @@ bool Container::verify(std::vector<VerificationError>* errors) const
     // Verify the child Fields of this Container
     for(const auto& field : m_fieldChildren)
     {
-      verified = verified && field.second->verify(errors);
+      if(!field.second->verify(errors))
+      {
+        verified = false;
+      }
     }
     // Verify the child Containers of this Container
     for(const auto& container : m_containerChildren)
     {
-      verified = verified && container.second->verify(errors);
+      if(!container.second->verify(errors))
+      {
+        verified = false;
+      }
     }
 
     // Verify the child Functions of this Container
     for(const auto& function : m_functionChildren)
     {
-      verified = verified && function.second->verify(errors);
+      if(!function.second->verify(errors))
+      {
+        verified = false;
+      }
     }
   }
   // If this has a collection group, it always needs to be verified, as annotations

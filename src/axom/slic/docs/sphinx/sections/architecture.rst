@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,17 +32,17 @@ The basic component architecture of Slic, depicted in
    * A Logger consists of *four* log message levels: ``ERROR``,
      ``WARNING``, ``INFO`` and ``DEBUG``.
 
-   * Each :ref:`logMessageLevel` can have one or more :ref:`logStream` instances,
+   * Each :ref:`logMessageLevel` can have one or more :ref:`LogStream` instances,
      which, specify the output destination, format and filtering of
      messages.
 
-#. One or more :ref:`logStream` instances, bound to a particular logger, that
+#. One or more :ref:`LogStream` instances, bound to a particular logger, that
    can be shared between log message levels.
 
 The application logs messages at an appropriate :ref:`logMessageLevel`, i.e.,
 ``ERROR``, ``WARNING``, ``INFO``, or, ``DEBUG`` using the static API.
 Internally, the Logger routes the message to the corresponding
-:ref:`logStream` instances that are bound to the associated
+:ref:`LogStream` instances that are bound to the associated
 :ref:`logMessageLevel`.
 
 The following sections discuss some of these concepts in more detail.
@@ -88,32 +88,36 @@ This indicates that all messages with a level of severity of ``WARNING`` and
 higher will be captured, namely ``WARNING`` and ``ERROR`` messages. Thereby,
 enable the application to filter out messages with lower severity.
 
-.. _logStream:
+.. warning::
+
+   All messages will be ignored until the first call to ``slic::setLoggingMsgLevel()``.
+
+.. _LogStream:
 
 Log Stream
 ^^^^^^^^^^^
 
-The :ref:`logStream` class, is an abstract base class that facilitates the
+The :ref:`LogStream` class, is an abstract base class that facilitates the
 following:
 
 * Specifying the :ref:`logMessageFormat` and output destination of log messages.
 
 * Implementing logic for handling and filtering messages.
 
-* Defines a pure abstract interface for all :ref:`logStream` instances.
+* Defines a pure abstract interface for all :ref:`LogStream` instances.
 
-Since :ref:`logStream` is an abstract base class, it cannot be instantiated
+Since :ref:`LogStream` is an abstract base class, it cannot be instantiated
 and used directly. Slic provides a set of :ref:`BuiltInLogStreams`, which provide
-concrete implementations of the :ref:`logStream` base class that support
+concrete implementations of the :ref:`LogStream` base class that support
 common use cases for logging, e.g., logging to a file or output to
 the console.
 
-Applications requiring custom functionality, may extend the :ref:`logStream`
-class and provide a concrete :ref:`logStream` instance implementation that
-implements the abstract interface defined by the :ref:`logStream` base class.
+Applications requiring custom functionality, may extend the :ref:`LogStream`
+class and provide a concrete :ref:`LogStream` instance implementation that
+implements the abstract interface defined by the :ref:`LogStream` base class.
 See the :ref:`addACustomLogStream` section for details.
 
-A concrete :ref:`logStream` instance can be attached to one or more
+A concrete :ref:`LogStream` instance can be attached to one or more
 :ref:`logMessageLevel` by calling ``slic::addStreamToMsgLevel()`` and
 ``slic::addStreamToAllMsgLevels()``. See the `Slic Doxygen API Documentation`_
 for more details.
@@ -140,17 +144,17 @@ The list of keywords is summarized in the table below.
 +---------------------+--------------------------------------------------------+
 | **<MESSAGE>**       | The supplied message that is being logged.             |
 +---------------------+--------------------------------------------------------+
-| **<FILE>**          | The file from where the message was emmitted.          |
+| **<FILE>**          | The file from where the message was emitted.           |
 +---------------------+--------------------------------------------------------+
-| **<LINE>**          | The line location where the message was emmitted.      |
+| **<LINE>**          | The line location where the message was emitted.       |
 +---------------------+--------------------------------------------------------+
 | **<TAG>**           | A string tag associated with a given message, e.g., for|
 |                     | filtering during post-processing, etc.                 |
 +---------------------+--------------------------------------------------------+
-| **<RANK>**          | The MPI rank that emmitted the message. Only applicable|
+| **<RANK>**          | The MPI rank that emitted the message. Only applicable |
 |                     | when the `Axom Toolkit`_ is compiled with MPI enabled  |
-|                     | and with MPI-aware :ref:`logStream` instances, such as,|
-|                     | the :ref:`SynchronizedOutputStream` and                |
+|                     | and with MPI-aware :ref:`LogStream` instances, such as,|
+|                     | the :ref:`SynchronizedStream` and                      |
 |                     | :ref:`LumberjackStream`.                               |
 +---------------------+--------------------------------------------------------+
 
@@ -181,7 +185,7 @@ and line where the message was emitted.
 Default Message Format
 """""""""""""""""""""""
 
-If the :ref:`logMessageFormat` is not specified, the :ref:`logStream` base class
+If the :ref:`logMessageFormat` is not specified, the :ref:`LogStream` base class
 defines a default format that is set to the following:
 
 .. code-block:: c++
@@ -203,7 +207,7 @@ table, followed by a brief description for each.
 | :ref:`GenericOutputStream`      | Always available. Used in serial applications, |
 |                                 | or, for logging on rank zero.                  |
 +---------------------------------+------------------------------------------------+
-| :ref:`SynchronizedOutputStream` | Requires MPI. Used with MPI applications.      |
+| :ref:`SynchronizedStream`       | Requires MPI. Used with MPI applications.      |
 +---------------------------------+------------------------------------------------+
 | :ref:`LumberjackStream`         | Requires MPI. Used with MPI applications.      |
 +---------------------------------+------------------------------------------------+
@@ -215,7 +219,7 @@ Generic Output Stream
 """"""""""""""""""""""
 
 The :ref:`GenericOutputStream`, is a concrete implementation of the
-:ref:`logStream` base class, that can be constructed by specifying:
+:ref:`LogStream` base class, that can be constructed by specifying:
 
 #. A C++ ``std::ostream`` object instance, e.g., ``std::cout`, ``std::cerr`` for
    console output, or to a file by passing a C++ ``std::ofstream`` object, and,
@@ -241,18 +245,18 @@ object that is bound to a file.
     slic::addStreamToAllMsgLevels(
       new slic::GenericOutputStream( &log_file, format ) );
 
-.. _SynchronizedOutputStream:
+.. _SynchronizedStream:
 
-Synchronized Output Stream
+Synchronized Stream
 """""""""""""""""""""""""""
 
-The :ref:`SynchronizedOutputStream` is intended to be used with parallel MPI
-applications, primarily for debugging. The :ref:`SynchronizedOutputStream`
+The :ref:`SynchronizedStream` is intended to be used with parallel MPI
+applications, primarily for debugging. The :ref:`SynchronizedStream`
 provides similar functionality to the :ref:`GenericOutputStream`, however, the
 log messages are synchronized across the MPI ranks of the specified
 communicator.
 
-Similar to the :ref:`GenericOutputStream` the :ref:`SynchronizedOutputStream`
+Similar to the :ref:`GenericOutputStream` the :ref:`SynchronizedStream`
 is constructed by specifying:
 
 #. A C++ ``std::ostream`` object instance, e.g., ``std::cout`, ``std::cerr`` for
@@ -263,30 +267,39 @@ is constructed by specifying:
 #. Optionally, a string that specifies the :ref:`logMessageFormat`.
 
 The following code snippet illustrates how to register a
-:ref:`SynchronizedOutputStream` object with Slic to log messages to
+:ref:`SynchronizedStream` object with Slic to log messages to
 ``std::cout``.
 
 .. code-block:: c++
 
     slic::addStreamToAllMsgLevels(
-       new slic::SynchronizedOutputStream( &std::cout, mpi_comm, format ) );
+       new slic::SynchronizedStream( &std::cout, mpi_comm, format ) );
 
 
 .. note::
 
-   Since, the :ref:`SynchronizedOutputStream` works across MPI ranks, logging
+   Since, the :ref:`SynchronizedStream` works across MPI ranks, logging
    messages using the :ref:`SlicMacros` or the static API directly
    only logs the messages locally. To send the messages to the output destination
    the application must call ``slic::flushStreams()`` explicitly, which, in
    this context is a collective call.
+
+.. warning::
+
+  In the event of an abort in :ref:`SynchronizedStream`, SLIC calls
+  ``slic::outputLocalMessages()``, which will output the locally stored
+  messages to the output destination for log messages (file or console) and
+  then SLIC calls ``MPI_Abort()``. The call to ``slic::outputLocalMessages()``
+  is non-collective, and does not guarantee all locally stored messages
+  will be outputted by all ranks.
 
 .. _LumberjackStream:
 
 Lumberjack Stream
 """""""""""""""""
 
-The :ref:`LumberjackStream`, is intended to be used with parallel MPI
-applications. In contrast to the :ref:`SynchronizedOutputStream`, which logs
+The :ref:`LumberjackStream` is intended to be used with parallel MPI
+applications. In contrast to the :ref:`SynchronizedStream`, which logs
 messages from all ranks, the :ref:`LumberjackStream` uses `Lumberjack`_
 internally to filter out duplicate messages that are emitted from multiple
 ranks.
@@ -319,28 +332,36 @@ object with Slic to log messages to ``std::cout``.
    the application must call ``slic::flushStreams()`` explicitly, which, in
    this context is a collective call.
 
+.. warning::
+
+  In the event of an abort in :ref:`LumberjackStream`, SLIC calls
+  ``slic::outputLocalMessages()``, which will output the locally stored
+  messages to the output destination for log messages (file or console) and
+  then SLIC calls ``MPI_Abort()``. The call to ``slic::outputLocalMessages()``
+  is non-collective, and does not guarantee all locally stored messages
+  will be outputted by all ranks.
 
 .. _addACustomLogStream:
 
 Add a Custom Log Stream
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Slic can be customized by implementing a new subclass of the :ref:`logStream`.
+Slic can be customized by implementing a new subclass of the :ref:`LogStream`.
 This section demonstrates the basic steps required to :ref:`addACustomLogStream`
-by walking through the implementation of a new :ref:`logStream` instance, which
+by walking through the implementation of a new :ref:`LogStream` instance, which
 we will call ``MyStream``.
 
 .. note::
 
   ``MyStream`` provides the same functionality as the :ref:`GenericOutputStream`.
   The implementation presented herein is primarily intended for demonstrating
-  the basic process for extending Slic by providing a custom :ref:`logStream`.
+  the basic process for extending Slic by providing a custom :ref:`LogStream`.
 
 Create a LogStream Subclass
 """""""""""""""""""""""""""
 
 First, we create a new class, ``MyStream``, that is a subclass of the
-:ref:`logStream` class, as illustrated in the code snippet below.
+:ref:`LogStream` class, as illustrated in the code snippet below.
 
 .. code-block:: c++
    :linenos:
@@ -382,7 +403,7 @@ for log messages, which can be any ``std::ostream`` instance, e.g., ``std::cout`
 The reference to the ``std::ostream`` is specified in the class constructor and
 is supplied by the application when a ``MyStream`` object is instantiated.
 
-Since ``MyStream`` is a concrete instance of the :ref:`logStream` base class,
+Since ``MyStream`` is a concrete instance of the :ref:`LogStream` base class,
 it must implement the ``append()`` method, which is a pure *virtual* method.
 
 
@@ -390,7 +411,7 @@ Implement LogStream::append()
 """""""""""""""""""""""""""""
 
 The ``MyStream`` class implements the ``LogStream::append()`` method of the
-:ref:`logStream` base class, as demonstrated in the code snippet below.
+:ref:`LogStream` base class, as demonstrated in the code snippet below.
 
 .. code-block:: c++
    :linenos:
@@ -427,7 +448,7 @@ its argument list:
 * The line location within the file where the message was emitted
 
 The ``append()`` method calls ``LogStream::getFormatedMessage()``, a method
-implemented in the :ref:`logStream` base class, which, applies the
+implemented in the :ref:`LogStream` base class, which, applies the
 :ref:`logMessageFormat` according to the specified format string supplied
 to the ``MyStream`` class constructor, when the class is instantiated.
 
@@ -435,7 +456,7 @@ to the ``MyStream`` class constructor, when the class is instantiated.
 Register the new class with Slic
 """"""""""""""""""""""""""""""""
 
-The new :ref:`logStream` class may be used with Slic in a similar manner to
+The new :ref:`LogStream` class may be used with Slic in a similar manner to
 any of the :ref:`BuiltInLogStreams`, as demonstrated in the code snippet below:
 
 .. code-block:: c++

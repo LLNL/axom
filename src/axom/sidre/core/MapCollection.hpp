@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,13 +59,13 @@
  *
  *          - // Return pointer to item with given name (nullptr if none).
  *
- *               TYPE* getItem(const std::string& name);
- *               TYPE const* getItem(const std::string& name) const ;
+ *               T* getItem(const std::string& name);
+ *               T const* getItem(const std::string& name) const ;
  *
  *          - // Return pointer to item with given index (nullptr if none).
  *
- *               TYPE* getItem(IndexType idx);
- *               TYPE const* getItem(IndexType idx) const;
+ *               T* getItem(IndexType idx);
+ *               T const* getItem(IndexType idx) const;
  *
  *          - // Return name of object with given index
  *            // (sidre::InvalidName if none).
@@ -80,17 +80,17 @@
  *          - // Insert item with given name; return index if insertion
  *            // succeeded, and InvalidIndex otherwise.
  *
- *               IndexType insertItem(TYPE* item, const std::string& name);
+ *               IndexType insertItem(T* item, const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
  *
- *               TYPE* removeItem(const std::string& name);
+ *               T* removeItem(const std::string& name);
  *
  *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
  *
- *               TYPE* removeItem(IndexType idx);
+ *               T* removeItem(IndexType idx);
  *
  *          - // Remove all items (items not destroyed).
  *
@@ -147,8 +147,7 @@ namespace sidre
  * \class MapCollection
  *
  * \brief MapCollection is a container class template for holding
- *        a collection of items of template parameter type TYPE, using
- *        a map container of type MAP_TYPE.
+ *        a collection of items of template parameter type T
  *
  * \warning Only std::map and std::unordered_map have been tried so far.
  *          These classes have identical APIs for the functionality we
@@ -156,9 +155,14 @@ namespace sidre
  *
  *************************************************************************
  */
-template <typename TYPE>
-class MapCollection : public ItemCollection<TYPE>
+template <typename T>
+class MapCollection : public ItemCollection<T>
 {
+public:
+  using value_type = T;
+  using iterator = typename ItemCollection<T>::iterator;
+  using const_iterator = typename ItemCollection<T>::const_iterator;
+
 public:
   //
   // Default compiler-generated ctor, dtor, copy ctor, and copy assignment
@@ -189,27 +193,27 @@ public:
   }
 
   ///
-  TYPE* getItem(const std::string& name)
+  T* getItem(const std::string& name)
   {
     typename MapType::iterator mit = m_name2idx_map.find(name);
     return (mit != m_name2idx_map.end() ? m_items[mit->second] : nullptr);
   }
 
   ///
-  TYPE const* getItem(const std::string& name) const
+  T const* getItem(const std::string& name) const
   {
     typename MapType::const_iterator mit = m_name2idx_map.find(name);
     return (mit != m_name2idx_map.end() ? m_items[mit->second] : nullptr);
   }
 
   ///
-  TYPE* getItem(IndexType idx)
+  T* getItem(IndexType idx)
   {
     return (hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr);
   }
 
   ///
-  TYPE const* getItem(IndexType idx) const
+  T const* getItem(IndexType idx) const
   {
     return (hasItem(idx) ? m_items[static_cast<unsigned>(idx)] : nullptr);
   }
@@ -229,13 +233,13 @@ public:
   }
 
   ///
-  IndexType insertItem(TYPE* item, const std::string& name);
+  IndexType insertItem(T* item, const std::string& name);
 
   ///
-  TYPE* removeItem(const std::string& name);
+  T* removeItem(const std::string& name);
 
   ///
-  TYPE* removeItem(IndexType idx);
+  T* removeItem(IndexType idx);
 
   ///
   void removeAllItems()
@@ -257,8 +261,17 @@ public:
     m_name2idx_map.clear();
   }
 
+  iterator begin() { return iterator(this, true); }
+  iterator end() { return iterator(this, false); }
+
+  const_iterator cbegin() const { return const_iterator(this, true); }
+  const_iterator cend() const { return const_iterator(this, false); }
+
+  const_iterator begin() const { return const_iterator(this, true); }
+  const_iterator end() const { return const_iterator(this, false); }
+
 private:
-  std::vector<TYPE*> m_items;
+  std::vector<T*> m_items;
   std::stack<IndexType> m_free_ids;
 
 #if defined(AXOM_USE_SPARSEHASH)
@@ -273,8 +286,8 @@ private:
 #endif
 };
 
-template <typename TYPE>
-IndexType MapCollection<TYPE>::getFirstValidIndex() const
+template <typename T>
+IndexType MapCollection<T>::getFirstValidIndex() const
 {
   IndexType idx = 0;
   while(static_cast<unsigned>(idx) < m_items.size() &&
@@ -285,8 +298,8 @@ IndexType MapCollection<TYPE>::getFirstValidIndex() const
   return ((static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex);
 }
 
-template <typename TYPE>
-IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
+template <typename T>
+IndexType MapCollection<T>::getNextValidIndex(IndexType idx) const
 {
   if(idx == InvalidIndex)
   {
@@ -302,8 +315,8 @@ IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
   return ((static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex);
 }
 
-template <typename TYPE>
-IndexType MapCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
+template <typename T>
+IndexType MapCollection<T>::insertItem(T* item, const std::string& name)
 {
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
@@ -347,10 +360,10 @@ IndexType MapCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
   }
 }
 
-template <typename TYPE>
-TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
+template <typename T>
+T* MapCollection<T>::removeItem(const std::string& name)
 {
-  TYPE* ret_val = nullptr;
+  T* ret_val = nullptr;
 
   typename MapType::iterator mit = m_name2idx_map.find(name);
   if(mit != m_name2idx_map.end())
@@ -367,12 +380,12 @@ TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
   return ret_val;
 }
 
-template <typename TYPE>
-TYPE* MapCollection<TYPE>::removeItem(IndexType idx)
+template <typename T>
+T* MapCollection<T>::removeItem(IndexType idx)
 {
   if(hasItem(idx))
   {
-    TYPE* item = removeItem(m_items[idx]->getName());
+    T* item = removeItem(m_items[idx]->getName());
     return item;
   }
   else

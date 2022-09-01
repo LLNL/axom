@@ -1,0 +1,22 @@
+diff --git a/src/thirdparty/axom/sol.hpp b/src/thirdparty/axom/sol.hpp
+index 8aa125950..a1d551336 100644
+--- a/src/thirdparty/axom/sol.hpp
++++ b/src/thirdparty/axom/sol.hpp
+@@ -11468,11 +11468,13 @@ namespace stack {
+ 	struct popper {
+ 		inline static decltype(auto) pop(lua_State* L) {
+ 			record tracking{};
+-#ifdef __INTEL_COMPILER
+-			auto&& r = get<T>(L, -lua_size<T>::value, tracking);
+-#else
++// AXOM EDIT START: sol.hpp(11477): error: an rvalue reference cannot be bound to an lvalue
++//#ifdef __INTEL_COMPILER
++//			auto&& r = get<T>(L, -lua_size<T>::value, tracking);
++//#else
+ 			decltype(auto) r = get<T>(L, -lua_size<T>::value, tracking);
+-#endif
++//#endif
++// AXOM EDIT END
+ 			lua_pop(L, tracking.used);
+ 			return r;
+ 		}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,6 +17,7 @@
 #include "axom/slic/streams/GenericOutputStream.hpp"
 
 // Sidre component headers
+#include "IndexedCollection.hpp"
 #include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "Group.hpp"
@@ -82,6 +83,7 @@ void DataStoreConduitInfoHandler(const std::string& message,
  */
 DataStore::DataStore()
   : m_RootGroup(nullptr)
+  , m_buffer_coll(new BufferCollection())
   , m_attribute_coll(new AttributeCollection())
   , m_need_to_finalize_slic(false)
 {
@@ -126,6 +128,7 @@ DataStore::~DataStore()
   destroyAllBuffers();
   destroyAllAttributes();
   delete m_attribute_coll;
+  delete m_buffer_coll;
 
   if(m_need_to_finalize_slic)
   {
@@ -167,20 +170,39 @@ void DataStore::setConduitDefaultMessageHandlers()
 /*
  *************************************************************************
  *
+ * Return number of Buffers in the DataStore *
+ *
+ *************************************************************************
+ */
+IndexType DataStore::getNumBuffers() const
+{
+  return m_buffer_coll->getNumItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if DataStore owns a Buffer with given index; else false
+ *
+ *************************************************************************
+ */
+bool DataStore::hasBuffer(IndexType idx) const
+{
+  return m_buffer_coll->hasItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
  * Return non-const pointer to Buffer with given index or null ptr.
  *
  *************************************************************************
  */
 Buffer* DataStore::getBuffer(IndexType idx) const
 {
-  if(!hasBuffer(idx))
-  {
-    SLIC_CHECK_MSG(hasBuffer(idx),
-                   "DataStore has no Buffer with index == " << idx);
-    return nullptr;
-  }
+  SLIC_CHECK_MSG(hasBuffer(idx), "DataStore has no Buffer with index == " << idx);
 
-  return m_data_buffers[idx];
+  return m_buffer_coll->getItem(idx);
 }
 
 /*
@@ -192,23 +214,10 @@ Buffer* DataStore::getBuffer(IndexType idx) const
  */
 Buffer* DataStore::createBuffer()
 {
-  // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  IndexType newIndex;
-  if(m_free_buffer_ids.empty())
-  {
-    newIndex = m_data_buffers.size();
-    m_data_buffers.push_back(nullptr);
-  }
-  else
-  {
-    newIndex = m_free_buffer_ids.top();
-    m_free_buffer_ids.pop();
-  }
-
-  Buffer* const obj = new(std::nothrow) Buffer(newIndex);
-  m_data_buffers[newIndex] = obj;
-
-  return obj;
+  IndexType newIndex = m_buffer_coll->getValidEmptyIndex();
+  Buffer* buff = new Buffer(newIndex);
+  m_buffer_coll->insertItem(buff, newIndex);
+  return buff;
 }
 
 /*
@@ -244,10 +253,8 @@ void DataStore::destroyBuffer(Buffer* buff)
   {
     buff->detachFromAllViews();
     IndexType idx = buff->getIndex();
+    m_buffer_coll->removeItem(idx);
     delete buff;
-    SLIC_ASSERT(m_data_buffers[idx] != nullptr);
-    m_data_buffers[idx] = nullptr;
-    m_free_buffer_ids.push(idx);
   }
 }
 
@@ -287,7 +294,7 @@ void DataStore::destroyAllBuffers()
  */
 IndexType DataStore::getFirstValidBufferIndex() const
 {
-  return getNextValidBufferIndex(-1);
+  return m_buffer_coll->getFirstValidIndex();
 }
 
 /*
@@ -299,14 +306,17 @@ IndexType DataStore::getFirstValidBufferIndex() const
  */
 IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
 {
-  idx++;
-  while(static_cast<unsigned>(idx) < m_data_buffers.size() &&
-        m_data_buffers[idx] == nullptr)
-  {
-    idx++;
-  }
-  return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx
-                                                               : InvalidIndex);
+  return m_buffer_coll->getNextValidIndex(idx);
+}
+
+typename DataStore::BufferCollection::iterator_adaptor DataStore::buffers()
+{
+  return m_buffer_coll->getIteratorAdaptor();
+}
+
+typename DataStore::BufferCollection::const_iterator_adaptor DataStore::buffers() const
+{
+  return m_buffer_coll->getIteratorAdaptor();
 }
 
 /*
@@ -531,6 +541,17 @@ IndexType DataStore::getFirstValidAttributeIndex() const
 IndexType DataStore::getNextValidAttributeIndex(IndexType idx) const
 {
   return m_attribute_coll->getNextValidIndex(idx);
+}
+
+typename DataStore::AttributeCollection::iterator_adaptor DataStore::attributes()
+{
+  return m_attribute_coll->getIteratorAdaptor();
+}
+
+typename DataStore::AttributeCollection::const_iterator_adaptor
+DataStore::attributes() const
+{
+  return m_attribute_coll->getIteratorAdaptor();
 }
 
 /*

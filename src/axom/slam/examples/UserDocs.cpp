@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file UserDocs.cpp
  *
  * \brief Example code to support slam user doc examples
  */
@@ -18,7 +18,7 @@
  * each prepended with an underscore.
  */
 
-#include "axom/config.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 // _quadmesh_example_import_header_start
@@ -92,7 +92,7 @@ struct SimpleQuadMesh
   // _quadmesh_example_set_typedefs_end
 
   // _quadmesh_example_common_typedefs_start
-  using ArrayIndir = slam::policies::ArrayIndirection<PosType, ElemType>;
+  using ArrayIndir = slam::policies::CArrayIndirection<PosType, ElemType>;
   // _quadmesh_example_common_typedefs_end
 
   /// Type aliases for relations
@@ -118,8 +118,8 @@ struct SimpleQuadMesh
   /// Type alias for position map
   // _quadmesh_example_maps_typedefs_start
   using BaseSet = slam::Set<PosType, ElemType>;
-  using ScalarMap = slam::Map<BaseSet, Point2>;
-  using PointMap = slam::Map<BaseSet, Point2>;
+  using ScalarMap = slam::Map<Point2, BaseSet>;
+  using PointMap = slam::Map<Point2, BaseSet>;
   using VertPositions = PointMap;
   // _quadmesh_example_maps_typedefs_end
 
@@ -389,9 +389,8 @@ void quadMeshExample()
   quadMesh.outputVTKMesh();
 }
 
-int main(int /* argc */, char** /* argv */)
+int main()
 {
   axom::slic::SimpleLogger logger;
-
   quadMeshExample();
 }

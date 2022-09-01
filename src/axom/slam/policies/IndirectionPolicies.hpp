@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,6 +33,7 @@
 #define SLAM_POLICIES_INDIRECTION_H_
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/Array.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 namespace axom
@@ -58,6 +59,7 @@ struct NoIndirection
   using ConstIndirectionResult = const ElementType;
   using IndirectionBufferType = struct
   { };
+  using IndirectionPtrType = IndirectionBufferType*;
 
   NoIndirection() { }
 
@@ -84,24 +86,25 @@ struct NoIndirection
 };
 
 /**
- * \brief A policy class for sets with array-based indirection
+ * \brief A policy class for sets with C-style array-based indirection
  */
 template <typename PositionType, typename ElementType>
-struct ArrayIndirection
+struct CArrayIndirection
 {
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType&;
 
   using IndirectionBufferType = ElementType;
+  using IndirectionPtrType = IndirectionBufferType*;
 
-  ArrayIndirection(IndirectionBufferType* buf = nullptr) : m_arrBuf(buf) { }
+  CArrayIndirection(IndirectionBufferType* buf = nullptr) : m_arrBuf(buf) { }
 
   IndirectionBufferType*& data() { return m_arrBuf; }
 
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
     SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:ArrayIndirection -- Tried to dereference "
+                    "SLAM::Set:CArrayIndirection -- Tried to dereference "
                       << " a null array in an array based indirection set.");
     return m_arrBuf[pos];
   }
@@ -109,7 +112,7 @@ struct ArrayIndirection
   inline IndirectionResult indirection(PositionType pos)
   {
     SLIC_ASSERT_MSG(hasIndirection(),
-                    "SLAM::Set:ArrayIndirection -- Tried to dereference "
+                    "SLAM::Set:CArrayIndirection -- Tried to dereference "
                       << " a null array in an array based indirection set.");
     return m_arrBuf[pos];
   }
@@ -146,6 +149,7 @@ struct STLVectorIndirection
 
   using VectorType = std::vector<ElementType>;
   using IndirectionBufferType = VectorType;
+  using IndirectionPtrType = IndirectionBufferType*;
 
   STLVectorIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
 
@@ -191,17 +195,152 @@ struct STLVectorIndirection
                       PositionType stride,
                       bool verboseOutput = false) const;
 
+  static IndirectionBufferType create(PositionType size,
+                                      ConstIndirectionResult value,
+                                      int allocatorId)
+  {
+    AXOM_UNUSED_VAR(allocatorId);
+    return IndirectionBufferType(size, value);
+  }
+
 private:
   IndirectionBufferType* m_vecBuf;
+};
+
+/**
+ * \brief A policy class for sets with axom::Array-based indirection
+ */
+template <typename PositionType, typename ElementType>
+struct ArrayIndirection
+{
+  using IndirectionResult = ElementType&;
+  using ConstIndirectionResult = const ElementType&;
+
+  using VectorType = axom::Array<ElementType>;
+  using IndirectionBufferType = VectorType;
+  using IndirectionPtrType = IndirectionBufferType*;
+
+  ArrayIndirection(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
+
+  IndirectionBufferType*& data() { return m_vecBuf; }
+  IndirectionBufferType* const& data() const { return m_vecBuf; }
+
+  inline ConstIndirectionResult indirection(PositionType pos) const
+  {
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayIndirection -- Tried to dereference "
+        << "a null vector in an axom::Array-based indirection set.");
+
+    return (*m_vecBuf)[pos];
+  }
+
+  inline IndirectionResult indirection(PositionType pos)
+  {
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayIndirection -- Tried to dereference "
+        << "a null vector in an axom::Array-based indirection set.");
+
+    return (*m_vecBuf)[pos];
+  }
+
+  inline IndirectionResult operator()(PositionType pos)
+  {
+    return indirection(pos);
+  }
+
+  inline ConstIndirectionResult operator()(PositionType pos) const
+  {
+    return indirection(pos);
+  }
+
+  bool hasIndirection() const { return m_vecBuf != nullptr; }
+
+  inline bool isValid(PositionType size,
+                      PositionType offset,
+                      PositionType stride,
+                      bool verboseOutput = false) const;
+
+  static IndirectionBufferType create(PositionType size,
+                                      ConstIndirectionResult value,
+                                      int allocatorID)
+  {
+    IndirectionBufferType buf(size, size, allocatorID);
+    buf.fill(value);
+    return buf;
+  }
+
+private:
+  IndirectionBufferType* m_vecBuf;
+};
+
+/**
+ * \brief A policy class for sets with axom::ArrayView-based indirection
+ */
+template <typename PositionType, typename ElementType>
+struct ArrayViewIndirection
+{
+  using IndirectionResult = ElementType&;
+  using ConstIndirectionResult = const ElementType&;
+
+  using VectorType = axom::ArrayView<ElementType>;
+  using IndirectionBufferType = VectorType;
+  using IndirectionPtrType = IndirectionBufferType;
+
+  ArrayViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
+
+  IndirectionBufferType& data() { return m_vecBuf; }
+  const IndirectionBufferType& data() const { return m_vecBuf; }
+
+  inline ConstIndirectionResult indirection(PositionType pos) const
+  {
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
+        << "a null vector in an axom::ArrayView-based indirection set.");
+
+    return m_vecBuf[pos];
+  }
+
+  inline IndirectionResult indirection(PositionType pos)
+  {
+    SLIC_ASSERT_MSG(
+      hasIndirection(),
+      "SLAM::Set:ArrayViewIndirection -- Tried to dereference "
+        << "a null vector in an axom::ArrayView-based indirection set.");
+
+    return m_vecBuf[pos];
+  }
+
+  inline IndirectionResult operator()(PositionType pos)
+  {
+    return indirection(pos);
+  }
+
+  inline ConstIndirectionResult operator()(PositionType pos) const
+  {
+    return indirection(pos);
+  }
+
+  bool hasIndirection() const { return m_vecBuf.data() != nullptr; }
+
+  inline bool isValid(PositionType size,
+                      PositionType offset,
+                      PositionType stride,
+                      bool verboseOutput = false) const;
+
+private:
+  IndirectionBufferType m_vecBuf;
 };
 
 /// \}
 
 template <typename PosType, typename ElemType>
-bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
-                                                  PosType offset,
-                                                  PosType stride,
-                                                  bool verboseOutput) const
+bool CArrayIndirection<PosType, ElemType>::isValid(PosType size,
+                                                   PosType offset,
+                                                   PosType stride,
+                                                   bool verboseOutput) const
 {
   AXOM_UNUSED_VAR(verboseOutput);
 
@@ -223,9 +362,7 @@ bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
   else
   {
     // Check that none of the elements have negative indices within the array
-    // Note: We do not have sufficient information about the array to know its
-    // upper bound
-
+    // Note: We do not have sufficient information about the array to know its upper bound
     PosType firstEltInd = offset;
     PosType lastEltInd = (size - 1) * stride + offset;
 
@@ -234,7 +371,7 @@ bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
     {
       SLIC_DEBUG_IF(
         verboseOutput,
-        "Array-based indirection does not allow access "
+        "C-style array-based indirection does not allow access "
           << "to data with lower addresses than its underlying pointer."
           << " Offset of " << offset << " leads to a first index of "
           << firstEltInd << "."
@@ -287,6 +424,112 @@ bool STLVectorIndirection<PosType, ElemType>::isValid(PosType size,
       SLIC_DEBUG_IF(
         verboseOutput,
         "Invalid vector-based IndirectionSet -- Data buffer "
+          << "must be large enough to hold all elements of the set. "
+          << "Underlying buffer size is " << vecSize << "."
+          << " Offset of " << offset << " leads to a first index of "
+          << firstEltInd << "."
+          << " Stride of " << stride << " and size of " << size
+          << " leads to a last index of " << lastEltInd << ".");
+
+      bValid = false;
+    }
+  }
+
+  return bValid;
+}
+
+template <typename PosType, typename ElemType>
+bool ArrayIndirection<PosType, ElemType>::isValid(PosType size,
+                                                  PosType offset,
+                                                  PosType stride,
+                                                  bool verboseOutput) const
+{
+  AXOM_UNUSED_VAR(verboseOutput);
+
+  // always valid if set has zero size, even if indirection buffer is null
+  if(size == 0) return true;
+
+  bool bValid = true;
+
+  // Otherwise, check whether the set has elements, but the array ptr is null
+  if(!hasIndirection())
+  {
+    SLIC_DEBUG_IF(verboseOutput,
+                  "Array-based indirection set with non-zero size "
+                    << "(size=" << size << ") requires a valid data buffer,"
+                    << "but buffer pointer was null.");
+
+    bValid = false;
+  }
+  else
+  {
+    // Verify underlying array has sufficient storage for all set elements
+    // Note: it is valid for the data buffer to have extra space
+    PosType firstEltInd = offset;
+    PosType lastEltInd = (size - 1) * stride + offset;
+    PosType vecSize = static_cast<PosType>(m_vecBuf->size());
+
+    bool isRangeValid = (0 <= firstEltInd) && (firstEltInd < vecSize) &&
+      (0 <= lastEltInd) && (lastEltInd < vecSize);
+
+    if(!isRangeValid)
+    {
+      SLIC_DEBUG_IF(
+        verboseOutput,
+        "Invalid array-based IndirectionSet -- Data buffer "
+          << "must be large enough to hold all elements of the set. "
+          << "Underlying buffer size is " << vecSize << "."
+          << " Offset of " << offset << " leads to a first index of "
+          << firstEltInd << "."
+          << " Stride of " << stride << " and size of " << size
+          << " leads to a last index of " << lastEltInd << ".");
+
+      bValid = false;
+    }
+  }
+
+  return bValid;
+}
+
+template <typename PosType, typename ElemType>
+bool ArrayViewIndirection<PosType, ElemType>::isValid(PosType size,
+                                                      PosType offset,
+                                                      PosType stride,
+                                                      bool verboseOutput) const
+{
+  AXOM_UNUSED_VAR(verboseOutput);
+
+  // always valid if set has zero size, even if indirection buffer is null
+  if(size == 0) return true;
+
+  bool bValid = true;
+
+  // Otherwise, check whether the set has elements, but the array ptr is null
+  if(!hasIndirection())
+  {
+    SLIC_DEBUG_IF(verboseOutput,
+                  "ArrayView-based indirection set with non-zero size "
+                    << "(size=" << size << ") requires a valid data buffer,"
+                    << "but buffer pointer was null.");
+
+    bValid = false;
+  }
+  else
+  {
+    // Verify underlying array has sufficient storage for all set elements
+    // Note: it is valid for the data buffer to have extra space
+    PosType firstEltInd = offset;
+    PosType lastEltInd = (size - 1) * stride + offset;
+    PosType vecSize = static_cast<PosType>(m_vecBuf.size());
+
+    bool isRangeValid = (0 <= firstEltInd) && (firstEltInd < vecSize) &&
+      (0 <= lastEltInd) && (lastEltInd < vecSize);
+
+    if(!isRangeValid)
+    {
+      SLIC_DEBUG_IF(
+        verboseOutput,
+        "Invalid ArrayView-based IndirectionSet -- Data buffer "
           << "must be large enough to hold all elements of the set. "
           << "Underlying buffer size is " << vecSize << "."
           << " Offset of " << offset << " leads to a first index of "

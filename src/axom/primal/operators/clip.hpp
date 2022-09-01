@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -127,6 +127,37 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
                                        double eps = 1.e-10)
 {
   return detail::clipOctahedron(oct, tet, eps);
+}
+
+/*!
+ * \brief Clips a 3D tetrahedron against another tetrahedron in 3D, returning
+ *        the geometric intersection as a polyhedron
+ *
+ *  This function clips the first tetrahedron by the 4 planes obtained from the
+ *  second tetrahedron's faces (normals point inward). Clipping the
+ *  tetrahedron/polyhedron by each plane gives the polyhedron above that plane.
+ *  Clipping the polyhedron by a plane involves
+ *  finding new vertices at the intersection of the polyhedron edges and
+ *  the plane, removing vertices from the polyhedron that are below the
+ *  plane, and redefining the neighbors for each vertex (a vertex is a
+ *  neighbor of another vertex if there is an edge between them).
+ *
+ *
+ * \param [in] tet1 The tetrahedron to clip
+ * \param [in] tet2 The tetrahedron to clip against
+ * \param [in] eps The epsilon value
+ * \return A polyhedron of the tetrahedron clipped against
+ *         the other tetrahedron.
+ *
+ * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet1,
+                                       const Tetrahedron<T, 3>& tet2,
+                                       double eps = 1.e-10)
+{
+  return detail::clipTetrahedron(tet1, tet2, eps);
 }
 
 }  // namespace primal

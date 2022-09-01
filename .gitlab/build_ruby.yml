@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -77,24 +77,17 @@ ruby-clang_9_0_0-src:
     HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
   extends: .src_build_on_ruby
 
-ruby-gcc_8_1_0-src:
+ruby-gcc_8_3_1-src:
+  variables:
+    COMPILER: "gcc@8.3.1"
+    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+  extends: .src_build_on_ruby
+
+ruby-gcc_8_1_0_no_fortran-src:
   variables:
     COMPILER: "gcc@8.1.0"
-    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
+    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}_nofortran.cmake"
   extends: .src_build_on_ruby
-
-ruby-gcc_8_1_no_fortran-src:
-  variables:
-    COMPILER: "gcc@8.1_no_fortran"
-    HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
-  extends: .src_build_on_ruby
-
-# disabled due to time limit
-# ruby-intel_18_0_2-src:
-#   variables:
-#     COMPILER: "intel@18.0.2"
-#     HOST_CONFIG: "ruby-toss_3_x86_64_ib-${COMPILER}.cmake"
-#   extends: .src_build_on_ruby
 
 # disabled due to time limit
 # ruby-intel_19_0_4-src:
@@ -118,22 +111,16 @@ ruby-clang_9_0_0-full:
     SPEC: "%${COMPILER}+mfem"
   extends: .full_build_on_ruby
 
-ruby-gcc_8_1_0-full:
+ruby-gcc_8_3_1-full:
   variables:
-    COMPILER: "gcc@8.1.0"
+    COMPILER: "gcc@8.3.1"
     SPEC: "%${COMPILER}+mfem"
   extends: .full_build_on_ruby
 
-ruby-gcc_8_1_no_fortran-full:
+ruby-gcc_8_1_0_no_fortran-full:
   variables:
-    COMPILER: "gcc@8.1_no_fortran"
+    COMPILER: "gcc@8.1.0"
     SPEC: "%${COMPILER}~fortran+mfem"
-  extends: .full_build_on_ruby
-
-ruby-intel_18_0_2-full:
-  variables:
-    COMPILER: "intel@18.0.2"
-    SPEC: "%${COMPILER}+mfem~cpp14"
   extends: .full_build_on_ruby
 
 ruby-intel_19_0_4-full:

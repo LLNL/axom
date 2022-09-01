@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,7 +10,7 @@
 #include "axom/mint/mesh/FieldData.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"  // for sidre::Group, sidre::View
+  #include "axom/sidre.hpp"
 #endif
 
 namespace axom

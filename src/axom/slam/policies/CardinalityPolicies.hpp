@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -77,6 +77,8 @@ struct ConstantCardinality
                           ElementType,
                           BeginsStridePolicy::DEFAULT_VALUE>::SizeType;
 
+  using IndirectionPtrType = typename BeginsIndirectionPolicy::IndirectionPtrType;
+
   ConstantCardinality() : m_begins() { }
   ConstantCardinality(BeginsSet begins) : m_begins(begins) { }
   ConstantCardinality(ElementType fromSetSize)
@@ -101,6 +103,10 @@ struct ConstantCardinality
   {
     return m_begins[fromPos];
   }
+
+  IndirectionPtrType offsetData() { return m_begins.data(); }
+
+  const IndirectionPtrType offsetData() const { return m_begins.data(); }
 
   void bindBeginOffsets(ElementType fromSetSize, ElementType stride)
   {
@@ -141,6 +147,7 @@ struct VariableCardinality
   using RelationalOperatorSizeType = BeginsSizePolicy;
 
   using IndirectionBufferType = typename IndirectionPolicy::IndirectionBufferType;
+  using IndirectionPtrType = typename IndirectionPolicy::IndirectionPtrType;
 
   VariableCardinality() : m_begins() { }
   VariableCardinality(BeginsSet begins) : m_begins(begins) { }
@@ -151,7 +158,7 @@ struct VariableCardinality
     m_begins = builder;
   }
 
-  void bindBeginOffsets(ElementType fromSetSize, IndirectionBufferType* data)
+  void bindBeginOffsets(ElementType fromSetSize, IndirectionPtrType data)
   {
     m_begins = typename BeginsSet::SetBuilder().size(fromSetSize + 1).data(data);
   }
@@ -165,6 +172,10 @@ struct VariableCardinality
   {
     return m_begins[fromPos];
   }
+
+  IndirectionPtrType offsetData() { return m_begins.data(); }
+
+  const IndirectionPtrType offsetData() const { return m_begins.data(); }
 
   ElementType totalSize() const
   {

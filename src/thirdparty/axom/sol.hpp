@@ -74,6 +74,8 @@
 #define SOL_CXX17_FEATURES 0
 #define SOL_ALL_SAFETIES_ON 1
 
+#include <limits>
+
 extern "C" {
   #include "lua.h"
   #include "lualib.h"
@@ -11466,11 +11468,13 @@ namespace stack {
 	struct popper {
 		inline static decltype(auto) pop(lua_State* L) {
 			record tracking{};
-#ifdef __INTEL_COMPILER
-			auto&& r = get<T>(L, -lua_size<T>::value, tracking);
-#else
+// AXOM EDIT START: sol.hpp(11477): error: an rvalue reference cannot be bound to an lvalue
+//#ifdef __INTEL_COMPILER
+//			auto&& r = get<T>(L, -lua_size<T>::value, tracking);
+//#else
 			decltype(auto) r = get<T>(L, -lua_size<T>::value, tracking);
-#endif
+//#endif
+// AXOM EDIT END
 			lua_pop(L, tracking.used);
 			return r;
 		}

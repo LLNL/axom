@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,6 +29,9 @@
 // Sidre project headers
 #include "Attribute.hpp"
 #include "SidreTypes.hpp"
+#include "ItemCollection.hpp"
+#include "IndexedCollection.hpp"
+#include "MapCollection.hpp"
 
 namespace axom
 {
@@ -36,6 +39,10 @@ namespace sidre
 {
 class Buffer;
 class Group;
+
+template <typename TYPE>
+class IndexedCollection;
+
 template <typename TYPE>
 class MapCollection;
 
@@ -52,6 +59,10 @@ class MapCollection;
  */
 class DataStore
 {
+public:
+  using AttributeCollection = MapCollection<Attribute>;
+  using BufferCollection = IndexedCollection<Buffer>;
+
 public:
   /*!
    * \brief Default ctor initializes DataStore object and creates a root Group.
@@ -77,27 +88,15 @@ public:
    */
   const Group* getRoot() const { return m_RootGroup; };
 
+public:
   //@{
   //!  @name Methods to query, access, create, and destroy Buffers.
 
-  /*!
-   * \brief Return number of Buffers in the DataStore.
-   */
-  IndexType getNumBuffers() const
-  {
-    return static_cast<IndexType>(m_data_buffers.size() -
-                                  m_free_buffer_ids.size());
-  }
+  /// \brief Return number of Buffers in the DataStore.
+  IndexType getNumBuffers() const;
 
-  /*!
-   * \brief Return true if DataStore owns a Buffer with given index;
-   *        else false.
-   */
-  bool hasBuffer(IndexType idx) const
-  {
-    return (0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
-            m_data_buffers[static_cast<unsigned>(idx)] != nullptr);
-  }
+  /// \brief Return true if DataStore owns a Buffer with given index; else false
+  bool hasBuffer(IndexType idx) const;
 
   /*!
    * \brief Return (non-const) pointer to Buffer object with the given
@@ -191,6 +190,29 @@ public:
 
   //@}
 
+  //@{
+  //!  @name Accessors for iterating buffer collections.
+  //!
+  //! These methods can be used to iterate over the collection of buffers
+  //! Example:
+  //!      for (auto& buffer : ds->buffers())
+  //!      {
+  //!          /// code here using buffers
+  //!      }
+
+  /*!
+   * \brief Returns an adaptor to support iterating the collection of buffers
+   */
+  typename BufferCollection::iterator_adaptor buffers();
+
+  /*!
+   * \brief Returns a const adaptor to support iterating the collection of buffers
+   */
+  typename BufferCollection::const_iterator_adaptor buffers() const;
+
+  //@}
+
+public:
   //@{
   //!  @name Methods to query, access, create, and destroy Attributes.
 
@@ -367,6 +389,29 @@ public:
 
   //@}
 
+  //@{
+  //!  @name Accessors for iterating attribute collections.
+  //!
+  //! These methods can be used to iterate over the collection of attributes
+  //! Example:
+  //!      for (auto& attr : ds->attributes())
+  //!      {
+  //!          /// code here using attribute
+  //!      }
+
+  /*!
+   * \brief Returns an adaptor to support iterating the collection of attributes
+   */
+  typename AttributeCollection::iterator_adaptor attributes();
+
+  /*!
+   * \brief Returns a const adaptor to support iterating the collection of attributes
+   */
+  typename AttributeCollection::const_iterator_adaptor attributes() const;
+
+  //@}
+
+public:
   /*!
    * \brief Generate a Conduit Blueprint index based on a mesh in stored in
    *        this DataStore.
@@ -452,19 +497,12 @@ private:
 
   //@}
 
+private:
   /// Root Group, created when DataStore object is created.
   Group* m_RootGroup;
 
   /// Collection of Buffers in DataStore instance.
-  std::vector<Buffer*> m_data_buffers;
-
-  /// Collection of unused unique Buffer indices (they can be recycled).
-  std::stack<IndexType> m_free_buffer_ids;
-
-  ///////////////////////////////////////////////////////////////////
-  //
-  using AttributeCollection = MapCollection<Attribute>;
-  ///////////////////////////////////////////////////////////////////
+  BufferCollection* m_buffer_coll;
 
   /// Collection of Attributes
   AttributeCollection* m_attribute_coll;

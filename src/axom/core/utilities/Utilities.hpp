@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,6 +46,30 @@ inline AXOM_HOST_DEVICE T abs(const T& x)
 }
 
 /*!
+ * \brief Returns the largest integer less than or equal to x.
+ * \accelerated
+ * \param [in] x value whose floor value is computed.
+ * \return floor(x) the largest integer less than or equal to x.
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T floor(const T& x)
+{
+  return ::floor(x);
+}
+
+/*!
+ * \brief Returns the smallest integer greater than or equal to x.
+ * \accelerated
+ * \param [in] x value whose ceil value is computed.
+ * \return ceil(x) the smallest integer greater than or equal to x.
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T ceil(const T& x)
+{
+  return ::ceil(x);
+}
+
+/*!
  * \brief Returns the max value of x and y.
  * \accelerated
  * \param [in] x the first value to check.
@@ -85,12 +109,21 @@ inline AXOM_HOST_DEVICE void swap(T& a, T& b)
   b = tmp;
 }
 
+/*! 
+ * \brief returns the linear interpolation of \a A and \a B at \a t. i.e. (1-t)A+tB
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T lerp(T A, T B, T t)
+{
+  return (1 - t) * A + t * B;
+}
+
 /*!
  * \brief Returns the base 2 logarithm of the input.
  * \param [in] val The input value
  */
 template <typename T>
-inline T log2(T& val)
+inline T log2(T val)
 {
   return static_cast<T>(std::log2(val));
 }
@@ -138,6 +171,14 @@ inline AXOM_HOST_DEVICE T clampLower(T val, T lower)
 {
   return val < lower ? lower : val;
 }
+
+/*!
+ * \brief Computes the binomial coefficient `n choose k`
+ *
+ * \return \f$ {n\choose k}  = n! / (k! * (n-k)!)\f$
+ * when \f$ n \ge k \ge 0 \f$, 0 otherwise.
+ */
+int binomialCoefficient(int n, int k);
 
 /*!
  * \brief Returns a random real number within the specified interval

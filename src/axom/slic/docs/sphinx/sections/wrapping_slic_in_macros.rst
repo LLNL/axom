@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -67,6 +67,11 @@ These macros can then be used in the application code as follows:
    approach alleviates the burden from application developers to have to
    pass the ``__FILE__`` and ``__LINE__`` to the ``logMessage()`` function
    each time.
+
+   Macros that use ``slic::logMessage()`` with a :ref:`logMessageLevel` of
+   ``WARNING`` or ``ERROR`` are collective operations when used with
+   MPI-aware :ref:`LogStream` instances. Consult :ref:`CollectiveSlicMacros`
+   for a list of collective Axom macros.
 
 The :ref:`SlicMacros` provide a good resource for the type of macros that an
 application may want to adopt and extend. Although these macros are tailored

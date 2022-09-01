@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -527,10 +527,7 @@ TEST(quest_mesh_tester, surfacemesh_watertight_ondisk)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  namespace slic = axom::slic;
-  slic::SimpleLogger logger;  // create & initialize test logger,
-  slic::setLoggingMsgLevel(slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
   return result;

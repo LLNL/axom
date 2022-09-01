@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
   // STEP 1: Create log streams
   //----------------------------------------------------------------------------
 
-  // setup log stream for FATAL, ERROR and WARNING messages
+  // setup log stream for ERROR and WARNING messages
   std::ofstream hspStream;
   hspStream.open("HSP.dat");
 
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   slic::LogStream* hspLogStream =
     new slic::GenericOutputStream(&hspStream, hsp_format);
 
-  // setup log stream for ALL messages, including FATAL, ERROR and WARNING
+  // setup log stream for ALL messages, including ERROR and WARNING
   std::string console_format = std::string("[<LEVEL>]: <MESSAGE>\n");
   slic::LogStream* console =
     new slic::GenericOutputStream(&std::cerr, console_format);

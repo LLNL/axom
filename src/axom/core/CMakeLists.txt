@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,10 +9,20 @@
 #------------------------------------------------------------------------------
 # Specify all headers/sources
 #------------------------------------------------------------------------------
+
+# This file contains metadata that often changes (ie. git sha).
+# Hide these changes in the source file so we do not force
+# a full rebuild.
+axom_configure_file(
+    utilities/About.cpp.in
+    ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
+)
+
 set(core_headers
 
     ## utilities
     utilities/AnnotationMacros.hpp
+    utilities/BitUtilities.hpp
     utilities/FileUtilities.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp
@@ -59,6 +69,7 @@ set(core_headers
     execution/internal/seq_exec.hpp
     execution/internal/omp_exec.hpp
     execution/internal/cuda_exec.hpp
+    execution/internal/hip_exec.hpp
 
     )
 
@@ -67,7 +78,7 @@ set(core_sources
     utilities/StringUtilities.cpp
     utilities/System.cpp
     utilities/Utilities.cpp
-    utilities/About.cpp
+    ${PROJECT_BINARY_DIR}/axom/core/utilities/About.cpp
 
     utilities/nvtx/interface.cpp
     utilities/nvtx/Range.cpp
@@ -86,12 +97,8 @@ set( core_depends fmt )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
 
-# TODO: remove this when we figure out why RAJA::cub is not getting inherited from RAJA
-if (TARGET RAJA::cub AND RAJA_FOUND)
-  list(APPEND core_depends RAJA::cub)
-endif()
-
 blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ENABLE_CUDA )
+blt_list_append( TO core_depends ELEMENTS blt::hip_runtime IF ENABLE_HIP)
 blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
 
@@ -107,11 +114,17 @@ blt_add_library( NAME        core
                  OBJECT      TRUE
                  )
 
+# Basic includes that should be inherited to all Axom targets
+target_include_directories(core PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    )
+
 # Add the AXOM_DEBUG compile definition, if non-empty
 if(AXOM_DEBUG_DEFINE_STRING)
   blt_add_target_definitions(TO core SCOPE PUBLIC TARGET_DEFINITIONS "${AXOM_DEBUG_DEFINE_STRING}")
 endif()
-
 
 axom_write_unified_header( NAME    core
                            HEADERS ${core_headers}

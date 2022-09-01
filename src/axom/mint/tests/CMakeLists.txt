@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,6 +46,7 @@ set( mint_tests
 set( mint_test_dependencies axom )
 
 blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO mint_test_dependencies ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 foreach( test ${mint_tests} )
 

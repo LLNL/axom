@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,6 +13,8 @@ set( primal_tests
     primal_clip.cpp
     primal_closest_point.cpp
     primal_compute_bounding_box.cpp
+    primal_compute_moments.cpp
+    primal_curved_polygon.cpp
     primal_in_sphere.cpp
     primal_intersect.cpp
     primal_intersect_impl.cpp
@@ -23,6 +25,7 @@ set( primal_tests
     primal_point.cpp
     primal_polygon.cpp
     primal_polyhedron.cpp
+    primal_rational_bezier.cpp
     primal_ray_intersect.cpp
     primal_bounding_box_intersect.cpp
     primal_segment.cpp
@@ -36,9 +39,17 @@ set( primal_tests
     primal_zip.cpp
    )
 
+blt_list_append(
+    TO       primal_tests 
+    ELEMENTS primal_integral.cpp 
+             primal_winding_number.cpp
+    IF       MFEM_FOUND 
+               )
+
 set(primal_test_depends axom fmt gtest)
 
 blt_list_append( TO primal_test_depends ELEMENTS cuda IF ENABLE_CUDA )
+blt_list_append( TO primal_test_depends ELEMENTS blt::hip IF ENABLE_HIP )
 blt_list_append( TO primal_test_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 foreach ( test ${primal_tests} )

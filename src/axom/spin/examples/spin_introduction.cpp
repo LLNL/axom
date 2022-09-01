@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -332,8 +332,8 @@ void findNeighborCandidates(TriangleType& t1,
   // greater than i into a vector.
   for(size_t curb = 0; curb < checkcount; ++curb)
   {
-    std::vector<int> ntlist = ugrid->getBinContents(bToCheck[curb]);
-    for(size_t j = 0; j < ntlist.size(); ++j)
+    axom::ArrayView<int> ntlist = ugrid->getBinContents(bToCheck[curb]);
+    for(axom::IndexType j = 0; j < ntlist.size(); ++j)
     {
       if(ntlist[j] > i)
       {
@@ -547,18 +547,20 @@ void findCandidateBVHTreeBins(BVH2DType* tree,
 {
   axom::IndexType offsets;
   axom::IndexType counts;
-  axom::IndexType* candidatesPtr;
   // Get the candidates for a given probe point:
   // BVH::findPoints takes an array of points, and allocates and fills an array
   // for all the candidate intersections with the points in a packed manner.
-  tree->findPoints(&offsets, &counts, candidatesPtr, 1, &ppoint);
+  axom::Array<axom::IndexType> candidatesArray;
+  tree->findPoints(axom::ArrayView<axom::IndexType>(&offsets, 1),
+                   axom::ArrayView<axom::IndexType>(&counts, 1),
+                   candidatesArray,
+                   1,
+                   &ppoint);
 
   // Since we are only querying one point, offsets == 0 and
   // len(candidatesPtr) == counts
-  candidates = std::vector<int>(candidatesPtr, candidatesPtr + counts);
-
-  // Deallocate candidates array
-  axom::deallocate(candidatesPtr);
+  candidates =
+    std::vector<int>(candidatesArray.data(), candidatesArray.data() + counts);
 }
 // _bvh_candidate_end
 

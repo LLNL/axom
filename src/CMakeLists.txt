@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,10 +6,10 @@
 # Axom project
 #------------------------------------------------------------------------------
 
-if (ENABLE_CUDA)
-    cmake_minimum_required(VERSION 3.9)
+if (ENABLE_HIP)
+    cmake_minimum_required(VERSION 3.21)
 else()
-    cmake_minimum_required(VERSION 3.8.2)
+    cmake_minimum_required(VERSION 3.14)
 endif()
 
 project(axom LANGUAGES C CXX)
@@ -33,20 +33,17 @@ else()
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
         message(FATAL_ERROR
             "Cannot locate BLT. "
-            "Either run the following two commands in your git repository: \n"
-            "    git submodule init\n"
-            "    git submodule update\n"
+            "Either run the following command in your git repository: \n"
+            "    git submodule update --init --recursive\n"
             "Or add -DBLT_SOURCE_DIR=/path/to/blt to your CMake command." )
     endif()
 endif()
-
-set(ENABLE_GMOCK ON CACHE STRING "")
 
 if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     # Set some default BLT options before loading BLT only if not included in
     # another project
     if (NOT BLT_CXX_STD)
-        set(BLT_CXX_STD "c++11" CACHE STRING "")
+        set(BLT_CXX_STD "c++14" CACHE STRING "")
     endif()
 
     # These are not used in Axom, turn them off
@@ -79,9 +76,28 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
 
     set(BLT_REQUIRED_CLANGFORMAT_VERSION  "10" CACHE STRING "")
 
+    # If Axom is the top project and AXOM_ENABLE_TESTS is off, force ENABLE_TESTS to off so
+    # gtest doesn't build when it's not needed
+    if(DEFINED AXOM_ENABLE_TESTS AND NOT AXOM_ENABLE_TESTS)
+        set(ENABLE_TESTS OFF CACHE BOOL "")
+    endif()
+
+    # If either AXOM_ENABLE_TESTS or ENABLE_TEST are explicitly turned off by the user,
+    # turn off GMock, otherwise turn it on
+    if((DEFINED AXOM_ENABLE_TESTS AND NOT AXOM_ENABLE_TESTS) OR
+       (DEFINED ENABLE_TESTS AND NOT ENABLE_TESTS))
+        set(ENABLE_GMOCK OFF CACHE BOOL "")
+    else()
+        set(ENABLE_GMOCK ON CACHE BOOL "")
+    endif()
+
     # Mark BLT's built-in third-party targets as EXPORTABLE so they can be added
     # to the axom-targets export set
     set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
+endif()
+
+if("${BLT_CXX_STD}" STREQUAL "c++98" OR "${BLT_CXX_STD}" STREQUAL "c++11")
+    message(FATAL_ERROR "Axom requires BLT_CXX_STD to be 'c++14' or above.")
 endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
@@ -104,12 +120,6 @@ include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
 
 #------------------------------------------------------------------------------
-# Global includes for the Axom projects (restrict these as much as possible)
-#------------------------------------------------------------------------------
-include_directories(${CMAKE_BINARY_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR})
-
-#------------------------------------------------------------------------------
 # Add source directories
 #------------------------------------------------------------------------------
 add_subdirectory(thirdparty)
@@ -122,7 +132,9 @@ if(AXOM_ENABLE_TOOLS)
 endif()
 
 # Using Axom install examples
-add_subdirectory(examples)
+if (AXOM_ENABLE_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 if(AXOM_ENABLE_DOCS)
     if(SPHINX_FOUND)

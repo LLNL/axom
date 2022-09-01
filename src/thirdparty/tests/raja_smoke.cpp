@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -77,6 +77,20 @@ AXOM_CUDA_TEST(raja_smoke, basic_use)
   std::cout << "Testing RAJA CUDA execution" << std::endl;
   constexpr int BLOCKSIZE = 256;
   raja_basic_usage_test<RAJA::cuda_exec<BLOCKSIZE>>();
+
+  axom::setDefaultAllocator(prev_allocator);
+#endif
+
+#if defined(AXOM_USE_HIP) && defined(RAJA_ENABLE_HIP) && \
+  defined(AXOM_USE_UMPIRE)
+  const int prev_allocator = axom::getDefaultAllocatorID();
+  const int UnifiedAllocatorID =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+  axom::setDefaultAllocator(UnifiedAllocatorID);
+
+  std::cout << "Testing RAJA HIP execution" << std::endl;
+  constexpr int BLOCKSIZE = 256;
+  raja_basic_usage_test<RAJA::hip_exec<BLOCKSIZE>>();
 
   axom::setDefaultAllocator(prev_allocator);
 #endif

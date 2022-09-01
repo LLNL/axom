@@ -1,25 +1,23 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-#include "axom/mint/config.hpp"  // for compile-time type
-                                 // definitions
-
+#include "axom/mint/config.hpp"             // for compile-time type definitions
 #include "axom/mint/mesh/blueprint.hpp"     // for blueprint functions
 #include "axom/mint/mesh/CellTypes.hpp"     // for CellTypes enum definition
 #include "axom/mint/mesh/ParticleMesh.hpp"  // for ParticleMesh
 #include "axom/mint/mesh/UniformMesh.hpp"   // for UniformMesh
 #include "StructuredMesh_helpers.hpp"       // for StructuredMesh test helpers
 
-#include "axom/slic/interface/slic.hpp"  // for slic macros
+#include "axom/slic.hpp"
 
 // Sidre includes
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"  // for sidre classes
+  #include "axom/sidre.hpp"
 namespace sidre = axom::sidre;
 #endif
 
-#include "gtest/gtest.h"  // for gtest macros
+#include "gtest/gtest.h"
 
 using namespace axom::mint;
 using IndexType = axom::IndexType;
@@ -164,13 +162,13 @@ TEST(mint_mesh_uniform_mesh, native_constructor)
       m = new UniformMesh(lo, hi, N[0], N[1], N[2]);
     }
 
-    internal::check_constructor(m, idim, lo, h, N);
+    axom::mint::internal::check_constructor(m, idim, lo, h, N);
     EXPECT_FALSE(m->hasSidreGroup());
 
-    internal::check_create_fields(m);
-    internal::check_fields(m, false);
+    axom::mint::internal::check_create_fields(m);
+    axom::mint::internal::check_fields(m, false);
     m->setExtent(idim, node_ext);
-    internal::check_node_extent(m, node_ext);
+    axom::mint::internal::check_node_extent(m, node_ext);
     delete m;
   }  // END for all dimensions
 }
@@ -210,19 +208,19 @@ TEST(mint_mesh_uniform_mesh, sidre_constructor)
     }  // END switch
 
     EXPECT_TRUE(m->hasSidreGroup());
-    internal::check_constructor(m, idim, lo, h, N);
-    internal::check_create_fields(m);
+    axom::mint::internal::check_constructor(m, idim, lo, h, N);
+    axom::mint::internal::check_create_fields(m);
     m->setExtent(idim, node_ext);
-    internal::check_node_extent(m, node_ext);
+    axom::mint::internal::check_node_extent(m, node_ext);
 
     delete m;
     m = nullptr;
 
     // STEP 2: pull the mesh from the sidre groups, and check with expected
     m = new UniformMesh(meshGroup);
-    internal::check_constructor(m, idim, lo, h, N);
-    internal::check_fields(m, true);
-    internal::check_node_extent(m, node_ext);
+    axom::mint::internal::check_constructor(m, idim, lo, h, N);
+    axom::mint::internal::check_fields(m, true);
+    axom::mint::internal::check_node_extent(m, node_ext);
     delete m;
 
     // STEP 3: ensure the data is persistent in sidre
@@ -248,7 +246,7 @@ TEST(mint_mesh_uniform_mesh, check_evaluate_coordinate)
     case 1:
     {
       UniformMesh m(lo, hi, N[0]);
-      internal::check_constructor(&m, idim, lo, h, N);
+      axom::mint::internal::check_constructor(&m, idim, lo, h, N);
       EXPECT_FALSE(m.hasSidreGroup());
 
       const IndexType Ni = m.getNodeResolution(I_DIRECTION);
@@ -266,7 +264,7 @@ TEST(mint_mesh_uniform_mesh, check_evaluate_coordinate)
     case 2:
     {
       UniformMesh m(lo, hi, N[0], N[1]);
-      internal::check_constructor(&m, idim, lo, h, N);
+      axom::mint::internal::check_constructor(&m, idim, lo, h, N);
       EXPECT_FALSE(m.hasSidreGroup());
 
       const IndexType Ni = m.getNodeResolution(I_DIRECTION);
@@ -295,7 +293,7 @@ TEST(mint_mesh_uniform_mesh, check_evaluate_coordinate)
       EXPECT_EQ(idim, 3);
       {
         UniformMesh m(lo, hi, N[0], N[1], N[2]);
-        internal::check_constructor(&m, idim, lo, h, N);
+        axom::mint::internal::check_constructor(&m, idim, lo, h, N);
         EXPECT_FALSE(m.hasSidreGroup());
 
         const IndexType Ni = m.getNodeResolution(I_DIRECTION);
@@ -333,18 +331,12 @@ TEST(mint_mesh_uniform_mesh, check_evaluate_coordinate)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

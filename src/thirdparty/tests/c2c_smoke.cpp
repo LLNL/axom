@@ -1,9 +1,8 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/config.hpp"
 #include "gtest/gtest.h"  // for gtest
 
 #include "c2c/config.hpp"

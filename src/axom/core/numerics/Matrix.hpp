@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -117,6 +117,11 @@ template <typename T>
 class Matrix
 {
 public:
+  /*!
+   * \brief Default constructor
+   */
+  Matrix() : m_rows(0), m_cols(0), m_data(nullptr), m_usingExternal(false) { }
+
   /*!
    * \brief Constructor, creates a Matrix with the given rows and columns.
    *
@@ -527,12 +532,6 @@ public:
   /// @}
 
 private:
-  /*!
-   * \brief Default constructor. Does nothing.
-   * \note Made private to prevent host-code from calling this.
-   */
-  Matrix() : m_rows(0), m_cols(0), m_data(nullptr) {};
-
   /// \name Private Helper Methods
   /// @{
 

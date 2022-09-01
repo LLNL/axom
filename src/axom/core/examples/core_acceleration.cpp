@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,6 +45,7 @@ void demoMemoryManageBasic()
     dynamic_memory_array[i] = i;
   }
 
+  //Print array values after initialization
   for(int i = 0; i < len; i++)
   {
     std::cout << i << " Current value: " << dynamic_memory_array[i] << std::endl;
@@ -52,9 +53,11 @@ void demoMemoryManageBasic()
 
   dyn_array_dst = axom::allocate<int>(len);
 
-  //Now, a copy operation. It's used exactly like memcpy -- destination, source, number of bytes.
+  //Now, a copy operation. It's used exactly like memcpy --
+  //destination, source, number of bytes.
   axom::copy(dyn_array_dst, dynamic_memory_array, sizeof(int) * len);
 
+  //Print array values and compare to copy
   for(int i = 0; i < len; i++)
   {
     std::cout << i << " Current value: " << dyn_array_dst[i] << std::endl;
@@ -62,17 +65,20 @@ void demoMemoryManageBasic()
               << (dynamic_memory_array[i] == dyn_array_dst[i]) << std::endl;
   }
 
-  //Deallocate is exactly like free. Of course, we won't try to access the now-deallocated
-  //memory after this:
+  //Deallocate is exactly like free. Of course, you cannot access the
+  //now-deallocated memory after this:
   axom::deallocate(dyn_array_dst);
 
-  //Reallocate is like realloc -- copies existing contents into a larger memory space.
-  //Slight deviation from realloc() in that it asks for item count, rather than bytes.
+  //Reallocate is like realloc -- copies existing contents into new
+  //memory allocation.
+  //Slight deviation from realloc() in that second arg is item count,
+  //rather than bytes.
   dynamic_memory_array = axom::reallocate(dynamic_memory_array, len * 2);
   for(int i = 20; i < len * 2; i++)
   {
     dynamic_memory_array[i] = i;
   }
+
   for(int i = 0; i < len * 2; i++)
   {
     std::cout << i << " Current value: " << dynamic_memory_array[i] << std::endl;
@@ -109,12 +115,16 @@ void demoAxomExecution()
     C[i] = 0;
   }
 
+  axom::deallocate(A);
+  axom::deallocate(B);
+  axom::deallocate(C);
+
 // _exebasic_end
 
-//Now, let's say we want to try out use of CUDA. We just change that execution space.
+//Now, let's say we want to try out use of CUDA or HIP. We just change that execution space.
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && \
-  defined(AXOM_USE_CUDA) && defined(__CUDACC__)
-  // _cudaexebasic_start
+  defined(AXOM_USE_GPU) && defined(AXOM_GPUCC)
+  // _deviceexebasic_start
   //This example requires Umpire to be in use, and Unified memory available.
   const int allocator_id = axom::getUmpireResourceAllocatorID(
     umpire::resource::MemoryResourceType::Unified);
@@ -129,18 +139,31 @@ void demoAxomExecution()
     C[i] = 0;
   }
 
-  axom::for_all<axom::CUDA_EXEC<256>>(
+  #if defined(__CUDACC__)
+  using ExecSpace = axom::CUDA_EXEC<256>;
+  #elif defined(__HIPCC__)
+  using ExecSpace = axom::HIP_EXEC<256>;
+  #else
+  using ExecSpace = axom::SEQ_EXEC;
+  #endif
+
+  axom::for_all<ExecSpace>(
     0,
     N,
     AXOM_LAMBDA(axom::IndexType i) { C[i] = A[i] + B[i]; });
 
-  std::cout << "Sums: " << std::endl;
+  std::cout << "\nSums (" << axom::execution_space<ExecSpace>::name()
+            << ") :" << std::endl;
   for(int i = 0; i < N; i++)
   {
     std::cout << C[i] << " ";
   }
   std::cout << std::endl;
-// _cudaexebasic_end
+
+  axom::deallocate(A);
+  axom::deallocate(B);
+  axom::deallocate(C);
+// _deviceexebasic_end
 #endif
 }
 

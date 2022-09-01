@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,6 +29,15 @@ struct ZipBase<Point<T, NDIMS>>
 
   static constexpr bool Exists = true;
 
+  /// Default constructor for a ZipBase of primal::Point
+  ZipBase()
+  {
+    for(int d = 0; d < NDIMS; ++d)
+    {
+      pts_arrays[d] = nullptr;
+    }
+  }
+
   /*!
    * \brief Creates a ZipIndexable over a set of arrays.
    * \param [in] arrays the arrays storing coordinate data for each dimension
@@ -39,9 +48,9 @@ struct ZipBase<Point<T, NDIMS>>
   ZipBase(const T* const (&arrays)[Size])
   {
     AXOM_STATIC_ASSERT_MSG(Size >= NDIMS, "Must provide at least NDIMS arrays");
-    for(int i = 0; i < NDIMS; i++)
+    for(int d = 0; d < NDIMS; ++d)
     {
-      pts_arrays[i] = arrays[i];
+      pts_arrays[d] = arrays[d];
     }
   }
 
@@ -52,7 +61,7 @@ struct ZipBase<Point<T, NDIMS>>
   AXOM_HOST_DEVICE GeomType operator[](int i) const
   {
     StackArray<T, NDIMS> pt_data;
-    for(int d = 0; d < NDIMS; d++)
+    for(int d = 0; d < NDIMS; ++d)
     {
       pt_data[d] = pts_arrays[d][i];
     }

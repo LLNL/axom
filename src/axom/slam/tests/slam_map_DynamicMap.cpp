@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -119,9 +119,7 @@ TEST(slam_map, modify_size_increases_set)
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();
 

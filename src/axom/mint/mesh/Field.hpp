@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -241,7 +241,7 @@ inline T* Field::getDataPtr(Field* field)
   SLIC_ASSERT(field != nullptr);
 
   // check type
-  int type = field_traits<T>::type();
+  constexpr int type = field_traits<T>::type();
   int ftype = field->getType();
   SLIC_ERROR_IF(
     (type == UNDEFINED_FIELD_TYPE),

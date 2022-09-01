@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -134,7 +134,7 @@ public:
 
   // Type aliases for the Relations from Gray leaf blocks to mesh entities
   static const int MAX_VERTS_PER_BLOCK = 1;
-  using VertexBlockMap = slam::Map<slam::Set<>, BlockIndex>;
+  using VertexBlockMap = slam::Map<BlockIndex>;
   using STLIndirection =
     slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
 
@@ -160,11 +160,9 @@ public:
                                                        MeshElementSet>;
   using CellIndexSet = typename GrayLeafElementRelation::RelationSubset;
 
-  using GrayLeafsLevelMap = slam::Map<slam::Set<>, GrayLeafSet>;
-  using GrayLeafVertexRelationLevelMap =
-    slam::Map<slam::Set<>, GrayLeafVertexRelation>;
-  using GrayLeafElementRelationLevelMap =
-    slam::Map<slam::Set<>, GrayLeafElementRelation>;
+  using GrayLeafsLevelMap = slam::Map<GrayLeafSet>;
+  using GrayLeafVertexRelationLevelMap = slam::Map<GrayLeafVertexRelation>;
+  using GrayLeafElementRelationLevelMap = slam::Map<GrayLeafElementRelation>;
 
 public:
   /**
@@ -1125,7 +1123,7 @@ typename std::enable_if<TDIM == 3, bool>::type InOutOctree<DIM>::withinGrayBlock
       }
     }
 
-    triPt = poly.centroid();
+    triPt = poly.vertexMean();
 
     /// Use a ray from the query point to the triangle point to find an
     /// intersection. Note: We have to check all triangles to ensure that

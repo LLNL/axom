@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -211,15 +211,15 @@ To illustrate how different memory spaces can be required, the following kernel 
 input arrays ``A`` and ``B`` are in unified memory and its output array ``C`` is in device memory.
 
 .. literalinclude:: ../../examples/core_containers.cpp
-   :start-after: _cuda_kernel_start
-   :end-before: _cuda_kernel_end
+   :start-after: _device_kernel_start
+   :end-before: _device_kernel_end
    :language: C++
 
 The following snippet illustrates how one would create and initialize the inputs/outputs to this kernel.
 
 .. literalinclude:: ../../examples/core_containers.cpp
-   :start-after: _cuda_array_create_start
-   :end-before: _cuda_array_create_end
+   :start-after: _device_array_create_start
+   :end-before: _device_array_create_end
    :language: C++
 
 .. note:: Unless the Dynamic memory space is in use, the ``Array`` constructor will
@@ -229,8 +229,8 @@ The following snippet illustrates how one would create and initialize the inputs
 We can now launch the kernel and display the results via a transfer back to host-accessible memory:
 
 .. literalinclude:: ../../examples/core_containers.cpp
-   :start-after: _cuda_array_call_start
-   :end-before: _cuda_array_call_end
+   :start-after: _device_array_call_start
+   :end-before: _device_array_call_end
    :language: C++
 
 If RAJA is available, we can also use Axom's acceleration utilities to perform an operation on the GPU
@@ -239,6 +239,14 @@ via a lambda:
 .. literalinclude:: ../../examples/core_containers.cpp
    :start-after: _array_w_raja_start
    :end-before: _array_w_raja_end
+   :language: C++
+
+By default, ``Array`` copies and moves will propagate the allocator ID; this ensures that objects
+with ``Array`` members do not accidentally move their data to the host when copied or moved:
+
+.. literalinclude:: ../../examples/core_containers.cpp
+   :start-after: _device_array_propagate_start
+   :end-before: _device_array_propagate_end
    :language: C++
 
 ##########

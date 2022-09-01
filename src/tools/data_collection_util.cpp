@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -165,8 +165,8 @@ public:
     // Options that are always available
     app.add_option("-o, --output-name", dcName)
       ->description(
-        "Name of the output mesh. Defaults to box{2,3}d for box meshes, and "
-        "the mfem mesh name when loading from an mfem file");
+        "Name of the output mesh. Defaults to box_{2,3}d for box meshes, "
+        "and the mfem mesh name when loading from an mfem file");
 
     app.add_flag("-v,--verbose", m_verboseOutput)
       ->description("Enable/disable verbose output")
@@ -292,12 +292,13 @@ mfem::Mesh* createBoxMesh(const Input& params)
       primal::BoundingBox<double, 2>(primal::Point<double, 2>(lo.data()),
                                      primal::Point<double, 2>(hi.data()))));
 
-    mesh = new mfem::Mesh(res[0],
-                          res[1],
-                          mfem::Element::QUADRILATERAL,
-                          false,
-                          hi[0] - lo[0],
-                          hi[1] - lo[1]);
+    mesh =
+      new mfem::Mesh(mfem::Mesh::MakeCartesian2D(res[0],
+                                                 res[1],
+                                                 mfem::Element::QUADRILATERAL,
+                                                 false,
+                                                 hi[0] - lo[0],
+                                                 hi[1] - lo[1]));
     break;
   case 3:
     SLIC_INFO(axom::fmt::format(
@@ -306,14 +307,14 @@ mfem::Mesh* createBoxMesh(const Input& params)
       primal::BoundingBox<double, 3>(primal::Point<double, 3>(lo.data()),
                                      primal::Point<double, 3>(hi.data()))));
 
-    mesh = new mfem::Mesh(res[0],
-                          res[1],
-                          res[2],
-                          mfem::Element::HEXAHEDRON,
-                          false,
-                          hi[0] - lo[0],
-                          hi[1] - lo[1],
-                          hi[2] - lo[2]);
+    mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian3D(res[0],
+                                                      res[1],
+                                                      res[2],
+                                                      mfem::Element::HEXAHEDRON,
+                                                      hi[0] - lo[0],
+                                                      hi[1] - lo[1],
+                                                      hi[2] - lo[2],
+                                                      false));
     break;
   default:
     SLIC_ERROR("Only 2D and 3D meshes are currently supported.");

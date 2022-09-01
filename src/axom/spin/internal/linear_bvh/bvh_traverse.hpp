@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -66,9 +66,9 @@ template <int NDIMS,
           typename LeafAction,
           typename TraversePref>
 AXOM_HOST_DEVICE inline void bvh_traverse(
-  const primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
-  const int32* inner_node_children,
-  const int32* leaf_nodes,
+  axom::ArrayView<const primal::BoundingBox<FloatType, NDIMS>> inner_nodes,
+  axom::ArrayView<const int32> inner_node_children,
+  axom::ArrayView<const int32> leaf_nodes,
   const PrimitiveType& p,
   InBinCheck&& B,
   LeafAction&& A,
@@ -141,7 +141,7 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
     while(leaf_node(found_leaf) && found_leaf != BARRIER)
     {
       int leaf_idx = -found_leaf - 1;
-      A(leaf_idx, leaf_nodes);
+      A(leaf_idx, leaf_nodes.data());
       found_leaf = current_node;
       if(leaf_node(current_node) && current_node != BARRIER)
       {

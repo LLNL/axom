@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,6 +14,39 @@ if(POLICY CMP0074)
 endif()
 
 set(TPL_DEPS)
+
+#------------------------------------------------------------------------------
+# Camp (needed by RAJA and Umpire)
+#------------------------------------------------------------------------------
+if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
+    message(FATAL_ERROR "CAMP_DIR is required if RAJA_DIR or UMPIRE_DIR is provided.")
+endif()
+
+if (CAMP_DIR)
+    if (NOT EXISTS "${CAMP_DIR}")
+        message(FATAL_ERROR "Given CAMP_DIR does not exist: ${CAMP_DIR}")
+    endif()
+
+    if (NOT IS_DIRECTORY "${CAMP_DIR}")
+        message(FATAL_ERROR "Given CAMP_DIR is not a directory: ${CAMP_DIR}")
+    endif()
+
+    find_package(camp REQUIRED PATHS ${CAMP_DIR})
+
+    message(STATUS "Checking for expected Camp target 'camp'")
+    if (NOT TARGET camp)
+        message(FATAL_ERROR "Camp failed to load: ${CAMP_DIR}")
+    else()
+        message(STATUS "Camp loaded: ${CAMP_DIR}")
+        set(CAMP_FOUND TRUE CACHE BOOL "")
+    endif()
+
+    # Note: camp sets a compile feature that is not available on XL
+    set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
+else()
+    message(STATUS "Camp support is OFF")
+    set(CAMP_FOUND FALSE CACHE BOOL "")
+endif()
 
 #------------------------------------------------------------------------------
 # UMPIRE
@@ -66,29 +99,16 @@ if (RAJA_DIR)
         message(STATUS "RAJA loaded: ${RAJA_DIR}")
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
-
-    # Note: camp sets a compile feature that is not available on XL
-    set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
 else()
     message(STATUS "RAJA support is OFF" )
     set(RAJA_FOUND FALSE CACHE BOOL "")
 endif()
 
-
-#------------------------------------------------------------------------------
-# HDF5
-#------------------------------------------------------------------------------
-if (HDF5_DIR)
-    include(cmake/thirdparty/SetupHDF5.cmake)
-    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
-else()
-    message(STATUS "HDF5 support is OFF")
-endif()
-
-
 #------------------------------------------------------------------------------
 # Conduit
 #------------------------------------------------------------------------------
+# Find Conduit first, then find HDF5 to fix "Could NOT find HDF5" issue with
+# newer CMake versions
 if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
 
@@ -105,9 +125,29 @@ else()
 endif()
 
 #------------------------------------------------------------------------------
+# HDF5
+#------------------------------------------------------------------------------
+if (HDF5_DIR)
+    include(cmake/thirdparty/SetupHDF5.cmake)
+    blt_list_append(TO TPL_DEPS ELEMENTS hdf5)
+else()
+    message(STATUS "HDF5 support is OFF")
+endif()
+
+#------------------------------------------------------------------------------
 # MFEM
 #------------------------------------------------------------------------------
-if (MFEM_DIR)
+if (TARGET mfem)
+    # Case: Axom included in project that also creates an mfem target, no need to recreate mfem
+    # Note - white238: I can't seem to get this to pass install testing due to mfem being included
+    # in multiple export sets
+    message(STATUS "MFEM support is ON, using existing mfem target")
+    # Add it to this export set but don't prefix it with axom::
+    install(TARGETS              mfem
+            EXPORT               axom-targets
+            DESTINATION          lib)
+    set(MFEM_FOUND TRUE CACHE BOOL "" FORCE)
+elseif (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
     # If the CMake build system was used, a CMake target for mfem already exists
     if (NOT TARGET mfem)
@@ -240,6 +280,7 @@ endif()
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
 blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF ENABLE_HIP)
 blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -158,6 +158,85 @@ bool shouldExit(void)
   int should_exit;
   SCR_Should_exit(&should_exit);
   return (bool)should_exit;
+}
+
+void initializeSimpleData(int my_rank, DataStore* ds)
+{
+  Group* root = ds->getRoot();
+
+  Group* flds = root->createGroup("fields");
+  Group* ga = flds->createGroup("a");
+  ga->createViewScalar<int>("i0", my_rank + 101);
+
+  Group* flds2 = root->createGroup("fields2");
+  Group* gb = flds2->createGroup("b");
+  gb->createViewScalar<int>("i1", 4 * my_rank * my_rank + 404);
+
+  return;
+}
+
+bool dumpSimpleData(MPI_Comm comm,
+                    const std::string& file_base,
+                    int num_files,
+                    DataStore* ds)
+{
+  // Tell SCR we're starting an output dataset.
+  // Each SCR output set should be given a name.
+  // This name should be user-friendly, because
+  // end users may need to type it at a command line.
+  // It should also encode enough information that
+  // one can construct the full path to the file on the
+  // parallel file system.
+  // SCR_Start_output must be called by all processes in MPI_COMM_WORLD.
+  SCR_Start_output(file_base.c_str(), SCR_FLAG_OUTPUT);
+
+  // write out the Datastore
+  IOManager writer(comm, true);
+  writer.write(ds->getRoot(), num_files, file_base, "sidre_hdf5");
+
+  // Tell SCR this process has completed its checkpoint.
+  // Each process should set valid=1 if it wrote its portion
+  // of the checkpoint successfully and valid=0 otherwise.
+  // SCR executes an allreduce across processes to identify
+  // whether all ranks succeeded.
+  // If any rank failed, SCR considers the checkpoint
+  // to be invalid.
+  // The return code will be SCR_SUCCESS if all procs
+  // succeeded.
+  // SCR_Complete_output must be called by all processes in MPI_COMM_WORLD.
+  int valid = 1;
+  int rc = SCR_Complete_output(valid);
+  return (rc == SCR_SUCCESS);
+}
+
+void simpleTestCheckpoint(DataStore* ds_output, int my_rank, int num_files)
+{
+  // Initialize data in DataStore
+  initializeSimpleData(my_rank, ds_output);
+
+  // Write checkpoint via SCR.
+  // One must write with MPI_COMM_WORLD when using SCR.
+  // Also, the number of files should be the same as
+  // the number of ranks in the job.
+  dumpSimpleData(MPI_COMM_WORLD, "simple_scr", num_files, ds_output);
+}
+
+void simpleTestLoad(MPI_Comm comm, DataStore* ds_input)
+{
+  std::string root_file = "simple_scr.root";
+  IOManager reader(comm, false);
+  reader.read(ds_input->getRoot(), root_file, false);
+}
+
+bool simpleTestCompare(DataStore* ds_output, DataStore* ds_input)
+{
+  int i0_output = ds_output->getRoot()->getView("fields/a/i0")->getScalar();
+  int i0_input = ds_input->getRoot()->getView("fields/a/i0")->getScalar();
+  int i1_output = ds_output->getRoot()->getView("fields2/b/i1")->getScalar();
+  int i1_input = ds_input->getRoot()->getView("fields2/b/i1")->getScalar();
+
+  bool success = (i0_output == i0_input) && (i1_output == i1_input);
+  return success;
 }
 
 /** Simple structure to hold the parsed command line arguments */
@@ -321,6 +400,13 @@ int main(int argc, char* argv[])
 
   delete ds;
 
+  // The "simpleTest" calls below do a separate test of a single simple
+  // checkpoint followed by a load from the parallel file system.
+  DataStore* ds_output = new DataStore();
+  SLIC_ASSERT(ds_output);
+
+  simpleTestCheckpoint(ds_output, my_rank, num_files);
+
   // SCR_Finalize must be called by all processes in MPI_COMM_WORLD,
   // and it must be called before MPI_Finalize.
   // Among other things, SCR_Finalize flushes cached datasets to the
@@ -328,6 +414,14 @@ int main(int argc, char* argv[])
   // that the job should *not* be restarted within the current job
   // allocation.
   SCR_Finalize();
+
+  DataStore* ds_input = new DataStore();
+  SLIC_ASSERT(ds_input);
+
+  simpleTestLoad(MPI_COMM_WORLD, ds_input);
+  bool success = simpleTestCompare(ds_output, ds_input);
+
+  SLIC_ASSERT(success);
 
   MPI_Finalize();
 

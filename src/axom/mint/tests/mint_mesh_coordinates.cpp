@@ -1,20 +1,19 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/slic/interface/slic.hpp"  // for slic macros
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/core/utilities/Utilities.hpp"  // for utilities::max()
-
-#include "axom/mint/config.hpp"                // for IndexType
-#include "axom/mint/mesh/MeshCoordinates.hpp"  // for MeshCoordinates
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/MeshCoordinates.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"  // for sidre::Group, View, Array
+  #include "axom/sidre.hpp"
 #endif
 
-#include "gtest/gtest.h"  // for gtest macros
+#include "gtest/gtest.h"
 
 namespace utilities = axom::utilities;
 
@@ -1382,18 +1381,12 @@ TEST(mint_mesh_coordinates_DeathTest, invalid_construction)
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

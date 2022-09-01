@@ -1,8 +1,8 @@
 *******************************************************************************
 
-Axom: ................................, version 0.6.1
+Axom: ................................, version 0.7.0
 
-Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC. 
+Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
 All rights reserved. See details in the file axom/LICENSE.
 
@@ -16,19 +16,4 @@ Unlimited Open Source - BSD Distribution
 LLNL-CODE-741217
 OCEC-17-187
 
-The Axom development team is comprised of:
-
-Arlie Capps (capps2@llnl.gov)
-Noah Elliott (elliott22@llnl.gov)
-Josh Essman (essman1@llnl.gov)
-Brian Han (han12@llnl.gov)
-Cyrus Harrison (harrison37@llnl.gov)
-Rich Hornung (hornung1@llnl.gov)
-Esteban Pauli (pauli2@llnl.gov)
-Lee Taylor (taylor16@llnl.gov)
-Kenny Weiss (kweiss@llnl.gov)
-Chris White (white238@llnl.gov)
-Max Yang (wang39@llnl.gov)
-
-emeritus
-George Zagaris
+See https://github.com/LLNL/axom/contributors for the list of contributors.

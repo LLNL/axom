@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -94,7 +94,7 @@ int makeDirsForPath(const std::string& path)
 #ifdef WIN32
     err = _mkdir(dir_name.c_str());
 #else
-    mode_t mode = 0770;  // user and group rwx permissions
+    mode_t mode = 0777;  // rwx permissions for everyone
     err = mkdir(dir_name.c_str(), mode);
 #endif
     err = (err && (errno != EEXIST)) ? 1 : 0;

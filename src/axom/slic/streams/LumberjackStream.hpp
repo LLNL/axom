@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -81,26 +81,47 @@ public:
                       bool filter_duplicates);
 
   /*!
+   * \brief Pushes the messages from the current rank directly to the
+   *        console (non-collectively).
+   *
+   * \warning This method is being called before slic aborts.
+   */
+  virtual void outputLocal();
+
+  /*!
    * \brief Pushes all messages to the output node according to Lumberjack's
-   *  Communication scheme. Then writes it to the given stream.
+   *  Communication scheme. Then writes it to the console.
+   *
+   * \collective
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
    */
   virtual void flush();
 
   /*!
    * \brief Pushes all messages once to their parent node according to
    *  Lumberjack's Communication scheme.
-
+   *
+   * \collective
+   * \note This method is a collective operation
+   *  intended for a synchronization checkpoint.
    * \note This does not guarantee all messages have reached the output node.
    * \note This does not write out to the given stream.
    */
   virtual void push();
 
   /*!
-   * \brief Writes the messages that are at the output node to the given stream.
+   * \brief Writes the messages to the given stream that are at the output node
+   *  or at the current node if local is true
+   *
+   *  param [in] local If true, writes out messages at the current node.
+   *             If false, only writes out messages at the output node.
+   *             Default is false.
+   *
    *  It does not flush any messages and not all messages are guaranteed to be
    *  at the output node.
    */
-  virtual void write();
+  virtual void write(bool local = false);
 
 private:
   void initializeLumberjack(MPI_Comm comm, int ranksLimit);

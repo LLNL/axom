@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,7 +65,8 @@ public:
    * The Group, including all of its child groups and views, is written
    * to files according to the given protocol.
    *
-   * This is an MPI collective call.
+   * This is an MPI collective call that must be called on all ranks in the
+   * communicator used in this object's constructor.
    *
    * valid protocols:
    *
@@ -78,12 +79,25 @@ public:
    *    conduit_json
    *    json
    *
+   * The output will consist of a root file and a subdirectory containing
+   * data output files. The name of the root file will be the file_base
+   * parameter with the suffix ".root" appended, while the subdirectory
+   * will have the file_base string as its name. Exception:  If the file_base
+   * parameter is provided as a string ending in ".root", that string will be
+   * unchanged and used as the root file's name, while the subdirectory
+   * name will be the file_base string with the ".root" suffix removed from
+   * its end.
+   *
+   * The file_base string must be identical on all ranks making this call.
+   * If it is not identical, a warning will be printed and the files produced
+   * here may not be useable in a subsequent call to IOManager::read().
+   *
    * \note The sidre_hdf5 and conduit_hdf5 protocols are only available
    * when Axom is configured with hdf5.
    *
    * \param group         Group to write to output
    * \param num_files     number of output data files
-   * \param file_string   base name for output files
+   * \param file_base     base name for output files
    * \param protocol      identifies I/O protocol
    * \param tree_pattern  Optional tree pattern string placed in root file,
    *                      to set search path for data in the output files
@@ -91,7 +105,7 @@ public:
    */
   void write(sidre::Group* group,
              int num_files,
-             const std::string& file_string,
+             const std::string& file_base,
              const std::string& protocol,
              const std::string& tree_pattern = "datagroup");
 
@@ -228,26 +242,28 @@ public:
   /*!
    * \brief read from input file
    *
-   * This is an MPI collective call.  Calling code may also need to add
+   * This is an MPI collective call on all ranks in the communicator used
+   * to construct this object.  Calling code may also need to add
    * an MPI barrier after this call if invoking subsequent operations that
-   * may change the inpt files.
+   * may change the input files.
    *
    * \param group         Group to fill with input data
-   * \param file_string   base name of input files
+   * \param root_file     root file containing input data
    * \param protocol      identifies I/O protocol
    * \param preserve_contents   Preserves group's existing contents if true
    */
   void read(sidre::Group* group,
-            const std::string& file_string,
+            const std::string& root_file,
             const std::string& protocol,
             bool preserve_contents = false);
 
   /*!
    * \brief read from a root file
    *
-   * This is an MPI collective call.  Calling code may also need to add
+   * This is an MPI collective call on all ranks in the communicator used
+   * to construct this object.  Calling code may also need to add
    * an MPI barrier after this call if invoking subsequent operations that
-   * may change the inpt files.
+   * may change the input files.
    *
    * \param group      Group to fill with input data
    * \param root_file  root file containing input data
@@ -293,10 +309,24 @@ public:
 private:
   DISABLE_COPY_AND_ASSIGNMENT(IOManager);
 
-  void createRootFile(const std::string& file_base,
-                      int num_files,
-                      const std::string& protocol,
-                      const std::string& tree_pattern);
+  /*!
+   * \brief create the root file for new output
+   *
+   * The root file will contain information about the organization of the
+   * output subdirectory and files containing sidre data. It will be
+   * named as the root_base string plus the suffix ".root", unless
+   * root_base already ends with ".root", in which case no additional
+   * suffix will be added.
+   *
+   * The returned string will be identical to root_base, except when
+   * root_base is provided with the suffix ".root" already there, in
+   * which case the returned string will be the root_base string with
+   * the ".root" suffix removed from its end.
+   */
+  std::string createRootFile(const std::string& root_base,
+                             int num_files,
+                             const std::string& protocol,
+                             const std::string& tree_pattern);
 
   std::string getProtocol(const std::string& root_name);
 

@@ -1,4 +1,4 @@
-! Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+! Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 ! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,33 +10,59 @@
 ! splicer end file_top
 
 ! splicer begin module_use
-! map conduit type names to sidre type names
 use conduit, only : &
-    SIDRE_NO_TYPE_ID    => CONDUIT_EMPTY_ID, &
-    SIDRE_INT8_ID       => CONDUIT_INT8_ID, &
-    SIDRE_INT16_ID      => CONDUIT_INT16_ID, &
-    SIDRE_INT32_ID      => CONDUIT_INT32_ID, &
-    SIDRE_INT64_ID      => CONDUIT_INT64_ID, &
-    SIDRE_UINT8_ID      => CONDUIT_UINT8_ID, &
-    SIDRE_UINT16_ID     => CONDUIT_UINT16_ID, &
-    SIDRE_UINT32_ID     => CONDUIT_UINT32_ID, &
-    SIDRE_UINT64_ID     => CONDUIT_UINT64_ID, &
-    SIDRE_FLOAT32_ID    => CONDUIT_FLOAT32_ID, &
-    SIDRE_FLOAT64_ID    => CONDUIT_FLOAT64_ID, &
-    SIDRE_CHAR8_STR_ID  => CONDUIT_CHAR8_STR_ID, &
-    SIDRE_INT_ID        => CONDUIT_INT_ID, &
-    SIDRE_UINT_ID       => CONDUIT_UINT_ID, &
-    SIDRE_LONG_ID       => CONDUIT_LONG_ID, &
-    SIDRE_ULONG_ID      => CONDUIT_ULONG_ID, &
-    SIDRE_FLOAT_ID      => CONDUIT_FLOAT_ID, &
-    SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_ID
-use, intrinsic :: iso_c_binding, only : C_INT64_T
+    CONDUIT_EMPTY_ID, &
+    CONDUIT_INT8_ID, &
+    CONDUIT_INT16_ID, &
+    CONDUIT_INT32_ID, &
+    CONDUIT_INT64_ID, &
+    CONDUIT_UINT8_ID, &
+    CONDUIT_UINT16_ID, &
+    CONDUIT_UINT32_ID, &
+    CONDUIT_UINT64_ID, &
+    CONDUIT_FLOAT32_ID, &
+    CONDUIT_FLOAT64_ID, &
+    CONDUIT_CHAR8_STR_ID, &
+    CONDUIT_INT_ID, &
+    CONDUIT_UINT_ID, &
+    CONDUIT_LONG_ID, &
+    CONDUIT_ULONG_ID, &
+    CONDUIT_FLOAT_ID, &
+    CONDUIT_DOUBLE_ID
+use, intrinsic :: iso_c_binding, only : C_SHORT, C_INT, C_INT32_T, C_INT64_T
 ! splicer end module_use
 
 ! splicer begin module_top
 integer, parameter :: MAXNAMESIZE = 128
 
+#if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
 integer, parameter :: SIDRE_IndexType = C_INT64_T
+#else
+integer, parameter :: SIDRE_IndexType = C_INT32_T
+#endif
+
+integer, parameter :: TypeID = C_SHORT
+integer, parameter :: TypeIDint = C_INT
+
+integer(TypeID), parameter :: &
+    SIDRE_NO_TYPE_ID    = CONDUIT_EMPTY_ID, &
+    SIDRE_INT8_ID       = CONDUIT_INT8_ID, &
+    SIDRE_INT16_ID      = CONDUIT_INT16_ID, &
+    SIDRE_INT32_ID      = CONDUIT_INT32_ID, &
+    SIDRE_INT64_ID      = CONDUIT_INT64_ID, &
+    SIDRE_UINT8_ID      = CONDUIT_UINT8_ID, &
+    SIDRE_UINT16_ID     = CONDUIT_UINT16_ID, &
+    SIDRE_UINT32_ID     = CONDUIT_UINT32_ID, &
+    SIDRE_UINT64_ID     = CONDUIT_UINT64_ID, &
+    SIDRE_FLOAT32_ID    = CONDUIT_FLOAT32_ID, &
+    SIDRE_FLOAT64_ID    = CONDUIT_FLOAT64_ID, &
+    SIDRE_CHAR8_STR_ID  = CONDUIT_CHAR8_STR_ID, &
+    SIDRE_INT_ID        = CONDUIT_INT_ID, &
+    SIDRE_UINT_ID       = CONDUIT_UINT_ID, &
+    SIDRE_LONG_ID       = CONDUIT_LONG_ID, &
+    SIDRE_ULONG_ID      = CONDUIT_ULONG_ID, &
+    SIDRE_FLOAT_ID      = CONDUIT_FLOAT_ID, &
+    SIDRE_DOUBLE_ID     = CONDUIT_DOUBLE_ID
 
 integer, parameter :: invalid_index = -1_SIDRE_IndexType
 ! splicer end module_top

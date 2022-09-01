@@ -1,4 +1,4 @@
-! Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+! Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 ! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
@@ -54,7 +54,7 @@ contains
 
     call dbuff%allocate(SIDRE_INT_ID, elem_count)
 
-    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_typeid()")
+    call assert_true(dbuff%get_type_id() == SIDRE_INT_ID, "dbuff%get_typeid()")
     call assert_true(dbuff%get_num_elements() == elem_count, "dbuff%get_num_elements()")
     call assert_true(dbuff%get_bytes_per_element() == int_size)
     call assert_true(dbuff%get_total_bytes() == int_size * elem_count)
@@ -92,7 +92,7 @@ contains
 
     call dbuff%allocate(SIDRE_INT_ID, elem_count)
 
-    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_type_id()")
+    call assert_true(dbuff%get_type_id() == SIDRE_INT_ID, "dbuff%get_type_id()")
     call assert_true(dbuff%get_num_elements() == elem_count, "dbuff%get_num_elements")
     call assert_true(dbuff%get_bytes_per_element() == int_size)
     call assert_true(dbuff%get_total_bytes() == int_size * elem_count)
@@ -133,7 +133,7 @@ contains
 
     call dbuff%allocate(SIDRE_LONG_ID, orig_elem_count)
 
-    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID, "dbuff%get_type_id()")
+    call assert_true(dbuff%get_type_id() == SIDRE_LONG_ID, "dbuff%get_type_id()")
     call assert_true(dbuff%get_num_elements() == orig_elem_count, "dbuff%get_num_elements()")
     call assert_true(dbuff%get_bytes_per_element() == long_size)
     call assert_true(dbuff%get_total_bytes() == long_size * orig_elem_count)
@@ -147,7 +147,7 @@ contains
   
     call dbuff%reallocate( mod_elem_count )
 
-    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID, "dbuff%get_type_id() after realloc")
+    call assert_true(dbuff%get_type_id() == SIDRE_LONG_ID, "dbuff%get_type_id() after realloc")
     call assert_true(dbuff%get_num_elements() == mod_elem_count, "dbuff%get_num_elements() after realloc")
     call assert_true(dbuff%get_bytes_per_element() == long_size)
     call assert_true(dbuff%get_total_bytes() == long_size * mod_elem_count)

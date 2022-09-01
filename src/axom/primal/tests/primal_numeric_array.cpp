@@ -1,25 +1,21 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/primal.hpp"
+
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/NumericArray.hpp"
-
-#include "axom/core/execution/execution_space.hpp"  // for execution_space traits
-#include "axom/core/execution/for_all.hpp"          // for_all()
-
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
-using namespace axom;
+namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 void check_numeric_array_policy()
 {
-  const int DIM = 3;
+  constexpr int DIM = 3;
   using NumericArrayType = primal::NumericArray<double, DIM>;
 
   double* coords =
@@ -39,9 +35,9 @@ void check_numeric_array_policy()
 //------------------------------------------------------------------------------
 TEST(primal_numeric_array, constructors)
 {
-  static const int DIM = 5;
-  typedef double CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
+  constexpr int DIM = 5;
+  using CoordType = double;
+  using QArray = primal::NumericArray<CoordType, DIM>;
 
   QArray arr1;
   EXPECT_EQ(QArray::size(), DIM);
@@ -114,9 +110,9 @@ TEST(primal_numeric_array, constructors)
 //------------------------------------------------------------------------------
 TEST(primal_numeric_array, num_array_to_array)
 {
-  static const int DIM = 5;
-  typedef double CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
+  constexpr int DIM = 5;
+  using CoordType = double;
+  using QArray = primal::NumericArray<CoordType, DIM>;
 
   // Compare array initialized from arbitrary array
   CoordType valsArr[DIM] = {12., 23., 34., 45., 56.432};
@@ -140,9 +136,9 @@ TEST(primal_numeric_array, num_array_to_array)
 //------------------------------------------------------------------------------
 TEST(primal_numeric_array, component_wise_arithmetic)
 {
-  static const int DIM = 3;
-  typedef double CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
+  constexpr int DIM = 3;
+  using CoordType = double;
+  using QArray = primal::NumericArray<CoordType, DIM>;
 
   CoordType ca1[] = {3, 0, 1.2};
   CoordType ca2[] = {0, 4, 1.2};
@@ -189,44 +185,59 @@ TEST(primal_numeric_array, component_wise_arithmetic)
 //------------------------------------------------------------------------------
 TEST(primal_numeric_array, component_min_max)
 {
-  static const int DIM = 3;
-  typedef int CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
+  constexpr int DIM = 3;
+  using CoordType = int;
+  using QArray = primal::NumericArray<CoordType, DIM>;
 
-  CoordType incSeq[] = {1, 2, 3};
-  CoordType decSeq[] = {3, 2, 1};
-  CoordType upDownSeq[] = {5, 8, 3};
-  CoordType downUpSeq[] = {6, 2, 5};
-
-  QArray incArr(incSeq);
-  QArray decArr(decSeq);
-  QArray udArr(upDownSeq);
-  QArray duArr(downUpSeq);
+  QArray incArr {1, 2, 3};
+  QArray decArr {3, 2, 1};
+  QArray udArr {5, 8, 3};
+  QArray duArr {6, 2, 5};
 
   // testing component-wise min and max functions
-  EXPECT_EQ(incArr.max(), 3);
-  EXPECT_EQ(decArr.max(), 3);
-  EXPECT_EQ(incArr.argMax(), 2);
-  EXPECT_EQ(decArr.argMax(), 0);
+  EXPECT_EQ(3, incArr.max());
+  EXPECT_EQ(3, decArr.max());
+  EXPECT_EQ(2, incArr.argMax());
+  EXPECT_EQ(0, decArr.argMax());
 
-  EXPECT_EQ(udArr.max(), 8);
-  EXPECT_EQ(udArr.argMax(), 1);
+  EXPECT_EQ(8, udArr.max());
+  EXPECT_EQ(1, udArr.argMax());
 
-  EXPECT_EQ(incArr.min(), 1);
-  EXPECT_EQ(decArr.min(), 1);
-  EXPECT_EQ(incArr.argMin(), 0);
-  EXPECT_EQ(decArr.argMin(), 2);
+  EXPECT_EQ(1, incArr.min());
+  EXPECT_EQ(1, decArr.min());
+  EXPECT_EQ(0, incArr.argMin());
+  EXPECT_EQ(2, decArr.argMin());
 
-  EXPECT_EQ(duArr.min(), 2);
-  EXPECT_EQ(duArr.argMin(), 1);
+  EXPECT_EQ(2, duArr.min());
+  EXPECT_EQ(1, duArr.argMin());
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_numeric_array, component_sum)
+{
+  constexpr int DIM = 3;
+  using CoordType = int;
+  using QArray = primal::NumericArray<CoordType, DIM>;
+
+  QArray incArr {1, 2, 3};
+  QArray decArr {3, 2, 1};
+
+  QArray udArr {5, 8, 3};
+  QArray duArr {6, 2, 5};
+
+  // testing component-wise min and max functions
+  EXPECT_EQ(6, incArr.sum());
+  EXPECT_EQ(6, decArr.sum());
+  EXPECT_EQ(16, udArr.sum());
+  EXPECT_EQ(13, duArr.sum());
 }
 
 //------------------------------------------------------------------------------
 TEST(primal_numeric_array, clamping)
 {
-  static const int DIM = 3;
-  typedef int CoordType;
-  typedef primal::NumericArray<CoordType, DIM> QArray;
+  constexpr int DIM = 3;
+  using CoordType = int;
+  using QArray = primal::NumericArray<CoordType, DIM>;
 
   CoordType seq[] = {15, 4, 2};
   CoordType seqClampUp7[] = {7, 4, 2};
@@ -290,6 +301,14 @@ AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
 
   check_numeric_array_policy<cuda_exec>();
 #endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && \
+  defined(RAJA_ENABLE_HIP) && defined(AXOM_USE_UMPIRE)
+
+  using hip_exec = axom::HIP_EXEC<512>;
+
+  check_numeric_array_policy<hip_exec>();
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -300,10 +319,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

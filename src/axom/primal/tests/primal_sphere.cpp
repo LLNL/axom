@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/primal/geometry/Sphere.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
+#include "axom/slic.hpp"
 #include "gtest/gtest.h"
 
 namespace primal = axom::primal;
@@ -14,9 +16,10 @@ namespace primal = axom::primal;
 //------------------------------------------------------------------------------
 namespace
 {
-void check_array(const double* a, const double* b, int size)
+template <typename PointType>
+void check_array(const PointType& a, const PointType& b)
 {
-  for(int i = 0; i < size; ++i)
+  for(int i = 0; i < PointType::dimension(); ++i)
   {
     EXPECT_DOUBLE_EQ(a[i], b[i]);
   }
@@ -26,50 +29,56 @@ void check_array(const double* a, const double* b, int size)
 template <int NDIMS>
 void check_constructor()
 {
-  const double DEFAULT_RADIUS = 1.0;
-  const double DEFAULT_CENTER[] = {0.0, 0.0, 0.0};
-  const double PRESCRIBED_RADIUS = 5.0;
-  const double PRESCRIBED_CENTER[] = {1.0, 1.0, 1.0};
+  using SphereType = primal::Sphere<double, NDIMS>;
+  using PointType = primal::Point<double, NDIMS>;
 
-  primal::Sphere<double, NDIMS> S0;
-  EXPECT_DOUBLE_EQ(S0.getRadius(), DEFAULT_RADIUS);
-  check_array(S0.getCenter(), DEFAULT_CENTER, NDIMS);
+  const double default_radius = 1.0;
+  const double prescribed_radius = 5.0;
 
-  primal::Sphere<double, NDIMS> S1(PRESCRIBED_RADIUS);
-  EXPECT_DOUBLE_EQ(S1.getRadius(), PRESCRIBED_RADIUS);
-  check_array(S1.getCenter(), DEFAULT_CENTER, NDIMS);
+  const PointType default_center = PointType::zero();
+  const PointType prescribed_center = PointType::ones();
 
-  primal::Sphere<double, NDIMS> S2(PRESCRIBED_CENTER);
-  EXPECT_DOUBLE_EQ(S2.getRadius(), DEFAULT_RADIUS);
-  check_array(S2.getCenter(), PRESCRIBED_CENTER, NDIMS);
+  SphereType S0;
+  EXPECT_DOUBLE_EQ(S0.getRadius(), default_radius);
+  check_array(S0.getCenter(), default_center);
 
-  primal::Sphere<double, NDIMS> S4(PRESCRIBED_CENTER, PRESCRIBED_RADIUS);
-  EXPECT_DOUBLE_EQ(S4.getRadius(), PRESCRIBED_RADIUS);
-  check_array(S4.getCenter(), PRESCRIBED_CENTER, NDIMS);
+  SphereType S1(default_radius);
+  EXPECT_DOUBLE_EQ(S1.getRadius(), default_radius);
+  check_array(S1.getCenter(), default_center);
+
+  SphereType S2(prescribed_radius);
+  EXPECT_DOUBLE_EQ(S2.getRadius(), prescribed_radius);
+  check_array(S2.getCenter(), default_center);
+
+  SphereType S4(prescribed_center, prescribed_radius);
+  EXPECT_DOUBLE_EQ(S4.getRadius(), prescribed_radius);
+  check_array(S4.getCenter(), prescribed_center);
+
+  SphereType S5(prescribed_center.data(), prescribed_radius);
+  EXPECT_DOUBLE_EQ(S5.getRadius(), prescribed_radius);
+  check_array(S5.getCenter(), prescribed_center);
 }
 
 //------------------------------------------------------------------------------
 template <int NDIMS>
 void check_signed_distance_and_orientation()
 {
-  double x[3] = {0.0, 0.0, 0.0};
-  double signed_distance = 0.0;
+  using PointType = primal::Point<double, NDIMS>;
+  using SphereType = primal::Sphere<double, NDIMS>;
 
-  // STEP 0: test 2D sphere (i.e., circle) with radius 1.0 centered @ (0,0)
-  primal::Sphere<double, NDIMS> sphere;
+  // test default sphere with radius 1.0 centered @ origin
+  SphereType sphere;
   const double radius = sphere.getRadius();
-  const double* center = sphere.getCenter();
-  EXPECT_TRUE(center != nullptr);
+  const auto& center = sphere.getCenter();
 
   // test sphere center
-  signed_distance = sphere.computeSignedDistance(center);
+  double signed_distance = sphere.computeSignedDistance(center);
   EXPECT_DOUBLE_EQ(signed_distance, (-1.0) * radius);
   EXPECT_EQ(sphere.getOrientation(center), primal::ON_NEGATIVE_SIDE);
 
   for(int j = 0; j < NDIMS; ++j)
   {
-    // initialize test point, x
-    memcpy(x, center, NDIMS * sizeof(double));
+    PointType x = center;
 
     // SHIFT RIGHT
     // shift right from center, but still within the sphere
@@ -116,25 +125,28 @@ void check_signed_distance_and_orientation()
 template <int NDIMS>
 void check_sphere_intersection()
 {
-  double center[3] = {0.0, 0.0, 0.0};
+  using PointType = primal::Point<double, NDIMS>;
+  using SphereType = primal::Sphere<double, NDIMS>;
+
+  PointType center {0.0, 0.0, 0.0};
 
   // STEP 0: test fully overlapping
-  primal::Sphere<double, NDIMS> S0;
+  SphereType S0;
   EXPECT_TRUE(S0.intersectsWith(S0));
 
   // STEP 1: test inter-penetrating
   center[0] = 0.5;
-  primal::Sphere<double, NDIMS> S1(center);
+  SphereType S1(center);
   EXPECT_TRUE(S0.intersectsWith(S1));
 
   // STEP 2: test abutting
   center[0] = 2.0;
-  primal::Sphere<double, NDIMS> S2(center);
+  SphereType S2(center);
   EXPECT_TRUE(S0.intersectsWith(S2));
 
   // STEP 3: test non-intersecting
   center[0] = 4.0;
-  primal::Sphere<double, NDIMS> S3(center);
+  SphereType S3(center);
   EXPECT_FALSE(S0.intersectsWith(S3));
 }
 
@@ -142,15 +154,18 @@ void check_sphere_intersection()
 template <int NDIMS>
 void check_copy_constructor()
 {
+  using PointType = primal::Point<double, NDIMS>;
+  using SphereType = primal::Sphere<double, NDIMS>;
+
   const double MAGIC_NUM = 42;
-  double center[3] = {MAGIC_NUM, MAGIC_NUM, MAGIC_NUM};
+  PointType center(MAGIC_NUM);
   double radius = MAGIC_NUM;
 
-  primal::Sphere<double, NDIMS> s1(center, radius);
-  primal::Sphere<double, NDIMS> s2(s1);
+  SphereType s1(center, radius);
+  SphereType s2(s1);
 
-  const double* c1 = s1.getCenter();
-  const double* c2 = s2.getCenter();
+  const auto& c1 = s1.getCenter();
+  const auto& c2 = s2.getCenter();
   for(int i = 0; i < NDIMS; ++i)
   {
     EXPECT_DOUBLE_EQ(c1[i], c2[i]);
@@ -165,18 +180,21 @@ void check_copy_constructor()
 template <int NDIMS>
 void check_assignment_operator()
 {
+  using PointType = primal::Point<double, NDIMS>;
+  using SphereType = primal::Sphere<double, NDIMS>;
+
   const double MAGIC_NUM = 42;
-  double center[3] = {MAGIC_NUM, MAGIC_NUM, MAGIC_NUM};
+  PointType center(MAGIC_NUM);
   double radius = MAGIC_NUM;
 
-  primal::Sphere<double, NDIMS> s1(center, radius);
-  primal::Sphere<double, NDIMS> s2;
+  SphereType s1(center, radius);
+  SphereType s2;
 
   /* test assignment */
   s2 = s1;
 
-  const double* c1 = s1.getCenter();
-  const double* c2 = s2.getCenter();
+  const auto& c1 = s1.getCenter();
+  const auto& c2 = s2.getCenter();
   for(int i = 0; i < NDIMS; ++i)
   {
     EXPECT_DOUBLE_EQ(c1[i], c2[i]);
@@ -227,18 +245,12 @@ TEST(primal_sphere, sphere_sphere_intersection)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

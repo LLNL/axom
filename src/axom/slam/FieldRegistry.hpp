@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,7 +31,7 @@ public:
   using PositionType = typename SetType::PositionType;
   using DataType = TheDataType;
   using KeyType = std::string;
-  using MapType = slam::Map<SetType, DataType>;
+  using MapType = slam::Map<DataType, SetType>;
   using BufferType = typename MapType::OrderedMap;
 
   using DataVecMap = std::map<KeyType, MapType>;

@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*
- * \file slam_set_positionset.cpp
+ * \file slam_set_PositionSet.cpp
  *
  * This file tests PositionSets within Slam.  These are OrderedSets with a
  * runtime size, but no offsets, stride or indirection.
@@ -260,8 +260,6 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();

@@ -1,11 +1,11 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "gtest/gtest.h"
 
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::DataStore;
@@ -241,10 +241,11 @@ TEST(sidre_buffer, create_buffer_view)
       break;
 
     case 4:
-      view = root->createView("data4", INT_ID, ndims, shape, buff);
+      view = root->createViewWithShape("data4", INT_ID, ndims, shape, buff);
       break;
     case 5:
-      view = root->createView("data5", INT_ID, ndims, shape)->attachBuffer(buff);
+      view =
+        root->createViewWithShape("data5", INT_ID, ndims, shape)->attachBuffer(buff);
       break;
     case 6:
       view = root->createView("data6")->attachBuffer(INT_ID, ndims, shape, buff);
@@ -441,7 +442,7 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
-  #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -482,7 +483,7 @@ TEST_P(UmpireTest, reallocate_zero)
 {
   constexpr int SIZE = 100;
 
-  #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  #if defined(AXOM_USE_GPU) && defined(UMPIRE_ENABLE_CONST)
   if(allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
@@ -530,7 +531,7 @@ TEST_P(UmpireTest, reallocate_zero)
 
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
-  #ifdef AXOM_USE_CUDA
+  #ifdef AXOM_USE_GPU
 
     #ifdef UMPIRE_ENABLE_PINNED
     ,
@@ -552,7 +553,7 @@ const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
     #endif
 
-  #endif /* AXOM_USE_CUDA */
+  #endif /* defined(AXOM_USE_GPU) */
 };
 
 INSTANTIATE_TEST_SUITE_P(sidre_buffer,

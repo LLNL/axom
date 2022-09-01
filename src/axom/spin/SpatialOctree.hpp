@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,7 +36,7 @@ public:
 
   using BlockIndex = typename BaseOctree::BlockIndex;
 
-  using SpaceVectorLevelMap = slam::Map<slam::Set<>, SpaceVector>;
+  using SpaceVectorLevelMap = slam::Map<SpaceVector>;
 
 public:
   /**

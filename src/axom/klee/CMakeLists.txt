@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -68,7 +68,7 @@ axom_install_component( NAME    klee
 #------------------------------------------------------------------------------
 # Add tests
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS AND ENABLE_GMOCK)
   add_subdirectory(tests)
 endif()
 

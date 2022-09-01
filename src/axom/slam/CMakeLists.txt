@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,7 +47,6 @@ set(slam_headers
     Set.hpp
     BivariateSet.hpp
     BitSet.hpp
-    internal/BitTwiddle.hpp
     RelationSet.hpp
 
     # SRM Relation headers
@@ -62,12 +61,14 @@ set(slam_headers
     BivariateMap.hpp
     SubMap.hpp
     DynamicMap.hpp
+
+    # Topological mesh headers
+    mesh_struct/IA.hpp
+    mesh_struct/IA_impl.hpp
     )
 
 set(slam_sources
     # SRM Set sources
-    # RangeSet.cpp
-    # IndirectionSet.cpp
     BitSet.cpp
     OrderedSet.cpp
 

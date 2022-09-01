@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,8 +13,7 @@
   #include "scr.h"
 #endif
 
-#include "axom/sidre/spio/IOManager.hpp"
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 #include "conduit_relay.hpp"
 
 using axom::sidre::DataStore;

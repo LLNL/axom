@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -66,6 +66,8 @@ public:
 
   using IndirectionBufferType =
     typename IndicesIndirectionPolicy::IndirectionBufferType;
+  using IndirectionPtrType =
+    typename IndicesIndirectionPolicy::IndirectionPtrType;
 
   // types for iterator
   using RelationIterator = typename RelationSubset::iterator;
@@ -78,13 +80,14 @@ public:
   struct RelationBuilder;
 
   StaticRelation()
-    : m_fromSet(EmptySetTraits<FromSetType>::emptySet())
-    , m_toSet(EmptySetTraits<ToSetType>::emptySet())
+    : m_fromSet(policies::EmptySetTraits<FromSetType>::emptySet())
+    , m_toSet(policies::EmptySetTraits<ToSetType>::emptySet())
   { }
 
   StaticRelation(FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy(
-        EmptySetTraits<FromSetType>::isEmpty(fromSet) ? 0 : fromSet->size())
+    : CardinalityPolicy(policies::EmptySetTraits<FromSetType>::isEmpty(fromSet)
+                          ? 0
+                          : fromSet->size())
     , m_fromSet(fromSet)
     , m_toSet(toSet)
   { }
@@ -105,15 +108,15 @@ public:
     using IndicesSetBuilder = typename StaticRelation::IndicesSet::SetBuilder;
 
     RelationBuilder()
-      : m_fromSet(EmptySetTraits<FromSetType>::emptySet())
-      , m_toSet(EmptySetTraits<ToSetType>::emptySet())
+      : m_fromSet(policies::EmptySetTraits<FromSetType>::emptySet())
+      , m_toSet(policies::EmptySetTraits<ToSetType>::emptySet())
     { }
 
     RelationBuilder& fromSet(FromSetType* pFromSet)
     {
       m_fromSet = pFromSet;
       if(m_cardPolicy.totalSize() == 0 &&
-         !EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
+         !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
       {
         m_cardPolicy = CardinalityPolicy(m_fromSet->size());
       }
@@ -129,7 +132,7 @@ public:
     RelationBuilder& begins(BeginsSetBuilder& beginsBuilder)
     {
       SLIC_ASSERT_MSG(
-        !EmptySetTraits<FromSetType>::isEmpty(m_fromSet),
+        !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet),
         "Must set the 'fromSet' pointer before setting the begins set");
 
       m_cardPolicy = CardinalityPolicy(m_fromSet->size(), beginsBuilder);
@@ -205,12 +208,15 @@ public:
 
   bool hasFromSet() const
   {
-    return !EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
+    return !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
   }
   FromSetType* fromSet() { return m_fromSet; }
   const FromSetType* fromSet() const { return m_fromSet; }
 
-  bool hasToSet() const { return !EmptySetTraits<ToSetType>::isEmpty(m_toSet); }
+  bool hasToSet() const
+  {
+    return !policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
+  }
   ToSetType* toSet() { return m_toSet; }
   const ToSetType* toSet() const { return m_toSet; }
 
@@ -218,17 +224,17 @@ public:
 
   SetPosition toSetSize() { return m_toSet->size(); }
 
-  void bindIndices(SetPosition size, IndirectionBufferType* data)
+  void bindIndices(SetPosition size, IndirectionPtrType data)
   {
     m_relationIndices = typename IndicesSet::SetBuilder().size(size).data(data);
   }
 
-  const IndirectionBufferType* relationData() const
+  const IndirectionPtrType relationData() const
   {
     return m_relationIndices.data();
   }
 
-  IndirectionBufferType* relationData() { return m_relationIndices.data(); }
+  IndirectionPtrType relationData() { return m_relationIndices.data(); }
 
 private:
   FromSetType* m_fromSet;
@@ -270,8 +276,8 @@ bool StaticRelation<PosType,
   bool relationdataIsValid = true;
 
   // Step 1: Check if the sets are valid
-  bool isFromSetNull = (m_fromSet == nullptr);
-  bool isToSetNull = (m_toSet == nullptr);
+  bool isFromSetNull = policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
+  bool isToSetNull = policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
 
   if(isFromSetNull || isToSetNull)
   {
@@ -302,7 +308,7 @@ bool StaticRelation<PosType,
   }
 
   // Step 3: Check if the relation data is valid
-  if(cardinalityIsValid)
+  if(setsAreValid && cardinalityIsValid)
   {
     if(m_relationIndices.size() != this->totalSize())
     {
@@ -339,15 +345,17 @@ bool StaticRelation<PosType,
     }
 
     // Check that all relation indices are in range for m_toSet
+    auto toSetSize = m_toSet->size();
     for(SetPosition pos = 0; pos < m_relationIndices.size(); ++pos)
     {
-      if(!m_toSet->isValidIndex(m_relationIndices[pos]))
+      auto el = m_relationIndices[pos];
+      if(el < 0 || el >= toSetSize)
       {
         if(verboseOutput)
         {
           errSstr << "\n\t* Relation index was out of range."
                   << "\n\t-- value: " << m_relationIndices[pos]
-                  << " needs to be in range [0," << m_toSet->size() << ")";
+                  << " needs to be in range [0," << toSetSize << ")";
         }
         relationdataIsValid = false;
       }

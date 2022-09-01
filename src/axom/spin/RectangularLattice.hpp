@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,13 +9,14 @@
 #include "axom/config.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
-#include <cmath>     // for std::floor
-#include <iostream>  // for ostream
+#include <cmath>
+#include <iostream>
 
 namespace axom
 {
@@ -47,7 +48,8 @@ namespace spin
  * and a grid spacing (a SpaceVector).
  *
  * \note Grid spacing coordinates that are really small (magnitude less
- * than 1E-50) are snapped to zero to avoid division by zero.
+ * than primal::PRIMAL_TINY := 1e-50) are snapped to zero to avoid division by zero.
+ * \sa primal::PRIMAL_TINY
  */
 template <int NDIMS, typename SpaceCoordType = double, typename CellCoordType = int>
 class RectangularLattice
@@ -89,7 +91,7 @@ public:
    * \param spacing The lattice's spacing
    *
    * \note The magnitude of the spacing coordinates should be greater than zero.
-   * If they are less than EPS = 1E-50, the lattice will be degenerate in
+   * If they are less than primal::PRIMAL_TINY, the lattice will be degenerate in
    * that dimension.
    */
   RectangularLattice(const SpacePoint& origin, const SpaceVector& spacing)
@@ -115,8 +117,8 @@ public:
    * \note Spacing will be set to vector or ones if pointer is NULL
    *
    * \note The magnitude of the spacing coordinates should be greater than zero.
-   * If they are less than EPS = 1E-50, the lattice will be degenerate in
-   * that dimension.
+   * If they are less than EPS = primal::PRIMAL_TINY, the lattice will be 
+   * degenerate in that dimension.
    */
   RectangularLattice(SpaceCoordType* origin_data, SpaceCoordType* spacing_data)
   {
@@ -139,6 +141,7 @@ public:
   const SpaceVector& spacing() const { return m_spacing; }
 
   /*! Returns the lattice cell associated with the given space point pt */
+  AXOM_HOST_DEVICE
   GridCell gridCell(const SpacePoint& pt) const
   {
     GridCell cell;
@@ -148,7 +151,7 @@ public:
       // Note: Always round down to negative infinity
       // uses inverted spacing, which handles zero-sized spacings
       cell[i] = static_cast<CellCoordType>(
-        std::floor((pt[i] - m_origin[i]) * m_invSpacing[i]));
+        axom::utilities::floor((pt[i] - m_origin[i]) * m_invSpacing[i]));
     }
 
     return cell;
@@ -191,7 +194,7 @@ private:
    * spacing to zero and to initialize the inverted spacing.
    *
    * A spacing coordinate is considered really small when its magnitude
-   * is less than EPS = 1E-50.
+   * is less than primal::PRIMAL_TINY.
    *
    * For each coordinate i, the inverted coordinate will be:
    *     m_invSpacing[i] = 1. / m_spacing[i]
@@ -200,7 +203,7 @@ private:
    */
   void initializeSpacingAndInvSpacing()
   {
-    constexpr SpaceCoordType EPS = 1.0e-50;
+    constexpr SpaceCoordType EPS = primal::PRIMAL_TINY;
     constexpr SpaceCoordType ZERO = SpaceCoordType(0.);
     constexpr SpaceCoordType ONE = SpaceCoordType(1.);
 
@@ -237,8 +240,8 @@ private:
  * minimum corner position.
  *
  * \note If the bounding box range along a dimension is near zero (i.e. smaller
- * than 1E-50, the grid resolution in that dimension will be set to zero in
- * that dimension.
+ * than primal::PRIMAL_TINY, the grid resolution in that dimension will be 
+ * set to zero in that dimension.
  */
 template <int NDIMS, typename SpaceCoordType, typename CellCoordType>
 RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>

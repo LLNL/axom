@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,12 +6,10 @@
 #include "axom/mint/mesh/UnstructuredMesh.hpp" /* for mint::UnstructuredMesh */
 #include "axom/mint/mesh/internal/MeshHelpers.hpp" /* for mint::initFaces */
 
-#include "axom/core/utilities/Utilities.hpp" /* for utilities::max */
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/slic/core/SimpleLogger.hpp" /* for SimpleLogger */
-#include "axom/slic/interface/slic.hpp"    /* for slic macros */
-
-#include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"
 
 #include <string>
 #include <sstream>
@@ -1106,13 +1104,13 @@ bool verifyFaceNodesTypes(int fcount,
 void runMeshFaceTest(internal::MeshFaceTest *t)
 {
   IndexType facecount = -1;
-  IndexType *f2c = nullptr;
-  IndexType *c2f = nullptr;
-  IndexType *c2n = nullptr;
-  IndexType *c2foffsets = nullptr;
-  IndexType *f2n = nullptr;
-  IndexType *f2noffsets = nullptr;
-  CellType *f2ntypes = nullptr;
+  Array<IndexType> f2c;
+  Array<IndexType> c2f;
+  Array<IndexType> c2n;
+  Array<IndexType> c2foffsets;
+  Array<IndexType> f2n;
+  Array<IndexType> f2noffsets;
+  Array<CellType> f2ntypes;
 
   bool initresult = internal::initFaces(t->mesh,
                                         facecount,
@@ -1136,14 +1134,6 @@ void runMeshFaceTest(internal::MeshFaceTest *t)
   }
   else if(initresult && !(t->initShouldSucceed))
   {
-    delete[] f2c;
-    delete[] c2f;
-    delete[] c2n;
-    delete[] c2foffsets;
-    delete[] f2n;
-    delete[] f2noffsets;
-    delete[] f2ntypes;
-
     FAIL() << "test mesh \"" << t->name
            << "\" call to initFaces() succeeded but should have failed.";
   }
@@ -1196,22 +1186,14 @@ void runMeshFaceTest(internal::MeshFaceTest *t)
     // do all faces have the type and nodes we expect?
     std::string errmesg;
     bool faceNodeTypeMatched = verifyFaceNodesTypes(facecount,
-                                                    f2n,
-                                                    f2noffsets,
-                                                    f2ntypes,
+                                                    f2n.data(),
+                                                    f2noffsets.data(),
+                                                    f2ntypes.data(),
                                                     t->totalFaceCount,
                                                     t->faceNodes.data(),
                                                     t->faceTypes.data(),
                                                     errmesg);
     EXPECT_TRUE(faceNodeTypeMatched) << errmesg;
-
-    delete[] f2c;
-    delete[] c2f;
-    delete[] c2n;
-    delete[] c2foffsets;
-    delete[] f2n;
-    delete[] f2noffsets;
-    delete[] f2ntypes;
   }
 }
 
@@ -1440,15 +1422,10 @@ TEST(mint_mesh_face_relation, correct_construction)
 }
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char *argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   return RUN_ALL_TESTS();
 }

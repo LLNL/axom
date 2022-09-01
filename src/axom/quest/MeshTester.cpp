@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,11 +59,6 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   detail::Triangle3 t2 {};
   SLIC_INFO("Running mesh_tester with UniformGrid index");
 
-  // Create a bounding box around mesh to find the minimum point
-  detail::SpatialBoundingBox meshBB = compute_bounds(surface_mesh);
-  const detail::Point3& minBBPt = meshBB.getMin();
-  const detail::Point3& maxBBPt = meshBB.getMax();
-
   const int ncells = surface_mesh->getNumberOfCells();
 
   // find the specified resolution.  If we're passed a number less than one,
@@ -72,18 +67,17 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   {
     spatialIndexResolution = (int)(1 + std::pow(ncells, 1 / 3.));
   }
-  int resolutions[3] = {spatialIndexResolution,
-                        spatialIndexResolution,
-                        spatialIndexResolution};
+  primal::NumericArray<int, 3> resolutions(spatialIndexResolution);
 
   SLIC_INFO("Building UniformGrid index...");
-  detail::UniformGrid3 ugrid(minBBPt.data(), maxBBPt.data(), resolutions);
   std::vector<int> nondegenerateIndices;
   nondegenerateIndices.reserve(ncells);
 
+  axom::Array<int> triIdxs(ncells);
+  axom::Array<detail::SpatialBoundingBox> triBboxes(ncells);
   for(int i = 0; i < ncells; i++)
   {
-    t1 = getMeshTriangle(i, surface_mesh);
+    t1 = detail::getMeshTriangle(i, surface_mesh);
 
     if(t1.degenerate())
     {
@@ -93,10 +87,11 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     {
       nondegenerateIndices.push_back(i);
 
-      detail::SpatialBoundingBox triBB = compute_bounding_box(t1);
-      ugrid.insert(triBB, i);
+      triIdxs[i] = i;
+      triBboxes[i] = compute_bounding_box(t1);
     }
   }
+  detail::UniformGrid3 ugrid(resolutions, triBboxes, triIdxs);
 
   // Iterate through triangle indices *idx.
   // Check against each other triangle with index greater than the index *idx
@@ -108,7 +103,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   for(; idx != ndgend; ++idx)
   {
     // Retrieve the triangle at *idx and construct a bounding box around it
-    t1 = getMeshTriangle(*idx, surface_mesh);
+    t1 = detail::getMeshTriangle(*idx, surface_mesh);
     detail::SpatialBoundingBox triBB2 = compute_bounding_box(t1);
 
     // Get a list of all triangles in bins this triangle will touch,
@@ -118,13 +113,12 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     size_t checkcount = binsToCheck.size();
     for(size_t curbin = 0; curbin < checkcount; ++curbin)
     {
-      std::vector<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
-      std::vector<int>::iterator ntlit = ntlist.begin(), ntlend = ntlist.end();
-      for(; ntlit != ntlend; ++ntlit)
+      axom::ArrayView<int> ntlist = ugrid.getBinContents(binsToCheck[curbin]);
+      for(const int nbr : ntlist)
       {
-        if(*ntlit > *idx)
+        if(nbr > *idx)
         {
-          neighborTriangles.push_back(*ntlit);
+          neighborTriangles.push_back(nbr);
         }
       }
     }
@@ -137,7 +131,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     // test any remaining neighbor tris for intersection
     while(nit != nend)
     {
-      t2 = getMeshTriangle(*nit, surface_mesh);
+      t2 = detail::getMeshTriangle(*nit, surface_mesh);
       if(primal::intersect(t1, t2, false, intersectionThreshold))
       {
         intersections.push_back(std::make_pair(*idx, *nit));

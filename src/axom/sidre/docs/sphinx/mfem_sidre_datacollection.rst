@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,7 @@ to the Mesh Blueprint, a hierarchical schema for describing mesh data.
 See the :ref:`Conduit page <sidre-conduit>` for more information on the Mesh 
 Blueprint.
 
-In this page, we first discuss `Getting Started`_ and how MFEM objects can 
+In this page, we first discuss how MFEM objects can 
 be associated with the ``MFEMSidreDataCollection``. We then explain the process
 and options available when `Saving Data to a File`_. The workflow for reading 
 saved data back in is discussed in `Restarting a Simulation`_.
@@ -135,7 +135,7 @@ accessed with the ``GetField``, ``GetQField``, and ``GetMesh`` methods.
    (should be set to ``true``), and field data ownership requires that each
    ``GridFunction`` object be unallocated when passed to the 
    ``RegisterField()`` method, which performs the allocation within Sidre-owned
-   memory. After registeration, a ``GridFunction`` object can be used normally.
+   memory. After registration, a ``GridFunction`` object can be used normally.
    The same conditions apply for ``QuadratureFunction`` objects.
 
 A complete demonstration of functionality is provided in the 

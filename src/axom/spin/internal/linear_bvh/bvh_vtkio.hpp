@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -152,8 +152,8 @@ void write_root(const primal::BoundingBox<FloatType, 3>& root,
 
 //------------------------------------------------------------------------------
 template <typename FloatType, int NDIMS>
-void write_recursive(primal::BoundingBox<FloatType, NDIMS>* inner_nodes,
-                     int32* inner_node_children,
+void write_recursive(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> inner_nodes,
+                     ArrayView<const int32> inner_node_children,
                      int32 current_node,
                      int32 level,
                      int32& numPoints,

@@ -3,7 +3,7 @@
 #
 copyright:
   -
-  - Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+  - Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
   - other Axom Project Developers. See the top-level LICENSE file for details.
   -
   - "SPDX-License-Identifier: (BSD-3-Clause)"
@@ -44,6 +44,19 @@ declarations:
           Num_Levels
         };
 
+- decl: class GenericOutputStream
+  cxx_header: axom/slic/streams/GenericOutputStream.hpp
+  format:
+    F_derived_name:  SlicGenericOutputStream
+  declarations:
+  - decl: GenericOutputStream(const std::string& stream)
+    format:
+      function_suffix: _default
+  - decl: GenericOutputStream(const std::string& stream, const std::string& format)
+    format:
+      function_suffix: _format
+  - decl: ~GenericOutputStream() +name(delete)
+
 - decl: void initialize()
 - decl: bool isInitialized()
 
@@ -52,6 +65,8 @@ declarations:
 - decl: std::string getActiveLoggerName()
 - decl: message::Level getLoggingMsgLevel()
 - decl: void setLoggingMsgLevel( message::Level level )
+- decl: void addStreamToMsgLevel(GenericOutputStream* ls, message::Level level)
+- decl: void addStreamToAllMsgLevels(GenericOutputStream* ls)
 
 - decl: void setAbortOnError( bool status )
 - decl: void enableAbortOnError()
@@ -67,6 +82,17 @@ declarations:
                          const std::string& message,
                          const std::string& fileName,
                          int line,
-                         bool filter )
+                         bool filter_duplicates = false )
+  default_arg_suffix:
+  - _file_line
+  - _file_line_filter
+- decl: void logMessage( message::Level level,
+                         const std::string& message,
+                         bool filter_duplicates = false )
+  default_arg_suffix:
+  -
+  - _filter
+
+- decl: void flushStreams()
 - decl: void finalize()
   

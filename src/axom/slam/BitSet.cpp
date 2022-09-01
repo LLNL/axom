@@ -1,19 +1,19 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "BitSet.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
+
+#include "axom/slam/BitSet.hpp"
 
 namespace axom
 {
 namespace slam
 {
-BitSet::Index const BitSet::npos = -2;
-
 void BitSet::clear()
 {
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] = 0;
   }
@@ -27,13 +27,13 @@ void BitSet::set()
   }
 
   const Word ones = ~Word(0);
-  for(int i = 0; i < m_numWords - 1; ++i)
+  for(int i = 0; i < m_data.size() - 1; ++i)
   {
     m_data[i] = ones;
   }
 
   // Handle last word
-  m_data[m_numWords - 1] = isLastWordFull() ? ones : lastWordMask();
+  m_data[m_data.size() - 1] = isLastWordFull() ? ones : lastWordMask();
 }
 
 void BitSet::flip()
@@ -44,22 +44,22 @@ void BitSet::flip()
   }
 
   const Word ones = ~Word(0);
-  for(int i = 0; i < m_numWords - 1; ++i)
+  for(int i = 0; i < m_data.size() - 1; ++i)
   {
     m_data[i] ^= ones;
   }
 
   // Handle last word
-  m_data[m_numWords - 1] ^= isLastWordFull() ? ones : lastWordMask();
+  m_data[m_data.size() - 1] ^= isLastWordFull() ? ones : lastWordMask();
 }
 
 int BitSet::count() const
 {
   int ctr = 0;
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
-    ctr += internal::popCount(m_data[i]);
+    ctr += axom::utilities::popCount(m_data[i]);
   }
   return ctr;
 }
@@ -68,14 +68,14 @@ bool BitSet::isValid() const
 {
   bool valid = true;
 
-  if(m_numBits < 0 || m_numWords < 0)
+  if(m_numBits < 0 || m_data.size() < 0)
   {
     valid = false;
   }
 
   if(m_numBits == 0)
   {
-    if(m_numWords != 1 || m_data[0] != Word(0))
+    if(m_data.size() != 1 || m_data[0] != Word(0))
     {
       valid = false;
     }
@@ -83,8 +83,8 @@ bool BitSet::isValid() const
   else
   {
     // check num words vs. num bits
-    int expWords = (m_numBits - 1) / BITS_PER_WORD + 1;
-    if(expWords != m_numWords) valid = false;
+    int expWords = (m_numBits - 1) / BitsPerWord + 1;
+    if(expWords != m_data.size()) valid = false;
 
     // check that highest bits are not set
     if(!isLastWordFull())
@@ -118,28 +118,28 @@ BitSet::Index BitSet::find_next(Index idx) const
     checkValidIndex(idx);
 
     const Index startIdx = idx + 1;
-    startWordIdx = startIdx / BITS_PER_WORD;
+    startWordIdx = startIdx / BitsPerWord;
 
     // Check for next set bit in current word
-    const Index startOffset = startIdx % BITS_PER_WORD;
+    const Index startOffset = startIdx % BitsPerWord;
 
     const Word startWord = m_data[startWordIdx] >> startOffset;
     if(startWord != Word(0))
     {
-      return (startWordIdx * BITS_PER_WORD) +
-        internal::trailingZeros(startWord << startOffset);
+      return (startWordIdx * BitsPerWord) +
+        axom::utilities::trailingZeros(startWord << startOffset);
     }
 
     ++startWordIdx;
   }
 
   // If not in current word, check remaining words
-  for(int i = startWordIdx; i < m_numWords; ++i)
+  for(int i = startWordIdx; i < m_data.size(); ++i)
   {
     const Word& w = m_data[i];
     if(w != Word(0))
     {
-      return (i * BITS_PER_WORD) + internal::trailingZeros(w);
+      return (i * BitsPerWord) + axom::utilities::trailingZeros(w);
     }
   }
   return BitSet::npos;
@@ -152,7 +152,7 @@ BitSet& BitSet::operator|=(const BitSet& other)
                     << " In operator|=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] |= other.m_data[i];
   }
@@ -167,7 +167,7 @@ BitSet& BitSet::operator&=(const BitSet& other)
                     << " In operator&=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] &= other.m_data[i];
   }
@@ -182,7 +182,7 @@ BitSet& BitSet::operator^=(const BitSet& other)
                     << " In operator^=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] ^= other.m_data[i];
   }
@@ -197,7 +197,7 @@ BitSet& BitSet::operator-=(const BitSet& other)
                     << " In operator-=(), BitSet has size " << size()
                     << " and other BitSet has size " << other.size() << ".");
 
-  for(int i = 0; i < m_numWords; ++i)
+  for(int i = 0; i < m_data.size(); ++i)
   {
     m_data[i] &= ~other.m_data[i];
   }

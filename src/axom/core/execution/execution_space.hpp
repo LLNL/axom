@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,7 +10,7 @@
 #include "axom/core/memory_management.hpp"
 
 /*!
- * \file
+ * \file execution_space.hpp
  *
  * \brief Defines the list of available execution spaces for axom.
  *
@@ -79,11 +79,13 @@ struct execution_space
   using atomic_policy = void;
   using sync_policy = void;
 
-  static constexpr bool async() noexcept { return false; };
-  static constexpr bool valid() noexcept { return false; };
-  static constexpr bool onDevice() noexcept { return false; };
-  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; };
-  static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; };
+  static constexpr MemorySpace memory_space = MemorySpace::Dynamic;
+
+  static constexpr bool async() noexcept { return false; }
+  static constexpr bool valid() noexcept { return false; }
+  static constexpr bool onDevice() noexcept { return false; }
+  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; }
+  static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; }
 };
 
 }  // namespace axom
@@ -98,6 +100,11 @@ struct execution_space
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
   defined(AXOM_USE_UMPIRE) && defined(__CUDACC__)
   #include "axom/core/execution/internal/cuda_exec.hpp"
+#endif
+
+#if defined(AXOM_USE_HIP) && defined(AXOM_USE_RAJA) && \
+  defined(AXOM_USE_UMPIRE) && defined(__HIPCC__)
+  #include "axom/core/execution/internal/hip_exec.hpp"
 #endif
 
 #endif  // AXOM_EXECUTIONSPACE_HPP_

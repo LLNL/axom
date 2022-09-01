@@ -1,10 +1,8 @@
-vcpkg_fail_port_install(ON_TARGET "UWP")
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/blt
-    REF v0.4.0
-    SHA512 56485176a8a3e725655acaa83718bb455e5502d26338c7acbcedc2b56ba6b08ab9719a8e4dbc0b8487407390199cfe079c32feacb301d7daa5a0095a1583ad3a
+    REF v0.5.1
+    SHA512 b8971937d1f526d56afbb1ea664ca426840232ad99c85f0434b398f975719eb678c44e0f3dd24c9f36987403f685d4507adb2ae8a559c7bf28b79ac8de46a345
     HEAD_REF develop
 )
 

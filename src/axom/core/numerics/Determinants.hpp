@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,9 +51,10 @@ real determinant(const real& a00, const real& a01,
  * \return det the determinant of the 3x3 matrix.
  */
 template <typename real>
-inline real determinant(const real& a00,  const real& a01,  const real& a02,
-                        const real& a10,  const real& a11,  const real& a12,
-                        const real& a20,  const real& a21,  const real& a22)
+inline AXOM_HOST_DEVICE
+real determinant(const real& a00,  const real& a01,  const real& a02,
+                 const real& a10,  const real& a11,  const real& a12,
+                 const real& a20,  const real& a21,  const real& a22)
 {
   const real m01 = a00 * a11 - a10 * a01;
   const real m02 = a00 * a21 - a20 * a01;

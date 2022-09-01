@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,15 +18,23 @@ set(mpi_example_sources
     basic/separate_file_per_rank.cpp
     )
 
+set(F_example_sources
+    basic/logging_F.f
+    basic/flogger.f
+)
+
 if (AXOM_ENABLE_LUMBERJACK)
     list(APPEND mpi_example_sources basic/lumberjack_logging.cpp )
 endif()
+
+set( slic_examples_depends axom )
+blt_list_append( TO slic_examples_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 foreach( example_source ${example_sources} )
     get_filename_component( example_name ${example_source} NAME_WE )
     blt_add_executable( NAME       slic_${example_name}_ex
                         SOURCES    ${example_source} 
-                        DEPENDS_ON axom
+                        DEPENDS_ON ${slic_examples_depends}
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
                         FOLDER     axom/slic/examples )
 
@@ -43,13 +51,29 @@ if ( ENABLE_MPI )
         blt_add_executable( NAME       slic_mpi_${example_name}_ex
                             SOURCES    ${example_source}
                             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                            DEPENDS_ON axom 
+                            DEPENDS_ON ${slic_examples_depends}
                             FOLDER     axom/slic/examples )
 
         if(AXOM_ENABLE_TESTS)
             axom_add_test( NAME    slic_mpi_${example_name}
                            COMMAND slic_mpi_${example_name}_ex
                            NUM_MPI_TASKS 4)
+        endif()
+    endforeach()
+endif()
+
+if(ENABLE_FORTRAN)
+    foreach(example_source ${F_example_sources})
+        get_filename_component(exe_name ${example_source} NAME_WE)
+        blt_add_executable( NAME slic_${exe_name}_ex
+                            SOURCES ${example_source}
+                            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+                            DEPENDS_ON slic
+                            FOLDER axom/slic/examples )
+
+        if(AXOM_ENABLE_TESTS)
+            axom_add_test( NAME slic_${exe_name}
+                           COMMAND slic_${exe_name}_ex )
         endif()
     endforeach()
 endif()

@@ -1,6 +1,6 @@
 {
   "name": "conduit",
-  "version": "0.7.2",
+  "version": "0.8.3",
   "homepage": "https://github.com/llnl/conduit",
   "description": "Simplified Data Exchange for HPC Simulations",
   "dependencies": [
@@ -9,5 +9,6 @@
       "features": ["tools"]
     }, 
     "blt"
-  ]
+  ],
+  "supports": "!uwp"
 }

@@ -1,14 +1,12 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- *
  * \file AxomMacros.hpp
  *
  * \brief Contains several useful macros for the axom project
- *
  */
 
 #ifndef AXOM_MACROS_HPP_
@@ -18,15 +16,24 @@
 #include <cassert>  // for assert()
 
 /*!
+ * \def AXOM_GPUCC
+ *
+ * \brief Convenience macro for compiling CUDA/HIP source files
+ */
+#if defined(__CUDACC__) || defined(__HIPCC__)
+  #define AXOM_GPUCC
+#endif
+
+/*!
  * \def AXOM_DEVICE
  * \def AXOM_HOST_DEVICE
  *
- * \brief CUDA host/device macros for decorating functions/lambdas
+ * \brief CUDA or HIP host/device macros for decorating functions/lambdas
  *
- * \note These will expand to the corresponding CUDA decorations when
- *  compiled with -DAXOM_USE_CUDA
+ * \note These will expand to the corresponding CUDA/HIP decorations when
+ *  compiled with -DAXOM_USE_CUDA or -DAXOM_USE_HIP
  */
-#if defined(__CUDACC__)
+#if defined(__CUDACC__) || defined(__HIPCC__)
   #define AXOM_DEVICE __device__
   #define AXOM_HOST_DEVICE __host__ __device__
   #define AXOM_HOST __host__
@@ -68,18 +75,21 @@
 #endif
 
 /*!
+ * \def AXOM_USE_GPU
+ *
+ * \brief Convenience macro used for GPU-enabled checks
+ */
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #define AXOM_USE_GPU
+#endif
+
+/*!
  * \def AXOM_LAMBDA
  *
  * \brief Convenience macro used for lambda capture by value.
- * \note When CUDA is used, the macro always expands to a host/device lambda.
- *
- * \warning When compiling with CUDA, host/device lambdas incur a significant
- *  penalty on the CPU code. The way NVCC implements host/device lambdas
- *  prevents the compiler from proper in-lining them. When CUDA is enabled use
- *  the parallel_gpu execution policy or opt to turn off CUDA if the application
- *  is making more use of the parallel_cpu and serial execution policies.
+ * \note When CUDA or HIP is used, the macro always expands to a host/device lambda.
  */
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
   #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
   #define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
   #define AXOM_HOST_LAMBDA [=] AXOM_HOST
@@ -108,7 +118,7 @@
  *
  * \brief Convenience macro used for kernel code
  */
-#if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
   #define AXOM_DEVICE_CODE
 #endif
 
@@ -257,4 +267,38 @@
   className(className&&) = delete;             \
   className& operator=(className&&) = delete
 
-#endif /* AXOM_MACROS_HPP_ */
+/*!
+ * \def AXOM_TYPED_TEST(CaseName, TestName)
+ * \brief Minor tweak of gtest's TYPED_TEST macro to work with device code
+ * \note Can be used in test files after including `gtest/gtest.h`
+ */
+// Specifically, we expose the `TestBody()` method as public instead of private
+#define AXOM_TYPED_TEST(CaseName, TestName)                                         \
+  static_assert(sizeof(GTEST_STRINGIFY_(TestName)) > 1,                             \
+                "test-name must not be empty");                                     \
+  template <typename gtest_TypeParam_>                                              \
+  class GTEST_TEST_CLASS_NAME_(CaseName, TestName)                                  \
+    : public CaseName<gtest_TypeParam_>                                             \
+  {                                                                                 \
+  public:                                                                           \
+    typedef CaseName<gtest_TypeParam_> TestFixture;                                 \
+    typedef gtest_TypeParam_ TypeParam;                                             \
+    void TestBody() override;                                                       \
+  };                                                                                \
+  static bool gtest_##CaseName##_##TestName##_registered_ GTEST_ATTRIBUTE_UNUSED_ = \
+    ::testing::internal::TypeParameterizedTest<                                     \
+      CaseName,                                                                     \
+      ::testing::internal::TemplateSel<GTEST_TEST_CLASS_NAME_(CaseName, TestName)>, \
+      GTEST_TYPE_PARAMS_(CaseName)>::                                               \
+      Register(                                                                     \
+        "",                                                                         \
+        ::testing::internal::CodeLocation(__FILE__, __LINE__),                      \
+        GTEST_STRINGIFY_(CaseName),                                                 \
+        GTEST_STRINGIFY_(TestName),                                                 \
+        0,                                                                          \
+        ::testing::internal::GenerateNames<GTEST_NAME_GENERATOR_(CaseName),         \
+                                           GTEST_TYPE_PARAMS_(CaseName)>());        \
+  template <typename gtest_TypeParam_>                                              \
+  void GTEST_TEST_CLASS_NAME_(CaseName, TestName)<gtest_TypeParam_>::TestBody()
+
+#endif  // AXOM_MACROS_HPP_

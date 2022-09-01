@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -95,6 +95,25 @@ void SynchronizedStream::append(message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
+void SynchronizedStream::outputLocal()
+{
+  if(m_cache == nullptr)
+  {
+    std::cerr << "ERROR: NULL cache!\n";
+    return;
+  }
+
+  if(m_comm == MPI_COMM_NULL)
+  {
+    std::cerr << "ERROR: NULL communicator!\n";
+    return;
+  }
+
+  // print messages for this rank
+  m_cache->printMessages(m_stream);
+}
+
+//------------------------------------------------------------------------------
 void SynchronizedStream::flush()
 {
   if(m_cache == nullptr)
@@ -109,6 +128,7 @@ void SynchronizedStream::flush()
     return;
   }
 
+  // Collective flush
   int rank = -1;
   int nranks = 0;
   MPI_Comm_rank(m_comm, &rank);

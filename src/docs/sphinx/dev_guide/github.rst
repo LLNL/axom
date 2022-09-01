@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -344,10 +344,6 @@ Step 4 -- Create a pull request
     the merge will proceed and you are done. If there are conflicts, Github 
     will indicate this and will not let you merge until all conflicts are
     resolved.
-
-    .. important:: **You must run the CZ Bamboo plan 'Build and Test Branch' 
-                   and verify all tests pass before you merge.** 
-                   See :ref:`bamboo-label` for more information.
 
     The preferred way to resolve conflicts at this point is to go into your 
     topic branch and do the following::

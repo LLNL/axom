@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -66,6 +66,12 @@ if(AXOM_ENABLE_QUEST)
     install(TARGETS              mesh_tester
             DESTINATION          bin
             )
+
+    # Add separable compilation flag
+    if (ENABLE_HIP)
+        blt_add_target_compile_flags(TO mesh_tester FLAGS "-fgpu-rdc")
+        blt_add_target_link_flags(TO mesh_tester FLAGS "-fgpu-rdc")
+    endif()
 endif()
 
 #------------------------------------------------------------------------------
@@ -101,10 +107,19 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
             COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
             NUM_MPI_TASKS 2
         )
+        axom_add_test(
+            NAME    data_collection_util_box3D
+            COMMAND data_collection_util --min -1 -1 -1 --max 1 1 1 --res 16 16 16 -p 1
+            NUM_MPI_TASKS 2
+        )
     else()
         axom_add_test(
             NAME    data_collection_util_box2D
             COMMAND data_collection_util --min -1 -1 --max 1 1 --res 16 16 -p 1
+        )
+        axom_add_test(
+            NAME    data_collection_util_box3D
+            COMMAND data_collection_util --min -1 -1 -1 --max 1 1 1 --res 16 16 16 -p 1
         )
     endif()
 

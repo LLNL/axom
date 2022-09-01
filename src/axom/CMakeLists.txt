@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,6 +33,7 @@ axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME inlet  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME klee   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME multimat DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
 if(ENABLE_CUDA)
     # Force "early" device linking to avoid propagating an NVCC link dependency
@@ -53,7 +54,7 @@ install(EXPORT axom-targets DESTINATION lib/cmake)
 # Generate export symbols
 #------------------------------------------------------------------------------
 include(GenerateExportHeader)
-set(_export_header ${CMAKE_BINARY_DIR}/axom_export_symbols)
+set(_export_header ${PROJECT_BINARY_DIR}/axom_export_symbols)
 generate_export_header(axom  EXPORT_FILE_NAME ${_export_header})
 
 #------------------------------------------------------------------------------

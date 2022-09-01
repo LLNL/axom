@@ -1,4 +1,4 @@
-! Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+! Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 ! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
@@ -52,7 +52,7 @@ program quest_signed_distance_interface
   logical :: is_verbose = .true.
   logical :: is_watertight = .true.
   logical :: compute_signs = .true.
-  real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), pt(3), phi
+  real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), pt(3), cp(3), normal(3), phi, phi_cp, eps, radius
 
 !...initialize mpi  
 #ifdef AXOM_USE_MPI
@@ -91,8 +91,23 @@ program quest_signed_distance_interface
        pt(j) = random_double( mesh_bb_min(j), mesh_bb_max(j) )
      end do ! end for all dimensions
 
+     ! evaluate signed distance (simple)
      phi = quest_signed_distance_evaluate( pt(1), pt(2), pt(3) )
-     print *, "phi=", phi
+
+     ! evaluate signed distance with closest point and normal at that point
+     phi_cp = quest_signed_distance_evaluate( pt(1), pt(2), pt(3), &
+                                              cp(1), cp(2), cp(3), &
+                                              normal(1), normal(2), normal(3) )
+     
+     radius = sqrt(cp(1)**2 + cp(2)**2 + cp(3)**2)
+
+     ! check that the two calls gave approximately the same answer
+     if (abs(phi-phi_cp) >= epsilon(phi)) then
+        print*, 'Got different values when calling overloads of quest_signed_distance_evaluate! ', phi, phi_cp
+     end if
+
+     print '("phi: ",F8.3,"; closest_point: ",F8.3, F8.3, F8.3, "; normal: ",F8.3,F8.3,F8.3,"; radius @ cp: ", F8.3)',  &
+            phi, cp(1), cp(2), cp(3), normal(1), normal(2), normal(3), radius
 
   end do ! end for all points
 

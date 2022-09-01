@@ -1,7 +1,14 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
+
+#include "axom/core/Path.hpp"
+#include "axom/slic/core/SimpleLogger.hpp"
+#include "axom/sidre.hpp"
+
+#include "axom/inlet/Inlet.hpp"
+#include "axom/inlet/tests/inlet_test_utils.hpp"
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -10,14 +17,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-
 #include <iostream>
-
-#include "axom/core/Path.hpp"
-#include "axom/sidre.hpp"
-
-#include "axom/inlet/Inlet.hpp"
-#include "axom/inlet/tests/inlet_test_utils.hpp"
 
 using axom::Path;
 using axom::inlet::Inlet;
@@ -1448,18 +1448,12 @@ TEST(inlet_object_lua_dict, mixed_keys_object)
 #endif
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

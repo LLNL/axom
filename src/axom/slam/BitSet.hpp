@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,10 +13,14 @@
 #define SLAM_BITSET_H_
 
 #include "axom/config.hpp"
+#include "axom/core/Array.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/BitUtilities.hpp"
 #include "axom/slic.hpp"
 
-#include "axom/slam/internal/BitTwiddle.hpp"
+#ifdef AXOM_USE_RAJA
+  #include "RAJA/RAJA.hpp"
+#endif
 
 #include <vector>
 
@@ -104,7 +108,7 @@ BitSet operator-(const BitSet& lhs, const BitSet& rhs);
  * BitSet uses the same interface as boost::dynamic_bitset to enumerate the
  * set bits. Specifically, find_first() returns the index of the first set bit.
  * and find_next(idx) returns the next bit that is set after bit index idx.
- * BitSet::npos is used as a sentinal to indicate no more set bits.
+ * BitSet::npos is used as a sentinel to indicate no more set bits.
  */
 class BitSet
 {
@@ -112,17 +116,16 @@ public:
   using Index = int;
   using Word = axom::uint64;
 
-  // Use vector for initial implementation -- TODO: update using a policy
-  using ArrayType = std::vector<Word>;
+  // TODO: update using a policy
+  using ArrayType = axom::Array<Word, 1>;
 
-  AXOM_EXPORT static const Index npos;
+  static constexpr Index npos = -2;
+  static constexpr int BitsPerWord =
+    axom::utilities::BitTraits<Word>::BITS_PER_WORD;
 
 private:
-  enum
-  {
-    BITS_PER_WORD = internal::BitTraits<Word>::BITS_PER_WORD,
-    LG_BITS_PER_WORD = internal::BitTraits<Word>::LG_BITS_PER_WORD
-  };
+  static constexpr int LG_BITS_PER_WORD =
+    axom::utilities::BitTraits<Word>::LG_BITS_PER_WORD;
 
 public:
   /**
@@ -133,24 +136,23 @@ public:
    * \post bset.size() == numBits
    * \post All bits will be off
    */
-  explicit BitSet(int numBits = 0)
+  explicit BitSet(int numBits = 0,
+                  int allocatorID = axom::getDefaultAllocatorID())
   {
     SLIC_ASSERT_MSG(
       numBits >= 0,
       "slam::BitSet must be initialized with a non-zero number of bits");
 
     m_numBits = axom::utilities::max(numBits, 0);
-    m_numWords = (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BITS_PER_WORD;
+    axom::IndexType numWords =
+      (m_numBits == 0) ? 1 : 1 + (m_numBits - 1) / BitsPerWord;
 
-    m_data = ArrayType(m_numWords);
+    m_data = ArrayType(axom::ArrayOptions::Uninitialized {},
+                       numWords,
+                       numWords,
+                       allocatorID);
+    m_data.fill(0);
   }
-
-  /** \brief Copy constructor for BitSet class */
-  BitSet(const BitSet& other)
-    : m_data(other.m_data)
-    , m_numBits(other.m_numBits)
-    , m_numWords(other.m_numWords)
-  { }
 
   /** \brief Equality operator for two bitsets */
   bool operator==(const BitSet& other) const;
@@ -158,21 +160,14 @@ public:
   /** \brief Inequality operator for two bitsets */
   bool operator!=(const BitSet& other) const { return !(operator==(other)); }
 
+  /*!
+   * \brief Gets the underlying data of a BitSet.
+   */
+  AXOM_HOST_DEVICE const Word* data() const { return m_data.data(); }
+
 public:
   /// \name Bitset bitwise assignment operators
   /// @{
-
-  /** \brief Assignment operator for BitSet class */
-  BitSet& operator=(const BitSet& other)
-  {
-    if(this != &other)
-    {
-      m_data = other.m_data;
-      m_numBits = other.m_numBits;
-      m_numWords = other.m_numWords;
-    }
-    return *this;
-  }
 
   /**
    * \brief BitSet union-assignment operator
@@ -254,7 +249,7 @@ public:
   /// @{
 
   /** \brief Returns the cardinality of the bitset */
-  int size() const { return m_numBits; }
+  AXOM_HOST_DEVICE int size() const { return m_numBits; }
 
   /** \brief Returns the number of bits that are set */
   int count() const;
@@ -308,11 +303,60 @@ public:
 
   /**
    * \brief Tests the bit at index \a idx
+   * \return True if \a idx is valid and its bit is set, false otherwise
+   */
+  bool test(Index idx) const
+  {
+    return (idx >= 0 && idx < m_numBits) &&   // idx is in range
+      (getWord(idx) & mask(idx)) != Word(0);  // and its bit is set
+  }
+
+  /// @}
+
+  /// \name Atomic versions of single-bit operations
+  /// @{
+
+  /**
+   * \brief Clears bit at index \a idx
    *
-   * \return True if bit \idx is set, false otherwise
    * \pre \a idx must be between 0 and bitset.size()
    */
-  bool test(Index idx) const { return (getWord(idx) & mask(idx)) != Word(0); }
+  void atomicClear(Index idx)
+  {
+#ifdef AXOM_USE_RAJA
+    RAJA::atomicAnd<RAJA::auto_atomic>(&getWord(idx), ~mask(idx));
+#else
+    clear(idx);
+#endif
+  }
+
+  /**
+   * \brief Sets bit at index \a idx
+   *
+   * \pre \a idx must be between 0 and bitset.size()
+   */
+  AXOM_HOST_DEVICE void atomicSet(Index idx)
+  {
+#ifdef AXOM_USE_RAJA
+    RAJA::atomicOr<RAJA::auto_atomic>(&getWord(idx), mask(idx));
+#else
+    set(idx);
+#endif
+  }
+
+  /**
+   * \brief Toggles bit at index \a idx
+   *
+   * \pre \a idx must be between 0 and bitset.size()
+   */
+  void atomicFlip(Index idx)
+  {
+#ifdef AXOM_USE_RAJA
+    RAJA::atomicXor<RAJA::auto_atomic>(&getWord(idx), mask(idx));
+#else
+    flip(idx);
+#endif
+  }
 
   /// @}
 private:
@@ -323,11 +367,12 @@ private:
    * \param checkIndexValid Option to enable bounds checking to ensure
    * that \a idx is within range [0, size() )
    */
+  AXOM_HOST_DEVICE
   Word& getWord(Index idx, bool checkIndexValid = true)
   {
     if(checkIndexValid) checkValidIndex(idx);
 
-    const Index wIdx = idx / BITS_PER_WORD;
+    const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];
   }
 
@@ -335,11 +380,12 @@ private:
    * \brief Const implementation of getWord()
    * \sa getWord()
    */
+  AXOM_HOST_DEVICE
   const Word& getWord(Index idx, bool checkIndexValid = true) const
   {
     if(checkIndexValid) checkValidIndex(idx);
 
-    const Index wIdx = idx / BITS_PER_WORD;
+    const Index wIdx = idx / BitsPerWord;
     return m_data[wIdx];
   }
 
@@ -349,9 +395,10 @@ private:
    *
    * \param idx The index of the desired bit
    */
+  AXOM_HOST_DEVICE
   Word mask(Index idx) const
   {
-    const Index wOffset = idx % BITS_PER_WORD;
+    const Index wOffset = idx % BitsPerWord;
     return Word(1) << wOffset;
   }
 
@@ -368,6 +415,7 @@ private:
    *
    * \note This function is a no-op in Release builds
    */
+  AXOM_HOST_DEVICE
   void checkValidIndex(Index idx) const
   {
     AXOM_UNUSED_VAR(idx);
@@ -381,7 +429,7 @@ private:
    * for the final word of the bitset
    *
    * The last word is full when the bitset has exactly
-   * m_words * BITS_PER_WORD bits
+   * m_words * BitsPerWord bits
    */
   bool isLastWordFull() const
   {
@@ -393,7 +441,6 @@ private:
   ArrayType m_data;
 
   int m_numBits;
-  int m_numWords;
 };
 
 }  // end namespace slam

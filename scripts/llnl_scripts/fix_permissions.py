@@ -1,7 +1,7 @@
 #!/bin/sh
 "exec" "python" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,7 +19,6 @@ from llnl_lc_build_tools import *
 
 def main():
     shared_dirs = [get_shared_mirror_dir(),
-                   get_archive_base_dir(),
                    get_shared_devtool_dir(),
                    get_shared_libs_dir()]
 

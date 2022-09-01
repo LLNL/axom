@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -80,7 +80,7 @@ void all_nearest_neighbors(const double* x,
     const size_t querybincount = qbins.size();
     for(size_t binidx = 0; binidx < querybincount; ++binidx)
     {
-      const std::vector<int> bs = ugrid.getBinContents(qbins[binidx]);
+      const axom::ArrayView<int> bs = ugrid.getBinContents(qbins[binidx]);
       const size_t binsize = bs.size();
       for(size_t bj = 0; bj < binsize; ++bj)
       {

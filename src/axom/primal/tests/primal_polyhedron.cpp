@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -136,7 +136,7 @@ void check_volume()
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA policy, set to Unified)
+  // Determine new allocator (for CUDA or HIP policy, set to Unified)
   umpire::Allocator allocator =
     rm.getAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
@@ -201,6 +201,16 @@ AXOM_CUDA_TEST(primal_polyhedron, check_volume_cuda)
   check_volume<exec>();
 }
   #endif /* AXOM_USE_CUDA */
+
+  #ifdef AXOM_USE_HIP
+TEST(primal_polyhedron, check_volume_hip)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+
+  check_volume<exec>();
+}
+  #endif /* AXOM_USE_HIP */
 
 #endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
@@ -399,10 +409,7 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  namespace slic = axom::slic;
-  slic::SimpleLogger logger;
-  slic::setLoggingMsgLevel(slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   result = RUN_ALL_TESTS();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -163,7 +163,7 @@ public:
   }
 
   /**
-   * \brief Insert vale \a value into position \a position in the map
+   * \brief Insert \a value into \a position in the map
    *
    * \note Increases the map size if position is out of range
    */

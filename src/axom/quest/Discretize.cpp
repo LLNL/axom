@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,15 +6,19 @@
 #include "axom/quest/Discretize.hpp"
 
 #include "axom/core.hpp"
+
+#include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 #include "axom/primal/operators/split.hpp"
+
 #include "axom/mint/config.hpp"
-#include "axom/mint/mesh/Mesh.hpp"             /* for Mesh base class */
-#include "axom/mint/mesh/UnstructuredMesh.hpp" /* for UnstructuredMesh */
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 
 #include <cmath>
@@ -28,38 +32,29 @@ namespace quest
  */
 Point3D project_to_shape(const Point3D& p, const SphereType& sphere)
 {
-  const double* ctr = sphere.getCenter();
-  double dist2 = primal::squared_distance(ctr, p.data(), 3);
-  double dist = sqrt(dist2);
-  double drat = sphere.getRadius() * dist / (dist2 + PTINY);
-  double dratc = drat - 1.0;
-  return Point3D::make_point(drat * p[0] - dratc * ctr[0],
-                             drat * p[1] - dratc * ctr[1],
-                             drat * p[2] - dratc * ctr[2]);
+  const auto& ctr = sphere.getCenter();
+  const double dist2 = primal::squared_distance(ctr, p);
+  const double dist = sqrt(dist2);
+  const double drat = sphere.getRadius() * dist / (dist2 + primal::PRIMAL_TINY);
+
+  return Point3D::lerp(ctr, p, drat);
 }
 
 /* Return an octahedron whose six points lie on the given sphere.
  */
 OctType from_sphere(const SphereType& sphere)
 {
-  NAType center(sphere.getCenter());
-  NAType ihat({1., 0., 0.});
-  NAType jhat({0., 1., 0.});
-  NAType khat({0., 0., 1.});
+  const NAType& center = sphere.getCenter().array();
+  const NAType ihat({1., 0., 0.});
+  const NAType jhat({0., 1., 0.});
+  const NAType khat({0., 0., 1.});
 
-  NAType dp = center + ihat;
-  NAType dq = center + jhat;
-  NAType dr = center + khat;
-  NAType ds = center - ihat;
-  NAType dt = center - jhat;
-  NAType du = center - khat;
-
-  Point3D P = project_to_shape(Point3D(dp), sphere);
-  Point3D Q = project_to_shape(Point3D(dq), sphere);
-  Point3D R = project_to_shape(Point3D(dr), sphere);
-  Point3D S = project_to_shape(Point3D(ds), sphere);
-  Point3D T = project_to_shape(Point3D(dt), sphere);
-  Point3D U = project_to_shape(Point3D(du), sphere);
+  const Point3D P = project_to_shape(Point3D(center + ihat), sphere);
+  const Point3D Q = project_to_shape(Point3D(center + jhat), sphere);
+  const Point3D R = project_to_shape(Point3D(center + khat), sphere);
+  const Point3D S = project_to_shape(Point3D(center - ihat), sphere);
+  const Point3D T = project_to_shape(Point3D(center - jhat), sphere);
+  const Point3D U = project_to_shape(Point3D(center - khat), sphere);
 
   return OctType(P, Q, R, S, T, U);
 }
@@ -123,7 +118,7 @@ bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcou
     return false;
   }
   // Zero radius: return true without generating octahedra.
-  if(sphere.getRadius() < PTINY)
+  if(sphere.getRadius() < primal::PRIMAL_TINY)
   {
     octcount = 0;
     return true;
@@ -230,9 +225,8 @@ int mesh_from_discretized_polyline(const OctType* octs,
   const int tetcount = 8 * octcount;
   const int vertcount = 4 * tetcount;
   int octPerSeg = octcount / segcount;
-  int remainderOcts = octcount % segcount;
   SLIC_ASSERT_MSG(
-    remainderOcts == 0,
+    (octcount % segcount) == 0,  // remainderOcts
     "Total octahedron count is not evenly divisible by segment count");
 
   // Step 0: create the UnstructuredMesh

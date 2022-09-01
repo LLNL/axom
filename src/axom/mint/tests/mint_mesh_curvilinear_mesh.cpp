@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,19 +9,19 @@
 #include "axom/mint/mesh/CellTypes.hpp"        // for CellTypes enum definition
 #include "axom/mint/mesh/CurvilinearMesh.hpp"  // for CurivilinearMesh
 #include "axom/mint/mesh/ParticleMesh.hpp"     // for ParticleMesh
-#include "axom/mint/mesh/internal/MeshHelpers.hpp"  // for internal::dim
+#include "axom/mint/mesh/internal/MeshHelpers.hpp"  // for axom::mint::internal::dim
 #include "StructuredMesh_helpers.hpp"  // for StructuredMesh test helpers
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"  // for slic macros
+#include "axom/slic.hpp"
 
 // Sidre includes
 #ifdef AXOM_MINT_USE_SIDRE
-  #include "axom/sidre/core/sidre.hpp"
+  #include "axom/sidre.hpp"
 namespace sidre = axom::sidre;
 #endif
 
-#include "gtest/gtest.h"  // for gtest macros
+#include "gtest/gtest.h"
 
 using namespace axom::mint;
 using IndexType = axom::IndexType;
@@ -37,10 +37,10 @@ namespace
 //------------------------------------------------------------------------------
 void set_coordinates(IndexType N, double* x, double* y = nullptr, double* z = nullptr)
 {
-  const IndexType ndims = internal::dim(x, y, z);
+  const IndexType ndims = axom::mint::internal::dim(x, y, z);
   double* const coords[3] = {x, y, z};
 
-  double factor = internal::PI;
+  double factor = axom::mint::internal::PI;
   for(int dim = 0; dim < ndims; ++dim)
   {
     SLIC_ASSERT(coords[dim] != nullptr);
@@ -49,7 +49,7 @@ void set_coordinates(IndexType N, double* x, double* y = nullptr, double* z = nu
       coords[dim][i] = factor * i;
     }
 
-    factor *= internal::PI;
+    factor *= axom::mint::internal::PI;
   }
 }
 
@@ -86,7 +86,7 @@ void check_coordinates(IndexType N,
 {
   const double* const coords[3] = {x, y, z};
 
-  double factor = internal::PI;
+  double factor = axom::mint::internal::PI;
   for(int dim = 0; dim < ndims; ++dim)
   {
     ASSERT_NE(coords[dim], nullptr);
@@ -95,7 +95,7 @@ void check_coordinates(IndexType N,
       EXPECT_DOUBLE_EQ(coords[dim][i], factor * i);
     }
 
-    factor *= internal::PI;
+    factor *= axom::mint::internal::PI;
   }
 }
 
@@ -184,13 +184,13 @@ TEST(mint_mesh_curvilinear_mesh, native_constructor)
       m = new CurvilinearMesh(N[0], N[1], N[2]);
     }  // END switch
 
-    internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
     EXPECT_FALSE(m->isExternal());
     EXPECT_FALSE(m->hasSidreGroup());
     m->setExtent(idim, extent);
-    internal::check_node_extent(m, extent);
+    axom::mint::internal::check_node_extent(m, extent);
     set_coordinates(m);
-    internal::check_create_fields(m);
+    axom::mint::internal::check_create_fields(m);
     delete m;
   }  // END for all dimensions
 }
@@ -241,9 +241,9 @@ TEST(mint_mesh_curvilinear_mesh, external_constructor)
     }  // END switch
 
     check_coordinates(m);
-    internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
     m->setExtent(idim, extent);
-    internal::check_node_extent(m, extent);
+    axom::mint::internal::check_node_extent(m, extent);
 
     EXPECT_FALSE(m->hasSidreGroup());
     EXPECT_TRUE(m->isExternal());
@@ -301,11 +301,11 @@ TEST(mint_mesh_curvilinear_mesh, sidre_constructor)
 
     EXPECT_TRUE(m->hasSidreGroup());
     EXPECT_FALSE(m->isExternal());
-    internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
+    axom::mint::internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
     m->setExtent(idim, extent);
-    internal::check_node_extent(m, extent);
+    axom::mint::internal::check_node_extent(m, extent);
     set_coordinates(m);
-    internal::check_create_fields(m);
+    axom::mint::internal::check_create_fields(m);
 
     delete m;
     m = nullptr;
@@ -314,8 +314,8 @@ TEST(mint_mesh_curvilinear_mesh, sidre_constructor)
     m = new CurvilinearMesh(meshGroup);
     EXPECT_TRUE(m->hasSidreGroup());
     EXPECT_FALSE(m->isExternal());
-    internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
-    internal::check_fields(m, true);
+    axom::mint::internal::check_constructor(m, STRUCTURED_CURVILINEAR_MESH, idim, N);
+    axom::mint::internal::check_fields(m, true);
     EXPECT_EQ(idim, m->getDimension());
     EXPECT_EQ(numNodes, m->getNumberOfNodes());
     check_coordinates(m);
@@ -330,18 +330,12 @@ TEST(mint_mesh_curvilinear_mesh, sidre_constructor)
 #endif /* AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();
 

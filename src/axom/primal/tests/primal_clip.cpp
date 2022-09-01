@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,9 +6,10 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/core/Types.hpp"
-#include "axom/core/execution/for_all.hpp"  // for for_all, execution policies
+#include "axom/core/execution/for_all.hpp"
 #include "axom/core/memory_management.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
@@ -17,6 +18,7 @@
 #include "axom/primal/geometry/Plane.hpp"
 
 #include "axom/primal/operators/clip.hpp"
+#include "axom/primal/operators/split.hpp"
 
 #include <limits>
 
@@ -42,16 +44,18 @@ TEST(primal_clip, simple_clip)
   bbox.addPoint(PointType::ones());
 
   PointType points[] = {
-    PointType::make_point(2, 2, 2),
-    PointType::make_point(2, 2, 4),
-    PointType::make_point(2, 4, 2),
-    PointType::make_point(-100, -100, 0.5),
-    PointType::make_point(-100, 100, 0.5),
-    PointType::make_point(100, 0, 0.5),
-    PointType::make_point(0.25, 0.25, 0.5),
-    PointType::make_point(0.75, 0.25, 0.5),
-    PointType::make_point(0.66, 0.5, 0.5),
-    PointType::make_point(1.5, 0.5, 0.5),
+    PointType {2, 2, 2},
+    PointType {2, 2, 4},
+    PointType {2, 4, 2},
+
+    PointType {-100, -100, 0.5},
+    PointType {-100, 100, 0.5},
+    PointType {100, 0, 0.5},
+
+    PointType {0.25, 0.25, 0.5},
+    PointType {0.75, 0.25, 0.5},
+    PointType {0.66, 0.5, 0.5},
+    PointType {1.5, 0.5, 0.5},
   };
 
   {
@@ -77,7 +81,7 @@ TEST(primal_clip, simple_clip)
     PolygonType poly = axom::primal::clip(tri, bbox);
     EXPECT_EQ(4, poly.numVertices());
 
-    EXPECT_EQ(PointType(.5), poly.centroid());
+    EXPECT_EQ(PointType(.5), poly.vertexMean());
 
     SLIC_INFO("Intersection of triangle " << tri << " and bounding box " << bbox
                                           << " is polygon" << poly);
@@ -100,12 +104,12 @@ TEST(primal_clip, unit_simplex)
   double delta = 1e-5;
 
   // Test the "unit simplex", and a jittered version
-  PointType points[] = {PointType::make_point(1, 0, 0),
-                        PointType::make_point(0, 1, 0),
-                        PointType::make_point(0, 0, 1),
-                        PointType::make_point(1 + delta, delta, delta),
-                        PointType::make_point(delta, 1 + delta, delta),
-                        PointType::make_point(delta, delta, 1 + delta)};
+  PointType points[] = {PointType {1, 0, 0},
+                        PointType {0, 1, 0},
+                        PointType {0, 0, 1},
+                        PointType {1 + delta, delta, delta},
+                        PointType {delta, 1 + delta, delta},
+                        PointType {delta, delta, 1 + delta}};
 
   BoundingBoxType bbox;
   bbox.addPoint(PointType::zero());
@@ -149,25 +153,25 @@ TEST(primal_clip, boundingBoxOptimization)
   PointType midpoint = PointType::zero();
 
   PointType points[] = {
-    PointType::make_point(VAL1, VAL2, 0),
-    PointType::make_point(-VAL1, VAL2, 0),
-    PointType::make_point(VAL1, -VAL2, 0),
-    PointType::make_point(-VAL1, -VAL2, 0),
+    PointType {VAL1, VAL2, 0},
+    PointType {-VAL1, VAL2, 0},
+    PointType {VAL1, -VAL2, 0},
+    PointType {-VAL1, -VAL2, 0},
 
-    PointType::make_point(VAL1, 0, VAL2),
-    PointType::make_point(-VAL1, 0, VAL2),
-    PointType::make_point(VAL1, 0, -VAL2),
-    PointType::make_point(-VAL1, 0, -VAL2),
+    PointType {VAL1, 0, VAL2},
+    PointType {-VAL1, 0, VAL2},
+    PointType {VAL1, 0, -VAL2},
+    PointType {-VAL1, 0, -VAL2},
 
-    PointType::make_point(0, VAL2, VAL1),
-    PointType::make_point(0, VAL2, -VAL1),
-    PointType::make_point(0, -VAL2, VAL1),
-    PointType::make_point(0, -VAL2, -VAL1),
+    PointType {0, VAL2, VAL1},
+    PointType {0, VAL2, -VAL1},
+    PointType {0, -VAL2, VAL1},
+    PointType {0, -VAL2, -VAL1},
 
-    PointType::make_point(0, VAL1, VAL2),
-    PointType::make_point(0, -VAL1, VAL2),
-    PointType::make_point(0, VAL1, -VAL2),
-    PointType::make_point(0, -VAL1, -VAL2),
+    PointType {0, VAL1, VAL2},
+    PointType {0, -VAL1, VAL2},
+    PointType {0, VAL1, -VAL2},
+    PointType {0, -VAL1, -VAL2},
   };
 
   for(int i = 0; i < 16; i += 2)
@@ -186,20 +190,20 @@ TEST(primal_clip, experimentalData)
   const double EPS = 1e-8;
 
   // Triangle 248 from sphere mesh
-  TriangleType tri(PointType::make_point(0.405431, 3.91921, 3.07821),
-                   PointType::make_point(1.06511, 3.96325, 2.85626),
-                   PointType::make_point(0.656002, 4.32465, 2.42221));
+  TriangleType tri(PointType {0.405431, 3.91921, 3.07821},
+                   PointType {1.06511, 3.96325, 2.85626},
+                   PointType {0.656002, 4.32465, 2.42221});
 
   // Block index {grid pt: (19,29,24); level: 5} from InOutOctree
-  BoundingBoxType box12(PointType::make_point(0.937594, 4.06291, 2.50025),
-                        PointType::make_point(1.25012, 4.37544, 2.81278));
+  BoundingBoxType box12(PointType {0.937594, 4.06291, 2.50025},
+                        PointType {1.25012, 4.37544, 2.81278});
 
   PolygonType poly = axom::primal::clip(tri, box12);
   EXPECT_EQ(3, poly.numVertices());
 
   SLIC_INFO("Intersection of triangle "
             << tri << " \n\t and bounding box " << box12 << " \n\t is polygon"
-            << poly << " with centroid " << poly.centroid());
+            << poly << " with centroid " << poly.vertexMean());
 
   // Check that the polygon vertices are on the triangle
   for(int i = 0; i < poly.numVertices(); ++i)
@@ -225,7 +229,7 @@ TEST(primal_clip, experimentalData)
 
   // Check that the polygon centroid is on the triangle
   {
-    PointType centroid = poly.centroid();
+    PointType centroid = poly.vertexMean();
     PointType bary = tri.physToBarycentric(centroid);
     PointType reconstructed = tri.baryToPhysical(bary);
 
@@ -356,27 +360,16 @@ void check_oct_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Determine new allocator (for CUDA policy, set to Unified)
-  umpire::Allocator allocator =
-    rm.getAllocator(axom::execution_space<ExecPolicy>::allocatorID());
-
-  // Set new default to device
-  axom::setDefaultAllocator(allocator.getId());
+  // Set new default to device if available
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
 
   // Allocate memory for shapes
   TetrahedronType* tet = axom::allocate<TetrahedronType>(1);
   OctahedronType* oct = axom::allocate<OctahedronType>(1);
-
-  PolyhedronType* res = (axom::execution_space<ExecPolicy>::onDevice()
-                           ? axom::allocate<PolyhedronType>(
-                               1,
-                               rm.getAllocator(umpire::resource::Unified).getId())
-                           : axom::allocate<PolyhedronType>(1));
+  PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
   tet[0] = TetrahedronType(PointType({1, 0, 0}),
                            PointType({1, 1, 0}),
@@ -403,6 +396,45 @@ void check_oct_tet_clip(double EPS)
   axom::setDefaultAllocator(current_allocator);
 }
 
+template <typename ExecPolicy>
+void check_tet_tet_clip(double EPS)
+{
+  using namespace Primal3D;
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Set new default to device if available
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
+
+  // Allocate memory for shapes
+  TetrahedronType* tet1 = axom::allocate<TetrahedronType>(1);
+  TetrahedronType* tet2 = axom::allocate<TetrahedronType>(1);
+  PolyhedronType* res = axom::allocate<PolyhedronType>(1);
+
+  tet1[0] = TetrahedronType(PointType({1, 0, 0}),
+                            PointType({1, 1, 0}),
+                            PointType({0, 1, 0}),
+                            PointType({1, 1, 1}));
+
+  tet2[0] = TetrahedronType(PointType({0, 0, 0}),
+                            PointType({1, 0, 0}),
+                            PointType({1, 1, 0}),
+                            PointType({1, 1, 1}));
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(tet1[i], tet2[i]); });
+
+  EXPECT_NEAR(0.0833, res[0].volume(), EPS);
+
+  axom::deallocate(tet1);
+  axom::deallocate(tet2);
+  axom::deallocate(res);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
 TEST(primal_clip, unit_poly_clip_vertices_sequential)
 {
   unit_check_poly_clip<axom::SEQ_EXEC>();
@@ -412,6 +444,12 @@ TEST(primal_clip, clip_oct_tet_sequential)
 {
   const double EPS = 1e-4;
   check_oct_tet_clip<axom::SEQ_EXEC>(EPS);
+}
+
+TEST(primal_clip, clip_tet_tet_sequential)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::SEQ_EXEC>(EPS);
 }
 
   #ifdef AXOM_USE_OPENMP
@@ -425,10 +463,16 @@ TEST(primal_clip, clip_oct_tet_omp)
   const double EPS = 1e-4;
   check_oct_tet_clip<axom::OMP_EXEC>(EPS);
 }
+
+TEST(primal_clip, clip_tet_tet_omp)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::OMP_EXEC>(EPS);
+}
   #endif /* AXOM_USE_OPENMP */
 
   #if defined(AXOM_USE_CUDA)
-AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_gpu)
+AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_cuda)
 {
   unit_check_poly_clip<axom::CUDA_EXEC<256>>();
 }
@@ -438,8 +482,34 @@ AXOM_CUDA_TEST(primal_clip, clip_oct_tet_cuda)
   const double EPS = 1e-4;
   check_oct_tet_clip<axom::CUDA_EXEC<256>>(EPS);
 }
+
+TEST(primal_clip, clip_tet_tet_cuda)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::CUDA_EXEC<256>>(EPS);
+}
   #endif /* AXOM_USE_CUDA */
-#endif   /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
+
+  #if defined(AXOM_USE_HIP)
+TEST(primal_clip, unit_poly_clip_vertices_hip)
+{
+  unit_check_poly_clip<axom::HIP_EXEC<256>>();
+}
+
+TEST(primal_clip, clip_oct_tet_hip)
+{
+  const double EPS = 1e-4;
+  check_oct_tet_clip<axom::HIP_EXEC<256>>(EPS);
+}
+
+TEST(primal_clip, clip_tet_tet_hip)
+{
+  const double EPS = 1e-4;
+  check_tet_tet_clip<axom::HIP_EXEC<256>>(EPS);
+}
+  #endif /* AXOM_USE_HIP */
+
+#endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 // Tetrahedron does not clip octahedron.
 TEST(primal_clip, oct_tet_clip_nonintersect)
@@ -654,15 +724,170 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
 }
 
-//------------------------------------------------------------------------------
-#include "axom/slic/core/SimpleLogger.hpp"
-using axom::slic::SimpleLogger;
+// Tetrahedron does not clip tetrahedron.
+TEST(primal_clip, tet_tet_clip_nonintersect)
+{
+  using namespace Primal3D;
 
+  TetrahedronType tet1(PointType({-1, -1, -1}),
+                       PointType({-1, 0, 0}),
+                       PointType({-1, -1, 0}),
+                       PointType({0, 0, 0}));
+
+  TetrahedronType tet2(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron is adjacent to tetrahedron
+TEST(primal_clip, tet_tet_clip_adjacent)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({1, 0, 1}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 0}),
+                       PointType({0, 0, 0}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron clips tetrahedron at a single vertex
+TEST(primal_clip, tet_tet_clip_point)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({0, 1, 0}),
+                       PointType({0, 0, 0}),
+                       PointType({-1, 0, 0}),
+                       PointType({0, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedrons are the same
+TEST(primal_clip, tet_tet_equal)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({1, 0, 0}),
+                      PointType({1, 1, 0}),
+                      PointType({0, 1, 0}),
+                      PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet, tet);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Tetrahedron is encapsulated inside the other tetrahedron
+TEST(primal_clip, tet_tet_encapsulate)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 0, 1}));
+
+  TetrahedronType tet2(PointType({3, 0, 0}),
+                       PointType({0, 3, 0}),
+                       PointType({-3, 0, 0}),
+                       PointType({0, 0, 3}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Half of the tetrahedron is clipped by the other tetrahedron
+TEST(primal_clip, tet_tet_half)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet1(PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({0, 1, 0}),
+                       PointType({1, 1, 1}));
+
+  TetrahedronType tet2(PointType({0, 0, 0}),
+                       PointType({1, 0, 0}),
+                       PointType({1, 1, 0}),
+                       PointType({1, 1, 1}));
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2);
+
+  // Expected result should be 0.666 / 4 / 2 = 0.0833, volume of tet.
+  EXPECT_NEAR(0.0833, poly.volume(), EPS);
+}
+
+// Half of the octahedron is clipped by the tetrahedron.
+// Then, we split the octahedron into 8 tetrahedrons,
+// and verify the total volume from clipping the 8 split tetrahedrons
+// by the starting tetrahedron are the same as with the octahedron.
+TEST(primal_clip, tet_tet_clip_split)
+{
+  using namespace Primal3D;
+  const double EPS = 1e-4;
+
+  TetrahedronType tet(PointType({0.5, 0.5, 2}),
+                      PointType({2, -1, 0}),
+                      PointType({-1, -1, 0}),
+                      PointType({-1, 2, 0}));
+  OctahedronType oct(PointType({1, 0, 0}),
+                     PointType({1, 1, 0}),
+                     PointType({0, 1, 0}),
+                     PointType({0, 1, 1}),
+                     PointType({0, 0, 1}),
+                     PointType({1, 0, 1}));
+
+  PolyhedronType poly = axom::primal::clip(oct, tet);
+
+  // Expected result should be 0.3333, half the volume of oct.
+  EXPECT_NEAR(0.3333, poly.volume(), EPS);
+
+  // Split the octahedron into 8 tetrahedrons
+  double tet_volumes = 0.0;
+
+  axom::Array<TetrahedronType> split_tets(8);
+
+  axom::primal::split(oct, split_tets);
+
+  for(int i = 0; i < split_tets.size(); i++)
+  {
+    tet_volumes += (axom::primal::clip(split_tets[i], tet)).volume();
+  }
+
+  // Expected result should still be 0.3333
+  EXPECT_NEAR(0.3333, tet_volumes, EPS);
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
-
-  SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
 
   int result = RUN_ALL_TESTS();
 

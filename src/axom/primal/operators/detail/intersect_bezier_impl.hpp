@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,9 +57,9 @@ namespace detail
  * \return True if the two curves intersect, False otherwise
  * \sa intersect_bezier
  */
-template <typename T, int NDIMS>
-bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
-                             const BezierCurve<T, NDIMS> &c2,
+template <typename T>
+bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
+                             const BezierCurve<T, 2> &c2,
                              std::vector<T> &sp,
                              std::vector<T> &tp,
                              double sq_tol,
@@ -97,19 +97,19 @@ bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
  * \note This function does not properly handle collinear lines
  */
 
-template <typename T, int NDIMS>
-bool intersect_2d_linear(const Point<T, NDIMS> &a,
-                         const Point<T, NDIMS> &b,
-                         const Point<T, NDIMS> &c,
-                         const Point<T, NDIMS> &d,
+template <typename T>
+bool intersect_2d_linear(const Point<T, 2> &a,
+                         const Point<T, 2> &b,
+                         const Point<T, 2> &c,
+                         const Point<T, 2> &d,
                          T &s,
                          T &t);
 
 //------------------------------ IMPLEMENTATIONS ------------------------------
 
-template <typename T, int NDIMS>
-bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
-                             const BezierCurve<T, NDIMS> &c2,
+template <typename T>
+bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
+                             const BezierCurve<T, 2> &c2,
                              std::vector<T> &sp,
                              std::vector<T> &tp,
                              double sq_tol,
@@ -120,8 +120,7 @@ bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
                              double t_offset,
                              double t_scale)
 {
-  using BCurve = BezierCurve<T, NDIMS>;
-  SLIC_ASSERT(NDIMS == 2);
+  using BCurve = BezierCurve<T, 2>;
 
   // Check bounding boxes to short-circuit the intersection
   if(!intersect(c1.boundingBox(), c2.boundingBox()))
@@ -152,6 +151,7 @@ bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
 
     s_scale *= scaleFac;
 
+    // Note: we want to find all intersections, so don't short-circuit
     if(intersect_bezier_curves(c2,
                                c3,
                                tp,
@@ -185,11 +185,11 @@ bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
   return foundIntersection;
 }
 
-template <typename T, int NDIMS>
-bool intersect_2d_linear(const Point<T, NDIMS> &a,
-                         const Point<T, NDIMS> &b,
-                         const Point<T, NDIMS> &c,
-                         const Point<T, NDIMS> &d,
+template <typename T>
+bool intersect_2d_linear(const Point<T, 2> &a,
+                         const Point<T, 2> &b,
+                         const Point<T, 2> &c,
+                         const Point<T, 2> &d,
                          T &s,
                          T &t)
 {
@@ -199,18 +199,16 @@ bool intersect_2d_linear(const Point<T, NDIMS> &a,
   // Note: Uses exact floating point comparisons since the subdivision algorithm
   // provides both sides of the line segments for interior curve points.
 
-  AXOM_STATIC_ASSERT(NDIMS == 2);
-
   // compute signed areas of endpoints of segment (c,d) w.r.t. segment (a,b)
-  auto area1 = twoDcross(a, b, c);
-  auto area2 = twoDcross(a, b, d);
+  const auto area1 = twoDcross(a, b, c);
+  const auto area2 = twoDcross(a, b, d);
 
   // early return if both have same orientation, or if d is collinear w/ (a,b)
   if(area2 == 0. || (area1 * area2) > 0.) return false;
 
   // compute signed areas of endpoints of segment (a,b) w.r.t. segment (c,d)
-  auto area3 = twoDcross(c, d, a);
-  auto area4 = area3 + area1 - area2;  // equivalent to twoDcross(c,d,b)
+  const auto area3 = twoDcross(c, d, a);
+  const auto area4 = area3 + area1 - area2;  // equivalent to twoDcross(c,d,b)
 
   // early return if both have same orientation, or if b is collinear w/ (c,d)
   if(area4 == 0. || (area3 * area4) > 0.) return false;

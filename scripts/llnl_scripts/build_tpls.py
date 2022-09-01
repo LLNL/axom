@@ -1,7 +1,7 @@
 #!/bin/sh
-"exec" "python" "-u" "-B" "$0" "$@"
+"exec" "python3" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,11 +35,6 @@ def parse_args():
                       dest="spec",
                       default="",
                       help="Spack spec to build (defaults to all available on SYS_TYPE)")
-    # Whether to archive results
-    parser.add_option("-a", "--archive",
-                      dest="archive",
-                      default="",
-                      help="Archive build results under given name (Defaults to off)")
     parser.add_option("-v", "--verbose",
                       action="store_true",
                       dest="verbose",
@@ -74,22 +69,12 @@ def main():
 
     repo_dir = get_repo_dir()
 
-    if opts["archive"] != "":
-        job_name = opts["archive"]
-    else:
-        job_name = get_username() + "/" + os.path.basename(__file__)
-
     try:
         original_wd = os.getcwd()
         os.chdir(repo_dir)
 
         timestamp = get_timestamp()
-        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp, opts["spec"], opts["verbose"], opts["mirror"])
-
-        if opts["archive"] != "":
-            # Get information for archiving
-            archive_base_dir = get_archive_base_dir()
-            archive_tpl_logs(builds_dir, job_name, timestamp)
+        res = full_build_and_test_of_tpls(builds_dir, timestamp, opts["spec"], opts["verbose"], opts["mirror"])
     finally:
         os.chdir(original_wd)
 

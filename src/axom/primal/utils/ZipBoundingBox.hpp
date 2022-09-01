@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,12 +29,20 @@ struct ZipBase<BoundingBox<T, NDIMS>>
 
   static constexpr bool Exists = true;
 
+  /// Default constructor for a ZipBase of primal::BoundingBox
+  ZipBase()
+  {
+    for(int d = 0; d < NDIMS; ++d)
+    {
+      bb_min_arrays[d] = nullptr;
+      bb_max_arrays[d] = nullptr;
+    }
+  }
+
   /*!
    * \brief Creates a ZipIndexable from a set of arrays
-   * \param [in] min_arrays the arrays storing the min coordinate for each
-   *  dimension
-   * \param [in] max_arrays the arrays storing the max coordinate for each
-   *  dimension
+   * \param [in] min_arrays the arrays storing the min coordinate for each dimension
+   * \param [in] max_arrays the arrays storing the max coordinate for each dimension
    *
    * \pre Size1 >= NDIMS
    * \pre Size2 >= NDIMS
@@ -45,10 +53,10 @@ struct ZipBase<BoundingBox<T, NDIMS>>
   {
     AXOM_STATIC_ASSERT_MSG(Size1 >= NDIMS, "Must provide at least NDIMS arrays");
     AXOM_STATIC_ASSERT_MSG(Size2 >= NDIMS, "Must provide at least NDIMS arrays");
-    for(int i = 0; i < NDIMS; i++)
+    for(int d = 0; d < NDIMS; ++d)
     {
-      bb_min_arrays[i] = min_arrays[i];
-      bb_max_arrays[i] = max_arrays[i];
+      bb_min_arrays[d] = min_arrays[d];
+      bb_max_arrays[d] = max_arrays[d];
     }
   }
 
@@ -60,7 +68,7 @@ struct ZipBase<BoundingBox<T, NDIMS>>
   {
     using PointType = typename GeomType::PointType;
     StackArray<T, NDIMS> min_data, max_data;
-    for(int d = 0; d < NDIMS; d++)
+    for(int d = 0; d < NDIMS; ++d)
     {
       min_data[d] = bb_min_arrays[d][i];
       max_data[d] = bb_max_arrays[d][i];

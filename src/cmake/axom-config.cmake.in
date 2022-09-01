@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,8 @@ if(NOT AXOM_FOUND)
   set(AXOM_VERSION_MINOR    "@AXOM_VERSION_MINOR@")
   set(AXOM_VERSION_PATCH    "@AXOM_VERSION_PATCH@")
   
+  set(AXOM_GIT_SHA          "@AXOM_GIT_SHA@")
+
   set(AXOM_INSTALL_PREFIX   "@AXOM_INSTALL_PREFIX@")
   set(AXOM_INCLUDE_DIRS     "${AXOM_INSTALL_PREFIX}/include")
   
@@ -29,6 +31,7 @@ if(NOT AXOM_FOUND)
   # Language features
   set(AXOM_ENABLE_FORTRAN     "@ENABLE_FORTRAN@")
   set(AXOM_USE_CUDA           "@AXOM_USE_CUDA@")
+  set(AXOM_USE_HIP            "@AXOM_USE_HIP@")
   set(AXOM_USE_MPI            "@AXOM_USE_MPI@")
   set(AXOM_USE_OPENMP         "@AXOM_USE_OPENMP@")
 
@@ -52,6 +55,7 @@ if(NOT AXOM_FOUND)
 
   # Axom external TPLs
   set(AXOM_USE_C2C            "@AXOM_USE_C2C@")
+  set(AXOM_USE_CAMP           "@AXOM_USE_CAMP@")
   set(AXOM_USE_CONDUIT        "@AXOM_USE_CONDUIT@")
   set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
   set(AXOM_USE_LUA            "@AXOM_USE_LUA@")
@@ -65,7 +69,7 @@ if(NOT AXOM_FOUND)
   set(AXOM_DEBUG_DEFINE_STRING  "@AXOM_DEBUG_DEFINE_STRING@")
 
   #----------------------------------------------------------------------------
-  # Bring in required  dependencies for this axom configuration
+  # Bring in required dependencies for this axom configuration
   #----------------------------------------------------------------------------
   include(CMakeFindDependencyMacro)
 
@@ -73,6 +77,15 @@ if(NOT AXOM_FOUND)
   if(AXOM_USE_C2C)
     set(AXOM_C2C_DIR     "@C2C_DIR@")
     # Note: Targets not currently imported
+  endif()
+
+  # camp
+  if(AXOM_USE_CAMP)
+    set(AXOM_CAMP_DIR      "@CAMP_DIR@")
+    if(NOT CAMP_DIR) 
+      set(CAMP_DIR ${AXOM_CAMP_DIR})
+    endif()
+    find_dependency(camp REQUIRED NO_DEFAULT_PATH PATHS "${CAMP_DIR}/lib/cmake/camp")
   endif()
 
   # conduit
@@ -109,7 +122,9 @@ if(NOT AXOM_FOUND)
     if(NOT RAJA_DIR) 
       set(RAJA_DIR ${AXOM_RAJA_DIR}) 
     endif()
-    find_dependency(RAJA REQUIRED NO_DEFAULT_PATH PATHS "${RAJA_DIR}/share/raja/cmake")
+    find_dependency(RAJA REQUIRED NO_DEFAULT_PATH
+                    PATHS "${RAJA_DIR}/share/raja/cmake"
+                          "${RAJA_DIR}/lib/cmake/raja")
   endif()
 
   # scr
@@ -124,7 +139,9 @@ if(NOT AXOM_FOUND)
     if(NOT UMPIRE_DIR) 
       set(UMPIRE_DIR ${AXOM_UMPIRE_DIR}) 
     endif()
-    find_dependency(umpire REQUIRED NO_DEFAULT_PATH PATHS "${UMPIRE_DIR}/share/umpire/cmake")
+    find_dependency(umpire REQUIRED NO_DEFAULT_PATH
+                    PATHS "${UMPIRE_DIR}/share/umpire/cmake"
+                          "${UMPIRE_DIR}/lib/cmake/umpire")
   endif()
 
   #----------------------------------------------------------------------------

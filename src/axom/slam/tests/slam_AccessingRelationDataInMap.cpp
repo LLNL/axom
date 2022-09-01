@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,12 +44,10 @@ using RelationType = slam::Relation<SetPosition, SetElement>;
 
 using IndexVec = std::vector<SetPosition>;
 
-const SetPosition FROMSET_SIZE = 10;
-const SetPosition TOSET_SIZE = 8;
+constexpr SetPosition FROMSET_SIZE = 10;
+constexpr SetPosition TOSET_SIZE = 8;
 
 using STLIndirection = policies::STLVectorIndirection<SetPosition, SetElement>;
-
-using ArrayIndirection = policies::ArrayIndirection<SetPosition, SetElement>;
 
 using VariableCardinality =
   policies::VariableCardinality<SetPosition, STLIndirection>;
@@ -146,15 +144,11 @@ TEST(slam_set_relation_map, access_pattern)
 }
 
 //----------------------------------------------------------------------
-using axom::slic::SimpleLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
 
   result = RUN_ALL_TESTS();

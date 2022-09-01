@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,10 +8,7 @@
 #include <limits>
 
 #include "axom/core/Types.hpp"
-
-#include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/interface/SidreTypes.h"
-#include "axom/sidre/core/SidreTypes.hpp"
+#include "axom/sidre.hpp"
 
 using axom::sidre::DataType;
 using axom::sidre::getTypeID;

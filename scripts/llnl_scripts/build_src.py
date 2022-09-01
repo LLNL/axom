@@ -1,7 +1,7 @@
 #!/bin/sh
-"exec" "python" "-u" "-B" "$0" "$@"
+"exec" "python3" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,11 +27,6 @@ def parse_args():
                       dest="directory",
                       default="",
                       help="Directory of source to be built (Defaults to current)")
-    # Whether to archive results
-    parser.add_option("-a", "--archive",
-                      dest="archive",
-                      default="",
-                      help="Archive build results under given name (Defaults to off)")
     # Whether to build a specific hostconfig
     parser.add_option("--host-config",
                       dest="hostconfig",
@@ -43,6 +38,12 @@ def parse_args():
                       default="Debug",
                       choices = ("Debug", "RelWithDebInfo", "Release", "MinSizeRel"),
                       help="The CMake build type to use")
+    # Run unit tests serially (MPI Bug on El Capitan)
+    parser.add_option("--test-serial",
+                      action="store_true",
+                      dest="testserial",
+                      default=False,
+                      help="Run unit tests serially")
     # Extra cmake options to pass to config build
     parser.add_option("--extra-cmake-options",
                       dest="extra_cmake_options",
@@ -93,11 +94,6 @@ def main():
     else:
         repo_dir = get_repo_dir()
 
-    if opts["archive"] != "":
-        job_name = opts["archive"]
-    else:
-        job_name = get_username() + "/" + os.path.basename(__file__)
-
     try:
         original_wd = os.getcwd()
         os.chdir(repo_dir)
@@ -106,10 +102,11 @@ def main():
         # Default to build all SYS_TYPE's host-configs in host-config/
         build_all = not opts["hostconfig"] and not opts["automation"]
         if build_all:
-            res = build_and_test_host_configs(repo_dir, job_name, timestamp, False,
+            res = build_and_test_host_configs(repo_dir, timestamp, False,
                                               report_to_stdout = opts["verbose"],
                                               extra_cmake_options = opts["extra_cmake_options"],
-                                              build_type = opts["buildtype"])
+                                              build_type = opts["buildtype"],
+                                              test_serial = opts["testserial"])
         # Otherwise try to build a specific host-config
         else:
             # Command-line arg has highest priority
@@ -161,11 +158,9 @@ def main():
             res = build_and_test_host_config(test_root, hostconfig_path,
                                              report_to_stdout = opts["verbose"],
                                              extra_cmake_options = opts["extra_cmake_options"],
-                                             build_type = opts["buildtype"])
+                                             build_type = opts["buildtype"],
+                                             test_serial = opts["testserial"])
 
-        # Archive logs
-        if opts["archive"] != "":
-            archive_src_logs(repo_dir, job_name, timestamp)
     finally:
         os.chdir(original_wd)
 
