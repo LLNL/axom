@@ -39,6 +39,7 @@
 #include <string>
 #include <limits>
 #include <map>
+#include <vector>
 #include <cmath>
 
 namespace quest = axom::quest;
@@ -198,7 +199,8 @@ public:
   explicit BlueprintParticleMesh(sidre::Group* group = nullptr,
                                  const std::string& coordset = "coords",
                                  const std::string& topology = "mesh")
-    : m_group(group)
+    : m_group(group),
+      m_domainGroups()
   {
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
@@ -426,6 +428,9 @@ private:
   void createBlueprintStubs(const std::string& coords, const std::string& topo)
   {
     SLIC_ASSERT(m_group != nullptr);
+    SLIC_ASSERT(m_domainGroups.empty());
+    m_domainGroups.resize(1, nullptr);
+    // BTNG TODO: put child domain group in m_group and other groups under the child group.
 
     m_coordsGroup = m_group->createGroup("coordsets")->createGroup(coords);
     m_coordsGroup->createViewString("type", "explicit");
@@ -444,6 +449,8 @@ private:
 private:
   /// Parent group for the entire mesh
   sidre::Group* m_group;
+  /// Group for each domain in multidomain mesh
+  std::vector<sidre::Group*> m_domainGroups;
 
   sidre::Group* m_coordsGroup;
   sidre::Group* m_topoGroup;
