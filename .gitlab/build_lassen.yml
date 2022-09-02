@@ -88,7 +88,7 @@ lassen-clang_9:
 lassen-gcc_7_3_1:
   variables:
     COMPILER: "gcc@7.3.1"
-    SPEC: "%${COMPILER}+mfem+c2c"
+    SPEC: "%${COMPILER}~mfem+c2c"
   extends: [.full_build_on_lassen]
 
 lassen-xl_cuda:

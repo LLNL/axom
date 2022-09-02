@@ -122,7 +122,7 @@ ruby-gcc_8_3_1-full:
 ruby-gcc_8_1_no_fort-full:
   variables:
     COMPILER: "gcc@8.1.0"
-    SPEC: "%${COMPILER}~fortran+mfem+c2c+scr"
+    SPEC: "%${COMPILER}~fortran~mfem+c2c+scr"
     EXTRA_SPEC: "^scr@3.0rc2~shared~tests~examples"
   extends: .full_build_on_ruby
 
