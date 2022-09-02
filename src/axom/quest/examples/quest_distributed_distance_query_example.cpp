@@ -465,7 +465,7 @@ private:
   int m_rank;
   int m_nranks;
   int m_dimension {-1};
-};
+}; // BlueprintParticleMesh
 
 /**
  * Helper class to generate a mesh blueprint-conforming particle mesh for the input object.
@@ -476,20 +476,20 @@ class ObjectMeshWrapper
 public:
   using Circle = primal::Sphere<double, 2>;
 
-  ObjectMeshWrapper(sidre::Group* group) : m_group(group), m_mesh(m_group)
+  ObjectMeshWrapper(sidre::Group* group) : m_objectGroup(group), m_objectMesh(m_objectGroup)
   {
-    SLIC_ASSERT(m_group != nullptr);
+    SLIC_ASSERT(m_objectGroup != nullptr);
   }
 
   /// Get a pointer to the root group for this mesh
-  sidre::Group* getBlueprintGroup() const { return m_group; }
+  sidre::Group* getBlueprintGroup() const { return m_objectGroup; }
 
   std::string getCoordsetName() const
   {
-    return m_mesh.coordsGroup()->getName();
+    return m_objectMesh.coordsGroup()->getName();
   }
 
-  int numPoints() const { return m_mesh.numPoints(); }
+  int numPoints() const { return m_objectMesh.numPoints(); }
 
   void setVerbosity(bool verbose) { m_verbose = verbose; }
 
@@ -505,14 +505,14 @@ public:
     using axom::utilities::random_real;
 
     // Check that we're starting with a valid group
-    SLIC_ASSERT(m_group != nullptr);
+    SLIC_ASSERT(m_objectGroup != nullptr);
 
     constexpr int DIM = 2;
     using PointType = primal::Point<double, DIM>;
     using PointArray = axom::Array<PointType>;
 
-    int rank = m_mesh.getRank();
-    int nranks = m_mesh.getNumRanks();
+    int rank = m_objectMesh.getRank();
+    int nranks = m_objectMesh.getNumRanks();
 
     // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
     axom::Array<int> sums(nranks, nranks);
@@ -579,7 +579,7 @@ public:
         pts.push_back(PointType {rcosT, rsinT});
       }
 
-      m_mesh.setPoints(pts);
+      m_objectMesh.setPoints(pts);
 
       SLIC_DEBUG_IF(
         m_verbose,
@@ -593,11 +593,11 @@ public:
     }
     else
     {
-      m_mesh.setPoints(PointArray(0, 0));
+      m_objectMesh.setPoints(PointArray(0, 0));
     }
 
     axom::slic::flushStreams();
-    SLIC_ASSERT(m_mesh.isValid());
+    SLIC_ASSERT(m_objectMesh.isValid());
   }
 
   /// Outputs the object mesh to disk
@@ -606,12 +606,12 @@ public:
     SLIC_INFO(banner(
       axom::fmt::format("Saving particle mesh '{}' to disk", outputMesh)));
 
-    m_mesh.saveMesh(outputMesh);
+    m_objectMesh.saveMesh(outputMesh);
   }
 
 private:
-  sidre::Group* m_group {nullptr};
-  BlueprintParticleMesh m_mesh;
+  sidre::Group* m_objectGroup {nullptr};
+  BlueprintParticleMesh m_objectMesh;
   bool m_verbose {false};
 };
 
