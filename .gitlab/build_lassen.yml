@@ -94,12 +94,12 @@ lassen-gcc_7_3_1:
 lassen-xl_cuda:
   variables:
     COMPILER: "xl@16.1.1.11"
-    SPEC: "%${COMPILER}+mfem+c2c+cuda~openmp~cpp14"
+    SPEC: "%${COMPILER}~openmp+mfem+c2c+cuda"
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_lassen, .with_cuda]
 
 lassen-xl_16_12:
   variables:
     COMPILER: "xl@16.1.1.12"
-    SPEC: "%${COMPILER}+mfem+c2c~openmp~cpp14"
+    SPEC: "%${COMPILER}~openmp+devtools+mfem+c2c"
   extends: [.full_build_on_lassen]
