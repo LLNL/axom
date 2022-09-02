@@ -64,7 +64,7 @@ struct Input
 {
 public:
   std::string meshFile;
-  std::string distanceFile {"closest_point"};
+  std::string distanceFile {"cp_coords"};
   std::string objectFile {"object_mesh"};
 
   double circleRadius {1.0};
@@ -620,7 +620,7 @@ class QueryMeshWrapper
 public:
   using Circle = primal::Sphere<double, 2>;
 
-  QueryMeshWrapper(const std::string& cpFilename = "closest_point")
+  QueryMeshWrapper(const std::string& cpFilename = "cp_coords")
     : m_dc(cpFilename, nullptr, true)
   { }
 
@@ -688,8 +688,8 @@ public:
 
     m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_rank");
     m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_index");
-    m_queryMesh.registerNodalScalarField<double>("min_distance");
-    m_queryMesh.registerNodalVectorField<double>("closest_point");
+    m_queryMesh.registerNodalScalarField<double>("cp_distance");
+    m_queryMesh.registerNodalVectorField<double>("cp_coords");
 
     SLIC_ASSERT(m_queryMesh.isValid());
   }
@@ -787,18 +787,18 @@ public:
 
     auto queryPts = getVertexPositions<PointArray>();
 
-    auto cpPositions =
-      getParticleMesh().getNodalVectorField<PointType>("closest_point");
+    auto cpCoords =
+      getParticleMesh().getNodalVectorField<PointType>("cp_coords");
 
     auto cpIndices =
       getParticleMesh().getNodalScalarField<axom::IndexType>("cp_index");
 
-    SLIC_ASSERT(queryPts.size() == cpPositions.size());
+    SLIC_ASSERT(queryPts.size() == cpCoords.size());
     SLIC_ASSERT(queryPts.size() == cpIndices.size());
 
     if(params.isVerbose())
     {
-      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpPositions.size()));
+      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
     }
 
     /*
@@ -819,7 +819,7 @@ public:
     for(auto i : IndexSet(queryPts.size()))
     {
       const auto& qPt = queryPts[i];
-      const auto& cpPos = cpPositions[i];
+      const auto& cpCoord = cpCoords[i];
       double analyticalDist = std::fabs(circle.computeSignedDistance(qPt));
       const bool closestPointFound = (cpIndices[i] == -1);
       if(closestPointFound)
@@ -846,20 +846,20 @@ public:
                               i,
                               qPt,
                               analyticalDist - params.distThreshold,
-                              cpPos));
+                              cpCoord));
         }
 
-        if(!axom::utilities::isNearlyEqual(circle.computeSignedDistance(cpPos),
+        if(!axom::utilities::isNearlyEqual(circle.computeSignedDistance(cpCoord),
                                            0.0))
         {
           errorFlag[i] = true;
           SLIC_INFO(axom::fmt::format(
             "***Error: Closest point ({}) for index {} is not on the circle.",
-            cpPositions[i],
+            cpCoords[i],
             i));
         }
 
-        double dist = sqrt(primal::squared_distance(qPt, cpPos));
+        double dist = sqrt(primal::squared_distance(qPt, cpCoord));
         if(!axom::utilities::isNearlyEqual(dist, analyticalDist, allowableSlack))
         {
           if(params.randomSpacing)
@@ -1161,9 +1161,9 @@ int main(int argc, char** argv)
   }
   slic::flushStreams();
 
-  auto cpPositions =
+  auto cpCoords =
     query_mesh_wrapper.getParticleMesh().getNodalVectorField<PointType>(
-      "closest_point");
+      "cp_coords");
 
   auto cpIndices =
     query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
@@ -1175,14 +1175,14 @@ int main(int argc, char** argv)
       query_mesh_wrapper.getParticleMesh().getNodalScalarField<axom::IndexType>(
         "cp_rank");
 
-    SLIC_INFO(axom::fmt::format("Closest points ({}):", cpPositions.size()));
-    for(auto i : IndexSet(cpPositions.size()))
+    SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
+    for(auto i : IndexSet(cpCoords.size()))
     {
       SLIC_INFO(axom::fmt::format("\t{}: {{rank:{}, index:{}, position:{}}}",
                                   i,
                                   cpRank[i],
                                   cpIndices[i],
-                                  cpPositions[i]));
+                                  cpCoords[i]));
     }
   }
 
@@ -1221,7 +1221,7 @@ int main(int argc, char** argv)
   for(auto idx : IndexSet(nMeshPoints))
   {
     const bool has_cp = rankHasQueryPoints && cpIndices[idx] >= 0;
-    const auto& cp = has_cp ? cpPositions[idx] : nowhere;
+    const auto& cp = has_cp ? cpCoords[idx] : nowhere;
 
     (*distances)(idx) = has_cp ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
 

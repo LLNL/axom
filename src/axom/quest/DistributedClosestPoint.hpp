@@ -606,11 +606,11 @@ public:
       xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
       xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
       xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
-      xferNode["closest_point"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/closest_point/values/x")), dim * qPtCount);
+      xferNode["cp_coords"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/cp_coords/values/x")), dim * qPtCount);
 
-      if(queryNode.has_path("fields/min_distance"))
+      if(queryNode.has_path("fields/cp_distance"))
       {
-        xferNode["debug/min_distance"].set_external(internal::getPointer<double>(queryNode["fields/min_distance/values"]), qPtCount);
+        xferNode["debug/cp_distance"].set_external(internal::getPointer<double>(queryNode["fields/cp_distance/values"]), qPtCount);
       }
       // clang-format on
     }
@@ -627,7 +627,7 @@ public:
     const int qPtCount = xferNode.fetch_existing("qPtCount").value();
     auto& qmcpr = queryNode.fetch_existing("fields/cp_rank/values");
     auto& qmcpi = queryNode.fetch_existing("fields/cp_index/values");
-    auto& qmcpcp = queryNode.fetch_existing("fields/closest_point/values/x");
+    auto& qmcpcp = queryNode.fetch_existing("fields/cp_coords/values/x");
     if(xferNode.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
     {
       axom::copy(qmcpr.data_ptr(),
@@ -640,10 +640,10 @@ public:
                  xferNode.fetch_existing("cp_index").data_ptr(),
                  qPtCount * sizeof(axom::IndexType));
     }
-    if(xferNode.fetch_existing("closest_point").data_ptr() != qmcpcp.data_ptr())
+    if(xferNode.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
     {
       axom::copy(qmcpcp.data_ptr(),
-                 xferNode.fetch_existing("closest_point").data_ptr(),
+                 xferNode.fetch_existing("cp_coords").data_ptr(),
                  qPtCount * sizeof(PointType));
     }
   }
@@ -660,12 +660,12 @@ public:
    * of the provided blueprint mesh and  contains the following fields:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
    *   - cp_index: Will hold the index of the object point containing the closest point
-   *   - closest_point: Will hold the position of the closest point
+   *   - cp_coords: Will hold the coordinates of the closest points
    *
-   * \note The current implementation assumes that the coordinates and closest_points and contiguous
+   * \note The current implementation assumes that the coordinates and cp_coords and contiguous
    * with stride NDIMS. We intend to loosen this restriction in the future
    *
-   * \note We're temporarily also using a min_distance field while debugging this class.
+   * \note We're temporarily also using a cp_distance field while debugging this class.
    * The code will use this field if it is present in \a query_mesh.
    *
    * We use non-blocking sends for performance and deadlock avoidance.
@@ -1034,8 +1034,8 @@ public:
     auto cpRanks =
       ArrayView_from_Node<axom::IndexType>(xfer_node.fetch_existing("cp_rank"),
                                            qPtCount);
-    auto closestPts =
-      ArrayView_from_Node<PointType>(xfer_node.fetch_existing("closest_point"),
+    auto cpCoords =
+      ArrayView_from_Node<PointType>(xfer_node.fetch_existing("cp_coords"),
                                      qPtCount);
 
     /// Create ArrayViews in ExecSpace that are compatible with fields
@@ -1052,17 +1052,17 @@ public:
     ///          We might need to transform it? or to use a single array w/ pointers into it?
     auto cp_pos = is_first
       ? axom::Array<PointType>(qPtCount, qPtCount, m_allocatorID)
-      : axom::Array<PointType>(closestPts, m_allocatorID);
+      : axom::Array<PointType>(cpCoords, m_allocatorID);
 
     // DEBUG
-    const bool has_min_distance = xfer_node.has_path("debug/min_distance");
-    auto minDist = has_min_distance
+    const bool has_cp_distance = xfer_node.has_path("debug/cp_distance");
+    auto minDist = has_cp_distance
       ? ArrayView_from_Node<double>(
-          xfer_node.fetch_existing("debug/min_distance"),
+          xfer_node.fetch_existing("debug/cp_distance"),
           qPtCount)
       : ArrayView<double>();
 
-    auto cp_dist = has_min_distance
+    auto cp_dist = has_cp_distance
       ? (is_first ? axom::Array<double>(qPtCount, qPtCount, m_allocatorID)
                   : axom::Array<double>(minDist, m_allocatorID))
       : axom::Array<double>(0, 0, m_allocatorID);
@@ -1140,7 +1140,7 @@ public:
               query_pos[idx] = pointsView[curr_min.minElem];
 
               //DEBUG
-              if(has_min_distance)
+              if(has_cp_distance)
               {
                 query_min_dist[idx] = sqrt(curr_min.minSqDist);
               }
@@ -1156,9 +1156,9 @@ public:
     axom::copy(cpRanks.data(),
                query_ranks.data(),
                cpRanks.size() * sizeof(axom::IndexType));
-    axom::copy(closestPts.data(),
+    axom::copy(cpCoords.data(),
                query_pos.data(),
-               closestPts.size() * sizeof(PointType));
+               cpCoords.size() * sizeof(PointType));
 
     // Data has now been initialized
     if(is_first)
@@ -1167,7 +1167,7 @@ public:
     }
 
     // DEBUG
-    if(has_min_distance)
+    if(has_cp_distance)
     {
       axom::copy(minDist.data(),
                  query_min_dist.data(),
