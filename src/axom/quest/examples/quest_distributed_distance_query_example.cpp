@@ -203,7 +203,10 @@ public:
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
 
-    setBlueprintGroup(m_group, coordset, topology);
+    if(m_group != nullptr)
+    {
+      createBlueprintStubs(coordset, topology);
+    }
   }
   /// Gets the root group for this mesh blueprint
   sidre::Group* rootGroup() const { return m_group; }
@@ -230,24 +233,6 @@ public:
   }
 
   int dimension() const { return m_dimension; }
-
-  /**
-   * Sets the parent group for the entire mesh and sets up the blueprint stubs
-   * for the "coordset", "topologies", "fields" and "state"
-   */
-  void setBlueprintGroup(sidre::Group* group,
-                         const std::string& coordset = "coords",
-                         const std::string& topology = "mesh")
-  {
-    // TODO: Ensure that we delete previous hierarchy if it existed
-
-    m_group = group;
-
-    if(m_group != nullptr)
-    {
-      createBlueprintStubs(coordset, topology);
-    }
-  }
 
   /// Set the coordinate data from an array of primal Points, templated on the dimension
   template <int NDIMS>
@@ -437,6 +422,7 @@ public:
 
 private:
   /// Creates blueprint stubs for this mesh
+  // for the "coordset", "topologies", "fields" and "state"
   void createBlueprintStubs(const std::string& coords, const std::string& topo)
   {
     SLIC_ASSERT(m_group != nullptr);
@@ -456,6 +442,7 @@ private:
   }
 
 private:
+  /// Parent group for the entire mesh
   sidre::Group* m_group;
 
   sidre::Group* m_coordsGroup;
@@ -465,7 +452,7 @@ private:
   int m_rank;
   int m_nranks;
   int m_dimension {-1};
-}; // BlueprintParticleMesh
+};  // BlueprintParticleMesh
 
 /**
  * Helper class to generate a mesh blueprint-conforming particle mesh for the input object.
@@ -476,13 +463,13 @@ class ObjectMeshWrapper
 public:
   using Circle = primal::Sphere<double, 2>;
 
-  ObjectMeshWrapper(sidre::Group* group) : m_objectGroup(group), m_objectMesh(m_objectGroup)
+  ObjectMeshWrapper(sidre::Group* group) : m_objectMesh(group)
   {
-    SLIC_ASSERT(m_objectGroup != nullptr);
+    SLIC_ASSERT(group != nullptr);
   }
 
   /// Get a pointer to the root group for this mesh
-  sidre::Group* getBlueprintGroup() const { return m_objectGroup; }
+  sidre::Group* getBlueprintGroup() const { return m_objectMesh.rootGroup(); }
 
   std::string getCoordsetName() const
   {
@@ -503,9 +490,6 @@ public:
                           bool randomSpacing = true)
   {
     using axom::utilities::random_real;
-
-    // Check that we're starting with a valid group
-    SLIC_ASSERT(m_objectGroup != nullptr);
 
     constexpr int DIM = 2;
     using PointType = primal::Point<double, DIM>;
@@ -610,7 +594,6 @@ public:
   }
 
 private:
-  sidre::Group* m_objectGroup {nullptr};
   BlueprintParticleMesh m_objectMesh;
   bool m_verbose {false};
 };
