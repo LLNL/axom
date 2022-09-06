@@ -311,11 +311,9 @@ def build_and_test_host_config(test_root, host_config,
     sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
 
     # test the installation using installed cmake examples
-    # TODO: enable tests for installed examples in device configurations
     # TODO: enable tests for installed makefile-based example
-    is_device_build = "cuda" in host_config or "hip" in host_config
-    should_test_installed_cmake_example = not is_device_build
-    should_test_installed_blt_example = not is_device_build
+    should_test_installed_cmake_example = True
+    should_test_installed_blt_example = True
     should_test_installed_make_example = False
 
     if should_test_installed_cmake_example:

@@ -58,6 +58,12 @@ release changes can be reviewed. Such changes include:
    release version number and release date in the heading, as well as,
    the corresponding link to the version on Github.
 
+#. Update the mail map in ``axom/.mailmap`` by adding the names and emails
+   of new contributors since the last release.
+
+#. Update the citations in ``axom/CITATION.cff`` by adding the names
+   of new LLNL contributors since the last release.
+
 #. Test the code by running it through all continuous integration tests
    and builds. This will ensure that all build configurations are working
    properly and all tests pass.
