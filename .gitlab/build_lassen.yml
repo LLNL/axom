@@ -57,6 +57,12 @@ lassen-gcc_7_3_1-src:
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_lassen]
 
+lassen-gcc_8_3_1_cuda-src:
+  variables:
+    COMPILER: "gcc@8.3.1_cuda"
+    HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_lassen, .with_cuda]
+
 lassen-xl_16_1_1_11_cuda-src:
   variables:
     COMPILER: "xl@16.1.1.11_cuda"
@@ -90,6 +96,13 @@ lassen-gcc_7_3_1-full:
     COMPILER: "gcc@7.3.1"
     SPEC: "%${COMPILER}+mfem"
   extends: [.full_build_on_lassen]
+
+lassen-gcc_8_3_1_cuda-full:
+  variables:
+    COMPILER: "gcc@8.3.1"
+    SPEC: "%${COMPILER}~mfem+cuda"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_lassen, .with_cuda]
 
 lassen-xl_16_1_1_11_cuda-full:
   variables:
