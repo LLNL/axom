@@ -20,6 +20,7 @@
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mpi.hpp"
 
+#include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/DistributedClosestPoint.hpp"
 
 #include "axom/fmt.hpp"
@@ -1110,6 +1111,12 @@ int main(int argc, char** argv)
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
   query.setRuntimePolicy(params.policy);
+  #ifdef AXOM_USE_CUDA
+  if(params.policy == RuntimePolicy::cuda)
+  {
+    query.setAllocatorID(axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID());
+  }
+  #endif
   query.setMpiCommunicator(MPI_COMM_WORLD, true);
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
