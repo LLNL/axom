@@ -72,6 +72,7 @@ public:
   using SetType = slam::Set<SetPosType, SetElemType>;
   using RangeSetType = slam::RangeSet<SetPosType, SetElemType>;
   using BivariateSetType = slam::BivariateSet<RangeSetType, RangeSetType>;
+
 protected:
   // SLAM Relation typedef
   using IndBufferType = axom::Array<SetPosType>;
