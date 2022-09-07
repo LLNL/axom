@@ -71,21 +71,25 @@ struct VirtualParentSubset
 
   using ParentSetType = Set<>;
 
-  VirtualParentSubset(ParentSetType* parSet = &s_nullSet) : m_parentSet(parSet)
+  VirtualParentSubset() : m_parentSet(slam::makePolySet(s_nullSet)) { }
+
+  template <typename ConcreteSetType>
+  VirtualParentSubset(ConcreteSetType* parSet)
+    : m_parentSet(slam::makePolySet(*parSet))
   { }
 
   /**
    * \brief Checks whether the set containing this policy class is a subset
    */
-  bool isSubset() const { return *m_parentSet != s_nullSet; }
-  const ParentSetType* parentSet() const { return m_parentSet; }
-  ParentSetType*& parentSet() { return m_parentSet; }
+  bool isSubset() const { return m_parentSet.get() != &s_nullSet; }
+  const ParentSetType* parentSet() const { return m_parentSet.get(); }
+  ParentSetType* parentSet() { return m_parentSet.get(); }
 
   template <typename OrderedSetIt>
   bool isValid(OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
   {
     // We allow parent sets to be null (i.e. the subset feature is deactivated)
-    if(!isSubset() || m_parentSet == nullptr) return true;
+    if(!isSubset() || m_parentSet.get() == nullptr) return true;
 
     // Next, check if child is empty -- null set is a subset of all sets
     bool childIsEmpty = (beg == end);
@@ -125,7 +129,7 @@ struct VirtualParentSubset
   }
 
 private:
-  ParentSetType* m_parentSet;
+  PolyValue<ParentSetType> m_parentSet;
 };
 
 template <typename TheParentSetType>

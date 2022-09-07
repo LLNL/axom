@@ -186,7 +186,8 @@ public:
       return *this;
     }
 
-    SetBuilder& parent(ParentSetType* parSet)
+    template <typename OtherParentType>
+    SetBuilder& parent(OtherParentType* parSet)
     {
       m_parent = SubsettingPolicyType(parSet);
       return *this;
