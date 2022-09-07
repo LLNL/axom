@@ -29,8 +29,8 @@ namespace slam
  */
 
 template <typename Relation,
-          typename SetType1 = slam::Set<>,
-          typename SetType2 = slam::Set<>>
+          typename SetType1 = typename Relation::FromSetType,
+          typename SetType2 = typename Relation::ToSetType>
 class RelationSet final
   : public OrderedSet<typename Relation::SetPosition, typename Relation::SetElement>,
     public BivariateSetBase<SetType1, SetType2, RelationSet<Relation, SetType1, SetType2>>
