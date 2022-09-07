@@ -59,7 +59,8 @@ template <typename T>
 MultiMat::MapUniquePtr MultiMat::helper_copyField(const MultiMat& mm, int map_i)
 {
   MapBaseType* other_map_ptr = mm.m_mapVec[map_i].get();
-  if(mm.getFieldMapping(map_i) == FieldMapping::PER_CELL_MAT)
+  FieldMapping mapping = mm.getFieldMapping(map_i);
+  if(mapping == FieldMapping::PER_CELL_MAT)
   {
     //BivariateSetType* biSetPtr = get_mapped_biSet(map_i);
     const Field2D<T>& typed_field =
@@ -78,8 +79,7 @@ MultiMat::MapUniquePtr MultiMat::helper_copyField(const MultiMat& mm, int map_i)
   }
   else
   {
-    const RangeSetType& setPtr =
-      *static_cast<RangeSetType*>(get_mapped_set(map_i));
+    const RangeSetType& setPtr = *getMappedRangeSet(mapping);
     const Field1D<T>& typed_field =
       dynamic_cast<VirtualField1D<T>*>(other_map_ptr)->get();
     return slam::makeVirtualMap(Field1D<T>(setPtr,
@@ -482,10 +482,10 @@ void MultiMat::convertToDynamic()
     }
     StaticVariableRelationType& rel = relStatic(layout);
 
-    SetType* set1 = &relDominantSet(layout);
-    SetType* set2 = &relSecondarySet(layout);
+    RangeSetType& set1 = relDominantSet(layout);
+    RangeSetType& set2 = relSecondarySet(layout);
 
-    DynamicVariableRelationType relDyn(set1, set2);
+    DynamicVariableRelationType relDyn(&set1, &set2);
     for(int i = 0; i < rel.fromSetSize(); i++)
     {
       auto&& rel_vec = rel[i];
@@ -1289,50 +1289,6 @@ bool MultiMat::isValid(bool verboseOutput) const
   }
 
   return bValid;
-}
-
-MultiMat::SetType* MultiMat::get_mapped_set(FieldMapping fm)
-{
-  SetType* set_ptr = nullptr;
-  switch(fm)
-  {
-  case FieldMapping::PER_CELL:
-    set_ptr = &getCellSet();
-    break;
-  case FieldMapping::PER_MAT:
-    set_ptr = &getMatSet();
-    break;
-  case FieldMapping::PER_CELL_MAT:
-    SLIC_ASSERT(false);
-    //dynamic_cast<SetType*>(get_mapped_biSet(m_dataLayout, m_sparsityLayout));
-    //todo fix this haha
-    break;
-  default:
-    SLIC_ASSERT(false);
-    return nullptr;
-  }
-  return set_ptr;
-}
-
-MultiMat::SetType* MultiMat::get_mapped_set(int field_idx)
-{
-  SetType* set_ptr = nullptr;
-  switch(m_fieldMappingVec[field_idx])
-  {
-  case FieldMapping::PER_CELL:
-    set_ptr = &getCellSet();
-    break;
-  case FieldMapping::PER_MAT:
-    set_ptr = &getMatSet();
-    break;
-  case FieldMapping::PER_CELL_MAT:
-    set_ptr = dynamic_cast<SetType*>(get_mapped_biSet(field_idx));
-    break;
-  default:
-    SLIC_ASSERT(false);
-    return nullptr;
-  }
-  return set_ptr;
 }
 
 template <>

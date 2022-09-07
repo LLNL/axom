@@ -66,15 +66,13 @@ class MMField2DTemplated;
 class MultiMat
 {
 public:
-  using BivariateSetType = slam::BivariateSet<>;  //RangeSetType, RangeSetType>;
-  using ProductSetType = slam::ProductSet<>;      //RangeSetType, RangeSetType>;
-
-protected:
   // SLAM Set type definitions
   using SetPosType = slam::DefaultPositionType;
   using SetElemType = slam::DefaultPositionType;
   using SetType = slam::Set<SetPosType, SetElemType>;
   using RangeSetType = slam::RangeSet<SetPosType, SetElemType>;
+  using BivariateSetType = slam::BivariateSet<RangeSetType, RangeSetType>;
+protected:
   // SLAM Relation typedef
   using IndBufferType = axom::Array<SetPosType>;
   template <typename T>
@@ -113,6 +111,8 @@ protected:
 public:
   using SparseRelationType = StaticVariableRelationType;
 
+  using ProductSetType =
+    slam::ProductSet<RangeSetType, RangeSetType>;  //RangeSetType, RangeSetType>;
   // SLAM RelationSet for the set of non-zero cell to mat variables
   using RelationSetType =
     slam::RelationSet<StaticVariableRelationType>;  //, RangeSetType
@@ -500,9 +500,23 @@ public:
   bool isValid(bool verboseOutput = false) const;
 
 protected:
-  //Return the Set pointer associalted with the given FieldMapping or field idx
-  SetType* get_mapped_set(FieldMapping);
-  SetType* get_mapped_set(int field_idx);
+  RangeSetType* getMappedRangeSet(FieldMapping mapping)
+  {
+    if(mapping == FieldMapping::PER_CELL)
+    {
+      return &getCellSet();
+    }
+    else if(mapping == FieldMapping::PER_MAT)
+    {
+      return &getMatSet();
+    }
+    else
+    {
+      SLIC_ASSERT("Cannot map Cell-Material relation to a RangeSet.");
+      return nullptr;
+    }
+  }
+
   //Return the BivariateSet used for the specified layouts or the field
   template <typename BiSetType = BivariateSetType>
   BiSetType* get_mapped_biSet(DataLayout, SparsityLayout);
@@ -637,7 +651,7 @@ private:  //private functions
     else
     {
       using SparseRelProxy =
-        slam::BivariateSetProxy<SetType, SetType, RelationSetType>;
+        slam::BivariateSetProxy<RangeSetType, RangeSetType, RelationSetType>;
       auto* wrapper = static_cast<SparseRelProxy*>(
         relVirtualSet(layout, SparsityLayout::SPARSE).get());
       *wrapper = SparseRelProxy(relSparseSet(layout));
@@ -651,7 +665,7 @@ private:  //private functions
     else
     {
       using DenseRelProxy =
-        slam::BivariateSetProxy<SetType, SetType, ProductSetType>;
+        slam::BivariateSetProxy<RangeSetType, RangeSetType, ProductSetType>;
       auto* wrapper = static_cast<DenseRelProxy*>(
         relVirtualSet(layout, SparsityLayout::DENSE).get());
       *wrapper = DenseRelProxy(relDenseSet(layout));
@@ -820,8 +834,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   {
     SLIC_ASSERT(field_mapping == FieldMapping::PER_CELL ||
                 field_mapping == FieldMapping::PER_MAT);
-    const RangeSetType& s =
-      *static_cast<RangeSetType*>(get_mapped_set(field_mapping));
+    const RangeSetType& s = *getMappedRangeSet(field_mapping);
 
     axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
     array.insert(0, s.size() * stride, data_arr);
