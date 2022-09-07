@@ -23,7 +23,7 @@ using RangeSetType = slam::RangeSet<>;
 
 TEST(slam_set_virtualbase, construct)
 {
-  slam::Set<>* s = new RangeSetType(NUM_ELEMS);
+  slam::PolyValue<slam::Set<>> s = slam::makePolySet(RangeSetType(NUM_ELEMS));
 
   // Tests function: isValid()
   EXPECT_TRUE(s->isValid());
@@ -39,15 +39,14 @@ TEST(slam_set_virtualbase, construct)
   {
     EXPECT_EQ(idx, s->at(idx));
   }
-
-  delete s;
 }
 
 TEST(slam_set_virtualbase, equality)
 {
-  slam::Set<>* s1 = new RangeSetType(NUM_ELEMS);
-  slam::Set<>* s2 = new RangeSetType(NUM_ELEMS);
-  slam::Set<>* s3 = new RangeSetType(2 * NUM_ELEMS);
+  slam::PolyValue<slam::Set<>> s1 = slam::makePolySet(RangeSetType(NUM_ELEMS));
+  slam::PolyValue<slam::Set<>> s2 = slam::makePolySet(RangeSetType(NUM_ELEMS));
+  slam::PolyValue<slam::Set<>> s3 =
+    slam::makePolySet(RangeSetType(2 * NUM_ELEMS));
 
   // Tests function: isValid()
   EXPECT_TRUE(s1->isValid());
@@ -69,18 +68,16 @@ TEST(slam_set_virtualbase, equality)
   // Tests implicit usage of equality operator
   EXPECT_EQ(*s1, *s2);
   EXPECT_NE(*s2, *s3);
-
-  // reclaim memory
-  delete s1;
-  delete s2;
-  delete s3;
 }
 
 TEST(slam_set_virtualbase, equality_different_types)
 {
-  slam::Set<int>* s1 = new slam::RangeSet<int>(NUM_ELEMS);
-  slam::Set<short>* s2 = new slam::RangeSet<short>(NUM_ELEMS);
-  slam::Set<short>* s3 = new slam::RangeSet<short>(10, NUM_ELEMS + 10);
+  slam::PolyValue<slam::Set<int>> s1 =
+    slam::makePolySet(slam::RangeSet<int>(NUM_ELEMS));
+  slam::PolyValue<slam::Set<short>> s2 =
+    slam::makePolySet(slam::RangeSet<short>(NUM_ELEMS));
+  slam::PolyValue<slam::Set<short>> s3 =
+    slam::makePolySet(slam::RangeSet<short>(10, NUM_ELEMS + 10));
 
   // Tests equality on different types, same values
   EXPECT_TRUE(*s1 == *s2);  // operator ==
@@ -91,9 +88,4 @@ TEST(slam_set_virtualbase, equality_different_types)
   // Tests operator== on different types, different values
   EXPECT_FALSE(*s1 == *s3);
   EXPECT_FALSE(*s2 == *s3);
-
-  // reclaim memory
-  delete s1;
-  delete s2;
-  delete s3;
 }

@@ -55,8 +55,7 @@ template <typename PosType = slam::DefaultPositionType,
           typename StridePolicy = policies::StrideOne<PosType>,
           typename IndirectionPolicy = policies::NoIndirection<PosType, ElemType>,
           typename SubsettingPolicy = policies::NoSubset>
-struct OrderedSet : public Set<PosType, ElemType>,
-                    SizePolicy,
+struct OrderedSet : SizePolicy,
                     OffsetPolicy,
                     StridePolicy,
                     IndirectionPolicy,
@@ -132,6 +131,39 @@ public:
   OrderedSet& operator=(OrderedSet&& other) = default;
 
   ~OrderedSet() = default;
+
+public:
+  template <typename OtherSet>
+  inline bool operator==(const OtherSet& other) const
+  {
+    using OtherPosType = typename OtherSet::PositionType;
+    using OtherElemType = typename OtherSet::ElementType;
+
+    using CmnElemType = typename std::common_type<ElemType, OtherElemType>::type;
+
+    if(this->size() != static_cast<PosType>(other.size()))
+    {
+      return false;
+    }
+
+    for(auto pos = PosType {}; pos < this->size(); pos++)
+    {
+      auto&& e1 = static_cast<CmnElemType&&>(this->at(pos));
+      auto&& e2 =
+        static_cast<CmnElemType&&>(other.at(static_cast<OtherPosType>(pos)));
+      if(e1 != e2)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  template <typename OtherSet>
+  inline bool operator!=(const OtherSet& other) const
+  {
+    return !(this->operator==(other));
+  }
 
 public:
   /**
