@@ -12,6 +12,7 @@
 
 namespace axom
 {
+// _gpu_synchronize_start
 /*!
  * \brief Synchronizes all execution threads when using an ASYNC policy with
  *  the specified execution space.
@@ -28,6 +29,7 @@ inline void synchronize() noexcept
   RAJA::synchronize<sync_policy>();
 #endif
 }
+// _gpu_synchronize_end
 
 template <>
 inline void synchronize<SEQ_EXEC>() noexcept

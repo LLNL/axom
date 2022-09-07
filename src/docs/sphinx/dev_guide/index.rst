@@ -50,6 +50,7 @@ changes are made, this guide should be updated accordingly.
    component_org
    testing
    updating_tpls
+   gpu_porting
    misc_tasks
 
 
