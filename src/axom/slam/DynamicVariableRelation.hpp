@@ -37,6 +37,9 @@ class DynamicVariableRelation : public Relation<PosType, ElemType>
 {
 public:
   using SetType = Set<PosType, ElemType>;
+  using FromSetType = SetType;
+  using ToSetType = SetType;
+
   using SetPosition = PosType;
 
   using RelationVec = std::vector<SetPosition>;
@@ -53,8 +56,13 @@ public:
   using Relation<PosType, ElemType>::s_nullSet;
 
 public:
-  DynamicVariableRelation(SetType* fromSet = &s_nullSet,
-                          SetType* toSet = &s_nullSet)
+  DynamicVariableRelation()
+    : m_fromSet(policies::EmptySetTraits<SetType>::emptySet())
+    , m_toSet(policies::EmptySetTraits<SetType>::emptySet())
+  { }
+
+  template <typename UFromSet, typename UToSet>
+  DynamicVariableRelation(UFromSet* fromSet, UToSet* toSet)
     : m_fromSet(fromSet)
     , m_toSet(toSet)
   {
@@ -196,8 +204,8 @@ private:
   }
 
 private:
-  SetType* m_fromSet;
-  SetType* m_toSet;
+  SetContainer<SetType> m_fromSet;
+  SetContainer<SetType> m_toSet;
 
   RelationsContainer m_relationsVec;
 };

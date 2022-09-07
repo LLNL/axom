@@ -103,7 +103,8 @@ public:
    * \brief Construct a DynamicConstantRelation from the given \a fromSet
    * to \a toSet
    */
-  DynamicConstantRelation(FromSetType* fromSet, ToSetType* toSet)
+  template <typename UFromSet, typename UToSet>
+  DynamicConstantRelation(UFromSet* fromSet, UToSet* toSet)
     : CardinalityPolicy(policies::EmptySetTraits<FromSetType>::isEmpty(fromSet)
                           ? 0
                           : fromSet->size())
@@ -438,8 +439,8 @@ private:
   }
 
 private:
-  FromSetType* m_fromSet;
-  ToSetType* m_toSet;
+  SetContainer<FromSetType> m_fromSet;
+  SetContainer<ToSetType> m_toSet;
 
   RelationVec m_relationsVec;
   IndexType m_currentFromSize {0};
