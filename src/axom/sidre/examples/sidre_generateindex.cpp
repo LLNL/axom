@@ -362,7 +362,7 @@ void generate_multidomain_blueprint(sidre::DataStore* ds,
 
   for(int64_t i = domain_begin; i < domain_end; ++i)
   {
-    sidre::Group* mroot = 0;
+    sidre::Group* mroot = nullptr;
 
     // The list format does not use string names to identify the domains
     // held by group 'holder`, while the map format in the else block
