@@ -2442,7 +2442,7 @@ IndexType Group::getNumViews() const { return m_view_coll->getNumItems(); }
  */
 bool Group::hasChildView(const std::string& name) const
 {
-  return getNamedViews()->hasItem(name);
+  return isUsingMap() ? getNamedViews()->hasItem(name) : false;
 }
 
 /*
@@ -2599,7 +2599,7 @@ typename Group::GroupCollection::const_iterator_adaptor Group::groups() const
  */
 bool Group::hasChildGroup(const std::string& name) const
 {
-  return getNamedGroups()->hasItem(name);
+  return isUsingMap() ? getNamedGroups()->hasItem(name) : false;
 }
 
 /*
