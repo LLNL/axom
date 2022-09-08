@@ -1032,16 +1032,17 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   const std::string umpireResourceName =
     params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
-    ? "HOST" :
-    #if defined(UMPIRE_ENABLE_DEVICE)
+    ? "HOST"
+    :
+  #if defined(UMPIRE_ENABLE_DEVICE)
     "DEVICE"
-    #elif defined(UMPIRE_ENABLE_UM)
+  #elif defined(UMPIRE_ENABLE_UM)
     "UM"
-    #elif defined(UMPIRE_ENABLE_PINNED)
+  #elif defined(UMPIRE_ENABLE_PINNED)
     "PINNED"
-    #else
+  #else
     "HOST"
-    #endif
+  #endif
     ;
   auto& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator ummpireAllocator = rm.getAllocator(umpireResourceName);

@@ -1470,13 +1470,19 @@ public:
     switch(m_dimension)
     {
     case 2:
-      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID) { m_dcp_2->setAllocatorID(m_allocatorID); }
+      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID)
+      {
+        m_dcp_2->setAllocatorID(m_allocatorID);
+      }
       m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_2->setMpiCommunicator(m_mpiComm);
       m_dcp_2->computeClosestPoints(query_node, coordset);
       break;
     case 3:
-      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID) { m_dcp_3->setAllocatorID(m_allocatorID); }
+      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID)
+      {
+        m_dcp_3->setAllocatorID(m_allocatorID);
+      }
       m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_3->setMpiCommunicator(m_mpiComm);
       m_dcp_3->computeClosestPoints(query_node, coordset);
@@ -1528,7 +1534,7 @@ private:
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
   MPI_Comm m_mpiComm;
   bool m_mpiCommIsPrivate;
-  int m_allocatorID{axom::INVALID_ALLOCATOR_ID};
+  int m_allocatorID {axom::INVALID_ALLOCATOR_ID};
   int m_dimension {-1};
   bool m_isVerbose {false};
   double m_sqDistanceThreshold {std::numeric_limits<double>::max()};
