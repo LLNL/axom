@@ -122,8 +122,7 @@ private:
   }
 
   template <typename SetRetType, typename SetFromType>
-  const SetRetType* getSetImpl(typename BSet::FirstSetType* src,
-                               std::false_type) const
+  const SetRetType* getSetImpl(SetFromType* src, std::false_type) const
   {
     return src;
   }
