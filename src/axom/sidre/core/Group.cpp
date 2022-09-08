@@ -1340,7 +1340,7 @@ void Group::copyToConduitNode(Node& n) const
   while(indexIsValid(vidx))
   {
     const View* view = getView(vidx);
-    if (isUsingMap())
+    if(isUsingMap())
     {
       Node& v = n["views"].fetch(view->getName());
       view->copyToConduitNode(v);
@@ -1357,7 +1357,7 @@ void Group::copyToConduitNode(Node& n) const
   while(indexIsValid(gidx))
   {
     const Group* group = getGroup(gidx);
-    if (isUsingMap())
+    if(isUsingMap())
     {
       Node& g = n["groups"].fetch(group->getName());
       group->copyToConduitNode(g);
