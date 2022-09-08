@@ -399,6 +399,7 @@ public:
   /// Sets the allocator ID to the default associated with the execution policy
   void setAllocatorID(int allocatorID)
   {
+    SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
     // If appropriate, how to check for compatibility with runtime policy?
     m_allocatorID = allocatorID;
   }
@@ -1469,13 +1470,13 @@ public:
     switch(m_dimension)
     {
     case 2:
-      if(m_allocatorID != -1) { m_dcp_2->setAllocatorID(m_allocatorID); }
+      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID) { m_dcp_2->setAllocatorID(m_allocatorID); }
       m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_2->setMpiCommunicator(m_mpiComm);
       m_dcp_2->computeClosestPoints(query_node, coordset);
       break;
     case 3:
-      if(m_allocatorID != -1) { m_dcp_3->setAllocatorID(m_allocatorID); }
+      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID) { m_dcp_3->setAllocatorID(m_allocatorID); }
       m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_3->setMpiCommunicator(m_mpiComm);
       m_dcp_3->computeClosestPoints(query_node, coordset);

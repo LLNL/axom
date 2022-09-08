@@ -20,7 +20,6 @@
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mpi.hpp"
 
-#include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/DistributedClosestPoint.hpp"
 
 #include "axom/fmt.hpp"
@@ -1027,6 +1026,27 @@ int main(int argc, char** argv)
   using IndexSet = slam::PositionSet<>;
   using Circle = primal::Sphere<double, DIM>;
 
+#if defined(AXOM_USE_UMPIRE)
+  //---------------------------------------------------------------------------
+  // Memory resource.  For testing, choose device memory if appropriate.
+  //---------------------------------------------------------------------------
+  const std::string umpireResourceName =
+    params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
+    ? "HOST" :
+    #if defined(UMPIRE_ENABLE_DEVICE)
+    "DEVICE"
+    #elif defined(UMPIRE_ENABLE_UM)
+    "UM"
+    #elif defined(UMPIRE_ENABLE_PINNED)
+    "PINNED"
+    #else
+    "HOST"
+    #endif
+    ;
+  auto& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator ummpireAllocator = rm.getAllocator(umpireResourceName);
+#endif
+
   //---------------------------------------------------------------------------
   // Load/generate object mesh
   //---------------------------------------------------------------------------
@@ -1111,12 +1131,9 @@ int main(int argc, char** argv)
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
   query.setRuntimePolicy(params.policy);
-  #ifdef AXOM_USE_CUDA
-  if(params.policy == RuntimePolicy::cuda)
-  {
-    query.setAllocatorID(axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID());
-  }
-  #endif
+#if defined(AXOM_USE_UMPIRE)
+  query.setAllocatorID(ummpireAllocator.getId());
+#endif
   query.setMpiCommunicator(MPI_COMM_WORLD, true);
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
