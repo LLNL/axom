@@ -44,8 +44,8 @@ using RelationType = slam::StaticRelation<SetPosition,
                                           SetType,
                                           SetType>;
 
-using BivariateSetType = slam::BivariateSet<>;
-using ProductSetType = slam::ProductSet<>;
+using BivariateSetType = slam::BivariateSet<SetType, SetType>;
+using ProductSetType = slam::ProductSet<SetType, SetType>;
 using RelationSetType = slam::RelationSet<RelationType>;
 
 template <typename T, typename B, typename I, typename S>
