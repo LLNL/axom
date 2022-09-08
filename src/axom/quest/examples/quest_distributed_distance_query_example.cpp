@@ -1045,7 +1045,7 @@ int main(int argc, char** argv)
   #endif
     ;
   auto& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator ummpireAllocator = rm.getAllocator(umpireResourceName);
+  umpire::Allocator umpireAllocator = rm.getAllocator(umpireResourceName);
 #endif
 
   //---------------------------------------------------------------------------
@@ -1133,7 +1133,7 @@ int main(int argc, char** argv)
   quest::DistributedClosestPoint query;
   query.setRuntimePolicy(params.policy);
 #if defined(AXOM_USE_UMPIRE)
-  query.setAllocatorID(ummpireAllocator.getId());
+  query.setAllocatorID(umpireAllocator.getId());
 #endif
   query.setMpiCommunicator(MPI_COMM_WORLD, true);
   query.setDimension(DIM);

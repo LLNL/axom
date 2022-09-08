@@ -912,12 +912,11 @@ private:
     }
   }
 
-  /// Sets the allocator ID to the default associated with the execution policy
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
   void setDefaultAllocatorID()
   {
-    // This function uses the default allocator ID for the execution space
-    // TODO: Add overload to allow the user to set an allocator ID
-
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
@@ -1309,7 +1308,9 @@ public:
     return false;
   }
 
-  /// Sets the allocator ID to the default associated with the execution policy
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
   void setAllocatorID(int allocatorID)
   {
     SLIC_ASSERT_MSG(allocatorID != axom::INVALID_ALLOCATOR_ID,
