@@ -1340,9 +1340,16 @@ void Group::copyToConduitNode(Node& n) const
   while(indexIsValid(vidx))
   {
     const View* view = getView(vidx);
-    Node& v = n["views"].fetch(view->getName());
-    view->copyToConduitNode(v);
-
+    if (isUsingMap())
+    {
+      Node& v = n["views"].fetch(view->getName());
+      view->copyToConduitNode(v);
+    }
+    else
+    {
+      Node& v = n["views"].append();
+      view->copyToConduitNode(v);
+    }
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -1350,9 +1357,16 @@ void Group::copyToConduitNode(Node& n) const
   while(indexIsValid(gidx))
   {
     const Group* group = getGroup(gidx);
-    Node& g = n["groups"].fetch(group->getName());
-    group->copyToConduitNode(g);
-
+    if (isUsingMap())
+    {
+      Node& g = n["groups"].fetch(group->getName());
+      group->copyToConduitNode(g);
+    }
+    else
+    {
+      Node& g = n["groups"].append();
+      group->copyToConduitNode(g);
+    }
     gidx = getNextValidGroupIndex(gidx);
   }
 }
