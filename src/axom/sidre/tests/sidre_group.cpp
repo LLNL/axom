@@ -1405,6 +1405,81 @@ TEST(sidre_group, create_view_of_buffer_with_schema)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group, copy_to_conduit_node)
+{
+  DataStore* ds1 = new DataStore();
+
+  // group_a uses map format, group_b uses list format.
+  Group* group_a = ds1->getRoot()->createGroup("group_a", false);
+  Group* group_b = ds1->getRoot()->createGroup("group_b", true);
+
+  // add child groups and views to group_a
+  Group* foo_a = group_a->createGroup("foo_a");
+  Group* bar_a = group_a->createGroup("bar_a");
+  group_a->createViewScalar("i0", 1);
+
+  foo_a->createViewScalar<int>("i1", 5);
+  bar_a->createViewScalar<double>("d0", 11.0);
+
+  // add child groups and views to group_b
+  Group* foo_b = group_b->createUnnamedGroup();
+  Group* bar_b = group_b->createUnnamedGroup();
+  group_b->createViewScalar("", -1);
+
+  foo_b->createViewScalar<int32_t>("i3", 15);
+  bar_b->createViewScalar<double>("d1", 33.0);
+
+  conduit::Node n;
+  ds1->getRoot()->copyToConduitNode(n);
+
+  // copyToConduitNode converts the View contents into strings in a
+  // JSON layout, so we verify the values as strings
+
+  // We can directly access group_a by name
+  EXPECT_EQ(n["groups/group_a/views/i0/value"].as_string(), std::string("1"));
+  EXPECT_EQ(n["groups/group_a/groups/foo_a/views/i1/value"].as_string(),
+            std::string("5"));
+  EXPECT_EQ(n["groups/group_a/groups/bar_a/views/d0/value"].as_string(),
+            std::string("11.0"));
+
+  // group_b has lists, so we iterate
+  conduit::Node& b_views = n["groups/group_b/views"];
+  conduit::Node& b_groups = n["groups/group_b/groups"];
+  EXPECT_TRUE(b_views.dtype().is_list());
+  EXPECT_TRUE(b_groups.dtype().is_list());
+  EXPECT_EQ(b_views.number_of_children(), 1);
+  EXPECT_EQ(b_groups.number_of_children(), 2);
+
+  // Verify the View held directly in group_b
+  conduit::NodeIterator v_itr = b_views.children();
+  while(v_itr.has_next())
+  {
+    conduit::Node& chld = v_itr.next();
+    EXPECT_EQ(chld["value"].as_string(), std::string("-1"));
+  }
+
+  // Verify the Views held in group_b's child Groups
+  conduit::NodeIterator g_itr = b_groups.children();
+  while(g_itr.has_next())
+  {
+    conduit::Node& chld = g_itr.next();
+    EXPECT_TRUE(chld.has_child("views"));
+
+    conduit::Node& chld_views = chld["views"];
+    EXPECT_TRUE(chld_views.number_of_children() == 1);
+    EXPECT_TRUE(chld_views.has_child("i3") || chld_views.has_child("d1"));
+
+    if(chld_views.has_child("i3"))
+    {
+      EXPECT_EQ(chld_views["i3/value"].as_string(), std::string("15"));
+    }
+    else
+    {
+      EXPECT_EQ(chld_views["d1/value"].as_string(), std::string("33.0"));
+    }
+  }
+}
+//------------------------------------------------------------------------------
 TEST(sidre_group, save_restore_empty_datastore)
 {
   const std::string file_path_base("sidre_empty_datastore_");
