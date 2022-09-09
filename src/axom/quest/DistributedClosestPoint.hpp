@@ -396,11 +396,43 @@ public:
     m_sqDistanceThreshold = sqThreshold;
   }
 
-  /// Sets the allocator ID to the default associated with the execution policy
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
+  void setDefaultAllocatorID()
+  {
+    switch(m_runtimePolicy)
+    {
+    case RuntimePolicy::seq:
+      m_allocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+      break;
+    case RuntimePolicy::omp:
+#ifdef _AXOM_DCP_USE_OPENMP
+      m_allocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
+#endif
+      break;
+
+    case RuntimePolicy::cuda:
+#ifdef _AXOM_DCP_USE_CUDA
+      m_allocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
+#endif
+      break;
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      m_allocatorID = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+#endif
+      break;
+    }
+  }
+
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
   void setAllocatorID(int allocatorID)
   {
     SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
-    // If appropriate, how to check for compatibility with runtime policy?
+    // TODO: If appropriate, how to check for compatibility with runtime policy?
     m_allocatorID = allocatorID;
   }
 
@@ -909,36 +941,6 @@ private:
       for(; prevIdx < idx; ++prevIdx) ++reqIter;
       reqIter = isendRequests.erase(reqIter);
       ++prevIdx;
-    }
-  }
-
-  /*!  @brief Sets the allocator ID to the default associated with the
-    execution policy
-  */
-  void setDefaultAllocatorID()
-  {
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      m_allocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-      break;
-    case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
-      m_allocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-#endif
-      break;
-
-    case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
-      m_allocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-#endif
-      break;
-
-    case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
-      m_allocatorID = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-#endif
-      break;
     }
   }
 
