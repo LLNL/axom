@@ -15,6 +15,28 @@
 #include "axom/config.hpp"
 #include <cassert>  // for assert()
 
+// _guarding_macros_start
+/*!
+ * \def AXOM_USE_GPU
+ *
+ * \brief Convenience macro used for GPU-enabled checks
+ *
+ * \note AXOM_USE_CUDA is defined if Axom is built with CUDA.
+ *       AXOM_USE_HIP is defined if Axom is built with HIP.
+ */
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #define AXOM_USE_GPU
+#endif
+
+/*!
+ * \def AXOM_DEVICE_CODE
+ *
+ * \brief Convenience macro used for kernel code
+ */
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
+  #define AXOM_DEVICE_CODE
+#endif
+
 /*!
  * \def AXOM_GPUCC
  *
@@ -23,7 +45,9 @@
 #if defined(__CUDACC__) || defined(__HIPCC__)
   #define AXOM_GPUCC
 #endif
+// _guarding_macros_end
 
+// _decorating_macros_start
 /*!
  * \def AXOM_DEVICE
  * \def AXOM_HOST_DEVICE
@@ -42,6 +66,23 @@
   #define AXOM_HOST_DEVICE
   #define AXOM_HOST
 #endif
+
+/*!
+ * \def AXOM_LAMBDA
+ *
+ * \brief Convenience macro used for lambda capture by value.
+ * \note When CUDA or HIP is used, the macro always expands to a host/device lambda.
+ */
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
+  #define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
+  #define AXOM_HOST_LAMBDA [=] AXOM_HOST
+#else
+  #define AXOM_LAMBDA [=]
+  #define AXOM_DEVICE_LAMBDA [=]
+  #define AXOM_HOST_LAMBDA [=]
+#endif
+// _decorating_macros_end
 
 /*
  * \def AXOM_STRINGIFY
@@ -75,31 +116,6 @@
 #endif
 
 /*!
- * \def AXOM_USE_GPU
- *
- * \brief Convenience macro used for GPU-enabled checks
- */
-#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
-  #define AXOM_USE_GPU
-#endif
-
-/*!
- * \def AXOM_LAMBDA
- *
- * \brief Convenience macro used for lambda capture by value.
- * \note When CUDA or HIP is used, the macro always expands to a host/device lambda.
- */
-#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
-  #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
-  #define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
-  #define AXOM_HOST_LAMBDA [=] AXOM_HOST
-#else
-  #define AXOM_LAMBDA [=]
-  #define AXOM_DEVICE_LAMBDA [=]
-  #define AXOM_HOST_LAMBDA [=]
-#endif
-
-/*!
  * \def AXOM_CUDA_TEST
  *
  * \brief Convenience macro used for a gtest that uses cuda.
@@ -111,15 +127,6 @@
     static void cuda_test_##X##Y()
 #else
   #define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
-#endif
-
-/*!
- * \def AXOM_DEVICE_CODE
- *
- * \brief Convenience macro used for kernel code
- */
-#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-  #define AXOM_DEVICE_CODE
 #endif
 
 /*!

@@ -282,6 +282,9 @@ public:
   /*!
    * \brief Return true if this Group owns a View with given name (not path);
    * else false.
+   *
+   * This will always return false if this Group holds items using the list
+   * format, which does not use string names to identify child items.
    */
   bool hasChildView(const std::string& name) const;
 
@@ -833,6 +836,9 @@ public:
   /*!
    * \brief Return true if this Group has a child Group with given
    * name; else false.
+   *
+   * This will always return false if this Group holds items using the list
+   * format, which does not use string names to identify child items.
    */
   bool hasChildGroup(const std::string& name) const;
 
