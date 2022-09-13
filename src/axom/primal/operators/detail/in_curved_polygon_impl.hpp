@@ -183,8 +183,7 @@ double adaptive_winding_number(const Point<T, 2>& q,
   if(ord <= 0) return 0.0;  // Catch degenerate cases
 
   // Use linearity as base case for recursion
-  if(c.isLinear(EPS))
-    return linear_winding_number(q, c[0], c[ord], edge_tol);
+  if(c.isLinear(EPS)) return linear_winding_number(q, c[0], c[ord], edge_tol);
 
   Polygon<T, 2> controlPolygon(c.getControlPoints());
 
@@ -192,7 +191,7 @@ double adaptive_winding_number(const Point<T, 2>& q,
   //  If so, all subcurves will be convex as well
   if(!isConvexControlPolygon)
     isConvexControlPolygon = is_convex(controlPolygon, EPS);
-  else // Formulas for winding number only work if shape is convex
+  else  // Formulas for winding number only work if shape is convex
   {
     // If q is outside the control polygon, for an open Bezier curve, the winding
     //  number for the shape connected at the endpoints with straight lines is zero.

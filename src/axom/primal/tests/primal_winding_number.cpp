@@ -113,7 +113,7 @@ TEST(primal_winding_number, simple_cases)
     1,
     abs_tol);
 
-  // Test containment on non-convex shape, where the query point is outside 
+  // Test containment on non-convex shape, where the query point is outside
   //  the control polygon, but interior to the closed Bezier curve
   Point2D cubic_loop_nodes[] = {Point2D {0.0, 0.0},
                                 Point2D {2.0, 1.0},
