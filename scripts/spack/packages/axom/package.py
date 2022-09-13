@@ -466,9 +466,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append("# Root directory for generated developer tools\n")
             entries.append(cmake_cache_path("DEVTOOLS_ROOT", devtools_root))
 
-        if "+devtools" in spec and 'toss_4' not in self._get_sys_type(spec):
+        if "+devtools" in spec and "toss_4" not in self._get_sys_type(spec):
             # Only turn on clangformat support if devtools is on and not TOSS4
-            clang_fmt_path = spec['llvm'].prefix.bin.join('clang-format')
+            clang_fmt_path = spec["llvm"].prefix.bin.join("clang-format")
             entries.append(cmake_cache_path(
                 "CLANGFORMAT_EXECUTABLE", clang_fmt_path))
         else:
@@ -503,6 +503,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     def cmake_args(self):
         options = []
+
+        options.append("-DBLT_SOURCE_DIR:PATH={0}".format(spec["blt"].prefix))
 
         if self.run_tests is False:
             options.append("-DENABLE_TESTS=OFF")
