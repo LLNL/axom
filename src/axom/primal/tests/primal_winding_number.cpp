@@ -112,6 +112,18 @@ TEST(primal_winding_number, simple_cases)
       winding_number(Point2D({-0.352, 0.72 - edge_tol * 2}), top_curve, edge_tol, EPS),
     1,
     abs_tol);
+
+  // Test containment on non-convex shape, where the query point is outside 
+  //  the control polygon, but interior to the closed Bezier curve
+  Point2D cubic_loop_nodes[] = {Point2D {0.0, 0.0},
+                                Point2D {2.0, 1.0},
+                                Point2D {-1.0, 1.0},
+                                Point2D {1.0, 0.0}};
+  Bezier cubic_loop(cubic_loop_nodes, 3);
+
+  EXPECT_NEAR(winding_number(Point2D({0.4, 0.21}), cubic_loop, edge_tol, EPS),
+              -0.630526441742,
+              abs_tol);
 }
 
 TEST(primal_winding_number, closure_edge_cases)
