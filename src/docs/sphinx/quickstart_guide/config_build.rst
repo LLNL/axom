@@ -88,7 +88,7 @@ The following table lists:
 .. _Lua: https://www.lua.org/
 .. _MFEM: https://mfem.org/
 .. _RAJA: https://raja.readthedocs.io/en/main/
-.. _SCR: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
+.. _SCR: https://computing.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 .. _Umpire: https://umpire.readthedocs.io/en/latest/
 
 Note that each  library dependency has a corresponding build system variable

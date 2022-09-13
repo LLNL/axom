@@ -19,6 +19,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+## [Version 0.7.0] - Release date 2022-08-30
+
 ###  Added
 - Adds a `view()` method to `axom::Array` class to simplify creation of a corresponding `axom::ArrayView`
 - Adds GPU/OpenMP support to `spin::ImplicitGrid`.
@@ -105,6 +107,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   have empty object meshes and/or empty query meshes 
 - 'BezierCurve' objects now support Rational Bezier curve functionality
 - Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and another `Tetrahedron` as a `Polyhedron`
+- Added `slic::outputLocalMessages()` to output messages from the current rank to the console for MPI-enabled LogStreams.
 
 ###  Changed
 - Axom now requires C++14 and will default to that if not specified via `BLT_CXX_STD`.
@@ -142,7 +145,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - The device traversal method `BVH::TraverserType::traverse_tree()` now supports passing in arbitrary query objects
   for BVH traversal.
 - Moved `inlet::LuaReader::solState()` to be a protected function that now returns a `std::shared_ptr<axom::sol::state>`.
-  This is an advanced feature that could cause users to break an input file state after verification. This also alows us
+  This is an advanced feature that could cause users to break an input file state after verification. This also allows us
   to not expose `axom/sol.hpp` to all users of Inlet. This greatly reduces compile times. Using this feature requires
   both a derived class and including `axom/sol.hpp` in the user code.
 - Renamed some overloads of function `createView` of
@@ -190,6 +193,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug on two-dimensional `sidre::Array<T>` construction where the size is set to the underlying buffer
   capacity, instead of the actual number of elements
 - Fixed `axom::Array<T>::insert` behavior with non-trivial types.
+- Fixed bug in Slic macros for MPI-based LogStreams not aborting when using collective Error or Warning
+  macros
 
 ## [Version 0.6.1] - Release date 2021-11-17
 
@@ -826,7 +831,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Security
 - Use this section in case of vulnerabilities
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.6.1...develop
+
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.7.0...develop
+[Version 0.7.0]: https://github.com/LLNL/axom/compare/v0.6.1...v0.7.0
 [Version 0.6.1]: https://github.com/LLNL/axom/compare/v0.6.0...v0.6.1
 [Version 0.6.0]: https://github.com/LLNL/axom/compare/v0.5.0...v0.6.0
 [Version 0.5.0]: https://github.com/LLNL/axom/compare/v0.4.0...v0.5.0

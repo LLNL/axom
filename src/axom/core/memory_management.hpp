@@ -26,6 +26,7 @@ namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
+// _memory_space_start
 /*! 
  * \brief Memory spaces supported by Array-like types
  *
@@ -44,7 +45,9 @@ enum class MemorySpace
   Constant
 #endif
 };
+// _memory_space_end
 
+// _memory_management_routines_start
 /// \name Memory Management Routines
 /// @{
 
@@ -172,6 +175,7 @@ inline T* reallocate(T* p,
 inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept;
 
 /// @}
+// _memory_management_routines_end
 
 //------------------------------------------------------------------------------
 //                        IMPLEMENTATION

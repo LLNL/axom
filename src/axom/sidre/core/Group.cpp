@@ -1340,9 +1340,16 @@ void Group::copyToConduitNode(Node& n) const
   while(indexIsValid(vidx))
   {
     const View* view = getView(vidx);
-    Node& v = n["views"].fetch(view->getName());
-    view->copyToConduitNode(v);
-
+    if(isUsingMap())
+    {
+      Node& v = n["views"].fetch(view->getName());
+      view->copyToConduitNode(v);
+    }
+    else
+    {
+      Node& v = n["views"].append();
+      view->copyToConduitNode(v);
+    }
     vidx = getNextValidViewIndex(vidx);
   }
 
@@ -1350,9 +1357,16 @@ void Group::copyToConduitNode(Node& n) const
   while(indexIsValid(gidx))
   {
     const Group* group = getGroup(gidx);
-    Node& g = n["groups"].fetch(group->getName());
-    group->copyToConduitNode(g);
-
+    if(isUsingMap())
+    {
+      Node& g = n["groups"].fetch(group->getName());
+      group->copyToConduitNode(g);
+    }
+    else
+    {
+      Node& g = n["groups"].append();
+      group->copyToConduitNode(g);
+    }
     gidx = getNextValidGroupIndex(gidx);
   }
 }
@@ -2442,7 +2456,7 @@ IndexType Group::getNumViews() const { return m_view_coll->getNumItems(); }
  */
 bool Group::hasChildView(const std::string& name) const
 {
-  return getNamedViews()->hasItem(name);
+  return isUsingMap() ? getNamedViews()->hasItem(name) : false;
 }
 
 /*
@@ -2599,7 +2613,7 @@ typename Group::GroupCollection::const_iterator_adaptor Group::groups() const
  */
 bool Group::hasChildGroup(const std::string& name) const
 {
-  return getNamedGroups()->hasItem(name);
+  return isUsingMap() ? getNamedGroups()->hasItem(name) : false;
 }
 
 /*

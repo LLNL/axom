@@ -73,7 +73,16 @@ public:
                       bool filter_duplicates);
 
   /*!
-   * \brief Dumps the messages to the console in rank-order.
+   * \brief Dumps the messages from the current rank directly to the
+   *        console (non-collectively).
+   *
+   * \warning This method is being called before slic aborts.
+   */
+  virtual void outputLocal();
+
+  /*!
+   * \brief Dumps the messages to the console in rank-order for all ranks.
+   *
    * \collective
    * \note This method is a collective operation
    *  intended for a synchronization checkpoint.

@@ -102,14 +102,19 @@ public:
 
   /*!
    * \brief Constructor. Creates a bounding box with a given min and max point
-   *  The code ensures that the bounds are valid.
+   *  The code ensures that the bounds are valid, if shouldFixBounds is true.
    */
   AXOM_HOST_DEVICE
-  BoundingBox(const PointType& lowerPt, const PointType& upperPt)
+  BoundingBox(const PointType& lowerPt,
+              const PointType& upperPt,
+              bool shouldFixBounds = true)
     : m_min(lowerPt)
     , m_max(upperPt)
   {
-    this->checkAndFixBounds();
+    if(shouldFixBounds)
+    {
+      this->checkAndFixBounds();
+    }
   }
 
   /*!

@@ -341,7 +341,8 @@ void generate_spio_blueprint(sidre::DataStore* ds, bool dense)
 
 void generate_multidomain_blueprint(sidre::DataStore* ds,
                                     const std::string& filename,
-                                    int num_files)
+                                    int num_files,
+                                    bool use_list)
 {
   int my_rank;
   int comm_size;
@@ -354,16 +355,27 @@ void generate_multidomain_blueprint(sidre::DataStore* ds,
 
   std::string holder_name = "domain_data";
   std::string mesh_name = "mesh";
-  sidre::Group* holder = ds->getRoot()->createGroup(holder_name);
+  sidre::Group* holder = ds->getRoot()->createGroup(holder_name, use_list);
 
   std::string domain_pattern = "domain_{domain:06d}";
   ds->getRoot()->createViewString("domain_pattern", domain_pattern);
 
   for(int64_t i = domain_begin; i < domain_end; ++i)
   {
-    std::string domain_name = axom::fmt::format("domain_{:06d}", i);
+    sidre::Group* mroot = nullptr;
 
-    sidre::Group* mroot = holder->createGroup(domain_name);
+    // The list format does not use string names to identify the domains
+    // held by group 'holder`, while the map format in the else block
+    // must give each domain a unique name.
+    if(use_list)
+    {
+      mroot = holder->createUnnamedGroup();
+    }
+    else
+    {
+      std::string domain_name = axom::fmt::format("domain_{:06d}", i);
+      mroot = holder->createGroup(domain_name);
+    }
     sidre::Group* coords = mroot->createGroup("coordsets/coords");
     sidre::Group* topos = mroot->createGroup("topologies");
     // no material sets in this example
@@ -513,17 +525,29 @@ int main(int argc, char** argv)
   spds->getRoot()->destroyGroups();
   spds->getRoot()->destroyViews();
   spds = create_tiny_datastore();
-  generate_multidomain_blueprint(spds, "multi1", 1);
+  generate_multidomain_blueprint(spds, "multi1", 1, false);
+  spds->getRoot()->destroyGroups();
+  spds->getRoot()->destroyViews();
+  spds = create_tiny_datastore();
+  generate_multidomain_blueprint(spds, "multi1_list", 1, true);
   if(num_ranks > 1)
   {
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
     spds = create_tiny_datastore();
-    generate_multidomain_blueprint(spds, "multi2", 2);
+    generate_multidomain_blueprint(spds, "multi2", 2, false);
     spds->getRoot()->destroyGroups();
     spds->getRoot()->destroyViews();
     spds = create_tiny_datastore();
-    generate_multidomain_blueprint(spds, "multi_all", num_ranks);
+    generate_multidomain_blueprint(spds, "multi2_list", 2, true);
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_multidomain_blueprint(spds, "multi_all", num_ranks, false);
+    spds->getRoot()->destroyGroups();
+    spds->getRoot()->destroyViews();
+    spds = create_tiny_datastore();
+    generate_multidomain_blueprint(spds, "multi_all_list", num_ranks, true);
   }
   spds->getRoot()->destroyGroups();
   spds->getRoot()->destroyViews();

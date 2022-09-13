@@ -52,63 +52,41 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         set(_nranks 3)
 
-        # Bugfix: Serialize ordering of DCP tests as workaround for MPI issues 
-        # encountered when these tests ran in parallel
-        set(_dcp_previous_test)
-
         # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")
         blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
         blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
         blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+
+        # Non-zero empty-rank probability tests domain underloading case
+        set(_emptyRankProbs 0.0 0.5)
         foreach(_pol ${_policies})
-            # Add test with data on all ranks
-            set(_test "quest_distributed_closest_point_run_2D_${_pol}")
-            axom_add_test(
-                NAME    ${_test}
-                COMMAND quest_distributed_distance_query_ex
-                            --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
-                            --num-samples 500
-                            --dist-threshold .45
-                            --policy ${_pol}
-                            --object-file dcp_object_mesh_2d_${_pol}
-                            --distance-file dcp_closest_point_2d_${_pol}
-                NUM_MPI_TASKS ${_nranks})
-            if(${_pol} STREQUAL "omp")
-                set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
-            endif()
-
-            if(_dcp_previous_test)
-                set_tests_properties(${_test} PROPERTIES DEPENDS ${_dcp_previous_test})
-            endif()
-            set(_dcp_previous_test ${_test})
-
-            # Add test with data on a subset of the ranks
-            set(_test "quest_distributed_closest_point_run_2D_empty_ranks_${_pol}")
-            axom_add_test(
-                NAME    ${_test}
-                COMMAND quest_distributed_distance_query_ex
-                            --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
-                            --num-samples 500
-                            --dist-threshold .45
-                            --policy ${_pol}
-                            --object-file dcp_object_mesh_2d_${_pol}
-                            --distance-file dcp_closest_point_2d_${_pol}
-                            --empty-rank-probability .5
-                NUM_MPI_TASKS ${_nranks})
-            if(${_pol} STREQUAL "omp")
-                set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
-            endif()
-
-            set_tests_properties(${_test} PROPERTIES DEPENDS ${_dcp_previous_test})
-            set(_dcp_previous_test ${_test})
-    
+            foreach(_emptyRankProb ${_emptyRankProbs})
+                # Add test with data on all ranks
+                set(_test "quest_distributed_closest_point_run_2D_${_pol}_empty_rank_prob_${_emptyRankProb}")
+                axom_add_test(
+                    NAME    ${_test}
+                    COMMAND quest_distributed_distance_query_ex
+                                --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
+                                --num-samples 500
+                                --dist-threshold .45
+                                --no-random-spacing
+                                --check-results
+                                --policy ${_pol}
+                                --object-file dcp_object_mesh_2d_${_pol}_${_emptyRankProb}
+                                --distance-file dcp_closest_point_2d_${_pol}_${_emptyRankProb}
+                                --empty-rank-probability ${_emptyRankProb}
+                    NUM_MPI_TASKS ${_nranks})
+                if(${_pol} STREQUAL "omp")
+                    set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
+                endif()
+            endforeach()
         endforeach()
 
         unset(_nranks)
         unset(_policies)
+        unset(_emptyRankProbs)
         unset(_test)
-        unset(_dcp_previous_test)
     endif()
 endif()
 
@@ -211,63 +189,49 @@ endif()
 
 if (ENABLE_FORTRAN)
 
+    set(quest_fortran_examples quest_signed_distance_interface)
+    
+    # The inout Fortran example fails to compile with hipcc/amdflang in debug configurations
+    if("${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(_has_inout_fortran_example FALSE)
+    else()
+        set(_has_inout_fortran_example TRUE)
+        blt_list_append(TO quest_fortran_examples ELEMENTS quest_inout_interface)
+    endif()
+
     blt_list_append(TO quest_example_fortran_depends ELEMENTS mpi IF ENABLE_MPI)
 
-    blt_add_executable(
-        NAME       quest_signed_distance_interface_F_ex
-        SOURCES    quest_signed_distance_interface.F
-        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_example_depends} ${quest_example_fortran_depends}
-        FOLDER     axom/quest/examples
-        )
-
-    # This target fails to compile with hipcc/amdflang on debugs
-    if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    foreach(_t ${quest_fortran_examples})
+        set(_example_name "${_t}_F_ex")
         blt_add_executable(
-            NAME        quest_inout_interface_F_ex
-            SOURCES     quest_inout_interface.F
-            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  ${quest_example_depends} ${quest_example_fortran_depends}
-            FOLDER      axom/quest/examples
-            )
+            NAME       ${_example_name}
+            SOURCES    ${_t}.F
+            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON ${quest_example_depends} ${quest_example_fortran_depends}
+            FOLDER     axom/quest/examples)
 
-        if (NOT ENABLE_CUDA)
-            if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-                set_target_properties(quest_inout_interface_F_ex
+        # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
+        if(NOT ENABLE_CUDA)
+            if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
+                set_target_properties(${_example_name}
                                       PROPERTIES LINKER_LANGUAGE Fortran)
             else()
-                set_target_properties(quest_inout_interface_F_ex
+                set_target_properties(${_example_name}
                                       PROPERTIES LINKER_LANGUAGE CXX)
             endif()
         endif()
-    endif()
+    endforeach()
 
-    # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
-    if (NOT ENABLE_CUDA)
-        # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly.
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-            set_target_properties( quest_signed_distance_interface_F_ex
-                                   PROPERTIES LINKER_LANGUAGE Fortran)
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND ${_has_inout_fortran_example})
+        if (ENABLE_MPI)
+            axom_add_test(
+                NAME quest_inout_interface_mpi_F_test
+                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                NUM_MPI_TASKS 2)
         else()
-            set_target_properties( quest_signed_distance_interface_F_ex
-                                   PROPERTIES LINKER_LANGUAGE CXX)
-        endif()
-    endif()
-
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
-        if(NOT "${CMAKE_Fortran_COMPILER}" MATCHES "amdflang$" OR NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-            if (ENABLE_MPI)
-                axom_add_test(
-                    NAME quest_inout_interface_mpi_F_test
-                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                    NUM_MPI_TASKS 2
-                    )
-            else()
-                axom_add_test(
-                    NAME quest_inout_interface_F_test
-                    COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-                    )
-            endif()
+            axom_add_test(
+                NAME quest_inout_interface_F_test
+                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl)
         endif()
     endif()
 endif()
