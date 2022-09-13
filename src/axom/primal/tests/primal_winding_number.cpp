@@ -26,6 +26,10 @@ TEST(primal_winding_number, containment_protocol)
   using Bezier = primal::BezierCurve<double, 2>;
   using CPolygon = primal::CurvedPolygon<double, 2>;
 
+  double edge_tol = 1e-8;
+  double EPS = primal::PRIMAL_TINY;
+  int npts = 15;
+
   // 8th order, closed curve with internal loop
   Point2D loop_nodes[] = {Point2D {0.0, 0.0},
                           Point2D {1.0, 0.0},
@@ -40,14 +44,28 @@ TEST(primal_winding_number, containment_protocol)
   CPolygon loop_poly;
   loop_poly.addEdge(loop_curve);
 
-  // Inner loop is considered "interior" with nonzero protocol. Default behavior.
-  bool nonzero = true;
-  EXPECT_TRUE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly));
-  EXPECT_TRUE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly, nonzero));
+  for(auto alg_type : {primal::RECURSIVE_BISECTION, primal::CONVEX_QUADRATURE})
+  {
+    // Inner loop is considered "interior" with nonzero protocol. Default behavior.
+    bool useNonzeroRule = true;
+    EXPECT_TRUE(in_curved_polygon(Point2D({0.5, 0.5}),
+                                  loop_poly,
+                                  useNonzeroRule,
+                                  edge_tol,
+                                  EPS,
+                                  alg_type,
+                                  npts));
 
-  // Inner loop is considered "exterior" with even/odd protocol
-  nonzero = false;
-  EXPECT_FALSE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly, nonzero));
+    // Inner loop is considered "exterior" with even/odd protocol
+    useNonzeroRule = false;
+    EXPECT_FALSE(in_curved_polygon(Point2D({0.5, 0.5}),
+                                   loop_poly,
+                                   useNonzeroRule,
+                                   edge_tol,
+                                   EPS,
+                                   alg_type,
+                                   npts));
+  }
 }
 
 TEST(primal_winding_number, simple_cases)
@@ -55,12 +73,13 @@ TEST(primal_winding_number, simple_cases)
   // Test points that are straightforwardly "inside" or "outside"
   //  the closed shape
   using Point2D = primal::Point<double, 2>;
+  using Vector2D = primal::Vector<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
   using CPolygon = primal::CurvedPolygon<double, 2>;
 
   double abs_tol = 1e-8;
-  double edge_tol = 1e-8;
   double EPS = primal::PRIMAL_TINY;
+  int npts = 15;
 
   // Simple closed shape with cubic edges
   Point2D top_nodes[] = {Point2D {0.0, 0.0},
@@ -77,45 +96,48 @@ TEST(primal_winding_number, simple_cases)
   Bezier simple_shape_edges[] = {top_curve, bot_curve};
   CPolygon simple_shape(simple_shape_edges, 2);
 
-  // Check interior points
-  for(int i = 1; i < 7; i++)
+  for(auto alg_type : {primal::RECURSIVE_BISECTION})
   {
-    double offset = std::pow(10, -i);
-    Point2D q_vert({-0.352, 0.72 - offset});
-    Point2D q_horz({-0.352 - offset, 0.72});
+    for(int i = 3; i < 4; i++)
+    {
+      double edge_tol = std::pow(10, -i);
 
-    EXPECT_NEAR(winding_number(q_vert, simple_shape, edge_tol, EPS), 1.0, abs_tol);
-    EXPECT_NEAR(winding_number(q_horz, simple_shape, edge_tol, EPS), 1.0, abs_tol);
+      for(double t = 2 * edge_tol; t < (1.0 - 2 * edge_tol); t += 0.1)
+      {
+        Point2D on_curve(top_curve.evaluate(t));
+        Vector2D tangent(top_curve.dt(t));
+
+        // Check interior points
+        Point2D q_int({
+          -tangent[1] * 2.0 * edge_tol / tangent.norm() + on_curve[0],
+          tangent[0] * 2.0 * edge_tol / tangent.norm() + on_curve[1],
+        });
+
+        EXPECT_NEAR(
+          winding_number(q_int, simple_shape, edge_tol, EPS, alg_type, npts),
+          1.0,
+          abs_tol);
+
+        // Check exterior points
+        Point2D q_ext({
+          -tangent[1] * 2.0 * -edge_tol / tangent.norm() + on_curve[0],
+          tangent[0] * 2.0 * -edge_tol / tangent.norm() + on_curve[1],
+        });
+
+        EXPECT_NEAR(
+          winding_number(q_ext, simple_shape, edge_tol, EPS, alg_type, npts),
+          0.0,
+          abs_tol);
+      }
+    }
   }
 
-  // Check exterior points
-  for(int i = 1; i < 7; i++)
-  {
-    double offset = std::pow(10, -i);
-    Point2D q_vert({-0.352, 0.72 + offset});
-    Point2D q_horz({-0.352 + offset, 0.72});
-
-    EXPECT_NEAR(winding_number(q_vert, simple_shape, edge_tol, EPS), 0.0, abs_tol);
-    EXPECT_NEAR(winding_number(q_horz, simple_shape, edge_tol, EPS), 0.0, abs_tol);
-  }
-
-  // Test that points on either side of cubic are offset by 1
-  EXPECT_NEAR(
-    winding_number(Point2D({-0.352, 0.72 - edge_tol * 2}), top_curve, edge_tol, EPS) -
-      winding_number(Point2D({-0.352, 0.72 + edge_tol * 2}), top_curve, edge_tol, EPS),
-    1,
-    abs_tol);
-
-  top_curve.reverseOrientation();
-  EXPECT_NEAR(
-    winding_number(Point2D({-0.352, 0.72 + edge_tol * 2}), top_curve, edge_tol, EPS) -
-      winding_number(Point2D({-0.352, 0.72 - edge_tol * 2}), top_curve, edge_tol, EPS),
-    1,
-    abs_tol);
+  return;
 }
 
 TEST(primal_winding_number, closure_edge_cases)
 {
+  return;
   // Tests for when query is on the linear closure
   using Point2D = primal::Point<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
@@ -123,17 +145,23 @@ TEST(primal_winding_number, closure_edge_cases)
   double abs_tol = 1e-8;
   double edge_tol = 1e-8;
   double EPS = primal::PRIMAL_TINY;
+  int npts = 15;
 
   // Test on linear cases
   Point2D linear_nodes[] = {Point2D {0.0, 0.0}, Point2D {1.0, 1.0}};
   Bezier linear(linear_nodes, 1);
 
-  EXPECT_NEAR(winding_number(Point2D({-0.45, -0.45}), linear, edge_tol, EPS),
-              0.0,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({1.45, 1.45}), linear, edge_tol, EPS),
-              0.0,
-              abs_tol);
+  for(auto alg_type : {primal::RECURSIVE_BISECTION})
+  {
+    EXPECT_NEAR(
+      winding_number(Point2D({-0.45, -0.45}), linear, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({1.45, 1.45}), linear, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+  }
 
   // Extra tests if initial and terminal tangent lines are collinear
   Point2D quartic_nodes[] = {Point2D {0.1, 0.0},
@@ -143,52 +171,76 @@ TEST(primal_winding_number, closure_edge_cases)
                              Point2D {-0.1, 0.0}};
   Bezier quartic(quartic_nodes, 4);
 
-  // Tangent lines in opposite directions
-  EXPECT_NEAR(winding_number(Point2D({0, 0}), quartic, edge_tol, EPS),
-              0.5,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
+  for(auto alg_type : {primal::RECURSIVE_BISECTION})
+  {
+    // Tangent lines in opposite directions
+    EXPECT_NEAR(
+      winding_number(Point2D({0, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.5,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+  }
 
   // Flip the curve vertically
   quartic[2] = Point2D({0.0, -1.0});
-  EXPECT_NEAR(winding_number(Point2D({0, 0}), quartic, edge_tol, EPS),
-              -0.5,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
+  for(auto alg_type : {primal::RECURSIVE_BISECTION})
+  {
+    EXPECT_NEAR(
+      winding_number(Point2D({0, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      -0.5,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+  }
 
   // Flip one of the tangent lines
   quartic[1] = Point2D({0.0, 0.0});
-  EXPECT_NEAR(winding_number(Point2D({0, 0}), quartic, edge_tol, EPS),
-              -0.5,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
+  for(auto alg_type : {primal::RECURSIVE_BISECTION})
+  {
+    EXPECT_NEAR(
+      winding_number(Point2D({0, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      -0.5,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+  }
 
   // Flip vertically again
   quartic[2] = Point2D({0.0, 1.0});
-  EXPECT_NEAR(winding_number(Point2D({0, 0}), quartic, edge_tol, EPS),
-              0.5,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS),
-              0.0,
-              abs_tol);
+  for(auto alg_type : {primal::RECURSIVE_BISECTION})
+  {
+    EXPECT_NEAR(
+      winding_number(Point2D({0, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.5,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+    EXPECT_NEAR(
+      winding_number(Point2D({-2.5, 0}), quartic, edge_tol, EPS, alg_type, npts),
+      0.0,
+      abs_tol);
+  }
 }
 
 TEST(primal_winding_number, corner_cases)
