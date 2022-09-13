@@ -62,7 +62,7 @@ double linear_winding_number(const Point<T, 2>& q,
     -1.0,
     1.0);
 
-  return -0.5 * M_1_PI * acos(dotprod) * ((tri_area > 0) ? 1 : -1);
+  return 0.5 * M_1_PI * acos(dotprod) * ((tri_area > 0) ? 1 : -1);
 }
 
 /*!
@@ -184,7 +184,7 @@ double adaptive_winding_number(const Point<T, 2>& q,
 
   // Use linearity as base case for recursion
   if(c.isLinear(EPS))
-    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
+    return linear_winding_number(q, c[0], c[ord], edge_tol);
 
   Polygon<T, 2> controlPolygon(c.getControlPoints());
 
@@ -198,7 +198,7 @@ double adaptive_winding_number(const Point<T, 2>& q,
     //  number for the shape connected at the endpoints with straight lines is zero.
     //  We then subtract the contribution of this line segment.
     if(!in_polygon(q, controlPolygon, true, false, EPS))
-      return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
+      return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
 
     // If the query point is at either endpoint, use direct formula
     if((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
