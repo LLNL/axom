@@ -188,23 +188,23 @@ double adaptive_winding_number(const Point<T, 2>& q,
 
   Polygon<T, 2> controlPolygon(c.getControlPoints());
 
-  // If q is outside the control polygon, for an open Bezier curve, the winding
-  //  number for the shape connected at the endpoints with straight lines is zero.
-  //  We then subtract the contribution of this line segment.
-  if(!in_polygon(q, controlPolygon, true, false, EPS))
-    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
-
   // Check if our new curve is convex.
   //  If so, all subcurves will be convex as well
   if(!isConvexControlPolygon)
     isConvexControlPolygon = is_convex(controlPolygon, EPS);
+  else // Formulas for winding number only work if shape is convex
+  {
+    // If q is outside the control polygon, for an open Bezier curve, the winding
+    //  number for the shape connected at the endpoints with straight lines is zero.
+    //  We then subtract the contribution of this line segment.
+    if(!in_polygon(q, controlPolygon, true, false, EPS))
+      return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
 
-  // If the query point is at either endpoint, use direct formula
-  //   Can only use formula if the control polygon is convex
-  if(isConvexControlPolygon &&
-     ((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
-      (squared_distance(q, c[ord]) <= edge_tol * edge_tol)))
-    return convex_endpoint_winding_number(q, c, edge_tol, EPS);
+    // If the query point is at either endpoint, use direct formula
+    if((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
+       (squared_distance(q, c[ord]) <= edge_tol * edge_tol))
+      return convex_endpoint_winding_number(q, c, edge_tol, EPS);
+  }
 
   // Recursively split curve until query is outside each control polygon
   BezierCurve<T, 2> c1, c2;
