@@ -606,6 +606,32 @@ public:
     return os;
   }
 
+  std::ostream& desmos_print(std::ostream& os) const
+  {
+    const int ord = getOrder();
+
+    os << "{ order " << ord << " Bezier Curve, x_n = [ ";
+    for(int p = 0; p <= ord; ++p)
+    {
+      os << m_controlPoints[p][0] << (p < ord ? "," : "]\n");
+    }
+    os << "y_n = [ ";
+    for(int p = 0; p <= ord; ++p)
+    {
+      os << m_controlPoints[p][1] << (p < ord ? "," : "]\n");
+    }
+
+    if(isRational())
+    {
+      os << ", weights [";
+      for(int p = 0; p <= ord; ++p)
+        os << m_weights[p] << (p < ord ? ", " : "]");
+    }
+    os << "}";
+
+    return os;
+  }
+
 private:
   /// Check that the weights used are positive, and
   ///  that there is one for each control node
