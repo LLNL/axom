@@ -70,7 +70,7 @@ double linear_winding_number(const Point<T, 2>& q,
     -1.0,
     1.0);
 
-  return -0.5 * M_1_PI * acos(dotprod) * ((tri_area > 0) ? 1 : -1);
+  return 0.5 * M_1_PI * acos(dotprod) * ((tri_area > 0) ? 1 : -1);
 }
 
 /*!
@@ -166,7 +166,7 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  * \param [in] q The query point at which to compute winding number
  * \param [in] c The BezierCurve object along which to compute the winding number
  * \param [in] isConvexControlPolygon Boolean flag if the input Bezier curve 
-                                      is already convex
+ *                                    is already convex
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance for nonphysical distances, used in
@@ -181,18 +181,19 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  * \return double The winding number.
  */
 template <typename T>
-double adaptive_winding_number(const Point<T, 2>& q,
-                               const BezierCurve<T, 2>& c,
-                               bool isConvexControlPolygon,
-                               double edge_tol = 1e-8,
-                               double EPS = 1e-8)
+double winding_number_recursive(const Point<T, 2>& q,
+                                const BezierCurve<T, 2>& c,
+                                bool isConvexControlPolygon,
+                                double edge_tol = 1e-8,
+                                double EPS = 1e-8)
 {
   const int ord = c.getOrder();
   if(ord <= 0) return 0.0;  // Catch degenerate cases
 
+  //c.desmos_print(std::cout);
+
   // Use linearity as base case for recursion
-  if(c.isLinear(EPS))
-    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
+  if(c.isLinear(EPS)) return linear_winding_number(q, c[0], c[ord], edge_tol);
 
   Polygon<T, 2> controlPolygon(c.getControlPoints());
 
@@ -200,8 +201,11 @@ double adaptive_winding_number(const Point<T, 2>& q,
   //  number for the shape connected at the endpoints with straight lines is zero.
   //  We then subtract the contribution of this line segment.
   if(!in_polygon(q, controlPolygon, true, false, EPS))
-    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
-
+  {
+    // If we are exactly (nearly) on the linear closure, split again
+    double lin_wn = linear_winding_number(q, c[ord], c[0], edge_tol);
+    if(!axom::utilities::isNearlyEqual(lin_wn, 0.0, EPS)) return 0.0 - lin_wn;
+  }
   // Check if our new curve is convex.
   //  If so, all subcurves will be convex as well
   if(!isConvexControlPolygon)
@@ -218,20 +222,24 @@ double adaptive_winding_number(const Point<T, 2>& q,
   BezierCurve<T, 2> c1, c2;
   c.split(0.5, c1, c2);
 
-  return adaptive_winding_number(q, c1, isConvexControlPolygon, edge_tol, EPS) +
-    adaptive_winding_number(q, c2, isConvexControlPolygon, edge_tol, EPS);
+  return winding_number_recursive(q, c1, isConvexControlPolygon, edge_tol, EPS) +
+    winding_number_recursive(q, c2, isConvexControlPolygon, edge_tol, EPS);
 }
 
-// Get the function to be passed into the evaluate integral function
-inline std::function<Vector2D(Point2D)> get_winding_func(Point2D p)
-{
-  return [p](Point2D x) -> Vector2D {
-    double denom =
-      2 * M_PI * ((x[0] - p[0]) * (x[0] - p[0]) + (x[1] - p[1]) * (x[1] - p[1]));
-    return Vector2D({-(x[1] - p[1]) / 1.0, (x[0] - p[0]) / denom});
-  };
-}
-
+/*!
+ * \brief Compute the orientation of an array of convex Bezier curves
+ *
+ * \param [in] cvxs The array of convex Bezier curves
+ * \param [in] EPS Error tolerance for isNearlyZero and isLinear
+ *
+ * Bezier curves with Convex control polygons have a constant orientation about
+ * around their interior. This method computes that orientation using signed 
+ * areas from endpoints to each internal node. 
+ * A value of 1 denotes positive orientation, -1 denotes negative orientation,
+ * 0 denotes the curve has no interior (i.e. is linear) and thus no orientation
+ * 
+ * \return Array<int> An above integer for each curve.
+ */
 template <typename T>
 axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs,
                                     double EPS)
@@ -241,18 +249,21 @@ axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs,
   {
     const BezierCurve<T, 2>& c = cvxs[i];
 
-    if(c.isLinear())
+    // Linear curves have no interior
+    if(c.isLinear(EPS))
     {
       orientations.push_back(0);
       break;
     }
+
+    // Get terminal vector for signed area calculation
+    Vector<T, 2> V2(c[0], c[c.getOrder()]);
 
     // Loop over each interior node of the Bezier curve
     int j;
     for(j = 1; j < c.getOrder() - 1; j++)
     {
       Vector<T, 2> V1(c[0], c[j]);
-      Vector<T, 2> V2(c[0], c[c.getOrder()]);
 
       // clang-format off
       double orient = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
@@ -269,56 +280,103 @@ axom::Array<int> convex_orientation(const axom::Array<BezierCurve<T, 2>>& cvxs,
     }
 
     // If we make it through the loop, every node is colinear
+    // (although with by a different metric than isLinear above)
     if(j == c.getOrder() - 1) orientations.push_back(0);
   }
 
   return orientations;
 }
 
-// Get total winding number with respect to each curve
+/*!
+ * \brief Compute the winding number for a query point with respect
+ *        to a single Bezier curve directly using quadrature.
+ *
+ * \param [in] q The query point at which to compute winding number
+ * \param [in] cvx The convex BezierCurve object
+ * \param [in] cvx_orient Integer value representing orientation of the curve
+ * \param [in] quad The MFEM quadrature rule containing 1D nodes and weights
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance for nonphysical distances, used in
+ *   isLinear, isNearlyZero, in_polygon, is_convex
+ * 
+ * Use a direct algorithm evaluates the winding number using quadrature. If the
+ * relevant integrand is negative at a quadrature node, then the loop can be 
+ * terminated early, as this means the query point is oriented outside a line
+ * tangent to the shape at that curve. Otherwise, the quadrature is rounded,
+ * and an evaluation of "inside" or "outside" is made accordingly.
+ * 
+ * \return double The winding number.
+ */
 template <typename T>
-double convex_winding_number(const Point<T, 2>& q,
-                             const BezierCurve<T, 2>& cvx,
-                             const int& cvx_orient,
-                             const mfem::IntegrationRule& quad,
-                             double edge_tol,
-                             double EPS)
+double winding_number_cvx_quad(const Point<T, 2>& q,
+                               const BezierCurve<T, 2>& cvx,
+                               int cvx_orient,
+                               const mfem::IntegrationRule& quad,
+                               double edge_tol,
+                               double EPS)
 {
-  // Zero orientation indicates the curve is flat
-  if(cvx.isLinear(EPS))
-    return 0.0 - linear_winding_number(q, c[0], c[ord], edge_tol);
-
   const int ord = cvx.getOrder();
 
-  double quad_result = 0;
+  //std::cout << q << ", x_n = [";
+  //for(int p = 0; p <= ord; ++p)
+  //{
+  //  std::cout << cvx[p][0] << (p < ord ? "," : "");
+  //}
+  //std::cout << "], y_n = [";
+  //for(int p = 0; p <= ord; ++p)
+  //{
+  //  std::cout << cvx[p][1] << (p < ord ? "," : "");
+  //}
+  //std::cout << "]" << std::endl;
 
+  // This number plus the winding number is either 0 or \pm 1
+  double closure_winding_num =
+    linear_winding_number(q, cvx[ord], cvx[0], edge_tol);
+
+  // This flag means the curve is flat, and we use the linear winding number
+  if(cvx_orient == 0) -closure_winding_num;
+
+  // If the closure winding number and the orientation have opposite signs,
+  //  we are external to the closed shape
+  if(cvx_orient * closure_winding_num < 0) return 0.0 - closure_winding_num;
+
+  // Evaluate integrand at each quadrature point
+  //   Return early if direct answer can be found
+  double quad_result = 0;
   for(int k = 0; k < quad.GetNPoints(); k++)
   {
-    Point<T, 2> x_q = cvx.evaluate(quad.IntPoint(k).x);
-    Vector<T, 2> dx_q = cvx.dt(quad.IntPoint(k).x);
+    Point<T, 2> x_quad = cvx.evaluate(quad.IntPoint(k).x);
+    Vector<T, 2> dx_quad = cvx.dt(quad.IntPoint(k).x);
 
-    // Denominator for quadrature
-    double q_dist = squared_distance(x_q, q);
-    if(q_dist <= edge_tol * edge_tol)
-      return cvx_orient * 0.5 - linear_winding_number(q, cvx[0], cvx[ord], edge_tol);
+    // Compute denominator for quadrature:
+    double query_dist = squared_distance(x_quad, q);
 
-    // Numerator for quadrature
+    // Early return: Use direct formula if query point is nearly on quadrature node,
+    //  Direct formula consistent with `convex_endpoint_winding_number`
+    if(query_dist <= edge_tol * edge_tol)
+      return cvx_orient *
+        (0.5 - linear_winding_number(q, cvx[0], cvx[ord], edge_tol));
+
+    // Compute numerator for quadrature
     // clang-format off
-    double q_orient = axom::numerics::determinant(x_q[0] - q[0], dx_q[0],
-                                                  x_q[1] - q[1], dx_q[1]);
+    double query_orient = axom::numerics::determinant(x_quad[0] - q[0], dx_quad[0],
+                                                      x_quad[1] - q[1], dx_quad[1]);
     // clang-format on
-    if(q_orient < 0)
-      return 0.0 - linear_winding_number(q, cvx[0], cvx[ord], edge_tol);
 
-    quad_result += quad.IntPoint(k).weight * q_orient / q_dist;
+    // Early return: If numerator is ever negative with positive orientation,
+    //  or positive with negative orientation, we are exterior to the closed curve
+    if(cvx_orient * query_orient < 0) return 0.0 - closure_winding_num;
+
+    // Add result to quadrature as normal
+    quad_result += quad.IntPoint(k).weight * query_orient / query_dist;
   }
 
-  double closure_number = linear_winding_number(q, cvx[0], cvx[ord], edge_tol);
-
-  // Make a call based off of the quadrature
-  if((0.5 * M_1_PI * quad_result) + closure_number >= 0.5)
-    return 1.0 - closure_number;
-  return 0.0 - closure_number;
+  // If rounded total winding number would be +/-1, assume we are inside
+  if(std::abs(0.5 * M_1_PI * quad_result + closure_winding_num) >= 0.5)
+    return cvx_orient - closure_winding_num;
+  else  // else, we are outside the closed shape
+    return 0.0 - closure_winding_num;
 }
 
 }  // end namespace detail

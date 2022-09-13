@@ -28,6 +28,21 @@ namespace axom
 {
 namespace primal
 {
+
+/*!
+ * \brief Enumerates possible algorithms for winding number algorithm.
+ * 
+ * RECURSIVE_BISECTION is an adaptive algorithm that bisects a curve until 
+ *  the query point is exterior to the control polygon of a Bezier curve.
+ * CONVEX_QUADRATURE is a direct algorithm that splits a curve into convex
+ *  components, and performs a quadrature evaluation on each. 
+ */
+enum WindingNumberAlgorithm
+{
+  RECURSIVE_BISECTION,
+  CONVEX_QUADRATURE
+};
+
 /*!
  * \brief Robustly determine if query point is interior to a curved polygon
  *
@@ -36,14 +51,17 @@ namespace primal
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
- * 
+ * \param [in] alg_type WindingNumberAlgorithm enum value to select algorithm type
+ * \param [in] npts The number of nodes to use on each component if quadrature is used
+ *
  * Determines containment using the (rounded) winding number with respect
  * to the given curved polygon. This algorithm is robust, as the winding number is rounded 
  * in the final in/out determination. 
  * Different protocols determine containment from the winding number differently.
  *   Nonzero Rule:  If the winding number is nonzero, the point is interior.
  *   Even/Odd rule: If the winding number is odd, it is interior. Exterior otherwise.
- *
+ * For descriptions of each algorithm, see the definition of WindingNumberAlgorithm
+ * 
  * \return A boolean value indicating containment.
  */
 template <typename T>
@@ -51,11 +69,13 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
                               const CurvedPolygon<T, 2>& cpoly,
                               bool useNonzeroRule = true,
                               double edge_tol = 1e-8,
-                              double EPS = 1e-8)
+                              double EPS = 1e-8,
+                              WindingNumberAlgorithm alg_type = RECURSIVE_BISECTION,
+                              int npts = 15)
 {
-  double winding_num = winding_number(query, cpoly, edge_tol, EPS);
+  double winding_num =
+    winding_number(query, cpoly, edge_tol, EPS, alg_type, npts);
 
-  // Else, use EvenOdd rule
   return useNonzeroRule ? (std::lround(winding_num) != 0)
                         : (std::lround(winding_num) % 2) == 1;
 }
@@ -68,10 +88,14 @@ inline bool in_curved_polygon(const Point<T, 2>& query,
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * \param [in] alg_type WindingNumberAlgorithm enum value to select algorithm type
+ * \param [in] npts The number of nodes to use on each component if quadrature is used
  *
  * Computes the winding number using a recursive, bisection algorithm.
  * Iterates over the edges of a curved polygon object, and uses nearly-linear 
  * Bezier curves as a base case.
+ * 
+ * For descriptions of each algorithm, see the definition of WindingNumberAlgorithm
  * 
  * \return float the generalized winding number.
  */
@@ -79,11 +103,40 @@ template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const CurvedPolygon<T, 2>& cpoly,
                       double edge_tol = 1e-8,
-                      double EPS = 1e-8)
+                      double EPS = 1e-8,
+                      WindingNumberAlgorithm alg_type = RECURSIVE_BISECTION,
+                      int npts = 15)
 {
   double ret_val = 0.0;
-  for(int i = 0; i < cpoly.numEdges(); i++)
-    ret_val += detail::adaptive_winding_number(q, cpoly[i], false, edge_tol, EPS);
+  if(alg_type == RECURSIVE_BISECTION)
+  {
+    for(int i = 0; i < cpoly.numEdges(); i++)
+      ret_val +=
+        detail::winding_number_recursive(q, cpoly[i], false, edge_tol, EPS);
+  }
+  else if(alg_type == CONVEX_QUADRATURE)
+  {
+    // Split curve into convex components, get orientation for each
+    axom::Array<BezierCurve<T, 2>> cvx_components;
+    split_to_convex(cpoly, cvx_components);
+    axom::Array<int> orientations(detail::convex_orientation(cvx_components, EPS));
+
+    // Get quadrature nodes from MFEM
+    static mfem::IntegrationRules my_IntRules(0,
+                                              mfem::Quadrature1D::GaussLegendre);
+    const mfem::IntegrationRule& quad =
+      my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
+
+    for(int i = 0; i < cvx_components.size(); i++)
+      ret_val += detail::winding_number_cvx_quad(q,
+                                                 cvx_components[i],
+                                                 orientations[i],
+                                                 quad,
+                                                 edge_tol,
+                                                 EPS);
+  }
+  else
+    SLIC_ERROR("Invalid winding number algorithm");
 
   return ret_val;
 }
@@ -96,9 +149,13 @@ double winding_number(const Point<T, 2>& q,
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * \param [in] alg_type WindingNumberAlgorithm enum value to select algorithm type
+ * \param [in] npts The number of nodes to use on each component if quadrature is used
  *
  * Computes the winding number using a recursive, bisection algorithm,
  * using nearly-linear Bezier curves as a base case.
+ * 
+ * For descriptions of each algorithm, see the definition of WindingNumberAlgorithm
  * 
  * \return float the generalized winding number.
  */
@@ -106,68 +163,42 @@ template <typename T>
 double winding_number(const Point<T, 2>& q,
                       const BezierCurve<T, 2>& c,
                       const double edge_tol = 1e-8,
-                      const double EPS = 1e-8)
+                      const double EPS = 1e-8,
+                      WindingNumberAlgorithm alg_type = RECURSIVE_BISECTION,
+                      int npts = 15)
 {
-  return detail::adaptive_winding_number(q, c, false, edge_tol, EPS);
-}
+  if(alg_type == RECURSIVE_BISECTION)
+  {
+    return detail::winding_number_recursive(q, c, false, edge_tol, EPS);
+  }
+  else if(alg_type == CONVEX_QUADRATURE)
+  {
+    CurvedPolygon<T, 2> cpoly;
+    cpoly.addEdge(c);
 
-template <typename T>
-double winding_number_quad(const Point<T, 2>& q,
-                           const BezierCurve<T, 2>& c,
-                           int n_qpts = 15,
-                           double edge_tol = 1e-8,
-                           double EPS = 1e-8)
-{
-  CurvedPolygon<T, 2> cpoly;
-  cpoly.addEdge(c);
+    // Split curve into convex components, get orientation for each
+    axom::Array<BezierCurve<T, 2>> cvx_components;
+    split_to_convex(cpoly, cvx_components);
+    axom::Array<int> orientations(detail::convex_orientation(cvx_components, EPS));
 
-  axom::Array<BezierCurve<T, 2>> cvx_components;
-  split_to_convex(cpoly, cvx_components);
-  axom::Array<int> orientations(detail::convex_orientation(cvx_components));
+    // Get quadrature nodes from MFEM
+    static mfem::IntegrationRules my_IntRules(0,
+                                              mfem::Quadrature1D::GaussLegendre);
+    const mfem::IntegrationRule& quad =
+      my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
-  // Get quadrature nodes from MFEM
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule& quad =
-    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * n_qpts - 1);
-
-  double ret_val = 0;
-  for(int i = 0; i < cvx_components.size(); i++)
-    ret_val += detail::convex_winding_number(q,
-                                             cvx_components[i],
-                                             orientations[i],
-                                             quad,
-                                             edge_tol,
-                                             EPS);
-
-  return ret_val;
-}
-
-template <typename T>
-double winding_number_quad(const Point<T, 2>& q,
-                           const CurvedPolygon<T, 2>& cpoly,
-                           int n_qpts = 15,
-                           double edge_tol = 1e-8,
-                           double EPS = 1e-8)
-{
-  axom::Array<BezierCurve<T, 2>> cvx_components;
-  split_to_convex(cpoly, cvx_components);
-  axom::Array<int> orientations(detail::convex_orientation(cvx_components));
-
-  // Get quadrature nodes from MFEM
-  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule& quad =
-    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * n_qpts - 1);
-
-  double ret_val = 0;
-  for(int i = 0; i < cvx_components.size(); i++)
-    ret_val += detail::convex_winding_number(q,
-                                             cvx_components[i],
-                                             orientations[i],
-                                             quad,
-                                             edge_tol,
-                                             EPS);
-
-  return ret_val;
+    double ret_val = 0;
+    for(int i = 0; i < cvx_components.size(); i++)
+      ret_val += detail::winding_number_cvx_quad(q,
+                                                 cvx_components[i],
+                                                 orientations[i],
+                                                 quad,
+                                                 edge_tol,
+                                                 EPS);
+    return ret_val;
+  }
+  else
+    SLIC_ERROR("Invalid winding number algorithm");
 }
 
 }  // namespace primal
