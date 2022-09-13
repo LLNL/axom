@@ -190,7 +190,9 @@ double adaptive_winding_number(const Point<T, 2>& q,
   // Check if our new curve is convex.
   //  If so, all subcurves will be convex as well
   if(!isConvexControlPolygon)
+  {
     isConvexControlPolygon = is_convex(controlPolygon, EPS);
+  }
   else  // Formulas for winding number only work if shape is convex
   {
     // If q is outside the control polygon, for an open Bezier curve, the winding
