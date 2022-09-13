@@ -369,7 +369,7 @@ public:
     , m_rank(-1)
     , m_nranks(-1)
   {
-    setAllocatorID();
+    setDefaultAllocatorID();
 
     setMpiCommunicator(MPI_COMM_WORLD);
   }
@@ -394,6 +394,46 @@ public:
     SLIC_ERROR_IF(sqThreshold < 0.0,
                   "Squared distance-threshold must be non-negative.");
     m_sqDistanceThreshold = sqThreshold;
+  }
+
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
+  void setDefaultAllocatorID()
+  {
+    switch(m_runtimePolicy)
+    {
+    case RuntimePolicy::seq:
+      m_allocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+      break;
+    case RuntimePolicy::omp:
+#ifdef _AXOM_DCP_USE_OPENMP
+      m_allocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
+#endif
+      break;
+
+    case RuntimePolicy::cuda:
+#ifdef _AXOM_DCP_USE_CUDA
+      m_allocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
+#endif
+      break;
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      m_allocatorID = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+#endif
+      break;
+    }
+  }
+
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
+  void setAllocatorID(int allocatorID)
+  {
+    SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
+    // TODO: If appropriate, how to check for compatibility with runtime policy?
+    m_allocatorID = allocatorID;
   }
 
 public:
@@ -904,37 +944,6 @@ private:
     }
   }
 
-  /// Sets the allocator ID to the default associated with the execution policy
-  void setAllocatorID()
-  {
-    // This function uses the default allocator ID for the execution space
-    // TODO: Add overload to allow the user to set an allocator ID
-
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      m_allocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-      break;
-    case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
-      m_allocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-#endif
-      break;
-
-    case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
-      m_allocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-#endif
-      break;
-
-    case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
-      m_allocatorID = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-#endif
-      break;
-    }
-  }
-
   /**
    * \brief Extracts a field \a fieldName from the mesh blueprint
    *
@@ -1301,6 +1310,16 @@ public:
     return false;
   }
 
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
+  void setAllocatorID(int allocatorID)
+  {
+    SLIC_ASSERT_MSG(allocatorID != axom::INVALID_ALLOCATOR_ID,
+                    "Invalid allocator id.");
+    m_allocatorID = allocatorID;
+  }
+
   /**
    * \brief Set the MPI communicator.
    *
@@ -1454,11 +1473,19 @@ public:
     switch(m_dimension)
     {
     case 2:
+      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID)
+      {
+        m_dcp_2->setAllocatorID(m_allocatorID);
+      }
       m_dcp_2->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_2->setMpiCommunicator(m_mpiComm);
       m_dcp_2->computeClosestPoints(query_node, coordset);
       break;
     case 3:
+      if(m_allocatorID != axom::INVALID_ALLOCATOR_ID)
+      {
+        m_dcp_3->setAllocatorID(m_allocatorID);
+      }
       m_dcp_3->setSquaredDistanceThreshold(m_sqDistanceThreshold);
       m_dcp_3->setMpiCommunicator(m_mpiComm);
       m_dcp_3->computeClosestPoints(query_node, coordset);
@@ -1510,6 +1537,7 @@ private:
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
   MPI_Comm m_mpiComm;
   bool m_mpiCommIsPrivate;
+  int m_allocatorID {axom::INVALID_ALLOCATOR_ID};
   int m_dimension {-1};
   bool m_isVerbose {false};
   double m_sqDistanceThreshold {std::numeric_limits<double>::max()};
