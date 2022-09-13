@@ -369,7 +369,9 @@ public:
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
     , m_nranks(-1)
+    , m_points(0, 0, allocatorID)
   {
+    SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
     setAllocatorID(allocatorID);
 
     setMpiCommunicator(MPI_COMM_WORLD);
@@ -405,6 +407,11 @@ public:
     SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
     // TODO: If appropriate, how to check for compatibility with runtime policy?
     m_allocatorID = allocatorID;
+    if(m_points.getAllocatorID() != m_allocatorID)
+    {
+      PointArray tmpPoints(m_points, m_allocatorID);
+      m_points.swap(tmpPoints);
+    }
   }
 
 public:
@@ -423,11 +430,9 @@ public:
     // TODO: Add error checking for children 'x', 'y' and 'z' and striding
 
     // Copy the data into the point array of primal points
-    PointArray pts(nPts, nPts);
+    m_points.resize(nPts);
     const std::size_t nbytes = sizeof(double) * DIM * nPts;
-    axom::copy(pts.data(), coords["x"].data_ptr(), nbytes);
-
-    m_points = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
+    axom::copy(m_points.data(), coords["x"].data_ptr(), nbytes);
   }
 
   /// Predicate to check if the BVH tree has been initialized
