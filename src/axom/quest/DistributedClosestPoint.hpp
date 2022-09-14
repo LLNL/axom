@@ -361,7 +361,9 @@ private:
   };
 
 public:
-  DistributedClosestPointImpl(RuntimePolicy runtimePolicy, int allocatorID, bool isVerbose)
+  DistributedClosestPointImpl(RuntimePolicy runtimePolicy,
+                              int allocatorID,
+                              bool isVerbose)
     : m_runtimePolicy(runtimePolicy)
     , m_isVerbose(isVerbose)
     , m_sqDistanceThreshold(std::numeric_limits<double>::max())
@@ -1074,7 +1076,9 @@ public:
       const int rank = m_rank;
 
       auto sqDistThresh = axom::allocate<double>(1, m_allocatorID);
-      axom::copy(sqDistThresh, &m_sqDistanceThreshold, sizeof(m_sqDistanceThreshold));
+      axom::copy(sqDistThresh,
+                 &m_sqDistanceThreshold,
+                 sizeof(m_sqDistanceThreshold));
 
       auto pointsView = m_points.view();
 
@@ -1304,19 +1308,23 @@ public:
 
     case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
-      defaultAllocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
+      defaultAllocatorID =
+        axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
 #endif
       break;
 
     case RuntimePolicy::hip:
 #ifdef _AXOM_DCP_USE_HIP
-      defaultAllocatorID = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+      defaultAllocatorID =
+        axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
 #endif
       break;
     }
     if(defaultAllocatorID == axom::INVALID_ALLOCATOR_ID)
     {
-      SLIC_ERROR(axom::fmt::format("There is no default allocator for runtime policy {}", m_runtimePolicy));
+      SLIC_ERROR(
+        axom::fmt::format("There is no default allocator for runtime policy {}",
+                          m_runtimePolicy));
     }
     setAllocatorID(defaultAllocatorID);
   }
