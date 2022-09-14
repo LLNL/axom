@@ -1073,10 +1073,8 @@ public:
       auto it = bvh->getTraverser();
       const int rank = m_rank;
 
-      double* sqDistThresh =
-        axom::allocate<double>(1,
-                               axom::execution_space<ExecSpace>::allocatorID());
-      *sqDistThresh = m_sqDistanceThreshold;
+      auto sqDistThresh = axom::allocate<double>(1, m_allocatorID);
+      axom::copy(sqDistThresh, &m_sqDistanceThreshold, sizeof(m_sqDistanceThreshold));
 
       auto pointsView = m_points.view();
 
