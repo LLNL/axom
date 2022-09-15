@@ -367,14 +367,13 @@ public:
     : m_runtimePolicy(runtimePolicy)
     , m_isVerbose(isVerbose)
     , m_sqDistanceThreshold(std::numeric_limits<double>::max())
-    , m_allocatorID(axom::INVALID_ALLOCATOR_ID)
+    , m_allocatorID(allocatorID)
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
     , m_nranks(-1)
     , m_points(0, 0, allocatorID)
   {
     SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
-    setAllocatorID(allocatorID);
 
     setMpiCommunicator(MPI_COMM_WORLD);
   }
@@ -409,11 +408,6 @@ public:
     SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
     // TODO: If appropriate, how to check for compatibility with runtime policy?
     m_allocatorID = allocatorID;
-    if(m_points.getAllocatorID() != m_allocatorID)
-    {
-      PointArray tmpPoints(m_points, m_allocatorID);
-      m_points.swap(tmpPoints);
-    }
   }
 
 public:
@@ -476,6 +470,14 @@ public:
     // the execution space templated bvh tree
 
     SLIC_ASSERT_MSG(!isBVHTreeInitialized(), "BVH tree already initialized");
+
+    // In case user changed the allocator after setObjectMesh,
+    // move the object point data to avoid repetitive page faults.
+    if(m_points.getAllocatorID() != m_allocatorID)
+    {
+      PointArray tmpPoints(m_points, m_allocatorID);
+      m_points.swap(tmpPoints);
+    }
 
     switch(m_runtimePolicy)
     {
