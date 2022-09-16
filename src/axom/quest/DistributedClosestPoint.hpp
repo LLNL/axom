@@ -533,6 +533,7 @@ public:
     case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
       local_bb = m_bvh_omp->getBounds();
+      break;
 #else
       break;
 #endif
@@ -540,6 +541,7 @@ public:
     case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
       local_bb = m_bvh_cuda->getBounds();
+      break;
 #else
       break;
 #endif
@@ -547,6 +549,7 @@ public:
     case RuntimePolicy::hip:
 #ifdef _AXOM_DCP_USE_HIP
       local_bb = m_bvh_hip->getBounds();
+      break;
 #else
       break;
 #endif
