@@ -43,6 +43,13 @@ blt_add_executable(
 
 if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
+
+        # CMake inserts Fortran flag that forces one OpenMP thread with MPI
+        # with xlf
+        if(ENABLE_FORTRAN)
+          list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "xlomp_ser")
+        endif()
+
         axom_add_test(NAME        slam_lulesh
                       COMMAND     slam_lulesh_ex
                       NUM_MPI_TASKS   8
@@ -53,4 +60,3 @@ if(AXOM_ENABLE_TESTS)
                       NUM_OMP_THREADS 4 )
     endif()
 endif()
-
