@@ -416,7 +416,7 @@ public:
     const std::size_t nbytes = sizeof(double) * DIM * nPts;
     axom::copy(pts.data(), coords["x"].data_ptr(), nbytes);
 
-    m_points = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
+    m_objectPts = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
   }
 
   /// Predicate to check if the BVH tree has been initialized
@@ -942,14 +942,14 @@ private:
    * \param mesh_node The conduit node at the root of the mesh blueprint
    * \param field_name The name of the field
    * \param field_template Template string for the path to the field
-   * \param num_points The size of the field
+   * \param num_objectPts The size of the field
    * \return An arrayview over the field data
    */
   template <typename T>
   axom::ArrayView<T> extractField(conduit::Node& mesh_node,
                                   std::string&& field_name,
                                   std::string&& path_template,
-                                  int num_points) const
+                                  int num_objectPts) const
   {
     const std::string path = axom::fmt::format(path_template, field_name);
     SLIC_ASSERT_MSG(
@@ -958,7 +958,7 @@ private:
         "Input to `computeClosestPoint()` must have a field named `{}`",
         field_name));
 
-    return internal::ArrayView_from_Node<T>(mesh_node[path], num_points);
+    return internal::ArrayView_from_Node<T>(mesh_node[path], num_objectPts);
   }
 
   // Note: following should be private, but nvcc complains about lambdas in private scope
@@ -971,10 +971,10 @@ public:
 
     SLIC_ASSERT(bvh != nullptr);
 
-    const int npts = m_points.size();
+    const int npts = m_objectPts.size();
     axom::Array<BoxType> boxesArray(npts, npts, m_allocatorID);
     auto boxesView = boxesArray.view();
-    auto pointsView = m_points.view();
+    auto pointsView = m_objectPts.view();
 
     axom::for_all<ExecSpace>(
       npts,
@@ -1009,7 +1009,7 @@ public:
     // Second check: empty object node
     // Note: There is some additional computation the first time this function
     // is called for a query node, even if the local object mesh is empty
-    const bool hasObjectPoints = m_points.size() > 0;
+    const bool hasObjectPoints = m_objectPts.size() > 0;
     const bool is_first = xfer_node.has_path("is_first");
     if(!hasObjectPoints && !is_first)
     {
@@ -1093,7 +1093,7 @@ public:
                                axom::execution_space<ExecSpace>::allocatorID());
       *sqDistThresh = m_sqDistanceThreshold;
 
-      auto pointsView = m_points.view();
+      auto pointsView = m_objectPts.view();
 
       AXOM_PERF_MARK_SECTION(
         "ComputeClosestPoints",
@@ -1185,7 +1185,7 @@ private:
   int m_rank;
   int m_nranks;
 
-  PointArray m_points;
+  PointArray m_objectPts;
   BoxArray m_objectPartitionBbs;
 
   std::unique_ptr<SeqBVHTree> m_bvh_seq;
