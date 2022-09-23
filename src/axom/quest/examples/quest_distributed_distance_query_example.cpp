@@ -16,6 +16,7 @@
 #include "axom/sidre.hpp"
 #include "axom/quest.hpp"
 #include "axom/slam.hpp"
+#include "axom/core/utilities/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mpi.hpp"
@@ -212,10 +213,16 @@ public:
   }
   /// Gets the root group for this mesh blueprint
   sidre::Group* rootGroup() const { return m_group; }
+  /// Gets a domain group.
+  sidre::Group* domainGroup(size_t groupIdx) const
+  {
+    SLIC_ASSERT(groupIdx < m_domainGroups.size());
+    return m_domainGroups[groupIdx];
+  }
   /// Gets the parent group for the blueprint coordinate set
-  sidre::Group* coordsGroup() const { return m_coordsGroup; }
+  sidre::Group* coordsGroup(size_t groupIdx) const { return m_coordsGroups[groupIdx]; }
   /// Gets the parent group for the blueprint mesh topology
-  sidre::Group* topoGroup() const { return m_topoGroup; }
+  sidre::Group* topoGroup(size_t groupIdx) const { return m_topoGroups[groupIdx]; }
 
   /// Gets the MPI rank for this mesh
   int getRank() const { return m_rank; }
@@ -225,13 +232,27 @@ public:
   /// Returns true if points have been added to the particle mesh
   bool hasPoints() const
   {
-    return m_coordsGroup != nullptr && m_coordsGroup->hasView("values/x");
+    // return m_coordsGroup != nullptr && m_coordsGroup->hasView("values/x");
+    for(auto *cg : m_coordsGroups)
+    {
+      if(cg != nullptr && cg->hasView("values/x")) return true;
+    }
+    return false;
   }
 
   /// Returns the number of points in the particle mesh
   int numPoints() const
   {
-    return hasPoints() ? m_coordsGroup->getView("values/x")->getNumElements() : 0;
+    // return hasPoints() ? m_coordsGroup->getView("values/x")->getNumElements() : 0;
+    int rval = 0;
+    for(auto *cg : m_coordsGroups)
+    {
+      if(cg != nullptr && cg->hasView("values/x"))
+      {
+        rval += cg->getView("values/x")->getNumElements();
+      }
+    }
+    return rval;
   }
 
   int dimension() const { return m_dimension; }
@@ -240,7 +261,8 @@ public:
   template <int NDIMS>
   void setPoints(const axom::Array<primal::Point<double, NDIMS>>& pts)
   {
-    SLIC_ASSERT_MSG(m_group != nullptr,
+    assert(m_domainGroups[0] != nullptr);
+    SLIC_ASSERT_MSG(m_domainGroups[0] != nullptr,
                     "Must set blueprint group before setPoints()");
 
     const int SZ = pts.size();
@@ -266,18 +288,18 @@ public:
 
     // create views into a shared buffer for the coordinates, with stride NDIMS
     {
-      auto* buf = m_group->getDataStore()
+      auto* buf = m_domainGroups[0]->getDataStore()
                     ->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)
                     ->allocate();
 
-      createAndApplyView(m_coordsGroup, "values/x", buf, 0, SZ);
+      createAndApplyView(m_coordsGroups[0], "values/x", buf, 0, SZ);
       if(NDIMS > 1)
       {
-        createAndApplyView(m_coordsGroup, "values/y", buf, 1, SZ);
+        createAndApplyView(m_coordsGroups[0], "values/y", buf, 1, SZ);
       }
       if(NDIMS > 2)
       {
-        createAndApplyView(m_coordsGroup, "values/z", buf, 2, SZ);
+        createAndApplyView(m_coordsGroups[0], "values/z", buf, 2, SZ);
       }
 
       // copy coordinate data into the buffer
@@ -286,7 +308,7 @@ public:
     }
 
     // set the default connectivity
-    sidre::Array<int> arr(m_topoGroup->createView("elements/connectivity"), SZ, SZ);
+    sidre::Array<int> arr(m_topoGroups[0]->createView("elements/connectivity"), SZ, SZ);
     for(int i = 0; i < SZ; ++i)
     {
       arr[i] = i;
@@ -300,9 +322,9 @@ public:
                     "Cannot register a field with the BlueprintParticleMesh "
                     "before adding points");
 
-    auto* fld = m_fieldsGroup->createGroup(fieldName);
+    auto* fld = m_fieldsGroups[0]->createGroup(fieldName);
     fld->createViewString("association", "vertex");
-    fld->createViewString("topology", m_topoGroup->getName());
+    fld->createViewString("topology", m_topoGroups[0]->getName());
     fld->createViewAndAllocate("values",
                                sidre::detail::SidreTT<T>::id,
                                numPoints());
@@ -318,12 +340,12 @@ public:
     const int SZ = numPoints();
     const int DIM = dimension();
 
-    auto* fld = m_fieldsGroup->createGroup(fieldName);
+    auto* fld = m_fieldsGroups[0]->createGroup(fieldName);
     fld->createViewString("association", "vertex");
-    fld->createViewString("topology", m_topoGroup->getName());
+    fld->createViewString("topology", m_topoGroups[0]->getName());
 
     // create views into a shared buffer for the coordinates, with stride NDIMS
-    auto* buf = m_group->getDataStore()
+    auto* buf = m_domainGroups[0]->getDataStore()
                   ->createBuffer(sidre::detail::SidreTT<T>::id, DIM * SZ)
                   ->allocate();
     switch(DIM)
@@ -345,7 +367,7 @@ public:
 
   bool hasField(const std::string& fieldName) const
   {
-    return m_fieldsGroup->hasGroup(fieldName);
+    return m_fieldsGroups[0]->hasGroup(fieldName);
   }
 
   template <typename T>
@@ -357,7 +379,7 @@ public:
 
     T* data = hasField(fieldName)
       ? static_cast<T*>(
-          m_fieldsGroup->getView(axom::fmt::format("{}/values", fieldName))
+          m_fieldsGroups[0]->getView(axom::fmt::format("{}/values", fieldName))
             ->getVoidPtr())
       : nullptr;
 
@@ -377,7 +399,7 @@ public:
     // need to modify this implementation accordingly.
     T* data = hasField(fieldName)
       ? static_cast<T*>(
-          m_fieldsGroup->getView(axom::fmt::format("{}/values/x", fieldName))
+          m_fieldsGroups[0]->getView(axom::fmt::format("{}/values/x", fieldName))
             ->getVoidPtr())
       : nullptr;
 
@@ -387,12 +409,27 @@ public:
   /// Checks whether the blueprint is valid and prints diagnostics
   bool isValid() const
   {
+#if 0
+    if(numPoints() > 0)
+    {
+      conduit::Node meshNode;
+      m_group->createNativeLayout(meshNode);
+      conduit::Node info;
+      if(!conduit::blueprint::mpi::verify("mesh", meshNode, info, MPI_COMM_WORLD))
+      {
+        SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
+        return false;
+      }
+      // info.print();
+    }
+    return true;
+#else
     conduit::Node mesh_node;
 
     // use an empty conduit node for meshes with 0 elements
     if(numPoints() > 0)
     {
-      m_group->createNativeLayout(mesh_node);
+      m_domainGroups[0]->createNativeLayout(mesh_node);
     }
 
     bool success = true;
@@ -404,22 +441,24 @@ public:
     }
 
     return success;
+#endif
   }
 
-  /// Outputs the object mesh to disk
+  /// Outputs the particle mesh to disk
   void saveMesh(const std::string& outputMesh)
   {
-    auto* ds = m_group->getDataStore();
+    auto* ds = m_domainGroups[0]->getDataStore();
     sidre::IOManager writer(MPI_COMM_WORLD);
     writer.write(ds->getRoot(), m_nranks, outputMesh, "sidre_hdf5");
 
     MPI_Barrier(MPI_COMM_WORLD);
 
+    // m_group->print();
     // Add the bp index to the root file
-    writer.writeBlueprintIndexToRootFile(m_group->getDataStore(),
-                                         m_group->getPathName(),
+    writer.writeBlueprintIndexToRootFile(m_domainGroups[0]->getDataStore(),
+                                         m_group->getName(),
                                          outputMesh + ".root",
-                                         m_group->getName());
+                                         "object_mesh"); // m_domainGroups[0]->getPathName());
   }
 
 private:
@@ -429,21 +468,26 @@ private:
   {
     SLIC_ASSERT(m_group != nullptr);
     SLIC_ASSERT(m_domainGroups.empty());
-    m_domainGroups.resize(1, nullptr);
-    // BTNG TODO: put child domain group in m_group and other groups under the child group.
 
-    m_coordsGroup = m_group->createGroup("coordsets")->createGroup(coords);
-    m_coordsGroup->createViewString("type", "explicit");
-    m_coordsGroup->createGroup("values");
+    auto* domainGroup0 = m_group->createUnnamedGroup();
 
-    m_topoGroup = m_group->createGroup("topologies")->createGroup(topo);
-    m_topoGroup->createViewString("coordset", coords);
-    m_topoGroup->createViewString("type", "unstructured");
-    m_topoGroup->createViewString("elements/shape", "point");
+    auto *coordsGroup0 = domainGroup0->createGroup("coordsets")->createGroup(coords);
+    coordsGroup0->createViewString("type", "explicit");
+    coordsGroup0->createGroup("values");
 
-    m_fieldsGroup = m_group->createGroup("fields");
+    auto *topoGroup0 = domainGroup0->createGroup("topologies")->createGroup(topo);
+    topoGroup0->createViewString("coordset", coords);
+    topoGroup0->createViewString("type", "unstructured");
+    topoGroup0->createViewString("elements/shape", "point");
 
-    m_group->createViewScalar<axom::int64>("state/domain_id", m_rank);
+    auto *fieldsGroup0 = domainGroup0->createGroup("fields");
+
+    domainGroup0->createViewScalar<axom::int64>("state/domain_id", m_rank);
+
+    m_domainGroups.push_back(domainGroup0);
+    m_coordsGroups.push_back(coordsGroup0);
+    m_topoGroups.push_back(topoGroup0);
+    m_fieldsGroups.push_back(fieldsGroup0);
   }
 
 private:
@@ -452,9 +496,9 @@ private:
   /// Group for each domain in multidomain mesh
   std::vector<sidre::Group*> m_domainGroups;
 
-  sidre::Group* m_coordsGroup;
-  sidre::Group* m_topoGroup;
-  sidre::Group* m_fieldsGroup;
+  std::vector<sidre::Group*> m_coordsGroups;
+  std::vector<sidre::Group*> m_topoGroups;
+  std::vector<sidre::Group*> m_fieldsGroups;
 
   int m_rank;
   int m_nranks;
@@ -476,11 +520,11 @@ public:
   }
 
   /// Get a pointer to the root group for this mesh
-  sidre::Group* getBlueprintGroup() const { return m_objectMesh.rootGroup(); }
+  sidre::Group* getBlueprintGroup() const { return m_objectMesh.domainGroup(0); }
 
-  std::string getCoordsetName() const
+  std::string getCoordsetName(size_t groupIdx) const
   {
-    return m_objectMesh.coordsGroup()->getName();
+    return m_objectMesh.coordsGroup(groupIdx)->getName();
   }
 
   int numPoints() const { return m_objectMesh.numPoints(); }
@@ -620,11 +664,11 @@ public:
 
   const BlueprintParticleMesh& getParticleMesh() const { return m_queryMesh; }
 
-  sidre::Group* getBlueprintGroup() const { return m_queryMesh.rootGroup(); }
+  sidre::Group* getBlueprintGroup() const { return m_queryMesh.domainGroup(0); }
 
   std::string getCoordsetName() const
   {
-    return m_queryMesh.coordsGroup()->getName();
+    return m_queryMesh.coordsGroup(0)->getName();
   }
 
   /// Returns an array containing the positions of the mesh vertices
@@ -643,7 +687,7 @@ public:
     return arr;
   }
 
-  /// Saves the data collection to disk
+  /// Saves the data collection (MFEM query mesh) to disk
   void saveMesh()
   {
     SLIC_INFO(banner(axom::fmt::format("Saving query mesh '{}' to disk",
@@ -658,7 +702,7 @@ public:
     using PointArray3D = axom::Array<primal::Point<double, 3>>;
 
     auto* dsRoot = m_dc.GetBPGroup()->getDataStore()->getRoot();
-    m_queryMesh = BlueprintParticleMesh(dsRoot->createGroup("query_mesh"));
+    m_queryMesh = BlueprintParticleMesh(dsRoot->createGroup("query_mesh", true));
 
     const int DIM = m_dc.GetMesh()->Dimension();
     SLIC_ERROR_IF(DIM != 2 && DIM != 3,
@@ -1025,7 +1069,7 @@ int main(int argc, char** argv)
 
   sidre::DataStore objectDS;
   ObjectMeshWrapper object_mesh_wrapper(
-    objectDS.getRoot()->createGroup("object_mesh"));
+    objectDS.getRoot()->createGroup("object_mesh", true));
   object_mesh_wrapper.setVerbosity(params.isVerbose());
 
   // Generate the object mesh, optionally allowing some ranks to be empty.
@@ -1104,7 +1148,7 @@ int main(int argc, char** argv)
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
-  query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
+  query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName(0));
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
