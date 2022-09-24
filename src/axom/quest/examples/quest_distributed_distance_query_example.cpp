@@ -409,8 +409,7 @@ public:
   /// Checks whether the blueprint is valid and prints diagnostics
   bool isValid() const
   {
-#if 0
-    if(numPoints() > 0)
+#if 1
     {
       conduit::Node meshNode;
       m_group->createNativeLayout(meshNode);
@@ -424,6 +423,7 @@ public:
     }
     return true;
 #else
+    // This is old.  It only checks the first child node.
     conduit::Node mesh_node;
 
     // use an empty conduit node for meshes with 0 elements
