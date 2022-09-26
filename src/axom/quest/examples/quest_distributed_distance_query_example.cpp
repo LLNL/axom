@@ -200,16 +200,13 @@ public:
   explicit BlueprintParticleMesh(sidre::Group* group = nullptr,
                                  const std::string& coordset = "coords",
                                  const std::string& topology = "mesh")
-    : m_group(group),
-      m_domainGroups()
+    : m_coordsetName(coordset)
+    , m_topologyName(topology)
+    , m_group(group)
+    , m_domainGroups()
   {
     MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &m_nranks);
-
-    if(m_group != nullptr)
-    {
-      createBlueprintStubs(coordset, topology);
-    }
   }
 
   /// Gets the root group for this mesh blueprint
@@ -262,8 +259,10 @@ public:
   template <int NDIMS>
   void setPoints(const axom::Array<primal::Point<double, NDIMS>>& pts)
   {
-    assert(m_domainGroups[0] != nullptr);
-    SLIC_ASSERT_MSG(m_domainGroups[0] != nullptr,
+    createBlueprintStubs();
+    auto domainIdx = m_group->getNumGroups() - 1;
+    assert(m_domainGroups[domainIdx] != nullptr);
+    SLIC_ASSERT_MSG(m_domainGroups[domainIdx] != nullptr,
                     "Must set blueprint group before setPoints()");
 
     const int SZ = pts.size();
@@ -289,18 +288,18 @@ public:
 
     // create views into a shared buffer for the coordinates, with stride NDIMS
     {
-      auto* buf = m_domainGroups[0]->getDataStore()
+      auto* buf = m_domainGroups[domainIdx]->getDataStore()
                     ->createBuffer(sidre::DOUBLE_ID, NDIMS * SZ)
                     ->allocate();
 
-      createAndApplyView(m_coordsGroups[0], "values/x", buf, 0, SZ);
+      createAndApplyView(m_coordsGroups[domainIdx], "values/x", buf, 0, SZ);
       if(NDIMS > 1)
       {
-        createAndApplyView(m_coordsGroups[0], "values/y", buf, 1, SZ);
+        createAndApplyView(m_coordsGroups[domainIdx], "values/y", buf, 1, SZ);
       }
       if(NDIMS > 2)
       {
-        createAndApplyView(m_coordsGroups[0], "values/z", buf, 2, SZ);
+        createAndApplyView(m_coordsGroups[domainIdx], "values/z", buf, 2, SZ);
       }
 
       // copy coordinate data into the buffer
@@ -309,7 +308,7 @@ public:
     }
 
     // set the default connectivity
-    sidre::Array<int> arr(m_topoGroups[0]->createView("elements/connectivity"), SZ, SZ);
+    sidre::Array<int> arr(m_topoGroups[domainIdx]->createView("elements/connectivity"), SZ, SZ);
     for(int i = 0; i < SZ; ++i)
     {
       arr[i] = i;
@@ -465,33 +464,35 @@ public:
 private:
   /// Creates blueprint stubs for this mesh
   // for the "coordset", "topologies", "fields" and "state"
-  void createBlueprintStubs(const std::string& coords, const std::string& topo)
+  void createBlueprintStubs()
   {
     SLIC_ASSERT(m_group != nullptr);
     SLIC_ASSERT(m_domainGroups.empty());
 
-    auto* domainGroup0 = m_group->createUnnamedGroup();
+    auto* domainGroup = m_group->createUnnamedGroup();
 
-    auto *coordsGroup0 = domainGroup0->createGroup("coordsets")->createGroup(coords);
-    coordsGroup0->createViewString("type", "explicit");
-    coordsGroup0->createGroup("values");
+    auto *coordsGroup = domainGroup->createGroup("coordsets")->createGroup(m_coordsetName);
+    coordsGroup->createViewString("type", "explicit");
+    coordsGroup->createGroup("values");
 
-    auto *topoGroup0 = domainGroup0->createGroup("topologies")->createGroup(topo);
-    topoGroup0->createViewString("coordset", coords);
-    topoGroup0->createViewString("type", "unstructured");
-    topoGroup0->createViewString("elements/shape", "point");
+    auto *topoGroup = domainGroup->createGroup("topologies")->createGroup(m_topologyName);
+    topoGroup->createViewString("coordset", m_coordsetName);
+    topoGroup->createViewString("type", "unstructured");
+    topoGroup->createViewString("elements/shape", "point");
 
-    auto *fieldsGroup0 = domainGroup0->createGroup("fields");
+    auto *fieldsGroup = domainGroup->createGroup("fields");
 
-    domainGroup0->createViewScalar<axom::int64>("state/domain_id", m_rank);
+    domainGroup->createViewScalar<axom::int64>("state/domain_id", m_rank);
 
-    m_domainGroups.push_back(domainGroup0);
-    m_coordsGroups.push_back(coordsGroup0);
-    m_topoGroups.push_back(topoGroup0);
-    m_fieldsGroups.push_back(fieldsGroup0);
+    m_domainGroups.push_back(domainGroup);
+    m_coordsGroups.push_back(coordsGroup);
+    m_topoGroups.push_back(topoGroup);
+    m_fieldsGroups.push_back(fieldsGroup);
   }
 
 private:
+  const std::string m_coordsetName;
+  const std::string m_topologyName;
   /// Parent group for the entire mesh
   sidre::Group* m_group;
   /// Group for each domain in multidomain mesh
