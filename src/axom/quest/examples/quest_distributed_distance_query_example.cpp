@@ -657,12 +657,16 @@ public:
 
   QueryMeshWrapper(const std::string& cpFilename)
     : m_dc(cpFilename, nullptr, true)
+    , m_queryMesh(m_dc.GetBPGroup()->getDataStore()->getRoot()
+                  ->createGroup("query_mesh", true))
   { }
 
   QueryMeshWrapper(const std::string& cpFilename,
                    const std::string& dcMeshFilename,
                    const std::string& dcMeshPath)
     : m_dc(cpFilename, nullptr, true)
+    , m_queryMesh(m_dc.GetBPGroup()->getDataStore()->getRoot()
+                  ->createGroup("query_mesh", true))
   {
     setupMesh(dcMeshFilename, dcMeshPath);
     setupParticleMesh();
@@ -710,9 +714,6 @@ public:
   {
     using PointArray2D = axom::Array<primal::Point<double, 2>>;
     using PointArray3D = axom::Array<primal::Point<double, 3>>;
-
-    auto* dsRoot = m_dc.GetBPGroup()->getDataStore()->getRoot();
-    m_queryMesh = BlueprintParticleMesh(dsRoot->createGroup("query_mesh", true));
 
     const int DIM = m_dc.GetMesh()->Dimension();
     SLIC_ERROR_IF(DIM != 2 && DIM != 3,
