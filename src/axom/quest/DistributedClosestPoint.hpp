@@ -680,7 +680,11 @@ public:
       isBVHTreeInitialized(),
       "BVH tree must be initialized before calling 'computeClosestPoints");
 
-    BoxType myQueryBb = computeMeshBoundingBox(queryMesh, coordset);
+    const bool qmIsMultidomain = conduit::blueprint::mesh::is_multi_domain(queryMesh);
+    conduit::Node dummyQueryDomain;
+    conduit::Node& firstQueryDomain(qmIsMultidomain ? (conduit::blueprint::mesh::number_of_domains(queryMesh) ? queryMesh[0] : dummyQueryDomain) : queryMesh);
+
+    BoxType myQueryBb = computeMeshBoundingBox(firstQueryDomain, coordset);
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
@@ -691,7 +695,7 @@ public:
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
-      copy_query_node_to_xfer_node(queryMesh, xferNode, coordset);
+      copy_query_node_to_xfer_node(firstQueryDomain, xferNode, coordset);
       put_bounding_box_to_conduit_node(myQueryBb, xferNode["aabb"]);
       xferNode["homeRank"] = m_rank;
     }
@@ -739,7 +743,7 @@ public:
         const bool shouldCopy = xferNodes[m_rank]->has_child("qPtCount");
         if(shouldCopy)
         {
-          copy_xfer_node_to_query_node(*xferNodes[m_rank], queryMesh);
+          copy_xfer_node_to_query_node(*xferNodes[m_rank], firstQueryDomain);
         }
         xferNodes.erase(m_rank);
       }
@@ -780,7 +784,7 @@ public:
         const bool shouldCopy = xferNode.has_child("qPtCount");
         if(shouldCopy)
         {
-          copy_xfer_node_to_query_node(xferNode, queryMesh);
+          copy_xfer_node_to_query_node(xferNode, firstQueryDomain);
         }
       }
       else
@@ -1367,20 +1371,25 @@ public:
    */
   void setObjectMesh(const conduit::Node& mesh_node, const std::string& coordset)
   {
-    // Perform some simple error checking
+    // Require mess_node to be valid blueprint mesh.
     SLIC_ASSERT(this->isValidBlueprint(mesh_node));
+
+    const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(mesh_node);
     auto valuesPath = fmt::format("coordsets/{}/values", coordset);
 
-    const bool rankIsEmpty = mesh_node.dtype().is_empty();
+    const bool rankHasPts = isMultidomain ?
+      conduit::blueprint::mesh::number_of_domains(mesh_node) > 0 :
+      !mesh_node[0].dtype().is_empty();
 
     // Extract the dimension from the coordinate values group
     // use allreduce since some ranks might be empty
     {
       int localDim = -1;
-      if(!rankIsEmpty)
+      if(rankHasPts)
       {
-        SLIC_ASSERT(mesh_node.has_path(valuesPath));
-        auto& values = mesh_node[valuesPath];
+        const conduit::Node& domain0(isMultidomain ? mesh_node[0] : mesh_node);
+        SLIC_ASSERT(domain0.has_path(valuesPath));
+        auto& values = domain0[valuesPath];
         localDim = internal::extractDimension(values);
       }
       int dim = -1;
@@ -1391,9 +1400,10 @@ public:
     allocateQueryInstance();
 
     // dispatch mesh import to dimension-specific implementation class
-    if(!rankIsEmpty)
+    if(rankHasPts)
     {
-      auto& values = mesh_node[valuesPath];
+      const conduit::Node& firstDomain(isMultidomain ? mesh_node[0] : mesh_node);
+      auto& values = firstDomain[valuesPath];
       const int N = internal::extractSize(values);
       switch(m_dimension)
       {

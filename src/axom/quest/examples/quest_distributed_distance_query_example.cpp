@@ -524,7 +524,7 @@ public:
   }
 
   /// Get a pointer to the root group for this mesh
-  sidre::Group* getBlueprintGroup() const { return m_objectMesh.domainGroup(0); }
+  sidre::Group* getBlueprintGroup() const { return m_objectMesh.rootGroup(); }
 
   std::string getCoordsetName(axom::IndexType groupIdx) const
   {
@@ -632,7 +632,7 @@ public:
     }
     else
     {
-      m_objectMesh.setPoints(PointArray(0, 0));
+      m_objectMesh.setPoints(PointArray(0, 0)); // Should we do this?
     }
 
     axom::slic::flushStreams();
@@ -675,7 +675,7 @@ public:
 
   const BlueprintParticleMesh& getParticleMesh() const { return m_queryMesh; }
 
-  sidre::Group* getBlueprintGroup() const { return m_queryMesh.domainGroup(0); }
+  sidre::Group* getBlueprintGroup() const { return m_queryMesh.rootGroup(); }
 
   std::string getCoordsetName() const
   {
