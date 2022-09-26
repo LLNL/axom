@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_13_36_57/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_13_36_57/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/spack/lib/spack/env/clang/flang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_13_36_57/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
@@ -23,7 +23,7 @@ else()
 
   set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-8.0.1/bin/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003_r" CACHE PATH "")
 
 endif()
 
@@ -79,7 +79,7 @@ set(gtest_disable_pthreads ON CACHE BOOL "")
 # Hardware Specifics
 #------------------------------------------------
 
-set(ENABLE_OPENMP OFF CACHE BOOL "")
+set(ENABLE_OPENMP ON CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
 
@@ -89,6 +89,8 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/
 
 set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE STRING "Converts C-style comments to Fortran style in preprocessed files")
 
+set(BLT_OPENMP_LINK_FLAGS "$<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:-fopenmp=libomp>;$<$<COMPILE_LANGUAGE:Fortran>:-qsmp=omp>" CACHE STRING "Different OpenMP linker flag between CXX and Fortran")
+
 set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
 
 #------------------------------------------------------------------------------
@@ -97,7 +99,7 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/clang-8.0.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_13_36_57/clang-8.0.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
@@ -107,7 +109,7 @@ set(MFEM_DIR "${TPL_ROOT}/mfem-4.4.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
-set(LUA_DIR "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/clang-9.0.0/lua-5.3.5" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
