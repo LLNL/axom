@@ -655,12 +655,6 @@ class QueryMeshWrapper
 public:
   using Circle = primal::Sphere<double, 2>;
 
-  QueryMeshWrapper(const std::string& cpFilename)
-    : m_dc(cpFilename, nullptr, true)
-    , m_queryMesh(m_dc.GetBPGroup()->getDataStore()->getRoot()
-                  ->createGroup("query_mesh", true))
-  { }
-
   QueryMeshWrapper(const std::string& cpFilename,
                    const std::string& dcMeshFilename,
                    const std::string& dcMeshPath)
@@ -1105,18 +1099,10 @@ int main(int argc, char** argv)
   // Load computational mesh and generate a particle mesh over its nodes
   // These will be used to query the closest points on the object mesh(es)
   //---------------------------------------------------------------------------
-#if 1
   QueryMeshWrapper query_mesh_wrapper(params.distanceFile,
                                       params.getDCMeshName(),
                                       params.meshFile);
   query_mesh_wrapper.printMeshInfo();
-#else
-  QueryMeshWrapper query_mesh_wrapper(params.distanceFile);
-
-  query_mesh_wrapper.setupMesh(params.getDCMeshName(), params.meshFile);
-  query_mesh_wrapper.setupParticleMesh();
-  query_mesh_wrapper.printMeshInfo();
-#endif
 
   const bool rankHasQueryPoints =
     axom::utilities::random_real(0., 1.) < (1. - params.percentEmptyRanks());
