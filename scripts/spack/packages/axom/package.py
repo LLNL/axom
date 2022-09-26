@@ -363,6 +363,18 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 "-WF,-C!  -qxlf2003=polymorphic",
                 description))
 
+            if "clang" in self.compiler.cxx and "+openmp" in spec:
+                openmp_gen_exp = ( "$<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:"
+                                   "-fopenmp=libomp>;$<$<COMPILE_LANGUAGE:"
+                                   "Fortran>:-qsmp=omp>")
+
+                description = ("Different OpenMP linker flag between "
+                               "CXX and Fortran")
+                entries.append(cmake_cache_string(
+                    "BLT_OPENMP_LINK_FLAGS",
+                    openmp_gen_exp,
+                    description))
+
         if spec.satisfies('target=ppc64le:'):
             # Fix for working around CMake adding implicit link directories
             # returned by the BlueOS compilers to link executables with
