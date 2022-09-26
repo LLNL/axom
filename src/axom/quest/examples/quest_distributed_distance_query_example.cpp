@@ -16,6 +16,7 @@
 #include "axom/sidre.hpp"
 #include "axom/quest.hpp"
 #include "axom/slam.hpp"
+#include "axom/core/Types.hpp"
 #include "axom/core/utilities/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
@@ -212,15 +213,15 @@ public:
   /// Gets the root group for this mesh blueprint
   sidre::Group* rootGroup() const { return m_group; }
   /// Gets a domain group.
-  sidre::Group* domainGroup(size_t groupIdx) const
+  sidre::Group* domainGroup(axom::IndexType groupIdx) const
   {
-    SLIC_ASSERT(groupIdx < m_domainGroups.size());
+    SLIC_ASSERT(size_t(groupIdx) < m_domainGroups.size());
     return m_domainGroups[groupIdx];
   }
   /// Gets the parent group for the blueprint coordinate set
-  sidre::Group* coordsGroup(size_t groupIdx) const { return m_coordsGroups[groupIdx]; }
+  sidre::Group* coordsGroup(axom::IndexType groupIdx) const { return m_coordsGroups[groupIdx]; }
   /// Gets the parent group for the blueprint mesh topology
-  sidre::Group* topoGroup(size_t groupIdx) const { return m_topoGroups[groupIdx]; }
+  sidre::Group* topoGroup(axom::IndexType groupIdx) const { return m_topoGroups[groupIdx]; }
 
   /// Gets the MPI rank for this mesh
   int getRank() const { return m_rank; }
@@ -256,14 +257,12 @@ public:
   int dimension() const { return m_dimension; }
 
   /// Set the coordinate data from an array of primal Points, templated on the dimension
+  // The points are assigned to a new domain (in the multidomain context).
   template <int NDIMS>
   void setPoints(const axom::Array<primal::Point<double, NDIMS>>& pts)
   {
-    createBlueprintStubs();
-    auto domainIdx = m_group->getNumGroups() - 1;
-    assert(m_domainGroups[domainIdx] != nullptr);
-    SLIC_ASSERT_MSG(m_domainGroups[domainIdx] != nullptr,
-                    "Must set blueprint group before setPoints()");
+    axom::IndexType domainIdx = createBlueprintStubs();
+    SLIC_ASSERT(m_domainGroups[domainIdx] != nullptr);
 
     const int SZ = pts.size();
 
@@ -464,7 +463,8 @@ public:
 private:
   /// Creates blueprint stubs for this mesh
   // for the "coordset", "topologies", "fields" and "state"
-  void createBlueprintStubs()
+  // Return the domain index created.
+  axom::IndexType createBlueprintStubs()
   {
     SLIC_ASSERT(m_group != nullptr);
     SLIC_ASSERT(m_domainGroups.empty());
@@ -488,6 +488,8 @@ private:
     m_coordsGroups.push_back(coordsGroup);
     m_topoGroups.push_back(topoGroup);
     m_fieldsGroups.push_back(fieldsGroup);
+
+    return axom::IndexType(m_domainGroups.size() - 1);
   }
 
 private:
@@ -524,7 +526,7 @@ public:
   /// Get a pointer to the root group for this mesh
   sidre::Group* getBlueprintGroup() const { return m_objectMesh.domainGroup(0); }
 
-  std::string getCoordsetName(size_t groupIdx) const
+  std::string getCoordsetName(axom::IndexType groupIdx) const
   {
     return m_objectMesh.coordsGroup(groupIdx)->getName();
   }
