@@ -34,6 +34,8 @@ packages:
   spectrum-mpi:
     buildable: false
     externals:
+    - spec: spectrum-mpi@release%gcc@7.3.1
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
     - spec: spectrum-mpi@release%gcc@8.3.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/
     - spec: spectrum-mpi@release%clang@9.0.0
