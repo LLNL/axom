@@ -44,8 +44,8 @@ blt_add_executable(
 if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
 
-        # CMake inserts Fortran flag that forces one OpenMP thread with MPI
-        # with xlf
+        # CMake inserts Fortran flag that forces one OpenMP thread when
+        # compiling with MPI and xlf
         if(ENABLE_FORTRAN)
           list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "xlomp_ser")
         endif()

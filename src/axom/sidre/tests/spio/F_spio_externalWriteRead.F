@@ -61,7 +61,6 @@ program spio_external_write_read
 
   ga = flds%create_group("a")
   gb = flds2%create_group("b")
-
   view1 = ga%create_array_view("external_array", orig_vals1)
   view1 = gb%create_view("external_undescribed")
   call view1%set_external_data_ptr(c_loc(orig_vals2))
