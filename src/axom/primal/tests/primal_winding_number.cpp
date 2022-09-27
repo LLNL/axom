@@ -137,7 +137,6 @@ TEST(primal_winding_number, simple_cases)
 
 TEST(primal_winding_number, closure_edge_cases)
 {
-  return;
   // Tests for when query is on the linear closure
   using Point2D = primal::Point<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
