@@ -59,6 +59,8 @@ set(ENABLE_OPENMP ON CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
+set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
+
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
