@@ -487,7 +487,6 @@ private:
   axom::IndexType createBlueprintStubs()
   {
     SLIC_ASSERT(m_group != nullptr);
-    SLIC_ASSERT(m_domainGroups.empty());
 
     auto* domainGroup = m_group->createUnnamedGroup();
 
@@ -636,7 +635,7 @@ public:
         pts.push_back(PointType {rcosT, rsinT});
       }
       m_objectMesh.setPoints(pts);
-std::cout<<__WHERE<< "rank " << rank << " got " << pts.size() << " circle points from domain " << di << std::endl;
+std::cout<<__WHERE<< "rank " << rank << " got " << pts.size() << " circle points from domain (global index) " << di << std::endl;
     }
 
     axom::slic::flushStreams();
