@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_47_27/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_47_27/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_47_27/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
 
 else()
 
@@ -59,15 +59,13 @@ set(ENABLE_OPENMP ON CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
-set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
-
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/gcc-7.3.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_47_27/gcc-7.3.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
@@ -77,13 +75,13 @@ set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
-set(LUA_DIR "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_07_05_12_53_31/clang-9.0.0/lua-5.3.5" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
 set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2" CACHE PATH "")
 
 # scr not built
 
