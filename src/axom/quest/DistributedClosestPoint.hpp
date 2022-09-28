@@ -403,8 +403,41 @@ public:
    * \param [in] coords The root group of a mesh blueprint's coordinate values
    * \note This function currently supports mesh blueprints with the "point" topology
    */
-  void importObjectPoints(const conduit::Node& coords, int nPts)
+  // void importObjectPoints(const conduit::Node& coords, int nPts)
+  void importObjectPoints(const conduit::Node& meshNode, const std::string& valuesPath)
   {
+    conduit::index_t domainCount = conduit::blueprint::mesh::number_of_domains(meshNode);
+
+    // Count points in the mesh.
+    int ptCount = 0;
+    for(conduit::index_t di=0; di<domainCount; ++di)
+    {
+      const conduit::Node &domain = meshNode[di];
+      auto& values = domain[valuesPath];
+      const int N = internal::extractSize(values);
+      ptCount += N;
+    }
+
+    // Copy points to internal memory
+    PointArray pts(ptCount, ptCount);
+    std::size_t copiedCount = 0;
+    for(conduit::index_t di=0; di<domainCount; ++di)
+    {
+      const conduit::Node &domain = meshNode[di];
+      auto& values = domain[valuesPath];
+      const int N = internal::extractSize(values);
+      assert(sizeof(double) * DIM == sizeof(PointType)); // BTNG check
+      const std::size_t nBytes = sizeof(double) * DIM * N;
+      axom::copy(pts.data()+copiedCount, values["x"].data_ptr(), nBytes);
+      copiedCount += N;
+    }
+    m_objectPts = PointArray(pts, m_allocatorID); // copy point array to ExecSpace
+
+#if 0
+    const conduit::Node& firstDomain(isMultidomain ? meshNode[0] : meshNode);
+    auto& values = firstDomain[valuesPath];
+    const int N = internal::extractSize(values);
+
     // Extract pointers to the coordinate data
     // Note: The following assumes the coordinates are contiguous with stride NDIMS
     // TODO: Generalize to support other strides
@@ -417,6 +450,7 @@ public:
     axom::copy(pts.data(), coords["x"].data_ptr(), nbytes);
 
     m_objectPts = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
+#endif
   }
 
   /// Predicate to check if the BVH tree has been initialized
@@ -497,6 +531,8 @@ public:
   }
 
   /// Get local copy of all ranks BVH root bounding boxes.
+  // Assumption: All domains are in the same index space.
+  // TODO: should be extended for multidomain.
   void gatherBVHRoots()
   {
     SLIC_ASSERT_MSG(
@@ -1189,7 +1225,18 @@ private:
   int m_rank;
   int m_nranks;
 
+  /*!
+    @brief Object point array.
+
+    Points from all object mesh domains are flattened here.
+    TODO: Will need a way to map the m_objectPts index back
+    to the domain that has the object point.
+  */
   PointArray m_objectPts;
+
+  /*!  @brief Object partition bounding boxes, one per rank.
+    All are in physical space, not index space.
+  */
   BoxArray m_objectPartitionBbs;
 
   std::unique_ptr<SeqBVHTree> m_bvh_seq;
@@ -1362,32 +1409,42 @@ public:
   /**
    * \brief Sets the object mesh for the query
    *
-   * \param [in] mesh_node Conduit node for the object mesh
+   * \param [in] meshNode Conduit node for the object mesh
    * \param [in] coordset The name of the coordset for the object mesh's coordinates
    *
-   * \pre \a mesh_node must follow the mesh blueprint convention. If this node
-   * is empty, the rank has no data
+   * \pre \a meshNode must follow the mesh blueprint convention.
    * \pre Dimension of the mesh must be 2D or 3D
    */
-  void setObjectMesh(const conduit::Node& mesh_node, const std::string& coordset)
+  void setObjectMesh(const conduit::Node& meshNode, const std::string& coordset)
   {
-    // Require mess_node to be valid blueprint mesh.
-    SLIC_ASSERT(this->isValidBlueprint(mesh_node));
+    SLIC_ASSERT(this->isValidBlueprint(meshNode));
 
-    const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(mesh_node);
-    auto valuesPath = fmt::format("coordsets/{}/values", coordset);
+    const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(meshNode);
+    if (!isMultidomain)
+    {
+      conduit::Node mdMeshNode;
+      conduit::blueprint::mesh::to_multi_domain(meshNode, mdMeshNode);
+      _setMultidomainObjectMesh(mdMeshNode, coordset);
+    }
+    else
+    {
+      _setMultidomainObjectMesh(meshNode, coordset);
+    }
+    return;
+  }
 
-    const bool rankHasPts = isMultidomain ?
-      conduit::blueprint::mesh::number_of_domains(mesh_node) > 0 :
-      !mesh_node[0].dtype().is_empty();
+  void _setMultidomainObjectMesh(const conduit::Node& meshNode, const std::string& coordset)
+  {
+    auto domainCount = conduit::blueprint::mesh::number_of_domains(meshNode);
+    const std::string valuesPath = fmt::format("coordsets/{}/values", coordset);
 
     // Extract the dimension from the coordinate values group
     // use allreduce since some ranks might be empty
     {
       int localDim = -1;
-      if(rankHasPts)
+      if(domainCount > 0)
       {
-        const conduit::Node& domain0(isMultidomain ? mesh_node[0] : mesh_node);
+        const conduit::Node& domain0(meshNode[0]);
         SLIC_ASSERT(domain0.has_path(valuesPath));
         auto& values = domain0[valuesPath];
         localDim = internal::extractDimension(values);
@@ -1399,10 +1456,21 @@ public:
 
     allocateQueryInstance();
 
+#if 1
+    switch(m_dimension)
+    {
+    case 2:
+      m_dcp_2->importObjectPoints(meshNode, valuesPath);
+      break;
+    case 3:
+      m_dcp_3->importObjectPoints(meshNode, valuesPath);
+      break;
+    }
+#else
     // dispatch mesh import to dimension-specific implementation class
     if(rankHasPts)
     {
-      const conduit::Node& firstDomain(isMultidomain ? mesh_node[0] : mesh_node);
+      const conduit::Node& firstDomain(isMultidomain ? meshNode[0] : meshNode);
       auto& values = firstDomain[valuesPath];
       const int N = internal::extractSize(values);
       switch(m_dimension)
@@ -1415,6 +1483,7 @@ public:
         break;
       }
     }
+#endif
   }
 
   /**
