@@ -82,6 +82,9 @@ public:
 
   bool randomSpacing {true};
 
+  unsigned int minDomainCount {1};
+  unsigned int maxDomainCount {1};
+
 private:
   bool m_verboseOutput {false};
   double m_emptyRankProbability {0.};
@@ -144,6 +147,21 @@ public:
         "Probability that a rank's data is empty "
         "(tests code's ability to handle empty ranks)")
       ->check(axom::CLI::Range(0., 1.))
+      ->capture_default_str();
+
+    app.add_option("--min-domain-count", minDomainCount)
+      ->description(
+        "Min number of domains per rank."
+        "Defaults to 1")
+      ->check(axom::CLI::Range(0, 10))
+      ->capture_default_str();
+
+    // TODO: Any way to set min and max together and require max >= min?
+    app.add_option("--max-domain-count", maxDomainCount)
+      ->description(
+        "Max number of domains per rank."
+        "Defaults to 1")
+      ->check(axom::CLI::Range(0, 10))
       ->capture_default_str();
 
     app.add_option("-r,--radius", circleRadius)
@@ -222,6 +240,8 @@ public:
   sidre::Group* coordsGroup(axom::IndexType groupIdx) const { return m_coordsGroups[groupIdx]; }
   /// Gets the parent group for the blueprint mesh topology
   sidre::Group* topoGroup(axom::IndexType groupIdx) const { return m_topoGroups[groupIdx]; }
+
+  const std::string& getCoordsetName() const { return m_coordsetName; }
 
   /// Gets the MPI rank for this mesh
   int getRank() const { return m_rank; }
@@ -446,7 +466,7 @@ public:
   /// Outputs the particle mesh to disk
   void saveMesh(const std::string& outputMesh)
   {
-    auto* ds = m_domainGroups[0]->getDataStore();
+    auto* ds = m_group->getDataStore();
     sidre::IOManager writer(MPI_COMM_WORLD);
     writer.write(ds->getRoot(), m_nranks, outputMesh, "sidre_hdf5");
 
@@ -454,7 +474,7 @@ public:
 
     // m_group->print();
     // Add the bp index to the root file
-    writer.writeBlueprintIndexToRootFile(m_domainGroups[0]->getDataStore(),
+    writer.writeBlueprintIndexToRootFile(ds,
                                          m_group->getName(),
                                          outputMesh + ".root",
                                          "object_mesh"); // m_domainGroups[0]->getPathName());
@@ -526,9 +546,9 @@ public:
   /// Get a pointer to the root group for this mesh
   sidre::Group* getBlueprintGroup() const { return m_objectMesh.rootGroup(); }
 
-  std::string getCoordsetName(axom::IndexType groupIdx) const
+  std::string getCoordsetName() const
   {
-    return m_objectMesh.coordsGroup(groupIdx)->getName();
+    return m_objectMesh.getCoordsetName();
   }
 
   int numPoints() const { return m_objectMesh.numPoints(); }
@@ -541,7 +561,7 @@ public:
    */
   void generateCircleMesh(const Circle& circle,
                           int totalNumPoints,
-                          bool rankHasPoints,
+                          int localDomainCount,
                           bool randomSpacing = true)
   {
     using axom::utilities::random_real;
@@ -556,28 +576,27 @@ public:
     // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
     axom::Array<int> sums(nranks, nranks);
     {
-      int hasPoints = rankHasPoints ? 1 : 0;
-
-      axom::Array<int> arr(nranks, nranks);
-      arr.fill(-1);
-      MPI_Allgather(&hasPoints, 1, MPI_INT, arr.data(), 1, MPI_INT, MPI_COMM_WORLD);
+      axom::Array<int> indivDomainCounts(nranks, nranks);
+      indivDomainCounts.fill(-1);
+      MPI_Allgather(&localDomainCount, 1, MPI_INT, indivDomainCounts.data(), 1,
+                    MPI_INT, MPI_COMM_WORLD);
 
       SLIC_DEBUG_IF(
         m_verbose,
-        axom::fmt::format("After all gather: [{}]", axom::fmt::join(arr, ",")));
+        axom::fmt::format("After all gather: [{}]", axom::fmt::join(indivDomainCounts, ",")));
 
-      sums[0] = arr[0];
+      sums[0] = indivDomainCounts[0];
       for(int i = 1; i < nranks; ++i)
       {
-        sums[i] = sums[i - 1] + arr[i];
+        sums[i] = sums[i - 1] + indivDomainCounts[i];
       }
-      // If no rank has any points, force last one to have points.
+      // If no rank has any domains, force last one to 1 domain.
       if(sums[nranks - 1] == 0)
       {
         sums[nranks - 1] = 1;
         if(rank == nranks - 1)
         {
-          rankHasPoints = true;
+          localDomainCount = 1;
         }
       }
     }
@@ -586,53 +605,38 @@ public:
       m_verbose,
       axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
 
-    if(rankHasPoints)
+    int globalDomainCount = sums[nranks - 1];
+    totalNumPoints = std::max(totalNumPoints, globalDomainCount);
+    int ptsPerDomain = totalNumPoints / globalDomainCount;
+    int domainsWithExtraPt = totalNumPoints % globalDomainCount;
+
+    int myDomainBegin = rank == 0 ? 0 : sums[rank - 1];
+    int myDomainEnd = sums[rank];
+    assert(myDomainEnd-myDomainBegin == localDomainCount);
+
+    double radius = circle.getRadius();
+    const auto& center = circle.getCenter();
+    const double avgAng = 2. * M_PI / totalNumPoints;
+
+    for(int di=myDomainBegin; di<myDomainEnd; ++di)
     {
-      /*
-        Renumber ranks with empty ranks omitted, and denote by "X".
-        sums provides mapping to renumbered ranks.  If totalNumPoints
-        is not divisible by nranksX, some ranks have an extra point.
-      */
-      int nranksX = sums[nranks - 1];
-      int rankX = sums[rank] - 1;
-      int ptsPerRankX = totalNumPoints / nranksX;
-      int ranksWithExtraPtX = totalNumPoints % nranksX;
+      int pBegin = di * ptsPerDomain + std::min(di, domainsWithExtraPt);
+      int pEnd =
+        (di + 1) * ptsPerDomain + std::min((di + 1), domainsWithExtraPt);
+      int domainPointCount = pEnd - pBegin;
+      PointArray pts(0, domainPointCount);
 
-      double radius = circle.getRadius();
-      const auto& center = circle.getCenter();
-      const double avgAng = 2. * M_PI / totalNumPoints;
-
-      int iBegin = rankX * ptsPerRankX + std::min(rankX, ranksWithExtraPtX);
-      int iEnd =
-        (rankX + 1) * ptsPerRankX + std::min((rankX + 1), ranksWithExtraPtX);
-      int localNumPoints = iEnd - iBegin;
-      PointArray pts(0, localNumPoints);
-
-      for(int i = iBegin; i < iEnd; ++i)
+      for(int pi = pBegin; pi < pEnd; ++pi)
       {
         const double ang = randomSpacing
-          ? random_real(avgAng * iBegin, avgAng * iEnd)
-          : i * avgAng;
+          ? random_real(avgAng * pBegin, avgAng * pEnd)
+          : pi * avgAng;
         const double rsinT = center[1] + radius * std::sin(ang);
         const double rcosT = center[0] + radius * std::cos(ang);
         pts.push_back(PointType {rcosT, rsinT});
       }
-
       m_objectMesh.setPoints(pts);
-
-      SLIC_DEBUG_IF(
-        m_verbose,
-        axom::fmt::format("Rank {}, start angle {}, stop angle {}, num "
-                          "non-empty {}, num points {}",
-                          rank,
-                          iBegin * avgAng,
-                          iEnd * avgAng,
-                          sums[nranks - 1],
-                          localNumPoints));
-    }
-    else
-    {
-      m_objectMesh.setPoints(PointArray(0, 0)); // Should we do this?
+std::cout<<__WHERE<< "rank " << rank << " got " << pts.size() << " circle points from domain " << di << std::endl;
     }
 
     axom::slic::flushStreams();
@@ -679,7 +683,7 @@ public:
 
   std::string getCoordsetName() const
   {
-    return m_queryMesh.coordsGroup(0)->getName();
+    return m_queryMesh.getCoordsetName();
   }
 
   /// Returns an array containing the positions of the mesh vertices
@@ -1080,14 +1084,13 @@ int main(int argc, char** argv)
     objectDS.getRoot()->createGroup("object_mesh", true));
   object_mesh_wrapper.setVerbosity(params.isVerbose());
 
-  // Generate the object mesh, optionally allowing some ranks to be empty.
-  // This better approximates how users will run the query.
   {
     const double prob = axom::utilities::random_real(0., 1.);
-    const bool rankHasObjectPoints = prob < (1. - params.percentEmptyRanks());
+    int localDomainCount = params.minDomainCount
+      + int(0.5 + prob*(params.maxDomainCount-params.minDomainCount));
     object_mesh_wrapper.generateCircleMesh(circle,
                                            params.circlePoints,
-                                           rankHasObjectPoints,
+                                           localDomainCount,
                                            params.randomSpacing);
   }
 
@@ -1159,7 +1162,7 @@ int main(int argc, char** argv)
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
-  query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName(0));
+  query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
