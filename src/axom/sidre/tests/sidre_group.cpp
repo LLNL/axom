@@ -2714,6 +2714,18 @@ TEST(sidre_group, import_conduit_external)
     iarray[i] = (conduit::int64)i;
   }
 
+  conduit::Node& list_item0 = input["list"].append();
+  list_item0.set((conduit::int64)(12));
+  conduit::Node& list_item1 = input["list"].append();
+
+  std::vector<conduit::float64> fvec(ndata);
+  list_item1.set(&fvec[0], ndata);
+  conduit::float64_array farray = list_item1.as_float64_array();
+  for(int i = 0; i < ndata; ++i)
+  {
+    farray[i] = (conduit::float64)(-i);
+  }
+
   DataStore ds;
 
   //Zero copy of array data
@@ -2752,6 +2764,40 @@ TEST(sidre_group, import_conduit_external)
   //The pointers should be the same addresses as the import treated the
   //array as an external pointer.
   EXPECT_EQ((void*)sidre_data_ptr, iarray.data_ptr());
+
+  //Test that the list group was correctly imported. The list group created
+  //above has two child views, one scalar and one external array.
+  Group* list = ds.getRoot()->getGroup("list");
+  for(auto& view : list->views())
+  {
+    if(view.isScalar())
+    {
+      EXPECT_EQ(view.getData<conduit::int64>(), 12);
+    }
+    else
+    {
+      //If not a scalar, it must be the external array.
+      EXPECT_TRUE(view.isExternal());
+
+      conduit::float64* sidre_flt_ptr = view.getData();
+      for(int j = 0; j < ndata; j++)
+      {
+        EXPECT_NEAR(farray[j], sidre_flt_ptr[j], 1.0e-12);
+      }
+
+      //Change a value in the original conduit array, then test that it's
+      //changed in the Sidre external view.
+      if(ndata > 5)
+      {
+        farray[5] *= 5.9;
+        EXPECT_NEAR(farray[5], sidre_flt_ptr[5], 1.0e-12);
+      }
+
+      //Check address equality, as the external view points to the storage of
+      //the original array.
+      EXPECT_EQ((void*)sidre_flt_ptr, farray.data_ptr());
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
