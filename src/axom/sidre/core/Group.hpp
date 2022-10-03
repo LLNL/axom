@@ -1432,11 +1432,6 @@ public:
    * This imports the hierarchy from the Node into a Sidre Group with the
    * same tree structure.
    *
-   * This does not support conduit's list datatype.  If the Node contains a
-   * list any where in its tree, the list and any child Nodes descending from
-   * the list will not be imported.  A warning will occur and an unsuccessful
-   * return value will be returned.
-   *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
    * Group.  If there is a naming conflict, an error will occur.
@@ -1462,11 +1457,6 @@ public:
    *
    * This imports the hierarchy from the Node into a Sidre Group with the
    * same tree structure.
-   *
-   * This does not support conduit's list datatype.  If the Node contains a
-   * list any where in its tree, the list and any child Nodes descending from
-   * the list will not be imported.  A warning will occur and an unsuccessful
-   * return value will be returned.
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
