@@ -349,8 +349,8 @@ void constructAndTestMapIteratorWithStride(int stride)
       EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
       for(auto idx2 = 0; idx2 < iter.numComp(); ++idx2)
       {
-        EXPECT_EQ(iter(idx2),
-                  static_cast<double>(idx * multFac + idx2 * multFac2));
+        EXPECT_DOUBLE_EQ(iter(idx2),
+                         static_cast<double>(idx * multFac + idx2 * multFac2));
       }
       idx++;
     }

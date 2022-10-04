@@ -33,7 +33,7 @@
 
 ####
 # PR Build jobs
-tioga-clang_14_0_0_hip-src:
+tioga-clang_14_0_0_hip_5_1_1-src:
   variables:
     COMPILER: "clang@14.0.0_hip"
     HOST_CONFIG: "tioga-toss_4_x86_64_ib_cray-${COMPILER}.cmake"
@@ -42,7 +42,7 @@ tioga-clang_14_0_0_hip-src:
 
 ####
 # Full Build jobs
-tioga-clang_14_0_0_hip-full:
+tioga-clang_14_0_0_hip_5_1_1-full:
   variables:
     COMPILER: "clang@14.0.0_hip"
     SPEC: "%${COMPILER}~openmp+rocm+mfem+c2c"
