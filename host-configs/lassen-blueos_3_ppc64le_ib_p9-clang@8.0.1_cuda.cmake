@@ -11,11 +11,19 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
+<<<<<<< HEAD
   set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_15_35_50/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
   set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_15_35_50/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
   set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_15_35_50/spack/lib/spack/env/clang/flang" CACHE PATH "")
+=======
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_09_02/spack/lib/spack/env/clang/clang" CACHE PATH "")
+
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_09_02/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_09_02/spack/lib/spack/env/clang/flang" CACHE PATH "")
+>>>>>>> a1222b67d (update cz host-configs)
 
 else()
 
@@ -99,7 +107,11 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
+<<<<<<< HEAD
 set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_26_15_35_50/clang-8.0.1" CACHE PATH "")
+=======
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_27_09_09_02/clang-8.0.1" CACHE PATH "")
+>>>>>>> a1222b67d (update cz host-configs)
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
@@ -115,7 +127,7 @@ set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
 set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2" CACHE PATH "")
 
 # scr not built
 
