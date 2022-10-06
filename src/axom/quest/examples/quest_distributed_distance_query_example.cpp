@@ -349,14 +349,14 @@ public:
 
     // Put mdMesh into sidre Group.
     bool goodImport = m_group->importConduitTree(mdMesh, false);
-std::cout<<__WHERE<<"rank " << m_rank << " goodImport " << goodImport << std::endl;
-    assert(goodImport);
     bool valid = isValid();
-std::cout<<__WHERE<<"rank " << m_rank << " valid " << valid << std::endl;
-    assert(valid);
-std::cout<<__WHERE<<"rank " << m_rank << " m_group:" << std::endl;
-    m_group->print(std::cout);
-    std::cout.flush();
+// std::cout<<__WHERE<<"rank " << m_rank << " goodImport " << goodImport << std::endl;
+// std::cout<<__WHERE<<"rank " << m_rank << " valid " << valid << std::endl;
+// std::cout<<__WHERE<<"rank " << m_rank << " m_group:" << std::endl;
+    SLIC_ASSERT(goodImport);
+    SLIC_ASSERT(valid);
+// m_group->print(std::cout);
+// std::cout.flush();
     m_domainGroups.resize(domCount, nullptr);
     m_coordsGroups.resize(domCount, nullptr);
     m_topoGroups.resize(domCount, nullptr);
@@ -584,20 +584,32 @@ std::cout<<__WHERE<<"rank " << m_rank << " m_group:" << std::endl;
   }
 
   /// Outputs the particle mesh to disk
-  void saveMesh(const std::string& outputMesh)
+  void saveMesh(const std::string& filename)
   {
-    auto* ds = m_group->getDataStore();
-    sidre::IOManager writer(MPI_COMM_WORLD);
-    writer.write(ds->getRoot(), m_nranks, outputMesh, "sidre_hdf5");
+    if(1)
+    {
+      conduit::Node meshNode;
+      m_group->createNativeLayout(meshNode);
+      conduit::relay::io::blueprint::save_mesh(meshNode,
+                                               filename,
+                                               "hdf5");
+    }
+    else
+    {
+      // This didn't write an object mesh that I could see with visit.
+      auto* ds = m_group->getDataStore();
+      sidre::IOManager writer(MPI_COMM_WORLD);
+      writer.write(ds->getRoot(), m_nranks, filename, "sidre_hdf5");
 
-    MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(MPI_COMM_WORLD);
 
-    // m_group->print();
-    // Add the bp index to the root file
-    writer.writeBlueprintIndexToRootFile(ds,
-                                         m_group->getName(),
-                                         outputMesh + ".root",
-                                         "object_mesh"); // m_domainGroups[0]->getPathName());
+      // m_group->print();
+      // Add the bp index to the root file
+      writer.writeBlueprintIndexToRootFile(ds,
+                                           m_group->getName(),
+                                           filename + ".root",
+                                           "object_mesh"); // m_domainGroups[0]->getPathName());
+    }
   }
 
   void print_mesh_info() const
@@ -771,12 +783,12 @@ public:
   }
 
   /// Outputs the object mesh to disk
-  void saveMesh(const std::string& outputMesh = "object_mesh")
+  void saveMesh(const std::string& filename = "object_mesh")
   {
     SLIC_INFO(banner(
-      axom::fmt::format("Saving particle mesh '{}' to disk", outputMesh)));
+      axom::fmt::format("Saving particle mesh '{}' to disk", filename)));
 
-    m_objectMesh.saveMesh(outputMesh);
+    m_objectMesh.saveMesh(filename);
   }
 
 private:
@@ -784,336 +796,6 @@ private:
   bool m_verbose {false};
 };
 
-class QueryMeshWrapper
-{
-public:
-  using Circle = primal::Sphere<double, 2>;
-
-  //!@brief Construct with MFEM mesh.
-  QueryMeshWrapper(const std::string& cpFilename,
-                   const std::string& dcMeshFilename,
-                   const std::string& dcMeshPath)
-    : m_dc(cpFilename, nullptr, true)
-    , m_queryMesh(m_dc.GetBPGroup()->getDataStore()->getRoot()
-                  ->createGroup("query_mesh", true))
-  {
-    setupMesh(dcMeshFilename, dcMeshPath);
-    setupParticleMesh();
-  }
-
-  // Returns a pointer to the MFEMSidreDataCollection
-  sidre::MFEMSidreDataCollection* getDC() { return &m_dc; }
-  const sidre::MFEMSidreDataCollection* getDC() const { return &m_dc; }
-
-  BlueprintParticleMesh& getParticleMesh() { return m_queryMesh; }
-
-  sidre::Group* getBlueprintGroup() const { return m_queryMesh.rootGroup(); }
-
-  std::string getCoordsetName() const
-  {
-    return m_queryMesh.getCoordsetName();
-  }
-
-  /// Returns an array containing the positions of the mesh vertices
-  template <typename PointArray>
-  PointArray getVertexPositions()
-  {
-    auto* mesh = m_dc.GetMesh();
-    const int NV = mesh->GetNV();
-    PointArray arr(NV);
-
-    for(auto i : slam::PositionSet<int>(NV))
-    {
-      mesh->GetNode(i, arr[i].data());
-    }
-
-    return arr;
-  }
-
-  /// Saves the data collection (MFEM query mesh) to disk
-  void saveMesh()
-  {
-    SLIC_INFO(banner(axom::fmt::format("Saving query mesh '{}' to disk",
-                                       m_dc.GetCollectionName())));
-
-    m_dc.Save();
-  }
-
-  void setupParticleMesh()
-  {
-    using PointArray2D = axom::Array<primal::Point<double, 2>>;
-    using PointArray3D = axom::Array<primal::Point<double, 3>>;
-
-    const int DIM = m_dc.GetMesh()->Dimension();
-    SLIC_ERROR_IF(DIM != 2 && DIM != 3,
-                  "Only 2D and 3D meshes are supported in setupParticleMesh(). "
-                  "Attempted mesh dimension was "
-                    << DIM);
-
-    switch(DIM)
-    {
-    case 2:
-      m_queryMesh.setPoints<2>(getVertexPositions<PointArray2D>());
-      break;
-    case 3:
-      m_queryMesh.setPoints<3>(getVertexPositions<PointArray3D>());
-      break;
-    }
-
-    m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_rank");
-    m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_index");
-    m_queryMesh.registerNodalScalarField<double>("cp_distance");
-    m_queryMesh.registerNodalVectorField<double>("cp_coords");
-
-    SLIC_ASSERT(m_queryMesh.isValid());
-  }
-
-  /**
-   * Loads the mesh as an MFEMSidreDataCollection with
-   * the following fields: "position", "distance", "direction"
-   */
-  void setupMesh(const std::string& fileName, const std::string meshFile)
-  {
-    SLIC_INFO(banner(axom::fmt::format("Loading '{}' mesh", fileName)));
-
-    sidre::MFEMSidreDataCollection originalMeshDC(fileName, nullptr, false);
-    {
-      originalMeshDC.SetComm(MPI_COMM_WORLD);
-      originalMeshDC.Load(meshFile, "sidre_hdf5");
-    }
-    SLIC_ASSERT_MSG(originalMeshDC.GetMesh()->Dimension() == 2,
-                    "This application currently only supports 2D meshes");
-    // TODO: Check order and apply LOR, if necessary
-
-    const int DIM = originalMeshDC.GetMesh()->Dimension();
-
-    // Create the data collection
-    mfem::Mesh* cpMesh = nullptr;
-    {
-      m_dc.SetMeshNodesName("position");
-
-      auto* pmesh = dynamic_cast<mfem::ParMesh*>(originalMeshDC.GetMesh());
-      cpMesh = (pmesh != nullptr) ? new mfem::ParMesh(*pmesh)
-                                  : new mfem::Mesh(*originalMeshDC.GetMesh());
-      m_dc.SetMesh(cpMesh);
-    }
-
-    // Register the distance and direction grid function
-    constexpr int order = 1;
-    auto* fec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
-    mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(cpMesh, fec);
-    mfem::GridFunction* distances = new mfem::GridFunction(fes);
-    distances->MakeOwner(fec);
-    m_dc.RegisterField("distance", distances);
-
-    auto* vfec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
-    mfem::FiniteElementSpace* vfes =
-      new mfem::FiniteElementSpace(cpMesh, vfec, DIM);
-    mfem::GridFunction* directions = new mfem::GridFunction(vfes);
-    directions->MakeOwner(vfec);
-    m_dc.RegisterField("direction", directions);
-
-    // Register the "error_flag" grid function
-    auto* efec = new mfem::H1_FECollection(order, DIM, mfem::BasisType::Positive);
-    mfem::FiniteElementSpace* efes = new mfem::FiniteElementSpace(cpMesh, efec);
-    mfem::GridFunction* errFlags = new mfem::GridFunction(efes);
-    errFlags->MakeOwner(efec);
-    m_dc.RegisterField("error_flag", errFlags);
-    // Initialize errorFlag to zeroes.
-    *errFlags = 0;
-  }
-
-  /// Prints some info about the mesh
-  void printMeshInfo()
-  {
-    switch(m_dc.GetMesh()->Dimension())
-    {
-    case 2:
-      printMeshInfo<2>();
-      break;
-    case 3:
-      printMeshInfo<3>();
-      break;
-    }
-  }
-
-  /**
-   * Check for error in the search.
-   * - check that points within threshold have a closest point
-   *   on the object.
-   * - check that found closest-point is near its corresponding
-   *   closest point on the circle (within tolerance)
-   *
-   * Return number of errors found on the local mesh partition.
-   * Populate "error_flag" field with the number of errors, for
-   * visualization.
-   *
-   * Randomized circle points (--random-spacing switch) can cause
-   * false positives, so when it's on, distance inaccuracy is a warning
-   * (not an error) for the purpose of checking.
-   */
-  template <int NDIMS>
-  int checkClosestPoints(const Circle& circle, const Input& params)
-  {
-    using PointType = Circle::PointType;
-    using PointArray = axom::Array<PointType>;
-    using IndexSet = slam::PositionSet<>;
-
-    auto queryPts = getVertexPositions<PointArray>();
-
-    auto cpCoords =
-      getParticleMesh().getNodalVectorField<PointType>("cp_coords", 0);
-
-    auto cpIndices =
-      getParticleMesh().getNodalScalarField<axom::IndexType>("cp_index", 0);
-
-    SLIC_ASSERT(queryPts.size() == cpCoords.size());
-    SLIC_ASSERT(queryPts.size() == cpIndices.size());
-
-    if(params.isVerbose())
-    {
-      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
-    }
-
-    /*
-      Allowable slack is half the arclength between 2 adjacent circle
-      points.  A query point on the circle can correctly have that
-      closest-distance, even though the analytical distance is zero.
-      If spacing is random, distance between adjacent points is not
-      predictable, leading to false positives.  We don't claim errors
-      for this in when using random.
-    */
-    const double avgObjectRes =
-      2 * M_PI * params.circleRadius / params.circlePoints;
-    const double allowableSlack = avgObjectRes / 2;
-
-    int sumErrCount = 0;
-    int sumWarningCount = 0;
-    auto& errorFlag = *getDC()->GetField("error_flag");
-    for(auto i : IndexSet(queryPts.size()))
-    {
-      const auto& qPt = queryPts[i];
-      const auto& cpCoord = cpCoords[i];
-      double analyticalDist = std::fabs(circle.computeSignedDistance(qPt));
-      const bool closestPointFound = (cpIndices[i] == -1);
-      if(closestPointFound)
-      {
-        if(analyticalDist < params.distThreshold - allowableSlack)
-        {
-          errorFlag[i] = true;
-          SLIC_INFO(
-            axom::fmt::format("***Error: Query point {} ({}) is within "
-                              "threshold by {} but lacks closest point.",
-                              i,
-                              qPt,
-                              params.distThreshold - analyticalDist));
-        }
-      }
-      else
-      {
-        if(analyticalDist >= params.distThreshold + allowableSlack)
-        {
-          errorFlag[i] = true;
-          SLIC_INFO(
-            axom::fmt::format("***Error: Query point {} ({}) is outside "
-                              "threshold by {} but has closest point at {}.",
-                              i,
-                              qPt,
-                              analyticalDist - params.distThreshold,
-                              cpCoord));
-        }
-
-        if(!axom::utilities::isNearlyEqual(circle.computeSignedDistance(cpCoord),
-                                           0.0))
-        {
-          errorFlag[i] = true;
-          SLIC_INFO(axom::fmt::format(
-            "***Error: Closest point ({}) for index {} is not on the circle.",
-            cpCoords[i],
-            i));
-        }
-
-        double dist = sqrt(primal::squared_distance(qPt, cpCoord));
-        if(!axom::utilities::isNearlyEqual(dist, analyticalDist, allowableSlack))
-        {
-          if(params.randomSpacing)
-          {
-            ++sumWarningCount;
-            SLIC_INFO(axom::fmt::format(
-              "***Warning: Closest distance for index {} is {}, off by {}.",
-              i,
-              dist,
-              dist - analyticalDist));
-          }
-          else
-          {
-            errorFlag[i] = true;
-            SLIC_INFO(
-              axom::fmt::format("***Error: Closest distance for index {} is "
-                                "{}, off by {}.",
-                                i,
-                                dist,
-                                dist - analyticalDist));
-          }
-        }
-      }
-      sumErrCount += errorFlag[i];
-    }
-
-    SLIC_INFO(axom::fmt::format(
-      "Local partition has {} errors, {} warnings in closest distance results.",
-      sumErrCount,
-      sumWarningCount));
-
-    return sumErrCount;
-  }
-
-private:
-  /**
-  * \brief Print some info about the mesh
-  *
-  * \note In MPI-based configurations, this is a collective call, but only prints on rank 0
-  */
-  template <int DIM>
-  void printMeshInfo()
-  {
-    mfem::Mesh* mesh = m_dc.GetMesh();
-
-    int myRank = 0;
-    int numElements = mesh->GetNE();
-
-    mfem::Vector mins, maxs;
-
-    auto* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
-    if(pmesh != nullptr)
-    {
-      pmesh->GetBoundingBox(mins, maxs);
-      numElements = pmesh->ReduceInt(numElements);
-      myRank = pmesh->GetMyRank();
-    }
-    else
-    {
-      mesh->GetBoundingBox(mins, maxs);
-    }
-
-    if(myRank == 0)
-    {
-      SLIC_INFO(axom::fmt::format(
-        "Mesh has {} elements and (approximate) bounding box {}",
-        numElements,
-        primal::BoundingBox<double, DIM>(
-          primal::Point<double, DIM>(mins.GetData()),
-          primal::Point<double, DIM>(maxs.GetData()))));
-    }
-
-    slic::flushStreams();
-  }
-
-private:
-  sidre::MFEMSidreDataCollection m_dc;
-  BlueprintParticleMesh m_queryMesh;
-};
-#if 1
 class NewQueryMeshWrapper
 {
 public:
@@ -1142,8 +824,8 @@ public:
   PointArray getVertexPositions(int domainIdx)
   {
     // SLIC_ERROR("TODO: get a PointArray from a sidre coordset/values group.");
-    sidre::Group* cg = m_queryMesh.coordsGroup(domainIdx);
-    cg->print(); std::cout << std::endl;
+// sidre::Group* cg = m_queryMesh.coordsGroup(domainIdx);
+// cg->print(); std::cout << std::endl;
     sidre::Group* cvg = m_queryMesh.domain_group(domainIdx)->getGroup(axom::fmt::format("coordsets/{}/values", m_queryMesh.getCoordsetName()));
     int ndim = cvg->getNumViews();
     sidre::View* xv = cvg->getView("x");
@@ -1368,7 +1050,6 @@ public:
 private:
   BlueprintParticleMesh m_queryMesh;
 };
-#endif
 
 /// Utility function to initialize the logger
 void initializeLogger()
@@ -1534,8 +1215,8 @@ int main(int argc, char** argv)
   // Put sidre data into Conduit query_mesh_node.
   conduit::Node queryMeshNode;
   queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode);
-std::cout << __WHERE << "queryMeshNode" << std::endl;
-queryMeshNode.print();
+// std::cout << __WHERE << "queryMeshNode" << std::endl;
+// queryMeshNode.print();
 
 #if 0
   conduit::Node query_mesh_node;
@@ -1710,6 +1391,15 @@ query_mesh_node.print();
 #else
   query_mesh_wrapper.saveMesh();
 #endif
+
+  if(errCount)
+  {
+    SLIC_INFO(axom::fmt::format(" Error exit: {} errors found.", errCount));
+  }
+  else
+  {
+    SLIC_INFO("Normal exit.");
+  }
 
   finalizeLogger();
   MPI_Finalize();

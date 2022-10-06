@@ -604,8 +604,9 @@ public:
   BoxType computeMeshBoundingBox(conduit::Node& mesh,
                                  const std::string& coordset) const
   {
-    SLIC_INFO(__WHERE "convert computeMeshBoundingBox for multidomain");
     assert(conduit::blueprint::mesh::is_multi_domain(mesh));
+// std::cout<<__WHERE<< std::endl;
+// mesh.print();
 
     BoxType rval;
     for(conduit::Node& domNode : mesh.children())
@@ -617,6 +618,7 @@ public:
         ArrayView_from_Node<PointType>(coords.fetch_existing("x"), npts);
       for(const auto& p : queryPts)
       {
+// std::cout<<__WHERE<< p << std::endl;
         rval.addPoint(p);
       }
     }
@@ -651,8 +653,8 @@ public:
     conduit::Node& xferDoms = xferNode["xferDoms"];
     for(auto& queryDom : queryNode.children())
     {
-std::cout<<__WHERE<< queryDom.name() << " domain_id " << queryDom["state/domain_id"].as_int32() << std::endl;
-queryDom.print();
+// std::cout<<__WHERE<< queryDom.name() << " domain_id " << queryDom["state/domain_id"].as_int32() << std::endl;
+// queryDom.print();
       const std::string& domName = queryDom.name();
       conduit::Node& xferDom = xferDoms["domName"];
 
@@ -672,7 +674,7 @@ queryDom.print();
       {
         xferDom["debug/cp_distance"].set_external(internal::getPointer<double>(queryDom["fields/cp_distance/values"]), qPtCount);
       }
-std::cout<<__WHERE<< queryDom.name() << std::endl;
+// std::cout<<__WHERE<< queryDom.name() << std::endl;
       // clang-format on
     }
 
@@ -804,6 +806,8 @@ std::cout<<__WHERE<< queryDom.name() << std::endl;
       conduit::blueprint::mesh::to_multi_domain(queryMesh_, queryMesh__);
     }
     conduit::Node& queryMesh = qmIsMultidomain ? queryMesh_ : queryMesh__;
+std::cout <<__WHERE<<"queryMesh:" << std::endl;
+queryMesh.print();
 
     for(conduit::Node& dom : queryMesh.children())
     {
@@ -811,6 +815,8 @@ std::cout<<__WHERE<< queryDom.name() << std::endl;
     }
 
     BoxType myQueryBb = computeMeshBoundingBox(queryMesh, coordset);
+    std::cout << __WHERE << "myQueryBb is " << myQueryBb << std::endl;
+
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
