@@ -249,7 +249,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             else:
                 entries.append("# cuda_arch could not be determined\n\n")
 
-            if spec.satisfies("^blt@:0.6.1"):
+            if spec.satisfies("^blt@:0.5.1"):
                 # This is handled internally by BLT now
                 if "+cpp14" in spec:
                     cudaflags += " -std=c++14"
