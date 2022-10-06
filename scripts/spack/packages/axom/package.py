@@ -67,7 +67,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant("tools", default=True, description="Build tools")
 
     # Hard requirement after Axom 0.6.1
-    variant("cpp14", default=True, when="@:0.6.0", description="Build with C++14 support")
+    variant("cpp14", default=True, description="Build with C++14 support")
 
     variant("fortran", default=True, description="Build with Fortran support")
 
