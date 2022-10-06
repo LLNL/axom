@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_06_16_43_54/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_06_16_43_54/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_06_16_43_54/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
 
 else()
 
@@ -69,7 +69,7 @@ set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
 
 set(CMAKE_CUDA_ARCHITECTURES "70" CACHE STRING "")
 
-set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -arch sm_${CMAKE_CUDA_ARCHITECTURES}  -std=c++14" CACHE STRING "")
+set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -arch sm_${CMAKE_CUDA_ARCHITECTURES}  -std=c++11" CACHE STRING "")
 
 # nvcc does not like gtest's 'pthreads' flag
 
@@ -91,7 +91,7 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_09_06_16_43_54/gcc-8.3.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/gcc-8.3.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
@@ -107,7 +107,7 @@ set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
 set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.0" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2" CACHE PATH "")
 
 # scr not built
 
