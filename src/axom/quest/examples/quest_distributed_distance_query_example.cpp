@@ -1144,25 +1144,16 @@ public:
     // SLIC_ERROR("TODO: get a PointArray from a sidre coordset/values group.");
     sidre::Group* cg = m_queryMesh.coordsGroup(domainIdx);
     cg->print(); std::cout << std::endl;
-    sidre::Group* vg1 = cg->getGroup("values");
     sidre::Group* cvg = m_queryMesh.domain_group(domainIdx)->getGroup(axom::fmt::format("coordsets/{}/values", m_queryMesh.getCoordsetName()));
     int ndim = cvg->getNumViews();
-    sidre::View* xc = m_queryMesh.domain_group(domainIdx)->getView(axom::fmt::format("coordsets/{}/values/x", m_queryMesh.getCoordsetName()));
-    sidre::View* yc = m_queryMesh.domain_group(domainIdx)->getView(axom::fmt::format("coordsets/{}/values/y", m_queryMesh.getCoordsetName()));
-    sidre::View* zc = ndim == 3 ? m_queryMesh.domain_group(domainIdx)->getView(axom::fmt::format("coordsets/{}/values/y", m_queryMesh.getCoordsetName())) : nullptr;
-    conduit::Node::Value xd = xc->getData();
-    conduit::Node::Value yd = yc->getData();
-    double* xp = (double*)(xd);
-    double* yp = (double*)(yd);
-    double *xyzs[3];
-    xyzs[0] = xp;
-    xyzs[1] = yp;
-    if(ndim == 3)
-    {
-      conduit::Node::Value zd = zc->getData();
-      xyzs[2] = (double*)(zd);
-    }
-    axom::IndexType npts = xc->getNumElements();
+    sidre::View* xv = cvg->getView("x");
+    sidre::View* yv = cvg->getView("y");
+    sidre::View* zv = ndim == 3 ? cvg->getView("z") : nullptr;
+    axom::IndexType npts = xv->getNumElements();
+    double* xp = xv->getData();
+    double* yp = yv->getData();
+    double* zp = zv ? (double*)(zv->getData()) : nullptr;
+    double *xyzs[3] {xp, yp, zp};
     PointArray rval(npts, npts);
     for(int d = 0; d < ndim; ++d)
     {
@@ -1713,6 +1704,9 @@ query_mesh_node.print();
   // Cleanup, save mesh/fields and exit
   //---------------------------------------------------------------------------
 #if 1
+  conduit::relay::io::blueprint::save_mesh(queryMeshNode,
+                                           params.distanceFile,
+                                           "hdf5");
 #else
   query_mesh_wrapper.saveMesh();
 #endif
