@@ -1204,12 +1204,17 @@ public:
            : axom::Array<double>(minDist, m_allocatorID))
         : axom::Array<double>(0, 0, m_allocatorID);
       auto query_min_dist = cp_dist.view();
+      // BTNG Q: Why do we need query_min_dist?  Why not use cp.dist?
       // END DEBUG
 
       if(is_first)
       {
         cp_rank.fill(-1);
         cp_idx.fill(-1);
+        if(has_cp_distance)
+        {
+          cp_dist.fill(std::numeric_limits<double>::signaling_NaN());
+        }
       }
       auto query_inds = cp_idx.view();
       auto query_ranks = cp_rank.view();

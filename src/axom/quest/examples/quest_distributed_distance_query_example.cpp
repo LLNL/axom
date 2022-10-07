@@ -995,7 +995,7 @@ public:
       using IndexSet = slam::PositionSet<>;
       for(auto i : IndexSet(queryPts.size()))
       {
-        errorFlag[i] = true;
+        bool errf = false;
 
         const auto& qPt = queryPts[i];
         const auto& cpCoord = cpCoords[i];
@@ -1005,7 +1005,7 @@ public:
         {
           if(analyticalDist < params.distThreshold - allowableSlack)
           {
-            errorFlag[i] = true;
+            errf = true;
             SLIC_INFO(
               axom::fmt::format("***Error: Query point {} ({}) is within "
                                 "threshold by {} but lacks closest point.",
@@ -1018,7 +1018,7 @@ public:
         {
           if(analyticalDist >= params.distThreshold + allowableSlack)
           {
-            errorFlag[i] = true;
+            errf = true;
             SLIC_INFO(
               axom::fmt::format("***Error: Query point {} ({}) is outside "
                                 "threshold by {} but has closest point at {}.",
@@ -1031,7 +1031,7 @@ public:
           if(!axom::utilities::isNearlyEqual(circle.computeSignedDistance(cpCoord),
                                              0.0))
           {
-            errorFlag[i] = true;
+            errf = true;
             SLIC_INFO(axom::fmt::format(
                         "***Error: Closest point ({}) for index {} is not on the circle.",
                         cpCoords[i],
@@ -1052,7 +1052,7 @@ public:
             }
             else
             {
-              errorFlag[i] = true;
+              errf = true;
               SLIC_INFO(
                 axom::fmt::format("***Error: Closest distance for index {} is "
                                   "{}, off by {}.",
@@ -1062,7 +1062,8 @@ public:
             }
           }
         }
-        sumErrCount += errorFlag[i];
+        errorFlag[i] = errf;
+        sumErrCount += errf;
       }
 #endif
     }
@@ -1391,6 +1392,10 @@ query_mesh_node.print();
       distances[ptIdx] = has_cp ? sqrt(squared_distance(qPts[ptIdx], cp)) : nodist;
       directions[ptIdx] = PointType(has_cp ? (cp - qPts[ptIdx]).array() : nowhere.array());
     }
+conduit::Node queryMeshNode1;
+queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode1);
+std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode"<<std::endl; queryMeshNode.print();
+std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode1"<<std::endl; queryMeshNode1.print();
   }
 #else
   auto* distances = query_mesh_wrapper.getDC()->GetField("distance");
