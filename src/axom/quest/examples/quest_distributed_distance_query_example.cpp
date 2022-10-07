@@ -303,7 +303,8 @@ public:
   int numPoints() const
   {
     int rval = 0;
-    for(axom::IndexType dIdx = 0; dIdx < domain_count(); ++dIdx)
+    const axom::IndexType domCount = domain_count();
+    for(axom::IndexType dIdx = 0; dIdx < domCount; ++dIdx)
     {
       rval += numPoints(dIdx);
     }
@@ -343,20 +344,20 @@ public:
 auto &mdCoords = mdMesh.child(0)["coordsets/coords/values"];
 conduit::Node mdCoords1 = mdCoords;
 conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
-std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords) << " contiguous=" << mdCoords.is_contiguous() <<std::endl;  mdCoords.print();
-std::cout<<__WHERE<<"mdCoords1: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords1) << " contiguous=" << mdCoords1.is_contiguous() <<std::endl;  mdCoords1.print();
+// std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords) << " contiguous=" << mdCoords.is_contiguous() <<std::endl;  mdCoords.print();
+// std::cout<<__WHERE<<"mdCoords1: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords1) << " contiguous=" << mdCoords1.is_contiguous() <<std::endl;  mdCoords1.print();
 // mdMesh.child(0)["coordsets/coords/values"] = mdCoords1;
-mdMesh.child(0)["coordsets/coords/values"].print();
-auto &mdCoords2 = mdMesh.child(0)["coordsets/coords/values"];
-std::cout<<__WHERE<<"mdCoords2: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords2) << " contiguous=" << mdCoords2.is_contiguous() <<std::endl;  mdCoords2.print();
+// mdMesh.child(0)["coordsets/coords/values"].print();
+// auto &mdCoords2 = mdMesh.child(0)["coordsets/coords/values"];
+// std::cout<<__WHERE<<"mdCoords2: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords2) << " contiguous=" << mdCoords2.is_contiguous() <<std::endl;  mdCoords2.print();
 }
 
     if(domCount > 0)
     {
       const conduit::Node coordsetNode = mdMesh[0].fetch_existing("coordsets").fetch_existing(m_coordsetName);
       m_dimension = conduit::blueprint::mesh::coordset::dims(coordsetNode);
-std::cout<<__WHERE<< "is_contiguous = " << coordsetNode["values"].is_contiguous() << std::endl;
-std::cout<<__WHERE<< "is_interleaved = " << conduit::blueprint::mcarray::is_interleaved(coordsetNode["values"]) << std::endl;
+// std::cout<<__WHERE<< "is_contiguous = " << coordsetNode["values"].is_contiguous() << std::endl;
+// std::cout<<__WHERE<< "is_interleaved = " << conduit::blueprint::mcarray::is_interleaved(coordsetNode["values"]) << std::endl;
     }
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
@@ -369,20 +370,20 @@ std::cout<<__WHERE<< "is_interleaved = " << conduit::blueprint::mcarray::is_inte
 // std::cout<<__WHERE<<"rank " << m_rank << " m_group:" << std::endl;
     SLIC_ASSERT(goodImport);
     SLIC_ASSERT(valid);
-conduit::Node checkNode;
-m_group->createNativeLayout(checkNode);
-conduit::Node diff;
-mdMesh.diff(checkNode, diff);
-std::cout<<__WHERE<<"Diff between mdMesh and checkNode: "<<std::endl; diff.print();
+// conduit::Node checkNode;
+// m_group->createNativeLayout(checkNode);
+// conduit::Node diff;
+// mdMesh.diff(checkNode, diff);
+// std::cout<<__WHERE<<"Diff between mdMesh and checkNode: "<<std::endl; diff.print();
 // std::cout<<__WHERE<<"mdMesh: "<<std::endl; mdMesh.print();
 // std::cout<<__WHERE<<"checkNode: "<<std::endl; checkNode.print();
 // std::cout<<__WHERE<<"mdMesh.schema(): "<<std::endl; mdMesh.schema().print();
 // std::cout<<__WHERE<<"checkNode.schema(): "<<std::endl; checkNode.schema().print();
 // std::cout<<__WHERE<<"m_group: "<<std::endl; m_group->print(std::cout);
-auto &checkCoords = checkNode.child(0)["coordsets/coords/values"];
-std::cout<<__WHERE<<"checkCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(checkCoords) << " contiguous=" << checkCoords.is_contiguous() <<std::endl;  checkCoords.print();
-auto &mdCoords = mdMesh.child(0)["coordsets/coords/values"];
-std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords) << " contiguous=" << mdCoords.is_contiguous() <<std::endl;  mdCoords.print();
+// auto &checkCoords = checkNode.child(0)["coordsets/coords/values"];
+// std::cout<<__WHERE<<"checkCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(checkCoords) << " contiguous=" << checkCoords.is_contiguous() <<std::endl;  checkCoords.print();
+// auto &mdCoords = mdMesh.child(0)["coordsets/coords/values"];
+// std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords) << " contiguous=" << mdCoords.is_contiguous() <<std::endl;  mdCoords.print();
 
     m_domainGroups.resize(domCount, nullptr);
     m_coordsGroups.resize(domCount, nullptr);
@@ -394,7 +395,7 @@ std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_
       m_coordsGroups[di] = m_domainGroups[di]->getGroup("coordsets")->getGroup(m_coordsetName);
       m_topoGroups[di] = m_domainGroups[di]->getGroup("topologies")->getGroup(m_topologyName);
       m_fieldsGroups[di] = m_domainGroups[di]->getGroup("fields");
-std::cout << __FILE__<<':'<<__LINE__<< "m_coordsGroup["<<di<<"]:"<<std::endl; m_coordsGroups[di]->print();
+// std::cout << __FILE__<<':'<<__LINE__<< "m_coordsGroup["<<di<<"]:"<<std::endl; m_coordsGroups[di]->print();
     }
   }
 
@@ -709,6 +710,8 @@ public:
     SLIC_ASSERT(group != nullptr);
   }
 
+  BlueprintParticleMesh& getParticleMesh() { return m_objectMesh; }
+
   /// Get a pointer to the root group for this mesh
   sidre::Group* getBlueprintGroup() const { return m_objectMesh.rootGroup(); }
 
@@ -716,8 +719,6 @@ public:
   {
     return m_objectMesh.getCoordsetName();
   }
-
-  int numPoints() const { return m_objectMesh.numPoints(); }
 
   void setVerbosity(bool verbose) { m_verbose = verbose; }
 
@@ -1188,7 +1189,7 @@ int main(int argc, char** argv)
 
   SLIC_INFO_IF(params.isVerbose(),
                axom::fmt::format("Object mesh has {} points",
-                                 object_mesh_wrapper.numPoints()));
+                                 object_mesh_wrapper.getParticleMesh().numPoints()));
 
   object_mesh_wrapper.saveMesh(params.objectFile);
   slic::flushStreams();
@@ -1234,7 +1235,7 @@ int main(int argc, char** argv)
 
   // Convert blueprint representation from sidre to conduit
   conduit::Node object_mesh_node;
-  if(object_mesh_wrapper.numPoints() > 0)
+  if(object_mesh_wrapper.getParticleMesh().numPoints() > 0)
   {
     object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
   }
@@ -1382,12 +1383,13 @@ query_mesh_node.print();
     PointArray qPts = queryMeshWrapper.getVertexPositions<PointArray>(di);
     axom::ArrayView<double> distances = queryMesh.getNodalScalarField<double>("distance", di);
     axom::ArrayView<PointType> directions = queryMesh.getNodalVectorField<PointType>("direction", di);
-    for(auto idx : IndexSet(nMeshPoints))
+    axom::IndexType ptCount = queryMeshWrapper.getParticleMesh().numPoints(di);
+    for(auto ptIdx : IndexSet(ptCount))
     {
-      const bool has_cp = cpIndices[idx] >= 0;
-      const PointType& cp = has_cp ? cpCoords[idx] : nowhere;
-      distances[idx] = has_cp ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
-      directions[idx] = PointType(has_cp ? (cp - qPts[idx]).array() : nowhere.array());
+      const bool has_cp = cpIndices[ptIdx] >= 0;
+      const PointType& cp = has_cp ? cpCoords[ptIdx] : nowhere;
+      distances[ptIdx] = has_cp ? sqrt(squared_distance(qPts[ptIdx], cp)) : nodist;
+      directions[ptIdx] = PointType(has_cp ? (cp - qPts[ptIdx]).array() : nowhere.array());
     }
   }
 #else

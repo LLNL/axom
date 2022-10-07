@@ -657,11 +657,11 @@ public:
 // std::cout<<__WHERE<< queryDom.name() << " domain_id " << queryDom["state/domain_id"].as_int32() << std::endl;
 // queryDom.print();
       const std::string& domName = queryDom.name();
-      conduit::Node& xferDom = xferDoms["domName"];
+      conduit::Node& xferDom = xferDoms[domName];
 
       // clang-format off
       conduit::Node& coords = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-std::cout<<__WHERE<<"coords from queryNode: interleaved=" << conduit::blueprint::mcarray::is_interleaved(coords) << " contiguous=" << coords.is_contiguous() <<std::endl;  coords.print();
+// std::cout<<__WHERE<<"coords from queryNode: interleaved=" << conduit::blueprint::mcarray::is_interleaved(coords) << " contiguous=" << coords.is_contiguous() <<std::endl;  coords.print();
       const int dim = internal::extractDimension(coords);
       const int qPtCount = internal::extractSize(coords);
 
@@ -669,7 +669,7 @@ std::cout<<__WHERE<<"coords from queryNode: interleaved=" << conduit::blueprint:
       xferDom["dim"] = dim;
       // xferDom["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);  // TODO: Fix this.  xferDom["coords"] is incorrect after copy.
       conduit::blueprint::mcarray::to_interleaved(coords, xferDom["coords"]);
-std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarray::is_interleaved(xferDom["coords"]) << " contiguous=" << xferDom["coords"].is_contiguous() <<std::endl;  xferDom["coords"].print();
+// std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarray::is_interleaved(xferDom["coords"]) << " contiguous=" << xferDom["coords"].is_contiguous() <<std::endl;  xferDom["coords"].print();
       xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_index/values")), qPtCount);
       xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_rank/values")), qPtCount);
       xferDom["cp_coords"].set_external(internal::getPointer<double>(queryDom.fetch_existing("fields/cp_coords/values/x")), dim * qPtCount);
@@ -810,7 +810,7 @@ std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarr
       conduit::blueprint::mesh::to_multi_domain(queryMesh_, queryMesh__);
     }
     conduit::Node& queryMesh = qmIsMultidomain ? queryMesh_ : queryMesh__;
-std::cout <<__WHERE<<"queryMesh:" << std::endl; queryMesh.print();
+// std::cout <<__WHERE<<"queryMesh:" << std::endl; queryMesh.print();
 
     for(conduit::Node& dom : queryMesh.children())
     {
