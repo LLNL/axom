@@ -326,23 +326,37 @@ public:
 
     conduit::Node mdMesh;
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename, mdMesh, MPI_COMM_WORLD);
+    assert(conduit::blueprint::mesh::is_multi_domain(mdMesh));
 #if 1
     conduit::index_t domCount = conduit::blueprint::mesh::number_of_domains(mdMesh);
     std::cout<<__WHERE<<"rank " << m_rank << " has " << domCount << " domains." << std::endl;
-#if 0
+#if 1
     for(auto &d : mdMesh.children())
     {
-      std::cout<<__WHERE<<"rank " << rank << " has domain " << d.name() << std::endl;
+      std::cout<<__WHERE<<"rank " << m_rank << " has domain " << d.name() << std::endl;
     }
-    std::cout << "Multidomain mesh from " << meshFile << std::endl;
+    std::cout << "Multidomain mesh from " << meshFilename << std::endl;
     mdMesh.print();
 #endif
 #endif
+{
+auto &mdCoords = mdMesh.child(0)["coordsets/coords/values"];
+conduit::Node mdCoords1 = mdCoords;
+conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
+std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords) << " contiguous=" << mdCoords.is_contiguous() <<std::endl;  mdCoords.print();
+std::cout<<__WHERE<<"mdCoords1: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords1) << " contiguous=" << mdCoords1.is_contiguous() <<std::endl;  mdCoords1.print();
+// mdMesh.child(0)["coordsets/coords/values"] = mdCoords1;
+mdMesh.child(0)["coordsets/coords/values"].print();
+auto &mdCoords2 = mdMesh.child(0)["coordsets/coords/values"];
+std::cout<<__WHERE<<"mdCoords2: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords2) << " contiguous=" << mdCoords2.is_contiguous() <<std::endl;  mdCoords2.print();
+}
 
     if(domCount > 0)
     {
       const conduit::Node coordsetNode = mdMesh[0].fetch_existing("coordsets").fetch_existing(m_coordsetName);
       m_dimension = conduit::blueprint::mesh::coordset::dims(coordsetNode);
+std::cout<<__WHERE<< "is_contiguous = " << coordsetNode["values"].is_contiguous() << std::endl;
+std::cout<<__WHERE<< "is_interleaved = " << conduit::blueprint::mcarray::is_interleaved(coordsetNode["values"]) << std::endl;
     }
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
@@ -355,8 +369,21 @@ public:
 // std::cout<<__WHERE<<"rank " << m_rank << " m_group:" << std::endl;
     SLIC_ASSERT(goodImport);
     SLIC_ASSERT(valid);
-// m_group->print(std::cout);
-// std::cout.flush();
+conduit::Node checkNode;
+m_group->createNativeLayout(checkNode);
+conduit::Node diff;
+mdMesh.diff(checkNode, diff);
+std::cout<<__WHERE<<"Diff between mdMesh and checkNode: "<<std::endl; diff.print();
+// std::cout<<__WHERE<<"mdMesh: "<<std::endl; mdMesh.print();
+// std::cout<<__WHERE<<"checkNode: "<<std::endl; checkNode.print();
+// std::cout<<__WHERE<<"mdMesh.schema(): "<<std::endl; mdMesh.schema().print();
+// std::cout<<__WHERE<<"checkNode.schema(): "<<std::endl; checkNode.schema().print();
+// std::cout<<__WHERE<<"m_group: "<<std::endl; m_group->print(std::cout);
+auto &checkCoords = checkNode.child(0)["coordsets/coords/values"];
+std::cout<<__WHERE<<"checkCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(checkCoords) << " contiguous=" << checkCoords.is_contiguous() <<std::endl;  checkCoords.print();
+auto &mdCoords = mdMesh.child(0)["coordsets/coords/values"];
+std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords) << " contiguous=" << mdCoords.is_contiguous() <<std::endl;  mdCoords.print();
+
     m_domainGroups.resize(domCount, nullptr);
     m_coordsGroups.resize(domCount, nullptr);
     m_topoGroups.resize(domCount, nullptr);
@@ -367,7 +394,7 @@ public:
       m_coordsGroups[di] = m_domainGroups[di]->getGroup("coordsets")->getGroup(m_coordsetName);
       m_topoGroups[di] = m_domainGroups[di]->getGroup("topologies")->getGroup(m_topologyName);
       m_fieldsGroups[di] = m_domainGroups[di]->getGroup("fields");
-      std::cout << di << ": " << m_domainGroups[di]->getIndex() << " '" << m_domainGroups[di]->getName() << "'" << std::endl;
+std::cout << __FILE__<<':'<<__LINE__<< "m_coordsGroup["<<di<<"]:"<<std::endl; m_coordsGroups[di]->print();
     }
   }
 

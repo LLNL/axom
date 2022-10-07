@@ -18,6 +18,7 @@
 #include "axom/fmt.hpp"
 
 #include "conduit_blueprint.hpp"
+#include "conduit_blueprint_mcarray.hpp"
 #include "conduit_blueprint_mpi.hpp"
 #include "conduit_relay_mpi.hpp"
 #include "conduit_relay_io.hpp"
@@ -659,13 +660,16 @@ public:
       conduit::Node& xferDom = xferDoms["domName"];
 
       // clang-format off
-      auto& coords = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
+      conduit::Node& coords = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
+std::cout<<__WHERE<<"coords from queryNode: interleaved=" << conduit::blueprint::mcarray::is_interleaved(coords) << " contiguous=" << coords.is_contiguous() <<std::endl;  coords.print();
       const int dim = internal::extractDimension(coords);
       const int qPtCount = internal::extractSize(coords);
 
       xferDom["qPtCount"] = qPtCount;
       xferDom["dim"] = dim;
-      xferDom["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
+      // xferDom["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);  // TODO: Fix this.  xferDom["coords"] is incorrect after copy.
+      conduit::blueprint::mcarray::to_interleaved(coords, xferDom["coords"]);
+std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarray::is_interleaved(xferDom["coords"]) << " contiguous=" << xferDom["coords"].is_contiguous() <<std::endl;  xferDom["coords"].print();
       xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_index/values")), qPtCount);
       xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_rank/values")), qPtCount);
       xferDom["cp_coords"].set_external(internal::getPointer<double>(queryDom.fetch_existing("fields/cp_coords/values/x")), dim * qPtCount);
@@ -806,8 +810,7 @@ public:
       conduit::blueprint::mesh::to_multi_domain(queryMesh_, queryMesh__);
     }
     conduit::Node& queryMesh = qmIsMultidomain ? queryMesh_ : queryMesh__;
-std::cout <<__WHERE<<"queryMesh:" << std::endl;
-queryMesh.print();
+std::cout <<__WHERE<<"queryMesh:" << std::endl; queryMesh.print();
 
     for(conduit::Node& dom : queryMesh.children())
     {
@@ -815,7 +818,7 @@ queryMesh.print();
     }
 
     BoxType myQueryBb = computeMeshBoundingBox(queryMesh, coordset);
-    std::cout << __WHERE << "myQueryBb is " << myQueryBb << std::endl;
+// std::cout << __WHERE << "myQueryBb is " << myQueryBb << std::endl;
 
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
@@ -830,6 +833,7 @@ queryMesh.print();
       copy_query_node_to_xfer_node(queryMesh, xferNode, coordset);
       put_bounding_box_to_conduit_node(myQueryBb, xferNode["aabb"]);
       xferNode["homeRank"] = m_rank;
+// std::cout <<__WHERE<<"xferNodes[m_rank]:" << std::endl; xferNodes[m_rank]->print();
     }
 
     {
