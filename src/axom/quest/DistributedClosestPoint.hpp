@@ -668,10 +668,15 @@ std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarr
   void copy_xfer_node_to_query_node(const conduit::Node& xferNode,
                                     conduit::Node& queryNode) const
   {
-    const conduit::Node& xferDoms = xferNode["xferDoms"];
-    for(const auto& xferDom : xferDoms.children())
+std::cout<<__WHERE<< "rank " << m_rank << " xferNode:" << std::endl; xferNode.print();
+std::cout<<__WHERE<< "rank " << m_rank << " queryNode:" << std::endl; queryNode.print();
+    const conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
+    conduit::index_t childCount = queryNode.number_of_children();
+    SLIC_ASSERT(xferDoms.number_of_children() == childCount);
+    for(conduit::index_t ci = 0; ci < childCount; ++ci)
     {
-      conduit::Node& queryDom = queryNode.append();
+      const conduit::Node& xferDom = xferDoms.child(ci);
+      conduit::Node& queryDom = queryNode.child(ci);
 
       const int qPtCount = xferDom.fetch_existing("qPtCount").value();
       auto& qmcpr = queryDom.fetch_existing("fields/cp_rank/values");
@@ -814,7 +819,7 @@ std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarr
 
       if(firstRecipForMyQuery == -1)
       {
-        const bool shouldCopy = xferNodes[m_rank]->has_child("qPtCount");
+        const bool shouldCopy = true; // OLD: xferNodes[m_rank]->has_child("qPtCount");
         if(shouldCopy)
         {
           copy_xfer_node_to_query_node(*xferNodes[m_rank], queryMesh);
@@ -855,7 +860,7 @@ std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarr
 
       if(homeRank == m_rank)
       {
-        const bool shouldCopy = xferNode.has_child("qPtCount");
+        const bool shouldCopy = true; // OLD: xferNode.has_child("qPtCount");
         if(shouldCopy)
         {
           copy_xfer_node_to_query_node(xferNode, queryMesh);
