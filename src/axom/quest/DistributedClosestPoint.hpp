@@ -602,42 +602,22 @@ public:
 
   /// Compute bounding box for local part of a mesh.
   // Note: We don't have a use case for multiple index spaces in the same mesh, so it's safe to put all domains points in a single bounding box.
-  BoxType computeMeshBoundingBox(conduit::Node& mesh,
-                                 const std::string& coordset) const
+  BoxType computeMeshBoundingBox(conduit::Node& xferNode) const
   {
-    assert(conduit::blueprint::mesh::is_multi_domain(mesh));
-// std::cout<<__WHERE<< std::endl;
-// mesh.print();
-
     BoxType rval;
-    for(conduit::Node& domNode : mesh.children())
+
+    conduit::Node& xferDoms = xferNode["xferDoms"];
+    for(conduit::Node& xferDom : xferDoms.children())
     {
-      auto& coords = domNode[fmt::format("coordsets/{}/values", coordset)];
-      SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
-      const int npts = internal::extractSize(coords);
-      ArrayView<PointType> queryPts =
-        ArrayView_from_Node<PointType>(coords.fetch_existing("x"), npts);
-      for(const auto& p : queryPts)
-      {
-// std::cout<<__WHERE<< p << std::endl;
-        rval.addPoint(p);
-      }
+      const int qPtCount = xferDom.fetch_existing("qPtCount").value();
+
+      /// Extract fields from the input node as ArrayViews
+      auto queryPts =
+        ArrayView_from_Node<PointType>(xferDom.fetch_existing("coords"),
+                                       qPtCount);
+      for(const auto& p : queryPts) { rval.addPoint(p); }
     }
-#if 0
-    const bool has_query_points = mesh.has_child("coordsets");
-    if(has_query_points)
-    {
-      auto& coords = mesh[fmt::format("coordsets/{}/values", coordset)];
-      SLIC_ASSERT(internal::extractDimension(coords) == NDIMS);
-      const int npts = internal::extractSize(coords);
-      ArrayView<PointType> queryPts =
-        ArrayView_from_Node<PointType>(coords.fetch_existing("x"), npts);
-      for(const auto& p : queryPts)
-      {
-        rval.addPoint(p);
-      }
-    }
-#endif
+
     return rval;
   }
 
@@ -681,36 +661,6 @@ public:
 // std::cout<<__WHERE<< queryDom.name() << std::endl;
       // clang-format on
     }
-
-#if 0
-    const bool has_query_points = queryNode.has_child("coordsets");
-
-    if(has_query_points)
-    {
-      // clang-format off
-      auto& coords = queryNode.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-      const int dim = internal::extractDimension(coords);
-      const int qPtCount = internal::extractSize(coords);
-
-      xferNode["qPtCount"] = qPtCount;
-      xferNode["dim"] = dim;
-      xferNode["is_first"] = 1;
-      xferNode["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);
-      xferNode["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_index/values")), qPtCount);
-      xferNode["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryNode.fetch_existing("fields/cp_rank/values")), qPtCount);
-      xferNode["cp_coords"].set_external(internal::getPointer<double>(queryNode.fetch_existing("fields/cp_coords/values/x")), dim * qPtCount);
-
-      if(queryNode.has_path("fields/cp_distance"))
-      {
-        xferNode["debug/cp_distance"].set_external(internal::getPointer<double>(queryNode["fields/cp_distance/values"]), qPtCount);
-      }
-      // clang-format on
-    }
-    else
-    {
-      xferNode["homeRank"] = m_rank;
-    }
-#endif
   }
 
   /// Copy xferNode back to query mesh partition.
@@ -745,30 +695,6 @@ public:
                    qPtCount * sizeof(PointType));
       }
     }
-#if 0
-    const int qPtCount = xferNode.fetch_existing("qPtCount").value();
-    auto& qmcpr = queryNode.fetch_existing("fields/cp_rank/values");
-    auto& qmcpi = queryNode.fetch_existing("fields/cp_index/values");
-    auto& qmcpcp = queryNode.fetch_existing("fields/cp_coords/values/x");
-    if(xferNode.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
-    {
-      axom::copy(qmcpr.data_ptr(),
-                 xferNode.fetch_existing("cp_rank").data_ptr(),
-                 qPtCount * sizeof(axom::IndexType));
-    }
-    if(xferNode.fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
-    {
-      axom::copy(qmcpi.data_ptr(),
-                 xferNode.fetch_existing("cp_index").data_ptr(),
-                 qPtCount * sizeof(axom::IndexType));
-    }
-    if(xferNode.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
-    {
-      axom::copy(qmcpcp.data_ptr(),
-                 xferNode.fetch_existing("cp_coords").data_ptr(),
-                 qPtCount * sizeof(PointType));
-    }
-#endif
   }
 
   /**
@@ -817,12 +743,6 @@ public:
       dom["homeRank"] = m_rank;
     }
 
-    BoxType myQueryBb = computeMeshBoundingBox(queryMesh, coordset);
-// std::cout << __WHERE << "myQueryBb is " << myQueryBb << std::endl;
-
-    BoxArray allQueryBbs;
-    gatherBoundingBoxes(myQueryBb, allQueryBbs);
-
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
 
     // create conduit node containing data that has to xfer between ranks.
@@ -831,13 +751,19 @@ public:
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
       copy_query_node_to_xfer_node(queryMesh, xferNode, coordset);
-      put_bounding_box_to_conduit_node(myQueryBb, xferNode["aabb"]);
       xferNode["homeRank"] = m_rank;
-// std::cout <<__WHERE<<"xferNodes[m_rank]:" << std::endl; xferNodes[m_rank]->print();
+std::cout <<__WHERE<<"xferNodes[m_rank]:" << std::endl; xferNodes[m_rank]->print();
     }
+
+    BoxType myQueryBb = computeMeshBoundingBox(*xferNodes[m_rank]);
+std::cout << __WHERE << "myQueryBb is " << myQueryBb << std::endl;
+    put_bounding_box_to_conduit_node(myQueryBb, xferNodes[m_rank]->fetch("aabb"));
+    BoxArray allQueryBbs;
+    gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
+std::cout <<__WHERE<<" xferNode:" << std::endl; xferNode.print();
       computeLocalClosestPointsByPolicy(xferNode);
     }
 
@@ -925,6 +851,7 @@ public:
       }
       else
       {
+std::cout <<__WHERE<<" xferNode:" << std::endl; xferNode.print();
         computeLocalClosestPointsByPolicy(xferNode);
 
         isendRequests.emplace_back(conduit::relay::mpi::Request());
@@ -1211,6 +1138,8 @@ public:
       {
         cp_rank.fill(-1);
         cp_idx.fill(-1);
+        const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
+        cp_pos.fill(nowhere);
         if(has_cp_distance)
         {
           cp_dist.fill(std::numeric_limits<double>::signaling_NaN());

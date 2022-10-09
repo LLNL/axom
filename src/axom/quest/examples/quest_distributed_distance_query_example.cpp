@@ -340,7 +340,7 @@ public:
     mdMesh.print();
 #endif
 #endif
-{
+if(0){
 auto &mdCoords = mdMesh.child(0)["coordsets/coords/values"];
 conduit::Node mdCoords1 = mdCoords;
 conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
@@ -362,14 +362,14 @@ conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
+    if(domCount > 0)
+    {
     // Put mdMesh into sidre Group.
     bool goodImport = m_group->importConduitTree(mdMesh, false);
-    bool valid = isValid();
 // std::cout<<__WHERE<<"rank " << m_rank << " goodImport " << goodImport << std::endl;
 // std::cout<<__WHERE<<"rank " << m_rank << " valid " << valid << std::endl;
 // std::cout<<__WHERE<<"rank " << m_rank << " m_group:" << std::endl;
     SLIC_ASSERT(goodImport);
-    SLIC_ASSERT(valid);
 // conduit::Node checkNode;
 // m_group->createNativeLayout(checkNode);
 // conduit::Node diff;
@@ -384,6 +384,10 @@ conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
 // std::cout<<__WHERE<<"checkCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(checkCoords) << " contiguous=" << checkCoords.is_contiguous() <<std::endl;  checkCoords.print();
 // auto &mdCoords = mdMesh.child(0)["coordsets/coords/values"];
 // std::cout<<__WHERE<<"mdCoords: interleaved=" << conduit::blueprint::mcarray::is_interleaved(mdCoords) << " contiguous=" << mdCoords.is_contiguous() <<std::endl;  mdCoords.print();
+    }
+
+    bool valid = isValid();
+    SLIC_ASSERT(valid);
 
     m_domainGroups.resize(domCount, nullptr);
     m_coordsGroups.resize(domCount, nullptr);
@@ -496,9 +500,12 @@ conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
   template <typename T>
   void registerNodalScalarField(const std::string& fieldName)
   {
+#if 0
+    // Disabling this assertion because we now allow zero domains.
     SLIC_ASSERT_MSG(hasPoints(),
                     "Cannot register a field with the BlueprintParticleMesh "
                     "before adding points");
+#endif
 
     for(axom::IndexType dIdx = 0; dIdx < domain_count(); ++ dIdx)
     {
@@ -514,9 +521,12 @@ conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
   template <typename T>
   void registerNodalVectorField(const std::string& fieldName)
   {
+#if 0
+    // Disabling this assertion because we now allow zero domains.
     SLIC_ASSERT_MSG(hasPoints(),
                     "Cannot register a field with the BlueprintParticleMesh "
                     "before adding points");
+#endif
 
     const int DIM = dimension();
     for(axom::IndexType dIdx = 0; dIdx < domain_count(); ++ dIdx)
@@ -559,9 +569,15 @@ conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
   axom::ArrayView<T> getNodalScalarField(const std::string& fieldName,
                                          int domainIdx)
   {
+#if 0
+    // Disabling this assertion because we now allow zero domains.
     SLIC_ASSERT_MSG(hasPoints(),
                     "Cannot extract a field from the BlueprintParticleMesh "
                     "before adding points");
+#endif
+    SLIC_ASSERT_MSG(domainIdx >= 0 && size_t(domainIdx) < m_domainGroups.size(),
+                    axom::fmt::format("Rank {} has no domain {}, only {} domains",
+                                      m_rank, domainIdx, m_domainGroups.size()));
 
     T* data = hasField(fieldName)
       ? static_cast<T*>(
@@ -576,9 +592,15 @@ conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
   axom::ArrayView<T> getNodalVectorField(const std::string& fieldName,
                                          int domainIdx)
   {
+#if 0
+    // Disabling this assertion because we now allow zero domains.
     SLIC_ASSERT_MSG(hasPoints(),
                     "Cannot extract a field from the BlueprintParticleMesh "
                     "before adding points");
+#endif
+    SLIC_ASSERT_MSG(domainIdx >= 0 && size_t(domainIdx) < m_domainGroups.size(),
+                    axom::fmt::format("Rank {} has no domain {}, only {} domains",
+                                      m_rank, domainIdx, m_domainGroups.size()));
 
     // Note: the implementation currently assumes that the field data is
     // interleaved, so it is safe to get a pointer to the beginning of the
@@ -1392,10 +1414,10 @@ query_mesh_node.print();
       distances[ptIdx] = has_cp ? sqrt(squared_distance(qPts[ptIdx], cp)) : nodist;
       directions[ptIdx] = PointType(has_cp ? (cp - qPts[ptIdx]).array() : nowhere.array());
     }
-conduit::Node queryMeshNode1;
-queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode1);
-std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode"<<std::endl; queryMeshNode.print();
-std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode1"<<std::endl; queryMeshNode1.print();
+// conduit::Node queryMeshNode1;
+// queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode1);
+// std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode"<<std::endl; queryMeshNode.print();
+// std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode1"<<std::endl; queryMeshNode1.print();
   }
 #else
   auto* distances = query_mesh_wrapper.getDC()->GetField("distance");
