@@ -328,8 +328,8 @@ public:
     conduit::Node mdMesh;
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename, mdMesh, MPI_COMM_WORLD);
     assert(conduit::blueprint::mesh::is_multi_domain(mdMesh));
-#if 1
     conduit::index_t domCount = conduit::blueprint::mesh::number_of_domains(mdMesh);
+#if 0
     std::cout<<__WHERE<<"rank " << m_rank << " has " << domCount << " domains." << std::endl;
 #if 1
     for(auto &d : mdMesh.children())
@@ -640,9 +640,10 @@ conduit::blueprint::mcarray::to_interleaved(mdCoords1, mdCoords);
     {
       conduit::Node meshNode;
       m_group->createNativeLayout(meshNode);
-      conduit::relay::io::blueprint::save_mesh(meshNode,
-                                               filename,
-                                               "hdf5");
+      conduit::relay::mpi::io::blueprint::save_mesh(meshNode,
+                                                    filename,
+                                                    "hdf5",
+                                                    MPI_COMM_WORLD);
     }
     else
     {
@@ -1441,9 +1442,10 @@ query_mesh_node.print();
   // Cleanup, save mesh/fields and exit
   //---------------------------------------------------------------------------
 #if 1
-  conduit::relay::io::blueprint::save_mesh(queryMeshNode,
-                                           params.distanceFile,
-                                           "hdf5");
+  conduit::relay::mpi::io::blueprint::save_mesh(queryMeshNode,
+                                                params.distanceFile,
+                                                "hdf5",
+                                                MPI_COMM_WORLD);
 #else
   query_mesh_wrapper.saveMesh();
 #endif

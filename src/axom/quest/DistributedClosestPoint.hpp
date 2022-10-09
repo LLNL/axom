@@ -606,7 +606,7 @@ public:
   {
     BoxType rval;
 
-    conduit::Node& xferDoms = xferNode["xferDoms"];
+    conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
     for(conduit::Node& xferDom : xferDoms.children())
     {
       const int qPtCount = xferDom.fetch_existing("qPtCount").value();
@@ -640,16 +640,17 @@ public:
       conduit::Node& xferDom = xferDoms[domName];
 
       // clang-format off
-      conduit::Node& coords = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-// std::cout<<__WHERE<<"coords from queryNode: interleaved=" << conduit::blueprint::mcarray::is_interleaved(coords) << " contiguous=" << coords.is_contiguous() <<std::endl;  coords.print();
-      const int dim = internal::extractDimension(coords);
-      const int qPtCount = internal::extractSize(coords);
+      xferDom["coords"] = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
+      std::cout<<__WHERE<<"coords from queryNode: interleaved=" << conduit::blueprint::mcarray::is_interleaved(xferDom.fetch_existing("coords")) << " contiguous=" << xferDom.fetch_existing("coords").is_contiguous() <<std::endl; xferDom.fetch_existing("coords").print();
+      const int dim = internal::extractDimension(xferDom.fetch_existing("coords"));
+      const int qPtCount = internal::extractSize(xferDom.fetch_existing("coords"));
 
       xferDom["qPtCount"] = qPtCount;
       xferDom["dim"] = dim;
       // xferDom["coords"].set_external(internal::getPointer<double>(coords["x"]), dim * qPtCount);  // TODO: Fix this.  xferDom["coords"] is incorrect after copy.
-      conduit::blueprint::mcarray::to_interleaved(coords, xferDom["coords"]);
-// std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarray::is_interleaved(xferDom["coords"]) << " contiguous=" << xferDom["coords"].is_contiguous() <<std::endl;  xferDom["coords"].print();
+      // conduit::blueprint::mcarray::to_interleaved(coords, xferDom["coords"]);
+      interleave_coordinates(xferDom.fetch_existing("coords"));
+std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarray::is_interleaved(xferDom["coords"]) << " contiguous=" << xferDom["coords"].is_contiguous() <<std::endl;  xferDom["coords"].print();
       xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_index/values")), qPtCount);
       xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_rank/values")), qPtCount);
       xferDom["cp_coords"].set_external(internal::getPointer<double>(queryDom.fetch_existing("fields/cp_coords/values/x")), dim * qPtCount);
@@ -695,6 +696,17 @@ public:
                    qPtCount * sizeof(PointType));
       }
     }
+  }
+
+  void interleave_coordinates(conduit::Node& coords) const
+  {
+    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coords);
+    if(isInterleaved) {return;}
+    std::cout<<__WHERE<<"Before: isInterleaved=" << isInterleaved <<std::endl;  coords.print();
+    conduit::Node oldCoords = coords;
+    coords.reset();
+    conduit::blueprint::mcarray::to_interleaved(oldCoords, coords);
+    std::cout<<__WHERE<<"After: isInterleaved=" << conduit::blueprint::mcarray::is_interleaved(coords) <<std::endl;  coords.print();
   }
 
   /**
@@ -752,18 +764,18 @@ public:
       conduit::Node& xferNode = *xferNodes[m_rank];
       copy_query_node_to_xfer_node(queryMesh, xferNode, coordset);
       xferNode["homeRank"] = m_rank;
-std::cout <<__WHERE<<"xferNodes[m_rank]:" << std::endl; xferNodes[m_rank]->print();
+// std::cout <<__WHERE<<"xferNodes[m_rank]:" << std::endl; xferNodes[m_rank]->print();
     }
 
     BoxType myQueryBb = computeMeshBoundingBox(*xferNodes[m_rank]);
-std::cout << __WHERE << "myQueryBb is " << myQueryBb << std::endl;
+// std::cout << __WHERE << "myQueryBb is " << myQueryBb << std::endl;
     put_bounding_box_to_conduit_node(myQueryBb, xferNodes[m_rank]->fetch("aabb"));
     BoxArray allQueryBbs;
     gatherBoundingBoxes(myQueryBb, allQueryBbs);
 
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
-std::cout <<__WHERE<<" xferNode:" << std::endl; xferNode.print();
+// std::cout <<__WHERE<<" xferNode:" << std::endl; xferNode.print();
       computeLocalClosestPointsByPolicy(xferNode);
     }
 
@@ -851,7 +863,7 @@ std::cout <<__WHERE<<" xferNode:" << std::endl; xferNode.print();
       }
       else
       {
-std::cout <<__WHERE<<" xferNode:" << std::endl; xferNode.print();
+// std::cout <<__WHERE<<" xferNode:" << std::endl; xferNode.print();
         computeLocalClosestPointsByPolicy(xferNode);
 
         isendRequests.emplace_back(conduit::relay::mpi::Request());
@@ -1080,6 +1092,9 @@ public:
     conduit::Node& xferDoms = xferNode["xferDoms"];
     for(conduit::Node& xferDom : xferDoms.children())
     {
+      interleave_coordinates(xferDom.fetch_existing("coords"));
+      interleave_coordinates(xferDom.fetch_existing("cp_coords"));
+      std::cout <<__WHERE<<" xferDom:" << std::endl; xferDom.print(); xferDom.fetch_existing("coords").schema().print();
       // --- Set up arrays and views in the execution space
       // Arrays are initialized in that execution space the first time they are processed
       // and are copied in during subsequent processing
