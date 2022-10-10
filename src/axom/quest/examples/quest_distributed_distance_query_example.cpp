@@ -84,8 +84,7 @@ public:
 
   bool randomSpacing {true};
 
-  unsigned int minDomainCount {1};
-  unsigned int maxDomainCount {1};
+  std::vector<unsigned int> objDomainCountRange {1,1};
 
 private:
   bool m_verboseOutput {false};
@@ -168,21 +167,6 @@ public:
       ->check(axom::CLI::Range(0., 1.))
       ->capture_default_str();
 
-    app.add_option("--min-domain-count", minDomainCount)
-      ->description(
-        "Min number of domains per rank."
-        "Defaults to 1")
-      ->check(axom::CLI::Range(0, 10))
-      ->capture_default_str();
-
-    // TODO: Any way to set min and max together and require max >= min?
-    app.add_option("--max-domain-count", maxDomainCount)
-      ->description(
-        "Max number of domains per rank."
-        "Defaults to 1")
-      ->check(axom::CLI::Range(0, 10))
-      ->capture_default_str();
-
     app.add_option("-r,--radius", circleRadius)
       ->description("Radius for circle")
       ->capture_default_str();
@@ -193,6 +177,10 @@ public:
     circle_options->add_option("--center", circleCenter)
       ->description("Center for object (x,y[,z])")
       ->expected(2, 3);
+
+    circle_options->add_option("--obj-domain-count-range", objDomainCountRange)
+      ->description("Range of object domain counts/rank (min, max)")
+      ->expected(2);
 
     app.add_flag("--random-spacing,!--no-random-spacing", randomSpacing)
       ->description("Enable/disable random spacing of circle points")
@@ -1202,9 +1190,12 @@ int main(int argc, char** argv)
   object_mesh_wrapper.setVerbosity(params.isVerbose());
 
   {
+    SLIC_ASSERT(params.objDomainCountRange[1] >= params.objDomainCountRange[0]);
+    const unsigned int omin = params.objDomainCountRange[0];
+    const unsigned int omax = params.objDomainCountRange[1];
     const double prob = axom::utilities::random_real(0., 1.);
-    int localDomainCount = params.minDomainCount
-      + int(0.5 + prob*(params.maxDomainCount-params.minDomainCount));
+    int localDomainCount = omin + int(0.5 + prob*(omax-omin));
+std::cout<<__WHERE<< omin << ' ' << omax << ' ' << localDomainCount << std::endl;
     object_mesh_wrapper.generateCircleMesh(circle,
                                            params.circlePoints,
                                            localDomainCount,
@@ -1278,6 +1269,9 @@ int main(int argc, char** argv)
   query.generateBVHTree();
   initTimer.stop();
 
+// std::cout<<__WHERE<<"cpIndexNode before search:"<< queryMeshNode.child(0).fetch_existing("fields/cp_index/values").to_string("yaml",2,3)<<std::endl;
+// std::cout<<__WHERE<<"cpRankNode before search:"<< queryMeshNode.child(0).fetch_existing("fields/cp_rank/values").to_string("yaml",2,3)<<std::endl;
+// std::cout<<__WHERE<<"cpCoordsNode before search:"<< queryMeshNode.child(0).fetch_existing("fields/cp_coords/values").to_string("yaml",2,3)<<std::endl;
   // Run the distributed closest point query over the nodes of the computational mesh
   SLIC_INFO(query_str);
   slic::flushStreams();
@@ -1285,6 +1279,9 @@ int main(int argc, char** argv)
   query.computeClosestPoints(queryMeshNode,
                              queryMeshWrapper.getCoordsetName());
   queryTimer.stop();
+// std::cout<<__WHERE<<"cpIndexNode after search:"<< queryMeshNode.child(0).fetch_existing("fields/cp_index/values").to_string("yaml",2,3)<<std::endl;
+// std::cout<<__WHERE<<"cpRankNode after search:"<< queryMeshNode.child(0).fetch_existing("fields/cp_rank/values").to_string("yaml",2,3)<<std::endl;
+// std::cout<<__WHERE<<"cpCoordsNode after search:"<< queryMeshNode.child(0).fetch_existing("fields/cp_coords/values").to_string("yaml",2,3)<<std::endl;
 
   auto getMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
@@ -1318,29 +1315,54 @@ int main(int argc, char** argv)
 
   auto& queryMesh = queryMeshWrapper.getParticleMesh();
 #if 0
-  auto cpCoords =
-    queryMesh.getNodalVectorField<PointType>(
-      "cp_coords", 0);
-
-  auto cpIndices =
-    queryMesh.getNodalScalarField<axom::IndexType>(
-      "cp_index", 0);
-
-  if(params.isVerbose())
+  // This may not be needed because the data is already in sidre.
+  for(axom::IndexType di = 0; di < queryMesh.domain_count(); ++di)
   {
+    sidre::Group* domGroup = queryMeshWrapper.getParticleMesh().domain_group(di);
+    sidre::Group* fieldsGroup = domGroup->getGroup("fields");
+    sidre::View* cpRankView = domGroup->getView("fields/cp_rank/values");
+    sidre::View* cpCoordsView = domGroup->getView("fields/cp_coords/values");
+    sidre::Group* cpCoordsGroup = domGroup->getGroup("fields/cp_coords/values");
+    sidre::View* cpCoordsViewX = domGroup->getView("fields/cp_coords/values/x");
+    sidre::View* cpCoordsViewY = domGroup->getView("fields/cp_coords/values/y");
+
+    conduit::Node& cpRankNode =
+      queryMeshNode.child(di).fetch_existing("fields/cp_rank/values");
+
+std::cout<<__WHERE<<"cpRankView before import:"<<std::endl; domGroup->getView("fields/cp_rank/values")->print();
+    bool goodImport = cpRankView->importArrayNode(queryMeshNode.child(di).fetch_existing("fields/cp_rank/values"));
+std::cout<<__WHERE<<"cpRankView after import:"<<std::endl; domGroup->getView("fields/cp_rank/values")->print();
+    assert(goodImport);
+
+std::cout<<__WHERE<<"cpCoordsGroup before import:"<<std::endl; domGroup->getGroup("fields/cp_coords/values")->print();
+    goodImport = cpCoordsGroup->importConduitTree(queryMeshNode.child(di).fetch_existing("fields/cp_coords/values"));
+// goodImport = cpCoordsView->importArrayNode(queryMeshNode.child(di).fetch_existing("fields/cp_coords/values"));
+std::cout<<__WHERE<<"cpCoordsGroup after import:"<<std::endl; domGroup->getGroup("fields/cp_coords/values")->print();
+    assert(goodImport);
+
+#if 0
+    auto cpIndices =
+      queryMesh.getNodalScalarField<axom::IndexType>(
+        "cp_index", di);
+
     auto cpRank =
       queryMesh.getNodalScalarField<axom::IndexType>(
-        "cp_rank", 0);
+        "cp_rank", di);
 
-    SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
-    for(auto i : IndexSet(cpCoords.size()))
+    if(params.isVerbose())
     {
-      SLIC_INFO(axom::fmt::format("\t{}: {{rank:{}, index:{}, position:{}}}",
-                                  i,
-                                  cpRank[i],
-                                  cpIndices[i],
-                                  cpCoords[i]));
+
+      SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
+      for(auto i : IndexSet(cpCoords.size()))
+      {
+        SLIC_INFO(axom::fmt::format("\t{}: {{rank:{}, index:{}, position:{}}}",
+                                    i,
+                                    cpRank[i],
+                                    cpIndices[i],
+                                    cpCoords[i]));
+      }
     }
+#endif
   }
 #endif
 
@@ -1371,6 +1393,7 @@ int main(int argc, char** argv)
   }
 
 
+#if 1
   PointType nowhere(std::numeric_limits<double>::signaling_NaN());
   const double nodist = std::numeric_limits<double>::signaling_NaN();
   queryMesh.registerNodalScalarField<double>("distance");
@@ -1396,15 +1419,16 @@ int main(int argc, char** argv)
       distances[ptIdx] = has_cp ? sqrt(squared_distance(qPts[ptIdx], cp)) : nodist;
       directions[ptIdx] = PointType(has_cp ? (cp - qPts[ptIdx]).array() : nowhere.array());
     }
-// conduit::Node queryMeshNode1;
-// queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode1);
-// std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode"<<std::endl; queryMeshNode.print();
-// std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode1"<<std::endl; queryMeshNode1.print();
   }
+#endif
 
   //---------------------------------------------------------------------------
   // Cleanup, save mesh/fields and exit
+  // The post-processed data is in sidre.
+  // Re-import to put it in a conduit Node for output.
   //---------------------------------------------------------------------------
+  queryMeshNode.reset();
+  queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode);
   conduit::relay::mpi::io::blueprint::save_mesh(queryMeshNode,
                                                 params.distanceFile,
                                                 "hdf5",
