@@ -7,6 +7,7 @@
 #define HEXAHEDRON_HPP_
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
@@ -55,10 +56,13 @@ class Hexahedron
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
+  using TetrahedronType = Tetrahedron<T, NDIMS>;
+  using NumArrayType = NumericArray<T, NDIMS>;
 
   enum
   {
-    NUM_HEX_VERTS = 8
+    NUM_HEX_VERTS = 8,
+    NUM_TRIANGULATE = 24
   };
 
 public:
@@ -119,6 +123,122 @@ public:
   {
     SLIC_ASSERT(idx >= 0 && idx < NUM_HEX_VERTS);
     return m_points[idx];
+  }
+
+  /*!
+   * \brief Computes the centroid as the average of the hexahedron's vertex
+   *  positions
+   *
+   * \return The centroid of the hexahedron's vertices
+   */
+  AXOM_HOST_DEVICE
+  PointType centroid() const
+  {
+    NumArrayType sum;
+
+    for(int i = 0; i < NUM_HEX_VERTS; ++i)
+    {
+      sum += m_points[i].array();
+    }
+    sum /= NUM_HEX_VERTS;
+
+    return PointType(sum);
+  }
+
+  /**
+   * \brief Method to decompose a Hexahedron
+   *        into 24 Tetrahedrons.
+   *        Each Tetrahedron consists of 4 points:
+   *          (1) The mean of all Hexahedron points (centroid)
+   *          (2,3) Two adjacent vertices on a Hexahedron face
+   *          (4) The mean of the current Hexahedron face
+   *
+   * \param tets [out] The tetrahedrons
+   *
+   * \note Assumes tets is pre-allocated
+   */
+  AXOM_HOST_DEVICE
+  void triangulate(TetrahedronType* tets)
+  {
+    // Hex center (hc)
+    PointType hc = centroid();
+
+    //Face means (fm)
+    PointType fm1 =
+      PointType::midpoint(PointType::midpoint(m_points[0], m_points[1]),
+                          PointType::midpoint(m_points[2], m_points[3]));
+
+    PointType fm2 =
+      PointType::midpoint(PointType::midpoint(m_points[0], m_points[1]),
+                          PointType::midpoint(m_points[4], m_points[5]));
+
+    PointType fm3 =
+      PointType::midpoint(PointType::midpoint(m_points[0], m_points[3]),
+                          PointType::midpoint(m_points[4], m_points[7]));
+
+    PointType fm4 =
+      PointType::midpoint(PointType::midpoint(m_points[1], m_points[2]),
+                          PointType::midpoint(m_points[5], m_points[6]));
+
+    PointType fm5 =
+      PointType::midpoint(PointType::midpoint(m_points[2], m_points[3]),
+                          PointType::midpoint(m_points[6], m_points[7]));
+
+    PointType fm6 =
+      PointType::midpoint(PointType::midpoint(m_points[4], m_points[5]),
+                          PointType::midpoint(m_points[6], m_points[7]));
+
+    // Initialize tets
+    tets[0] = TetrahedronType(hc, m_points[1], m_points[0], fm1);
+    tets[1] = TetrahedronType(hc, m_points[0], m_points[3], fm1);
+    tets[2] = TetrahedronType(hc, m_points[3], m_points[2], fm1);
+    tets[3] = TetrahedronType(hc, m_points[2], m_points[1], fm1);
+
+    tets[4] = TetrahedronType(hc, m_points[4], m_points[0], fm2);
+    tets[5] = TetrahedronType(hc, m_points[0], m_points[1], fm2);
+    tets[6] = TetrahedronType(hc, m_points[1], m_points[5], fm2);
+    tets[7] = TetrahedronType(hc, m_points[5], m_points[4], fm2);
+
+    tets[8] = TetrahedronType(hc, m_points[3], m_points[0], fm3);
+    tets[9] = TetrahedronType(hc, m_points[0], m_points[4], fm3);
+    tets[10] = TetrahedronType(hc, m_points[4], m_points[7], fm3);
+    tets[11] = TetrahedronType(hc, m_points[7], m_points[3], fm3);
+
+    tets[12] = TetrahedronType(hc, m_points[5], m_points[1], fm4);
+    tets[13] = TetrahedronType(hc, m_points[1], m_points[2], fm4);
+    tets[14] = TetrahedronType(hc, m_points[2], m_points[6], fm4);
+    tets[15] = TetrahedronType(hc, m_points[6], m_points[5], fm4);
+
+    tets[16] = TetrahedronType(hc, m_points[6], m_points[2], fm5);
+    tets[17] = TetrahedronType(hc, m_points[2], m_points[3], fm5);
+    tets[18] = TetrahedronType(hc, m_points[3], m_points[7], fm5);
+    tets[19] = TetrahedronType(hc, m_points[7], m_points[6], fm5);
+
+    tets[20] = TetrahedronType(hc, m_points[7], m_points[4], fm6);
+    tets[21] = TetrahedronType(hc, m_points[4], m_points[5], fm6);
+    tets[22] = TetrahedronType(hc, m_points[5], m_points[6], fm6);
+    tets[23] = TetrahedronType(hc, m_points[6], m_points[7], fm6);
+  }
+
+  /**
+   * \brief Finds the volume of the hexahedron by triangulating the hexahedron
+   *        into 24 tetrahedrons and finding the total volume of the tetrahedrons
+   *
+   * \return The volume of the hexahedron
+   */
+  double volume()
+  {
+    double retVol = 0.0;
+    TetrahedronType tets[NUM_TRIANGULATE];
+
+    triangulate(tets);
+
+    for(int i = 0; i < NUM_TRIANGULATE; i++)
+    {
+      retVol += tets[i].volume();
+    }
+
+    return retVol;
   }
 
   /*!
