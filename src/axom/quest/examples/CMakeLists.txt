@@ -60,22 +60,25 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
 
         # Non-zero empty-rank probability tests domain underloading case
         set(_emptyRankProbs 0.0 0.5)
+        set(_meshes "mdmesh.2x1" "mdmesh.2x3")
         foreach(_pol ${_policies})
-            foreach(_emptyRankProb ${_emptyRankProbs})
+            foreach(_mesh ${_meshes})
                 # Add test with data on all ranks
-                set(_test "quest_distributed_closest_point_run_2D_${_pol}_empty_rank_prob_${_emptyRankProb}")
+                set(_test "quest_distributed_closest_point_run_2D_${_pol}_${_mesh}")
                 axom_add_test(
                     NAME    ${_test}
                     COMMAND quest_distributed_distance_query_ex
-                                --mesh-file ${quest_data_dir}/box_2D_r${_nranks}.root
+                                --mesh-file ${quest_data_dir}/${_mesh}.root
                                 --num-samples 500
-                                --dist-threshold .45
+                                --center 1.2 1.5
+                                --radius 0.75
+                                --obj-domain-count-range 0 2
+                                --dist-threshold .3
                                 --no-random-spacing
                                 --check-results
                                 --policy ${_pol}
-                                --object-file dcp_object_mesh_2d_${_pol}_${_emptyRankProb}
-                                --distance-file dcp_closest_point_2d_${_pol}_${_emptyRankProb}
-                                --empty-rank-probability ${_emptyRankProb}
+                                --object-file dcp_object_mesh_2d_${_pol}_${_mesh}
+                                --distance-file dcp_closest_point_2d_${_pol}_${_mesh}
                     NUM_MPI_TASKS ${_nranks})
                 if(${_pol} STREQUAL "omp")
                     set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
