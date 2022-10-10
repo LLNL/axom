@@ -847,13 +847,13 @@ private:
   bool m_verbose {false};
 };
 
-class NewQueryMeshWrapper
+class QueryMeshWrapper
 {
 public:
   using Circle = primal::Sphere<double, 2>;
 
   //!@brief Construct with MFEM mesh.
-  NewQueryMeshWrapper(sidre::Group* group, const std::string& meshFilename)
+  QueryMeshWrapper(sidre::Group* group, const std::string& meshFilename)
     : m_queryMesh(group)
   {
     // Test reading in multidomain mesh.
@@ -1223,19 +1223,11 @@ int main(int argc, char** argv)
   // These will be used to query the closest points on the object mesh(es)
   //---------------------------------------------------------------------------
   sidre::DataStore queryDS; // TODO: Need separate stores for object and query?
-#if 1
-  NewQueryMeshWrapper queryMeshWrapper(
+  QueryMeshWrapper queryMeshWrapper(
     queryDS.getRoot()->createGroup("queryMesh", true),
     params.meshFile);
   // queryMeshWrapper.print_mesh_info();
   const int nMeshPoints = queryMeshWrapper.getParticleMesh().numPoints();
-#else
-  QueryMeshWrapper query_mesh_wrapper(params.distanceFile,
-                                      params.getDCMeshName(),
-                                      params.meshFile);
-  query_mesh_wrapper.printMeshInfo();
-  const int nMeshPoints = query_mesh_wrapper.getParticleMesh().numPoints();
-#endif
 
 
   SLIC_INFO_IF(
@@ -1264,18 +1256,11 @@ int main(int argc, char** argv)
     object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
   }
 
-  // Put sidre data into Conduit query_mesh_node.
+  // Put sidre data into Conduit Node.
   conduit::Node queryMeshNode;
   queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode);
 // std::cout << __WHERE << "queryMeshNode" << std::endl;
 // queryMeshNode.print();
-
-#if 0
-  conduit::Node query_mesh_node;
-  query_mesh_wrapper.getBlueprintGroup()->createNativeLayout(query_mesh_node);
-std::cout << __WHERE << "query_mesh_node" << std::endl;
-query_mesh_node.print();
-#endif
 
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
@@ -1297,13 +1282,8 @@ query_mesh_node.print();
   SLIC_INFO(query_str);
   slic::flushStreams();
   queryTimer.start();
-#if 1
   query.computeClosestPoints(queryMeshNode,
                              queryMeshWrapper.getCoordsetName());
-#else
-  query.computeClosestPoints(query_mesh_node,
-                             query_mesh_wrapper.getCoordsetName());
-#endif
   queryTimer.stop();
 
   auto getMinMax =
@@ -1336,11 +1316,8 @@ query_mesh_node.print();
   }
   slic::flushStreams();
 
-#if 1
   auto& queryMesh = queryMeshWrapper.getParticleMesh();
-#else
-  auto& queryMesh = query_mesh_wrapper.getParticleMesh();
-#endif
+#if 0
   auto cpCoords =
     queryMesh.getNodalVectorField<PointType>(
       "cp_coords", 0);
@@ -1365,16 +1342,13 @@ query_mesh_node.print();
                                   cpCoords[i]));
     }
   }
+#endif
 
   int errCount = 0;
   int localErrCount = 0;
   if(params.checkResults)
   {
-#if 1
     localErrCount = queryMeshWrapper.checkClosestPoints<DIM>(circle, params);
-#else
-    localErrCount = query_mesh_wrapper.checkClosestPoints<DIM>(circle, params);
-#endif
   }
   MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
@@ -1399,11 +1373,18 @@ query_mesh_node.print();
 
   PointType nowhere(std::numeric_limits<double>::signaling_NaN());
   const double nodist = std::numeric_limits<double>::signaling_NaN();
-#if 1
   queryMesh.registerNodalScalarField<double>("distance");
   queryMesh.registerNodalVectorField<double>("direction");
   for(axom::IndexType di = 0; di < queryMesh.domain_count(); ++di)
   {
+    auto cpCoords =
+      queryMesh.getNodalVectorField<PointType>(
+        "cp_coords", di);
+
+    auto cpIndices =
+      queryMesh.getNodalScalarField<axom::IndexType>(
+        "cp_index", di);
+
     PointArray qPts = queryMeshWrapper.getVertexPositions<PointArray>(di);
     axom::ArrayView<double> distances = queryMesh.getNodalScalarField<double>("distance", di);
     axom::ArrayView<PointType> directions = queryMesh.getNodalVectorField<PointType>("direction", di);
@@ -1420,35 +1401,14 @@ query_mesh_node.print();
 // std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode"<<std::endl; queryMeshNode.print();
 // std::cout << __FILE__<<':'<<__LINE__<< "queryMeshNode1"<<std::endl; queryMeshNode1.print();
   }
-#else
-  auto* distances = query_mesh_wrapper.getDC()->GetField("distance");
-  auto* directions = query_mesh_wrapper.getDC()->GetField("direction");
-  auto qPts = query_mesh_wrapper.getVertexPositions<PointArray>();
-  mfem::Array<int> dofs;
-  for(auto idx : IndexSet(nMeshPoints))
-  {
-    const bool has_cp = cpIndices[idx] >= 0;
-    const auto& cp = has_cp ? cpCoords[idx] : nowhere;
-
-    (*distances)(idx) = has_cp ? sqrt(squared_distance(qPts[idx], cp)) : nodist;
-
-    directions->FESpace()->GetVertexVDofs(idx, dofs);
-    directions->SetSubVector(dofs,
-                             has_cp ? (cp - qPts[idx]).data() : nowhere.data());
-  }
-#endif
 
   //---------------------------------------------------------------------------
   // Cleanup, save mesh/fields and exit
   //---------------------------------------------------------------------------
-#if 1
   conduit::relay::mpi::io::blueprint::save_mesh(queryMeshNode,
                                                 params.distanceFile,
                                                 "hdf5",
                                                 MPI_COMM_WORLD);
-#else
-  query_mesh_wrapper.saveMesh();
-#endif
 
   if(errCount)
   {
