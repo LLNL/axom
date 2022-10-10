@@ -23,6 +23,7 @@ set( primal_headers
     geometry/BezierCurve.hpp
     geometry/BoundingBox.hpp
     geometry/CurvedPolygon.hpp
+    geometry/Hexahedron.hpp
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
     geometry/NumericArray.hpp
