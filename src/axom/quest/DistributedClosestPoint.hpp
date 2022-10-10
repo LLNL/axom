@@ -657,7 +657,7 @@ std::cout<<__WHERE<<"xferDom[coords]: interleaved=" << conduit::blueprint::mcarr
 
       if(queryDom.has_path("fields/cp_distance"))
       {
-        xferDom["debug/cp_distance"].set_external(internal::getPointer<double>(queryDom["fields/cp_distance/values"]), qPtCount);
+        xferDom["debug/cp_distance"].set_external(internal::getPointer<double>(queryDom.fetch_existing("fields/cp_distance/values")), qPtCount);
       }
 // std::cout<<__WHERE<< queryDom.name() << std::endl;
       // clang-format on
@@ -682,6 +682,7 @@ std::cout<<__WHERE<< "rank " << m_rank << " queryNode:" << std::endl; queryNode.
       auto& qmcpr = queryDom.fetch_existing("fields/cp_rank/values");
       auto& qmcpi = queryDom.fetch_existing("fields/cp_index/values");
       auto& qmcpcp = queryDom.fetch_existing("fields/cp_coords/values/x");
+
       if(xferDom.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
       {
         axom::copy(qmcpr.data_ptr(),
@@ -699,6 +700,19 @@ std::cout<<__WHERE<< "rank " << m_rank << " queryNode:" << std::endl; queryNode.
         axom::copy(qmcpcp.data_ptr(),
                    xferDom.fetch_existing("cp_coords").data_ptr(),
                    qPtCount * sizeof(PointType));
+      }
+
+      bool hasDistance = xferDom.has_path("debug/cp_distance");
+      if(hasDistance)
+      {
+        assert(queryDom.has_path("fields/cp_distance/values"));
+        auto& qmcpdist = queryDom.fetch_existing("fields/cp_distance/values");
+        if(xferDom.fetch_existing("debug/cp_distance").data_ptr() != qmcpdist.data_ptr())
+        {
+          axom::copy(qmcpdist.data_ptr(),
+                     xferDom.fetch_existing("debug/cp_distance").data_ptr(),
+                     qPtCount * sizeof(double));
+        }
       }
     }
   }
