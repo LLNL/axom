@@ -631,6 +631,7 @@ public:
 
       conduit::Node& fields = queryDom.fetch_existing("fields");
       // BTNG Q: Why not store these as IndexType and PointType containers, like queryMesh does?  Why raw pointers?
+      // set_external doesn't work with mutable Nodes, dynamic types or templated types.
       xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_index/values")), qPtCount);
       xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_rank/values")), qPtCount);
       xferDom["cp_coords"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_coords/values/x")), dim * qPtCount);
@@ -802,11 +803,8 @@ public:
 
       if(firstRecipForMyQuery == -1)
       {
-        const bool shouldCopy = true; // OLD: xferNodes[m_rank]->has_child("qPtCount");
-        if(shouldCopy)
-        {
-          copy_xfer_node_to_query_node(*xferNodes[m_rank], queryMesh);
-        }
+        // No need to send anywhere.  Put computed data back into queryMesh.
+        copy_xfer_node_to_query_node(*xferNodes[m_rank], queryMesh);
         xferNodes.erase(m_rank);
       }
       else
