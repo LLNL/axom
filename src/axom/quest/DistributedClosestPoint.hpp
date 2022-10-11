@@ -428,7 +428,7 @@ public:
       const conduit::Node &domain = meshNode[di];
       auto& values = domain[valuesPath];
       const int N = internal::extractSize(values);
-      assert(sizeof(double) * DIM == sizeof(PointType)); // BTNG check
+      SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
       const std::size_t nBytes = sizeof(double) * DIM * N;
       axom::copy(pts.data()+copiedCount, values["x"].data_ptr(), nBytes);
       copiedCount += N;
@@ -605,7 +605,7 @@ public:
 
   /// Copy parts of query mesh partition to a conduit::Node for
   /// computation and communication.
-  // This method assumes queryNode is a blueprint multidomain mesh.
+  // queryNode must be a blueprint multidomain mesh.
   void copy_query_node_to_xfer_node(conduit::Node& queryNode,
                                     conduit::Node& xferNode,
                                     const std::string& coordset) const
@@ -618,22 +618,26 @@ public:
     {
       const std::string& domName = queryDom.name();
       conduit::Node& xferDom = xferDoms[domName];
+      conduit::Node& domainPts = xferDom["coords"];
 
       // clang-format off
-      xferDom["coords"] = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-      const int dim = internal::extractDimension(xferDom.fetch_existing("coords"));
-      const int qPtCount = internal::extractSize(xferDom.fetch_existing("coords"));
+      domainPts = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
+      const int dim = internal::extractDimension(domainPts);
+      const int qPtCount = internal::extractSize(domainPts);
 
       xferDom["qPtCount"] = qPtCount;
       xferDom["dim"] = dim;
-      interleave_coordinates(xferDom.fetch_existing("coords"));
-      xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_index/values")), qPtCount);
-      xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(queryDom.fetch_existing("fields/cp_rank/values")), qPtCount);
-      xferDom["cp_coords"].set_external(internal::getPointer<double>(queryDom.fetch_existing("fields/cp_coords/values/x")), dim * qPtCount);
+      make_interleaved(domainPts);
 
-      if(queryDom.has_path("fields/cp_distance"))
+      conduit::Node& fields = queryDom.fetch_existing("fields");
+      // BTNG Q: Why not store these as IndexType and PointType containers, like queryMesh does?  Why raw pointers?
+      xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_index/values")), qPtCount);
+      xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_rank/values")), qPtCount);
+      xferDom["cp_coords"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_coords/values/x")), dim * qPtCount);
+
+      if(fields.has_path("cp_distance"))
       {
-        xferDom["debug/cp_distance"].set_external(internal::getPointer<double>(queryDom.fetch_existing("fields/cp_distance/values")), qPtCount);
+        xferDom["debug/cp_distance"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_distance/values")), qPtCount);
       }
       // clang-format on
     }
@@ -651,10 +655,12 @@ public:
       const conduit::Node& xferDom = xferDoms.child(ci);
       conduit::Node& queryDom = queryNode.child(ci);
 
+      conduit::Node& fields = queryDom.fetch_existing("fields");
+
       const int qPtCount = xferDom.fetch_existing("qPtCount").value();
-      auto& qmcpr = queryDom.fetch_existing("fields/cp_rank/values");
-      auto& qmcpi = queryDom.fetch_existing("fields/cp_index/values");
-      auto& qmcpcp = queryDom.fetch_existing("fields/cp_coords/values/x");
+      auto& qmcpr = fields.fetch_existing("cp_rank/values");
+      auto& qmcpi = fields.fetch_existing("cp_index/values");
+      auto& qmcpcp = fields.fetch_existing("cp_coords/values/x");
 
       if(xferDom.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
       {
@@ -678,8 +684,7 @@ public:
       bool hasDistance = xferDom.has_path("debug/cp_distance");
       if(hasDistance)
       {
-        assert(queryDom.has_path("fields/cp_distance/values"));
-        auto& qmcpdist = queryDom.fetch_existing("fields/cp_distance/values");
+        auto& qmcpdist = fields.fetch_existing("cp_distance/values");
         if(xferDom.fetch_existing("debug/cp_distance").data_ptr() != qmcpdist.data_ptr())
         {
           axom::copy(qmcpdist.data_ptr(),
@@ -690,7 +695,7 @@ public:
     }
   }
 
-  void interleave_coordinates(conduit::Node& coords) const
+  void make_interleaved(conduit::Node& coords) const
   {
     bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coords);
     if(isInterleaved) {return;}
@@ -1074,8 +1079,8 @@ public:
     conduit::Node& xferDoms = xferNode["xferDoms"];
     for(conduit::Node& xferDom : xferDoms.children())
     {
-      interleave_coordinates(xferDom.fetch_existing("coords"));
-      interleave_coordinates(xferDom.fetch_existing("cp_coords"));
+      make_interleaved(xferDom.fetch_existing("coords"));
+      make_interleaved(xferDom.fetch_existing("cp_coords"));
       // --- Set up arrays and views in the execution space
       // Arrays are initialized in that execution space the first time they are processed
       // and are copied in during subsequent processing
