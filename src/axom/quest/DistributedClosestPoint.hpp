@@ -701,9 +701,9 @@ public:
 
   /**
    * \brief Computes the closest point within the objects for each query point
-   * in the provided particle mesh, provided in the mesh blueprint rooted at \a query_mesh
+   * in the provided particle mesh, provided in the mesh blueprint rooted at \a queryMesh
    *
-   * \param query_mesh The root node of a mesh blueprint for the query points
+   * \param queryMesh The root node of a mesh blueprint for the query points
    * Can be empty if there are no query points for the calling rank
    * \param coordset The coordinate set for the query points
    *
@@ -717,7 +717,7 @@ public:
    * with stride NDIMS. We intend to loosen this restriction in the future
    *
    * \note We're temporarily also using a cp_distance field while debugging this class.
-   * The code will use this field if it is present in \a query_mesh.
+   * The code will use this field if it is present in \a queryMesh.
    *
    * We use non-blocking sends for performance and deadlock avoidance.
    * The worst case could incur nranks^2 sends.  To avoid excessive
@@ -731,18 +731,15 @@ public:
       isBVHTreeInitialized(),
       "BVH tree must be initialized before calling 'computeClosestPoints");
 
+    // If query mesh isn't multidomain, create a temporary multidomain representation.
     const bool qmIsMultidomain = conduit::blueprint::mesh::is_multi_domain(queryMesh_);
-    conduit::Node queryMesh__;
+    std::shared_ptr<conduit::Node> tmpNode;
     if(!qmIsMultidomain)
     {
-      conduit::blueprint::mesh::to_multi_domain(queryMesh_, queryMesh__);
+      tmpNode = std::make_shared<conduit::Node>();
+      conduit::blueprint::mesh::to_multi_domain(queryMesh_, *tmpNode);
     }
-    conduit::Node& queryMesh = qmIsMultidomain ? queryMesh_ : queryMesh__;
-
-    for(conduit::Node& dom : queryMesh.children())
-    {
-      dom["homeRank"] = m_rank;
-    }
+    conduit::Node& queryMesh = qmIsMultidomain ? queryMesh_ : *tmpNode;
 
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
 
@@ -1451,22 +1448,17 @@ public:
     SLIC_ASSERT(this->isValidBlueprint(meshNode));
 
     const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(meshNode);
+
+    // If meshNode isn't multidomain, create a temporary multidomain representation.
+    std::shared_ptr<conduit::Node> tmpNode;
     if (!isMultidomain)
     {
-      conduit::Node mdMeshNode;
-      conduit::blueprint::mesh::to_multi_domain(meshNode, mdMeshNode);
-      _setMultidomainObjectMesh(mdMeshNode, coordset);
+      tmpNode = std::make_shared<conduit::Node>();
+      conduit::blueprint::mesh::to_multi_domain(meshNode, *tmpNode);
     }
-    else
-    {
-      _setMultidomainObjectMesh(meshNode, coordset);
-    }
-    return;
-  }
+    const conduit::Node& mdMeshNode(isMultidomain ? meshNode : *tmpNode);
 
-  void _setMultidomainObjectMesh(const conduit::Node& meshNode, const std::string& coordset)
-  {
-    auto domainCount = conduit::blueprint::mesh::number_of_domains(meshNode);
+    auto domainCount = conduit::blueprint::mesh::number_of_domains(mdMeshNode);
     const std::string valuesPath = fmt::format("coordsets/{}/values", coordset);
 
     // Extract the dimension from the coordinate values group
@@ -1475,7 +1467,7 @@ public:
       int localDim = -1;
       if(domainCount > 0)
       {
-        const conduit::Node& domain0(meshNode[0]);
+        const conduit::Node& domain0(mdMeshNode[0]);
         SLIC_ASSERT(domain0.has_path(valuesPath));
         auto& values = domain0[valuesPath];
         localDim = internal::extractDimension(values);
@@ -1490,12 +1482,14 @@ public:
     switch(m_dimension)
     {
     case 2:
-      m_dcp_2->importObjectPoints(meshNode, valuesPath);
+      m_dcp_2->importObjectPoints(mdMeshNode, valuesPath);
       break;
     case 3:
-      m_dcp_3->importObjectPoints(meshNode, valuesPath);
+      m_dcp_3->importObjectPoints(mdMeshNode, valuesPath);
       break;
     }
+
+    return;
   }
 
   /**
