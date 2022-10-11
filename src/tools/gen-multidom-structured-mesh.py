@@ -32,8 +32,11 @@ ps.add_argument('-mu', type=f_c, default=(1.,1.), help='Mesh upper coordinates')
 ps.add_argument('-ms', type=i_c, default=(3,3), help='Logical size of mesh (cells)')
 ps.add_argument('-dc', type=i_c, default=(1,1), help='Domain counts in each index direction')
 ps.add_argument('-o', '--output', type=str, default='mdmesh', help='Output file base name')
-opts,_ = ps.parse_known_args()
-print(opts)
+opts,unkn = ps.parse_known_args()
+print(opts, unkn)
+if(unkn):
+  print("Unrecognized arguments:", *unkn)
+  quit(1)
 
 dim = len(opts.dc)
 
