@@ -17,7 +17,6 @@
 #include "axom/quest.hpp"
 #include "axom/slam.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/utilities/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mpi.hpp"
@@ -830,7 +829,13 @@ public:
   }
 
   /// Saves the data collection (MFEM query mesh) to disk
-  void saveMesh() { SLIC_ERROR(__WHERE "Incomplete code"); }
+  void saveMesh(const std::string& filename)
+  {
+    SLIC_INFO(
+      banner(axom::fmt::format("Saving query mesh '{}' to disk", filename)));
+
+    m_queryMesh.saveMesh(filename);
+  }
 
   void setupParticleMesh()
   {
@@ -1261,17 +1266,9 @@ int main(int argc, char** argv)
     }
   }
 
-  //---------------------------------------------------------------------------
-  // Cleanup, save mesh/fields and exit
-  // The post-processed data is in sidre.
-  // Re-import to put it in a conduit Node for output.
-  //---------------------------------------------------------------------------
   queryMeshNode.reset();
-  queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode);
-  conduit::relay::mpi::io::blueprint::save_mesh(queryMeshNode,
-                                                params.distanceFile,
-                                                "hdf5",
-                                                MPI_COMM_WORLD);
+
+  queryMeshWrapper.saveMesh(params.distanceFile);
 
   if(errCount)
   {
