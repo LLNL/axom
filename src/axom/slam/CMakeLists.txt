@@ -39,6 +39,7 @@ set(slam_headers
     policies/InterfacePolicies.hpp
     policies/SetInterfacePolicies.hpp
     policies/MapInterfacePolicies.hpp
+    policies/BivariateSetInterfacePolicies.hpp
 
     # SRM Set headers
     IndirectionSet.hpp

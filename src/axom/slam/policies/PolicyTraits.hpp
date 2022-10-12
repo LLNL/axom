@@ -145,9 +145,7 @@ struct indices_use_indirection : std::true_type
 template <class T>
 struct indices_use_indirection<T, void_t<typename T::ProductSetType>>
   : std::false_type
-{
-  static_assert(std::is_base_of<typename T::BivariateSetType, T>::value, "");
-};
+{ };
 
 ///@}
 

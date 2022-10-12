@@ -99,7 +99,7 @@ public:
 
   using SetType = slam::RangeSet<SetPosition, SetElement>;
   using MapType = Map<DataType, SetType, IndPol, StrPol>;
-  using OrderedSetType = typename BSet::OrderedSetType;
+  using OrderedSetType = typename BSet::SubsetType;
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
