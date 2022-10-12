@@ -405,17 +405,13 @@ public:
    * \param [in] coords The root group of a mesh blueprint's coordinate values
    * \note This function currently supports mesh blueprints with the "point" topology
    */
-  // void importObjectPoints(const conduit::Node& coords, int nPts)
-  void importObjectPoints(const conduit::Node& meshNode, const std::string& valuesPath)
+  void importObjectPoints(const conduit::Node& mdMeshNode, const std::string& valuesPath)
   {
-    conduit::index_t domainCount = conduit::blueprint::mesh::number_of_domains(meshNode);
-
     // Count points in the mesh.
     int ptCount = 0;
-    for(conduit::index_t di=0; di<domainCount; ++di)
+    for(const conduit::Node& domain : mdMeshNode.children())
     {
-      const conduit::Node &domain = meshNode[di];
-      auto& values = domain[valuesPath];
+      auto& values = domain.fetch_existing(valuesPath);
       const int N = internal::extractSize(values);
       ptCount += N;
     }
@@ -423,14 +419,13 @@ public:
     // Copy points to internal memory
     PointArray pts(ptCount, ptCount);
     std::size_t copiedCount = 0;
-    for(conduit::index_t di=0; di<domainCount; ++di)
+    for(const conduit::Node& domain : mdMeshNode.children())
     {
-      const conduit::Node &domain = meshNode[di];
-      auto& values = domain[valuesPath];
+      auto& values = domain.fetch_existing(valuesPath);
       const int N = internal::extractSize(values);
       SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
       const std::size_t nBytes = sizeof(double) * DIM * N;
-      axom::copy(pts.data()+copiedCount, values["x"].data_ptr(), nBytes);
+      axom::copy(pts.data()+copiedCount, values.fetch_existing("x").data_ptr(), nBytes);
       copiedCount += N;
     }
     m_objectPts = PointArray(pts, m_allocatorID); // copy point array to ExecSpace
@@ -631,7 +626,7 @@ public:
 
       conduit::Node& fields = queryDom.fetch_existing("fields");
       // BTNG Q: Why not store these as IndexType and PointType containers, like queryMesh does?  Why raw pointers?
-      // set_external doesn't work with mutable Nodes, dynamic types or templated types.
+      // set_external doesn't work with const Nodes, dynamic types or templated types.
       xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_index/values")), qPtCount);
       xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_rank/values")), qPtCount);
       xferDom["cp_coords"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_coords/values/x")), dim * qPtCount);
@@ -1472,7 +1467,7 @@ public:
       {
         const conduit::Node& domain0(mdMeshNode[0]);
         SLIC_ASSERT(domain0.has_path(valuesPath));
-        auto& values = domain0[valuesPath];
+        auto& values = domain0.fetch_existing(valuesPath);
         localDim = internal::extractDimension(values);
       }
       int dim = -1;
