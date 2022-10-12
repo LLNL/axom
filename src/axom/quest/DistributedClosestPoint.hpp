@@ -405,7 +405,8 @@ public:
    * \param [in] coords The root group of a mesh blueprint's coordinate values
    * \note This function currently supports mesh blueprints with the "point" topology
    */
-  void importObjectPoints(const conduit::Node& mdMeshNode, const std::string& valuesPath)
+  void importObjectPoints(const conduit::Node& mdMeshNode,
+                          const std::string& valuesPath)
   {
     // Count points in the mesh.
     int ptCount = 0;
@@ -425,10 +426,12 @@ public:
       const int N = internal::extractSize(values);
       SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
       const std::size_t nBytes = sizeof(double) * DIM * N;
-      axom::copy(pts.data()+copiedCount, values.fetch_existing("x").data_ptr(), nBytes);
+      axom::copy(pts.data() + copiedCount,
+                 values.fetch_existing("x").data_ptr(),
+                 nBytes);
       copiedCount += N;
     }
-    m_objectPts = PointArray(pts, m_allocatorID); // copy point array to ExecSpace
+    m_objectPts = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
   }
 
   /// Predicate to check if the BVH tree has been initialized
@@ -592,7 +595,10 @@ public:
       auto queryPts =
         ArrayView_from_Node<PointType>(xferDom.fetch_existing("coords"),
                                        qPtCount);
-      for(const auto& p : queryPts) { rval.addPoint(p); }
+      for(const auto& p : queryPts)
+      {
+        rval.addPoint(p);
+      }
     }
 
     return rval;
@@ -658,11 +664,13 @@ public:
 
       if(xferDom.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
       {
-        fields.fetch_existing("cp_rank/values").update_compatible(xferDom.fetch_existing("cp_rank"));
+        fields.fetch_existing("cp_rank/values")
+          .update_compatible(xferDom.fetch_existing("cp_rank"));
       }
       if(xferDom.fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
       {
-        fields.fetch_existing("cp_index/values").update_compatible(xferDom.fetch_existing("cp_index"));
+        fields.fetch_existing("cp_index/values")
+          .update_compatible(xferDom.fetch_existing("cp_index"));
       }
       if(xferDom.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
       {
@@ -675,9 +683,11 @@ public:
       if(hasDistance)
       {
         auto& qmcpdist = fields.fetch_existing("cp_distance/values");
-        if(xferDom.fetch_existing("debug/cp_distance").data_ptr() != qmcpdist.data_ptr())
+        if(xferDom.fetch_existing("debug/cp_distance").data_ptr() !=
+           qmcpdist.data_ptr())
         {
-          fields.fetch_existing("cp_distance/values").update_compatible(xferDom.fetch_existing("debug/cp_distance"));
+          fields.fetch_existing("cp_distance/values")
+            .update_compatible(xferDom.fetch_existing("debug/cp_distance"));
         }
       }
     }
@@ -686,7 +696,10 @@ public:
   void make_interleaved(conduit::Node& coords) const
   {
     bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coords);
-    if(isInterleaved) {return;}
+    if(isInterleaved)
+    {
+      return;
+    }
     conduit::Node oldCoords = coords;
     coords.reset();
     conduit::blueprint::mcarray::to_interleaved(oldCoords, coords);
@@ -725,7 +738,8 @@ public:
       "BVH tree must be initialized before calling 'computeClosestPoints");
 
     // If query mesh isn't multidomain, create a temporary multidomain representation.
-    const bool qmIsMultidomain = conduit::blueprint::mesh::is_multi_domain(queryMesh_);
+    const bool qmIsMultidomain =
+      conduit::blueprint::mesh::is_multi_domain(queryMesh_);
     std::shared_ptr<conduit::Node> tmpNode;
     if(!qmIsMultidomain)
     {
@@ -828,7 +842,7 @@ public:
 
       if(homeRank == m_rank)
       {
-        const bool shouldCopy = true; // OLD: xferNode.has_child("qPtCount");
+        const bool shouldCopy = true;  // OLD: xferNode.has_child("qPtCount");
         if(shouldCopy)
         {
           copy_xfer_node_to_query_node(xferNode, queryMesh);
@@ -1108,13 +1122,13 @@ public:
       const bool has_cp_distance = xferDom.has_path("debug/cp_distance");
       auto minDist = has_cp_distance
         ? ArrayView_from_Node<double>(
-          xferDom.fetch_existing("debug/cp_distance"),
-          qPtCount)
+            xferDom.fetch_existing("debug/cp_distance"),
+            qPtCount)
         : ArrayView<double>();
 
       auto cp_dist = has_cp_distance
         ? (is_first ? axom::Array<double>(qPtCount, qPtCount, m_allocatorID)
-           : axom::Array<double>(minDist, m_allocatorID))
+                    : axom::Array<double>(minDist, m_allocatorID))
         : axom::Array<double>(0, 0, m_allocatorID);
       auto query_min_dist = cp_dist.view();
       // BTNG Q: Why do we need query_min_dist?  Why not use cp_dist?
@@ -1145,9 +1159,9 @@ public:
         auto it = bvh->getTraverser();
         const int rank = m_rank;
 
-        double* sqDistThresh =
-          axom::allocate<double>(1,
-                                 axom::execution_space<ExecSpace>::allocatorID());
+        double* sqDistThresh = axom::allocate<double>(
+          1,
+          axom::execution_space<ExecSpace>::allocatorID());
         *sqDistThresh = m_sqDistanceThreshold;
 
         auto pointsView = m_objectPts.view();
@@ -1160,14 +1174,16 @@ public:
               PointType qpt = query_pts[idx];
 
               MinCandidate curr_min {};
-              if(query_ranks[idx] >= 0)  // i.e. we've already found a candidate closest
+              if(query_ranks[idx] >=
+                 0)  // i.e. we've already found a candidate closest
               {
                 curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
                 curr_min.minElem = query_inds[idx];
                 curr_min.minRank = query_ranks[idx];
               }
 
-              auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
+              auto checkMinDist = [&](int32 current_node,
+                                      const int32* leaf_nodes) {
                 const int candidate_idx = leaf_nodes[current_node];
                 const PointType candidate_pt = pointsView[candidate_idx];
                 const double sq_dist = squared_distance(qpt, candidate_pt);
@@ -1434,11 +1450,12 @@ public:
   {
     SLIC_ASSERT(this->isValidBlueprint(meshNode));
 
-    const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(meshNode);
+    const bool isMultidomain =
+      conduit::blueprint::mesh::is_multi_domain(meshNode);
 
     // If meshNode isn't multidomain, create a temporary multidomain representation.
     std::shared_ptr<conduit::Node> tmpNode;
-    if (!isMultidomain)
+    if(!isMultidomain)
     {
       tmpNode = std::make_shared<conduit::Node>();
       conduit::blueprint::mesh::to_multi_domain(meshNode, *tmpNode);
