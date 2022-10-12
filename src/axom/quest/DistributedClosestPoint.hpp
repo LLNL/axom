@@ -1288,16 +1288,13 @@ private:
  *
  * The object mesh and the query mesh are provided as conduit nodes
  * using the mesh blueprint schema.  Each of these are distributed
- * over the same MPI rank space.  Ranks are allowed to have zero
- * object and/or query points.  This class orchestrates passing the
+ * over the same MPI rank space.  Ranks are allowed to have any number
+ * of domains, including zero.  This class orchestrates passing the
  * query points to all ranks whose object meshes might contain a
  * closest point.
  *
  * \note The class currently supports object meshes that are comprised of a collection of points.
  * In the future, we'd like to consider more general object meshes, e.g. triangle meshes.
- *
- * \note The class currently supports object meshes and query meshes with a single domain per MPI rank.
- * We intend to add support for multiple computational domains on each rank.
  *
  * To use this class, first set some parameters, such as the runtime execution policy,
  * then pass in the object mesh and build a spatial index over this mesh.
