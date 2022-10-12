@@ -26,6 +26,7 @@
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/SubsettingPolicies.hpp"
+#include "axom/slam/policies/SetInterfacePolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
 #include "axom/core/IteratorBase.hpp"
@@ -54,8 +55,9 @@ template <typename PosType = slam::DefaultPositionType,
           typename OffsetPolicy = policies::ZeroOffset<PosType>,
           typename StridePolicy = policies::StrideOne<PosType>,
           typename IndirectionPolicy = policies::NoIndirection<PosType, ElemType>,
-          typename SubsettingPolicy = policies::NoSubset>
-struct OrderedSet : public Set<PosType, ElemType>,
+          typename SubsettingPolicy = policies::NoSubset,
+          typename InterfacePolicy = policies::VirtualSet<PosType, ElemType>>
+struct OrderedSet : public InterfacePolicy,
                     SizePolicy,
                     OffsetPolicy,
                     StridePolicy,
@@ -456,14 +458,16 @@ template <typename PosType,
           typename OffsetPolicy,
           typename StridePolicy,
           typename IndirectionPolicy,
-          typename SubsettingPolicy>
+          typename SubsettingPolicy,
+          typename InterfacePolicy>
 bool OrderedSet<PosType,
                 ElemType,
                 SizePolicy,
                 OffsetPolicy,
                 StridePolicy,
                 IndirectionPolicy,
-                SubsettingPolicy>::isValid(bool verboseOutput) const
+                SubsettingPolicy,
+                InterfacePolicy>::isValid(bool verboseOutput) const
 {
   bool bValid = SizePolicyType::isValid(verboseOutput) &&
     OffsetPolicyType::isValid(verboseOutput) &&
