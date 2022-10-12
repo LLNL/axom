@@ -36,6 +36,7 @@ set(slam_headers
     policies/IndirectionPolicies.hpp
     policies/SubsettingPolicies.hpp
     policies/PolicyTraits.hpp
+    policies/MapInterfacePolicies.hpp
 
     # SRM Set headers
     IndirectionSet.hpp

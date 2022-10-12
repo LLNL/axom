@@ -82,8 +82,9 @@ template <typename T,
           typename BSet = BivariateSet<>,
           typename IndPol =
             policies::STLVectorIndirection<typename BSet::PositionType, T>,
-          typename StrPol = policies::StrideOne<typename BSet::PositionType>>
-class BivariateMap : public MapBase<typename BSet::PositionType>, public StrPol
+          typename StrPol = policies::StrideOne<typename BSet::PositionType>,
+          typename IfacePol = policies::VirtualMap<typename BSet::PositionType>>
+class BivariateMap : public IfacePol, public StrPol
 {
 public:
   using DataType = T;
@@ -586,9 +587,9 @@ private:
 
 };  //end BivariateMap
 
-template <typename T, typename BSet, typename IndPol, typename StrPol>
-typename BivariateMap<T, BSet, IndPol, StrPol>::NullBivariateSetType const
-  BivariateMap<T, BSet, IndPol, StrPol>::s_nullBiSet;
+template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
+typename BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::NullBivariateSetType const
+  BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::s_nullBiSet;
 
 }  // end namespace slam
 }  // end namespace axom

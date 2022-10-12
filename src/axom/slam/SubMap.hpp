@@ -51,10 +51,10 @@ namespace slam
  */
 
 template <typename SuperMapType,
-          typename SubsetType  //= slam::RangeSet<SetPosition, SetElement>
-          >
-class SubMap : public MapBase<typename SubsetType::PositionType>,
-               public SuperMapType::StridePolicyType
+          typename SubsetType,  //= slam::RangeSet<SetPosition, SetElement>
+          typename InterfacePolicy =
+            policies::VirtualMap<typename SubsetType::PositionType>>
+class SubMap : public InterfacePolicy, public SuperMapType::StridePolicyType
 {
 public:
   static_assert(!std::is_abstract<SubsetType>::value,
@@ -338,8 +338,8 @@ protected:  //Member variables
 
 };  //end SubMap
 
-template <typename SuperMapType, typename SetType>
-bool SubMap<SuperMapType, SetType>::isValid(bool verboseOutput) const
+template <typename SuperMapType, typename SetType, typename InterfacePolicy>
+bool SubMap<SuperMapType, SetType, InterfacePolicy>::isValid(bool verboseOutput) const
 {
   bool isValid = true;
   std::stringstream errStr;
