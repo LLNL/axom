@@ -625,15 +625,13 @@ public:
       make_interleaved(domainPts);
 
       conduit::Node& fields = queryDom.fetch_existing("fields");
-      // BTNG Q: Why not store these as IndexType and PointType containers, like queryMesh does?  Why raw pointers?
-      // set_external doesn't work with const Nodes, dynamic types or templated types.
-      xferDom["cp_index"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_index/values")), qPtCount);
-      xferDom["cp_rank"].set_external(internal::getPointer<axom::IndexType>(fields.fetch_existing("cp_rank/values")), qPtCount);
+      xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
+      xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
       xferDom["cp_coords"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_coords/values/x")), dim * qPtCount);
 
       if(fields.has_path("cp_distance"))
       {
-        xferDom["debug/cp_distance"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_distance/values")), qPtCount);
+        xferDom["debug/cp_distance"].set_external(fields.fetch_existing("cp_distance/values"));
       }
       // clang-format on
     }
@@ -660,15 +658,11 @@ public:
 
       if(xferDom.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
       {
-        axom::copy(qmcpr.data_ptr(),
-                   xferDom.fetch_existing("cp_rank").data_ptr(),
-                   qPtCount * sizeof(axom::IndexType));
+        fields.fetch_existing("cp_rank/values").update_compatible(xferDom.fetch_existing("cp_rank"));
       }
       if(xferDom.fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
       {
-        axom::copy(qmcpi.data_ptr(),
-                   xferDom.fetch_existing("cp_index").data_ptr(),
-                   qPtCount * sizeof(axom::IndexType));
+        fields.fetch_existing("cp_index/values").update_compatible(xferDom.fetch_existing("cp_index"));
       }
       if(xferDom.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
       {
@@ -683,9 +677,7 @@ public:
         auto& qmcpdist = fields.fetch_existing("cp_distance/values");
         if(xferDom.fetch_existing("debug/cp_distance").data_ptr() != qmcpdist.data_ptr())
         {
-          axom::copy(qmcpdist.data_ptr(),
-                     xferDom.fetch_existing("debug/cp_distance").data_ptr(),
-                     qPtCount * sizeof(double));
+          fields.fetch_existing("cp_distance/values").update_compatible(xferDom.fetch_existing("debug/cp_distance"));
         }
       }
     }
