@@ -36,6 +36,8 @@ packages:
     externals:
     - spec: spectrum-mpi@release%gcc@7.3.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
+    - spec: spectrum-mpi@release%gcc@8.3.1
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/
     - spec: spectrum-mpi@release%clang@9.0.0
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
     - spec: spectrum-mpi@release%clang@8.0.1

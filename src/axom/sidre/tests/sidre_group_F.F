@@ -784,7 +784,7 @@ contains
     character(80) file_path
     integer i, j
     integer, parameter :: nfoo = 10
-    integer foo1(nfoo), foo2(nfoo)
+    integer(C_INT), target :: foo1(nfoo), foo2(nfoo)
 !    integer, pointer :: foo3(:) => null()
     integer(C_INT), target :: foo4(nfoo)
     integer int2d1(nfoo,2), int2d2(nfoo,2)

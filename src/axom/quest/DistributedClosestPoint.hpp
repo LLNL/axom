@@ -362,15 +362,19 @@ private:
   };
 
 public:
-  DistributedClosestPointImpl(RuntimePolicy runtimePolicy, bool isVerbose)
+  DistributedClosestPointImpl(RuntimePolicy runtimePolicy,
+                              int allocatorID,
+                              bool isVerbose)
     : m_runtimePolicy(runtimePolicy)
     , m_isVerbose(isVerbose)
     , m_sqDistanceThreshold(std::numeric_limits<double>::max())
+    , m_allocatorID(allocatorID)
     , m_mpiComm(MPI_COMM_NULL)
     , m_rank(-1)
     , m_nranks(-1)
+    , m_objectPts(0, 0, allocatorID)
   {
-    setAllocatorID();
+    SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
 
     setMpiCommunicator(MPI_COMM_WORLD);
   }
@@ -395,6 +399,16 @@ public:
     SLIC_ERROR_IF(sqThreshold < 0.0,
                   "Squared distance-threshold must be non-negative.");
     m_sqDistanceThreshold = sqThreshold;
+  }
+
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
+  void setAllocatorID(int allocatorID)
+  {
+    SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
+    // TODO: If appropriate, how to check for compatibility with runtime policy?
+    m_allocatorID = allocatorID;
   }
 
 public:
@@ -473,6 +487,14 @@ public:
 
     SLIC_ASSERT_MSG(!isBVHTreeInitialized(), "BVH tree already initialized");
 
+    // In case user changed the allocator after setObjectMesh,
+    // move the object point data to avoid repetitive page faults.
+    if(m_objectPts.getAllocatorID() != m_allocatorID)
+    {
+      PointArray tmpPoints(m_objectPts, m_allocatorID);
+      m_objectPts.swap(tmpPoints);
+    }
+
     switch(m_runtimePolicy)
     {
     case RuntimePolicy::seq:
@@ -529,6 +551,7 @@ public:
     case RuntimePolicy::omp:
 #ifdef _AXOM_DCP_USE_OPENMP
       local_bb = m_bvh_omp->getBounds();
+      break;
 #else
       break;
 #endif
@@ -536,6 +559,7 @@ public:
     case RuntimePolicy::cuda:
 #ifdef _AXOM_DCP_USE_CUDA
       local_bb = m_bvh_cuda->getBounds();
+      break;
 #else
       break;
 #endif
@@ -543,6 +567,7 @@ public:
     case RuntimePolicy::hip:
 #ifdef _AXOM_DCP_USE_HIP
       local_bb = m_bvh_hip->getBounds();
+      break;
 #else
       break;
 #endif
@@ -968,37 +993,6 @@ private:
     }
   }
 
-  /// Sets the allocator ID to the default associated with the execution policy
-  void setAllocatorID()
-  {
-    // This function uses the default allocator ID for the execution space
-    // TODO: Add overload to allow the user to set an allocator ID
-
-    switch(m_runtimePolicy)
-    {
-    case RuntimePolicy::seq:
-      m_allocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-      break;
-    case RuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
-      m_allocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
-#endif
-      break;
-
-    case RuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
-      m_allocatorID = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-#endif
-      break;
-
-    case RuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
-      m_allocatorID = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-#endif
-      break;
-    }
-  }
-
   /**
    * \brief Extracts a field \a fieldName from the mesh blueprint
    *
@@ -1173,8 +1167,8 @@ public:
               PointType qpt = query_pts[idx];
 
               MinCandidate curr_min {};
-              if(query_ranks[idx] >=
-                 0)  // i.e. we've already found a candidate closest
+              // Preset cur_min to the closest point found so far.
+              if(query_ranks[idx] >= 0)
               {
                 curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
                 curr_min.minElem = query_inds[idx];
@@ -1285,7 +1279,7 @@ private:
 #ifdef _AXOM_DCP_USE_HIP
   std::unique_ptr<HipBVHTree> m_bvh_hip;
 #endif
-};
+};  // DistributedClosestPointImpl
 
 }  // namespace internal
 
@@ -1325,6 +1319,7 @@ public:
     : m_mpiComm(MPI_COMM_WORLD)
     , m_mpiCommIsPrivate(false)
   {
+    setDefaultAllocatorID();
     setMpiCommunicator(MPI_COMM_WORLD);
   }
 
@@ -1380,6 +1375,65 @@ public:
     }
 
     return false;
+  }
+
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
+  void setDefaultAllocatorID()
+  {
+    int defaultAllocatorID = axom::INVALID_ALLOCATOR_ID;
+    switch(m_runtimePolicy)
+    {
+    case RuntimePolicy::seq:
+      defaultAllocatorID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+      break;
+    case RuntimePolicy::omp:
+#ifdef _AXOM_DCP_USE_OPENMP
+      defaultAllocatorID = axom::execution_space<axom::OMP_EXEC>::allocatorID();
+#endif
+      break;
+
+    case RuntimePolicy::cuda:
+#ifdef _AXOM_DCP_USE_CUDA
+      defaultAllocatorID =
+        axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
+#endif
+      break;
+
+    case RuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+      defaultAllocatorID =
+        axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+#endif
+      break;
+    }
+    if(defaultAllocatorID == axom::INVALID_ALLOCATOR_ID)
+    {
+      SLIC_ERROR(
+        axom::fmt::format("There is no default allocator for runtime policy {}",
+                          m_runtimePolicy));
+    }
+    setAllocatorID(defaultAllocatorID);
+  }
+
+  /*!  @brief Sets the allocator ID to the default associated with the
+    execution policy
+  */
+  void setAllocatorID(int allocatorID)
+  {
+    SLIC_ASSERT_MSG(allocatorID != axom::INVALID_ALLOCATOR_ID,
+                    "Invalid allocator id.");
+    m_allocatorID = allocatorID;
+
+    if(m_dcp_2 != nullptr)
+    {
+      m_dcp_2->setAllocatorID(m_allocatorID);
+    }
+    if(m_dcp_3 != nullptr)
+    {
+      m_dcp_3->setAllocatorID(m_allocatorID);
+    }
   }
 
   /**
@@ -1564,12 +1618,14 @@ private:
     case 2:
       m_dcp_2 = std::make_unique<internal::DistributedClosestPointImpl<2>>(
         m_runtimePolicy,
+        m_allocatorID,
         m_isVerbose);
       m_objectMeshCreated = true;
       break;
     case 3:
       m_dcp_3 = std::make_unique<internal::DistributedClosestPointImpl<3>>(
         m_runtimePolicy,
+        m_allocatorID,
         m_isVerbose);
       m_objectMeshCreated = true;
       break;
@@ -1598,6 +1654,7 @@ private:
   RuntimePolicy m_runtimePolicy {RuntimePolicy::seq};
   MPI_Comm m_mpiComm;
   bool m_mpiCommIsPrivate;
+  int m_allocatorID {axom::INVALID_ALLOCATOR_ID};
   int m_dimension {-1};
   bool m_isVerbose {false};
   double m_sqDistanceThreshold {std::numeric_limits<double>::max()};
