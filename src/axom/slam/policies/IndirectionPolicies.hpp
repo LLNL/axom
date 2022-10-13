@@ -308,6 +308,18 @@ struct ArrayViewIndirection
 
   ArrayViewIndirection(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
 
+  ArrayViewIndirection(ArrayIndirection<PositionType, ElementType> ind)
+    : m_vecBuf(ind.data().data(), ind.data().size())
+  { }
+
+  ArrayViewIndirection(STLVectorIndirection<PositionType, ElementType> ind)
+    : m_vecBuf(ind.data().data(), ind.data().size())
+  { }
+
+  ArrayViewIndirection(NoIndirection<PositionType, ElementType>)
+    : m_vecBuf(nullptr, 0)
+  { }
+
   IndirectionBufferType data() { return m_vecBuf; }
   const IndirectionBufferType data() const { return m_vecBuf; }
 

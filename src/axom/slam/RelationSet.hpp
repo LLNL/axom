@@ -176,7 +176,7 @@ public:
   ElementType at(PositionType pos) const
   {
     RelationSet::verifyPosition(pos);
-    return (*m_relation->relationData())[pos];
+    return getRelationBuf(m_relation->relationData())[pos];
   }
 
   /** \brief Returns the relation pointer   */
@@ -187,7 +187,7 @@ public:
   /** \brief Return the size of the relation   */
   PositionType totalSize() const
   {
-    return PositionType(m_relation->relationData()->size());
+    return PositionType(getRelationBuf(m_relation->relationData()).size());
   }
 
   /**
@@ -220,7 +220,7 @@ public:
   // KW -- made this public to use from BivariateMap
   PositionType size() const
   {
-    return PositionType(m_relation->relationData()->size());
+    return PositionType(getRelationBuf(m_relation->relationData()).size());
   }
 
 private:
@@ -248,6 +248,14 @@ private:
         << s1 << "," << s2 << "), but set only has " << this->firstSetSize()
         << "x" << this->secondSetSize() << " elements.");
   }
+
+  using RelationBuf = typename RelationType::IndirectionBufferType;
+
+  static const RelationBuf& getRelationBuf(const RelationBuf* ptr)
+  {
+    return *ptr;
+  }
+  static RelationBuf getRelationBuf(RelationBuf value) { return value; }
 
 private:
   RelationType* m_relation;  //the relation that this set is based off of

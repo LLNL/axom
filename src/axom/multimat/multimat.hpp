@@ -151,7 +151,8 @@ public:
   using SubField = MMSubField2D<Field2DType>;
 
   using IndexSet = RangeSetType;  //For returning set of SparseIndex
-  using IdSet = OrderedSetType;   //For returning set of DenseIndex
+  using IdSet =
+    typename BivariateSetType::SubsetType;  //For returning set of DenseIndex
 
   //Constructors
 

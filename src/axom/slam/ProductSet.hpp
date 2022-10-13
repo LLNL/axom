@@ -68,13 +68,15 @@ private:
       //         goes from 0 to secondSetSize()
       // This requires a change to the return type of BivariateSet::getElements()
       std::iota(m_data.begin(), m_data.end(), 0);
-      m_set =
-        typename SetType::SetBuilder().size(secondSetSize).offset(0).data(&m_data);
+      m_set = typename SetType::SetBuilder()
+                .size(secondSetSize)
+                .offset(0)
+                .data(m_data.view());
     }
 
     Type get(PositionType) const { return m_set; }
 
-    std::vector<PositionType> m_data;
+    axom::Array<PositionType> m_data;
     SetType m_set;
   };
 

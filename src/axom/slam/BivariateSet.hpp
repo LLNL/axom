@@ -92,7 +92,7 @@ public:
                policies::RuntimeSize<PositionType>,
                policies::RuntimeOffset<PositionType>,
                policies::StrideOne<PositionType>,
-               policies::STLVectorIndirection<PositionType, ElementType>>;
+               policies::ArrayViewIndirection<PositionType, ElementType>>;
 
   using RangeSetType = RangeSet<PositionType, ElementType>;
 
