@@ -65,16 +65,19 @@ class MMField2DTemplated;
  */
 class MultiMat
 {
-public:
-  using BivariateSetType = slam::BivariateSet<>;  //RangeSetType, RangeSetType>;
-  using ProductSetType = slam::ProductSet<>;      //RangeSetType, RangeSetType>;
-
 protected:
   // SLAM Set type definitions
   using SetPosType = slam::DefaultPositionType;
   using SetElemType = slam::DefaultPositionType;
   using SetType = slam::Set<SetPosType, SetElemType>;
   using RangeSetType = slam::RangeSet<SetPosType, SetElemType>;
+
+public:
+  // SLAM Bivariate set type definitions
+  using BivariateSetType = slam::BivariateSet<RangeSetType, RangeSetType>;
+  using ProductSetType = slam::ProductSet<RangeSetType, RangeSetType>;
+
+private:
   // SLAM Relation typedef
   using IndBufferType = std::vector<SetPosType>;
   template <typename T>

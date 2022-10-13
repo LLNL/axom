@@ -37,6 +37,10 @@ class DynamicVariableRelation : public Relation<PosType, ElemType>
 {
 public:
   using SetType = Set<PosType, ElemType>;
+
+  using FromSetType = SetType;
+  using ToSetType = SetType;
+
   using SetPosition = PosType;
 
   using RelationVec = std::vector<SetPosition>;

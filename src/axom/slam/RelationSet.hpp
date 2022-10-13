@@ -30,8 +30,8 @@ namespace slam
  */
 
 template <typename Relation,
-          typename SetType1 = slam::Set<>,
-          typename SetType2 = slam::Set<>,
+          typename SetType1 = typename Relation::FromSetType,
+          typename SetType2 = typename Relation::ToSetType,
           typename InterfaceType = policies::VirtualBivariateSet<SetType1, SetType2>>
 class RelationSet final : public InterfaceType
 {
