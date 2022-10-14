@@ -6,8 +6,11 @@
 #ifndef SLAM_MapIfacePolicies_HPP
 #define SLAM_MapIfacePolicies_HPP
 
+#include <type_traits>
+
 #include "axom/slam/Set.hpp"
 #include "axom/slam/MapBase.hpp"
+#include "axom/slam/policies/InterfacePolicies.hpp"
 
 namespace axom
 {
@@ -15,13 +18,27 @@ namespace slam
 {
 namespace policies
 {
-template <typename SetPositionType = slam::DefaultPositionType>
-using VirtualMap = MapBase<SetPositionType>;
+namespace detail
+{
+template <typename InterfaceTag, typename PosType>
+struct MapInterfaceSelector
+{
+  static_assert(std::is_same<InterfaceTag, ConcreteInterface>::value,
+                "InterfaceTag must be one of policies::ConcreteInterface or "
+                "policies::VirtualInterface.");
+  using Type = ConcreteInterface;
+};
 
-template <typename PosType = slam::DefaultPositionType,
-          typename ElemType = slam::DefaultElementType>
-struct ConcreteMap
-{ };
+template <typename PosType>
+struct MapInterfaceSelector<VirtualInterface, PosType>
+{
+  using Type = MapBase<PosType>;
+};
+}  // namespace detail
+
+template <typename InterfaceTag, typename SetPositionType>
+using MapInterface =
+  typename detail::MapInterfaceSelector<InterfaceTag, SetPositionType>::Type;
 
 }  // end namespace policies
 }  // end namespace slam

@@ -56,13 +56,14 @@ template <typename PosType = slam::DefaultPositionType,
           typename StridePolicy = policies::StrideOne<PosType>,
           typename IndirectionPolicy = policies::NoIndirection<PosType, ElemType>,
           typename SubsettingPolicy = policies::NoSubset,
-          typename InterfacePolicy = policies::VirtualSet<PosType, ElemType>>
-struct OrderedSet : public InterfacePolicy,
-                    SizePolicy,
-                    OffsetPolicy,
-                    StridePolicy,
-                    IndirectionPolicy,
-                    SubsettingPolicy
+          typename InterfacePolicy = policies::VirtualInterface>
+struct OrderedSet
+  : public policies::SetInterface<InterfacePolicy, PosType, ElemType>,
+    SizePolicy,
+    OffsetPolicy,
+    StridePolicy,
+    IndirectionPolicy,
+    SubsettingPolicy
 {
 public:
   using PositionType = PosType;

@@ -83,8 +83,10 @@ template <typename T,
           typename IndPol =
             policies::STLVectorIndirection<typename BSet::PositionType, T>,
           typename StrPol = policies::StrideOne<typename BSet::PositionType>,
-          typename IfacePol = policies::VirtualMap<typename BSet::PositionType>>
-class BivariateMap : public IfacePol, public StrPol
+          typename IfacePol = policies::VirtualInterface>
+class BivariateMap
+  : public policies::MapInterface<IfacePol, typename BSet::PositionType>,
+    public StrPol
 {
 public:
   using DataType = T;

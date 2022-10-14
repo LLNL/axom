@@ -52,9 +52,10 @@ namespace slam
 
 template <typename SuperMapType,
           typename SubsetType,  //= slam::RangeSet<SetPosition, SetElement>
-          typename InterfacePolicy =
-            policies::VirtualMap<typename SubsetType::PositionType>>
-class SubMap : public InterfacePolicy, public SuperMapType::StridePolicyType
+          typename InterfacePolicy = policies::VirtualInterface>
+class SubMap
+  : public policies::MapInterface<InterfacePolicy, typename SubsetType::PositionType>,
+    public SuperMapType::StridePolicyType
 {
 public:
   static_assert(!std::is_abstract<SubsetType>::value,

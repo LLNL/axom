@@ -67,8 +67,9 @@ template <typename T,
           typename IndPol =
             policies::STLVectorIndirection<typename S::PositionType, T>,
           typename StrPol = policies::StrideOne<typename S::PositionType>,
-          typename IfacePol = policies::VirtualMap<typename S::PositionType>>
-class Map : public StrPol, public IfacePol
+          typename IfacePol = policies::VirtualInterface>
+class Map : public StrPol,
+            public policies::MapInterface<IfacePol, typename S::PositionType>
 {
 public:
   using DataType = T;
