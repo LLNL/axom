@@ -317,6 +317,7 @@ TEST(slam_generic_range_set, virtual_parent_set)
   using GenericRangeSet =
     axom::slam::GenericRangeSet<SetPosition,
                                 SetElement,
+                                policies::RuntimeOffset<SetPosition>,
                                 policies::StrideOne<SetPosition>,
                                 policies::NoIndirection<SetPosition, SetElement>,
                                 policies::VirtualParentSubset>;
@@ -366,6 +367,7 @@ TEST(slam_generic_range_set, concrete_parent_set)
   using GenericRangeSet =
     axom::slam::GenericRangeSet<SetPosition,
                                 SetElement,
+                                policies::RuntimeOffset<SetPosition>,
                                 policies::StrideOne<SetPosition>,
                                 policies::NoIndirection<SetPosition, SetElement>,
                                 policies::ConcreteParentSubset<ParentType>>;
@@ -416,6 +418,7 @@ TEST(slam_generic_range_set, strided_range_set)
   using GenericRangeSet =
     axom::slam::GenericRangeSet<SetPosition,
                                 SetElement,
+                                policies::RuntimeOffset<SetPosition>,
                                 policies::RuntimeStride<SetPosition>>;
   using SetBuilder = GenericRangeSet::SetBuilder;
 
