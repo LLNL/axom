@@ -18,7 +18,7 @@ namespace multimat
 
 template <typename Field2DType>
 class MMSubField2D
-  : public slam::SubMap<typename Field2DType::BiVarMapType, slam::RangeSet<>>
+  : public slam::SubMap<typename Field2DType::BiVarMapType, MultiMat::RangeSetType>
 {
 public:
   using SubSetType = MultiMat::RangeSetType;

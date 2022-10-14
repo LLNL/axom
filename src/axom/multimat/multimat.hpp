@@ -70,7 +70,7 @@ protected:
   using SetPosType = slam::DefaultPositionType;
   using SetElemType = slam::DefaultPositionType;
   using SetType = slam::Set<SetPosType, SetElemType>;
-  using RangeSetType = slam::RangeSet<SetPosType, SetElemType>;
+  using RangeSetType = slam::RangeSet<SetPosType, SetElemType>::ConcreteSet;
 
 public:
   // SLAM Bivariate set type definitions
