@@ -113,8 +113,75 @@ public:
     , SubsettingPolicyType(builder.m_parent)
   { }
 
-  OrderedSet(const OrderedSet& oset) = default;
-  OrderedSet& operator=(const OrderedSet& other) = default;
+private:
+  template <typename OtherPosType,
+            typename OtherElemType,
+            typename OtherSizePolicy,
+            typename OtherOffsetPolicy,
+            typename OtherStridePolicy,
+            typename OtherIndirectionPolicy,
+            typename OtherSubsettingPolicy,
+            typename OtherInterfacePolicy>
+  friend struct OrderedSet;
+
+  /*!
+   * \brief Helper tag class to call OrderedSet conversion constructor.
+   */
+  struct ConversionTag
+  { };
+
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  using ConvertibleOrderedSet = OrderedSet<PosType,
+                                           ElemType,
+                                           SizePolicyType,
+                                           OffsetPolicyType,
+                                           StridePolicyType,
+                                           OtherIndirectionPolicy,
+                                           SubsettingPolicyType,
+                                           OtherInterfaceType>;
+
+  /*!
+   * \brief Private constructor to create an OrderedSet from another OrderedSet
+   *  with different IndirectionPolicy and InterfacePolicy.
+   *
+   *  Used by the conversion function defined below.
+   */
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  OrderedSet(
+    ConversionTag,
+    const ConvertibleOrderedSet<OtherIndirectionPolicy, OtherInterfaceType>& other)
+    : SizePolicyType(other)
+    , OffsetPolicyType(other)
+    , StridePolicyType(other)
+    , IndirectionPolicyType(other)
+    , SubsettingPolicyType(other)
+  { }
+
+public:
+  using ConcreteSet =
+    ConvertibleOrderedSet<IndirectionPolicy, policies::ConcreteInterface>;
+
+  using PolymorphicSet =
+    ConvertibleOrderedSet<IndirectionPolicy, policies::VirtualInterface>;
+
+  /*!
+   * \brief Converts this OrderedSet to an OrderedSet of another indirection
+   *  policy and/or interface policy.
+   */
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  operator OrderedSet<PosType,
+                      ElemType,
+                      SizePolicyType,
+                      OffsetPolicyType,
+                      StridePolicyType,
+                      OtherIndirectionPolicy,
+                      SubsettingPolicyType,
+                      OtherInterfaceType>() const
+  {
+    using ToOrderedSet =
+      ConvertibleOrderedSet<OtherIndirectionPolicy, OtherInterfaceType>;
+    return ToOrderedSet(typename ToOrderedSet::ConversionTag {}, *this);
+  }
 
 public:
   /**

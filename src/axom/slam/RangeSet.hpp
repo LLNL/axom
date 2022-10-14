@@ -36,17 +36,41 @@ template <typename P = slam::DefaultPositionType,
           typename OffsetPolicy = policies::RuntimeOffset<P>,
           typename StridingPolicy = policies::StrideOne<P>,
           typename IndirectionPolicy = policies::NoIndirection<P, E>,
-          typename SubsettingPolicy = policies::NoSubset>
-class GenericRangeSet
-  : public OrderedSet<P, E, policies::RuntimeSize<P>, OffsetPolicy, StridingPolicy, IndirectionPolicy, SubsettingPolicy>
+          typename SubsettingPolicy = policies::NoSubset,
+          typename InterfacePolicy = policies::VirtualInterface>
+class GenericRangeSet : public OrderedSet<P,
+                                          E,
+                                          policies::RuntimeSize<P>,
+                                          OffsetPolicy,
+                                          StridingPolicy,
+                                          IndirectionPolicy,
+                                          SubsettingPolicy,
+                                          InterfacePolicy>
 {
 public:
   using PositionType = P;
   using ElementType = E;
 
 private:
-  using OrderedSetType =
-    OrderedSet<P, E, policies::RuntimeSize<P>, OffsetPolicy, StridingPolicy, IndirectionPolicy, SubsettingPolicy>;
+  using OrderedSetType = OrderedSet<P,
+                                    E,
+                                    policies::RuntimeSize<P>,
+                                    OffsetPolicy,
+                                    StridingPolicy,
+                                    IndirectionPolicy,
+                                    SubsettingPolicy,
+                                    InterfacePolicy>;
+
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  using ConvertibleRangeSet =
+    GenericRangeSet<P, E, OffsetPolicy, StridingPolicy, OtherIndirectionPolicy, SubsettingPolicy, InterfacePolicy>;
+
+public:
+  using ConcreteSet =
+    ConvertibleRangeSet<IndirectionPolicy, policies::ConcreteInterface>;
+
+  using PolymorphicSet =
+    ConvertibleRangeSet<IndirectionPolicy, policies::VirtualInterface>;
 
 public:
   GenericRangeSet(PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
