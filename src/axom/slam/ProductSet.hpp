@@ -38,16 +38,27 @@ namespace slam
  */
 template <typename SetType1 = slam::Set<>,
           typename SetType2 = slam::Set<>,
-          typename InterfaceType = policies::VirtualBivariateSet<SetType1, SetType2>>
-class ProductSet final : public InterfaceType
+          typename InterfaceType = policies::VirtualInterface>
+class ProductSet final
+  : public policies::BivariateSetInterface<InterfaceType,
+                                           SetType1,
+                                           SetType2,
+                                           ProductSet<SetType1, SetType2, InterfaceType>>
 {
+private:
+  using BaseType =
+    policies::BivariateSetInterface<InterfaceType,
+                                    SetType1,
+                                    SetType2,
+                                    ProductSet<SetType1, SetType2, InterfaceType>>;
+
 public:
   using RangeSetType =
     RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>;
   using FirstSetType = SetType1;
   using SecondSetType = SetType2;
-  using PositionType = typename InterfaceType::PositionType;
-  using ElementType = typename InterfaceType::ElementType;
+  using PositionType = typename BaseType::PositionType;
+  using ElementType = typename BaseType::ElementType;
   using ProductSetType = ProductSet<SetType1, SetType2>;
 
 private:
@@ -88,8 +99,7 @@ private:
   };
 
 public:
-  using SubsetType =
-    typename RowSet<void, typename InterfaceType::SubsetType>::Type;
+  using SubsetType = typename RowSet<void, typename BaseType::SubsetType>::Type;
 
   /**
    * \brief Constructor taking in pointers of two Sets.
@@ -190,7 +200,7 @@ public:
 
   bool isValid(bool verboseOutput = false) const
   {
-    return InterfaceType::isValid(verboseOutput);
+    return BaseType::isValid(verboseOutput);
   }
 
   /** \brief Returns pointer to the first set.   */
@@ -236,7 +246,7 @@ private:
 private:
   const FirstSetType* m_set1;
   const SecondSetType* m_set2;
-  RowSet<void, typename InterfaceType::SubsetType> m_rowSet;
+  RowSet<void, typename BaseType::SubsetType> m_rowSet;
 };
 
 }  // end namespace slam

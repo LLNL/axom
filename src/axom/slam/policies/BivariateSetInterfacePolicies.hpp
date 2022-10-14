@@ -7,6 +7,7 @@
 #define SLAM_BivarSetIfacePolicies_HPP
 
 #include "axom/slam/BivariateSet.hpp"
+#include "axom/slam/policies/InterfacePolicies.hpp"
 
 namespace axom
 {
@@ -14,9 +15,8 @@ namespace slam
 {
 namespace policies
 {
-template <typename Set1 = slam::Set<>, typename Set2 = slam::Set<>>
-using VirtualBivariateSet = BivariateSet<Set1, Set2>;
-
+namespace detail
+{
 template <typename Derived, typename Set1 = slam::Set<>, typename Set2 = slam::Set<>>
 struct ConcreteBivariateSet
 {
@@ -71,6 +71,26 @@ protected:
     return static_cast<const Derived*>(this)->getSecondSet();
   }
 };
+
+template <typename InterfaceTag, typename Set1, typename Set2, typename Derived>
+struct BSetInterfaceSelector
+{
+  static_assert(std::is_same<InterfaceTag, ConcreteInterface>::value,
+                "InterfaceTag must be one of policies::ConcreteInterface or "
+                "policies::VirtualInterface.");
+  using Type = ConcreteBivariateSet<Derived, Set1, Set2>;
+};
+
+template <typename Set1, typename Set2, typename Derived>
+struct BSetInterfaceSelector<VirtualInterface, Set1, Set2, Derived>
+{
+  using Type = BivariateSet<Set1, Set2>;
+};
+}  // namespace detail
+
+template <typename InterfaceTag, typename FromSet, typename ToSet, typename Derived>
+using BivariateSetInterface =
+  typename detail::BSetInterfaceSelector<InterfaceTag, FromSet, ToSet, Derived>::Type;
 
 }  // end namespace policies
 }  // end namespace slam

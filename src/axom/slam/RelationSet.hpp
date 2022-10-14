@@ -32,8 +32,13 @@ namespace slam
 template <typename Relation,
           typename SetType1 = typename Relation::FromSetType,
           typename SetType2 = typename Relation::ToSetType,
-          typename InterfaceType = policies::VirtualBivariateSet<SetType1, SetType2>>
-class RelationSet final : public InterfaceType
+          typename InterfaceType = policies::VirtualInterface>
+class RelationSet final
+  : public policies::BivariateSetInterface<
+      InterfaceType,
+      SetType1,
+      SetType2,
+      RelationSet<Relation, SetType1, SetType2, InterfaceType>>
 {
 public:
   using FirstSetType = SetType1;
@@ -44,15 +49,20 @@ public:
 private:
   using RangeSetType =
     RangeSet<typename RelationType::SetPosition, typename RelationType::SetElement>;
+  using BaseType = policies::BivariateSetInterface<
+    InterfaceType,
+    SetType1,
+    SetType2,
+    RelationSet<Relation, SetType1, SetType2, InterfaceType>>;
 
 public:
   using PositionType = typename RelationType::SetPosition;
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
-  using SubsetType = typename InterfaceType::SubsetType;
+  using SubsetType = typename BaseType::SubsetType;
 
-  using InterfaceType::INVALID_POS;
+  using BaseType::INVALID_POS;
 
 public:
   RelationSet() = default;
@@ -91,7 +101,7 @@ public:
     {
       if(ls[i] == pos2) return i;
     }
-    return InterfaceType::INVALID_POS;
+    return BaseType::INVALID_POS;
   }
 
   /**
@@ -112,7 +122,7 @@ public:
     {
       if(ls[i] == s2) return ls.offset() + i;
     }
-    return InterfaceType::INVALID_POS;
+    return BaseType::INVALID_POS;
   }
 
   /**
@@ -131,7 +141,7 @@ public:
 
     if(ls.size() > 0) return ls.offset();
 
-    return InterfaceType::INVALID_POS;
+    return BaseType::INVALID_POS;
   }
 
   RangeSetType elementRangeSet(PositionType pos1) const
