@@ -92,7 +92,7 @@ private:
                                                           RangeSetType>;
 
   using DynamicVariableRelationType =
-    slam::DynamicVariableRelation<SetPosType, SetElemType>;
+    slam::DynamicVariableRelation<RangeSetType, RangeSetType>;
   using OrderedSetType =
     slam::OrderedSet<SetPosType,
                      SetElemType,

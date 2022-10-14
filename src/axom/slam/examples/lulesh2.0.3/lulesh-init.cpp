@@ -391,7 +391,7 @@ namespace slamLulesh {
   void
   Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
   {
-    using RegionToElemDynamicRelation = axom::slam::DynamicVariableRelation<PositionType, ElementType>;
+    using RegionToElemDynamicRelation = axom::slam::DynamicVariableRelation<RegionSet, ElemSet>;
 
 #ifdef AXOM_USE_MPI
     int myRank;
