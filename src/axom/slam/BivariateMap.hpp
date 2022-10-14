@@ -135,29 +135,15 @@ public:
     , m_map(SetType(bSet->size()), defaultValue, stride, allocatorID)
   { }
 
-  // (KW) Problem -- does not work with RelationSet
-  template <typename BivariateSetRetType, typename RelType = void>
-  typename std::enable_if<!traits::has_relation_ptr<BivariateSetRetType>::value,
-                          BivariateSetRetType>::type
-  getBivariateSet() const
+  template <typename BivariateSetRetType>
+  BivariateSetRetType getBivariateSet() const
   {
     using OuterSet = const typename BivariateSetRetType::FirstSetType;
     using InnerSet = const typename BivariateSetRetType::SecondSetType;
-    OuterSet* outer = dynamic_cast<OuterSet*>(set()->getFirstSet());
-    InnerSet* inner = dynamic_cast<InnerSet*>(set()->getSecondSet());
+    OuterSet* outer = static_cast<OuterSet*>(set()->getFirstSet());
+    InnerSet* inner = static_cast<InnerSet*>(set()->getSecondSet());
 
     return BivariateSetRetType(outer, inner);
-  }
-
-  template <typename BivariateSetRetType, typename RelType>
-  typename std::enable_if<traits::has_relation_ptr<BivariateSetRetType>::value,
-                          BivariateSetRetType>::type
-  getBivariateSet() const
-  {
-    auto* rel = dynamic_cast<const RelType*>(m_bset)->getRelation();
-    SLIC_ASSERT(rel != nullptr);
-
-    return BivariateSetRetType(rel);
   }
 
   /// \name BivariateMap value access functions

@@ -91,18 +91,17 @@ public:
   using SubsetType =
     typename RowSet<void, typename InterfaceType::SubsetType>::Type;
 
-  /** \brief Default constructor */
-  ProductSet() : m_rowSet(0) { }
-
   /**
    * \brief Constructor taking in pointers of two Sets.
    *
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-
-  ProductSet(const FirstSetType* set1, const SecondSetType* set2)
-    : InterfaceType(set1, set2)
+  ProductSet(
+    const FirstSetType* set1 = policies::EmptySetTraits<FirstSetType>::emptySet(),
+    const SecondSetType* set2 = policies::EmptySetTraits<SecondSetType>::emptySet())
+    : m_set1(set1)
+    , m_set2(set2)
     , m_rowSet(this->secondSetSize())
   { }
 
@@ -194,6 +193,11 @@ public:
     return InterfaceType::isValid(verboseOutput);
   }
 
+  /** \brief Returns pointer to the first set.   */
+  const FirstSetType* getFirstSet() const { return m_set1; }
+  /** \brief Returns pointer to the second set.   */
+  const SecondSetType* getSecondSet() const { return m_set2; }
+
 private:
   /** \brief verify the FlatIndex \a pos is within the valid range. */
   void verifyPosition(PositionType pos) const
@@ -230,6 +234,8 @@ private:
   }
 
 private:
+  const FirstSetType* m_set1;
+  const SecondSetType* m_set2;
   RowSet<void, typename InterfaceType::SubsetType> m_rowSet;
 };
 
