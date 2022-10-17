@@ -1293,7 +1293,7 @@ int main(int argc, char** argv)
 
   queryMeshNode.reset();
 
-  queryMeshWrapper.saveMesh(params.distanceFile);
+  // queryMeshWrapper.saveMesh(params.distanceFile);
 
   if(errCount)
   {
