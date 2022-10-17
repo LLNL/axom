@@ -126,7 +126,6 @@ MultiMat::MultiMat(const MultiMat& other)
   , m_denseBivarSet(other.m_denseBivarSet)
   , m_fieldNameVec(other.m_fieldNameVec)
   , m_fieldMappingVec(other.m_fieldMappingVec)
-  , m_fieldBackingVec(other.m_fieldBackingVec)
   , m_dataTypeVec(other.m_dataTypeVec)
   , m_fieldDataLayoutVec(other.m_fieldDataLayoutVec)
   , m_fieldSparsityLayoutVec(other.m_fieldSparsityLayoutVec)
@@ -158,6 +157,18 @@ MultiMat::MultiMat(const MultiMat& other)
     relSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
     relDenseSet(DataLayout::MAT_DOM) =
       ProductSetType(&getMatSet(), &getCellSet());
+  }
+  for(size_t idx = 0; idx < other.m_fieldBackingVec.size(); idx++)
+  {
+    if(other.m_fieldBackingVec[idx] == nullptr)
+    {
+      m_fieldBackingVec.push_back(nullptr);
+    }
+    else
+    {
+      m_fieldBackingVec.emplace_back(
+        new FieldBacking(*(other.m_fieldBackingVec[idx])));
+    }
   }
 }
 
@@ -230,7 +241,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
 
   //Create a field for VolFrac as the 0th field
   m_fieldNameVec.push_back("Volfrac");
-  m_fieldBackingVec.push_back({});
+  m_fieldBackingVec.push_back(nullptr);
   m_fieldMappingVec.push_back(FieldMapping::PER_CELL_MAT);
   m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
   m_fieldDataLayoutVec.push_back(DataLayout::CELL_DOM);
@@ -835,7 +846,7 @@ void MultiMat::convertToSparse_helper(int map_i)
   SLIC_ASSERT(m_fieldSparsityLayoutVec[map_i] != SparsityLayout::SPARSE);
 
   //Skip if no volume fraction array is set-up
-  if(map_i == 0 && m_fieldBackingVec[0].getArray<double>().empty()) return;
+  if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
 
   StaticVariableRelationType* Rel = getRel(map_i);
 
@@ -857,7 +868,7 @@ void MultiMat::convertToSparse_helper(int map_i)
   }
   SLIC_ASSERT(idx == Rel->totalSize() * stride);
 
-  auto& backingArray = m_fieldBackingVec[map_i].getArray<DataType>();
+  auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
   backingArray = std::move(arr_data);
 }
 
@@ -867,7 +878,7 @@ void MultiMat::convertToDense_helper(int map_i)
   SLIC_ASSERT(m_fieldSparsityLayoutVec[map_i] != SparsityLayout::DENSE);
 
   //Skip if no volume fraction array is set-up
-  if(map_i == 0 && m_fieldBackingVec[0].getArray<double>().empty()) return;
+  if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
 
   ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[map_i]);
 
@@ -886,7 +897,7 @@ void MultiMat::convertToDense_helper(int map_i)
     }
   }
 
-  auto& backingArray = m_fieldBackingVec[map_i].getArray<DataType>();
+  auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
   backingArray = std::move(arr_data);
 }
 
@@ -912,7 +923,7 @@ void MultiMat::transposeField_helper(int field_idx)
   SLIC_ASSERT(m_fieldMappingVec[field_idx] == FieldMapping::PER_CELL_MAT);
 
   //Skip if no volume fraction array is set-up
-  if(field_idx == 0 && m_fieldBackingVec[0].getArray<double>().empty()) return;
+  if(field_idx == 0 && m_fieldBackingVec[0] == nullptr) return;
 
   Field2D<DataType> old_map = get2dFieldImpl<DataType>(field_idx);
   int stride = old_map.stride();
@@ -975,7 +986,7 @@ void MultiMat::transposeField_helper(int field_idx)
     }
   }
 
-  m_fieldBackingVec[field_idx].getArray<DataType>() = std::move(arr_data);
+  m_fieldBackingVec[field_idx]->getArray<DataType>() = std::move(arr_data);
   m_fieldDataLayoutVec[field_idx] = new_layout;
 }
 
@@ -1084,7 +1095,7 @@ bool MultiMat::isValid(bool verboseOutput) const
   {
     //It's a non-empty MultiMat object.
     //Check Volfrac exists
-    if(m_fieldBackingVec[0].m_dblData.empty())
+    if(m_fieldBackingVec[0] == nullptr)
     {
       errStr << "\n\t*No Volfrac field added.";
       bValid = false;

@@ -659,7 +659,7 @@ private:
   //std::vector of information for each fields
   std::vector<std::string> m_fieldNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
-  std::vector<FieldBacking> m_fieldBackingVec;
+  std::vector<std::unique_ptr<FieldBacking>> m_fieldBackingVec;
   std::vector<DataTypeSupported> m_dataTypeVec;
   std::vector<DataLayout> m_fieldDataLayoutVec;
   std::vector<SparsityLayout> m_fieldSparsityLayoutVec;
@@ -740,7 +740,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
 
   m_fieldNameVec.push_back(field_name);
   m_fieldMappingVec.push_back(field_mapping);
-  m_fieldBackingVec.push_back({});
+  m_fieldBackingVec.emplace_back(new FieldBacking);
   m_fieldDataLayoutVec.push_back(data_layout);
   m_fieldSparsityLayoutVec.push_back(sparsity_layout);
   m_fieldStrideVec.push_back(stride);
@@ -767,7 +767,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     const BivariateSetType* s = get_mapped_biSet(data_layout, sparsity_layout);
     SLIC_ASSERT(s != nullptr);
 
-    axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
+    axom::Array<T>& array = m_fieldBackingVec.back()->getArray<T>();
     array.insert(0, s->size() * stride, data_arr);
   }
   else
@@ -776,7 +776,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
                 field_mapping == FieldMapping::PER_MAT);
     const RangeSetType& s = *getMappedRangeSet(field_mapping);
 
-    axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
+    axom::Array<T>& array = m_fieldBackingVec.back()->getArray<T>();
     array.insert(0, s.size() * stride, data_arr);
   }
 
@@ -812,7 +812,7 @@ MultiMat::Field1D<T> MultiMat::get1dFieldImpl(int fieldIdx)
      m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
   {
     return Field1D<T>(*getMappedRangeSet(m_fieldMappingVec[fieldIdx]),
-                      m_fieldBackingVec[fieldIdx].getArray<T>().view(),
+                      m_fieldBackingVec[fieldIdx]->getArray<T>().view(),
                       m_fieldStrideVec[fieldIdx]);
   }
   else
@@ -824,7 +824,7 @@ MultiMat::Field1D<T> MultiMat::get1dFieldImpl(int fieldIdx)
     // indexing information would be lost.
     RangeSetType bisetFlat(get_mapped_biSet(fieldIdx)->size());
     return Field1D<T>(bisetFlat,
-                      m_fieldBackingVec[fieldIdx].getArray<T>().view(),
+                      m_fieldBackingVec[fieldIdx]->getArray<T>().view(),
                       m_fieldStrideVec[fieldIdx]);
   }
 }
@@ -837,7 +837,7 @@ MultiMat::Field2D<T> MultiMat::get2dFieldImpl(int fieldIdx)
   return Field2D<T>(*this,
                     get_mapped_biSet(fieldIdx),
                     m_fieldNameVec[fieldIdx],
-                    m_fieldBackingVec[fieldIdx].getArray<T>().view(),
+                    m_fieldBackingVec[fieldIdx]->getArray<T>().view(),
                     m_fieldStrideVec[fieldIdx]);
 }
 
