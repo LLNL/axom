@@ -47,7 +47,7 @@ public:
   //  const DataType* data_arr = nullptr,
   //  int stride = 1);
   // Constructor given the bivariate set
-  MMField2D(MultiMat& mm,
+  MMField2D(const MultiMat& mm,
             const BiSet*,
             const std::string& arr_name = "unnamed",
             axom::ArrayView<DataType> data_arr = {},
@@ -96,7 +96,7 @@ public:
   bool isMatDom() const { return m_data_layout == DataLayout::MAT_DOM; }
 
 private:
-  MultiMat* m_mm;
+  const MultiMat* m_mm;
 
   DataLayout m_data_layout;
   SparsityLayout m_sparsity_layout;
@@ -117,7 +117,7 @@ private:
 
 // Constructor given the biset
 template <typename DataType, typename BiSet>
-inline MMField2D<DataType, BiSet>::MMField2D(MultiMat& mm,
+inline MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
                                              const BiSet* biset,
                                              const std::string& arr_name,
                                              axom::ArrayView<DataType> data_arr,

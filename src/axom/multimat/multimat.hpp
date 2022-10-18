@@ -100,7 +100,8 @@ private:
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
 
   template <typename T>
-  using MapType = slam::Map<T, RangeSetType, IndViewPolicy<T>, MapStrideType>;
+  using MapType =
+    slam::Map<std::remove_const_t<T>, RangeSetType, IndViewPolicy<T>, MapStrideType>;
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapType =  //this one has runtime stride
@@ -108,7 +109,7 @@ private:
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapTypeStrideOne =  //this one has compile time stride 1
-    slam::BivariateMap<T, BSet, IndViewPolicy<T>>;
+    slam::BivariateMap<std::remove_const_t<T>, BSet, IndViewPolicy<T>>;
 
 public:
   using SparseRelationType = StaticVariableRelationType;
@@ -317,6 +318,10 @@ public:
   template <typename T>
   Field1D<T> get1dField(const std::string& field_name);
 
+  /// \overload
+  template <typename T>
+  Field1D<const T> get1dField(const std::string& field_name) const;
+
   /**
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field2D, containing an entry for each cell and
@@ -329,6 +334,10 @@ public:
    */
   template <typename T>
   Field2D<T> get2dField(const std::string& field_name);
+
+  /// \overload
+  template <typename T>
+  Field2D<const T> get2dField(const std::string& field_name) const;
 
   template <typename T, typename BSetType>
   Field2D<T, BSetType> get2dField(const std::string& field_name);
@@ -350,6 +359,7 @@ public:
    * \brief Get the volume fraction field
    */
   Field2D<double> getVolfracField();
+  Field2D<const double> getVolfracField() const;
 
   /**
    * \brief Get a set of index for a Subfield.
@@ -399,12 +409,12 @@ public:
    */
   IndexSet getSubfieldIndexingSet(int idx,
                                   DataLayout layout,
-                                  SparsityLayout sparsity);
+                                  SparsityLayout sparsity) const;
 
   /** Cell-dominant version of getSubfieldIndexingSet() **/
-  IndexSet getIndexingSetOfCell(int cell_id, SparsityLayout sparsity);
+  IndexSet getIndexingSetOfCell(int cell_id, SparsityLayout sparsity) const;
   /** Material-dominant version of getSubfieldIndexingSet() **/
-  IndexSet getIndexingSetOfMat(int mat_id, SparsityLayout sparsity);
+  IndexSet getIndexingSetOfMat(int mat_id, SparsityLayout sparsity) const;
 
   /** Return the number of material this object holds **/
   int getNumberOfMaterials() const { return m_nmats; };
@@ -493,7 +503,7 @@ public:
 
 protected:
   //Return the Set pointer associalted with the given FieldMapping or field idx
-  RangeSetType* getMappedRangeSet(FieldMapping mapping)
+  const RangeSetType* getMappedRangeSet(FieldMapping mapping) const
   {
     if(mapping == FieldMapping::PER_CELL)
     {
@@ -511,8 +521,8 @@ protected:
   }
 
   //Return the BivariateSet used for the specified layouts or the field
-  BivariateSetType* get_mapped_biSet(DataLayout, SparsityLayout);
-  BivariateSetType* get_mapped_biSet(int field_idx);
+  const BivariateSetType* get_mapped_biSet(DataLayout, SparsityLayout) const;
+  const BivariateSetType* get_mapped_biSet(int field_idx) const;
   //Return the relation for the specified field idx or the mapping
   StaticVariableRelationType* getRel(int field_idx);
 
@@ -595,6 +605,7 @@ private:  //private functions
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
   RelationSetType& relSparseSet(DataLayout layout);
+  const RelationSetType& relSparseSet(DataLayout layout) const;
 
   /*!
    * \brief Returns a reference to a product set corresponding to a relation.
@@ -602,6 +613,7 @@ private:  //private functions
    * \param layout The layout type of the relation (cell- or mat-dominant)
    */
   ProductSetType& relDenseSet(DataLayout layout);
+  const ProductSetType& relDenseSet(DataLayout layout) const;
 
   /*!
    * \brief Returns true if the static relation corresponding to the given data
@@ -618,9 +630,9 @@ private:  //private functions
   bool hasValidDynamicRelation(DataLayout layout) const;
 
   template <typename T>
-  Field1D<T> get1dFieldImpl(int fieldIdx);
+  Field1D<T> get1dFieldImpl(int fieldIdx) const;
   template <typename T>
-  Field2D<T> get2dFieldImpl(int fieldIdx);
+  Field2D<T> get2dFieldImpl(int fieldIdx) const;
 
 private:
   unsigned int m_ncells, m_nmats;
@@ -654,6 +666,12 @@ private:
 
     template <typename T>
     axom::Array<T>& getArray();
+
+    template <typename T>
+    axom::ArrayView<T> getArrayView()
+    {
+      return getArray<std::remove_const_t<T>>().view();
+    }
   };
 
   //std::vector of information for each fields
@@ -795,6 +813,17 @@ MultiMat::Field1D<T> MultiMat::get1dField(const std::string& field_name)
 }
 
 template <typename T>
+MultiMat::Field1D<const T> MultiMat::get1dField(const std::string& field_name) const
+{
+  int fieldIdx = getFieldIdx(field_name);
+
+  if(fieldIdx < 0)
+    throw std::invalid_argument("No field with this name is found");
+
+  return get1dFieldImpl<const T>(fieldIdx);
+}
+
+template <typename T>
 MultiMat::Field2D<T> MultiMat::get2dField(const std::string& field_name)
 {
   int fieldIdx = getFieldIdx(field_name);
@@ -806,7 +835,18 @@ MultiMat::Field2D<T> MultiMat::get2dField(const std::string& field_name)
 }
 
 template <typename T>
-MultiMat::Field1D<T> MultiMat::get1dFieldImpl(int fieldIdx)
+MultiMat::Field2D<const T> MultiMat::get2dField(const std::string& field_name) const
+{
+  int fieldIdx = getFieldIdx(field_name);
+
+  if(fieldIdx < 0)
+    throw std::invalid_argument("No field with this name is found");
+
+  return get2dFieldImpl<const T>(fieldIdx);
+}
+
+template <typename T>
+MultiMat::Field1D<T> MultiMat::get1dFieldImpl(int fieldIdx) const
 {
   if(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL ||
      m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
@@ -824,20 +864,20 @@ MultiMat::Field1D<T> MultiMat::get1dFieldImpl(int fieldIdx)
     // indexing information would be lost.
     RangeSetType bisetFlat(get_mapped_biSet(fieldIdx)->size());
     return Field1D<T>(bisetFlat,
-                      m_fieldBackingVec[fieldIdx]->getArray<T>().view(),
+                      m_fieldBackingVec[fieldIdx]->getArrayView<T>(),
                       m_fieldStrideVec[fieldIdx]);
   }
 }
 
 template <typename T>
-MultiMat::Field2D<T> MultiMat::get2dFieldImpl(int fieldIdx)
+MultiMat::Field2D<T> MultiMat::get2dFieldImpl(int fieldIdx) const
 {
   SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
 
   return Field2D<T>(*this,
                     get_mapped_biSet(fieldIdx),
                     m_fieldNameVec[fieldIdx],
-                    m_fieldBackingVec[fieldIdx]->getArray<T>().view(),
+                    m_fieldBackingVec[fieldIdx]->getArrayView<T>(),
                     m_fieldStrideVec[fieldIdx]);
 }
 

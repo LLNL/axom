@@ -92,7 +92,17 @@ MultiMat::RelationSetType& MultiMat::relSparseSet(DataLayout layout)
   return m_sparseBivarSet[(int)layout];
 }
 
+const MultiMat::RelationSetType& MultiMat::relSparseSet(DataLayout layout) const
+{
+  return m_sparseBivarSet[(int)layout];
+}
+
 MultiMat::ProductSetType& MultiMat::relDenseSet(DataLayout layout)
+{
+  return m_denseBivarSet[(int)layout];
+}
+
+const MultiMat::ProductSetType& MultiMat::relDenseSet(DataLayout layout) const
 {
   return m_denseBivarSet[(int)layout];
 }
@@ -297,6 +307,11 @@ MultiMat::Field2D<double> MultiMat::getVolfracField()
   return get2dFieldImpl<double>(0);
 }
 
+MultiMat::Field2D<const double> MultiMat::getVolfracField() const
+{
+  return get2dFieldImpl<const double>(0);
+}
+
 int MultiMat::getFieldIdx(const std::string& field_name) const
 {
   for(unsigned int i = 0; i < m_fieldNameVec.size(); i++)
@@ -332,7 +347,7 @@ MultiMat::IdSet MultiMat::getCellContainingMat(int m)
 
 MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx,
                                                     DataLayout layout,
-                                                    SparsityLayout sparsity)
+                                                    SparsityLayout sparsity) const
 {
   if(layout == DataLayout::CELL_DOM)
     return getIndexingSetOfCell(idx, sparsity);
@@ -340,7 +355,8 @@ MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx,
     return getIndexingSetOfMat(idx, sparsity);
 }
 
-MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c, SparsityLayout sparsity)
+MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c,
+                                                  SparsityLayout sparsity) const
 {
   SLIC_ASSERT(hasValidStaticRelation(DataLayout::CELL_DOM));
   SLIC_ASSERT(0 <= c && c < (int)m_ncells);
@@ -359,7 +375,8 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c, SparsityLayout sparsity
   }
 }
 
-MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m, SparsityLayout sparsity)
+MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m,
+                                                 SparsityLayout sparsity) const
 {
   SLIC_ASSERT(hasValidStaticRelation(DataLayout::MAT_DOM));
   SLIC_ASSERT(0 <= m && m < (int)m_nmats);
@@ -1103,7 +1120,7 @@ bool MultiMat::isValid(bool verboseOutput) const
     else
     {
       // TODO: fix constness of multimat
-      auto volfrac_map = const_cast<MultiMat*>(this)->getVolfracField();
+      auto volfrac_map = getVolfracField();
       auto volfrac_sparsity = m_fieldSparsityLayoutVec[0];
       auto volfrac_layout = m_fieldDataLayoutVec[0];
 
@@ -1180,10 +1197,11 @@ bool MultiMat::isValid(bool verboseOutput) const
   return bValid;
 }
 
-MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(DataLayout layout,
-                                                       SparsityLayout sparsity)
+const MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(
+  DataLayout layout,
+  SparsityLayout sparsity) const
 {
-  BivariateSetType* set_ptr = nullptr;
+  const BivariateSetType* set_ptr = nullptr;
 
   if(sparsity == SparsityLayout::SPARSE)
   {
@@ -1197,7 +1215,7 @@ MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(DataLayout layout,
   return set_ptr;
 }
 
-MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(int field_idx)
+const MultiMat::BivariateSetType* MultiMat::get_mapped_biSet(int field_idx) const
 {
   SLIC_ASSERT(m_fieldMappingVec[field_idx] == FieldMapping::PER_CELL_MAT);
   SLIC_ASSERT(0 <= field_idx &&
