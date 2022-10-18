@@ -28,11 +28,6 @@
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
 
-#ifndef AXOM_USE_MFEM
-  #error This example requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
-#endif
-#include "mfem.hpp"
-
 #ifndef AXOM_USE_MPI
   #error This example requires Axom to be configured with MPI
 #endif
@@ -491,7 +486,7 @@ public:
       fld->createViewString("association", "vertex");
       fld->createViewString("topology", m_topoGroups[dIdx]->getName());
 
-      // create views into a shared buffer for the coordinates, with stride NDIMS
+      // create views into a shared buffer for the coordinates, with stride DIM
       auto* buf = m_domainGroups[dIdx]
                     ->getDataStore()
                     ->createBuffer(sidre::detail::SidreTT<T>::id, DIM * SZ)
@@ -783,7 +778,7 @@ class QueryMeshWrapper
 public:
   using Circle = primal::Sphere<double, 2>;
 
-  //!@brief Construct with MFEM mesh.
+  //!@brief Construct with blueprint mesh.
   QueryMeshWrapper(sidre::Group* group, const std::string& meshFilename)
     : m_queryMesh(group)
   {
@@ -828,7 +823,7 @@ public:
     return rval;
   }
 
-  /// Saves the data collection (MFEM query mesh) to disk
+  /// Saves the mesh to disk
   void saveMesh(const std::string& filename)
   {
     SLIC_INFO(
