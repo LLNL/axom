@@ -997,7 +997,7 @@ private:
   BlueprintParticleMesh m_queryMesh;
 };
 
-void make_coords_contiguous(conduit::Node &coordValues)
+void make_coords_contiguous(conduit::Node& coordValues)
 {
   bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
   if(isInterleaved)
@@ -1195,7 +1195,7 @@ int main(int argc, char** argv)
   for(int di = 0; di < object_mesh_node.number_of_children(); ++di)
   {
     auto& dom = object_mesh_node.child(di);
-    if((my_rank + di)%2 == 1)
+    if((my_rank + di) % 2 == 1)
     {
       make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
     }
@@ -1203,7 +1203,7 @@ int main(int argc, char** argv)
   for(int di = 0; di < queryMeshNode.number_of_children(); ++di)
   {
     auto& dom = queryMeshNode.child(di);
-    if((my_rank + di)%2 == 1)
+    if((my_rank + di) % 2 == 1)
     {
       make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
     }
