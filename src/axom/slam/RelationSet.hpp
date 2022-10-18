@@ -65,6 +65,21 @@ public:
   using BaseType::INVALID_POS;
 
 public:
+  using ConcreteSet =
+    RelationSet<Relation, SetType1, SetType2, policies::ConcreteInterface>;
+  using PolymorphicSet =
+    RelationSet<Relation, SetType1, SetType2, policies::VirtualInterface>;
+
+  using OtherSet =
+    std::conditional_t<std::is_same<InterfaceType, policies::VirtualInterface>::value,
+                       ConcreteSet,
+                       PolymorphicSet>;
+
+  friend OtherSet;
+
+  RelationSet(const OtherSet& other) : m_relation(other.m_relation) { }
+
+public:
   RelationSet() = default;
 
   /**

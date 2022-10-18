@@ -99,6 +99,24 @@ private:
   };
 
 public:
+  using ConcreteSet = ProductSet<SetType1, SetType2, policies::ConcreteInterface>;
+  using PolymorphicSet =
+    ProductSet<SetType1, SetType2, policies::VirtualInterface>;
+
+  using OtherSet =
+    std::conditional_t<std::is_same<InterfaceType, policies::VirtualInterface>::value,
+                       ConcreteSet,
+                       PolymorphicSet>;
+
+  friend OtherSet;
+
+  ProductSet(const OtherSet& other)
+    : m_set1(other.m_set1)
+    , m_set2(other.m_set2)
+    , m_rowSet(this->secondSetSize())
+  { }
+
+public:
   using SubsetType = typename RowSet<void, typename BaseType::SubsetType>::Type;
 
   /**
