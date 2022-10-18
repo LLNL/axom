@@ -876,7 +876,7 @@ MultiMat::Field2D<T> MultiMat::get2dFieldImpl(int fieldIdx) const
 
   return Field2D<T>(*this,
                     get_mapped_biSet(fieldIdx),
-                    m_fieldNameVec[fieldIdx],
+                    fieldIdx,
                     m_fieldBackingVec[fieldIdx]->getArrayView<T>(),
                     m_fieldStrideVec[fieldIdx]);
 }
@@ -896,7 +896,7 @@ MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_nam
     (BSetType*)this->get_mapped_biSet(m_fieldDataLayoutVec[fi],
                                       m_fieldSparsityLayoutVec[fi]);
 
-  Field2D<T, BSetType> typedBMap(*this, bi_set, field_name, bmap.getMap()->data());
+  Field2D<T, BSetType> typedBMap(*this, bi_set, fi, bmap.getMap()->data());
 
   return typedBMap;
 }
@@ -921,7 +921,7 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
 
   ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
-  DenseField2D<T> typedBMap(*this, prod_set, field_name, bmap.getMap()->data());
+  DenseField2D<T> typedBMap(*this, prod_set, fieldIdx, bmap.getMap()->data());
 
   return typedBMap;
 }
@@ -946,7 +946,7 @@ MultiMat::SparseField2D<T> MultiMat::getSparse2dField(const std::string& field_n
 
   RelationSetType* rel_set = &relSparseSet(m_fieldDataLayoutVec[fieldIdx]);
 
-  SparseField2D<T> typedBMap(*this, rel_set, field_name, bmap.getMap()->data());
+  SparseField2D<T> typedBMap(*this, rel_set, fieldIdx, bmap.getMap()->data());
 
   return typedBMap;
 }
@@ -957,7 +957,10 @@ MultiMat::Field2DTemplated<T, D, B> MultiMat::getTemplated2DField(
 {
   // Get a reference to the unspecialized BMap
   auto bmap = get2dField<T>(field_name);
-  Field2DTemplated<T, D, B> typedBMap(*this, field_name, bmap.getMap()->data());
+
+  int fieldIdx = getFieldIdx(field_name);
+
+  Field2DTemplated<T, D, B> typedBMap(*this, fieldIdx, bmap.getMap()->data());
 
   return typedBMap;
 }

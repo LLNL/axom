@@ -49,7 +49,7 @@ public:
   // Constructor given the bivariate set
   MMField2D(const MultiMat& mm,
             const BiSet*,
-            const std::string& arr_name = "unnamed",
+            const int fieldIdx,
             axom::ArrayView<DataType> data_arr = {},
             int stride = 1);
 
@@ -119,13 +119,13 @@ private:
 template <typename DataType, typename BiSet>
 inline MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
                                              const BiSet* biset,
-                                             const std::string& arr_name,
+                                             const int fieldIdx,
                                              axom::ArrayView<DataType> data_arr,
                                              int stride)
   :  //call Bivariate map constructor
   BiVarMapType(biset, data_arr, stride)
   , m_mm(&mm)
-  , m_fieldIdx(m_mm->getFieldIdx(arr_name))
+  , m_fieldIdx(fieldIdx)
 {
   SLIC_ASSERT(stride > 0);
 
@@ -186,13 +186,13 @@ class MMField2DTemplated : public MMField2D<DataType, BiSet>
 
 public:
   MMField2DTemplated(MultiMat& mm,
-                     const std::string& arr_name = "unnamed",
+                     int fieldIdx,
                      axom::ArrayView<DataType> data_arr = {},
                      int stride = 1)
     : Field2DType(mm,
                   (BiSet*)mm.get_mapped_biSet(DataLayoutT,
                                               MMBiSet2Sparsity<BiSet>().sparsity),
-                  arr_name,
+                  fieldIdx,
                   data_arr,
                   stride)
   { }
