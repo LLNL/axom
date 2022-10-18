@@ -92,6 +92,10 @@ public:
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
 
+public:
+  using ConcreteMap = Map<T, S, IndPol, StrPol, policies::ConcreteInterface>;
+  using PolymorphicMap = Map<T, S, IndPol, StrPol, policies::VirtualInterface>;
+
 private:
   template <typename USet = SetType, bool HasValue = !std::is_abstract<USet>::value>
   struct SetContainer;

@@ -98,10 +98,10 @@ public:
   using SetElement = typename BSet::ElementType;
 
   using SetType = slam::RangeSet<SetPosition, SetElement>;
-  using MapType = Map<DataType, SetType, IndPol, StrPol>;
+  using MapType = Map<DataType, SetType, IndPol, StrPol, IfacePol>;
   using OrderedSetType = typename BSet::SubsetType;
 
-  using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
+  using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol, IfacePol>;
 
   using SubMapType = SubMap<BivariateMapType, SetType>;
   using ConstSubMapType = const SubMap<const BivariateMapType, SetType>;
@@ -112,6 +112,12 @@ public:
 
 private:
   static const NullBivariateSetType s_nullBiSet;
+
+public:
+  using ConcreteMap =
+    BivariateMap<T, BSet, IndPol, StrPol, policies::ConcreteInterface>;
+  using PolymorphicMap =
+    BivariateMap<T, BSet, IndPol, StrPol, policies::VirtualInterface>;
 
 public:
   /**
@@ -499,7 +505,7 @@ public:
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 
-  virtual bool isValid(bool verboseOutput = false) const override
+  bool isValid(bool verboseOutput = false) const
   {
     return set()->isValid(verboseOutput) && m_map.isValid(verboseOutput);
   }
@@ -509,7 +515,7 @@ public:
   ///
 
   /** \brief Returns the BivariateSet size. */
-  SetPosition size() const override { return set()->size(); }
+  SetPosition size() const { return set()->size(); }
   /** \brief Returns the BivariateSet size. */
   SetPosition totalSize() const { return set()->size(); }
 
@@ -551,7 +557,7 @@ private:
   }
 
   /** \brief Check the given ElementFlatIndex is valid.  */
-  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const override
+  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const
   {
     SLIC_ASSERT_MSG(pos >= 0 && pos < SetPosition(m_map.size()),
                     "Attempted to access element "
