@@ -53,6 +53,14 @@ public:
             axom::ArrayView<DataType> data_arr = {},
             int stride = 1);
 
+  template <typename BiSetType = BiSet,
+            typename Enable = std::enable_if_t<std::is_abstract<BiSetType>::value>>
+  MMField2D(const MultiMat& mm,
+            const BiSetType&,
+            const int fieldIdx,
+            axom::ArrayView<DataType> data_arr = {},
+            int stride = 1);
+
   bool operator==(const MMField2D& other) const
   {
     return ((m_mm == other.m_mm) && (this->set() == other.set()) &&
@@ -155,8 +163,49 @@ inline MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
   {
     SLIC_ASSERT(false);
   }
+}
 
-  m_mm = &mm;
+template <typename DataType, typename BiSet>
+template <typename BiSetType, typename Enable>
+MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
+                                      const BiSetType& bisetValue,
+                                      const int fieldIdx,
+                                      axom::ArrayView<DataType> data_arr,
+                                      int stride)
+  : BiVarMapType(bisetValue, data_arr, stride)
+  , m_mm(&mm)
+  , m_fieldIdx(fieldIdx)
+{
+  SLIC_ASSERT(stride > 0);
+
+  if(&bisetValue ==
+     mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::DENSE))
+  {
+    m_data_layout = DataLayout::CELL_DOM;
+    m_sparsity_layout = SparsityLayout::DENSE;
+  }
+  else if(&bisetValue ==
+          mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::SPARSE))
+  {
+    m_data_layout = DataLayout::CELL_DOM;
+    m_sparsity_layout = SparsityLayout::SPARSE;
+  }
+  else if(&bisetValue ==
+          mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::DENSE))
+  {
+    m_data_layout = DataLayout::MAT_DOM;
+    m_sparsity_layout = SparsityLayout::DENSE;
+  }
+  else if(&bisetValue ==
+          mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::SPARSE))
+  {
+    m_data_layout = DataLayout::MAT_DOM;
+    m_sparsity_layout = SparsityLayout::SPARSE;
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
 }
 
 //////////////////////// MMField2D Templated ////////////////////////////

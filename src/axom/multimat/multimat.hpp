@@ -132,9 +132,9 @@ public:
   using Field2D = MMField2D<T, BSet>;
   //special
   template <typename T>
-  using SparseField2D = MMField2D<T, RelationSetType>;
+  using SparseField2D = MMField2D<T, typename RelationSetType::ConcreteSet>;
   template <typename T>
-  using DenseField2D = MMField2D<T, ProductSetType>;
+  using DenseField2D = MMField2D<T, typename ProductSetType::ConcreteSet>;
 
   template <typename T, DataLayout D, typename B>
   using Field2DTemplated = MMField2DTemplated<T, D, B>;
@@ -919,7 +919,8 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
       << field_name << "\" as a "
       << "dense field. Convert the field to a sparse field first.");
 
-  ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
+  typename ProductSetType::ConcreteSet prod_set =
+    relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
   DenseField2D<T> typedBMap(*this, prod_set, fieldIdx, bmap.getMap()->data());
 
@@ -944,7 +945,8 @@ MultiMat::SparseField2D<T> MultiMat::getSparse2dField(const std::string& field_n
       << field_name << "\" as a "
       << "sparse field. Convert the field to a dense field first.");
 
-  RelationSetType* rel_set = &relSparseSet(m_fieldDataLayoutVec[fieldIdx]);
+  typename RelationSetType::ConcreteSet rel_set =
+    relSparseSet(m_fieldDataLayoutVec[fieldIdx]);
 
   SparseField2D<T> typedBMap(*this, rel_set, fieldIdx, bmap.getMap()->data());
 
