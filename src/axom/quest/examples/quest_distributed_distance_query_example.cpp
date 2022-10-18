@@ -997,6 +997,16 @@ private:
   BlueprintParticleMesh m_queryMesh;
 };
 
+void make_coords_contiguous(conduit::Node &coordValues)
+{
+  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+  if(isInterleaved)
+  {
+    conduit::Node oldValues = coordValues;
+    conduit::blueprint::mcarray::to_contiguous(oldValues, coordValues);
+  }
+}
+
 /// Utility function to initialize the logger
 void initializeLogger()
 {
@@ -1179,6 +1189,25 @@ int main(int argc, char** argv)
   // Put sidre data into Conduit Node.
   conduit::Node queryMeshNode;
   queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode);
+
+  // To test with contiguous and interleaved coordinate storage,
+  // make half them contiguous.
+  for(int di = 0; di < object_mesh_node.number_of_children(); ++di)
+  {
+    auto& dom = object_mesh_node.child(di);
+    if((my_rank + di)%2 == 1)
+    {
+      make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
+    }
+  }
+  for(int di = 0; di < queryMeshNode.number_of_children(); ++di)
+  {
+    auto& dom = queryMeshNode.child(di);
+    if((my_rank + di)%2 == 1)
+    {
+      make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
+    }
+  }
 
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;

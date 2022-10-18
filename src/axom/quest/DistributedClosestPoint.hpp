@@ -413,9 +413,10 @@ public:
 
 public:
   /**
-   * Utility function to set the array of points
+   * Import object mesh points from the object blueprint mesh into internal memory.
    *
-   * \param [in] coords The root group of a mesh blueprint's coordinate values
+   * \param [in] mdMeshNode The blueprint mesh containing the object points.
+   * \param [in] valuesPath The path to the mesh points.
    * \note This function currently supports mesh blueprints with the "point" topology
    */
   void importObjectPoints(const conduit::Node& mdMeshNode,
@@ -433,15 +434,26 @@ public:
     // Copy points to internal memory
     PointArray pts(ptCount, ptCount);
     std::size_t copiedCount = 0;
+    conduit::Node tmpValues;
     for(const conduit::Node& domain : mdMeshNode.children())
     {
       auto& values = domain.fetch_existing(valuesPath);
-      const int N = internal::extractSize(values);
+
+      bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(values);
+      if(!isInterleaved)
+      {
+        conduit::blueprint::mcarray::to_interleaved(values, tmpValues);
+      }
+      const conduit::Node& copySrc = isInterleaved ? values : tmpValues;
+
       SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
+      const int N = internal::extractSize(copySrc);
       const std::size_t nBytes = sizeof(double) * DIM * N;
+
       axom::copy(pts.data() + copiedCount,
-                 values.fetch_existing("x").data_ptr(),
+                 copySrc.fetch_existing("x").data_ptr(),
                  nBytes);
+      tmpValues.reset();
       copiedCount += N;
     }
     m_objectPts = PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
@@ -743,8 +755,8 @@ public:
    *   - cp_index: Will hold the index of the object point containing the closest point
    *   - cp_coords: Will hold the coordinates of the closest points
    *
-   * \note The current implementation assumes that the coordinates and cp_coords and contiguous
-   * with stride NDIMS. We intend to loosen this restriction in the future
+   * \note The current implementation assumes that the coordinates and
+   * cp_coords are interleaved or contiguous.
    *
    * \note We're temporarily also using a cp_distance field while debugging this class.
    * The code will use this field if it is present in \a queryMesh.
@@ -774,8 +786,8 @@ public:
 
     std::map<int, std::shared_ptr<conduit::Node>> xferNodes;
 
-    // create conduit node containing data that has to xfer between ranks.
-    // The node will be mostly empty if there are no query points on this rank
+    // create conduit Node containing data that has to xfer between ranks.
+    // The node will be mostly empty if there are no domains on this rank
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
