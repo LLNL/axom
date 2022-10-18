@@ -100,16 +100,16 @@ private:
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
 
   template <typename T>
-  using MapType =
-    slam::Map<std::remove_const_t<T>, RangeSetType, IndViewPolicy<T>, MapStrideType>;
+  using MapType = typename slam::
+    Map<std::remove_const_t<T>, RangeSetType, IndViewPolicy<T>, MapStrideType>::ConcreteMap;
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapType =  //this one has runtime stride
-    slam::BivariateMap<T, BSet, IndViewPolicy<T>, MapStrideType>;
+    typename slam::BivariateMap<T, BSet, IndViewPolicy<T>, MapStrideType>::ConcreteMap;
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapTypeStrideOne =  //this one has compile time stride 1
-    slam::BivariateMap<std::remove_const_t<T>, BSet, IndViewPolicy<T>>;
+    typename slam::BivariateMap<std::remove_const_t<T>, BSet, IndViewPolicy<T>>::ConcreteMap;
 
 public:
   using SparseRelationType = StaticVariableRelationType;
