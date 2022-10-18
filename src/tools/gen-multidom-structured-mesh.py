@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # gen-multidom-structured-mesh.py
-# Write a simple multidomain structured mesh for testing.
+# Write a simple multidomain structured blueprint mesh for testing.
 
 # This script requires a conduit installation configured with python3 and hdf5.
 # Make sure PYTHONPATH includes /path/to/conduit/install/python-modules

@@ -327,6 +327,12 @@ inline int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm com
  * using a provided execution policy (e.g. sequential, openmp, cuda, hip)
  *
  * \tparam NDIMS The dimension of the object mesh and query points
+ *
+ * TODO: For simplicity, we require coordinate data to be interleaved.
+ * It may be possible to optimize out copies involved in ensuring this
+ * data layout.  It may be better to work with un-interleaved data.
+ * Interleaved data can be cast into an array of PointType, but the
+ * conduit communication methods currently un-interleave the data.
  */
 template <int NDIMS>
 class DistributedClosestPointImpl
@@ -418,10 +424,14 @@ public:
    * \param [in] mdMeshNode The blueprint mesh containing the object points.
    * \param [in] valuesPath The path to the mesh points.
    * \note This function currently supports mesh blueprints with the "point" topology
+   *
+   * TODO: See if some of the copies in this method can be optimized out.
    */
   void importObjectPoints(const conduit::Node& mdMeshNode,
                           const std::string& valuesPath)
   {
+    SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
+
     // Count points in the mesh.
     int ptCount = 0;
     for(const conduit::Node& domain : mdMeshNode.children())
@@ -446,7 +456,6 @@ public:
       }
       const conduit::Node& copySrc = isInterleaved ? values : tmpValues;
 
-      SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
       const int N = internal::extractSize(copySrc);
       const std::size_t nBytes = sizeof(double) * DIM * N;
 
@@ -545,8 +554,6 @@ public:
   }
 
   /// Get local copy of all ranks BVH root bounding boxes.
-  // Assumption: All domains are in the same index space.
-  // TODO: should be extended for multidomain.
   void gatherBVHRoots()
   {
     SLIC_ASSERT_MSG(
@@ -616,8 +623,6 @@ public:
   }
 
   /// Compute bounding box for local part of a mesh.
-  // Note: We don't have a use case for multiple index spaces in the same mesh,
-  // so it's safe to put all domains points in a single bounding box.
   BoxType computeMeshBoundingBox(conduit::Node& xferNode) const
   {
     BoxType rval;
@@ -640,9 +645,11 @@ public:
     return rval;
   }
 
-  /// Copy parts of query mesh partition to a conduit::Node for
-  /// computation and communication.
-  // queryNode must be a blueprint multidomain mesh.
+  /*!
+   * Copy parts of query mesh partition to a conduit::Node for
+   * computation and communication.
+   * queryNode must be a blueprint multidomain mesh.
+   */
   void copy_query_node_to_xfer_node(conduit::Node& queryNode,
                                     conduit::Node& xferNode,
                                     const std::string& coordset) const
@@ -749,10 +756,12 @@ public:
    * Can be empty if there are no query points for the calling rank
    * \param coordset The coordinate set for the query points
    *
-   * When the query mesh contains query points, it uses the \a coordset coordinate set 
+   * When the query mesh contains query points, it uses the \a coordset coordinate set
    * of the provided blueprint mesh and  contains the following fields:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
-   *   - cp_index: Will hold the index of the object point containing the closest point
+   *   - cp_index: Will hold the index of the object point containing the closest point.
+   *     For multiple object mesh domains on a rank, cp_index increases consecutively
+   *     from one domain to the next.
    *   - cp_coords: Will hold the coordinates of the closest points
    *
    * \note The current implementation assumes that the coordinates and
@@ -1070,7 +1079,6 @@ public:
     using axom::primal::squared_distance;
     using int32 = axom::int32;
 
-    // Second check: empty object node
     // Note: There is some additional computation the first time this function
     // is called for a query node, even if the local object mesh is empty
     const bool hasObjectPoints = m_objectPts.size() > 0;
