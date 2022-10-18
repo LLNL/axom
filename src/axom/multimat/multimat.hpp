@@ -427,12 +427,12 @@ public:
 
   void convertFieldToSparse(int field_idx);
   void convertFieldToDense(int field_idx);
-  SparsityLayout getFieldSparsityLayout(int field_idx);
+  SparsityLayout getFieldSparsityLayout(int field_idx) const;
 
   void transposeField(int field_idx);
   void convertFieldToMatDom(int field_idx);
   void convertFieldToCellDom(int field_idx);
-  DataLayout getFieldDataLayout(int field_idx);
+  DataLayout getFieldDataLayout(int field_idx) const;
 
   std::string getFieldDataLayoutAsString(int field_idx) const;
   std::string getFieldSparsityLayoutAsString(int field_idx) const;

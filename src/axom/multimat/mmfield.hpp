@@ -54,7 +54,7 @@ public:
             int stride = 1);
 
   template <typename BiSetType = BiSet,
-            typename Enable = std::enable_if_t<std::is_abstract<BiSetType>::value>>
+            typename Enable = std::enable_if_t<!std::is_abstract<BiSetType>::value>>
   MMField2D(const MultiMat& mm,
             const BiSetType&,
             const int fieldIdx,
@@ -137,32 +137,8 @@ inline MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
 {
   SLIC_ASSERT(stride > 0);
 
-  if(biset == mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(biset ==
-          mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else if(biset == mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(biset ==
-          mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else
-  {
-    SLIC_ASSERT(false);
-  }
+  m_data_layout = mm.getFieldDataLayout(fieldIdx);
+  m_sparsity_layout = mm.getFieldSparsityLayout(fieldIdx);
 }
 
 template <typename DataType, typename BiSet>
@@ -178,54 +154,11 @@ MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
 {
   SLIC_ASSERT(stride > 0);
 
-  if(&bisetValue ==
-     mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(&bisetValue ==
-          mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else if(&bisetValue ==
-          mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(&bisetValue ==
-          mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else
-  {
-    SLIC_ASSERT(false);
-  }
+  m_data_layout = mm.getFieldDataLayout(fieldIdx);
+  m_sparsity_layout = mm.getFieldSparsityLayout(fieldIdx);
 }
 
 //////////////////////// MMField2D Templated ////////////////////////////
-
-// A helping struct to map a bivariate set to the corresponding SparsityLayout
-template <typename Biset>
-struct MMBiSet2Sparsity
-{ };
-
-template <>
-struct MMBiSet2Sparsity<MultiMat::ProductSetType>
-{
-  SparsityLayout sparsity = SparsityLayout::DENSE;
-};
-
-template <>
-struct MMBiSet2Sparsity<MultiMat::RelationSetType>
-{
-  SparsityLayout sparsity = SparsityLayout::SPARSE;
-};
 
 // Child class of MMField2D, typed with layout (cell/mat dom) and sparsity
 template <typename DataType, DataLayout DataLayoutT, typename BiSet = MultiMat::BivariateSetType>
@@ -238,12 +171,7 @@ public:
                      int fieldIdx,
                      axom::ArrayView<DataType> data_arr = {},
                      int stride = 1)
-    : Field2DType(mm,
-                  (BiSet*)mm.get_mapped_biSet(DataLayoutT,
-                                              MMBiSet2Sparsity<BiSet>().sparsity),
-                  fieldIdx,
-                  data_arr,
-                  stride)
+    : Field2DType(mm, (BiSet*)mm.get_mapped_biSet(fieldIdx), fieldIdx, data_arr, stride)
   { }
 };
 

@@ -918,7 +918,7 @@ void MultiMat::convertToDense_helper(int map_i)
   backingArray = std::move(arr_data);
 }
 
-DataLayout MultiMat::getFieldDataLayout(int field_idx)
+DataLayout MultiMat::getFieldDataLayout(int field_idx) const
 {
   SLIC_ASSERT(0 <= field_idx &&
               field_idx < static_cast<int>(m_fieldNameVec.size()));
@@ -926,7 +926,7 @@ DataLayout MultiMat::getFieldDataLayout(int field_idx)
   return m_fieldDataLayoutVec[field_idx];
 }
 
-SparsityLayout MultiMat::getFieldSparsityLayout(int field_idx)
+SparsityLayout MultiMat::getFieldSparsityLayout(int field_idx) const
 {
   SLIC_ASSERT(0 <= field_idx &&
               field_idx < static_cast<int>(m_fieldNameVec.size()));
