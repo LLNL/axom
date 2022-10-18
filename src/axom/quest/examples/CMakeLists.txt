@@ -59,7 +59,6 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
 
         # Non-zero empty-rank probability tests domain underloading case
-        set(_emptyRankProbs 0.0 0.5)
         set(_meshes "mdmesh.2x1" "mdmesh.2x3")
         foreach(_pol ${_policies})
             foreach(_mesh ${_meshes})
@@ -88,7 +87,6 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
 
         unset(_nranks)
         unset(_policies)
-        unset(_emptyRankProbs)
         unset(_test)
     endif()
 endif()
