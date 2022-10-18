@@ -101,6 +101,9 @@ public:
   using MapType = Map<DataType, SetType, IndPol, StrPol, IfacePol>;
   using OrderedSetType = typename BSet::SubsetType;
 
+  using ValueType = typename IndirectionPolicy::IndirectionResult;
+  using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
+
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol, IfacePol>;
 
   using SubMapType = SubMap<BivariateMapType, SetType, IfacePol>;
@@ -284,11 +287,11 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  const DataType& operator[](SetPosition setIndex) const
+  ConstValueType operator[](SetPosition setIndex) const
   {
     return m_map[setIndex];
   }
-  DataType& operator[](SetPosition setIndex) { return m_map[setIndex]; }
+  ValueType operator[](SetPosition setIndex) { return m_map[setIndex]; }
 
 public:
   /**
@@ -320,15 +323,13 @@ public:
    * \pre `0 <= s2 < size(s1)`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& operator()(SetPosition s1,
-                             SetPosition s2,
-                             SetPosition comp = 0) const
+  ConstValueType operator()(SetPosition s1, SetPosition s2, SetPosition comp = 0) const
   {
     auto idx = flatIndex(s1, s2);
     return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
   }
 
-  DataType& operator()(SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  ValueType operator()(SetPosition s1, SetPosition s2, SetPosition comp = 0)
   {
     auto idx = flatIndex(s1, s2);
     return useCompIndexing() ? m_map(idx, comp) : m_map[idx];

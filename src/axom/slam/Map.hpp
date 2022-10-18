@@ -83,6 +83,9 @@ public:
   using SetElement = typename SetType::ElementType;
   static const NullSet<SetPosition, SetElement> s_nullSet;
 
+  using ValueType = typename IndirectionPolicy::IndirectionResult;
+  using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
+
   class MapBuilder;
 
   // types for iterator
@@ -242,13 +245,13 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  const DataType& operator[](SetPosition setIndex) const
+  ConstValueType operator[](SetPosition setIndex) const
   {
     verifyPositionImpl(setIndex);
     return m_data[setIndex];
   }
 
-  DataType& operator[](SetPosition setIndex)
+  ValueType operator[](SetPosition setIndex)
   {
     verifyPositionImpl(setIndex);
     return m_data[setIndex];
@@ -261,14 +264,14 @@ public:
    * \pre `0 <= setIdx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& operator()(SetPosition setIdx, SetPosition comp = 0) const
+  ConstValueType operator()(SetPosition setIdx, SetPosition comp = 0) const
   {
     verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return m_data[setIndex];
   }
 
-  DataType& operator()(SetPosition setIdx, SetPosition comp = 0)
+  ValueType operator()(SetPosition setIdx, SetPosition comp = 0)
   {
     verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
