@@ -41,6 +41,21 @@ struct ConcreteBivariateSet
     return getSize<SecondSetType>(getSecondSetDerived());
   }
 
+  bool isValid(bool verboseOutput = false) const
+  {
+    if(getFirstSetDerived() == nullptr || getSecondSetDerived() == nullptr)
+    {
+      if(verboseOutput)
+      {
+        SLIC_INFO("BivariateSet is not valid: "
+                  << " Set pointers should not be null.");
+      }
+      return false;
+    }
+    return getFirstSetDerived()->isValid(verboseOutput) &&
+      getSecondSetDerived()->isValid(verboseOutput);
+  }
+
 private:
   template <typename SetType>
   typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
