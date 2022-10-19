@@ -125,21 +125,23 @@ struct FieldGetter<MMFieldMethod::GenericField, BSet, Layout>
 template <typename BSet, DataLayout Layout>
 struct FieldGetter<MMFieldMethod::BSetTemplatedField, BSet, Layout>
 {
-  static MultiMat::Field2D<double, BSet> get(MultiMat& mm,
-                                             const std::string& fieldName)
+  using ConcreteBSet = typename BSet::ConcreteSet;
+  static MultiMat::Field2D<double, ConcreteBSet> get(MultiMat& mm,
+                                                     const std::string& fieldName)
   {
-    return mm.get2dField<double, BSet>(fieldName);
+    return mm.get2dField<double, ConcreteBSet>(fieldName);
   }
 };
 
 template <typename BSet, DataLayout Layout>
 struct FieldGetter<MMFieldMethod::FullyTemplatedField, BSet, Layout>
 {
-  static MultiMat::Field2DTemplated<double, Layout, BSet> get(
+  using ConcreteBSet = typename BSet::ConcreteSet;
+  static MultiMat::Field2DTemplated<double, Layout, ConcreteBSet> get(
     MultiMat& mm,
     const std::string& fieldName)
   {
-    return mm.getTemplated2DField<double, Layout, BSet>(fieldName);
+    return mm.getTemplated2DField<double, Layout, ConcreteBSet>(fieldName);
   }
 };
 
