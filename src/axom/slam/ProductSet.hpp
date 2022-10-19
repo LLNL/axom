@@ -47,8 +47,7 @@ private:
     policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>;
 
 public:
-  using RangeSetType =
-    RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>;
+  using RangeSetType = typename BaseType::RangeSetType;
   using FirstSetType = SetType1;
   using SecondSetType = SetType2;
   using PositionType = typename BaseType::PositionType;

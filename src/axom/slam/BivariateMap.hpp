@@ -97,7 +97,7 @@ public:
   using SetPosition = typename BSet::PositionType;
   using SetElement = typename BSet::ElementType;
 
-  using SetType = slam::RangeSet<SetPosition, SetElement>;
+  using SetType = typename slam::RangeSet<SetPosition, SetElement>::ConcreteSet;
   using MapType = Map<DataType, SetType, IndPol, StrPol, IfacePol>;
   using OrderedSetType = typename BSet::SubsetType;
 

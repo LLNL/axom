@@ -27,6 +27,7 @@ struct ConcreteBivariateSet
   using ElementType = typename FirstSetType::ElementType;
 
   using SubsetType = void;
+  using RangeSetType = typename RangeSet<PositionType, ElementType>::ConcreteSet;
 
   static constexpr PositionType INVALID_POS = PositionType(-1);
 

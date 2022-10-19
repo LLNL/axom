@@ -43,10 +43,9 @@ public:
   using RelationType = Relation;
 
 private:
-  using RangeSetType =
-    RangeSet<typename RelationType::SetPosition, typename RelationType::SetElement>;
   using BaseType =
     policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>;
+  using RangeSetType = typename BaseType::RangeSetType;
 
 public:
   using PositionType = typename RelationType::SetPosition;
