@@ -32,13 +32,14 @@ MeshCoordinates::MeshCoordinates(int dimension,
   ,
 #endif
   m_ndims(dimension)
+  , m_storageMode(StorageMode::Native)
 {
   SLIC_ERROR_IF(this->invalidDimension(), "invalid dimension");
 
   IndexType max_capacity = -1;
   if(capacity == USE_DEFAULT)
   {
-    const double ratio = axom::deprecated::MCArray<double>::DEFAULT_RESIZE_RATIO;
+    const double ratio = axom::Array<double>::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(DEFAULT_CAPACITY,
                                   static_cast<IndexType>(numNodes * ratio + 0.5));
   }
@@ -63,6 +64,7 @@ MeshCoordinates::MeshCoordinates(IndexType numNodes,
   ,
 #endif
   m_ndims(0)
+  , m_storageMode(StorageMode::External)
 {
   m_ndims = (z != nullptr) ? 3 : ((y != nullptr) ? 2 : 1);
   SLIC_ERROR_IF(invalidDimension(), "invalid dimension");
@@ -78,8 +80,7 @@ MeshCoordinates::MeshCoordinates(IndexType numNodes,
     SLIC_ERROR_IF(ptrs[i] == nullptr,
                   "encountered null coordinate array for i=" << i);
 
-    m_coordinates[i] =
-      new axom::deprecated::MCArray<double>(ptrs[i], numNodes, 1, capacity);
+    m_coordinates[i].reset(new ExternalArray<double>(ptrs[i], numNodes, capacity));
   }
 
   SLIC_ASSERT(consistencyCheck());
@@ -95,6 +96,7 @@ MeshCoordinates::MeshCoordinates(IndexType numNodes, double* x, double* y, doubl
 MeshCoordinates::MeshCoordinates(sidre::Group* group)
   : m_group(group)
   , m_ndims(0)
+  , m_storageMode(StorageMode::Sidre)
 {
   SLIC_ERROR_IF(m_group == nullptr, "null sidre::Group");
   SLIC_ERROR_IF(!m_group->hasChildView("type"),
@@ -136,7 +138,7 @@ MeshCoordinates::MeshCoordinates(sidre::Group* group)
     coord_view->getShape(2, dims);
     SLIC_ERROR_IF(dims[1] != 1, "number of components is expected to be 1");
 
-    m_coordinates[i] = new sidre::deprecated::MCArray<double>(coord_view);
+    m_coordinates[i].reset(new sidre::MCArray<double>(coord_view));
 
   }  // END for all dimensions
 }
@@ -148,6 +150,7 @@ MeshCoordinates::MeshCoordinates(sidre::Group* group,
                                  IndexType capacity)
   : m_group(group)
   , m_ndims(dimension)
+  , m_storageMode(StorageMode::Sidre)
 {
   SLIC_ERROR_IF(m_group == nullptr, "null sidre::Group");
   SLIC_ERROR_IF((capacity != USE_DEFAULT) && (numNodes > capacity),
@@ -164,24 +167,12 @@ MeshCoordinates::MeshCoordinates(sidre::Group* group,
   {
     const char* coord_name = coord_names[dim];
     sidre::View* coord_view = values->createView(coord_name);
-    m_coordinates[dim] =
-      new sidre::deprecated::MCArray<double>(coord_view, numNodes, 1, capacity);
+    m_coordinates[dim].reset(
+      new sidre::MCArray<double>(coord_view, numNodes, 1, capacity));
   }
 }
 
 #endif
-
-//------------------------------------------------------------------------------
-MeshCoordinates::~MeshCoordinates()
-{
-  for(int dim = 0; dim < m_ndims; ++dim)
-  {
-    SLIC_ASSERT(m_coordinates[dim] != nullptr);
-
-    delete m_coordinates[dim];
-    m_coordinates[dim] = nullptr;
-  }
-}
 
 //------------------------------------------------------------------------------
 bool MeshCoordinates::consistencyCheck() const
@@ -191,28 +182,22 @@ bool MeshCoordinates::consistencyCheck() const
   SLIC_ASSERT(!invalidDimension());
   SLIC_ASSERT(m_coordinates[0] != nullptr);
 
-  const IndexType NUM_COMPONENTS = 1;
   const IndexType expected_size = m_coordinates[0]->size();
   const IndexType expected_capacity = m_coordinates[0]->capacity();
   const double expected_resize_ratio = m_coordinates[0]->getResizeRatio();
-  const bool expected_is_external = m_coordinates[0]->isExternal();
 
   for(int i = 1; i < m_ndims; ++i)
   {
     const IndexType actual_size = m_coordinates[i]->size();
-    const IndexType actual_components = m_coordinates[i]->numComponents();
     const IndexType actual_capacity = m_coordinates[i]->capacity();
     const double actual_resize_ratio = m_coordinates[i]->getResizeRatio();
 
     const bool size_mismatch = (actual_size != expected_size);
-    const bool component_mismatch = (actual_components != NUM_COMPONENTS);
     const bool capacity_mismatch = (actual_capacity != expected_capacity);
     const bool ratio_mismatch =
       !utilities::isNearlyEqual(actual_resize_ratio, expected_resize_ratio);
 
     SLIC_WARNING_IF(size_mismatch, "coordinate array size mismatch!");
-    SLIC_WARNING_IF(component_mismatch,
-                    "coordinate array number of components != 1");
     SLIC_WARNING_IF(capacity_mismatch, "coordinate array capacity mismatch!");
     SLIC_WARNING_IF(ratio_mismatch, "coordinate array ratio mismatch!");
 
@@ -221,14 +206,6 @@ bool MeshCoordinates::consistencyCheck() const
       status = false;
       break;
     }
-
-    if(expected_is_external != m_coordinates[i]->isExternal())
-    {
-      SLIC_WARNING("external propery mismatch!");
-      status = false;
-      break;
-    }
-
   }  // END for all dimensions
 
   return status;
