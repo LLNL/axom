@@ -302,12 +302,12 @@ public:
   }
 
   /** \brief Returns pointer to the first set.   */
-  const FirstSetType* getFirstSet() const
+  const FirstSetType* getFirstSet() const override
   {
     return policies::EmptySetTraits<FirstSetType>::emptySet();
   }
   /** \brief Returns pointer to the second set.   */
-  const SecondSetType* getSecondSet() const
+  const SecondSetType* getSecondSet() const override
   {
     return policies::EmptySetTraits<SecondSetType>::emptySet();
   }
