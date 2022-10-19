@@ -29,7 +29,7 @@ namespace utilities = axom::utilities;
 namespace
 {
 template <typename T>
-void populate_array(axom::deprecated::MCArray<T>& data)
+void populate_array(axom::Array<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
@@ -46,7 +46,7 @@ void populate_array(axom::deprecated::MCArray<T>& data)
 
 //------------------------------------------------------------------------------
 template <typename T>
-void check_array(axom::deprecated::MCArray<T>& data)
+void check_array(axom::Array<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
@@ -136,14 +136,10 @@ TEST(mint_mesh_field_variable_DeathTest, invalid_construction)
   EXPECT_EQ(mint::field_traits<invalid_type>::type(), mint::UNDEFINED_FIELD_TYPE);
 
   EXPECT_DEATH_IF_SUPPORTED(
-    mint::FieldVariable<invalid_type>("foo",
-                                      axom::deprecated::internal::ZERO,
-                                      axom::deprecated::internal::ZERO),
+    mint::FieldVariable<invalid_type>("foo", axom::IndexType{}, axom::IndexType{}),
     IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(
-    mint::FieldVariable<double>(EMPTY_STRING,
-                                axom::deprecated::internal::ZERO,
-                                axom::deprecated::internal::ZERO),
+    mint::FieldVariable<double>(EMPTY_STRING, axom::IndexType{}, axom::IndexType{}),
     IGNORE_OUTPUT);
 }
 
@@ -394,10 +390,11 @@ TEST(mint_mesh_field_variable, shrink)
   axom::IndexType capacity =
     static_cast<axom::IndexType>(SMALL_NUM_TUPLES * ratio + 0.5);
 
-  if(capacity < axom::deprecated::MCArray<axom::IndexType>::MIN_DEFAULT_CAPACITY)
+  if(capacity < axom::Array<axom::IndexType>::MIN_DEFAULT_CAPACITY)
   {
-    capacity = axom::deprecated::MCArray<axom::IndexType>::MIN_DEFAULT_CAPACITY;
+    capacity = axom::Array<axom::IndexType>::MIN_DEFAULT_CAPACITY;
   }
+  capacity /= field.getNumComponents();
   EXPECT_EQ(field.getCapacity(), capacity);
 
   field.shrink();

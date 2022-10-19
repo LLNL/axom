@@ -11,16 +11,15 @@
 // axom includes
 #include "axom/core/Macros.hpp"  // for axom Macros
 #include "axom/core/Types.hpp"   // for axom types
-#include "axom/mint/deprecated/MCArray.hpp"
 
 #include "axom/mint/config.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre.hpp"
-  #include "axom/mint/deprecated/SidreMCArray.hpp"
 #endif
 
 #include "axom/slic/interface/slic.hpp"
+#include "axom/mint/utils/ExternalArray.hpp"
 
 // C/C++ includes
 #include <string>  // for C++ string
@@ -222,7 +221,7 @@ public:
   /*!
    * \brief Destructor.
    */
-  virtual ~FieldVariable() { delete m_field; }
+  virtual ~FieldVariable() = default;
 
   /*!
    * \brief Returns the number of tuples of this FieldVariable instance.
@@ -232,7 +231,7 @@ public:
    */
   virtual IndexType getNumTuples() const final override
   {
-    return m_field->size();
+    return m_field->shape()[0];
   }
 
   /*!
@@ -243,7 +242,7 @@ public:
    */
   virtual IndexType getNumComponents() const final override
   {
-    return m_field->numComponents();
+    return m_field->shape()[1];
   };
 
   /*!
@@ -254,7 +253,7 @@ public:
    */
   virtual IndexType getCapacity() const final override
   {
-    return m_field->capacity();
+    return m_field->capacity() / getNumComponents();
   };
 
   /*!
@@ -265,7 +264,7 @@ public:
    */
   virtual void resize(IndexType newNumTuples) final override
   {
-    m_field->resize(newNumTuples);
+    m_field->resize(newNumTuples, m_field->shape()[1]);
   }
 
   /*!
@@ -279,7 +278,9 @@ public:
    */
   virtual void emplace(IndexType pos, IndexType num_tuples) final override
   {
-    m_field->emplace(num_tuples, pos);
+    axom::Array<T, 2> default_value_arr(num_tuples, m_field->shape()[1]);
+
+    m_field->insert(pos, default_value_arr.view());
   }
 
   /*!
@@ -323,13 +324,13 @@ public:
    */
   virtual bool isExternal() const final override
   {
-    return m_field->isExternal();
+    return m_storageMode == StorageMode::External;
   }
 
   /*!
    * \brief Return true iff the field is stored in sidre.
    */
-  virtual bool isInSidre() const final override { return m_field->isInSidre(); }
+  virtual bool isInSidre() const final override { return m_storageMode == StorageMode::Sidre; }
 
   /// @}
 
@@ -343,16 +344,17 @@ public:
    */
   /// @{
 
-  inline T* getFieldVariablePtr() { return m_field->getData(); }
+  inline T* getFieldVariablePtr() { return m_field->data(); }
 
-  inline const T* getFieldVariablePtr() const { return m_field->getData(); }
+  inline const T* getFieldVariablePtr() const { return m_field->data(); }
 
   /// @}
 
   /// @}
 
 private:
-  axom::deprecated::MCArray<T>* m_field;
+  StorageMode m_storageMode;
+  std::unique_ptr<axom::Array<T, 2>> m_field;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);
@@ -368,9 +370,11 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType num_components,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
+  , m_storageMode(StorageMode::Native)
 {
-  m_field =
-    new axom::deprecated::MCArray<T>(num_tuples, num_components, capacity);
+  m_field.reset(
+    new axom::Array<T, 2>(num_tuples, num_components));
+  m_field->reserve(capacity);
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
@@ -383,11 +387,11 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType num_components,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
+  , m_storageMode(StorageMode::External)
 {
-  m_field =
-    new axom::deprecated::MCArray<T>(data, num_tuples, num_components, capacity);
+  m_field.reset(
+    new ExternalArray<T, 2>(data, {num_tuples, num_components}, capacity));
   SLIC_ASSERT(m_field != nullptr);
-  SLIC_ASSERT(m_field->isExternal() == true);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
 
@@ -397,8 +401,9 @@ FieldVariable<T>::FieldVariable(const std::string& name,
 template <typename T>
 FieldVariable<T>::FieldVariable(const std::string& name, sidre::View* field_view)
   : Field(name, field_traits<T>::type())
+  , m_storageMode(StorageMode::Sidre)
 {
-  m_field = new sidre::deprecated::MCArray<T>(field_view);
+  m_field.reset(new sidre::MCArray<T>(field_view));
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
@@ -411,11 +416,12 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType num_components,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
+  , m_storageMode(StorageMode::Sidre)
 {
-  m_field = new sidre::deprecated::MCArray<T>(field_view,
-                                              num_tuples,
-                                              num_components,
-                                              capacity);
+  m_field.reset(new sidre::MCArray<T>(field_view,
+                                  num_tuples,
+                                  num_components,
+                                  capacity));
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
