@@ -126,14 +126,13 @@ public:
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a StridePolicy::stride(), when provided.
    */
-
   BivariateMap(const BivariateSetType* bSet = &s_nullBiSet,
                DataType defaultValue = DataType(),
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+               SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+               int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_bset(bSet)
-    , m_map(SetType(bSet->size()), defaultValue, stride)
-    , m_managesBSet(false)
+    , m_map(SetType(bSet->size()), defaultValue, stride, allocatorID)
   { }
 
   // (KW) Problem -- does not work with RelationSet
@@ -585,8 +584,6 @@ private:
 private:
   const BivariateSetType* m_bset;
   MapType m_map;
-  bool m_managesBSet;
-
 };  //end BivariateMap
 
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
