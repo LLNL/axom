@@ -496,8 +496,23 @@ public:
 
 protected:
   //Return the Set pointer associalted with the given FieldMapping or field idx
-  SetType* get_mapped_set(FieldMapping);
-  SetType* get_mapped_set(int field_idx);
+  RangeSetType* getMappedRangeSet(FieldMapping mapping)
+  {
+    if(mapping == FieldMapping::PER_CELL)
+    {
+      return &getCellSet();
+    }
+    else if(mapping == FieldMapping::PER_MAT)
+    {
+      return &getMatSet();
+    }
+    else
+    {
+      SLIC_ASSERT("Cannot map Cell-Material relation to a RangeSet.");
+      return nullptr;
+    }
+  }
+
   //Return the BivariateSet used for the specified layouts or the field
   BivariateSetType* get_mapped_biSet(DataLayout, SparsityLayout);
   BivariateSetType* get_mapped_biSet(int field_idx);
@@ -768,8 +783,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   {
     SLIC_ASSERT(field_mapping == FieldMapping::PER_CELL ||
                 field_mapping == FieldMapping::PER_MAT);
-    const RangeSetType& s =
-      *static_cast<RangeSetType*>(get_mapped_set(field_mapping));
+    const RangeSetType& s = *getMappedRangeSet(field_mapping);
 
     axom::Array<T>& array = m_fieldBackingVec.back().getArray<T>();
     array.insert(0, s.size() * stride, data_arr);
