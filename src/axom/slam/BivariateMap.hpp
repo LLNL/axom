@@ -143,8 +143,8 @@ public:
   {
     using OuterSet = const typename BivariateSetRetType::FirstSetType;
     using InnerSet = const typename BivariateSetRetType::SecondSetType;
-    OuterSet* outer = dynamic_cast<OuterSet*>(m_bset->getFirstSet());
-    InnerSet* inner = dynamic_cast<InnerSet*>(m_bset->getSecondSet());
+    OuterSet* outer = dynamic_cast<OuterSet*>(set()->getFirstSet());
+    InnerSet* inner = dynamic_cast<InnerSet*>(set()->getSecondSet());
 
     return BivariateSetRetType(outer, inner);
   }
@@ -187,7 +187,7 @@ public:
   const ConstSubMapType operator()(SetPosition firstIdx) const
   {
     verifyFirstSetIndex(firstIdx);
-    auto s = m_bset->elementRangeSet(firstIdx);
+    auto s = set()->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return ConstSubMapType(this, s, hasInd);
   }
@@ -195,7 +195,7 @@ public:
   SubMapType operator()(SetPosition firstIdx)
   {
     verifyFirstSetIndex(firstIdx);
-    auto s = m_bset->elementRangeSet(firstIdx);
+    auto s = set()->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return SubMapType(this, s, hasInd);
   }
@@ -237,7 +237,7 @@ public:
    */
   const DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0) const
   {
-    SetPosition i = m_bset->findElementFlatIndex(s1, s2);
+    SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -248,7 +248,7 @@ public:
 
   DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0)
   {
-    SetPosition i = m_bset->findElementFlatIndex(s1, s2);
+    SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -271,7 +271,7 @@ public:
    */
   SetPosition index(SetPosition s1, SetPosition s2) const
   {
-    return m_bset->findElementIndex(s1, s2);
+    return set()->findElementIndex(s1, s2);
   }
 
   /**
@@ -282,7 +282,7 @@ public:
    */
   OrderedSetType indexSet(SetPosition s1) const
   {
-    return m_bset->getElements(s1);
+    return set()->getElements(s1);
   }
 
   /**
@@ -291,7 +291,7 @@ public:
    */
   inline SetPosition flatIndex(SetPosition s1, SetPosition s2) const
   {
-    return m_bset->findElementFlatIndex(s1, s2);
+    return set()->findElementFlatIndex(s1, s2);
   }
 
   /// @}
@@ -317,7 +317,7 @@ protected:
   constexpr bool submapIndicesHaveIndirection() const
   {
     return traits::indices_use_indirection<BivariateSetType>::value ||
-      (m_bset->getSecondSet()->at(0) != 0);
+      (set()->getSecondSet()->at(0) != 0);
   }
 
 public:
@@ -515,7 +515,7 @@ public:
 
   virtual bool isValid(bool verboseOutput = false) const override
   {
-    return m_bset->isValid(verboseOutput) && m_map.isValid(verboseOutput);
+    return set()->isValid(verboseOutput) && m_map.isValid(verboseOutput);
   }
 
   /// \name BivariateMap cardinality functions
@@ -523,15 +523,15 @@ public:
   ///
 
   /** \brief Returns the BivariateSet size. */
-  SetPosition size() const override { return m_bset->size(); }
+  SetPosition size() const override { return set()->size(); }
   /** \brief Returns the BivariateSet size. */
-  SetPosition totalSize() const { return m_bset->size(); }
+  SetPosition totalSize() const { return set()->size(); }
 
-  SetPosition firstSetSize() const { return m_bset->firstSetSize(); }
-  SetPosition secondSetSize() const { return m_bset->secondSetSize(); }
+  SetPosition firstSetSize() const { return set()->firstSetSize(); }
+  SetPosition secondSetSize() const { return set()->secondSetSize(); }
   /** \brief Returns the number of the BivariateSet ordered pairs with
    *         the given first set index. */
-  SetPosition size(SetPosition s) const { return m_bset->size(s); }
+  SetPosition size(SetPosition s) const { return set()->size(s); }
   /** \brief Return the number of components of the map  */
   SetPosition numComp() const { return StrPol::stride(); }
 
@@ -561,7 +561,7 @@ private:
   /** \brief Check the indices (DenseIndex) are valid   */
   void verifyPosition(SetPosition s1, SetPosition s2) const
   {
-    m_bset->verifyPosition(s1, s2);
+    set()->verifyPosition(s1, s2);
   }
 
   /** \brief Check the given ElementFlatIndex is valid.  */
