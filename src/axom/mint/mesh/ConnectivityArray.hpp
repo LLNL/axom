@@ -36,16 +36,6 @@ enum ConnectivityType
 };
 
 /*!
- * \brief Represents the type of storage the ConnectivityArray is constructed with.
- */
-enum class StorageMode
-{
-  Native,
-  External,
-  Sidre
-};
-
-/*!
  * \class ConnectivityArray
  *
  * \brief Provides an interface for general mesh connectivity.

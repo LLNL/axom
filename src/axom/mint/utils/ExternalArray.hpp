@@ -18,6 +18,16 @@ namespace axom
 namespace mint
 {
 /*!
+ * \brief Represents the type of storage the ConnectivityArray is constructed with.
+ */
+enum class StorageMode
+{
+  Native,
+  External,
+  Sidre
+};
+
+/*!
  * \class ExternalArray
  *
  * \brief Provides a generic multi-component array, constructed from external
