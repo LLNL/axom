@@ -201,14 +201,14 @@ public:
   ///
 
   /** \brief returns the size of the SubMap  */
-  IndexType size() const override { return m_subsetIdx.size(); }
+  IndexType size() const { return m_subsetIdx.size(); }
 
   /** \brief returns the number of components (aka. stride) of the SubMap  */
   IndexType numComp() const { return StridePolicyType::stride(); }
 
   /// @}
 
-  bool isValid(bool VerboseOutput = false) const override;
+  bool isValid(bool VerboseOutput = false) const;
 
 private:  //function inherit from StridePolicy that should not be accessible
   void setStride(IndexType)
@@ -239,10 +239,7 @@ private:  //helper functions
   }
 
   /** Checks the ComponentFlatIndex is valid */
-  void verifyPosition(SetPosition idx) const override
-  {
-    verifyPositionImpl(idx);
-  }
+  void verifyPosition(SetPosition idx) const { verifyPositionImpl(idx); }
 
   /** Checks the ElementFlatIndex and the component index is valid */
   void verifyPosition(SetPosition idx, SetPosition comp) const

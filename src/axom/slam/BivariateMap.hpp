@@ -103,8 +103,8 @@ public:
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol, IfacePol>;
 
-  using SubMapType = SubMap<BivariateMapType, SetType>;
-  using ConstSubMapType = const SubMap<const BivariateMapType, SetType>;
+  using SubMapType = SubMap<BivariateMapType, SetType, IfacePol>;
+  using ConstSubMapType = const SubMap<const BivariateMapType, SetType, IfacePol>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType =
