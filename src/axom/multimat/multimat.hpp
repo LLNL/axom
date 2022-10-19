@@ -634,6 +634,26 @@ private:  //private functions
   template <typename T>
   Field2D<T> get2dFieldImpl(int fieldIdx) const;
 
+  template <typename BSet>
+  BSet getCompatibleBivarSet(int fieldIdx) const;
+
+  template <typename BSet>
+  struct ConvertibleTraits;
+
+  template <typename SetType1, typename SetType2, typename InterfaceType>
+  struct ConvertibleTraits<slam::ProductSet<SetType1, SetType2, InterfaceType>>
+  {
+    using Type = ProductSetType;
+    constexpr static SparsityLayout Layout = SparsityLayout::DENSE;
+  };
+
+  template <typename Relation, typename SetType1, typename SetType2, typename InterfaceType>
+  struct ConvertibleTraits<slam::RelationSet<Relation, SetType1, SetType2, InterfaceType>>
+  {
+    using Type = RelationSetType;
+    constexpr static SparsityLayout Layout = SparsityLayout::SPARSE;
+  };
+
 private:
   unsigned int m_ncells, m_nmats;
 
@@ -892,11 +912,9 @@ MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_nam
 
   if(fi < 0) throw std::invalid_argument("No field with this name is found");
 
-  BSetType* bi_set =
-    (BSetType*)this->get_mapped_biSet(m_fieldDataLayoutVec[fi],
-                                      m_fieldSparsityLayoutVec[fi]);
+  BSetType bsetValue = getCompatibleBivarSet<BSetType>(fi);
 
-  Field2D<T, BSetType> typedBMap(*this, bi_set, fi, bmap.getMap()->data());
+  Field2D<T, BSetType> typedBMap(*this, bsetValue, fi, bmap.getMap()->data());
 
   return typedBMap;
 }
@@ -975,14 +993,31 @@ MultiMat::get2dFieldAsSlamBivarMap(const std::string& field_name)
   // Get a reference to the unspecialized BMap
   auto bmap = get2dField<T>(field_name);
 
-  const BSetType* pBset = static_cast<const BSetType*>(bmap.set());
+  int fieldIdx = getFieldIdx(field_name);
+
+  BSetType bsetValue = getCompatibleBivarSet<BSetType>(fieldIdx);
 
   // Create instance of templated BivariateMap
   slam::BivariateMap<T, BSetType, IndViewPolicy<T>> typedBMap(
-    pBset,
+    bsetValue,
     bmap.getMap()->data());
 
   return typedBMap;
+}
+
+template <typename BSet>
+BSet MultiMat::getCompatibleBivarSet(int fieldIdx) const
+{
+  using FromBSetType = typename ConvertibleTraits<BSet>::Type;
+
+  SLIC_CHECK_MSG(
+    m_fieldSparsityLayoutVec[fieldIdx] == ConvertibleTraits<BSet>::Layout,
+    "BivariateSet type is incompatible with stored field sparsity layout.");
+
+  const FromBSetType* ptr =
+    static_cast<const FromBSetType*>(get_mapped_biSet(fieldIdx));
+
+  return *ptr;
 }
 
 }  //end namespace multimat

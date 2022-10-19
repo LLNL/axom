@@ -171,7 +171,11 @@ public:
                      int fieldIdx,
                      axom::ArrayView<DataType> data_arr = {},
                      int stride = 1)
-    : Field2DType(mm, (BiSet*)mm.get_mapped_biSet(fieldIdx), fieldIdx, data_arr, stride)
+    : Field2DType(mm,
+                  mm.getCompatibleBivarSet<BiSet>(fieldIdx),
+                  fieldIdx,
+                  data_arr,
+                  stride)
   { }
 };
 
