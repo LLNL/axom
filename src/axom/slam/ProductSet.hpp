@@ -40,17 +40,11 @@ template <typename SetType1 = slam::Set<>,
           typename SetType2 = slam::Set<>,
           typename InterfaceType = policies::VirtualInterface>
 class ProductSet final
-  : public policies::BivariateSetInterface<InterfaceType,
-                                           SetType1,
-                                           SetType2,
-                                           ProductSet<SetType1, SetType2, InterfaceType>>
+  : public policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>
 {
 private:
   using BaseType =
-    policies::BivariateSetInterface<InterfaceType,
-                                    SetType1,
-                                    SetType2,
-                                    ProductSet<SetType1, SetType2, InterfaceType>>;
+    policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>;
 
 public:
   using RangeSetType =
@@ -111,13 +105,15 @@ public:
   friend OtherSet;
 
   ProductSet(const OtherSet& other)
-    : m_set1(other.m_set1)
-    , m_set2(other.m_set2)
+    : BaseType(other)
     , m_rowSet(this->secondSetSize())
   { }
 
 public:
   using SubsetType = typename RowSet<void, typename BaseType::SubsetType>::Type;
+
+  /** \brief Default constructor */
+  ProductSet() : m_rowSet(0) { }
 
   /**
    * \brief Constructor taking in pointers of two Sets.
@@ -125,11 +121,9 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-  ProductSet(
-    const FirstSetType* set1 = policies::EmptySetTraits<FirstSetType>::emptySet(),
-    const SecondSetType* set2 = policies::EmptySetTraits<SecondSetType>::emptySet())
-    : m_set1(set1)
-    , m_set2(set2)
+
+  ProductSet(const FirstSetType* set1, const SecondSetType* set2)
+    : BaseType(set1, set2)
     , m_rowSet(this->secondSetSize())
   { }
 
@@ -221,11 +215,6 @@ public:
     return BaseType::isValid(verboseOutput);
   }
 
-  /** \brief Returns pointer to the first set.   */
-  const FirstSetType* getFirstSet() const { return m_set1; }
-  /** \brief Returns pointer to the second set.   */
-  const SecondSetType* getSecondSet() const { return m_set2; }
-
 private:
   /** \brief verify the FlatIndex \a pos is within the valid range. */
   void verifyPosition(PositionType pos) const
@@ -262,8 +251,6 @@ private:
   }
 
 private:
-  const FirstSetType* m_set1;
-  const SecondSetType* m_set2;
   RowSet<void, typename BaseType::SubsetType> m_rowSet;
 };
 

@@ -102,6 +102,19 @@ public:
 
 public:
   /**
+   * \brief Constructor taking pointers to the two sets that defines the range
+   *        of the indices of the BivariateSet.
+   *
+   * \param set1  Pointer to the first Set.
+   * \param set2  Pointer to the second Set.
+   */
+  BivariateSet(const Set1* set1 = policies::EmptySetTraits<Set1>::emptySet(),
+               const Set2* set2 = policies::EmptySetTraits<Set2>::emptySet())
+    : m_set1(set1)
+    , m_set2(set2)
+  { }
+
+  /**
    * \brief Default virtual destructor
    *
    * \note BivariateSet does not own the two underlying sets
@@ -171,24 +184,18 @@ public:
   /** \brief Size of the first set.   */
   inline PositionType firstSetSize() const
   {
-    return getSize<FirstSetType>(getFirstSet());
+    return getSize<FirstSetType>(m_set1);
   }
   /** \brief Size of the second set.   */
   inline PositionType secondSetSize() const
   {
-    return getSize<SecondSetType>(getSecondSet());
+    return getSize<SecondSetType>(m_set2);
   }
 
   /** \brief Returns pointer to the first set.   */
-  virtual const FirstSetType* getFirstSet() const
-  {
-    return policies::EmptySetTraits<FirstSetType>::emptySet();
-  }
+  const FirstSetType* getFirstSet() const { return m_set1; }
   /** \brief Returns pointer to the second set.   */
-  virtual const SecondSetType* getSecondSet() const
-  {
-    return policies::EmptySetTraits<SecondSetType>::emptySet();
-  }
+  const SecondSetType* getSecondSet() const { return m_set2; }
 
   /** \brief Returns the element at the given FlatIndex \a pos */
   virtual ElementType at(PositionType pos) const = 0;
@@ -219,12 +226,13 @@ private:
   typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
   getSize(const SetType* s) const
   {
-    if(policies::EmptySetTraits<SetType>::emptySet() == s)
-    {
-      return 0;
-    }
+    SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
     return static_cast<SetType>(*s).size();
   }
+
+protected:
+  const FirstSetType* m_set1;
+  const SecondSetType* m_set2;
 };
 
 template <typename Set1, typename Set2>
@@ -233,7 +241,7 @@ const typename BivariateSet<Set1, Set2>::NullSetType BivariateSet<Set1, Set2>::s
 template <typename Set1, typename Set2>
 bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
 {
-  if(getFirstSet() == nullptr || getSecondSet() == nullptr)
+  if(m_set1 == nullptr || m_set2 == nullptr)
   {
     if(verboseOutput)
     {
@@ -242,8 +250,7 @@ bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
     }
     return false;
   }
-  return getFirstSet()->isValid(verboseOutput) &&
-    getSecondSet()->isValid(verboseOutput);
+  return m_set1->isValid(verboseOutput) && m_set2->isValid(verboseOutput);
 }
 
 /**
@@ -299,17 +306,6 @@ public:
   {
     using OrderedSetBuilder = typename SubsetType::SetBuilder;
     return OrderedSetBuilder();
-  }
-
-  /** \brief Returns pointer to the first set.   */
-  const FirstSetType* getFirstSet() const override
-  {
-    return policies::EmptySetTraits<FirstSetType>::emptySet();
-  }
-  /** \brief Returns pointer to the second set.   */
-  const SecondSetType* getSecondSet() const override
-  {
-    return policies::EmptySetTraits<SecondSetType>::emptySet();
   }
 
 private:

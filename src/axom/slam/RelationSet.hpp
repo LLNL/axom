@@ -34,11 +34,7 @@ template <typename Relation,
           typename SetType2 = typename Relation::ToSetType,
           typename InterfaceType = policies::VirtualInterface>
 class RelationSet final
-  : public policies::BivariateSetInterface<
-      InterfaceType,
-      SetType1,
-      SetType2,
-      RelationSet<Relation, SetType1, SetType2, InterfaceType>>
+  : public policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>
 {
 public:
   using FirstSetType = SetType1;
@@ -49,11 +45,8 @@ public:
 private:
   using RangeSetType =
     RangeSet<typename RelationType::SetPosition, typename RelationType::SetElement>;
-  using BaseType = policies::BivariateSetInterface<
-    InterfaceType,
-    SetType1,
-    SetType2,
-    RelationSet<Relation, SetType1, SetType2, InterfaceType>>;
+  using BaseType =
+    policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>;
 
 public:
   using PositionType = typename RelationType::SetPosition;
@@ -86,7 +79,12 @@ public:
    * \brief Constructor taking in the relation this BivariateSet is based on.
    * \pre relation pointer must not be a null pointer
    */
-  RelationSet(RelationType* relation) : m_relation(relation)
+  RelationSet(RelationType* relation)
+    : BaseType(relation ? relation->fromSet()
+                        : policies::EmptySetTraits<FirstSetType>::emptySet(),
+               relation ? relation->toSet()
+                        : policies::EmptySetTraits<SecondSetType>::emptySet())
+    , m_relation(relation)
   {
     SLIC_ASSERT(relation != nullptr);
   }
@@ -199,19 +197,6 @@ public:
    * \param pos The from-set position.
    */
   PositionType size(PositionType pos) const { return m_relation->size(pos); }
-
-  /** \brief Returns pointer to the first set.   */
-  const FirstSetType* getFirstSet() const
-  {
-    return m_relation ? m_relation->fromSet()
-                      : policies::EmptySetTraits<FirstSetType>::emptySet();
-  }
-  /** \brief Returns pointer to the second set.   */
-  const SecondSetType* getSecondSet() const
-  {
-    return m_relation ? m_relation->toSet()
-                      : policies::EmptySetTraits<SecondSetType>::emptySet();
-  }
 
   bool isValid(bool verboseOutput = false) const
   {

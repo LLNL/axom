@@ -17,7 +17,7 @@ namespace policies
 {
 namespace detail
 {
-template <typename Derived, typename Set1 = slam::Set<>, typename Set2 = slam::Set<>>
+template <typename Set1 = slam::Set<>, typename Set2 = slam::Set<>>
 struct ConcreteBivariateSet
 {
   using FirstSetType = Set1;
@@ -30,20 +30,39 @@ struct ConcreteBivariateSet
 
   static constexpr PositionType INVALID_POS = PositionType(-1);
 
+  /**
+   * \brief Constructor taking pointers to the two sets that defines the range
+   *        of the indices of the BivariateSet.
+   *
+   * \param set1  Pointer to the first Set.
+   * \param set2  Pointer to the second Set.
+   */
+  ConcreteBivariateSet(
+    const Set1* set1 = policies::EmptySetTraits<Set1>::emptySet(),
+    const Set2* set2 = policies::EmptySetTraits<Set2>::emptySet())
+    : m_set1(set1)
+    , m_set2(set2)
+  { }
+
   /** \brief Size of the first set.   */
   inline PositionType firstSetSize() const
   {
-    return getSize<FirstSetType>(getFirstSetDerived());
+    return getSize<FirstSetType>(m_set1);
   }
   /** \brief Size of the second set.   */
   inline PositionType secondSetSize() const
   {
-    return getSize<SecondSetType>(getSecondSetDerived());
+    return getSize<SecondSetType>(m_set2);
   }
+
+  /** \brief Returns pointer to the first set.   */
+  const FirstSetType* getFirstSet() const { return m_set1; }
+  /** \brief Returns pointer to the second set.   */
+  const SecondSetType* getSecondSet() const { return m_set2; }
 
   bool isValid(bool verboseOutput = false) const
   {
-    if(getFirstSetDerived() == nullptr || getSecondSetDerived() == nullptr)
+    if(getFirstSet() == nullptr || getSecondSet() == nullptr)
     {
       if(verboseOutput)
       {
@@ -52,8 +71,8 @@ struct ConcreteBivariateSet
       }
       return false;
     }
-    return getFirstSetDerived()->isValid(verboseOutput) &&
-      getSecondSetDerived()->isValid(verboseOutput);
+    return getFirstSet()->isValid(verboseOutput) &&
+      getSecondSet()->isValid(verboseOutput);
   }
 
 private:
@@ -69,43 +88,34 @@ private:
   typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
   getSize(const SetType* s) const
   {
-    if(policies::EmptySetTraits<SetType>::emptySet() == s)
-    {
-      return 0;
-    }
+    SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
     return static_cast<SetType>(*s).size();
   }
 
 protected:
-  const FirstSetType* getFirstSetDerived() const
-  {
-    return static_cast<const Derived*>(this)->getFirstSet();
-  }
-  const SecondSetType* getSecondSetDerived() const
-  {
-    return static_cast<const Derived*>(this)->getSecondSet();
-  }
+  const FirstSetType* m_set1;
+  const SecondSetType* m_set2;
 };
 
-template <typename InterfaceTag, typename Set1, typename Set2, typename Derived>
+template <typename InterfaceTag, typename Set1, typename Set2>
 struct BSetInterfaceSelector
 {
   static_assert(std::is_same<InterfaceTag, ConcreteInterface>::value,
                 "InterfaceTag must be one of policies::ConcreteInterface or "
                 "policies::VirtualInterface.");
-  using Type = ConcreteBivariateSet<Derived, Set1, Set2>;
+  using Type = ConcreteBivariateSet<Set1, Set2>;
 };
 
-template <typename Set1, typename Set2, typename Derived>
-struct BSetInterfaceSelector<VirtualInterface, Set1, Set2, Derived>
+template <typename Set1, typename Set2>
+struct BSetInterfaceSelector<VirtualInterface, Set1, Set2>
 {
   using Type = BivariateSet<Set1, Set2>;
 };
 }  // namespace detail
 
-template <typename InterfaceTag, typename FromSet, typename ToSet, typename Derived>
+template <typename InterfaceTag, typename FromSet, typename ToSet>
 using BivariateSetInterface =
-  typename detail::BSetInterfaceSelector<InterfaceTag, FromSet, ToSet, Derived>::Type;
+  typename detail::BSetInterfaceSelector<InterfaceTag, FromSet, ToSet>::Type;
 
 }  // end namespace policies
 }  // end namespace slam
