@@ -435,6 +435,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   SLIC_INFO(
     "-- Averaging Density cell-dominant using MultiMat Submap -- templated on "
     "concrete bivariate set");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
@@ -870,6 +871,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
   SLIC_INFO(
     "-- Averaging Density mat-dominant using MultiMat Submap -- templated on "
     "concrete bivariate set");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   mm.convertLayoutToMaterialDominant();
 
@@ -1502,6 +1504,8 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO(
     "-- Calculating pressure, using MultiMat Submap \t\t-- templated on BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
+
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -1985,6 +1989,7 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   SLIC_INFO(
     "-- Calculating pressure, using MultiMat Submap \t\t-- using templated "
     "BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
   SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
@@ -2542,6 +2547,7 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm,
 {
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix,"
             << " Multimat Submap -- using templated BSet ");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -2981,6 +2987,7 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm,
 {
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact, "
             << " Multimat Submap -- templated on BSet type");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -3675,6 +3682,7 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm,
   SLIC_INFO(
     "-- Average Density over Neighbors, Material-Dominant, using MultiMat "
     "Submap -- templated on BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -4026,6 +4034,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm,
   SLIC_INFO(
     "-- Average Density over Neighbors, Material-Dominant Compact, using "
     "MultiMat Submap -- templated on BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
