@@ -160,7 +160,8 @@ using MMRelationType = typename MultiMat::RelationSetType::RelationType;
 using ConcreteRelationSet = slam::RelationSet<MMRelationType, RangeSet, RangeSet>;
 
 std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet> g_concretizedProdSets;
-std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet> g_concretizedRelSets;
+std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>
+  g_concretizedRelSets;
 
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetType, Layout>
@@ -4564,17 +4565,17 @@ int main(int argc, char** argv)
                                      ProductSetType>(mm);
   average_density_cell_dom_mm_direct<MMFieldMethod::FullyTemplatedField,
                                      ProductSetType>(mm);
-  average_density_cell_dom_mm_direct<MMFieldMethod::SlamField,
-                                     ProductSetType>(mm);
-  average_density_cell_dom_mm_direct<MMFieldMethod::SlamTmplField,
-                                     ProductSetType>(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::SlamField, ProductSetType>(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
   average_density_cell_dom_mm_direct<MMFieldMethod::SlamTmplStrideField,
                                      ProductSetType>(mm);
 
   average_density_cell_dom_mm_submap(mm);
 #ifdef run_slam_bivarmap
   average_density_cell_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
-  average_density_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
 #endif
   average_density_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
                                      ProductSetType>(mm);
@@ -4631,7 +4632,8 @@ int main(int argc, char** argv)
   average_density_mat_dom_mm_submap(mm);
 #ifdef run_slam_bivarmap
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
-  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
 #endif
   average_density_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField, ProductSetType>(
     mm);
@@ -4649,7 +4651,8 @@ int main(int argc, char** argv)
   average_density_mat_dom_mm_submap(mm);
 #ifdef run_slam_bivarmap
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(mm);
-  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
+    mm);
 #endif
   average_density_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
                                     RelationSetType>(mm);
