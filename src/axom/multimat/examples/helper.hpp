@@ -898,7 +898,7 @@ struct Result_Store
                                "Neighbor material density",
                                "Pressure from ideal gas law"};
 
-  static constexpr int nMethod = 14;
+  static constexpr int nMethod = 15;
   enum Method
   {
     method_csr,
@@ -911,6 +911,7 @@ struct Result_Store
     mm_idxarray,
     mm_submap,
     mm_submap_slam,
+    mm_submap_slam_tmpl,
     mm_submap_templated_bset,
     mm_submap_templated_full,
     mm_iter,
@@ -925,7 +926,8 @@ struct Result_Store
                                        "MM-Direct-Slam-BMap-Tmpl-StrideOne",
                                        "MM-Index Array",
                                        "MM-Submap",
-                                       "MM-Submap-Slam-Obj",
+                                       "MM-Submap-Slam",
+                                       "MM-Submap-Slam-Tmpl",
                                        "MM-Submap-BSet-Templated",
                                        "MM-Submap-Fully-Templated",
                                        "MM-Iterator",

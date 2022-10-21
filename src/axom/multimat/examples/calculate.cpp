@@ -64,7 +64,8 @@ std::unordered_map<MMFieldMethod, Result_Store::Method> g_resultStoreMethodSubma
   {MMFieldMethod::GenericField, Result_Store::mm_submap},
   {MMFieldMethod::BSetTemplatedField, Result_Store::mm_submap_templated_bset},
   {MMFieldMethod::FullyTemplatedField, Result_Store::mm_submap_templated_full},
-  {MMFieldMethod::SlamField, Result_Store::mm_submap_slam}};
+  {MMFieldMethod::SlamField, Result_Store::mm_submap_slam},
+  {MMFieldMethod::SlamTmplField, Result_Store::mm_submap_slam_tmpl}};
 
 std::unordered_map<MMFieldMethod, Result_Store::Method> g_resultStoreMethodDirect {
   {MMFieldMethod::GenericField, Result_Store::mm_direct},
@@ -120,7 +121,11 @@ struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
 
 using RangeSet = slam::RangeSet<>;
 using ConcreteProdSet = slam::ProductSet<RangeSet, RangeSet>;
-std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet> g_concretizedBSets;
+using MMRelationType = typename MultiMat::RelationSetType::RelationType;
+using ConcreteRelationSet = slam::RelationSet<MMRelationType, RangeSet, RangeSet>;
+
+std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet> g_concretizedProdSets;
+std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet> g_concretizedRelSets;
 
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetType, Layout>
@@ -132,13 +137,13 @@ struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetTy
   {
     auto field =
       mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedBSets.find(field.set()) == g_concretizedBSets.end())
+    if(g_concretizedProdSets.find(field.set()) == g_concretizedProdSets.end())
     {
       BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
                    static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      g_concretizedBSets[field.set()] = prodSet;
+      g_concretizedProdSets[field.set()] = prodSet;
     }
-    SlamBMap fieldStrided(&(g_concretizedBSets[field.set()]));
+    SlamBMap fieldStrided(&(g_concretizedProdSets[field.set()]));
     fieldStrided.copy(field.getMap()->data().data());
     return fieldStrided;
   }
@@ -158,13 +163,38 @@ struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::Produc
   {
     auto field =
       mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedBSets.find(field.set()) == g_concretizedBSets.end())
+    if(g_concretizedProdSets.find(field.set()) == g_concretizedProdSets.end())
     {
       BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
                    static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      g_concretizedBSets[field.set()] = prodSet;
+      g_concretizedProdSets[field.set()] = prodSet;
     }
-    SlamBMapStrided fieldStrided(&(g_concretizedBSets[field.set()]));
+    SlamBMapStrided fieldStrided(&(g_concretizedProdSets[field.set()]));
+    fieldStrided.copy(field.getMap()->data().data());
+    return fieldStrided;
+  }
+};
+
+template <DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::RelationSetType, Layout>
+{
+  using BSet = ConcreteRelationSet;
+  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using Stride = slam::policies::StrideOne<int>;
+  using Ind = typename SlamBMap::IndirectionPolicy;
+
+  using SlamBMapStrided = slam::BivariateMap<double, BSet, Ind, Stride>;
+
+  static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
+  {
+    auto field =
+      mm.get2dFieldAsSlamBivarMap<double, MultiMat::RelationSetType>(fieldName);
+    if(g_concretizedRelSets.find(field.set()) == g_concretizedRelSets.end())
+    {
+      BSet relSet(field.set()->getRelation());
+      g_concretizedRelSets[field.set()] = relSet;
+    }
+    SlamBMapStrided fieldStrided(&(g_concretizedRelSets[field.set()]));
     fieldStrided.copy(field.getMap()->data().data());
     return fieldStrided;
   }
@@ -4509,6 +4539,7 @@ int main(int argc, char** argv)
   average_density_cell_dom_mm_submap(mm);
 #ifdef run_slam_bivarmap
   average_density_cell_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(mm);
 #endif
   average_density_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
                                      ProductSetType>(mm);
@@ -4528,6 +4559,8 @@ int main(int argc, char** argv)
   average_density_cell_dom_mm_submap(mm);
 #ifdef run_slam_bivarmap
   average_density_cell_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(
+    mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
     mm);
 #endif
   average_density_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
@@ -4563,6 +4596,7 @@ int main(int argc, char** argv)
   average_density_mat_dom_mm_submap(mm);
 #ifdef run_slam_bivarmap
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(mm);
 #endif
   average_density_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField, ProductSetType>(
     mm);
@@ -4580,6 +4614,7 @@ int main(int argc, char** argv)
   average_density_mat_dom_mm_submap(mm);
 #ifdef run_slam_bivarmap
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(mm);
 #endif
   average_density_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
                                     RelationSetType>(mm);
@@ -4615,6 +4650,8 @@ int main(int argc, char** argv)
 #ifdef run_slam_bivarmap
   average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::SlamField,
                                                    ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::SlamTmplField,
+                                                   ProductSetType>(mm, data);
 #endif
   average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::BSetTemplatedField,
                                                    ProductSetType>(mm, data);
@@ -4631,6 +4668,8 @@ int main(int argc, char** argv)
   average_density_over_nbr_cell_dom_compact_mm_submap(mm, data);
 #ifdef run_slam_bivarmap
   average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::SlamField,
+                                                      RelationSetType>(mm, data);
+  average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::SlamTmplField,
                                                       RelationSetType>(mm, data);
 #endif
   average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::BSetTemplatedField,
@@ -4662,6 +4701,8 @@ int main(int argc, char** argv)
 #ifdef run_slam_bivarmap
   average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::SlamField,
                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::SlamTmplField,
+                                                  ProductSetType>(mm, data);
 #endif
   average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::BSetTemplatedField,
                                                   ProductSetType>(mm, data);
@@ -4679,6 +4720,8 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_compact_mm_submap(mm, data);
 #ifdef run_slam_bivarmap
   average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::SlamField,
+                                                     RelationSetType>(mm, data);
+  average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::SlamTmplField,
                                                      RelationSetType>(mm, data);
 #endif
   average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::BSetTemplatedField,
@@ -4714,6 +4757,8 @@ int main(int argc, char** argv)
 #ifdef run_slam_bivarmap
   calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(
     mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
 #endif
   calculate_pressure_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
                                         ProductSetType>(mm);
@@ -4731,6 +4776,8 @@ int main(int argc, char** argv)
   calculate_pressure_cell_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
   calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(
+    mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
     mm);
 #endif
   calculate_pressure_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
@@ -4761,6 +4808,8 @@ int main(int argc, char** argv)
 #ifdef run_slam_bivarmap
   calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(
     mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
 #endif
   calculate_pressure_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
                                        ProductSetType>(mm);
@@ -4777,6 +4826,8 @@ int main(int argc, char** argv)
   calculate_pressure_mat_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
   calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(
+    mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
     mm);
 #endif
   calculate_pressure_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
