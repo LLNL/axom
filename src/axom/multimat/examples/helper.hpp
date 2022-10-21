@@ -898,11 +898,16 @@ struct Result_Store
                                "Neighbor material density",
                                "Pressure from ideal gas law"};
 
-  const int nMethod = 9;
+  static constexpr int nMethod = 14;
   enum Method
   {
     method_csr,
     mm_direct,
+    mm_direct_templated_bset,
+    mm_direct_templated_full,
+    mm_direct_slam,
+    mm_direct_slam_tmpl,
+    mm_direct_slam_tmpl_stride,
     mm_idxarray,
     mm_submap,
     mm_submap_slam,
@@ -911,15 +916,20 @@ struct Result_Store
     mm_iter,
     mm_flatiter
   };
-  const char* method_names[9] = {"CSR",
-                                 "MM-Direct",
-                                 "MM-Index Array",
-                                 "MM-Submap",
-                                 "MM-Submap-Slam-Obj",
-                                 "MM-Submap-BSet-Templated",
-                                 "MM-Submap-Fully-Templated",
-                                 "MM-Iterator",
-                                 "MM-Flat Iterator"};
+  const char* method_names[nMethod] = {"CSR",
+                                       "MM-Direct",
+                                       "MM-Direct-BSet-Templated",
+                                       "MM-Direct-Fully-Templated",
+                                       "MM-Direct-Slam-BMap",
+                                       "MM-Direct-Slam-BMap-Tmpl",
+                                       "MM-Direct-Slam-BMap-Tmpl-StrideOne",
+                                       "MM-Index Array",
+                                       "MM-Submap",
+                                       "MM-Submap-Slam-Obj",
+                                       "MM-Submap-BSet-Templated",
+                                       "MM-Submap-Fully-Templated",
+                                       "MM-Iterator",
+                                       "MM-Flat Iterator"};
 
   const int nLayout = 4;
   const char* const data_layout_str[2] = {"Cell Dominant", "Material Dominant"};

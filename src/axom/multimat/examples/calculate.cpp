@@ -46,20 +46,33 @@ enum class MMFieldMethod
   GenericField,
   BSetTemplatedField,
   FullyTemplatedField,
-  SlamField
+  SlamField,
+  SlamTmplField,
+  SlamTmplStrideField,
 };
 
 std::unordered_map<MMFieldMethod, std::string> g_fieldMethodNames {
   {MMFieldMethod::GenericField, "Generic Field2D"},
   {MMFieldMethod::BSetTemplatedField, "BSet-Templated Field2D"},
   {MMFieldMethod::FullyTemplatedField, "BSet/Layout-Templated Field2D"},
-  {MMFieldMethod::SlamField, "Slam BivariateMap"}};
+  {MMFieldMethod::SlamField, "Slam BivariateMap"},
+  {MMFieldMethod::SlamTmplField, "Slam BivariateMap-Templated on RangeSet"},
+  {MMFieldMethod::SlamTmplStrideField,
+   "Slam BivariateMap-Templated on RangeSet/Stride"}};
 
 std::unordered_map<MMFieldMethod, Result_Store::Method> g_resultStoreMethodSubmap {
   {MMFieldMethod::GenericField, Result_Store::mm_submap},
   {MMFieldMethod::BSetTemplatedField, Result_Store::mm_submap_templated_bset},
   {MMFieldMethod::FullyTemplatedField, Result_Store::mm_submap_templated_full},
   {MMFieldMethod::SlamField, Result_Store::mm_submap_slam}};
+
+std::unordered_map<MMFieldMethod, Result_Store::Method> g_resultStoreMethodDirect {
+  {MMFieldMethod::GenericField, Result_Store::mm_direct},
+  {MMFieldMethod::BSetTemplatedField, Result_Store::mm_direct_templated_bset},
+  {MMFieldMethod::FullyTemplatedField, Result_Store::mm_direct_templated_full},
+  {MMFieldMethod::SlamField, Result_Store::mm_direct_slam},
+  {MMFieldMethod::SlamTmplField, Result_Store::mm_direct_slam_tmpl},
+  {MMFieldMethod::SlamTmplStrideField, Result_Store::mm_direct_slam_tmpl_stride}};
 
 template <MMFieldMethod FieldType, typename BSet, DataLayout Layout>
 struct FieldGetter;
@@ -102,6 +115,58 @@ struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
   static SlamBMap get(MultiMat& mm, const std::string& fieldName)
   {
     return mm.get2dFieldAsSlamBivarMap<double, BSet>(fieldName);
+  }
+};
+
+using RangeSet = slam::RangeSet<>;
+using ConcreteProdSet = slam::ProductSet<RangeSet, RangeSet>;
+std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet> g_concretizedBSets;
+
+template <DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetType, Layout>
+{
+  using BSet = ConcreteProdSet;
+  using SlamBMap = slam::BivariateMap<double, BSet>;
+
+  static SlamBMap get(MultiMat& mm, const std::string& fieldName)
+  {
+    auto field =
+      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
+    if(g_concretizedBSets.find(field.set()) == g_concretizedBSets.end())
+    {
+      BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
+                   static_cast<const RangeSet*>(field.set()->getSecondSet()));
+      g_concretizedBSets[field.set()] = prodSet;
+    }
+    SlamBMap fieldStrided(&(g_concretizedBSets[field.set()]));
+    fieldStrided.copy(field.getMap()->data().data());
+    return fieldStrided;
+  }
+};
+
+template <DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::ProductSetType, Layout>
+{
+  using BSet = ConcreteProdSet;
+  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using Stride = slam::policies::StrideOne<int>;
+  using Ind = typename SlamBMap::IndirectionPolicy;
+
+  using SlamBMapStrided = slam::BivariateMap<double, BSet, Ind, Stride>;
+
+  static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
+  {
+    auto field =
+      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
+    if(g_concretizedBSets.find(field.set()) == g_concretizedBSets.end())
+    {
+      BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
+                   static_cast<const RangeSet*>(field.set()->getSecondSet()));
+      g_concretizedBSets[field.set()] = prodSet;
+    }
+    SlamBMapStrided fieldStrided(&(g_concretizedBSets[field.set()]));
+    fieldStrided.copy(field.getMap()->data().data());
+    return fieldStrided;
   }
 };
 
