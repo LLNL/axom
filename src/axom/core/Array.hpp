@@ -704,10 +704,6 @@ public:
   template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
   void resize(ArrayOptions::Uninitialized, Args... args)
   {
-    static_assert(std::is_default_constructible<T>::value,
-                  "Cannot call Array<T>::resize() when T is non-trivially-"
-                  "constructible. Use Array<T>::reserve() and emplace_back()"
-                  "instead.");
     const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
     resize(dims, false);
   }
