@@ -24,6 +24,7 @@
 
 #include "helper.hpp"
 
+#include <unordered_map>
 #include <type_traits>
 
 namespace slam = axom::slam;
@@ -40,46 +41,63 @@ using Field2DTempT = MultiMat::Field2DTemplated<double, D, B>;
 template <typename B>
 using BiVarMapT = slam::BivariateMap<double, B>;
 
-template <typename FieldTypeT>
-using GetFieldFunType = FieldTypeT (MultiMat::*)(const std::string&);
-
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<std::is_same<FieldTypeT, Field2DT<BSet>>::value,
-                        GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
+enum class MMFieldMethod
 {
-  SLIC_INFO("Using templated field2D");
-  return &MultiMat::get2dField<double, BSet>;
-}
+  GenericField,
+  BSetTemplatedField,
+  FullyTemplatedField,
+  SlamField
+};
 
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<
-  std::is_same<FieldTypeT, Field2DTempT<DataLayout::CELL_DOM, BSet>>::value,
-  GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
-{
-  SLIC_INFO("Using specialized templated-field2D");
-  return &MultiMat::getTemplated2DField<double, DataLayout::CELL_DOM, BSet>;
-}
+std::unordered_map<MMFieldMethod, std::string> g_fieldMethodNames {
+  {MMFieldMethod::GenericField, "Generic Field2D"},
+  {MMFieldMethod::BSetTemplatedField, "BSet-Templated Field2D"},
+  {MMFieldMethod::FullyTemplatedField, "BSet/Layout-Templated Field2D"},
+  {MMFieldMethod::SlamField, "Slam BivariateMap"}};
 
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<
-  std::is_same<FieldTypeT, Field2DTempT<DataLayout::MAT_DOM, BSet>>::value,
-  GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
-{
-  SLIC_INFO("Using specialized templated-field2D");
-  return &MultiMat::getTemplated2DField<double, DataLayout::MAT_DOM, BSet>;
-}
+template <MMFieldMethod FieldType, typename BSet, DataLayout Layout>
+struct FieldGetter;
 
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<std::is_same<FieldTypeT, BiVarMapT<BSet>>::value,
-                        GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::GenericField, BSet, Layout>
 {
-  SLIC_INFO("Using slam BivariateMap");
-  return &MultiMat::get2dFieldAsSlamBivarMap<double, BSet>;
-}
+  static MultiMat::Field2D<double> get(MultiMat& mm, const std::string& fieldName)
+  {
+    return mm.get2dField<double>(fieldName);
+  }
+};
+
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::BSetTemplatedField, BSet, Layout>
+{
+  static MultiMat::Field2D<double, BSet> get(MultiMat& mm,
+                                             const std::string& fieldName)
+  {
+    return mm.get2dField<double, BSet>(fieldName);
+  }
+};
+
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::FullyTemplatedField, BSet, Layout>
+{
+  static MultiMat::Field2DTemplated<double, Layout, BSet> get(
+    MultiMat& mm,
+    const std::string& fieldName)
+  {
+    return mm.getTemplated2DField<double, Layout, BSet>(fieldName);
+  }
+};
+
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
+{
+  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+
+  static SlamBMap get(MultiMat& mm, const std::string& fieldName)
+  {
+    return mm.get2dFieldAsSlamBivarMap<double, BSet>(fieldName);
+  }
+};
 
 multirun_timer timer;
 Value_Checker data_checker;
