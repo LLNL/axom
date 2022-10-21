@@ -43,11 +43,35 @@ using BiVarMapT = slam::BivariateMap<double, B>;
 
 enum class MMFieldMethod
 {
+  /*!
+   * \brief Return a generic Field2D<T>, templated on abstract BivariateSet
+   */
   GenericField,
+  /*!
+   * \brief Return a Field2D<T> templated on a provided BivariateSet
+   *        (either MultiMat::ProductSet or MultiMat::RelationSet)
+   */
   BSetTemplatedField,
+  /*!
+   * \brief Returns a Field2DTemplated<T>, templated on the bivariate set and
+   *        layout (cell-dominant or material-dominant)
+   */
   FullyTemplatedField,
+  /*!
+   * \brief Return a generic slam::BivariateMap templated on the abstract
+   *        BivariateSet
+   */
   SlamField,
+  /*!
+   * \brief Return a slam::BivariateMap templated on a concrete bivariate set.
+   *        Converts the underlying bivariate set to the corresponding product/
+   *        relation set with slam::RangeSets as from/to set types.
+   */
   SlamTmplField,
+  /*!
+   * \brief Return a slam::BivariateMap templated on a concrete bivariate set,
+   *        and with compile-time stride of one.
+   */
   SlamTmplStrideField,
 };
 
@@ -75,6 +99,17 @@ std::unordered_map<MMFieldMethod, Result_Store::Method> g_resultStoreMethodDirec
   {MMFieldMethod::SlamTmplField, Result_Store::mm_direct_slam_tmpl},
   {MMFieldMethod::SlamTmplStrideField, Result_Store::mm_direct_slam_tmpl_stride}};
 
+/**
+ * \brief Specializable helper class to enable testing accesses of fields through
+ *  various methods.
+ *
+ * \tparam FieldType The field access method to use
+ * \tparam BSet The bivariate set type to use
+ * \tparam Layout The layout to template a Field2D with; ignored except when FieldType
+ *
+ * \note The BSet template parameter is ignored for FieldType == GenericField
+ * \note the Layout template parameter is ignored except when FieldType == FullyTemplatedField.
+ */
 template <MMFieldMethod FieldType, typename BSet, DataLayout Layout>
 struct FieldGetter;
 
