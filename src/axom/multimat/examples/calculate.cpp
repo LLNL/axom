@@ -545,7 +545,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Density                      compute time is "
             << act_perf << " secs\n");
@@ -1118,7 +1118,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
@@ -1622,7 +1622,7 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
@@ -2108,7 +2108,7 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
@@ -2853,7 +2853,7 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
@@ -3109,7 +3109,7 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -3806,7 +3806,7 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -4158,7 +4158,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
