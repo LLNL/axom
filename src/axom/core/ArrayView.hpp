@@ -96,6 +96,11 @@ public:
   inline AXOM_HOST_DEVICE IndexType size() const { return m_num_elements; }
 
   /*!
+   * \brief Returns true iff the ArrayView stores no elements.
+   */
+  bool empty() const { return m_num_elements == 0; }
+
+  /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
    */
   AXOM_HOST_DEVICE
@@ -191,7 +196,14 @@ AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
                 "T must be const if memory space is Constant memory");
 #endif
   // Intel hits internal compiler error when casting as part of function call
-  m_num_elements = detail::packProduct(shape.m_data);
+  if(data != nullptr)
+  {
+    m_num_elements = detail::packProduct(shape.m_data);
+  }
+  else
+  {
+    m_num_elements = 0;
+  }
 
 #if !defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
   // If we have Umpire, we can try and see what space the pointer is allocated in

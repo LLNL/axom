@@ -556,6 +556,7 @@ void check_insert_iterator(Array<T>& v)
     capacity = calc_new_capacity(v, 1);
     typename axom::Array<T>::ArrayIterator ret3 = v.insert(v.begin(), 1, i);
     EXPECT_EQ(ret3, v.begin());
+    EXPECT_EQ(i, v.front());
     size++;
   }
 
@@ -641,6 +642,7 @@ void check_emplace(Array<T>& v)
     capacity = calc_new_capacity(v, 1);
     typename axom::Array<T>::ArrayIterator ret3 = v.emplace(v.begin(), i);
     EXPECT_EQ(ret3, v.begin());
+    EXPECT_EQ(i, v.front());
     size++;
   }
 
@@ -1235,7 +1237,9 @@ TEST(core_array, checkIterator)
   }
 
   EXPECT_EQ(*v_int.begin(), 0);
+  EXPECT_EQ(v_int.front(), 0);
   EXPECT_EQ(*(v_int.end() - 1), SIZE - 1);
+  EXPECT_EQ(v_int.back(), SIZE - 1);
   EXPECT_EQ(v_int.size(), SIZE);
 
   /* Erase nothing */
@@ -1251,7 +1255,9 @@ TEST(core_array, checkIterator)
 
   EXPECT_EQ(ret2, v_int.begin());
   EXPECT_EQ(*v_int.begin(), SIZE / 2);
+  EXPECT_EQ(v_int.front(), SIZE / 2);
   EXPECT_EQ(*(v_int.end() - 1), SIZE - 1);
+  EXPECT_EQ(v_int.back(), SIZE - 1);
   EXPECT_EQ(v_int.size(), SIZE / 2);
 
   /* Erase first, last elements */
@@ -1259,11 +1265,13 @@ TEST(core_array, checkIterator)
 
   EXPECT_EQ(ret3, v_int.begin());
   EXPECT_EQ(*v_int.begin(), SIZE / 2 + 1);
+  EXPECT_EQ(v_int.front(), SIZE / 2 + 1);
 
   axom::Array<int>::ArrayIterator ret4 = v_int.erase(v_int.end() - 1);
 
   EXPECT_EQ(ret4, v_int.end());
   EXPECT_EQ(*(v_int.end() - 1), SIZE - 2);
+  EXPECT_EQ(v_int.back(), SIZE - 2);
 
   /* Clear the rest of the array */
   v_int.clear();

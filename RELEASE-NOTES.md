@@ -19,6 +19,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
+  - `Array::front()`: returns a reference to the first element
+  - `Array::back()`: returns a reference to the last element
+  - `Array::resize(size, T value)`: resizes the array, and sets any new elements to `value`.
+- Adds an `ArrayView::empty()` method to return whether the view is empty or not.
+
+### Changed
+- `axom::Array` move constructors are now `noexcept`.
+
 ## [Version 0.7.0] - Release date 2022-08-30
 
 ###  Added
