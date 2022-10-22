@@ -499,6 +499,86 @@ AXOM_TYPED_TEST(core_array_for_all, dynamic_array_initializer_list)
 }
 
 //------------------------------------------------------------------------------
+AXOM_TYPED_TEST(core_array_for_all, dynamic_array_resize)
+{
+  using DynamicArray = typename TestFixture::DynamicArray;
+  using HostArray = typename TestFixture::HostArray;
+  using ExecSpace = typename TestFixture::ExecSpace;
+
+  int kernelAllocID = axom::execution_space<ExecSpace>::allocatorID();
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
+  if(axom::execution_space<ExecSpace>::onDevice())
+  {
+    kernelAllocID = axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+#endif
+
+  constexpr axom::IndexType N = 10;
+  DynamicArray arr(N, N, kernelAllocID);
+  auto arr_v = arr.view();
+
+  // Set some elements
+  axom::for_all<ExecSpace>(
+    N,
+    AXOM_LAMBDA(axom::IndexType idx) { arr_v[idx] = idx; });
+
+  // Call resize without a default value. New elements in array should be set
+  // to 0.
+  arr.resize(2 * N);
+  EXPECT_EQ(arr.size(), 2 * N);
+
+  {
+    HostArray arr_host = arr;
+    for(int i = 0; i < N; i++)
+    {
+      EXPECT_EQ(arr_host[i], i);
+    }
+    for(int i = N; i < 2 * N; i++)
+    {
+      EXPECT_EQ(arr_host[i], 0);
+    }
+  }
+
+  // Call resize with a default value. New elements in array should be set to
+  // that value.
+  arr.resize(3 * N, -5);
+  EXPECT_EQ(arr.size(), 3 * N);
+
+  {
+    HostArray arr_host = arr;
+    for(int i = 0; i < N; i++)
+    {
+      EXPECT_EQ(arr_host[i], i);
+    }
+    for(int i = N; i < 2 * N; i++)
+    {
+      EXPECT_EQ(arr_host[i], 0);
+    }
+    for(int i = 2 * N; i < 3 * N; i++)
+    {
+      EXPECT_EQ(arr_host[i], -5);
+    }
+  }
+
+  // Call resize to shrink the array. No elements should be modified.
+  arr.resize(N + 5);
+  EXPECT_EQ(arr.size(), N + 5);
+
+  {
+    HostArray arr_host = arr;
+    for(int i = 0; i < N; i++)
+    {
+      EXPECT_EQ(arr_host[i], i);
+    }
+    for(int i = N; i < N + 5; i++)
+    {
+      EXPECT_EQ(arr_host[i], 0);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 AXOM_TYPED_TEST(core_array_for_all, dynamic_array_of_arrays)
 {
   using ExecSpace = typename TestFixture::ExecSpace;
@@ -937,6 +1017,12 @@ AXOM_TYPED_TEST(core_array_for_all, nontrivial_copy_ctor_obj)
     // Second fill should be idempotent - i.e. isn't affected by the data
     // already present in the array
     arr.fill(NonTrivialCopyCtor {});
+    EXPECT_TRUE(check_array_values(arr, MAGIC_COPY_CTOR));
+
+    // Array resize with a specified value should invoke the copy constructor
+    // on the argument.
+    arr.clear();
+    arr.resize(N, NonTrivialCopyCtor {});
     EXPECT_TRUE(check_array_values(arr, MAGIC_COPY_CTOR));
   }
 }
