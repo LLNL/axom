@@ -3564,7 +3564,7 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
 
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
@@ -4560,7 +4560,7 @@ int main(int argc, char** argv)
   mm.convertLayoutToDense();
 
   average_density_cell_dom_full(data);
-  average_density_cell_dom_mm_direct(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::GenericField>(mm);
   average_density_cell_dom_mm_direct<MMFieldMethod::BSetTemplatedField,
                                      ProductSetType>(mm);
   average_density_cell_dom_mm_direct<MMFieldMethod::FullyTemplatedField,
@@ -4571,7 +4571,7 @@ int main(int argc, char** argv)
   average_density_cell_dom_mm_direct<MMFieldMethod::SlamTmplStrideField,
                                      ProductSetType>(mm);
 
-  average_density_cell_dom_mm_submap(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
   average_density_cell_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
   average_density_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
@@ -4592,7 +4592,7 @@ int main(int argc, char** argv)
   mm.convertLayoutToSparse();
   average_density_cell_dom_mm_idxarray(mm);
 
-  average_density_cell_dom_mm_submap(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
   average_density_cell_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(
     mm);
@@ -4619,7 +4619,7 @@ int main(int argc, char** argv)
 
   average_density_mat_dom_full(data);
 
-  average_density_mat_dom_mm_direct(mm);
+  average_density_mat_dom_mm_direct<MMFieldMethod::GenericField>(mm);
   average_density_mat_dom_mm_direct<MMFieldMethod::BSetTemplatedField, ProductSetType>(
     mm);
   average_density_mat_dom_mm_direct<MMFieldMethod::FullyTemplatedField,
@@ -4629,7 +4629,7 @@ int main(int argc, char** argv)
     mm);
   average_density_mat_dom_mm_direct<MMFieldMethod::SlamTmplStrideField,
                                     ProductSetType>(mm);
-  average_density_mat_dom_mm_submap(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
@@ -4648,7 +4648,7 @@ int main(int argc, char** argv)
 
   average_density_mat_dom_compact(data);
   average_density_mat_dom_mm_idxarray(mm);
-  average_density_mat_dom_mm_submap(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(mm);
   average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
@@ -4673,7 +4673,9 @@ int main(int argc, char** argv)
   mm.convertLayoutToCellDominant();
   mm.convertLayoutToDense();
   average_density_over_nbr_cell_dom_full(data);
-  average_density_over_nbr_cell_dom_full_mm_direct(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::GenericField>(
+    mm,
+    data);
   average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
                                                    ProductSetType>(mm, data);
   average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
@@ -4684,7 +4686,9 @@ int main(int argc, char** argv)
                                                    ProductSetType>(mm, data);
   average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::SlamTmplStrideField,
                                                    ProductSetType>(mm, data);
-  average_density_over_nbr_cell_dom_full_mm_submap(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
 #ifdef run_slam_bivarmap
   average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::SlamField,
                                                    ProductSetType>(mm, data);
@@ -4703,7 +4707,9 @@ int main(int argc, char** argv)
   data_checker.reset();
   average_density_over_nbr_cell_dom_compact(data);
   //average_density_over_nbr_cell_dom_compact_mm_idxarray(mm, data);
-  average_density_over_nbr_cell_dom_compact_mm_submap(mm, data);
+  average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
 #ifdef run_slam_bivarmap
   average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::SlamField,
                                                       RelationSetType>(mm, data);
@@ -4724,7 +4730,9 @@ int main(int argc, char** argv)
   mm.convertLayoutToDense();
 
   average_density_over_nbr_mat_dom_full(data);
-  average_density_over_nbr_mat_dom_full_mm_direct(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::GenericField>(
+    mm,
+    data);
   average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
                                                   ProductSetType>(mm, data);
   average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
@@ -4735,7 +4743,9 @@ int main(int argc, char** argv)
                                                   ProductSetType>(mm, data);
   average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::SlamTmplStrideField,
                                                   ProductSetType>(mm, data);
-  average_density_over_nbr_mat_dom_full_mm_submap(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
 #ifdef run_slam_bivarmap
   average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::SlamField,
                                                   ProductSetType>(mm, data);
@@ -4755,7 +4765,9 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_compact(data);
 
   //average_density_over_nbr_mat_dom_compact_mm_indexarray(mm, data);
-  average_density_over_nbr_mat_dom_compact_mm_submap(mm, data);
+  average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
 #ifdef run_slam_bivarmap
   average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::SlamField,
                                                      RelationSetType>(mm, data);
@@ -4780,7 +4792,7 @@ int main(int argc, char** argv)
   mm.convertLayoutToCellDominant();
   mm.convertLayoutToDense();
   calculate_pressure_cell_dom_full(data);
-  calculate_pressure_cell_dom_full_mm_direct(mm);
+  calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::GenericField>(mm);
   calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
                                              ProductSetType>(mm);
   calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
@@ -4831,7 +4843,7 @@ int main(int argc, char** argv)
   mm.convertLayoutToMaterialDominant();
 
   calculate_pressure_mat_dom_full(data);
-  calculate_pressure_mat_dom_full_mm_direct(mm);
+  calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::GenericField>(mm);
   calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
                                             ProductSetType>(mm);
   calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
