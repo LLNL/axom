@@ -110,6 +110,7 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
 
   // Modify array using lambda and ArrayView
   auto arr_view = arr.view();
+  EXPECT_FALSE(arr_view.empty());
   axom::for_all<ExecSpace>(
     N,
     AXOM_LAMBDA(axom::IndexType idx) { arr_view[idx] = N - idx; });
@@ -126,6 +127,11 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView)
   {
     EXPECT_EQ(localArr[i], N - i);
   }
+
+  // Empty the array and create a view from it. ArrayView::empty() should return true.
+  arr.clear();
+  auto empty_view = arr.view();
+  EXPECT_TRUE(empty_view.empty());
 }
 
 //------------------------------------------------------------------------------
@@ -149,6 +155,7 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView_const)
   // Then copy it over to the device
   KernelArray kernelSource = source;
   auto kernelSourceView = kernelSource.view();
+  EXPECT_FALSE(kernelSourceView.empty());
 
   // First, modify array using lambda and KernelArray::ArrayView operator[] const
   auto arrData = arr.data();
@@ -177,6 +184,7 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView_const)
 
   const KernelArray& kernelSourceCref = kernelSource;
   auto kernelSourceConstView = kernelSourceCref.view();
+  EXPECT_FALSE(kernelSourceConstView.empty());
 
   axom::for_all<ExecSpace>(
     N,
@@ -196,6 +204,11 @@ AXOM_TYPED_TEST(core_array_for_all, auto_ArrayView_const)
   {
     EXPECT_EQ(localArr[i], N - i);
   }
+
+  // Empty the array and create a view from it. ArrayView::empty() should return true.
+  arr.clear();
+  auto empty_view = arr.view();
+  EXPECT_TRUE(empty_view.empty());
 }
 
 //------------------------------------------------------------------------------
