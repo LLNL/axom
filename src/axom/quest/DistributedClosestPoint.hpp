@@ -13,6 +13,7 @@
 #include "axom/sidre.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
+#include "axom/core/utilities/WhereMacro.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -676,7 +677,22 @@ public:
       conduit::Node& fields = queryDom.fetch_existing("fields");
       xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
       xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
-      xferDom["cp_coords"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_coords/values/x")), dim * qPtCount);
+      conduit::Node& cpCoordsNode = fields.fetch_existing("cp_coords/values");
+      bool cpCoordsNodeIsInterleaved = conduit::blueprint::mcarray::is_interleaved(cpCoordsNode);
+// std::cout<<__WHERE<<"fields[cp_coords/values]:"<<std::endl;
+// fields.fetch_existing("cp_coords/values").schema().print();
+// fields.fetch_existing("cp_coords/values").print();
+      if(cpCoordsNodeIsInterleaved)
+      {
+        xferDom["cp_coords"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_coords/values/x")), dim * qPtCount);
+      }
+      else
+      {
+        conduit::blueprint::mcarray::to_interleaved(cpCoordsNode, xferDom["cp_coords"]);
+      }
+// std::cout<<__WHERE<<"xferNode[cp_coords]:"<<std::endl;
+// xferDom["cp_coords"].schema().print();
+// xferDom["cp_coords"].print();
 
       if(fields.has_path("cp_distance"))
       {
@@ -700,7 +716,7 @@ public:
 
       conduit::Node& fields = queryDom.fetch_existing("fields");
 
-      const int qPtCount = xferDom.fetch_existing("qPtCount").value();
+      // const int qPtCount = xferDom.fetch_existing("qPtCount").value();
       auto& qmcpr = fields.fetch_existing("cp_rank/values");
       auto& qmcpi = fields.fetch_existing("cp_index/values");
       auto& qmcpcp = fields.fetch_existing("cp_coords/values/x");
@@ -717,9 +733,23 @@ public:
       }
       if(xferDom.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
       {
+#if 1
+        // TODO: Could we do a simple node update?
+        // How would that affect interleaving of cp_coords?
+        conduit::blueprint::mcarray::to_interleaved(xferDom.fetch_existing("cp_coords"),
+                                                    fields.fetch_existing("cp_coords/values"));
+std::cout<<__WHERE<<"queryNode[ci][fields] after xfer->query copy:" << std::endl; queryNode.child(ci).fetch_existing("fields").schema().print(); queryNode.child(ci).fetch_existing("fields").print();
+// std::cout<<__WHERE<<"xferNode[cp_coords]:"<<std::endl;
+// xferDom["cp_coords"].schema().print();
+// xferDom["cp_coords"].print();
+// std::cout<<__WHERE<<"fields[cp_coords/values]:"<<std::endl;
+// fields.fetch_existing("cp_coords/values").schema().print();
+// fields.fetch_existing("cp_coords/values").print();
+#else
         axom::copy(qmcpcp.data_ptr(),
                    xferDom.fetch_existing("cp_coords").data_ptr(),
                    qPtCount * sizeof(PointType));
+#endif
       }
 
       bool hasDistance = xferDom.has_path("debug/cp_distance");
@@ -788,6 +818,7 @@ public:
     std::shared_ptr<conduit::Node> tmpNode;
     if(!qmIsMultidomain)
     {
+// std::cout<<__WHERE<<std::endl;
       tmpNode = std::make_shared<conduit::Node>();
       conduit::blueprint::mesh::to_multi_domain(queryMesh_, *tmpNode);
     }
@@ -921,6 +952,32 @@ public:
 
     MPI_Barrier(m_mpiComm);
     slic::flushStreams();
+
+    if(!qmIsMultidomain)
+    {
+      // conduit::Node& dom0Node = queryMesh.child(0);
+std::cout<<__WHERE<<"queryMesh.child(0)[fields/cp_coords] before set-from-multi:" << std::endl; queryMesh.child(0).fetch_existing("fields/cp_coords").schema().print(); queryMesh.child(0).fetch_existing("fields/cp_coords").print();
+std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] before set-from-multi:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
+      // This drops association & topology:
+      // And it doesn't work when dom0CpCoordsValues.data_ptr() is null.
+      // conduit::Node& dom0CpCoordsValues = queryMesh.child(0).fetch_existing("fields/cp_coords/values");
+      // queryMesh_.fetch_existing("fields/cp_coords").set(dom0CpCoordsValues.schema(), dom0CpCoordsValues.data_ptr());
+
+      // This may de-interleave coordinates, but we'll assume user code will handle appropriately.
+      // It also sets the association and topology wrong (weird characters)!
+      queryMesh_.fetch_existing("fields/cp_coords").set(queryMesh.child(0).fetch_existing("fields/cp_coords"));
+
+      // Use to_interleaved on the fields/cp_coords.
+      // It sets the association and topology wrong (empty strings).
+      // conduit::blueprint::mcarray::to_interleaved(queryMesh.child(0).fetch_existing("fields/cp_coords"), queryMesh_.fetch_existing("fields/cp_coords"));
+
+      // Use to_interleaved on the fields/cp_coords/values.
+      // conduit::blueprint::mcarray::to_interleaved(queryMesh.child(0).fetch_existing("fields/cp_coords/values"), queryMesh_.fetch_existing("fields/cp_coords/values"));
+
+std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] after set-from-multi:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
+tmpNode.reset();
+std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] after search:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
+    }
   }
 
 private:
@@ -1087,6 +1144,7 @@ public:
     {
       return;
     }
+// std::cout<<__WHERE<<"is_first " << is_first << std::endl;
 
     conduit::Node& xferDoms = xferNode["xferDoms"];
     for(conduit::Node& xferDom : xferDoms.children())
@@ -1111,9 +1169,14 @@ public:
       auto cpRanks =
         ArrayView_from_Node<axom::IndexType>(xferDom.fetch_existing("cp_rank"),
                                              qPtCount);
+// std::cout<<__WHERE<<"xferDom[cp_coords]:"<<std::endl;
+// xferDom.fetch_existing("cp_coords").schema().print();
       auto cpCoords =
         ArrayView_from_Node<PointType>(xferDom.fetch_existing("cp_coords"),
                                        qPtCount);
+// std::cout<<__WHERE<<"qPtCount: " << qPtCount <<std::endl;
+// std::cout<<__WHERE<<"cpCoords.size(): " << cpCoords.size() <<std::endl;
+// std::cout<<__WHERE<<"sizeof(PointType): " << sizeof(PointType) <<std::endl;
 
       /// Create ArrayViews in ExecSpace that are compatible with fields
       // This deep-copies host memory in xferDom to device memory.
@@ -1242,7 +1305,7 @@ public:
       axom::copy(cpRanks.data(),
                  query_ranks.data(),
                  cpRanks.size() * sizeof(axom::IndexType));
-      axom::copy(cpCoords.data(),
+      if(1) axom::copy(cpCoords.data(),
                  query_pos.data(),
                  cpCoords.size() * sizeof(PointType));
 
@@ -1530,6 +1593,7 @@ public:
     std::shared_ptr<conduit::Node> tmpNode;
     if(!isMultidomain)
     {
+// std::cout<<__WHERE<<std::endl;
       tmpNode = std::make_shared<conduit::Node>();
       conduit::blueprint::mesh::to_multi_domain(meshNode, *tmpNode);
     }

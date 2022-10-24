@@ -17,6 +17,7 @@
 #include "axom/quest.hpp"
 #include "axom/slam.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/utilities/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mpi.hpp"
@@ -228,7 +229,7 @@ public:
   }
 
   /// Gets the root group for this mesh blueprint
-  sidre::Group* rootGroup() const { return m_group; }
+  sidre::Group* root_group() const { return m_group; }
 
   /// Gets number of domains in the multidomain particle mesh
   axom::IndexType domain_count() const { return m_group->getNumGroups(); }
@@ -240,16 +241,22 @@ public:
     return m_domainGroups[groupIdx];
   }
   /// Gets the parent group for the blueprint coordinate set
-  sidre::Group* coordsGroup(axom::IndexType groupIdx) const
+  sidre::Group* coords_group(axom::IndexType groupIdx) const
   {
     return m_coordsGroups[groupIdx];
   }
   /// Gets the parent group for the blueprint mesh topology
-  sidre::Group* topoGroup(axom::IndexType groupIdx) const
+  sidre::Group* topo_group(axom::IndexType groupIdx) const
   {
     return m_topoGroups[groupIdx];
   }
+  /// Gets the parent group for the blueprint fields
+  sidre::Group* fields_group(axom::IndexType groupIdx) const
+  {
+    return m_fieldsGroups[groupIdx];
+  }
 
+  const std::string& get_topology_name() const { return m_topologyName; }
   const std::string& getCoordsetName() const { return m_coordsetName; }
 
   /// Gets the MPI rank for this mesh
@@ -328,11 +335,18 @@ public:
       // Put mdMesh into sidre Group.
       bool goodImport = m_group->importConduitTree(mdMesh, false);
       SLIC_ASSERT(goodImport);
+      SLIC_ASSERT(m_group->getNumGroups() == domCount);
     }
 
     bool valid = isValid();
     SLIC_ASSERT(valid);
 
+    reset_group_pointers();
+  }
+
+  void reset_group_pointers()
+  {
+    axom::IndexType domCount = m_group->getNumGroups();
     m_domainGroups.resize(domCount, nullptr);
     m_coordsGroups.resize(domCount, nullptr);
     m_topoGroups.resize(domCount, nullptr);
@@ -662,7 +676,7 @@ public:
   BlueprintParticleMesh& getParticleMesh() { return m_objectMesh; }
 
   /// Get a pointer to the root group for this mesh
-  sidre::Group* getBlueprintGroup() const { return m_objectMesh.rootGroup(); }
+  sidre::Group* getBlueprintGroup() const { return m_objectMesh.root_group(); }
 
   std::string getCoordsetName() const { return m_objectMesh.getCoordsetName(); }
 
@@ -789,7 +803,7 @@ public:
 
   BlueprintParticleMesh& getParticleMesh() { return m_queryMesh; }
 
-  sidre::Group* getBlueprintGroup() const { return m_queryMesh.rootGroup(); }
+  sidre::Group* getBlueprintGroup() const { return m_queryMesh.root_group(); }
 
   std::string getCoordsetName() const { return m_queryMesh.getCoordsetName(); }
 
@@ -846,6 +860,47 @@ public:
 
   /// Prints some info about the mesh
   void print_mesh_info() { m_queryMesh.print_mesh_info(); }
+
+  /*!
+    @brief Update results from closest point search.
+  */
+  void update_closest_points(conduit::Node& node)
+  {
+    bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(node);
+    SLIC_ASSERT(m_queryMesh.domain_count() == 1);
+
+    // If query mesh isn't multidomain, create a temporary multidomain representation.
+    std::shared_ptr<conduit::Node> tmpNode;
+    if(!isMultidomain)
+    {
+std::cout<<__WHERE<<"node[fields] before importConduitTree:"<<std::endl; node.fetch_existing("fields").schema().print(); node.fetch_existing("fields").print();
+std::cout<<__WHERE<<"node[fields/cp_coords] before importConduitTree:"<<std::endl; node.fetch_existing("fields/cp_coords").schema().print(); node.fetch_existing("fields/cp_coords").print();
+std::cout<<__WHERE<<"node[fields/cp_coords/values] before importConduitTree:"<<std::endl; node.fetch_existing("fields/cp_coords/values").schema().print(); node.fetch_existing("fields/cp_coords/values").print();
+std::cout<<__WHERE<<"m_groups before group importConduitTree:"<<std::endl; m_queryMesh.root_group()->getGroup(0)->print();
+// auto &tmp1 = node.fetch_existing("fields/cp_coords/values");
+      bool goodImport = m_queryMesh.domain_group(0)->getGroup("fields/cp_coords/values")->importConduitTree(node.fetch_existing("fields/cp_coords/values"));
+std::cout<<__WHERE<<"m_groups after group importConduitTree:"<<std::endl; m_queryMesh.root_group()->getGroup(0)->print();
+      SLIC_ASSERT(goodImport);
+    }
+    else
+    {
+      SLIC_ASSERT(node.number_of_children() == m_queryMesh.domain_count());
+      bool goodImport = m_queryMesh.root_group()->importConduitTree(node);
+      SLIC_ASSERT(goodImport);
+    }
+
+    m_queryMesh.reset_group_pointers();
+    for(axom::IndexType di = 0; di < m_queryMesh.domain_count(); ++di)
+    {
+      assert(m_queryMesh.domain_group(di) == m_queryMesh.root_group()->getGroup(di));
+#if 1
+      assert(m_queryMesh.coords_group(di) == m_queryMesh.domain_group(di)->getGroup("coordsets")->getGroup(m_queryMesh.getCoordsetName()));
+      assert(m_queryMesh.topo_group(di) ==
+             m_queryMesh.domain_group(di)->getGroup("topologies")->getGroup(m_queryMesh.get_topology_name()));
+      assert(m_queryMesh.fields_group(di) == m_queryMesh.domain_group(di)->getGroup("fields"));
+#endif
+    }
+  }
 
   /**
    * Check for error in the search.
@@ -999,6 +1054,16 @@ void make_coords_contiguous(conduit::Node& coordValues)
   {
     conduit::Node oldValues = coordValues;
     conduit::blueprint::mcarray::to_contiguous(oldValues, coordValues);
+  }
+}
+
+void make_coords_interleaved(conduit::Node& coordValues)
+{
+  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+  if(!isInterleaved)
+  {
+    conduit::Node oldValues = coordValues;
+    conduit::blueprint::mcarray::to_interleaved(oldValues, coordValues);
   }
 }
 
@@ -1183,7 +1248,9 @@ int main(int argc, char** argv)
 
   // Put sidre data into Conduit Node.
   conduit::Node queryMeshNode;
+std::cout<<__WHERE<<"before createNativeLayout, queryMesh[0][fields]:"<<std::endl; queryMeshWrapper.getBlueprintGroup()->getGroup(0)->getGroup("fields")->print();
   queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode);
+std::cout<<__WHERE<<"after createNativeLayout, queryMeshNode[fields]:"<<std::endl; queryMeshNode.schema().print(); queryMeshNode.print();
 
   // To test with contiguous and interleaved coordinate storage,
   // make half them contiguous.
@@ -1204,6 +1271,28 @@ int main(int argc, char** argv)
     }
   }
 
+#if 1
+  if(object_mesh_node.number_of_children() == 1)
+  {
+    conduit::Node tmpNode = object_mesh_node[0];
+    object_mesh_node.reset();
+    object_mesh_node = tmpNode;
+  }
+#endif
+
+#if 1
+  if(queryMeshNode.number_of_children() == 1)
+  {
+    conduit::Node tmpNode = queryMeshNode[0];
+// std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(queryMeshNode[0].fetch_existing("fields/cp_coords/values")) << std::endl;
+// std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(tmpNode.fetch_existing("fields/cp_coords/values")) << std::endl;
+    queryMeshNode.reset();
+    queryMeshNode = tmpNode;
+// std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(queryMeshNode.fetch_existing("fields/cp_coords/values")) << std::endl;
+std::cout<<__WHERE<<"group(0)[fields] after singledomain:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
+  }
+#endif
+
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
   query.setRuntimePolicy(params.policy);
@@ -1223,11 +1312,32 @@ int main(int argc, char** argv)
   query.generateBVHTree();
   initTimer.stop();
 
+{
+// std::cout<<__WHERE<<"fields/cp_coords:"<<std::endl;
+// make_coords_interleaved(queryMeshNode.fetch_existing("fields/cp_coords/values"));
+std::cout<<__WHERE<<"queryMeshNode[fields/cp_coords]:"<<std::endl; queryMeshNode.fetch_existing("fields/cp_coords").schema().print(); queryMeshNode.fetch_existing("fields/cp_coords").print();
+double *xptr = (double*)queryMeshNode.fetch_existing("fields/cp_coords/values/x").data_ptr();
+double *yptr = (double*)queryMeshNode.fetch_existing("fields/cp_coords/values/y").data_ptr();
+int sx = queryMeshNode.fetch_existing("fields/cp_coords/values/x").dtype().number_of_elements();
+int sy = queryMeshNode.fetch_existing("fields/cp_coords/values/y").dtype().number_of_elements();
+// std::cout<<__WHERE<<"ptr: " << xptr << ' ' << yptr << ' ' << (yptr-xptr) << " s: " << sx << ' ' << sy << std::endl;
+for(int i=0; i<sx; ++i) xptr[i] = 10;
+for(int j=0; j<sy; ++j) yptr[j] = 11;
   // Run the distributed closest point query over the nodes of the computational mesh
   SLIC_INFO(query_str);
   slic::flushStreams();
   queryTimer.start();
+// std::cout<<__WHERE<<std::endl;
+// queryMeshNode.print();
+}
+
+// std::cout<<__WHERE<<"Before search:"<<std::endl; queryMeshNode.print();
+std::cout<<__WHERE<<"group(0)[fields] before search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
   query.computeClosestPoints(queryMeshNode, queryMeshWrapper.getCoordsetName());
+std::cout<<__WHERE<<"group(0)[fields] after search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
+// std::cout<<__WHERE<<"After search:"<<std::endl; queryMeshNode.print();
+exit(0);
+// queryMeshNode.reset();
   queryTimer.stop();
 
   auto getMinMax =
@@ -1259,6 +1369,8 @@ int main(int argc, char** argv)
       maxQuery));
   }
   slic::flushStreams();
+
+  queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;
   int localErrCount = 0;
@@ -1315,6 +1427,7 @@ int main(int argc, char** argv)
     }
   }
 
+// queryMeshNode.print();
   queryMeshNode.reset();
 
   queryMeshWrapper.saveMesh(params.distanceFile);
