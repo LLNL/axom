@@ -39,13 +39,12 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
 endif()
 
 # Distributed closest point example -------------------------------------------
-if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
-              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+if(ENABLE_MPI AND AXOM_ENABLE_SIDRE)
     blt_add_executable(
             NAME        quest_distributed_distance_query_ex
             SOURCES     quest_distributed_distance_query_example.cpp
             OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  ${quest_example_depends} mfem mpi
+            DEPENDS_ON  ${quest_example_depends} mpi
             FOLDER      axom/quest/examples
             )
 
