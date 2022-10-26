@@ -793,6 +793,7 @@ std::cout<<__WHERE<<"queryNode[ci][fields] after xfer->query copy:" << std::endl
    *     For multiple object mesh domains on a rank, cp_index increases consecutively
    *     from one domain to the next.
    *   - cp_coords: Will hold the coordinates of the closest points
+   *     interleaved in a 1D array.
    *
    * \note The current implementation assumes that the coordinates and
    * cp_coords are interleaved or contiguous.
@@ -965,14 +966,14 @@ std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] before set-from-multi:" << std
 
       // This may de-interleave coordinates, but we'll assume user code will handle appropriately.
       // It also sets the association and topology wrong (weird characters)!
-      queryMesh_.fetch_existing("fields/cp_coords").set(queryMesh.child(0).fetch_existing("fields/cp_coords"));
+      // queryMesh_.fetch_existing("fields/cp_coords").set(queryMesh.child(0).fetch_existing("fields/cp_coords"));
 
       // Use to_interleaved on the fields/cp_coords.
       // It sets the association and topology wrong (empty strings).
       // conduit::blueprint::mcarray::to_interleaved(queryMesh.child(0).fetch_existing("fields/cp_coords"), queryMesh_.fetch_existing("fields/cp_coords"));
 
       // Use to_interleaved on the fields/cp_coords/values.
-      // conduit::blueprint::mcarray::to_interleaved(queryMesh.child(0).fetch_existing("fields/cp_coords/values"), queryMesh_.fetch_existing("fields/cp_coords/values"));
+      conduit::blueprint::mcarray::to_interleaved(queryMesh.child(0).fetch_existing("fields/cp_coords/values"), queryMesh_.fetch_existing("fields/cp_coords/values"));
 
 std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] after set-from-multi:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
 tmpNode.reset();

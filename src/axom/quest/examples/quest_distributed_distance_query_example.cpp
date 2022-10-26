@@ -867,26 +867,60 @@ public:
   void update_closest_points(conduit::Node& node)
   {
     bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(node);
-    SLIC_ASSERT(m_queryMesh.domain_count() == 1);
+// SLIC_ASSERT(m_queryMesh.domain_count() == 1);
 
     // If query mesh isn't multidomain, create a temporary multidomain representation.
     std::shared_ptr<conduit::Node> tmpNode;
     if(!isMultidomain)
     {
-std::cout<<__WHERE<<"node[fields] before importConduitTree:"<<std::endl; node.fetch_existing("fields").schema().print(); node.fetch_existing("fields").print();
-std::cout<<__WHERE<<"node[fields/cp_coords] before importConduitTree:"<<std::endl; node.fetch_existing("fields/cp_coords").schema().print(); node.fetch_existing("fields/cp_coords").print();
+// std::cout<<__WHERE<<"node[fields] before importConduitTree:"<<std::endl; node.fetch_existing("fields").schema().print(); node.fetch_existing("fields").print();
+// std::cout<<__WHERE<<"node[fields/cp_coords] before importConduitTree:"<<std::endl; node.fetch_existing("fields/cp_coords").schema().print(); node.fetch_existing("fields/cp_coords").print();
 std::cout<<__WHERE<<"node[fields/cp_coords/values] before importConduitTree:"<<std::endl; node.fetch_existing("fields/cp_coords/values").schema().print(); node.fetch_existing("fields/cp_coords/values").print();
-std::cout<<__WHERE<<"m_groups before group importConduitTree:"<<std::endl; m_queryMesh.root_group()->getGroup(0)->print();
-// auto &tmp1 = node.fetch_existing("fields/cp_coords/values");
-      bool goodImport = m_queryMesh.domain_group(0)->getGroup("fields/cp_coords/values")->importConduitTree(node.fetch_existing("fields/cp_coords/values"));
-std::cout<<__WHERE<<"m_groups after group importConduitTree:"<<std::endl; m_queryMesh.root_group()->getGroup(0)->print();
+      sidre::Group* fg0 = m_queryMesh.domain_group(0)->getGroup("fields");
+      sidre::Group* fg0coords = fg0->getGroup("cp_coords");
+// std::cout<<__WHERE<<"fg0coords before group importConduitTree:"<<std::endl; fg0coords->print();
+      sidre::Group* fg0coordsValues = fg0coords->getGroup("values");
+      // bool goodImport = fg0->getGroup("cp_coords/values")->importConduitTree(node.fetch_existing("fields/cp_coords/values"));
+      // SLIC_ASSERT(goodImport);
+      sidre::Group* fg0rank = fg0->getGroup("cp_rank");
+      sidre::View* fg0rankValues = fg0rank->getView("values");
+      bool goodImport = fg0->getGroup("cp_rank")->importConduitTree(node.fetch_existing("fields/cp_rank"));
+      SLIC_ASSERT(goodImport);
+      goodImport = fg0->getGroup("cp_index")->importConduitTree(node.fetch_existing("fields/cp_index"));
+      SLIC_ASSERT(goodImport);
+      int dim = node.fetch_existing("fields/cp_coords/values").number_of_children();
+#if 1
+      auto* dst = fg0coords->getGroup("values");
+      auto* viewx = fg0coords->getView("values/x");
+      auto* viewy = fg0coords->getView("values/y");
+      double* dstx = static_cast<double*>(fg0coords->getView("values/x")->getVoidPtr());
+      double* dsty = static_cast<double*>(fg0coords->getView("values/y")->getVoidPtr());
+      const auto& nd = node.fetch_existing("fields/cp_coords/values");
+      double *src = static_cast<double*>(node.fetch_existing("fields/cp_coords/values").data_ptr());
+      auto pointCount = node.fetch_existing("fields/cp_coords/values/x").total_bytes_compact();
+      axom::copy(dstx, src, dim*pointCount);
+#else
+      goodImport = fg0->getGroup("cp_distance")->importConduitTree(node.fetch_existing("fields/cp_distance"));
+      SLIC_ASSERT(goodImport);
+#endif
+// std::cout<<__WHERE<<"fg0coords after group importConduitTree:"<<std::endl; fg0coords->print();
       SLIC_ASSERT(goodImport);
     }
     else
     {
+#if 0
+for(auto &dom : node.children())
+{
+std::cout<<__WHERE<<"dom[fields/cp_coords] before importConduitTree:"<<std::endl; dom.fetch_existing("fields/cp_coords").schema().print(); dom.fetch_existing("fields/cp_coords").print();
+}
       SLIC_ASSERT(node.number_of_children() == m_queryMesh.domain_count());
       bool goodImport = m_queryMesh.root_group()->importConduitTree(node);
       SLIC_ASSERT(goodImport);
+for(auto &grp : m_queryMesh.root_group()->groups())
+{
+std::cout<<__WHERE<<"grp[fields/cp_coords] after importConduitTree:"<<std::endl; grp.getGroup("fields/cp_coords")->print();
+}
+#endif
     }
 
     m_queryMesh.reset_group_pointers();
@@ -900,6 +934,10 @@ std::cout<<__WHERE<<"m_groups after group importConduitTree:"<<std::endl; m_quer
       assert(m_queryMesh.fields_group(di) == m_queryMesh.domain_group(di)->getGroup("fields"));
 #endif
     }
+  }
+
+  void importCoordinatesFromConduitTree(sidre::Group *dst, const conduit::Node &src)
+  {
   }
 
   /**
@@ -1312,7 +1350,7 @@ std::cout<<__WHERE<<"group(0)[fields] after singledomain:"<<std::endl; queryMesh
   query.generateBVHTree();
   initTimer.stop();
 
-{
+if(0){
 // std::cout<<__WHERE<<"fields/cp_coords:"<<std::endl;
 // make_coords_interleaved(queryMeshNode.fetch_existing("fields/cp_coords/values"));
 std::cout<<__WHERE<<"queryMeshNode[fields/cp_coords]:"<<std::endl; queryMeshNode.fetch_existing("fields/cp_coords").schema().print(); queryMeshNode.fetch_existing("fields/cp_coords").print();
@@ -1323,20 +1361,21 @@ int sy = queryMeshNode.fetch_existing("fields/cp_coords/values/y").dtype().numbe
 // std::cout<<__WHERE<<"ptr: " << xptr << ' ' << yptr << ' ' << (yptr-xptr) << " s: " << sx << ' ' << sy << std::endl;
 for(int i=0; i<sx; ++i) xptr[i] = 10;
 for(int j=0; j<sy; ++j) yptr[j] = 11;
+}
   // Run the distributed closest point query over the nodes of the computational mesh
   SLIC_INFO(query_str);
   slic::flushStreams();
   queryTimer.start();
 // std::cout<<__WHERE<<std::endl;
 // queryMeshNode.print();
-}
 
 // std::cout<<__WHERE<<"Before search:"<<std::endl; queryMeshNode.print();
-std::cout<<__WHERE<<"group(0)[fields] before search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
+// std::cout<<__WHERE<<"domain(0)[fields] before search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
   query.computeClosestPoints(queryMeshNode, queryMeshWrapper.getCoordsetName());
-std::cout<<__WHERE<<"group(0)[fields] after search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
-// std::cout<<__WHERE<<"After search:"<<std::endl; queryMeshNode.print();
-exit(0);
+// std::cout<<__WHERE<<"domain(0)[fields] after search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
+// std::cout<<__WHERE<<"After search, cp_index:"<<std::endl; queryMeshNode.fetch_existing("fields/cp_index/values").print_detailed();
+// std::cout<<__WHERE<<"After search, cp_coords:"<<std::endl; queryMeshNode.fetch_existing("fields/cp_coords/values").print_detailed();
+// exit(0);
 // queryMeshNode.reset();
   queryTimer.stop();
 
