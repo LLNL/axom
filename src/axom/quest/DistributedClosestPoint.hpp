@@ -688,8 +688,20 @@ public:
       }
       else
       {
-        conduit::blueprint::mcarray::to_interleaved(cpCoordsNode, xferDom["cp_coords"]);
+        // conduit::blueprint::mcarray::to_interleaved(cpCoordsNode, xferDom["cp_coords"]);
+        // cp_coords copy, from component-wise src to 1D-interleaved dst.
+        xferDom["cp_coords"].set_dtype(conduit::DataType::float64(dim*qPtCount));
+        for(int d=0; d<dim; ++d)
+        {
+          auto src = fields.fetch_existing("cp_coords/values").child(d).as_float64_array();
+          double *dst = xferDom.fetch_existing("cp_coords").as_float64_ptr() + d;
+          for(int i=0; i<qPtCount; ++i)
+          {
+            dst[i*dim] = src[i];
+          }
+        }
       }
+      assert(conduit::blueprint::mcarray::is_interleaved(xferDom.fetch_existing("cp_coords")));
 // std::cout<<__WHERE<<"xferNode[cp_coords]:"<<std::endl;
 // xferDom["cp_coords"].schema().print();
 // xferDom["cp_coords"].print();
@@ -713,10 +725,11 @@ public:
     {
       const conduit::Node& xferDom = xferDoms.child(ci);
       conduit::Node& queryDom = queryNode.child(ci);
+      const int dim = internal::extractDimension(xferDom.fetch_existing("coords"));
+      int qPtCount = xferDom["qPtCount"].as_int();
 
       conduit::Node& fields = queryDom.fetch_existing("fields");
 
-      // const int qPtCount = xferDom.fetch_existing("qPtCount").value();
       auto& qmcpr = fields.fetch_existing("cp_rank/values");
       auto& qmcpi = fields.fetch_existing("cp_index/values");
       auto& qmcpcp = fields.fetch_existing("cp_coords/values/x");
@@ -734,10 +747,29 @@ public:
       if(xferDom.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
       {
 #if 1
+        // cp_coords copy, from 1D-interleaved src to component-wise dst.
+        for(int d=0; d<dim; ++d)
+        {
+          for(int i=0; i<qPtCount; ++i)
+          {
+            const double* src = xferDom.fetch_existing("cp_coords").as_float64_ptr() + d;
+            auto dst = fields.fetch_existing("cp_coords/values").child(d).as_float64_array();
+            dst[i] = src[i*dim];
+          }
+        }
+#else
+        const conduit::Node& src = xferDom.fetch_existing("cp_coords");
+        const void* srcDp = src.data_ptr();
+        conduit::Node& dst = fields.fetch_existing("cp_coords/values");
+        void* dstDp = dst.data_ptr();
+        conduit::Node& dstx = fields.fetch_existing("cp_coords/values/x");
+        void* dstxDp = dstx.data_ptr();
+        conduit::Node& dsty = fields.fetch_existing("cp_coords/values/y");
+        void* dstyDp = dsty.data_ptr();
+#if 0
         // TODO: Could we do a simple node update?
         // How would that affect interleaving of cp_coords?
-        conduit::blueprint::mcarray::to_interleaved(xferDom.fetch_existing("cp_coords"),
-                                                    fields.fetch_existing("cp_coords/values"));
+        conduit::blueprint::mcarray::to_interleaved(src, dst);
 std::cout<<__WHERE<<"queryNode[ci][fields] after xfer->query copy:" << std::endl; queryNode.child(ci).fetch_existing("fields").schema().print(); queryNode.child(ci).fetch_existing("fields").print();
 // std::cout<<__WHERE<<"xferNode[cp_coords]:"<<std::endl;
 // xferDom["cp_coords"].schema().print();
@@ -746,9 +778,9 @@ std::cout<<__WHERE<<"queryNode[ci][fields] after xfer->query copy:" << std::endl
 // fields.fetch_existing("cp_coords/values").schema().print();
 // fields.fetch_existing("cp_coords/values").print();
 #else
-        axom::copy(qmcpcp.data_ptr(),
-                   xferDom.fetch_existing("cp_coords").data_ptr(),
-                   qPtCount * sizeof(PointType));
+        const int qPtCount = xferDom.fetch_existing("qPtCount").value();
+        axom::copy(dstxDp, srcDp, qPtCount * sizeof(PointType));
+#endif
 #endif
       }
 
@@ -954,11 +986,17 @@ std::cout<<__WHERE<<"queryNode[ci][fields] after xfer->query copy:" << std::endl
     MPI_Barrier(m_mpiComm);
     slic::flushStreams();
 
+#if 0
+    // should never have to do this if we copy cp_coords to queryMesh without disturbing Node metadata.
     if(!qmIsMultidomain)
     {
       // conduit::Node& dom0Node = queryMesh.child(0);
-std::cout<<__WHERE<<"queryMesh.child(0)[fields/cp_coords] before set-from-multi:" << std::endl; queryMesh.child(0).fetch_existing("fields/cp_coords").schema().print(); queryMesh.child(0).fetch_existing("fields/cp_coords").print();
-std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] before set-from-multi:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
+std::cout<<__WHERE<<"queryMesh.child(0)[fields/cp_coords/values] before set-from-multi:" << std::endl; queryMesh.child(0).fetch_existing("fields/cp_coords/values").schema().print(); queryMesh.child(0).fetch_existing("fields/cp_coords/values").print_detailed();
+std::cout<<__WHERE<<"queryMesh_[fields/cp_coords/values] before set-from-multi:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords/values").schema().print(); queryMesh_.fetch_existing("fields/cp_coords/values").print_detailed();
+      const conduit::Node &src = queryMesh.child(0).fetch_existing("fields/cp_coords/values");
+      conduit::Node &dst = queryMesh_.fetch_existing("fields/cp_coords/values");
+      if(dst.data_ptr() && dst.data_ptr() != dst.data_ptr())
+      {
       // This drops association & topology:
       // And it doesn't work when dom0CpCoordsValues.data_ptr() is null.
       // conduit::Node& dom0CpCoordsValues = queryMesh.child(0).fetch_existing("fields/cp_coords/values");
@@ -973,12 +1011,14 @@ std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] before set-from-multi:" << std
       // conduit::blueprint::mcarray::to_interleaved(queryMesh.child(0).fetch_existing("fields/cp_coords"), queryMesh_.fetch_existing("fields/cp_coords"));
 
       // Use to_interleaved on the fields/cp_coords/values.
-      conduit::blueprint::mcarray::to_interleaved(queryMesh.child(0).fetch_existing("fields/cp_coords/values"), queryMesh_.fetch_existing("fields/cp_coords/values"));
+        conduit::blueprint::mcarray::to_interleaved(src, dst);
+      }
 
 std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] after set-from-multi:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
-tmpNode.reset();
-std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] after search:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
+// tmpNode.reset();
+// std::cout<<__WHERE<<"queryMesh_[fields/cp_coords] after search:" << std::endl; queryMesh_.fetch_existing("fields/cp_coords").schema().print(); queryMesh_.fetch_existing("fields/cp_coords").print();
     }
+#endif
   }
 
 private:
@@ -1243,8 +1283,8 @@ public:
 
         auto pointsView = m_objectPts.view();
 
-        AXOM_PERF_MARK_SECTION(
-          "ComputeClosestPoints",
+        // AXOM_PERF_MARK_SECTION(
+          // "ComputeClosestPoints",
           axom::for_all<ExecSpace>(
             qPtCount,
             AXOM_LAMBDA(int32 idx) mutable {
@@ -1295,7 +1335,7 @@ public:
                   query_min_dist[idx] = sqrt(curr_min.minSqDist);
                 }
               }
-            }););
+            });// );
 
         axom::deallocate(sqDistThresh);
       }

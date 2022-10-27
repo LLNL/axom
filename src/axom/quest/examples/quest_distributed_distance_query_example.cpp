@@ -330,6 +330,11 @@ public:
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
+std::ostringstream os;
+for(auto&c: mdMesh.children()) os << ' ' << c.name();
+std::cout<<__WHERE<<"rank " << m_rank << " read in " << domCount << " domains:" << os.str() << std::endl;
+// SLIC_INFO(axom::fmt::format("{} rank {} read in {} domains: {}", __WHERE, m_rank, domCount, os.str()));
+
     if(domCount > 0)
     {
       // Put mdMesh into sidre Group.
@@ -864,13 +869,58 @@ public:
   /*!
     @brief Update results from closest point search.
   */
-  void update_closest_points(conduit::Node& node)
+  void update_closest_points(const conduit::Node& node)
   {
+    sidre::Group* dstDomains = m_queryMesh.root_group();
     bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(node);
+    if(!isMultidomain)
+    {
+      SLIC_ASSERT(!isMultidomain || dstDomains->getNumGroups() == node.number_of_children());
+    }
+#if 1
+    const int domainCount = dstDomains->getNumGroups();
+    for(int d=0; d<domainCount; ++d)
+    {
+      sidre::Group& domGroup = *dstDomains->getGroup(d);
+      const conduit::Node& domNode = isMultidomain ? node.child(d) : node;
+
+      sidre::Group& dstFieldsGroup = *domGroup.getGroup("fields");
+      const conduit::Node &srcFieldsNode = domNode.fetch_existing("fields");
+      {
+        auto dst = dstFieldsGroup.getGroup("cp_rank");
+        auto src = srcFieldsNode.fetch_existing("cp_rank");
+        bool goodImport = dst->importConduitTree(src);;
+        SLIC_ASSERT(goodImport);
+      }
+      {
+        auto dst = dstFieldsGroup.getGroup("cp_index");
+        auto src = srcFieldsNode.fetch_existing("cp_index");
+        bool goodImport = dst->importConduitTree(src);;
+        SLIC_ASSERT(goodImport);
+      }
+      {
+        auto dstGroup = dstFieldsGroup.getGroup("cp_coords");
+        auto srcNode = srcFieldsNode.fetch_existing("cp_coords");
+        int dim = srcNode.fetch_existing("values").number_of_children();
+        for(int d=0; d<dim; ++d)
+        {
+          conduit::float64_array dst = dstGroup->getGroup("values")->getView(d)->getArray();
+          const conduit::float64_array src = srcNode.fetch_existing("values").child(d).value();
+          SLIC_ASSERT(src.number_of_elements() == dst.number_of_elements());
+          int nPts = src.number_of_elements();
+          for(int i=0; i<nPts; ++i)
+          {
+            dst[i] = src[i];
+          }
+        }
+      }
+std::cout<<__WHERE<<"src fields/cp_coords before update:"<<std::endl; domNode.fetch_existing("fields/cp_coords").print_detailed();
+std::cout<<__WHERE<<"dst fields/cp_coords after update:"<<std::endl; domGroup.getGroup("fields/cp_coords")->print();
+    }
+#else
 // SLIC_ASSERT(m_queryMesh.domain_count() == 1);
 
     // If query mesh isn't multidomain, create a temporary multidomain representation.
-    std::shared_ptr<conduit::Node> tmpNode;
     if(!isMultidomain)
     {
 // std::cout<<__WHERE<<"node[fields] before importConduitTree:"<<std::endl; node.fetch_existing("fields").schema().print(); node.fetch_existing("fields").print();
@@ -889,39 +939,18 @@ std::cout<<__WHERE<<"node[fields/cp_coords/values] before importConduitTree:"<<s
       goodImport = fg0->getGroup("cp_index")->importConduitTree(node.fetch_existing("fields/cp_index"));
       SLIC_ASSERT(goodImport);
       int dim = node.fetch_existing("fields/cp_coords/values").number_of_children();
-#if 1
-      auto* dst = fg0coords->getGroup("values");
-      auto* viewx = fg0coords->getView("values/x");
-      auto* viewy = fg0coords->getView("values/y");
-      double* dstx = static_cast<double*>(fg0coords->getView("values/x")->getVoidPtr());
-      double* dsty = static_cast<double*>(fg0coords->getView("values/y")->getVoidPtr());
-      const auto& nd = node.fetch_existing("fields/cp_coords/values");
-      double *src = static_cast<double*>(node.fetch_existing("fields/cp_coords/values").data_ptr());
-      auto pointCount = node.fetch_existing("fields/cp_coords/values/x").total_bytes_compact();
-      axom::copy(dstx, src, dim*pointCount);
-#else
-      goodImport = fg0->getGroup("cp_distance")->importConduitTree(node.fetch_existing("fields/cp_distance"));
-      SLIC_ASSERT(goodImport);
-#endif
-// std::cout<<__WHERE<<"fg0coords after group importConduitTree:"<<std::endl; fg0coords->print();
-      SLIC_ASSERT(goodImport);
+      for(int d=0; d<dim; ++d)
+      {
+        conduit::float64_array dst = fg0coords->getGroup("values")->getView(d)->getArray();
+        const conduit::float64_array src = node.fetch_existing("fields/cp_coords/values").child(0).value();
+        int nPts = src.number_of_elements();
+        for(int i=0; i<nPts; ++i)
+        {
+          dst[i] = src[i];
+        }
+      }
     }
-    else
-    {
-#if 0
-for(auto &dom : node.children())
-{
-std::cout<<__WHERE<<"dom[fields/cp_coords] before importConduitTree:"<<std::endl; dom.fetch_existing("fields/cp_coords").schema().print(); dom.fetch_existing("fields/cp_coords").print();
-}
-      SLIC_ASSERT(node.number_of_children() == m_queryMesh.domain_count());
-      bool goodImport = m_queryMesh.root_group()->importConduitTree(node);
-      SLIC_ASSERT(goodImport);
-for(auto &grp : m_queryMesh.root_group()->groups())
-{
-std::cout<<__WHERE<<"grp[fields/cp_coords] after importConduitTree:"<<std::endl; grp.getGroup("fields/cp_coords")->print();
-}
 #endif
-    }
 
     m_queryMesh.reset_group_pointers();
     for(axom::IndexType di = 0; di < m_queryMesh.domain_count(); ++di)
@@ -934,10 +963,6 @@ std::cout<<__WHERE<<"grp[fields/cp_coords] after importConduitTree:"<<std::endl;
       assert(m_queryMesh.fields_group(di) == m_queryMesh.domain_group(di)->getGroup("fields"));
 #endif
     }
-  }
-
-  void importCoordinatesFromConduitTree(sidre::Group *dst, const conduit::Node &src)
-  {
   }
 
   /**
@@ -969,11 +994,12 @@ std::cout<<__WHERE<<"grp[fields/cp_coords] after importConduitTree:"<<std::endl;
     {
       PointArray queryPts = m_queryMesh.getPoints<NDIMS>(dIdx);
 
-      auto cpCoords =
+      axom::ArrayView<PointType> cpCoords =
         m_queryMesh.getNodalVectorField<PointType>("cp_coords", dIdx);
 
-      auto cpIndices =
+      axom::ArrayView<axom::IndexType> cpIndices =
         m_queryMesh.getNodalScalarField<axom::IndexType>("cp_index", dIdx);
+        SLIC_INFO(axom::fmt::format("Closest points ({}):", cpCoords.size()));
 
       axom::ArrayView<axom::IndexType> errorFlag =
         m_queryMesh.getNodalScalarField<axom::IndexType>("error_flag", dIdx);
@@ -1286,9 +1312,9 @@ int main(int argc, char** argv)
 
   // Put sidre data into Conduit Node.
   conduit::Node queryMeshNode;
-std::cout<<__WHERE<<"before createNativeLayout, queryMesh[0][fields]:"<<std::endl; queryMeshWrapper.getBlueprintGroup()->getGroup(0)->getGroup("fields")->print();
+// std::cout<<__WHERE<<"before createNativeLayout, queryMesh[0][fields]:"<<std::endl; queryMeshWrapper.getBlueprintGroup()->getGroup(0)->getGroup("fields")->print();
   queryMeshWrapper.getBlueprintGroup()->createNativeLayout(queryMeshNode);
-std::cout<<__WHERE<<"after createNativeLayout, queryMeshNode[fields]:"<<std::endl; queryMeshNode.schema().print(); queryMeshNode.print();
+// std::cout<<__WHERE<<"after createNativeLayout, queryMeshNode[fields]:"<<std::endl; queryMeshNode.schema().print(); queryMeshNode.print();
 
   // To test with contiguous and interleaved coordinate storage,
   // make half them contiguous.
@@ -1318,6 +1344,7 @@ std::cout<<__WHERE<<"after createNativeLayout, queryMeshNode[fields]:"<<std::end
   }
 #endif
 
+  bool qmIsMultidomain = true;
 #if 1
   if(queryMeshNode.number_of_children() == 1)
   {
@@ -1326,8 +1353,9 @@ std::cout<<__WHERE<<"after createNativeLayout, queryMeshNode[fields]:"<<std::end
 // std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(tmpNode.fetch_existing("fields/cp_coords/values")) << std::endl;
     queryMeshNode.reset();
     queryMeshNode = tmpNode;
+    qmIsMultidomain = false;
 // std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(queryMeshNode.fetch_existing("fields/cp_coords/values")) << std::endl;
-std::cout<<__WHERE<<"group(0)[fields] after singledomain:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
+std::cout<<__WHERE<<"rank " << my_rank << " group(0)[fields] after singledomain:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
   }
 #endif
 
@@ -1378,6 +1406,16 @@ for(int j=0; j<sy; ++j) yptr[j] = 11;
 // exit(0);
 // queryMeshNode.reset();
   queryTimer.stop();
+
+  conduit::Node* qm0 = !qmIsMultidomain ? &queryMeshNode : (queryMeshNode.number_of_children() > 0 ? &queryMeshNode.child(0) : nullptr);
+if(qm0)
+{
+SLIC_INFO(axom::fmt::format("After search cp_rank: {}", qm0->fetch_existing("fields/cp_rank").to_string()));
+SLIC_INFO(axom::fmt::format("After search cp_index: {}", qm0->fetch_existing("fields/cp_index").to_string()));
+SLIC_INFO(axom::fmt::format("After search cp_coords: {}", qm0->fetch_existing("fields/cp_coords").to_string()));
+SLIC_INFO(axom::fmt::format("After search cp_coords schema: {}", qm0->fetch_existing("fields/cp_coords").schema().to_string()));
+}
+slic::flushStreams();
 
   auto getMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
