@@ -719,7 +719,8 @@ public:
     {
       const conduit::Node& xferDom = xferDoms.child(ci);
       conduit::Node& queryDom = queryNode.child(ci);
-      const int dim = internal::extractDimension(xferDom.fetch_existing("coords"));
+      const int dim =
+        internal::extractDimension(xferDom.fetch_existing("coords"));
       int qPtCount = xferDom["qPtCount"].as_int();
 
       conduit::Node& fields = queryDom.fetch_existing("fields");
@@ -741,13 +742,15 @@ public:
       if(xferDom.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
       {
         // cp_coords copy, from 1D-interleaved src to component-wise dst.
-        for(int d=0; d<dim; ++d)
+        for(int d = 0; d < dim; ++d)
         {
-          for(int i=0; i<qPtCount; ++i)
+          for(int i = 0; i < qPtCount; ++i)
           {
-            const double* src = xferDom.fetch_existing("cp_coords").as_float64_ptr() + d;
-            auto dst = fields.fetch_existing("cp_coords/values").child(d).as_float64_array();
-            dst[i] = src[i*dim];
+            const double* src =
+              xferDom.fetch_existing("cp_coords").as_float64_ptr() + d;
+            auto dst =
+              fields.fetch_existing("cp_coords/values").child(d).as_float64_array();
+            dst[i] = src[i * dim];
           }
         }
       }
@@ -952,7 +955,6 @@ public:
 
     MPI_Barrier(m_mpiComm);
     slic::flushStreams();
-
   }
 
 private:
@@ -1212,58 +1214,57 @@ public:
         auto pointsView = m_objectPts.view();
 
         // AXOM_PERF_MARK_SECTION(
-          // "ComputeClosestPoints",
-          axom::for_all<ExecSpace>(
-            qPtCount,
-            AXOM_LAMBDA(int32 idx) mutable {
-              PointType qpt = query_pts[idx];
+        // "ComputeClosestPoints",
+        axom::for_all<ExecSpace>(
+          qPtCount,
+          AXOM_LAMBDA(int32 idx) mutable {
+            PointType qpt = query_pts[idx];
 
-              MinCandidate curr_min {};
-              // Preset cur_min to the closest point found so far.
-              if(query_ranks[idx] >= 0)
+            MinCandidate curr_min {};
+            // Preset cur_min to the closest point found so far.
+            if(query_ranks[idx] >= 0)
+            {
+              curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
+              curr_min.minElem = query_inds[idx];
+              curr_min.minRank = query_ranks[idx];
+            }
+
+            auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
+              const int candidate_idx = leaf_nodes[current_node];
+              const PointType candidate_pt = pointsView[candidate_idx];
+              const double sq_dist = squared_distance(qpt, candidate_pt);
+
+              if(sq_dist < curr_min.minSqDist)
               {
-                curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
-                curr_min.minElem = query_inds[idx];
-                curr_min.minRank = query_ranks[idx];
+                curr_min.minSqDist = sq_dist;
+                curr_min.minElem = candidate_idx;
+                curr_min.minRank = rank;
               }
+            };
 
-              auto checkMinDist = [&](int32 current_node,
-                                      const int32* leaf_nodes) {
-                const int candidate_idx = leaf_nodes[current_node];
-                const PointType candidate_pt = pointsView[candidate_idx];
-                const double sq_dist = squared_distance(qpt, candidate_pt);
+            auto traversePredicate = [&](const PointType& p,
+                                         const BoxType& bb) -> bool {
+              auto sqDist = squared_distance(p, bb);
+              return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
+            };
 
-                if(sq_dist < curr_min.minSqDist)
-                {
-                  curr_min.minSqDist = sq_dist;
-                  curr_min.minElem = candidate_idx;
-                  curr_min.minRank = rank;
-                }
-              };
+            // Traverse the tree, searching for the point with minimum distance.
+            it.traverse_tree(qpt, checkMinDist, traversePredicate);
 
-              auto traversePredicate = [&](const PointType& p,
-                                           const BoxType& bb) -> bool {
-                auto sqDist = squared_distance(p, bb);
-                return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
-              };
+            // If modified, update the fields that changed
+            if(curr_min.minRank == rank)
+            {
+              query_inds[idx] = curr_min.minElem;
+              query_ranks[idx] = curr_min.minRank;
+              query_pos[idx] = pointsView[curr_min.minElem];
 
-              // Traverse the tree, searching for the point with minimum distance.
-              it.traverse_tree(qpt, checkMinDist, traversePredicate);
-
-              // If modified, update the fields that changed
-              if(curr_min.minRank == rank)
+              //DEBUG
+              if(has_cp_distance)
               {
-                query_inds[idx] = curr_min.minElem;
-                query_ranks[idx] = curr_min.minRank;
-                query_pos[idx] = pointsView[curr_min.minElem];
-
-                //DEBUG
-                if(has_cp_distance)
-                {
-                  query_min_dist[idx] = sqrt(curr_min.minSqDist);
-                }
+                query_min_dist[idx] = sqrt(curr_min.minSqDist);
               }
-            });// );
+            }
+          });  // );
 
         axom::deallocate(sqDistThresh);
       }
@@ -1274,9 +1275,10 @@ public:
       axom::copy(cpRanks.data(),
                  query_ranks.data(),
                  cpRanks.size() * sizeof(axom::IndexType));
-      if(1) axom::copy(cpCoords.data(),
-                 query_pos.data(),
-                 cpCoords.size() * sizeof(PointType));
+      if(1)
+        axom::copy(cpCoords.data(),
+                   query_pos.data(),
+                   cpCoords.size() * sizeof(PointType));
 
       // DEBUG
       if(has_cp_distance)
