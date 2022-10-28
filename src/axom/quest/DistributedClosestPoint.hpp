@@ -650,7 +650,7 @@ public:
    * computation and communication.
    * queryNode must be a blueprint multidomain mesh.
    */
-  void copy_query_node_to_xfer_node(conduit::Node& queryNode,
+  void node_copy_query_to_xfer(conduit::Node& queryNode,
                                     conduit::Node& xferNode,
                                     const std::string& coordset) const
   {
@@ -662,53 +662,33 @@ public:
     {
       const std::string& domName = queryDom.name();
       conduit::Node& xferDom = xferDoms[domName];
-      conduit::Node& domainPts = xferDom["coords"];
+      conduit::Node& fields = queryDom.fetch_existing("fields");
+      conduit::Node& queryCoords = queryDom.fetch_existing(fmt::format("coordsets/{}", coordset));
 
       // clang-format off
-      domainPts = queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordset));
-      const int dim = internal::extractDimension(domainPts);
-      const int qPtCount = internal::extractSize(domainPts);
+      coords_copy_query_to_xfer(queryCoords, xferDom["coords"]);
 
-      xferDom["qPtCount"] = qPtCount;
-      xferDom["dim"] = dim;
-      make_interleaved(domainPts);
-
-      conduit::Node& fields = queryDom.fetch_existing("fields");
       xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
       xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
-      conduit::Node& cpCoordsNode = fields.fetch_existing("cp_coords/values");
-      bool cpCoordsNodeIsInterleaved = conduit::blueprint::mcarray::is_interleaved(cpCoordsNode);
-      if(cpCoordsNodeIsInterleaved)
-      {
-        xferDom["cp_coords"].set_external(internal::getPointer<double>(fields.fetch_existing("cp_coords/values/x")), dim * qPtCount);
-      }
-      else
-      {
-        // conduit::blueprint::mcarray::to_interleaved(cpCoordsNode, xferDom["cp_coords"]);
-        // cp_coords copy, from component-wise src to 1D-interleaved dst.
-        xferDom["cp_coords"].set_dtype(conduit::DataType::float64(dim*qPtCount));
-        for(int d=0; d<dim; ++d)
-        {
-          auto src = fields.fetch_existing("cp_coords/values").child(d).as_float64_array();
-          double *dst = xferDom.fetch_existing("cp_coords").as_float64_ptr() + d;
-          for(int i=0; i<qPtCount; ++i)
-          {
-            dst[i*dim] = src[i];
-          }
-        }
-      }
-      assert(conduit::blueprint::mcarray::is_interleaved(xferDom.fetch_existing("cp_coords")));
+      coords_copy_query_to_xfer(fields.fetch_existing("cp_coords"),
+                                       xferDom["cp_coords"]);
 
       if(fields.has_path("cp_distance"))
       {
         xferDom["debug/cp_distance"].set_external(fields.fetch_existing("cp_distance/values"));
       }
       // clang-format on
+
+      conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
+      const int dim = internal::extractDimension(queryCoordsValues);
+      const int qPtCount = internal::extractSize(queryCoordsValues);
+      xferDom["qPtCount"] = qPtCount;
+      xferDom["dim"] = dim;
     }
   }
 
   /// Copy xferNode back to query mesh partition.
-  void copy_xfer_node_to_query_node(const conduit::Node& xferNode,
+  void node_copy_xfer_to_query(const conduit::Node& xferNode,
                                     conduit::Node& queryNode) const
   {
     const conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
@@ -718,66 +698,97 @@ public:
     {
       const conduit::Node& xferDom = xferDoms.child(ci);
       conduit::Node& queryDom = queryNode.child(ci);
-      const int dim =
-        internal::extractDimension(xferDom.fetch_existing("coords"));
-      int qPtCount = xferDom["qPtCount"].as_int();
-
       conduit::Node& fields = queryDom.fetch_existing("fields");
 
-      auto& qmcpr = fields.fetch_existing("cp_rank/values");
-      auto& qmcpi = fields.fetch_existing("cp_index/values");
-      auto& qmcpcp = fields.fetch_existing("cp_coords/values/x");
-
-      if(xferDom.fetch_existing("cp_rank").data_ptr() != qmcpr.data_ptr())
       {
-        fields.fetch_existing("cp_rank/values")
-          .update_compatible(xferDom.fetch_existing("cp_rank"));
-      }
-      if(xferDom.fetch_existing("cp_index").data_ptr() != qmcpi.data_ptr())
-      {
-        fields.fetch_existing("cp_index/values")
-          .update_compatible(xferDom.fetch_existing("cp_index"));
-      }
-      if(xferDom.fetch_existing("cp_coords").data_ptr() != qmcpcp.data_ptr())
-      {
-        // cp_coords copy, from 1D-interleaved src to component-wise dst.
-        for(int d = 0; d < dim; ++d)
+        auto &src = xferDom.fetch_existing("cp_rank");
+        auto& dst = fields.fetch_existing("cp_rank/values");
+        if(dst.data_ptr() != src.data_ptr())
         {
-          for(int i = 0; i < qPtCount; ++i)
-          {
-            const double* src =
-              xferDom.fetch_existing("cp_coords").as_float64_ptr() + d;
-            auto dst =
-              fields.fetch_existing("cp_coords/values").child(d).as_float64_array();
-            dst[i] = src[i * dim];
-          }
+          dst.update_compatible(src);
         }
       }
 
-      bool hasDistance = xferDom.has_path("debug/cp_distance");
-      if(hasDistance)
       {
-        auto& qmcpdist = fields.fetch_existing("cp_distance/values");
-        if(xferDom.fetch_existing("debug/cp_distance").data_ptr() !=
-           qmcpdist.data_ptr())
+        auto& src = xferDom.fetch_existing("cp_index");
+        auto& dst = fields.fetch_existing("cp_index/values");
+        if(dst.data_ptr() != src.data_ptr())
         {
-          fields.fetch_existing("cp_distance/values")
-            .update_compatible(xferDom.fetch_existing("debug/cp_distance"));
+          dst.update_compatible(src);
+        }
+      }
+
+      coords_copy_xfer_to_query(xferDom.fetch_existing("cp_coords"),
+                                fields.fetch_existing("cp_coords"));
+
+      if(xferDom.has_path("debug/cp_distance"))
+      {
+        auto& src = xferDom.fetch_existing("debug/cp_distance");
+        auto& dst = fields.fetch_existing("cp_distance/values");
+        if(dst.data_ptr() != src.data_ptr())
+        {
+          dst.update_compatible(src);
         }
       }
     }
   }
 
-  void make_interleaved(conduit::Node& coords) const
+  /*
+    Special copy from query coordinates (which stores "values/[xyz]"
+    in a format that's not necessarily interleaved) to xfer
+    coordinates (which stores a 1D array of interleaved values).
+    If query coordinates are already interleaved, copy pointer.
+  */
+  void coords_copy_query_to_xfer(conduit::Node &queryCoords,
+                                 conduit::Node& xferCoords) const
   {
-    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coords);
-    if(isInterleaved)
+    conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
+    const int dim = internal::extractDimension(queryCoordsValues);
+    const int qPtCount = internal::extractSize(queryCoordsValues);
+    bool interleavedSrc = conduit::blueprint::mcarray::is_interleaved(queryCoordsValues);
+    if(interleavedSrc)
     {
-      return;
+      xferCoords.set_external(internal::getPointer<double>(queryCoordsValues.child(0)), dim * qPtCount);
     }
-    conduit::Node oldCoords = coords;
-    coords.reset();
-    conduit::blueprint::mcarray::to_interleaved(oldCoords, coords);
+    else
+    {
+      // Copy from component-wise src to 1D-interleaved dst.
+      xferCoords.reset();
+      xferCoords.set_dtype(conduit::DataType::float64(dim*qPtCount));
+      for(int d=0; d<dim; ++d)
+      {
+        auto src = queryCoordsValues.child(d).as_float64_array();
+        double *dst = xferCoords.as_float64_ptr() + d;
+        for(int i=0; i<qPtCount; ++i)
+        {
+          dst[i*dim] = src[i];
+        }
+      }
+    }
+  }
+
+  /*
+    Special copy from xfer coordinates back to query coordinates.
+    This is a nop if they point to the same data.
+  */
+  void coords_copy_xfer_to_query(const conduit::Node& xferCoords, conduit::Node& queryCoords) const
+  {
+    const conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
+    if(xferCoords.data_ptr() != queryCoordsValues.child(0).data_ptr())
+    {
+      const int dim = internal::extractDimension(queryCoordsValues);
+      const int qPtCount = internal::extractSize(queryCoordsValues);
+      // Copy from 1D-interleaved src to component-wise dst.
+      for(int d = 0; d < dim; ++d)
+      {
+        const double* src = xferCoords.as_float64_ptr() + d;
+        auto dst = queryCoordsValues.child(d).as_float64_array();
+        for(int i = 0; i < qPtCount; ++i)
+        {
+          dst[i] = src[i * dim];
+        }
+      }
+    }
   }
 
   /**
@@ -833,7 +844,7 @@ public:
     {
       xferNodes[m_rank] = std::make_shared<conduit::Node>();
       conduit::Node& xferNode = *xferNodes[m_rank];
-      copy_query_node_to_xfer_node(queryMesh, xferNode, coordset);
+      node_copy_query_to_xfer(queryMesh, xferNode, coordset);
       xferNode["homeRank"] = m_rank;
     }
 
@@ -883,7 +894,7 @@ public:
       if(firstRecipForMyQuery == -1)
       {
         // No need to send anywhere.  Put computed data back into queryMesh.
-        copy_xfer_node_to_query_node(*xferNodes[m_rank], queryMesh);
+        node_copy_xfer_to_query(*xferNodes[m_rank], queryMesh);
         xferNodes.erase(m_rank);
       }
       else
@@ -920,11 +931,7 @@ public:
 
       if(homeRank == m_rank)
       {
-        const bool shouldCopy = true;  // OLD: xferNode.has_child("qPtCount");
-        if(shouldCopy)
-        {
-          copy_xfer_node_to_query_node(xferNode, queryMesh);
-        }
+        node_copy_xfer_to_query(xferNode, queryMesh);
       }
       else
       {
@@ -1124,8 +1131,6 @@ public:
     conduit::Node& xferDoms = xferNode["xferDoms"];
     for(conduit::Node& xferDom : xferDoms.children())
     {
-      make_interleaved(xferDom.fetch_existing("coords"));
-      make_interleaved(xferDom.fetch_existing("cp_coords"));
       // --- Set up arrays and views in the execution space
       // Arrays are initialized in that execution space the first time they are processed
       // and are copied in during subsequent processing
