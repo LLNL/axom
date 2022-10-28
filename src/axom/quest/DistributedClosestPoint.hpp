@@ -13,7 +13,6 @@
 #include "axom/sidre.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
-#include "axom/core/utilities/WhereMacro.hpp"
 
 #include "axom/fmt.hpp"
 

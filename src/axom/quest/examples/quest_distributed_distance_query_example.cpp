@@ -17,7 +17,6 @@
 #include "axom/quest.hpp"
 #include "axom/slam.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/utilities/WhereMacro.hpp"
 
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mpi.hpp"
