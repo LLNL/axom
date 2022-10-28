@@ -651,8 +651,8 @@ public:
    * queryNode must be a blueprint multidomain mesh.
    */
   void node_copy_query_to_xfer(conduit::Node& queryNode,
-                                    conduit::Node& xferNode,
-                                    const std::string& coordset) const
+                               conduit::Node& xferNode,
+                               const std::string& coordset) const
   {
     xferNode["homeRank"] = m_rank;
     xferNode["is_first"] = 1;
@@ -663,7 +663,8 @@ public:
       const std::string& domName = queryDom.name();
       conduit::Node& xferDom = xferDoms[domName];
       conduit::Node& fields = queryDom.fetch_existing("fields");
-      conduit::Node& queryCoords = queryDom.fetch_existing(fmt::format("coordsets/{}", coordset));
+      conduit::Node& queryCoords =
+        queryDom.fetch_existing(fmt::format("coordsets/{}", coordset));
 
       // clang-format off
       coords_copy_query_to_xfer(queryCoords, xferDom["coords"]);
@@ -689,7 +690,7 @@ public:
 
   /// Copy xferNode back to query mesh partition.
   void node_copy_xfer_to_query(const conduit::Node& xferNode,
-                                    conduit::Node& queryNode) const
+                               conduit::Node& queryNode) const
   {
     const conduit::Node& xferDoms = xferNode.fetch_existing("xferDoms");
     conduit::index_t childCount = queryNode.number_of_children();
@@ -701,7 +702,7 @@ public:
       conduit::Node& fields = queryDom.fetch_existing("fields");
 
       {
-        auto &src = xferDom.fetch_existing("cp_rank");
+        auto& src = xferDom.fetch_existing("cp_rank");
         auto& dst = fields.fetch_existing("cp_rank/values");
         if(dst.data_ptr() != src.data_ptr())
         {
@@ -739,29 +740,32 @@ public:
     coordinates (which stores a 1D array of interleaved values).
     If query coordinates are already interleaved, copy pointer.
   */
-  void coords_copy_query_to_xfer(conduit::Node &queryCoords,
+  void coords_copy_query_to_xfer(conduit::Node& queryCoords,
                                  conduit::Node& xferCoords) const
   {
     conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
     const int dim = internal::extractDimension(queryCoordsValues);
     const int qPtCount = internal::extractSize(queryCoordsValues);
-    bool interleavedSrc = conduit::blueprint::mcarray::is_interleaved(queryCoordsValues);
+    bool interleavedSrc =
+      conduit::blueprint::mcarray::is_interleaved(queryCoordsValues);
     if(interleavedSrc)
     {
-      xferCoords.set_external(internal::getPointer<double>(queryCoordsValues.child(0)), dim * qPtCount);
+      xferCoords.set_external(
+        internal::getPointer<double>(queryCoordsValues.child(0)),
+        dim * qPtCount);
     }
     else
     {
       // Copy from component-wise src to 1D-interleaved dst.
       xferCoords.reset();
-      xferCoords.set_dtype(conduit::DataType::float64(dim*qPtCount));
-      for(int d=0; d<dim; ++d)
+      xferCoords.set_dtype(conduit::DataType::float64(dim * qPtCount));
+      for(int d = 0; d < dim; ++d)
       {
         auto src = queryCoordsValues.child(d).as_float64_array();
-        double *dst = xferCoords.as_float64_ptr() + d;
-        for(int i=0; i<qPtCount; ++i)
+        double* dst = xferCoords.as_float64_ptr() + d;
+        for(int i = 0; i < qPtCount; ++i)
         {
-          dst[i*dim] = src[i];
+          dst[i * dim] = src[i];
         }
       }
     }
@@ -771,9 +775,11 @@ public:
     Special copy from xfer coordinates back to query coordinates.
     This is a nop if they point to the same data.
   */
-  void coords_copy_xfer_to_query(const conduit::Node& xferCoords, conduit::Node& queryCoords) const
+  void coords_copy_xfer_to_query(const conduit::Node& xferCoords,
+                                 conduit::Node& queryCoords) const
   {
-    const conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
+    const conduit::Node& queryCoordsValues =
+      queryCoords.fetch_existing("values");
     if(xferCoords.data_ptr() != queryCoordsValues.child(0).data_ptr())
     {
       const int dim = internal::extractDimension(queryCoordsValues);

@@ -1333,23 +1333,18 @@ int main(int argc, char** argv)
    To test support for single-domain format,
    convert to single-domain when possible.
   */
-#if 1
   if(object_mesh_node.number_of_children() == 1)
   {
     conduit::Node tmpNode = object_mesh_node[0];
     object_mesh_node.reset();
     object_mesh_node = tmpNode;
   }
-#endif
-
-#if 1
   if(queryMeshNode.number_of_children() == 1)
   {
     conduit::Node tmpNode = queryMeshNode[0];
     queryMeshNode.reset();
     queryMeshNode = tmpNode;
   }
-#endif
 
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
