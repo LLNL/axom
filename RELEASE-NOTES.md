@@ -19,6 +19,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+- `DistributedClosestPoint` query now supports any blueprint-valid mesh format, including multidomain.
+   Domain under- and overloading can be expressed using multidomain format.
+- `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
+  changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
+  interfacing variables.
+
 ## [Version 0.7.0] - Release date 2022-08-30
 
 ###  Added
