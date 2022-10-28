@@ -330,11 +330,6 @@ public:
     MPI_Allreduce(MPI_IN_PLACE, &m_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     SLIC_ASSERT(m_dimension > 0);
 
-std::ostringstream os;
-for(auto&c: mdMesh.children()) os << ' ' << c.name();
-std::cout<<__WHERE<<"rank " << m_rank << " read in " << domCount << " domains:" << os.str() << std::endl;
-// SLIC_INFO(axom::fmt::format("{} rank {} read in {} domains: {}", __WHERE, m_rank, domCount, os.str()));
-
     if(domCount > 0)
     {
       // Put mdMesh into sidre Group.
@@ -877,7 +872,6 @@ public:
     {
       SLIC_ASSERT(!isMultidomain || dstDomains->getNumGroups() == node.number_of_children());
     }
-#if 1
     const int domainCount = dstDomains->getNumGroups();
     for(int d=0; d<domainCount; ++d)
     {
@@ -914,54 +908,18 @@ public:
           }
         }
       }
-std::cout<<__WHERE<<"src fields/cp_coords before update:"<<std::endl; domNode.fetch_existing("fields/cp_coords").print_detailed();
-std::cout<<__WHERE<<"dst fields/cp_coords after update:"<<std::endl; domGroup.getGroup("fields/cp_coords")->print();
+// std::cout<<__WHERE<<"src fields/cp_coords before update:"<<std::endl; domNode.fetch_existing("fields/cp_coords").print_detailed();
+// std::cout<<__WHERE<<"dst fields/cp_coords after update:"<<std::endl; domGroup.getGroup("fields/cp_coords")->print();
     }
-#else
-// SLIC_ASSERT(m_queryMesh.domain_count() == 1);
-
-    // If query mesh isn't multidomain, create a temporary multidomain representation.
-    if(!isMultidomain)
-    {
-// std::cout<<__WHERE<<"node[fields] before importConduitTree:"<<std::endl; node.fetch_existing("fields").schema().print(); node.fetch_existing("fields").print();
-// std::cout<<__WHERE<<"node[fields/cp_coords] before importConduitTree:"<<std::endl; node.fetch_existing("fields/cp_coords").schema().print(); node.fetch_existing("fields/cp_coords").print();
-std::cout<<__WHERE<<"node[fields/cp_coords/values] before importConduitTree:"<<std::endl; node.fetch_existing("fields/cp_coords/values").schema().print(); node.fetch_existing("fields/cp_coords/values").print();
-      sidre::Group* fg0 = m_queryMesh.domain_group(0)->getGroup("fields");
-      sidre::Group* fg0coords = fg0->getGroup("cp_coords");
-// std::cout<<__WHERE<<"fg0coords before group importConduitTree:"<<std::endl; fg0coords->print();
-      sidre::Group* fg0coordsValues = fg0coords->getGroup("values");
-      // bool goodImport = fg0->getGroup("cp_coords/values")->importConduitTree(node.fetch_existing("fields/cp_coords/values"));
-      // SLIC_ASSERT(goodImport);
-      sidre::Group* fg0rank = fg0->getGroup("cp_rank");
-      sidre::View* fg0rankValues = fg0rank->getView("values");
-      bool goodImport = fg0->getGroup("cp_rank")->importConduitTree(node.fetch_existing("fields/cp_rank"));
-      SLIC_ASSERT(goodImport);
-      goodImport = fg0->getGroup("cp_index")->importConduitTree(node.fetch_existing("fields/cp_index"));
-      SLIC_ASSERT(goodImport);
-      int dim = node.fetch_existing("fields/cp_coords/values").number_of_children();
-      for(int d=0; d<dim; ++d)
-      {
-        conduit::float64_array dst = fg0coords->getGroup("values")->getView(d)->getArray();
-        const conduit::float64_array src = node.fetch_existing("fields/cp_coords/values").child(0).value();
-        int nPts = src.number_of_elements();
-        for(int i=0; i<nPts; ++i)
-        {
-          dst[i] = src[i];
-        }
-      }
-    }
-#endif
 
     m_queryMesh.reset_group_pointers();
     for(axom::IndexType di = 0; di < m_queryMesh.domain_count(); ++di)
     {
       assert(m_queryMesh.domain_group(di) == m_queryMesh.root_group()->getGroup(di));
-#if 1
       assert(m_queryMesh.coords_group(di) == m_queryMesh.domain_group(di)->getGroup("coordsets")->getGroup(m_queryMesh.getCoordsetName()));
       assert(m_queryMesh.topo_group(di) ==
              m_queryMesh.domain_group(di)->getGroup("topologies")->getGroup(m_queryMesh.get_topology_name()));
       assert(m_queryMesh.fields_group(di) == m_queryMesh.domain_group(di)->getGroup("fields"));
-#endif
     }
   }
 
@@ -1288,6 +1246,34 @@ int main(int argc, char** argv)
                                  my_rank));
   slic::flushStreams();
 
+  auto getIntMinMax =
+    [](int inVal, int& minVal, int& maxVal, int& sumVal) {
+      MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    };
+
+  // Output some mesh size stats
+  {
+    int minObject, maxObject, sumObject;
+    getIntMinMax(object_mesh_wrapper.getParticleMesh().numPoints(), minObject, maxObject, sumObject);
+
+    int minQuery, maxQuery, sumQuery;
+    getIntMinMax(queryMeshWrapper.getParticleMesh().numPoints(), minQuery, maxQuery, sumQuery);
+
+    SLIC_INFO(axom::fmt::format(
+      "Object mesh has {{avg:{}, min:{}, max:{}}} points",
+      (double)sumObject / num_ranks,
+      minObject,
+      maxObject));
+    SLIC_INFO(axom::fmt::format(
+      "Query mesh has {{avg:{}, min:{}, max:{}}} points",
+      (double)sumQuery / num_ranks,
+      minQuery,
+      maxQuery));
+  }
+  slic::flushStreams();
+
   //---------------------------------------------------------------------------
   // Initialize spatial index for querying points, and run query
   //---------------------------------------------------------------------------
@@ -1295,10 +1281,6 @@ int main(int argc, char** argv)
   auto init_str =
     banner(axom::fmt::format("Initializing BVH tree over {} points",
                              params.circlePoints));
-
-  auto query_str =
-    banner(axom::fmt::format("Computing closest points for {} query points",
-                             nMeshPoints));
 
   axom::utilities::Timer initTimer(false);
   axom::utilities::Timer queryTimer(false);
@@ -1335,6 +1317,10 @@ int main(int argc, char** argv)
     }
   }
 
+  /*
+   To test support for single-domain format,
+   convert to single-domain when possible.
+  */
 #if 1
   if(object_mesh_node.number_of_children() == 1)
   {
@@ -1344,18 +1330,12 @@ int main(int argc, char** argv)
   }
 #endif
 
-  bool qmIsMultidomain = true;
 #if 1
   if(queryMeshNode.number_of_children() == 1)
   {
     conduit::Node tmpNode = queryMeshNode[0];
-// std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(queryMeshNode[0].fetch_existing("fields/cp_coords/values")) << std::endl;
-// std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(tmpNode.fetch_existing("fields/cp_coords/values")) << std::endl;
     queryMeshNode.reset();
     queryMeshNode = tmpNode;
-    qmIsMultidomain = false;
-// std::cout<<__WHERE<<conduit::blueprint::mcarray::is_interleaved(queryMeshNode.fetch_existing("fields/cp_coords/values")) << std::endl;
-std::cout<<__WHERE<<"rank " << my_rank << " group(0)[fields] after singledomain:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
   }
 #endif
 
@@ -1378,46 +1358,13 @@ std::cout<<__WHERE<<"rank " << my_rank << " group(0)[fields] after singledomain:
   query.generateBVHTree();
   initTimer.stop();
 
-if(0){
-// std::cout<<__WHERE<<"fields/cp_coords:"<<std::endl;
-// make_coords_interleaved(queryMeshNode.fetch_existing("fields/cp_coords/values"));
-std::cout<<__WHERE<<"queryMeshNode[fields/cp_coords]:"<<std::endl; queryMeshNode.fetch_existing("fields/cp_coords").schema().print(); queryMeshNode.fetch_existing("fields/cp_coords").print();
-double *xptr = (double*)queryMeshNode.fetch_existing("fields/cp_coords/values/x").data_ptr();
-double *yptr = (double*)queryMeshNode.fetch_existing("fields/cp_coords/values/y").data_ptr();
-int sx = queryMeshNode.fetch_existing("fields/cp_coords/values/x").dtype().number_of_elements();
-int sy = queryMeshNode.fetch_existing("fields/cp_coords/values/y").dtype().number_of_elements();
-// std::cout<<__WHERE<<"ptr: " << xptr << ' ' << yptr << ' ' << (yptr-xptr) << " s: " << sx << ' ' << sy << std::endl;
-for(int i=0; i<sx; ++i) xptr[i] = 10;
-for(int j=0; j<sy; ++j) yptr[j] = 11;
-}
   // Run the distributed closest point query over the nodes of the computational mesh
-  SLIC_INFO(query_str);
   slic::flushStreams();
   queryTimer.start();
-// std::cout<<__WHERE<<std::endl;
-// queryMeshNode.print();
-
-// std::cout<<__WHERE<<"Before search:"<<std::endl; queryMeshNode.print();
-// std::cout<<__WHERE<<"domain(0)[fields] before search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
   query.computeClosestPoints(queryMeshNode, queryMeshWrapper.getCoordsetName());
-// std::cout<<__WHERE<<"domain(0)[fields] after search:"<<std::endl; queryMeshNode.fetch_existing("fields").schema().print(); queryMeshNode.fetch_existing("fields").print();
-// std::cout<<__WHERE<<"After search, cp_index:"<<std::endl; queryMeshNode.fetch_existing("fields/cp_index/values").print_detailed();
-// std::cout<<__WHERE<<"After search, cp_coords:"<<std::endl; queryMeshNode.fetch_existing("fields/cp_coords/values").print_detailed();
-// exit(0);
-// queryMeshNode.reset();
   queryTimer.stop();
 
-  conduit::Node* qm0 = !qmIsMultidomain ? &queryMeshNode : (queryMeshNode.number_of_children() > 0 ? &queryMeshNode.child(0) : nullptr);
-if(qm0)
-{
-SLIC_INFO(axom::fmt::format("After search cp_rank: {}", qm0->fetch_existing("fields/cp_rank").to_string()));
-SLIC_INFO(axom::fmt::format("After search cp_index: {}", qm0->fetch_existing("fields/cp_index").to_string()));
-SLIC_INFO(axom::fmt::format("After search cp_coords: {}", qm0->fetch_existing("fields/cp_coords").to_string()));
-SLIC_INFO(axom::fmt::format("After search cp_coords schema: {}", qm0->fetch_existing("fields/cp_coords").schema().to_string()));
-}
-slic::flushStreams();
-
-  auto getMinMax =
+  auto getDoubleMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
       MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
@@ -1427,10 +1374,10 @@ slic::flushStreams();
   // Output some timing stats
   {
     double minInit, maxInit, sumInit;
-    getMinMax(initTimer.elapsedTimeInSec(), minInit, maxInit, sumInit);
+    getDoubleMinMax(initTimer.elapsedTimeInSec(), minInit, maxInit, sumInit);
 
     double minQuery, maxQuery, sumQuery;
-    getMinMax(queryTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
+    getDoubleMinMax(queryTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
 
     SLIC_INFO(axom::fmt::format(
       "Initialization with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
@@ -1461,19 +1408,6 @@ slic::flushStreams();
   // Transform closest points to distances and directions
   //---------------------------------------------------------------------------
   using primal::squared_distance;
-
-  // Output some stats about the per-rank query points
-  {
-    double minPts, maxPts, sumPts;
-    getMinMax(nMeshPoints, minPts, maxPts, sumPts);
-    SLIC_INFO(
-      axom::fmt::format(" Query points: {{total:{}, min:{}, max:{}, avg:{}}}",
-                        sumPts,
-                        minPts,
-                        maxPts,
-                        sumPts / num_ranks));
-    slic::flushStreams();
-  }
 
   auto& queryMesh = queryMeshWrapper.getParticleMesh();
   PointType nowhere(std::numeric_limits<double>::signaling_NaN());
