@@ -327,12 +327,6 @@ inline int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm com
  * using a provided execution policy (e.g. sequential, openmp, cuda, hip)
  *
  * \tparam NDIMS The dimension of the object mesh and query points
- *
- * TODO: For simplicity, we require coordinate data to be interleaved.
- * It may be possible to optimize out copies involved in ensuring this
- * data layout.  It may be better to work with un-interleaved data.
- * Interleaved data can be cast into an array of PointType, but the
- * conduit communication methods currently un-interleave the data.
  */
 template <int NDIMS>
 class DistributedClosestPointImpl
@@ -665,14 +659,15 @@ public:
       conduit::Node& fields = queryDom.fetch_existing("fields");
       conduit::Node& queryCoords =
         queryDom.fetch_existing(fmt::format("coordsets/{}", coordset));
+      conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
 
       // clang-format off
-      coords_copy_query_to_xfer(queryCoords, xferDom["coords"]);
+      copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
 
       xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
       xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
-      coords_copy_query_to_xfer(fields.fetch_existing("cp_coords"),
-                                       xferDom["cp_coords"]);
+      copy_components_to_interleaved(fields.fetch_existing("cp_coords/values"),
+                                     xferDom["cp_coords"]);
 
       if(fields.has_path("cp_distance"))
       {
@@ -680,7 +675,6 @@ public:
       }
       // clang-format on
 
-      conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
       const int dim = internal::extractDimension(queryCoordsValues);
       const int qPtCount = internal::extractSize(queryCoordsValues);
       xferDom["qPtCount"] = qPtCount;
@@ -719,8 +713,8 @@ public:
         }
       }
 
-      coords_copy_xfer_to_query(xferDom.fetch_existing("cp_coords"),
-                                fields.fetch_existing("cp_coords"));
+      copy_interleaved_to_components(xferDom.fetch_existing("cp_coords"),
+                                     fields.fetch_existing("cp_coords/values"));
 
       if(xferDom.has_path("debug/cp_distance"))
       {
@@ -735,34 +729,30 @@ public:
   }
 
   /*
-    Special copy from query coordinates (which stores "values/[xyz]"
-    in a format that's not necessarily interleaved) to xfer
-    coordinates (which stores a 1D array of interleaved values).
-    If query coordinates are already interleaved, copy pointer.
+    Special copy from coordinates (in a format that's not
+    necessarily interleaved) to a 1D array of interleaved values).
+    If coordinates are already interleaved, copy pointer.
   */
-  void coords_copy_query_to_xfer(conduit::Node& queryCoords,
-                                 conduit::Node& xferCoords) const
+  void copy_components_to_interleaved(conduit::Node& components,
+                                      conduit::Node& interleaved) const
   {
-    conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
-    const int dim = internal::extractDimension(queryCoordsValues);
-    const int qPtCount = internal::extractSize(queryCoordsValues);
-    bool interleavedSrc =
-      conduit::blueprint::mcarray::is_interleaved(queryCoordsValues);
+    const int dim = internal::extractDimension(components);
+    const int qPtCount = internal::extractSize(components);
+    bool interleavedSrc = conduit::blueprint::mcarray::is_interleaved(components);
     if(interleavedSrc)
     {
-      xferCoords.set_external(
-        internal::getPointer<double>(queryCoordsValues.child(0)),
-        dim * qPtCount);
+      interleaved.set_external(internal::getPointer<double>(components.child(0)),
+                               dim * qPtCount);
     }
     else
     {
       // Copy from component-wise src to 1D-interleaved dst.
-      xferCoords.reset();
-      xferCoords.set_dtype(conduit::DataType::float64(dim * qPtCount));
+      interleaved.reset();
+      interleaved.set_dtype(conduit::DataType::float64(dim * qPtCount));
       for(int d = 0; d < dim; ++d)
       {
-        auto src = queryCoordsValues.child(d).as_float64_array();
-        double* dst = xferCoords.as_float64_ptr() + d;
+        auto src = components.child(d).as_float64_array();
+        double* dst = interleaved.as_float64_ptr() + d;
         for(int i = 0; i < qPtCount; ++i)
         {
           dst[i * dim] = src[i];
@@ -772,23 +762,22 @@ public:
   }
 
   /*
-    Special copy from xfer coordinates back to query coordinates.
+    Special copy from 1D interleaved coordinate values back to
+    component-wise storage.
     This is a nop if they point to the same data.
   */
-  void coords_copy_xfer_to_query(const conduit::Node& xferCoords,
-                                 conduit::Node& queryCoords) const
+  void copy_interleaved_to_components(const conduit::Node& interleaved,
+                                      conduit::Node& components) const
   {
-    const conduit::Node& queryCoordsValues =
-      queryCoords.fetch_existing("values");
-    if(xferCoords.data_ptr() != queryCoordsValues.child(0).data_ptr())
+    if(interleaved.data_ptr() != components.child(0).data_ptr())
     {
-      const int dim = internal::extractDimension(queryCoordsValues);
-      const int qPtCount = internal::extractSize(queryCoordsValues);
+      const int dim = internal::extractDimension(components);
+      const int qPtCount = internal::extractSize(components);
       // Copy from 1D-interleaved src to component-wise dst.
       for(int d = 0; d < dim; ++d)
       {
-        const double* src = xferCoords.as_float64_ptr() + d;
-        auto dst = queryCoordsValues.child(d).as_float64_array();
+        const double* src = interleaved.as_float64_ptr() + d;
+        auto dst = components.child(d).as_float64_array();
         for(int i = 0; i < qPtCount; ++i)
         {
           dst[i] = src[i * dim];
