@@ -47,6 +47,7 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
     fi
 fi
 
+# Note: Azure pipelines requires read/write access for everyone between steps
 find ./axom -type d -exec chmod 755 {} \;
 find ./axom -type f -exec chmod 644 {} \;
 
