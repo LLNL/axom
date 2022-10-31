@@ -47,7 +47,7 @@ if dim not in (2,3)	\
   raise RuntimeError('dc, ms, ml and mu options must have the same dimensions (2 or 3)')
 
 def scale_structured_domain(n, startCoord, endCoord):
-  '''This funciton scales and shift a blueprint structured domain after
+  '''This function scales and shift a blueprint structured domain after
   it has been created.  There's no way to specify the physical extent
   of a domain using conduit.blueprint.mesh.examples.basic, as far as I
   can tell.
