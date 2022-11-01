@@ -772,6 +772,53 @@ public:
     SLIC_ASSERT(m_objectMesh.isValid());
   }
 
+  /**
+   * Change cp_domain data from a local index to a global domain index
+   * by adding rank offsets.
+   * This is an optional step to transform domain ids verification.
+   */
+  void add_rank_offset_to_cp_domain_ids(conduit::Node& queryMesh)
+  {
+    int nranks = m_objectMesh.getNumRanks();
+
+    int localDomainCount = m_objectMesh.domain_count();
+
+    // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
+    axom::Array<int> starts(nranks, nranks);
+    {
+      axom::Array<int> indivDomainCounts(nranks, nranks);
+      indivDomainCounts.fill(-1);
+      MPI_Allgather(&localDomainCount,
+                    1,
+                    MPI_INT,
+                    indivDomainCounts.data(),
+                    1,
+                    MPI_INT,
+                    MPI_COMM_WORLD);
+      starts[0] = 0;
+      for(int i = 1; i < nranks; ++i)
+      {
+        starts[i] = starts[i - 1] + indivDomainCounts[i];
+      }
+    }
+
+    for(conduit::Node& dom : queryMesh.children())
+    {
+      auto& fields = dom.fetch_existing("fields");
+      auto cpDomainIdxs =
+        fields.fetch_existing("cp_domain_index/values").as_int_array();
+      auto cpRanks = fields.fetch_existing("cp_rank/values").as_int_array();
+      for(int i = 0; i < cpDomainIdxs.number_of_elements(); ++i)
+      {
+        const auto& r = cpRanks[i];
+        if(r >= 0)
+        {
+          cpDomainIdxs[i] += starts[cpRanks[i]];
+        }
+      }
+    }
+  }
+
   /// Outputs the object mesh to disk
   void saveMesh(const std::string& filename = "object_mesh")
   {
@@ -850,6 +897,7 @@ public:
     {
       m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_rank");
       m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_index");
+      m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_domain_index");
       m_queryMesh.registerNodalScalarField<double>("cp_distance");
       m_queryMesh.registerNodalVectorField<double>("cp_coords");
     }
@@ -890,6 +938,13 @@ public:
       {
         auto dst = dstFieldsGroup.getGroup("cp_index");
         auto src = srcFieldsNode.fetch_existing("cp_index");
+        bool goodImport = dst->importConduitTree(src);
+        ;
+        SLIC_ASSERT(goodImport);
+      }
+      {
+        auto dst = dstFieldsGroup.getGroup("cp_domain_index");
+        auto src = srcFieldsNode.fetch_existing("cp_domain_index");
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
@@ -1214,9 +1269,9 @@ int main(int argc, char** argv)
     params.circleRadius);
 
   sidre::DataStore objectDS;
-  ObjectMeshWrapper object_mesh_wrapper(
+  ObjectMeshWrapper objectMeshWrapper(
     objectDS.getRoot()->createGroup("object_mesh", true));
-  object_mesh_wrapper.setVerbosity(params.isVerbose());
+  objectMeshWrapper.setVerbosity(params.isVerbose());
 
   {
     SLIC_ASSERT(params.objDomainCountRange[1] >= params.objDomainCountRange[0]);
@@ -1224,18 +1279,18 @@ int main(int argc, char** argv)
     const unsigned int omax = params.objDomainCountRange[1];
     const double prob = axom::utilities::random_real(0., 1.);
     int localDomainCount = omin + int(0.5 + prob * (omax - omin));
-    object_mesh_wrapper.generateCircleMesh(circle,
-                                           params.circlePoints,
-                                           localDomainCount,
-                                           params.randomSpacing);
+    objectMeshWrapper.generateCircleMesh(circle,
+                                         params.circlePoints,
+                                         localDomainCount,
+                                         params.randomSpacing);
   }
 
   SLIC_INFO_IF(
     params.isVerbose(),
     axom::fmt::format("Object mesh has {} points",
-                      object_mesh_wrapper.getParticleMesh().numPoints()));
+                      objectMeshWrapper.getParticleMesh().numPoints()));
 
-  object_mesh_wrapper.saveMesh(params.objectFile);
+  objectMeshWrapper.saveMesh(params.objectFile);
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
@@ -1264,7 +1319,7 @@ int main(int argc, char** argv)
   // Output some mesh size stats
   {
     int minObject, maxObject, sumObject;
-    getIntMinMax(object_mesh_wrapper.getParticleMesh().numPoints(),
+    getIntMinMax(objectMeshWrapper.getParticleMesh().numPoints(),
                  minObject,
                  maxObject,
                  sumObject);
@@ -1300,10 +1355,10 @@ int main(int argc, char** argv)
   axom::utilities::Timer queryTimer(false);
 
   // Convert blueprint representation from sidre to conduit
-  conduit::Node object_mesh_node;
-  if(object_mesh_wrapper.getParticleMesh().numPoints() > 0)
+  conduit::Node objectMeshNode;
+  if(objectMeshWrapper.getParticleMesh().numPoints() > 0)
   {
-    object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
+    objectMeshWrapper.getBlueprintGroup()->createNativeLayout(objectMeshNode);
   }
 
   // Put sidre data into Conduit Node.
@@ -1312,9 +1367,9 @@ int main(int argc, char** argv)
 
   // To test with contiguous and interleaved coordinate storage,
   // make half them contiguous.
-  for(int di = 0; di < object_mesh_node.number_of_children(); ++di)
+  for(int di = 0; di < objectMeshNode.number_of_children(); ++di)
   {
-    auto& dom = object_mesh_node.child(di);
+    auto& dom = objectMeshNode.child(di);
     if((my_rank + di) % 2 == 1)
     {
       make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
@@ -1329,23 +1384,6 @@ int main(int argc, char** argv)
     }
   }
 
-  /*
-   To test support for single-domain format,
-   convert to single-domain when possible.
-  */
-  if(object_mesh_node.number_of_children() == 1)
-  {
-    conduit::Node tmpNode = object_mesh_node[0];
-    object_mesh_node.reset();
-    object_mesh_node = tmpNode;
-  }
-  if(queryMeshNode.number_of_children() == 1)
-  {
-    conduit::Node tmpNode = queryMeshNode[0];
-    queryMeshNode.reset();
-    queryMeshNode = tmpNode;
-  }
-
   // Create distributed closest point query object and set some parameters
   quest::DistributedClosestPoint query;
   query.setRuntimePolicy(params.policy);
@@ -1356,7 +1394,10 @@ int main(int argc, char** argv)
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
-  query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
+  // To test support for single-domain format, use single-domain when possible.
+  query.setObjectMesh(
+    objectMeshNode.number_of_children() == 1 ? objectMeshNode[0] : objectMeshNode,
+    objectMeshWrapper.getCoordsetName());
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
@@ -1366,9 +1407,12 @@ int main(int argc, char** argv)
   initTimer.stop();
 
   // Run the distributed closest point query over the nodes of the computational mesh
+  // To test support for single-domain format, use single-domain when possible.
   slic::flushStreams();
   queryTimer.start();
-  query.computeClosestPoints(queryMeshNode, queryMeshWrapper.getCoordsetName());
+  query.computeClosestPoints(
+    queryMeshNode.number_of_children() == 1 ? queryMeshNode[0] : queryMeshNode,
+    queryMeshWrapper.getCoordsetName());
   queryTimer.stop();
 
   auto getDoubleMinMax =
@@ -1401,6 +1445,7 @@ int main(int argc, char** argv)
   }
   slic::flushStreams();
 
+  objectMeshWrapper.add_rank_offset_to_cp_domain_ids(queryMeshNode);
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;
