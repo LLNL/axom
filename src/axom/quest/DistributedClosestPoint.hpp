@@ -418,12 +418,12 @@ public:
    * \param [in] mdMeshNode The blueprint mesh containing the object points.
    * \param [in] valuesPath The path to the mesh points.
    * \note This function currently supports mesh blueprints with the "point" topology
-   *
-   * TODO: See if some of the copies in this method can be optimized out.
    */
   void importObjectPoints(const conduit::Node& mdMeshNode,
                           const std::string& valuesPath)
   {
+    // TODO: See if some of the copies in this method can be optimized out.
+
     SLIC_ASSERT(sizeof(double) * DIM == sizeof(PointType));
 
     // Count points in the mesh.
@@ -1276,10 +1276,9 @@ public:
       axom::copy(cpRanks.data(),
                  query_ranks.data(),
                  cpRanks.size() * sizeof(axom::IndexType));
-      if(1)
-        axom::copy(cpCoords.data(),
-                   query_pos.data(),
-                   cpCoords.size() * sizeof(PointType));
+      axom::copy(cpCoords.data(),
+                 query_pos.data(),
+                 cpCoords.size() * sizeof(PointType));
 
       // DEBUG
       if(has_cp_distance)
@@ -1353,7 +1352,7 @@ private:
  * To use this class, first set some parameters, such as the runtime execution policy,
  * then pass in the object mesh and build a spatial index over this mesh.
  * Finally, compute the closest points in the object mesh to each point in a query mesh
- * using the \a computeClosestPoint() function.
+ * using the \a computeClosestPoints() function.
  *
  * \note The implementation currently assumes that the coordinates for the positions and vector field
  * data are interleaved (i.e. xyzxyzxyz....). We will relax this assumption in the future to support both
