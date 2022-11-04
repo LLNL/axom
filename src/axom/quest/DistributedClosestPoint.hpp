@@ -1212,58 +1212,59 @@ public:
 
         auto pointsView = m_objectPts.view();
 
-        // AXOM_PERF_MARK_SECTION(
-        // "ComputeClosestPoints",
-        axom::for_all<ExecSpace>(
-          qPtCount,
-          AXOM_LAMBDA(int32 idx) mutable {
-            PointType qpt = query_pts[idx];
+        AXOM_PERF_MARK_SECTION(
+          "ComputeClosestPoints",
+          axom::for_all<ExecSpace>(
+            qPtCount,
+            AXOM_LAMBDA(int32 idx) mutable {
+              PointType qpt = query_pts[idx];
 
-            MinCandidate curr_min {};
-            // Preset cur_min to the closest point found so far.
-            if(query_ranks[idx] >= 0)
-            {
-              curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
-              curr_min.minElem = query_inds[idx];
-              curr_min.minRank = query_ranks[idx];
-            }
-
-            auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
-              const int candidate_idx = leaf_nodes[current_node];
-              const PointType candidate_pt = pointsView[candidate_idx];
-              const double sq_dist = squared_distance(qpt, candidate_pt);
-
-              if(sq_dist < curr_min.minSqDist)
+              MinCandidate curr_min {};
+              // Preset cur_min to the closest point found so far.
+              if(query_ranks[idx] >= 0)
               {
-                curr_min.minSqDist = sq_dist;
-                curr_min.minElem = candidate_idx;
-                curr_min.minRank = rank;
+                curr_min.minSqDist = squared_distance(qpt, query_pos[idx]);
+                curr_min.minElem = query_inds[idx];
+                curr_min.minRank = query_ranks[idx];
               }
-            };
 
-            auto traversePredicate = [&](const PointType& p,
-                                         const BoxType& bb) -> bool {
-              auto sqDist = squared_distance(p, bb);
-              return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
-            };
+              auto checkMinDist = [&](int32 current_node,
+                                      const int32* leaf_nodes) {
+                const int candidate_idx = leaf_nodes[current_node];
+                const PointType candidate_pt = pointsView[candidate_idx];
+                const double sq_dist = squared_distance(qpt, candidate_pt);
 
-            // Traverse the tree, searching for the point with minimum distance.
-            it.traverse_tree(qpt, checkMinDist, traversePredicate);
+                if(sq_dist < curr_min.minSqDist)
+                {
+                  curr_min.minSqDist = sq_dist;
+                  curr_min.minElem = candidate_idx;
+                  curr_min.minRank = rank;
+                }
+              };
 
-            // If modified, update the fields that changed
-            if(curr_min.minRank == rank)
-            {
-              query_inds[idx] = curr_min.minElem;
-              query_ranks[idx] = curr_min.minRank;
-              query_pos[idx] = pointsView[curr_min.minElem];
+              auto traversePredicate = [&](const PointType& p,
+                                           const BoxType& bb) -> bool {
+                auto sqDist = squared_distance(p, bb);
+                return sqDist <= curr_min.minSqDist && sqDist <= sqDistThresh[0];
+              };
 
-              //DEBUG
-              if(has_cp_distance)
+              // Traverse the tree, searching for the point with minimum distance.
+              it.traverse_tree(qpt, checkMinDist, traversePredicate);
+
+              // If modified, update the fields that changed
+              if(curr_min.minRank == rank)
               {
-                query_min_dist[idx] = sqrt(curr_min.minSqDist);
+                query_inds[idx] = curr_min.minElem;
+                query_ranks[idx] = curr_min.minRank;
+                query_pos[idx] = pointsView[curr_min.minElem];
+
+                //DEBUG
+                if(has_cp_distance)
+                {
+                  query_min_dist[idx] = sqrt(curr_min.minSqDist);
+                }
               }
-            }
-          });  // );
+            }););
 
         axom::deallocate(sqDistThresh);
       }
