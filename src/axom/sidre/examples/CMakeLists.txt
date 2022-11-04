@@ -36,6 +36,7 @@ elseif(UNIX)
 endif()
 
 blt_list_append( TO EXTRA_LIBS ELEMENTS blt::hip IF ENABLE_HIP )
+blt_list_append( TO EXTRA_LIBS ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples

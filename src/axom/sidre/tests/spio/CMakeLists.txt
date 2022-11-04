@@ -19,6 +19,8 @@ set(gtest_spio_parallel_tests
    spio_parallel.hpp
    )
 
+set(spio_tests_depends_on axom gtest)
+blt_list_append( TO spio_tests_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
@@ -27,7 +29,7 @@ blt_add_executable( NAME       spio_tests
                     SOURCES    spio_main.cpp
                     HEADERS    ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON axom gtest
+                    DEPENDS_ON ${spio_tests_depends_on}
                     FOLDER     axom/sidre/tests
                     )
 
@@ -50,6 +52,9 @@ endforeach()
 #------------------------------------------------------------------------------
 # Add Fortran tests
 #------------------------------------------------------------------------------
+set(spio_fortran_tests_depends_on sidre)
+blt_list_append( TO spio_fortran_tests_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 if(ENABLE_FORTRAN)
     # Non-Fruit parallel tests with 1 MPI task
     set(spio_one_fortran_tests
@@ -63,7 +68,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre
+                            DEPENDS_ON ${spio_fortran_tests_depends_on}
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F
@@ -85,7 +90,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre
+                            DEPENDS_ON ${spio_fortran_tests_depends_on}
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F
@@ -105,7 +110,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre fruit
+                            DEPENDS_ON ${spio_fortran_tests_depends_on} fruit
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F

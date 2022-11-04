@@ -21,6 +21,9 @@ set(gtest_inlet_tests
 
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
 
+set(inlet_device_test_depends)
+blt_list_append( TO inlet_device_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 blt_add_library(NAME        inlet_test_utils
                 SOURCES     inlet_test_utils.cpp
                 HEADERS     inlet_test_utils.hpp
@@ -31,7 +34,7 @@ foreach(test ${gtest_inlet_tests})
     blt_add_executable( NAME       ${test_name}_test
                         SOURCES    ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON gtest inlet_test_utils
+                        DEPENDS_ON gtest inlet_test_utils ${inlet_device_test_depends}
                         FOLDER     axom/inlet/tests )
     axom_add_test( NAME    ${test_name} 
                    COMMAND ${test_name}_test )

@@ -28,7 +28,12 @@ if (AXOM_ENABLE_LUMBERJACK)
 endif()
 
 set( slic_examples_depends axom )
+blt_list_append( TO slic_examples_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 blt_list_append( TO slic_examples_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
+
+set( slic_example_device_depends )
+blt_list_append( TO slic_example_device_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 
 foreach( example_source ${example_sources} )
     get_filename_component( example_name ${example_source} NAME_WE )
@@ -68,7 +73,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME slic_${exe_name}_ex
                             SOURCES ${example_source}
                             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                            DEPENDS_ON slic
+                            DEPENDS_ON slic ${slic_example_device_depends}
                             FOLDER axom/slic/examples )
 
         if(AXOM_ENABLE_TESTS)

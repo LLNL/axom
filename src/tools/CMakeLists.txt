@@ -26,6 +26,8 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         fmt)
 
     blt_list_append(TO datastore_converter_depends ELEMENTS scr IF SCR_FOUND)
+    blt_list_append(TO datastore_converter_depends ELEMENTS cuda IF ENABLE_CUDA)
+
 
     blt_add_executable(
         NAME       convert_sidre_protocol
@@ -92,6 +94,7 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
         )
 
     blt_list_append(TO data_collection_util_depends ELEMENTS mpi IF ENABLE_MPI)
+    blt_list_append(TO data_collection_util_depends ELEMENTS cuda IF ENABLE_CUDA)
 
     blt_add_executable(
         NAME        data_collection_util

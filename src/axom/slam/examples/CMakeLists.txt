@@ -23,6 +23,7 @@ set(example_sources
 
 set(slam_tests_extra_depends)
 blt_list_append( TO slam_tests_extra_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
+blt_list_append( TO slam_tests_extra_depends ELEMENTS cuda IF ENABLE_CUDA)
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)

@@ -52,6 +52,10 @@ set(sidre_gtests_depends_on axom fmt gtest)
 # hipErrorNoBinaryForGpu without hip dependency
 blt_list_append( TO sidre_gtests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
 
+blt_list_append( TO sidre_gtests_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
+
+set( sidre_test_device_depends )
+blt_list_append( TO sidre_test_device_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
@@ -80,7 +84,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre gtest
+                            DEPENDS_ON sidre gtest ${sidre_test_device_depends}
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
@@ -98,7 +102,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre fruit
+                            DEPENDS_ON sidre fruit ${sidre_test_device_depends}
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
@@ -116,7 +120,7 @@ if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     blt_add_executable( NAME sidre_mfem_datacollection_test
                         SOURCES sidre_mfem_datacollection.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${_sidre_mfem_dc_depends}
+                        DEPENDS_ON ${_sidre_mfem_dc_depends} ${sidre_test_device_depends}
                         FOLDER axom/sidre/tests
                         )
     if (ENABLE_MPI)

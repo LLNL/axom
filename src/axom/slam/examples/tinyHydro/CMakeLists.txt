@@ -25,6 +25,8 @@ set(tinyHydro_lib_sources
 
 
 set(slam_tiny_hydro_lib_depends_on core slam slic fmt)
+blt_list_append( TO slam_tiny_hydro_lib_depends_on ELEMENTS cuda IF ENABLE_CUDA)
+
 
 #------------------------------------------------------------------------------
 # Build the tinyHydro library
@@ -38,6 +40,8 @@ blt_add_library(
     OBJECT      TRUE )
 
 list(APPEND slam_tiny_hydro_tests_depends_on slam_tinyHydro_ex)
+blt_list_append( TO slam_tiny_hydro_tests_depends_on ELEMENTS cuda IF ENABLE_CUDA)
+
 
 #------------------------------------------------------------------------------
 # Add gtest based tests for tinyHydro

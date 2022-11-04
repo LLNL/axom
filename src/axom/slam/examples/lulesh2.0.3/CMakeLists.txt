@@ -31,7 +31,9 @@ set(slam_tests_depends_on core slic slam)
 
 blt_list_append( TO slam_tests_depends_on ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO slam_tests_depends_on ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append( TO slam_tests_depends_on ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append( TO slam_tests_depends_on ELEMENTS blt::hip IF ${ENABLE_HIP} )
+
 
 blt_add_executable(
     NAME        slam_lulesh_ex

@@ -16,6 +16,8 @@ set(example_sources
 
 set( core_examples_depends axom )
 blt_list_append( TO core_examples_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
+blt_list_append( TO core_examples_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples

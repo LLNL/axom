@@ -28,6 +28,9 @@ blt_list_append(
     SOL_FOUND )
 
 
+set(inlet_device_example_depends)
+blt_list_append( TO inlet_device_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 #------------------------------------------------------------------------------
 # Build each executable example
 #------------------------------------------------------------------------------
@@ -37,7 +40,7 @@ foreach(example ${inlet_examples})
     blt_add_executable( NAME       inlet_${ex_name}_ex
                         SOURCES    ${example}
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON axom
+                        DEPENDS_ON axom ${inlet_device_example_depends}
                         FOLDER     axom/inlet/examples )
 endforeach()
 
@@ -45,7 +48,7 @@ if (SOL_FOUND AND MFEM_FOUND)
     blt_add_executable( NAME       inlet_mfem_coefficient_ex
                         SOURCES    mfem_coefficient.cpp
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON axom mfem
+                        DEPENDS_ON axom mfem ${inlet_device_example_depends}
                         FOLDER     axom/inlet/examples )
 endif()
 

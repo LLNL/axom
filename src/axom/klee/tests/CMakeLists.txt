@@ -29,6 +29,9 @@ blt_add_library(
         DEPENDS_ON  axom gtest gmock
         FOLDER      axom/klee/tests)
 
+set(klee_device_test_depends)
+blt_list_append( TO klee_device_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 #
 # Add gtest based tests
 #
@@ -37,7 +40,7 @@ foreach(test ${gtest_klee_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON gtest klee_test_utils
+                        DEPENDS_ON gtest klee_test_utils ${klee_device_test_depends}
                         FOLDER      axom/klee/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )

@@ -19,6 +19,7 @@ set(multimat_example_sources
 set(multimat_tests_depends_on slic slam multimat)
 
 set(multimat_tests_extra_depends)
+blt_list_append( TO multimat_tests_extra_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach(example_source ${multimat_example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)

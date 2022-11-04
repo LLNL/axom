@@ -26,6 +26,7 @@ set(lulesh_depends
 blt_list_append( TO lulesh_depends ELEMENTS hdf5   IF HDF5_FOUND )
 blt_list_append( TO lulesh_depends ELEMENTS mpi    IF ENABLE_MPI )
 blt_list_append( TO lulesh_depends ELEMENTS openmp IF ENABLE_OPENMP )
+blt_list_append( TO lulesh_depends ELEMENTS cuda IF ENABLE_CUDA )
 
 blt_add_executable(
     NAME sidre_lulesh2_ex

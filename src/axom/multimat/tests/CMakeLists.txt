@@ -16,6 +16,7 @@ set(gtest_multimat_tests
 
 
 set(multimat_tests_depends_on core slic slam multimat gtest)
+blt_list_append( TO multimat_tests_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
 # Add gtest based tests
