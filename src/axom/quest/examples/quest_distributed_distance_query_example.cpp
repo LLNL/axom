@@ -1214,9 +1214,9 @@ int main(int argc, char** argv)
     params.circleRadius);
 
   sidre::DataStore objectDS;
-  ObjectMeshWrapper object_mesh_wrapper(
+  ObjectMeshWrapper objectMeshWrapper(
     objectDS.getRoot()->createGroup("object_mesh", true));
-  object_mesh_wrapper.setVerbosity(params.isVerbose());
+  objectMeshWrapper.setVerbosity(params.isVerbose());
 
   {
     SLIC_ASSERT(params.objDomainCountRange[1] >= params.objDomainCountRange[0]);
@@ -1224,18 +1224,18 @@ int main(int argc, char** argv)
     const unsigned int omax = params.objDomainCountRange[1];
     const double prob = axom::utilities::random_real(0., 1.);
     int localDomainCount = omin + int(0.5 + prob * (omax - omin));
-    object_mesh_wrapper.generateCircleMesh(circle,
-                                           params.circlePoints,
-                                           localDomainCount,
-                                           params.randomSpacing);
+    objectMeshWrapper.generateCircleMesh(circle,
+                                         params.circlePoints,
+                                         localDomainCount,
+                                         params.randomSpacing);
   }
 
   SLIC_INFO_IF(
     params.isVerbose(),
     axom::fmt::format("Object mesh has {} points",
-                      object_mesh_wrapper.getParticleMesh().numPoints()));
+                      objectMeshWrapper.getParticleMesh().numPoints()));
 
-  object_mesh_wrapper.saveMesh(params.objectFile);
+  objectMeshWrapper.saveMesh(params.objectFile);
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
@@ -1264,7 +1264,7 @@ int main(int argc, char** argv)
   // Output some mesh size stats
   {
     int minObject, maxObject, sumObject;
-    getIntMinMax(object_mesh_wrapper.getParticleMesh().numPoints(),
+    getIntMinMax(objectMeshWrapper.getParticleMesh().numPoints(),
                  minObject,
                  maxObject,
                  sumObject);
@@ -1300,10 +1300,10 @@ int main(int argc, char** argv)
   axom::utilities::Timer queryTimer(false);
 
   // Convert blueprint representation from sidre to conduit
-  conduit::Node object_mesh_node;
-  if(object_mesh_wrapper.getParticleMesh().numPoints() > 0)
+  conduit::Node objectMeshNode;
+  if(objectMeshWrapper.getParticleMesh().numPoints() > 0)
   {
-    object_mesh_wrapper.getBlueprintGroup()->createNativeLayout(object_mesh_node);
+    objectMeshWrapper.getBlueprintGroup()->createNativeLayout(objectMeshNode);
   }
 
   // Put sidre data into Conduit Node.
@@ -1312,9 +1312,9 @@ int main(int argc, char** argv)
 
   // To test with contiguous and interleaved coordinate storage,
   // make half them contiguous.
-  for(int di = 0; di < object_mesh_node.number_of_children(); ++di)
+  for(int di = 0; di < objectMeshNode.number_of_children(); ++di)
   {
-    auto& dom = object_mesh_node.child(di);
+    auto& dom = objectMeshNode.child(di);
     if((my_rank + di) % 2 == 1)
     {
       make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
@@ -1333,11 +1333,11 @@ int main(int argc, char** argv)
    To test support for single-domain format,
    convert to single-domain when possible.
   */
-  if(object_mesh_node.number_of_children() == 1)
+  if(objectMeshNode.number_of_children() == 1)
   {
-    conduit::Node tmpNode = object_mesh_node[0];
-    object_mesh_node.reset();
-    object_mesh_node = tmpNode;
+    conduit::Node tmpNode = objectMeshNode[0];
+    objectMeshNode.reset();
+    objectMeshNode = tmpNode;
   }
   if(queryMeshNode.number_of_children() == 1)
   {
@@ -1356,7 +1356,7 @@ int main(int argc, char** argv)
   query.setDimension(DIM);
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
-  query.setObjectMesh(object_mesh_node, object_mesh_wrapper.getCoordsetName());
+  query.setObjectMesh(objectMeshNode, objectMeshWrapper.getCoordsetName());
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);

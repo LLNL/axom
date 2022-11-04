@@ -436,7 +436,7 @@ public:
     }
 
     // Copy points to internal memory
-    PointArray pts(ptCount, ptCount);
+    PointArray coords(ptCount, ptCount);
     std::size_t copiedCount = 0;
     conduit::Node tmpValues;
     for(const conduit::Node& domain : mdMeshNode.children())
@@ -453,14 +453,14 @@ public:
       const int N = internal::extractSize(copySrc);
       const std::size_t nBytes = sizeof(double) * DIM * N;
 
-      axom::copy(pts.data() + copiedCount,
+      axom::copy(coords.data() + copiedCount,
                  copySrc.fetch_existing("x").data_ptr(),
                  nBytes);
       tmpValues.reset();
       copiedCount += N;
     }
-    m_objectPtCoords =
-      PointArray(pts, m_allocatorID);  // copy point array to ExecSpace
+    // copy computed data to ExecSpace
+    m_objectPtCoords = PointArray(coords, m_allocatorID);
   }
 
   /// Predicate to check if the BVH tree has been initialized
@@ -1231,14 +1231,14 @@ public:
 
               auto checkMinDist = [&](int32 current_node,
                                       const int32* leaf_nodes) {
-                const int candidate_idx = leaf_nodes[current_node];
-                const PointType candidate_pt = pointsView[candidate_idx];
+                const int candidate_point_idx = leaf_nodes[current_node];
+                const PointType candidate_pt = pointsView[candidate_point_idx];
                 const double sq_dist = squared_distance(qpt, candidate_pt);
 
                 if(sq_dist < curr_min.sqDist)
                 {
                   curr_min.sqDist = sq_dist;
-                  curr_min.pointIdx = candidate_idx;
+                  curr_min.pointIdx = candidate_point_idx;
                   curr_min.rank = rank;
                 }
               };
