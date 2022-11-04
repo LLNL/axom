@@ -1243,63 +1243,64 @@ public:
 
         auto pointsView = m_objectPtCoords.view();
 
-        // AXOM_PERF_MARK_SECTION(
-        // "ComputeClosestPoints",
-        axom::for_all<ExecSpace>(
-          qPtCount,
-          AXOM_LAMBDA(int32 idx) mutable {
-            PointType qpt = query_pts[idx];
+        AXOM_PERF_MARK_SECTION(
+          "ComputeClosestPoints",
+          axom::for_all<ExecSpace>(
+            qPtCount,
+            AXOM_LAMBDA(int32 idx) mutable {
+              PointType qpt = query_pts[idx];
 
-            MinCandidate curr_min {};
-            // Preset cur_min to the closest point found so far.
-            if(query_ranks[idx] >= 0)
-            {
-              curr_min.sqDist = squared_distance(qpt, query_pos[idx]);
-              curr_min.pointIdx = query_inds[idx];
-              curr_min.domainIdx = query_doms[idx];
-              curr_min.rank = query_ranks[idx];
-            }
-
-            auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
-              const int candidate_point_idx = leaf_nodes[current_node];
-              const int candidate_domain_idx =
-                m_objectPtDomainIds[candidate_point_idx];
-              const PointType candidate_pt = pointsView[candidate_point_idx];
-              const double sq_dist = squared_distance(qpt, candidate_pt);
-
-              if(sq_dist < curr_min.sqDist)
+              MinCandidate curr_min {};
+              // Preset cur_min to the closest point found so far.
+              if(query_ranks[idx] >= 0)
               {
-                curr_min.sqDist = sq_dist;
-                curr_min.pointIdx = candidate_point_idx;
-                curr_min.domainIdx = candidate_domain_idx;
-                curr_min.rank = rank;
+                curr_min.sqDist = squared_distance(qpt, query_pos[idx]);
+                curr_min.pointIdx = query_inds[idx];
+                curr_min.domainIdx = query_doms[idx];
+                curr_min.rank = query_ranks[idx];
               }
-            };
 
-            auto traversePredicate = [&](const PointType& p,
-                                         const BoxType& bb) -> bool {
-              auto sqDist = squared_distance(p, bb);
-              return sqDist <= curr_min.sqDist && sqDist <= sqDistThresh[0];
-            };
+              auto checkMinDist = [&](int32 current_node,
+                                      const int32* leaf_nodes) {
+                const int candidate_point_idx = leaf_nodes[current_node];
+                const int candidate_domain_idx =
+                  m_objectPtDomainIds[candidate_point_idx];
+                const PointType candidate_pt = pointsView[candidate_point_idx];
+                const double sq_dist = squared_distance(qpt, candidate_pt);
 
-            // Traverse the tree, searching for the point with minimum distance.
-            it.traverse_tree(qpt, checkMinDist, traversePredicate);
+                if(sq_dist < curr_min.sqDist)
+                {
+                  curr_min.sqDist = sq_dist;
+                  curr_min.pointIdx = candidate_point_idx;
+                  curr_min.domainIdx = candidate_domain_idx;
+                  curr_min.rank = rank;
+                }
+              };
 
-            // If modified, update the fields that changed
-            if(curr_min.rank == rank)
-            {
-              query_inds[idx] = curr_min.pointIdx;
-              query_doms[idx] = curr_min.domainIdx;
-              query_ranks[idx] = curr_min.rank;
-              query_pos[idx] = pointsView[curr_min.pointIdx];
+              auto traversePredicate = [&](const PointType& p,
+                                           const BoxType& bb) -> bool {
+                auto sqDist = squared_distance(p, bb);
+                return sqDist <= curr_min.sqDist && sqDist <= sqDistThresh[0];
+              };
 
-              //DEBUG
-              if(has_cp_distance)
+              // Traverse the tree, searching for the point with minimum distance.
+              it.traverse_tree(qpt, checkMinDist, traversePredicate);
+
+              // If modified, update the fields that changed
+              if(curr_min.rank == rank)
               {
-                query_min_dist[idx] = sqrt(curr_min.sqDist);
+                query_inds[idx] = curr_min.pointIdx;
+                query_doms[idx] = curr_min.domainIdx;
+                query_ranks[idx] = curr_min.rank;
+                query_pos[idx] = pointsView[curr_min.pointIdx];
+
+                //DEBUG
+                if(has_cp_distance)
+                {
+                  query_min_dist[idx] = sqrt(curr_min.sqDist);
+                }
               }
-            }
-          });  // );
+            }););
 
         axom::deallocate(sqDistThresh);
       }

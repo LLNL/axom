@@ -1395,9 +1395,7 @@ int main(int argc, char** argv)
   query.setVerbosity(params.isVerbose());
   query.setDistanceThreshold(params.distThreshold);
   // To test support for single-domain format, use single-domain when possible.
-  query.setObjectMesh(
-    objectMeshNode.number_of_children() == 1 ? objectMeshNode[0] : objectMeshNode,
-    objectMeshWrapper.getCoordsetName());
+  query.setObjectMesh(objectMeshNode, objectMeshWrapper.getCoordsetName());
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
@@ -1410,9 +1408,7 @@ int main(int argc, char** argv)
   // To test support for single-domain format, use single-domain when possible.
   slic::flushStreams();
   queryTimer.start();
-  query.computeClosestPoints(
-    queryMeshNode.number_of_children() == 1 ? queryMeshNode[0] : queryMeshNode,
-    queryMeshWrapper.getCoordsetName());
+  query.computeClosestPoints(queryMeshNode, queryMeshWrapper.getCoordsetName());
   queryTimer.stop();
 
   auto getDoubleMinMax =
