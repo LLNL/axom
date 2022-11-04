@@ -850,6 +850,7 @@ public:
     {
       m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_rank");
       m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_index");
+      m_queryMesh.registerNodalScalarField<axom::IndexType>("cp_domain_index");
       m_queryMesh.registerNodalScalarField<double>("cp_distance");
       m_queryMesh.registerNodalVectorField<double>("cp_coords");
     }
@@ -890,6 +891,13 @@ public:
       {
         auto dst = dstFieldsGroup.getGroup("cp_index");
         auto src = srcFieldsNode.fetch_existing("cp_index");
+        bool goodImport = dst->importConduitTree(src);
+        ;
+        SLIC_ASSERT(goodImport);
+      }
+      {
+        auto dst = dstFieldsGroup.getGroup("cp_domain_index");
+        auto src = srcFieldsNode.fetch_existing("cp_domain_index");
         bool goodImport = dst->importConduitTree(src);
         ;
         SLIC_ASSERT(goodImport);
