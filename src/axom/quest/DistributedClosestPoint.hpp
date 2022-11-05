@@ -355,8 +355,6 @@ private:
   {
     /// Squared distance to query point
     double sqDist {numerics::floating_point_limits<double>::max()};
-    /// Index of domain of closest element
-    int domainIdx {-1};
     /// Index within domain of closest element
     int pointIdx {-1};
     /// MPI rank of closest element
@@ -375,7 +373,6 @@ public:
     , m_rank(-1)
     , m_nranks(-1)
     , m_objectPtCoords(0, 0, allocatorID)
-    , m_objectPtDomainIds(0, 0, allocatorID)
   {
     SLIC_ASSERT(allocatorID != axom::INVALID_ALLOCATOR_ID);
 
@@ -440,13 +437,10 @@ public:
 
     // Copy points to internal memory
     PointArray coords(ptCount, ptCount);
-    axom::Array<axom::IndexType> domIds(ptCount, ptCount);
     std::size_t copiedCount = 0;
     conduit::Node tmpValues;
-    for(conduit::index_t d = 0; d < mdMeshNode.number_of_children(); ++d)
+    for(const conduit::Node& domain : mdMeshNode.children())
     {
-      const conduit::Node& domain = mdMeshNode.child(d);
-
       auto& values = domain.fetch_existing(valuesPath);
 
       bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(values);
@@ -463,14 +457,10 @@ public:
                  copySrc.fetch_existing("x").data_ptr(),
                  nBytes);
       tmpValues.reset();
-
-      domIds.fill(d, copiedCount, N);
-
       copiedCount += N;
     }
     // copy computed data to ExecSpace
     m_objectPtCoords = PointArray(coords, m_allocatorID);
-    m_objectPtDomainIds = axom::Array<axom::IndexType>(domIds, m_allocatorID);
   }
 
   /// Predicate to check if the BVH tree has been initialized
@@ -676,7 +666,6 @@ public:
       copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
 
       xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
-      xferDom["cp_domain_index"].set_external(fields.fetch_existing("cp_domain_index/values"));
       xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
       copy_components_to_interleaved(fields.fetch_existing("cp_coords/values"),
                                      xferDom["cp_coords"]);
@@ -719,15 +708,6 @@ public:
       {
         auto& src = xferDom.fetch_existing("cp_index");
         auto& dst = fields.fetch_existing("cp_index/values");
-        if(dst.data_ptr() != src.data_ptr())
-        {
-          dst.update_compatible(src);
-        }
-      }
-
-      {
-        auto& src = xferDom.fetch_existing("cp_domain_index");
-        auto& dst = fields.fetch_existing("cp_domain_index/values");
         if(dst.data_ptr() != src.data_ptr())
         {
           dst.update_compatible(src);
@@ -818,11 +798,9 @@ public:
    * When the query mesh contains query points, it uses the \a coordset coordinate set
    * of the provided blueprint mesh and  contains the following fields:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
-   *   - cp_domain_index: will hold the index of the object domain containing
-   *     the closest points.
-   *   - cp_index: Will hold the index of the closest object point.
-   *     For multiple object mesh domains on a rank, cp_index is relative to
-   *     each domain.
+   *   - cp_index: Will hold the index of the object point containing the closest point.
+   *     For multiple object mesh domains on a rank, cp_index increases consecutively
+   *     from one domain to the next.
    *   - cp_coords: Will hold the coordinates of the closest points
    *     interleaved in a 1D array.
    *
@@ -1164,9 +1142,6 @@ public:
       auto cpIndexes =
         ArrayView_from_Node<axom::IndexType>(xferDom.fetch_existing("cp_index"),
                                              qPtCount);
-      auto cpDomainIndexes = ArrayView_from_Node<axom::IndexType>(
-        xferDom.fetch_existing("cp_domain_index"),
-        qPtCount);
       auto cpRanks =
         ArrayView_from_Node<axom::IndexType>(xferDom.fetch_existing("cp_rank"),
                                              qPtCount);
@@ -1180,9 +1155,6 @@ public:
       auto cp_idx = is_first
         ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
         : axom::Array<axom::IndexType>(cpIndexes, m_allocatorID);
-      auto cp_domidx = is_first
-        ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
-        : axom::Array<axom::IndexType>(cpDomainIndexes, m_allocatorID);
       auto cp_rank = is_first
         ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
         : axom::Array<axom::IndexType>(cpRanks, m_allocatorID);
@@ -1213,7 +1185,6 @@ public:
       {
         cp_rank.fill(-1);
         cp_idx.fill(-1);
-        cp_domidx.fill(-1);
         const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
         cp_pos.fill(nowhere);
         if(has_cp_distance)
@@ -1222,7 +1193,6 @@ public:
         }
       }
       auto query_inds = cp_idx.view();
-      auto query_doms = cp_domidx.view();
       auto query_ranks = cp_rank.view();
       auto query_pos = cp_pos.view();
 
@@ -1256,15 +1226,12 @@ public:
               {
                 curr_min.sqDist = squared_distance(qpt, query_pos[idx]);
                 curr_min.pointIdx = query_inds[idx];
-                curr_min.domainIdx = query_doms[idx];
                 curr_min.rank = query_ranks[idx];
               }
 
               auto checkMinDist = [&](int32 current_node,
                                       const int32* leaf_nodes) {
                 const int candidate_point_idx = leaf_nodes[current_node];
-                const int candidate_domain_idx =
-                  m_objectPtDomainIds[candidate_point_idx];
                 const PointType candidate_pt = pointsView[candidate_point_idx];
                 const double sq_dist = squared_distance(qpt, candidate_pt);
 
@@ -1272,7 +1239,6 @@ public:
                 {
                   curr_min.sqDist = sq_dist;
                   curr_min.pointIdx = candidate_point_idx;
-                  curr_min.domainIdx = candidate_domain_idx;
                   curr_min.rank = rank;
                 }
               };
@@ -1290,7 +1256,6 @@ public:
               if(curr_min.rank == rank)
               {
                 query_inds[idx] = curr_min.pointIdx;
-                query_doms[idx] = curr_min.domainIdx;
                 query_ranks[idx] = curr_min.rank;
                 query_pos[idx] = pointsView[curr_min.pointIdx];
 
@@ -1308,9 +1273,6 @@ public:
       axom::copy(cpIndexes.data(),
                  query_inds.data(),
                  cpIndexes.size() * sizeof(axom::IndexType));
-      axom::copy(cpDomainIndexes.data(),
-                 query_doms.data(),
-                 cpDomainIndexes.size() * sizeof(axom::IndexType));
       axom::copy(cpRanks.data(),
                  query_ranks.data(),
                  cpRanks.size() * sizeof(axom::IndexType));
@@ -1351,8 +1313,6 @@ private:
     Points from all local object mesh domains are flattened here.
   */
   PointArray m_objectPtCoords;
-
-  axom::Array<axom::IndexType> m_objectPtDomainIds;
 
   /*!  @brief Object partition bounding boxes, one per rank.
     All are in physical space, not index space.
