@@ -1256,12 +1256,15 @@ public:
               {
                 curr_min.sqDist = squared_distance(qpt, query_pos[idx]);
                 curr_min.pointIdx = query_inds[idx];
+                curr_min.domainIdx = query_doms[idx];
                 curr_min.rank = query_ranks[idx];
               }
 
               auto checkMinDist = [&](int32 current_node,
                                       const int32* leaf_nodes) {
                 const int candidate_point_idx = leaf_nodes[current_node];
+                const int candidate_domain_idx =
+                  m_objectPtDomainIds[candidate_point_idx];
                 const PointType candidate_pt = pointsView[candidate_point_idx];
                 const double sq_dist = squared_distance(qpt, candidate_pt);
 
@@ -1269,6 +1272,7 @@ public:
                 {
                   curr_min.sqDist = sq_dist;
                   curr_min.pointIdx = candidate_point_idx;
+                  curr_min.domainIdx = candidate_domain_idx;
                   curr_min.rank = rank;
                 }
               };
@@ -1286,6 +1290,7 @@ public:
               if(curr_min.rank == rank)
               {
                 query_inds[idx] = curr_min.pointIdx;
+                query_doms[idx] = curr_min.domainIdx;
                 query_ranks[idx] = curr_min.rank;
                 query_pos[idx] = pointsView[curr_min.pointIdx];
 
