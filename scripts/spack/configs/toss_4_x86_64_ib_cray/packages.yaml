@@ -94,6 +94,11 @@ packages:
     externals:
     - spec: bzip2@1.0.6
       prefix: /usr
+  curl:
+    buildable: false
+    externals:
+    - spec: curl@7.61.1
+      prefix: /usr
   cmake:
     version: [3.21.1]
     buildable: false
