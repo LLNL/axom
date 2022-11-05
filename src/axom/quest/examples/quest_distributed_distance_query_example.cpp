@@ -1445,6 +1445,7 @@ int main(int argc, char** argv)
   }
   slic::flushStreams();
 
+  objectMeshWrapper.add_rank_offset_to_cp_domain_ids(queryMeshNode);
   queryMeshWrapper.update_closest_points(queryMeshNode);
 
   int errCount = 0;

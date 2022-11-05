@@ -20,7 +20,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 - `DistributedClosestPoint` query now supports any blueprint-valid mesh format, including multidomain.
-   Domain under- and overloading can be expressed using multidomain format.
+   Domain under- and overloading can be expressed using multidomain format.  Closest points are
+   identified by cp_rank, cp_domain_index, and cp_index.  The new cp_domain_index specifies the
+   domain containing the closest point.
 - `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
   changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
   interfacing variables.

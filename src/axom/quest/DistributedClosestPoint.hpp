@@ -820,7 +820,7 @@ public:
    *   - cp_rank: Will hold the rank of the object point containing the closest point
    *   - cp_domain_index: will hold the index of the object domain containing
    *     the closest points.
-   *   - cp_index: Will hold the index of the closest object point.
+   *   - cp_index: Will hold the index of the closest object points.
    *     For multiple object mesh domains on a rank, cp_index is relative to
    *     each domain.
    *   - cp_coords: Will hold the coordinates of the closest points
