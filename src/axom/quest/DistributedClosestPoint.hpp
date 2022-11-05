@@ -1164,6 +1164,9 @@ public:
       auto cpIndexes =
         ArrayView_from_Node<axom::IndexType>(xferDom.fetch_existing("cp_index"),
                                              qPtCount);
+      auto cpDomainIndexes = ArrayView_from_Node<axom::IndexType>(
+        xferDom.fetch_existing("cp_domain_index"),
+        qPtCount);
       auto cpRanks =
         ArrayView_from_Node<axom::IndexType>(xferDom.fetch_existing("cp_rank"),
                                              qPtCount);
@@ -1177,6 +1180,9 @@ public:
       auto cp_idx = is_first
         ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
         : axom::Array<axom::IndexType>(cpIndexes, m_allocatorID);
+      auto cp_domidx = is_first
+        ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
+        : axom::Array<axom::IndexType>(cpDomainIndexes, m_allocatorID);
       auto cp_rank = is_first
         ? axom::Array<axom::IndexType>(qPtCount, qPtCount, m_allocatorID)
         : axom::Array<axom::IndexType>(cpRanks, m_allocatorID);
@@ -1207,6 +1213,7 @@ public:
       {
         cp_rank.fill(-1);
         cp_idx.fill(-1);
+        cp_domidx.fill(-1);
         const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
         cp_pos.fill(nowhere);
         if(has_cp_distance)
@@ -1215,6 +1222,7 @@ public:
         }
       }
       auto query_inds = cp_idx.view();
+      auto query_doms = cp_domidx.view();
       auto query_ranks = cp_rank.view();
       auto query_pos = cp_pos.view();
 
@@ -1295,6 +1303,9 @@ public:
       axom::copy(cpIndexes.data(),
                  query_inds.data(),
                  cpIndexes.size() * sizeof(axom::IndexType));
+      axom::copy(cpDomainIndexes.data(),
+                 query_doms.data(),
+                 cpDomainIndexes.size() * sizeof(axom::IndexType));
       axom::copy(cpRanks.data(),
                  query_ranks.data(),
                  cpRanks.size() * sizeof(axom::IndexType));
