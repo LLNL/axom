@@ -15,7 +15,10 @@ compilers:
 - compiler:
     environment: {}
     extra_rpaths: []
-    flags: {}
+    flags:
+      # Fix for "undefined refence to 'ddot_'" due to compiler-specific linker
+      # flags in mixed toolchains
+      ldlibs: -lgfortran
     modules: []
     operating_system: rhel7
     paths:
