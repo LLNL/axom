@@ -13,7 +13,10 @@ compilers:
     spec: gcc@8.3.1
     target: ppc64le
 - compiler:
-    environment: {}
+    environment:
+      # Temporary workaround: Spack issue #18156
+      set:
+        SPACK_TARGET_ARGS: ""
     extra_rpaths: []
     flags:
       # Fix for "undefined refence to 'ddot_'" due to compiler-specific linker
