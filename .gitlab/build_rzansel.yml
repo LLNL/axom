@@ -17,7 +17,7 @@
 # Load required CUDA module
 .with_cuda:
   before_script:
-    - module load cuda/10.1.243
+    - module load cuda/11.2.0
 
 ####
 # Template
