@@ -712,10 +712,6 @@ public:
                     MPI_INT,
                     MPI_COMM_WORLD);
 
-      SLIC_DEBUG_IF(m_verbose,
-                    axom::fmt::format("After all gather: [{}]",
-                                      axom::fmt::join(indivDomainCounts, ",")));
-
       sums[0] = indivDomainCounts[0];
       for(int i = 1; i < nranks; ++i)
       {
@@ -731,10 +727,6 @@ public:
         }
       }
     }
-
-    SLIC_DEBUG_IF(
-      m_verbose,
-      axom::fmt::format("After scan: [{}]", axom::fmt::join(sums, ",")));
 
     int globalDomainCount = sums[nranks - 1];
     totalNumPoints = std::max(totalNumPoints, globalDomainCount);
@@ -1287,8 +1279,9 @@ int main(int argc, char** argv)
 
   SLIC_INFO_IF(
     params.isVerbose(),
-    axom::fmt::format("Object mesh has {} points",
-                      objectMeshWrapper.getParticleMesh().numPoints()));
+    axom::fmt::format("Object mesh has {} local points in {} domains",
+                      objectMeshWrapper.getParticleMesh().numPoints(),
+                      objectMeshWrapper.getParticleMesh().domain_count()));
 
   objectMeshWrapper.saveMesh(params.objectFile);
   slic::flushStreams();
@@ -1304,10 +1297,11 @@ int main(int argc, char** argv)
   // queryMeshWrapper.print_mesh_info();
   const int nMeshPoints = queryMeshWrapper.getParticleMesh().numPoints();
 
-  SLIC_INFO_IF(params.isVerbose(),
-               axom::fmt::format("Query mesh has {} points on rank {}",
-                                 nMeshPoints,
-                                 my_rank));
+  SLIC_INFO_IF(
+    params.isVerbose(),
+    axom::fmt::format("Query mesh has local {} points in {} domains",
+                      nMeshPoints,
+                      queryMeshWrapper.getParticleMesh().domain_count()));
   slic::flushStreams();
 
   auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
@@ -1398,6 +1392,8 @@ int main(int argc, char** argv)
   query.setObjectMesh(
     objectMeshNode.number_of_children() == 1 ? objectMeshNode[0] : objectMeshNode,
     objectMeshWrapper.getCoordsetName());
+  SLIC_INFO_IF(params.isVerbose(),
+               axom::fmt::format("======= Finished setObjectMesh ======="));
 
   // Build the spatial index over the object on each rank
   SLIC_INFO(init_str);
@@ -1408,6 +1404,9 @@ int main(int argc, char** argv)
 
   // Run the distributed closest point query over the nodes of the computational mesh
   // To test support for single-domain format, use single-domain when possible.
+  SLIC_INFO_IF(
+    params.isVerbose(),
+    axom::fmt::format("======= Calling query.computeClosestPoints ======="));
   slic::flushStreams();
   queryTimer.start();
   query.computeClosestPoints(

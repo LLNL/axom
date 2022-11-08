@@ -13,6 +13,7 @@
 #include "axom/sidre.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
+#include "axom/core/utilities/WhereMacro.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -48,6 +49,7 @@
   #endif
 #endif
 
+// clang-format off
 namespace axom
 {
 namespace quest
@@ -471,6 +473,12 @@ public:
     // copy computed data to ExecSpace
     m_objectPtCoords = PointArray(coords, m_allocatorID);
     m_objectPtDomainIds = axom::Array<axom::IndexType>(domIds, m_allocatorID);
+
+    SLIC_INFO_IF(
+      m_isVerbose,
+      fmt::format("======= Imported {} object points in {} domains =======",
+                  copiedCount,
+                  mdMeshNode.number_of_children()));
   }
 
   /// Predicate to check if the BVH tree has been initialized
@@ -672,7 +680,6 @@ public:
         queryDom.fetch_existing(fmt::format("coordsets/{}", coordset));
       conduit::Node& queryCoordsValues = queryCoords.fetch_existing("values");
 
-      // clang-format off
       copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
 
       xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
@@ -685,7 +692,6 @@ public:
       {
         xferDom["debug/cp_distance"].set_external(fields.fetch_existing("cp_distance/values"));
       }
-      // clang-format on
 
       const int dim = internal::extractDimension(queryCoordsValues);
       const int qPtCount = internal::extractSize(queryCoordsValues);
@@ -873,7 +879,9 @@ public:
 
     {
       conduit::Node& xferNode = *xferNodes[m_rank];
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
       computeLocalClosestPointsByPolicy(xferNode);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
     }
 
     const auto& myObjectBb = m_objectPartitionBbs[m_rank];
@@ -912,18 +920,22 @@ public:
       if(firstRecipForMyQuery == -1)
       {
         // No need to send anywhere.  Put computed data back into queryMesh.
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
         node_copy_xfer_to_query(*xferNodes[m_rank], queryMesh);
         xferNodes.erase(m_rank);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
       }
       else
       {
         isendRequests.emplace_back(conduit::relay::mpi::Request());
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
         auto& req = isendRequests.back();
         relay::mpi::isend_using_schema(*xferNodes[m_rank],
                                        firstRecipForMyQuery,
                                        tag,
                                        m_mpiComm,
                                        &req);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
         ++remainingRecvs;
       }
     }
@@ -937,10 +949,12 @@ public:
       // Receive the next xferNode
       std::shared_ptr<conduit::Node> recvXferNodePtr =
         std::make_shared<conduit::Node>();
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
       relay::mpi::recv_using_schema(*recvXferNodePtr,
                                     MPI_ANY_SOURCE,
                                     tag,
                                     m_mpiComm);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
 
       const int homeRank = recvXferNodePtr->fetch_existing("homeRank").as_int();
       --remainingRecvs;
@@ -949,26 +963,33 @@ public:
 
       if(homeRank == m_rank)
       {
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
         node_copy_xfer_to_query(xferNode, queryMesh);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
       }
       else
       {
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
         computeLocalClosestPointsByPolicy(xferNode);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
 
         isendRequests.emplace_back(conduit::relay::mpi::Request());
         auto& isendRequest = isendRequests.back();
         int nextRecipient = next_recipient(xferNode);
         SLIC_ASSERT(nextRecipient != -1);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
         relay::mpi::isend_using_schema(xferNode,
                                        nextRecipient,
                                        tag,
                                        m_mpiComm,
                                        &isendRequest);
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
 
         // Check non-blocking sends to free memory.
         check_send_requests(isendRequests, false);
       }
 
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
     }  // remainingRecvs loop
 
     // Complete remaining non-blocking sends.
@@ -977,8 +998,10 @@ public:
       check_send_requests(isendRequests, true);
     }
 
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
     MPI_Barrier(m_mpiComm);
     slic::flushStreams();
+std::cout<<__WHERE<< "rank " << m_rank <<std::endl;
   }
 
 private:
@@ -1211,6 +1234,10 @@ public:
 
       if(is_first)
       {
+        SLIC_INFO_IF(
+          m_isVerbose,
+          fmt::format("======= Initializing output for {} query points =======",
+                      cp_idx.size()));
         cp_rank.fill(-1);
         cp_idx.fill(-1);
         cp_domidx.fill(-1);
@@ -1243,6 +1270,10 @@ public:
 
         auto pointsView = m_objectPtCoords.view();
 
+        SLIC_INFO_IF(
+          m_isVerbose,
+          fmt::format("======= Starting {} local point searches =======",
+                      cp_idx.size()));
         AXOM_PERF_MARK_SECTION(
           "ComputeClosestPoints",
           axom::for_all<ExecSpace>(
@@ -1305,6 +1336,10 @@ public:
         axom::deallocate(sqDistThresh);
       }
 
+      SLIC_INFO_IF(
+        m_isVerbose,
+        fmt::format("======= Copy {} results back to xferNode =======",
+                    cp_idx.size()));
       axom::copy(cpIndexes.data(),
                  query_inds.data(),
                  cpIndexes.size() * sizeof(axom::IndexType));
