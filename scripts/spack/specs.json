@@ -15,9 +15,9 @@
 
     "toss_3_x86_64_ib":
     [ "clang@9.0.0+devtools+mfem+c2c",
-      "clang@10.0.0+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
-      "gcc@8.3.1+devtools+mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
-      "gcc@8.1.0~fortran+devtools~mfem+c2c+scr ^scr@3.0rc2~shared~tests~examples",
+      "clang@10.0.0+devtools+mfem+c2c+scr ^scr@3.0.1~shared~tests~examples",
+      "gcc@8.3.1+devtools+mfem+c2c+scr ^scr@3.0.1~shared~tests~examples",
+      "gcc@8.1.0~fortran+devtools~mfem+c2c+scr ^scr@3.0.1~shared~tests~examples",
       "intel@19.0.4~openmp+devtools+mfem+c2c" ],
 
     "toss_4_x86_64_ib":
