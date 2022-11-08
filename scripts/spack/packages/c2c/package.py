@@ -1,5 +1,4 @@
 from spack import *
-import spack.builder
 
 import os
 import socket
