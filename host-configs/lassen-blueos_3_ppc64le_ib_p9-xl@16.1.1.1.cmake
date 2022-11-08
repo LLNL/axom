@@ -7,23 +7,23 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: gcc@7.3.1
+# Compiler Spec: xl@16.1.1.1
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_11_08_10_10_40/spack/lib/spack/env/xl/xlc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_11_08_10_10_40/spack/lib/spack/env/xl/xlc++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_11_08_10_10_40/spack/lib/spack/env/xl/xlf90" CACHE PATH "")
 
 else()
 
-  set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2022.08.19/bin/xlc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2022.08.19/bin/xlC" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2022.08.19/bin/xlf2003" CACHE PATH "")
 
 endif()
 
@@ -33,13 +33,13 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 # MPI
 #------------------------------------------------------------------------------
 
-set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19/bin/mpixlc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19/bin/mpixlC" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19/bin/mpixlf" CACHE PATH "")
 
-set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19/bin/mpirun" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE STRING "")
 
@@ -55,9 +55,15 @@ set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE STRING "")
 # Hardware Specifics
 #------------------------------------------------
 
-set(ENABLE_OPENMP ON CACHE BOOL "")
+set(ENABLE_OPENMP OFF CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2022.08.19/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
+
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2022.08.19/lib" CACHE STRING "Adds a missing rpath for libraries associated with the fortran compiler")
+
+set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE STRING "Converts C-style comments to Fortran style in preprocessed files")
 
 set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64;/usr/tce/packages/gcc/gcc-4.9.3/gnu/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")
 
@@ -67,17 +73,17 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_10_05_16_51_00/gcc-7.3.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_11_08_10_10_40/xl-16.1.1.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0" CACHE PATH "")
 
-# MFEM not built
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.4.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
+set(LUA_DIR "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2022_11_08_10_10_40/clang-10.0.1.1/lua-5.3.5" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 
