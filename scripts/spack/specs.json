@@ -28,12 +28,12 @@
     [ "clang@14.0.0~openmp+rocm+mfem+c2c amdgpu_target=gfx90a ^raja~openmp+rocm ^umpire~openmp+rocm" ],
 
     "blueos_3_ppc64le_ib_p9":
-    [ "clang@10.0.1+devtools+mfem+c2c",
-      "clang@10.0.1+devtools+mfem+c2c+cuda cuda_arch=70",
-      "gcc@8.3.1+devtools~mfem+c2c",
-      "gcc@8.3.1+devtools~mfem+c2c+cuda cuda_arch=70",
-      "xl@16.1.1.11~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
-      "xl@16.1.1.12~openmp+devtools+mfem+c2c" ],
+    [ "clang@10.0.1.1+devtools+mfem+c2c",
+      "clang@10.0.1.2~openmp+devtools+mfem+c2c+cuda cuda_arch=70",
+      "gcc@8.3.1.1+devtools~mfem+c2c",
+      "gcc@8.3.1.2+devtools~mfem+c2c+cuda cuda_arch=70",
+      "xl@16.1.1.1~openmp+devtools+mfem+c2c",
+      "xl@16.1.1.2~openmp+devtools+mfem+c2c+cuda cuda_arch=70" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0+devtools+mfem" ]
