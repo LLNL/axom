@@ -331,7 +331,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 )
             )
 
-        if "clang" in self.compiler.cxx and "+openmp" in spec and "+fortran" in spec:
+        if "clang" in self.compiler.cxx and "+openmp" in spec and "+fortran" in spec and
+           ("xlf" in self.compiler.fc or "xlf" in self.compiler.f77):
             openmp_gen_exp = ( "$<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:"
                                "-fopenmp=libomp>;$<$<COMPILE_LANGUAGE:"
                                "Fortran>:-qsmp=omp>")
