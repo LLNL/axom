@@ -439,7 +439,8 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
         else
         {
           BoxType empty_box;
-          empty_box.addPoint(PointType(0.));
+          // Make the box invalid.
+          empty_box.clear();
           boxesptr[i] = empty_box;
         }
       });

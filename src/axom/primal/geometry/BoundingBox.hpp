@@ -529,14 +529,16 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansio
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::scale(double scaleFactor)
 {
-  const PointType midpoint = getCentroid();
-  const VectorType r = static_cast<T>(scaleFactor * 0.5) * range();
+  if(this->isValid())
+  {
+    const PointType midpoint = getCentroid();
+    const VectorType r = static_cast<T>(scaleFactor * 0.5) * range();
 
-  m_min = PointType(midpoint.array() - r.array());
-  m_max = PointType(midpoint.array() + r.array());
+    m_min = PointType(midpoint.array() - r.array());
+    m_max = PointType(midpoint.array() + r.array());
 
-  this->checkAndFixBounds();
-
+    this->checkAndFixBounds();
+  }
   return *this;
 }
 
