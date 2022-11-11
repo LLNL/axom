@@ -1349,7 +1349,8 @@ make_query_points_2d()
  */
 template <typename BVHType, typename PointType>
 void
-bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &query_pts)
+bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &points,
+  axom::Array<PointType> &query_pts, bool none)
 {
   EXPECT_TRUE(!query_pts.empty());
 
@@ -1367,28 +1368,23 @@ bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &query_pts)
     int minRank {-1};
   };
 
-  // Make a 1 element array that we'll access from a BVH callback lambda.
-  axom::Array<PointType> points;
-  PointType a({0.45, 0.8});
-  points.push_back(a);
-  axom::ArrayView<PointType> pointsView(points.data(), points.size());
-
-  // Initialize the BVH with 1 bbox.
-  axom::IndexType npts = points.size();
+  // Initialize the BVH with the points.
+  axom::IndexType npts = none ? 0 : points.size();
   //axom::Array<BoxType> bboxes;
   axom::Array<BoxType> bboxes;
   for(axom::IndexType i = 0; i < npts; i++)
     bboxes.push_back(BoxType(points[i]));
-  bvh.initialize(bboxes, 1);
+  bvh.initialize(bboxes, bboxes.size());
 
   // Call the BVH like the DistributedClosestPoint does.
   auto it = bvh.getTraverser();
 
   // Make a results array to contain the data values we read.
-  axom::Array<PointType> results(query_pts.size());
-  axom::ArrayView<PointType> results_view(results.data(), results.size());
+  axom::Array<int> results(query_pts.size());
+  axom::ArrayView<int> results_view(results.data(), results.size());
 
   // Loop over the query points.
+  axom::ArrayView<PointType> pointsView(points.data(), points.size());
   axom::ArrayView<PointType> query_pts_view(query_pts.data(), query_pts.size());
   npts = query_pts.size();
   axom::for_all<typename BVHType::ExecSpaceType>(
@@ -1424,26 +1420,37 @@ bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &query_pts)
     // Traverse the tree, searching for the point with minimum distance.
     it.traverse_tree(qpt, checkMinDist, traversePredicate);
 
-    // Save this point.
-    results_view[idx] = pointsView[curr_min.minElem];
+    // Save the index of the minElem.
+    results_view[idx] = curr_min.minElem;
   });
 
-  // Make sure all of the data values are good. If we ran off the end of
-  // the array in checkMinDist then
+  // Make sure all of the indices we found are the expected value.
+  int expected_idx = none ? -1 : 0;
   for(axom::IndexType i = 0; i < results.size(); i++)
   {
-    EXPECT_TRUE(points[0] == results[i]);
+    EXPECT_TRUE(results[i] == expected_idx);
   }
 }
 
 //------------------------------------------------------------------------------
 template <typename ExecType, typename FloatType>
 void
-check_single_bbox_2d()
+check_0_or_1_bbox_2d()
 {
-  auto points = make_query_points_2d<FloatType>();
+  // Make a 1 element array that we'll access from a BVH callback lambda.
+  using PointType = axom::primal::Point<FloatType, 2>;
+  axom::Array<PointType> src_pts;
+  PointType a({0.45, 0.8});
+  src_pts.push_back(a);
+
+  // 1 src point
+  auto query_pts = make_query_points_2d<FloatType>();
   spin::BVH<2, ExecType, FloatType> bvh;
-  bvh_one_bbox_2d(bvh, points);
+  bvh_one_bbox_2d(bvh, src_pts, query_pts, false);
+
+  // 0 src points
+  spin::BVH<2, ExecType, FloatType> bvh2;
+  bvh_one_bbox_2d(bvh2, src_pts, query_pts, true);
 }
 
 } /* end unnamed namespace */
@@ -1544,8 +1551,8 @@ TEST(spin_bvh, find_points_3d_sequential_zip)
 //------------------------------------------------------------------------------
 TEST(spin_bvh, single_bbox_sequential)
 {
-  check_single_bbox_2d<axom::SEQ_EXEC, double>();
-  check_single_bbox_2d<axom::SEQ_EXEC, float>();
+  check_0_or_1_bbox_2d<axom::SEQ_EXEC, double>();
+  check_0_or_1_bbox_2d<axom::SEQ_EXEC, float>();
 }
 
 //------------------------------------------------------------------------------
@@ -1618,14 +1625,14 @@ TEST(spin_bvh, single_box3d_omp)
 {
   check_single_box3d<axom::OMP_EXEC, double>();
 }
-/**
+
 //------------------------------------------------------------------------------
 TEST(spin_bvh, single_bbox_omp)
 {
-  check_single_bbox_2d<axom::OMP_EXEC, double>();
-  check_single_bbox_2d<axom::OMP_EXEC, float>();
+  check_0_or_1_bbox_2d<axom::OMP_EXEC, double>();
+  check_0_or_1_bbox_2d<axom::OMP_EXEC, float>();
 }
-*/
+
 #endif
 
 //------------------------------------------------------------------------------
@@ -1888,8 +1895,8 @@ TEST(spin_bvh, single_bbox_device)
   using exec = axom::SEQ_EXEC;
   #endif
 
-  check_single_bbox_2d<exec, double>();
-  check_single_bbox_2d<exec, float>();
+  check_0_or_1_bbox_2d<exec, double>();
+  check_0_or_1_bbox_2d<exec, float>();
 }
 
 #endif /* AXOM_USE_GPU && AXOM_USE_RAJA && AXOM_USE_UMPIRE */
