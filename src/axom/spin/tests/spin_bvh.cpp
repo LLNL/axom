@@ -1306,6 +1306,146 @@ void check_find_points_zip2d()
   axom::setDefaultAllocator(current_allocator);
 }
 
+//---------------------------------------------------------------------------
+
+/*!
+ * \brief Makes an array of 2D points for testing the BVH.
+ *
+ * \return points The array of points to use for testing.
+ */
+template <typename FloatType>
+axom::Array<axom::primal::Point<FloatType, 2>>
+make_query_points_2d()
+{
+  int dims[] = {101,101};
+  const FloatType x0 = -1.5, x1 = 1.5;
+  const FloatType y0 = -1.5, y1 = 1.5;
+  axom::Array<axom::primal::Point<FloatType, 2>> points;
+  points.reserve(dims[0] * dims[1]);
+  for(int j = 0; j < dims[1]; j++)
+  {
+    FloatType tj = static_cast<FloatType>(j)/static_cast<FloatType>(dims[1]-1);
+    FloatType y = (1. - tj) * y0 + tj * y1;
+    for(int i = 0; i <= dims[0]; i++)
+    {
+      FloatType ti = static_cast<FloatType>(i)/static_cast<FloatType>(dims[0]-1);
+      FloatType x = (1. - ti) * x0 + ti * x1;
+      points.push_back(axom::primal::Point<FloatType,2>({x, y}));
+    }
+  }
+  return points;
+}
+
+//---------------------------------------------------------------------------
+
+/*!
+ * \brief Tests inserting a single point into the BVH and querying a set of
+ *        points against it, using a pattern seen in DistributedClosestPoint.
+ *        The test demonstrates current_node that the BVH returns an in range
+ *        value to the checkMinDist lambda.
+ *
+ * \param [in] bvh The BVH object to use.
+ * \param [in] query_pts The array of query points to use against the BVH. 
+ */
+template <typename BVHType, typename PointType>
+void
+bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &query_pts)
+{
+  EXPECT_TRUE(!query_pts.empty());
+
+  using FloatType = typename PointType::CoordType;
+  using BoxType = axom::primal::BoundingBox<FloatType,2>;
+
+  // Borrowed from DistibutedClosestPoint.
+  struct MinCandidate
+  {
+    /// Squared distance to query point
+    double minSqDist {numerics::floating_point_limits<double>::max()};
+    /// Index within mesh of closest element
+    int minElem {-1};
+    /// MPI rank of closest element
+    int minRank {-1};
+  };
+
+  // Make a 1 element array that we'll access from a BVH callback lambda.
+  axom::Array<PointType> points;
+  PointType a({0.45, 0.8});
+  points.push_back(a);
+  axom::ArrayView<PointType> pointsView(points.data(), points.size());
+
+  // Initialize the BVH with 1 bbox.
+  axom::IndexType npts = points.size();
+  //axom::Array<BoxType> bboxes;
+  axom::Array<BoxType> bboxes;
+  for(axom::IndexType i = 0; i < npts; i++)
+    bboxes.push_back(BoxType(points[i]));
+  bvh.initialize(bboxes, 1);
+
+  // Call the BVH like the DistributedClosestPoint does.
+  auto it = bvh.getTraverser();
+
+  // Make a results array to contain the data values we read.
+  axom::Array<PointType> results(query_pts.size());
+  axom::ArrayView<PointType> results_view(results.data(), results.size());
+
+  // Loop over the query points.
+  axom::ArrayView<PointType> query_pts_view(query_pts.data(), query_pts.size());
+  npts = query_pts.size();
+  axom::for_all<typename BVHType::ExecSpaceType>(
+          npts,
+          AXOM_LAMBDA(int32 idx) mutable
+  {
+    // Get the current query point.
+    auto qpt = query_pts_view[idx];
+    MinCandidate curr_min;
+
+    auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes)
+    {
+      int candidate_idx = leaf_nodes[current_node];
+      const PointType candidate_pt = pointsView[candidate_idx];
+      const double sq_dist = squared_distance(qpt, candidate_pt);
+
+      if(sq_dist < curr_min.minSqDist)
+      {
+        curr_min.minSqDist = sq_dist;
+        curr_min.minElem = candidate_idx;
+        curr_min.minRank = 0; // rank
+      }
+    };
+
+    // Borrowed from DistributedClosestPoint.
+    auto traversePredicate = [&](const PointType& p,
+                                 const BoxType& bb) -> bool
+    {
+      auto sqDist = squared_distance(p, bb);
+      return sqDist <= curr_min.minSqDist;
+    };
+
+    // Traverse the tree, searching for the point with minimum distance.
+    it.traverse_tree(qpt, checkMinDist, traversePredicate);
+
+    // Save this point.
+    results_view[idx] = pointsView[curr_min.minElem];
+  });
+
+  // Make sure all of the data values are good. If we ran off the end of
+  // the array in checkMinDist then
+  for(axom::IndexType i = 0; i < results.size(); i++)
+  {
+    EXPECT_TRUE(points[0] == results[i]);
+  }
+}
+
+//------------------------------------------------------------------------------
+template <typename ExecType, typename FloatType>
+void
+check_single_bbox_2d()
+{
+  auto points = make_query_points_2d<FloatType>();
+  spin::BVH<2, ExecType, FloatType> bvh;
+  bvh_one_bbox_2d(bvh, points);
+}
+
 } /* end unnamed namespace */
 
 //------------------------------------------------------------------------------
@@ -1402,6 +1542,13 @@ TEST(spin_bvh, find_points_3d_sequential_zip)
 }
 
 //------------------------------------------------------------------------------
+TEST(spin_bvh, single_bbox_sequential)
+{
+  check_single_bbox_2d<axom::SEQ_EXEC, double>();
+  check_single_bbox_2d<axom::SEQ_EXEC, float>();
+}
+
+//------------------------------------------------------------------------------
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 
 TEST(spin_bvh, construct2D_omp)
@@ -1471,7 +1618,14 @@ TEST(spin_bvh, single_box3d_omp)
 {
   check_single_box3d<axom::OMP_EXEC, double>();
 }
-
+/**
+//------------------------------------------------------------------------------
+TEST(spin_bvh, single_bbox_omp)
+{
+  check_single_bbox_2d<axom::OMP_EXEC, double>();
+  check_single_bbox_2d<axom::OMP_EXEC, float>();
+}
+*/
 #endif
 
 //------------------------------------------------------------------------------
@@ -1719,6 +1873,23 @@ AXOM_CUDA_TEST(spin_bvh, use_pool_allocator)
 
   axom::deallocate(centroid);
   axom::deallocate(boxes);
+}
+
+//---------------------------------------------------------------------------
+TEST(spin_bvh, single_bbox_device)
+{
+  constexpr int BLOCK_SIZE = 256;
+
+  #if defined(__CUDACC__)
+  using exec = axom::CUDA_EXEC<BLOCK_SIZE>;
+  #elif defined(__HIPCC__)
+  using exec = axom::HIP_EXEC<BLOCK_SIZE>;
+  #else
+  using exec = axom::SEQ_EXEC;
+  #endif
+
+  check_single_bbox_2d<exec, double>();
+  check_single_bbox_2d<exec, float>();
 }
 
 #endif /* AXOM_USE_GPU && AXOM_USE_RAJA && AXOM_USE_UMPIRE */
