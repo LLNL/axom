@@ -17,7 +17,7 @@
 # Load required CUDA module
 .with_cuda:
   before_script:
-    - module load cuda/10.1.243
+    - module load cuda/11.2.0
 
 ####
 # Template
@@ -37,67 +37,79 @@
 
 ####
 # PR Build jobs
-rzansel-clang_8_0_1_nvcc_xlf-src:
+rzansel-clang_10_0_1-src:
   variables:
-    COMPILER: "clang@8.0.1_nvcc_xlf"
-    HOST_CONFIG: "rzansel-klee-${COMPILER}.cmake"
+    COMPILER: "clang@10.0.1.1"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
+  extends: [.src_build_on_rzansel]
+
+rzansel-clang_10_0_1_cuda-src:
+  variables:
+    COMPILER: "clang@10.0.1.2_cuda"
+    HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_rzansel, .with_cuda]
 
-rzansel-clang_9_0_0_upstream_xlf-src:
+rzansel-gcc_8_3_1-src:
   variables:
-    COMPILER: "clang@9.0.0_upstream_xlf"
+    COMPILER: "gcc@8.3.1.1"
     HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_rzansel]
 
-rzansel-gcc_7_3_1-src:
+rzansel-gcc_8_3_1_cuda-src:
   variables:
-    COMPILER: "gcc@7.3.1"
+    COMPILER: "gcc@8.3.1.2_cuda"
     HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.src_build_on_rzansel]
+  extends: [.src_build_on_rzansel, .with_cuda]
 
 rzansel-xl_16_1_1-src:
   variables:
-    COMPILER: "xl@16.1.1_coral"
+    COMPILER: "xl@16.1.1.1"
     HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_rzansel]
 
-rzansel-xl_16_1_1_nvcc-src:
+rzansel-xl_16_1_1_cuda-src:
   variables:
-    COMPILER: "xl@16.1.1_nvcc"
+    COMPILER: "xl@16.1.1.2_cuda"
     HOST_CONFIG: "rzansel-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
   extends: [.src_build_on_rzansel, .with_cuda]
 
-
 ####
 # Full Build jobs
-rzansel-clang_8_0_1_nvcc_xlf-full:
+rzansel-clang_10_0_1-full:
   variables:
-    COMPILER: "clang@8.0.1_nvcc_xlf"
+    COMPILER: "clang@10.0.1.1"
+    SPEC: "%${COMPILER}+mfem~openmp"
+  extends: [.full_build_on_rzansel]
+
+rzansel-clang_10_0_1_cuda-full:
+  variables:
+    COMPILER: "clang@10.0.1.2"
     SPEC: "%${COMPILER}+mfem+cuda~openmp"
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_rzansel, .with_cuda]
 
-rzansel-clang_9_0_0_upstream_xlf-full:
+rzansel-gcc_8_3_1-full:
   variables:
-    COMPILER: "clang@9.0.0_upstream_xlf"
-    SPEC: "%${COMPILER}+mfem~openmp"
-  extends: [.full_build_on_rzansel]
-
-rzansel-gcc_7_3_1-full:
-  variables:
-    COMPILER: "gcc@7.3.1"
+    COMPILER: "gcc@8.3.1.1"
     SPEC: "%${COMPILER}+mfem"
   extends: [.full_build_on_rzansel]
 
-rzansel-xl_16_1_1_coral-full:
+rzansel-gcc_8_3_1_cuda-full:
   variables:
-    COMPILER: "xl@16.1.1_coral"
+    COMPILER: "gcc@8.3.1.2"
+    SPEC: "%${COMPILER}~mfem+cuda"
+    EXTRA_SPEC: "cuda_arch=70"
+  extends: [.full_build_on_rzansel, .with_cuda]
+
+rzansel-xl_16_1_1-full:
+  variables:
+    COMPILER: "xl@16.1.1.1"
     SPEC: "%${COMPILER}+mfem~openmp~cpp14"
   extends: [.full_build_on_rzansel]
 
-rzansel-xl_16_1_1_nvcc-full:
+rzansel-xl_16_1_1_cuda-full:
   variables:
-    COMPILER: "xl@16.1.1_nvcc"
+    COMPILER: "xl@16.1.1.2"
     SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
     EXTRA_SPEC: "cuda_arch=70"
   extends: [.full_build_on_rzansel, .with_cuda]
