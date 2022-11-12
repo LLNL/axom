@@ -485,8 +485,25 @@ template <typename OtherT>
 AXOM_HOST_DEVICE void BoundingBox<T, NDIMS>::addBox(
   const BoundingBox<OtherT, NDIMS>& bbox)
 {
-  this->addPoint(bbox.getMin());
-  this->addPoint(bbox.getMax());
+  if(this->isValid())
+  {
+    if(bbox.isValid())
+    {
+      this->addPoint(bbox.getMin());
+      this->addPoint(bbox.getMax());
+    }
+  }
+  else
+  {
+    PointType m0, m1;
+    for(int i = 0; i < NDIMS; i++)
+    {
+      m0[i] = static_cast<T>(bbox.getMin()[i]);
+      m1[i] = static_cast<T>(bbox.getMax()[i]);
+    }
+    this->setMin(m0);
+    this->setMax(m1);
+  }
 }
 
 //------------------------------------------------------------------------------
