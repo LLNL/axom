@@ -60,8 +60,8 @@ public:
       double sqDistL = primal::squared_distance(p, l.getCentroid());
       // If the right bbox is not valid, return max. Otherwise, the invalid right
       // bbox might actually win when we should ignore it.
-      double sqDistR = r.isValid() ? primal::squared_distance(p, r.getCentroid()) :
-                         std::numeric_limits<double>::max();
+      double sqDistR = r.isValid() ? primal::squared_distance(p, r.getCentroid())
+                                   : std::numeric_limits<double>::max();
       return sqDistL > sqDistR;
     };
 

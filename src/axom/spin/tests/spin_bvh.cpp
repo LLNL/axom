@@ -1314,23 +1314,24 @@ void check_find_points_zip2d()
  * \return points The array of points to use for testing.
  */
 template <typename FloatType>
-axom::Array<axom::primal::Point<FloatType, 2>>
-make_query_points_2d()
+axom::Array<axom::primal::Point<FloatType, 2>> make_query_points_2d()
 {
-  int dims[] = {101,101};
+  int dims[] = {101, 101};
   const FloatType x0 = -1.5, x1 = 1.5;
   const FloatType y0 = -1.5, y1 = 1.5;
   axom::Array<axom::primal::Point<FloatType, 2>> points;
   points.reserve(dims[0] * dims[1]);
   for(int j = 0; j < dims[1]; j++)
   {
-    FloatType tj = static_cast<FloatType>(j)/static_cast<FloatType>(dims[1]-1);
+    FloatType tj =
+      static_cast<FloatType>(j) / static_cast<FloatType>(dims[1] - 1);
     FloatType y = (1. - tj) * y0 + tj * y1;
     for(int i = 0; i <= dims[0]; i++)
     {
-      FloatType ti = static_cast<FloatType>(i)/static_cast<FloatType>(dims[0]-1);
+      FloatType ti =
+        static_cast<FloatType>(i) / static_cast<FloatType>(dims[0] - 1);
       FloatType x = (1. - ti) * x0 + ti * x1;
-      points.push_back(axom::primal::Point<FloatType,2>({x, y}));
+      points.push_back(axom::primal::Point<FloatType, 2>({x, y}));
     }
   }
   return points;
@@ -1348,14 +1349,15 @@ make_query_points_2d()
  * \param [in] query_pts The array of query points to use against the BVH. 
  */
 template <typename BVHType, typename PointType>
-void
-bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &points,
-  axom::Array<PointType> &query_pts, bool none)
+void bvh_one_bbox_2d(BVHType& bvh,
+                     axom::Array<PointType>& points,
+                     axom::Array<PointType>& query_pts,
+                     bool none)
 {
   EXPECT_TRUE(!query_pts.empty());
 
   using FloatType = typename PointType::CoordType;
-  using BoxType = axom::primal::BoundingBox<FloatType,2>;
+  using BoxType = axom::primal::BoundingBox<FloatType, 2>;
 
   // Borrowed from DistibutedClosestPoint.
   struct MinCandidate
@@ -1388,41 +1390,37 @@ bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &points,
   axom::ArrayView<PointType> query_pts_view(query_pts.data(), query_pts.size());
   npts = query_pts.size();
   axom::for_all<typename BVHType::ExecSpaceType>(
-          npts,
-          AXOM_LAMBDA(int32 idx) mutable
-  {
-    // Get the current query point.
-    auto qpt = query_pts_view[idx];
-    MinCandidate curr_min;
+    npts,
+    AXOM_LAMBDA(int32 idx) mutable {
+      // Get the current query point.
+      auto qpt = query_pts_view[idx];
+      MinCandidate curr_min;
 
-    auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes)
-    {
-      int candidate_idx = leaf_nodes[current_node];
-      const PointType candidate_pt = pointsView[candidate_idx];
-      const double sq_dist = squared_distance(qpt, candidate_pt);
+      auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
+        int candidate_idx = leaf_nodes[current_node];
+        const PointType candidate_pt = pointsView[candidate_idx];
+        const double sq_dist = squared_distance(qpt, candidate_pt);
 
-      if(sq_dist < curr_min.minSqDist)
-      {
-        curr_min.minSqDist = sq_dist;
-        curr_min.minElem = candidate_idx;
-        curr_min.minRank = 0; // rank
-      }
-    };
+        if(sq_dist < curr_min.minSqDist)
+        {
+          curr_min.minSqDist = sq_dist;
+          curr_min.minElem = candidate_idx;
+          curr_min.minRank = 0;  // rank
+        }
+      };
 
-    // Borrowed from DistributedClosestPoint.
-    auto traversePredicate = [&](const PointType& p,
-                                 const BoxType& bb) -> bool
-    {
-      auto sqDist = squared_distance(p, bb);
-      return sqDist <= curr_min.minSqDist;
-    };
+      // Borrowed from DistributedClosestPoint.
+      auto traversePredicate = [&](const PointType& p, const BoxType& bb) -> bool {
+        auto sqDist = squared_distance(p, bb);
+        return sqDist <= curr_min.minSqDist;
+      };
 
-    // Traverse the tree, searching for the point with minimum distance.
-    it.traverse_tree(qpt, checkMinDist, traversePredicate);
+      // Traverse the tree, searching for the point with minimum distance.
+      it.traverse_tree(qpt, checkMinDist, traversePredicate);
 
-    // Save the index of the minElem.
-    results_view[idx] = curr_min.minElem;
-  });
+      // Save the index of the minElem.
+      results_view[idx] = curr_min.minElem;
+    });
 
   // Make sure all of the indices we found are the expected value.
   int expected_idx = none ? -1 : 0;
@@ -1434,8 +1432,7 @@ bvh_one_bbox_2d(BVHType &bvh, axom::Array<PointType> &points,
 
 //------------------------------------------------------------------------------
 template <typename ExecType, typename FloatType>
-void
-check_0_or_1_bbox_2d()
+void check_0_or_1_bbox_2d()
 {
   // Make a 1 element array that we'll access from a BVH callback lambda.
   using PointType = axom::primal::Point<FloatType, 2>;
