@@ -1205,8 +1205,6 @@ public:
         ? (is_first ? axom::Array<double>(qPtCount, qPtCount, m_allocatorID)
                     : axom::Array<double>(minDist, m_allocatorID))
         : axom::Array<double>(0, 0, m_allocatorID);
-      auto query_min_dist = cp_dist.view();
-      // BTNG Q: Why do we need query_min_dist?  Why not use cp_dist?
       // END DEBUG
 
       if(is_first)
@@ -1216,15 +1214,13 @@ public:
         cp_domidx.fill(-1);
         const PointType nowhere(std::numeric_limits<double>::signaling_NaN());
         cp_pos.fill(nowhere);
-        if(has_cp_distance)
-        {
-          cp_dist.fill(std::numeric_limits<double>::signaling_NaN());
-        }
+        cp_dist.fill(std::numeric_limits<double>::signaling_NaN());
       }
       auto query_inds = cp_idx.view();
       auto query_doms = cp_domidx.view();
       auto query_ranks = cp_rank.view();
       auto query_pos = cp_pos.view();
+      auto query_min_dist = cp_dist.view();
 
       /// Create an ArrayView in ExecSpace that is compatible with queryPts
       PointArray execPoints(queryPts, m_allocatorID);
@@ -1241,7 +1237,8 @@ public:
           axom::execution_space<ExecSpace>::allocatorID());
         *sqDistThresh = m_sqDistanceThreshold;
 
-        auto pointsView = m_objectPtCoords.view();
+        auto ptCoordsView = m_objectPtCoords.view();
+        auto ptDomainIdsView = m_objectPtDomainIds.view();
 
         AXOM_PERF_MARK_SECTION(
           "ComputeClosestPoints",
@@ -1264,8 +1261,8 @@ public:
                                       const int32* leaf_nodes) {
                 const int candidate_point_idx = leaf_nodes[current_node];
                 const int candidate_domain_idx =
-                  m_objectPtDomainIds[candidate_point_idx];
-                const PointType candidate_pt = pointsView[candidate_point_idx];
+                  ptDomainIdsView[candidate_point_idx];
+                const PointType candidate_pt = ptCoordsView[candidate_point_idx];
                 const double sq_dist = squared_distance(qpt, candidate_pt);
 
                 if(sq_dist < curr_min.sqDist)
@@ -1292,7 +1289,7 @@ public:
                 query_inds[idx] = curr_min.pointIdx;
                 query_doms[idx] = curr_min.domainIdx;
                 query_ranks[idx] = curr_min.rank;
-                query_pos[idx] = pointsView[curr_min.pointIdx];
+                query_pos[idx] = ptCoordsView[curr_min.pointIdx];
 
                 //DEBUG
                 if(has_cp_distance)
