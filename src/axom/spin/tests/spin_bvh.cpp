@@ -1373,10 +1373,10 @@ void bvh_one_bbox_2d(BVHType& bvh,
 
   // Initialize the BVH with the points.
   axom::IndexType npts = none ? 0 : points.size();
-  BoxType* bboxes = axom::allocate<BoxType>(npts + 1,
-                                            axom::execution_space<ExecSpace>::allocatorID());
-  for(axom::IndexType i = 0; i < npts; i++)
-    bboxes[i] = BoxType(points[i]);
+  BoxType* bboxes =
+    axom::allocate<BoxType>(npts + 1,
+                            axom::execution_space<ExecSpace>::allocatorID());
+  for(axom::IndexType i = 0; i < npts; i++) bboxes[i] = BoxType(points[i]);
   bvh.initialize(bboxes, npts);
 
   // Call the BVH like the DistributedClosestPoint does.
