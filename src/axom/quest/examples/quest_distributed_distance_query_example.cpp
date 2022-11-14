@@ -1287,8 +1287,9 @@ int main(int argc, char** argv)
 
   SLIC_INFO_IF(
     params.isVerbose(),
-    axom::fmt::format("Object mesh has {} points",
-                      objectMeshWrapper.getParticleMesh().numPoints()));
+    axom::fmt::format("Object mesh has {} points in {} domains locally",
+                      objectMeshWrapper.getParticleMesh().numPoints(),
+                      objectMeshWrapper.getParticleMesh().domain_count()));
 
   objectMeshWrapper.saveMesh(params.objectFile);
   slic::flushStreams();
@@ -1302,12 +1303,12 @@ int main(int argc, char** argv)
     queryDS.getRoot()->createGroup("queryMesh", true),
     params.meshFile);
   // queryMeshWrapper.print_mesh_info();
-  const int nMeshPoints = queryMeshWrapper.getParticleMesh().numPoints();
 
-  SLIC_INFO_IF(params.isVerbose(),
-               axom::fmt::format("Query mesh has {} points on rank {}",
-                                 nMeshPoints,
-                                 my_rank));
+  SLIC_INFO_IF(
+    params.isVerbose(),
+    axom::fmt::format("Query mesh has {} points in {} domains locally",
+                      queryMeshWrapper.getParticleMesh().numPoints(),
+                      queryMeshWrapper.getParticleMesh().domain_count()));
   slic::flushStreams();
 
   auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
@@ -1316,31 +1317,48 @@ int main(int argc, char** argv)
     MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
   };
 
-  // Output some mesh size stats
+  // Output some global mesh size stats
   {
-    int minObject, maxObject, sumObject;
-    getIntMinMax(objectMeshWrapper.getParticleMesh().numPoints(),
-                 minObject,
-                 maxObject,
-                 sumObject);
-
-    int minQuery, maxQuery, sumQuery;
-    getIntMinMax(queryMeshWrapper.getParticleMesh().numPoints(),
-                 minQuery,
-                 maxQuery,
-                 sumQuery);
-
-    SLIC_INFO(
-      axom::fmt::format("Object mesh has {{avg:{}, min:{}, max:{}}} points",
-                        (double)sumObject / num_ranks,
-                        minObject,
-                        maxObject));
-    SLIC_INFO(
-      axom::fmt::format("Query mesh has {{avg:{}, min:{}, max:{}}} points",
-                        (double)sumQuery / num_ranks,
-                        minQuery,
-                        maxQuery));
+    int mn, mx, sum;
+    getIntMinMax(objectMeshWrapper.getParticleMesh().numPoints(), mn, mx, sum);
+    SLIC_INFO(axom::fmt::format(
+      "Object mesh has {{min:{}, max:{}, sum:{}, avg:{}}} points",
+      mn,
+      mx,
+      sum,
+      (double)sum / num_ranks));
   }
+  {
+    int mn, mx, sum;
+    getIntMinMax(objectMeshWrapper.getParticleMesh().domain_count(), mn, mx, sum);
+    SLIC_INFO(axom::fmt::format(
+      "Object mesh has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
+      mn,
+      mx,
+      sum,
+      (double)sum / num_ranks));
+  }
+  {
+    int mn, mx, sum;
+    getIntMinMax(queryMeshWrapper.getParticleMesh().numPoints(), mn, mx, sum);
+    SLIC_INFO(axom::fmt::format(
+      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} points",
+      mn,
+      mx,
+      sum,
+      (double)sum / num_ranks));
+  }
+  {
+    int mn, mx, sum;
+    getIntMinMax(queryMeshWrapper.getParticleMesh().domain_count(), mn, mx, sum);
+    SLIC_INFO(axom::fmt::format(
+      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
+      mn,
+      mx,
+      sum,
+      (double)sum / num_ranks));
+  }
+
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
