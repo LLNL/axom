@@ -93,8 +93,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     # Dependencies
     # -----------------------------------------------------------------------
     # Basics
-    depends_on("cmake@3.8.2:", type="build")
-    depends_on("cmake@3.16.8:", type="build", when="+rocm")
+    depends_on("cmake@3.14:", type="build")
+    depends_on("cmake@3.21:", type="build", when="+rocm")
 
     depends_on("blt", type="build")
     depends_on("blt@0.5.1:", type="build", when="@0.6.2:")
@@ -331,7 +331,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 )
             )
 
-        if "clang" in self.compiler.cxx and "+openmp" in spec and "+fortran" in spec:
+        if "+openmp" in spec and \
+           "clang" in self.compiler.cxx and \
+           "+fortran" in spec and self.is_fortran_compiler("xlf"):
             openmp_gen_exp = ( "$<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:"
                                "-fopenmp=libomp>;$<$<COMPILE_LANGUAGE:"
                                "Fortran>:-qsmp=omp>")
@@ -464,7 +466,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append("# ClangFormat disabled due to disabled devtools\n")
             entries.append(cmake_cache_option("ENABLE_CLANGFORMAT", False))
 
-        if spec.satisfies("^python") or "+devtools" in spec:
+        if "+python" in spec or "+devtools" in spec:
             python_path = os.path.realpath(spec["python"].command.path)
             for key in path_replacements:
                 python_path = python_path.replace(key, path_replacements[key])

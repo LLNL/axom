@@ -35,7 +35,7 @@ class C2c(CMakePackage):
     depends_on('flex@2.6.0:', type='build', when='+dev')
     depends_on('nlohmann-json', when='+tools')
 
-    phases = ['hostconfig'] + CMakePackage.phases
+    phases = ('hostconfig',) + spack.build_systems.cmake.CMakeBuilder.phases
 
     def configure_args(self):
         spec = self.spec if self.spec is not None else ""

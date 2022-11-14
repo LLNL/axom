@@ -25,8 +25,8 @@ packages:
   cuda:
     buildable: false
     externals:
-    - spec: cuda@11.0.2
-      prefix: /usr/tce/packages/cuda/cuda-11.0.2
+    - spec: cuda@11.2.0
+      prefix: /usr/tce/packages/cuda/cuda-11.2.0
 
 # LLNL blueos mpi
   mpi:
@@ -34,32 +34,38 @@ packages:
   spectrum-mpi:
     buildable: false
     externals:
-    - spec: spectrum-mpi@release%gcc@7.3.1
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
-    - spec: spectrum-mpi@release%gcc@8.3.1
+    - spec: spectrum-mpi@release%gcc@8.3.1.1
       prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/
-    - spec: spectrum-mpi@release%clang@9.0.0
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
-    - spec: spectrum-mpi@release%clang@8.0.1
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/
-    - spec: spectrum-mpi@release%xl@16.1.1.11
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2020.08.24-cuda-11.0.2/
-    - spec: spectrum-mpi@release%xl@16.1.1.12
-      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.03.10/
+    - spec: spectrum-mpi@release%gcc@8.3.1.2
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/
+    - spec: spectrum-mpi@release%clang@10.0.1.1
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-10.0.1-gcc-8.3.1/
+    - spec: spectrum-mpi@release%clang@10.0.1.2
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-10.0.1-gcc-8.3.1/
+    - spec: spectrum-mpi@release%xl@16.1.1.1
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19/
+    - spec: spectrum-mpi@release%xl@16.1.1.2
+      prefix: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2022.08.19-cuda-11.2.0/
 
   # blas is a bit more complicated because its a virtual package so fake it with
   # the following per spack docs
   netlib-lapack:
     buildable: false
     externals:
-    - spec: netlib-lapack@3.8.0 %clang@8.0.1
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %clang@9.0.0
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %xl@16.1.1.11
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
-    - spec: netlib-lapack@3.8.0 %xl@16.1.1.12
-      prefix: /usr/tcetmp/packages/lapack/lapack-3.8.0-xl-2019.08.20/
+    # These have trailing underscores in their symbols
+    - spec: netlib-lapack@3.9.0%gcc@8.3.1.1
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-gcc-7.3.1/
+    - spec: netlib-lapack@3.9.0%gcc@8.3.1.2
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-gcc-7.3.1/
+    - spec: netlib-lapack@3.9.0%clang@10.0.1.1
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-gcc-7.3.1/
+    - spec: netlib-lapack@3.9.0%clang@10.0.1.2
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-gcc-7.3.1/
+    # These do not have trailing underscores in their symbols
+    - spec: netlib-lapack@3.9.0%xl@16.1.1.1
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-xl-2020.11.12/
+    - spec: netlib-lapack@3.9.0%xl@16.1.1.2
+      prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-xl-2020.11.12/
 
 # System level packages to not build
   autoconf:
@@ -132,10 +138,11 @@ packages:
     externals:
     - spec: libunwind@8.0.1
       prefix: /usr
-  # ncurses has a bug in their 6.2 that says that getopt is not present
-  # see: https://github.com/spack/spack/issues/16269
   ncurses:
-    version: [6.1]
+    buildable: false
+    externals:
+    - spec: ncurses@5.9
+      prefix: /usr
   m4:
     buildable: false
     externals:
