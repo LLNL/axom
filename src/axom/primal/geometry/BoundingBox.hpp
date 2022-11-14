@@ -341,13 +341,13 @@ private:
    * \brief Sets the min point for this bounding box instance.
    * \param [in] newMin the new min point.
    */
-  inline void setMin(const PointType& newMin) { m_min = newMin; };
+  AXOM_HOST_DEVICE inline void setMin(const PointType& newMin) { m_min = newMin; };
 
   /*!
    * \brief Sets the max point for this bounding box instance.
    * \param [in] newMax the new max point.
    */
-  inline void setMax(const PointType& newMax) { m_max = newMax; };
+  AXOM_HOST_DEVICE inline void setMax(const PointType& newMax) { m_max = newMax; };
 
   /*!
    * \brief Ensures that the bounds are valid.

@@ -1356,6 +1356,7 @@ void bvh_one_bbox_2d(BVHType& bvh,
 {
   EXPECT_TRUE(!query_pts.empty());
 
+  using ExecSpace = typename BVHType::ExecSpaceType;
   using FloatType = typename PointType::CoordType;
   using BoxType = axom::primal::BoundingBox<FloatType, 2>;
 
@@ -1372,11 +1373,11 @@ void bvh_one_bbox_2d(BVHType& bvh,
 
   // Initialize the BVH with the points.
   axom::IndexType npts = none ? 0 : points.size();
-  //axom::Array<BoxType> bboxes;
-  axom::Array<BoxType> bboxes;
+  BoxType* bboxes = axom::allocate<BoxType>(npts + 1,
+                                            axom::execution_space<ExecSpace>::allocatorID());
   for(axom::IndexType i = 0; i < npts; i++)
-    bboxes.push_back(BoxType(points[i]));
-  bvh.initialize(bboxes, bboxes.size());
+    bboxes[i] = BoxType(points[i]);
+  bvh.initialize(bboxes, npts);
 
   // Call the BVH like the DistributedClosestPoint does.
   auto it = bvh.getTraverser();
@@ -1389,7 +1390,7 @@ void bvh_one_bbox_2d(BVHType& bvh,
   axom::ArrayView<PointType> pointsView(points.data(), points.size());
   axom::ArrayView<PointType> query_pts_view(query_pts.data(), query_pts.size());
   npts = query_pts.size();
-  axom::for_all<typename BVHType::ExecSpaceType>(
+  axom::for_all<ExecSpace>(
     npts,
     AXOM_LAMBDA(int32 idx) mutable {
       // Get the current query point.
@@ -1428,26 +1429,37 @@ void bvh_one_bbox_2d(BVHType& bvh,
   {
     EXPECT_TRUE(results[i] == expected_idx);
   }
+
+  axom::deallocate(bboxes);
 }
 
 //------------------------------------------------------------------------------
 template <typename ExecType, typename FloatType>
 void check_0_or_1_bbox_2d()
 {
+  // Temporarily force the allocator for the ExecType so the query points as
+  // well as any other important allocations are available in that space.
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator(axom::execution_space<ExecType>::allocatorID());
+
   // Make a 1 element array that we'll access from a BVH callback lambda.
   using PointType = axom::primal::Point<FloatType, 2>;
   axom::Array<PointType> src_pts;
   PointType a({0.45, 0.8});
   src_pts.push_back(a);
 
-  // 1 src point
+  // Make query points.
   auto query_pts = make_query_points_2d<FloatType>();
+
+  // 1 src point
   spin::BVH<2, ExecType, FloatType> bvh;
   bvh_one_bbox_2d(bvh, src_pts, query_pts, false);
 
   // 0 src points
   spin::BVH<2, ExecType, FloatType> bvh2;
   bvh_one_bbox_2d(bvh2, src_pts, query_pts, true);
+
+  axom::setDefaultAllocator(current_allocator);
 }
 
 } /* end unnamed namespace */
