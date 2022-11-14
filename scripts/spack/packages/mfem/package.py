@@ -360,7 +360,7 @@ class Mfem(Package, CudaPackage, ROCmPackage):
     # https://github.com/mfem/mfem/pull/1043 for the bugfix contributed
     # upstream.
     patch('mfem-4.0.0-makefile-syntax-fix.patch', when='@4.0.0')
-    phases = ['configure', 'build', 'install']
+    phases = ('configure', 'build', 'install')
 
     def setup_build_environment(self, env):
         env.unset('MFEM_DIR')
