@@ -36,6 +36,24 @@ namespace policy
 {
 namespace lbvh = internal::linear_bvh;
 
+/*
+ * \brief Interface for traversing a BVH tree.
+ *
+ * \brief Traverse a tree to perform user-specified actions at the
+ * leaves, while limiting the search to branches satisfying a
+ * user-provided predicate.
+ *
+ * To a initiate traversals, use traverse_tree.  It requires
+ * -# an action functor to call at the leaves,
+ * -# a predicate functor to decide whether to descend a branch and
+ * -# some data to pass to the functors
+ *
+ * Both functors should only access memory that's available to the
+ * execution space.  For example, GPU execution should access only
+ * device and unified memory.
+ *
+ * \see internal::linear_bvh::bvh_traverse
+ */
 template <typename FloatType, int NDIMS>
 class LinearBVHTraverser
 {
@@ -71,6 +89,11 @@ public:
                        traversePref);
   }
 
+  /*
+   * Functors lf and predicate should access only memory compatible
+   * with the execution space.  For example, GPU execution should access
+   * only device and unified memory.
+   */
   template <typename Primitive, typename LeafAction, typename Predicate>
   AXOM_HOST_DEVICE void traverse_tree(const Primitive& p,
                                       LeafAction&& lf,
