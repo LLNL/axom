@@ -29,7 +29,9 @@ blt_list_append(
 
 
 set(inlet_device_example_depends)
-blt_list_append( TO inlet_device_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  blt_list_append( TO inlet_device_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+endif()
 
 #------------------------------------------------------------------------------
 # Build each executable example

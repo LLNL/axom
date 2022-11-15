@@ -22,7 +22,10 @@ set(gtest_inlet_tests
 blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
 
 set(inlet_device_test_depends)
-blt_list_append( TO inlet_device_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
+if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    blt_list_append( TO inlet_device_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+endif()
 
 blt_add_library(NAME        inlet_test_utils
                 SOURCES     inlet_test_utils.cpp
