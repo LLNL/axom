@@ -1317,21 +1317,18 @@ template <typename FloatType>
 axom::Array<axom::primal::Point<FloatType, 2>> make_query_points_2d()
 {
   int dims[] = {101, 101};
-  const FloatType x0 = -1.5, x1 = 1.5;
-  const FloatType y0 = -1.5, y1 = 1.5;
+  FloatType x0 = -1.5, x1 = 1.5;
+  FloatType y0 = -1.5, y1 = 1.5;
+  axom::Array<FloatType> x(dims[0]), y(dims[1]);
+  axom::numerics::linspace(x0, x1, x.data(), dims[0]);
+  axom::numerics::linspace(y0, y1, y.data(), dims[1]);
   axom::Array<axom::primal::Point<FloatType, 2>> points;
   points.reserve(dims[0] * dims[1]);
   for(int j = 0; j < dims[1]; j++)
   {
-    FloatType tj =
-      static_cast<FloatType>(j) / static_cast<FloatType>(dims[1] - 1);
-    FloatType y = (1. - tj) * y0 + tj * y1;
-    for(int i = 0; i <= dims[0]; i++)
+    for(int i = 0; i < dims[0]; i++)
     {
-      FloatType ti =
-        static_cast<FloatType>(i) / static_cast<FloatType>(dims[0] - 1);
-      FloatType x = (1. - ti) * x0 + ti * x1;
-      points.push_back(axom::primal::Point<FloatType, 2>({x, y}));
+      points.push_back(axom::primal::Point<FloatType, 2>({x[i], y[j]}));
     }
   }
   return points;
@@ -1346,19 +1343,25 @@ axom::Array<axom::primal::Point<FloatType, 2>> make_query_points_2d()
  *        value to the checkMinDist lambda.
  *
  * \param [in] bvh The BVH object to use.
- * \param [in] query_pts The array of query points to use against the BVH. 
+ * \param [in] points The points that will be inserted in the BVH as bboxes.
+ * \param [in] query_pts The array of query points to use against the BVH.
+ * \param [in] none Whether to add no points to the BVH. If this is the case,
+ *                  none of the queries against the BVH will set the minElem
+ *                  value and we use none so we know the expected result.
  */
 template <typename BVHType, typename PointType>
-void bvh_one_bbox_2d(BVHType& bvh,
-                     axom::Array<PointType>& points,
-                     axom::Array<PointType>& query_pts,
-                     bool none)
+void bvh_compute_point_distances_2d(BVHType& bvh,
+                                    axom::Array<PointType>& points,
+                                    axom::Array<PointType>& query_pts,
+                                    bool none)
 {
   EXPECT_TRUE(!query_pts.empty());
 
   using ExecSpace = typename BVHType::ExecSpaceType;
   using FloatType = typename PointType::CoordType;
   using BoxType = axom::primal::BoundingBox<FloatType, 2>;
+  constexpr int INVALID_ELEMENT_INDEX = -1;
+  constexpr int FIRST_ELEMENT_INDEX = 0;
 
   // Borrowed from DistibutedClosestPoint.
   struct MinCandidate
@@ -1366,15 +1369,13 @@ void bvh_one_bbox_2d(BVHType& bvh,
     /// Squared distance to query point
     double minSqDist {numerics::floating_point_limits<double>::max()};
     /// Index within mesh of closest element
-    int minElem {-1};
-    /// MPI rank of closest element
-    int minRank {-1};
+    int minElem {INVALID_ELEMENT_INDEX};
   };
 
   // Initialize the BVH with the points.
   axom::IndexType npts = none ? 0 : points.size();
   BoxType* bboxes =
-    axom::allocate<BoxType>(npts + 1,
+    axom::allocate<BoxType>(npts ? npts : 1, // do not allocate 0 elements
                             axom::execution_space<ExecSpace>::allocatorID());
   for(axom::IndexType i = 0; i < npts; i++) bboxes[i] = BoxType(points[i]);
   bvh.initialize(bboxes, npts);
@@ -1406,7 +1407,6 @@ void bvh_one_bbox_2d(BVHType& bvh,
         {
           curr_min.minSqDist = sq_dist;
           curr_min.minElem = candidate_idx;
-          curr_min.minRank = 0;  // rank
         }
       };
 
@@ -1424,10 +1424,10 @@ void bvh_one_bbox_2d(BVHType& bvh,
     });
 
   // Make sure all of the indices we found are the expected value.
-  int expected_idx = none ? -1 : 0;
+  int expected_idx = none ? INVALID_ELEMENT_INDEX : FIRST_ELEMENT_INDEX;
   for(axom::IndexType i = 0; i < results.size(); i++)
   {
-    EXPECT_TRUE(results[i] == expected_idx);
+    EXPECT_EQ(expected_idx, results[i]);
   }
 
   axom::deallocate(bboxes);
@@ -1453,11 +1453,11 @@ void check_0_or_1_bbox_2d()
 
   // 1 src point
   spin::BVH<2, ExecType, FloatType> bvh;
-  bvh_one_bbox_2d(bvh, src_pts, query_pts, false);
+  bvh_compute_point_distances_2d(bvh, src_pts, query_pts, false);
 
   // 0 src points
   spin::BVH<2, ExecType, FloatType> bvh2;
-  bvh_one_bbox_2d(bvh2, src_pts, query_pts, true);
+  bvh_compute_point_distances_2d(bvh2, src_pts, query_pts, true);
 
   axom::setDefaultAllocator(current_allocator);
 }
