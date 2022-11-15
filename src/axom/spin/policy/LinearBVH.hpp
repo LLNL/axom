@@ -43,7 +43,7 @@ namespace lbvh = internal::linear_bvh;
  * leaves, while limiting the search to branches satisfying a
  * user-provided predicate.
  *
- * To a initiate traversals, use traverse_tree.  It requires
+ * To initiate traversals, use \a traverse_tree.  It requires
  * -# an action functor to call at the leaves,
  * -# a predicate functor to decide whether to descend a branch and
  * -# some data to pass to the functors
@@ -90,7 +90,7 @@ public:
   }
 
   /*
-   * Functors lf and predicate should access only memory compatible
+   * Functors \a lf and \a predicate should access only memory compatible
    * with the execution space.  For example, GPU execution should access
    * only device and unified memory.
    */
