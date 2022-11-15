@@ -375,7 +375,7 @@ TEST(primal_boundingBox, bb_add_box)
   QBBox bbox5;
   EXPECT_FALSE(bbox5.isValid());
   EXPECT_NE(bbox5, bbox1);
-  bbox5.addBox(bbox1); // invalid + valid
+  bbox5.addBox(bbox1);  // invalid + valid
   EXPECT_EQ(bbox5, bbox1);
   EXPECT_TRUE(bbox5.contains(bbox1));
 
@@ -383,12 +383,12 @@ TEST(primal_boundingBox, bb_add_box)
   EXPECT_FALSE(bbox6.isValid());
   EXPECT_FALSE(bbox7.isValid());
   bbox6.addBox(bbox7);
-  EXPECT_FALSE(bbox6.isValid()); // invalid + invalid
+  EXPECT_FALSE(bbox6.isValid());  // invalid + invalid
 
   QBBox bbox8(bbox1);
   EXPECT_EQ(bbox8, bbox1);
   EXPECT_TRUE(bbox8.isValid());
-  bbox8.addBox(bbox7); // valid + invalid
+  bbox8.addBox(bbox7);  // valid + invalid
   EXPECT_EQ(bbox8, bbox1);
 }
 

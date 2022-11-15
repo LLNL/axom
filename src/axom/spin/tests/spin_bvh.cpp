@@ -1375,7 +1375,7 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
   // Initialize the BVH with the points.
   axom::IndexType npts = none ? 0 : points.size();
   BoxType* bboxes =
-    axom::allocate<BoxType>(npts ? npts : 1, // do not allocate 0 elements
+    axom::allocate<BoxType>(npts ? npts : 1,  // do not allocate 0 elements
                             axom::execution_space<ExecSpace>::allocatorID());
   for(axom::IndexType i = 0; i < npts; i++) bboxes[i] = BoxType(points[i]);
   bvh.initialize(bboxes, npts);
