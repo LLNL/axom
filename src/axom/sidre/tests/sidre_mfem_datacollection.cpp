@@ -308,8 +308,8 @@ TEST(sidre_datacollection, dc_reload_qf)
   // We want Sidre to allocate the data for us and to own the internal data.
   // If we don't do the below then the data collection doesn't save off the data
   // structure.
-  mfem::QuadratureFunction qs(&qspace, nullptr, qs_vdim);
-  mfem::QuadratureFunction qv(&qspace, nullptr, qv_vdim);
+  mfem::QuadratureFunction qs(&qspace, qs_vdim);
+  mfem::QuadratureFunction qv(&qspace, qv_vdim);
 
   int Nq = qs.Size();
 

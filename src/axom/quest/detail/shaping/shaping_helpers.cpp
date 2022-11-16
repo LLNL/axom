@@ -140,8 +140,8 @@ void computeVolumeFractions(const std::string& matField,
   // Grab a pointer to the inout samples QFunc
   mfem::QuadratureFunction* inout = inoutQFuncs.Get(matField);
 
-  const int sampleOrder = inout->GetSpace()->GetElementIntRule(0).GetOrder();
-  const int sampleNQ = inout->GetSpace()->GetElementIntRule(0).GetNPoints();
+  const int sampleOrder = inout->GetSpace()->GetIntRule(0).GetOrder();
+  const int sampleNQ = inout->GetSpace()->GetIntRule(0).GetNPoints();
   const int sampleSZ = inout->GetSpace()->GetSize();
   SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
                               "In computeVolumeFractions(): sample order {} | "
@@ -176,7 +176,7 @@ void computeVolumeFractions(const std::string& matField,
     mfem::DomainLFIntegrator rhs(qfc);
 
     // assume all elts are the same
-    const auto& ir = inout->GetSpace()->GetElementIntRule(0);
+    const auto& ir = inout->GetSpace()->GetIntRule(0);
     rhs.SetIntRule(&ir);
 
     mfem::DenseMatrix m;
@@ -366,7 +366,7 @@ void computeVolumeFractionsIdentity(mfem::DataCollection* dc,
                                     mfem::QuadratureFunction* inout,
                                     const std::string& name)
 {
-  const int order = inout->GetSpace()->GetElementIntRule(0).GetOrder();
+  const int order = inout->GetSpace()->GetIntRule(0).GetOrder();
 
   mfem::Mesh* mesh = dc->GetMesh();
   const int dim = mesh->Dimension();
