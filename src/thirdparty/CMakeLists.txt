@@ -96,6 +96,8 @@ target_include_directories(fmt SYSTEM INTERFACE
 target_include_directories(fmt INTERFACE 
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> )
 
+set_target_properties(fmt PROPERTIES EXPORT_NAME axom::fmt)
+
 # Setup some variables for fmt in Axom's config.hpp
 set(AXOM_FMT_EXCEPTIONS FALSE PARENT_SCOPE)
 set(AXOM_FMT_HEADER_ONLY TRUE PARENT_SCOPE)
