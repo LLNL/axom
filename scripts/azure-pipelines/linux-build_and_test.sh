@@ -47,8 +47,9 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
     fi
 fi
 
-find ./axom/sidre -type d -exec chmod 755 {} \;
-find ./axom/sidre -type f -exec chmod 644 {} \;
+# Note: Azure pipelines requires read/write access for everyone between steps
+find ./axom -type d -exec chmod 755 {} \;
+find ./axom -type f -exec chmod 644 {} \;
 
 if [[ "$DO_CLEAN" == "yes" ]] ; then
     echo "~~~~~~ CLEANING BUILD DIRECTORY ~~~~~~~~"

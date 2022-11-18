@@ -82,7 +82,7 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
 
   if(!B.isValid())
   {
-    return std::numeric_limits<double>::max();
+    return std::numeric_limits<T>::max();
   }
 
   if(B.contains(P))
