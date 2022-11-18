@@ -57,14 +57,14 @@ find_package(axom REQUIRED
 
 blt_add_executable(NAME       example 
                    SOURCES    example.cpp
-                   DEPENDS_ON axom fmt)
+                   DEPENDS_ON axom axom::fmt)
 
 
 #------------------------------------------------------------------------------
 # Optionally, print out information about imported targets
 #------------------------------------------------------------------------------
 if(EXAMPLE_VERBOSE_OUTPUT)
-    foreach(_target axom cli11 fmt sparsehash conduit::conduit example)
+    foreach(_target axom axom::cli11 axom::fmt axom::sparsehash conduit::conduit example)
         blt_print_target_properties(TARGET ${_target})  
     endforeach()
 endif()

@@ -18,6 +18,8 @@ if (LUA_FOUND)
   target_include_directories(sol SYSTEM INTERFACE
               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
+  set_target_properties(sol PROPERTIES EXPORT_NAME axom::sol)
+
   install(TARGETS              sol
           EXPORT               axom-targets
           INCLUDES DESTINATION include)
@@ -43,6 +45,8 @@ blt_add_library(NAME    cli11
 
 target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+set_target_properties(cli11 PROPERTIES EXPORT_NAME axom::cli11)
 
 install(TARGETS              cli11
         EXPORT               axom-targets
@@ -99,6 +103,8 @@ target_include_directories(fmt INTERFACE
 # Setup some variables for fmt in Axom's config.hpp
 set(AXOM_FMT_EXCEPTIONS FALSE PARENT_SCOPE)
 set(AXOM_FMT_HEADER_ONLY TRUE PARENT_SCOPE)
+
+set_target_properties(fmt PROPERTIES EXPORT_NAME axom::fmt)
 
 install(TARGETS              fmt
         EXPORT               axom-targets
@@ -170,6 +176,8 @@ if (AXOM_ENABLE_SPARSEHASH)
         blt_add_target_compile_flags(TO sparsehash FLAGS
             $<$<AND:$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CXX>>:-Wno-class-memaccess>)
     endif()
+
+    set_target_properties(sparsehash PROPERTIES EXPORT_NAME axom::sparsehash)
 
     install(TARGETS              sparsehash
             EXPORT               axom-targets
