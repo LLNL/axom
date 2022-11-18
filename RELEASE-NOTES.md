@@ -37,6 +37,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Changed
 - `axom::Array` move constructors are now `noexcept`.
+- Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`
+  to guard against conflicts.
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
