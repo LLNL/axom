@@ -19,8 +19,8 @@
 #include <iostream>  // for std::cerr and std::ostream
 #include <numeric>   // for std::accumulate
 #if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
-  // Workaround for unimplemented C++11 type traits in libstdc++ versions <5
-  #include <tr1/type_traits>
+  #error \
+    "GNU libstdc++ versions less than 5 do not fully support C++11 and are unsupported by Axom."
 #endif
 
 namespace axom
@@ -696,24 +696,6 @@ struct all_types_are_integral
   static constexpr bool value = all_types_are_integral_impl<Args...>::value;
 };
 
-#if defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CXX11_ABI)
-// Some type traits we need aren't fully-implemented in libstdc++ for GCC <5.
-// We thus check for the macro _GLIBCXX_USE_CXX11_ABI, which should only be
-// defined for GCC 5+; if not defined, we'll use the below fallbacks.
-template <typename T>
-using HasTrivialDefaultCtor = ::std::has_trivial_default_constructor<T>;
-template <typename T>
-using TriviallyCopyable =
-  typename std::conditional<std::tr1::has_trivial_copy<T>::value,
-                            std::true_type,
-                            std::false_type>::type;
-#else
-template <typename T>
-using HasTrivialDefaultCtor = ::std::is_trivially_default_constructible<T>;
-template <typename T>
-using TriviallyCopyable = ::std::is_trivially_copyable<T>;
-#endif
-
 template <typename T, bool DeviceOps>
 struct ArrayOpsBase;
 
@@ -786,7 +768,7 @@ struct ArrayOpsBase<T, false>
                          MemorySpace space)
   {
 #if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
-    if(TriviallyCopyable<T>::value)
+    if(std::is_trivially_copyable<T>::value)
     {
       axom::copy(array + begin, values, sizeof(T) * nelems);
     }
@@ -888,7 +870,8 @@ struct ArrayOpsBase<T, true>
   using ExecSpace = axom::HIP_EXEC<256>;
   #endif
 
-  static constexpr bool InitOnDevice = HasTrivialDefaultCtor<T>::value;
+  static constexpr bool InitOnDevice =
+    std::is_trivially_default_constructible<T>::value;
   static constexpr bool DestroyOnHost = !std::is_trivially_destructible<T>::value;
   static constexpr bool DefaultCtor = std::is_default_constructible<T>::value;
 
@@ -1017,7 +1000,7 @@ struct ArrayOpsBase<T, true>
    */
   static void fill(T* array, IndexType begin, IndexType nelems, const T& value)
   {
-    fill_impl(array, begin, nelems, value, TriviallyCopyable<T> {});
+    fill_impl(array, begin, nelems, value, std::is_trivially_copyable<T> {});
   }
 
   /*!
@@ -1035,7 +1018,7 @@ struct ArrayOpsBase<T, true>
                          const T* values,
                          MemorySpace space)
   {
-    if(TriviallyCopyable<T>::value)
+    if(std::is_trivially_copyable<T>::value)
     {
       axom::copy(array + begin, values, sizeof(T) * nelems);
     }
