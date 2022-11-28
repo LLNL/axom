@@ -67,9 +67,10 @@ public:
                        ConcreteSet,
                        PolymorphicSet>;
 
-  friend OtherSet;
-
-  RelationSet(const OtherSet& other) : m_relation(other.m_relation) { }
+  RelationSet(const OtherSet& other)
+    : BaseType(other.getFirstSet(), other.getSecondSet())
+    , m_relation(other.getRelation())
+  { }
 
 public:
   RelationSet() = default;

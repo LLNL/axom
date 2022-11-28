@@ -101,10 +101,8 @@ public:
                        ConcreteSet,
                        PolymorphicSet>;
 
-  friend OtherSet;
-
   ProductSet(const OtherSet& other)
-    : BaseType(other)
+    : BaseType(other.getFirstSet(), other.getSecondSet())
     , m_rowSet(this->secondSetSize())
   { }
 
