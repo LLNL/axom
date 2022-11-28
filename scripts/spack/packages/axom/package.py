@@ -242,6 +242,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # CUDA_FLAGS
             cudaflags = "-restrict --expt-extended-lambda "
 
+            # Pass through any cxxflags to the host compiler via nvcc's Xcompiler flag
+            host_cxx_flags = spec.compiler_flags['cxxflags']
+            cudaflags += ' '.join(['-Xcompiler=%s' % flag for flag in host_cxx_flags])
+
             if not spec.satisfies("cuda_arch=none"):
                 cuda_arch = spec.variants["cuda_arch"].value[0]
                 entries.append(cmake_cache_string("CMAKE_CUDA_ARCHITECTURES", cuda_arch))
