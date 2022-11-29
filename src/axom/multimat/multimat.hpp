@@ -208,6 +208,13 @@ public:
    */
   void setNumberOfCells(int num_cells);
 
+  /**
+   * \brief Sets the allocator ID to use for allocations.
+   *
+   * \param The allocator ID to use
+   */
+  void setAllocatorID(int alloc_id);
+
   /// \brief Returns a pointer to the dense 2d field set
   const ProductSetType* getDense2dFieldSet(DataLayout layout) const
   {
@@ -655,6 +662,7 @@ private:  //private functions
   };
 
 private:
+  int m_allocatorId;
   unsigned int m_ncells, m_nmats;
 
   //slam set variables
@@ -691,6 +699,21 @@ private:
     axom::ArrayView<T> getArrayView()
     {
       return getArray<std::remove_const_t<T>>().view();
+    }
+
+    FieldBacking(int alloc_id)
+      : m_ucharData(0, 0, alloc_id)
+      , m_intData(0, 0, alloc_id)
+      , m_floatData(0, 0, alloc_id)
+      , m_dblData(0, 0, alloc_id)
+    { }
+
+    void moveSpaces(int new_alloc_id)
+    {
+      m_ucharData = axom::Array<unsigned char>(m_ucharData, new_alloc_id);
+      m_intData = axom::Array<int>(m_intData, new_alloc_id);
+      m_floatData = axom::Array<float>(m_floatData, new_alloc_id);
+      m_dblData = axom::Array<double>(m_dblData, new_alloc_id);
     }
   };
 
@@ -778,7 +801,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
 
   m_fieldNameVec.push_back(field_name);
   m_fieldMappingVec.push_back(field_mapping);
-  m_fieldBackingVec.emplace_back(new FieldBacking);
+  m_fieldBackingVec.emplace_back(new FieldBacking(m_allocatorId));
   m_fieldDataLayoutVec.push_back(data_layout);
   m_fieldSparsityLayoutVec.push_back(sparsity_layout);
   m_fieldStrideVec.push_back(stride);

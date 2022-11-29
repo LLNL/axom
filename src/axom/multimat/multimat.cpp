@@ -45,13 +45,14 @@ axom::Array<double>& MultiMat::FieldBacking::getArray<double>()
 
 MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
                    SparsityLayout AXOM_UNUSED_PARAM(s))
-  : m_ncells(0)
+  : m_allocatorId(axom::getDefaultAllocatorID())
+  , m_ncells(0)
   , m_nmats(0)
-  , m_sets(2)
-  , m_staticRelations(2)
-  , m_dynamicRelations(2)
-  , m_sparseBivarSet(2)
-  , m_denseBivarSet(2)
+  , m_sets(2, 2, m_allocatorId)
+  , m_staticRelations(2, 2, m_allocatorId)
+  , m_dynamicRelations(2, 2, m_allocatorId)
+  , m_sparseBivarSet(2, 2, m_allocatorId)
+  , m_denseBivarSet(2, 2, m_allocatorId)
   , m_dynamic_mode(false)
 { }
 
@@ -123,7 +124,8 @@ bool MultiMat::hasValidDynamicRelation(DataLayout layout) const
 
 // Copy constructor
 MultiMat::MultiMat(const MultiMat& other)
-  : m_ncells(other.m_ncells)
+  : m_allocatorId(other.m_allocatorId)
+  , m_ncells(other.m_ncells)
   , m_nmats(other.m_nmats)
   , m_sets(other.m_sets)
   , m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec)
@@ -198,6 +200,62 @@ void MultiMat::setNumberOfCells(int c)
 
   getCellSet() = RangeSetType(0, m_ncells);
   SLIC_ASSERT(getCellSet().isValid());
+}
+
+void MultiMat::setAllocatorID(int alloc_id)
+{
+  bool hasCellDomRelation = hasValidStaticRelation(DataLayout::CELL_DOM);
+  bool hasMatDomRelation = hasValidStaticRelation(DataLayout::MAT_DOM);
+  m_allocatorId = alloc_id;
+  m_sets = axom::Array<RangeSetType>(m_sets, m_allocatorId);
+
+  m_cellMatRel_beginsVec = IndBufferType(m_cellMatRel_beginsVec, m_allocatorId);
+  m_cellMatRel_indicesVec = IndBufferType(m_cellMatRel_indicesVec, m_allocatorId);
+  m_matCellRel_beginsVec = IndBufferType(m_matCellRel_beginsVec, m_allocatorId);
+  m_matCellRel_indicesVec = IndBufferType(m_matCellRel_indicesVec, m_allocatorId);
+
+  m_staticRelations =
+    axom::Array<StaticVariableRelationType>(m_staticRelations, m_allocatorId);
+  m_dynamicRelations =
+    axom::Array<DynamicVariableRelationType>(m_dynamicRelations, m_allocatorId);
+  m_sparseBivarSet =
+    axom::Array<RelationSetType>(m_sparseBivarSet, m_allocatorId);
+  m_denseBivarSet = axom::Array<ProductSetType>(m_denseBivarSet, m_allocatorId);
+
+  if(hasCellDomRelation)
+  {
+    StaticVariableRelationType& cellMatRel = relStatic(DataLayout::CELL_DOM);
+
+    cellMatRel = StaticVariableRelationType(&getCellSet(), &getMatSet());
+    cellMatRel.bindBeginOffsets(getCellSet().size(),
+                                m_cellMatRel_beginsVec.view());
+    cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
+                           m_cellMatRel_indicesVec.view());
+    relSparseSet(DataLayout::CELL_DOM) = RelationSetType(&cellMatRel);
+    relDenseSet(DataLayout::CELL_DOM) =
+      ProductSetType(&getCellSet(), &getMatSet());
+  }
+  if(hasMatDomRelation)
+  {
+    StaticVariableRelationType& matCellRel = relStatic(DataLayout::MAT_DOM);
+
+    matCellRel = StaticVariableRelationType(&getMatSet(), &getCellSet());
+    matCellRel.bindBeginOffsets(getMatSet().size(),
+                                m_matCellRel_beginsVec.view());
+    matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
+                           m_matCellRel_indicesVec.view());
+    relSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
+    relDenseSet(DataLayout::MAT_DOM) =
+      ProductSetType(&getMatSet(), &getCellSet());
+  }
+
+  for(size_t idx = 0; idx < m_fieldBackingVec.size(); idx++)
+  {
+    if(m_fieldBackingVec[idx] != nullptr)
+    {
+      m_fieldBackingVec[idx]->moveSpaces(m_allocatorId);
+    }
+  }
 }
 
 void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
@@ -885,6 +943,11 @@ void MultiMat::convertToSparse_helper(int map_i)
   }
   SLIC_ASSERT(idx == Rel->totalSize() * stride);
 
+  if(arr_data.getAllocatorID() != m_allocatorId)
+  {
+    arr_data = axom::Array<DataType>(arr_data, m_allocatorId);
+  }
+
   auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
   backingArray = std::move(arr_data);
 }
@@ -912,6 +975,11 @@ void MultiMat::convertToDense_helper(int map_i)
         arr_data[elem_idx * stride + c] = iter.value(c);
       }
     }
+  }
+
+  if(arr_data.getAllocatorID() != m_allocatorId)
+  {
+    arr_data = axom::Array<DataType>(arr_data, m_allocatorId);
   }
 
   auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
@@ -1001,6 +1069,11 @@ void MultiMat::transposeField_helper(int field_idx)
         }
       }
     }
+  }
+
+  if(arr_data.getAllocatorID() != m_allocatorId)
+  {
+    arr_data = axom::Array<DataType>(arr_data, m_allocatorId);
   }
 
   m_fieldBackingVec[field_idx]->getArray<DataType>() = std::move(arr_data);
