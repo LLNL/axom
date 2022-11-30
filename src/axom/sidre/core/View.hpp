@@ -929,12 +929,24 @@ public:
   //@{
   //!  @name Attribute Value query and accessor methods
 
+  /*!
+   * \return the index-specified Attribute, or nullptr if it doesn't exist.
+   */
   Attribute* getAttribute(IndexType idx);
 
+  /*!
+   * \return the index-specified Attribute, or nullptr if it doesn't exist.
+   */
   const Attribute* getAttribute(IndexType idx) const;
 
+  /*!
+   * \return the name-specified Attribute, or nullptr if it doesn't exist.
+   */
   Attribute* getAttribute(const std::string& name);
 
+  /*!
+   * \return the name-specified Attribute, or nullptr if it doesn't exist.
+   */
   const Attribute* getAttribute(const std::string& name) const;
 
   /*!
@@ -1052,6 +1064,8 @@ public:
 
   /*!
    * \brief Set Attribute for a View from Attribute index.
+   *
+   * If no such Attribute exists, this is a no-op.
    */
   bool setAttributeString(IndexType indx, const std::string& value);
 
@@ -1164,6 +1178,8 @@ public:
    * \brief Return a string attribute from the Attribute index.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute name, or nullptr if no such Attribute.
    */
   const char* getAttributeString(IndexType idx) const;
 
@@ -1171,6 +1187,8 @@ public:
    * \brief Return a string attribute from the Attribute name.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute name, or nullptr if no such Attribute.
    */
   const char* getAttributeString(const std::string& name) const;
 
@@ -1178,6 +1196,8 @@ public:
    * \brief Return a string attribute from the Attribute pointer.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute name, or nullptr if no such Attribute.
    */
   const char* getAttributeString(const Attribute* attr) const;
 
@@ -1185,6 +1205,8 @@ public:
    * \brief Return reference to attribute node from Attribute index.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute Node, or an empty Node if no such Attribute.
    */
   const Node& getAttributeNodeRef(IndexType idx) const
   {
@@ -1196,6 +1218,8 @@ public:
    * \brief Return reference to attribute node from Attribute name.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute Node, or an empty Node if no such Attribute.
    */
   const Node& getAttributeNodeRef(const std::string& name) const
   {
@@ -1207,6 +1231,8 @@ public:
    * \brief Return reference to attribute node from Attribute pointer.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute Node, or an empty Node if no such Attribute.
    */
   const Node& getAttributeNodeRef(const Attribute* attr) const
   {
