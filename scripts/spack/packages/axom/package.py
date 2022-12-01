@@ -244,7 +244,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             # Pass through any cxxflags to the host compiler via nvcc's Xcompiler flag
             host_cxx_flags = spec.compiler_flags['cxxflags']
-            cudaflags += ' '.join(['-Xcompiler=%s' % flag for flag in host_cxx_flags])
+            cudaflags += ' '.join(['-Xcompiler=%s ' % flag for flag in host_cxx_flags])
 
             if not spec.satisfies("cuda_arch=none"):
                 cuda_arch = spec.variants["cuda_arch"].value[0]
