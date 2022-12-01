@@ -359,7 +359,7 @@ public:
    * \param [in] n the number of elements to write.
    * \param [in] pos the position at which to begin writing.
    *
-   * \note The size is unchanged by calls to set.
+   * \note The size is unchanged by calls to fill.
    *
    * \pre pos + n <= m_num_elements.
    */
