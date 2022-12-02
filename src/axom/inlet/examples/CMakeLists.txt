@@ -20,7 +20,6 @@ blt_list_append(
     arrays.cpp
     documentation_generation.cpp
     fields.cpp
-    lua_library.cpp
     containers.cpp
     user_defined_type.cpp
     verification.cpp
@@ -28,10 +27,15 @@ blt_list_append(
     SOL_FOUND )
 
 
-set(inlet_device_example_depends)
-if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  blt_list_append( TO inlet_device_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+# "error: parse error in template argument list"
+# when GNU and CUDA enabled
+if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR NOT ENABLE_CUDA)
+  blt_list_append(TO inlet_examples ELEMENTS lua_library.cpp IF SOL_FOUND)
 endif()
+
+
+set(inlet_device_example_depends)
+blt_list_append( TO inlet_device_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------
 # Build each executable example
@@ -72,8 +76,10 @@ if (SOL_FOUND)
     axom_add_test( NAME    inlet_fields_ex
                    COMMAND inlet_fields_ex)
 
-    axom_add_test( NAME    inlet_lua_library_ex
-                   COMMAND inlet_lua_library_ex )
+    if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR NOT ENABLE_CUDA)
+      axom_add_test( NAME    inlet_lua_library_ex
+                     COMMAND inlet_lua_library_ex )
+    endif()
 
     axom_add_test( NAME    inlet_containers_ex
                    COMMAND inlet_containers_ex)
