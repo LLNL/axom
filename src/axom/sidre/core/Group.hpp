@@ -109,9 +109,25 @@ class MapCollection;
  * of the indexed group.  None of these methods is marked with "Child".
  *
  * A Group can optionally be created to hold items in a "list format". In
- * this format, any number of child Group or View items can be created with
- * empty strings for their names, and none of the methods that access
- * child items by name or path will return a valid pointer.
+ * this format, any number of child Group or View items can be created to
+ * be held and accessed like a list.  When using this format, the child items
+ * can be accessed only via iterators that iterate in the order that they
+ * were added to the parent Group.
+ *
+ * It is recommended but not required that the items held in the list format
+ * be created without names.  String names may be assigned to these items,
+ * but the names will not be useful for accessing them from their parent
+ * Group, and none of the methods that access child items by name or path will
+ * return a valid pointer.  Unnamed Groups to be held in the list format
+ * should be created using the method createUnnamedGroup, while unnamed
+ * Views should be created by passing an empty string as the path argument
+ * to any of the createView methods.
+ *
+ * For the list format ONLY, if the method creating a Group or View is
+ * passed a string with path syntax (such as "foo/bar/baz"), only the
+ * name after the final delimiter is assigned to the new item, and the
+ * preceding names are ignored.
+ * 
  *
  * \attention when Views or Groups are created, destroyed, copied, or moved,
  * indices of other Views and Groups in associated Group objects may
@@ -1627,6 +1643,10 @@ private:
    * the method returns is the last entry in the path, either the string
    * following the last "/" in the input (if there is one) or the entire
    * input path string if it contains no "/".
+   *
+   * When this Group uses the list format ONLY:  this Group will always
+   * be returned, the path argement will be modified to the last entry in
+   * the path, and no intermediate Groups from the path will be created.
    */
   Group* walkPath(std::string& path, bool create_groups_in_path);
 

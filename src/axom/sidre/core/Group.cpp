@@ -2367,11 +2367,19 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
       }
       else if(create_groups_in_path)
       {
-        group_ptr = group_ptr->createGroup(*iter);
-
-        if(group_ptr == nullptr)
+        if(m_is_list)
         {
+          // Never create intermediate path groups when using list format
           iter = stop;
+        }
+        else
+        {
+          group_ptr = group_ptr->createGroup(*iter);
+
+          if(group_ptr == nullptr)
+          {
+            iter = stop;
+          }
         }
       }
       else

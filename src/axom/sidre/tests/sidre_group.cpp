@@ -575,6 +575,68 @@ TEST(sidre_group, child_lists)
 }
 
 //------------------------------------------------------------------------------
+// Verify results with various path arguments for items in list
+//------------------------------------------------------------------------------
+TEST(sidre_group, list_item_names)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  // Create a group that uses the list format.
+  Group* list_test = root->createGroup("list_test", true);
+
+  // It is recommended that all items held in a Group that uses the list
+  // format be unnamed, as the names are not useful to access those items
+  // from the parent Group.  Nonetheless it is allowed, and this test
+  // verifies that the names are created as expected.
+
+  // Test a group created with createUnnamedGroup, the recommended way to
+  // create groups for a list.
+  Group* unnamed_group = list_test->createUnnamedGroup();
+
+  ASSERT_TRUE(unnamed_group->getName().empty());
+
+  // Test groups created with empty string, a simple name, and a path.
+
+  // The API says that groups cannot be created with an empty string argument,
+  // so a nullptr is returned for this one.
+  Group* blank_group = list_test->createGroup("");
+
+  // A simple name with no path syntax will be assigned to the group.
+  Group* named_group = list_test->createGroup("named");
+
+  // With a path, the leading names are ignored and the final name is used.
+  Group* path_group_a = list_test->createGroup("testing/path");
+  Group* path_group_b = list_test->createGroup("testing/longer/path");
+
+  ASSERT_TRUE(blank_group == nullptr);
+  ASSERT_TRUE(named_group->getName() == "named");
+  ASSERT_TRUE(path_group_a->getName() == "path");
+  ASSERT_TRUE(path_group_b->getName() == "path");
+
+  // Similar tests for views
+ 
+  // An empty string is the recommended way to create an unnamed view for
+  // a list.
+  View* blank_view = list_test->createView("");
+
+  // A simple name with no path syntax will be assigned to the view.
+  View* named_view = list_test->createView("named");
+
+  // With a path, the leading names are ignored and the final name is used.
+  View* path_view_a = list_test->createView("testing/path");
+  View* path_view_b = list_test->createView("testing/longer/path");
+
+  ASSERT_TRUE(blank_view->getName().empty());
+  ASSERT_TRUE(named_view->getName() == "named");
+  ASSERT_TRUE(path_view_a->getName() == "path");
+  ASSERT_TRUE(path_view_b->getName() == "path");
+
+  root->destroyGroup("list_test");
+
+  delete ds;
+}
+//------------------------------------------------------------------------------
 // Test Group's list format for holding contents of a vector of strings.
 //------------------------------------------------------------------------------
 TEST(sidre_group, string_list)
