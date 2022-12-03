@@ -1645,7 +1645,7 @@ private:
    * input path string if it contains no "/".
    *
    * When this Group uses the list format ONLY:  this Group will always
-   * be returned, the path argement will be modified to the last entry in
+   * be returned, the path argument will be modified to the last entry in
    * the path, and no intermediate Groups from the path will be created.
    */
   Group* walkPath(std::string& path, bool create_groups_in_path);
