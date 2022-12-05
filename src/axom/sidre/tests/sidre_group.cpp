@@ -615,7 +615,7 @@ TEST(sidre_group, list_item_names)
   ASSERT_TRUE(path_group_b->getName() == "path");
 
   // Similar tests for views
- 
+
   // An empty string is the recommended way to create an unnamed view for
   // a list.
   View* blank_view = list_test->createView("");
