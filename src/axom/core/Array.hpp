@@ -353,6 +353,19 @@ public:
   void fill(const T& value);
 
   /*!
+   * \brief Set a range of elements to a given value.
+   *
+   * \param [in] value the value to set to.
+   * \param [in] n the number of elements to write.
+   * \param [in] pos the position at which to begin writing.
+   *
+   * \note The size is unchanged by calls to fill.
+   *
+   * \pre pos + n <= m_num_elements.
+   */
+  void fill(const T& value, IndexType n, IndexType pos);
+
+  /*!
    * \brief Modify the values of existing elements.
    *
    * \param [in] elements the new elements to write.
@@ -1070,6 +1083,17 @@ inline void Array<T, DIM, SPACE>::fill(const T& value)
 {
   OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
   OpHelper::fill(m_data, 0, m_num_elements, m_allocator_id, value);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+inline void Array<T, DIM, SPACE>::fill(const T& value, IndexType n, IndexType pos)
+{
+  assert(pos >= 0);
+  assert(pos + n <= m_num_elements);
+
+  OpHelper::destroy(m_data, pos, n, m_allocator_id);
+  OpHelper::fill(m_data, pos, n, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
