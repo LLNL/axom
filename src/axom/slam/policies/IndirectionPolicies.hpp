@@ -65,9 +65,9 @@ struct IndexedIndirection : public BasePolicy
   using typename BasePolicy::IndirectionResult;
 
   using typename BasePolicy::IndirectionBufferType;
+  using typename BasePolicy::IndirectionConstRefType;
   using typename BasePolicy::IndirectionPtrType;
   using typename BasePolicy::IndirectionRefType;
-  using typename BasePolicy::IndirectionConstRefType;
 
   using BasePolicy::BasePolicy;
 
@@ -76,16 +76,28 @@ struct IndexedIndirection : public BasePolicy
                       PositionType stride,
                       bool verboseOutput = false) const;
 
+  static inline IndirectionResult getIndirection(IndirectionRefType buf,
+                                                 PositionType pos)
+  {
+    return buf[pos];
+  }
+
+  static inline ConstIndirectionResult getConstIndirection(IndirectionConstRefType buf,
+                                                           PositionType pos)
+  {
+    return buf[pos];
+  }
+
   inline ConstIndirectionResult indirection(PositionType pos) const
   {
     checkIndirection(pos);
-    return BasePolicy::data()[pos];
+    return IndexedIndirection::getConstIndirection(BasePolicy::data(), pos);
   }
 
   inline IndirectionResult indirection(PositionType pos)
   {
     checkIndirection(pos);
-    return BasePolicy::data()[pos];
+    return IndexedIndirection::getIndirection(BasePolicy::data(), pos);
   }
 
   inline ConstIndirectionResult operator()(PositionType pos) const
@@ -218,15 +230,15 @@ struct CArrayIndirectionBase
 
   using IndirectionBufferType = ElementType*;
   using IndirectionPtrType = IndirectionBufferType;
-  using IndirectionRefType = IndirectionBufferType&;
+  using IndirectionRefType = IndirectionBufferType;
   using IndirectionConstRefType = const IndirectionBufferType&;
 
   static constexpr const char* Name = "SLAM::CArrayIndirection";
 
   CArrayIndirectionBase(IndirectionPtrType buf = nullptr) : m_arrBuf(buf) { }
 
-  IndirectionBufferType* data() const { return m_arrBuf; }
-  IndirectionBufferType*& ptr() { return m_arrBuf; }
+  IndirectionBufferType data() const { return m_arrBuf; }
+  IndirectionBufferType& ptr() { return m_arrBuf; }
 
   bool hasIndirection() const { return m_arrBuf != nullptr; }
 
@@ -236,7 +248,7 @@ struct CArrayIndirectionBase
   }
 
 private:
-  IndirectionBufferType* m_arrBuf;
+  IndirectionBufferType m_arrBuf;
 };
 
 /**

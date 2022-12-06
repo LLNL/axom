@@ -248,13 +248,13 @@ public:
   ConstValueType operator[](SetPosition setIndex) const
   {
     verifyPositionImpl(setIndex);
-    return m_data[setIndex];
+    return IndirectionPolicy::getConstIndirection(m_data, setIndex);
   }
 
   ValueType operator[](SetPosition setIndex)
   {
     verifyPositionImpl(setIndex);
-    return m_data[setIndex];
+    return IndirectionPolicy::getIndirection(m_data, setIndex);
   }
 
   /**
@@ -268,14 +268,14 @@ public:
   {
     verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
-    return m_data[setIndex];
+    return IndirectionPolicy::getConstIndirection(m_data, setIndex);
   }
 
   ValueType operator()(SetPosition setIdx, SetPosition comp = 0)
   {
     verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
-    return m_data[setIndex];
+    return IndirectionPolicy::getIndirection(m_data, setIndex);
   }
 
   /// @}
