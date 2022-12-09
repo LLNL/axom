@@ -608,11 +608,15 @@ TEST(sidre_group, list_item_names)
   // With a path, the leading names are ignored and the final name is used.
   Group* path_group_a = list_test->createGroup("testing/path");
   Group* path_group_b = list_test->createGroup("testing/longer/path");
+  Group* found_group_a = list_test->getGroup("testing/path");
+  Group* found_group_b = list_test->getGroup("testing/longer/path");
 
   ASSERT_TRUE(blank_group == nullptr);
   ASSERT_TRUE(named_group->getName() == "named");
-  ASSERT_TRUE(path_group_a->getName() == "path");
-  ASSERT_TRUE(path_group_b->getName() == "path");
+  ASSERT_TRUE(path_group_a == nullptr);
+  ASSERT_TRUE(path_group_b == nullptr);
+  ASSERT_TRUE(found_group_a == nullptr);
+  ASSERT_TRUE(found_group_b == nullptr);
 
   // Similar tests for views
 
@@ -626,11 +630,15 @@ TEST(sidre_group, list_item_names)
   // With a path, the leading names are ignored and the final name is used.
   View* path_view_a = list_test->createView("testing/path");
   View* path_view_b = list_test->createView("testing/longer/path");
+  View* found_view_a = list_test->getView("testing/path");
+  View* found_view_b = list_test->getView("testing/longer/path");
 
   ASSERT_TRUE(blank_view->getName().empty());
   ASSERT_TRUE(named_view->getName() == "named");
-  ASSERT_TRUE(path_view_a->getName() == "path");
-  ASSERT_TRUE(path_view_b->getName() == "path");
+  ASSERT_TRUE(path_view_a == nullptr);
+  ASSERT_TRUE(path_view_b == nullptr);
+  ASSERT_TRUE(found_view_a == nullptr);
+  ASSERT_TRUE(found_view_b == nullptr);
 
   root->destroyGroup("list_test");
 

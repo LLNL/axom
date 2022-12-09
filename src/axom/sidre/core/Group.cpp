@@ -232,10 +232,20 @@ View* Group::createView(const std::string& path)
 
     if(group == nullptr)
     {
-      SLIC_CHECK_MSG(group != nullptr,
-                     SIDRE_GROUP_LOG_PREPEND
-                       << "Could not find or create path '" << path << "'."
-                       << "There is already a view with that name.");
+      if(m_is_list)
+      {
+        SLIC_CHECK_MSG(group != nullptr,
+                       SIDRE_GROUP_LOG_PREPEND
+                         << "Could not find or create View '" << path << "'."
+                         << "for a Group using the list format.");
+      }
+      else
+      {
+        SLIC_CHECK_MSG(group != nullptr,
+                       SIDRE_GROUP_LOG_PREPEND
+                         << "Could not find or create path '" << path << "'."
+                         << "There is already a View with that name.");
+      }
       return nullptr;
     }
     else if(intpath.empty() || group->hasChildView(intpath) ||
@@ -922,10 +932,20 @@ Group* Group::createGroup(const std::string& path, bool is_list)
 
   if(group == nullptr)
   {
-    SLIC_CHECK_MSG(group != nullptr,
-                   SIDRE_GROUP_LOG_PREPEND
-                     << "Could not find or create path '" << path
-                     << "'. There is already a Group with that name");
+    if(m_is_list)
+    {
+      SLIC_CHECK_MSG(group != nullptr,
+                     SIDRE_GROUP_LOG_PREPEND
+                       << "Could not find or create Group '" << path << "'."
+                       << "for a Group using the list format.");
+    }
+    else
+    {
+      SLIC_CHECK_MSG(group != nullptr,
+                     SIDRE_GROUP_LOG_PREPEND
+                       << "Could not find or create path '" << path
+                       << "'. There is already a Group with that name");
+    }
     return nullptr;
   }
   else if(intpath.empty() || group->hasChildGroup(intpath) ||
@@ -2353,26 +2373,32 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
 
   if(path_parts.size() > 0)
   {
-    // Find stopping point (right before last part of path)
-    std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
-
-    // Navigate path down to desired Group
-    for(std::vector<std::string>::const_iterator iter = path_parts.begin();
-        iter < stop;
-        ++iter)
+    if(m_is_list && path_parts.size() > 1)
     {
-      if(group_ptr->hasChildGroup(*iter))
+      // A size > 1 indicates that a delimited path string was provided.
+      // A path string is invalid when this Group uses the list format.
+      SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+                   << "A delimited path string '" << path
+                   << "' cannot be used as the name of an object "
+                   << "to be created by a Group that uses the list format. "
+                   << "A null pointer will be returned.");
+      group_ptr = nullptr;
+    }
+    else
+    {
+      // Find stopping point (right before last part of path)
+      std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
+
+      // Navigate path down to desired Group
+      for(std::vector<std::string>::const_iterator iter = path_parts.begin();
+          iter < stop;
+          ++iter)
       {
-        group_ptr = group_ptr->getGroup(*iter);
-      }
-      else if(create_groups_in_path)
-      {
-        if(m_is_list)
+        if(group_ptr->hasChildGroup(*iter))
         {
-          // Never create intermediate path groups when using list format
-          iter = stop;
+          group_ptr = group_ptr->getGroup(*iter);
         }
-        else
+        else if(create_groups_in_path)
         {
           group_ptr = group_ptr->createGroup(*iter);
 
@@ -2381,14 +2407,14 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
             iter = stop;
           }
         }
+        else
+        {
+          iter = stop;
+          group_ptr = nullptr;
+        }
       }
-      else
-      {
-        iter = stop;
-        group_ptr = nullptr;
-      }
+      path = path_parts.back();
     }
-    path = path_parts.back();
   }
 
   return group_ptr;
