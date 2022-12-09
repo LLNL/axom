@@ -141,13 +141,13 @@ class Raja(CachedCMakePackage, CudaPackage, ROCmPackage):
 
                 # C++ 14 error fix in camp
                 entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
-                # END AXOM EDIT
 
             archs = self.spec.variants['amdgpu_target'].value
             if archs != 'none':
                 arch_str = ",".join(archs)
-                entries.append(cmake_cache_string(
-                    "HIP_HIPCC_FLAGS", '--amdgpu-target={0}'.format(arch_str)))
+                entries.append(cmake_cache_string("HIP_HIPCC_FLAGS", "--amdgpu-target={0}".format(arch_str)))
+                entries.append(cmake_cache_string("CMAKE_HIP_ARCHITECTURES", arch_str))
+            # END AXOM EDIT
         else:
             entries.append(cmake_cache_option("ENABLE_HIP", False))
 

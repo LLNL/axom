@@ -7,9 +7,9 @@ compilers:
     modules: []
     operating_system: rhel8
     paths:
-      cc: /opt/rocm-5.1.1/llvm/bin/amdclang
-      cxx: /opt/rocm-5.1.1/llvm/bin/amdclang++
-      f77: /opt/rocm-5.1.1/llvm/bin/amdflang
-      fc: /opt/rocm-5.1.1/llvm/bin/amdflang
+      cc: /opt/rocm-5.2.3/llvm/bin/amdclang
+      cxx: /opt/rocm-5.2.3/llvm/bin/amdclang++
+      f77: /opt/rocm-5.2.3/llvm/bin/amdflang
+      fc: /opt/rocm-5.2.3/llvm/bin/amdflang
     spec: clang@14.0.0
     target: x86_64

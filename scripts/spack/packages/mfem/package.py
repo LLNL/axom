@@ -493,7 +493,7 @@ class Mfem(Package, CudaPackage, ROCmPackage):
             'MFEM_MPIEXEC=%s' % mfem_mpiexec,
             'MFEM_MPIEXEC_NP=%s' % mfem_mpiexec_np]
 
-        cxxflags = spec.compiler_flags['cxxflags']
+        cxxflags = spec.compiler_flags['cxxflags'][:]
 
         if cxxflags:
             # Add opt/debug flags if they are not present in global cxx flags
