@@ -1505,7 +1505,7 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   // FIXME: QF order can be retrieved directly as of MFEM 4.3
   const std::string basis_name =
     fmt::format("QF_Default_{0}_{1}",
-                qf->GetSpace()->GetElementIntRule(0).GetOrder(),
+                qf->GetSpace()->GetIntRule(0).GetOrder(),
                 qf->GetVDim());
   v->setString(basis_name);
 
