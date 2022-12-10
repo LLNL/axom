@@ -48,7 +48,7 @@ class View;
  *    - A Buffer object has a unique identifier within a DataStore,
  *      which is assigned by the DataStore when the Buffer is created.
  *    - The data owned by a Buffer is unique to that Buffer
- *      object; i.e.,  Buffers do not share their data.
+ *      object; i.e.,  Buffers do not share their data with other Buffers.
  *    - Typical usage is to describe the data a Buffer will hold and then
  *      allocate it by calling one of the Buffer allocate or
  *      reallocate methods.

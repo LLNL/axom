@@ -110,6 +110,20 @@ if(CONDUIT_FOUND AND ENABLE_MPI)
                                  conduit::conduit_mpi)
 endif()
 
+blt_list_append(
+    TO       quest_headers
+    ELEMENTS MarchingCubesAlgo.hpp
+    IF       CONDUIT_FOUND
+               )
+
+blt_list_append(
+    TO       quest_sources
+    ELEMENTS MarchingCubesAlgo.cpp
+    IF       CONDUIT_FOUND
+               )
+
+blt_list_append( TO quest_depends_on ELEMENTS conduit::conduit IF CONDUIT_FOUND )
+
 if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     list(APPEND quest_headers Shaper.hpp
                               SamplingShaper.hpp

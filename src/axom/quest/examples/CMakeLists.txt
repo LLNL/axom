@@ -93,6 +93,18 @@ if(ENABLE_MPI AND AXOM_ENABLE_SIDRE)
     endif()
 endif()
 
+# Marching cubes example -------------------------------------------
+if(CONDUIT_FOUND)
+    blt_add_executable(
+            NAME        quest_marching_cubes_ex
+            SOURCES     quest_marching_cubes_example.cpp
+            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON  ${quest_example_depends}
+            FOLDER      axom/quest/examples
+            )
+
+endif()
+
 # Point in cell example -------------------------------------------------------
 if(MFEM_FOUND)
     blt_add_executable(
