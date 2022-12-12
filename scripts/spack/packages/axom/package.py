@@ -275,7 +275,16 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             rocm_root = hip_root + "/.."
 
             entries.append(cmake_cache_string("HIP_ROOT_DIR", hip_root))
-            entries.append(cmake_cache_string("HIP_CLANG_PATH", rocm_root + "/llvm/bin"))
+
+            # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
+            if self.spec.satisfies('%clang') and 'toss_4' in self._get_sys_type(spec):
+                clang_version= str(self.compiler.version)
+                hip_clang_include_path = rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
+                if os.path.isdir(hip_clang_include_path):
+                    entries.append(cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path))
+
+                # C++ 14 error fix in camp
+                entries.append(cmake_cache_string("CMAKE_CXX_FLAGS","--std=c++14"))
 
             archs = self.spec.variants["amdgpu_target"].value
             if archs != "none":
@@ -293,7 +302,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             # Additional libraries for TOSS4
             hip_link_flags += " -L{0}/../lib64 -Wl,-rpath,{0}/../lib64 ".format(hip_root)
-            hip_link_flags += "-lhsakmt -lamd_comgr "
+            hip_link_flags += "-lhsakmt "
 
             entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
