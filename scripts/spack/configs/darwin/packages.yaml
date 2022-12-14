@@ -83,7 +83,7 @@ packages:
   hdf5:
     variants: ~shared~mpi
   mfem:
-    variants: ~mpi~metis~zlib
+    require: "@4.5~mpi~metis~zlib"
   raja:
     variants: ~shared~examples~exercises
   scr:
