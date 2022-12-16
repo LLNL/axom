@@ -801,8 +801,11 @@ public:
         shapeName,
         materialName)));
 
+    const std::string vol_frac_("vol_frac_");
+    const std::string vol_frac_fmt("vol_frac_{}");
+
     auto shapeVolFracName = axom::fmt::format("shape_vol_frac_{}", shapeName);
-    auto materialVolFracName = axom::fmt::format("vol_frac_{}", materialName);
+    auto materialVolFracName = axom::fmt::format(vol_frac_fmt, materialName);
 
     auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
     SLIC_ASSERT(shapeVolFrac != nullptr);
@@ -817,8 +820,157 @@ public:
     {
       matVolFrac = newVolFracGridFunction();
       this->getDC()->RegisterField(materialVolFracName, matVolFrac);
+#if 1
+      // Zero out the volume fractions.
+      for(int elem = 0; elem < m_num_elements; elem++)
+         (*matVolFrac)[elem] = 0.;
+#endif
+    }
+#if 1
+    // For each cell, figure out how much VF is still completely free
+    // (unallocated to any material).
+    std::vector<double> completely_free(m_num_elements, 1.);
+    for(auto it : this->getDC()->GetFieldMap())
+    {
+      if(it.first.find(vol_frac_) == 0)
+      {
+        const mfem::GridFunction *gf = it.second;          
+        for(int elem = 0; elem < m_num_elements; elem++)
+        {
+          completely_free[elem] -= (*gf)[elem];
+        }
+      }
     }
 
+    // This vector holds the GridFunctions for each material VF object
+    // that we need to update (other than that for the current shape,
+    // which is referenced using matVolFrac).
+    std::vector<mfem::GridFunction *> vfs;
+
+    // Populate vfs with the pointers to the grid functions that can be
+    // updated when we modify VFs. This does not include the grid function
+    // for the current shape, matVolFrac.
+    if(!shape.getMaterialsReplaced().empty())
+    {
+      // Include only non-shape materials in the replaced list.
+      for(const auto &name : shape.getMaterialsReplaced())
+      {
+        if(name == shape.getMaterial())
+          continue;
+        auto vfname = axom::fmt::format(vol_frac_fmt, name);
+        if(this->getDC()->HasField(vfname))
+        {
+          mfem::GridFunction *gf = this->getDC()->GetField(vfname);
+          vfs.push_back(gf);
+        }
+      }
+    }
+    else if(!shape.getMaterialsNotReplaced().empty())
+    {
+      // We include all non-shape materials unless they are in the NOT
+      // replaced list.
+      for(auto it : this->getDC()->GetFieldMap())
+      {
+        if(it.first.find(vol_frac_) == 0)
+        {
+          std::string name(it.first.substr(vol_frac_.size()));
+          if(name == shape.getMaterial())
+            continue;
+          // See if the material name is in the list of materials NOT replaced.
+          auto it2 = std::find(shape.getMaterialsNotReplaced().cbegin(),
+                               shape.getMaterialsNotReplaced().cend(),
+                               name);
+          if(it2 == shape.getMaterialsNotReplaced().cend())
+            vfs.push_back(it.second);
+        }
+      }
+    }
+    else
+    {
+      // Normal case. Every non-shape material is allowed to be replaced.
+      for(auto it : this->getDC()->GetFieldMap())
+      {
+        if(it.first.find(vol_frac_) == 0)
+        {
+          std::string name(it.first.substr(vol_frac_.size()));
+          if(name == shape.getMaterial())
+            continue;
+          vfs.push_back(it.second);
+        }
+      }
+    }
+
+    // Print some debugging info about which replacements will happen.
+    for(auto it : this->getDC()->GetFieldMap())
+    {
+      if(it.first.find(vol_frac_) == 0)
+      {
+        std::string name(it.first.substr(vol_frac_.size()));
+        bool rep = std::find(vfs.begin(), vfs.end(), it.second) != vfs.cend();
+        SLIC_DEBUG(axom::fmt::format(
+          "Should we replace material '{}' with shape '{}' of material '{}'? {}",
+          name,
+          shape.getName(),
+          shape.getMaterial(),
+          rep ? "yes" : "no"));
+      }
+    }
+
+    // For each cell, figure out how much VF can be overwritten if
+    // we need the space. This is the sum of all VFs that we are
+    // allowed to write into.
+    std::vector<double> overwriteable(m_num_elements, 0.);
+    for(int elem = 0; elem < m_num_elements; elem++)
+    {
+      overwriteable[elem] += (*matVolFrac)(elem);
+    }
+    for(const auto gf : vfs)
+    {
+      for(int elem = 0; elem < m_num_elements; elem++)
+      {
+        overwriteable[elem] += (*gf)(elem);
+      }
+    }
+
+    // Now update the volume fractions.
+    for(int elem = 0; elem < m_num_elements; elem++)
+    {
+      auto VF = m_overlap_volumes[elem] / m_hex_volumes[elem];
+      if(VF <= completely_free[elem])
+      {
+        // there is enough free room for this VF ? no need to update other VFs
+        (*matVolFrac)(elem) += VF;
+      }
+      else
+      {
+        double avail = completely_free[elem] + overwriteable[elem];
+        if(VF >= avail)
+        {
+          // VF can completely overtake the space in the available VFs.
+          // This material gets it all and we zero out the others.
+          for(auto &gf : vfs)
+             (*gf)(elem) = 0.;
+          (*matVolFrac)(elem) = avail;
+        }
+        else
+        {
+          // We can fit the VF in avail but it does not cover all of avail.
+          // So, we?ll scale the other replacement materials
+          double scale = avail / (overwriteable[elem] + VF);
+          (*matVolFrac)(elem) = scale * VF;
+          // Scale the replaced materials.
+          for(auto gf : vfs)
+             (*gf)(elem) *= scale;
+        }
+      }
+    }
+
+    // Update the shape volume fractions.
+    for(int i = 0; i < m_num_elements; i++)
+    {
+      (*shapeVolFrac)(i) = m_overlap_volumes[i] / m_hex_volumes[i];
+    }
+#else
     // update material volume fractions
     for(int i = 0; i < m_num_elements; i++)
     {
@@ -828,6 +980,7 @@ public:
     /// Implementation here -- update material volume fractions based on replacement rules
     // Note: we're not yet updating the shape volume fractions
     AXOM_UNUSED_VAR(shapeVolFrac);
+#endif
   }
 
   void finalizeShapeQuery() override
