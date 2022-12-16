@@ -28,6 +28,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Changed
 - `axom::Array` move constructors are now `noexcept`.
+- Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`
+  to guard against conflicts.
+- `DistributedClosestPoint` query now supports any blueprint-valid mesh format, including multidomain.
+   Domain underloading and overloading can be expressed using multidomain format.  Closest points are
+   identified by cp_rank, cp_domain_index, and cp_index.  The new cp_domain_index specifies the
+   domain containing the closest point.
+- `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
+  changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
+  interfacing variables.
+- Updates mfem dependency to v4.5
 
 ## [Version 0.7.0] - Release date 2022-08-30
 

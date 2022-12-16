@@ -929,12 +929,28 @@ public:
   //@{
   //!  @name Attribute Value query and accessor methods
 
+  /*!
+   * \brief Get an Attribute.
+   *
+   * \param [in] idx Attribute identifier.
+   *
+   * \return the specified Attribute, or nullptr if it doesn't exist.
+   */
   Attribute* getAttribute(IndexType idx);
 
+  /*!
+   * \overload
+   */
   const Attribute* getAttribute(IndexType idx) const;
 
+  /*!
+   * \overload
+   */
   Attribute* getAttribute(const std::string& name);
 
+  /*!
+   * \overload
+   */
   const Attribute* getAttribute(const std::string& name) const;
 
   /*!
@@ -968,7 +984,8 @@ public:
   }
 
   /*!
-   * \brief Set Attribute to its default value from Attribute index.
+   * \brief Set Attribute to its default value.
+   * \param [in] idx Attribute identifier
    *
    * This causes hasAttributeValue to return false for the attribute.
    */
@@ -979,9 +996,7 @@ public:
   }
 
   /*!
-   * \brief Set Attribute to its default value from Attribute name.
-   *
-   * This causes hasAttributeValue to return false for the attribute.
+   * \overload
    */
   bool setAttributeToDefault(const std::string& name)
   {
@@ -990,9 +1005,7 @@ public:
   }
 
   /*!
-   * \brief Set Attribute to its default value from Attribute pointer.
-   *
-   * This causes hasAttributeValue to return false for the attribute.
+   * \overload
    */
   bool setAttributeToDefault(const Attribute* attr)
   {
@@ -1004,7 +1017,11 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute index.
+   * \brief Set Attribute to a scalar value.
+   * \param [in] idx Attribute identifier
+   * \param [in] value Value of Attribute
+   *
+   * If no such Attribute exists, this is a no-op.
    */
   template <typename ScalarType>
   bool setAttributeScalar(IndexType idx, ScalarType value)
@@ -1019,7 +1036,7 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute name.
+   * \overload
    */
   template <typename ScalarType>
   bool setAttributeScalar(const std::string& name, ScalarType value)
@@ -1034,7 +1051,7 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute pointer.
+   * \overload
    */
   template <typename ScalarType>
   bool setAttributeScalar(const Attribute* attr, ScalarType value)
@@ -1051,22 +1068,29 @@ public:
   }
 
   /*!
-   * \brief Set Attribute for a View from Attribute index.
+   * \brief Set Attribute to a string value.
+   * \param [in] indx Attribute identifier.
+   * \param [in] value Value of attribute.
+   *
+   * If no such Attribute exists, this is a no-op.
    */
   bool setAttributeString(IndexType indx, const std::string& value);
 
   /*!
-   * \brief Set Attribute for a View from Attribute name.
+   * \overload
    */
   bool setAttributeString(const std::string& name, const std::string& value);
 
   /*!
-   * \brief Set Attribute for a View from Attribute pointer.
+   * \overload
    */
   bool setAttributeString(const Attribute* attr, const std::string& value);
 
   /*!
-   * \brief Return scalar attribute value from Attribute indx.
+   * \brief Return scalar Attribute value.
+   * \param [in] idx Attribute identifier.
+   *
+   * If no such Attribute exists, return empty scalar value.
    */
   Node::ConstValue getAttributeScalar(IndexType idx) const
   {
@@ -1080,7 +1104,7 @@ public:
   }
 
   /*!
-   * \brief Return scalar attribute value from Attribute name.
+   * \overload
    */
   Node::ConstValue getAttributeScalar(const std::string& name) const
   {
@@ -1094,7 +1118,7 @@ public:
   }
 
   /*!
-   * \brief Return scalar attribute value from Attribute pointer.
+   * \overload
    */
   Node::ConstValue getAttributeScalar(const Attribute* attr) const
   {
@@ -1161,30 +1185,32 @@ public:
   }
 
   /*!
-   * \brief Return a string attribute from the Attribute index.
+   * \brief Return a string attribute.
+   * \param [in] idx Attribute identifer.
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute name, or nullptr if no such Attribute.
    */
   const char* getAttributeString(IndexType idx) const;
 
   /*!
-   * \brief Return a string attribute from the Attribute name.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
   const char* getAttributeString(const std::string& name) const;
 
   /*!
-   * \brief Return a string attribute from the Attribute pointer.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
   const char* getAttributeString(const Attribute* attr) const;
 
   /*!
-   * \brief Return reference to attribute node from Attribute index.
+   * \brief Return reference to an Attribute node.
+   * \param [in] idx Attribute identifier
    *
    * If the value has not been explicitly set, return the current default.
+   *
+   * \return The Attribute Node, or an empty Node if no such Attribute.
    */
   const Node& getAttributeNodeRef(IndexType idx) const
   {
@@ -1193,9 +1219,7 @@ public:
   }
 
   /*!
-   * \brief Return reference to attribute node from Attribute name.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
   const Node& getAttributeNodeRef(const std::string& name) const
   {
@@ -1204,9 +1228,7 @@ public:
   }
 
   /*!
-   * \brief Return reference to attribute node from Attribute pointer.
-   *
-   * If the value has not been explicitly set, return the current default.
+   * \overload
    */
   const Node& getAttributeNodeRef(const Attribute* attr) const
   {

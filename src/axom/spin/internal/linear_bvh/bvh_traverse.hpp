@@ -58,6 +58,10 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \note Moreover, the functor `B` returns a boolean status that indicates
  *  if the specified traversal predicate is satisfied.
  *
+ * \note Functors A, B and Comp may access only memory available in
+ * the execution space.  For example, GPU execution may access only
+ * device and unified memory.
+ *
  */
 template <int NDIMS,
           typename FloatType,

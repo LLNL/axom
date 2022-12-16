@@ -78,5 +78,5 @@ target_include_directories(example PRIVATE ${AXOM_INCLUDE_DIRS})
 
 # link to axom targets
 target_link_libraries(example axom)
-target_link_libraries(example fmt)
+target_link_libraries(example axom::fmt)
 
