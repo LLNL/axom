@@ -24,6 +24,7 @@
 
 #include "helper.hpp"
 
+#include <unordered_map>
 #include <type_traits>
 
 namespace slam = axom::slam;
@@ -40,46 +41,200 @@ using Field2DTempT = MultiMat::Field2DTemplated<double, D, B>;
 template <typename B>
 using BiVarMapT = slam::BivariateMap<double, B>;
 
-template <typename FieldTypeT>
-using GetFieldFunType = FieldTypeT (MultiMat::*)(const std::string&);
-
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<std::is_same<FieldTypeT, Field2DT<BSet>>::value,
-                        GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
+enum class MMFieldMethod
 {
-  SLIC_INFO("Using templated field2D");
-  return &MultiMat::get2dField<double, BSet>;
-}
+  /*!
+   * \brief Return a generic Field2D<T>, templated on abstract BivariateSet
+   */
+  GenericField,
+  /*!
+   * \brief Return a Field2D<T> templated on a provided BivariateSet
+   *        (either MultiMat::ProductSet or MultiMat::RelationSet)
+   */
+  BSetTemplatedField,
+  /*!
+   * \brief Returns a Field2DTemplated<T>, templated on the bivariate set and
+   *        layout (cell-dominant or material-dominant)
+   */
+  FullyTemplatedField,
+  /*!
+   * \brief Return a generic slam::BivariateMap templated on the abstract
+   *        BivariateSet
+   */
+  SlamField,
+  /*!
+   * \brief Return a slam::BivariateMap templated on a concrete bivariate set.
+   *        Converts the underlying bivariate set to the corresponding product/
+   *        relation set with slam::RangeSets as from/to set types.
+   */
+  SlamTmplField,
+  /*!
+   * \brief Return a slam::BivariateMap templated on a concrete bivariate set,
+   *        and with compile-time stride of one.
+   */
+  SlamTmplStrideField,
+};
 
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<
-  std::is_same<FieldTypeT, Field2DTempT<DataLayout::CELL_DOM, BSet>>::value,
-  GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
-{
-  SLIC_INFO("Using specialized templated-field2D");
-  return &MultiMat::getTemplated2DField<double, DataLayout::CELL_DOM, BSet>;
-}
+std::unordered_map<MMFieldMethod, std::string> g_fieldMethodNames {
+  {MMFieldMethod::GenericField, "Generic Field2D"},
+  {MMFieldMethod::BSetTemplatedField, "BSet-Templated Field2D"},
+  {MMFieldMethod::FullyTemplatedField, "BSet/Layout-Templated Field2D"},
+  {MMFieldMethod::SlamField, "Slam BivariateMap"},
+  {MMFieldMethod::SlamTmplField, "Slam BivariateMap-Templated on RangeSet"},
+  {MMFieldMethod::SlamTmplStrideField,
+   "Slam BivariateMap-Templated on RangeSet/Stride"}};
 
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<
-  std::is_same<FieldTypeT, Field2DTempT<DataLayout::MAT_DOM, BSet>>::value,
-  GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
-{
-  SLIC_INFO("Using specialized templated-field2D");
-  return &MultiMat::getTemplated2DField<double, DataLayout::MAT_DOM, BSet>;
-}
+std::unordered_map<MMFieldMethod, Result_Store::Method> g_resultStoreMethodSubmap {
+  {MMFieldMethod::GenericField, Result_Store::mm_submap},
+  {MMFieldMethod::BSetTemplatedField, Result_Store::mm_submap_templated_bset},
+  {MMFieldMethod::FullyTemplatedField, Result_Store::mm_submap_templated_full},
+  {MMFieldMethod::SlamField, Result_Store::mm_submap_slam},
+  {MMFieldMethod::SlamTmplField, Result_Store::mm_submap_slam_tmpl}};
 
-template <typename FieldTypeT, typename BSet>
-typename std::enable_if<std::is_same<FieldTypeT, BiVarMapT<BSet>>::value,
-                        GetFieldFunType<FieldTypeT>>::type
-getfieldfun()
+std::unordered_map<MMFieldMethod, Result_Store::Method> g_resultStoreMethodDirect {
+  {MMFieldMethod::GenericField, Result_Store::mm_direct},
+  {MMFieldMethod::BSetTemplatedField, Result_Store::mm_direct_templated_bset},
+  {MMFieldMethod::FullyTemplatedField, Result_Store::mm_direct_templated_full},
+  {MMFieldMethod::SlamField, Result_Store::mm_direct_slam},
+  {MMFieldMethod::SlamTmplField, Result_Store::mm_direct_slam_tmpl},
+  {MMFieldMethod::SlamTmplStrideField, Result_Store::mm_direct_slam_tmpl_stride}};
+
+/**
+ * \brief Specializable helper class to enable testing accesses of fields through
+ *  various methods.
+ *
+ * \tparam FieldType The field access method to use
+ * \tparam BSet The bivariate set type to use
+ * \tparam Layout The layout to template a Field2D with; ignored except when FieldType
+ *
+ * \note The BSet template parameter is ignored for FieldType == GenericField
+ * \note the Layout template parameter is ignored except when FieldType == FullyTemplatedField.
+ */
+template <MMFieldMethod FieldType, typename BSet, DataLayout Layout>
+struct FieldGetter;
+
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::GenericField, BSet, Layout>
 {
-  SLIC_INFO("Using slam BivariateMap");
-  return &MultiMat::get2dFieldAsSlamBivarMap<double, BSet>;
-}
+  static MultiMat::Field2D<double> get(MultiMat& mm, const std::string& fieldName)
+  {
+    return mm.get2dField<double>(fieldName);
+  }
+};
+
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::BSetTemplatedField, BSet, Layout>
+{
+  static MultiMat::Field2D<double, BSet> get(MultiMat& mm,
+                                             const std::string& fieldName)
+  {
+    return mm.get2dField<double, BSet>(fieldName);
+  }
+};
+
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::FullyTemplatedField, BSet, Layout>
+{
+  static MultiMat::Field2DTemplated<double, Layout, BSet> get(
+    MultiMat& mm,
+    const std::string& fieldName)
+  {
+    return mm.getTemplated2DField<double, Layout, BSet>(fieldName);
+  }
+};
+
+template <typename BSet, DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
+{
+  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+
+  static SlamBMap get(MultiMat& mm, const std::string& fieldName)
+  {
+    return mm.get2dFieldAsSlamBivarMap<double, BSet>(fieldName);
+  }
+};
+
+using RangeSet = slam::RangeSet<>;
+using ConcreteProdSet = slam::ProductSet<RangeSet, RangeSet>;
+using MMRelationType = typename MultiMat::RelationSetType::RelationType;
+using ConcreteRelationSet = slam::RelationSet<MMRelationType, RangeSet, RangeSet>;
+
+std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet> g_concretizedProdSets;
+std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>
+  g_concretizedRelSets;
+
+template <DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetType, Layout>
+{
+  using BSet = ConcreteProdSet;
+  using SlamBMap = slam::BivariateMap<double, BSet>;
+
+  static SlamBMap get(MultiMat& mm, const std::string& fieldName)
+  {
+    auto field =
+      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
+    if(g_concretizedProdSets.find(field.set()) == g_concretizedProdSets.end())
+    {
+      BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
+                   static_cast<const RangeSet*>(field.set()->getSecondSet()));
+      g_concretizedProdSets[field.set()] = prodSet;
+    }
+    SlamBMap fieldStrided(&(g_concretizedProdSets[field.set()]));
+    fieldStrided.copy(field.getMap()->data().data());
+    return fieldStrided;
+  }
+};
+
+template <DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::ProductSetType, Layout>
+{
+  using BSet = ConcreteProdSet;
+  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using Stride = slam::policies::StrideOne<int>;
+  using Ind = typename SlamBMap::IndirectionPolicy;
+
+  using SlamBMapStrided = slam::BivariateMap<double, BSet, Ind, Stride>;
+
+  static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
+  {
+    auto field =
+      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
+    if(g_concretizedProdSets.find(field.set()) == g_concretizedProdSets.end())
+    {
+      BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
+                   static_cast<const RangeSet*>(field.set()->getSecondSet()));
+      g_concretizedProdSets[field.set()] = prodSet;
+    }
+    SlamBMapStrided fieldStrided(&(g_concretizedProdSets[field.set()]));
+    fieldStrided.copy(field.getMap()->data().data());
+    return fieldStrided;
+  }
+};
+
+template <DataLayout Layout>
+struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::RelationSetType, Layout>
+{
+  using BSet = ConcreteRelationSet;
+  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using Stride = slam::policies::StrideOne<int>;
+  using Ind = typename SlamBMap::IndirectionPolicy;
+
+  using SlamBMapStrided = slam::BivariateMap<double, BSet, Ind, Stride>;
+
+  static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
+  {
+    auto field =
+      mm.get2dFieldAsSlamBivarMap<double, MultiMat::RelationSetType>(fieldName);
+    if(g_concretizedRelSets.find(field.set()) == g_concretizedRelSets.end())
+    {
+      BSet relSet(field.set()->getRelation());
+      g_concretizedRelSets[field.set()] = relSet;
+    }
+    SlamBMapStrided fieldStrided(&(g_concretizedRelSets[field.set()]));
+    fieldStrided.copy(field.getMap()->data().data());
+    return fieldStrided;
+  }
+};
 
 multirun_timer timer;
 Value_Checker data_checker;
@@ -233,11 +388,14 @@ void average_density_cell_dom_mm_template(MultiMat& mm)
 
 //    Average density - Cell-Dominant Full Matrix
 //    MultiMat - Direct Access
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_cell_dom_mm_direct(MultiMat& mm)
 {
   SLIC_INFO(
     "-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access "
     "--");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
@@ -247,29 +405,15 @@ void average_density_cell_dom_mm_direct(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
-  auto& Volfrac = mm.get2dField<double>("Volfrac");
+  //pick which get field function to use
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
+
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
+
   auto& Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells);
-
-  using SetType = slam::RangeSet<>;
-  using ProductSet = slam::ProductSet<SetType, SetType>;
-  using Stride = slam::policies::StrideOne<int>;
-  //slam::policies::RuntimeStride<int> >
-  using Ind = slam::policies::STLVectorIndirection<int, double>;
-
-  /**** BEGIN MOVE THIS CODE INTO MULTIMAT  *****/
-  // convert DensityFrac to use ProductSets
-  using BMapT = slam::BivariateMap<double, ProductSet, Ind, Stride>;
-
-  auto prodSet = Densityfrac.getBivariateSet<ProductSet>();
-  auto densityMap = BMapT(&prodSet);
-  densityMap.copy(Densityfrac.getMap()->data().data());
-
-  auto volfracMap = BMapT(&prodSet);
-  volfracMap.copy(Volfrac.getMap()->data().data());
-  /**** END MOVE THIS CODE INTO MULTIMAT  *****/
 
   timer.reset();
 
@@ -282,7 +426,7 @@ void average_density_cell_dom_mm_direct(MultiMat& mm)
       double density_ave = 0.0;
       for(int m = 0; m < nmats; ++m)
       {
-        density_ave += densityMap(ic, m) * volfracMap(ic, m);
+        density_ave += Densityfrac(ic, m) * Volfrac(ic, m);
       }
       Density_average[ic] = density_ave / Vol[ic];
     }
@@ -294,7 +438,7 @@ void average_density_cell_dom_mm_direct(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_direct,
+                          g_resultStoreMethodDirect[Method],
                           act_perf);
   SLIC_INFO("Average Density                      compute time is "
             << act_perf << " secs\n");
@@ -402,7 +546,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Density                      compute time is "
             << act_perf << " secs\n");
@@ -410,12 +554,14 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
 
 //    Average density - Cell-Dominant
 //    MultiMat - Submap
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_cell_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO(
     "-- Averaging Density cell-dominant using MultiMat Submap -- templated on "
     "concrete bivariate set");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
@@ -425,25 +571,10 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   int ncells = mm.getNumberOfCells();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
 
-  /*if constexpr (std::is_same< FieldTypeT, Field2DT<BSet>>::value) {
-    SLIC_INFO("Using templated field2D");
-    getFieldFun = &MultiMat::get2dField<double, BSet>;
-  }
-  else if constexpr (std::is_same< FieldTypeT, Field2DTempT<DataLayout::CELL_DOM, BSet>>::value)
-  {
-    SLIC_INFO("Using specialized templated-field2D");
-    getFieldFun = &MultiMat::getTemplated2DField<double, DataLayout::CELL_DOM, BSet>;
-  }
-  else if constexpr (std::is_same< FieldTypeT, BiVarMapT<BSet> >::value)
-  {
-    SLIC_INFO("Using slam BivariateMap");
-    getFieldFun = &MultiMat::get2dFieldAsSlamBivarMap<double, BSet>;
-  }*/
-
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT Volfrac = (mm.*getFieldFun)("Volfrac");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
   auto& Vol = mm.get1dField<double>("Vol");
 
@@ -476,7 +607,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
   SLIC_INFO("Average Density                      compute time is "
             << act_perf << " secs\n");
@@ -745,6 +876,8 @@ double average_density_mat_dom_compact(Robey_data& data)
 
 //    Average density - Material-Dominant
 //    MultiMat - Direct Access
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_mat_dom_mm_direct(MultiMat& mm)
 {
   SLIC_INFO(
@@ -759,8 +892,10 @@ void average_density_mat_dom_mm_direct(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
+
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
   MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
@@ -777,8 +912,7 @@ void average_density_mat_dom_mm_direct(MultiMat& mm)
     {
       for(int ic = 0; ic < ncells; ++ic)
       {
-        Density_average[ic] +=
-          *Densityfrac.findValue(m, ic) * *Volfrac.findValue(m, ic);
+        Density_average[ic] += Densityfrac(m, ic) * Volfrac(m, ic);
       }
     }
     for(int ic = 0; ic < ncells; ++ic)
@@ -793,7 +927,7 @@ void average_density_mat_dom_mm_direct(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_direct,
+                          g_resultStoreMethodDirect[Method],
                           act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
@@ -859,12 +993,14 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
 
 //    Average density - Material-Dominant
 //    MultiMat - Submap
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_mat_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO(
     "-- Averaging Density mat-dominant using MultiMat Submap -- templated on "
     "concrete bivariate set");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   mm.convertLayoutToMaterialDominant();
 
@@ -876,16 +1012,10 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
   int nmats = mm.getNumberOfMaterials();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
 
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT Volfrac = (mm.*getFieldFun)("Volfrac");
-
-  //auto Densityfrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Densityfrac");
-  //auto Volfrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Volfrac");
-
-  //auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
-  //auto Volfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Volfrac");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
   auto& Vol = mm.get1dField<double>("Vol");
 
@@ -921,7 +1051,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
@@ -989,7 +1119,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::avg_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
@@ -1312,6 +1442,8 @@ void calculate_pressure_cell_dom_compact(Robey_data& data)
 
 //   Calculate pressure using ideal gas law - Cell-Dominant
 //     MultiMat - Direct Access
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Direct Access --");
@@ -1323,10 +1455,11 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
+
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
+  auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
   MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
@@ -1341,12 +1474,11 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
     {
       for(int m = 0; m < nmats; ++m)
       {
-        if(*Volfrac.findValue(ic, m) > 0.)
+        if(Volfrac(ic, m) > 0.)
         {
           Pressurefrac[ic * nmats + m] =
-            (nmatconsts[m] * *Densityfrac.findValue(ic, m) *
-             *Temperaturefrac.findValue(ic, m)) /
-            *Volfrac.findValue(ic, m);
+            (nmatconsts[m] * Densityfrac(ic, m) * Temperaturefrac(ic, m)) /
+            Volfrac(ic, m);
         }
         else
         {
@@ -1363,7 +1495,7 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_direct,
+                          g_resultStoreMethodDirect[Method],
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
@@ -1491,17 +1623,20 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
 }
 
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO(
     "-- Calculating pressure, using MultiMat Submap \t\t-- templated on BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
+
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -1510,17 +1645,14 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   int ncells = mm.getNumberOfCells();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
 
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT Volfrac = (mm.*getFieldFun)("Volfrac");
-  FieldTypeT Temperaturefrac = (mm.*getFieldFun)("Tempfrac");
-  FieldTypeT Pressurefrac = (mm.*getFieldFun)("Pressurefrac");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
+  auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
+  auto Pressurefrac = FieldGetterType::get(mm, "Pressurefrac");
 
-  auto& nmatconsts = mm.get1dField<double>("nmatconsts");
-
-  //auto Pressurefrac = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("Pressurefrac");
-  //auto Pressurefrac = mm.get2dFieldAsSlamBivarMap<double, BSet>("Pressurefrac");
+  auto nmatconsts = mm.get1dField<double>("nmatconsts");
 
   timer.reset();
 
@@ -1556,7 +1688,7 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
@@ -1793,6 +1925,8 @@ void calculate_pressure_mat_dom_compact(Robey_data& data)
 
 //   Calculate pressure using ideal gas law - Material-Dominant
 //     MultiMat - Direct Access
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Direct Access --");
@@ -1804,10 +1938,11 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
+
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
+  auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
   MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
@@ -1822,12 +1957,11 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
     {
       for(int ic = 0; ic < ncells; ++ic)
       {
-        if(*Volfrac.findValue(m, ic) > 0.)
+        if(Volfrac(m, ic) > 0.)
         {
           Pressurefrac[m * ncells + ic] =
-            (nmatconsts[m] * *Densityfrac.findValue(m, ic) *
-             *Temperaturefrac.findValue(m, ic)) /
-            *Volfrac.findValue(m, ic);
+            (nmatconsts[m] * Densityfrac(m, ic) * Temperaturefrac(m, ic)) /
+            Volfrac(m, ic);
         }
         else
         {
@@ -1844,7 +1978,7 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_direct,
+                          g_resultStoreMethodDirect[Method],
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
@@ -1975,18 +2109,20 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
 }
 
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO(
     "-- Calculating pressure, using MultiMat Submap \t\t-- using templated "
     "BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
   SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
@@ -1994,21 +2130,24 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   int nmats = mm.getNumberOfMaterials();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
 
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT Volfrac = (mm.*getFieldFun)("Volfrac");
-  FieldTypeT Temperaturefrac = (mm.*getFieldFun)("Tempfrac");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
+  auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
 
   MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
 
   // Store result in a dense field
-  using DenseFieldSet = typename MultiMat::ProductSetType;
-  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
-  DenseField Pressurefrac(mm, mm.getDense2dFieldSet(DataLayout::MAT_DOM));
-
-  //this field needs to be dense, but the other fields can be sparse, so not this:
-  //auto Pressurefrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Pressurefrac");
+  {
+    // this field may have been converted to sparse along with the other fields
+    const int fieldIdx = mm.getFieldIdx("Pressurefrac");
+    mm.convertFieldToDense(fieldIdx);
+  }
+  auto Pressurefrac =
+    FieldGetter<Method, MultiMat::ProductSetType, DataLayout::MAT_DOM>::get(
+      mm,
+      "Pressurefrac");
 
   timer.reset();
 
@@ -2044,7 +2183,7 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   result_store.add_result(Result_Store::pressure_calc,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
             << act_perf << " secs\n");
@@ -2332,6 +2471,8 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
 
 //    Average material density over neighborhood of each cell
 //      MultiMat - Dense - Direct Access
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
                                                       Robey_data& data)
 {
@@ -2348,8 +2489,10 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
+
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
   std::vector<double> MatDensity_average(ncells * nmats, 0);
 
@@ -2389,16 +2532,15 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
       for(int m = 0; m < nmats; ++m)
       {
         //this check is not needed in sparse layout.
-        if(*Volfrac.findValue(ic, m) > 0.0)
+        if(Volfrac(ic, m) > 0.0)
         {
           int nnm = 0;  // number of nbrs with this material
           for(int n = 0; n < nn; ++n)
           {
             int jc = cnbrs[n];
-            if(*Volfrac.findValue(jc, m) > 0.0)
+            if(Volfrac(jc, m) > 0.0)
             {
-              MatDensity_average[ic * nmats + m] +=
-                *Densityfrac.findValue(jc, m) / dsqr[n];
+              MatDensity_average[ic * nmats + m] += Densityfrac(jc, m) / dsqr[n];
               ++nnm;
             }
           }
@@ -2426,7 +2568,7 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_direct,
+                          g_resultStoreMethodDirect[Method],
                           act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
@@ -2534,12 +2676,14 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm,
 
 //    Average material density over neighborhood of each cell
 //      MultiMat - Dense - Submap
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm,
                                                       Robey_data& data)
 {
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix,"
             << " Multimat Submap -- using templated BSet ");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -2550,24 +2694,15 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm,
   int nmats = mm.getNumberOfMaterials();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
 
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT Volfrac = (mm.*getFieldFun)("Volfrac");
-
-  //auto Densityfrac = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("Densityfrac");
-  //auto Volfrac = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("Volfrac");
-
-  //auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
-  //auto Volfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Volfrac");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
+  auto MatDensity_average = FieldGetterType::get(mm, "MatDensityAverage");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
   const auto& cen = data.slam_centroids;
-
-  FieldTypeT MatDensity_average = (mm.*getFieldFun)("MatDensityAverage");
-  //auto MatDensity_average = mm.get2dFieldAsSlamBivarMap<double, BSet>("MatDensityAverage");
-  //auto MatDensity_average = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("MatDensityAverage");
 
   timer.reset();
 
@@ -2624,7 +2759,7 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
@@ -2719,7 +2854,7 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
@@ -2975,18 +3110,20 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
 }
 
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm,
                                                          Robey_data& data)
 {
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact, "
             << " Multimat Submap -- templated on BSet type");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -2996,16 +3133,10 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm,
   int ncells = mm.getNumberOfCells();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::CELL_DOM>;
 
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT MatDensity_average = (mm.*getFieldFun)("MatDensityAverage");
-
-  //auto Densityfrac = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("Densityfrac");
-  //auto MatDensity_average = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("MatDensityAverage");
-
-  //auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double, BSet>("Densityfrac");
-  //auto MatDensity_average = mm.get2dFieldAsSlamBivarMap<double, BSet>("MatDensityAverage");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto MatDensity_average = FieldGetterType::get(mm, "MatDensityAverage");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
@@ -3062,7 +3193,7 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -3417,6 +3548,8 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
 
 //    Average density over neighbor cells
 //      MultiMat - full - Direct Access
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
                                                      Robey_data& data)
 {
@@ -3431,8 +3564,10 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
+
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
@@ -3452,7 +3587,7 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
     {
       for(int ic = 0; ic < ncells; ++ic)
       {
-        if(*Volfrac.findValue(m, ic) > 0.0)
+        if(Volfrac(m, ic) > 0.0)
         {
           double xc[2];
           xc[0] = cen[ic * 2];
@@ -3475,10 +3610,9 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
           for(int n = 0; n < nn; ++n)
           {
             int jc = cnbrs[n];
-            if(*Volfrac.findValue(m, jc) > 0.0)
+            if(Volfrac(m, jc) > 0.0)
             {
-              MatDensity_average[m * ncells + ic] +=
-                *Densityfrac.findValue(m, jc) / dsqr[n];
+              MatDensity_average[m * ncells + ic] += Densityfrac(m, jc) / dsqr[n];
               ++nnm;
             }
           }
@@ -3501,7 +3635,7 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_direct,
+                          g_resultStoreMethodDirect[Method],
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -3673,19 +3807,21 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
 }
 
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm,
                                                      Robey_data& data)
 {
   SLIC_INFO(
     "-- Average Density over Neighbors, Material-Dominant, using MultiMat "
     "Submap -- templated on BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -3695,11 +3831,11 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm,
   int nmats = mm.getNumberOfMaterials();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
 
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT Volfrac = (mm.*getFieldFun)("Volfrac");
-  FieldTypeT MatDensity_average = (mm.*getFieldFun)("MatDensityAverage");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto Volfrac = FieldGetterType::get(mm, "Volfrac");
+  auto MatDensity_average = FieldGetterType::get(mm, "MatDensityAverage");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
@@ -3759,7 +3895,7 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -4023,19 +4159,21 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          Result_Store::mm_submap_templated_bset,
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
 }
 
-template <typename BSet, typename FieldTypeT>
+template <MMFieldMethod Method = MMFieldMethod::GenericField,
+          typename BSet = MultiMat::BivariateSetType>
 void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm,
                                                         Robey_data& data)
 {
   SLIC_INFO(
     "-- Average Density over Neighbors, Material-Dominant Compact, using "
     "MultiMat Submap -- templated on BSet");
+  SLIC_INFO("-- Field accesses through: " << g_fieldMethodNames[Method] << " --");
 
   SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
                                 << mm.getFieldSparsityLayoutAsString(0));
@@ -4046,10 +4184,10 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm,
   int nmats = mm.getNumberOfMaterials();
 
   //pick which get field function to use
-  GetFieldFunType<FieldTypeT> getFieldFun = getfieldfun<FieldTypeT, BSet>();
+  using FieldGetterType = FieldGetter<Method, BSet, DataLayout::MAT_DOM>;
 
-  FieldTypeT Densityfrac = (mm.*getFieldFun)("Densityfrac");
-  FieldTypeT MatDensity_average = (mm.*getFieldFun)("MatDensityAverage");
+  auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
+  auto MatDensity_average = FieldGetterType::get(mm, "MatDensityAverage");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
@@ -4106,7 +4244,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm,
   result_store.add_result(Result_Store::neighbor_density,
                           mm.getFieldDataLayout(0),
                           mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_submap_templated,
+                          g_resultStoreMethodSubmap[Method],
                           act_perf);
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -4422,19 +4560,27 @@ int main(int argc, char** argv)
   mm.convertLayoutToDense();
 
   average_density_cell_dom_full(data);
-  average_density_cell_dom_mm_template(mm);
-  average_density_cell_dom_mm_direct(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::GenericField>(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::BSetTemplatedField,
+                                     ProductSetType>(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::FullyTemplatedField,
+                                     ProductSetType>(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::SlamField, ProductSetType>(mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
+  average_density_cell_dom_mm_direct<MMFieldMethod::SlamTmplStrideField,
+                                     ProductSetType>(mm);
 
-  average_density_cell_dom_mm_submap(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
-  average_density_cell_dom_mm_submap<ProductSetType>(mm);
-  average_density_cell_dom_mm_submap<ProductSetType, BiVarMapT<ProductSetType>>(
+  average_density_cell_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
     mm);
 #endif
-  average_density_cell_dom_mm_submap<ProductSetType, Field2DT<ProductSetType>>(mm);
-  average_density_cell_dom_mm_submap<ProductSetType,
-                                     Field2DTempT<DataLayout::CELL_DOM, ProductSetType>>(
-    mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                     ProductSetType>(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                     ProductSetType>(mm);
   average_density_cell_dom_mm_idxarray(mm);
 
   average_density_cell_dom_mm_iter(mm);
@@ -4446,17 +4592,17 @@ int main(int argc, char** argv)
   mm.convertLayoutToSparse();
   average_density_cell_dom_mm_idxarray(mm);
 
-  average_density_cell_dom_mm_submap(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
-  average_density_cell_dom_mm_submap<RelationSetType>(mm);
-  average_density_cell_dom_mm_submap<RelationSetType, BiVarMapT<RelationSetType>>(
+  average_density_cell_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(
+    mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
     mm);
 #endif
-  average_density_cell_dom_mm_submap<RelationSetType, Field2DT<RelationSetType>>(
-    mm);
-  average_density_cell_dom_mm_submap<
-    RelationSetType,
-    Field2DTempT<DataLayout::CELL_DOM, RelationSetType>>(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                     RelationSetType>(mm);
+  average_density_cell_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                     RelationSetType>(mm);
 
   average_density_cell_dom_mm_iter(mm);
   //average_density_cell_dom_mm_flatiter(mm);
@@ -4473,16 +4619,26 @@ int main(int argc, char** argv)
 
   average_density_mat_dom_full(data);
 
-  average_density_mat_dom_mm_direct(mm);
-  average_density_mat_dom_mm_submap(mm);
-#ifdef run_slam_bivarmap
-  average_density_mat_dom_mm_submap<ProductSetType>(mm);
-  average_density_mat_dom_mm_submap<ProductSetType, BiVarMapT<ProductSetType>>(mm);
-#endif
-  average_density_mat_dom_mm_submap<ProductSetType, Field2DT<ProductSetType>>(mm);
-  average_density_mat_dom_mm_submap<ProductSetType,
-                                    Field2DTempT<DataLayout::MAT_DOM, ProductSetType>>(
+  average_density_mat_dom_mm_direct<MMFieldMethod::GenericField>(mm);
+  average_density_mat_dom_mm_direct<MMFieldMethod::BSetTemplatedField, ProductSetType>(
     mm);
+  average_density_mat_dom_mm_direct<MMFieldMethod::FullyTemplatedField,
+                                    ProductSetType>(mm);
+  average_density_mat_dom_mm_direct<MMFieldMethod::SlamField, ProductSetType>(mm);
+  average_density_mat_dom_mm_direct<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
+  average_density_mat_dom_mm_direct<MMFieldMethod::SlamTmplStrideField,
+                                    ProductSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::GenericField>(mm);
+#ifdef run_slam_bivarmap
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
+    mm);
+#endif
+  average_density_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField, ProductSetType>(
+    mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                    ProductSetType>(mm);
   average_density_mat_dom_mm_iter(mm);
   //average_density_mat_dom_mm_flatiter(mm);
 
@@ -4492,17 +4648,16 @@ int main(int argc, char** argv)
 
   average_density_mat_dom_compact(data);
   average_density_mat_dom_mm_idxarray(mm);
-  average_density_mat_dom_mm_submap(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
-  average_density_mat_dom_mm_submap<RelationSetType>(mm);
-  average_density_mat_dom_mm_submap<RelationSetType, BiVarMapT<RelationSetType>>(
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
     mm);
 #endif
-  average_density_mat_dom_mm_submap<RelationSetType, Field2DT<RelationSetType>>(
-    mm);
-  average_density_mat_dom_mm_submap<RelationSetType,
-                                    Field2DTempT<DataLayout::MAT_DOM, RelationSetType>>(
-    mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                    RelationSetType>(mm);
+  average_density_mat_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                    RelationSetType>(mm);
 
   average_density_mat_dom_mm_iter(mm);
   //average_density_mat_dom_mm_flatiter(mm);
@@ -4518,22 +4673,32 @@ int main(int argc, char** argv)
   mm.convertLayoutToCellDominant();
   mm.convertLayoutToDense();
   average_density_over_nbr_cell_dom_full(data);
-  average_density_over_nbr_cell_dom_full_mm_direct(mm, data);
-  average_density_over_nbr_cell_dom_full_mm_submap(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::GenericField>(
+    mm,
+    data);
+  average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
+                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
+                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::SlamField,
+                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::SlamTmplField,
+                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_direct<MMFieldMethod::SlamTmplStrideField,
+                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
 #ifdef run_slam_bivarmap
-  average_density_over_nbr_cell_dom_full_mm_submap<ProductSetType>(mm, data);
-  average_density_over_nbr_cell_dom_full_mm_submap<ProductSetType,
-                                                   BiVarMapT<ProductSetType>>(
-    mm,
-    data);
+  average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::SlamField,
+                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::SlamTmplField,
+                                                   ProductSetType>(mm, data);
 #endif
-  average_density_over_nbr_cell_dom_full_mm_submap<ProductSetType,
-                                                   Field2DT<ProductSetType>>(
-    mm,
-    data);
-  average_density_over_nbr_cell_dom_full_mm_submap<
-    ProductSetType,
-    Field2DTempT<DataLayout::CELL_DOM, ProductSetType>>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                                   ProductSetType>(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                                   ProductSetType>(mm, data);
   average_density_over_nbr_cell_dom_full_mm_iter(mm, data);
 
   SLIC_INFO(
@@ -4542,21 +4707,19 @@ int main(int argc, char** argv)
   data_checker.reset();
   average_density_over_nbr_cell_dom_compact(data);
   //average_density_over_nbr_cell_dom_compact_mm_idxarray(mm, data);
-  average_density_over_nbr_cell_dom_compact_mm_submap(mm, data);
+  average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
 #ifdef run_slam_bivarmap
-  average_density_over_nbr_cell_dom_compact_mm_submap<RelationSetType>(mm, data);
-  average_density_over_nbr_cell_dom_compact_mm_submap<RelationSetType,
-                                                      BiVarMapT<RelationSetType>>(
-    mm,
-    data);
+  average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::SlamField,
+                                                      RelationSetType>(mm, data);
+  average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::SlamTmplField,
+                                                      RelationSetType>(mm, data);
 #endif
-  average_density_over_nbr_cell_dom_compact_mm_submap<RelationSetType,
-                                                      Field2DT<RelationSetType>>(
-    mm,
-    data);
-  average_density_over_nbr_cell_dom_compact_mm_submap<
-    RelationSetType,
-    Field2DTempT<DataLayout::CELL_DOM, RelationSetType>>(mm, data);
+  average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                                      RelationSetType>(mm, data);
+  average_density_over_nbr_cell_dom_compact_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                                      RelationSetType>(mm, data);
   //average_density_over_nbr_cell_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO(
@@ -4567,21 +4730,32 @@ int main(int argc, char** argv)
   mm.convertLayoutToDense();
 
   average_density_over_nbr_mat_dom_full(data);
-  average_density_over_nbr_mat_dom_full_mm_direct(mm, data);
-  average_density_over_nbr_mat_dom_full_mm_submap(mm, data);
-#ifdef run_slam_bivarmap
-  average_density_over_nbr_mat_dom_full_mm_submap<ProductSetType>(mm, data);
-  average_density_over_nbr_mat_dom_full_mm_submap<ProductSetType,
-                                                  BiVarMapT<ProductSetType>>(
+  average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::GenericField>(
     mm,
     data);
+  average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
+                                                  ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
+                                                  ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::SlamField,
+                                                  ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::SlamTmplField,
+                                                  ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_direct<MMFieldMethod::SlamTmplStrideField,
+                                                  ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
+#ifdef run_slam_bivarmap
+  average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::SlamField,
+                                                  ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::SlamTmplField,
+                                                  ProductSetType>(mm, data);
 #endif
-  average_density_over_nbr_mat_dom_full_mm_submap<ProductSetType,
-                                                  Field2DT<ProductSetType>>(mm,
-                                                                            data);
-  average_density_over_nbr_mat_dom_full_mm_submap<
-    ProductSetType,
-    Field2DTempT<DataLayout::MAT_DOM, ProductSetType>>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                                  ProductSetType>(mm, data);
+  average_density_over_nbr_mat_dom_full_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                                  ProductSetType>(mm, data);
   //average_density_over_nbr_mat_dom_full_mm_iter(mm, data);
 
   SLIC_INFO(
@@ -4591,21 +4765,19 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_compact(data);
 
   //average_density_over_nbr_mat_dom_compact_mm_indexarray(mm, data);
-  average_density_over_nbr_mat_dom_compact_mm_submap(mm, data);
+  average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::GenericField>(
+    mm,
+    data);
 #ifdef run_slam_bivarmap
-  average_density_over_nbr_mat_dom_compact_mm_submap<RelationSetType>(mm, data);
-  average_density_over_nbr_mat_dom_compact_mm_submap<RelationSetType,
-                                                     BiVarMapT<RelationSetType>>(
-    mm,
-    data);
+  average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::SlamField,
+                                                     RelationSetType>(mm, data);
+  average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::SlamTmplField,
+                                                     RelationSetType>(mm, data);
 #endif
-  average_density_over_nbr_mat_dom_compact_mm_submap<RelationSetType,
-                                                     Field2DT<RelationSetType>>(
-    mm,
-    data);
-  average_density_over_nbr_mat_dom_compact_mm_submap<
-    RelationSetType,
-    Field2DTempT<DataLayout::MAT_DOM, RelationSetType>>(mm, data);
+  average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                                     RelationSetType>(mm, data);
+  average_density_over_nbr_mat_dom_compact_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                                     RelationSetType>(mm, data);
   //average_density_over_nbr_mat_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO("**********************************************************");
@@ -4620,18 +4792,28 @@ int main(int argc, char** argv)
   mm.convertLayoutToCellDominant();
   mm.convertLayoutToDense();
   calculate_pressure_cell_dom_full(data);
-  calculate_pressure_cell_dom_full_mm_direct(mm);
-  calculate_pressure_cell_dom_mm_submap(mm);
+  calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::GenericField>(mm);
+  calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
+                                             ProductSetType>(mm);
+  calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
+                                             ProductSetType>(mm);
+  calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::SlamField, ProductSetType>(
+    mm);
+  calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::SlamTmplField,
+                                             ProductSetType>(mm);
+  calculate_pressure_cell_dom_full_mm_direct<MMFieldMethod::SlamTmplStrideField,
+                                             ProductSetType>(mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
-  calculate_pressure_cell_dom_mm_submap<ProductSetType>(mm);
-  calculate_pressure_cell_dom_mm_submap<ProductSetType, BiVarMapT<ProductSetType>>(
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(
+    mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
     mm);
 #endif
-  calculate_pressure_cell_dom_mm_submap<ProductSetType, Field2DT<ProductSetType>>(
-    mm);
-  calculate_pressure_cell_dom_mm_submap<
-    ProductSetType,
-    Field2DTempT<DataLayout::CELL_DOM, ProductSetType>>(mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                        ProductSetType>(mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                        ProductSetType>(mm);
   calculate_pressure_cell_dom_full_mm_iter(mm);
   //calculate_pressure_cell_dom_full_mm_flatiter(mm);
 
@@ -4641,17 +4823,17 @@ int main(int argc, char** argv)
   data_checker.reset();
   calculate_pressure_cell_dom_compact(data);
 
-  calculate_pressure_cell_dom_mm_submap(mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
-  calculate_pressure_cell_dom_mm_submap<RelationSetType>(mm);
-  calculate_pressure_cell_dom_mm_submap<RelationSetType, BiVarMapT<RelationSetType>>(
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(
+    mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
     mm);
 #endif
-  calculate_pressure_cell_dom_mm_submap<RelationSetType, Field2DT<RelationSetType>>(
-    mm);
-  calculate_pressure_cell_dom_mm_submap<
-    RelationSetType,
-    Field2DTempT<DataLayout::CELL_DOM, RelationSetType>>(mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                        RelationSetType>(mm);
+  calculate_pressure_cell_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                        RelationSetType>(mm);
 
   SLIC_INFO(
     "**************** Full Layout - Material-Dominant ******************");
@@ -4661,18 +4843,28 @@ int main(int argc, char** argv)
   mm.convertLayoutToMaterialDominant();
 
   calculate_pressure_mat_dom_full(data);
-  calculate_pressure_mat_dom_full_mm_direct(mm);
-  calculate_pressure_mat_dom_mm_submap(mm);
+  calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::GenericField>(mm);
+  calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::BSetTemplatedField,
+                                            ProductSetType>(mm);
+  calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::FullyTemplatedField,
+                                            ProductSetType>(mm);
+  calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::SlamField, ProductSetType>(
+    mm);
+  calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::SlamTmplField,
+                                            ProductSetType>(mm);
+  calculate_pressure_mat_dom_full_mm_direct<MMFieldMethod::SlamTmplStrideField,
+                                            ProductSetType>(mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
-  calculate_pressure_mat_dom_mm_submap<ProductSetType>(mm);
-  calculate_pressure_mat_dom_mm_submap<ProductSetType, BiVarMapT<ProductSetType>>(
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamField, ProductSetType>(
+    mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, ProductSetType>(
     mm);
 #endif
-  calculate_pressure_mat_dom_mm_submap<ProductSetType, Field2DT<ProductSetType>>(
-    mm);
-  calculate_pressure_mat_dom_mm_submap<
-    ProductSetType,
-    Field2DTempT<DataLayout::MAT_DOM, ProductSetType>>(mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                       ProductSetType>(mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                       ProductSetType>(mm);
   calculate_pressure_mat_dom_full_mm_iter(mm);
   //calculate_pressure_mat_dom_full_mm_flatiter(mm);
 
@@ -4681,17 +4873,17 @@ int main(int argc, char** argv)
   mm.convertLayoutToSparse();
   calculate_pressure_mat_dom_compact(data);
 
-  calculate_pressure_mat_dom_mm_submap(mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::GenericField>(mm);
 #ifdef run_slam_bivarmap
-  calculate_pressure_mat_dom_mm_submap<RelationSetType>(mm);
-  calculate_pressure_mat_dom_mm_submap<RelationSetType, BiVarMapT<RelationSetType>>(
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamField, RelationSetType>(
+    mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::SlamTmplField, RelationSetType>(
     mm);
 #endif
-  calculate_pressure_mat_dom_mm_submap<RelationSetType, Field2DT<RelationSetType>>(
-    mm);
-  calculate_pressure_mat_dom_mm_submap<
-    RelationSetType,
-    Field2DTempT<DataLayout::MAT_DOM, RelationSetType>>(mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::BSetTemplatedField,
+                                       RelationSetType>(mm);
+  calculate_pressure_mat_dom_mm_submap<MMFieldMethod::FullyTemplatedField,
+                                       RelationSetType>(mm);
 
   /*
   average_density_cell_dom_with_if(data);
