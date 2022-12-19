@@ -201,7 +201,7 @@ packages:
   hypre:
     version: [2.24.0]
   mfem:
-    version: [4.4.0]
+    require: "@4.5"
   raja:
     variants: ~shared~examples~exercises
   umpire:
