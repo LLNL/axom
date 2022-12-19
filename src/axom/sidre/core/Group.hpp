@@ -123,7 +123,7 @@ class MapCollection;
  * held in the list format, and the object creation methods will return
  * a null pointer if such a string is provided.  Unnamed Groups to be held
  * in the list format should be created using the method createUnnamedGroup,
- * whlie unnamed Views should be created by passing an empty string as the
+ * while unnamed Views should be created by passing an empty string as the
  * path argument to any of the createView methods.
  *
  *
