@@ -126,8 +126,8 @@ public:
 
     // Access the positions QFunc and associated QuadratureSpace
     mfem::QuadratureFunction* pos_coef = inoutQFuncs.Get("positions");
-    mfem::QuadratureSpace* sp = pos_coef->GetSpace();
-    const int nq = sp->GetElementIntRule(0).GetNPoints();
+    auto* sp = pos_coef->GetSpace();
+    const int nq = sp->GetIntRule(0).GetNPoints();
 
     // Sample the in/out field at each point
     // store in QField which we register with the QFunc collection
@@ -142,8 +142,8 @@ public:
     axom::utilities::Timer timer(true);
     for(int i = 0; i < NE; ++i)
     {
-      pos_coef->GetElementValues(i, m);
-      inout->GetElementValues(i, res);
+      pos_coef->GetValues(i, m);
+      inout->GetValues(i, res);
 
       for(int p = 0; p < nq; ++p)
       {

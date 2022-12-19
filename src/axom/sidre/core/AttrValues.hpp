@@ -90,6 +90,8 @@ private:
    * Create vector of Nodes and push empty nodes up to attr's index.
    * Called as part of View::createAttributeScalar and
    * View::createAttributeString.
+   *
+   * \return true
    */
   bool createNode(IndexType idx);
 

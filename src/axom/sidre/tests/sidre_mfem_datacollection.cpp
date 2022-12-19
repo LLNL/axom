@@ -296,7 +296,7 @@ TEST(sidre_datacollection, dc_reload_qf)
 {
   //Set up a small mesh and a couple of grid function on that mesh
   auto mesh =
-    mfem::Mesh::MakeCartesian2D(2, 3, mfem::Element::QUADRILATERAL, 0, 2.0, 3.0);
+    mfem::Mesh::MakeCartesian2D(2, 3, mfem::Element::QUADRILATERAL, 0, 2., 3.);
   mfem::LinearFECollection fec;
   mfem::FiniteElementSpace fes(&mesh, &fec);
 
@@ -306,10 +306,12 @@ TEST(sidre_datacollection, dc_reload_qf)
 
   mfem::QuadratureSpace qspace(&mesh, intOrder);
   // We want Sidre to allocate the data for us and to own the internal data.
-  // If we don't do the below then the data collection doesn't save off the data
-  // structure.
-  mfem::QuadratureFunction qs(&qspace, nullptr, qs_vdim);
-  mfem::QuadratureFunction qv(&qspace, nullptr, qv_vdim);
+  // If we don't provide a nullptr, the data collection won't save the data structure
+  mfem::QuadratureFunction qs(&qspace, qs_vdim);
+  qs.NewDataAndSize(nullptr, qs_vdim * qspace.GetSize());
+
+  mfem::QuadratureFunction qv(&qspace, qv_vdim);
+  qv.NewDataAndSize(nullptr, qv_vdim * qspace.GetSize());
 
   int Nq = qs.Size();
 
