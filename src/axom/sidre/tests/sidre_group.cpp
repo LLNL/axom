@@ -611,12 +611,12 @@ TEST(sidre_group, list_item_names)
   Group* found_group_a = list_test->getGroup("testing/path");
   Group* found_group_b = list_test->getGroup("testing/longer/path");
 
-  ASSERT_TRUE(blank_group == nullptr);
-  ASSERT_TRUE(named_group->getName() == "named");
-  ASSERT_TRUE(path_group_a == nullptr);
-  ASSERT_TRUE(path_group_b == nullptr);
-  ASSERT_TRUE(found_group_a == nullptr);
-  ASSERT_TRUE(found_group_b == nullptr);
+  ASSERT_EQ(blank_group, nullptr);
+  ASSERT_EQ(named_group->getName(), "named");
+  ASSERT_EQ(path_group_a, nullptr);
+  ASSERT_EQ(path_group_b, nullptr);
+  ASSERT_EQ(found_group_a, nullptr);
+  ASSERT_EQ(found_group_b, nullptr);
 
   // Similar tests for views
 
@@ -634,11 +634,11 @@ TEST(sidre_group, list_item_names)
   View* found_view_b = list_test->getView("testing/longer/path");
 
   ASSERT_TRUE(blank_view->getName().empty());
-  ASSERT_TRUE(named_view->getName() == "named");
-  ASSERT_TRUE(path_view_a == nullptr);
-  ASSERT_TRUE(path_view_b == nullptr);
-  ASSERT_TRUE(found_view_a == nullptr);
-  ASSERT_TRUE(found_view_b == nullptr);
+  ASSERT_EQ(named_view->getName(), "named");
+  ASSERT_EQ(path_view_a, nullptr);
+  ASSERT_EQ(path_view_b, nullptr);
+  ASSERT_EQ(found_view_a, nullptr);
+  ASSERT_EQ(found_view_b, nullptr);
 
   root->destroyGroup("list_test");
 
