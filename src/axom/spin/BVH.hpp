@@ -412,19 +412,14 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
 
-  if(numBoxes == 0)
-  {
-    m_bvh.reset();
-    return BVH_BUILD_FAILED;
-  }
-
   // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
   m_bvh.reset(new ImplType);
 
-  // STEP 1: Handle case when user supplied a single bounding box
+  // STEP 1: Handle case when user supplied 0 or 1 bounding boxes.
   BoxType* boxesptr = nullptr;
-  if(numBoxes == 1)
+  if(numBoxes <= 1)
   {
+    const bool copyFirst = numBoxes == 1;
     numBoxes = 2;
     boxesptr = axom::allocate<BoxType>(numBoxes, m_AllocatorID);
 
@@ -432,14 +427,15 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
     for_all<ExecSpace>(
       2,
       AXOM_LAMBDA(IndexType i) {
-        if(i == 0)
+        if(copyFirst && i == 0)
         {
           boxesptr[i] = boxes[i];
         }
         else
         {
           BoxType empty_box;
-          empty_box.addPoint(PointType(0.));
+          // Make the box invalid.
+          empty_box.clear();
           boxesptr[i] = empty_box;
         }
       });

@@ -97,8 +97,8 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
     {
       BBoxType left_bin = inner_nodes[current_node + 0];
       BBoxType right_bin = inner_nodes[current_node + 1];
-      const bool in_left = B(p, left_bin);
-      const bool in_right = B(p, right_bin);
+      const bool in_left = left_bin.isValid() ? B(p, left_bin) : false;
+      const bool in_right = right_bin.isValid() ? B(p, right_bin) : false;
       int32 l_child = inner_node_children[current_node + 0];
       int32 r_child = inner_node_children[current_node + 1];
       bool swap = Comp(left_bin, right_bin, p);
