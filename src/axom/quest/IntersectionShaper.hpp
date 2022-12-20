@@ -828,6 +828,10 @@ public:
     }
 
 #if 1
+#if 1
+    // Debugging. Expose our arrays as grid functions.
+    static int shaperpass = 0;
+#endif
     //-----------------------------------------------------------------------
     // This vector holds the GridFunctions for each material VF object
     // that we need to update (other than that for the current shape,
@@ -843,6 +847,7 @@ public:
         auto vfname = axom::fmt::format(vol_frac_fmt, name);
         if(this->getDC()->HasField(vfname))
         {
+std::cout << "!!!!!!!!!!!! material " << name << " will get replaced." << std::endl;
           mfem::GridFunction *gf = this->getDC()->GetField(vfname);
           vfs.push_back(gf);
         }
@@ -856,19 +861,33 @@ public:
         for(int elem = 0; elem < m_num_elements; elem++)
           writable_vf[elem] += (*gf)[elem];
       }
+
       // TODO: we could add completely_available here to writable_vf since it is
       //       an additional capacity that could be used for storing the VF.
+
+#if 1
+    // Debugging. Expose our arrays as grid functions.
+    mfem::GridFunction* ov = newVolFracGridFunction();
+    std::string ovname(axom::fmt::format("writable_vf{}", shaperpass));
+    shaperpass++;
+    this->getDC()->RegisterField(ovname, ov);
+    for(int elem = 0; elem < m_num_elements; elem++)
+    {
+      (*ov)(elem) = writable_vf[elem];
+    }
+#endif
 
       for(int elem = 0; elem < m_num_elements; elem++)
       {
         if(writable_vf[elem] > 0.)
         {
           auto VF = m_overlap_volumes[elem] / m_hex_volumes[elem];
-          if(VF >= writable_vf[elem])
+
+          if(VF >= writable_vf[elem] - 1.e-5)
           {
             // There is more VF than writable_vf. We can claim what's there
             // and only that since we can't change other materials in this mode.
-            (*matVolFrac)(elem) = writable_vf[elem];
+            (*matVolFrac)(elem) += writable_vf[elem];
             for(auto gf : vfs)
               (*gf)(elem) = 0.;
           }
@@ -889,6 +908,7 @@ public:
     {
       // Include all materials that are NOT in replaced list.
       std::vector<mfem::GridFunction *> forbidden;
+      std::vector<std::string> forbidden_names;
       for(auto it : this->getDC()->GetFieldMap())
       {
         if(it.first.find(vol_frac_) == 0)
@@ -899,7 +919,10 @@ public:
                                shape.getMaterialsNotReplaced().cend(),
                                name);
           if(it2 != shape.getMaterialsNotReplaced().cend())
+          {
             forbidden.push_back(it.second);
+            forbidden_names.push_back(it.first);
+          }
           else
             vfs.push_back(it.second);
         }
@@ -909,8 +932,10 @@ public:
 
       // Assume we can write everywhere. Then we subtract off the forbidden areas.
       std::vector<double> writable_vf(m_num_elements, 1.);
-      for(auto gf : forbidden)
+      for(size_t i = 0; i < forbidden.size(); i++)
       {
+        auto gf = forbidden[i];
+        std::cout << "!!!!!!!!!!!!!! " << forbidden_names[i] << " is FORBIDDEN!" << std::endl;
         for(int elem = 0; elem < m_num_elements; elem++)
           writable_vf[elem] -= (*gf)[elem];
       }
@@ -924,7 +949,6 @@ public:
 
 #if 1
     // Debugging. Expose our arrays as grid functions.
-    static int shaperpass = 0;
     mfem::GridFunction* ov = newVolFracGridFunction();
     std::string ovname(axom::fmt::format("writable_vf{}", shaperpass));
     shaperpass++;
@@ -934,9 +958,10 @@ public:
       (*ov)(elem) = writable_vf[elem];
     }
 #endif
+    int skips = 0;
       for(int elem = 0; elem < m_num_elements; elem++)
       {
-        if(writable_vf[elem] > 0.)
+        if(writable_vf[elem] > 0.0)
         {
           auto VF = m_overlap_volumes[elem] / m_hex_volumes[elem];
           if(VF >= writable_vf[elem])
@@ -958,7 +983,14 @@ public:
             (*matVolFrac)(elem) = VF;
           }
         }
+        else
+        {
+           skips++;
+           (*matVolFrac)(elem) = 0.;
+        }
       }
+
+      std::cout << "!!!!!!!!!!!!!! Skipped " << skips << " elements when writing material " << shape.getMaterial() << std::endl;
     }
     else
     {
@@ -1032,6 +1064,7 @@ public:
 #endif
 
 #if 0
+#if 1
 //--------------------------------------------------------------------------------------
     // For each cell, figure out how much VF is still completely free
     // (unallocated to any material).
@@ -1216,6 +1249,7 @@ public:
     /// Implementation here -- update material volume fractions based on replacement rules
     // Note: we're not yet updating the shape volume fractions
     AXOM_UNUSED_VAR(shapeVolFrac);
+#endif
 #endif
   }
 
