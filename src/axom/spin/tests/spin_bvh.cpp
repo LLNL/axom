@@ -1339,8 +1339,8 @@ axom::Array<axom::primal::Point<FloatType, 2>> make_query_points_2d()
 /*!
  * \brief Tests inserting a single point into the BVH and querying a set of
  *        points against it, using a pattern seen in DistributedClosestPoint.
- *        The test demonstrates current_node that the BVH returns an in range
- *        value to the checkMinDist lambda.
+ *        The test demonstrates that the BVH returns an in range value to
+ *        the checkMinDist lambda.
  *
  * \param [in] bvh The BVH object to use.
  * \param [in] points The points that will be inserted in the BVH as bboxes.
@@ -1377,7 +1377,7 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
   BoxType* bboxes =
     axom::allocate<BoxType>(npts ? npts : 1,  // do not allocate 0 elements
                             axom::execution_space<ExecSpace>::allocatorID());
-  for(axom::IndexType i = 0; i < npts; i++) bboxes[i] = BoxType(points[i]);
+  for(axom::IndexType i = 0; i < npts; i++) { bboxes[i] = BoxType(points[i]); }
   bvh.initialize(bboxes, npts);
 
   // Call the BVH like the DistributedClosestPoint does.
