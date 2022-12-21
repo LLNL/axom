@@ -74,13 +74,6 @@ void MarchingCubesAlgo::compute_iso_surface(double isoValue)
 }
 
 // From app
-#define NDSET2D(v,v1,v2,v3,v4)  \
-   v4 = v ;   \
-   v1 = v4 + 1 ;  \
-   v2 = v1 + jp ;  \
-   v3 = v4 + jp ;
-
-// From app
 #define NDSET3D(v,v1,v2,v3,v4,v5,v6,v7,v8)  \
    v4 = v ;   \
    v1 = v4 + 1 ;  \
@@ -174,25 +167,6 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
   SLIC_ASSERT_MSG(_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
 
-  // Domain size.
-  /*
-    domain_0_0:
-  coordsets:
-    coords:
-      type: "explicit"
-      values:
-        x: [0.0, 0.333333333333333, 0.666666666666667, ..., 0.333333333333333, 0.666666666666667]
-        y: [0.0, 0.0, 0.0, ..., 1.0, 1.0]
-  topologies:
-    mesh:
-      type: "structured"
-      coordset: "coords"
-      elements:
-        dims:
-          i: 2
-          j: 3
-  */
-
   /*
     Notes: how to handle non-interleaved coordinates.
     We should be able to handle any blueprint-compatible domains.
@@ -209,32 +183,21 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
   */
 
   const conduit::Node& coordValues = _dom->fetch_existing("coordsets/coords/values");
-  if(conduit::blueprint::mcarray::is_interleaved(coordValues))
-  {
-    SLIC_ERROR("Only supporting contiguous mesh coordinates for now.");
-    // Supporting interleaved coordinates requires working with strides.
-  }
-  const conduit::double_array xs = coordValues["x"].as_double_array();
-  const conduit::double_array ys = _ndim >= 2 ? coordValues["y"].as_double_array() : conduit::double_array();
   const double* xPtr = coordValues["x"].as_double_ptr();
   const double* yPtr = _ndim >= 2 ? coordValues["y"].as_double_ptr() : nullptr;
+  const double* zPtr = _ndim >= 3 ? coordValues["z"].as_double_ptr() : nullptr;
 
-  auto& fieldNode = _dom->fetch_existing(axom::fmt::format("fields/{}", _valueField));
-  auto& fieldValues = fieldNode.fetch_existing("values");
+  auto& fieldValues = _dom->fetch_existing("fields/" + _valueField + "/values");
   const double *fieldPtr = fieldValues.as_double_ptr();
 
-  const int *mask = nullptr;
-  const conduit::int_array ms = _maskField.empty() ? conduit::int_array() :
-    _dom->fetch_existing("fields/" + _maskField + "/values").as_int_array();
+  const int* maskPtr = nullptr;
   if(!_maskField.empty())
   {
-    const std::string maskKey =
-      axom::fmt::format("fields/{}/values", _maskField);
-    mask = _dom->fetch_existing("maskKey").as_int_ptr();
+    auto& maskValues = _dom->fetch_existing("fields/" + _maskField + "/values");
+    maskPtr = maskValues.as_int_ptr();
   }
 
   _isoValue = isoValue;
-
 
   if ( _ndim==2 ) {
     /*
@@ -243,10 +206,12 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
       handle data with ghosts.
     */
 #if 1
-    axom::StackArray<axom::IndexType, 2> shape{1+_logicalSize[0], 1+_logicalSize[1]};
-    axom::ArrayView<const double, 2> fieldView(fieldPtr, shape);
-    axom::ArrayView<const double, 2> xView(xPtr, shape);
-    axom::ArrayView<const double, 2> yView(yPtr, shape);
+    axom::StackArray<axom::IndexType, 2> cShape{_logicalSize[0], _logicalSize[1]};
+    axom::StackArray<axom::IndexType, 2> nShape{1+_logicalSize[0], 1+_logicalSize[1]};
+    axom::ArrayView<const double, 2> fieldView(fieldPtr, nShape);
+    axom::ArrayView<const double, 2> xView(xPtr, nShape);
+    axom::ArrayView<const double, 2> yView(yPtr, nShape);
+    axom::ArrayView<const int, 2> maskView(maskPtr, cShape);
 #else
     RAJA::OffsetLayout<2> fieldLayout = RAJA::make_offset_layout<2>(
       {_logicalOrigin[0], 1 + _logicalSize[0] + _logicalOrigin[0]},
@@ -276,8 +241,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
     {
       for(int i=0; i<_logicalSize[0]; ++i)
       {
-        int zoneIdx = i + j * _logicalSize[0]; // TODO: Fix for ghost layer size.
-        const bool skipZone = mask && bool(mask[ zoneIdx ]);
+        const bool skipZone = maskPtr && bool(maskView(i, j));
         if ( !skipZone ) {
 
            double vfs[4];
@@ -305,6 +269,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
 
            if(_outputCellIds && nNew > nPrev)
            {
+             int zoneIdx = i + j * _logicalSize[0]; // TODO: Fix for ghost layer size.
              _outputCellIds->insert(nPrev, nNew-nPrev, zoneIdx);
            }
         } // END if

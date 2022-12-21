@@ -69,9 +69,9 @@ public:
   std::string meshFile;
   std::string fieldsFile{"fields"};
 
-  double circleRadius {1.0};
-  std::vector<double> circleCenter {0.0, 0.0};
-  // TODO: Ensure that circleCenter size matches dimensionality.
+  double contourVal {1.0};
+  std::vector<double> fcnCenter {0.0, 0.0};
+  // TODO: Ensure that fcnCenter size matches dimensionality.
   RuntimePolicy policy {RuntimePolicy::seq};
 
   bool checkResults {false};
@@ -116,17 +116,17 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    auto* circle_options =
-      app.add_option_group("circle",
-                           "Options for setting up the circle of points");
+    auto* fcn_options =
+      app.add_option_group("fcn",
+                           "Options for setting up the nodal distance function");
 
-    circle_options->add_option("-r,--radius", circleRadius)
-      ->description("Radius for circle")
-      ->capture_default_str();
-
-    circle_options->add_option("--center", circleCenter)
-      ->description("Center for object (x,y[,z])")
+    fcn_options->add_option("--center", fcnCenter)
+      ->description("Center for nodal distance function (x,y[,z])")
       ->expected(2, 3);
+
+    app.add_option("--contourVal", contourVal)
+      ->description("Contour value")
+      ->capture_default_str();
 
     app.add_option("-p, --policy", policy)
       ->description("Set runtime policy for marching cubes execution")
@@ -148,10 +148,10 @@ public:
   }
 
   template<int DIM>
-  axom::primal::Point<double, DIM> circle_center() const
+  axom::primal::Point<double, DIM> fcn_center() const
   {
-    SLIC_ASSERT(circleCenter.size() == DIM);
-    return axom::primal::Point<double, DIM>(circleCenter.data());
+    SLIC_ASSERT(fcnCenter.size() == DIM);
+    return axom::primal::Point<double, DIM>(fcnCenter.data());
   }
 };
 
@@ -470,9 +470,6 @@ int main(int argc, char** argv)
 
   constexpr int DIM = 2;
 
-  using PointType = primal::Point<double, DIM>;
-  using Circle = primal::Sphere<double, DIM>;
-
 #if defined(AXOM_USE_UMPIRE)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
@@ -497,13 +494,6 @@ int main(int argc, char** argv)
   umpire::Allocator umpireAllocator = rm.getAllocator(umpireResourceName);
 #endif
 #endif
-
-  //---------------------------------------------------------------------------
-  // Load/generate object mesh
-  //---------------------------------------------------------------------------
-  const Circle circle(
-    PointType(params.circleCenter.data(), params.circleCenter.size()),
-    params.circleRadius);
 
   //---------------------------------------------------------------------------
   // Load computational mesh.
@@ -551,7 +541,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Initialize nodal scalar function.
   //---------------------------------------------------------------------------
-  compute_nodal_distance(computationalMesh, "fVal", params.circle_center<DIM>());
+  compute_nodal_distance(computationalMesh, "fVal", params.fcn_center<DIM>());
 
   //---------------------------------------------------------------------------
   // Initialize spatial index for querying points, and run query
@@ -586,7 +576,7 @@ int main(int argc, char** argv)
 
   slic::flushStreams();
   computeTimer.start();
-  mca.compute_iso_surface(params.circleRadius);
+  mca.compute_iso_surface(params.contourVal);
   computeTimer.stop();
 
   auto getDoubleMinMax =
