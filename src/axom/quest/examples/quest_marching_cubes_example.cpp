@@ -37,6 +37,13 @@
 #include <vector>
 #include <cmath>
 
+#ifndef __WHERE
+#define __STRINGIZE(x) __STRINGIZE2(x)
+#define __STRINGIZE2(x) #x
+//!@brief String literal for code location
+#define __WHERE __FILE__ ":" __STRINGIZE(__LINE__) "(" + std::string(__func__) + ") "
+#endif
+
 namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace mint = axom::mint;
@@ -64,7 +71,6 @@ public:
   double circleRadius {1.0};
   std::vector<double> circleCenter {0.0, 0.0};
   // TODO: Ensure that circleCenter size matches dimensionality.
-  int circlePoints {100};
   RuntimePolicy policy {RuntimePolicy::seq};
 
   bool checkResults {false};
@@ -105,13 +111,14 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    app.add_option("-r,--radius", circleRadius)
-      ->description("Radius for circle")
-      ->capture_default_str();
-
     auto* circle_options =
       app.add_option_group("circle",
                            "Options for setting up the circle of points");
+
+    circle_options->add_option("-r,--radius", circleRadius)
+      ->description("Radius for circle")
+      ->capture_default_str();
+
     circle_options->add_option("--center", circleCenter)
       ->description("Center for object (x,y[,z])")
       ->expected(2, 3);
@@ -134,6 +141,13 @@ public:
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
                                              : slic::message::Info);
   }
+
+  template<int DIM>
+  axom::primal::Point<double, DIM> circle_center() const
+  {
+    SLIC_ASSERT(circleCenter.size() == DIM);
+    return axom::primal::Point<double, DIM>(circleCenter.data());
+  }
 };
 
 /**
@@ -151,8 +165,8 @@ public:
     const std::string& meshFile,
     const std::string& coordset = "coords",
     const std::string& topology = "mesh")
-    : _coordsetPath("coordset/" + coordset)
-    , _topologyPath("topology/" + topology)
+    : _coordsetPath("coordsets/" + coordset)
+    , _topologyPath("topologies/" + topology)
   {
     MPI_Comm_rank(MPI_COMM_WORLD, &_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &_nranks);
@@ -168,28 +182,46 @@ public:
   /// Get number of domains in the multidomain particle mesh
   axom::IndexType domain_count() const { return _domCount; }
 
-  /// Get a domain group.
+  /// Get domain group.
   conduit::Node& domain(axom::IndexType domainIdx)
   {
     SLIC_ASSERT(domainIdx >= 0 && domainIdx < _domCount);
     return _mdMesh.child(domainIdx);
   }
 
+  /// Get the number of cells in each direction of a blueprint single domain.
+  template<int DIM>
+  axom::StackArray<axom::IndexType, DIM> domain_lengths(const conduit::Node &dom) const
+  {
+    SLIC_ASSERT(_dimension == DIM);
+    const conduit::Node& dimsNode = dom.fetch_existing(_topologyPath + "/elements/dims");
+    axom::StackArray<axom::IndexType, DIM> cellCounts;
+    for(int i=0; i<_dimension; ++i)
+    {
+      cellCounts[i] = dimsNode[i].as_int();
+    }
+    return cellCounts;
+  }
+
   /// Gets the MPI rank for this mesh
-  int getRank() const { return _rank; }
+  int get_mpi_rank() const { return _rank; }
   /// Gets the number of ranks in the problem
-  int getNumRanks() const { return _nranks; }
+  int get_mpi_size() const { return _nranks; }
 
   /// Returns the number of points in a particle mesh domain
   int point_count() const
   {
-    SLIC_ASSERT_MSG(
-      _mdMesh.fetch_existing(_coordsetPath + "/type").as_string() == "explicit",
-      "Currently only supporting explicit coordinate types.");
-
+    // _mdMesh.print();
     int rval = 0;
     for(const auto& dom : _mdMesh.children())
     {
+      // dom.print();
+      SLIC_ASSERT_MSG(
+        dom.fetch_existing(_coordsetPath + "/type").as_string() == "explicit",
+        axom::fmt::format("Currently only supporting explicit coordinate types."
+                          "  '{}/type' is '{}'",
+                          _coordsetPath, dom.fetch_existing(_coordsetPath + "/type").as_string()));
+
       const auto& dims = dom.fetch_existing(_topologyPath + "/elements/dims");
       int n = 1;
       for(const auto& l : dims.children())
@@ -268,6 +300,21 @@ private:
 
     bool valid = isValid();
     SLIC_ASSERT(valid);
+
+    // Interleave coordinates if they aren't already.
+    for(auto& dom : _mdMesh.children())
+    {
+      conduit::Node& coordsNode = dom.fetch_existing(_coordsetPath);
+      conduit::Node& values = coordsNode.fetch_existing("values");
+      bool isInterleaved =
+        conduit::blueprint::mcarray::is_interleaved(values);
+      if(!isInterleaved)
+      {
+        conduit::Node interleavedValues;
+        conduit::blueprint::mcarray::to_interleaved(values, interleavedValues);
+        values.set(interleavedValues);
+      }
+    }
   }
 };  // BlueprintStructuredMesh
 
@@ -291,6 +338,60 @@ void make_coords_interleaved(conduit::Node& coordValues)
     conduit::blueprint::mcarray::to_interleaved(oldValues, coordValues);
   }
 }
+
+
+template<int DIM>
+void compute_nodal_distance(BlueprintStructuredMesh& bpMesh,
+                            const std::string fieldName,
+                            const axom::primal::Point<double, DIM>& center)
+{
+  SLIC_ASSERT(bpMesh.dimension() == DIM);
+  conduit::Node& bpNode = bpMesh.as_conduit_node();
+  for(conduit::Node& dom : bpNode.children())
+  {
+std::cout << __WHERE << std::endl; dom.print();
+
+    // Access the coordinates
+    axom::StackArray<axom::IndexType, DIM> shape = bpMesh.domain_lengths<DIM>(dom);
+    for(int i=0; i<DIM; ++i) { ++shape[i]; }
+    conduit::index_t count = 1;
+    for(auto i : shape) count *= i;
+    conduit::Node& coordsValues = dom.fetch_existing("coordsets/coords/values");
+    double *coordsPtrs[DIM];
+    axom::ArrayView<double, DIM> coordsViews[DIM];
+    for(int d=0; d<DIM; ++d)
+    {
+      coordsPtrs[d] = coordsValues[d].as_double_ptr();
+      coordsViews[d] = axom::ArrayView<double, DIM>(coordsPtrs[d], shape);
+    }
+    axom::ArrayView<axom::primal::Point<double, DIM>, DIM>
+      coordsView( (axom::primal::Point<double, DIM>*)coordsValues.data_ptr(),
+                  shape );
+
+    // Create the nodal function data.
+    conduit::Node &fieldNode = dom["fields"][fieldName];
+    fieldNode["association"] = "vertex";
+    fieldNode["topology"] = "topo";
+    fieldNode["volume_dependent"] = "false";
+    fieldNode["values"].set(conduit::DataType::float64(count));
+    double* d = fieldNode["values"].value();
+    axom::ArrayView<double, DIM> fieldView(d, shape);
+
+    // Set the nodal data to the distance from center.
+    for(int i=0; i<shape[0]; ++i)
+    {
+      for(int j=0; j<shape[0]; ++j)
+      {
+        axom::primal::Point<double, DIM> pt{coordsViews[0](i,j), coordsViews[1](i,j)};
+        double dist = primal::squared_distance(center, pt);
+        dist = sqrt(dist);
+        fieldView(i,j) = dist;
+      }
+    }
+std::cout << __WHERE << std::endl; dom.print();
+  }
+}
+
 
 /// Utility function to initialize the logger
 void initializeLogger()
@@ -342,7 +443,7 @@ int main(int argc, char** argv)
   // Set up and parse command line arguments
   //---------------------------------------------------------------------------
   Input params;
-  axom::CLI::App app {"Driver for marching cubes code"};
+  axom::CLI::App app {"Driver/test code for marching cubes algorithm"};
 
   try
   {
@@ -440,12 +541,13 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
   //---------------------------------------------------------------------------
+  // Initialize nodal scalar function.
+  //---------------------------------------------------------------------------
+  compute_nodal_distance(computationalMesh, "fVal", params.circle_center<DIM>());
+
+  //---------------------------------------------------------------------------
   // Initialize spatial index for querying points, and run query
   //---------------------------------------------------------------------------
-
-  auto init_str =
-    banner(axom::fmt::format("Initializing BVH tree over {} points",
-                             params.circlePoints));
 
   axom::utilities::Timer computeTimer(false);
 
@@ -464,7 +566,6 @@ int main(int argc, char** argv)
   quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(), "fVal");
 
   // Build the spatial index over the object on each rank
-  SLIC_INFO(init_str);
   slic::flushStreams();
 
   // Run the marching cubes algorithm on the computational mesh.
@@ -472,6 +573,8 @@ int main(int argc, char** argv)
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
     DIM,
     DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+
+  mca.set_output_mesh(&surfaceMesh);
 
   slic::flushStreams();
   computeTimer.start();

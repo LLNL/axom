@@ -9,6 +9,13 @@
 #include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
 
+#ifndef __WHERE
+#define __STRINGIZE(x) __STRINGIZE2(x)
+#define __STRINGIZE2(x) #x
+//!@brief String literal for code location
+#define __WHERE __FILE__ ":" __STRINGIZE(__LINE__) "(" + std::string(__func__) + ") "
+#endif
+
 namespace axom
 {
 namespace quest
@@ -18,14 +25,25 @@ MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
                                      const std::string &valueField,
                                      const std::string &maskField)
   : _sd()
+  , _ndim(0)
   , _valueField(valueField)
   , _maskField(maskField)
+  , _surfaceMesh(nullptr)
+  , _outputCellIds(nullptr)
   , _outputDomainIds(nullptr)
 {
   _sd.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto &dom : bpMesh.children())
   {
     _sd.emplace_back(new MarchingCubesAlgo1(dom, _valueField, _maskField));
+    if(_ndim == 0)
+    {
+      _ndim = _sd.back()->dimension();
+    }
+    else
+    {
+      SLIC_ASSERT(_ndim == _sd.back()->dimension());
+    }
   }
 }
 
@@ -35,31 +53,20 @@ MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
 */
 void MarchingCubesAlgo::set_output_mesh(axom::mint::Mesh *surfaceMesh)
 {
-  SLIC_ASSERT_MSG(surfaceMesh->getDimension() != _ndim, "Mismatched dimensions.");
-
-  if(_ndim == 2)
-  {
-    using SegmentMesh = axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE >;
-    SegmentMesh* mesh = dynamic_cast< SegmentMesh* >( _surfaceMesh );
-    SLIC_ASSERT_MSG(mesh, "Surface mesh for 2D problem must be a SegmentMesh");
-  }
-  else
-  {
-    using TriangleMesh = axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE >;
-    TriangleMesh* mesh = dynamic_cast< TriangleMesh* >( _surfaceMesh );
-    SLIC_ASSERT_MSG(mesh, "Surface mesh for 3D problem must be a TriangleMesh");
-  }
-
   _surfaceMesh = surfaceMesh;
+
   for(auto &s : _sd)
   {
-    s->set_output_mesh(surfaceMesh);
+    s->set_output_mesh(_surfaceMesh);
   }
 }
 
 
 void MarchingCubesAlgo::compute_iso_surface(double isoValue)
 {
+  SLIC_ASSERT_MSG(_surfaceMesh,
+                  "You must call set_output_mesh before compute_iso_surface.");
+
   for(auto &d : _sd)
   {
     d->compute_iso_surface(isoValue);
@@ -88,11 +95,11 @@ MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node &dom,
                                        const std::string &valueField,
                                        const std::string &maskField)
   : _dom(nullptr)
+  , _ndim(0)
+  , _logicalSize()
+  , _logicalOrigin()
   , _valueField(valueField)
   , _maskField(maskField)
-  , _ndim(0)
-  , _logicalSize(nullptr)
-  , _logicalOrigin(nullptr)
   , _surfaceMesh(nullptr)
   , _outputCellIds(nullptr)
 {
@@ -102,34 +109,70 @@ MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node &dom,
 
 void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
 {
-  bool multiDomain = conduit::blueprint::mesh::is_multi_domain(dom);
-  SLIC_ASSERT(multiDomain);
+  SLIC_ASSERT_MSG(!conduit::blueprint::mesh::is_multi_domain(dom),
+                  "MarchingCubesAlgo1 is single-domain only.  Try MarchingCubesAlgo.");
 
-  const auto fieldValuesKey = axom::fmt::format("field/{}/values", _valueField);
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
-  SLIC_ASSERT(dom.has_child(fieldValuesKey));
-  SLIC_ASSERT(dom[fieldValuesKey].fetch_existing("association").as_string() == "element");
-
-  SLIC_ASSERT(dom.has_child("domainId"));
-
+  SLIC_ASSERT(dom["fields/" + _valueField + "/association"].as_string() == "vertex");
+  SLIC_ASSERT(dom.has_path("fields/" + _valueField + "/values"));
 
   if(!_maskField.empty())
   {
-    const auto maskKey = axom::fmt::format("field/{}/values", _maskField);
-    SLIC_ASSERT(dom.has_path(maskKey));
+    SLIC_ASSERT(dom.has_path("field/" + _maskField + "/values"));
   }
 
   _dom = &dom;
-  _ndim = _dom->fetch_existing("topologies/mesh/elements/dims/i").as_int();
-  _logicalSize = _dom->fetch_existing("topologies/mesh/elements/dims").as_int_ptr();
-  _logicalOrigin = _dom->has_path("topologies/mesh/elements/origin") ?
-    _dom->fetch_existing("topologies/mesh/elements/origin").as_int_ptr() : nullptr;
+
+  const conduit::Node& dimsNode = _dom->fetch_existing("topologies/mesh/elements/dims");
+
+  _ndim = dimsNode.number_of_children();
+
+  _logicalSize.resize(_ndim);
+  for(int d=0; d<_ndim; ++d)
+  {
+    _logicalSize[d] = dimsNode[d].as_int();
+  }
+
+  _logicalOrigin.resize(_ndim, 0);
+  if (_dom->has_path("topologies/mesh/elements/origin"))
+  {
+    const conduit::Node& origins = _dom->fetch_existing("topologies/mesh/elements/origin");
+    for(int d=0; d<_ndim; ++d)
+    {
+      _logicalOrigin[d] = origins[d].as_int();
+    }
+  }
+
   SLIC_ASSERT(_ndim >= 1 && _ndim <= 3);
 }
 
+
+/*!
+  @brief Set the output surface mesh object.
+*/
+void MarchingCubesAlgo1::set_output_mesh(axom::mint::Mesh *surfaceMesh)
+{
+  _surfaceMesh = surfaceMesh;
+
+  if(_ndim == 2)
+  {
+    using SegmentMesh = axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE >;
+    SegmentMesh* mesh = dynamic_cast< SegmentMesh* >( _surfaceMesh );
+    SLIC_ASSERT_MSG(mesh, "Surface mesh for 2D problem must be a SegmentMesh");
+  }
+  else
+  {
+    using TriangleMesh = axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE >;
+    TriangleMesh* mesh = dynamic_cast< TriangleMesh* >( _surfaceMesh );
+    SLIC_ASSERT_MSG(mesh, "Surface mesh for 3D problem must be a TriangleMesh");
+  }
+}
+
+
 void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
 {
-  SLIC_ASSERT_MSG(false, "Unfinished code.");
+  SLIC_ASSERT_MSG(_surfaceMesh,
+                  "You must call set_output_mesh before compute_iso_surface.");
 
   // Domain size.
   /*
@@ -150,21 +193,39 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
           j: 3
   */
 
+  /*
+    Notes: how to handle non-interleaved coordinates.
+    We should be able to handle any blueprint-compatible domains.
+
+    Need an array interface that supports strides.
+
+    conduit DataArray uses DataType, which has strides.  But I'm not convinced
+    that it actually uses those strides to compute offsets.  Need to do a practice
+    problem or try it here.
+
+    axom::ArrayView doesn't have strides.  It can support multicomponent arrays
+    so I can represent an Nx3 or 3xN layout.  However, I would have to switch
+    point index and dimension index depending on which layout.  Won't work.
+  */
+
   const conduit::Node& coordValues = _dom->fetch_existing("coordsets/coords/values");
   if(conduit::blueprint::mcarray::is_interleaved(coordValues))
   {
     SLIC_ERROR("Only supporting contiguous mesh coordinates for now.");
     // Supporting interleaved coordinates requires working with strides.
   }
+  const conduit::double_array xs = coordValues["x"].as_double_array();
+  const conduit::double_array ys = _ndim >= 2 ? coordValues["y"].as_double_array() : conduit::double_array();
   const double* xPtr = coordValues["x"].as_double_ptr();
-  const double* yPtr = _ndim > 2 ? coordValues["y"].as_double_ptr() : nullptr;
-  SLIC_ERROR("Verify pointer values before proceeding..");
+  const double* yPtr = _ndim >= 2 ? coordValues["y"].as_double_ptr() : nullptr;
 
   auto& fieldNode = _dom->fetch_existing(axom::fmt::format("fields/{}", _valueField));
   auto& fieldValues = fieldNode.fetch_existing("values");
   const double *fieldPtr = fieldValues.as_double_ptr();
 
   const int *mask = nullptr;
+  const conduit::int_array ms = _maskField.empty() ? conduit::int_array() :
+    _dom->fetch_existing("fields/" + _maskField + "/values").as_int_array();
   if(!_maskField.empty())
   {
     const std::string maskKey =

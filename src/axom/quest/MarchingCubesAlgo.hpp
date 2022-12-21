@@ -54,14 +54,16 @@ public:
                      const std::string &valueField,
                      const std::string &maskfield);
 
+  //! @brief Spatial dimension of domain.
+  int dimension() const
+  {
+    return _ndim;
+  }
+
   /*!
     @brief Set the output sufrace mesh object.
   */
-  void set_output_mesh(axom::mint::Mesh *surfaceMesh)
-  {
-    SLIC_ASSERT_MSG(surfaceMesh->getDimension() != _ndim, "Mismatched dimensions.");
-    _surfaceMesh = surfaceMesh;
-  }
+  void set_output_mesh(axom::mint::Mesh *surfaceMesh);
 
   /*!
     @brief Set a container for saving the output cell ids.
@@ -84,13 +86,19 @@ public:
   void compute_iso_surface(double isoValue = 0.0);
 
 private:
+  /*!
+    \brief Computational mesh as a conduit::Node.
+
+    Plan for supporting blueprint mesh in sidre is to shallow-copy the
+    mesh to a conduit::Node on the heap, and point _dom to it.
+  */
   const conduit::Node *_dom;
+  int _ndim;
+  axom::Array<axom::IndexType> _logicalSize; //! @brief Number of cells in each direction
+  axom::Array<axom::IndexType> _logicalOrigin; //! @brief First domain cell in each direction.
+
   const std::string _valueField;
   const std::string _maskField;
-
-  int _ndim;
-  const int* _logicalSize; //! @brief Number of cells in each direction
-  const int* _logicalOrigin; //! @brief First cell index in each direction
 
   /*
     Non-state variables we don't want to have to propagate down the
@@ -190,9 +198,9 @@ public:
 private:
   //! @brief Single-domain implementations.
   axom::Array<std::shared_ptr<MarchingCubesAlgo1>> _sd;
-  const std::string &_valueField;
-  const std::string &_maskField;
   int _ndim;
+  const std::string _valueField;
+  const std::string _maskField;
 
   /*
     Non-state variables we don't want to have to propagate down the
