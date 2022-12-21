@@ -235,6 +235,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
 
   _isoValue = isoValue;
 
+
   if ( _ndim==2 ) {
     /*
       For now, assume zero offsets and zero ghost width.
@@ -242,9 +243,10 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
       handle data with ghosts.
     */
 #if 1
-    axom::ArrayView<const double, 2> fieldView(fieldPtr, 1+_logicalSize[0], 1+_logicalSize[1]);
-    axom::ArrayView<const double, 2> xView(xPtr, 1+_logicalSize[0], 1+_logicalSize[1]);
-    axom::ArrayView<const double, 2> yView(yPtr, 1+_logicalSize[0], 1+_logicalSize[1]);
+    axom::StackArray<axom::IndexType, 2> shape{1+_logicalSize[0], 1+_logicalSize[1]};
+    axom::ArrayView<const double, 2> fieldView(fieldPtr, shape);
+    axom::ArrayView<const double, 2> xView(xPtr, shape);
+    axom::ArrayView<const double, 2> yView(yPtr, shape);
 #else
     RAJA::OffsetLayout<2> fieldLayout = RAJA::make_offset_layout<2>(
       {_logicalOrigin[0], 1 + _logicalSize[0] + _logicalOrigin[0]},
@@ -308,68 +310,6 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
         } // END if
       }
     }
-#else
-    double* vf  = fieldPtr; // MeshVariable_getDoublePtr( m_field.c_str(), domain );
-    double* x = xPtr;
-    double* y = yPtr;
-
-    double* vf1, *vf2, *vf3, *vf4;
-    double* x1,  *x2,  *x3,  *x4;
-    double* y1,  *y2,  *y3,  *y4;
-
-    NDSET2D(vf, vf1, vf2, vf3, vf4 );
-    NDSET2D(x, x1, x2, x3, x4 );
-    NDSET2D(y, y1, y2, y3, y4 );
-
-    for_all_zones< policy::seq >( domain, [&](int zoneIdx) {
-
-      const bool skipZone = finest && (finest[ zoneIdx ] != level);
-        if ( !skipZone ) {
-
-           double vfs[4];
-           double xx[4];
-           double yy[4];
-
-           vfs[ 0 ] = vf1[ zoneIdx ];
-           vfs[ 1 ] = vf2[ zoneIdx ];
-           vfs[ 2 ] = vf3[ zoneIdx ];
-           vfs[ 3 ] = vf4[ zoneIdx ];
-
-           xx[ 0 ] = x1[ zoneIdx ];
-           xx[ 1 ] = x2[ zoneIdx ];
-           xx[ 2 ] = x3[ zoneIdx ];
-           xx[ 3 ] = x4[ zoneIdx ];
-
-           yy[ 0 ] = y1[ zoneIdx ];
-           yy[ 1 ] = y2[ zoneIdx ];
-           yy[ 2 ] = y3[ zoneIdx ];
-           yy[ 3 ] = y4[ zoneIdx ];
-
-           auto nPrev = _surfaceMesh->getNumberOfCells();
-           this->contourCell2D( xx, yy, vfs );
-           auto nNew = _surfaceMesh->getNumberOfCells() - nPrev;
-
-           if(nNew > 0)
-           {
-             if(cId)
-             {
-               auto *cIdPtr = axom::mint::Field::getDataPtr<int>(cId);
-               for(int i=nPrev; i<nNew; ++i) cIdPtr[i] = zoneIdx;
-             }
-             if(dId)
-             {
-               auto *dIdPtr = axom::mint::Field::getDataPtr<int>(dId);
-               for(int i=nPrev; i<nNew; ++i) dIdPtr[i] = _domainId;
-             }
-             if(lNum)
-             {
-               auto *lNumPtr = axom::mint::Field::getDataPtr<int>(lNum);
-               for(int i=nPrev; i<nNew; ++i) lNumPtr[i] = _levelNum;
-             }
-           }
-        } // END if
-
-    } );
 #endif
 
   } else {

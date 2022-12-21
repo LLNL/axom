@@ -67,6 +67,7 @@ struct Input
 {
 public:
   std::string meshFile;
+  std::string fieldsFile{"fields"};
 
   double circleRadius {1.0};
   std::vector<double> circleCenter {0.0, 0.0};
@@ -107,6 +108,10 @@ public:
         "convention.")
       ->check(axom::CLI::ExistingFile);
 
+    app.add_option("-s,--fields-file", fieldsFile)
+      ->description("Name of output mesh file with all its fields.")
+      ->capture_default_str();
+
     app.add_flag("-v,--verbose,!--no-verbose", _verboseOutput)
       ->description("Enable/disable verbose output")
       ->capture_default_str();
@@ -139,7 +144,7 @@ public:
     app.parse(argc, argv);
 
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
-                                             : slic::message::Info);
+                             : slic::message::Info);
   }
 
   template<int DIM>
@@ -371,7 +376,7 @@ std::cout << __WHERE << std::endl; dom.print();
     // Create the nodal function data.
     conduit::Node &fieldNode = dom["fields"][fieldName];
     fieldNode["association"] = "vertex";
-    fieldNode["topology"] = "topo";
+    fieldNode["topology"] = "mesh";
     fieldNode["volume_dependent"] = "false";
     fieldNode["values"].set(conduit::DataType::float64(count));
     double* d = fieldNode["values"].value();
@@ -472,6 +477,8 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Memory resource.  For testing, choose device memory if appropriate.
   //---------------------------------------------------------------------------
+#if 0
+  // Temporarily disable to prevent warnings.
   const std::string umpireResourceName =
     params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
     ? "HOST"
@@ -488,6 +495,7 @@ int main(int argc, char** argv)
     ;
   auto& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator umpireAllocator = rm.getAllocator(umpireResourceName);
+#endif
 #endif
 
   //---------------------------------------------------------------------------
@@ -578,7 +586,7 @@ int main(int argc, char** argv)
 
   slic::flushStreams();
   computeTimer.start();
-  mca.compute_iso_surface(0.0);
+  mca.compute_iso_surface(params.circleRadius);
   computeTimer.stop();
 
   auto getDoubleMinMax =
@@ -601,6 +609,10 @@ int main(int argc, char** argv)
       maxQuery));
   }
   slic::flushStreams();
+
+  assert(computationalMesh.isValid());
+  computationalMesh.saveMesh(params.fieldsFile);
+  mint::write_vtk(&surfaceMesh, "surface_mesh.vtk");
 
   int errCount = 0;
   int localErrCount = 0;
