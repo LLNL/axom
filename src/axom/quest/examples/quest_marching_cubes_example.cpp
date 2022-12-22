@@ -155,6 +155,8 @@ public:
   }
 };
 
+Input params;
+
 /**
  \brief Generic computational mesh, to hold cell and node data.
 */
@@ -257,7 +259,7 @@ public:
   }
 
   /// Outputs the particle mesh to disk
-  void saveMesh(const std::string& filename)
+  void save_mesh(const std::string& filename)
   {
     conduit::relay::mpi::io::blueprint::save_mesh(_mdMesh,
                                                   filename,
@@ -346,56 +348,102 @@ void make_coords_interleaved(conduit::Node& coordValues)
 
 
 template<int DIM>
-void compute_nodal_distance(BlueprintStructuredMesh& bpMesh,
-                            const std::string fieldName,
-                            const axom::primal::Point<double, DIM>& center)
-{
-  SLIC_ASSERT(bpMesh.dimension() == DIM);
-  conduit::Node& bpNode = bpMesh.as_conduit_node();
-  for(conduit::Node& dom : bpNode.children())
+struct DistanceFromPoint {
+  DistanceFromPoint(const axom::primal::Point<double, DIM> &pt)
+    : _center(pt)
+    {}
+  const axom::primal::Point<double, DIM> _center;
+  void compute_nodal_distance(BlueprintStructuredMesh& bpMesh,
+                              const std::string fieldName)
   {
-std::cout << __WHERE << std::endl; dom.print();
-
-    // Access the coordinates
-    axom::StackArray<axom::IndexType, DIM> shape = bpMesh.domain_lengths<DIM>(dom);
-    for(int i=0; i<DIM; ++i) { ++shape[i]; }
-    conduit::index_t count = 1;
-    for(auto i : shape) count *= i;
-    conduit::Node& coordsValues = dom.fetch_existing("coordsets/coords/values");
-    double *coordsPtrs[DIM];
-    axom::ArrayView<double, DIM> coordsViews[DIM];
-    for(int d=0; d<DIM; ++d)
+    SLIC_ASSERT(bpMesh.dimension() == DIM);
+    conduit::Node& bpNode = bpMesh.as_conduit_node();
+    for(conduit::Node& dom : bpNode.children())
     {
-      coordsPtrs[d] = coordsValues[d].as_double_ptr();
-      coordsViews[d] = axom::ArrayView<double, DIM>(coordsPtrs[d], shape);
-    }
-    axom::ArrayView<axom::primal::Point<double, DIM>, DIM>
-      coordsView( (axom::primal::Point<double, DIM>*)coordsValues.data_ptr(),
-                  shape );
-
-    // Create the nodal function data.
-    conduit::Node &fieldNode = dom["fields"][fieldName];
-    fieldNode["association"] = "vertex";
-    fieldNode["topology"] = "mesh";
-    fieldNode["volume_dependent"] = "false";
-    fieldNode["values"].set(conduit::DataType::float64(count));
-    double* d = fieldNode["values"].value();
-    axom::ArrayView<double, DIM> fieldView(d, shape);
-
-    // Set the nodal data to the distance from center.
-    for(int i=0; i<shape[0]; ++i)
-    {
-      for(int j=0; j<shape[0]; ++j)
+      // Access the coordinates
+      axom::StackArray<axom::IndexType, DIM> shape = bpMesh.domain_lengths<DIM>(dom);
+      for(int i=0; i<DIM; ++i) { ++shape[i]; }
+      conduit::index_t count = 1;
+      for(auto i : shape) count *= i;
+      conduit::Node& coordsValues = dom.fetch_existing("coordsets/coords/values");
+      double *coordsPtrs[DIM];
+      axom::ArrayView<double, DIM> coordsViews[DIM];
+      for(int d=0; d<DIM; ++d)
       {
-        axom::primal::Point<double, DIM> pt{coordsViews[0](i,j), coordsViews[1](i,j)};
-        double dist = primal::squared_distance(center, pt);
-        dist = sqrt(dist);
-        fieldView(i,j) = dist;
+        coordsPtrs[d] = coordsValues[d].as_double_ptr();
+        coordsViews[d] = axom::ArrayView<double, DIM>(coordsPtrs[d], shape);
+      }
+      axom::ArrayView<axom::primal::Point<double, DIM>, DIM>
+        coordsView( (axom::primal::Point<double, DIM>*)coordsValues.data_ptr(),
+                    shape );
+
+      // Create the nodal function data.
+      conduit::Node &fieldNode = dom["fields"][fieldName];
+      fieldNode["association"] = "vertex";
+      fieldNode["topology"] = "mesh";
+      fieldNode["volume_dependent"] = "false";
+      fieldNode["values"].set(conduit::DataType::float64(count));
+      double* d = fieldNode["values"].value();
+      axom::ArrayView<double, DIM> fieldView(d, shape);
+
+      // Set the nodal data to the distance from center.
+      axom::IndexType nodeCount = fieldView.size();
+      for(int i=0; i<nodeCount; ++i)
+      {
+        axom::primal::Point<double, DIM> pt;
+        for(int d=0; d<DIM; ++d)
+        {
+          pt[d] = coordsViews[d].flatIndex(i);
+        };
+        fieldView.flatIndex(i) = distance(pt);
       }
     }
-std::cout << __WHERE << std::endl; dom.print();
   }
-}
+
+  double distance(axom::primal::Point<double, DIM> &pt) const
+  {
+    double dist = primal::squared_distance(_center, pt);
+    dist = sqrt(dist);
+    return dist;
+  }
+
+  /**
+     Check for errors in the surface contour mesh.
+
+     - surface triangle should be contained in their cells.
+     - surface points should lie on computational mesh edges.
+     - analytical scalar value at surface points should be
+       contourVal, within machine zero.
+  */
+  int check_contour_surface(
+    const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &contourMesh,
+    double contourVal,
+    double tol = 1e-12)
+  {
+    int sumErrCount = 0;
+    const axom::IndexType nodeCount = contourMesh.getNumberOfNodes();
+    axom::primal::Point<double, DIM> pt;
+    for(axom::IndexType i=0; i<nodeCount; ++i)
+    {
+      contourMesh.getNode(i, pt.data());
+      double dist = distance(pt);
+      double diff = std::abs(dist - contourVal);
+      if(diff > tol)
+      {
+        ++sumErrCount;
+        SLIC_INFO_IF(
+          params.isVerbose(),
+          axom::fmt::format("check_contour_surface: node {} has dist {}, off by {}",
+                            i, dist, diff));
+      }
+    }
+    SLIC_INFO_IF(
+      params.isVerbose(),
+      axom::fmt::format("check_contour_surface: found {} errors",
+                        sumErrCount));
+    return sumErrCount;
+  }
+};
 
 
 /// Utility function to initialize the logger
@@ -447,7 +495,6 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Set up and parse command line arguments
   //---------------------------------------------------------------------------
-  Input params;
   axom::CLI::App app {"Driver/test code for marching cubes algorithm"};
 
   try
@@ -538,10 +585,12 @@ int main(int argc, char** argv)
 
   slic::flushStreams();
 
+  DistanceFromPoint<DIM> dfp(params.fcn_center<DIM>());
+
   //---------------------------------------------------------------------------
   // Initialize nodal scalar function.
   //---------------------------------------------------------------------------
-  compute_nodal_distance(computationalMesh, "fVal", params.fcn_center<DIM>());
+  dfp.compute_nodal_distance(computationalMesh, "fVal");
 
   //---------------------------------------------------------------------------
   // Initialize spatial index for querying points, and run query
@@ -571,8 +620,10 @@ int main(int argc, char** argv)
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
     DIM,
     DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+  axom::Array<int> domainIds;
 
   mca.set_output_mesh(&surfaceMesh);
+  mca.set_output_cell_ids(&domainIds);
 
   slic::flushStreams();
   computeTimer.start();
@@ -601,27 +652,32 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
   assert(computationalMesh.isValid());
-  computationalMesh.saveMesh(params.fieldsFile);
+  computationalMesh.save_mesh(params.fieldsFile);
   mint::write_vtk(&surfaceMesh, "surface_mesh.vtk");
 
   int errCount = 0;
   int localErrCount = 0;
   if(params.checkResults)
   {
-    // TODO: Write a correctness checker.
-  }
-  MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    localErrCount = dfp.check_contour_surface(surfaceMesh, params.contourVal, 1e-3);
+    MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
-  // TODO: Write surface mesh to file for viz.
-
-  if(errCount)
-  {
-    SLIC_INFO(axom::fmt::format(" Error exit: {} errors found.", errCount));
+    if(errCount)
+    {
+      SLIC_INFO(axom::fmt::format(" Error exit: {} errors found.", errCount));
+    }
+    else
+    {
+      SLIC_INFO("Normal exit.");
+    }
   }
   else
   {
-    SLIC_INFO("Normal exit.");
+    SLIC_INFO("Not checking results.");
   }
+
+  // TODO: Write surface mesh to file for viz.
+
 
   finalizeLogger();
   MPI_Finalize();

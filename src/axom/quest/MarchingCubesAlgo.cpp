@@ -280,7 +280,79 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
   } else {
     SLIC_ERROR("Unfinished code for 3D marching cubes.");
 
-#if 0
+#if 1
+    axom::StackArray<axom::IndexType, 3> cShape{_logicalSize[0], _logicalSize[1], _logicalSize[2]};
+    axom::StackArray<axom::IndexType, 3> nShape{1+_logicalSize[0], 1+_logicalSize[1], 1+_logicalSize[2]};
+    axom::ArrayView<const double, 3> fieldView(fieldPtr, nShape);
+    axom::ArrayView<const double, 3> xView(xPtr, nShape);
+    axom::ArrayView<const double, 3> yView(yPtr, nShape);
+    axom::ArrayView<const double, 3> zView(zPtr, nShape);
+    axom::ArrayView<const int, 3> maskView(maskPtr, cShape);
+    // Write as regular nested loops.
+    for(int k=0; k<_logicalSize[2]; ++k)
+    {
+      for(int j=0; j<_logicalSize[1]; ++j)
+      {
+        for(int i=0; i<_logicalSize[0]; ++i)
+        {
+          const bool skipZone = maskPtr && bool(maskView(i, j, k));
+          if ( !skipZone ) {
+
+            double vfs[8];
+            double xx[8];
+            double yy[8];
+            double zz[8];
+
+            vfs[0] = fieldView(i+1, j  , k);
+            vfs[1] = fieldView(i+1, j+1, k);
+            vfs[2] = fieldView(i  , j+1, k);
+            vfs[3] = fieldView(i  , j  , k);
+            vfs[4] = fieldView(i+1, j  , k+1);
+            vfs[5] = fieldView(i+1, j+1, k+1);
+            vfs[6] = fieldView(i  , j+1, k+1);
+            vfs[7] = fieldView(i  , j  , k+1);
+
+            xx[0] = xView(i+1, j  , k);
+            xx[1] = xView(i+1, j+1, k);
+            xx[2] = xView(i  , j+1, k);
+            xx[3] = xView(i  , j  , k);
+            xx[4] = xView(i+1, j  , k+1);
+            xx[5] = xView(i+1, j+1, k+1);
+            xx[6] = xView(i  , j+1, k+1);
+            xx[7] = xView(i  , j  , k+1);
+
+            yy[0] = yView(i+1, j  , k);
+            yy[1] = yView(i+1, j+1, k);
+            yy[2] = yView(i  , j+1, k);
+            yy[3] = yView(i  , j  , k);
+            yy[4] = yView(i+1, j  , k+1);
+            yy[5] = yView(i+1, j+1, k+1);
+            yy[6] = yView(i  , j+1, k+1);
+            yy[7] = yView(i  , j  , k+1);
+
+            zz[0] = zView(i+1, j  , k);
+            zz[1] = zView(i+1, j+1, k);
+            zz[2] = zView(i  , j+1, k);
+            zz[3] = zView(i  , j  , k);
+            zz[4] = zView(i+1, j  , k+1);
+            zz[5] = zView(i+1, j+1, k+1);
+            zz[6] = zView(i  , j+1, k+1);
+            zz[7] = zView(i  , j  , k+1);
+
+            auto nPrev = _surfaceMesh->getNumberOfCells();
+            this->contourCell3D( xx, yy, zz, vfs );
+            auto nNew = _surfaceMesh->getNumberOfCells();
+
+            if(_outputCellIds && nNew > nPrev)
+            {
+              int zoneIdx = i + j * _logicalSize[0] + k * _logicalSize[0] * _logicalSize[1]; // TODO: Fix for ghost layer size.
+              _outputCellIds->insert(nPrev, nNew-nPrev, zoneIdx);
+            }
+          } // END if
+        }
+      }
+    }
+#else
     double* zPtr = _ndim > 3 ? coordValues["z"].as_double_ptr() : nullptr;
     double* vf1, *vf2, *vf3, *vf4, *vf5, *vf6, *vf7, *vf8;
     double* x1,  *x2,  *x3,  *x4, *x5, *x6, *x7, *x8;
