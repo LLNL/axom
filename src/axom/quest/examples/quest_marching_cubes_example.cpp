@@ -623,7 +623,8 @@ int main(int argc, char** argv)
   axom::Array<int> domainIds;
 
   mca.set_output_mesh(&surfaceMesh);
-  mca.set_output_cell_ids(&domainIds);
+  mca.set_cell_id_field("zoneIds");
+  mca.set_domain_id_field("domainIds");
 
   slic::flushStreams();
   computeTimer.start();

@@ -51,7 +51,7 @@ public:
    * See set_domain(const conduit::Node &) for requirements on \a dom.
    */
   MarchingCubesAlgo1(const conduit::Node &dom,
-                     const std::string &valueField,
+                     const std::string &fcnField,
                      const std::string &maskfield);
 
   //! @brief Spatial dimension of domain.
@@ -66,24 +66,26 @@ public:
   void set_output_mesh(axom::mint::Mesh *surfaceMesh);
 
   /*!
-    @brief Set a container for saving the output cell ids.
+    @brief Save the originating cell index in output mesh.
 
-    For each surface mesh cell generated, the generating computational mesh
-    cell id is appended to \a outputCellIds.  To disable, set \a outputCellIds to nullptr.
+    For each contour mesh cell generated, the 1D index of the
+    generating computational mesh cell is set in the \a cellIdField of
+    the contour mesh.  If the field doesn't exist, it will be created.
+    To disable, set \a outputCellIds to empty.
   */
-  void set_output_cell_ids(axom::Array<int>* outputCellIds)
+  void set_cell_id_field(const std::string& cellIdField)
   {
-    _outputCellIds = outputCellIds;
+    _cellIdField = cellIdField;
   }
 
   /*!
    * \brief Computes the iso-surface.
    *
-   * \param [in] isoValue iso-contour value
+   * \param [in] contourVal iso-contour value
    *
    * Compute iso-surface using the marching cubes algorithm.
    */
-  void compute_iso_surface(double isoValue = 0.0);
+  void compute_iso_surface(double contourVal = 0.0);
 
 private:
   /*!
@@ -97,7 +99,7 @@ private:
   axom::Array<axom::IndexType> _logicalSize; //! @brief Number of cells in each direction
   axom::Array<axom::IndexType> _logicalOrigin; //! @brief First domain cell in each direction.
 
-  const std::string _valueField;
+  const std::string _fcnField;
   const std::string _maskField;
 
   /*
@@ -105,8 +107,10 @@ private:
     stack repeatedly during computation.
   */
   mutable axom::mint::Mesh* _surfaceMesh;
-  mutable axom::Array<int>* _outputCellIds;
-  double _isoValue{0.0};
+
+  std::string _cellIdField;
+
+  double _contourVal;
 
   /*!
    * \brief Set the blueprint single-domain mesh.
@@ -148,7 +152,7 @@ public:
  * Some data from \a bpMesh may be cached by the constructor.
  */
   MarchingCubesAlgo(const conduit::Node &bpMesh,
-                    const std::string &valueField,
+                    const std::string &fcnField,
                     const std::string &maskField={});
 
   /*!
@@ -158,48 +162,47 @@ public:
 
 
   /*!
-    @brief Set a container for saving the output domain ids.
+    @brief Save the originating 1D cell index as an int in the specified
+    cell-centered field of the mesh.
 
-    For each surface mesh cell generated, the generating computational mesh
-    domain id is appended to \a outputDomainIds.
-    To disable, set \a outputDomainIds to nullptr.
+    If the field doesn't exist, it will be created.  To disable, set
+    \a domainIdField to empty.
   */
-  void set_output_domain_ids(axom::Array<int>* outputDomainIds)
+  void set_cell_id_field(const std::string& cellIdField)
   {
-    _outputDomainIds = outputDomainIds;
+    _cellIdField = cellIdField;
+    for(auto &s : _sd)
+    {
+      s->set_cell_id_field(cellIdField);
+    }
   }
 
 
   /*!
-    @brief Set the container for saving the output cell ids.
+    @brief Save the originating domain index as an int in the specified
+    cell-centered field of the mesh.
 
-    For each surface mesh cell generated, the generating computational mesh
-    cell id is appended to \a outputCellIds.  To disable, set \a outputCellIds to nullptr.
+    If the field doesn't exist, it will be created.  To disable, set
+    \a domainIdField to empty.
   */
-  void set_output_cell_ids(axom::Array<int>* outputCellIds)
+  void set_domain_id_field(const std::string& domainIdField)
   {
-    _outputCellIds = outputCellIds;
-    for(auto &s : _sd)
-    {
-      s->set_output_cell_ids(outputCellIds);
-    }
+    _domainIdField = domainIdField;
   }
 
 
 /*!
  * \brief Computes the iso-surface.
  *
- * \param [in] isoValue iso-contour value
- *
- * Compute iso-surface using the marching cubes algorithm.
+ * \param [in] contourVal iso-contour value
  */
-  void compute_iso_surface(double isoValue = 0.0);
+  void compute_iso_surface(double contourVal = 0.0);
 
 private:
   //! @brief Single-domain implementations.
   axom::Array<std::shared_ptr<MarchingCubesAlgo1>> _sd;
   int _ndim;
-  const std::string _valueField;
+  const std::string _fcnField;
   const std::string _maskField;
 
   /*
@@ -207,8 +210,9 @@ private:
     stack repeatedly during computation.
   */
   mutable axom::mint::Mesh *_surfaceMesh;
-  mutable axom::Array<int>* _outputCellIds;
-  mutable axom::Array<int>* _outputDomainIds;
+
+  std::string _cellIdField;
+  std::string _domainIdField;
 
   // Use simple pointers for now.  Later, maybe sidre.
 

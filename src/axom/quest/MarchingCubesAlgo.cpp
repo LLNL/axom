@@ -22,20 +22,20 @@ namespace quest
 {
 
 MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
-                                     const std::string &valueField,
+                                     const std::string &fcnField,
                                      const std::string &maskField)
   : _sd()
   , _ndim(0)
-  , _valueField(valueField)
+  , _fcnField(fcnField)
   , _maskField(maskField)
   , _surfaceMesh(nullptr)
-  , _outputCellIds(nullptr)
-  , _outputDomainIds(nullptr)
+  , _cellIdField()
+  , _domainIdField()
 {
   _sd.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto &dom : bpMesh.children())
   {
-    _sd.emplace_back(new MarchingCubesAlgo1(dom, _valueField, _maskField));
+    _sd.emplace_back(new MarchingCubesAlgo1(dom, _fcnField, _maskField));
     if(_ndim == 0)
     {
       _ndim = _sd.back()->dimension();
@@ -62,14 +62,33 @@ void MarchingCubesAlgo::set_output_mesh(axom::mint::Mesh *surfaceMesh)
 }
 
 
-void MarchingCubesAlgo::compute_iso_surface(double isoValue)
+void MarchingCubesAlgo::compute_iso_surface(double contourVal)
 {
   SLIC_ASSERT_MSG(_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
 
-  for(auto &d : _sd)
+  if(!_domainIdField.empty() && !_surfaceMesh->hasField(_domainIdField, axom::mint::CELL_CENTERED))
   {
-    d->compute_iso_surface(isoValue);
+    _surfaceMesh->createField<int>(_domainIdField, axom::mint::CELL_CENTERED);
+  }
+
+  for(int dId=0; dId<_sd.size(); ++dId)
+  {
+    std::shared_ptr<MarchingCubesAlgo1>& single = _sd[dId];
+
+    auto nPrev = _surfaceMesh->getNumberOfCells();
+    single->compute_iso_surface(contourVal);
+    auto nNew = _surfaceMesh->getNumberOfCells();
+
+    if(nNew > nPrev && !_domainIdField.empty())
+    {
+      auto *domainIdPtr =
+        _surfaceMesh->getFieldPtr<int>(_domainIdField, axom::mint::CELL_CENTERED);
+      for(int n=nPrev; n<nNew; ++n)
+      {
+        domainIdPtr[n] = dId;
+      }
+    }
   }
 }
 
@@ -85,16 +104,17 @@ void MarchingCubesAlgo::compute_iso_surface(double isoValue)
    v8 = v4 + kp ;
 
 MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node &dom,
-                                       const std::string &valueField,
+                                       const std::string &fcnField,
                                        const std::string &maskField)
   : _dom(nullptr)
   , _ndim(0)
   , _logicalSize()
   , _logicalOrigin()
-  , _valueField(valueField)
+  , _fcnField(fcnField)
   , _maskField(maskField)
   , _surfaceMesh(nullptr)
-  , _outputCellIds(nullptr)
+  , _cellIdField()
+  , _contourVal(0.0)
 {
   set_domain(dom);
   return;
@@ -106,8 +126,8 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
                   "MarchingCubesAlgo1 is single-domain only.  Try MarchingCubesAlgo.");
 
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
-  SLIC_ASSERT(dom["fields/" + _valueField + "/association"].as_string() == "vertex");
-  SLIC_ASSERT(dom.has_path("fields/" + _valueField + "/values"));
+  SLIC_ASSERT(dom["fields/" + _fcnField + "/association"].as_string() == "vertex");
+  SLIC_ASSERT(dom.has_path("fields/" + _fcnField + "/values"));
 
   if(!_maskField.empty())
   {
@@ -162,7 +182,7 @@ void MarchingCubesAlgo1::set_output_mesh(axom::mint::Mesh *surfaceMesh)
 }
 
 
-void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
+void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 {
   SLIC_ASSERT_MSG(_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
@@ -187,8 +207,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
   const double* yPtr = _ndim >= 2 ? coordValues["y"].as_double_ptr() : nullptr;
   const double* zPtr = _ndim >= 3 ? coordValues["z"].as_double_ptr() : nullptr;
 
-  auto& fieldValues = _dom->fetch_existing("fields/" + _valueField + "/values");
-  const double *fieldPtr = fieldValues.as_double_ptr();
+  auto& fcnValues = _dom->fetch_existing("fields/" + _fcnField + "/values");
+  const double *fcnPtr = fcnValues.as_double_ptr();
 
   const int* maskPtr = nullptr;
   if(!_maskField.empty())
@@ -197,7 +217,12 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
     maskPtr = maskValues.as_int_ptr();
   }
 
-  _isoValue = isoValue;
+  if(!_cellIdField.empty() && !_surfaceMesh->hasField(_cellIdField, axom::mint::CELL_CENTERED))
+  {
+    _surfaceMesh->createField<int>(_cellIdField, axom::mint::CELL_CENTERED);
+  }
+
+  _contourVal = contourVal;
 
   if ( _ndim==2 ) {
     /*
@@ -208,7 +233,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
 #if 1
     axom::StackArray<axom::IndexType, 2> cShape{_logicalSize[0], _logicalSize[1]};
     axom::StackArray<axom::IndexType, 2> nShape{1+_logicalSize[0], 1+_logicalSize[1]};
-    axom::ArrayView<const double, 2> fieldView(fieldPtr, nShape);
+    axom::ArrayView<const double, 2> fcnView(fcnPtr, nShape);
     axom::ArrayView<const double, 2> xView(xPtr, nShape);
     axom::ArrayView<const double, 2> yView(yPtr, nShape);
     axom::ArrayView<const int, 2> maskView(maskPtr, cShape);
@@ -216,7 +241,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
     RAJA::OffsetLayout<2> fieldLayout = RAJA::make_offset_layout<2>(
       {_logicalOrigin[0], 1 + _logicalSize[0] + _logicalOrigin[0]},
       {_logicalOrigin[1], 1 + _logicalSize[1] + _logicalOrigin[1]} );
-    RAJA::View<double, 2> fieldView(fieldPtr, fieldLayout);
+    RAJA::View<double, 2> fcnView(fcnPtr, fieldLayout);
     RAJA::View<double, 2> xView(xPtr, _logicalSize[0], _logicalSize[1]);
     RAJA::View<double, 2> yView(yPtr, _logicalSize[0], _logicalSize[1]);
 #endif
@@ -248,10 +273,10 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
            double xx[4];
            double yy[4];
 
-           vfs[0] = fieldView(i+1, j);
-           vfs[1] = fieldView(i+1, j+1);
-           vfs[2] = fieldView(i, j+1);
-           vfs[3] = fieldView(i, j);
+           vfs[0] = fcnView(i+1, j);
+           vfs[1] = fcnView(i+1, j+1);
+           vfs[2] = fcnView(i, j+1);
+           vfs[3] = fcnView(i, j);
 
            xx[0] = xView(i+1, j);
            xx[1] = xView(i+1, j+1);
@@ -267,10 +292,15 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
            this->contourCell2D( xx, yy, vfs );
            auto nNew = _surfaceMesh->getNumberOfCells();
 
-           if(_outputCellIds && nNew > nPrev)
+           if(nNew > nPrev && !_cellIdField.empty())
            {
              int zoneIdx = i + j * _logicalSize[0]; // TODO: Fix for ghost layer size.
-             _outputCellIds->insert(nPrev, nNew-nPrev, zoneIdx);
+             auto *cellIdPtr =
+               _surfaceMesh->getFieldPtr<int>(_cellIdField, axom::mint::CELL_CENTERED);
+             for(int n=nPrev; n<nNew; ++n)
+             {
+               cellIdPtr[n] = zoneIdx;
+             }
            }
         } // END if
       }
@@ -283,7 +313,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
 #if 1
     axom::StackArray<axom::IndexType, 3> cShape{_logicalSize[0], _logicalSize[1], _logicalSize[2]};
     axom::StackArray<axom::IndexType, 3> nShape{1+_logicalSize[0], 1+_logicalSize[1], 1+_logicalSize[2]};
-    axom::ArrayView<const double, 3> fieldView(fieldPtr, nShape);
+    axom::ArrayView<const double, 3> fcnView(fcnPtr, nShape);
     axom::ArrayView<const double, 3> xView(xPtr, nShape);
     axom::ArrayView<const double, 3> yView(yPtr, nShape);
     axom::ArrayView<const double, 3> zView(zPtr, nShape);
@@ -303,14 +333,14 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
             double yy[8];
             double zz[8];
 
-            vfs[0] = fieldView(i+1, j  , k);
-            vfs[1] = fieldView(i+1, j+1, k);
-            vfs[2] = fieldView(i  , j+1, k);
-            vfs[3] = fieldView(i  , j  , k);
-            vfs[4] = fieldView(i+1, j  , k+1);
-            vfs[5] = fieldView(i+1, j+1, k+1);
-            vfs[6] = fieldView(i  , j+1, k+1);
-            vfs[7] = fieldView(i  , j  , k+1);
+            vfs[0] = fcnView(i+1, j  , k);
+            vfs[1] = fcnView(i+1, j+1, k);
+            vfs[2] = fcnView(i  , j+1, k);
+            vfs[3] = fcnView(i  , j  , k);
+            vfs[4] = fcnView(i+1, j  , k+1);
+            vfs[5] = fcnView(i+1, j+1, k+1);
+            vfs[6] = fcnView(i  , j+1, k+1);
+            vfs[7] = fcnView(i  , j  , k+1);
 
             xx[0] = xView(i+1, j  , k);
             xx[1] = xView(i+1, j+1, k);
@@ -343,11 +373,17 @@ void MarchingCubesAlgo1::compute_iso_surface(double isoValue)
             this->contourCell3D( xx, yy, zz, vfs );
             auto nNew = _surfaceMesh->getNumberOfCells();
 
-            if(_outputCellIds && nNew > nPrev)
-            {
-              int zoneIdx = i + j * _logicalSize[0] + k * _logicalSize[0] * _logicalSize[1]; // TODO: Fix for ghost layer size.
-              _outputCellIds->insert(nPrev, nNew-nPrev, zoneIdx);
-            }
+
+           if(nNew > nPrev && !_cellIdField.empty())
+           {
+             int zoneIdx = i + j * _logicalSize[0] + k * _logicalSize[0] * _logicalSize[1]; // TODO: Fix for ghost layer size.
+             auto *cellIdPtr =
+               _surfaceMesh->getFieldPtr<int>(_cellIdField, axom::mint::CELL_CENTERED);
+             for(int n=nPrev; n<nNew; ++n)
+             {
+               cellIdPtr[n] = zoneIdx;
+             }
+           }
           } // END if
         }
       }
@@ -477,14 +513,14 @@ void MarchingCubesAlgo1::linear_interp( int edgeIdx,
   }
 
   // STEP 2: check whether the interpolated point is at one of the two corners.
-  if ( axom::utilities::isNearlyEqual( _isoValue, f1 ) ||
+  if ( axom::utilities::isNearlyEqual( _contourVal, f1 ) ||
        axom::utilities::isNearlyEqual( f1,f2) ) {
 
       memcpy( xyz, p1, _ndim*sizeof(double) );
       return;
   }
 
-  if ( axom::utilities::isNearlyEqual(_isoValue, f2 ) ) {
+  if ( axom::utilities::isNearlyEqual(_contourVal, f2 ) ) {
 
      memcpy( xyz, p2, _ndim*sizeof(double) );
      return;
@@ -493,7 +529,7 @@ void MarchingCubesAlgo1::linear_interp( int edgeIdx,
   // STEP 3: point is in between the edge points, interpolate its position
   constexpr double ptiny = 1.0e-80;
   const double df = f2 - f1 + ptiny; //add ptiny to avoid division by zero
-  const double w  = (_isoValue-f1) / df;
+  const double w  = (_contourVal-f1) / df;
   for ( int i=0; i < _ndim; ++i ) {
      xyz[ i ] = p1[ i ] + w*( p2[ i ] - p1[ i ] );
   }
@@ -508,7 +544,7 @@ int MarchingCubesAlgo1::computeIndex( const double* f )
   int index = 0;
   for ( int i=0; i < numNodes; ++i ) {
 
-      if ( f[ i ] >= _isoValue ) {
+      if ( f[ i ] >= _contourVal ) {
          const int mask = (1 << i);
          index |= mask;
       }
