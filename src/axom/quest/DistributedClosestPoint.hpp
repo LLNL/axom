@@ -35,15 +35,14 @@
 
 // Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
 // within the distributed closest point query.
-// These are only used when building with RAJA and Umpire
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   #ifdef AXOM_USE_OPENMP
     #define _AXOM_DCP_USE_OPENMP
   #endif
-  #ifdef AXOM_USE_CUDA
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     #define _AXOM_DCP_USE_CUDA
   #endif
-  #ifdef AXOM_USE_HIP
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     #define _AXOM_DCP_USE_HIP
   #endif
 #endif
