@@ -341,13 +341,19 @@ private:
    * \brief Sets the min point for this bounding box instance.
    * \param [in] newMin the new min point.
    */
-  inline void setMin(const PointType& newMin) { m_min = newMin; };
+  AXOM_HOST_DEVICE inline void setMin(const PointType& newMin)
+  {
+    m_min = newMin;
+  };
 
   /*!
    * \brief Sets the max point for this bounding box instance.
    * \param [in] newMax the new max point.
    */
-  inline void setMax(const PointType& newMax) { m_max = newMax; };
+  AXOM_HOST_DEVICE inline void setMax(const PointType& newMax)
+  {
+    m_max = newMax;
+  };
 
   /*!
    * \brief Ensures that the bounds are valid.
@@ -485,8 +491,25 @@ template <typename OtherT>
 AXOM_HOST_DEVICE void BoundingBox<T, NDIMS>::addBox(
   const BoundingBox<OtherT, NDIMS>& bbox)
 {
-  this->addPoint(bbox.getMin());
-  this->addPoint(bbox.getMax());
+  if(this->isValid())
+  {
+    if(bbox.isValid())
+    {
+      this->addPoint(bbox.getMin());
+      this->addPoint(bbox.getMax());
+    }
+  }
+  else
+  {
+    PointType m0, m1;
+    for(int i = 0; i < NDIMS; i++)
+    {
+      m0[i] = static_cast<T>(bbox.getMin()[i]);
+      m1[i] = static_cast<T>(bbox.getMax()[i]);
+    }
+    this->setMin(m0);
+    this->setMax(m1);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -529,14 +552,16 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::expand(T expansio
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS>& BoundingBox<T, NDIMS>::scale(double scaleFactor)
 {
-  const PointType midpoint = getCentroid();
-  const VectorType r = static_cast<T>(scaleFactor * 0.5) * range();
+  if(this->isValid())
+  {
+    const PointType midpoint = getCentroid();
+    const VectorType r = static_cast<T>(scaleFactor * 0.5) * range();
 
-  m_min = PointType(midpoint.array() - r.array());
-  m_max = PointType(midpoint.array() + r.array());
+    m_min = PointType(midpoint.array() - r.array());
+    m_max = PointType(midpoint.array() + r.array());
 
-  this->checkAndFixBounds();
-
+    this->checkAndFixBounds();
+  }
   return *this;
 }
 
