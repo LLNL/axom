@@ -88,14 +88,14 @@ private:
   const std::map<std::string, RuntimePolicy> s_validPolicies
   {
       {"seq", RuntimePolicy::seq}
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   #ifdef AXOM_USE_OPENMP
     , {"omp", RuntimePolicy::omp}
   #endif
-  #ifdef AXOM_USE_CUDA
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     , {"cuda", RuntimePolicy::cuda}
   #endif
-  #ifdef AXOM_USE_HIP
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     , {"hip", RuntimePolicy::hip}
   #endif
 #endif
