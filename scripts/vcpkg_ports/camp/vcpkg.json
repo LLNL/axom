@@ -6,5 +6,10 @@
   "dependencies": [
     "blt"
   ],
+  "features": {
+    "openmp": {
+      "description": "openmp functionality for camp"
+    }
+  },
   "supports": "!uwp"
 }

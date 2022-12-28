@@ -7,5 +7,18 @@
     "blt",
     "camp"
   ],
+  "features": {
+    "openmp": {
+      "description": "openmp functionality for raja",
+      "dependencies": [
+        {
+          "name": "camp",
+          "features": [
+            "openmp"
+          ]
+        }
+      ]
+    }
+  },
   "supports": "!uwp"
 }

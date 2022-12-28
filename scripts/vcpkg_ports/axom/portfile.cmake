@@ -149,8 +149,12 @@ set(RAJA_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 set(CAMP_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 ]=])
 
+set(_openmp_dep [=[
+set(ENABLE_OPENMP ON CACHE BOOL "")
+]=])
+
 # TODO:
-#  * Add TPLs: mfem, umpire, raja
+#  * Add features/TPLs: umpire, lua, mpi
 #  * Add tools: uncrustify, sphinx, doxygen
 
 # Create a copyright file
@@ -181,6 +185,9 @@ if("raja" IN_LIST FEATURES)
   file(APPEND ${_hc_file}.in ${_raja_dep})
 endif()
 
+if("openmp" IN_LIST FEATURES)
+  file(APPEND ${_hc_file}.in ${_openmp_dep})
+endif()
 
 configure_file(${_hc_file}.in ${_hc_file} @ONLY)
 

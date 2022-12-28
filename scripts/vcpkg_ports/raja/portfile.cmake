@@ -13,6 +13,11 @@ else()
     set(_extra_cxx_flags "/DRAJASHAREDDLL_EXPORTS")
 endif()
 
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        openmp       ENABLE_OPENMP
+)
+
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
@@ -32,6 +37,7 @@ vcpkg_configure_cmake(
         -DRAJA_ENABLE_BENCHMARKS:BOOL=OFF
         -DBUILD_SHARED_LIBS:BOOL=${_is_shared}
         -DBLT_CXX_FLAGS:STRING=${_extra_cxx_flags}
+        ${FEATURE_OPTIONS}
 )
 
 vcpkg_install_cmake()
