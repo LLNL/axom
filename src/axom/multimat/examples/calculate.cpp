@@ -156,10 +156,12 @@ struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
   }
 };
 
-using RangeSet = slam::RangeSet<>;
-using ConcreteProdSet = slam::ProductSet<RangeSet, RangeSet>;
+using RangeSet = typename slam::RangeSet<>::ConcreteSet;
+using ConcreteProdSet =
+  typename slam::ProductSet<RangeSet, RangeSet>::ConcreteSet;
 using MMRelationType = typename MultiMat::RelationSetType::RelationType;
-using ConcreteRelationSet = slam::RelationSet<MMRelationType, RangeSet, RangeSet>;
+using ConcreteRelationSet =
+  typename slam::RelationSet<MMRelationType, RangeSet, RangeSet>::ConcreteSet;
 
 std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet>* g_concretizedProdSets;
 std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>*
@@ -168,21 +170,22 @@ std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>*
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetType, Layout>
 {
+  using VirtualBSet = typename MultiMat::ProductSetType;
   using BSet = ConcreteProdSet;
-  using SlamBMap = slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
 
   static SlamBMap get(MultiMat& mm, const std::string& fieldName)
   {
-    auto field =
-      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedProdSets->find(field.set()) == g_concretizedProdSets->end())
+    auto field = mm.get2dField<double>(fieldName);
+    auto fieldSet = dynamic_cast<const VirtualBSet*>(field.set());
+    if(g_concretizedProdSets->find(fieldSet) == g_concretizedProdSets->end())
     {
       BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
                    static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      (*g_concretizedProdSets)[field.set()] = prodSet;
+      (*g_concretizedProdSets)[fieldSet] = prodSet;
     }
-    SlamBMap fieldStrided(&((*g_concretizedProdSets)[field.set()]));
-    fieldStrided.copy(field.getMap()->data().data());
+    SlamBMap fieldStrided(&((*g_concretizedProdSets)[fieldSet]),
+                          field.getMap()->data());
     return fieldStrided;
   }
 };
@@ -190,8 +193,9 @@ struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetTy
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::ProductSetType, Layout>
 {
+  using VirtualBSet = typename MultiMat::ProductSetType;
   using BSet = ConcreteProdSet;
-  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
   using Stride = slam::policies::StrideOne<int>;
   using Ind = typename SlamBMap::IndirectionPolicy;
 
@@ -199,16 +203,16 @@ struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::Produc
 
   static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
   {
-    auto field =
-      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedProdSets->find(field.set()) == g_concretizedProdSets->end())
+    auto field = mm.get2dField<double>(fieldName);
+    auto fieldSet = dynamic_cast<const VirtualBSet*>(field.set());
+    if(g_concretizedProdSets->find(fieldSet) == g_concretizedProdSets->end())
     {
-      BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
-                   static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      (*g_concretizedProdSets)[field.set()] = prodSet;
+      BSet prodSet(static_cast<const RangeSet*>(fieldSet->getFirstSet()),
+                   static_cast<const RangeSet*>(fieldSet->getSecondSet()));
+      (*g_concretizedProdSets)[fieldSet] = prodSet;
     }
-    SlamBMapStrided fieldStrided(&((*g_concretizedProdSets)[field.set()]));
-    fieldStrided.copy(field.getMap()->data().data());
+    SlamBMapStrided fieldStrided(&((*g_concretizedProdSets)[fieldSet]),
+                                 field.getMap()->data());
     return fieldStrided;
   }
 };
@@ -216,8 +220,9 @@ struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::Produc
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::RelationSetType, Layout>
 {
+  using VirtualBSet = typename MultiMat::RelationSetType;
   using BSet = ConcreteRelationSet;
-  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
   using Stride = slam::policies::StrideOne<int>;
   using Ind = typename SlamBMap::IndirectionPolicy;
 
@@ -225,15 +230,15 @@ struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::RelationSetT
 
   static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
   {
-    auto field =
-      mm.get2dFieldAsSlamBivarMap<double, MultiMat::RelationSetType>(fieldName);
-    if(g_concretizedRelSets->find(field.set()) == g_concretizedRelSets->end())
+    auto field = mm.get2dField<double>(fieldName);
+    auto fieldSet = dynamic_cast<const VirtualBSet*>(field.set());
+    if(g_concretizedRelSets->find(fieldSet) == g_concretizedRelSets->end())
     {
-      BSet relSet(field.set()->getRelation());
-      (*g_concretizedRelSets)[field.set()] = relSet;
+      BSet relSet(fieldSet->getRelation());
+      (*g_concretizedRelSets)[fieldSet] = relSet;
     }
-    SlamBMapStrided fieldStrided(&((*g_concretizedRelSets)[field.set()]));
-    fieldStrided.copy(field.getMap()->data().data());
+    SlamBMapStrided fieldStrided(&((*g_concretizedRelSets)[fieldSet]),
+                                 field.getMap()->data());
     return fieldStrided;
   }
 };
