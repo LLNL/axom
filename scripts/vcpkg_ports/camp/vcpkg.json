@@ -1,0 +1,10 @@
+{
+  "name": "camp",
+  "version-string": "2022.03.2",
+  "homepage": "https://github.com/llnl/camp",
+  "description": "Compiler agnostic metaprogramming library",
+  "dependencies": [
+    "blt"
+  ],
+  "supports": "!uwp"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "raja",
+  "version-string": "2022.03.1",
+  "homepage": "https://github.com/llnl/raja",
+  "description": "RAJA Performance Portability Layer (C++)",
+  "dependencies": [
+    "blt",
+    "camp"
+  ],
+  "supports": "!uwp"
+}

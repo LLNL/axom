@@ -6,7 +6,8 @@
   "dependencies": ["blt"],
   "default-features": [
     "mfem",
-    "conduit"
+    "conduit",
+    "raja"
   ],
   "features": {
     "mfem": {
@@ -16,6 +17,10 @@
     "conduit": {
       "description": "conduit functionality for axom",
       "dependencies": ["conduit"]
+    },
+    "raja": {
+      "description": "raja functionality for axom",
+      "dependencies": ["raja"]
     }
   },
   "supports": "!uwp"

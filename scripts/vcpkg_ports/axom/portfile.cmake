@@ -126,15 +126,32 @@ set(ENABLE_MPI OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 # Set TPLs
 #------------------------------------------------------------------------------
+]=])
+
+set(_conduit_dep_on [=[
 set(CONDUIT_DIR "@CURRENT_INSTALLED_DIR@/share/conduit" CACHE PATH "")
 set(HDF5_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+set(_conduit_dep_off [=[
+# conduit is disabled
+# sidre requires conduit; inlet and klee require sidre
+set(AXOM_ENABLE_SIDRE OFF CACHE BOOL "")
+set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
+set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
+]=])
+
+set(_mfem_dep [=[
 set(MFEM_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
+set(_raja_dep [=[
+set(RAJA_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+set(CAMP_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
 
 # TODO:
 #  * Add TPLs: mfem, umpire, raja
 #  * Add tools: uncrustify, sphinx, doxygen
-
-]=])
 
 # Create a copyright file
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/share/${PORT} )
@@ -145,6 +162,25 @@ file(WRITE ${_copyright_file} "${_copyright}")
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/include/${PORT} )
 set(_hc_file ${CURRENT_PACKAGES_DIR}/include/${PORT}/hc.cmake)
 
+# Add enabled features to host-config
+message(STATUS "FEATURES: ${FEATURES}")
+
 file(WRITE ${_hc_file}.in ${_host-config_hdr})
+
+if("conduit" IN_LIST FEATURES)
+  file(APPEND ${_hc_file}.in ${_conduit_dep_on})
+else()
+  file(APPEND ${_hc_file}.in ${_conduit_dep_off})
+endif()
+
+if("mfem" IN_LIST FEATURES)
+  file(APPEND ${_hc_file}.in ${_mfem_dep})
+endif()
+
+if("raja" IN_LIST FEATURES)
+  file(APPEND ${_hc_file}.in ${_raja_dep})
+endif()
+
+
 configure_file(${_hc_file}.in ${_hc_file} @ONLY)
 
