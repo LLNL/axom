@@ -5,8 +5,8 @@
 //
 // For the license information refer to format.h.
 
-#ifndef AXOM_FMT_ARGS_H_
-#define AXOM_FMT_ARGS_H_
+#ifndef FMT_ARGS_H_
+#define FMT_ARGS_H_
 
 #include <functional>  // std::reference_wrapper
 #include <memory>      // std::unique_ptr
@@ -14,7 +14,7 @@
 
 #include "core.h"
 
-AXOM_FMT_BEGIN_NAMESPACE
+FMT_BEGIN_NAMESPACE
 
 namespace detail {
 
@@ -40,10 +40,10 @@ class dynamic_arg_list {
     T value;
 
     template <typename Arg>
-    AXOM_FMT_CONSTEXPR typed_node(const Arg& arg) : value(arg) {}
+    FMT_CONSTEXPR typed_node(const Arg& arg) : value(arg) {}
 
     template <typename Char>
-    AXOM_FMT_CONSTEXPR typed_node(const basic_string_view<Char>& arg)
+    FMT_CONSTEXPR typed_node(const basic_string_view<Char>& arg)
         : value(arg.data(), arg.size()) {}
   };
 
@@ -62,17 +62,17 @@ class dynamic_arg_list {
 
 /**
   \rst
-  A dynamic version of `axom::fmt::format_arg_store`.
+  A dynamic version of `fmt::format_arg_store`.
   It's equipped with a storage to potentially temporary objects which lifetimes
   could be shorter than the format arguments object.
 
-  It can be implicitly converted into `~axom::fmt::basic_format_args` for passing
-  into type-erased formatting functions such as `~axom::fmt::vformat`.
+  It can be implicitly converted into `~fmt::basic_format_args` for passing
+  into type-erased formatting functions such as `~fmt::vformat`.
   \endrst
  */
 template <typename Context>
 class dynamic_format_arg_store
-#if AXOM_FMT_GCC_VERSION && AXOM_FMT_GCC_VERSION < 409
+#if FMT_GCC_VERSION && FMT_GCC_VERSION < 409
     // Workaround a GCC template argument substitution bug.
     : public basic_format_args<Context>
 #endif
@@ -95,10 +95,10 @@ class dynamic_format_arg_store
   };
 
   template <typename T>
-  using stored_type = conditional_t<detail::is_string<T>::value &&
-                                        !has_formatter<T, Context>::value &&
-                                        !detail::is_reference_wrapper<T>::value,
-                                    std::basic_string<char_type>, T>;
+  using stored_type = conditional_t<
+      std::is_convertible<T, std::basic_string<char_type>>::value &&
+          !detail::is_reference_wrapper<T>::value,
+      std::basic_string<char_type>, T>;
 
   // Storage of basic_format_arg must be contiguous.
   std::vector<basic_format_arg<Context>> data_;
@@ -143,6 +143,8 @@ class dynamic_format_arg_store
   }
 
  public:
+  constexpr dynamic_format_arg_store() = default;
+
   /**
     \rst
     Adds an argument into the dynamic store for later passing to a formatting
@@ -153,11 +155,11 @@ class dynamic_format_arg_store
 
     **Example**::
 
-      axom::fmt::dynamic_format_arg_store<axom::fmt::format_context> store;
+      fmt::dynamic_format_arg_store<fmt::format_context> store;
       store.push_back(42);
       store.push_back("abc");
       store.push_back(1.5f);
-      std::string result = axom::fmt::vformat("{} and {} and {}", store);
+      std::string result = fmt::vformat("{} and {} and {}", store);
     \endrst
   */
   template <typename T> void push_back(const T& arg) {
@@ -174,11 +176,11 @@ class dynamic_format_arg_store
 
     **Example**::
 
-      axom::fmt::dynamic_format_arg_store<axom::fmt::format_context> store;
+      fmt::dynamic_format_arg_store<fmt::format_context> store;
       char band[] = "Rolling Stones";
       store.push_back(std::cref(band));
       band[9] = 'c'; // Changing str affects the output.
-      std::string result = axom::fmt::vformat("{}", store);
+      std::string result = fmt::vformat("{}", store);
       // result == "Rolling Scones"
     \endrst
   */
@@ -200,9 +202,9 @@ class dynamic_format_arg_store
         dynamic_args_.push<std::basic_string<char_type>>(arg.name).c_str();
     if (detail::const_check(need_copy<T>::value)) {
       emplace_arg(
-          axom::fmt::arg(arg_name, dynamic_args_.push<stored_type<T>>(arg.value)));
+          fmt::arg(arg_name, dynamic_args_.push<stored_type<T>>(arg.value)));
     } else {
-      emplace_arg(axom::fmt::arg(arg_name, arg.value));
+      emplace_arg(fmt::arg(arg_name, arg.value));
     }
   }
 
@@ -220,13 +222,13 @@ class dynamic_format_arg_store
     \endrst
   */
   void reserve(size_t new_cap, size_t new_cap_named) {
-    AXOM_FMT_ASSERT(new_cap >= new_cap_named,
+    FMT_ASSERT(new_cap >= new_cap_named,
                "Set of arguments includes set of named arguments");
     data_.reserve(new_cap);
     named_info_.reserve(new_cap_named);
   }
 };
 
-AXOM_FMT_END_NAMESPACE
+FMT_END_NAMESPACE
 
-#endif  // AXOM_FMT_ARGS_H_
+#endif  // FMT_ARGS_H_
