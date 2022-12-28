@@ -410,7 +410,6 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
     "Iterator must return objects convertible to primal::BoundingBox.");
 
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
-  using PointType = primal::Point<FloatType, NDIMS>;
 
   // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
   m_bvh.reset(new ImplType);
