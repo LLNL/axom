@@ -170,7 +170,7 @@ public:
     using HostPointArray = axom::Array<SpacePoint>;
 
     using HostIndexView = IndexView;
-    using HostPointView = axom::Array<SpacePoint>;
+    using HostPointView = axom::ArrayView<SpacePoint>;
     using ConstHostPointView = axom::ArrayView<const SpacePoint>;
   #endif  // AXOM_USE_UMPIRE
 #endif    // AXOM_USE_RAJA
