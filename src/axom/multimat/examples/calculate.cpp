@@ -332,62 +332,6 @@ void average_density_cell_dom_compact(Robey_data& data)
 
 //    Average density - Cell-Dominant Full Matrix
 //    MultiMat - Direct Access
-void average_density_cell_dom_mm_template(MultiMat& mm)
-{
-  SLIC_INFO(
-    "-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access "
-    "w/ template cast --");
-
-  mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
-                                << mm.getFieldSparsityLayoutAsString(0));
-  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
-  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
-
-  int ncells = mm.getNumberOfCells();
-  int nmats = mm.getNumberOfMaterials();
-  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
-  auto& Volfrac = mm.get2dField<double>("Volfrac");
-  auto& Vol = mm.get1dField<double>("Vol");
-
-  using SetType = slam::RangeSet<>;
-  using ProductSetType = slam::ProductSet<SetType, SetType>;
-  auto prodset = Densityfrac.getBivariateSet<ProductSetType>();
-
-  std::vector<double> Density_average(ncells);
-
-  timer.reset();
-
-  for(int iter = 0; iter < ITERMAX; ++iter)
-  {
-    timer.start();
-
-    for(int ic = 0; ic < ncells; ++ic)
-    {
-      double density_ave = 0.0;
-      for(int m = 0; m < nmats; ++m)
-      {
-        auto flatIdx = prodset.findElementFlatIndex(ic, m);
-        density_ave += Densityfrac[flatIdx] * Volfrac[flatIdx];
-      }
-      Density_average[ic] = density_ave / Vol[ic];
-    }
-
-    timer.record();
-    data_checker.check(Density_average);
-  }
-  double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density,
-                          mm.getFieldDataLayout(0),
-                          mm.getFieldSparsityLayout(0),
-                          Result_Store::mm_direct,
-                          act_perf);
-  SLIC_INFO("Average Density                      compute time is "
-            << act_perf << " secs\n");
-}
-
-//    Average density - Cell-Dominant Full Matrix
-//    MultiMat - Direct Access
 template <MMFieldMethod Method = MMFieldMethod::GenericField,
           typename BSet = MultiMat::BivariateSetType>
 void average_density_cell_dom_mm_direct(MultiMat& mm)
