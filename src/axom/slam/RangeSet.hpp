@@ -86,7 +86,7 @@ public:
                      OrderedSetType::StridePolicyType::DEFAULT_VALUE)
   { }
 
-  GenericRangeSet(const typename OrderedSetType::SetBuilder& builder)
+  AXOM_HOST_DEVICE GenericRangeSet(const typename OrderedSetType::SetBuilder& builder)
     : OrderedSetType(builder)
   { }
 

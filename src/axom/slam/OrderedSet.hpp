@@ -105,7 +105,7 @@ public:
   //, SubsettingPolicyType(parentSet)
   { }
 
-  OrderedSet(const SetBuilder& builder)
+  AXOM_HOST_DEVICE OrderedSet(const SetBuilder& builder)
     : SizePolicyType(builder.m_size)
     , OffsetPolicyType(builder.m_offset)
     , StridePolicyType(builder.m_stride)
@@ -198,7 +198,7 @@ public:
     using DataType = typename IndirectionPolicyType::IndirectionPtrType;
     using ParentSetType = typename SubsettingPolicyType::ParentSetType;
 
-    SetBuilder& size(PositionType sz)
+    AXOM_HOST_DEVICE SetBuilder& size(PositionType sz)
     {
       SLIC_ASSERT_MSG(
         !m_hasRange,
@@ -208,7 +208,7 @@ public:
       return *this;
     }
 
-    SetBuilder& offset(PositionType off)
+    AXOM_HOST_DEVICE SetBuilder& offset(PositionType off)
     {
       SLIC_ASSERT(!m_hasRange || off == m_offset.offset());
 
@@ -454,23 +454,32 @@ public:
    * \brief Given a position in the Set, return a position in the larger index
    *  space
    */
+  AXOM_HOST_DEVICE
   inline typename IndirectionPolicy::ConstIndirectionResult operator[](
     PositionType pos) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos);
+#endif
     return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
                                           OffsetPolicyType::offset());
   }
 
+  AXOM_HOST_DEVICE
   inline typename IndirectionPolicy::IndirectionResult operator[](PositionType pos)
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos);
+#endif
     return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
                                           OffsetPolicyType::offset());
   }
   inline ElementType at(PositionType pos) const { return operator[](pos); }
 
-  inline PositionType size() const { return SizePolicyType::size(); }
+  AXOM_HOST_DEVICE inline PositionType size() const
+  {
+    return SizePolicyType::size();
+  }
   inline bool empty() const { return SizePolicyType::empty(); }
 
   bool isValid(bool verboseOutput = false) const;

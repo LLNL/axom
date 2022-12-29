@@ -37,7 +37,7 @@ public:
 public:
   NullSet() { }
 
-  inline PositionType size() const { return PositionType(); }
+  AXOM_HOST_DEVICE inline PositionType size() const { return PositionType(); }
 
   inline ElementType at(PositionType pos) const
   {

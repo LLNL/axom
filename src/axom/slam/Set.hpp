@@ -100,7 +100,7 @@ public:
    * \brief Get the number of entities in the set
    * \return The number of entities in the set.
    */
-  virtual PositionType size() const = 0;
+  AXOM_HOST_DEVICE virtual PositionType size() const = 0;
 
   /**
    * \brief Determines if the Set is a Subset of another set.
