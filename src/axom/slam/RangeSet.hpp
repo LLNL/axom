@@ -63,7 +63,7 @@ private:
 
   template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
   using ConvertibleRangeSet =
-    GenericRangeSet<P, E, OffsetPolicy, StridingPolicy, OtherIndirectionPolicy, SubsettingPolicy, InterfacePolicy>;
+    GenericRangeSet<P, E, OffsetPolicy, StridingPolicy, OtherIndirectionPolicy, SubsettingPolicy, OtherInterfaceType>;
 
 public:
   using ConcreteSet =
@@ -71,6 +71,13 @@ public:
 
   using VirtualSet =
     ConvertibleRangeSet<IndirectionPolicy, policies::VirtualInterface>;
+
+  using OtherIfaceSet =
+    std::conditional_t<std::is_same<InterfacePolicy, policies::VirtualInterface>::value,
+                       ConcreteSet,
+                       VirtualSet>;
+
+  GenericRangeSet(const OtherIfaceSet& otherSet) : OrderedSetType(otherSet) { }
 
 public:
   GenericRangeSet(PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
