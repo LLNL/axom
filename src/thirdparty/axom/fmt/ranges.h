@@ -9,8 +9,8 @@
 // All Rights Reserved
 // {fmt} support for ranges, containers and types tuple interface.
 
-#ifndef FMT_RANGES_H_
-#define FMT_RANGES_H_
+#ifndef AXOM_FMT_RANGES_H_
+#define AXOM_FMT_RANGES_H_
 
 #include <initializer_list>
 #include <tuple>
@@ -18,7 +18,7 @@
 
 #include "format.h"
 
-FMT_BEGIN_NAMESPACE
+AXOM_FMT_BEGIN_NAMESPACE
 
 namespace detail {
 
@@ -62,14 +62,14 @@ template <typename T> class is_std_string_like {
 };
 
 template <typename Char>
-struct is_std_string_like<fmt::basic_string_view<Char>> : std::true_type {};
+struct is_std_string_like<axom::fmt::basic_string_view<Char>> : std::true_type {};
 
 template <typename T> class is_map {
   template <typename U> static auto check(U*) -> typename U::mapped_type;
   template <typename> static void check(...);
 
  public:
-#ifdef FMT_FORMAT_MAP_AS_LIST
+#ifdef AXOM_FMT_FORMAT_MAP_AS_LIST
   static constexpr const bool value = false;
 #else
   static constexpr const bool value =
@@ -82,7 +82,7 @@ template <typename T> class is_set {
   template <typename> static void check(...);
 
  public:
-#ifdef FMT_FORMAT_SET_AS_LIST
+#ifdef AXOM_FMT_FORMAT_SET_AS_LIST
   static constexpr const bool value = false;
 #else
   static constexpr const bool value =
@@ -94,9 +94,9 @@ template <typename... Ts> struct conditional_helper {};
 
 template <typename T, typename _ = void> struct is_range_ : std::false_type {};
 
-#if !FMT_MSC_VERSION || FMT_MSC_VERSION > 1800
+#if !AXOM_FMT_MSC_VERSION || AXOM_FMT_MSC_VERSION > 1800
 
-#  define FMT_DECLTYPE_RETURN(val)  \
+#  define AXOM_FMT_DECLTYPE_RETURN(val)  \
     ->decltype(val) { return val; } \
     static_assert(                  \
         true, "")  // This makes it so that a semicolon is required after the
@@ -122,9 +122,9 @@ struct has_member_fn_begin_end_t<T, void_t<decltype(std::declval<T>().begin()),
 
 // Member function overload
 template <typename T>
-auto range_begin(T&& rng) FMT_DECLTYPE_RETURN(static_cast<T&&>(rng).begin());
+auto range_begin(T&& rng) AXOM_FMT_DECLTYPE_RETURN(static_cast<T&&>(rng).begin());
 template <typename T>
-auto range_end(T&& rng) FMT_DECLTYPE_RETURN(static_cast<T&&>(rng).end());
+auto range_end(T&& rng) AXOM_FMT_DECLTYPE_RETURN(static_cast<T&&>(rng).end());
 
 // ADL overload. Only participates in overload resolution if member functions
 // are not found.
@@ -164,7 +164,7 @@ template <typename T>
 struct is_range_<T, void>
     : std::integral_constant<bool, (has_const_begin_end<T>::value ||
                                     has_mutable_begin_end<T>::value)> {};
-#  undef FMT_DECLTYPE_RETURN
+#  undef AXOM_FMT_DECLTYPE_RETURN
 #endif
 
 // tuple_size and tuple_element check.
@@ -179,7 +179,7 @@ template <typename T> class is_tuple_like_ {
 };
 
 // Check for integer_sequence
-#if defined(__cpp_lib_integer_sequence) || FMT_MSC_VERSION >= 1900
+#if defined(__cpp_lib_integer_sequence) || AXOM_FMT_MSC_VERSION >= 1900
 template <typename T, T... N>
 using integer_sequence = std::integer_sequence<T, N...>;
 template <size_t... N> using index_sequence = std::index_sequence<N...>;
@@ -188,7 +188,7 @@ template <size_t N> using make_index_sequence = std::make_index_sequence<N>;
 template <typename T, T... N> struct integer_sequence {
   using value_type = T;
 
-  static FMT_CONSTEXPR size_t size() { return sizeof...(N); }
+  static AXOM_FMT_CONSTEXPR size_t size() { return sizeof...(N); }
 };
 
 template <size_t... N> using index_sequence = integer_sequence<size_t, N...>;
@@ -236,7 +236,7 @@ void for_each(index_sequence<Is...>, Tuple&& tup, F&& f) noexcept {
 }
 
 template <class T>
-FMT_CONSTEXPR make_index_sequence<std::tuple_size<T>::value> get_indexes(
+AXOM_FMT_CONSTEXPR make_index_sequence<std::tuple_size<T>::value> get_indexes(
     T const&) {
   return {};
 }
@@ -246,7 +246,7 @@ template <class Tuple, class F> void for_each(Tuple&& tup, F&& f) {
   for_each(indexes, std::forward<Tuple>(tup), std::forward<F>(f));
 }
 
-#if FMT_MSC_VERSION && FMT_MSC_VERSION < 1920
+#if AXOM_FMT_MSC_VERSION && AXOM_FMT_MSC_VERSION < 1920
 // Older MSVC doesn't get the reference type correctly for arrays.
 template <typename R> struct range_reference_type_impl {
   using type = decltype(*detail::range_begin(std::declval<R&>()));
@@ -289,21 +289,21 @@ auto write_range_entry(OutputIt out, basic_string_view<Char> str) -> OutputIt {
 }
 
 template <typename Char, typename OutputIt, typename T,
-          FMT_ENABLE_IF(std::is_convertible<T, std_string_view<char>>::value)>
+          AXOM_FMT_ENABLE_IF(std::is_convertible<T, std_string_view<char>>::value)>
 inline auto write_range_entry(OutputIt out, const T& str) -> OutputIt {
   auto sv = std_string_view<Char>(str);
   return write_range_entry<Char>(out, basic_string_view<Char>(sv));
 }
 
 template <typename Char, typename OutputIt, typename Arg,
-          FMT_ENABLE_IF(std::is_same<Arg, Char>::value)>
+          AXOM_FMT_ENABLE_IF(std::is_same<Arg, Char>::value)>
 OutputIt write_range_entry(OutputIt out, const Arg v) {
   return write_escaped_char(out, v);
 }
 
 template <
     typename Char, typename OutputIt, typename Arg,
-    FMT_ENABLE_IF(!is_std_string_like<typename std::decay<Arg>::type>::value &&
+    AXOM_FMT_ENABLE_IF(!is_std_string_like<typename std::decay<Arg>::type>::value &&
                   !std::is_same<Arg, Char>::value)>
 OutputIt write_range_entry(OutputIt out, const Arg& v) {
   return write<Char>(out, v);
@@ -323,8 +323,8 @@ template <typename T, typename C> struct is_tuple_formattable {
 
 template <typename TupleT, typename Char>
 struct formatter<TupleT, Char,
-                 enable_if_t<fmt::is_tuple_like<TupleT>::value &&
-                             fmt::is_tuple_formattable<TupleT, Char>::value>> {
+                 enable_if_t<axom::fmt::is_tuple_like<TupleT>::value &&
+                             axom::fmt::is_tuple_formattable<TupleT, Char>::value>> {
  private:
   basic_string_view<Char> separator_ = detail::string_literal<Char, ',', ' '>{};
   basic_string_view<Char> opening_bracket_ =
@@ -345,20 +345,20 @@ struct formatter<TupleT, Char,
   };
 
  public:
-  FMT_CONSTEXPR formatter() {}
+  AXOM_FMT_CONSTEXPR formatter() {}
 
-  FMT_CONSTEXPR void set_separator(basic_string_view<Char> sep) {
+  AXOM_FMT_CONSTEXPR void set_separator(basic_string_view<Char> sep) {
     separator_ = sep;
   }
 
-  FMT_CONSTEXPR void set_brackets(basic_string_view<Char> open,
+  AXOM_FMT_CONSTEXPR void set_brackets(basic_string_view<Char> open,
                                   basic_string_view<Char> close) {
     opening_bracket_ = open;
     closing_bracket_ = close;
   }
 
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
     return ctx.begin();
   }
 
@@ -385,12 +385,12 @@ template <typename Context> struct range_mapper {
   using mapper = arg_mapper<Context>;
 
   template <typename T,
-            FMT_ENABLE_IF(has_formatter<remove_cvref_t<T>, Context>::value)>
+            AXOM_FMT_ENABLE_IF(has_formatter<remove_cvref_t<T>, Context>::value)>
   static auto map(T&& value) -> T&& {
     return static_cast<T&&>(value);
   }
   template <typename T,
-            FMT_ENABLE_IF(!has_formatter<remove_cvref_t<T>, Context>::value)>
+            AXOM_FMT_ENABLE_IF(!has_formatter<remove_cvref_t<T>, Context>::value)>
   static auto map(T&& value)
       -> decltype(mapper().map(static_cast<T&&>(value))) {
     return mapper().map(static_cast<T&&>(value));
@@ -410,7 +410,7 @@ using maybe_const_range =
     conditional_t<has_const_begin_end<R>::value, const R, R>;
 
 // Workaround a bug in MSVC 2015 and earlier.
-#if !FMT_MSC_VERSION || FMT_MSC_VERSION >= 1910
+#if !AXOM_FMT_MSC_VERSION || AXOM_FMT_MSC_VERSION >= 1910
 template <typename R, typename Char>
 struct is_formattable_delayed
     : disjunction<
@@ -440,37 +440,37 @@ struct range_formatter<
       detail::string_literal<Char, ']'>{};
 
   template <class U>
-  FMT_CONSTEXPR static auto maybe_set_debug_format(U& u, int)
+  AXOM_FMT_CONSTEXPR static auto maybe_set_debug_format(U& u, int)
       -> decltype(u.set_debug_format()) {
     u.set_debug_format();
   }
 
   template <class U>
-  FMT_CONSTEXPR static void maybe_set_debug_format(U&, ...) {}
+  AXOM_FMT_CONSTEXPR static void maybe_set_debug_format(U&, ...) {}
 
-  FMT_CONSTEXPR void maybe_set_debug_format() {
+  AXOM_FMT_CONSTEXPR void maybe_set_debug_format() {
     maybe_set_debug_format(underlying_, 0);
   }
 
  public:
-  FMT_CONSTEXPR range_formatter() {}
+  AXOM_FMT_CONSTEXPR range_formatter() {}
 
-  FMT_CONSTEXPR auto underlying() -> detail::range_formatter_type<Char, T>& {
+  AXOM_FMT_CONSTEXPR auto underlying() -> detail::range_formatter_type<Char, T>& {
     return underlying_;
   }
 
-  FMT_CONSTEXPR void set_separator(basic_string_view<Char> sep) {
+  AXOM_FMT_CONSTEXPR void set_separator(basic_string_view<Char> sep) {
     separator_ = sep;
   }
 
-  FMT_CONSTEXPR void set_brackets(basic_string_view<Char> open,
+  AXOM_FMT_CONSTEXPR void set_brackets(basic_string_view<Char> open,
                                   basic_string_view<Char> close) {
     opening_bracket_ = open;
     closing_bracket_ = close;
   }
 
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
     auto it = ctx.begin();
     auto end = ctx.end();
     if (it == end || *it == '}') {
@@ -489,7 +489,7 @@ struct range_formatter<
     }
 
     if (*it != ':')
-      FMT_THROW(format_error("no other top-level range formatters supported"));
+      AXOM_FMT_THROW(format_error("no other top-level range formatters supported"));
 
     custom_specs_ = true;
     ++it;
@@ -542,14 +542,14 @@ struct range_default_formatter<
   using range_type = detail::maybe_const_range<R>;
   range_formatter<detail::uncvref_type<range_type>, Char> underlying_;
 
-  FMT_CONSTEXPR range_default_formatter() { init(range_format_constant<K>()); }
+  AXOM_FMT_CONSTEXPR range_default_formatter() { init(range_format_constant<K>()); }
 
-  FMT_CONSTEXPR void init(range_format_constant<range_format::set>) {
+  AXOM_FMT_CONSTEXPR void init(range_format_constant<range_format::set>) {
     underlying_.set_brackets(detail::string_literal<Char, '{'>{},
                              detail::string_literal<Char, '}'>{});
   }
 
-  FMT_CONSTEXPR void init(range_format_constant<range_format::map>) {
+  AXOM_FMT_CONSTEXPR void init(range_format_constant<range_format::map>) {
     underlying_.set_brackets(detail::string_literal<Char, '{'>{},
                              detail::string_literal<Char, '}'>{});
     underlying_.underlying().set_brackets({}, {});
@@ -557,10 +557,10 @@ struct range_default_formatter<
         detail::string_literal<Char, ':', ' '>{});
   }
 
-  FMT_CONSTEXPR void init(range_format_constant<range_format::sequence>) {}
+  AXOM_FMT_CONSTEXPR void init(range_format_constant<range_format::sequence>) {}
 
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
     return underlying_.parse(ctx);
   }
 
@@ -584,7 +584,7 @@ struct formatter<
     enable_if_t<conjunction<bool_constant<range_format_kind<R, Char>::value !=
                                           range_format::disabled>
 // Workaround a bug in MSVC 2015 and earlier.
-#if !FMT_MSC_VERSION || FMT_MSC_VERSION >= 1910
+#if !AXOM_FMT_MSC_VERSION || AXOM_FMT_MSC_VERSION >= 1910
                             ,
                             detail::is_formattable_delayed<R, Char>
 #endif
@@ -604,17 +604,17 @@ template <typename Char, typename... T> struct tuple_join_view : detail::view {
 template <typename Char, typename... T>
 using tuple_arg_join = tuple_join_view<Char, T...>;
 
-// Define FMT_TUPLE_JOIN_SPECIFIERS to enable experimental format specifiers
+// Define AXOM_FMT_TUPLE_JOIN_SPECIFIERS to enable experimental format specifiers
 // support in tuple_join. It is disabled by default because of issues with
 // the dynamic width and precision.
-#ifndef FMT_TUPLE_JOIN_SPECIFIERS
-#  define FMT_TUPLE_JOIN_SPECIFIERS 0
+#ifndef AXOM_FMT_TUPLE_JOIN_SPECIFIERS
+#  define AXOM_FMT_TUPLE_JOIN_SPECIFIERS 0
 #endif
 
 template <typename Char, typename... T>
 struct formatter<tuple_join_view<Char, T...>, Char> {
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
     return do_parse(ctx, std::integral_constant<size_t, sizeof...(T)>());
   }
 
@@ -629,23 +629,23 @@ struct formatter<tuple_join_view<Char, T...>, Char> {
   std::tuple<formatter<typename std::decay<T>::type, Char>...> formatters_;
 
   template <typename ParseContext>
-  FMT_CONSTEXPR auto do_parse(ParseContext& ctx,
+  AXOM_FMT_CONSTEXPR auto do_parse(ParseContext& ctx,
                               std::integral_constant<size_t, 0>)
       -> decltype(ctx.begin()) {
     return ctx.begin();
   }
 
   template <typename ParseContext, size_t N>
-  FMT_CONSTEXPR auto do_parse(ParseContext& ctx,
+  AXOM_FMT_CONSTEXPR auto do_parse(ParseContext& ctx,
                               std::integral_constant<size_t, N>)
       -> decltype(ctx.begin()) {
     auto end = ctx.begin();
-#if FMT_TUPLE_JOIN_SPECIFIERS
+#if AXOM_FMT_TUPLE_JOIN_SPECIFIERS
     end = std::get<sizeof...(T) - N>(formatters_).parse(ctx);
     if (N > 1) {
       auto end1 = do_parse(ctx, std::integral_constant<size_t, N - 1>());
       if (end != end1)
-        FMT_THROW(format_error("incompatible format specs for tuple elements"));
+        AXOM_FMT_THROW(format_error("incompatible format specs for tuple elements"));
     }
 #endif
     return end;
@@ -673,7 +673,7 @@ struct formatter<tuple_join_view<Char, T...>, Char> {
   }
 };
 
-FMT_MODULE_EXPORT_BEGIN
+AXOM_FMT_MODULE_EXPORT_BEGIN
 
 /**
   \rst
@@ -682,18 +682,18 @@ FMT_MODULE_EXPORT_BEGIN
   **Example**::
 
     std::tuple<int, char> t = {1, 'a'};
-    fmt::print("{}", fmt::join(t, ", "));
+    axom::fmt::print("{}", axom::fmt::join(t, ", "));
     // Output: "1, a"
   \endrst
  */
 template <typename... T>
-FMT_CONSTEXPR auto join(const std::tuple<T...>& tuple, string_view sep)
+AXOM_FMT_CONSTEXPR auto join(const std::tuple<T...>& tuple, string_view sep)
     -> tuple_join_view<char, T...> {
   return {tuple, sep};
 }
 
 template <typename... T>
-FMT_CONSTEXPR auto join(const std::tuple<T...>& tuple,
+AXOM_FMT_CONSTEXPR auto join(const std::tuple<T...>& tuple,
                         basic_string_view<wchar_t> sep)
     -> tuple_join_view<wchar_t, T...> {
   return {tuple, sep};
@@ -706,7 +706,7 @@ FMT_CONSTEXPR auto join(const std::tuple<T...>& tuple,
 
   **Example**::
 
-    fmt::print("{}", fmt::join({1, 2, 3}, ", "));
+    axom::fmt::print("{}", axom::fmt::join({1, 2, 3}, ", "));
     // Output: "1, 2, 3"
   \endrst
  */
@@ -716,7 +716,7 @@ auto join(std::initializer_list<T> list, string_view sep)
   return join(std::begin(list), std::end(list), sep);
 }
 
-FMT_MODULE_EXPORT_END
-FMT_END_NAMESPACE
+AXOM_FMT_MODULE_EXPORT_END
+AXOM_FMT_END_NAMESPACE
 
-#endif  // FMT_RANGES_H_
+#endif  // AXOM_FMT_RANGES_H_

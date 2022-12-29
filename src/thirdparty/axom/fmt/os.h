@@ -5,8 +5,8 @@
 //
 // For the license information refer to format.h.
 
-#ifndef FMT_OS_H_
-#define FMT_OS_H_
+#ifndef AXOM_FMT_OS_H_
+#define AXOM_FMT_OS_H_
 
 #include <cerrno>
 #include <cstddef>
@@ -19,59 +19,59 @@
 
 #include "format.h"
 
-#ifndef FMT_USE_FCNTL
+#ifndef AXOM_FMT_USE_FCNTL
 // UWP doesn't provide _pipe.
-#  if FMT_HAS_INCLUDE("winapifamily.h")
+#  if AXOM_FMT_HAS_INCLUDE("winapifamily.h")
 #    include <winapifamily.h>
 #  endif
-#  if (FMT_HAS_INCLUDE(<fcntl.h>) || defined(__APPLE__) || \
+#  if (AXOM_FMT_HAS_INCLUDE(<fcntl.h>) || defined(__APPLE__) || \
        defined(__linux__)) &&                              \
       (!defined(WINAPI_FAMILY) ||                          \
        (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
 #    include <fcntl.h>  // for O_RDONLY
-#    define FMT_USE_FCNTL 1
+#    define AXOM_FMT_USE_FCNTL 1
 #  else
-#    define FMT_USE_FCNTL 0
+#    define AXOM_FMT_USE_FCNTL 0
 #  endif
 #endif
 
-#ifndef FMT_POSIX
+#ifndef AXOM_FMT_POSIX
 #  if defined(_WIN32) && !defined(__MINGW32__)
 // Fix warnings about deprecated symbols.
-#    define FMT_POSIX(call) _##call
+#    define AXOM_FMT_POSIX(call) _##call
 #  else
-#    define FMT_POSIX(call) call
+#    define AXOM_FMT_POSIX(call) call
 #  endif
 #endif
 
-// Calls to system functions are wrapped in FMT_SYSTEM for testability.
-#ifdef FMT_SYSTEM
-#  define FMT_POSIX_CALL(call) FMT_SYSTEM(call)
+// Calls to system functions are wrapped in AXOM_FMT_SYSTEM for testability.
+#ifdef AXOM_FMT_SYSTEM
+#  define AXOM_FMT_POSIX_CALL(call) AXOM_FMT_SYSTEM(call)
 #else
-#  define FMT_SYSTEM(call) ::call
+#  define AXOM_FMT_SYSTEM(call) ::call
 #  ifdef _WIN32
 // Fix warnings about deprecated symbols.
-#    define FMT_POSIX_CALL(call) ::_##call
+#    define AXOM_FMT_POSIX_CALL(call) ::_##call
 #  else
-#    define FMT_POSIX_CALL(call) ::call
+#    define AXOM_FMT_POSIX_CALL(call) ::call
 #  endif
 #endif
 
 // Retries the expression while it evaluates to error_result and errno
 // equals to EINTR.
 #ifndef _WIN32
-#  define FMT_RETRY_VAL(result, expression, error_result) \
+#  define AXOM_FMT_RETRY_VAL(result, expression, error_result) \
     do {                                                  \
       (result) = (expression);                            \
     } while ((result) == (error_result) && errno == EINTR)
 #else
-#  define FMT_RETRY_VAL(result, expression, error_result) result = (expression)
+#  define AXOM_FMT_RETRY_VAL(result, expression, error_result) result = (expression)
 #endif
 
-#define FMT_RETRY(result, expression) FMT_RETRY_VAL(result, expression, -1)
+#define AXOM_FMT_RETRY(result, expression) AXOM_FMT_RETRY_VAL(result, expression, -1)
 
-FMT_BEGIN_NAMESPACE
-FMT_MODULE_EXPORT_BEGIN
+AXOM_FMT_BEGIN_NAMESPACE
+AXOM_FMT_MODULE_EXPORT_BEGIN
 
 /**
   \rst
@@ -122,12 +122,12 @@ using wcstring_view = basic_cstring_view<wchar_t>;
 
 template <typename Char> struct formatter<std::error_code, Char> {
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
     return ctx.begin();
   }
 
   template <typename FormatContext>
-  FMT_CONSTEXPR auto format(const std::error_code& ec, FormatContext& ctx) const
+  AXOM_FMT_CONSTEXPR auto format(const std::error_code& ec, FormatContext& ctx) const
       -> decltype(ctx.out()) {
     auto out = ctx.out();
     out = detail::write_bytes(out, ec.category().name(),
@@ -139,9 +139,9 @@ template <typename Char> struct formatter<std::error_code, Char> {
 };
 
 #ifdef _WIN32
-FMT_API const std::error_category& system_category() noexcept;
+AXOM_FMT_API const std::error_category& system_category() noexcept;
 
-FMT_BEGIN_DETAIL_NAMESPACE
+AXOM_FMT_BEGIN_DETAIL_NAMESPACE
 // A converter from UTF-16 to UTF-8.
 // It is only provided for Windows since other systems support UTF-8 natively.
 class utf16_to_utf8 {
@@ -150,7 +150,7 @@ class utf16_to_utf8 {
 
  public:
   utf16_to_utf8() {}
-  FMT_API explicit utf16_to_utf8(basic_string_view<wchar_t> s);
+  AXOM_FMT_API explicit utf16_to_utf8(basic_string_view<wchar_t> s);
   operator string_view() const { return string_view(&buffer_[0], size()); }
   size_t size() const { return buffer_.size() - 1; }
   const char* c_str() const { return &buffer_[0]; }
@@ -159,14 +159,14 @@ class utf16_to_utf8 {
   // Performs conversion returning a system error code instead of
   // throwing exception on conversion error. This method may still throw
   // in case of memory allocation error.
-  FMT_API int convert(basic_string_view<wchar_t> s);
+  AXOM_FMT_API int convert(basic_string_view<wchar_t> s);
 };
 
-FMT_API void format_windows_error(buffer<char>& out, int error_code,
+AXOM_FMT_API void format_windows_error(buffer<char>& out, int error_code,
                                   const char* message) noexcept;
-FMT_END_DETAIL_NAMESPACE
+AXOM_FMT_END_DETAIL_NAMESPACE
 
-FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
+AXOM_FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
                                          format_args args);
 
 /**
@@ -192,7 +192,7 @@ FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
    LPOFSTRUCT of = LPOFSTRUCT();
    HFILE file = OpenFile(filename, &of, OF_READ);
    if (file == HFILE_ERROR) {
-     throw fmt::windows_error(GetLastError(),
+     throw axom::fmt::windows_error(GetLastError(),
                               "cannot open file '{}'", filename);
    }
  \endrst
@@ -200,12 +200,12 @@ FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
 template <typename... Args>
 std::system_error windows_error(int error_code, string_view message,
                                 const Args&... args) {
-  return vwindows_error(error_code, message, fmt::make_format_args(args...));
+  return vwindows_error(error_code, message, axom::fmt::make_format_args(args...));
 }
 
 // Reports a Windows error without throwing an exception.
 // Can be used to report errors from destructors.
-FMT_API void report_windows_error(int error_code, const char* message) noexcept;
+AXOM_FMT_API void report_windows_error(int error_code, const char* message) noexcept;
 #else
 inline const std::error_category& system_category() noexcept {
   return std::system_category();
@@ -237,7 +237,7 @@ class buffered_file {
   buffered_file() noexcept : file_(nullptr) {}
 
   // Destroys the object closing the file it represents if any.
-  FMT_API ~buffered_file() noexcept;
+  AXOM_FMT_API ~buffered_file() noexcept;
 
  public:
   buffered_file(buffered_file&& other) noexcept : file_(other.file_) {
@@ -252,34 +252,34 @@ class buffered_file {
   }
 
   // Opens a file.
-  FMT_API buffered_file(cstring_view filename, cstring_view mode);
+  AXOM_FMT_API buffered_file(cstring_view filename, cstring_view mode);
 
   // Closes the file.
-  FMT_API void close();
+  AXOM_FMT_API void close();
 
   // Returns the pointer to a FILE object representing this file.
   FILE* get() const noexcept { return file_; }
 
-  FMT_API int descriptor() const;
+  AXOM_FMT_API int descriptor() const;
 
   void vprint(string_view format_str, format_args args) {
-    fmt::vprint(file_, format_str, args);
+    axom::fmt::vprint(file_, format_str, args);
   }
 
   template <typename... Args>
   inline void print(string_view format_str, const Args&... args) {
-    vprint(format_str, fmt::make_format_args(args...));
+    vprint(format_str, axom::fmt::make_format_args(args...));
   }
 };
 
-#if FMT_USE_FCNTL
+#if AXOM_FMT_USE_FCNTL
 // A file. Closed file is represented by a file object with descriptor -1.
 // Methods that are not declared with noexcept may throw
-// fmt::system_error in case of failure. Note that some errors such as
+// axom::fmt::system_error in case of failure. Note that some errors such as
 // closing the file multiple times will cause a crash on Windows rather
 // than an exception. You can get standard behavior by overriding the
 // invalid parameter handler with _set_invalid_parameter_handler.
-class FMT_API file {
+class AXOM_FMT_API file {
  private:
   int fd_;  // File descriptor.
 
@@ -289,12 +289,12 @@ class FMT_API file {
  public:
   // Possible values for the oflag argument to the constructor.
   enum {
-    RDONLY = FMT_POSIX(O_RDONLY),  // Open for reading only.
-    WRONLY = FMT_POSIX(O_WRONLY),  // Open for writing only.
-    RDWR = FMT_POSIX(O_RDWR),      // Open for reading and writing.
-    CREATE = FMT_POSIX(O_CREAT),   // Create if the file doesn't exist.
-    APPEND = FMT_POSIX(O_APPEND),  // Open in append mode.
-    TRUNC = FMT_POSIX(O_TRUNC)     // Truncate the content of the file.
+    RDONLY = AXOM_FMT_POSIX(O_RDONLY),  // Open for reading only.
+    WRONLY = AXOM_FMT_POSIX(O_WRONLY),  // Open for writing only.
+    RDWR = AXOM_FMT_POSIX(O_RDWR),      // Open for reading and writing.
+    CREATE = AXOM_FMT_POSIX(O_CREAT),   // Create if the file doesn't exist.
+    APPEND = AXOM_FMT_POSIX(O_APPEND),  // Open in append mode.
+    TRUNC = AXOM_FMT_POSIX(O_TRUNC)     // Truncate the content of the file.
   };
 
   // Constructs a file object which doesn't represent any file.
@@ -360,7 +360,7 @@ class FMT_API file {
 // Returns the memory page size.
 long getpagesize();
 
-FMT_BEGIN_DETAIL_NAMESPACE
+AXOM_FMT_BEGIN_DETAIL_NAMESPACE
 
 struct buffer_size {
   buffer_size() = default;
@@ -397,14 +397,14 @@ struct ostream_params {
 #  endif
 };
 
-FMT_END_DETAIL_NAMESPACE
+AXOM_FMT_END_DETAIL_NAMESPACE
 
 // Added {} below to work around default constructor error known to
 // occur in Xcode versions 7.2.1 and 8.2.1.
 constexpr detail::buffer_size buffer_size{};
 
 /** A fast output stream which is not thread-safe. */
-class FMT_API ostream final : private detail::buffer<char> {
+class AXOM_FMT_API ostream final : private detail::buffer<char> {
  private:
   file file_;
 
@@ -447,7 +447,7 @@ class FMT_API ostream final : private detail::buffer<char> {
    */
   template <typename... T> void print(format_string<T...> fmt, T&&... args) {
     vformat_to(detail::buffer_appender<char>(*this), fmt,
-               fmt::make_format_args(args...));
+               axom::fmt::make_format_args(args...));
   }
 };
 
@@ -462,7 +462,7 @@ class FMT_API ostream final : private detail::buffer<char> {
 
   **Example**::
 
-    auto out = fmt::output_file("guide.txt");
+    auto out = axom::fmt::output_file("guide.txt");
     out.print("Don't {}", "Panic");
   \endrst
  */
@@ -470,9 +470,9 @@ template <typename... T>
 inline ostream output_file(cstring_view path, T... params) {
   return {path, detail::ostream_params(params...)};
 }
-#endif  // FMT_USE_FCNTL
+#endif  // AXOM_FMT_USE_FCNTL
 
-FMT_MODULE_EXPORT_END
-FMT_END_NAMESPACE
+AXOM_FMT_MODULE_EXPORT_END
+AXOM_FMT_END_NAMESPACE
 
-#endif  // FMT_OS_H_
+#endif  // AXOM_FMT_OS_H_

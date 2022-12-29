@@ -5,8 +5,8 @@
 //
 // For the license information refer to format.h.
 
-#ifndef FMT_STD_H_
-#define FMT_STD_H_
+#ifndef AXOM_FMT_STD_H_
+#define AXOM_FMT_STD_H_
 
 #include <thread>
 #include <type_traits>
@@ -14,21 +14,21 @@
 
 #include "ostream.h"
 
-#if FMT_HAS_INCLUDE(<version>)
+#if AXOM_FMT_HAS_INCLUDE(<version>)
 #  include <version>
 #endif
-// Checking FMT_CPLUSPLUS for warning suppression in MSVC.
-#if FMT_CPLUSPLUS >= 201703L
-#  if FMT_HAS_INCLUDE(<filesystem>)
+// Checking AXOM_FMT_CPLUSPLUS for warning suppression in MSVC.
+#if AXOM_FMT_CPLUSPLUS >= 201703L
+#  if AXOM_FMT_HAS_INCLUDE(<filesystem>)
 #    include <filesystem>
 #  endif
-#  if FMT_HAS_INCLUDE(<variant>)
+#  if AXOM_FMT_HAS_INCLUDE(<variant>)
 #    include <variant>
 #  endif
 #endif
 
 #ifdef __cpp_lib_filesystem
-FMT_BEGIN_NAMESPACE
+AXOM_FMT_BEGIN_NAMESPACE
 
 namespace detail {
 
@@ -69,19 +69,19 @@ struct formatter<std::filesystem::path, Char>
         basic_string_view<Char>(quoted.data(), quoted.size()), ctx);
   }
 };
-FMT_END_NAMESPACE
+AXOM_FMT_END_NAMESPACE
 #endif
 
-FMT_BEGIN_NAMESPACE
+AXOM_FMT_BEGIN_NAMESPACE
 template <typename Char>
 struct formatter<std::thread::id, Char> : basic_ostream_formatter<Char> {};
-FMT_END_NAMESPACE
+AXOM_FMT_END_NAMESPACE
 
 #ifdef __cpp_lib_variant
-FMT_BEGIN_NAMESPACE
+AXOM_FMT_BEGIN_NAMESPACE
 template <typename Char> struct formatter<std::monostate, Char> {
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
     return ctx.begin();
   }
 
@@ -146,7 +146,7 @@ struct formatter<
     std::enable_if_t<std::conjunction_v<
         is_variant_like<Variant>, is_variant_formattable<Variant, Char>>>> {
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
     return ctx.begin();
   }
 
@@ -165,7 +165,7 @@ struct formatter<
     return out;
   }
 };
-FMT_END_NAMESPACE
+AXOM_FMT_END_NAMESPACE
 #endif
 
-#endif  // FMT_STD_H_
+#endif  // AXOM_FMT_STD_H_

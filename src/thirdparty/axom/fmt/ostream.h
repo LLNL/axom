@@ -5,8 +5,8 @@
 //
 // For the license information refer to format.h.
 
-#ifndef FMT_OSTREAM_H_
-#define FMT_OSTREAM_H_
+#ifndef AXOM_FMT_OSTREAM_H_
+#define AXOM_FMT_OSTREAM_H_
 
 #include <fstream>
 #include <ostream>
@@ -19,7 +19,7 @@
 
 #include "format.h"
 
-FMT_BEGIN_NAMESPACE
+AXOM_FMT_BEGIN_NAMESPACE
 
 template <typename OutputIt, typename Char> class basic_printf_context;
 
@@ -52,7 +52,7 @@ struct is_streamable<
     enable_if_t<
         std::is_arithmetic<T>::value || std::is_array<T>::value ||
         std::is_pointer<T>::value || std::is_same<T, char8_type>::value ||
-        std::is_convertible<T, fmt::basic_string_view<Char>>::value ||
+        std::is_convertible<T, axom::fmt::basic_string_view<Char>>::value ||
         std::is_same<T, std_string_view<Char>>::value ||
         (std::is_convertible<T, int>::value && !std::is_enum<T>::value)>>
     : std::false_type {};
@@ -67,7 +67,7 @@ class file_access {
   friend auto get_file(BufType& obj) -> FILE* { return obj.*FileMemberPtr; }
 };
 
-#if FMT_MSC_VERSION
+#if AXOM_FMT_MSC_VERSION
 template class file_access<file_access_tag, std::filebuf,
                            &std::filebuf::_Myfile>;
 auto get_file(std::filebuf&) -> FILE*;
@@ -77,8 +77,8 @@ template class file_access<file_access_tag, std::__stdoutbuf<char>,
 auto get_file(std::__stdoutbuf<char>&) -> FILE*;
 #endif
 
-inline bool write_ostream_unicode(std::ostream& os, fmt::string_view data) {
-#if FMT_MSC_VERSION
+inline bool write_ostream_unicode(std::ostream& os, axom::fmt::string_view data) {
+#if AXOM_FMT_MSC_VERSION
   if (auto* buf = dynamic_cast<std::filebuf*>(os.rdbuf()))
     if (FILE* f = get_file(*buf)) return write_console(f, data);
 #elif defined(_WIN32) && defined(__GLIBCXX__)
@@ -100,7 +100,7 @@ inline bool write_ostream_unicode(std::ostream& os, fmt::string_view data) {
   return false;
 }
 inline bool write_ostream_unicode(std::wostream&,
-                                  fmt::basic_string_view<wchar_t>) {
+                                  axom::fmt::basic_string_view<wchar_t>) {
   return false;
 }
 
@@ -125,7 +125,7 @@ void format_value(buffer<Char>& buf, const T& value,
                   locale_ref loc = locale_ref()) {
   auto&& format_buf = formatbuf<std::basic_streambuf<Char>>(buf);
   auto&& output = std::basic_ostream<Char>(&format_buf);
-#if !defined(FMT_STATIC_THOUSANDS_SEPARATOR)
+#if !defined(AXOM_FMT_STATIC_THOUSANDS_SEPARATOR)
   if (loc) output.imbue(loc.get<std::locale>());
 #endif
   output << value;
@@ -169,8 +169,8 @@ struct formatter<detail::streamed_view<T>, Char>
 
   **Example**::
 
-    fmt::print("Current thread id: {}\n",
-               fmt::streamed(std::this_thread::get_id()));
+    axom::fmt::print("Current thread id: {}\n",
+               axom::fmt::streamed(std::this_thread::get_id()));
   \endrst
  */
 template <typename T>
@@ -196,7 +196,7 @@ inline void vprint_directly(std::ostream& os, string_view format_str,
 
 }  // namespace detail
 
-FMT_MODULE_EXPORT template <typename Char>
+AXOM_FMT_MODULE_EXPORT template <typename Char>
 void vprint(std::basic_ostream<Char>& os,
             basic_string_view<type_identity_t<Char>> format_str,
             basic_format_args<buffer_context<type_identity_t<Char>>> args) {
@@ -212,26 +212,26 @@ void vprint(std::basic_ostream<Char>& os,
 
   **Example**::
 
-    fmt::print(cerr, "Don't {}!", "panic");
+    axom::fmt::print(cerr, "Don't {}!", "panic");
   \endrst
  */
-FMT_MODULE_EXPORT template <typename... T>
+AXOM_FMT_MODULE_EXPORT template <typename... T>
 void print(std::ostream& os, format_string<T...> fmt, T&&... args) {
-  const auto& vargs = fmt::make_format_args(args...);
+  const auto& vargs = axom::fmt::make_format_args(args...);
   if (detail::is_utf8())
     vprint(os, fmt, vargs);
   else
     detail::vprint_directly(os, fmt, vargs);
 }
 
-FMT_MODULE_EXPORT
+AXOM_FMT_MODULE_EXPORT
 template <typename... Args>
 void print(std::wostream& os,
            basic_format_string<wchar_t, type_identity_t<Args>...> fmt,
            Args&&... args) {
-  vprint(os, fmt, fmt::make_format_args<buffer_context<wchar_t>>(args...));
+  vprint(os, fmt, axom::fmt::make_format_args<buffer_context<wchar_t>>(args...));
 }
 
-FMT_END_NAMESPACE
+AXOM_FMT_END_NAMESPACE
 
-#endif  // FMT_OSTREAM_H_
+#endif  // AXOM_FMT_OSTREAM_H_

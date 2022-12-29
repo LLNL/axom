@@ -5,20 +5,20 @@
 //
 // For the license information refer to format.h.
 
-#ifndef FMT_XCHAR_H_
-#define FMT_XCHAR_H_
+#ifndef AXOM_FMT_XCHAR_H_
+#define AXOM_FMT_XCHAR_H_
 
 #include <cwchar>
 
 #include "format.h"
 
-FMT_BEGIN_NAMESPACE
+AXOM_FMT_BEGIN_NAMESPACE
 namespace detail {
 template <typename T>
 using is_exotic_char = bool_constant<!std::is_same<T, char>::value>;
 }
 
-FMT_MODULE_EXPORT_BEGIN
+AXOM_FMT_MODULE_EXPORT_BEGIN
 
 using wstring_view = basic_string_view<wchar_t>;
 using wformat_parse_context = basic_format_parse_context<wchar_t>;
@@ -26,7 +26,7 @@ using wformat_context = buffer_context<wchar_t>;
 using wformat_args = basic_format_args<wformat_context>;
 using wmemory_buffer = basic_memory_buffer<wchar_t>;
 
-#if FMT_GCC_VERSION && FMT_GCC_VERSION < 409
+#if AXOM_FMT_GCC_VERSION && AXOM_FMT_GCC_VERSION < 409
 // Workaround broken conversion on older gcc.
 template <typename... Args> using wformat_string = wstring_view;
 inline auto runtime(wstring_view s) -> wstring_view { return s; }
@@ -48,7 +48,7 @@ constexpr format_arg_store<wformat_context, Args...> make_wformat_args(
 }
 
 inline namespace literals {
-#if FMT_USE_USER_DEFINED_LITERALS && !FMT_USE_NONTYPE_TEMPLATE_ARGS
+#if AXOM_FMT_USE_USER_DEFINED_LITERALS && !AXOM_FMT_USE_NONTYPE_TEMPLATE_ARGS
 constexpr detail::udl_arg<wchar_t> operator"" _a(const wchar_t* s, size_t) {
   return {s};
 }
@@ -74,7 +74,7 @@ auto join(std::initializer_list<T> list, wstring_view sep)
   return join(std::begin(list), std::end(list), sep);
 }
 
-template <typename Char, FMT_ENABLE_IF(!std::is_same<Char, char>::value)>
+template <typename Char, AXOM_FMT_ENABLE_IF(!std::is_same<Char, char>::value)>
 auto vformat(basic_string_view<Char> format_str,
              basic_format_args<buffer_context<type_identity_t<Char>>> args)
     -> std::basic_string<Char> {
@@ -85,21 +85,21 @@ auto vformat(basic_string_view<Char> format_str,
 
 template <typename... T>
 auto format(wformat_string<T...> fmt, T&&... args) -> std::wstring {
-  return vformat(fmt::wstring_view(fmt), fmt::make_wformat_args(args...));
+  return vformat(axom::fmt::wstring_view(fmt), axom::fmt::make_wformat_args(args...));
 }
 
 // Pass char_t as a default template parameter instead of using
 // std::basic_string<char_t<S>> to reduce the symbol size.
 template <typename S, typename... Args, typename Char = char_t<S>,
-          FMT_ENABLE_IF(!std::is_same<Char, char>::value &&
+          AXOM_FMT_ENABLE_IF(!std::is_same<Char, char>::value &&
                         !std::is_same<Char, wchar_t>::value)>
 auto format(const S& format_str, Args&&... args) -> std::basic_string<Char> {
   return vformat(detail::to_string_view(format_str),
-                 fmt::make_format_args<buffer_context<Char>>(args...));
+                 axom::fmt::make_format_args<buffer_context<Char>>(args...));
 }
 
 template <typename Locale, typename S, typename Char = char_t<S>,
-          FMT_ENABLE_IF(detail::is_locale<Locale>::value&&
+          AXOM_FMT_ENABLE_IF(detail::is_locale<Locale>::value&&
                             detail::is_exotic_char<Char>::value)>
 inline auto vformat(
     const Locale& loc, const S& format_str,
@@ -110,16 +110,16 @@ inline auto vformat(
 
 template <typename Locale, typename S, typename... Args,
           typename Char = char_t<S>,
-          FMT_ENABLE_IF(detail::is_locale<Locale>::value&&
+          AXOM_FMT_ENABLE_IF(detail::is_locale<Locale>::value&&
                             detail::is_exotic_char<Char>::value)>
 inline auto format(const Locale& loc, const S& format_str, Args&&... args)
     -> std::basic_string<Char> {
   return detail::vformat(loc, detail::to_string_view(format_str),
-                         fmt::make_format_args<buffer_context<Char>>(args...));
+                         axom::fmt::make_format_args<buffer_context<Char>>(args...));
 }
 
 template <typename OutputIt, typename S, typename Char = char_t<S>,
-          FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
+          AXOM_FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
                             detail::is_exotic_char<Char>::value)>
 auto vformat_to(OutputIt out, const S& format_str,
                 basic_format_args<buffer_context<type_identity_t<Char>>> args)
@@ -131,16 +131,16 @@ auto vformat_to(OutputIt out, const S& format_str,
 
 template <typename OutputIt, typename S, typename... Args,
           typename Char = char_t<S>,
-          FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
+          AXOM_FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
                             detail::is_exotic_char<Char>::value)>
 inline auto format_to(OutputIt out, const S& fmt, Args&&... args) -> OutputIt {
   return vformat_to(out, detail::to_string_view(fmt),
-                    fmt::make_format_args<buffer_context<Char>>(args...));
+                    axom::fmt::make_format_args<buffer_context<Char>>(args...));
 }
 
 template <typename Locale, typename S, typename OutputIt, typename... Args,
           typename Char = char_t<S>,
-          FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
+          AXOM_FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
                             detail::is_locale<Locale>::value&&
                                 detail::is_exotic_char<Char>::value)>
 inline auto vformat_to(
@@ -161,11 +161,11 @@ inline auto format_to(OutputIt out, const Locale& loc, const S& format_str,
                       Args&&... args) ->
     typename std::enable_if<enable, OutputIt>::type {
   return vformat_to(out, loc, to_string_view(format_str),
-                    fmt::make_format_args<buffer_context<Char>>(args...));
+                    axom::fmt::make_format_args<buffer_context<Char>>(args...));
 }
 
 template <typename OutputIt, typename Char, typename... Args,
-          FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
+          AXOM_FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
                             detail::is_exotic_char<Char>::value)>
 inline auto vformat_to_n(
     OutputIt out, size_t n, basic_string_view<Char> format_str,
@@ -179,20 +179,20 @@ inline auto vformat_to_n(
 
 template <typename OutputIt, typename S, typename... Args,
           typename Char = char_t<S>,
-          FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
+          AXOM_FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, Char>::value&&
                             detail::is_exotic_char<Char>::value)>
 inline auto format_to_n(OutputIt out, size_t n, const S& fmt,
                         const Args&... args) -> format_to_n_result<OutputIt> {
   return vformat_to_n(out, n, detail::to_string_view(fmt),
-                      fmt::make_format_args<buffer_context<Char>>(args...));
+                      axom::fmt::make_format_args<buffer_context<Char>>(args...));
 }
 
 template <typename S, typename... Args, typename Char = char_t<S>,
-          FMT_ENABLE_IF(detail::is_exotic_char<Char>::value)>
+          AXOM_FMT_ENABLE_IF(detail::is_exotic_char<Char>::value)>
 inline auto formatted_size(const S& fmt, Args&&... args) -> size_t {
   detail::counting_buffer<Char> buf;
   detail::vformat_to(buf, detail::to_string_view(fmt),
-                     fmt::make_format_args<buffer_context<Char>>(args...));
+                     axom::fmt::make_format_args<buffer_context<Char>>(args...));
   return buf.count();
 }
 
@@ -201,7 +201,7 @@ inline void vprint(std::FILE* f, wstring_view fmt, wformat_args args) {
   detail::vformat_to(buffer, fmt, args);
   buffer.push_back(L'\0');
   if (std::fputws(buffer.data(), f) == -1)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")));
+    AXOM_FMT_THROW(system_error(errno, AXOM_FMT_STRING("cannot write to file")));
 }
 
 inline void vprint(wstring_view fmt, wformat_args args) {
@@ -210,20 +210,20 @@ inline void vprint(wstring_view fmt, wformat_args args) {
 
 template <typename... T>
 void print(std::FILE* f, wformat_string<T...> fmt, T&&... args) {
-  return vprint(f, wstring_view(fmt), fmt::make_wformat_args(args...));
+  return vprint(f, wstring_view(fmt), axom::fmt::make_wformat_args(args...));
 }
 
 template <typename... T> void print(wformat_string<T...> fmt, T&&... args) {
-  return vprint(wstring_view(fmt), fmt::make_wformat_args(args...));
+  return vprint(wstring_view(fmt), axom::fmt::make_wformat_args(args...));
 }
 
 /**
   Converts *value* to ``std::wstring`` using the default format for type *T*.
  */
 template <typename T> inline auto to_wstring(const T& value) -> std::wstring {
-  return format(FMT_STRING(L"{}"), value);
+  return format(AXOM_FMT_STRING(L"{}"), value);
 }
-FMT_MODULE_EXPORT_END
-FMT_END_NAMESPACE
+AXOM_FMT_MODULE_EXPORT_END
+AXOM_FMT_END_NAMESPACE
 
-#endif  // FMT_XCHAR_H_
+#endif  // AXOM_FMT_XCHAR_H_

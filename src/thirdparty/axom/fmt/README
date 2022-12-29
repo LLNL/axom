@@ -5,3 +5,9 @@ Note: Axom adds a custom header file ('fmt.hpp') to simplify usage of fmt config
 This can be included in source files as follows:
 
    #include "axom/fmt.hpp"
+
+We also put fmt in the axom namespace to isolate it from other libraries that might include fmt. To do so, the following changes were applied:
+> find . -type f -regex .*[.]h$ -exec sed -i "s/FMT_/AXOM_FMT_/g" {} \;
+> find . -type f -regex .*[.]h$ -exec sed -i "s/fmt::/axom::fmt::/g" {} \;
+* Add `namespace axom { \` to `AXOM_FMT_BEGIN_NAMESPACE` in `fmt/core.h`
+* Add `}                \` to `AXOM_FMT_END_NAMESPACE` in `fmt/core.h`
