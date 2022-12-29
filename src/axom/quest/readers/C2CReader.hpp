@@ -12,7 +12,6 @@
   #error C2CReader should only be included when Axom is configured with C2C
 #endif
 
-#include "axom/fmt.hpp"
 #include "axom/mint.hpp"
 #include "c2c/C2C.hpp"
 

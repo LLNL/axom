@@ -416,7 +416,8 @@ public:
     if(dimension() == 3)
     {
       axom::fmt::memory_buffer edgeHistStr;
-      axom::fmt::format_to(std::back_inserter(edgeHistStr), "Edge length histogram (lg-arithmic): ");
+      axom::fmt::format_to(std::back_inserter(edgeHistStr),
+                           "Edge length histogram (lg-arithmic): ");
       for(auto it = edgeLenHist.begin(); it != edgeLenHist.end(); ++it)
       {
         axom::fmt::format_to(std::back_inserter(edgeHistStr),
@@ -429,7 +430,8 @@ public:
     }
 
     axom::fmt::memory_buffer cellHistStr;
-    axom::fmt::format_to(std::back_inserter(cellHistStr), "Cell areas histogram (lg-arithmic): ");
+    axom::fmt::format_to(std::back_inserter(cellHistStr),
+                         "Cell areas histogram (lg-arithmic): ");
     for(auto it = areaHist.begin(); it != areaHist.end(); ++it)
     {
       axom::fmt::format_to(std::back_inserter(cellHistStr),

@@ -718,4 +718,10 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox<T, NDIMS>& bb)
 }  // namespace primal
 }  // namespace axom
 
+/// Overload to format a primal::BoundingBox using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::BoundingBox<T, NDIMS>>
+  : ostream_formatter
+{ };
+
 #endif  // AXOM_PRIMAL_BOUNDINGBOX_HPP_

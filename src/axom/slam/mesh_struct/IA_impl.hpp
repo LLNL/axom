@@ -51,8 +51,9 @@ std::vector<std::string> entries_as_vec(const RelOrMap& outer, const SetType& s)
   std::vector<std::string> strs(sz);
   for(auto pos : s.positions())
   {
-    strs[pos] = s.isValidEntry(pos) ? fmt::format("{}: {}", pos, outer[pos])
-                                    : fmt::format("{}: {{}}", pos);
+    strs[pos] = s.isValidEntry(pos)
+      ? fmt::format("{}: {}", axom::fmt::streamed(pos), outer[pos])
+      : fmt::format("{}: {{}}", axom::fmt::streamed(pos));
   }
 
   return strs;
