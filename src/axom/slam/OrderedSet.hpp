@@ -340,14 +340,6 @@ public:
       , m_orderedSet(oSet)
     { }
 
-    OrderedSetIterator(const OrderedSetIterator& it) = default;
-
-    OrderedSetIterator& operator=(const OrderedSetIterator& it)
-    {
-      this->m_pos = it.m_pos;
-      this->m_orderedSet = const_cast<OrderedSet&>(it.m_orderedSet);
-      return *this;
-    }
     /// \}
 
     /// \name Member and pointer operators
@@ -414,10 +406,10 @@ public:
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
-    void advance(PositionType n) { m_pos += n * stride(); }
+    AXOM_HOST_DEVICE void advance(PositionType n) { m_pos += n * stride(); }
 
   private:
-    inline const PositionType stride() const
+    AXOM_HOST_DEVICE inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
     }

@@ -459,7 +459,7 @@ public:
 
   public:
     using PositionType = SetPosition;
-    const PositionType INVALID_POS = -2;
+    static constexpr PositionType INVALID_POS = -2;
 
   public:
     /**

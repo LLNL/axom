@@ -445,7 +445,7 @@ public:
     void advance(PositionType n) { m_pos += n; }
 
   protected:
-    Map* const m_mapPtr;
+    Map* m_mapPtr;
   };
 
 public:  // Functions related to iteration
