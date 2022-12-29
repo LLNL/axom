@@ -852,32 +852,51 @@ bool IAMesh<TDIM, SDIM, P>::isValid(bool verboseOutput) const
   // Check sets, relations and maps for validity
   if(!vertex_set.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(std::back_inserter(out), "\n\t Vertex set invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Vertex set invalid");
+    }
     bValid = false;
   }
   if(!element_set.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(std::back_inserter(out), "\n\t Element set invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Element set invalid");
+    }
     bValid = false;
   }
   if(!ev_rel.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(std::back_inserter(out), "\n\t Boundary relation invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Boundary relation invalid");
+    }
     bValid = false;
   }
   if(!ve_rel.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(std::back_inserter(out), "\n\t Coboundary relation invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out),
+                     "\n\t Coboundary relation invalid");
+    }
     bValid = false;
   }
   if(!ee_rel.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(std::back_inserter(out), "\n\t Adjacency relation invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Adjacency relation invalid");
+    }
     bValid = false;
   }
   if(!vcoord_map.isValid(verboseOutput))
   {
-    if(verboseOutput) fmt::format_to(std::back_inserter(out), "\n\t Coordinate map is invalid");
+    if(verboseOutput)
+    {
+      fmt::format_to(std::back_inserter(out), "\n\t Coordinate map is invalid");
+    }
     bValid = false;
   }
 

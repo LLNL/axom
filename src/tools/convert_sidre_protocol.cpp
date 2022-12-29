@@ -211,7 +211,7 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
     axom::fmt::memory_buffer out;
     for(auto i : viewInds.positions())
     {
-      axom::fmt::format_to(out,
+      axom::fmt::format_to(std::back_inserter(out),
                            "\n\ti: {0}; index: {1}; arr[{1}] = {2}",
                            i,
                            viewInds[i],
@@ -247,7 +247,10 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
     axom::fmt::memory_buffer out;
     for(auto i : ViewSet(newSz).positions())
     {
-      axom::fmt::format_to(out, "\n\ti: {0}; arr[{0}] = {1}", i, newArr[i]);
+      axom::fmt::format_to(std::back_inserter(out),
+                           "\n\ti: {0}; arr[{0}] = {1}",
+                           i,
+                           newArr[i]);
     }
     SLIC_DEBUG("After truncation" << axom::fmt::to_string(out));
   }
