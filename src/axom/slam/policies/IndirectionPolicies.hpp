@@ -76,36 +76,72 @@ struct IndexedIndirection : public BasePolicy
                       PositionType stride,
                       bool verboseOutput = false) const;
 
-  static inline IndirectionResult getIndirection(IndirectionRefType buf,
-                                                 PositionType pos)
+  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
+  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, IndirectionResult>
+  getIndirection(IndirectionRefType buf, PositionType pos)
   {
     return buf[pos];
   }
 
-  static inline ConstIndirectionResult getConstIndirection(IndirectionConstRefType buf,
-                                                           PositionType pos)
+  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
+  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, ConstIndirectionResult>
+  getConstIndirection(IndirectionConstRefType buf, PositionType pos)
   {
     return buf[pos];
   }
 
-  inline ConstIndirectionResult indirection(PositionType pos) const
+  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
+  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, IndirectionResult>
+  getIndirection(IndirectionRefType buf, PositionType pos)
   {
+#ifdef AXOM_DEVICE_CODE
+    SLIC_ASSERT_MSG(
+      false,
+      BasePolicy::Name
+        << " -- Attempting to indirect on an unsupported indirection policy.");
+    __trap();  // Disable no-return warnings from device code
+#else
+    return buf[pos];
+#endif
+  }
+
+  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
+  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstIndirectionResult>
+  getConstIndirection(IndirectionConstRefType buf, PositionType pos)
+  {
+#ifdef AXOM_DEVICE_CODE
+    SLIC_ASSERT_MSG(
+      false,
+      BasePolicy::Name
+        << " -- Attempting to indirect on an unsupported indirection policy.");
+    __trap();  // Disable no-return warnings from device code
+#else
+    return buf[pos];
+#endif
+  }
+
+  AXOM_HOST_DEVICE inline ConstIndirectionResult indirection(PositionType pos) const
+  {
+#ifndef AXOM_DEVICE_CODE
     checkIndirection(pos);
+#endif
     return IndexedIndirection::getConstIndirection(BasePolicy::data(), pos);
   }
 
-  inline IndirectionResult indirection(PositionType pos)
+  AXOM_HOST_DEVICE inline IndirectionResult indirection(PositionType pos)
   {
+#ifndef AXOM_DEVICE_CODE
     checkIndirection(pos);
+#endif
     return IndexedIndirection::getIndirection(BasePolicy::data(), pos);
   }
 
-  inline ConstIndirectionResult operator()(PositionType pos) const
+  AXOM_HOST_DEVICE inline ConstIndirectionResult operator()(PositionType pos) const
   {
     return indirection(pos);
   }
 
-  inline IndirectionResult operator()(PositionType pos)
+  AXOM_HOST_DEVICE inline IndirectionResult operator()(PositionType pos)
   {
     return indirection(pos);
   }
@@ -195,22 +231,24 @@ struct NoIndirection
   { };
   using IndirectionPtrType = IndirectionBufferType*;
 
-  NoIndirection() { }
+  static constexpr bool DeviceAccessible = true;
+
+  AXOM_HOST_DEVICE NoIndirection() { }
 
   // This empty .ctor exists to satisfy IndirectionPolicy interface
   NoIndirection(IndirectionBufferType*) { }
 
-  inline IndirectionResult indirection(PositionType pos) const
+  AXOM_HOST_DEVICE inline IndirectionResult indirection(PositionType pos) const
   {
     return static_cast<ElementType>(pos);
   }
 
-  inline IndirectionResult operator()(PositionType pos) const
+  AXOM_HOST_DEVICE inline IndirectionResult operator()(PositionType pos) const
   {
     return indirection(pos);
   }
 
-  IndirectionBufferType* ptr() { return nullptr; }
+  AXOM_HOST_DEVICE IndirectionBufferType* ptr() { return nullptr; }
 
   bool hasIndirection() const { return false; }
   inline bool isValid(PositionType, PositionType, PositionType, bool) const
@@ -233,12 +271,15 @@ struct CArrayIndirectionBase
   using IndirectionRefType = IndirectionBufferType;
   using IndirectionConstRefType = const IndirectionBufferType&;
 
+  static constexpr bool DeviceAccessible = true;
   static constexpr const char* Name = "SLAM::CArrayIndirection";
 
-  CArrayIndirectionBase(IndirectionPtrType buf = nullptr) : m_arrBuf(buf) { }
+  AXOM_HOST_DEVICE CArrayIndirectionBase(IndirectionPtrType buf = nullptr)
+    : m_arrBuf(buf)
+  { }
 
-  IndirectionBufferType data() const { return m_arrBuf; }
-  IndirectionBufferType& ptr() { return m_arrBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType data() const { return m_arrBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType& ptr() { return m_arrBuf; }
 
   bool hasIndirection() const { return m_arrBuf != nullptr; }
 
@@ -274,17 +315,22 @@ struct STLVectorIndirectionBase
   using IndirectionRefType = IndirectionBufferType&;
   using IndirectionConstRefType = const IndirectionBufferType&;
 
+  static constexpr bool DeviceAccessible = false;
   static constexpr bool IsMutableBuffer = true;
   static constexpr const char* Name = "SLAM::STLVectorIndirection";
 
-  STLVectorIndirectionBase(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf)
+  AXOM_HOST_DEVICE STLVectorIndirectionBase(IndirectionBufferType* buf = nullptr)
+    : m_vecBuf(buf)
   { }
 
-  IndirectionBufferType& data() { return *m_vecBuf; }
-  IndirectionBufferType const& data() const { return *m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType& data() { return *m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType const& data() const
+  {
+    return *m_vecBuf;
+  }
 
-  IndirectionPtrType& ptr() { return m_vecBuf; }
-  IndirectionPtrType const& ptr() const { return m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionPtrType& ptr() { return m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionPtrType const& ptr() const { return m_vecBuf; }
 
   bool hasIndirection() const { return m_vecBuf != nullptr; }
 
@@ -324,16 +370,22 @@ struct ArrayIndirectionBase
   using IndirectionRefType = IndirectionBufferType&;
   using IndirectionConstRefType = const IndirectionBufferType&;
 
+  static constexpr bool DeviceAccessible = true;
   static constexpr bool IsMutableBuffer = true;
   static constexpr const char* Name = "SLAM::ArrayIndirection";
 
-  ArrayIndirectionBase(IndirectionBufferType* buf = nullptr) : m_vecBuf(buf) { }
+  AXOM_HOST_DEVICE ArrayIndirectionBase(IndirectionBufferType* buf = nullptr)
+    : m_vecBuf(buf)
+  { }
 
-  IndirectionBufferType& data() { return *m_vecBuf; }
-  IndirectionBufferType const& data() const { return *m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType& data() { return *m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType const& data() const
+  {
+    return *m_vecBuf;
+  }
 
-  IndirectionPtrType& ptr() { return m_vecBuf; }
-  IndirectionPtrType const& ptr() const { return m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionPtrType& ptr() { return m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionPtrType const& ptr() const { return m_vecBuf; }
 
   bool hasIndirection() const { return m_vecBuf != nullptr; }
 
@@ -374,10 +426,13 @@ struct ArrayViewIndirectionBase
   using IndirectionRefType = IndirectionBufferType;
   using IndirectionConstRefType = const IndirectionBufferType;
 
+  static constexpr bool DeviceAccessible = true;
   static constexpr bool IsMutableBuffer = false;
   static constexpr const char* Name = "SLAM::ArrayViewIndirection";
 
-  ArrayViewIndirectionBase(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
+  AXOM_HOST_DEVICE ArrayViewIndirectionBase(IndirectionBufferType buf = {})
+    : m_vecBuf(buf)
+  { }
 
   ArrayViewIndirectionBase(ArrayIndirection<PositionType, ElementType> ind)
     : m_vecBuf(ind.data().data(), ind.data().size())
@@ -391,11 +446,11 @@ struct ArrayViewIndirectionBase
     : m_vecBuf(nullptr, 0)
   { }
 
-  IndirectionBufferType data() { return m_vecBuf; }
-  const IndirectionBufferType data() const { return m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType data() { return m_vecBuf; }
+  AXOM_HOST_DEVICE const IndirectionBufferType data() const { return m_vecBuf; }
 
-  IndirectionBufferType& ptr() { return m_vecBuf; }
-  const IndirectionBufferType& ptr() const { return m_vecBuf; }
+  AXOM_HOST_DEVICE IndirectionBufferType& ptr() { return m_vecBuf; }
+  AXOM_HOST_DEVICE const IndirectionBufferType& ptr() const { return m_vecBuf; }
 
   bool hasIndirection() const { return m_vecBuf.data() != nullptr; }
 
