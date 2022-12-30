@@ -91,9 +91,9 @@ public:
    * \param supermap The map that this SubMap is a subset of.
    * \param subset_idxset a Set of ElementFlatIndex into the SuperMap
    */
-  SubMap(SuperMapType* supermap,
-         SubsetType subset_idxset,
-         bool indicesHaveIndirection = true)
+  AXOM_HOST_DEVICE SubMap(SuperMapType* supermap,
+                          SubsetType subset_idxset,
+                          bool indicesHaveIndirection = true)
     : StridePolicyType(supermap->stride())
     , m_superMap(supermap)
     , m_subsetIdx(subset_idxset)
@@ -134,16 +134,23 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& operator()(IndexType idx, IndexType comp = 0) const
+  AXOM_HOST_DEVICE const DataType& operator()(IndexType idx,
+                                              IndexType comp = 0) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(idx, comp);
+#endif
+    SLIC_ASSERT_MSG(m_superMap != nullptr, "Submap's super map was null.");
+
     return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
   }
 
   //non-const version
-  DataType& operator()(IndexType idx, IndexType comp = 0)
+  AXOM_HOST_DEVICE DataType& operator()(IndexType idx, IndexType comp = 0)
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(idx, comp);
+#endif
     SLIC_ASSERT_MSG(m_superMap != nullptr, "Submap's super map was null.");
 
     return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
@@ -185,7 +192,10 @@ public:
   IndexType size() const { return m_subsetIdx.size(); }
 
   /** \brief returns the number of components (aka. stride) of the SubMap  */
-  IndexType numComp() const { return StridePolicyType::stride(); }
+  AXOM_HOST_DEVICE IndexType numComp() const
+  {
+    return StridePolicyType::stride();
+  }
 
   /// @}
 
@@ -203,7 +213,7 @@ private:  //helper functions
   /**
    * \brief Get the ElementFlatIndex into the SuperMap given the subset's index.
    */
-  IndexType getMapElemFlatIndex(IndexType idx) const
+  AXOM_HOST_DEVICE IndexType getMapElemFlatIndex(IndexType idx) const
   {
     return m_subsetIdx[idx];
   }

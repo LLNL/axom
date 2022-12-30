@@ -136,7 +136,7 @@ private:
     BSetContainer(const USet* set) : m_pSet(set) { }
     BSetContainer(const USet& set) : m_set(set) { }
 
-    const USet* get() const
+    AXOM_HOST_DEVICE const USet* get() const
     {
       if(m_pSet)
       {
@@ -287,11 +287,14 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  ConstValueType operator[](SetPosition setIndex) const
+  AXOM_HOST_DEVICE ConstValueType operator[](SetPosition setIndex) const
   {
     return m_map[setIndex];
   }
-  ValueType operator[](SetPosition setIndex) { return m_map[setIndex]; }
+  AXOM_HOST_DEVICE ValueType operator[](SetPosition setIndex)
+  {
+    return m_map[setIndex];
+  }
 
 public:
   /**
@@ -323,13 +326,17 @@ public:
    * \pre `0 <= s2 < size(s1)`
    * \pre `0 <= comp < numComp()`
    */
-  ConstValueType operator()(SetPosition s1, SetPosition s2, SetPosition comp = 0) const
+  AXOM_HOST_DEVICE ConstValueType operator()(SetPosition s1,
+                                             SetPosition s2,
+                                             SetPosition comp = 0) const
   {
     auto idx = flatIndex(s1, s2);
     return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
   }
 
-  ValueType operator()(SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  AXOM_HOST_DEVICE ValueType operator()(SetPosition s1,
+                                        SetPosition s2,
+                                        SetPosition comp = 0)
   {
     auto idx = flatIndex(s1, s2);
     return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
@@ -402,7 +409,7 @@ public:
    * \brief Search for the FlatIndex of an element given its DenseIndex in the
    *        BivariateSet.
    */
-  inline SetPosition flatIndex(SetPosition s1, SetPosition s2) const
+  AXOM_HOST_DEVICE inline SetPosition flatIndex(SetPosition s1, SetPosition s2) const
   {
     return set()->findElementFlatIndex(s1, s2);
   }
@@ -415,7 +422,7 @@ protected:
    *
    * \note Intended to help optimize internal indexing
    */
-  constexpr bool useCompIndexing() const
+  AXOM_HOST_DEVICE constexpr bool useCompIndexing() const
   {
     return !(StrPol::IS_COMPILE_TIME && StrPol::DEFAULT_VALUE == 1);
   }
@@ -427,10 +434,10 @@ protected:
    * This test distinguishes between ProductSet whose second set do not use
    * indirection and other BivariateSet types
    */
-  constexpr bool submapIndicesHaveIndirection() const
+  AXOM_HOST_DEVICE constexpr bool submapIndicesHaveIndirection() const
   {
-    return traits::indices_use_indirection<BivariateSetType>::value ||
-      (set()->getSecondSet()->at(0) != 0);
+    return traits::indices_use_indirection<BivariateSetType>::value;
+    //      || (set()->getSecondSet()->at(0) != 0);
   }
 
 public:
@@ -622,7 +629,7 @@ public:
   SubMapIterator end(int i) { return (*this)(i).end(); }
 
 public:
-  const BivariateSetType* set() const { return m_bset.get(); }
+  AXOM_HOST_DEVICE const BivariateSetType* set() const { return m_bset.get(); }
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 

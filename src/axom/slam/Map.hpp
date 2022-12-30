@@ -245,15 +245,19 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  ConstValueType operator[](SetPosition setIndex) const
+  AXOM_HOST_DEVICE ConstValueType operator[](SetPosition setIndex) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIndex);
+#endif
     return IndirectionPolicy::getConstIndirection(m_data, setIndex);
   }
 
-  ValueType operator[](SetPosition setIndex)
+  AXOM_HOST_DEVICE ValueType operator[](SetPosition setIndex)
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIndex);
+#endif
     return IndirectionPolicy::getIndirection(m_data, setIndex);
   }
 
@@ -264,16 +268,21 @@ public:
    * \pre `0 <= setIdx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  ConstValueType operator()(SetPosition setIdx, SetPosition comp = 0) const
+  AXOM_HOST_DEVICE ConstValueType operator()(SetPosition setIdx,
+                                             SetPosition comp = 0) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, comp);
+#endif
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return IndirectionPolicy::getConstIndirection(m_data, setIndex);
   }
 
-  ValueType operator()(SetPosition setIdx, SetPosition comp = 0)
+  AXOM_HOST_DEVICE ValueType operator()(SetPosition setIdx, SetPosition comp = 0)
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, comp);
+#endif
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return IndirectionPolicy::getIndirection(m_data, setIndex);
   }
