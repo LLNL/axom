@@ -277,7 +277,7 @@ public:
     using iter = SubMapIterator;
     using PositionType = SetPosition;
 
-    SubMapIterator(PositionType pos, SubMap* sMap)
+    AXOM_HOST_DEVICE SubMapIterator(PositionType pos, SubMap* sMap)
       : IterBase(pos)
       , m_submap(*sMap)
     { }
@@ -287,7 +287,7 @@ public:
      *        components, this will return the first component. To access
      *        the other components, use iter(comp)
      */
-    DataType& operator*() { return m_submap(m_pos, 0); }
+    AXOM_HOST_DEVICE DataType& operator*() { return m_submap(m_pos, 0); }
 
     /**
      * \brief Returns the iterator's value at the specified component.
@@ -310,15 +310,18 @@ public:
 
   protected:
     /* Implementation of advance() as required by IteratorBase */
-    void advance(PositionType pos) { m_pos += pos; }
+    AXOM_HOST_DEVICE void advance(PositionType pos) { m_pos += pos; }
 
   private:
     SubMap m_submap;
   };
 
 public:  // Functions related to iteration
-  SubMapIterator begin() { return SubMapIterator(0, this); }
-  SubMapIterator end() { return SubMapIterator(m_subsetIdx.size(), this); }
+  AXOM_HOST_DEVICE SubMapIterator begin() { return SubMapIterator(0, this); }
+  AXOM_HOST_DEVICE SubMapIterator end()
+  {
+    return SubMapIterator(m_subsetIdx.size(), this);
+  }
 
 protected:  //Member variables
   SuperMapType* m_superMap;
