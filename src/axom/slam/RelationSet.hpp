@@ -128,14 +128,22 @@ public:
    * \return  The element's FlatIndex
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
-  PositionType findElementFlatIndex(PositionType s1, PositionType s2) const
+  AXOM_HOST_DEVICE PositionType findElementFlatIndex(PositionType s1,
+                                                     PositionType s2) const
   {
+#ifdef AXOM_DEVICE_CODE
+    SLIC_ASSERT_MSG(
+      false,
+      "RelationSet::findElementFlatIndex unimplemented in device code.");
+    return BaseType::INVALID_POS;
+#else
     RelationSubset ls = (*m_relation)[s1];
     for(PositionType i = 0; i < ls.size(); i++)
     {
       if(ls[i] == s2) return ls.offset() + i;
     }
     return BaseType::INVALID_POS;
+#endif
   }
 
   /**
@@ -157,11 +165,17 @@ public:
     return BaseType::INVALID_POS;
   }
 
-  RangeSetType elementRangeSet(PositionType pos1) const
+  AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
   {
+#ifdef AXOM_DEVICE_CODE
+    SLIC_ASSERT_MSG(
+      false,
+      "RelationSet::elementRangeSet unimplemented in device code.");
+#else
     return typename RangeSetType::SetBuilder()
       .size(m_relation->size(pos1))
       .offset(m_relation->offset(pos1));
+#endif
   }
 
   /**

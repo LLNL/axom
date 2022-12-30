@@ -56,7 +56,7 @@ struct ConcreteBivariateSet
     return getSize<FirstSetType>(m_set1);
   }
   /** \brief Size of the second set.   */
-  inline PositionType secondSetSize() const
+  AXOM_HOST_DEVICE inline PositionType secondSetSize() const
   {
     return getSize<SecondSetType>(m_set2);
   }
@@ -91,8 +91,9 @@ private:
   }
 
   template <typename SetType>
-  typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
-  getSize(const SetType* s) const
+  AXOM_HOST_DEVICE
+    typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
+    getSize(const SetType* s) const
   {
     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
     return static_cast<SetType>(*s).size();

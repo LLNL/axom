@@ -151,9 +151,12 @@ public:
    *
    * \return  The element's FlatIndex.
    */
-  PositionType findElementFlatIndex(PositionType pos1, PositionType pos2) const
+  AXOM_HOST_DEVICE PositionType findElementFlatIndex(PositionType pos1,
+                                                     PositionType pos2) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos1, pos2);
+#endif
     PositionType size2 = this->secondSetSize();
     PositionType pos = size2 * pos1 + pos2;
 
@@ -195,7 +198,7 @@ public:
 
   PositionType size(PositionType) const { return this->secondSetSize(); }
 
-  RangeSetType elementRangeSet(PositionType pos1) const
+  AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
   {
     const auto sz = this->secondSetSize();
     return typename RangeSetType::SetBuilder().size(sz).offset(sz * pos1);
