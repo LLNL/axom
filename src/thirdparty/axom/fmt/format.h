@@ -3389,6 +3389,14 @@ template <typename Char> struct arg_formatter {
   const basic_format_specs<Char>& specs;
   locale_ref locale;
 
+  // BEGIN AXOM BUGFIX
+  arg_formatter(buffer_appender<Char> it, const basic_format_specs<Char>& s)
+  : out (it), specs (s) {}
+
+  arg_formatter(buffer_appender<Char> it, const basic_format_specs<Char>& s, locale_ref l)
+  : out (it), specs (s), locale (l) {}
+  // END AXOM BUGFIX
+
   template <typename T>
   AXOM_FMT_CONSTEXPR AXOM_FMT_INLINE auto operator()(T value) -> iterator {
     return detail::write(out, value, specs, locale);

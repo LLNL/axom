@@ -1,0 +1,35 @@
+diff --git a/src/thirdparty/axom/fmt/format.h b/src/thirdparty/axom/fmt/format.h
+index 309b7d098..047bf255e 100644
+--- a/src/thirdparty/axom/fmt/format.h
++++ b/src/thirdparty/axom/fmt/format.h
+@@ -3389,6 +3389,14 @@ template <typename Char> struct arg_formatter {
+   const basic_format_specs<Char>& specs;
+   locale_ref locale;
+ 
++  // BEGIN AXOM BUGFIX
++  arg_formatter(buffer_appender<Char> it, const basic_format_specs<Char>& s)
++  : out (it), specs (s) {}
++
++  arg_formatter(buffer_appender<Char> it, const basic_format_specs<Char>& s, locale_ref l)
++  : out (it), specs (s), locale (l) {}
++  // END AXOM BUGFIX
++
+   template <typename T>
+   AXOM_FMT_CONSTEXPR AXOM_FMT_INLINE auto operator()(T value) -> iterator {
+     return detail::write(out, value, specs, locale);
+diff --git a/src/thirdparty/axom/fmt/printf.h b/src/thirdparty/axom/fmt/printf.h
+index 1c6f960a6..0ee1f30f3 100644
+--- a/src/thirdparty/axom/fmt/printf.h
++++ b/src/thirdparty/axom/fmt/printf.h
+@@ -237,8 +237,10 @@ class printf_arg_formatter : public arg_formatter<Char> {
+   }
+ 
+  public:
++  // BEGIN AXOM BUGFIX
+   printf_arg_formatter(OutputIt iter, format_specs& s, context_type& ctx)
+-      : base{iter, s, locale_ref()}, context_(ctx) {}
++      : base{iter, s}, context_(ctx) {}
++  // END AXOM BUGFIX
+ 
+   OutputIt operator()(monostate value) { return base::operator()(value); }
+ 

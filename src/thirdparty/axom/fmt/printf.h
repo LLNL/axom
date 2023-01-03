@@ -237,8 +237,10 @@ class printf_arg_formatter : public arg_formatter<Char> {
   }
 
  public:
+  // BEGIN AXOM BUGFIX
   printf_arg_formatter(OutputIt iter, format_specs& s, context_type& ctx)
-      : base{iter, s, locale_ref()}, context_(ctx) {}
+      : base{iter, s}, context_(ctx) {}
+  // END AXOM BUGFIX
 
   OutputIt operator()(monostate value) { return base::operator()(value); }
 
