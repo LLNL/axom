@@ -1623,10 +1623,14 @@ auto snprintf_float(T value, int precision, float_specs specs,
   }
 }
 
+// BEGIN AXOM BUGFIX
 template <typename T>
 using convert_float_result =
-    conditional_t<std::is_same<T, float>::value || sizeof(T) == sizeof(double),
+    conditional_t<std::is_same<T, float>::value ||
+                      std::numeric_limits<T>::digits ==
+                          std::numeric_limits<double>::digits,
                   double, T>;
+// END AXOM BUGFIX
 
 template <typename T>
 constexpr auto convert_float(T value) -> convert_float_result<T> {
