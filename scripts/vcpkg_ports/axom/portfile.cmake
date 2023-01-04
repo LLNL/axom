@@ -129,10 +129,12 @@ set(ENABLE_MPI OFF CACHE BOOL "")
 ]=])
 
 set(_conduit_dep_on [=[
+
 set(CONDUIT_DIR "@CURRENT_INSTALLED_DIR@/share/conduit" CACHE PATH "")
 set(HDF5_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 ]=])
 set(_conduit_dep_off [=[
+
 # conduit is disabled
 # sidre requires conduit; inlet and klee require sidre
 set(AXOM_ENABLE_SIDRE OFF CACHE BOOL "")
@@ -141,20 +143,34 @@ set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
 ]=])
 
 set(_mfem_dep [=[
+
 set(MFEM_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 ]=])
 
-set(_raja_dep [=[
-set(RAJA_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+set(_camp_dep [=[
+
 set(CAMP_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 ]=])
 
+set(_raja_dep [=[
+
+set(RAJA_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
+set(_umpire_dep [=[
+
+set(UMPIRE_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
 set(_openmp_dep [=[
+
+# Setup OpenMP; fix MSVC linker error about unknown flag
 set(ENABLE_OPENMP ON CACHE BOOL "")
+set(BLT_OPENMP_LINK_FLAGS " " CACHE STRING "")
 ]=])
 
 # TODO:
-#  * Add features/TPLs: umpire, lua, mpi
+#  * Add features/TPLs: lua, mpi
 #  * Add tools: uncrustify, sphinx, doxygen
 
 # Create a copyright file
@@ -169,25 +185,23 @@ set(_hc_file ${CURRENT_PACKAGES_DIR}/include/${PORT}/hc.cmake)
 # Add enabled features to host-config
 message(STATUS "FEATURES: ${FEATURES}")
 
-file(WRITE ${_hc_file}.in ${_host-config_hdr})
+file(WRITE ${_hc_file}.in "${_host-config_hdr}")
 
 if("conduit" IN_LIST FEATURES)
-  file(APPEND ${_hc_file}.in ${_conduit_dep_on})
+  file(APPEND ${_hc_file}.in "${_conduit_dep_on}")
 else()
-  file(APPEND ${_hc_file}.in ${_conduit_dep_off})
+  file(APPEND ${_hc_file}.in "${_conduit_dep_off}")
 endif()
 
-if("mfem" IN_LIST FEATURES)
-  file(APPEND ${_hc_file}.in ${_mfem_dep})
-endif()
+foreach(_dep openmp mfem raja umpire)
+  if(${_dep} IN_LIST FEATURES)
+    file(APPEND ${_hc_file}.in "${_${_dep}_dep}")
+  endif()
+endforeach()
 
-if("raja" IN_LIST FEATURES)
-  file(APPEND ${_hc_file}.in ${_raja_dep})
-endif()
-
-if("openmp" IN_LIST FEATURES)
-  file(APPEND ${_hc_file}.in ${_openmp_dep})
+# camp is required if umpire or raja are present
+if(raja IN_LIST FEATURES OR umpire IN_LIST FEATURES)
+  file(APPEND ${_hc_file}.in "${_camp_dep}")
 endif()
 
 configure_file(${_hc_file}.in ${_hc_file} @ONLY)
-

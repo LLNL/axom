@@ -5,10 +5,11 @@
   "description": "Host-config generator for Axom TPLs",
   "dependencies": ["blt"],
   "default-features": [
-    "mfem",
     "conduit",
+    "mfem",
+    "openmp",
     "raja",
-    "openmp"
+    "umpire"
   ],
   "features": {
     "mfem": {
@@ -23,11 +24,21 @@
       "description": "raja functionality for axom",
       "dependencies": ["raja"]
     },
+    "umpire": {
+      "description": "umpire functionality for axom",
+      "dependencies": ["umpire"]
+    },
     "openmp": {
       "description": "openmp functionality for axom",
       "dependencies": [
         {
           "name": "raja",
+          "features": [
+            "openmp"
+          ]
+        },
+        {
+          "name": "umpire",
           "features": [
             "openmp"
           ]
