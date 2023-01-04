@@ -22,12 +22,14 @@ namespace quest
 {
 
 MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
+                                     const std::string &coordsetName,
                                      const std::string &fcnField,
                                      const std::string &maskField)
   : _sd()
   , _ndim(0)
-  , _fcnField(fcnField)
-  , _maskField(maskField)
+  , _coordsetPath("coordsets/" + coordsetName)
+  , _fcnPath("fields/" + fcnField)
+  , _maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
   , _surfaceMesh(nullptr)
   , _cellIdField()
   , _domainIdField()
@@ -35,7 +37,7 @@ MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
   _sd.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto &dom : bpMesh.children())
   {
-    _sd.emplace_back(new MarchingCubesAlgo1(dom, _fcnField, _maskField));
+    _sd.emplace_back(new MarchingCubesAlgo1(dom, coordsetName, fcnField, maskField));
     if(_ndim == 0)
     {
       _ndim = _sd.back()->dimension();
@@ -104,14 +106,16 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
    v8 = v4 + kp ;
 
 MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node &dom,
+                                       const std::string &coordsetName,
                                        const std::string &fcnField,
                                        const std::string &maskField)
   : _dom(nullptr)
   , _ndim(0)
   , _logicalSize()
   , _logicalOrigin()
-  , _fcnField(fcnField)
-  , _maskField(maskField)
+  , _coordsetPath("coordsets/" + coordsetName)
+  , _fcnPath("fields/" + fcnField)
+  , _maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
   , _surfaceMesh(nullptr)
   , _cellIdField()
   , _contourVal(0.0)
@@ -125,13 +129,14 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
   SLIC_ASSERT_MSG(!conduit::blueprint::mesh::is_multi_domain(dom),
                   "MarchingCubesAlgo1 is single-domain only.  Try MarchingCubesAlgo.");
 
+  SLIC_ASSERT(dom.has_path(_coordsetPath));
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
-  SLIC_ASSERT(dom["fields/" + _fcnField + "/association"].as_string() == "vertex");
-  SLIC_ASSERT(dom.has_path("fields/" + _fcnField + "/values"));
+  SLIC_ASSERT(dom[_fcnPath + "/association"].as_string() == "vertex");
+  SLIC_ASSERT(dom.has_path(_fcnPath + "/values"));
 
-  if(!_maskField.empty())
+  if(!_maskPath.empty())
   {
-    SLIC_ASSERT(dom.has_path("field/" + _maskField + "/values"));
+    SLIC_ASSERT(dom.has_path(_maskPath + "/values"));
   }
 
   _dom = &dom;
@@ -157,6 +162,11 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
   }
 
   SLIC_ASSERT(_ndim >= 1 && _ndim <= 3);
+
+  const conduit::Node& coordsValues = dom[_coordsetPath + "/values"];
+  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
+  SLIC_ASSERT_MSG(!isInterleaved,
+                  "MarchingCubesAlgo currently requires contiguous coordinates layout.");
 }
 
 
@@ -202,18 +212,18 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
     point index and dimension index depending on which layout.  Won't work.
   */
 
-  const conduit::Node& coordValues = _dom->fetch_existing("coordsets/coords/values");
+  const conduit::Node& coordValues = _dom->fetch_existing(_coordsetPath + "/values");
   const double* xPtr = coordValues["x"].as_double_ptr();
   const double* yPtr = _ndim >= 2 ? coordValues["y"].as_double_ptr() : nullptr;
   const double* zPtr = _ndim >= 3 ? coordValues["z"].as_double_ptr() : nullptr;
 
-  auto& fcnValues = _dom->fetch_existing("fields/" + _fcnField + "/values");
+  auto& fcnValues = _dom->fetch_existing(_fcnPath + "/values");
   const double *fcnPtr = fcnValues.as_double_ptr();
 
   const int* maskPtr = nullptr;
-  if(!_maskField.empty())
+  if(!_maskPath.empty())
   {
-    auto& maskValues = _dom->fetch_existing("fields/" + _maskField + "/values");
+    auto& maskValues = _dom->fetch_existing(_maskPath + "/values");
     maskPtr = maskValues.as_int_ptr();
   }
 
@@ -394,8 +404,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
     double* x1,  *x2,  *x3,  *x4, *x5, *x6, *x7, *x8;
     double* y1,  *y2,  *y3,  *y4, *y5, *y6, *y7, *y8;
     double* z1,  *z2,  *z3,  *z4, *z5, *z6, *z7, *z8;
-    int jp = _dom->fetch_existing("coordsets/coords/dims/i").as_int();
-    int kp = _dom->fetch_existing("coordsets/coords/dims/j").as_int() * jp;
+    int jp = _dom->fetch_existing(_coordsetPath + "/dims/i").as_int();
+    int kp = _dom->fetch_existing(_coordsetPath + "/dims/j").as_int() * jp;
 
     NDSET3D( vf, vf1, vf2, vf3, vf4, vf5, vf6, vf7, vf8 );
     NDSET3D( x, x1, x2, x3, x4, x5, x6, x7, x8 );

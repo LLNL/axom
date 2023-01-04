@@ -759,8 +759,9 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
 
+#if 0
   // To test with contiguous and interleaved coordinate storage,
-  // make half them contiguous.
+  // make half of them contiguous and half interleaved.
   for(int di = 0; di < computationalMesh.domain_count(); ++di)
   {
     auto& dom = computationalMesh.as_conduit_node().child(di);
@@ -768,7 +769,12 @@ int main(int argc, char** argv)
     {
       make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
     }
+    else
+    {
+      make_coords_interleaved(dom.fetch_existing("coordsets/coords/values"));
+    }
   }
+#endif
 
 
   std::shared_ptr<ScalarFunctionBase<DIM>> scalarFcn;
@@ -799,7 +805,8 @@ int main(int argc, char** argv)
   axom::utilities::Timer computeTimer(false);
 
   // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(), "fVal");
+  quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(),
+                               "coords", "fVal");
 
   // Build the spatial index over the object on each rank
   slic::flushStreams();
