@@ -27,7 +27,6 @@ namespace mint = axom::mint;
 namespace primal = axom::primal;
 namespace spin = axom::spin;
 namespace slic = axom::slic;
-namespace quest = axom::quest;
 
 using IndexType = axom::IndexType;
 using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
@@ -406,7 +405,7 @@ int main(int argc, char** argv)
   // Read file
   SLIC_INFO("Reading file: '" << args.file_name << "'...\n");
   {
-    quest::STLReader reader;
+    axom::quest::STLReader reader;
     reader.setFileName(args.file_name);
     reader.read();
 

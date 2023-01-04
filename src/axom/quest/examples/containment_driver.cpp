@@ -416,10 +416,11 @@ public:
     if(dimension() == 3)
     {
       axom::fmt::memory_buffer edgeHistStr;
-      axom::fmt::format_to(edgeHistStr, "Edge length histogram (lg-arithmic): ");
+      axom::fmt::format_to(std::back_inserter(edgeHistStr),
+                           "Edge length histogram (lg-arithmic): ");
       for(auto it = edgeLenHist.begin(); it != edgeLenHist.end(); ++it)
       {
-        axom::fmt::format_to(edgeHistStr,
+        axom::fmt::format_to(std::back_inserter(edgeHistStr),
                              "\n\texp: {}\tcount: {}\tRange: {}",
                              it->first,
                              it->second / 2,
@@ -429,10 +430,11 @@ public:
     }
 
     axom::fmt::memory_buffer cellHistStr;
-    axom::fmt::format_to(cellHistStr, "Cell areas histogram (lg-arithmic): ");
+    axom::fmt::format_to(std::back_inserter(cellHistStr),
+                         "Cell areas histogram (lg-arithmic): ");
     for(auto it = areaHist.begin(); it != areaHist.end(); ++it)
     {
-      axom::fmt::format_to(cellHistStr,
+      axom::fmt::format_to(std::back_inserter(cellHistStr),
                            "\n\texp: {}\tcount: {}\tRange: {}",
                            it->first,
                            it->second,
@@ -444,11 +446,11 @@ public:
     {
       axom::fmt::memory_buffer badCellStr;
       axom::fmt::format_to(
-        badCellStr,
+        std::back_inserter(badCellStr),
         "The following cell(s) have zero area/edge lengths:");
       for(auto it = badCells.begin(); it != badCells.end(); ++it)
       {
-        axom::fmt::format_to(badCellStr, "\n\tCell {}", *it);
+        axom::fmt::format_to(std::back_inserter(badCellStr), "\n\tCell {}", *it);
         CellVertIndices vertIndices;
         m_surfaceMesh->getCellNodeIDs(*it, vertIndices.data());
 
@@ -456,7 +458,7 @@ public:
         for(int j = 0; j < DIM; ++j)
         {
           m_surfaceMesh->getNode(vertIndices[j], vertPos.data());
-          axom::fmt::format_to(badCellStr,
+          axom::fmt::format_to(std::back_inserter(badCellStr),
                                "\n\t\t vId: {} @ position: {}",
                                vertIndices[j],
                                vertPos);

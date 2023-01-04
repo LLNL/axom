@@ -11,8 +11,9 @@
 #include "axom/primal/geometry/NumericArray.hpp"
 
 // C/C++ includes
-#include <cstring>  // For memcpy()
-#include <ostream>  // For print() and operator <<
+#include <cstring>
+#include <ostream>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -332,5 +333,10 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Point using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Point<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_POINT_HPP_

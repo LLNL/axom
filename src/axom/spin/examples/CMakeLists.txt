@@ -22,7 +22,8 @@ blt_add_executable(
     FOLDER      axom/spin/examples
     )
 
-if (RAJA_FOUND AND UMPIRE_FOUND)
+# Note: The following example uses quest to read in an STL file
+if (AXOM_ENABLE_QUEST AND RAJA_FOUND AND UMPIRE_FOUND)
 
     blt_add_executable(
         NAME        spin_bvh_two_pass_ex

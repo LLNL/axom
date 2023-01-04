@@ -419,4 +419,10 @@ inline std::ostream& operator<<(std::ostream& os,
 
 }  // namespace quest
 }  // namespace axom
+
+/// Overload to format a quest::InOutBlockData using fmt
+template <>
+struct axom::fmt::formatter<axom::quest::InOutBlockData> : ostream_formatter
+{ };
+
 #endif  // AXOM_QUEST_INOUT_OCTREE_BLOCKDATA__HPP_

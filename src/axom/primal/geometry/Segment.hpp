@@ -199,4 +199,9 @@ std::ostream& operator<<(std::ostream& os, const Segment<T, NDIMS>& seg)
 }  // namespace primal
 }  // namespace axom
 
+/// Overload to format a primal::Segment using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Segment<T, NDIMS>> : ostream_formatter
+{ };
+
 #endif  // AXOM_PRIMAL_SEGMENT_HPP_

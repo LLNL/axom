@@ -60,6 +60,12 @@ enum class DistributedClosestPointRuntimePolicy
   hip = 3
 };
 
+/// Utility function to allow formating a DistributedClosestPointRuntimePolicy
+auto format_as(DistributedClosestPointRuntimePolicy pol)
+{
+  return fmt::underlying(pol);
+}
+
 namespace internal
 {
 // Utility function to dump a conduit node on each rank, e.g. for debugging

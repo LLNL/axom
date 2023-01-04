@@ -16,6 +16,7 @@
 #include "axom/primal/geometry/OrientationResult.hpp"
 
 #include "axom/slic/interface/slic.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -238,5 +239,10 @@ std::ostream& operator<<(std::ostream& os, const Sphere<T, NDIMS>& s)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Sphere using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Sphere<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_SPHERE_HPP_

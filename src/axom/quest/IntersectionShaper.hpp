@@ -34,7 +34,6 @@
 #include "mfem.hpp"
 
 #include "axom/fmt.hpp"
-#include "axom/fmt/locale.h"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
