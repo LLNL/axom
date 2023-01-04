@@ -69,9 +69,24 @@ public:
   std::string meshFile;
   std::string fieldsFile{"fields"};
 
+  // Center of round contour function
+  bool usingRound {false};
+  std::vector<double> fcnCenter {std::numeric_limits<double>::signaling_NaN(),
+                                 std::numeric_limits<double>::signaling_NaN()};
+
+  // Parameters for planar contour function
+  bool usingPlanar {false};
+  std::vector<double> inPlane {0.0, 0.0};
+  std::vector<double> perpDir {std::numeric_limits<double>::signaling_NaN(),
+                              std::numeric_limits<double>::signaling_NaN()};
+
+  // TODO: Ensure that fcnCenter, inPlane and perpDir sizes match dimensionality.
+
+  //! contourType is 'r' for round, 'p' for planar.
+  char contourType;
+
   double contourVal {1.0};
-  std::vector<double> fcnCenter {0.0, 0.0};
-  // TODO: Ensure that fcnCenter size matches dimensionality.
+
   RuntimePolicy policy {RuntimePolicy::seq};
 
   bool checkResults {false};
@@ -116,12 +131,21 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    auto* fcn_options =
-      app.add_option_group("fcn",
-                           "Options for setting up the nodal distance function");
+    auto* distFromPtOption =
+      app.add_option_group("distFromPtOption",
+                           "Options for setting up distance-from-point function");
+    distFromPtOption->add_option("--center", fcnCenter)
+      ->description("Center for distance-from-point function (x,y[,z])")
+      ->expected(2, 3);
 
-    fcn_options->add_option("--center", fcnCenter)
-      ->description("Center for nodal distance function (x,y[,z])")
+    auto* distFromPlaneOption =
+      app.add_option_group("distFromPlaneOption",
+                           "Options for setting up distance-from-plane function");
+    distFromPlaneOption->add_option("--inPlane", inPlane)
+      ->description("In-plane point for distance-from-plane function (x,y[,z])")
+      ->expected(2, 3);
+    distFromPlaneOption->add_option("--dir", perpDir)
+      ->description("Positive direction for distance-from-plane function (x,y[,z])")
       ->expected(2, 3);
 
     app.add_option("--contourVal", contourVal)
@@ -145,13 +169,41 @@ public:
 
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
                              : slic::message::Info);
+
+    usingPlanar = !std::isnan(perpDir[0]);
+    usingRound = !std::isnan(fcnCenter[0]);
+    SLIC_ASSERT_MSG(usingPlanar + usingRound == 1,
+                    "You must specify a planar scalar function or a round scalar"
+                    " function, not both and not neither.");
+    if(usingPlanar)
+    {
+      contourType = 'p';
+    }
+    if(usingRound)
+    {
+      contourType = 'r';
+    }
   }
 
   template<int DIM>
-  axom::primal::Point<double, DIM> fcn_center() const
+  axom::primal::Point<double, DIM> round_contour_center() const
   {
     SLIC_ASSERT(fcnCenter.size() == DIM);
     return axom::primal::Point<double, DIM>(fcnCenter.data());
+  }
+
+  template<int DIM>
+  axom::primal::Point<double, DIM> inplane_point() const
+  {
+    SLIC_ASSERT(inPlane.size() == DIM);
+    return axom::primal::Point<double, DIM>(inPlane.data());
+  }
+
+  template<int DIM>
+  axom::primal::Vector<double, DIM> plane_normal() const
+  {
+    SLIC_ASSERT(perpDir.size() == DIM);
+    return axom::primal::Vector<double, DIM>(perpDir.data());
   }
 };
 
@@ -200,10 +252,10 @@ public:
   template<int DIM>
   axom::StackArray<axom::IndexType, DIM> domain_lengths(const conduit::Node &dom) const
   {
-    SLIC_ASSERT(_dimension == DIM);
+    SLIC_ASSERT(_ndims == DIM);
     const conduit::Node& dimsNode = dom.fetch_existing(_topologyPath + "/elements/dims");
     axom::StackArray<axom::IndexType, DIM> cellCounts;
-    for(int i=0; i<_dimension; ++i)
+    for(int i=0; i<_ndims; ++i)
     {
       cellCounts[i] = dimsNode[i].as_int();
     }
@@ -240,7 +292,57 @@ public:
     return rval;
   }
 
-  int dimension() const { return _dimension; }
+  int dimension() const { return _ndims; }
+
+  /*!
+    @return largest mesh spacing in local domains.
+  */
+  double max_spacing() const
+  {
+    double rval = 0.0;
+    for(const auto& dom : _mdMesh.children())
+    {
+      rval += max_spacing1(dom);
+    }
+    return rval;
+  }
+
+  /*!
+    @return largest mesh spacing in a domain.
+
+    This method takes shorcuts by assuming
+    the mesh is structured and cartesian, with explicit coordinates.
+  */
+  double max_spacing1(const conduit::Node &dom) const
+  {
+    const conduit::Node& dimsNode = dom.fetch_existing("topologies/mesh/elements/dims");
+    axom::Array<axom::IndexType> ls(_ndims);
+    for(int d=0; d<_ndims; ++d)
+    {
+      ls[d] = 1 + dimsNode[d].as_int();
+    }
+
+    double rval = 0.0;
+
+    const conduit::Node& cVals = dom.fetch_existing("coordsets/coords/values");
+    if(_ndims == 2)
+    {
+      axom::ArrayView<const double, 2> xs(cVals["x"].as_double_ptr(), ls[0], ls[1]);
+      axom::ArrayView<const double, 2> ys(cVals["y"].as_double_ptr(), ls[0], ls[1]);
+      rval = std::max(rval, std::abs(xs(0,0) - xs(1,0)));
+      rval = std::max(rval, std::abs(ys(0,0) - ys(0,1)));
+    }
+    else
+    {
+      axom::ArrayView<const double, 3> xs(cVals["x"].as_double_ptr(), ls[0], ls[1], ls[2]);
+      axom::ArrayView<const double, 3> ys(cVals["y"].as_double_ptr(), ls[0], ls[1], ls[2]);
+      axom::ArrayView<const double, 3> zs(cVals["z"].as_double_ptr(), ls[0], ls[1], ls[2]);
+      rval = std::max(rval, std::abs(xs(0,0,0) - xs(1,0,0)));
+      rval = std::max(rval, std::abs(ys(0,0,0) - ys(0,1,0)));
+      rval = std::max(rval, std::abs(zs(0,0,0) - zs(0,0,1)));
+    }
+    return rval;
+  }
 
   /// Checks whether the blueprint is valid and prints diagnostics
   bool isValid() const
@@ -276,7 +378,7 @@ public:
 private:
   int _rank;
   int _nranks;
-  int _dimension {-1};
+  int _ndims {-1};
   conduit::Node _mdMesh;
   axom::IndexType _domCount;
   const std::string _coordsetPath;
@@ -300,10 +402,10 @@ private:
     {
       const conduit::Node coordsetNode =
         _mdMesh[0].fetch_existing(_coordsetPath);
-      _dimension = conduit::blueprint::mesh::coordset::dims(coordsetNode);
+      _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
-    MPI_Allreduce(MPI_IN_PLACE, &_dimension, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    SLIC_ASSERT(_dimension > 0);
+    MPI_Allreduce(MPI_IN_PLACE, &_ndims, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    SLIC_ASSERT(_ndims > 0);
 
     bool valid = isValid();
     SLIC_ASSERT(valid);
@@ -326,33 +428,16 @@ private:
 };  // BlueprintStructuredMesh
 
 
-void make_coords_contiguous(conduit::Node& coordValues)
-{
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-  if(isInterleaved)
-  {
-    conduit::Node oldValues = coordValues;
-    conduit::blueprint::mcarray::to_contiguous(oldValues, coordValues);
-  }
-}
-
-void make_coords_interleaved(conduit::Node& coordValues)
-{
-  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-  if(!isInterleaved)
-  {
-    conduit::Node oldValues = coordValues;
-    conduit::blueprint::mcarray::to_interleaved(oldValues, coordValues);
-  }
-}
-
-
 template<int DIM>
-struct DistanceFromPoint {
-  DistanceFromPoint(const axom::primal::Point<double, DIM> &pt)
-    : _center(pt)
-    {}
-  const axom::primal::Point<double, DIM> _center;
+struct ScalarFunctionBase {
+  ScalarFunctionBase() {}
+
+  //!@brief Return function value at a point.
+  virtual double value(const axom::primal::Point<double, DIM> &pt) const = 0;
+
+  //!@brief Return error tolerance for contour surface accuracy check.
+  virtual double error_tolerance() const = 0;
+
   void compute_nodal_distance(BlueprintStructuredMesh& bpMesh,
                               const std::string fieldName)
   {
@@ -395,16 +480,9 @@ struct DistanceFromPoint {
         {
           pt[d] = coordsViews[d].flatIndex(i);
         };
-        fieldView.flatIndex(i) = distance(pt);
+        fieldView.flatIndex(i) = value(pt);
       }
     }
-  }
-
-  double distance(axom::primal::Point<double, DIM> &pt) const
-  {
-    double dist = primal::squared_distance(_center, pt);
-    dist = sqrt(dist);
-    return dist;
   }
 
   /**
@@ -413,28 +491,28 @@ struct DistanceFromPoint {
      - surface triangle should be contained in their cells.
      - surface points should lie on computational mesh edges.
      - analytical scalar value at surface points should be
-       contourVal, within machine zero.
+       contourVal, within tolerance zero.
   */
   int check_contour_surface(
     const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &contourMesh,
-    double contourVal,
-    double tol = 1e-12)
+    double contourVal)
   {
+    double tol = error_tolerance();
     int sumErrCount = 0;
     const axom::IndexType nodeCount = contourMesh.getNumberOfNodes();
     axom::primal::Point<double, DIM> pt;
     for(axom::IndexType i=0; i<nodeCount; ++i)
     {
       contourMesh.getNode(i, pt.data());
-      double dist = distance(pt);
-      double diff = std::abs(dist - contourVal);
+      double analyticalVal = value(pt);
+      double diff = std::abs(analyticalVal - contourVal);
       if(diff > tol)
       {
         ++sumErrCount;
         SLIC_INFO_IF(
           params.isVerbose(),
           axom::fmt::format("check_contour_surface: node {} has dist {}, off by {}",
-                            i, dist, diff));
+                            i, analyticalVal, diff));
       }
     }
     SLIC_INFO_IF(
@@ -444,6 +522,101 @@ struct DistanceFromPoint {
     return sumErrCount;
   }
 };
+
+
+
+/*!
+  @brief Function providing distance from a point.
+*/
+template<int DIM>
+struct RoundContourFunction : public ScalarFunctionBase<DIM>
+{
+  RoundContourFunction(const axom::primal::Point<double, DIM> &pt)
+    : ScalarFunctionBase<DIM>()
+    , _center(pt)
+    , _errTol(1e-3)
+    {}
+  const axom::primal::Point<double, DIM> _center;
+  double _errTol;
+
+  double value(const axom::primal::Point<double, DIM> &pt) const override
+  {
+    double dist = primal::squared_distance(_center, pt);
+    dist = sqrt(dist);
+    return dist;
+  }
+
+  double error_tolerance() const override
+  {
+    return _errTol;
+  }
+
+  void set_tolerance_by_longest_edge(const BlueprintStructuredMesh &bsm)
+  {
+    double maxSpacing = bsm.max_spacing();
+    _errTol = 0.1 * maxSpacing;
+  }
+};
+
+
+
+/*!
+  @brief Function providing signed distance from a plane.
+*/
+template<int DIM>
+struct PlanarContourFunction : public ScalarFunctionBase<DIM> {
+  /*!
+    @brief Constructor.
+
+    @param inPlane [in] A point in the plane.
+    @param perpDir [in] Perpendicular direction on positive side.
+  */
+  PlanarContourFunction(const axom::primal::Point<double, DIM> &inPlane,
+                        const axom::primal::Vector<double, DIM> &perpDir)
+    : ScalarFunctionBase<DIM>()
+    , _inPlane(inPlane)
+    , _normal(perpDir.unitVector())
+    {}
+  const axom::primal::Point<double, DIM> _inPlane;
+  const axom::primal::Vector<double, DIM> _normal;
+
+  double value(const axom::primal::Point<double, DIM> &pt) const
+  {
+    axom::primal::Vector<double, DIM> r(_inPlane, pt);
+    double dist = r.dot(_normal);
+    return dist;
+  }
+
+  double error_tolerance() const override
+  {
+    return 1e-12;
+  }
+};
+
+
+
+/// Utility function to transform blueprint node storage.
+void make_coords_contiguous(conduit::Node& coordValues)
+{
+  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+  if(isInterleaved)
+  {
+    conduit::Node oldValues = coordValues;
+    conduit::blueprint::mcarray::to_contiguous(oldValues, coordValues);
+  }
+}
+
+
+/// Utility function to transform blueprint node storage.
+void make_coords_interleaved(conduit::Node& coordValues)
+{
+  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+  if(!isInterleaved)
+  {
+    conduit::Node oldValues = coordValues;
+    conduit::blueprint::mcarray::to_interleaved(oldValues, coordValues);
+  }
+}
 
 
 /// Utility function to initialize the logger
@@ -585,18 +758,6 @@ int main(int argc, char** argv)
 
   slic::flushStreams();
 
-  DistanceFromPoint<DIM> dfp(params.fcn_center<DIM>());
-
-  //---------------------------------------------------------------------------
-  // Initialize nodal scalar function.
-  //---------------------------------------------------------------------------
-  dfp.compute_nodal_distance(computationalMesh, "fVal");
-
-  //---------------------------------------------------------------------------
-  // Initialize spatial index for querying points, and run query
-  //---------------------------------------------------------------------------
-
-  axom::utilities::Timer computeTimer(false);
 
   // To test with contiguous and interleaved coordinate storage,
   // make half them contiguous.
@@ -608,6 +769,34 @@ int main(int argc, char** argv)
       make_coords_contiguous(dom.fetch_existing("coordsets/coords/values"));
     }
   }
+
+
+  std::shared_ptr<ScalarFunctionBase<DIM>> scalarFcn;
+  if(params.usingRound)
+  {
+    auto rcf =
+      std::make_shared<RoundContourFunction<DIM>>(params.round_contour_center<DIM>());
+    rcf->set_tolerance_by_longest_edge(computationalMesh);
+    scalarFcn = rcf;
+  }
+  else
+  {
+    auto pcf =
+      std::make_shared<PlanarContourFunction<DIM>>(params.inplane_point<DIM>(),
+                                                   params.plane_normal<DIM>());
+    scalarFcn = pcf;
+  }
+
+  //---------------------------------------------------------------------------
+  // Initialize nodal scalar function.
+  //---------------------------------------------------------------------------
+  scalarFcn->compute_nodal_distance(computationalMesh, "fVal");
+
+  //---------------------------------------------------------------------------
+  // Initialize spatial index for querying points, and run query
+  //---------------------------------------------------------------------------
+
+  axom::utilities::Timer computeTimer(false);
 
   // Create marching cubes algorithm object and set some parameters
   quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(), "fVal");
@@ -660,7 +849,7 @@ int main(int argc, char** argv)
   int localErrCount = 0;
   if(params.checkResults)
   {
-    localErrCount = dfp.check_contour_surface(surfaceMesh, params.contourVal, 1e-3);
+    localErrCount = scalarFcn->check_contour_surface(surfaceMesh, params.contourVal);
     MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
     if(errCount)
