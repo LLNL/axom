@@ -41,6 +41,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
 - Updates uberenv submodule to HEAD of main on 28Dec2022
 - Updates blt submodule to HEAD of develop on 28Dec2022
+- Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
