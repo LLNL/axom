@@ -9,7 +9,7 @@
 if (ENABLE_HIP)
     cmake_minimum_required(VERSION 3.21)
 else()
-    cmake_minimum_required(VERSION 3.14)
+    cmake_minimum_required(VERSION 3.18)
 endif()
 
 project(axom LANGUAGES C CXX)
