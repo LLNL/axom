@@ -71,19 +71,16 @@ public:
 
   // Center of round contour function
   bool usingRound {false};
-  std::vector<double> fcnCenter {std::numeric_limits<double>::signaling_NaN(),
-                                 std::numeric_limits<double>::signaling_NaN()};
+  std::vector<double> fcnCenter;
 
   // Parameters for planar contour function
   bool usingPlanar {false};
-  std::vector<double> inPlane {0.0, 0.0};
-  std::vector<double> perpDir {std::numeric_limits<double>::signaling_NaN(),
-                              std::numeric_limits<double>::signaling_NaN()};
+  std::vector<double> inPlane;
+  std::vector<double> perpDir;
+
+  size_t ndim{0};
 
   // TODO: Ensure that fcnCenter, inPlane and perpDir sizes match dimensionality.
-
-  //! contourType is 'r' for round, 'p' for planar.
-  char contourType;
 
   double contourVal {1.0};
 
@@ -170,18 +167,24 @@ public:
     slic::setLoggingMsgLevel(_verboseOutput ? slic::message::Debug
                              : slic::message::Info);
 
-    usingPlanar = !std::isnan(perpDir[0]);
-    usingRound = !std::isnan(fcnCenter[0]);
-    SLIC_ASSERT_MSG(usingPlanar + usingRound == 1,
+    ndim = std::max(ndim, fcnCenter.size());
+    ndim = std::max(ndim, inPlane.size());
+    ndim = std::max(ndim, perpDir.size());
+    SLIC_ASSERT_MSG((fcnCenter.empty() || fcnCenter.size() == ndim) &&
+                    (inPlane.empty() || inPlane.size() == ndim) &&
+                    (perpDir.empty() || perpDir.size() == ndim),
+                    "fcnCenter, inPlane and perpDir must have consistent sizes if specified.");
+
+    usingPlanar = !perpDir.empty();
+    usingRound = !fcnCenter.empty();
+    SLIC_ASSERT_MSG(usingPlanar || usingRound,
                     "You must specify a planar scalar function or a round scalar"
-                    " function, not both and not neither.");
-    if(usingPlanar)
+                    " function or both.");
+
+    // inPlane defaults to origin if omitted.
+    if(usingPlanar && inPlane.empty())
     {
-      contourType = 'p';
-    }
-    if(usingRound)
-    {
-      contourType = 'r';
+      inPlane.insert(inPlane.begin(), ndim, 0.0);
     }
   }
 
@@ -409,21 +412,6 @@ private:
 
     bool valid = isValid();
     SLIC_ASSERT(valid);
-
-    // Interleave coordinates if they aren't already.
-    for(auto& dom : _mdMesh.children())
-    {
-      conduit::Node& coordsNode = dom.fetch_existing(_coordsetPath);
-      conduit::Node& values = coordsNode.fetch_existing("values");
-      bool isInterleaved =
-        conduit::blueprint::mcarray::is_interleaved(values);
-      if(!isInterleaved)
-      {
-        conduit::Node interleavedValues;
-        conduit::blueprint::mcarray::to_interleaved(values, interleavedValues);
-        values.set(interleavedValues);
-      }
-    }
   }
 };  // BlueprintStructuredMesh
 
@@ -435,11 +423,13 @@ struct ScalarFunctionBase {
   //!@brief Return function value at a point.
   virtual double value(const axom::primal::Point<double, DIM> &pt) const = 0;
 
+  //!@brief Return field name for storing nodal function.
+  virtual std::string function_name() const = 0;
+
   //!@brief Return error tolerance for contour surface accuracy check.
   virtual double error_tolerance() const = 0;
 
-  void compute_nodal_distance(BlueprintStructuredMesh& bpMesh,
-                              const std::string fieldName)
+  void compute_nodal_distance(BlueprintStructuredMesh& bpMesh)
   {
     SLIC_ASSERT(bpMesh.dimension() == DIM);
     conduit::Node& bpNode = bpMesh.as_conduit_node();
@@ -463,7 +453,7 @@ struct ScalarFunctionBase {
                     shape );
 
       // Create the nodal function data.
-      conduit::Node &fieldNode = dom["fields"][fieldName];
+      conduit::Node &fieldNode = dom["fields"][function_name()];
       fieldNode["association"] = "vertex";
       fieldNode["topology"] = "mesh";
       fieldNode["volume_dependent"] = "false";
@@ -546,6 +536,11 @@ struct RoundContourFunction : public ScalarFunctionBase<DIM>
     return dist;
   }
 
+  virtual std::string function_name() const override
+  {
+    return std::string("dist_to_center");
+  }
+
   double error_tolerance() const override
   {
     return _errTol;
@@ -585,6 +580,11 @@ struct PlanarContourFunction : public ScalarFunctionBase<DIM> {
     axom::primal::Vector<double, DIM> r(_inPlane, pt);
     double dist = r.dot(_normal);
     return dist;
+  }
+
+  virtual std::string function_name() const override
+  {
+    return std::string("dist_to_plane");
   }
 
   double error_tolerance() const override
@@ -654,11 +654,118 @@ void finalizeLogger()
   }
 }
 
+
+int myRank = -1, numRanks = -1; // MPI stuff, set in main().
+
+
+/*!
+  All the test code that depends on DIM to instantiate.
+*/
+template<int DIM>
+int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
+{
+  std::shared_ptr<ScalarFunctionBase<DIM>> scalarFcn;
+  if(params.usingRound)
+  {
+    auto rcf =
+      std::make_shared<RoundContourFunction<DIM>>(params.round_contour_center<DIM>());
+    rcf->set_tolerance_by_longest_edge(computationalMesh);
+    scalarFcn = rcf;
+  }
+  else
+  {
+    auto pcf =
+      std::make_shared<PlanarContourFunction<DIM>>(params.inplane_point<DIM>(),
+                                                   params.plane_normal<DIM>());
+    scalarFcn = pcf;
+  }
+
+  //---------------------------------------------------------------------------
+  // Initialize nodal scalar function.
+  //---------------------------------------------------------------------------
+  scalarFcn->compute_nodal_distance(computationalMesh);
+
+  //---------------------------------------------------------------------------
+  // Initialize spatial index for querying points, and run query
+  //---------------------------------------------------------------------------
+
+  axom::utilities::Timer computeTimer(false);
+
+  // Create marching cubes algorithm object and set some parameters
+  quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(),
+                               "coords", scalarFcn->function_name());
+
+  slic::flushStreams();
+
+  // Run the marching cubes algorithm on the computational mesh.
+  // To test support for single-domain format, use single-domain when possible.
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
+    DIM,
+    DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+  axom::Array<int> domainIds;
+
+  mca.set_output_mesh(&surfaceMesh);
+  mca.set_cell_id_field("zoneIds");
+  mca.set_domain_id_field("domainIds");
+
+  slic::flushStreams();
+  computeTimer.start();
+  mca.compute_iso_surface(params.contourVal);
+  computeTimer.stop();
+
+  auto getDoubleMinMax =
+    [](double inVal, double& minVal, double& maxVal, double& sumVal) {
+      MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+      MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    };
+
+  // Output some timing stats
+  {
+    double minQuery, maxQuery, sumQuery;
+    getDoubleMinMax(computeTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
+
+    SLIC_INFO(axom::fmt::format(
+      "Query with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
+      params.policy,
+      sumQuery / numRanks,
+      minQuery,
+      maxQuery));
+  }
+  slic::flushStreams();
+
+  assert(computationalMesh.isValid());
+  computationalMesh.save_mesh(params.fieldsFile);
+  mint::write_vtk(&surfaceMesh, "surface_mesh.vtk");
+
+  int errCount = 0;
+  int localErrCount = 0;
+  if(params.checkResults)
+  {
+    localErrCount = scalarFcn->check_contour_surface(surfaceMesh, params.contourVal);
+    MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
+    if(errCount)
+    {
+      SLIC_INFO(axom::fmt::format(" Error exit: {} errors found.", errCount));
+    }
+    else
+    {
+      SLIC_INFO("Normal exit.");
+    }
+  }
+  else
+  {
+    SLIC_INFO("Not checking results.");
+  }
+
+  return errCount;
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
-  int myRank, numRanks;
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
   MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
 
@@ -687,8 +794,6 @@ int main(int argc, char** argv)
 
     exit(retval);
   }
-
-  constexpr int DIM = 2;
 
 #if defined(AXOM_USE_UMPIRE)
   //---------------------------------------------------------------------------
@@ -760,6 +865,7 @@ int main(int argc, char** argv)
 
 
 #if 0
+  // TODO: Eventually, support both interleaved and contiguous storage.
   // To test with contiguous and interleaved coordinate storage,
   // make half of them contiguous and half interleaved.
   for(int di = 0; di < computationalMesh.domain_count(); ++di)
@@ -777,104 +883,15 @@ int main(int argc, char** argv)
 #endif
 
 
-  std::shared_ptr<ScalarFunctionBase<DIM>> scalarFcn;
-  if(params.usingRound)
-  {
-    auto rcf =
-      std::make_shared<RoundContourFunction<DIM>>(params.round_contour_center<DIM>());
-    rcf->set_tolerance_by_longest_edge(computationalMesh);
-    scalarFcn = rcf;
-  }
-  else
-  {
-    auto pcf =
-      std::make_shared<PlanarContourFunction<DIM>>(params.inplane_point<DIM>(),
-                                                   params.plane_normal<DIM>());
-    scalarFcn = pcf;
-  }
-
-  //---------------------------------------------------------------------------
-  // Initialize nodal scalar function.
-  //---------------------------------------------------------------------------
-  scalarFcn->compute_nodal_distance(computationalMesh, "fVal");
-
-  //---------------------------------------------------------------------------
-  // Initialize spatial index for querying points, and run query
-  //---------------------------------------------------------------------------
-
-  axom::utilities::Timer computeTimer(false);
-
-  // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(),
-                               "coords", "fVal");
-
-  // Build the spatial index over the object on each rank
-  slic::flushStreams();
-
-  // Run the marching cubes algorithm on the computational mesh.
-  // To test support for single-domain format, use single-domain when possible.
-  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
-    DIM,
-    DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
-  axom::Array<int> domainIds;
-
-  mca.set_output_mesh(&surfaceMesh);
-  mca.set_cell_id_field("zoneIds");
-  mca.set_domain_id_field("domainIds");
-
-  slic::flushStreams();
-  computeTimer.start();
-  mca.compute_iso_surface(params.contourVal);
-  computeTimer.stop();
-
-  auto getDoubleMinMax =
-    [](double inVal, double& minVal, double& maxVal, double& sumVal) {
-      MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-      MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-      MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    };
-
-  // Output some timing stats
-  {
-    double minQuery, maxQuery, sumQuery;
-    getDoubleMinMax(computeTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
-
-    SLIC_INFO(axom::fmt::format(
-      "Query with policy {} took {{avg:{}, min:{}, max:{}}} seconds",
-      params.policy,
-      sumQuery / numRanks,
-      minQuery,
-      maxQuery));
-  }
-  slic::flushStreams();
-
-  assert(computationalMesh.isValid());
-  computationalMesh.save_mesh(params.fieldsFile);
-  mint::write_vtk(&surfaceMesh, "surface_mesh.vtk");
-
   int errCount = 0;
-  int localErrCount = 0;
-  if(params.checkResults)
+  if(params.ndim == 2)
   {
-    localErrCount = scalarFcn->check_contour_surface(surfaceMesh, params.contourVal);
-    MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-
-    if(errCount)
-    {
-      SLIC_INFO(axom::fmt::format(" Error exit: {} errors found.", errCount));
-    }
-    else
-    {
-      SLIC_INFO("Normal exit.");
-    }
+    errCount = test_ndim_instance<2>(computationalMesh);
   }
-  else
+  else if(params.ndim == 3)
   {
-    SLIC_INFO("Not checking results.");
+    errCount = test_ndim_instance<3>(computationalMesh);
   }
-
-  // TODO: Write surface mesh to file for viz.
-
 
   finalizeLogger();
   MPI_Finalize();

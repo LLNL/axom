@@ -131,6 +131,8 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
 
   SLIC_ASSERT(dom.has_path(_coordsetPath));
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
+
+  SLIC_ASSERT(dom.has_path(_fcnPath));
   SLIC_ASSERT(dom[_fcnPath + "/association"].as_string() == "vertex");
   SLIC_ASSERT(dom.has_path(_fcnPath + "/values"));
 
@@ -318,7 +320,6 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 #endif
 
   } else {
-    SLIC_ERROR("Unfinished code for 3D marching cubes.");
 
 #if 1
     axom::StackArray<axom::IndexType, 3> cShape{_logicalSize[0], _logicalSize[1], _logicalSize[2]};

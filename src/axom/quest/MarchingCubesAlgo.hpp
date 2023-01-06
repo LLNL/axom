@@ -46,8 +46,8 @@ public:
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
    * \param [in] coordsetName Name of blueprint point coordinate set.
    * \param [in] fieldName Name of scalar field data.
-   * \param [in] maskField Cell-based mask field.  If provided, only cells
-   *             where this field evaluates to true are evaluated.
+   * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
+   *             cells where this field evaluates to false are skipped.
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
@@ -55,8 +55,8 @@ public:
    *
    * The mesh coordinates should be contiguous.  See
    * conduit::blueprint::is_contiguous().  In the future, this
-   * requirement may be relaxed, at the cost of a transformation and
-   * storage of the temporary contiguous layout.
+   * requirement may be relaxed, possibly at the cost of a
+   * transformation and storage of the temporary contiguous layout.
    */
   MarchingCubesAlgo1(const conduit::Node &dom,
                      const std::string &coordsetName,
@@ -150,24 +150,24 @@ class MarchingCubesAlgo
 {
 public:
 
-/*!
- * \brief Constructor sets up computational mesh and data for running the
- * marching cubes algorithm.
- *
- * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
- * \param [in] coordsetName Name of blueprint point coordinate set.
- * \param [in] fieldName Name of node-based scalar function values.
- * \param [in] maskField Cell-based mask field.  If provided, cells
- *             where this field evaluates to false are skipped.
- *
- * Some data from \a bpMesh may be cached by the constructor.
- * Any change to it after the constructor leads to undefined behavior.
- *
- * The mesh coordinates should be contiguous.  See
- * conduit::blueprint::is_contiguous().  In the future, this
- * requirement may be relaxed, at the cost of a transformation and
- * storage of the temporary contiguous layout.
- */
+  /*!
+   * \brief Constructor sets up computational mesh and data for running the
+   * marching cubes algorithm.
+   *
+   * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
+   * \param [in] coordsetName Name of blueprint point coordinate set.
+   * \param [in] fieldName Name of node-based scalar function values.
+   * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
+   *             cells where this field evaluates to false are skipped.
+   *
+   * Some data from \a bpMesh may be cached by the constructor.
+   * Any change to it after the constructor leads to undefined behavior.
+   *
+   * The mesh coordinates should be contiguous.  See
+   * conduit::blueprint::is_contiguous().  In the future, this
+   * requirement may be relaxed, possibly at the cost of a
+   * transformation and storage of the temporary contiguous layout.
+   */
   MarchingCubesAlgo(const conduit::Node &bpMesh,
                     const std::string &coordsetName,
                     const std::string &fcnField,
