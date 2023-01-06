@@ -4,9 +4,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file marching_cubes_example.cpp
- * \brief Driver for a marching cubes iso-surface generation
- */
+ \file marching_cubes_example.cpp
+ \brief Driver and test for a marching cubes iso-surface generation
+
+  The test can generate planar and round contours.  Planar contours
+  can be checked to machine-zero accuracy, but it doesn't test a great
+  variety of contour-mesh intersection types.  Round contours can
+  check more intersection types but requires a tolerance to compensate
+  for the function not varying linearly along mesh lines.
+*/
 
 // Axom includes
 #include "axom/config.hpp"
@@ -664,54 +670,93 @@ int myRank = -1, numRanks = -1; // MPI stuff, set in main().
 template<int DIM>
 int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 {
-  std::shared_ptr<ScalarFunctionBase<DIM>> scalarFcn;
-  if(params.usingRound)
-  {
-    auto rcf =
-      std::make_shared<RoundContourFunction<DIM>>(params.round_contour_center<DIM>());
-    rcf->set_tolerance_by_longest_edge(computationalMesh);
-    scalarFcn = rcf;
-  }
-  else
-  {
-    auto pcf =
-      std::make_shared<PlanarContourFunction<DIM>>(params.inplane_point<DIM>(),
-                                                   params.plane_normal<DIM>());
-    scalarFcn = pcf;
-  }
+  // Create marching cubes algorithm object and set some parameters
+  quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(),
+                               "coords");
+
+
+  mca.set_cell_id_field("zoneIds");
+  mca.set_domain_id_field("domainIds");
 
   //---------------------------------------------------------------------------
   // Initialize nodal scalar function.
   //---------------------------------------------------------------------------
-  scalarFcn->compute_nodal_distance(computationalMesh);
 
-  //---------------------------------------------------------------------------
-  // Initialize spatial index for querying points, and run query
-  //---------------------------------------------------------------------------
+  std::shared_ptr<RoundContourFunction<DIM>> roundFcn;
+  std::shared_ptr<PlanarContourFunction<DIM>> planarFcn;
+  if(params.usingRound)
+  {
+    roundFcn =
+      std::make_shared<RoundContourFunction<DIM>>(params.round_contour_center<DIM>());
+    roundFcn->set_tolerance_by_longest_edge(computationalMesh);
+    roundFcn->compute_nodal_distance(computationalMesh);
+  }
+  if(params.usingPlanar)
+  {
+    planarFcn =
+      std::make_shared<PlanarContourFunction<DIM>>(params.inplane_point<DIM>(),
+                                                   params.plane_normal<DIM>());
+    planarFcn->compute_nodal_distance(computationalMesh);
+  }
+
+  // Save computational mesh with contour functions.
+  computationalMesh.save_mesh(params.fieldsFile);
+
 
   axom::utilities::Timer computeTimer(false);
 
-  // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(),
-                               "coords", scalarFcn->function_name());
+  int localErrCount = 0;
+
+  slic::flushStreams();
+  if(planarFcn)
+  {
+    SLIC_INFO("Testing round contour.");
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> planarSurfaceMesh(
+      DIM, DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+    mca.set_function_field(planarFcn->function_name());
+    mca.set_output_mesh(&planarSurfaceMesh);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    computeTimer.start();
+    mca.compute_iso_surface(params.contourVal);
+    computeTimer.stop();
+
+    mint::write_vtk(&planarSurfaceMesh, "planar_surface_mesh.vtk");
+    SLIC_INFO("Wrote planar contour in planar_surface_mesh.vtk");
+
+    if(params.checkResults)
+    {
+      localErrCount += planarFcn->check_contour_surface(
+        planarSurfaceMesh, params.contourVal);
+    }
+  }
 
   slic::flushStreams();
 
-  // Run the marching cubes algorithm on the computational mesh.
-  // To test support for single-domain format, use single-domain when possible.
-  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
-    DIM,
-    DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
-  axom::Array<int> domainIds;
+  if(roundFcn)
+  {
+    SLIC_INFO("Testing round contour.");
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> roundSurfaceMesh(
+      DIM, DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+    mca.set_function_field(roundFcn->function_name());
+    mca.set_output_mesh(&roundSurfaceMesh);
 
-  mca.set_output_mesh(&surfaceMesh);
-  mca.set_cell_id_field("zoneIds");
-  mca.set_domain_id_field("domainIds");
+    MPI_Barrier(MPI_COMM_WORLD);
+    computeTimer.start();
+    mca.compute_iso_surface(params.contourVal);
+    computeTimer.stop();
 
-  slic::flushStreams();
-  computeTimer.start();
-  mca.compute_iso_surface(params.contourVal);
-  computeTimer.stop();
+    mint::write_vtk(&roundSurfaceMesh, "round_surface_mesh.vtk");
+    SLIC_INFO("Wrote round contour in round_surface_mesh.vtk");
+
+    if(params.checkResults)
+    {
+      localErrCount += roundFcn->check_contour_surface(
+        roundSurfaceMesh, params.contourVal);
+    }
+  }
+
+  // Output some timing stats
 
   auto getDoubleMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
@@ -720,7 +765,6 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     };
 
-  // Output some timing stats
   {
     double minQuery, maxQuery, sumQuery;
     getDoubleMinMax(computeTimer.elapsedTimeInSec(), minQuery, maxQuery, sumQuery);
@@ -734,15 +778,12 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
   }
   slic::flushStreams();
 
-  assert(computationalMesh.isValid());
-  computationalMesh.save_mesh(params.fieldsFile);
-  mint::write_vtk(&surfaceMesh, "surface_mesh.vtk");
+
+  // Check results
 
   int errCount = 0;
-  int localErrCount = 0;
   if(params.checkResults)
   {
-    localErrCount = scalarFcn->check_contour_surface(surfaceMesh, params.contourVal);
     MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
     if(errCount)
@@ -756,7 +797,7 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
   }
   else
   {
-    SLIC_INFO("Not checking results.");
+    SLIC_INFO("Results not checked.");
   }
 
   return errCount;

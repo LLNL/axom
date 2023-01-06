@@ -45,7 +45,6 @@ public:
    *
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
    * \param [in] coordsetName Name of blueprint point coordinate set.
-   * \param [in] fieldName Name of scalar field data.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
@@ -60,7 +59,6 @@ public:
    */
   MarchingCubesAlgo1(const conduit::Node &dom,
                      const std::string &coordsetName,
-                     const std::string &fcnField,
                      const std::string &maskfield);
 
   //! @brief Spatial dimension of domain.
@@ -68,6 +66,13 @@ public:
   {
     return _ndim;
   }
+
+
+  /*!
+    @brief Set the field containing the nodal function.
+    \param [in] fcnField Name of node-based scalar function values.
+  */
+  void set_function_field(const std::string& fcnField);
 
   /*!
     @brief Set the output sufrace mesh object.
@@ -109,8 +114,8 @@ private:
   axom::Array<axom::IndexType> _logicalOrigin; //! @brief First domain cell in each direction.
 
   const std::string _coordsetPath;
-  const std::string _fcnPath;
-  const std::string _maskPath;
+  std::string _fcnPath;
+  std::string _maskPath;
 
   /*
     Non-state variables we don't want to have to propagate down the
@@ -156,7 +161,6 @@ public:
    *
    * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
    * \param [in] coordsetName Name of blueprint point coordinate set.
-   * \param [in] fieldName Name of node-based scalar function values.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
@@ -170,8 +174,13 @@ public:
    */
   MarchingCubesAlgo(const conduit::Node &bpMesh,
                     const std::string &coordsetName,
-                    const std::string &fcnField,
                     const std::string &maskField={});
+
+  /*!
+    @brief Set the field containing the nodal function.
+    \param [in] fcnField Name of node-based scalar function values.
+  */
+  void set_function_field(const std::string& fcnField);
 
   /*!
     @brief Set the output surface mesh object.
@@ -221,8 +230,8 @@ private:
   axom::Array<std::shared_ptr<MarchingCubesAlgo1>> _sd;
   int _ndim;
   const std::string _coordsetPath;
-  const std::string _fcnPath;
-  const std::string _maskPath;
+  std::string _fcnPath;
+  std::string _maskPath;
 
   /*
     Non-state variables we don't want to have to propagate down the

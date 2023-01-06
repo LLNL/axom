@@ -23,12 +23,11 @@ namespace quest
 
 MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
                                      const std::string &coordsetName,
-                                     const std::string &fcnField,
                                      const std::string &maskField)
   : _sd()
   , _ndim(0)
   , _coordsetPath("coordsets/" + coordsetName)
-  , _fcnPath("fields/" + fcnField)
+  , _fcnPath()
   , _maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
   , _surfaceMesh(nullptr)
   , _cellIdField()
@@ -37,7 +36,7 @@ MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
   _sd.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto &dom : bpMesh.children())
   {
-    _sd.emplace_back(new MarchingCubesAlgo1(dom, coordsetName, fcnField, maskField));
+    _sd.emplace_back(new MarchingCubesAlgo1(dom, coordsetName, maskField));
     if(_ndim == 0)
     {
       _ndim = _sd.back()->dimension();
@@ -46,6 +45,16 @@ MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node &bpMesh,
     {
       SLIC_ASSERT(_ndim == _sd.back()->dimension());
     }
+  }
+}
+
+
+void MarchingCubesAlgo::set_function_field(const std::string& fcnField)
+{
+  _fcnPath = "fields/" + fcnField;
+  for(auto &s : _sd)
+  {
+    s->set_function_field(fcnField);
   }
 }
 
@@ -68,6 +77,8 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
 {
   SLIC_ASSERT_MSG(_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
+  SLIC_ASSERT_MSG(!_fcnPath.empty(),
+                  "You must call set_function_field before compute_iso_surface.");
 
   if(!_domainIdField.empty() && !_surfaceMesh->hasField(_domainIdField, axom::mint::CELL_CENTERED))
   {
@@ -107,14 +118,13 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
 
 MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node &dom,
                                        const std::string &coordsetName,
-                                       const std::string &fcnField,
                                        const std::string &maskField)
   : _dom(nullptr)
   , _ndim(0)
   , _logicalSize()
   , _logicalOrigin()
   , _coordsetPath("coordsets/" + coordsetName)
-  , _fcnPath("fields/" + fcnField)
+  , _fcnPath()
   , _maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
   , _surfaceMesh(nullptr)
   , _cellIdField()
@@ -132,9 +142,11 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
   SLIC_ASSERT(dom.has_path(_coordsetPath));
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
 
+#if 0
   SLIC_ASSERT(dom.has_path(_fcnPath));
   SLIC_ASSERT(dom[_fcnPath + "/association"].as_string() == "vertex");
   SLIC_ASSERT(dom.has_path(_fcnPath + "/values"));
+#endif
 
   if(!_maskPath.empty())
   {
@@ -172,6 +184,15 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
 }
 
 
+void MarchingCubesAlgo1::set_function_field(const std::string& fcnField)
+{
+  _fcnPath = "fields/" + fcnField;
+  SLIC_ASSERT(_dom->has_path(_fcnPath));
+  SLIC_ASSERT(_dom->fetch_existing(_fcnPath + "/association").as_string() == "vertex");
+  SLIC_ASSERT(_dom->has_path(_fcnPath + "/values"));
+}
+
+
 /*!
   @brief Set the output surface mesh object.
 */
@@ -198,6 +219,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 {
   SLIC_ASSERT_MSG(_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
+  SLIC_ASSERT_MSG(!_fcnPath.empty(),
+                  "You must call set_function_field before compute_iso_surface.");
 
   /*
     Notes: how to handle non-interleaved coordinates.
