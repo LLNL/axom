@@ -27,7 +27,7 @@ blt_add_executable( NAME       spio_tests
                     SOURCES    spio_main.cpp
                     HEADERS    ${gtest_spio_parallel_tests} ${gtest_spio_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                    DEPENDS_ON axom gtest
+                    DEPENDS_ON axom ${axom_device_depends} gtest
                     FOLDER     axom/sidre/tests
                     )
 
@@ -63,7 +63,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre
+                            DEPENDS_ON sidre ${axom_device_depends}
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F
@@ -85,7 +85,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre
+                            DEPENDS_ON sidre ${axom_device_depends}
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F
@@ -105,7 +105,7 @@ if(ENABLE_FORTRAN)
         blt_add_executable( NAME       ${test_name}_F_test
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre fruit
+                            DEPENDS_ON sidre ${axom_device_depends} fruit
                             FOLDER     axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}_F

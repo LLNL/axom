@@ -16,6 +16,16 @@ endif()
 set(TPL_DEPS)
 
 #------------------------------------------------------------------------------
+# Create global variable to toggle between GPU targets
+#------------------------------------------------------------------------------
+if(ENABLE_CUDA)
+    set(axom_device_depends cuda CACHE STRING "" FORCE)
+endif()
+if(ENABLE_HIP)
+    set(axom_device_depends blt::hip CACHE STRING "" FORCE)
+endif()
+
+#------------------------------------------------------------------------------
 # Camp (needed by RAJA and Umpire)
 #------------------------------------------------------------------------------
 if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)

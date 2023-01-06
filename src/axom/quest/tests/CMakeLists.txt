@@ -27,13 +27,12 @@ blt_list_append(TO       quest_tests
 
 set(quest_tests_depends
     axom
+    ${axom_device_depends}
     fmt
     gtest
    )
 
 blt_list_append( TO quest_tests_depends ELEMENTS mpi IF ENABLE_MPI )
-blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
-blt_list_append( TO quest_tests_depends ELEMENTS blt::hip IF ENABLE_HIP )
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )

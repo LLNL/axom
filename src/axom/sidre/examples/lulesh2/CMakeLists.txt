@@ -18,10 +18,10 @@ set(lulesh_sources
     lulesh-viz.cc )
 
 set(lulesh_depends
-    core
     sidre
-    conduit::conduit
-    slic )
+    slic
+    core
+    ${axom_device_depends} )
 
 blt_list_append( TO lulesh_depends ELEMENTS hdf5   IF HDF5_FOUND )
 blt_list_append( TO lulesh_depends ELEMENTS mpi    IF ENABLE_MPI )

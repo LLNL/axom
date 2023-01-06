@@ -53,7 +53,7 @@ blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF SOL_FOUND)
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(inlet_depends core slic sidre fmt)
+set(inlet_depends sidre slic core ${axom_device_depends} fmt)
 
 blt_list_append(TO inlet_depends ELEMENTS sol lua IF SOL_FOUND)
 

@@ -48,11 +48,9 @@ set(core_serial_tests
 
 set(core_test_depends
     axom
+    ${axom_device_depends}
     gtest
     )
-
-blt_list_append( TO core_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO core_test_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 #------------------------------------------------------------------------------
 # Serial GTests
@@ -125,7 +123,7 @@ endif()
 #------------------------------------------------------------------------------
 # Add a test to query properties of the configuration
 #------------------------------------------------------------------------------
-set(utils_config_test_depends core gtest )
+set(utils_config_test_depends core ${axom_device_depends} gtest )
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 

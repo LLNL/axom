@@ -610,8 +610,6 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
   // Test for each rank
   for(int i = 0; i < nranks; i++)
   {
-    int val = rank == i ? 42 : -42;
-
     // Test abort enabled/disabled
     for(int j = 0; j < NUM_ABORT_STATES; j++)
     {
@@ -642,6 +640,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         check_line(slic::internal::test_stream.str(), (__LINE__ - 7));
         reset_state();
 
+        int val = rank == i ? 42 : -42;
         SLIC_ERROR_IF(val == 42, "SLIC_ERROR_IF message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
@@ -699,7 +698,11 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
       axom::slic::setIsRoot(true);
 #else
       // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
-      AXOM_UNUSED_VAR(val);
+
+      // Quiet warning about has_aborted and reset_state never being referenced
+      EXPECT_EQ(has_aborted, abort_enabled);
+      reset_state();
+
       EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 
@@ -723,8 +726,6 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
   // Test for each rank
   for(int i = 0; i < nranks; i++)
   {
-    int val = rank == i ? 42 : -42;
-
     // Test abort enabled/disabled
     for(int j = 0; j < NUM_ABORT_STATES; j++)
     {
@@ -756,6 +757,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         check_line(slic::internal::test_stream.str(), (__LINE__ - 8));
         reset_state();
 
+        int val = rank == i ? 42 : -42;
         SLIC_WARNING_IF(val == 42, "SLIC_WARNING_IF message is logged!");
         slic::outputLocalMessages();
         EXPECT_EQ(has_aborted, abort_enabled);
@@ -815,7 +817,6 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
 
 #else
       // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
-      AXOM_UNUSED_VAR(val);
       EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 

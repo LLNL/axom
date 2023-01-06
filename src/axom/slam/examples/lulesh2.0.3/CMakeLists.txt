@@ -27,11 +27,10 @@ if ( NOT ENABLE_OPENMP )
         PROPERTIES COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
-set(slam_tests_depends_on core slic slam)
+set(slam_tests_depends_on core slic slam ${axom_device_depends})
 
 blt_list_append( TO slam_tests_depends_on ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO slam_tests_depends_on ELEMENTS openmp IF ${ENABLE_OPENMP} )
-blt_list_append( TO slam_tests_depends_on ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 blt_add_executable(
     NAME        slam_lulesh_ex

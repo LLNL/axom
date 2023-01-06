@@ -82,7 +82,7 @@ set(slam_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(slam_depends_on core slic)
+set(slam_depends_on core slic ${axom_device_depends})
 
 blt_add_library(
     NAME        slam

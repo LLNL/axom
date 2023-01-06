@@ -43,10 +43,7 @@ set( mint_tests
      mint_deprecated_mcarray.cpp
    )
 
-set( mint_test_dependencies axom )
-
-blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO mint_test_dependencies ELEMENTS blt::hip IF ${ENABLE_HIP} )
+set( mint_test_dependencies axom ${axom_device_depends})
 
 foreach( test ${mint_tests} )
 

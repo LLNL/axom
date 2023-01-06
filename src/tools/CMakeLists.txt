@@ -21,6 +21,7 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
     )
     set(datastore_converter_depends
         axom
+        ${axom_device_depends}
         mpi
         cli11
         fmt)
@@ -47,13 +48,13 @@ set(mesh_tester_sources
 )
 set(mesh_tester_depends
     axom
+    ${axom_device_depends}
     )
 
 blt_list_append(TO mesh_tester_depends ELEMENTS mpi IF ENABLE_MPI)
 blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO mesh_tester_depends ELEMENTS umpire IF UMPIRE_FOUND)
 blt_list_append(TO mesh_tester_depends ELEMENTS RAJA IF RAJA_FOUND)
-blt_list_append(TO mesh_tester_depends ELEMENTS cuda IF ENABLE_CUDA)
 
 if(AXOM_ENABLE_QUEST)
     blt_add_executable(
@@ -86,6 +87,7 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
     )
     set(data_collection_util_depends
         axom
+        ${axom_device_depends}
         mfem
         cli11
         fmt
@@ -128,6 +130,7 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
             )
 
 endif()
+
 #------------------------------------------------------------------------------
 # Add code checks
 #------------------------------------------------------------------------------

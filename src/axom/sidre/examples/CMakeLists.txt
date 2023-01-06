@@ -35,7 +35,7 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
-blt_list_append( TO EXTRA_LIBS ELEMENTS blt::hip IF ENABLE_HIP )
+list(APPEND EXTRA_LIBS ${axom_device_depends} )
 
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples

@@ -12,10 +12,9 @@ set( primal_examples
 
 set(primal_example_depends
         axom
+        ${axom_device_depends}
         fmt
         )
-
-blt_list_append( TO primal_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach ( example ${primal_examples} )
 

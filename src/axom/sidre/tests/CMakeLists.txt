@@ -47,11 +47,7 @@ set(fruit_sidre_tests
    sidre_allocatable_F.f
    )
 
-set(sidre_gtests_depends_on axom fmt gtest)
-
-# hipErrorNoBinaryForGpu without hip dependency
-blt_list_append( TO sidre_gtests_depends_on ELEMENTS blt::hip IF ENABLE_HIP )
-
+set(sidre_gtests_depends_on axom ${axom_device_depends} fmt gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
@@ -80,7 +76,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre gtest
+                            DEPENDS_ON sidre ${axom_device_depends} gtest
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
@@ -98,7 +94,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable( NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre fruit
+                            DEPENDS_ON sidre ${axom_device_depends} fruit
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
@@ -111,7 +107,7 @@ endif()
 # Add MFEMSidreDataCollection tests
 #------------------------------------------------------------------------------
 if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
-    set(_sidre_mfem_dc_depends axom gtest)
+    set(_sidre_mfem_dc_depends axom ${axom_device_depends} gtest)
 
     blt_add_executable( NAME sidre_mfem_datacollection_test
                         SOURCES sidre_mfem_datacollection.cpp

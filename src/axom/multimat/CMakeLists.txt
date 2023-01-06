@@ -28,7 +28,7 @@ set(multimat_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(multimat_depends_on core slam slic)
+set(multimat_depends_on core slam slic ${axom_device_depends})
 
 blt_add_library(
     NAME        multimat

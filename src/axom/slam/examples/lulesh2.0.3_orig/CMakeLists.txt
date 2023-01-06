@@ -21,7 +21,7 @@ set(lulesh_sources
 
 # Add some extra configuration flags for MPI, OpenMP and allowing unused
 # parameters (in 3rd party source code)
-set(lulesh_depends_on )
+set(lulesh_depends_on ${axom_device_depends})
 set(luleshExtraCompileFlags ${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS})
 if ( ENABLE_OPENMP )
     list(APPEND lulesh_depends_on openmp)

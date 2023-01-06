@@ -21,16 +21,13 @@ set(example_sources
     UserDocs.cpp
     )
 
-set(slam_tests_extra_depends)
-blt_list_append( TO slam_tests_extra_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
-
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
     blt_add_executable(
         NAME        "slam_${example_name}_ex"
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  axom ${slam_tests_extra_depends}
+        DEPENDS_ON  axom ${axom_device_depends}
         FOLDER      axom/slam/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -50,13 +47,11 @@ add_subdirectory(tinyHydro)
 #------------------------------------------------------------------------------
 # Unstructured hexahedral mesh example
 #------------------------------------------------------------------------------
-list(APPEND slam_tests_extra_depends fmt)
-
 blt_add_executable(
     NAME        slam_unstructMesh_ex
     SOURCES     UnstructMeshField.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  axom ${slam_tests_extra_depends}
+    DEPENDS_ON  axom ${axom_device_depends} fmt
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
