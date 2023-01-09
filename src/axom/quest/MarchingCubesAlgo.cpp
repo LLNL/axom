@@ -265,37 +265,13 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
       Eventually, we'll have to support index offsets to
       handle data with ghosts.
     */
-#if 1
-    axom::StackArray<axom::IndexType, 2> cShape{_logicalSize[0], _logicalSize[1]};
-    axom::StackArray<axom::IndexType, 2> nShape{1+_logicalSize[0], 1+_logicalSize[1]};
+    axom::StackArray<axom::IndexType, 2> cShape{_logicalSize[1], _logicalSize[0]};
+    axom::StackArray<axom::IndexType, 2> nShape{1+_logicalSize[1], 1+_logicalSize[0]};
     axom::ArrayView<const double, 2> fcnView(fcnPtr, nShape);
     axom::ArrayView<const double, 2> xView(xPtr, nShape);
     axom::ArrayView<const double, 2> yView(yPtr, nShape);
     axom::ArrayView<const int, 2> maskView(maskPtr, cShape);
-#else
-    RAJA::OffsetLayout<2> fieldLayout = RAJA::make_offset_layout<2>(
-      {_logicalOrigin[0], 1 + _logicalSize[0] + _logicalOrigin[0]},
-      {_logicalOrigin[1], 1 + _logicalSize[1] + _logicalOrigin[1]} );
-    RAJA::View<double, 2> fcnView(fcnPtr, fieldLayout);
-    RAJA::View<double, 2> xView(xPtr, _logicalSize[0], _logicalSize[1]);
-    RAJA::View<double, 2> yView(yPtr, _logicalSize[0], _logicalSize[1]);
-#endif
 
-#if 0
-    // Write as RAJA::kernel<...>
-    using KERNEL_EXEC_POL_SEQ =
-      RAJA::KernelPolicy<
-        RAJA::statement::For<1, RAJA::seq_exec,
-                             RAJA::statement::For<0, RAJA::seq_exec,
-                                                  RAJA::statement::Lambda<0>
-                                                  >
-                             >
-      >;
-    RAJA::kernel<KERNEL_EXEC_POL_SEQ>( RAJA::make_tuple(col_Range, row_Range),
-                                       [=](int col, int row) {
-                                         // computation for zone (row, col)
-                                       } );
-#elif 1
     // Write as regular nested loops.
     for(int j=0; j<_logicalSize[1]; ++j)
     {
@@ -308,20 +284,20 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
            double xx[4];
            double yy[4];
 
-           vfs[0] = fcnView(i+1, j);
-           vfs[1] = fcnView(i+1, j+1);
-           vfs[2] = fcnView(i, j+1);
-           vfs[3] = fcnView(i, j);
+           vfs[0] = fcnView(j  , i+1);
+           vfs[1] = fcnView(j+1, i+1);
+           vfs[2] = fcnView(j+1, i  );
+           vfs[3] = fcnView(j  , i  );
 
-           xx[0] = xView(i+1, j);
-           xx[1] = xView(i+1, j+1);
-           xx[2] = xView(i, j+1);
-           xx[3] = xView(i, j);
+           xx[0] = xView(j  , i+1);
+           xx[1] = xView(j+1, i+1);
+           xx[2] = xView(j+1, i  );
+           xx[3] = xView(j  , i  );
 
-           yy[0] = yView(i+1, j);
-           yy[1] = yView(i+1, j+1);
-           yy[2] = yView(i, j+1);
-           yy[3] = yView(i, j);
+           yy[0] = yView(j  , i+1);
+           yy[1] = yView(j+1, i+1);
+           yy[2] = yView(j+1, i  );
+           yy[3] = yView(j  , i  );
 
            auto nPrev = _surfaceMesh->getNumberOfCells();
            this->contourCell2D( xx, yy, vfs );
@@ -340,13 +316,11 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
         } // END if
       }
     }
-#endif
 
   } else {
 
-#if 1
-    axom::StackArray<axom::IndexType, 3> cShape{_logicalSize[0], _logicalSize[1], _logicalSize[2]};
-    axom::StackArray<axom::IndexType, 3> nShape{1+_logicalSize[0], 1+_logicalSize[1], 1+_logicalSize[2]};
+    axom::StackArray<axom::IndexType, 3> cShape{_logicalSize[2], _logicalSize[1], _logicalSize[0]};
+    axom::StackArray<axom::IndexType, 3> nShape{1+_logicalSize[2], 1+_logicalSize[1], 1+_logicalSize[0]};
     axom::ArrayView<const double, 3> fcnView(fcnPtr, nShape);
     axom::ArrayView<const double, 3> xView(xPtr, nShape);
     axom::ArrayView<const double, 3> yView(yPtr, nShape);
@@ -359,7 +333,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
       {
         for(int i=0; i<_logicalSize[0]; ++i)
         {
-          const bool skipZone = maskPtr && bool(maskView(i, j, k));
+          const bool skipZone = maskPtr && bool(maskView(k, j, i));
           if ( !skipZone ) {
 
             double vfs[8];
@@ -367,41 +341,41 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
             double yy[8];
             double zz[8];
 
-            vfs[0] = fcnView(i+1, j  , k);
-            vfs[1] = fcnView(i+1, j+1, k);
-            vfs[2] = fcnView(i  , j+1, k);
-            vfs[3] = fcnView(i  , j  , k);
-            vfs[4] = fcnView(i+1, j  , k+1);
-            vfs[5] = fcnView(i+1, j+1, k+1);
-            vfs[6] = fcnView(i  , j+1, k+1);
-            vfs[7] = fcnView(i  , j  , k+1);
+            vfs[0] = fcnView(k  , j  , i+1);
+            vfs[1] = fcnView(k  , j+1, i+1);
+            vfs[2] = fcnView(k  , j+1, i);
+            vfs[3] = fcnView(k  , j  , i);
+            vfs[4] = fcnView(k+1, j  , i+1);
+            vfs[5] = fcnView(k+1, j+1, i+1);
+            vfs[6] = fcnView(k+1, j+1, i);
+            vfs[7] = fcnView(k+1, j  , i);
 
-            xx[0] = xView(i+1, j  , k);
-            xx[1] = xView(i+1, j+1, k);
-            xx[2] = xView(i  , j+1, k);
-            xx[3] = xView(i  , j  , k);
-            xx[4] = xView(i+1, j  , k+1);
-            xx[5] = xView(i+1, j+1, k+1);
-            xx[6] = xView(i  , j+1, k+1);
-            xx[7] = xView(i  , j  , k+1);
+            xx[0] = xView(k  , j  , i+1);
+            xx[1] = xView(k  , j+1, i+1);
+            xx[2] = xView(k  , j+1, i);
+            xx[3] = xView(k  , j  , i);
+            xx[4] = xView(k+1, j  , i+1);
+            xx[5] = xView(k+1, j+1, i+1);
+            xx[6] = xView(k+1, j+1, i);
+            xx[7] = xView(k+1, j  , i);
 
-            yy[0] = yView(i+1, j  , k);
-            yy[1] = yView(i+1, j+1, k);
-            yy[2] = yView(i  , j+1, k);
-            yy[3] = yView(i  , j  , k);
-            yy[4] = yView(i+1, j  , k+1);
-            yy[5] = yView(i+1, j+1, k+1);
-            yy[6] = yView(i  , j+1, k+1);
-            yy[7] = yView(i  , j  , k+1);
+            yy[0] = yView(k  , j  , i+1);
+            yy[1] = yView(k  , j+1, i+1);
+            yy[2] = yView(k  , j+1, i);
+            yy[3] = yView(k  , j  , i);
+            yy[4] = yView(k+1, j  , i+1);
+            yy[5] = yView(k+1, j+1, i+1);
+            yy[6] = yView(k+1, j+1, i);
+            yy[7] = yView(k+1, j  , i);
 
-            zz[0] = zView(i+1, j  , k);
-            zz[1] = zView(i+1, j+1, k);
-            zz[2] = zView(i  , j+1, k);
-            zz[3] = zView(i  , j  , k);
-            zz[4] = zView(i+1, j  , k+1);
-            zz[5] = zView(i+1, j+1, k+1);
-            zz[6] = zView(i  , j+1, k+1);
-            zz[7] = zView(i  , j  , k+1);
+            zz[0] = zView(k  , j  , i+1);
+            zz[1] = zView(k  , j+1, i+1);
+            zz[2] = zView(k  , j+1, i);
+            zz[3] = zView(k  , j  , i);
+            zz[4] = zView(k+1, j  , i+1);
+            zz[5] = zView(k+1, j+1, i+1);
+            zz[6] = zView(k+1, j+1, i);
+            zz[7] = zView(k+1, j  , i);
 
             auto nPrev = _surfaceMesh->getNumberOfCells();
             this->contourCell3D( xx, yy, zz, vfs );
@@ -422,72 +396,6 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
         }
       }
     }
-#else
-    double* zPtr = _ndim > 3 ? coordValues["z"].as_double_ptr() : nullptr;
-    double* vf1, *vf2, *vf3, *vf4, *vf5, *vf6, *vf7, *vf8;
-    double* x1,  *x2,  *x3,  *x4, *x5, *x6, *x7, *x8;
-    double* y1,  *y2,  *y3,  *y4, *y5, *y6, *y7, *y8;
-    double* z1,  *z2,  *z3,  *z4, *z5, *z6, *z7, *z8;
-    int jp = _dom->fetch_existing(_coordsetPath + "/dims/i").as_int();
-    int kp = _dom->fetch_existing(_coordsetPath + "/dims/j").as_int() * jp;
-
-    NDSET3D( vf, vf1, vf2, vf3, vf4, vf5, vf6, vf7, vf8 );
-    NDSET3D( x, x1, x2, x3, x4, x5, x6, x7, x8 );
-    NDSET3D( y, y1, y2, y3, y4, y5, y6, y7, y8 );
-    NDSET3D( z, z1, z2, z3, z4, z5, z6, z7, z8 );
-
-    for_all_zones< policy::seq >( domain, [&](int zoneIdx) {
-
-        const bool skipZone = finest && (finest[ zoneIdx ] != level);
-        if ( !skipZone ) {
-
-            double vfs[ 8 ];
-            double xx[ 8 ];
-            double yy[ 8 ];
-            double zz[ 8 ];
-
-            vfs[ 0 ] = vf1[ zoneIdx ];
-            vfs[ 1 ] = vf2[ zoneIdx ];
-            vfs[ 2 ] = vf3[ zoneIdx ];
-            vfs[ 3 ] = vf4[ zoneIdx ];
-            vfs[ 4 ] = vf5[ zoneIdx ];
-            vfs[ 5 ] = vf6[ zoneIdx ];
-            vfs[ 6 ] = vf7[ zoneIdx ];
-            vfs[ 7 ] = vf8[ zoneIdx ];
-
-            xx[ 0 ] = x1[ zoneIdx ];
-            xx[ 1 ] = x2[ zoneIdx ];
-            xx[ 2 ] = x3[ zoneIdx ];
-            xx[ 3 ] = x4[ zoneIdx ];
-            xx[ 4 ] = x5[ zoneIdx ];
-            xx[ 5 ] = x6[ zoneIdx ];
-            xx[ 6 ] = x7[ zoneIdx ];
-            xx[ 7 ] = x8[ zoneIdx ];
-
-            yy[ 0 ] = y1[ zoneIdx ];
-            yy[ 1 ] = y2[ zoneIdx ];
-            yy[ 2 ] = y3[ zoneIdx ];
-            yy[ 3 ] = y4[ zoneIdx ];
-            yy[ 4 ] = y5[ zoneIdx ];
-            yy[ 5 ] = y6[ zoneIdx ];
-            yy[ 6 ] = y7[ zoneIdx ];
-            yy[ 7 ] = y8[ zoneIdx ];
-
-            zz[ 0 ] = z1[ zoneIdx ];
-            zz[ 1 ] = z2[ zoneIdx ];
-            zz[ 2 ] = z3[ zoneIdx ];
-            zz[ 3 ] = z4[ zoneIdx ];
-            zz[ 4 ] = z5[ zoneIdx ];
-            zz[ 5 ] = z6[ zoneIdx ];
-            zz[ 6 ] = z7[ zoneIdx ];
-            zz[ 7 ] = z8[ zoneIdx ];
-
-            this->contourCell3D( xx, yy, zz, vfs );
-        } // END if
-
-    } );
-
-#endif
   } // END else
 
 }

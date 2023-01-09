@@ -218,6 +218,10 @@ public:
 
 Input params;
 
+
+int myRank = -1, numRanks = -1; // MPI stuff, set in main().
+
+
 /**
  \brief Generic computational mesh, to hold cell and node data.
 */
@@ -276,8 +280,8 @@ public:
   /// Gets the number of ranks in the problem
   int get_mpi_size() const { return _nranks; }
 
-  /// Returns the number of points in a particle mesh domain
-  int point_count() const
+  /// Returns the number of cells in a particle mesh domain
+  int cell_count() const
   {
     // _mdMesh.print();
     int rval = 0;
@@ -294,7 +298,7 @@ public:
       int n = 1;
       for(const auto& l : dims.children())
       {
-        n *= 1 + l.as_int();
+        n *= l.as_int();
       }
       rval += n;
     }
@@ -308,11 +312,15 @@ public:
   */
   double max_spacing() const
   {
-    double rval = 0.0;
+    double localRval = 0.0;
     for(const auto& dom : _mdMesh.children())
     {
-      rval += max_spacing1(dom);
+      localRval += max_spacing1(dom);
     }
+
+    double rval;
+    MPI_Allreduce(&localRval, &rval, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+
     return rval;
   }
 
@@ -336,16 +344,16 @@ public:
     const conduit::Node& cVals = dom.fetch_existing("coordsets/coords/values");
     if(_ndims == 2)
     {
-      axom::ArrayView<const double, 2> xs(cVals["x"].as_double_ptr(), ls[0], ls[1]);
-      axom::ArrayView<const double, 2> ys(cVals["y"].as_double_ptr(), ls[0], ls[1]);
-      rval = std::max(rval, std::abs(xs(0,0) - xs(1,0)));
-      rval = std::max(rval, std::abs(ys(0,0) - ys(0,1)));
+      axom::ArrayView<const double, 2> xs(cVals["x"].as_double_ptr(), ls[1], ls[0]);
+      axom::ArrayView<const double, 2> ys(cVals["y"].as_double_ptr(), ls[1], ls[0]);
+      rval = std::max(rval, std::abs(xs(0,0) - xs(0,1)));
+      rval = std::max(rval, std::abs(ys(0,0) - ys(1,0)));
     }
     else
     {
-      axom::ArrayView<const double, 3> xs(cVals["x"].as_double_ptr(), ls[0], ls[1], ls[2]);
-      axom::ArrayView<const double, 3> ys(cVals["y"].as_double_ptr(), ls[0], ls[1], ls[2]);
-      axom::ArrayView<const double, 3> zs(cVals["z"].as_double_ptr(), ls[0], ls[1], ls[2]);
+      axom::ArrayView<const double, 3> xs(cVals["x"].as_double_ptr(), ls[2], ls[1], ls[0]);
+      axom::ArrayView<const double, 3> ys(cVals["y"].as_double_ptr(), ls[2], ls[1], ls[0]);
+      axom::ArrayView<const double, 3> zs(cVals["z"].as_double_ptr(), ls[2], ls[1], ls[0]);
       rval = std::max(rval, std::abs(xs(0,0,0) - xs(1,0,0)));
       rval = std::max(rval, std::abs(ys(0,0,0) - ys(0,1,0)));
       rval = std::max(rval, std::abs(zs(0,0,0) - zs(0,0,1)));
@@ -507,8 +515,8 @@ struct ScalarFunctionBase {
         ++sumErrCount;
         SLIC_INFO_IF(
           params.isVerbose(),
-          axom::fmt::format("check_contour_surface: node {} has dist {}, off by {}",
-                            i, analyticalVal, diff));
+          axom::fmt::format("check_contour_surface: node {} at {} has dist {}, off by {}",
+                            i, pt, analyticalVal, diff));
       }
     }
     SLIC_INFO_IF(
@@ -555,7 +563,7 @@ struct RoundContourFunction : public ScalarFunctionBase<DIM>
   void set_tolerance_by_longest_edge(const BlueprintStructuredMesh &bsm)
   {
     double maxSpacing = bsm.max_spacing();
-    _errTol = 0.1 * maxSpacing;
+    _errTol = 1e-2 * maxSpacing;
   }
 };
 
@@ -598,6 +606,46 @@ struct PlanarContourFunction : public ScalarFunctionBase<DIM> {
     return 1e-12;
   }
 };
+
+
+
+/**
+ * Change cp_domain data from a local index to a global domain index
+ * by adding rank offsets.
+ * This is an optional step to transform domain ids verification.
+ */
+void add_rank_offset_to_surface_mesh_domain_ids(
+  int localDomainCount, axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& surfaceMesh)
+{
+  // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
+  axom::Array<int> starts(numRanks, numRanks);
+  {
+    axom::Array<int> indivDomainCounts(numRanks, numRanks);
+    indivDomainCounts.fill(-1);
+    MPI_Allgather(&localDomainCount,
+                  1,
+                  MPI_INT,
+                  indivDomainCounts.data(),
+                  1,
+                  MPI_INT,
+                  MPI_COMM_WORLD);
+    starts[0] = 0;
+    for(int i = 1; i < numRanks; ++i)
+    {
+      starts[i] = starts[i - 1] + indivDomainCounts[i];
+    }
+  }
+
+  const std::string domainIdField = "domainIds";
+  auto *domainIdPtr =
+    surfaceMesh.getFieldPtr<int>(domainIdField, axom::mint::CELL_CENTERED);
+  int cellCount = surfaceMesh.getNumberOfCells();
+
+  for(int i=0; i<cellCount; ++i)
+  {
+    domainIdPtr[i] += starts[myRank];
+  }
+}
 
 
 
@@ -661,9 +709,6 @@ void finalizeLogger()
 }
 
 
-int myRank = -1, numRanks = -1; // MPI stuff, set in main().
-
-
 /*!
   All the test code that depends on DIM to instantiate.
 */
@@ -721,6 +766,8 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
     mca.compute_iso_surface(params.contourVal);
     computeTimer.stop();
 
+    add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(), planarSurfaceMesh);
+
     mint::write_vtk(&planarSurfaceMesh, "planar_surface_mesh.vtk");
     SLIC_INFO("Wrote planar contour in planar_surface_mesh.vtk");
 
@@ -745,6 +792,8 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
     computeTimer.start();
     mca.compute_iso_surface(params.contourVal);
     computeTimer.stop();
+
+    add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(), roundSurfaceMesh);
 
     mint::write_vtk(&roundSurfaceMesh, "round_surface_mesh.vtk");
     SLIC_INFO("Wrote round contour in round_surface_mesh.vtk");
@@ -869,8 +918,8 @@ int main(int argc, char** argv)
 
   SLIC_INFO_IF(
     params.isVerbose(),
-    axom::fmt::format("Query mesh has {} points in {} domains locally",
-                      computationalMesh.point_count(),
+    axom::fmt::format("Query mesh has {} cells in {} domains locally",
+                      computationalMesh.cell_count(),
                       computationalMesh.domain_count()));
   slic::flushStreams();
 
@@ -883,9 +932,9 @@ int main(int argc, char** argv)
   // Output some global mesh size stats
   {
     int mn, mx, sum;
-    getIntMinMax(computationalMesh.point_count(), mn, mx, sum);
+    getIntMinMax(computationalMesh.cell_count(), mn, mx, sum);
     SLIC_INFO(axom::fmt::format(
-      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} points",
+      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
       mn,
       mx,
       sum,
@@ -895,7 +944,7 @@ int main(int argc, char** argv)
     int mn, mx, sum;
     getIntMinMax(computationalMesh.domain_count(), mn, mx, sum);
     SLIC_INFO(axom::fmt::format(
-      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} domains",
+      "Query mesh has {{min:{}, max:{}, sum:{}, avg:{}}} cells",
       mn,
       mx,
       sum,
