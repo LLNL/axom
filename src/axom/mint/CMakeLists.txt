@@ -131,7 +131,6 @@ if (AXOM_MINT_USE_SIDRE)
 endif()
 
 blt_list_append( TO mint_dependencies ELEMENTS RAJA IF RAJA_FOUND )
-blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 
 blt_add_library(
     NAME       mint

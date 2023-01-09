@@ -44,7 +44,7 @@ foreach( example_source ${example_sources} )
 endforeach()
 
 
-if ( ENABLE_MPI )
+if ( AXOM_ENABLE_MPI )
     foreach( example_source ${mpi_example_sources} )
         get_filename_component( example_name ${example_source} NAME_WE )
         blt_add_executable( NAME       slic_mpi_${example_name}_ex

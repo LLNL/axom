@@ -115,7 +115,7 @@ if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
                         DEPENDS_ON ${_sidre_mfem_dc_depends}
                         FOLDER axom/sidre/tests
                         )
-    if (ENABLE_MPI)
+    if (AXOM_ENABLE_MPI)
         if(MFEM_USE_MPI)
             set(_nranks 2)
         else()
@@ -134,6 +134,6 @@ if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
 endif()
 
 
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
     add_subdirectory(spio)
 endif()

@@ -8,8 +8,6 @@
 
 set(quest_example_depends axom ${axom_device_depends} fmt cli11)
 
-blt_list_append(TO quest_example_depends ELEMENTS mpi IF ENABLE_MPI)
-blt_list_append(TO quest_example_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
@@ -24,9 +22,9 @@ blt_add_executable(
     )
 
 # Shaping example -------------------------------------------------------------
-if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
-              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
-              AND AXOM_ENABLE_KLEE)
+if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+                   AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
+                   AND AXOM_ENABLE_KLEE)
     blt_add_executable(
         NAME        quest_shaping_driver_ex
         SOURCES     shaping_driver.cpp
@@ -37,7 +35,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
 endif()
 
 # Distributed closest point example -------------------------------------------
-if(ENABLE_MPI AND AXOM_ENABLE_SIDRE)
+if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE)
     blt_add_executable(
             NAME        quest_distributed_distance_query_ex
             SOURCES     quest_distributed_distance_query_example.cpp
@@ -52,9 +50,9 @@ if(ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")
         if(RAJA_FOUND)
-            blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
-            blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
-            blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
+            blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+            blt_list_append(TO _policies ELEMENTS "hip"  IF AXOM_ENABLE_HIP)
+            blt_list_append(TO _policies ELEMENTS "omp"  IF AXOM_ENABLE_OPENMP)
         endif()
 
         # Non-zero empty-rank probability tests domain underloading case
@@ -163,7 +161,7 @@ blt_add_executable(
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     # Add a test for the quest interface; Set up for MPI, when available
-    if (ENABLE_MPI)
+    if (AXOM_ENABLE_MPI)
         axom_add_test(
             NAME quest_inout_interface_3D_mpi_test
             COMMAND quest_inout_interface_ex -i ${quest_data_dir}/sphere_binary.stl
@@ -212,7 +210,7 @@ if (ENABLE_FORTRAN)
             FOLDER     axom/quest/examples)
 
         # When CUDA is enabled, BLT will determine the correct linker, so don't override it here
-        if(NOT ENABLE_CUDA)
+        if(NOT AXOM_ENABLE_CUDA)
             if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "IntelLLVM")
                 set_target_properties(${_example_name}
                                       PROPERTIES LINKER_LANGUAGE Fortran)
@@ -224,7 +222,7 @@ if (ENABLE_FORTRAN)
     endforeach()
 
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND ${_has_inout_fortran_example})
-        if (ENABLE_MPI)
+        if (AXOM_ENABLE_MPI)
             axom_add_test(
                 NAME quest_inout_interface_mpi_F_test
                 COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl

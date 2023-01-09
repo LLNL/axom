@@ -11,17 +11,18 @@
 
 # Core is an essential part of Axom and cannot be turned off
 add_subdirectory(core)
+set(AXOM_ENABLE_CORE ON CACHE BOOL "" FORCE)
 set(AXOM_COMPONENTS_FULL core CACHE STRING "List of all components in Axom" FORCE)
 set(AXOM_COMPONENTS_ENABLED core
     CACHE STRING "List of all enabled components in Axom" FORCE)
 
 # Lumberjack is a parallel message filtering and reduction library. It can be used
 # by itself or as a SLIC Log Stream. It is not meant for serial (non-mpi) executables.
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
     axom_add_component( COMPONENT_NAME lumberjack
                         DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
 else()
-    message(STATUS "Axom Component Lumberjack turned off due to ENABLE_MPI=OFF")
+    message(STATUS "Axom Component Lumberjack turned off due to AXOM_ENABLE_MPI=OFF")
     set(AXOM_ENABLE_LUMBERJACK OFF CACHE BOOL "")
 endif()
 
@@ -38,7 +39,7 @@ axom_add_component(COMPONENT_NAME klee   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME multimat DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
-if(ENABLE_CUDA)
+if(AXOM_ENABLE_CUDA)
     # Force "early" device linking to avoid propagating an NVCC link dependency
     set_target_properties(${AXOM_COMPONENTS_ENABLED} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 endif()

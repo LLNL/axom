@@ -22,15 +22,12 @@ set(lulesh_sources
 
 
 # Ignore omp pragmas when openMP is not defined
-if ( NOT ENABLE_OPENMP )
+if ( NOT AXOM_ENABLE_OPENMP )
     set_source_files_properties(${lulesh_sources}
         PROPERTIES COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
 set(slam_tests_depends_on core slic slam ${axom_device_depends})
-
-blt_list_append( TO slam_tests_depends_on ELEMENTS mpi IF ${ENABLE_MPI} )
-blt_list_append( TO slam_tests_depends_on ELEMENTS openmp IF ${ENABLE_OPENMP} )
 
 blt_add_executable(
     NAME        slam_lulesh_ex
@@ -41,7 +38,7 @@ blt_add_executable(
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS)
-    if(ENABLE_MPI)
+    if(AXOM_ENABLE_MPI)
 
         # CMake inserts Fortran flag that forces one OpenMP thread when
         # compiling with MPI and xlf

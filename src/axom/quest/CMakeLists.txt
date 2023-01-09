@@ -95,7 +95,6 @@ set( quest_depends_on
     )
 
 blt_list_append(TO quest_depends_on IF AXOM_ENABLE_SIDRE ELEMENTS sidre)
-blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF MFEM_FOUND ELEMENTS mfem)
 
@@ -103,7 +102,7 @@ if(AXOM_ENABLE_SIDRE)
     list(APPEND quest_headers    ScatteredInterpolation.hpp )
 endif()
 
-if(CONDUIT_FOUND AND ENABLE_MPI)
+if(CONDUIT_FOUND AND AXOM_ENABLE_MPI)
     list(APPEND quest_headers    DistributedClosestPoint.hpp )
     list(APPEND quest_depends_on conduit::conduit
                                  conduit::conduit_mpi)
@@ -124,7 +123,7 @@ if(C2C_FOUND)
     list(APPEND quest_depends_on c2c)
 endif()
 
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
     list(APPEND quest_headers readers/PSTLReader.hpp)
     blt_list_append(TO quest_headers IF C2C_FOUND ELEMENTS readers/PC2CReader.hpp)
 

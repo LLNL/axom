@@ -39,6 +39,8 @@ blt_add_library(
     OBJECT      TRUE
     )
 
+set_source_files_properties(multimat.cpp PROPERTIES LANGUAGE CXX)
+
 axom_write_unified_header(NAME    multimat
                           HEADERS ${multimat_headers}
                           )

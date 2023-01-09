@@ -48,7 +48,7 @@ blt_list_append(
 
 set(primal_test_depends axom ${axom_device_depends} fmt gtest)
 
-blt_list_append( TO primal_test_depends ELEMENTS openmp IF ENABLE_OPENMP )
+blt_list_append( TO primal_test_depends ELEMENTS openmp IF AXOM_ENABLE_OPENMP )
 
 foreach ( test ${primal_tests} )
 

@@ -56,8 +56,8 @@ set(core_test_depends
 # Serial GTests
 #------------------------------------------------------------------------------
 
-# Only enable this test in serial mode if ENABLE_MPI is off
-if (NOT ENABLE_MPI)
+# Only enable this test in serial mode if AXOM_ENABLE_MPI is off
+if (NOT AXOM_ENABLE_MPI)
   list(APPEND core_serial_tests core_types.hpp)
 endif()
 
@@ -77,7 +77,7 @@ endforeach()
 #------------------------------------------------------------------------------
 # MPI GTests
 #------------------------------------------------------------------------------
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
   set( core_mpi_tests
        core_types.hpp
        )
@@ -100,7 +100,7 @@ endif()
 #------------------------------------------------------------------------------
 # OpenMP GTests
 #------------------------------------------------------------------------------
-if (ENABLE_OPENMP AND AXOM_USE_RAJA)
+if (AXOM_ENABLE_OPENMP AND AXOM_USE_RAJA)
   set( core_openmp_tests
        core_openmp_map.hpp
        )

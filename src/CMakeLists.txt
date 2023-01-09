@@ -6,10 +6,12 @@
 # Axom project
 #------------------------------------------------------------------------------
 
-if (ENABLE_HIP)
+if (ENABLE_HIP OR AXOM_ENABLE_HIP)
     cmake_minimum_required(VERSION 3.21)
 else()
-    cmake_minimum_required(VERSION 3.18)
+    # Do not bump this over 3.14 due to it changing CMake policies and breaking
+    # the CUDA build. We check the required version specifically for this below
+    cmake_minimum_required(VERSION 3.14)
 endif()
 
 project(axom LANGUAGES C CXX)
@@ -118,6 +120,11 @@ endif()
 #------------------------------------------------------------------------------
 include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
+
+# Check for minimum CMake version required w/o changing policies like cmake_minimum_required
+if(AXOM_ENABLE_CUDA AND ${CMAKE_VERSION} VERSION_LESS 3.18.0)
+    message(FATAL_ERROR "Axom requires CMake version 3.18.0+ when CUDA is enabled.")
+endif()
 
 #------------------------------------------------------------------------------
 # Add source directories

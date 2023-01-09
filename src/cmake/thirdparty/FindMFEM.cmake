@@ -118,7 +118,7 @@ else()
 
     # Check if MFEM was built with CUDA
     if(mfem_cfg_file_txt MATCHES "MFEM_USE_CUDA += YES")
-        if(NOT ENABLE_CUDA)
+        if(NOT AXOM_ENABLE_CUDA)
             message(WARNING "MFEM was built with CUDA but CUDA is not enabled")
         endif()
         list(APPEND MFEM_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
@@ -129,7 +129,7 @@ else()
 
     # Check if MFEM was built with MPI
     if(mfem_cfg_file_txt MATCHES "MFEM_USE_MPI += YES")
-        if(NOT ENABLE_MPI)
+        if(NOT AXOM_ENABLE_MPI)
             message(WARNING "MFEM was built with MPI but MPI is not enabled")
         endif()
         set(MFEM_USE_MPI ON CACHE BOOL "")

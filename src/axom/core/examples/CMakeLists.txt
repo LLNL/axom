@@ -35,7 +35,7 @@ foreach(example_source ${example_sources})
     endif()
 endforeach()
 
-if(ENABLE_CUDA)
+if(AXOM_ENABLE_CUDA)
     blt_add_executable(
           NAME        core_acceleration_cuda_on_ex
           SOURCES     core_acceleration.cpp

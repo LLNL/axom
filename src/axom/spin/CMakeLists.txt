@@ -50,10 +50,9 @@ set( spin_sources
 set( spin_depends_on
      core slic primal slam ${axom_device_depends})
 
-blt_list_append( TO spin_depends_on ELEMENTS sparsehash IF ${SPARSEHASH_FOUND} )
-blt_list_append( TO spin_depends_on ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO spin_depends_on ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO spin_depends_on ELEMENTS openmp  IF ${ENABLE_OPENMP} )
+blt_list_append( TO spin_depends_on ELEMENTS sparsehash IF SPARSEHASH_FOUND )
+blt_list_append( TO spin_depends_on ELEMENTS RAJA IF RAJA_FOUND )
+blt_list_append( TO spin_depends_on ELEMENTS umpire IF UMPIRE_FOUND )
 
 #------------------------------------------------------------------------------
 # Make/Install the library

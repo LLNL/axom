@@ -32,8 +32,6 @@ set(quest_tests_depends
     gtest
    )
 
-blt_list_append( TO quest_tests_depends ELEMENTS mpi IF ENABLE_MPI )
-
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
 
@@ -74,7 +72,7 @@ if(MFEM_FOUND)
 
     string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
 
-    if (ENABLE_CUDA)
+    if (AXOM_ENABLE_CUDA)
         set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
     endif()
 
@@ -119,7 +117,7 @@ foreach(test ${quest_mpi_tests})
         set(_numMPITasks 1)
     endif()
 
-    if (ENABLE_MPI)
+    if (AXOM_ENABLE_MPI)
         axom_add_test(
             NAME ${test_name}
             COMMAND ${test_name}_test
@@ -145,10 +143,10 @@ endforeach()
 cmake_dependent_option(
     AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
     "Enable extra regression tests for quest" OFF
-    "ENABLE_MPI;AXOM_ENABLE_SIDRE;AXOM_DATA_DIR" OFF )
+    "AXOM_ENABLE_MPI;AXOM_ENABLE_SIDRE;AXOM_DATA_DIR" OFF )
 mark_as_advanced(AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS)
 
-if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
+if (AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends
         ${quest_tests_depends}
@@ -168,10 +166,10 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         FOLDER axom/quest/tests
         )
 
-    if ( NOT ENABLE_OPENMP )
+    if ( NOT AXOM_ENABLE_OPENMP )
         set(extra_compile_flags "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
 
-        if ( ENABLE_CUDA )
+        if ( AXOM_ENABLE_CUDA )
             string(STRIP "${extra_compile_flags}" extra_compile_flags)
             set(extra_compile_flags "-Xcompiler=${extra_compile_flags}")
         endif()

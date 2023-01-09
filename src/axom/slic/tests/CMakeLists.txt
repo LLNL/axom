@@ -33,7 +33,7 @@ endforeach()
 #
 # Parallel Unit Tests
 #
-if (ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
+if (AXOM_ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
     set(parallel_slic_tests
         slic_macros_parallel.cpp )
 

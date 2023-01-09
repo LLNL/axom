@@ -34,7 +34,7 @@ set(slic_sources
     streams/GenericOutputStream.cpp
     )
 
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
     list(APPEND slic_headers streams/SynchronizedStream.hpp)
     list(APPEND slic_sources streams/SynchronizedStream.cpp)
     if (AXOM_ENABLE_LUMBERJACK)
