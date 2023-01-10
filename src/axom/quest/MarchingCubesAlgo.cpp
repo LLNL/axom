@@ -80,7 +80,8 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
   SLIC_ASSERT_MSG(!_fcnPath.empty(),
                   "You must call set_function_field before compute_iso_surface.");
 
-  if(!_domainIdField.empty() && !_surfaceMesh->hasField(_domainIdField, axom::mint::CELL_CENTERED))
+  if(!_domainIdField.empty() &&
+     !_surfaceMesh->hasField(_domainIdField, axom::mint::CELL_CENTERED))
   {
     _surfaceMesh->createField<int>(_domainIdField, axom::mint::CELL_CENTERED);
   }
@@ -141,12 +142,6 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node &dom)
 
   SLIC_ASSERT(dom.has_path(_coordsetPath));
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
-
-#if 0
-  SLIC_ASSERT(dom.has_path(_fcnPath));
-  SLIC_ASSERT(dom[_fcnPath + "/association"].as_string() == "vertex");
-  SLIC_ASSERT(dom.has_path(_fcnPath + "/values"));
-#endif
 
   if(!_maskPath.empty())
   {

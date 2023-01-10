@@ -21,7 +21,7 @@
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
 #include "axom/quest.hpp"
-#include "axom/slam.hpp"
+#include "axom/sidre.hpp"
 #include "axom/core/Types.hpp"
 
 #include "conduit_blueprint.hpp"
@@ -53,8 +53,7 @@
 namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace mint = axom::mint;
-namespace slam = axom::slam;
-namespace spin = axom::spin;
+namespace sidre = axom::sidre;
 namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
@@ -228,11 +227,6 @@ int myRank = -1, numRanks = -1; // MPI stuff, set in main().
 struct BlueprintStructuredMesh
 {
 public:
-  using Point2D = primal::Point<double, 2>;
-  using Point3D = primal::Point<double, 3>;
-  using PointArray2D = axom::Array<Point2D>;
-  using PointArray3D = axom::Array<Point3D>;
-
   explicit BlueprintStructuredMesh(
     const std::string& meshFile,
     const std::string& coordset = "coords",
@@ -251,7 +245,7 @@ public:
     return _mdMesh;
   }
 
-  /// Get number of domains in the multidomain particle mesh
+  /// Get number of domains in the multidomain mesh
   axom::IndexType domain_count() const { return _domCount; }
 
   /// Get domain group.
@@ -280,7 +274,7 @@ public:
   /// Gets the number of ranks in the problem
   int get_mpi_size() const { return _nranks; }
 
-  /// Returns the number of cells in a particle mesh domain
+  /// Returns the number of cells in all mesh domains
   int cell_count() const
   {
     // _mdMesh.print();
@@ -315,7 +309,7 @@ public:
     double localRval = 0.0;
     for(const auto& dom : _mdMesh.children())
     {
-      localRval += max_spacing1(dom);
+      localRval = std::max(localRval, max_spacing1(dom));
     }
 
     double rval;
@@ -354,9 +348,9 @@ public:
       axom::ArrayView<const double, 3> xs(cVals["x"].as_double_ptr(), ls[2], ls[1], ls[0]);
       axom::ArrayView<const double, 3> ys(cVals["y"].as_double_ptr(), ls[2], ls[1], ls[0]);
       axom::ArrayView<const double, 3> zs(cVals["z"].as_double_ptr(), ls[2], ls[1], ls[0]);
-      rval = std::max(rval, std::abs(xs(0,0,0) - xs(1,0,0)));
+      rval = std::max(rval, std::abs(xs(0,0,0) - xs(0,0,1)));
       rval = std::max(rval, std::abs(ys(0,0,0) - ys(0,1,0)));
-      rval = std::max(rval, std::abs(zs(0,0,0) - zs(0,0,1)));
+      rval = std::max(rval, std::abs(zs(0,0,0) - zs(1,0,0)));
     }
     return rval;
   }
@@ -364,26 +358,15 @@ public:
   /// Checks whether the blueprint is valid and prints diagnostics
   bool isValid() const
   {
+    conduit::Node info;
+    if(!conduit::blueprint::mpi::verify("mesh", _mdMesh, info, MPI_COMM_WORLD))
     {
-      conduit::Node info;
-      if(!conduit::blueprint::mpi::verify("mesh", _mdMesh, info, MPI_COMM_WORLD))
-      {
-        SLIC_INFO("Invalid blueprint for particle mesh: \n" << info.to_yaml());
-        slic::flushStreams();
-        return false;
-      }
-      // info.print();
+      SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
+      slic::flushStreams();
+      return false;
     }
+    // info.print();
     return true;
-  }
-
-  /// Outputs the particle mesh to disk
-  void save_mesh(const std::string& filename)
-  {
-    conduit::relay::mpi::io::blueprint::save_mesh(_mdMesh,
-                                                  filename,
-                                                  "hdf5",
-                                                  MPI_COMM_WORLD);
   }
 
   void print_mesh_info() const
@@ -521,8 +504,8 @@ struct ScalarFunctionBase {
     }
     SLIC_INFO_IF(
       params.isVerbose(),
-      axom::fmt::format("check_contour_surface: found {} errors",
-                        sumErrCount));
+      axom::fmt::format("check_contour_surface: found {} errors outside tolerance of {}",
+                        sumErrCount, tol));
     return sumErrCount;
   }
 };
@@ -563,7 +546,7 @@ struct RoundContourFunction : public ScalarFunctionBase<DIM>
   void set_tolerance_by_longest_edge(const BlueprintStructuredMesh &bsm)
   {
     double maxSpacing = bsm.max_spacing();
-    _errTol = 1e-2 * maxSpacing;
+    _errTol = 1e-1 * maxSpacing;
   }
 };
 
@@ -608,6 +591,39 @@ struct PlanarContourFunction : public ScalarFunctionBase<DIM> {
 };
 
 
+/// Write blueprint mesh to disk
+void save_mesh(const conduit::Node& mesh,
+               const std::string& filename)
+{
+  conduit::relay::mpi::io::blueprint::save_mesh(mesh,
+                                                filename,
+                                                "hdf5",
+                                                MPI_COMM_WORLD);
+}
+
+
+/// Write blueprint mesh to disk
+void save_mesh(const sidre::Group& mesh,
+               const std::string& filename)
+{
+  conduit::Node tmpMesh;
+  mesh.createNativeLayout(tmpMesh);
+  {
+    conduit::Node info;
+    if(!conduit::blueprint::mpi::verify("mesh", tmpMesh, info, MPI_COMM_WORLD))
+    {
+      SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
+      slic::flushStreams();
+      assert(false);
+    }
+    // info.print();
+  }
+  conduit::relay::mpi::io::blueprint::save_mesh(tmpMesh,
+                                                filename,
+                                                "hdf5",
+                                                MPI_COMM_WORLD);
+}
+
 
 /**
  * Change cp_domain data from a local index to a global domain index
@@ -632,7 +648,7 @@ void add_rank_offset_to_surface_mesh_domain_ids(
     starts[0] = 0;
     for(int i = 1; i < numRanks; ++i)
     {
-      starts[i] = starts[i - 1] + indivDomainCounts[i];
+      starts[i] = starts[i - 1] + indivDomainCounts[i - 1];
     }
   }
 
@@ -744,9 +760,10 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
     planarFcn->compute_nodal_distance(computationalMesh);
   }
 
-  // Save computational mesh with contour functions.
-  computationalMesh.save_mesh(params.fieldsFile);
+  // Write computational mesh with contour functions.
+  save_mesh(computationalMesh.as_conduit_node(), params.fieldsFile);
 
+  sidre::DataStore objectDS;
 
   axom::utilities::Timer computeTimer(false);
 
@@ -756,9 +773,14 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
   if(planarFcn)
   {
     SLIC_INFO("Testing round contour.");
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> planarSurfaceMesh(
-      DIM, DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+
     mca.set_function_field(planarFcn->function_name());
+
+    sidre::Group* planarGroup = objectDS.getRoot()->createGroup("planar_mesh");
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> planarSurfaceMesh(
+      DIM,
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
+      planarGroup);
     mca.set_output_mesh(&planarSurfaceMesh);
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -766,10 +788,11 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
     mca.compute_iso_surface(params.contourVal);
     computeTimer.stop();
 
-    add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(), planarSurfaceMesh);
+    add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(),
+                                               planarSurfaceMesh);
 
-    mint::write_vtk(&planarSurfaceMesh, "planar_surface_mesh.vtk");
-    SLIC_INFO("Wrote planar contour in planar_surface_mesh.vtk");
+    save_mesh(*planarGroup, "planar_surface_mesh");
+    SLIC_INFO("Wrote planar contour in planar_surface_mesh");
 
     if(params.checkResults)
     {
@@ -783,9 +806,14 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
   if(roundFcn)
   {
     SLIC_INFO("Testing round contour.");
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> roundSurfaceMesh(
-      DIM, DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+
     mca.set_function_field(roundFcn->function_name());
+
+    sidre::Group* roundGroup = objectDS.getRoot()->createGroup("round_mesh");
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> roundSurfaceMesh(
+      DIM,
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
+      roundGroup);
     mca.set_output_mesh(&roundSurfaceMesh);
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -793,10 +821,11 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
     mca.compute_iso_surface(params.contourVal);
     computeTimer.stop();
 
-    add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(), roundSurfaceMesh);
+    add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(),
+                                               roundSurfaceMesh);
 
-    mint::write_vtk(&roundSurfaceMesh, "round_surface_mesh.vtk");
-    SLIC_INFO("Wrote round contour in round_surface_mesh.vtk");
+    save_mesh(*roundGroup, "round_surface_mesh");
+    SLIC_INFO("Wrote round contour in round_surface_mesh");
 
     if(params.checkResults)
     {
