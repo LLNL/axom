@@ -622,9 +622,9 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
         slic::disableAbortOnError();
       }
 
-      bool abort_enabled = slic::isAbortOnErrorsEnabled();
-
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
+
+      bool abort_enabled = slic::isAbortOnErrorsEnabled();
 
       axom::slic::setIsRoot(rank == i);
 
@@ -700,7 +700,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
       // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
 
       // Quiet warning about has_aborted and reset_state never being referenced
-      EXPECT_EQ(has_aborted, abort_enabled);
+      AXOM_UNUSED_VAR(has_aborted);
       reset_state();
 
       EXPECT_TRUE(slic::internal::is_stream_empty());
@@ -738,9 +738,9 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
         slic::disableAbortOnWarning();
       }
 
-      bool abort_enabled = slic::isAbortOnWarningsEnabled();
-
 #if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
+
+      bool abort_enabled = slic::isAbortOnWarningsEnabled();
 
       axom::slic::setIsRoot(rank == i);
 
