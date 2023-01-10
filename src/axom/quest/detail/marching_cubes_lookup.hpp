@@ -20,8 +20,9 @@ namespace detail {
        |     |
        0--0--1--i
 
-  Values in cases refer to edges that intersect isosurface.
+  Values in cases2D refer to edges that intersect isosurface.
 */
+// clang-format off
 static const int cases2D[ 16 ][ 4 ] = {
 #define X -1
     {X, X, X, X},
@@ -61,6 +62,7 @@ static const int num_segments[ 16 ] = {
     1, // {3, 0, X, X},
     0, // {X, X, X, X}
 };
+// clang-format on
 
 
 // triangulation case table
@@ -87,8 +89,9 @@ static const int num_segments[ 16 ] = {
         /
        k
 
-  Values in cases refer to edges that intersect isosurface.
+  Values in cases3D refer to edges that intersect isosurface.
 */
+// clang-format off
 static const int cases3D[ 256 ][ 16 ] = {
 #define X -1
     {X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X},
@@ -609,6 +612,7 @@ static const int num_triangles[ 256 ] = {
   1,
   0
 };
+// clang-format on
 
 }
 }

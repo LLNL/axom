@@ -106,17 +106,6 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
   }
 }
 
-// From app
-#define NDSET3D(v,v1,v2,v3,v4,v5,v6,v7,v8)  \
-   v4 = v ;   \
-   v1 = v4 + 1 ;  \
-   v2 = v1 + jp ; \
-   v3 = v4 + jp ; \
-   v5 = v1 + kp ; \
-   v6 = v2 + kp ; \
-   v7 = v3 + kp ; \
-   v8 = v4 + kp ;
-
 MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node &dom,
                                        const std::string &coordsetName,
                                        const std::string &maskField)
@@ -260,8 +249,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
       Eventually, we'll have to support index offsets to
       handle data with ghosts.
     */
-    axom::StackArray<axom::IndexType, 2> cShape{_logicalSize[1], _logicalSize[0]};
-    axom::StackArray<axom::IndexType, 2> nShape{1+_logicalSize[1], 1+_logicalSize[0]};
+    axom::StackArray<axom::IndexType, 2> cShape = get_cells_shape<2>();
+    axom::StackArray<axom::IndexType, 2> nShape = get_nodes_shape<2>();
     axom::ArrayView<const double, 2> fcnView(fcnPtr, nShape);
     axom::ArrayView<const double, 2> xView(xPtr, nShape);
     axom::ArrayView<const double, 2> yView(yPtr, nShape);
@@ -272,7 +261,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
     {
       for(int i=0; i<_logicalSize[0]; ++i)
       {
-        const bool skipZone = maskPtr && bool(maskView(i, j));
+        const bool skipZone = maskPtr && bool(maskView(j, i));
         if ( !skipZone ) {
 
            double vfs[4];
@@ -314,8 +303,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
   } else {
 
-    axom::StackArray<axom::IndexType, 3> cShape{_logicalSize[2], _logicalSize[1], _logicalSize[0]};
-    axom::StackArray<axom::IndexType, 3> nShape{1+_logicalSize[2], 1+_logicalSize[1], 1+_logicalSize[0]};
+    axom::StackArray<axom::IndexType, 3> cShape = get_cells_shape<3>();
+    axom::StackArray<axom::IndexType, 3> nShape = get_nodes_shape<3>();
     axom::ArrayView<const double, 3> fcnView(fcnPtr, nShape);
     axom::ArrayView<const double, 3> xView(xPtr, nShape);
     axom::ArrayView<const double, 3> yView(yPtr, nShape);
@@ -594,64 +583,7 @@ void MarchingCubesAlgo1::contourCell3D( double xx[8], double yy[8], double zz[8]
     mesh->appendCell( cell );
 
   } // END for all triangles
-
 }
-
-
-
-#if 0
-// Code from app
-
-struct Attributes {
-  std::vector< int > Zone;
-  std::vector< int > DomainID;
-  std::vector< int > Level;
-};
-
-//------------------------------------------------------------------------------
-IsoContour::IsoContour( const std::string& field, double isoval ) :
-        m_field( field ),
-        m_isoval( isoval ),
-        m_saveAttributes( true ),
-        m_contour_attributes( new Attributes() )
-{
-
-}
-
-//------------------------------------------------------------------------------
-IsoContour::~IsoContour()
-{
-  delete m_contour_attributes;
-  m_contour_attributes = NULL;
-}
-
-//------------------------------------------------------------------------------
-const int* IsoContour::getZoneAttribute() const
-{
-  if ( m_saveAttributes ) {
-     return ( &(m_contour_attributes->Zone)[0] );
-  }
-  return NULL;
-}
-
-//------------------------------------------------------------------------------
-const int* IsoContour::getLevelAttribute() const
-{
-  if ( m_saveAttributes ) {
-    return ( &(m_contour_attributes->Level)[0] );
-  }
-  return NULL;
-}
-
-//------------------------------------------------------------------------------
-const int* IsoContour::getDomainIDAttribute() const
-{
-  if ( m_saveAttributes ) {
-    return ( &(m_contour_attributes->DomainID)[0] );
-  }
-  return NULL;
-}
-#endif
 
 
 }  // end namespace quest
