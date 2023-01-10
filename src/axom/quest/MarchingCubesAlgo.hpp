@@ -27,7 +27,6 @@ namespace axom
 {
 namespace quest
 {
-
 /*!
  * \@brief Class implementing marching cubes algorithm on a single
  * structured mesh domain.
@@ -39,7 +38,6 @@ namespace quest
 class MarchingCubesAlgo1
 {
 public:
-
   /*!
    * \brief Constructor for applying algorithm in multi-level mesh context.
    *
@@ -62,16 +60,13 @@ public:
                      const std::string &maskfield);
 
   //! @brief Spatial dimension of domain.
-  int dimension() const
-  {
-    return _ndim;
-  }
+  int dimension() const { return _ndim; }
 
   /*!
     @brief Set the field containing the nodal function.
     \param [in] fcnField Name of node-based scalar function values.
   */
-  void set_function_field(const std::string& fcnField);
+  void set_function_field(const std::string &fcnField);
 
   /*!
     @brief Set the output surface mesh object.
@@ -86,7 +81,7 @@ public:
     the contour mesh.  If the field doesn't exist, it will be created.
     To disable, set \a outputCellIds to empty.
   */
-  void set_cell_id_field(const std::string& cellIdField)
+  void set_cell_id_field(const std::string &cellIdField)
   {
     _cellIdField = cellIdField;
   }
@@ -109,8 +104,8 @@ private:
   */
   const conduit::Node *_dom;
   int _ndim;
-  axom::Array<axom::IndexType> _logicalSize; //!< @brief Number of cells in each direction
-  axom::Array<axom::IndexType> _logicalOrigin; //!< @brief First domain cell in each direction.
+  axom::Array<axom::IndexType> _logicalSize;  //!< @brief Number of cells in each direction
+  axom::Array<axom::IndexType> _logicalOrigin;  //!< @brief First domain cell in each direction.
 
   const std::string _coordsetPath;
   std::string _fcnPath;
@@ -120,7 +115,7 @@ private:
     Non-state variables we don't want to have to propagate down the
     stack repeatedly during computation.
   */
-  mutable axom::mint::Mesh* _surfaceMesh;
+  mutable axom::mint::Mesh *_surfaceMesh;
 
   std::string _cellIdField;
 
@@ -134,12 +129,12 @@ private:
   void set_domain(const conduit::Node &dom);
 
   //! \brief Compute shape of cell-centered arrays, for building ArrayView.
-  template<int NDIM>
+  template <int NDIM>
   axom::StackArray<axom::IndexType, NDIM> get_cells_shape() const
   {
     SLIC_ASSERT(NDIM == _ndim);
     axom::StackArray<axom::IndexType, NDIM> rval;
-    for(axom::IndexType i=0; i<NDIM; ++i)
+    for(axom::IndexType i = 0; i < NDIM; ++i)
     {
       rval[i] = _logicalSize[NDIM - 1 - i];
     }
@@ -147,28 +142,31 @@ private:
   }
 
   //! \brief Compute shape of node-centered arrays, for building ArrayView.
-  template<int NDIM>
+  template <int NDIM>
   axom::StackArray<axom::IndexType, NDIM> get_nodes_shape() const
   {
     axom::StackArray<axom::IndexType, NDIM> rval = get_cells_shape<NDIM>();
-    for(axom::IndexType i=0; i<NDIM; ++i)
+    for(axom::IndexType i = 0; i < NDIM; ++i)
     {
       rval[i] = 1 + rval[i];
     }
     return rval;
   }
 
-  void contourCell2D( double xx[4], double yy[4], double cellValues[4]);
+  void contourCell2D(double xx[4], double yy[4], double cellValues[4]);
 
-  void contourCell3D( double xx[8], double yy[8], double zz[8], double f[8]);
+  void contourCell3D(double xx[8], double yy[8], double zz[8], double f[8]);
 
-  void linear_interp( int edgeIdx,
-                      const double* xx, const double* yy, const double* zz,
-                      const double* f, double* xyz );
+  void linear_interp(int edgeIdx,
+                     const double *xx,
+                     const double *yy,
+                     const double *zz,
+                     const double *f,
+                     double *xyz);
 
-  int computeIndex( const double* f );
+  int computeIndex(const double *f);
 
-}; // class MarchingCubesAlgo1
+};  // class MarchingCubesAlgo1
 
 /*!
  * \@brief Class implementing marching cubes algorithm.
@@ -178,7 +176,6 @@ private:
 class MarchingCubesAlgo
 {
 public:
-
   /*!
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
@@ -198,19 +195,18 @@ public:
    */
   MarchingCubesAlgo(const conduit::Node &bpMesh,
                     const std::string &coordsetName,
-                    const std::string &maskField={});
+                    const std::string &maskField = {});
 
   /*!
     @brief Set the field containing the nodal function.
     \param [in] fcnField Name of node-based scalar function values.
   */
-  void set_function_field(const std::string& fcnField);
+  void set_function_field(const std::string &fcnField);
 
   /*!
     @brief Set the output surface mesh object.
   */
   void set_output_mesh(axom::mint::Mesh *surfaceMesh);
-
 
   /*!
     @brief Save the originating 1D cell index as an int in the specified
@@ -219,7 +215,7 @@ public:
     If the field doesn't exist, it will be created.  To disable, set
     \a domainIdField to empty.
   */
-  void set_cell_id_field(const std::string& cellIdField)
+  void set_cell_id_field(const std::string &cellIdField)
   {
     _cellIdField = cellIdField;
     for(auto &s : _sd)
@@ -228,7 +224,6 @@ public:
     }
   }
 
-
   /*!
     @brief Save the originating domain index as an int in the specified
     cell-centered field of the mesh.
@@ -236,13 +231,12 @@ public:
     If the field doesn't exist, it will be created.  To disable, set
     \a domainIdField to empty.
   */
-  void set_domain_id_field(const std::string& domainIdField)
+  void set_domain_id_field(const std::string &domainIdField)
   {
     _domainIdField = domainIdField;
   }
 
-
-/*!
+  /*!
  * \brief Computes the iso-surface.
  *
  * \param [in] contourVal iso-contour value

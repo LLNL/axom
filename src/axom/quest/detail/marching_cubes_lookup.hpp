@@ -7,8 +7,8 @@ namespace axom
 {
 namespace quest
 {
-namespace detail {
-
+namespace detail
+{
 // 2D case table
 /*
   Node and edge indices:
@@ -63,7 +63,6 @@ static const int num_segments[ 16 ] = {
     0, // {X, X, X, X}
 };
 // clang-format on
-
 
 // triangulation case table
 /*
@@ -614,6 +613,6 @@ static const int num_triangles[ 256 ] = {
 };
 // clang-format on
 
-}
-}
-}
+}  // namespace detail
+}  // namespace quest
+}  // namespace axom
