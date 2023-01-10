@@ -37,3 +37,8 @@ foreach(test ${gtest_inlet_tests})
     axom_add_test( NAME    ${test_name} 
                    COMMAND ${test_name}_test )
 endforeach()
+
+if(SOL_FOUND)
+    # Set file back to C++ due to nvcc compiler error
+    set_source_files_properties(inlet_function.cpp PROPERTIES LANGUAGE CXX)
+endif()

@@ -39,6 +39,7 @@ blt_add_library(
     OBJECT      TRUE
     )
 
+# Set file back to C++ due to nvcc compiler error
 set_source_files_properties(multimat.cpp PROPERTIES LANGUAGE CXX)
 
 axom_write_unified_header(NAME    multimat
