@@ -112,7 +112,7 @@ if(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     blt_list_append(TO sidre_depends ELEMENTS fmt)
 endif()
 
-# Include additional dependencides for spio when MPI is available
+# Include additional dependencies for spio when MPI is available
 if(AXOM_ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)
     blt_list_append(TO sidre_depends ELEMENTS conduit::conduit_mpi IF AXOM_ENABLE_MPI)
