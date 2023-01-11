@@ -1126,6 +1126,10 @@ std::cout << "*** Writing VFs for shape material" << std::endl;
 std::cout << "=========================================================" << std::endl;
 #endif
 
+    // The problem I'm having is that a shape does not define volfracs over
+    // some parts of the domain and we're replacing
+
+
     // Compute the volume fractions for the current shape's material.
     ArrayView<double,1> matVFView(matVF.first->GetData(), dataSize);
     ArrayView<double,1> shapeVFView(shapeVolFrac->GetData(), dataSize);
@@ -1151,7 +1155,7 @@ constexpr double EPSILON = 1.e-10;
           {
             // Write at most the writable amount.
             double vf_actual = (vf <= m_vf_writable[i]) ? vf : m_vf_writable[i];
-            matVFView[i] = vf_actual;
+            matVFView[i] += vf_actual;
             m_vf_subtract[i] = vf_actual;
           }
 
