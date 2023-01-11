@@ -96,13 +96,6 @@ public:
     : Shaper(shapeSet, dc)
   { }
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  virtual ~IntersectionShaper()
-  {
-    deallocateReplacementRuleStorage();
-  }
-#endif
-
   //@{
   //!  @name Functions to get and set shaping parameters related to intersection; supplements parameters in base class
 
@@ -798,6 +791,7 @@ public:
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#define DEBUG_PRINT
   // These methods are private in support of replacement rules.
 private:
 
@@ -835,11 +829,15 @@ private:
     if(this->getDC()->HasField(materialVolFracName))
     {
       matVolFrac = this->getDC()->GetField(materialVolFracName);
-std::cout << "*** Found existing GF for " << materialName << std::endl;
+#ifdef DEBUG_PRINT
+      std::cout << "*** Found existing GF for " << materialName << std::endl;
+#endif
     }
     else
     {
-std::cout << "*** Made new GF for " << materialName << std::endl;
+#ifdef DEBUG_PRINT
+      std::cout << "*** Made new GF for " << materialName << std::endl;
+#endif
       matVolFrac = newVolFracGridFunction();
       this->getDC()->RegisterField(materialVolFracName, matVolFrac);
       // Zero out the volume fractions (on host).
@@ -855,10 +853,10 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
   }
 
   // If we are passed in a data collection that already has volume fractions
-  // in it, then we need to add them to our vectors. We maintain out own
+  // in it, then we need to add them to our vectors. We maintain our own
   // vectors because we assume that the order of materials does not change.
   // The mfem::DataCollection uses a map internally so if we add materials,
-  // we could change the traversal order.
+  // it could change the traversal order.
   void populateMaterials()
   {
     std::vector<std::string> materialNames;
@@ -873,7 +871,7 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
     {
       (void)getMaterial(materialName);
     }
-#if 1
+#ifdef DEBUG_PRINT
     std::cout << "*** populateMaterials: names={";
     for(const auto &name : m_vf_material_names)
       std::cout << name << ", ";
@@ -882,54 +880,12 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
   }
 
   template <typename ExecSpace>
-  bool allocateReplacementRuleStorage(int size)
-  {
-    // Allocate the memory if we have not already.
-    bool first = m_vf_sums == nullptr;
-    if(first)
-    {
-      // Save current/default allocator
-      const int current_allocator = axom::getDefaultAllocatorID();
-
-      // Determine new allocator (for CUDA/HIP policy, set to Unified)
-      // Set new default to device
-      m_replacement_allocator = axom::execution_space<ExecSpace>::allocatorID();
-      axom::setDefaultAllocator(m_replacement_allocator);
-
-      m_vf_sums = axom::allocate<double>(size);
-      m_vf_subtract = axom::allocate<double>(size);
-      m_vf_writable = axom::allocate<double>(size);
-
-      axom::setDefaultAllocator(current_allocator);
-    }
-
-    return first;
-  }
-
-  void deallocateReplacementRuleStorage()
-  {
-    if(m_vf_sums)
-    {
-      const int current_allocator = axom::getDefaultAllocatorID();
-      axom::setDefaultAllocator(m_replacement_allocator);
-      axom::deallocate(m_vf_sums);
-      m_vf_sums = nullptr;
-      axom::deallocate(m_vf_subtract);
-      m_vf_subtract = nullptr;
-      axom::deallocate(m_vf_writable);
-      m_vf_writable = nullptr;
-      axom::setDefaultAllocator(current_allocator);
-    }
-  }
-
-  // Ares-style replacement rules built using forall.
-  template <typename ExecSpace>
   void applyReplacementRulesImpl(const klee::Shape& shape)
   {
     // Make sure the material lists are up to date.
     populateMaterials();
 
-    // Get this shape's material, creating it if needed.
+    // Get this shape's material, creating the GridFunction if needed.
     auto matVF = getMaterial(shape.getMaterial());
     int dataSize = matVF.first->Size();
 
@@ -939,8 +895,40 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
     SLIC_ASSERT(shapeVolFrac != nullptr);
 
     // Allocate some memory for the replacement rule data arrays.
-    bool first = allocateReplacementRuleStorage<ExecSpace>(dataSize);
-int values_per_line = 20;
+    const int current_allocator = axom::getDefaultAllocatorID();
+    int replacement_allocator = axom::execution_space<ExecSpace>::allocatorID();
+    axom::setDefaultAllocator(replacement_allocator);
+    double *vf_subtract = axom::allocate<double>(dataSize);
+    double *vf_writable = axom::allocate<double>(dataSize);
+
+#ifdef DEBUG_PRINT
+    int values_per_line = 20;
+
+    auto print_array = [&](const std::string &name, const double *arr, int dataSize)
+    {
+      std::cout << name << "={" << std::endl;
+      int nwrite = 0;
+      for(int i = 0; i < dataSize; i++)
+      {
+        std::cout << arr[i] << " ";
+        nwrite++;
+        if(nwrite == values_per_line)
+        {
+          std::cout << "\n";
+          nwrite = 0;
+        }
+      }
+      std::cout << "}" << std::endl;
+    };
+
+    auto print_gf = [&](const std::string &name, mfem::GridFunction *gf)
+    {
+      std::cout << name << "={" << std::endl;
+      gf->Print(std::cout, values_per_line);
+      std::cout << "}" << std::endl;
+    };
+#endif
+
     // Determine which grid functions need to be considered for VF updates.
     std::vector<std::pair<mfem::GridFunction *,int>> gf_order_by_matnumber;
     std::vector<mfem::GridFunction *> updateVFs, excludeVFs;
@@ -954,7 +942,9 @@ int values_per_line = 20;
     }
     else
     {
-std::cout << "*** excludeVFs" << std::endl;
+#ifdef DEBUG_PRINT
+      std::cout << "*** excludeVFs" << std::endl;
+#endif
       // Include all materials except those in "does_not_replace".
       // We'll also sort them by material number since the field map
       // sorts them by name rather than order added.
@@ -982,7 +972,9 @@ std::cout << "*** excludeVFs" << std::endl;
             // The material was in the exclusion list. This means that
             // cannot write to materials that have volume fraction in
             // that zone.
-std::cout << "\t" << name << std::endl;
+#ifdef DEBUG_PRINT
+            std::cout << "\t" << name << std::endl;
+#endif
             excludeVFs.emplace_back(getMaterial(name).first);
           }
         }
@@ -995,99 +987,30 @@ std::cout << "\t" << name << std::endl;
     {
       return lhs.second < rhs.second;
     });
-std::cout << "*** updateVFs" << std::endl;
+#ifdef DEBUG_PRINT
+    std::cout << "*** updateVFs" << std::endl;
+#endif
     // Append the grid functions in mat number order.
     for(const auto &mat : gf_order_by_matnumber)
     {
-std::cout << "\t" << m_vf_material_names[mat.second] << std::endl;
+#ifdef DEBUG_PRINT
+      std::cout << "\t" << m_vf_material_names[mat.second] << std::endl;
+#endif
       updateVFs.push_back(mat.first);
     }
 
-#define DEBUG_PRINT
-#ifdef DEBUG_PRINT
-    // Lambda to print array.
-    auto print_array = [&](const std::string &name, const double *arr, int dataSize)
-    {
-      std::cout << name << "={" << std::endl;
-      int nwrite = 0;
-      for(int i = 0; i < dataSize; i++)
-      {
-        std::cout << arr[i] << " ";
-        nwrite++;
-        if(nwrite == values_per_line)
-        {
-          std::cout << "\n";
-          nwrite = 0;
-        }
-      }
-      std::cout << "}" << std::endl;
-    };
-
-    auto print_gf = [&](const std::string &name, mfem::GridFunction *gf)
-    {
-      std::cout << name << "={" << std::endl;
-      gf->Print(std::cout, values_per_line);
-      std::cout << "}" << std::endl;
-    };
-#endif
-
-#ifdef COMPUTE_VF_SUMS
-    // First time through the shaper, compute VF sums over all materials.
-    if(first)
-    {
-#ifdef DEBUG_PRINT
-std::cout << "*** Computing initial vf_sums " << std::endl;
-std::cout << "=========================================================" << std::endl;
-#endif
-      axom::for_all<ExecSpace>(
-        dataSize,
-        AXOM_LAMBDA(axom::IndexType i) {
-          m_vf_sums[i] = 0;
-        });
-      // Sum each zone's VFs into m_vf_sums.
-      int idx = 0;
-      for(const auto &gf : m_vf_grid_functions)
-      {
-std::cout << "*** adding " << m_vf_material_names[idx] << std::endl;
-
-        ArrayView<double,1> matVFView(gf->GetData(), dataSize);
-        axom::for_all<ExecSpace>(
-          dataSize,
-          AXOM_LAMBDA(axom::IndexType i) {
-            m_vf_sums[i] += matVFView[i];
-          });
-#ifdef DEBUG_PRINT
-print_gf(m_vf_material_names[idx], gf);
-idx++;
-#endif
-      }
-
-      // If the sum is close to 1, make it 1.
-      axom::for_all<ExecSpace>(
-        dataSize,
-        AXOM_LAMBDA(axom::IndexType i) {
-          constexpr double ONE_MINUS_EPSILON = 1. - 1.e-8;
-          m_vf_sums[i] = (m_vf_sums[i] >= ONE_MINUS_EPSILON) ? 1. : m_vf_sums[i];
-        });
-#ifdef DEBUG_PRINT
-      print_array("m_vf_sums", m_vf_sums, dataSize);
-#endif
-    }
-#endif
-
     // Figure out how much VF in each zone is occupied and immutable.
-#ifdef DEBUG_PRINT
-std::cout << "*** Sum excludeVFs" << std::endl;
-std::cout << "=========================================================" << std::endl;
-#endif
     if(!shape.getMaterialsReplaced().empty())
     {
       // Replaces - We'll sum up the VFs that we can replace in a zone.
-
+#ifdef DEBUG_PRINT
+      std::cout << "*** Sum replaces" << std::endl;
+      std::cout << "=========================================================" << std::endl;
+#endif
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
-          m_vf_writable[i] = 0.;
+          vf_writable[i] = 0.;
         });
       for(const auto &name : shape.getMaterialsReplaced())
       {
@@ -1096,18 +1019,21 @@ std::cout << "=========================================================" << std:
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
-            m_vf_writable[i] += matVFView[i];
+            vf_writable[i] += matVFView[i];
           });
       }
     }
     else
     {
       // Does not replace. We can replace all except for listed mats.
-
+#ifdef DEBUG_PRINT
+      std::cout << "*** Sum excludeVFs" << std::endl;
+      std::cout << "=========================================================" << std::endl;
+#endif
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
-          m_vf_writable[i] = 1.;
+          vf_writable[i] = 1.;
         });
       for(auto &gf : excludeVFs)
       {
@@ -1115,21 +1041,16 @@ std::cout << "=========================================================" << std:
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
-            m_vf_writable[i] -= matVFView[i];
+            vf_writable[i] -= matVFView[i];
           });
       }
     }
 
 #ifdef DEBUG_PRINT
-print_array("m_vf_writable",m_vf_writable, dataSize);
-
-std::cout << "*** Writing VFs for shape material" << std::endl;
-std::cout << "=========================================================" << std::endl;
+    print_array("vf_writable",vf_writable, dataSize);
+    std::cout << "*** Writing VFs for shape material" << std::endl;
+    std::cout << "=========================================================" << std::endl;
 #endif
-
-    // The problem I'm having is that a shape does not define volfracs over
-    // some parts of the domain and we're replacing
-
 
     // Compute the volume fractions for the current shape's material.
     ArrayView<double,1> matVFView(matVF.first->GetData(), dataSize);
@@ -1137,50 +1058,24 @@ std::cout << "=========================================================" << std:
     axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
-          // Update this material's VF and m_vf_subtract, which is the
-          // amount to subtract from the VF arrays that we need to update.
+          // Update this material's VF and vf_subtract, which is the
+          // amount to subtract from the gf's in updateVF.
           double vf = (m_overlap_volumes[i] / m_hex_volumes[i]);
-#ifdef COMPUTE_VF_SUMS
-constexpr double EPSILON = 1.e-10;
-          double completely_free = 1. - m_vf_sums[i];
-//std::cout << i << ": vf=" << vf << ", cf=" << completely_free << ", wr=" << m_vf_writable[i] << std::endl;
-// Is this first section necessary?
-          if(vf <= completely_free - EPSILON)
-          {
-            // We can shape in the material without affecting other materials
-            // since there is room for it. No need to subtract.
-            matVFView[i] = vf;
-            m_vf_subtract[i] = 0.;
-          }
-          else
-#endif
-          {
-            // Write at most the writable amount.
-            double vf_actual = (vf <= m_vf_writable[i]) ? vf : m_vf_writable[i];
-            matVFView[i] += vf_actual;
-            m_vf_subtract[i] = vf_actual;
-          }
+
+          // Write at most the writable amount.
+          double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
+          matVFView[i] += vf_actual;
+          vf_subtract[i] = vf_actual;
 
           // Store the max shape VF.
           shapeVFView[i] = vf;
-
-#ifdef COMPUTE_VF_SUMS
-          // Update the total sum.
-          m_vf_sums[i] += matVFView[i];
-          // Clamp to 1.
-          if(m_vf_sums[i] >= 1.)
-            m_vf_sums[i] = 1.;
-#endif
         });
-#ifdef DEBUG_PRINT
-print_gf("matVF", matVF.first);
-#ifdef COMPUTE_VF_SUMS
-print_array("m_vf_sums",m_vf_sums, dataSize);
-#endif
-print_array("m_vf_subtract",m_vf_subtract, dataSize);
 
-std::cout << "*** Updating other VFs" << std::endl;
-std::cout << "=========================================================" << std::endl;
+#ifdef DEBUG_PRINT
+    print_gf("matVF", matVF.first);
+    print_array("vf_subtract",vf_subtract, dataSize);
+    std::cout << "*** Updating other VFs" << std::endl;
+    std::cout << "=========================================================" << std::endl;
 #endif
 
     // Now iterate over updateVFs to subtract off VFs we allocated to the
@@ -1191,18 +1086,20 @@ std::cout << "=========================================================" << std:
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
-            double s = (matVFView[i] < m_vf_subtract[i]) ? matVFView[i] : m_vf_subtract[i];
+            double s = (matVFView[i] < vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
             matVFView[i] -= s;
-#ifdef USE_EPSILONS
-            // If it is close to zero, make it zero.
-            constexpr double EPSILON = 1.e-10;
-            if(matVFView[i] < EPSILON)
-                matVFView[i] = 0.;
-#endif
-            m_vf_subtract[i] -= s;
+            vf_subtract[i] -= s;
         });
     }
+
+    // Free temporary arrays and restore allocator.
+    axom::deallocate(vf_subtract);
+    axom::deallocate(vf_writable);
+    axom::setDefaultAllocator(current_allocator);
   }
+
+  // Switch back to public.
+public:
 #endif
 
   void applyReplacementRules(const klee::Shape& shape) override
@@ -1235,471 +1132,6 @@ std::cout << "=========================================================" << std:
       break;
     }
   }
-//---------------------------------------------------------------------------
-// OLD STUFF
-#if 0
-  void applyReplacementRules(const klee::Shape& shape) override
-  {
-    const auto& shapeName = shape.getName();
-    const auto& materialName = shape.getMaterial();
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      axom::fmt::format(
-        "Applying replacement rules for shape '{}' of material {}",
-        shapeName,
-        materialName)));
-
-    const std::string vol_frac_("vol_frac_");
-    const std::string vol_frac_fmt("vol_frac_{}");
-
-    auto shapeVolFracName = axom::fmt::format("shape_vol_frac_{}", shapeName);
-    auto materialVolFracName = axom::fmt::format(vol_frac_fmt, materialName);
-
-    auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
-    SLIC_ASSERT(shapeVolFrac != nullptr);
-
-    // Get or create the volume fraction field for this shape's material
-    mfem::GridFunction* matVolFrac = nullptr;
-    if(this->getDC()->HasField(materialVolFracName))
-    {
-      matVolFrac = this->getDC()->GetField(materialVolFracName);
-    }
-    else
-    {
-      matVolFrac = newVolFracGridFunction();
-      this->getDC()->RegisterField(materialVolFracName, matVolFrac);
-#if 1
-      // Zero out the volume fractions.
-      for(int elem = 0; elem < m_num_elements; elem++)
-         (*matVolFrac)[elem] = 0.;
-#endif
-    }
-
-#if 1
-#if 1
-    // Debugging. Expose our arrays as grid functions.
-    static int shaperpass = 0;
-#endif
-    //-----------------------------------------------------------------------
-    // This vector holds the GridFunctions for each material VF object
-    // that we need to update (other than that for the current shape,
-    // which is referenced using matVolFrac).
-    std::vector<mfem::GridFunction *> vfs;
-
-    // Determine the amount that can be written in each element.   
-    if(!shape.getMaterialsReplaced().empty())
-    {
-      // Include only non-shape materials in the replaced list.
-      for(const auto &name : shape.getMaterialsReplaced())
-      {
-        auto vfname = axom::fmt::format(vol_frac_fmt, name);
-        if(this->getDC()->HasField(vfname))
-        {
-          mfem::GridFunction *gf = this->getDC()->GetField(vfname);
-          vfs.push_back(gf);
-        }
-      }
-
-      // These are the VF arrays that have to have something in them for the
-      // element to be writeable.
-      std::vector<double> writable_vf(m_num_elements, 0.);
-      for(auto gf : vfs)
-      {
-        for(int elem = 0; elem < m_num_elements; elem++)
-          writable_vf[elem] += (*gf)[elem];
-      }
-
-      // TODO: we could add completely_available here to writable_vf since it is
-      //       an additional capacity that could be used for storing the VF.
-
-#if 1
-    // Debugging. Expose our arrays as grid functions.
-    mfem::GridFunction* ov = newVolFracGridFunction();
-    std::string ovname(axom::fmt::format("writable_vf{}", shaperpass));
-    shaperpass++;
-    this->getDC()->RegisterField(ovname, ov);
-    for(int elem = 0; elem < m_num_elements; elem++)
-    {
-      (*ov)(elem) = writable_vf[elem];
-    }
-#endif
-
-      for(int elem = 0; elem < m_num_elements; elem++)
-      {
-        if(writable_vf[elem] > 0.)
-        {
-          auto VF = m_overlap_volumes[elem] / m_hex_volumes[elem];
-
-          if(VF >= writable_vf[elem] - 1.e-5)
-          {
-            // There is more VF than writable_vf. We can claim what's there
-            // and only that since we can't change other materials in this mode.
-            (*matVolFrac)(elem) += writable_vf[elem];
-            for(auto gf : vfs)
-              (*gf)(elem) = 0.;
-          }
-          else
-          {
-            // VF is less than writable_vf, which was the amount that other
-            // materials that we're replacing occupy. We need to make
-            // all of the materials fit in writable_vf.
-            double scale = (writable_vf[elem] - VF) / writable_vf[elem];
-            for(auto gf : vfs)
-              (*gf)(elem) *= scale;
-            (*matVolFrac)(elem) = VF;
-          }
-        }
-      }
-    }
-    else if(!shape.getMaterialsNotReplaced().empty())
-    {
-      // Include all materials that are NOT in replaced list.
-      std::vector<mfem::GridFunction *> forbidden;
-      std::vector<std::string> forbidden_names;
-      for(auto it : this->getDC()->GetFieldMap())
-      {
-        if(it.first.find(vol_frac_) == 0)
-        {
-          std::string name(it.first.substr(vol_frac_.size()));
-          // See if the material name is in the list of materials NOT replaced.
-          auto it2 = std::find(shape.getMaterialsNotReplaced().cbegin(),
-                               shape.getMaterialsNotReplaced().cend(),
-                               name);
-          if(it2 != shape.getMaterialsNotReplaced().cend())
-          {
-            forbidden.push_back(it.second);
-            forbidden_names.push_back(it.first);
-          }
-          else
-            vfs.push_back(it.second);
-        }
-      }
-      // NOTE: the shape material is included in vfs so we can include it
-      //       in writable_vf.
-
-      // Assume we can write everywhere. Then we subtract off the forbidden areas.
-      std::vector<double> writable_vf(m_num_elements, 1.);
-      for(size_t i = 0; i < forbidden.size(); i++)
-      {
-        auto gf = forbidden[i];
-        std::cout << "!!!!!!!!!!!!!! " << forbidden_names[i] << " is FORBIDDEN!" << std::endl;
-        for(int elem = 0; elem < m_num_elements; elem++)
-          writable_vf[elem] -= (*gf)[elem];
-      }
-      // Make sure we get zeroes if things are really close to zero.
-      for(int elem = 0; elem < m_num_elements; elem++)
-      {
-          writable_vf[elem] = abs(writable_vf[elem]);
-          if(writable_vf[elem] < 1.e-10)
-             writable_vf[elem] = 0.;
-      }
-
-#if 1
-    // Debugging. Expose our arrays as grid functions.
-    mfem::GridFunction* ov = newVolFracGridFunction();
-    std::string ovname(axom::fmt::format("writable_vf{}", shaperpass));
-    shaperpass++;
-    this->getDC()->RegisterField(ovname, ov);
-    for(int elem = 0; elem < m_num_elements; elem++)
-    {
-      (*ov)(elem) = writable_vf[elem];
-    }
-#endif
-    int skips = 0;
-      for(int elem = 0; elem < m_num_elements; elem++)
-      {
-        if(writable_vf[elem] > 0.0)
-        {
-          auto VF = m_overlap_volumes[elem] / m_hex_volumes[elem];
-          if(VF >= writable_vf[elem])
-          {
-            // There is more VF than writable_vf. We can claim what's there
-            // and only that since we can't change other materials in this mode.
-            for(auto gf : vfs)
-              (*gf)(elem) = 0.;
-            (*matVolFrac)(elem) = writable_vf[elem];
-          }
-          else
-          {
-            // VF is less than writable_vf, which was the amount that other
-            // materials that we're replacing occupy. We need to make
-            // all of the materials fit in writable_vf.
-            double scale = (writable_vf[elem] - VF) / writable_vf[elem];
-            for(auto gf : vfs)
-              (*gf)(elem) *= scale;
-            (*matVolFrac)(elem) = VF;
-          }
-        }
-        else
-        {
-           skips++;
-           (*matVolFrac)(elem) = 0.;
-        }
-      }
-
-      std::cout << "!!!!!!!!!!!!!! Skipped " << skips << " elements when writing material " << shape.getMaterial() << std::endl;
-    }
-    else
-    {
-      // Normal case. Every non-shape material is allowed to be replaced.
-      for(auto it : this->getDC()->GetFieldMap())
-      {
-        if(it.first.find(vol_frac_) == 0)
-        {
-          std::string name(it.first.substr(vol_frac_.size()));
-          if(name == shape.getMaterial())
-            continue;
-          vfs.push_back(it.second);
-        }
-      }
-
-      // For each cell, figure out how much VF is still completely free
-      // (unallocated to any material).
-      std::vector<double> writable_vf(m_num_elements, 1.);
-      for(auto it : this->getDC()->GetFieldMap())
-      {
-        if(it.first.find(vol_frac_) == 0)
-        {
-          const mfem::GridFunction *gf = it.second;          
-          for(int elem = 0; elem < m_num_elements; elem++)
-          {
-            writable_vf[elem] -= (*gf)[elem];
-          }
-        }
-      }
-      // Clamp any negative epsilon values.
-      for(int elem = 0; elem < m_num_elements; elem++)
-      {
-        writable_vf[elem] = std::max(writable_vf[elem], 0.);
-      }
-
-      for(int elem = 0; elem < m_num_elements; elem++)
-      {
-          auto VF = m_overlap_volumes[elem] / m_hex_volumes[elem];
-          constexpr double ONE_TOL = 1. - 1.e-10;
-          if(VF >= ONE_TOL)
-          {
-            // This material gets it all.
-            (*matVolFrac)(elem) = 1.;
-            for(auto gf : vfs)
-              (*gf)(elem) = 0.;
-          }
-          else if(VF <= writable_vf[elem])
-          {
-            // This material can claim all of its VF because the element
-            // still has enough void to fit it.
-            (*matVolFrac)(elem) += VF;
-          }
-          else
-          {
-            // VF is less than writable_vf, which was the amount that other
-            // materials that we're replacing occupy. We need to make
-            // all of the materials fit in writable_vf.
-            double other_vf = 1. - writable_vf[elem];
-            double scale = (other_vf - VF) / other_vf;
-
-            // If writable_vf[elem] is 0. then other_vf will be 1.
-            // scale = (1 - VF)
-
-            for(auto gf : vfs)
-              (*gf)(elem) *= scale;
-            (*matVolFrac)(elem) = VF;
-          }
-      }
-    }
-
-#endif
-
-#if 0
-#if 1
-//--------------------------------------------------------------------------------------
-    // For each cell, figure out how much VF is still completely free
-    // (unallocated to any material).
-    std::vector<double> completely_free(m_num_elements, 1.);
-    for(auto it : this->getDC()->GetFieldMap())
-    {
-      if(it.first.find(vol_frac_) == 0)
-      {
-        const mfem::GridFunction *gf = it.second;          
-        for(int elem = 0; elem < m_num_elements; elem++)
-        {
-          completely_free[elem] -= (*gf)[elem];
-        }
-      }
-    }
-    // Clamp any negative epsilon values.
-    for(int elem = 0; elem < m_num_elements; elem++)
-    {
-      completely_free[elem] = std::max(completely_free[elem], 0.);
-    }
-
-    // This vector holds the GridFunctions for each material VF object
-    // that we need to update (other than that for the current shape,
-    // which is referenced using matVolFrac).
-    std::vector<mfem::GridFunction *> vfs;
-
-    // Populate vfs with the pointers to the grid functions that can be
-    // updated when we modify VFs. This does not include the grid function
-    // for the current shape, matVolFrac.
-    if(!shape.getMaterialsReplaced().empty())
-    {
-      // Include only non-shape materials in the replaced list.
-      for(const auto &name : shape.getMaterialsReplaced())
-      {
-        if(name == shape.getMaterial())
-          continue;
-        auto vfname = axom::fmt::format(vol_frac_fmt, name);
-        if(this->getDC()->HasField(vfname))
-        {
-          mfem::GridFunction *gf = this->getDC()->GetField(vfname);
-          vfs.push_back(gf);
-        }
-      }
-    }
-    else if(!shape.getMaterialsNotReplaced().empty())
-    {
-      // We include all non-shape materials unless they are in the NOT
-      // replaced list.
-      for(auto it : this->getDC()->GetFieldMap())
-      {
-        if(it.first.find(vol_frac_) == 0)
-        {
-          std::string name(it.first.substr(vol_frac_.size()));
-          if(name == shape.getMaterial())
-            continue;
-          // See if the material name is in the list of materials NOT replaced.
-          auto it2 = std::find(shape.getMaterialsNotReplaced().cbegin(),
-                               shape.getMaterialsNotReplaced().cend(),
-                               name);
-          if(it2 == shape.getMaterialsNotReplaced().cend())
-            vfs.push_back(it.second);
-        }
-      }
-    }
-    else
-    {
-      // Normal case. Every non-shape material is allowed to be replaced.
-      for(auto it : this->getDC()->GetFieldMap())
-      {
-        if(it.first.find(vol_frac_) == 0)
-        {
-          std::string name(it.first.substr(vol_frac_.size()));
-          if(name == shape.getMaterial())
-            continue;
-          vfs.push_back(it.second);
-        }
-      }
-    }
-
-    // Print some debugging info about which replacements will happen.
-    for(auto it : this->getDC()->GetFieldMap())
-    {
-      if(it.first.find(vol_frac_) == 0)
-      {
-        std::string name(it.first.substr(vol_frac_.size()));
-        bool rep = std::find(vfs.begin(), vfs.end(), it.second) != vfs.cend();
-        SLIC_DEBUG(axom::fmt::format(
-          "Should we replace material '{}' with shape '{}' of material '{}'? {}",
-          name,
-          shape.getName(),
-          shape.getMaterial(),
-          rep ? "yes" : "no"));
-      }
-    }
-
-    // For each cell, figure out how much VF can be overwritten if
-    // we need the space. This is the sum of all VFs that we are
-    // allowed to write into.
-    std::vector<double> overwriteable(m_num_elements, 0.);
-    for(int elem = 0; elem < m_num_elements; elem++)
-    {
-      overwriteable[elem] += (*matVolFrac)(elem);
-    }
-    for(const auto gf : vfs)
-    {
-      for(int elem = 0; elem < m_num_elements; elem++)
-      {
-        overwriteable[elem] += (*gf)(elem);
-      }
-    }
-
-#if 1
-    // Debugging. Expose our arrays as grid functions.
-    static int shaperpass = 0;
-    mfem::GridFunction* cf = newVolFracGridFunction();
-    mfem::GridFunction* ov = newVolFracGridFunction();
-    std::string cfname(axom::fmt::format("cf{}", shaperpass));
-    std::string ovname(axom::fmt::format("ov{}", shaperpass));
-    shaperpass++;
-    this->getDC()->RegisterField(cfname, cf);
-    this->getDC()->RegisterField(ovname, ov);
-    for(int elem = 0; elem < m_num_elements; elem++)
-    {
-      (*cf)(elem) = completely_free[elem];
-      (*ov)(elem) = overwriteable[elem];
-    }
-#endif
-
-    // Now update the volume fractions.
-    for(int elem = 0; elem < m_num_elements; elem++)
-    {
-      auto VF = m_overlap_volumes[elem] / m_hex_volumes[elem];
-      if(VF <= completely_free[elem])
-      {
-        // There is enough free room for this VF. No need to update other VFs.
-        (*matVolFrac)(elem) += VF;
-      }
-      else
-      {
-        double avail = completely_free[elem] + overwriteable[elem];
-        constexpr double ONE_TOL = 1. - 1.e-10;
-        if(VF >= ONE_TOL)
-        {
-          // VF takes the whole element.
-          for(auto &gf : vfs)
-             (*gf)(elem) = 0.;
-          (*matVolFrac)(elem) = VF;
-        }
-        else if(VF >= avail)
-        {
-          // VF can completely overtake the space in the available VFs.
-          // This material gets it all and we zero out the others.
-          for(auto &gf : vfs)
-             (*gf)(elem) = 0.;
-          (*matVolFrac)(elem) = avail;
-        }
-        else
-        {
-          // We can fit the VF in avail but it does not cover all of avail.
-          // So, we?ll scale the other replacement materials
-          double scale = avail / (overwriteable[elem] + VF);
-          (*matVolFrac)(elem) = scale * VF;
-          // Scale the replaced materials.
-          for(auto gf : vfs)
-             (*gf)(elem) *= scale;
-        }
-      }
-    }
-
-    // Update the shape volume fractions.
-    for(int i = 0; i < m_num_elements; i++)
-    {
-      (*shapeVolFrac)(i) = m_overlap_volumes[i] / m_hex_volumes[i];
-    }
-#else
-    // update material volume fractions
-    for(int i = 0; i < m_num_elements; i++)
-    {
-      (*matVolFrac)(i) = m_overlap_volumes[i] / m_hex_volumes[i];
-    }
-
-    /// Implementation here -- update material volume fractions based on replacement rules
-    // Note: we're not yet updating the shape volume fractions
-    AXOM_UNUSED_VAR(shapeVolFrac);
-#endif
-#endif
-  }
-#endif
 
   void finalizeShapeQuery() override
   {
@@ -1819,16 +1251,9 @@ private:
   PolyhedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};
 
-  int m_replacement_allocator{-1};
-  double* m_vf_sums {nullptr};
-  double* m_vf_subtract {nullptr};
-  double* m_vf_writable {nullptr};
   std::vector<mfem::GridFunction *> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
-
 #endif
-  // What do I need here?
-  // Probably size of stuff
 };
 
 }  // end namespace quest
