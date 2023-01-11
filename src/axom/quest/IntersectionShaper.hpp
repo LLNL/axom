@@ -899,6 +899,7 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
       m_vf_sums = axom::allocate<double>(size);
       m_vf_subtract = axom::allocate<double>(size);
       m_vf_occupied = axom::allocate<double>(size);
+      m_vf_mask = axom::allocate<double>(size);
 
       axom::setDefaultAllocator(current_allocator);
     }
@@ -918,6 +919,8 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
       m_vf_subtract = nullptr;
       axom::deallocate(m_vf_occupied);
       m_vf_occupied = nullptr;
+      axom::deallocate(m_vf_mask);
+      m_vf_mask = nullptr;
       axom::setDefaultAllocator(current_allocator);
     }
   }
@@ -1036,12 +1039,36 @@ std::cout << "*** Sum excludeVFs" << std::endl;
     for(auto &gf : excludeVFs)
     {
       ArrayView<double,1> matVFView(gf->GetData(), dataSize);
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) {
+          m_vf_occupied[i] += matVFView[i];
+        });
+    }
+
+    // Build a mask where the shape material is allowed to write. By default,
+    // it can write in any zone.
+    axom::for_all<ExecSpace>(
+      dataSize,
+      AXOM_LAMBDA(axom::IndexType i) {
+        m_vf_mask[i] = 1;
+      });
+    if(!shape.getMaterialsReplaced().empty())
+    {
+      // Restrict the mask to where the replacement materials have values.
+      for(const auto &name : shape.getMaterialsReplaced())
+      {
+        auto mat = getMaterial(name);
+        ArrayView<double,1> matVFView(mat.first->GetData(), dataSize);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
-            m_vf_occupied[i] += matVFView[i];
+            constexpr double EPSILON = 1.e-6;
+            m_vf_mask[i] *= matVFView[i] > EPSILON;
         });
+      }
     }
+
 #if 1
 std::cout << "m_vf_occupied={" << std::endl;
 for(int i = 0; i < dataSize; i++)
@@ -1060,9 +1087,12 @@ std::cout << "*** Writing VFs for shape material" << std::endl;
     axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
+
           // Update this material's VF and m_vf_subtract, which is the
           // amount to subtract from the VF arrays that we need to update.
-          double vf = m_overlap_volumes[i] / m_hex_volumes[i];
+          double vf = (m_overlap_volumes[i] / m_hex_volumes[i]);
+if(m_vf_mask[i] > 0.)
+{
           if(vf < m_vf_sums[i])
           {
             matVFView[i] = vf;
@@ -1075,7 +1105,12 @@ std::cout << "*** Writing VFs for shape material" << std::endl;
             matVFView[i] = vf_actual;
             m_vf_subtract[i] = vf_actual;
           }
-
+}
+else
+{
+   matVFView[i] = 0.;
+   m_vf_subtract[i] = 0.;
+}
           // Update the total sum.
           m_vf_sums[i] += matVFView[i] - m_vf_subtract[i];
         });
@@ -1736,6 +1771,7 @@ private:
   double* m_vf_sums {nullptr};
   double* m_vf_subtract {nullptr};
   double* m_vf_occupied {nullptr};
+  double* m_vf_mask {nullptr};
   std::vector<mfem::GridFunction *> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
 
