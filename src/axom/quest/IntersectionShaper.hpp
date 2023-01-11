@@ -1021,6 +1021,7 @@ private:
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
               vf_writable[i] += matVFView[i];
+              vf_writable[i] = (vf_writable[i] > 1.) ? 1. : vf_writable[i];
             });
         }
       });
@@ -1045,6 +1046,7 @@ private:
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
               vf_writable[i] -= matVFView[i];
+              vf_writable[i] = (vf_writable[i] < 0.) ? 0. : vf_writable[i];
             });
         }
       });
@@ -1061,20 +1063,20 @@ private:
       ArrayView<double,1> matVFView(matVF.first->GetData(), dataSize);
       ArrayView<double,1> shapeVFView(shapeVolFrac->GetData(), dataSize);
       axom::for_all<ExecSpace>(
-          dataSize,
-          AXOM_LAMBDA(axom::IndexType i) {
-            // Update this material's VF and vf_subtract, which is the
-            // amount to subtract from the gf's in updateVF.
-            double vf = (m_overlap_volumes[i] / m_hex_volumes[i]);
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) {
+          // Update this material's VF and vf_subtract, which is the
+          // amount to subtract from the gf's in updateVF.
+          double vf = (m_overlap_volumes[i] / m_hex_volumes[i]);
 
-            // Write at most the writable amount.
-            double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
-            matVFView[i] += vf_actual;
-            vf_subtract[i] = vf_actual;
+          // Write at most the writable amount.
+          double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
+          matVFView[i] += vf_actual;
+          vf_subtract[i] = vf_actual;
 
-            // Store the max shape VF.
-            shapeVFView[i] = vf;
-          });
+          // Store the max shape VF.
+          shapeVFView[i] = vf;
+        });
       });
 #ifdef REPLACEMENT_RULE_DEBUG_PRINT
     print_gf("matVF", matVF.first);
@@ -1089,13 +1091,14 @@ private:
       for(auto &gf : updateVFs)
       {
         ArrayView<double,1> matVFView(gf->GetData(), dataSize);
-          axom::for_all<ExecSpace>(
-            dataSize,
-            AXOM_LAMBDA(axom::IndexType i) {
-              double s = (matVFView[i] < vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
-              matVFView[i] -= s;
-              vf_subtract[i] -= s;
-          });
+        axom::for_all<ExecSpace>(
+          dataSize,
+          AXOM_LAMBDA(axom::IndexType i) {
+            double s = (matVFView[i] <= vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
+            matVFView[i] -= s;
+            matVFView[i] = (matVFView[i] < 0.) ? 0. : matVFView[i];
+            vf_subtract[i] -= s;
+        });
       }
     });
 
