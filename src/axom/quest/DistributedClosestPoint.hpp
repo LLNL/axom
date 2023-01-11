@@ -61,7 +61,7 @@ enum class DistributedClosestPointRuntimePolicy
 };
 
 /// Utility function to allow formating a DistributedClosestPointRuntimePolicy
-auto format_as(DistributedClosestPointRuntimePolicy pol)
+inline auto format_as(DistributedClosestPointRuntimePolicy pol)
 {
   return fmt::underlying(pol);
 }
