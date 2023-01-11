@@ -898,8 +898,7 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
 
       m_vf_sums = axom::allocate<double>(size);
       m_vf_subtract = axom::allocate<double>(size);
-      m_vf_occupied = axom::allocate<double>(size);
-      m_vf_mask = axom::allocate<double>(size);
+      m_vf_writable = axom::allocate<double>(size);
 
       axom::setDefaultAllocator(current_allocator);
     }
@@ -917,10 +916,8 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
       m_vf_sums = nullptr;
       axom::deallocate(m_vf_subtract);
       m_vf_subtract = nullptr;
-      axom::deallocate(m_vf_occupied);
-      m_vf_occupied = nullptr;
-      axom::deallocate(m_vf_mask);
-      m_vf_mask = nullptr;
+      axom::deallocate(m_vf_writable);
+      m_vf_writable = nullptr;
       axom::setDefaultAllocator(current_allocator);
     }
   }
@@ -935,6 +932,11 @@ std::cout << "*** Made new GF for " << materialName << std::endl;
     // Get this shape's material, creating it if needed.
     auto matVF = getMaterial(shape.getMaterial());
     int dataSize = matVF.first->Size();
+
+    // Get this shape's array.
+    auto shapeVolFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
+    auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
+    SLIC_ASSERT(shapeVolFrac != nullptr);
 
     // Allocate some memory for the replacement rule data arrays.
     bool first = allocateReplacementRuleStorage<ExecSpace>(dataSize);
@@ -1001,11 +1003,41 @@ std::cout << "\t" << m_vf_material_names[mat.second] << std::endl;
       updateVFs.push_back(mat.first);
     }
 
+#define DEBUG_PRINT
+#ifdef DEBUG_PRINT
+    // Lambda to print array.
+    auto print_array = [&](const std::string &name, const double *arr, int dataSize)
+    {
+      std::cout << name << "={" << std::endl;
+      int nwrite = 0;
+      for(int i = 0; i < dataSize; i++)
+      {
+        std::cout << arr[i] << " ";
+        nwrite++;
+        if(nwrite == values_per_line)
+        {
+          std::cout << "\n";
+          nwrite = 0;
+        }
+      }
+      std::cout << "}" << std::endl;
+    };
+
+    auto print_gf = [&](const std::string &name, mfem::GridFunction *gf)
+    {
+      std::cout << name << "={" << std::endl;
+      gf->Print(std::cout, values_per_line);
+      std::cout << "}" << std::endl;
+    };
+#endif
+
     // First time through the shaper, compute VF sums over all materials.
     if(first)
     {
+#ifdef DEBUG_PRINT
 std::cout << "*** Computing initial vf_sums " << std::endl;
-
+std::cout << "=========================================================" << std::endl;
+#endif
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
@@ -1023,39 +1055,39 @@ std::cout << "*** adding " << m_vf_material_names[idx] << std::endl;
           AXOM_LAMBDA(axom::IndexType i) {
             m_vf_sums[i] += matVFView[i];
           });
-
-gf->Print(std::cout, values_per_line);
+#ifdef DEBUG_PRINT
+print_gf(m_vf_material_names[idx], gf);
 idx++;
+#endif
       }
-    }
-
-    // Figure out how much VF in each zone is occupied and immutable.
-std::cout << "*** Sum excludeVFs" << std::endl;
-    axom::for_all<ExecSpace>(
-      dataSize,
-      AXOM_LAMBDA(axom::IndexType i) {
-        m_vf_occupied[i] = 0.;
-      });
-    for(auto &gf : excludeVFs)
-    {
-      ArrayView<double,1> matVFView(gf->GetData(), dataSize);
+#if 1
+      // If the sum is close to 1, make it 1.
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
-          m_vf_occupied[i] += matVFView[i];
+          constexpr double ONE_MINUS_EPSILON = 1. - 1.e-8;
+          m_vf_sums[i] = (m_vf_sums[i] >= ONE_MINUS_EPSILON) ? 1. : m_vf_sums[i];
         });
+#endif
+#ifdef DEBUG_PRINT
+      print_array("m_vf_sums", m_vf_sums, dataSize);
+#endif
     }
 
-    // Build a mask where the shape material is allowed to write. By default,
-    // it can write in any zone.
-    axom::for_all<ExecSpace>(
-      dataSize,
-      AXOM_LAMBDA(axom::IndexType i) {
-        m_vf_mask[i] = 1;
-      });
+    // Figure out how much VF in each zone is occupied and immutable.
+#ifdef DEBUG_PRINT
+std::cout << "*** Sum excludeVFs" << std::endl;
+std::cout << "=========================================================" << std::endl;
+#endif
     if(!shape.getMaterialsReplaced().empty())
     {
-      // Restrict the mask to where the replacement materials have values.
+      // Replaces - We'll sum up the VFs that we can replace in a zone.
+
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) {
+          m_vf_writable[i] = 0.;
+        });
       for(const auto &name : shape.getMaterialsReplaced())
       {
         auto mat = getMaterial(name);
@@ -1063,80 +1095,87 @@ std::cout << "*** Sum excludeVFs" << std::endl;
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
-            constexpr double EPSILON = 1.e-6;
-            m_vf_mask[i] *= matVFView[i] > EPSILON;
+            m_vf_writable[i] += matVFView[i];
+          });
+      }
+    }
+    else
+    {
+      // Does not replace. We can replace all except for listed mats.
+
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) {
+          m_vf_writable[i] = 1.;
         });
+      for(auto &gf : excludeVFs)
+      {
+        ArrayView<double,1> matVFView(gf->GetData(), dataSize);
+        axom::for_all<ExecSpace>(
+          dataSize,
+          AXOM_LAMBDA(axom::IndexType i) {
+            m_vf_writable[i] -= matVFView[i];
+          });
       }
     }
 
-#if 1
-std::cout << "m_vf_occupied={" << std::endl;
-for(int i = 0; i < dataSize; i++)
-{
-    if(i > 0) std::cout << " ";
-    std::cout << m_vf_occupied[i];
-    if(i > 0 && i % values_per_line == 0)
-       std::cout << "\n";
-}
-std::cout << "}" << std::endl;
+#ifdef DEBUG_PRINT
+print_array("m_vf_writable",m_vf_writable, dataSize);
 
 std::cout << "*** Writing VFs for shape material" << std::endl;
+std::cout << "=========================================================" << std::endl;
 #endif
+
     // Compute the volume fractions for the current shape's material.
     ArrayView<double,1> matVFView(matVF.first->GetData(), dataSize);
+    ArrayView<double,1> shapeVFView(shapeVolFrac->GetData(), dataSize);
     axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
-
+constexpr double EPSILON = 1.e-10;
           // Update this material's VF and m_vf_subtract, which is the
           // amount to subtract from the VF arrays that we need to update.
           double vf = (m_overlap_volumes[i] / m_hex_volumes[i]);
-if(m_vf_mask[i] > 0.)
-{
-          if(vf < m_vf_sums[i])
+          double completely_free = 1. - m_vf_sums[i];
+//std::cout << i << ": vf=" << vf << ", cf=" << completely_free << ", wr=" << m_vf_writable[i] << std::endl;
+
+// Is this first section necessary?
+          if(vf <= completely_free - EPSILON)
           {
+            // We can shape in the material without affecting other materials
+            // since there is room for it. No need to subtract.
             matVFView[i] = vf;
             m_vf_subtract[i] = 0.;
           }
           else
           {
-            double avail = 1. - m_vf_occupied[i];
-            double vf_actual = (vf < avail) ? vf : avail;
+            // Write at most the writable amount.
+            double vf_actual = (vf <= m_vf_writable[i]) ? vf : m_vf_writable[i];
             matVFView[i] = vf_actual;
             m_vf_subtract[i] = vf_actual;
           }
-}
-else
-{
-   matVFView[i] = 0.;
-   m_vf_subtract[i] = 0.;
-}
+
+          // Store the max shape VF.
+          shapeVFView[i] = vf;
+
           // Update the total sum.
-          m_vf_sums[i] += matVFView[i] - m_vf_subtract[i];
-        });
+          m_vf_sums[i] += matVFView[i];
+//          m_vf_sums[i] += matVFView[i] - m_vf_subtract[i];
 #if 1
-std::cout << "m_vf_sums={" << std::endl;
-for(int i = 0; i < dataSize; i++)
-{
-    if(i > 0) std::cout << " ";
-    std::cout << m_vf_sums[i];
-    if(i > 0 && i % values_per_line == 0)
-       std::cout << "\n";
-}
-std::cout << "}" << std::endl;
-std::cout << "m_vf_subtract={" << std::endl;
-for(int i = 0; i < dataSize; i++)
-{
-    if(i > 0) std::cout << " ";
-    std::cout << m_vf_subtract[i];
-    if(i > 0 && i % values_per_line == 0)
-       std::cout << "\n";
-}
-std::cout << "}" << std::endl;
-std::cout << "matVF={" << std::endl;
-matVF.first->Print(std::cout, values_per_line);
-std::cout << "}" << std::endl;
+          // Clamp to 1.
+          if(m_vf_sums[i] >= 1.)
+            m_vf_sums[i] = 1.;
 #endif
+        });
+#ifdef DEBUG_PRINT
+print_gf("matVF", matVF.first);
+print_array("m_vf_sums",m_vf_sums, dataSize);
+print_array("m_vf_subtract",m_vf_subtract, dataSize);
+
+std::cout << "*** Updating other VFs" << std::endl;
+std::cout << "=========================================================" << std::endl;
+#endif
+
     // Now iterate over updateVFs to subtract off VFs we allocated to the
     // current shape's material.
     for(auto &gf : updateVFs)
@@ -1147,6 +1186,12 @@ std::cout << "}" << std::endl;
           AXOM_LAMBDA(axom::IndexType i) {
             double s = (matVFView[i] < m_vf_subtract[i]) ? matVFView[i] : m_vf_subtract[i];
             matVFView[i] -= s;
+#if 1
+            // If it is close to zero, make it zero.
+            constexpr double EPSILON = 1.e-10;
+            if(matVFView[i] < EPSILON)
+                matVFView[i] = 0.;
+#endif
             m_vf_subtract[i] -= s;
         });
     }
@@ -1770,8 +1815,7 @@ private:
   int m_replacement_allocator{-1};
   double* m_vf_sums {nullptr};
   double* m_vf_subtract {nullptr};
-  double* m_vf_occupied {nullptr};
-  double* m_vf_mask {nullptr};
+  double* m_vf_writable {nullptr};
   std::vector<mfem::GridFunction *> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
 
