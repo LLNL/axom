@@ -1031,6 +1031,7 @@ std::cout << "\t" << m_vf_material_names[mat.second] << std::endl;
     };
 #endif
 
+#ifdef COMPUTE_VF_SUMS
     // First time through the shaper, compute VF sums over all materials.
     if(first)
     {
@@ -1060,7 +1061,7 @@ print_gf(m_vf_material_names[idx], gf);
 idx++;
 #endif
       }
-#if 1
+
       // If the sum is close to 1, make it 1.
       axom::for_all<ExecSpace>(
         dataSize,
@@ -1068,11 +1069,11 @@ idx++;
           constexpr double ONE_MINUS_EPSILON = 1. - 1.e-8;
           m_vf_sums[i] = (m_vf_sums[i] >= ONE_MINUS_EPSILON) ? 1. : m_vf_sums[i];
         });
-#endif
 #ifdef DEBUG_PRINT
       print_array("m_vf_sums", m_vf_sums, dataSize);
 #endif
     }
+#endif
 
     // Figure out how much VF in each zone is occupied and immutable.
 #ifdef DEBUG_PRINT
@@ -1136,13 +1137,13 @@ std::cout << "=========================================================" << std:
     axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
-constexpr double EPSILON = 1.e-10;
           // Update this material's VF and m_vf_subtract, which is the
           // amount to subtract from the VF arrays that we need to update.
           double vf = (m_overlap_volumes[i] / m_hex_volumes[i]);
+#ifdef COMPUTE_VF_SUMS
+constexpr double EPSILON = 1.e-10;
           double completely_free = 1. - m_vf_sums[i];
 //std::cout << i << ": vf=" << vf << ", cf=" << completely_free << ", wr=" << m_vf_writable[i] << std::endl;
-
 // Is this first section necessary?
           if(vf <= completely_free - EPSILON)
           {
@@ -1152,6 +1153,7 @@ constexpr double EPSILON = 1.e-10;
             m_vf_subtract[i] = 0.;
           }
           else
+#endif
           {
             // Write at most the writable amount.
             double vf_actual = (vf <= m_vf_writable[i]) ? vf : m_vf_writable[i];
@@ -1162,10 +1164,9 @@ constexpr double EPSILON = 1.e-10;
           // Store the max shape VF.
           shapeVFView[i] = vf;
 
+#ifdef COMPUTE_VF_SUMS
           // Update the total sum.
           m_vf_sums[i] += matVFView[i];
-//          m_vf_sums[i] += matVFView[i] - m_vf_subtract[i];
-#if 1
           // Clamp to 1.
           if(m_vf_sums[i] >= 1.)
             m_vf_sums[i] = 1.;
@@ -1173,7 +1174,9 @@ constexpr double EPSILON = 1.e-10;
         });
 #ifdef DEBUG_PRINT
 print_gf("matVF", matVF.first);
+#ifdef COMPUTE_VF_SUMS
 print_array("m_vf_sums",m_vf_sums, dataSize);
+#endif
 print_array("m_vf_subtract",m_vf_subtract, dataSize);
 
 std::cout << "*** Updating other VFs" << std::endl;
@@ -1190,7 +1193,7 @@ std::cout << "=========================================================" << std:
           AXOM_LAMBDA(axom::IndexType i) {
             double s = (matVFView[i] < m_vf_subtract[i]) ? matVFView[i] : m_vf_subtract[i];
             matVFView[i] -= s;
-#if 1
+#ifdef USE_EPSILONS
             // If it is close to zero, make it zero.
             constexpr double EPSILON = 1.e-10;
             if(matVFView[i] < EPSILON)
