@@ -879,6 +879,10 @@ private:
 #endif
   }
 
+  // Switch back to public. This is done here because the CUDA compiler
+  // does not like these template functions being private.
+public:
+
   // Make a new grid function that contains all of the free space not occupied
   // by existing materials.
   template <typename ExecSpace>
@@ -1168,9 +1172,6 @@ private:
     axom::deallocate(vf_writable);
     axom::setDefaultAllocator(current_allocator);
   }
-
-  // Switch back to public.
-public:
 #endif
 
   void applyReplacementRules(const klee::Shape& shape) override
