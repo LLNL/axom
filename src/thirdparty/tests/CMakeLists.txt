@@ -123,6 +123,27 @@ if (MFEM_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
+# Smoke test for caliper and adiak third party library
+#------------------------------------------------------------------------------
+if ( CALIPER_FOUND )
+
+  set( caliper_smoke_dependencies caliper gtest )
+
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+  blt_list_append( TO caliper_smoke_dependencies ELEMENTS cuda_runtime IF ENABLE_CUDA)
+
+  blt_add_executable( NAME caliper_smoke_test
+                      SOURCES caliper_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${caliper_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  axom_add_test( NAME    caliper_smoke
+                 COMMAND caliper_smoke_test )
+
+endif()
+
+#------------------------------------------------------------------------------
 # Smoke test for fmt third party library
 #------------------------------------------------------------------------------
 set(fmt_smoke_dependencies fmt gtest)
