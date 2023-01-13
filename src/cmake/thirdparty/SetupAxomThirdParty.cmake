@@ -187,6 +187,58 @@ if(TARGET mfem)
 endif()
 
 #------------------------------------------------------------------------------
+# Adiak
+#------------------------------------------------------------------------------
+if(ADIAK_DIR)
+    axom_assert_is_directory(VARIABLE_NAME ADIAK_DIR)
+    find_dependency(adiak REQUIRED 
+                    PATHS "${ADIAK_DIR}/lib/cmake/adiak"
+                          "${ADIAK_DIR}")
+
+    message(STATUS "Checking for expected adiak target 'adiak::adiak'")
+    if (NOT TARGET adiak::adiak)
+        message(FATAL_ERROR "adiak failed to load: ${ADIAK_DIR}")
+    endif()
+
+    # TODO: CHECK
+    # Set the include directories as adiak does not completely configure the "adiak" target
+    set_target_properties(adiak::adiak PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${adiak_INCLUDE_DIRS})
+
+    message(STATUS "adiak loaded: ${ADIAK_DIR}")
+    set(ADIAK_FOUND TRUE)
+else()
+    message(STATUS "adiak support is OFF")
+    set(ADIAK_FOUND FALSE)
+endif()
+
+if(CALIPER_DIR)
+    # Extra handling for caliper's cuda dependencies
+    if(AXOM_ENABLE_CUDA)
+        find_package(CUDAToolkit REQUIRED)
+    endif()
+
+    find_dependency(caliper REQUIRED 
+                    PATHS "${CALIPER_DIR}/share/cmake/caliper" 
+                          "${CALIPER_DIR}")
+
+    message(STATUS "Checking for expected caliper target 'caliper'")
+    if (NOT TARGET caliper)
+        message(FATAL_ERROR "caliper failed to load: ${CALIPER_DIR}")
+    endif()
+
+    # Set the include directories as caliper does not completely configure the "adiak" target
+    set_target_properties(caliper PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${caliper_INCLUDE_PATH})
+
+    message(STATUS "caliper loaded: ${CALIPER_DIR}")
+    set(CALIPER_FOUND TRUE)
+else()
+    message(STATUS "aliper support is OFF")
+    set(CALIPER_FOUND FALSE)
+endif()
+
+#------------------------------------------------------------------------------
 # Shroud - Generates C/Fortran/Python bindings
 #------------------------------------------------------------------------------
 if(EXISTS ${SHROUD_EXECUTABLE})
