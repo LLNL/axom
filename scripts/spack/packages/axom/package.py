@@ -82,6 +82,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant("mpi", default=True, description="Build MPI support")
     variant("openmp", default=True, description="Turn on OpenMP support.")
 
+    variant('profiling', default=False, 
+            description='Build with hooks for Adiak/Caliper performance analysis')
+
     variant("c2c",      default=False, description="Build with c2c")
 
     variant("mfem", default=False, description="Build with mfem")
@@ -136,18 +139,35 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("raja@:0.13.0", when="@:0.5.0")
         depends_on("raja~openmp", when="~openmp")
         depends_on("raja+openmp", when="+openmp")
+        depends_on("raja+cuda", when="+cuda")
+
+    with when("+profiling"):
+        depends_on("adiak@0.2.2")
+        depends_on("caliper@2.8.0+adiak~papi")
+
+        depends_on("caliper+cuda", when="+cuda")
+        depends_on("caliper~cuda", when="~cuda")
+
+        for dep in ["adiak", "caliper"]:
+            depends_on("{0}+mpi".format(dep), when="+mpi")
+            depends_on("{0}~mpi".format(dep), when="~mpi")
+            depends_on("{0}+shared".format(dep), when="+profiling+shared")
+            depends_on("{0}~shared".format(dep), when="+profiling~shared")
+
 
     for val in CudaPackage.cuda_arch_values:
         raja_cuda = "raja +cuda cuda_arch={0}".format(val)
         umpire_cuda = "umpire +cuda cuda_arch={0}".format(val)
         depends_on(raja_cuda, when="+{0}".format(raja_cuda))
         depends_on(umpire_cuda, when="+{0}".format(umpire_cuda))
+        depends_on("caliper cuda_arch={0}".format(val), when="+profiling cuda_arch={0}".format(val))
 
     for val in ROCmPackage.amdgpu_targets:
         raja_rocm = "raja +rocm amdgpu_target={0}".format(val)
         umpire_rocm = "umpire +rocm amdgpu_target={0}".format(val)
         depends_on(raja_rocm, when="+{0}".format(raja_rocm))
         depends_on(umpire_rocm, when="+{0}".format(umpire_rocm))
+        depends_on("caliper amdgpu_target={0}".format(val), when="+profiling amdgpu_target={0}".format(val))
 
     depends_on("rocprim", when="+rocm")
 
@@ -467,7 +487,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries.append(cmake_cache_path("CONDUIT_DIR", conduit_dir))
 
         # optional tpls
-        for dep in ("c2c", "mfem", "hdf5", "lua", "raja", "umpire"):
+        for dep in ("adiak", "caliper", "c2c", "mfem", "hdf5", "lua", "raja", "umpire"):
             if "+%s" % dep in spec:
                 dep_dir = get_spec_path(spec, dep, path_replacements)
                 entries.append(cmake_cache_path("%s_DIR" % dep.upper(), dep_dir))
