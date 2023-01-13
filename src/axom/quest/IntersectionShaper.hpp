@@ -879,9 +879,55 @@ private:
 #endif
   }
 
+  // Make a new grid function that contains all of the free space not occupied
+  // by existing materials.
+  template <typename ExecSpace>
+  mfem::GridFunction *getCompletelyFree()
+  {
+    const std::string fieldName("completely_free");
+    mfem::GridFunction *cfgf = nullptr;
+    if(this->getDC()->HasField(fieldName))
+      cfgf = this->getDC()->GetField(fieldName);
+    else
+    {
+      // Make the new grid function.
+      cfgf = newVolFracGridFunction();
+      this->getDC()->RegisterField(fieldName, cfgf);
+
+      AXOM_PERF_MARK_SECTION("compute_completely_free", {
+        int dataSize = cfgf->Size();
+        ArrayView<double,1> cfView(cfgf->GetData(), dataSize);
+        axom::for_all<ExecSpace>(
+          dataSize,
+          AXOM_LAMBDA(axom::IndexType i) {
+            cfView[i] = 1.;
+          });
+        // Iterate over all materials and subtract off their VFs from cfgf.
+        for(auto &gf : m_vf_grid_functions)
+        {
+          ArrayView<double,1> matVFView(gf->GetData(), dataSize);
+          axom::for_all<ExecSpace>(
+            dataSize,
+            AXOM_LAMBDA(axom::IndexType i) {
+              cfView[i] -= matVFView[i];
+              cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
+            });
+        }
+      });
+    }
+    return cfgf;
+  }
+
   template <typename ExecSpace>
   void applyReplacementRulesImpl(const klee::Shape& shape)
   {
+#ifdef REPLACEMENT_RULE_DEBUG_PRINT
+    std::cout << "=====================================================================" << std::endl;
+    std::cout << "=====================================================================" << std::endl;
+    std::cout << "*** applyReplacementRulesImpl" << std::endl;
+    std::cout << "=====================================================================" << std::endl;
+    std::cout << "=====================================================================" << std::endl;
+#endif
     // Make sure the material lists are up to date.
     populateMaterials();
 
@@ -990,6 +1036,12 @@ private:
 #ifdef REPLACEMENT_RULE_DEBUG_PRINT
     std::cout << "*** updateVFs" << std::endl;
 #endif
+    // Append the completely free grid function to the materials we update
+    // Add it first so it is the highest priority material. This helps us
+    // account for how much we need to deduct from the real materials during
+    // subtraction.
+    updateVFs.push_back(getCompletelyFree<ExecSpace>());
+
     // Append the grid functions in mat number order.
     for(const auto &mat : gf_order_by_matnumber)
     {
@@ -999,7 +1051,11 @@ private:
       updateVFs.push_back(mat.first);
     }
 
-    // Figure out how much VF in each zone is occupied and immutable.
+    // We put the current shape's material at the end of the update list,
+    // in the case that adding to its VF initially exceeds 1.
+    updateVFs.push_back(getMaterial(shape.getMaterial()).first);
+
+    // Figure out how much VF in each zone can be written.
     if(!shape.getMaterialsReplaced().empty())
     {
       // Replaces - We'll sum up the VFs that we can replace in a zone.
@@ -1071,6 +1127,9 @@ private:
 
           // Write at most the writable amount.
           double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
+
+          // NOTE: if matVFView[i] temporarily exceeds 1, it will be corrected
+          //       during the subtraction stage. 
           matVFView[i] += vf_actual;
           vf_subtract[i] = vf_actual;
 
@@ -1094,9 +1153,11 @@ private:
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
+            constexpr double INSIGNIFICANT_VOLFRAC = 1.e-14;
             double s = (matVFView[i] <= vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
             matVFView[i] -= s;
-            matVFView[i] = (matVFView[i] < 0.) ? 0. : matVFView[i];
+            // Turn any slight zeroes or positive insignificant volume fractions to zero.
+            matVFView[i] = (matVFView[i] < INSIGNIFICANT_VOLFRAC) ? 0. : matVFView[i];
             vf_subtract[i] -= s;
         });
       }
