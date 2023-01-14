@@ -32,8 +32,10 @@ set(quest_tests_depends
    )
 
 blt_list_append( TO quest_tests_depends ELEMENTS mpi IF ENABLE_MPI )
+blt_list_append( TO quest_tests_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
 blt_list_append( TO quest_tests_depends ELEMENTS blt::hip IF ENABLE_HIP )
+blt_list_append( TO quest_tests_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
@@ -64,27 +66,32 @@ endif()
 #------------------------------------------------------------------------------
 
 if(MFEM_FOUND)
-    set(test_name quest_point_in_cell_mfem)
-    blt_add_executable(
-        NAME ${test_name}
-        SOURCES ${test_name}.cpp
-        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} mfem
-        FOLDER axom/quest/tests
-        )
+    set(quest_mfem_tests
+        quest_point_in_cell_mfem
+       )
+    foreach(test ${quest_mfem_tests})
+        set(test_name ${test})
+        blt_add_executable(
+            NAME ${test_name}
+            SOURCES ${test_name}.cpp
+            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON ${quest_tests_depends} mfem
+            FOLDER axom/quest/tests
+            )
 
-    string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
+        string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
 
-    if (ENABLE_CUDA)
-        set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
-    endif()
+        if (ENABLE_CUDA)
+            set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
+        endif()
 
-    blt_add_target_compile_flags( TO ${test_name} FLAGS "${MFEM_COMPILE_FLAGS}" )
+        blt_add_target_compile_flags( TO ${test_name} FLAGS "${MFEM_COMPILE_FLAGS}" )
 
-    axom_add_test(
-        NAME ${test_name}
-        COMMAND ${test_name}
-        )
+        axom_add_test(
+            NAME ${test_name}
+            COMMAND ${test_name}
+            )
+    endforeach()
 endif()
 
 
@@ -134,6 +141,33 @@ foreach(test ${quest_mpi_tests})
     endif()
 endforeach()
 
+#------------------------------------------------------------------------------
+# Tests that have several dependencies.
+#------------------------------------------------------------------------------
+if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
+              AND AXOM_ENABLE_KLEE AND AXOM_DATA_DIR)
+    set(quest_mpi_mfem_data_tests
+        quest_intersection_shaper.cpp
+       )
+    foreach(test ${quest_mpi_mfem_data_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        blt_add_executable(
+            NAME ${test_name}
+            SOURCES ${test_name}.cpp
+            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON ${quest_tests_depends} mfem mpi
+            FOLDER axom/quest/tests
+        )
+
+        set(_numMPITasks 1)
+        axom_add_test(
+            NAME ${test_name}
+            COMMAND ${test_name}_test
+            NUM_MPI_TASKS ${_numMPITasks}
+        )
+    endforeach()
+endif()
 
 #------------------------------------------------------------------------------
 # Regression tests for quest signed distance and inout queries
