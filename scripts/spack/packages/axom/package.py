@@ -151,8 +151,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         for dep in ["adiak", "caliper"]:
             depends_on("{0}+mpi".format(dep), when="+mpi")
             depends_on("{0}~mpi".format(dep), when="~mpi")
-            depends_on("{0}+shared".format(dep), when="+profiling+shared")
-            depends_on("{0}~shared".format(dep), when="+profiling~shared")
+            depends_on("{0}+shared".format(dep), when="+shared")
+            depends_on("{0}~shared".format(dep), when="~shared")
 
 
     for val in CudaPackage.cuda_arch_values:
