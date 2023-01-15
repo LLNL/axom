@@ -26,4 +26,6 @@ TEST(core_about, get_version)
 
   std::string axom_version = axom::getVersion();
   EXPECT_EQ(expected_version.str(), axom_version);
+
+  std::cout << "Version: " << axom::getVersion() << std::endl;
 }
