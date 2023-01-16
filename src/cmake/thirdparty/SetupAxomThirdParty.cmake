@@ -192,18 +192,33 @@ endif()
 if(ADIAK_DIR)
     axom_assert_is_directory(VARIABLE_NAME ADIAK_DIR)
     find_dependency(adiak REQUIRED 
-                    PATHS "${ADIAK_DIR}/lib/cmake/adiak"
-                          "${ADIAK_DIR}")
+                    PATHS "${ADIAK_DIR}"
+                          "${ADIAK_DIR}/lib/cmake/adiak")
 
     message(STATUS "Checking for expected adiak target 'adiak::adiak'")
+    # Earlier versions of adiak (before 0.2.2) did not use the adiak:: alias 
+    # or attach its include directory
+    if(TARGET adiak AND NOT TARGET adiak::adiak)
+        set_target_properties(adiak PROPERTIES IMPORTED_GLOBAL TRUE)
+        set_target_properties(adiak PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${adiak_INCLUDE_DIRS})
+        add_library(adiak::adiak ALIAS adiak)
+    endif()
+
     if (NOT TARGET adiak::adiak)
         message(FATAL_ERROR "adiak failed to load: ${ADIAK_DIR}")
     endif()
 
-    # TODO: CHECK
-    # Set the include directories as adiak does not completely configure the "adiak" target
-    set_target_properties(adiak::adiak PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES ${adiak_INCLUDE_DIRS})
+
+    # Apply patch for adiak's missing `-ldl' for mpi when built statically
+    get_target_property(_target_type adiak::adiak TYPE)
+    if(MPI_FOUND AND ${_target_type} STREQUAL "STATIC_LIBRARY")
+        if(TARGET adiak::mpi)
+            blt_patch_target(NAME adiak::mpi DEPENDS_ON dl)
+        else()
+            set_property(TARGET adiak APPEND PROPERTY INTERFACE_LINK_LIBRARIES dl)
+        endif()
+    endif()
 
     message(STATUS "adiak loaded: ${ADIAK_DIR}")
     set(ADIAK_FOUND TRUE)
@@ -219,8 +234,8 @@ if(CALIPER_DIR)
     endif()
 
     find_dependency(caliper REQUIRED 
-                    PATHS "${CALIPER_DIR}/share/cmake/caliper" 
-                          "${CALIPER_DIR}")
+                    PATHS "${CALIPER_DIR}" 
+                          "${CALIPER_DIR}/share/cmake/caliper")
 
     message(STATUS "Checking for expected caliper target 'caliper'")
     if (NOT TARGET caliper)
@@ -234,7 +249,7 @@ if(CALIPER_DIR)
     message(STATUS "caliper loaded: ${CALIPER_DIR}")
     set(CALIPER_FOUND TRUE)
 else()
-    message(STATUS "aliper support is OFF")
+    message(STATUS "caliper support is OFF")
     set(CALIPER_FOUND FALSE)
 endif()
 
