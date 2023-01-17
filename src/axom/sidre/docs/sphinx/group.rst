@@ -261,7 +261,7 @@ class.
      View* v0 = list_group->createView("");
      View* v1 = list_group->createViewScalar("", 1.0);
      View* v2 = list_group->createViewString("", "foo");
-     View* v3 = list_group->createViewg("", type, num_elems, buffer);
+     View* v3 = list_group->createView("", type, num_elems, buffer);
 
 While it is allowed to pass a non-empty string to be the name of a child
 item held in the list format, a string with path syntax, (such as
