@@ -231,10 +231,10 @@ List Format
 ----------------------------
 
 The list format is an alternate way for a group to hold its child groups and
-view. In this format, any number of child group or view items can be created to
-be held and accessed like a list, using iterators that iterate in the order
-that they were added to the parent group. Child groups and views held in the
-list format cannot be accessed by name.
+views. In list format, any number of child group or view items can be created.
+Each can be accessed, in order of creation, using an iterator over groups or
+over views. Child groups and views held in list format cannot be accessed by
+name.
 
 To create a group that uses the list format, the optional argument ``is_list``
 must be set to ``true`` in the call to ``createGroup``.
