@@ -923,6 +923,48 @@ public:
     return cfgf;
   }
 
+  // The replacement rules operate on the current shape's material as well as the
+  // rest of the materials since they need to be updated to sum to 1. When adding
+  // a volume fraction to a zone, the code adds the allowed amount to the zone.
+  // In most cases, this is just the computed material volume, though it can be
+  // restricted by amounts of other materials if replacing materials. Once a
+  // volume fraction has been added, a list of update materials is iterated and
+  // a corresponding amount is subtracted from them. This update list consists of
+  // "completely free", all non-shape  materials, and finally the shape material
+  // itself. The shape material is added at the end in case the initial volume
+  // fraction addition exceeded 1.
+  //
+  // The "completely free" material (CF) represents any volume fraction in the
+  // zones that has not been assigned to any material. We subtract from CF first
+  // as part of the update process so we do not have to subtract from real materials
+  // in the event that a zone is not full.
+  //
+  // The list of update materials depends on the shape's material replacement rule.
+  //
+  // Example:
+  //                        update mats
+  //                        |---->
+  //
+  //                  mat1  |  CF     mat0
+  //                  ---------------------
+  // add 0.4 mat1  -> | 0.4 | 0.2  | 0.4  |
+  //                  ---------------------
+  //
+  //                  mat1     CF     mat0     subtract
+  //                  ---------------------    -------
+  //                  | 0.8 | 0.2  | 0.4  |    | 0.4 |  (added 0.4 to mat1)
+  //                  ---------------------    -------
+  //
+  //                  mat1     CF     mat0     subtract
+  //                  ---------------------    -------
+  //                  | 0.8 | 0.0  | 0.4  |    | 0.2 |  (subtracted 0.2 from CF)
+  //                  ---------------------    -------
+  //
+  //                  mat1     CF     mat0     subtract
+  //                  ---------------------    -------
+  //                  | 0.8 | 0.0  | 0.2  |    | 0.0 |  (subtracted 0.2 from mat0)
+  //                  ---------------------    -------
+  //
   template <typename ExecSpace>
   void applyReplacementRulesImpl(const klee::Shape& shape)
   {
