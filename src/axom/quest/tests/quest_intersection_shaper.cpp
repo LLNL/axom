@@ -101,8 +101,8 @@ psplit(const std::string &filepath, std::string &path, std::string &filename)
 std::string
 dataDirectory()
 {
-// TEMP
-  return "/usr/WS2/whitlocb/Axom/axom_data";
+  // TEMP
+  //return "/usr/WS2/whitlocb/Axom/axom_data";
 
   return AXOM_DATA_DIR;
 }
