@@ -29,11 +29,16 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <sys/stat.h>
 // _quest_intersection_shaper_include_end
 
 //#define AXOM_SEQ_INTERSECTION_SHAPER_WORKS
-#define GENERATE_BASELINES
-#define VISUALIZE_DATASETS
+
+// Uncomment this macro to regenerate baseline YAML files.
+//#define GENERATE_BASELINES
+
+// Uncomment this macro to save MFEM datasets for use in VisIt.
+//#define VISUALIZE_DATASETS
 
 std::vector<std::string> case1{
   "shaping/case1/case1_012.yaml",
@@ -82,23 +87,15 @@ namespace klee = axom::klee;
 std::string
 pjoin(const std::string &path, const std::string &filename)
 {
-  return path + "/" + filename;
+  return axom::utilities::filesystem::joinPath(path, filename);
 }
 
 void
 psplit(const std::string &filepath, std::string &path, std::string &filename)
 {
-  auto idx = filepath.rfind("/");
-  if(idx != std::string::npos)
-  {
-    path = filepath.substr(0, idx);
-    filename = filepath.substr(idx+1, filepath.size()-1-idx-1);
-  }
-  else
-  {
-    path = "";
-    filename = filepath;
-  }
+  axom::Path p(filepath);
+  path = p.dirName();
+  filename = p.baseName();
 }
 
 std::string
@@ -135,8 +132,8 @@ yaml_root(const std::string &filepath)
   return retval;
 }
 
-mfem::GridFunction *
-newGridFunction(mfem::Mesh *mesh)
+mfem::GridFunction*
+newGridFunction(mfem::Mesh* mesh)
 {
   const int vfOrder = 0;
   const int dim = mesh->Dimension();
@@ -150,7 +147,7 @@ newGridFunction(mfem::Mesh *mesh)
 }
 
 void
-makeTestMesh(sidre::MFEMSidreDataCollection &dc)
+makeTestMesh(sidre::MFEMSidreDataCollection &dc, bool initialMats)
 {
   int polynomialOrder = 1;
   double lo[] = {0., 0., -0.25};
@@ -168,81 +165,26 @@ makeTestMesh(sidre::MFEMSidreDataCollection &dc)
   dc.SetMeshNodesName("positions");
   dc.SetMesh(mesh);
 
-#if 0
   // This mode will make 2 clean materials in the mesh.
-  mfem::GridFunction *mata = newGridFunction(mesh);
-  mfem::GridFunction *matb = newGridFunction(mesh);
-  for(int k = 0; k < celldims[2]; k++)
+  if(initialMats)
   {
-    for(int j = 0; j < celldims[1]; j++)
+    mfem::GridFunction* mata = newGridFunction(mesh);
+    mfem::GridFunction* matb = newGridFunction(mesh);
+    for(int k = 0; k < celldims[2]; k++)
     {
-      for(int i = 0; i < celldims[0]; j++)
+      for(int j = 0; j < celldims[1]; j++)
       {
-        int id = k*celldims[1]*celldims[0] + j*celldims[0] + i;
-        (*mata)(id) = (j < celldims[1]/2);
-        (*matb)(id) = (j >= celldims[1]/2);
-      }
-    }
-  }
-  dc.RegisterField("vol_frac_a", mata);
-  dc.RegisterField("vol_frac_b", matb);
-#endif
-}
-
-bool
-compareGF(const mfem::GridFunction *baselineGF, const mfem::GridFunction *newGF,
-  double tolerance)
-{
-  bool retval = false;
-  if(baselineGF->Size() == newGF->Size())
-  {
-    const double *bgf = baselineGF->GetData();
-    const double *ngf = newGF->GetData();
-    double maxdiff = 0.;
-    for(int i = 0; i < baselineGF->Size(); i++)
-    {
-      double diff = fabs(bgf[i] - ngf[i]);
-      maxdiff = std::max(maxdiff, diff);
-      if(diff > tolerance)
-      {
-        cout << "Grid functions differ at index " << i << ". maxdiff=" << maxdiff << endl;
-        retval = false;
-        break;
-      }
-    }
-    retval = true;
-  }
-  return retval;
-}
-
-// compare the volume fraction fields in the DCs.
-bool
-compareDC(sidre::MFEMSidreDataCollection &baselineDC,
-  sidre::MFEMSidreDataCollection &newDC, double tolerance)
-{
-  for(auto it : baselineDC.GetFieldMap())
-  {
-    // Just compare vol_frac_ grid functions.
-    if(it.first.find("vol_frac_") != std::string::npos)
-    {
-      // The field is a shape or volfrac.
-      auto newGF = newDC.GetField(it.first);
-      if(newGF)
-      {
-        if(!compareGF(it.second, newGF, tolerance))
+        for(int i = 0; i < celldims[0]; i++)
         {
-          cout << "Grid function " << it.first << " does not match baseline." << endl;
-          return false;
+          int id = k*celldims[1]*celldims[0] + j*celldims[0] + i;
+          (*mata)(id) = (i < celldims[0]/2);
+          (*matb)(id) = (i >= celldims[0]/2);
         }
       }
-      else
-      {
-        cout << "Grid function " << it.first << " does not exist in new data collection." << endl;
-        return false;
-      }
     }
+    dc.RegisterField("vol_frac_a", mata);
+    dc.RegisterField("vol_frac_b", matb);
   }
-  return true;
 }
 
 // Save Sidre as VisIt
@@ -258,7 +200,9 @@ saveVisIt(const std::string &path, const std::string &filename, sidre::MFEMSidre
   for(auto it : dc.GetFieldMap())
   {
     if(it.first.find("vol_frac_") != std::string::npos)
+    {
       vdc.RegisterField(it.first, it.second);
+    }
   } 
   vdc.Save();
 }
@@ -279,32 +223,102 @@ loadVisIt(mfem::VisItDataCollection &vdc, sidre::MFEMSidreDataCollection &dc)
   } 
 }
 
+// Turn a MFEMSidreDataCollection's fields into a simple Conduit node so
+// I/O is not so problematic.
+void
+dcToConduit(sidre::MFEMSidreDataCollection &dc, conduit::Node &n)
+{
+  for(auto it : dc.GetFieldMap())
+  {
+    // Just compare vol_frac_ grid functions.
+    if(it.first.find("vol_frac_") != std::string::npos)
+    {
+      n[it.first].set(it.second->GetData(), it.second->Size());
+    }
+  }
+}
+
+bool
+compareConduit(const conduit::Node &n1, const conduit::Node &n2, double tolerance,
+  conduit::Node &info)
+{
+  bool same = true;
+  if(n1.dtype().id() == n2.dtype().id() && n1.dtype().is_floating_point())
+  {
+    const auto a1 = n1.as_double_accessor();
+    const auto a2 = n2.as_double_accessor();
+    double maxdiff = 0.;
+    for(int i = 0; i < a1.number_of_elements() && same; i++)
+    {
+      double diff = fabs(a1[i] - a2[i]);
+      maxdiff = std::max(diff, maxdiff);
+      same &= diff <= tolerance;
+      if(!same)
+      {
+        info.append().set(axom::fmt::format("\"{}\" fields differ at index {}.", n1.name(), i));
+      }
+    }
+    info["maxdiff"][n1.name()] = maxdiff;
+  }
+  else
+  {
+    for(int i = 0; i < n1.number_of_children() && same; i++)
+    {
+      const auto &n1c = n1.child(i);
+      const auto &n2c = n2.fetch_existing(n1c.name());
+      same &= compareConduit(n1c, n2c, tolerance, info);
+    }
+  }
+  return same;
+}
+
+// NOTE: The baselines are read/written using Conduit directly because the 
+//       various data collections in Sidre, MFEM, VisIt all exhibited problems
+//       either saving or loading the data.
+void
+saveBaseline(const std::string &filename, const conduit::Node &n)
+{
+  std::string file_with_ext(filename + ".yaml");
+  SLIC_INFO(axom::fmt::format("Save baseline ", file_with_ext));
+  conduit::relay::io::save(n, file_with_ext, "yaml");
+}
+
+bool
+loadBaseline(const std::string &filename, conduit::Node &n)
+{
+  bool loaded = false;
+  std::string file_with_ext(filename + ".yaml");
+  SLIC_INFO(axom::fmt::format("Load baseline {}", file_with_ext));
+  // Check before we read because Sidre installs a conduit error handler
+  // that terminates.
+  if(axom::utilities::filesystem::pathExists(file_with_ext))
+  {
+    conduit::relay::io::load(file_with_ext, "yaml", n);
+    loaded = true;
+  }
+  return loaded;
+}
+
 void
 replacementRuleTest(const std::string &shapeFile, const std::string &policyName,
-  int policy, double tolerance)
+  int policy, double tolerance, bool initialMats = false)
 {
   // Make potential baseline filenames for this test. Make a policy-specific
   // baseline that we can check first. If it is not present, the next baseline
   // is tried.
   std::string baselineName(yaml_root(shapeFile));
+  if(initialMats)
+    baselineName += "_initial_mats";
   std::vector<std::string> baselinePaths;
   // Example /path/to/axom/src/quest/tests/baseline/quest_intersection_shaper/cuda
   baselinePaths.push_back(pjoin(baselineDir(), policyName));
   // Example: /path/to/axom/src/quest/tests/baseline/quest_intersection_shaper/
   baselinePaths.push_back(baselineDir());
 
-#if 0
-  // Get the test info so we can use it to help construct baseline names.
-  const testing::TestInfo* const test_info =
-    testing::UnitTest::GetInstance()->current_test_info();
-  printf("We are in test %s of test suite %s.\n",
-         test_info->name(),
-#endif
-
   // Need to make a target mesh
   SLIC_INFO(axom::fmt::format("Creating dc {}", baselineName));
   sidre::MFEMSidreDataCollection dc(baselineName, nullptr, true);
-  makeTestMesh(dc);
+  makeTestMesh(dc, initialMats);
 
   // Set up shapes.
   SLIC_INFO(axom::fmt::format("Reading shape set from {}", shapeFile));
@@ -355,6 +369,10 @@ replacementRuleTest(const std::string &shapeFile, const std::string &policyName,
     slic::flushStreams();
   }
 
+  // Wrap the parts of the dc data we want in the baseline as a conduit node.
+  conduit::Node current;
+  dcToConduit(dc, current);
+
 #ifdef VISUALIZE_DATASETS
   saveVisIt("", baselineName, dc);
 #endif
@@ -362,14 +380,9 @@ replacementRuleTest(const std::string &shapeFile, const std::string &policyName,
   for(const auto &path : baselinePaths)
   {
     SLIC_INFO(axom::fmt::format("Saving baseline to {}", path));
-#if 0
-    saveVisIt(path, baselineName, dc);
-#else
-    dc.SetPrefixPath(path);
-    dc.SetCycle(0);
-    dc.SetPadDigits(0);
-    dc.Save();
-#endif
+    axom::utilities::filesystem::makeDirsForPath(path);
+    std::string filename(pjoin(path, baselineName));
+    saveBaseline(filename, current);
   }
 #endif
 
@@ -381,49 +394,17 @@ replacementRuleTest(const std::string &shapeFile, const std::string &policyName,
   {
     try
     {
-#if 0
-/**
- This approach does not work because MFEM decides to mess up the filename.
-
-MFEM Warning: Unable to open mesh file: /usr/WS2/whitlocb/Axom/axom_data/quest/regression/quest_intersection_shaper/omp/case1_000000/mesh.000000
- ... in function: void mfem::VisItDataCollection::LoadMesh()
- ... in file: fem/datacollection.cpp:574
-
- */
-
-      // Load as VisIt and turn into Sidre. This is easier than getting Sidre
-      // to read the data.
-      mfem::VisItDataCollection vdc(baselineName);
-      vdc.SetFormat(mfem::DataCollection::SERIAL_FORMAT);
-      vdc.SetPrefixPath(path);
-      vdc.Load();
-      sidre::MFEMSidreDataCollection baselineDC(baselineName, nullptr, false);
-      loadVisIt(vdc, baselineDC);
-#else
-
-/**
-This approach using Sidre fails because it thinks that the volume fraction arrays
-do not conform to the blueprint. Well, that has to be Sidre's fault since it wrote
-the data.
-
-WARNING in line 723 of file /usr/WS2/whitlocb/Axom/axom/src/axom/sidre/core/MFEMSidreDataCollection.cpp]
-MESSAGE=MFEMSidreDataCollection blueprint verification failed:
-*/
-      // Try loading the baseline.
-      SLIC_INFO(axom::fmt::format("Load baseline {} from {}", baselineName, path));
-      sidre::MFEMSidreDataCollection baselineDC(baselineName, nullptr, true);
-      baselineDC.SetPrefixPath(path);
-#ifdef AXOM_USE_MPI
-      baselineDC.SetComm(MPI_COMM_WORLD);
-#endif
-      // Make sure that the data collection does not include cycle in the name.
-      baselineDC.SetPadDigits(0);
-      baselineDC.Load();
-#endif
-      // Compare the baseline to the current DC.
-      SLIC_INFO(axom::fmt::format("Comparing to baseline ", pjoin(path,baselineName)));
-      success = compareDC(dc, baselineDC, tolerance);
-      break;
+      // Load the baseline file.
+      conduit::Node info, baselineNode;
+      std::string filename(pjoin(path, baselineName));
+      if(loadBaseline(filename, baselineNode))
+      {
+        // Compare the baseline to the current DC.
+        SLIC_INFO(axom::fmt::format("Comparing to baseline ", filename));
+        success = compareConduit(current, baselineNode, tolerance, info);
+        info.print();
+        break;
+      }
     }
     catch(...)
     {
@@ -435,11 +416,12 @@ MESSAGE=MFEMSidreDataCollection blueprint verification failed:
 
 void
 replacementRuleTestSet(const std::vector<std::string> &cases,
-  const std::string &policyName, int policy, double tolerance)
+  const std::string &policyName, int policy, double tolerance,
+  bool initialMats = false)
 {
   for(const auto &c : cases)
   {
-    replacementRuleTest(testData(c), policyName, policy, tolerance);
+    replacementRuleTest(testData(c), policyName, policy, tolerance, initialMats);
   }
 }
 
@@ -447,29 +429,122 @@ replacementRuleTestSet(const std::vector<std::string> &cases,
 #if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
 TEST(IntersectionShaperTest, case1_seq)
 {
-  constexpr double tolerance = 1.e-8;
+  constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case1, "seq", quest::IntersectionShaper::seq, tolerance);
 }
 #endif
 #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, case1_omp)
 {
-  constexpr double tolerance = 1.e-8;
+  constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case1, "omp", quest::IntersectionShaper::omp, tolerance);
+
+  // Include a version that has some initial materials.
+  replacementRuleTestSet(case1, "omp", quest::IntersectionShaper::omp, tolerance, true);
 }
 #endif
 #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, case1_cuda)
 {
-  constexpr double tolerance = 1.e-8;
+  constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case1, "cuda", quest::IntersectionShaper::cuda, tolerance);
 }
 #endif
 #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, case1_hip)
 {
-  constexpr double tolerance = 1.e-8;
+  constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case1, "hip", quest::IntersectionShaper::hip, tolerance);
+}
+#endif
+
+// case2
+#if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
+TEST(IntersectionShaperTest, case2_seq)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case2, "seq", quest::IntersectionShaper::seq, tolerance);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, case2_omp)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case2, "omp", quest::IntersectionShaper::omp, tolerance);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, case2_cuda)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case2, "cuda", quest::IntersectionShaper::cuda, tolerance);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, case2_hip)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case2, "hip", quest::IntersectionShaper::hip, tolerance);
+}
+#endif
+
+// case3
+#if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
+TEST(IntersectionShaperTest, case3_seq)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case3, "seq", quest::IntersectionShaper::seq, tolerance);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, case3_omp)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case3, "omp", quest::IntersectionShaper::omp, tolerance);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, case3_cuda)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case3, "cuda", quest::IntersectionShaper::cuda, tolerance);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, case3_hip)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case3, "hip", quest::IntersectionShaper::hip, tolerance);
+}
+#endif
+
+// case4
+#if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
+TEST(IntersectionShaperTest, case4_seq)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case4, "seq", quest::IntersectionShaper::seq, tolerance);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, case4_omp)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case4, "omp", quest::IntersectionShaper::omp, tolerance);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, case4_cuda)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case4, "cuda", quest::IntersectionShaper::cuda, tolerance);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, case4_hip)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(case4, "hip", quest::IntersectionShaper::hip, tolerance);
 }
 #endif
 
