@@ -813,7 +813,7 @@ private:
   }
 
   // Gets the grid function and material number for a material name.
-  std::pair<mfem::GridFunction *, int> getMaterial(const std::string &materialName)
+  std::pair<mfem::GridFunction* , int> getMaterial(const std::string &materialName)
   {
     // If we already know about the material, return it.
     for(size_t i = 0; i < m_vf_material_names.size(); i++)
@@ -887,10 +887,10 @@ public:
   // Make a new grid function that contains all of the free space not occupied
   // by existing materials.
   template <typename ExecSpace>
-  mfem::GridFunction *getCompletelyFree()
+  mfem::GridFunction* getCompletelyFree()
   {
     const std::string fieldName("completely_free");
-    mfem::GridFunction *cfgf = nullptr;
+    mfem::GridFunction* cfgf = nullptr;
     if(this->getDC()->HasField(fieldName))
       cfgf = this->getDC()->GetField(fieldName);
     else
@@ -991,8 +991,8 @@ public:
     const int current_allocator = axom::getDefaultAllocatorID();
     int replacement_allocator = axom::execution_space<ExecSpace>::allocatorID();
     axom::setDefaultAllocator(replacement_allocator);
-    double *vf_subtract = axom::allocate<double>(dataSize);
-    double *vf_writable = axom::allocate<double>(dataSize);
+    double* vf_subtract = axom::allocate<double>(dataSize);
+    double* vf_writable = axom::allocate<double>(dataSize);
 
 #ifdef REPLACEMENT_RULE_DEBUG_PRINT
     int values_per_line = 20;
@@ -1023,8 +1023,8 @@ public:
 #endif
 
     // Determine which grid functions need to be considered for VF updates.
-    std::vector<std::pair<mfem::GridFunction *,int>> gf_order_by_matnumber;
-    std::vector<mfem::GridFunction *> updateVFs, excludeVFs;
+    std::vector<std::pair<mfem::GridFunction*, int>> gf_order_by_matnumber;
+    std::vector<mfem::GridFunction*> updateVFs, excludeVFs;
     if(!shape.getMaterialsReplaced().empty())
     {
       // Include materials replaced in updateVFs.
@@ -1075,8 +1075,8 @@ public:
     }
     // Sort eligible update materials by material number.
     std::sort(gf_order_by_matnumber.begin(), gf_order_by_matnumber.end(),
-      [&](const std::pair<mfem::GridFunction *, int> &lhs,
-          const std::pair<mfem::GridFunction *, int> &rhs)
+      [&](const std::pair<mfem::GridFunction*, int> &lhs,
+          const std::pair<mfem::GridFunction*, int> &rhs)
     {
       return lhs.second < rhs.second;
     });
@@ -1203,10 +1203,10 @@ public:
             constexpr double INSIGNIFICANT_VOLFRAC = 1.e-14;
             double s = (matVFView[i] <= vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
             matVFView[i] -= s;
-            // Turn any slight zeroes or positive insignificant volume fractions to zero.
+            // Turn any slight negatives or positive insignificant volume fractions to zero.
             matVFView[i] = (matVFView[i] < INSIGNIFICANT_VOLFRAC) ? 0. : matVFView[i];
             vf_subtract[i] -= s;
-        });
+          });
       }
     });
 
