@@ -135,8 +135,8 @@ public:
    * \param [in] count The number of elements to include in the subspan, or -1
    *  to take all elements after offset (default).
    *
-   * \return A subspan ArrayView that spans the indices [offsets, offsets + count),
-   *  or [offsets, num_elements) if count == -1.
+   * \return A subspan ArrayView that spans the indices [offset, offset + count),
+   *  or [offset, num_elements) if count == -1.
    *
    * \pre offset + count <= m_num_elements if count != -1
    */
@@ -146,7 +146,11 @@ public:
     assert(offset + count <= m_num_elements);
     ArrayView slice = *this;
     slice.m_data += offset;
-    if(count != -1)
+    if(count == -1)
+    {
+      slice.m_num_elements -= offset;
+    }
+    else
     {
       slice.m_num_elements = count;
     }

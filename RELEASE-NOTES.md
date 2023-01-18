@@ -42,6 +42,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updates uberenv submodule to HEAD of main on 28Dec2022
 - Updates blt submodule to HEAD of develop on 28Dec2022
 - Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
+- Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
