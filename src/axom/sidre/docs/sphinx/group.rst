@@ -264,9 +264,9 @@ class.
      View* v3 = list_group->createView("", type, num_elems, buffer);
 
 While it is allowed to pass a non-empty string to be the name of a child
-item held in the list format, a string with path syntax, (such as
-``"foo/bar/baz"``) will be considered invalid, and the object creation methods
-will return a null pointer if such a string is provided.
+item held in the list format, a string with path syntax, like
+``"foo/bar/baz"``, will be considered invalid, and the object creation methods
+will return a nullptr if such a string is provided.
 
   .. code-block:: C++
 
