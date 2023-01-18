@@ -114,13 +114,13 @@ testData(const std::string &filename)
 }
 
 std::string
-baselineDir()
+baselineDirectory()
 {
   return pjoin(pjoin(pjoin(dataDirectory(), "quest"), "regression"), "quest_intersection_shaper");
 }
 
 std::string
-yaml_root(const std::string &filepath)
+yamlRoot(const std::string &filepath)
 {
   std::string retval, path, filename;
   psplit(filepath, path, filename);
@@ -306,14 +306,14 @@ replacementRuleTest(const std::string &shapeFile, const std::string &policyName,
   // Make potential baseline filenames for this test. Make a policy-specific
   // baseline that we can check first. If it is not present, the next baseline
   // is tried.
-  std::string baselineName(yaml_root(shapeFile));
+  std::string baselineName(yamlRoot(shapeFile));
   if(initialMats)
     baselineName += "_initial_mats";
   std::vector<std::string> baselinePaths;
   // Example /path/to/axom/src/quest/tests/baseline/quest_intersection_shaper/cuda
-  baselinePaths.push_back(pjoin(baselineDir(), policyName));
+  baselinePaths.push_back(pjoin(baselineDirectory(), policyName));
   // Example: /path/to/axom/src/quest/tests/baseline/quest_intersection_shaper/
-  baselinePaths.push_back(baselineDir());
+  baselinePaths.push_back(baselineDirectory());
 
   // Need to make a target mesh
   SLIC_INFO(axom::fmt::format("Creating dc {}", baselineName));
