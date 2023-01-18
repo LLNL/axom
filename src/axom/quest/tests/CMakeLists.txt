@@ -153,7 +153,7 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
     foreach(test ${quest_mpi_mfem_data_tests})
         get_filename_component( test_name ${test} NAME_WE )
         blt_add_executable(
-            NAME ${test_name}
+            NAME ${test_name}_test
             SOURCES ${test_name}.cpp
             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
             DEPENDS_ON ${quest_tests_depends} mfem mpi
