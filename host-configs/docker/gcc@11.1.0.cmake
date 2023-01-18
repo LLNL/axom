@@ -73,11 +73,11 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
 
 # C2C not built
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.4.0" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4" CACHE PATH "")
 
 set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0" CACHE PATH "")
 

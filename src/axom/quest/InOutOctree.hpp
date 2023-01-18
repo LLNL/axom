@@ -709,7 +709,7 @@ void InOutOctree<DIM>::insertMeshCells()
           this->isInternal(blk),
           fmt::format(
             "Block {} was refined, so it should be marked as internal.",
-            blk));
+            fmt::streamed(blk)));
 
         /// Setup caches for data associated with children
         BlockIndex childBlk[BlockIndex::NUM_CHILDREN];
@@ -898,7 +898,7 @@ void InOutOctree<DIM>::colorOctreeLeaves()
                     "First problem block is: {}",
                     lev,
                     uncoloredBlocks.size(),
-                    BlockIndex(uncoloredBlocks[0], lev)));
+                    fmt::streamed(BlockIndex(uncoloredBlocks[0], lev))));
     }
 
     if(!levelLeafMap.empty())
@@ -1459,7 +1459,7 @@ bool InOutOctree<DIM>::within(const SpacePt& pt) const
         false,
         fmt::format("Error -- All leaf blocks must have a color. The color of "
                     "leafBlock {} was 'Undetermined' when querying point {}",
-                    block,
+                    fmt::streamed(block),
                     pt));
       break;
     }

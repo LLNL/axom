@@ -9,6 +9,7 @@
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic/interface/slic.hpp"
+#include "axom/fmt.hpp"
 
 #include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -419,5 +420,10 @@ std::ostream& operator<<(std::ostream& os, const Triangle<T, NDIMS>& tri)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Triangle using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Triangle<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_TRIANGLE_HPP_

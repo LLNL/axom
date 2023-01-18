@@ -94,6 +94,7 @@ set(core_sources
 #------------------------------------------------------------------------------
 
 set( core_depends fmt )
+blt_list_append( TO core_depends ELEMENTS camp IF CAMP_FOUND )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
 

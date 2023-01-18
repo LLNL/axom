@@ -19,15 +19,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-### Changed
-- `DistributedClosestPoint` query now supports any blueprint-valid mesh format, including multidomain.
-   Domain underloading and overloading can be expressed using multidomain format.  Closest points are
-   identified by cp_rank, cp_domain_index, and cp_index.  The new cp_domain_index specifies the
-   domain containing the closest point.
-- `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
-  changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
-  interfacing variables.
-
 ### Added
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element
@@ -39,6 +30,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `axom::Array` move constructors are now `noexcept`.
 - Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`
   to guard against conflicts.
+- `DistributedClosestPoint` query now supports any blueprint-valid mesh format, including multidomain.
+   Domain underloading and overloading can be expressed using multidomain format.  Closest points are
+   identified by cp_rank, cp_domain_index, and cp_index.  The new cp_domain_index specifies the
+   domain containing the closest point.
+- `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
+  changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
+  interfacing variables.
+- Updates mfem dependency to v4.5
+- Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
+- Updates uberenv submodule to HEAD of main on 28Dec2022
+- Updates blt submodule to HEAD of develop on 28Dec2022
+- Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
@@ -122,10 +125,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   fields.
 - Adds functions to compute winding numbers and in/out queries for `Polygon` and `CurvedPolygon` objects.
 - Adds `constants.hpp` to primal to track geometric constants. Initially includes
-  a value for `PRIMAL_TINY`, a small constant that can be added to 
+  a value for `PRIMAL_TINY`, a small constant that can be added to
   denominators to avoid division by zero.
-- `DistributedClosestPoint` query now supports "domain underloading" -- ranks that are passed in can 
-  have empty object meshes and/or empty query meshes 
+- `DistributedClosestPoint` query now supports "domain underloading" -- ranks that are passed in can
+  have empty object meshes and/or empty query meshes
 - 'BezierCurve' objects now support Rational Bezier curve functionality
 - Primal: Adds a `clip()` operator for computing the intersection of a `Tetrahedron` and another `Tetrahedron` as a `Polyhedron`
 - Added `slic::outputLocalMessages()` to output messages from the current rank to the console for MPI-enabled LogStreams.

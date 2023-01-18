@@ -372,7 +372,7 @@ public:
           const auto& pos = m_mesh.getVertexPosition(vertex_idx);
           const auto element = this->getElement(element_idx);
           const auto circumsphere = element.circumsphere();
-          fmt::format_to(out,
+          fmt::format_to(std::back_inserter(out),
                          "\n\tVertex {} @ {}"
                          "\n\tElement {}: {} w/ circumsphere: {}"
                          "\n\tDistance to circumcenter: {}",

@@ -34,7 +34,6 @@
 #include "mfem.hpp"
 
 #include "axom/fmt.hpp"
-#include "axom/fmt/locale.h"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
@@ -660,11 +659,13 @@ public:
       "{:-^80}",
       " Decomposing each hexahedron element into 24 tetrahedrons "));
 
+    using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
+
     AXOM_PERF_MARK_SECTION("init_tets",
                            axom::for_all<ExecSpace>(
                              NE,
                              AXOM_LAMBDA(axom::IndexType i) {
-                               TetrahedronType cur_tets[NUM_TETS_PER_HEX];
+                               TetHexArray cur_tets;
                                decompose_hex_to_tets(local_hexes[i], cur_tets);
 
                                for(int j = 0; j < NUM_TETS_PER_HEX; j++)

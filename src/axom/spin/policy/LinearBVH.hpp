@@ -76,7 +76,10 @@ public:
   {
     auto traversePref = [](const BoxType& l, const BoxType& r, const PointType& p) {
       double sqDistL = primal::squared_distance(p, l.getCentroid());
-      double sqDistR = primal::squared_distance(p, r.getCentroid());
+      // If the right bbox is not valid, return max. Otherwise, the invalid right
+      // bbox might actually win when we should ignore it.
+      double sqDistR = r.isValid() ? primal::squared_distance(p, r.getCentroid())
+                                   : std::numeric_limits<double>::max();
       return sqDistL > sqDistR;
     };
 

@@ -5,8 +5,11 @@
   "description": "Host-config generator for Axom TPLs",
   "dependencies": ["blt"],
   "default-features": [
+    "conduit",
     "mfem",
-    "conduit"
+    "openmp",
+    "raja",
+    "umpire"
   ],
   "features": {
     "mfem": {
@@ -16,6 +19,31 @@
     "conduit": {
       "description": "conduit functionality for axom",
       "dependencies": ["conduit"]
+    },
+    "raja": {
+      "description": "raja functionality for axom",
+      "dependencies": ["raja"]
+    },
+    "umpire": {
+      "description": "umpire functionality for axom",
+      "dependencies": ["umpire"]
+    },
+    "openmp": {
+      "description": "openmp functionality for axom",
+      "dependencies": [
+        {
+          "name": "raja",
+          "features": [
+            "openmp"
+          ]
+        },
+        {
+          "name": "umpire",
+          "features": [
+            "openmp"
+          ]
+        }
+      ]
     }
   },
   "supports": "!uwp"
