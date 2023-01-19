@@ -1018,6 +1018,7 @@ std::cout << "explicitly_move_memory: 2" << std::endl;
     double* vf_writable = axom::allocate<double>(dataSize, execSpaceAllocatorID);
 #ifdef EXPLICITLY_MOVE_MEMORY
 std::cout << "explicitly_move_memory: 3" << std::endl;
+std::cout << "\tdataSize=" << dataSize << std::endl;
 std::cout << "\tdefault allocator = " << axom::getDefaultAllocatorID() << std::endl;
 std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
 
@@ -1209,20 +1210,19 @@ std::cout << "explicitly_move_memory: 6" << std::endl;
       axom::copy(matVFView, matVF.first->GetData(), sizeof(double) * dataSize);
       axom::copy(shapeVFView, shapeVolFrac->GetData(), sizeof(double) * dataSize);
 std::cout << "explicitly_move_memory: 6.1" << std::endl;
-
-      
-
-
 #else
       ArrayView<double> matVFView(matVF.first->GetData(), dataSize);
       ArrayView<double> shapeVFView(shapeVolFrac->GetData(), dataSize);
 #endif
+      // Workaround for HIP so we do not capture through "this" pointer.
+      double* local_overlap_volumes = m_overlap_volumes;
+      double* local_hex_volumes = m_hex_volumes;
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
           // Update this material's VF and vf_subtract, which is the
           // amount to subtract from the gf's in updateVF.
-          double vf = (m_overlap_volumes[i] / m_hex_volumes[i]);
+          double vf = (local_overlap_volumes[i] / local_hex_volumes[i]);
 
           // Write at most the writable amount.
           double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
