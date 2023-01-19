@@ -97,7 +97,7 @@ inline IndexType getViewShapeImpl<2>(int dim, const View* view)
  *
  *  Objects of the sidre::Array class may be constructed from a View.
  *  All array operations can be performed as with the base
- *  axom::utilities::Array class.  The size of the Array can grow as needed,
+ *  axom::Array class.  The size of the Array can grow as needed,
  *  and all memory management is delegated to Sidre.
  *
  *  \note When the Array object is deleted, it does not delete the associated

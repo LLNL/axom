@@ -58,7 +58,10 @@ compilers:
 - compiler:
     environment: {}
     extra_rpaths: []
-    flags: {}
+    flags:
+      cflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
+      cxxflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
+      fflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
     modules: []
     operating_system: rhel7
     paths:
@@ -71,7 +74,10 @@ compilers:
 - compiler:
     environment: {}
     extra_rpaths: []
-    flags: {}
+    flags:
+      cflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
+      cxxflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
+      fflags: --gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1
     modules: []
     operating_system: rhel7
     paths:

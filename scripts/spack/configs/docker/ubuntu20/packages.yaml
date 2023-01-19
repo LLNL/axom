@@ -103,8 +103,7 @@ packages:
     version: [2.24.0]
   # do shared mfem to allow PIC flag in mfem
   mfem:
-    version: [4.4.0]
-    variants: +shared~static
+    require: "@4.5+shared~static"
   raja:
     variants: ~shared~examples~exercises
   scr:

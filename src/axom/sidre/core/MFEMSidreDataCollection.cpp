@@ -1498,15 +1498,11 @@ void MFEMSidreDataCollection::RegisterQField(const std::string& field_name,
   //                                               integration order and vector dimension
   //                                               "QF_Default_[ORDER]_[VDIM]"
 
-  // Set the "basis" string using the qf's order and vdim, overwrite if
-  // necessary.
+  // Set the "basis" string using the qf's order and vdim, overwrite if necessary
   sidre::View* v = alloc_view(grp, "basis");
   // In the future, we should be able to have mfem::QuadratureFunction provide us this name.
-  // FIXME: QF order can be retrieved directly as of MFEM 4.3
   const std::string basis_name =
-    fmt::format("QF_Default_{0}_{1}",
-                qf->GetSpace()->GetElementIntRule(0).GetOrder(),
-                qf->GetVDim());
+    fmt::format("QF_Default_{0}_{1}", qf->GetSpace()->GetOrder(), qf->GetVDim());
   v->setString(basis_name);
 
   // Set the topology of the QuadratureFunction.
@@ -2644,12 +2640,18 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
     else
     {
       m_owned_quadfuncs.emplace_back(
-        new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(),
-                                     values,
-                                     vdim));
+        new mfem::QuadratureFunction(m_quadspaces.at(basis_name).get(), vdim));
+
+      // FIXME: A bug was fixed in QuadratureFunction::SetSpace after mfem@4.5
+      // See: https://github.com/mfem/mfem/pull/3281
+      // Update using the following when possible to avoid an unnecessary allocation in the constructor
+      // (1) Use default Quadrature function constructor
+      // (2) Use qf->SetSpace(qs, values, vdim);
+      auto* qf = m_owned_quadfuncs.back().get();
+      qf->NewDataAndSize(values, vdim * qf->GetSpace()->GetSize());
+
       // Register a non-owning pointer with the base subobject
-      DataCollection::RegisterQField(field_grp->getName(),
-                                     m_owned_quadfuncs.back().get());
+      DataCollection::RegisterQField(field_grp->getName(), qf);
     }
   }
 }

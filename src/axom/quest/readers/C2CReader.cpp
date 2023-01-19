@@ -12,6 +12,12 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
+#include "axom/fmt.hpp"
+
+/// Overload to format a c2c::Point using fmt
+template <>
+struct axom::fmt::formatter<c2c::Point> : ostream_formatter
+{ };
 
 namespace axom
 {

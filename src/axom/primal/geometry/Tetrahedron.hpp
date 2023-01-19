@@ -284,4 +284,10 @@ std::ostream& operator<<(std::ostream& os, const Tetrahedron<T, NDIMS>& tet)
 }  // namespace primal
 }  // namespace axom
 
+/// Overload to format a primal::Tetrahedron using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Tetrahedron<T, NDIMS>>
+  : ostream_formatter
+{ };
+
 #endif  // AXOM_PRIMAL_TETRAHEDRON_HPP_
