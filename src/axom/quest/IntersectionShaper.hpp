@@ -435,7 +435,11 @@ public:
 
     // Save current/default allocator
     const int current_allocator = axom::getDefaultAllocatorID();
-
+#if 1
+std::cout << "runShapeQueryImpl:" << std::endl;
+std::cout << "\tdefault allocator = " << axom::getDefaultAllocatorID() << std::endl;
+std::cout << "\texec space allocator = " << axom::execution_space<ExecSpace>::allocatorID() << std::endl;
+#endif
     // Determine new allocator (for CUDA/HIP policy, set to Unified)
     // Set new default to device
     axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
@@ -901,16 +905,30 @@ public:
 
       AXOM_PERF_MARK_SECTION("compute_completely_free", {
         int dataSize = cfgf->Size();
-        ArrayView<double,1> cfView(cfgf->GetData(), dataSize);
+#define EXPLICITLY_MOVE_MEMORY
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 0" << std::endl;
+        int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+        double* cfView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+        double* matVFView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+#else
+        ArrayView<double> cfView(cfgf->GetData(), dataSize);
+#endif
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
             cfView[i] = 1.;
           });
+
         // Iterate over all materials and subtract off their VFs from cfgf.
         for(auto &gf : m_vf_grid_functions)
         {
-          ArrayView<double,1> matVFView(gf->GetData(), dataSize);
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 1" << std::endl;
+          axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
+#else
+          ArrayView<double> matVFView(gf->GetData(), dataSize);
+#endif
           axom::for_all<ExecSpace>(
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
@@ -918,6 +936,13 @@ public:
               cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
             });
         }
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 2" << std::endl;
+        // Move the data back from the device.
+        axom::copy(cfgf->GetData(), cfView, sizeof(double) * dataSize);
+        axom::deallocate(cfView);
+        axom::deallocate(matVFView);
+#endif
       });
     }
     return cfgf;
@@ -988,11 +1013,17 @@ public:
     SLIC_ASSERT(shapeVolFrac != nullptr);
 
     // Allocate some memory for the replacement rule data arrays.
-    const int current_allocator = axom::getDefaultAllocatorID();
-    int replacement_allocator = axom::execution_space<ExecSpace>::allocatorID();
-    axom::setDefaultAllocator(replacement_allocator);
-    double* vf_subtract = axom::allocate<double>(dataSize);
-    double* vf_writable = axom::allocate<double>(dataSize);
+    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    double* vf_subtract = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+    double* vf_writable = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 3" << std::endl;
+std::cout << "\tdefault allocator = " << axom::getDefaultAllocatorID() << std::endl;
+std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
+
+    double* matVFView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+    double* shapeVFView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+#endif
 
 #ifdef REPLACEMENT_RULE_DEBUG_PRINT
     int values_per_line = 20;
@@ -1119,7 +1150,12 @@ public:
         for(const auto &name : shape.getMaterialsReplaced())
         {
           auto mat = getMaterial(name);
-          ArrayView<double,1> matVFView(mat.first->GetData(), dataSize);
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 4" << std::endl;
+          axom::copy(matVFView, mat.first->GetData(), sizeof(double) * dataSize);
+#else
+          ArrayView<double> matVFView(mat.first->GetData(), dataSize);
+#endif
           axom::for_all<ExecSpace>(
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
@@ -1144,7 +1180,12 @@ public:
           });
         for(auto &gf : excludeVFs)
         {
-          ArrayView<double,1> matVFView(gf->GetData(), dataSize);
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 5" << std::endl;
+          axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
+#else
+          ArrayView<double> matVFView(gf->GetData(), dataSize);
+#endif
           axom::for_all<ExecSpace>(
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
@@ -1163,8 +1204,19 @@ public:
 
     // Compute the volume fractions for the current shape's material.
     AXOM_PERF_MARK_SECTION("compute_vf", {
-      ArrayView<double,1> matVFView(matVF.first->GetData(), dataSize);
-      ArrayView<double,1> shapeVFView(shapeVolFrac->GetData(), dataSize);
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 6" << std::endl;
+      axom::copy(matVFView, matVF.first->GetData(), sizeof(double) * dataSize);
+      axom::copy(shapeVFView, shapeVolFrac->GetData(), sizeof(double) * dataSize);
+std::cout << "explicitly_move_memory: 6.1" << std::endl;
+
+      
+
+
+#else
+      ArrayView<double> matVFView(matVF.first->GetData(), dataSize);
+      ArrayView<double> shapeVFView(shapeVolFrac->GetData(), dataSize);
+#endif
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
@@ -1183,6 +1235,11 @@ public:
           // Store the max shape VF.
           shapeVFView[i] = vf;
         });
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 7" << std::endl;
+      axom::copy(matVF.first->GetData(), matVFView, sizeof(double) * dataSize);
+      axom::copy(shapeVolFrac->GetData(), shapeVFView, sizeof(double) * dataSize);
+#endif
       });
 #ifdef REPLACEMENT_RULE_DEBUG_PRINT
     print_gf("matVF", matVF.first);
@@ -1196,7 +1253,12 @@ public:
     AXOM_PERF_MARK_SECTION("update_vf", {
       for(auto &gf : updateVFs)
       {
-        ArrayView<double,1> matVFView(gf->GetData(), dataSize);
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 8" << std::endl;
+        axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
+#else
+        ArrayView<double> matVFView(gf->GetData(), dataSize);
+#endif
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1207,13 +1269,21 @@ public:
             matVFView[i] = (matVFView[i] < INSIGNIFICANT_VOLFRAC) ? 0. : matVFView[i];
             vf_subtract[i] -= s;
           });
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 9" << std::endl;
+        axom::copy(gf->GetData(), matVFView, sizeof(double) * dataSize);
+#endif
       }
     });
 
-    // Free temporary arrays and restore allocator.
+    // Free temporary arrays
     axom::deallocate(vf_subtract);
     axom::deallocate(vf_writable);
-    axom::setDefaultAllocator(current_allocator);
+#ifdef EXPLICITLY_MOVE_MEMORY
+std::cout << "explicitly_move_memory: 10" << std::endl;
+    axom::deallocate(matVFView);
+    axom::deallocate(shapeVFView);
+#endif
   }
 #endif
 
