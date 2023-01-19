@@ -75,7 +75,8 @@ namespace quest
  *
  * \brief Provides a view over an MFEM grid function. MFEM grid functions are
  *        assumed to live in host memory. This class performs data movement
- *        needed to access the grid function data within a RAJA lambda.
+ *        needed to access the grid function data within a RAJA lambda. This
+ *        view is limited in scope, though could be expanded in the future.
  *
  * \tparam ExecSpace The execution space where the grid function data will
  *                   be accessed.
@@ -97,8 +98,8 @@ public:
   }
 
   /*!
-   * \brief Copy constructor, which is assumed to be the mechanism used to
-   *        make the object accessible from a RAJA kernel. Any data movement
+   * \brief Copy constructor, which is called to make a copy of the host
+   *        object so it is accessible inside a RAJA kernel. Any data movement
    *        happened in the host constructor. This version sets hostData to
    *        nullptr so we know not to clean up in the destructor.
    */
@@ -977,10 +978,15 @@ public:
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-//#define REPLACEMENT_RULE_DEBUG_PRINT
   // These methods are private in support of replacement rules.
 private:
-
+  /*!
+   * \brief Turn a material name into a grid function name.
+   *
+   * \param materialName The name of the material.
+   *
+   * \return The name of the material's grid function.
+   */
   std::string materialNameToFieldName(const std::string &materialName) const
   {
     const std::string vol_frac_fmt("vol_frac_{}");
@@ -988,6 +994,13 @@ private:
     return name;
   }
 
+  /*!
+   * \brief Turn a grid function name into a material name.
+   *
+   * \param fieldName The name of the grid function.
+   *
+   * \return The name of the material material.
+   */
   std::string fieldNameToMaterialName(const std::string &fieldName) const
   {
     const std::string vol_frac_("vol_frac_");
@@ -997,7 +1010,14 @@ private:
     return name;
   }
 
-  // Gets the grid function and material number for a material name.
+  /*!
+   * \brief Gets the grid function and material number for a material name.
+   *
+   * \param materialName The name of the material.
+   *
+   * \return A pair containing the associated grid function and material
+   *         number (its order in the list).
+   */
   std::pair<mfem::GridFunction* , int> getMaterial(const std::string &materialName)
   {
     // If we already know about the material, return it.
@@ -1015,15 +1035,9 @@ private:
     if(this->getDC()->HasField(materialVolFracName))
     {
       matVolFrac = this->getDC()->GetField(materialVolFracName);
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-      std::cout << "*** Found existing GF for " << materialName << std::endl;
-#endif
     }
     else
     {
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-      std::cout << "*** Made new GF for " << materialName << std::endl;
-#endif
       matVolFrac = newVolFracGridFunction();
       this->getDC()->RegisterField(materialVolFracName, matVolFrac);
       // Zero out the volume fractions (on host).
@@ -1038,11 +1052,14 @@ private:
     return std::make_pair(matVolFrac, idx);
   }
 
-  // If we are passed in a data collection that already has volume fractions
-  // in it, then we need to add them to our vectors. We maintain our own
-  // vectors because we assume that the order of materials does not change.
-  // The mfem::DataCollection uses a map internally so if we add materials,
-  // it could change the traversal order.
+  /*!
+   * \brief Scans the grid functions in the data collection and creates
+   *        a material entry for any that do not already exist. We maintain
+   *        our own vectors because we assume that the order of materials
+   *        does not change. The mfem::DataCollection uses a map internally
+   *        so if we add materials, it could change the traversal order.
+   *
+   */
   void populateMaterials()
   {
     std::vector<std::string> materialNames;
@@ -1057,20 +1074,23 @@ private:
     {
       (void)getMaterial(materialName);
     }
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-    std::cout << "*** populateMaterials: names={";
-    for(const auto &name : m_vf_material_names)
-      std::cout << name << ", ";
-    std::cout << "}" << std::endl;
-#endif
   }
 
   // Switch back to public. This is done here because the CUDA compiler
-  // does not like these template functions being private.
+  // does not like the following template functions to be private.
 public:
-
-  // Make a new grid function that contains all of the free space not occupied
-  // by existing materials.
+  /*!
+   * \brief Make a new grid function that contains all of the free space not
+   *        occupied by existing materials.
+   *
+   * \note We currently leave completely_free in the data collection,
+   *       even after the shaper has executed.
+   *
+   * \tparam ExecSpace The execution space where the data are computed.
+   *
+   * \return The grid function that represents the amount of completely
+   *         free space in each zone.
+   */
   template <typename ExecSpace>
   mfem::GridFunction* getCompletelyFree()
   {
@@ -1086,16 +1106,7 @@ public:
 
       AXOM_PERF_MARK_SECTION("compute_completely_free", {
         int dataSize = cfgf->Size();
-//#define EXPLICITLY_MOVE_MEMORY
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 0" << std::endl;
-        int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
-        double* cfView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
-        double* matVFView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
-#else
-        //ArrayView<double> cfView(cfgf->GetData(), dataSize);
         GridFunctionView<ExecSpace> cfView(cfgf);
-#endif
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1105,13 +1116,7 @@ std::cout << "explicitly_move_memory: 0" << std::endl;
         // Iterate over all materials and subtract off their VFs from cfgf.
         for(auto &gf : m_vf_grid_functions)
         {
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 1" << std::endl;
-          axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
-#else
-          //ArrayView<double> matVFView(gf->GetData(), dataSize);
           GridFunctionView<ExecSpace> matVFView(gf, false);
-#endif
           axom::for_all<ExecSpace>(
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
@@ -1119,70 +1124,64 @@ std::cout << "explicitly_move_memory: 1" << std::endl;
               cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
             });
         }
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 2" << std::endl;
-        // Move the data back from the device.
-        axom::copy(cfgf->GetData(), cfView, sizeof(double) * dataSize);
-        axom::deallocate(cfView);
-        axom::deallocate(matVFView);
-#endif
       });
     }
     return cfgf;
   }
 
-  // The replacement rules operate on the current shape's material as well as the
-  // rest of the materials since they need to be updated to sum to 1. When adding
-  // a volume fraction to a zone, the code adds the allowed amount to the zone.
-  // In most cases, this is just the computed material volume, though it can be
-  // restricted by amounts of other materials if replacing materials. Once a
-  // volume fraction has been added, a list of update materials is iterated and
-  // a corresponding amount is subtracted from them. This update list consists of
-  // "completely free", all non-shape  materials, and finally the shape material
-  // itself. The shape material is added at the end in case the initial volume
-  // fraction addition exceeded 1.
-  //
-  // The "completely free" material (CF) represents any volume fraction in the
-  // zones that has not been assigned to any material. We subtract from CF first
-  // as part of the update process so we do not have to subtract from real materials
-  // in the event that a zone is not full.
-  //
-  // The list of update materials depends on the shape's material replacement rule.
-  //
-  // Example:
-  //                        update mats
-  //                        |---->
-  //
-  //                  mat1  |  CF     mat0
-  //                  ---------------------
-  // add 0.4 mat1  -> | 0.4 | 0.2  | 0.4  |
-  //                  ---------------------
-  //
-  //                  mat1     CF     mat0     subtract
-  //                  ---------------------    -------
-  //                  | 0.8 | 0.2  | 0.4  |    | 0.4 |  (added 0.4 to mat1)
-  //                  ---------------------    -------
-  //
-  //                  mat1     CF     mat0     subtract
-  //                  ---------------------    -------
-  //                  | 0.8 | 0.0  | 0.4  |    | 0.2 |  (subtracted 0.2 from CF)
-  //                  ---------------------    -------
-  //
-  //                  mat1     CF     mat0     subtract
-  //                  ---------------------    -------
-  //                  | 0.8 | 0.0  | 0.2  |    | 0.0 |  (subtracted 0.2 from mat0)
-  //                  ---------------------    -------
-  //
+  /*!
+   * \brief Set the volume fractions for the current shape into the grid
+   *        function for the material and adjust any other material volume
+   *        fraction grid functions.
+   *
+   * \tparam ExecSpace The execution space where the data are computed.
+   * \param shape The shape whose volume fractions are being stored.
+   *
+   * The replacement rules operate on the current shape's material as well as the
+   * rest of the materials since they need to be updated to sum to 1. When adding
+   * a volume fraction to a zone, the code adds the allowed amount to the zone.
+   * In most cases, this is just the computed material volume, though it can be
+   * restricted by amounts of other materials if replacing materials. Once a
+   * volume fraction has been added, a list of update materials is iterated and
+   * a corresponding amount is subtracted from them. This update list consists of
+   * "completely free", all non-shape  materials, and finally the shape material
+   * itself. The shape material is added at the end in case the initial volume
+   * fraction addition exceeded 1.
+   *
+   * The "completely free" material (CF) represents any volume fraction in the
+   * zones that has not been assigned to any material. We subtract from CF first
+   * as part of the update process so we do not have to subtract from real materials
+   * in the event that a zone is not full.
+   *
+   * The list of update materials depends on the shape's material replacement rule.
+   *
+   * Example:
+   *                        update mats
+   *                        |---->
+   *
+   *                  mat1  |  CF     mat0
+   *                  ---------------------
+   * add 0.4 mat1  -> | 0.4 | 0.2  | 0.4  |
+   *                  ---------------------
+   *
+   *                  mat1     CF     mat0     subtract
+   *                  ---------------------    -------
+   *                  | 0.8 | 0.2  | 0.4  |    | 0.4 |  (added 0.4 to mat1)
+   *                  ---------------------    -------
+   *
+   *                  mat1     CF     mat0     subtract
+   *                  ---------------------    -------
+   *                  | 0.8 | 0.0  | 0.4  |    | 0.2 |  (subtracted 0.2 from CF)
+   *                  ---------------------    -------
+   *
+   *                  mat1     CF     mat0     subtract
+   *                  ---------------------    -------
+   *                  | 0.8 | 0.0  | 0.2  |    | 0.0 |  (subtracted 0.2 from mat0)
+   *                  ---------------------    -------
+   */
   template <typename ExecSpace>
   void applyReplacementRulesImpl(const klee::Shape& shape)
   {
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-    std::cout << "=====================================================================" << std::endl;
-    std::cout << "=====================================================================" << std::endl;
-    std::cout << "*** applyReplacementRulesImpl" << std::endl;
-    std::cout << "=====================================================================" << std::endl;
-    std::cout << "=====================================================================" << std::endl;
-#endif
     // Make sure the material lists are up to date.
     populateMaterials();
 
@@ -1199,43 +1198,6 @@ std::cout << "explicitly_move_memory: 2" << std::endl;
     int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
     double* vf_subtract = axom::allocate<double>(dataSize, execSpaceAllocatorID);
     double* vf_writable = axom::allocate<double>(dataSize, execSpaceAllocatorID);
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 3" << std::endl;
-std::cout << "\tdataSize=" << dataSize << std::endl;
-std::cout << "\tdefault allocator = " << axom::getDefaultAllocatorID() << std::endl;
-std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
-
-    double* matVFView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
-    double* shapeVFView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
-#endif
-
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-    int values_per_line = 20;
-
-    auto print_array = [&](const std::string &name, const double *arr, int dataSize)
-    {
-      std::cout << name << "={" << std::endl;
-      int nwrite = 0;
-      for(int i = 0; i < dataSize; i++)
-      {
-        std::cout << arr[i] << " ";
-        nwrite++;
-        if(nwrite == values_per_line)
-        {
-          std::cout << "\n";
-          nwrite = 0;
-        }
-      }
-      std::cout << "}" << std::endl;
-    };
-
-    auto print_gf = [&](const std::string &name, mfem::GridFunction *gf)
-    {
-      std::cout << name << "={" << std::endl;
-      gf->Print(std::cout, values_per_line);
-      std::cout << "}" << std::endl;
-    };
-#endif
 
     // Determine which grid functions need to be considered for VF updates.
     std::vector<std::pair<mfem::GridFunction*, int>> gf_order_by_matnumber;
@@ -1250,9 +1212,6 @@ std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
     }
     else
     {
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-      std::cout << "*** excludeVFs" << std::endl;
-#endif
       // Include all materials except those in "does_not_replace".
       // We'll also sort them by material number since the field map
       // sorts them by name rather than order added.
@@ -1280,9 +1239,6 @@ std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
             // The material was in the exclusion list. This means that
             // cannot write to materials that have volume fraction in
             // that zone.
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-            std::cout << "\t" << name << std::endl;
-#endif
             excludeVFs.emplace_back(getMaterial(name).first);
           }
         }
@@ -1295,9 +1251,7 @@ std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
     {
       return lhs.second < rhs.second;
     });
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-    std::cout << "*** updateVFs" << std::endl;
-#endif
+
     // Append the completely free grid function to the materials we update
     // Add it first so it is the highest priority material. This helps us
     // account for how much we need to deduct from the real materials during
@@ -1307,9 +1261,6 @@ std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
     // Append the grid functions in mat number order.
     for(const auto &mat : gf_order_by_matnumber)
     {
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-      std::cout << "\t" << m_vf_material_names[mat.second] << std::endl;
-#endif
       updateVFs.push_back(mat.first);
     }
 
@@ -1321,10 +1272,6 @@ std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
     if(!shape.getMaterialsReplaced().empty())
     {
       // Replaces - We'll sum up the VFs that we can replace in a zone.
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-      std::cout << "*** Sum replaces" << std::endl;
-      std::cout << "=========================================================" << std::endl;
-#endif
       AXOM_PERF_MARK_SECTION("compute_vf_writable", {
         axom::for_all<ExecSpace>(
           dataSize,
@@ -1334,13 +1281,7 @@ std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
         for(const auto &name : shape.getMaterialsReplaced())
         {
           auto mat = getMaterial(name);
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 4" << std::endl;
-          axom::copy(matVFView, mat.first->GetData(), sizeof(double) * dataSize);
-#else
-          //ArrayView<double> matVFView(mat.first->GetData(), dataSize);
           GridFunctionView<ExecSpace> matVFView(mat.first, false);
-#endif
           axom::for_all<ExecSpace>(
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
@@ -1353,10 +1294,6 @@ std::cout << "explicitly_move_memory: 4" << std::endl;
     else
     {
       // Does not replace. We can replace all except for listed mats.
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-      std::cout << "*** Sum excludeVFs" << std::endl;
-      std::cout << "=========================================================" << std::endl;
-#endif
       AXOM_PERF_MARK_SECTION("compute_vf_writable", {
         axom::for_all<ExecSpace>(
           dataSize,
@@ -1365,13 +1302,7 @@ std::cout << "explicitly_move_memory: 4" << std::endl;
           });
         for(auto &gf : excludeVFs)
         {
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 5" << std::endl;
-          axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
-#else
-          //ArrayView<double> matVFView(gf->GetData(), dataSize);
           GridFunctionView<ExecSpace> matVFView(gf, false);
-#endif
           axom::for_all<ExecSpace>(
             dataSize,
             AXOM_LAMBDA(axom::IndexType i) {
@@ -1382,25 +1313,11 @@ std::cout << "explicitly_move_memory: 5" << std::endl;
       });
     }
 
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-    print_array("vf_writable",vf_writable, dataSize);
-    std::cout << "*** Writing VFs for shape material" << std::endl;
-    std::cout << "=========================================================" << std::endl;
-#endif
-
     // Compute the volume fractions for the current shape's material.
     AXOM_PERF_MARK_SECTION("compute_vf", {
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 6" << std::endl;
-      axom::copy(matVFView, matVF.first->GetData(), sizeof(double) * dataSize);
-      axom::copy(shapeVFView, shapeVolFrac->GetData(), sizeof(double) * dataSize);
-std::cout << "explicitly_move_memory: 6.1" << std::endl;
-#else
-      //ArrayView<double> matVFView(matVF.first->GetData(), dataSize);
-      //ArrayView<double> shapeVFView(shapeVolFrac->GetData(), dataSize);
       GridFunctionView<ExecSpace> matVFView(matVF.first);
       GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
-#endif
+
       // Workaround for HIP so we do not capture through "this" pointer.
       const double* local_overlap_volumes = m_overlap_volumes;
       const double* local_hex_volumes = m_hex_volumes;
@@ -1422,31 +1339,14 @@ std::cout << "explicitly_move_memory: 6.1" << std::endl;
           // Store the max shape VF.
           shapeVFView[i] = vf;
         });
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 7" << std::endl;
-      axom::copy(matVF.first->GetData(), matVFView, sizeof(double) * dataSize);
-      axom::copy(shapeVolFrac->GetData(), shapeVFView, sizeof(double) * dataSize);
-#endif
       });
-#ifdef REPLACEMENT_RULE_DEBUG_PRINT
-    print_gf("matVF", matVF.first);
-    print_array("vf_subtract",vf_subtract, dataSize);
-    std::cout << "*** Updating other VFs" << std::endl;
-    std::cout << "=========================================================" << std::endl;
-#endif
 
-    // Now iterate over updateVFs to subtract off VFs we allocated to the
+    // Iterate over updateVFs to subtract off VFs we allocated to the
     // current shape's material.
     AXOM_PERF_MARK_SECTION("update_vf", {
       for(auto &gf : updateVFs)
       {
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 8" << std::endl;
-        axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
-#else
-        //ArrayView<double> matVFView(gf->GetData(), dataSize);
         GridFunctionView<ExecSpace> matVFView(gf);
-#endif
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
@@ -1457,24 +1357,19 @@ std::cout << "explicitly_move_memory: 8" << std::endl;
             matVFView[i] = (matVFView[i] < INSIGNIFICANT_VOLFRAC) ? 0. : matVFView[i];
             vf_subtract[i] -= s;
           });
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 9" << std::endl;
-        axom::copy(gf->GetData(), matVFView, sizeof(double) * dataSize);
-#endif
       }
     });
 
     // Free temporary arrays
     axom::deallocate(vf_subtract);
     axom::deallocate(vf_writable);
-#ifdef EXPLICITLY_MOVE_MEMORY
-std::cout << "explicitly_move_memory: 10" << std::endl;
-    axom::deallocate(matVFView);
-    axom::deallocate(shapeVFView);
-#endif
   }
 #endif
 
+  /*!
+   * \brief Apply material replacement rules for the current shape, using
+   *        the appropriate execution policy.
+   */
   void applyReplacementRules(const klee::Shape& shape) override
   {
     switch(m_execPolicy)
