@@ -1931,4 +1931,27 @@ TEST(core_array, checkVariadicCtors)
   Array<int, 3> arr12(s, s, s);
 }
 
+//------------------------------------------------------------------------------
+
+TEST(core_array, check_subspan_range)
+{
+  int m = 10;
+  int n = 3;
+  int l = 5;
+  Array<int> arr(m);
+
+  ArrayView<int> arrv1(arr);
+  EXPECT_EQ(arrv1.size(), arr.size());
+
+  ArrayView<int> arrv2 = arrv1.subspan(n);
+  EXPECT_EQ(arrv2.size() + n, arrv1.size());
+  EXPECT_EQ(&arrv2[0], &arr[n]);
+  EXPECT_EQ(&arrv2[arrv2.size() - 1], &arr[arr.size() - 1]);
+
+  ArrayView<int> arrv3 = arrv1.subspan(n, l);
+  EXPECT_EQ(arrv3.size(), l);
+  EXPECT_EQ(&arrv3[0], &arr[n]);
+  EXPECT_EQ(&arrv3[arrv3.size() - 1], &arr[n + l - 1]);
+}
+
 } /* end namespace axom */
