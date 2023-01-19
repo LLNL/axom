@@ -144,9 +144,11 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node& dom)
   _ndim = dimsNode.number_of_children();
 
   _shape.resize(_ndim);
+  _rshape.resize(_ndim);
   for(int d = 0; d < _ndim; ++d)
   {
     _shape[d] = dimsNode[d].as_int();
+    _rshape[d] = dimsNode[_ndim - 1 - d].as_int();
   }
 
   _logicalOrigin.resize(_ndim, 0);
@@ -246,6 +248,17 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
   _contourVal = contourVal;
 
+  /*
+    We need to know whether data is row-major to index into it
+    correctly and to use cache efficiently.  Col-major layout
+    of MxN data is the same as row-major layout of NxM data.
+
+    When I can determine data layout from blueprint metadata,
+    set dataIsRowMajor accordingly.
+  */
+  bool dataIsRowMajor = false;
+  const axom::Array<axom::IndexType>& shape = dataIsRowMajor ? _shape : _rshape;
+
   if(_ndim == 2)
   {
     /*
@@ -253,41 +266,41 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
       Eventually, we'll have to support index offsets to
       handle data with ghosts.
 
-      Test data is stored i-fastest, but ArrayView
-      assumes i-slowest, so we reverse the index ordering.
-      In the future, we should support both orderings.
+      Nested loops are memory efficient for row-major data.
+      If data is column-major, use _rshape to make it look
+      row-major.
     */
-    axom::ArrayView<const double, 2> fcnView(fcnPtr, 1+_shape[1], 1+_shape[0]);
-    axom::ArrayView<const double, 2> xView(xPtr, 1+_shape[1], 1+_shape[0]);
-    axom::ArrayView<const double, 2> yView(yPtr, 1+_shape[1], 1+_shape[0]);
-    axom::ArrayView<const int, 2> maskView(maskPtr, _shape[1], _shape[0]);
+    axom::ArrayView<const double, 2> fcnView(fcnPtr, 1 + shape[0], 1 + shape[1]);
+    axom::ArrayView<const double, 2> xView(xPtr, 1 + shape[0], 1 + shape[1]);
+    axom::ArrayView<const double, 2> yView(yPtr, 1 + shape[0], 1 + shape[1]);
+    axom::ArrayView<const int, 2> maskView(maskPtr, shape[0], shape[1]);
 
     // Write as regular nested loops.
-    for(int j = 0; j < _shape[1]; ++j)
+    for(int i = 0; i < shape[0]; ++i)
     {
-      for(int i = 0; i < _shape[0]; ++i)
+      for(int j = 0; j < shape[1]; ++j)
       {
-        const bool skipZone = maskPtr && bool(maskView(j, i));
+        const bool skipZone = maskPtr && bool(maskView(i, j));
         if(!skipZone)
         {
           double vfs[4];
           double xx[4];
           double yy[4];
 
-          vfs[0] = fcnView(j, i + 1);
-          vfs[1] = fcnView(j + 1, i + 1);
-          vfs[2] = fcnView(j + 1, i);
-          vfs[3] = fcnView(j, i);
+          vfs[0] = fcnView(i + 1, j);
+          vfs[1] = fcnView(i + 1, j + 1);
+          vfs[2] = fcnView(i, j + 1);
+          vfs[3] = fcnView(i, j);
 
-          xx[0] = xView(j, i + 1);
-          xx[1] = xView(j + 1, i + 1);
-          xx[2] = xView(j + 1, i);
-          xx[3] = xView(j, i);
+          xx[0] = xView(i + 1, j);
+          xx[1] = xView(i + 1, j + 1);
+          xx[2] = xView(i, j + 1);
+          xx[3] = xView(i, j);
 
-          yy[0] = yView(j, i + 1);
-          yy[1] = yView(j + 1, i + 1);
-          yy[2] = yView(j + 1, i);
-          yy[3] = yView(j, i);
+          yy[0] = yView(i + 1, j);
+          yy[1] = yView(i + 1, j + 1);
+          yy[2] = yView(i, j + 1);
+          yy[3] = yView(i, j);
 
           auto nPrev = _surfaceMesh->getNumberOfCells();
           this->contourCell2D(xx, yy, vfs);
@@ -295,8 +308,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
           if(nNew > nPrev && !_cellIdField.empty())
           {
-            int zoneIdx =
-              i + j * _shape[0];  // TODO: Fix for ghost layer size.
+            int zoneIdx = i + j * shape[0];  // TODO: Fix for ghost layer size.
             auto* cellIdPtr =
               _surfaceMesh->getFieldPtr<int>(_cellIdField,
                                              axom::mint::CELL_CENTERED);
@@ -311,19 +323,31 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
   }
   else
   {
-    axom::ArrayView<const double, 3> fcnView(fcnPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
-    axom::ArrayView<const double, 3> xView(xPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
-    axom::ArrayView<const double, 3> yView(yPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
-    axom::ArrayView<const double, 3> zView(zPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
-    axom::ArrayView<const int, 3> maskView(maskPtr, _shape[2], _shape[1], _shape[0]);
+    axom::ArrayView<const double, 3> fcnView(fcnPtr,
+                                             1 + shape[0],
+                                             1 + shape[1],
+                                             1 + shape[2]);
+    axom::ArrayView<const double, 3> xView(xPtr,
+                                           1 + shape[0],
+                                           1 + shape[1],
+                                           1 + shape[2]);
+    axom::ArrayView<const double, 3> yView(yPtr,
+                                           1 + shape[0],
+                                           1 + shape[1],
+                                           1 + shape[2]);
+    axom::ArrayView<const double, 3> zView(zPtr,
+                                           1 + shape[0],
+                                           1 + shape[1],
+                                           1 + shape[2]);
+    axom::ArrayView<const int, 3> maskView(maskPtr, shape[0], shape[1], shape[2]);
     // Write as regular nested loops.
-    for(int k = 0; k < _shape[2]; ++k)
+    for(int i = 0; i < shape[0]; ++i)
     {
-      for(int j = 0; j < _shape[1]; ++j)
+      for(int j = 0; j < shape[1]; ++j)
       {
-        for(int i = 0; i < _shape[0]; ++i)
+        for(int k = 0; k < shape[2]; ++k)
         {
-          const bool skipZone = maskPtr && bool(maskView(k, j, i));
+          const bool skipZone = maskPtr && bool(maskView(i, j, k));
           if(!skipZone)
           {
             double vfs[8];
@@ -331,41 +355,41 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
             double yy[8];
             double zz[8];
 
-            vfs[0] = fcnView(k, j, i + 1);
-            vfs[1] = fcnView(k, j + 1, i + 1);
-            vfs[2] = fcnView(k, j + 1, i);
-            vfs[3] = fcnView(k, j, i);
-            vfs[4] = fcnView(k + 1, j, i + 1);
-            vfs[5] = fcnView(k + 1, j + 1, i + 1);
-            vfs[6] = fcnView(k + 1, j + 1, i);
-            vfs[7] = fcnView(k + 1, j, i);
+            vfs[0] = fcnView(i + 1, j, k);
+            vfs[1] = fcnView(i + 1, j + 1, k);
+            vfs[2] = fcnView(i, j + 1, k);
+            vfs[3] = fcnView(i, j, k);
+            vfs[4] = fcnView(i + 1, j, k + 1);
+            vfs[5] = fcnView(i + 1, j + 1, k + 1);
+            vfs[6] = fcnView(i, j + 1, k + 1);
+            vfs[7] = fcnView(i, j, k + 1);
 
-            xx[0] = xView(k, j, i + 1);
-            xx[1] = xView(k, j + 1, i + 1);
-            xx[2] = xView(k, j + 1, i);
-            xx[3] = xView(k, j, i);
-            xx[4] = xView(k + 1, j, i + 1);
-            xx[5] = xView(k + 1, j + 1, i + 1);
-            xx[6] = xView(k + 1, j + 1, i);
-            xx[7] = xView(k + 1, j, i);
+            xx[0] = xView(i + 1, j, k);
+            xx[1] = xView(i + 1, j + 1, k);
+            xx[2] = xView(i, j + 1, k);
+            xx[3] = xView(i, j, k);
+            xx[4] = xView(i + 1, j, k + 1);
+            xx[5] = xView(i + 1, j + 1, k + 1);
+            xx[6] = xView(i, j + 1, k + 1);
+            xx[7] = xView(i, j, k + 1);
 
-            yy[0] = yView(k, j, i + 1);
-            yy[1] = yView(k, j + 1, i + 1);
-            yy[2] = yView(k, j + 1, i);
-            yy[3] = yView(k, j, i);
-            yy[4] = yView(k + 1, j, i + 1);
-            yy[5] = yView(k + 1, j + 1, i + 1);
-            yy[6] = yView(k + 1, j + 1, i);
-            yy[7] = yView(k + 1, j, i);
+            yy[0] = yView(i + 1, j, k);
+            yy[1] = yView(i + 1, j + 1, k);
+            yy[2] = yView(i, j + 1, k);
+            yy[3] = yView(i, j, k);
+            yy[4] = yView(i + 1, j, k + 1);
+            yy[5] = yView(i + 1, j + 1, k + 1);
+            yy[6] = yView(i, j + 1, k + 1);
+            yy[7] = yView(i, j, k + 1);
 
-            zz[0] = zView(k, j, i + 1);
-            zz[1] = zView(k, j + 1, i + 1);
-            zz[2] = zView(k, j + 1, i);
-            zz[3] = zView(k, j, i);
-            zz[4] = zView(k + 1, j, i + 1);
-            zz[5] = zView(k + 1, j + 1, i + 1);
-            zz[6] = zView(k + 1, j + 1, i);
-            zz[7] = zView(k + 1, j, i);
+            zz[0] = zView(i + 1, j, k);
+            zz[1] = zView(i + 1, j + 1, k);
+            zz[2] = zView(i, j + 1, k);
+            zz[3] = zView(i, j, k);
+            zz[4] = zView(i + 1, j, k + 1);
+            zz[5] = zView(i + 1, j + 1, k + 1);
+            zz[6] = zView(i, j + 1, k + 1);
+            zz[7] = zView(i, j, k + 1);
 
             auto nPrev = _surfaceMesh->getNumberOfCells();
             this->contourCell3D(xx, yy, zz, vfs);
@@ -373,9 +397,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
             if(nNew > nPrev && !_cellIdField.empty())
             {
-              int zoneIdx = i + j * _shape[0] +
-                k * _shape[0] *
-                  _shape[1];  // TODO: Fix for ghost layer size.
+              int zoneIdx = i + j * shape[0] +
+                k * shape[0] * shape[1];  // TODO: Fix for ghost layer size.
               auto* cellIdPtr =
                 _surfaceMesh->getFieldPtr<int>(_cellIdField,
                                                axom::mint::CELL_CENTERED);
