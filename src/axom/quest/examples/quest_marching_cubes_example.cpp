@@ -870,7 +870,7 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 
   if(roundTest)
   {
-    localErrCount += planarTest->run_test(computationalMesh, mca);
+    localErrCount += roundTest->run_test(computationalMesh, mca);
   }
   slic::flushStreams();
 

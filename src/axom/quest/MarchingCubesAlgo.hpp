@@ -104,7 +104,7 @@ private:
   */
   const conduit::Node *_dom;
   int _ndim;
-  axom::Array<axom::IndexType> _logicalSize;  //!< @brief Number of cells in each direction
+  axom::Array<axom::IndexType> _shape;  //!< @brief Number of cells in each direction
   axom::Array<axom::IndexType> _logicalOrigin;  //!< @brief First domain cell in each direction.
 
   const std::string _coordsetPath;
@@ -127,31 +127,6 @@ private:
    * Some data from \a dom may be cached by the constructor.
    */
   void set_domain(const conduit::Node &dom);
-
-  //! \brief Compute shape of cell-centered arrays, for building ArrayView.
-  template <int NDIM>
-  axom::StackArray<axom::IndexType, NDIM> get_cells_shape() const
-  {
-    SLIC_ASSERT(NDIM == _ndim);
-    axom::StackArray<axom::IndexType, NDIM> rval;
-    for(axom::IndexType i = 0; i < NDIM; ++i)
-    {
-      rval[i] = _logicalSize[NDIM - 1 - i];
-    }
-    return rval;
-  }
-
-  //! \brief Compute shape of node-centered arrays, for building ArrayView.
-  template <int NDIM>
-  axom::StackArray<axom::IndexType, NDIM> get_nodes_shape() const
-  {
-    axom::StackArray<axom::IndexType, NDIM> rval = get_cells_shape<NDIM>();
-    for(axom::IndexType i = 0; i < NDIM; ++i)
-    {
-      rval[i] = 1 + rval[i];
-    }
-    return rval;
-  }
 
   void contourCell2D(double xx[4], double yy[4], double cellValues[4]);
 

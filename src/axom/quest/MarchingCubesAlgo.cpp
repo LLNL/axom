@@ -109,7 +109,7 @@ MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node& dom,
                                        const std::string& maskField)
   : _dom(nullptr)
   , _ndim(0)
-  , _logicalSize()
+  , _shape()
   , _logicalOrigin()
   , _coordsetPath("coordsets/" + coordsetName)
   , _fcnPath()
@@ -143,10 +143,10 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node& dom)
 
   _ndim = dimsNode.number_of_children();
 
-  _logicalSize.resize(_ndim);
+  _shape.resize(_ndim);
   for(int d = 0; d < _ndim; ++d)
   {
-    _logicalSize[d] = dimsNode[d].as_int();
+    _shape[d] = dimsNode[d].as_int();
   }
 
   _logicalOrigin.resize(_ndim, 0);
@@ -252,18 +252,20 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
       For now, assume zero offsets and zero ghost width.
       Eventually, we'll have to support index offsets to
       handle data with ghosts.
+
+      Test data is stored i-fastest, but ArrayView
+      assumes i-slowest, so we reverse the index ordering.
+      In the future, we should support both orderings.
     */
-    axom::StackArray<axom::IndexType, 2> cShape = get_cells_shape<2>();
-    axom::StackArray<axom::IndexType, 2> nShape = get_nodes_shape<2>();
-    axom::ArrayView<const double, 2> fcnView(fcnPtr, nShape);
-    axom::ArrayView<const double, 2> xView(xPtr, nShape);
-    axom::ArrayView<const double, 2> yView(yPtr, nShape);
-    axom::ArrayView<const int, 2> maskView(maskPtr, cShape);
+    axom::ArrayView<const double, 2> fcnView(fcnPtr, 1+_shape[1], 1+_shape[0]);
+    axom::ArrayView<const double, 2> xView(xPtr, 1+_shape[1], 1+_shape[0]);
+    axom::ArrayView<const double, 2> yView(yPtr, 1+_shape[1], 1+_shape[0]);
+    axom::ArrayView<const int, 2> maskView(maskPtr, _shape[1], _shape[0]);
 
     // Write as regular nested loops.
-    for(int j = 0; j < _logicalSize[1]; ++j)
+    for(int j = 0; j < _shape[1]; ++j)
     {
-      for(int i = 0; i < _logicalSize[0]; ++i)
+      for(int i = 0; i < _shape[0]; ++i)
       {
         const bool skipZone = maskPtr && bool(maskView(j, i));
         if(!skipZone)
@@ -294,7 +296,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
           if(nNew > nPrev && !_cellIdField.empty())
           {
             int zoneIdx =
-              i + j * _logicalSize[0];  // TODO: Fix for ghost layer size.
+              i + j * _shape[0];  // TODO: Fix for ghost layer size.
             auto* cellIdPtr =
               _surfaceMesh->getFieldPtr<int>(_cellIdField,
                                              axom::mint::CELL_CENTERED);
@@ -309,19 +311,17 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
   }
   else
   {
-    axom::StackArray<axom::IndexType, 3> cShape = get_cells_shape<3>();
-    axom::StackArray<axom::IndexType, 3> nShape = get_nodes_shape<3>();
-    axom::ArrayView<const double, 3> fcnView(fcnPtr, nShape);
-    axom::ArrayView<const double, 3> xView(xPtr, nShape);
-    axom::ArrayView<const double, 3> yView(yPtr, nShape);
-    axom::ArrayView<const double, 3> zView(zPtr, nShape);
-    axom::ArrayView<const int, 3> maskView(maskPtr, cShape);
+    axom::ArrayView<const double, 3> fcnView(fcnPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
+    axom::ArrayView<const double, 3> xView(xPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
+    axom::ArrayView<const double, 3> yView(yPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
+    axom::ArrayView<const double, 3> zView(zPtr, 1+_shape[2], 1+_shape[1], 1+_shape[0]);
+    axom::ArrayView<const int, 3> maskView(maskPtr, _shape[2], _shape[1], _shape[0]);
     // Write as regular nested loops.
-    for(int k = 0; k < _logicalSize[2]; ++k)
+    for(int k = 0; k < _shape[2]; ++k)
     {
-      for(int j = 0; j < _logicalSize[1]; ++j)
+      for(int j = 0; j < _shape[1]; ++j)
       {
-        for(int i = 0; i < _logicalSize[0]; ++i)
+        for(int i = 0; i < _shape[0]; ++i)
         {
           const bool skipZone = maskPtr && bool(maskView(k, j, i));
           if(!skipZone)
@@ -373,9 +373,9 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
             if(nNew > nPrev && !_cellIdField.empty())
             {
-              int zoneIdx = i + j * _logicalSize[0] +
-                k * _logicalSize[0] *
-                  _logicalSize[1];  // TODO: Fix for ghost layer size.
+              int zoneIdx = i + j * _shape[0] +
+                k * _shape[0] *
+                  _shape[1];  // TODO: Fix for ghost layer size.
               auto* cellIdPtr =
                 _surfaceMesh->getFieldPtr<int>(_cellIdField,
                                                axom::mint::CELL_CENTERED);
