@@ -19,7 +19,7 @@
 .src_build_on_tioga:
   stage: build
   variables:
-    ALLOC_COMMAND: "flux mini run --exclusive --time-limit=25m --nodes=1"
+    ALLOC_COMMAND: "flux mini run --exclusive --time-limit=35m --nodes=1"
     EXTRA_OPTIONS: "--test-serial"
   extends: [.src_build_script, .on_tioga, .src_workflow]
   needs: []
