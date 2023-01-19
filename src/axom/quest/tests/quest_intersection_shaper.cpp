@@ -29,7 +29,6 @@
 #include <cmath>
 #include <string>
 #include <vector>
-#include <sys/stat.h>
 // _quest_intersection_shaper_include_end
 
 //#define AXOM_SEQ_INTERSECTION_SHAPER_WORKS
@@ -72,10 +71,6 @@ std::vector<std::string> case4{
   "shaping/case4/case4_overwrite.yaml"
 };
 
-std::vector<std::string> case5{
-  "shaping/case5.yaml"
-};
-
 using std::cout;
 using std::endl;
 
@@ -101,9 +96,6 @@ psplit(const std::string &filepath, std::string &path, std::string &filename)
 std::string
 dataDirectory()
 {
-  // TEMP
-  //return "/usr/WS2/whitlocb/Axom/axom_data";
-
   return AXOM_DATA_DIR;
 }
 
