@@ -103,6 +103,12 @@ blt_list_append( TO core_depends ELEMENTS blt::hip_runtime IF ENABLE_HIP)
 blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
 
+# HACK: RAJA's dependencies are not getting added to core due to a bug in
+# dependency propagation in blt_register_library. Explicitly add it in the short term.
+if(TARGET RAJA::roctx)
+    list(APPEND core_depends RAJA::roctx)
+endif()
+
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
