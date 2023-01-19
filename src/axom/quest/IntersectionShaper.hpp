@@ -70,6 +70,191 @@ namespace axom
 {
 namespace quest
 {
+/*!
+ * \class GridFunctionView
+ *
+ * \brief Provides a view over an MFEM grid function. MFEM grid functions are
+ *        assumed to live in host memory. This class performs data movement
+ *        needed to access the grid function data within a RAJA lambda.
+ *
+ * \tparam ExecSpace The execution space where the grid function data will
+ *                   be accessed.
+ */
+template <typename ExecSpace>
+class GridFunctionView
+{
+public:
+  /*!
+   * \brief Host constructor that accepts the grid function.
+   *
+   * \param gf The grid function that will be accessed/modified by the view.
+   * \param _needResult Whether the data needs to be brought back to the host
+   *                    from the device.
+   */
+  AXOM_HOST GridFunctionView(mfem::GridFunction *gf, bool _needResult = true)
+  {
+    initialize(gf->GetData(), gf->Size(), _needResult);
+  }
+
+  /*!
+   * \brief Copy constructor, which is assumed to be the mechanism used to
+   *        make the object accessible from a RAJA kernel. Any data movement
+   *        happened in the host constructor. This version sets hostData to
+   *        nullptr so we know not to clean up in the destructor.
+   */
+  AXOM_HOST_DEVICE GridFunctionView(const GridFunctionView &obj) :
+    m_hostData(nullptr), m_deviceData(obj.m_deviceData), m_numElements(obj.m_numElements),
+    m_needResult(obj.m_needResult)
+  {
+  }
+
+  /*!
+   * \brief Destructor. On the host, this method may move data from the 
+            device and deallocate device storage.
+   */
+  AXOM_HOST_DEVICE ~GridFunctionView()
+  {
+    finalize();
+  }
+
+  /*!
+   * \brief Indexing operator for accessing the data.
+   *
+   * \param i The index at which to access the data.
+   *
+   * \return A reference to the data at index i.
+   */
+  AXOM_HOST_DEVICE double &operator[](int i) { return m_deviceData[i]; }
+  // non-const return on purpose.
+  AXOM_HOST_DEVICE double &operator[](int i) const { return m_deviceData[i]; }
+private:
+  /*!
+   * \brief Initializes members using data from the grid function. This method
+   *        is called on the host.
+   *
+   * \param hostPtr The grid function data pointer on the host.
+   * \param nElem   The grid function size.
+   * \param _needResult Whether any data are copied from device.
+   */
+  AXOM_HOST void initialize(double* hostPtr, int nElem, bool _needResult)
+  {
+    m_hostData = m_deviceData = hostPtr;
+    m_numElements = nElem;
+    m_needResult = _needResult;
+  }
+
+  /*!
+   * \brief Helps during destruction.
+   */
+  AXOM_HOST_DEVICE void finalize()
+  {
+    m_deviceData = nullptr;
+  }
+
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  /*!
+   * \brief Initializes members using data from the grid function. This method
+   *        is called on the host and it copies data to the device.
+   *
+   * \param hostPtr The grid function data pointer on the host.
+   * \param nElem   The grid function size.
+   * \param _needResult Whether any data are copied from device.
+   */
+  AXOM_HOST void initializeDevice(double* hostPtr, int nElem, bool _needResult)
+  {
+    m_hostData = hostPtr;
+    m_numElements = nElem;
+    m_needResult = _needResult;
+    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    auto dataSize = sizeof(double) * m_numElements;
+    m_deviceData = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+    axom::copy(m_deviceData, m_hostData, dataSize);
+  }
+
+  /*!
+   * \brief Helps during destruction. On the host, it copies device data back
+   *        into the grid function on the host.
+   */
+  AXOM_HOST_DEVICE void finalizeDevice()
+  {
+#ifndef AXOM_DEVICE_CODE
+    // Only the host will do this work.
+    if(m_hostData != nullptr)
+    {
+      if(m_needResult)
+      {
+        auto dataSize = sizeof(double) * m_numElements;
+        axom::copy(m_hostData, m_deviceData, dataSize);
+      }
+      axom::deallocate(m_deviceData);
+      m_deviceData = nullptr;
+    }
+#endif
+  }
+#endif
+
+private:
+  double* m_hostData{nullptr};
+  double* m_deviceData{nullptr};
+  int     m_numElements{0};
+  bool    m_needResult{false};
+};
+
+#if defined(AXOM_USE_CUDA)
+/*!
+ * \brief CUDA specialization that calls initializeDevice to copy data
+ *        from the host to the device.
+ *
+ * \param hostPtr The grid function data pointer on the host.
+ * \param nElem   The grid function size.
+ * \param _needResult Whether any data are copied from device.
+ */
+template <>
+AXOM_HOST inline void GridFunctionView<cuda_exec>::initialize(double* hostPtr,
+  int nElem, bool _needResult)
+{
+  initializeDevice(hostPtr, nElem, _needResult);
+}
+
+/*!
+ * \brief CUDA specialization that may copy data back from the device
+ *        and deallocate any associated device data.
+ */
+template <>
+AXOM_HOST_DEVICE inline void GridFunctionView<cuda_exec>::finalize()
+{
+  finalizeDevice();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+/*!
+ * \brief HIP specialization that calls initializeDevice to copy data
+ *        from the host to the device.
+ *
+ * \param hostPtr The grid function data pointer on the host.
+ * \param nElem   The grid function size.
+ * \param _needResult Whether any data are copied from device.
+ */
+template <>
+AXOM_HOST inline void GridFunctionView<hip_exec>::initialize(double* hostPtr,
+  int nElem, bool _needResult)
+{
+  initializeDevice(hostPtr, nElem, _needResult);
+}
+
+/*!
+ * \brief HIP specialization that may copy data back from the device
+ *        and deallocate any associated device data.
+ */
+template <>
+AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
+{
+  finalizeDevice();
+}
+#endif
+
+
+//---------------------------------------------------------------------------
 class IntersectionShaper : public Shaper
 {
 public:
@@ -435,11 +620,7 @@ public:
 
     // Save current/default allocator
     const int current_allocator = axom::getDefaultAllocatorID();
-#if 1
-std::cout << "runShapeQueryImpl:" << std::endl;
-std::cout << "\tdefault allocator = " << axom::getDefaultAllocatorID() << std::endl;
-std::cout << "\texec space allocator = " << axom::execution_space<ExecSpace>::allocatorID() << std::endl;
-#endif
+
     // Determine new allocator (for CUDA/HIP policy, set to Unified)
     // Set new default to device
     axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
@@ -905,14 +1086,15 @@ public:
 
       AXOM_PERF_MARK_SECTION("compute_completely_free", {
         int dataSize = cfgf->Size();
-#define EXPLICITLY_MOVE_MEMORY
+//#define EXPLICITLY_MOVE_MEMORY
 #ifdef EXPLICITLY_MOVE_MEMORY
 std::cout << "explicitly_move_memory: 0" << std::endl;
         int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
         double* cfView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
         double* matVFView = axom::allocate<double>(dataSize, execSpaceAllocatorID);
 #else
-        ArrayView<double> cfView(cfgf->GetData(), dataSize);
+        //ArrayView<double> cfView(cfgf->GetData(), dataSize);
+        GridFunctionView<ExecSpace> cfView(cfgf);
 #endif
         axom::for_all<ExecSpace>(
           dataSize,
@@ -927,7 +1109,8 @@ std::cout << "explicitly_move_memory: 0" << std::endl;
 std::cout << "explicitly_move_memory: 1" << std::endl;
           axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
 #else
-          ArrayView<double> matVFView(gf->GetData(), dataSize);
+          //ArrayView<double> matVFView(gf->GetData(), dataSize);
+          GridFunctionView<ExecSpace> matVFView(gf, false);
 #endif
           axom::for_all<ExecSpace>(
             dataSize,
@@ -1155,7 +1338,8 @@ std::cout << "\texec space allocator = " << execSpaceAllocatorID << std::endl;
 std::cout << "explicitly_move_memory: 4" << std::endl;
           axom::copy(matVFView, mat.first->GetData(), sizeof(double) * dataSize);
 #else
-          ArrayView<double> matVFView(mat.first->GetData(), dataSize);
+          //ArrayView<double> matVFView(mat.first->GetData(), dataSize);
+          GridFunctionView<ExecSpace> matVFView(mat.first, false);
 #endif
           axom::for_all<ExecSpace>(
             dataSize,
@@ -1185,7 +1369,8 @@ std::cout << "explicitly_move_memory: 4" << std::endl;
 std::cout << "explicitly_move_memory: 5" << std::endl;
           axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
 #else
-          ArrayView<double> matVFView(gf->GetData(), dataSize);
+          //ArrayView<double> matVFView(gf->GetData(), dataSize);
+          GridFunctionView<ExecSpace> matVFView(gf, false);
 #endif
           axom::for_all<ExecSpace>(
             dataSize,
@@ -1211,12 +1396,14 @@ std::cout << "explicitly_move_memory: 6" << std::endl;
       axom::copy(shapeVFView, shapeVolFrac->GetData(), sizeof(double) * dataSize);
 std::cout << "explicitly_move_memory: 6.1" << std::endl;
 #else
-      ArrayView<double> matVFView(matVF.first->GetData(), dataSize);
-      ArrayView<double> shapeVFView(shapeVolFrac->GetData(), dataSize);
+      //ArrayView<double> matVFView(matVF.first->GetData(), dataSize);
+      //ArrayView<double> shapeVFView(shapeVolFrac->GetData(), dataSize);
+      GridFunctionView<ExecSpace> matVFView(matVF.first);
+      GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
 #endif
       // Workaround for HIP so we do not capture through "this" pointer.
-      double* local_overlap_volumes = m_overlap_volumes;
-      double* local_hex_volumes = m_hex_volumes;
+      const double* local_overlap_volumes = m_overlap_volumes;
+      const double* local_hex_volumes = m_hex_volumes;
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
@@ -1257,7 +1444,8 @@ std::cout << "explicitly_move_memory: 7" << std::endl;
 std::cout << "explicitly_move_memory: 8" << std::endl;
         axom::copy(matVFView, gf->GetData(), sizeof(double) * dataSize);
 #else
-        ArrayView<double> matVFView(gf->GetData(), dataSize);
+        //ArrayView<double> matVFView(gf->GetData(), dataSize);
+        GridFunctionView<ExecSpace> matVFView(gf);
 #endif
         axom::for_all<ExecSpace>(
           dataSize,
