@@ -17,7 +17,6 @@
 #include "axom/quest.hpp"
 #include "axom/sidre.hpp"
 #include "axom/slic.hpp"
-// _quest_intersection_shaper_include_start
 #include "axom/quest/IntersectionShaper.hpp"
 
 #ifndef AXOM_USE_MFEM
@@ -29,7 +28,6 @@
 #include <cmath>
 #include <string>
 #include <vector>
-// _quest_intersection_shaper_include_end
 
 //#define AXOM_SEQ_INTERSECTION_SHAPER_WORKS
 
@@ -62,9 +60,6 @@ std::vector<std::string> case3 {"shaping/case3/case3_012.yaml",
 
 std::vector<std::string> case4 {"shaping/case4/case4.yaml",
                                 "shaping/case4/case4_overwrite.yaml"};
-
-using std::cout;
-using std::endl;
 
 namespace quest = axom::quest;
 namespace slic = axom::slic;
@@ -108,6 +103,7 @@ std::string yamlRoot(const std::string &filepath)
   return retval;
 }
 
+// The caller is responsible for freeing the returned grid function.
 mfem::GridFunction *newGridFunction(mfem::Mesh *mesh)
 {
   const int vfOrder = 0;
@@ -117,7 +113,8 @@ mfem::GridFunction *newGridFunction(mfem::Mesh *mesh)
   mfem::FiniteElementSpace *fes = new mfem::FiniteElementSpace(mesh, coll);
   mfem::GridFunction *gf = new mfem::GridFunction(fes);
   gf->MakeOwner(coll);
-  memset(gf->GetData(), 0, gf->Size() * sizeof(double));
+  // Initialize the values to 0.
+  *gf = 0;
   return gf;
 }
 
@@ -157,6 +154,7 @@ void makeTestMesh(sidre::MFEMSidreDataCollection &dc, bool initialMats)
         }
       }
     }
+    // Register the fields. The dc will own them now.
     dc.RegisterField("vol_frac_a", mata);
     dc.RegisterField("vol_frac_b", matb);
   }

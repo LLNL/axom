@@ -1191,8 +1191,10 @@ public:
 
     // Allocate some memory for the replacement rule data arrays.
     int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    double* vf_subtract = axom::allocate<double>(dataSize, execSpaceAllocatorID);
-    double* vf_writable = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+    Array<double> vf_subtract_array(dataSize, dataSize, execSpaceAllocatorID);
+    Array<double> vf_writable_array(dataSize, dataSize, execSpaceAllocatorID);
+    ArrayView<double> vf_subtract(vf_subtract_array);
+    ArrayView<double> vf_writable(vf_writable_array);
 
     // Determine which grid functions need to be considered for VF updates.
     std::vector<std::pair<mfem::GridFunction*, int>> gf_order_by_matnumber;
@@ -1352,10 +1354,6 @@ public:
           });
       }
     });
-
-    // Free temporary arrays
-    axom::deallocate(vf_subtract);
-    axom::deallocate(vf_writable);
   }
 #endif
 
