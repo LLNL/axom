@@ -425,6 +425,13 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   //Clip Polyhedron by each plane
   for(PlaneType plane : planes)
   {
+    // Check the obtained Polyhedron is still valid
+    if(!poly.isValid())
+    {
+      poly.clear();
+      break;
+    }
+    
     // Check that plane intersects Polyhedron
     if(intersect(plane, polyBox, true, eps))
     {
