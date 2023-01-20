@@ -431,7 +431,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
       poly.clear();
       break;
     }
-    
+
     // Check that plane intersects Polyhedron
     if(intersect(plane, polyBox, true, eps))
     {
