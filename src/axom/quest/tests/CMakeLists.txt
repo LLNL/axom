@@ -148,10 +148,10 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
               AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
               AND AXOM_ENABLE_KLEE AND AXOM_DATA_DIR
               AND C2C_FOUND)
-    set(quest_mpi_mfem_data_tests
+    set(quest_mpi_mfem_c2c_data_tests
         quest_intersection_shaper.cpp
        )
-    foreach(test ${quest_mpi_mfem_data_tests})
+    foreach(test ${quest_mpi_mfem_c2c_data_tests})
         get_filename_component( test_name ${test} NAME_WE )
         blt_add_executable(
             NAME ${test_name}_test
