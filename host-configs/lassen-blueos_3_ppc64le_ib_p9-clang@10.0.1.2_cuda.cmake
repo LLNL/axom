@@ -77,7 +77,7 @@ set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
 
 set(CMAKE_CUDA_ARCHITECTURES "70" CACHE STRING "")
 
-set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -arch sm_${CMAKE_CUDA_ARCHITECTURES} " CACHE STRING "")
+set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda" CACHE STRING "")
 
 # nvcc does not like gtest's 'pthreads' flag
 

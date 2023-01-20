@@ -69,13 +69,13 @@ set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}" CACHE PATH "")
 
 set(ENABLE_CUDA ON CACHE BOOL "")
 
-set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
+set(CMAKE_CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
 
 set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
 
 set(CMAKE_CUDA_ARCHITECTURES "70" CACHE STRING "")
 
-set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -Xcompiler=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 -arch sm_${CMAKE_CUDA_ARCHITECTURES} " CACHE STRING "")
+set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -Xcompiler=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1" CACHE STRING "")
 
 # nvcc does not like gtest's 'pthreads' flag
 
