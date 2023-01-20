@@ -75,7 +75,7 @@ namespace quest
  *
  * \brief Provides a view over an MFEM grid function. MFEM grid functions are
  *        assumed to live in host memory. This class performs data movement
- *        needed to access the grid function data within a RAJA lambda. This
+ *        needed to access the grid function data within a GPU device lambda. This
  *        view is limited in scope, though could be expanded in the future.
  *
  * \tparam ExecSpace The execution space where the grid function data will
