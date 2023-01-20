@@ -141,7 +141,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("c2c", when="+c2c")
 
     depends_on("mfem", when="+mfem")
-    depends_on("mfem~mpi", when="+mfem~mpi")
+    depends_on("mfem@4.5.0:", when="@0.7.0:")
+    depends_on("mfem~mpi", when="~mpi")
 
     depends_on("python", when="+python")
 
@@ -218,7 +219,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 flags = ""
                 for _libpath in [libdir, libdir + "64"]:
                     if os.path.exists(_libpath):
-                        flags += " -Wl,-rpath,{0}".format(_libpath)
+                        if spec.satisfies('^cuda'):
+                            flags += " -Xlinker -rpath -Xlinker {0}".format(_libpath)
+                        else:
+                            flags += " -Wl,-rpath,{0}".format(_libpath)
                 description = "Adds a missing libstdc++ rpath"
                 if flags:
                     entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags, description))
@@ -236,7 +240,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         if "+cuda" in spec:
             entries.append(cmake_cache_option("ENABLE_CUDA", True))
-            entries.append(cmake_cache_option("CUDA_SEPARABLE_COMPILATION", True))
+            entries.append(cmake_cache_option("CMAKE_CUDA_SEPARABLE_COMPILATION", True))
 
             entries.append(cmake_cache_option("AXOM_ENABLE_ANNOTATIONS", True))
 
@@ -250,7 +254,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             if not spec.satisfies("cuda_arch=none"):
                 cuda_arch = spec.variants["cuda_arch"].value[0]
                 entries.append(cmake_cache_string("CMAKE_CUDA_ARCHITECTURES", cuda_arch))
-                cudaflags += "-arch sm_${CMAKE_CUDA_ARCHITECTURES} "
             else:
                 entries.append("# cuda_arch could not be determined\n\n")
 
