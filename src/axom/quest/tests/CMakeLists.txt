@@ -142,11 +142,12 @@ foreach(test ${quest_mpi_tests})
 endforeach()
 
 #------------------------------------------------------------------------------
-# Tests that have several dependencies.
+# These tests require MPI+MFEM+C2C+Axom data+...
 #------------------------------------------------------------------------------
 if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
               AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
-              AND AXOM_ENABLE_KLEE AND AXOM_DATA_DIR)
+              AND AXOM_ENABLE_KLEE AND AXOM_DATA_DIR
+              AND C2C_FOUND)
     set(quest_mpi_mfem_data_tests
         quest_intersection_shaper.cpp
        )
