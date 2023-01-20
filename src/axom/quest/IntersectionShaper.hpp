@@ -92,7 +92,7 @@ public:
    * \param _needResult Whether the data needs to be brought back to the host
    *                    from the device.
    */
-  AXOM_HOST GridFunctionView(mfem::GridFunction *gf, bool _needResult = true)
+  AXOM_HOST GridFunctionView(mfem::GridFunction* gf, bool _needResult = true)
   {
     initialize(gf->GetData(), gf->Size(), _needResult);
   }
@@ -103,20 +103,18 @@ public:
    *        happened in the host constructor. This version sets hostData to
    *        nullptr so we know not to clean up in the destructor.
    */
-  AXOM_HOST_DEVICE GridFunctionView(const GridFunctionView &obj) :
-    m_hostData(nullptr), m_deviceData(obj.m_deviceData), m_numElements(obj.m_numElements),
-    m_needResult(obj.m_needResult)
-  {
-  }
+  AXOM_HOST_DEVICE GridFunctionView(const GridFunctionView& obj)
+    : m_hostData(nullptr)
+    , m_deviceData(obj.m_deviceData)
+    , m_numElements(obj.m_numElements)
+    , m_needResult(obj.m_needResult)
+  { }
 
   /*!
    * \brief Destructor. On the host, this method may move data from the 
             device and deallocate device storage.
    */
-  AXOM_HOST_DEVICE ~GridFunctionView()
-  {
-    finalize();
-  }
+  AXOM_HOST_DEVICE ~GridFunctionView() { finalize(); }
 
   /*!
    * \brief Indexing operator for accessing the data.
@@ -125,9 +123,10 @@ public:
    *
    * \return A reference to the data at index i.
    */
-  AXOM_HOST_DEVICE double &operator[](int i) { return m_deviceData[i]; }
+  AXOM_HOST_DEVICE double& operator[](int i) { return m_deviceData[i]; }
   // non-const return on purpose.
-  AXOM_HOST_DEVICE double &operator[](int i) const { return m_deviceData[i]; }
+  AXOM_HOST_DEVICE double& operator[](int i) const { return m_deviceData[i]; }
+
 private:
   /*!
    * \brief Initializes members using data from the grid function. This method
@@ -147,10 +146,7 @@ private:
   /*!
    * \brief Helps during destruction.
    */
-  AXOM_HOST_DEVICE void finalize()
-  {
-    m_deviceData = nullptr;
-  }
+  AXOM_HOST_DEVICE void finalize() { m_deviceData = nullptr; }
 
 #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
   /*!
@@ -178,7 +174,7 @@ private:
    */
   AXOM_HOST_DEVICE void finalizeDevice()
   {
-#ifndef AXOM_DEVICE_CODE
+  #ifndef AXOM_DEVICE_CODE
     // Only the host will do this work.
     if(m_hostData != nullptr)
     {
@@ -190,15 +186,15 @@ private:
       axom::deallocate(m_deviceData);
       m_deviceData = nullptr;
     }
-#endif
+  #endif
   }
 #endif
 
 private:
-  double* m_hostData{nullptr};
-  double* m_deviceData{nullptr};
-  int     m_numElements{0};
-  bool    m_needResult{false};
+  double* m_hostData {nullptr};
+  double* m_deviceData {nullptr};
+  int m_numElements {0};
+  bool m_needResult {false};
 };
 
 #if defined(AXOM_USE_CUDA)
@@ -212,7 +208,8 @@ private:
  */
 template <>
 AXOM_HOST inline void GridFunctionView<cuda_exec>::initialize(double* hostPtr,
-  int nElem, bool _needResult)
+                                                              int nElem,
+                                                              bool _needResult)
 {
   initializeDevice(hostPtr, nElem, _needResult);
 }
@@ -238,7 +235,8 @@ AXOM_HOST_DEVICE inline void GridFunctionView<cuda_exec>::finalize()
  */
 template <>
 AXOM_HOST inline void GridFunctionView<hip_exec>::initialize(double* hostPtr,
-  int nElem, bool _needResult)
+                                                             int nElem,
+                                                             bool _needResult)
 {
   initializeDevice(hostPtr, nElem, _needResult);
 }
@@ -253,7 +251,6 @@ AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
   finalizeDevice();
 }
 #endif
-
 
 //---------------------------------------------------------------------------
 class IntersectionShaper : public Shaper
@@ -987,7 +984,7 @@ private:
    *
    * \return The name of the material's grid function.
    */
-  std::string materialNameToFieldName(const std::string &materialName) const
+  std::string materialNameToFieldName(const std::string& materialName) const
   {
     const std::string vol_frac_fmt("vol_frac_{}");
     auto name = axom::fmt::format(vol_frac_fmt, materialName);
@@ -1001,7 +998,7 @@ private:
    *
    * \return The name of the material material.
    */
-  std::string fieldNameToMaterialName(const std::string &fieldName) const
+  std::string fieldNameToMaterialName(const std::string& fieldName) const
   {
     const std::string vol_frac_("vol_frac_");
     std::string name;
@@ -1018,7 +1015,7 @@ private:
    * \return A pair containing the associated grid function and material
    *         number (its order in the list).
    */
-  std::pair<mfem::GridFunction* , int> getMaterial(const std::string &materialName)
+  std::pair<mfem::GridFunction*, int> getMaterial(const std::string& materialName)
   {
     // If we already know about the material, return it.
     for(size_t i = 0; i < m_vf_material_names.size(); i++)
@@ -1066,11 +1063,10 @@ private:
     for(auto it : this->getDC()->GetFieldMap())
     {
       std::string materialName = fieldNameToMaterialName(it.first);
-      if(!materialName.empty())
-        materialNames.emplace_back(materialName);
+      if(!materialName.empty()) materialNames.emplace_back(materialName);
     }
     // Add any of these existing fields to this class' bookkeeping.
-    for(const auto &materialName : materialNames)
+    for(const auto& materialName : materialNames)
     {
       (void)getMaterial(materialName);
     }
@@ -1109,12 +1105,10 @@ public:
         GridFunctionView<ExecSpace> cfView(cfgf);
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) {
-            cfView[i] = 1.;
-          });
+          AXOM_LAMBDA(axom::IndexType i) { cfView[i] = 1.; });
 
         // Iterate over all materials and subtract off their VFs from cfgf.
-        for(auto &gf : m_vf_grid_functions)
+        for(auto& gf : m_vf_grid_functions)
         {
           GridFunctionView<ExecSpace> matVFView(gf, false);
           axom::for_all<ExecSpace>(
@@ -1190,7 +1184,8 @@ public:
     int dataSize = matVF.first->Size();
 
     // Get this shape's array.
-    auto shapeVolFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
+    auto shapeVolFracName =
+      axom::fmt::format("shape_vol_frac_{}", shape.getName());
     auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
     SLIC_ASSERT(shapeVolFrac != nullptr);
 
@@ -1205,7 +1200,7 @@ public:
     if(!shape.getMaterialsReplaced().empty())
     {
       // Include materials replaced in updateVFs.
-      for(const auto &name : shape.getMaterialsReplaced())
+      for(const auto& name : shape.getMaterialsReplaced())
       {
         gf_order_by_matnumber.emplace_back(getMaterial(name));
       }
@@ -1245,12 +1240,12 @@ public:
       }
     }
     // Sort eligible update materials by material number.
-    std::sort(gf_order_by_matnumber.begin(), gf_order_by_matnumber.end(),
-      [&](const std::pair<mfem::GridFunction*, int> &lhs,
-          const std::pair<mfem::GridFunction*, int> &rhs)
-    {
-      return lhs.second < rhs.second;
-    });
+    std::sort(gf_order_by_matnumber.begin(),
+              gf_order_by_matnumber.end(),
+              [&](const std::pair<mfem::GridFunction*, int>& lhs,
+                  const std::pair<mfem::GridFunction*, int>& rhs) {
+                return lhs.second < rhs.second;
+              });
 
     // Append the completely free grid function to the materials we update
     // Add it first so it is the highest priority material. This helps us
@@ -1259,7 +1254,7 @@ public:
     updateVFs.push_back(getCompletelyFree<ExecSpace>());
 
     // Append the grid functions in mat number order.
-    for(const auto &mat : gf_order_by_matnumber)
+    for(const auto& mat : gf_order_by_matnumber)
     {
       updateVFs.push_back(mat.first);
     }
@@ -1275,10 +1270,8 @@ public:
       AXOM_PERF_MARK_SECTION("compute_vf_writable", {
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) {
-            vf_writable[i] = 0.;
-          });
-        for(const auto &name : shape.getMaterialsReplaced())
+          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 0.; });
+        for(const auto& name : shape.getMaterialsReplaced())
         {
           auto mat = getMaterial(name);
           GridFunctionView<ExecSpace> matVFView(mat.first, false);
@@ -1297,10 +1290,8 @@ public:
       AXOM_PERF_MARK_SECTION("compute_vf_writable", {
         axom::for_all<ExecSpace>(
           dataSize,
-          AXOM_LAMBDA(axom::IndexType i) {
-            vf_writable[i] = 1.;
-          });
-        for(auto &gf : excludeVFs)
+          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 1.; });
+        for(auto& gf : excludeVFs)
         {
           GridFunctionView<ExecSpace> matVFView(gf, false);
           axom::for_all<ExecSpace>(
@@ -1332,29 +1323,31 @@ public:
           double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
 
           // NOTE: if matVFView[i] temporarily exceeds 1, it will be corrected
-          //       during the subtraction stage. 
+          //       during the subtraction stage.
           matVFView[i] += vf_actual;
           vf_subtract[i] = vf_actual;
 
           // Store the max shape VF.
           shapeVFView[i] = vf;
         });
-      });
+    });
 
     // Iterate over updateVFs to subtract off VFs we allocated to the
     // current shape's material.
     AXOM_PERF_MARK_SECTION("update_vf", {
-      for(auto &gf : updateVFs)
+      for(auto& gf : updateVFs)
       {
         GridFunctionView<ExecSpace> matVFView(gf);
         axom::for_all<ExecSpace>(
           dataSize,
           AXOM_LAMBDA(axom::IndexType i) {
             constexpr double INSIGNIFICANT_VOLFRAC = 1.e-14;
-            double s = (matVFView[i] <= vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
+            double s =
+              (matVFView[i] <= vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
             matVFView[i] -= s;
             // Turn any slight negatives or positive insignificant volume fractions to zero.
-            matVFView[i] = (matVFView[i] < INSIGNIFICANT_VOLFRAC) ? 0. : matVFView[i];
+            matVFView[i] =
+              (matVFView[i] < INSIGNIFICANT_VOLFRAC) ? 0. : matVFView[i];
             vf_subtract[i] -= s;
           });
       }
@@ -1519,7 +1512,7 @@ private:
   PolyhedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};
 
-  std::vector<mfem::GridFunction *> m_vf_grid_functions;
+  std::vector<mfem::GridFunction*> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
 #endif
 };
