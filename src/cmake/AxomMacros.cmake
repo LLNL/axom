@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -340,7 +340,7 @@ macro(axom_write_unified_header)
     set(_header ${PROJECT_BINARY_DIR}/include/axom/${_lcname}.hpp)
     set(_tmp_header ${_header}.tmp)
 
-    file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+    file(WRITE ${_tmp_header} "\/\/ Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 \/\/ other Axom Project Developers. See the top-level LICENSE file for details.
 \/\/
 \/\/ SPDX-License-Identifier: (BSD-3-Clause)
