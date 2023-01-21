@@ -264,7 +264,7 @@ void sort_mcodes(Array<uint32>& mcodes, int32 size, const ArrayView<int32> iter)
 
     std::stable_sort(iter.begin(),
                      iter.begin() + size,
-                     [=](int32 i1, int32 i2) { return mcodes[i1] < mcodes[i2]; });
+                     [&](int32 i1, int32 i2) { return mcodes[i1] < mcodes[i2]; });
 
   );
 
