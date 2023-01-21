@@ -31,7 +31,9 @@ if (CAMP_DIR)
         message(FATAL_ERROR "Given CAMP_DIR is not a directory: ${CAMP_DIR}")
     endif()
 
-    find_package(camp REQUIRED PATHS ${CAMP_DIR})
+    if (NOT TARGET camp)
+      find_package(camp CONFIG NO_DEFAULT_PATH PATHS ${CAMP_DIR})
+    endif ()
 
     message(STATUS "Checking for expected Camp target 'camp'")
     if (NOT TARGET camp)
