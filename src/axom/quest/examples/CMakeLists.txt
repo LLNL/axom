@@ -53,9 +53,11 @@ if(ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
         # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")
-        blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
-        blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
-        blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+        if(RAJA_FOUND)
+            blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
+            blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+            blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
+        endif()
 
         # Non-zero empty-rank probability tests domain underloading case
         set(_meshes "mdmesh.2x1" "mdmesh.2x3")
