@@ -24,6 +24,8 @@ cmake_minimum_required(VERSION 3.14)
 
 project(using_with_cmake)
 
+message("CMake Version: ${CMAKE_VERSION}")
+
 #------------------------------------------------------------------------------
 # Check for AXOM_DIR and use CMake's find_package to import axom's targets
 #------------------------------------------------------------------------------
