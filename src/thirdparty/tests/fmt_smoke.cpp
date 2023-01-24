@@ -16,6 +16,10 @@
 
 #include "gtest/gtest.h"
 
+// Note: The following line generates an error with nvcc on fmt@9.1
+// Axom has a patch to workaround this error.
+using namespace std;
+
 //-----------------------------------------------------------------------------
 TEST(fmt_smoke, basic_use)
 {
