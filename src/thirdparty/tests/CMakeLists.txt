@@ -130,11 +130,14 @@ endif()
 #------------------------------------------------------------------------------
 # Smoke test for fmt third party library
 #------------------------------------------------------------------------------
+set(fmt_smoke_dependencies fmt gtest)
+blt_list_append( TO fmt_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
+
 blt_add_executable(
     NAME fmt_smoke_test
     SOURCES fmt_smoke.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON fmt gtest
+    DEPENDS_ON ${fmt_smoke_dependencies}
     FOLDER axom/thirdparty/tests )
     
 axom_add_test(NAME    fmt_smoke
