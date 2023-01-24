@@ -99,6 +99,25 @@ if (RAJA_DIR)
         message(STATUS "RAJA loaded: ${RAJA_DIR}")
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
+
+    # Suppress warnings from cub and cuda related to the (low) version 
+    # of clang that XL compiler pretends to be.
+    if(C_COMPILER_FAMILY_IS_XL)
+        if(TARGET RAJA::cub)
+            blt_add_target_definitions(
+                TO RAJA::cub
+                SCOPE INTERFACE
+                TARGET_DEFINITIONS CUB_IGNORE_DEPRECATED_CPP_DIALECT)
+        endif()
+
+        if(TARGET cuda)
+            blt_add_target_definitions(
+                TO cuda
+                SCOPE INTERFACE
+                TARGET_DEFINITIONS THRUST_IGNORE_DEPRECATED_CPP_DIALECT)
+        endif()
+    endif()
+
 else()
     message(STATUS "RAJA support is OFF" )
     set(RAJA_FOUND FALSE CACHE BOOL "")
