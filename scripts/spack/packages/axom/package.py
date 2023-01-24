@@ -394,6 +394,28 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         else:
             entries.append(cmake_cache_option("ENABLE_MPI", False))
 
+        # Replace set MPIEXEC info with flux
+        flux_checks = ["+flux", "schedulers=flux", "process_managers=flux"]
+        if any(spec["mpi"].satisfies(variant) for variant in flux_checks):
+            flux = which("flux")
+            if (flux):
+                mpi_exe_indices = sorted(set([index for index,entry in enumerate(entries)
+                                              if "MPIEXEC_EXECUTABLE" in entry
+                                              or "MPIEXEC_NUMPROC_FLAG" in entry
+                                              or "MPIEXEC" in entry]), reverse= True)
+
+                for i in mpi_exe_indices:
+                    del entries[i]
+
+                if spec["cmake"].satisfies("@3.10:"):
+                    entries.append(cmake_cache_path("MPIEXEC_EXECUTABLE", flux))
+                else:
+                    entries.append(cmake_cache_path("MPIEXEC", flux))
+
+                entries.append(cmake_cache_string("MPIEXEC_NUMPROC_FLAG", "mini;run;-n"))
+            else:
+                entries.append("# flux could not be found\n\n")
+
         return entries
 
     def initconfig_package_entries(self):
