@@ -286,9 +286,24 @@ TEST(primal_intersect, more_ray_segment_intersection)
   }
 }
 
+TEST(primal_intersect, triangle_empty_aabb_intersection)
+{
+  constexpr int DIM = 3;
+  using PointType = primal::Point<double, DIM>;
+  using TriangleType = primal::Triangle<double, DIM>;
+  using BoundingBoxType = primal::BoundingBox<double, DIM>;
+
+  TriangleType unitTri(PointType {1., 0., 0.},
+                       PointType {0., 1., 0.},
+                       PointType {0., 0., 1.});
+  BoundingBoxType emptyBB;
+
+  EXPECT_FALSE(primal::intersect(unitTri, emptyBB));
+}
+
 TEST(primal_intersect, triangle_aabb_intersection)
 {
-  const int DIM = 3;
+  constexpr int DIM = 3;
   using PointType = primal::Point<double, DIM>;
   using TriangleType = primal::Triangle<double, DIM>;
   using BoundingBoxType = primal::BoundingBox<double, DIM>;

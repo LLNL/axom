@@ -635,7 +635,7 @@ std::ostream& operator<<(std::ostream& os, const Polyhedron<T, NDIMS>& poly)
 }  // namespace primal
 }  // namespace axom
 
-/// Overload to format a primal::Tetrahedron using fmt
+/// Overload to format a primal::Polyhedron using fmt
 template <typename T, int NDIMS>
 struct axom::fmt::formatter<axom::primal::Polyhedron<T, NDIMS>> : ostream_formatter
 { };

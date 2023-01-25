@@ -721,20 +721,24 @@ bool intersect_tri_bbox(const primal::Triangle<T, 3>& tri,
   //           1 test for the triangle face normal
   // We use early termination if we find a separating axis between the shapes
 
-  typedef typename BoundingBox<T, 3>::PointType PointType;
-  typedef typename BoundingBox<T, 3>::VectorType VectorType;
+  using PointType = typename BoundingBox<T, 3>::PointType;
+  using VectorType = typename BoundingBox<T, 3>::VectorType;
+
+  // Check for early return -- nothing intersects an empty/invalid bounding box
+  if(!bb.isValid())
+  {
+    return false;
+  }
 
   // Extent: vector center to max corner of BB
-  VectorType e = 0.5 * bb.range();
+  const VectorType e = 0.5 * bb.range();
 
   // Make the AABB center the origin by moving the triangle vertices
-  PointType center(bb.getMin().array() + e.array());
-  VectorType v[3] = {VectorType(center, tri[0]),
-                     VectorType(center, tri[1]),
-                     VectorType(center, tri[2])};
+  const PointType center = bb.getMin() + e;
+  const VectorType v[3] = {tri[0] - center, tri[1] - center, tri[2] - center};
 
   // Create the edge vectors of the triangle
-  VectorType f[3] = {v[1] - v[0], v[2] - v[1], v[0] - v[2]};
+  const VectorType f[3] = {v[1] - v[0], v[2] - v[1], v[0] - v[2]};
 
   /* clang-format off */
 
@@ -771,12 +775,13 @@ bool intersect_tri_bbox(const primal::Triangle<T, 3>& tri,
   }
 
   /// Final test -- face normal of triangle's plane
-  VectorType planeNormal = VectorType::cross_product(f[0], f[1]);
-  double planeDist = planeNormal.dot(VectorType(tri[0]));
+  const VectorType planeNormal = VectorType::cross_product(f[0], f[1]);
+  const double planeDist = planeNormal.dot(VectorType(tri[0]));
 
-  double r = e[0] * std::abs(planeNormal[0]) + e[1] * std::abs(planeNormal[1]) +
-    e[2] * std::abs(planeNormal[2]);
-  double s = planeNormal.dot(VectorType(center)) - planeDist;
+  const double r = e[0] * std::abs(planeNormal[0])  //
+    + e[1] * std::abs(planeNormal[1])               //
+    + e[2] * std::abs(planeNormal[2]);
+  const double s = planeNormal.dot(VectorType(center)) - planeDist;
 
   return std::abs(s) <= r;
 }
