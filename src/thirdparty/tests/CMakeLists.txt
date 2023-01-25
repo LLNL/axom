@@ -36,9 +36,9 @@ if ( RAJA_FOUND )
 
   set( raja_smoke_dependencies RAJA ${axom_device_depends} gtest )
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP)
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
   blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi    IF AXOM_ENABLE_MPI)
 
   blt_add_executable( NAME raja_smoke_test
                       SOURCES raja_smoke.cpp
@@ -128,7 +128,7 @@ endif()
 # Smoke test for fmt third party library
 #------------------------------------------------------------------------------
 set(fmt_smoke_dependencies fmt gtest)
-blt_list_append( TO fmt_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
+blt_list_append( TO fmt_smoke_dependencies ELEMENTS cuda IF AXOM_ENABLE_CUDA)
 
 blt_add_executable(
     NAME fmt_smoke_test
