@@ -76,7 +76,7 @@ packages:
   cray-mpich:
     buildable: false
     externals:
-    - spec: cray-mpich@8.1.16%clang@14.0.0+flux
+    - spec: cray-mpich@8.1.16%clang@14.0.0+slurm
       prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.16-rocmcc-5.2.3/
 
   # blas is a bit more complicated because its a virtual package so fake it with

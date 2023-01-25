@@ -35,7 +35,6 @@ class CrayMpich(Package):
 
     # AXOM EDIT START
     variant("slurm", default=True, description="Added to get MPIEXEC_NUMPROC_FLAG right")
-    variant("flux", default=False, description="Added to get MPIEXEC_EXECUTABLE right")
     # AXOM EDIT END
 
     provides('mpi@3')

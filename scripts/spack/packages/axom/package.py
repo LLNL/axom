@@ -394,9 +394,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         else:
             entries.append(cmake_cache_option("ENABLE_MPI", False))
 
-        # Replace set MPIEXEC info with flux
-        flux_checks = ["+flux", "schedulers=flux", "process_managers=flux"]
-        if any(spec["mpi"].satisfies(variant) for variant in flux_checks):
+        # Replace srun MPIEXEC info with flux on tioga
+        hostname = socket.gethostname()
+        if "tioga" in hostname:
             flux = which("flux")
             if (flux):
                 mpi_exe_indices = sorted(set([index for index,entry in enumerate(entries)
