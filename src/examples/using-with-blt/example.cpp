@@ -19,7 +19,7 @@ int main()
 {
    // Using fmt library exported by axom
    std::cout << axom::fmt::format(
-        "Example of using and installed version of Axom {}",
+        "Example of using an installed version of Axom {}",
         axom::getVersion()) << std::endl << std::endl;
 
    // Uses installed axom library
