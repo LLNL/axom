@@ -2072,50 +2072,91 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 //------------------------------------------------------------------------------
 TEST(primal_intersect, plane_bb_test_intersection)
 {
-  const int DIM = 3;
+  constexpr int DIM = 3;
   using PointType = primal::Point<double, DIM>;
   using PlaneType = primal::Plane<double, DIM>;
   using BoundingBoxType = primal::BoundingBox<double, DIM>;
   using VectorType = primal::Vector<double, DIM>;
 
-  // Bounding Box containing (0,0,0) and (1,1,1)
-  BoundingBoxType unitBB(PointType::zero(), PointType::ones());
+  // Tests against the bounding box of a unit cube
+  {
+    BoundingBoxType unitBB(PointType::zero(), PointType::ones());
 
-  // bottom face
-  VectorType normal1 {0.0, 1.0, 0.0};
-  double offset1 = 0.0;
-  PlaneType p1(normal1, offset1);
+    // bottom face
+    VectorType normal1 {0.0, 1.0, 0.0};
+    double offset1 = 0.0;
+    PlaneType p1(normal1, offset1);
 
-  // top face
-  VectorType normal2 {0.0, -1.0, 0.0};
-  double offset2 = -1.0;
-  PlaneType p2(normal2, offset2);
+    // top face
+    VectorType normal2 {0.0, -1.0, 0.0};
+    double offset2 = -1.0;
+    PlaneType p2(normal2, offset2);
 
-  // center
-  VectorType normal3 {1.0, 1.0, 1.0};
-  double offset3 = 0.5;
-  PlaneType p3(normal3, offset3);
+    // center
+    VectorType normal3 {1.0, 1.0, 1.0};
+    double offset3 = 0.5;
+    PlaneType p3(normal3, offset3);
 
-  // non-intersect
-  VectorType normal4 {1.0, 1.0, 1.0};
-  double offset4 = -0.5;
-  PlaneType p4(normal4, offset4);
+    // non-intersect
+    VectorType normal4 {1.0, 1.0, 1.0};
+    double offset4 = -0.5;
+    PlaneType p4(normal4, offset4);
 
-  EXPECT_TRUE(axom::primal::intersect(p1, unitBB));
-  p1.flip();
-  EXPECT_TRUE(axom::primal::intersect(p1, unitBB));
+    EXPECT_TRUE(axom::primal::intersect(p1, unitBB, false));
+    EXPECT_FALSE(axom::primal::intersect(p1, unitBB, true));
+    p1.flip();
+    EXPECT_TRUE(axom::primal::intersect(p1, unitBB, false));
+    EXPECT_FALSE(axom::primal::intersect(p1, unitBB, true));
 
-  EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
-  p2.flip();
-  EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
+    EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
+    p2.flip();
+    EXPECT_TRUE(axom::primal::intersect(p2, unitBB));
 
-  EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
-  p3.flip();
-  EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
+    EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
+    p3.flip();
+    EXPECT_TRUE(axom::primal::intersect(p3, unitBB));
 
-  EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
-  p4.flip();
-  EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
+    EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
+    p4.flip();
+    EXPECT_FALSE(axom::primal::intersect(p4, unitBB));
+  }
+
+  // Exercises checkOverlaps parameter
+  {
+    constexpr double smallEPS = 1e-8;
+    constexpr double largeEPS = .1;
+
+    BoundingBoxType unitBB(PointType::zero(), PointType::ones());
+
+    VectorType normal1 {0.0, 1, 0.0};
+    double offset1 = -0.025;
+    PlaneType p1(normal1, offset1);
+
+    // When checkOverlaps is true, the plane needs to be outside
+    // the fuzzy interval to intersect the bounding box
+    bool checkOverlaps = true;
+    EXPECT_FALSE(axom::primal::intersect(p1, unitBB, checkOverlaps, smallEPS));
+    EXPECT_FALSE(axom::primal::intersect(p1, unitBB, checkOverlaps, largeEPS));
+
+    // When checkOverlaps is false, the plane can be within
+    // the fuzzy interval to intersect with bounding box
+    checkOverlaps = false;
+    EXPECT_FALSE(axom::primal::intersect(p1, unitBB, checkOverlaps, smallEPS));
+    EXPECT_TRUE(axom::primal::intersect(p1, unitBB, checkOverlaps, largeEPS));
+  }
+
+  // tests against an invalid bounding box
+  {
+    BoundingBoxType emptyBoundingBox;
+
+    VectorType normal1 {1., 1., 1.};
+    double offset1 = 0.0;
+    PlaneType p1(normal1, offset1);
+
+    EXPECT_FALSE(axom::primal::intersect(p1, emptyBoundingBox));
+    p1.flip();
+    EXPECT_FALSE(axom::primal::intersect(p1, emptyBoundingBox));
+  }
 }
 
 //------------------------------------------------------------------------------
