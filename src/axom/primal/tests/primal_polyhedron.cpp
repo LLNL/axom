@@ -5,6 +5,8 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 
 #include "axom/core.hpp"
@@ -20,6 +22,8 @@ TEST(primal_polyhedron, polyhedron_empty)
   PolyhedronType poly;
   EXPECT_FALSE(poly.isValid());
   EXPECT_FALSE(poly.hasNeighbors());
+
+  EXPECT_NEAR(0., poly.volume(), 1e-12);
 }
 
 //------------------------------------------------------------------------------
@@ -51,34 +55,56 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
 //------------------------------------------------------------------------------
 TEST(primal_polyhedron, polyhedron_tetrahedron)
 {
+  using PointType = primal::Point<double, 3>;
+  using TetrahedronType = primal::Tetrahedron<double, 3>;
   using PolyhedronType = primal::Polyhedron<double, 3>;
 
-  static const double EPS = 1e-4;
-  PolyhedronType poly;
-  poly.addVertex({1, 1, 1});
-  poly.addVertex({-1, 1, -1});
-  poly.addVertex({1, -1, -1});
-  poly.addVertex({-1, -1, 1});
+  constexpr double EPS = 1e-4;
+  {
+    TetrahedronType tet {PointType {1, 1, 1},
+                         PointType {-1, 1, -1},
+                         PointType {1, -1, -1},
+                         PointType {-1, -1, 1}};
 
-  poly.addNeighbors(poly[0], {1, 3, 2});
-  poly.addNeighbors(poly[1], {0, 2, 3});
-  poly.addNeighbors(poly[2], {0, 3, 1});
-  poly.addNeighbors(poly[3], {0, 1, 2});
+    EXPECT_TRUE(tet.signedVolume() > 0.);
 
-  EXPECT_NEAR(2.6666, poly.volume(), EPS);
+    PolyhedronType poly;
+    poly.addVertex(tet[0]);
+    poly.addVertex(tet[1]);
+    poly.addVertex(tet[2]);
+    poly.addVertex(tet[3]);
 
-  PolyhedronType polyB;
-  polyB.addVertex({1, 0, 0});
-  polyB.addVertex({1, 1, 0});
-  polyB.addVertex({0, 1, 0});
-  polyB.addVertex({1, 0, 1});
+    poly.addNeighbors(0, {1, 3, 2});
+    poly.addNeighbors(1, {0, 2, 3});
+    poly.addNeighbors(2, {0, 3, 1});
+    poly.addNeighbors(3, {0, 1, 2});
 
-  polyB.addNeighbors(polyB[0], {1, 3, 2});
-  polyB.addNeighbors(polyB[1], {0, 2, 3});
-  polyB.addNeighbors(polyB[2], {0, 3, 1});
-  polyB.addNeighbors(polyB[3], {0, 1, 2});
+    EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+    EXPECT_NEAR(2.6666, poly.volume(), EPS);
+  }
 
-  EXPECT_NEAR(0.1666, polyB.volume(), EPS);
+  {
+    TetrahedronType tet {PointType {1, 0, 0},
+                         PointType {1, 1, 0},
+                         PointType {0, 1, 0},
+                         PointType {1, 0, 1}};
+
+    EXPECT_TRUE(tet.signedVolume() > 0.);
+
+    PolyhedronType poly;
+    poly.addVertex(tet[0]);
+    poly.addVertex(tet[1]);
+    poly.addVertex(tet[2]);
+    poly.addVertex(tet[3]);
+
+    poly.addNeighbors(0, {1, 3, 2});
+    poly.addNeighbors(1, {0, 2, 3});
+    poly.addNeighbors(2, {0, 3, 1});
+    poly.addNeighbors(3, {0, 1, 2});
+
+    EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
+    EXPECT_NEAR(0.1666, poly.volume(), EPS);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -86,7 +112,7 @@ TEST(primal_polyhedron, polyhedron_octahedron)
 {
   using PolyhedronType = primal::Polyhedron<double, 3>;
 
-  static const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   PolyhedronType octA;
   octA.addVertex({0, 0, -1});
   octA.addVertex({1, 0, 0});
@@ -219,7 +245,7 @@ TEST(primal_polyhedron, polyhedron_decomposition)
   using PolyhedronType = primal::Polyhedron<double, 3>;
   using PointType = primal::Point<double, 3>;
 
-  static const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
   PolyhedronType poly;
   poly.addVertex({0, 0, 0});
