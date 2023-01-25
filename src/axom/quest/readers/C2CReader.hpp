@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,7 +12,6 @@
   #error C2CReader should only be included when Axom is configured with C2C
 #endif
 
-#include "axom/fmt.hpp"
 #include "axom/mint.hpp"
 #include "c2c/C2C.hpp"
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -463,7 +463,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
   {
     if(verboseOutput)
     {
-      fmt::format_to(out,
+      fmt::format_to(std::back_inserter(out),
                      "\n\t Static relations require both the fromSet and toSet "
                      "to be non-null:"
                      "\t-- fromSet was {} null"
@@ -482,7 +482,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
     {
       if(verboseOutput)
       {
-        fmt::format_to(out,
+        fmt::format_to(std::back_inserter(out),
                        "\n\t Internal size does not match fromSet size:"
                        "\t-- fromSet size is {}"
                        "\t-- internal size is {}",
@@ -496,7 +496,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
     {
       if(verboseOutput)
       {
-        fmt::format_to(out,
+        fmt::format_to(std::back_inserter(out),
                        "\n\t Size of relationVec does not match toSet size:"
                        "\t-- fromSet size is {}"
                        "\t-- m_relationsVec size is {}",
@@ -519,7 +519,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
         if(verboseOutput)
         {
           fmt::format_to(
-            out,
+            std::back_inserter(out),
             "\n\t* invalid entries in fromSet; has a valid relation at index "
             "{}, but element not in from set. Values: {}",
             pos,
@@ -542,7 +542,7 @@ bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>::isValid(
           {
             if(verboseOutput)
             {
-              fmt::format_to(out,
+              fmt::format_to(std::back_inserter(out),
                              "\n\t* Relation index out of range or invalid:"
                              "\n\t-- position {} ({}-{}) with value {} needs "
                              "to be in range [0,{}) and index a valid entry",

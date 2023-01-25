@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,7 +27,6 @@ namespace mint = axom::mint;
 namespace primal = axom::primal;
 namespace spin = axom::spin;
 namespace slic = axom::slic;
-namespace quest = axom::quest;
 
 using IndexType = axom::IndexType;
 using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
@@ -406,7 +405,7 @@ int main(int argc, char** argv)
   // Read file
   SLIC_INFO("Reading file: '" << args.file_name << "'...\n");
   {
-    quest::STLReader reader;
+    axom::quest::STLReader reader;
     reader.setFileName(args.file_name);
     reader.read();
 

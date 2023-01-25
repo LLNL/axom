@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,6 +12,12 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
+#include "axom/fmt.hpp"
+
+/// Overload to format a c2c::Point using fmt
+template <>
+struct axom::fmt::formatter<c2c::Point> : ostream_formatter
+{ };
 
 namespace axom
 {

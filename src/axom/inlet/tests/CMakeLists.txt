@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,7 +24,8 @@ blt_list_append(TO gtest_inlet_tests ELEMENTS inlet_function.cpp IF SOL_FOUND)
 blt_add_library(NAME        inlet_test_utils
                 SOURCES     inlet_test_utils.cpp
                 HEADERS     inlet_test_utils.hpp
-                DEPENDS_ON  axom gtest gmock)
+                DEPENDS_ON  axom gtest gmock
+                FOLDER      axom/inlet/tests )
 
 foreach(test ${gtest_inlet_tests})
     get_filename_component( test_name ${test} NAME_WE )

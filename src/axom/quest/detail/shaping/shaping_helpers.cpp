@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include "shaping_helpers.hpp"
 
 #include "axom/config.hpp"
@@ -5,7 +10,6 @@
 #include "axom/slic.hpp"
 
 #include "axom/fmt.hpp"
-#include "axom/fmt/locale.h"
 
 #ifndef AXOM_USE_MFEM
   #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option

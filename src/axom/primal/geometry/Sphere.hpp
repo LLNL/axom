@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,6 +16,7 @@
 #include "axom/primal/geometry/OrientationResult.hpp"
 
 #include "axom/slic/interface/slic.hpp"
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -238,5 +239,10 @@ std::ostream& operator<<(std::ostream& os, const Sphere<T, NDIMS>& s)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Sphere using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Sphere<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_SPHERE_HPP_

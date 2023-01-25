@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -135,18 +135,27 @@ public:
    * \param [in] count The number of elements to include in the subspan, or -1
    *  to take all elements after offset (default).
    *
-   * \return A subspan ArrayView that spans the indices [offsets, offsets + count),
-   *  or [offsets, num_elements) if count == -1.
+   * \return An ArrayView that spans the indices [offset, offset + count),
+   *  or [offset, num_elements) if count < 0.
    *
-   * \pre offset + count <= m_num_elements if count != -1
+   * \pre offset + count <= m_num_elements if count < 0
    */
   template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
   AXOM_HOST_DEVICE ArrayView subspan(IndexType offset, IndexType count = -1) const
   {
-    assert(offset + count <= m_num_elements);
+    assert(offset >= 0 && offset < m_num_elements);
+    if(count >= 0)
+    {
+      assert(offset + count <= m_num_elements);
+    }
+
     ArrayView slice = *this;
     slice.m_data += offset;
-    if(count != -1)
+    if(count < 0)
+    {
+      slice.m_num_elements -= offset;
+    }
+    else
     {
       slice.m_num_elements = count;
     }

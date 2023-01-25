@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,13 +82,14 @@ set(fmt_headers
     axom/fmt/color.h
     axom/fmt/compile.h
     axom/fmt/core.h
-    axom/fmt/format-inl.h
     axom/fmt/format.h
-    axom/fmt/locale.h
+    axom/fmt/format-inl.h
     axom/fmt/os.h
     axom/fmt/ostream.h
     axom/fmt/printf.h
     axom/fmt/ranges.h
+    axom/fmt/std.h
+    axom/fmt/xchar.h
     )
 
 blt_add_library(NAME    fmt

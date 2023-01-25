@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -372,7 +372,7 @@ public:
           const auto& pos = m_mesh.getVertexPosition(vertex_idx);
           const auto element = this->getElement(element_idx);
           const auto circumsphere = element.circumsphere();
-          fmt::format_to(out,
+          fmt::format_to(std::back_inserter(out),
                          "\n\tVertex {} @ {}"
                          "\n\tElement {}: {} w/ circumsphere: {}"
                          "\n\tDistance to circumcenter: {}",

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -717,5 +717,11 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox<T, NDIMS>& bb)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::BoundingBox using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::BoundingBox<T, NDIMS>>
+  : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_BOUNDINGBOX_HPP_
