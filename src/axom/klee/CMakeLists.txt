@@ -39,7 +39,7 @@ set(klee_sources
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(klee_depends core primal slic sidre inlet fmt)
+set(klee_depends core primal slic sidre inlet ${axom_device_depends} fmt)
 
 blt_add_library(NAME        klee
                 SOURCES     ${klee_sources}

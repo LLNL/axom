@@ -48,18 +48,16 @@ set(core_serial_tests
 
 set(core_test_depends
     axom
+    ${axom_device_depends}
     gtest
     )
-
-blt_list_append( TO core_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO core_test_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 #------------------------------------------------------------------------------
 # Serial GTests
 #------------------------------------------------------------------------------
 
-# Only enable this test in serial mode if ENABLE_MPI is off
-if (NOT ENABLE_MPI)
+# Only enable this test in serial mode if AXOM_ENABLE_MPI is off
+if (NOT AXOM_ENABLE_MPI)
   list(APPEND core_serial_tests core_types.hpp)
 endif()
 
@@ -79,7 +77,7 @@ endforeach()
 #------------------------------------------------------------------------------
 # MPI GTests
 #------------------------------------------------------------------------------
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
   set( core_mpi_tests
        core_types.hpp
        )
@@ -102,7 +100,7 @@ endif()
 #------------------------------------------------------------------------------
 # OpenMP GTests
 #------------------------------------------------------------------------------
-if (ENABLE_OPENMP AND AXOM_USE_RAJA)
+if (AXOM_ENABLE_OPENMP AND AXOM_USE_RAJA)
   set( core_openmp_tests
        core_openmp_map.hpp
        )
@@ -125,7 +123,7 @@ endif()
 #------------------------------------------------------------------------------
 # Add a test to query properties of the configuration
 #------------------------------------------------------------------------------
-set(utils_config_test_depends core gtest )
+set(utils_config_test_depends core ${axom_device_depends} gtest )
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 

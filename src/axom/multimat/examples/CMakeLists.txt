@@ -16,9 +16,7 @@ set(multimat_example_sources
     calculate.cpp
     traversal.cpp )
 
-set(multimat_tests_depends_on slic slam multimat)
-
-set(multimat_tests_extra_depends)
+set(multimat_tests_depends_on slic slam multimat ${axom_device_depends})
 
 foreach(example_source ${multimat_example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
@@ -27,7 +25,7 @@ foreach(example_source ${multimat_example_sources})
         HEADERS     ${multimat_example_headers}
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${multimat_tests_depends_on} ${multimat_tests_extra_depends}
+        DEPENDS_ON  ${multimat_tests_depends_on}
         FOLDER      axom/multimat/examples
         )
 

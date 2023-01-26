@@ -15,7 +15,7 @@ set(example_sources
     sidre_shocktube.cpp
 )
 
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
     set (example_parallel_sources
          sidre_array.cpp
          sidre_createdatastore.cpp
@@ -35,7 +35,7 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
-blt_list_append( TO EXTRA_LIBS ELEMENTS blt::hip IF ENABLE_HIP )
+list(APPEND EXTRA_LIBS ${axom_device_depends} )
 
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
@@ -59,7 +59,7 @@ endforeach()
 #------------------------------------------------------------------------------
 # Add targets and tests for parallel examples
 #------------------------------------------------------------------------------
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
     foreach(example_source ${example_parallel_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
         blt_add_executable(
@@ -99,7 +99,6 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
         sidre_mfem_datacollection_vis.cpp)
 
     set(_mfem_dc_test_depends axom mfem ${EXTRA_LIBS})
-    blt_list_append(TO _mfem_dc_test_depends ELEMENTS mpi IF ENABLE_MPI)
 
     foreach(example_source ${_mfem_dc_tests})
         get_filename_component(exe_name ${example_source} NAME_WE)
@@ -111,7 +110,7 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
-            if(ENABLE_MPI)
+            if(AXOM_ENABLE_MPI)
                 if(MFEM_USE_MPI)
                     set(_nranks 2)
                 else()
@@ -154,7 +153,7 @@ endif()
 #------------------------------------------------------------------------------
 # Add Spio examples
 #------------------------------------------------------------------------------
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
     add_subdirectory(spio)
 endif()
 

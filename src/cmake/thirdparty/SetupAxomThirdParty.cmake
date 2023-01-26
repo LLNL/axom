@@ -16,6 +16,16 @@ endif()
 set(TPL_DEPS)
 
 #------------------------------------------------------------------------------
+# Create global variable to toggle between GPU targets
+#------------------------------------------------------------------------------
+if(AXOM_ENABLE_CUDA)
+    set(axom_device_depends cuda CACHE STRING "" FORCE)
+endif()
+if(AXOM_ENABLE_HIP)
+    set(axom_device_depends blt::hip CACHE STRING "" FORCE)
+endif()
+
+#------------------------------------------------------------------------------
 # Camp (needed by RAJA and Umpire)
 #------------------------------------------------------------------------------
 if ((RAJA_DIR OR UMPIRE_DIR) AND NOT CAMP_DIR)
@@ -298,10 +308,10 @@ endif()
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
-blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
-blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF ENABLE_HIP)
-blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
-blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
+blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF AXOM_ENABLE_HIP)
+blt_list_append(TO TPL_DEPS ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
+blt_list_append(TO TPL_DEPS ELEMENTS mpi IF AXOM_ENABLE_MPI)
 
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set

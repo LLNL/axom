@@ -8,11 +8,9 @@
 
 set(spin_example_depends
         axom
+        ${axom_device_depends}
         fmt
         )
-
-blt_list_append( TO spin_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO spin_example_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 blt_add_executable(
     NAME        spin_introduction_ex
@@ -23,7 +21,8 @@ blt_add_executable(
     )
 
 # Note: The following example uses quest to read in an STL file
-if (AXOM_ENABLE_QUEST AND RAJA_FOUND AND UMPIRE_FOUND)
+#       and mint for meshing
+if (AXOM_ENABLE_MINT AND AXOM_ENABLE_QUEST AND RAJA_FOUND AND UMPIRE_FOUND)
 
     blt_add_executable(
         NAME        spin_bvh_two_pass_ex

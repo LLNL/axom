@@ -14,8 +14,7 @@ set(gtest_multimat_tests
     multimat_test.cpp
     )
 
-
-set(multimat_tests_depends_on core slic slam multimat gtest)
+set(multimat_tests_depends_on core slic slam multimat ${axom_device_depends} gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest based tests

@@ -27,8 +27,7 @@ if (AXOM_ENABLE_LUMBERJACK)
     list(APPEND mpi_example_sources basic/lumberjack_logging.cpp )
 endif()
 
-set( slic_examples_depends axom )
-blt_list_append( TO slic_examples_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
+set( slic_examples_depends axom ${axom_device_depends})
 
 foreach( example_source ${example_sources} )
     get_filename_component( example_name ${example_source} NAME_WE )
@@ -45,7 +44,7 @@ foreach( example_source ${example_sources} )
 endforeach()
 
 
-if ( ENABLE_MPI )
+if ( AXOM_ENABLE_MPI )
     foreach( example_source ${mpi_example_sources} )
         get_filename_component( example_name ${example_source} NAME_WE )
         blt_add_executable( NAME       slic_mpi_${example_name}_ex
@@ -63,12 +62,14 @@ if ( ENABLE_MPI )
 endif()
 
 if(ENABLE_FORTRAN)
+    set( slic_fortran_examples_depends slic ${axom_device_depends})
+
     foreach(example_source ${F_example_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
         blt_add_executable( NAME slic_${exe_name}_ex
                             SOURCES ${example_source}
                             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                            DEPENDS_ON slic
+                            DEPENDS_ON ${slic_fortran_examples_depends}
                             FOLDER axom/slic/examples )
 
         if(AXOM_ENABLE_TESTS)

@@ -18,14 +18,12 @@ set(lulesh_sources
     lulesh-viz.cc )
 
 set(lulesh_depends
-    core
     sidre
-    conduit::conduit
-    slic )
+    slic
+    core
+    ${axom_device_depends} )
 
 blt_list_append( TO lulesh_depends ELEMENTS hdf5   IF HDF5_FOUND )
-blt_list_append( TO lulesh_depends ELEMENTS mpi    IF ENABLE_MPI )
-blt_list_append( TO lulesh_depends ELEMENTS openmp IF ENABLE_OPENMP )
 
 blt_add_executable(
     NAME sidre_lulesh2_ex
@@ -36,7 +34,7 @@ blt_add_executable(
     FOLDER axom/sidre/examples )
 
 if(AXOM_ENABLE_TESTS)
-    if(ENABLE_MPI)
+    if(AXOM_ENABLE_MPI)
         axom_add_test(NAME sidre_lulesh2
                       COMMAND sidre_lulesh2_ex -s 5
                       NUM_MPI_TASKS 1

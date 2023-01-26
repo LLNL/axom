@@ -34,7 +34,7 @@ set(slic_sources
     streams/GenericOutputStream.cpp
     )
 
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
     list(APPEND slic_headers streams/SynchronizedStream.hpp)
     list(APPEND slic_sources streams/SynchronizedStream.cpp)
     if (AXOM_ENABLE_LUMBERJACK)
@@ -63,10 +63,9 @@ endif()
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(slic_depends core)
+set(slic_depends core ${axom_device_depends})
 
 blt_list_append( TO slic_depends ELEMENTS lumberjack IF ${AXOM_ENABLE_LUMBERJACK} )
-blt_list_append( TO slic_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO slic_depends ELEMENTS dbghelp IF ${WIN32} )
 
 blt_add_library(NAME        slic
