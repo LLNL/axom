@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -85,12 +85,11 @@ blt_list_append(
 # Build and install the library
 #------------------------------------------------------------------------------
 set( primal_dependencies
-     core
      slic
+     core
+     ${axom_device_depends}
      )
 
-blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
-blt_list_append( TO primal_dependencies ELEMENTS blt::hip_runtime IF ENABLE_HIP )
 blt_list_append( TO primal_dependencies ELEMENTS mfem IF MFEM_FOUND )
 
 blt_add_library(

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,9 +20,11 @@
 #
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.14)
 
 project(using_with_cmake)
+
+message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
 #------------------------------------------------------------------------------
 # Check for AXOM_DIR and use CMake's find_package to import axom's targets
@@ -68,6 +70,17 @@ add_library(cuda_runtime INTERFACE)
 add_library(blt_hip_runtime INTERFACE)
 # END FIXME
 
+# Remove implicitly added link directories added by CMake that are problematic when
+# the default system libraries are older than the ones used by the compiler
+if(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE)
+    list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_DIRECTORIES
+                     ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES
+                     ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
+    list(REMOVE_ITEM CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES
+                     ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
+endif()
+
 #------------------------------------------------------------------------------
 # Set up example target that depends on axom
 #------------------------------------------------------------------------------
@@ -79,4 +92,3 @@ target_include_directories(example PRIVATE ${AXOM_INCLUDE_DIRS})
 # link to axom targets
 target_link_libraries(example axom)
 target_link_libraries(example axom::fmt)
-

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,13 +17,10 @@ set(spin_tests
 
 set(spin_tests_depends
     axom
+    ${axom_device_depends}
     gtest
     fmt
     )
-
-blt_list_append( TO spin_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO spin_tests_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
-
 
 foreach ( test ${spin_tests} )
 

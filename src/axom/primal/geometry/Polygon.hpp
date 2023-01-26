@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -99,6 +99,86 @@ public:
     sum.array() /= sz;
 
     return sum;
+  }
+
+  /**
+   * \brief Returns the area of the polygon (3D specialization)
+   *
+   * The algorithm sums up contributions from triangles defined by each edge 
+   * of the polygon and a local origin (at the Polygon's \a vertexMean()).
+   * The algorithm assumes a planar polygon embedded in 3D, however it will return 
+   * a value for non-planar polygons.
+   *
+   * The area is always non-negative since 3D polygons do not have a unique orientation.
+   */
+  template <int TDIM = NDIMS>
+  typename std::enable_if<TDIM == 3, double>::type area() const
+  {
+    const int nVerts = numVertices();
+    double sum = 0.;
+
+    // check for early return
+    if(nVerts < 3)
+    {
+      return sum;
+    }
+
+    // Add up areas of triangles connecting polygon edges the vertex average
+    const auto O = vertexMean();  // 'O' for (local) origin
+    for(int curr = 0, prev = nVerts - 1; curr < nVerts; prev = curr++)
+    {
+      const auto& P = m_vertices[prev];
+      const auto& C = m_vertices[curr];
+      // clang-format off
+      sum += axom::numerics::determinant(P[0] - O[0], C[0] - O[0],
+                                         P[1] - O[1], C[1] - O[1]);
+      // clang-format on
+    }
+
+    return axom::utilities::abs(0.5 * sum);
+  }
+
+  /**
+   * \brief Returns the area of a planar polygon (2D specialization)
+   *
+   * The area is always non-negative.
+   * \sa signedArea()
+   */
+  template <int TDIM = NDIMS>
+  typename std::enable_if<TDIM == 2, double>::type area() const
+  {
+    return axom::utilities::abs(signedArea());
+  }
+
+  /**
+   * \brief Returns the signed area of a 2D polygon
+   *
+   * The signed area accounts for the orientation of the polygon.
+   * It is positive when the vertices are oriented counter-clockwise
+   * and negative when the vertices are oriented clockwise.
+   * \note Signed area is only defined in 2D.
+   * \sa area()
+   */
+  template <int TDIM = NDIMS>
+  typename std::enable_if<TDIM == 2, double>::type signedArea() const
+  {
+    const int nVerts = numVertices();
+    double sum = 0.;
+
+    // check for early return
+    if(nVerts < 3)
+    {
+      return sum;
+    }
+
+    // use shoelace algorithm
+    for(int curr = 0, prev = nVerts - 1; curr < nVerts; prev = curr++)
+    {
+      sum += m_vertices[prev][0] * m_vertices[curr][1]  //
+        - m_vertices[curr][0] * m_vertices[prev][1];
+    }
+
+    return 0.5 * sum;
   }
 
   /*!

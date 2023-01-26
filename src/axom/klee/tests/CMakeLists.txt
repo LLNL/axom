@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,7 @@ blt_add_library(
         NAME        klee_test_utils
         SOURCES     KleeTestUtils.cpp
         HEADERS     KleeTestUtils.hpp KleeMatchers.hpp
-        DEPENDS_ON  axom gtest gmock
+        DEPENDS_ON  axom ${axom_device_depends} gtest gmock
         FOLDER      axom/klee/tests)
 
 #
@@ -37,7 +37,7 @@ foreach(test ${gtest_klee_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON gtest klee_test_utils
+                        DEPENDS_ON gtest klee_test_utils ${axom_device_depends}
                         FOLDER      axom/klee/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )

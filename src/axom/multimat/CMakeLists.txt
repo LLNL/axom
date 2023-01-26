@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,7 +28,7 @@ set(multimat_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(multimat_depends_on core slam slic)
+set(multimat_depends_on core slam slic ${axom_device_depends})
 
 blt_add_library(
     NAME        multimat
@@ -38,6 +38,9 @@ blt_add_library(
     FOLDER      axom/multimat
     OBJECT      TRUE
     )
+
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(multimat.cpp PROPERTIES LANGUAGE CXX)
 
 axom_write_unified_header(NAME    multimat
                           HEADERS ${multimat_headers}

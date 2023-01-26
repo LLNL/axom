@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -492,6 +492,8 @@ def full_build_and_test_of_tpls(builds_dir, timestamp, spec, report_to_stdout = 
     if not os.path.exists(prefix):
         os.mkdir(prefix)
     prefix = pjoin(prefix, timestamp)
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
 
     # create a mirror
     uberenv_create_mirror(prefix, spec, "", mirror_dir)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -189,8 +189,10 @@ TEST(core_stack_array, less_than)
   // The following would produce a compiler error since Tensor does not have an operator<() !
   //internal::test_less_than<Tensor, N>([](int i) { return Tensor(i + 1); });
 
+#if !defined(AXOM_GPUCC)
   internal::test_less_than<std::string, N>(
     [](int i) { return std::to_string(i + 1); });
+#endif
 }
 
 } /* namespace axom */

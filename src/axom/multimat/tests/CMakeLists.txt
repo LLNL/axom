@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,8 +14,7 @@ set(gtest_multimat_tests
     multimat_test.cpp
     )
 
-
-set(multimat_tests_depends_on core slic slam multimat gtest)
+set(multimat_tests_depends_on core slic slam multimat ${axom_device_depends} gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest based tests

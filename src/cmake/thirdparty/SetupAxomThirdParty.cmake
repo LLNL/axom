@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,6 +14,16 @@ if(POLICY CMP0074)
 endif()
 
 set(TPL_DEPS)
+
+#------------------------------------------------------------------------------
+# Create global variable to toggle between GPU targets
+#------------------------------------------------------------------------------
+if(AXOM_ENABLE_CUDA)
+    set(axom_device_depends cuda CACHE STRING "" FORCE)
+endif()
+if(AXOM_ENABLE_HIP)
+    set(axom_device_depends blt::hip CACHE STRING "" FORCE)
+endif()
 
 #------------------------------------------------------------------------------
 # Camp (needed by RAJA and Umpire)
@@ -99,6 +109,25 @@ if (RAJA_DIR)
         message(STATUS "RAJA loaded: ${RAJA_DIR}")
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
+
+    # Suppress warnings from cub and cuda related to the (low) version 
+    # of clang that XL compiler pretends to be.
+    if(C_COMPILER_FAMILY_IS_XL)
+        if(TARGET RAJA::cub)
+            blt_add_target_definitions(
+                TO RAJA::cub
+                SCOPE INTERFACE
+                TARGET_DEFINITIONS CUB_IGNORE_DEPRECATED_CPP_DIALECT)
+        endif()
+
+        if(TARGET cuda)
+            blt_add_target_definitions(
+                TO cuda
+                SCOPE INTERFACE
+                TARGET_DEFINITIONS THRUST_IGNORE_DEPRECATED_CPP_DIALECT)
+        endif()
+    endif()
+
 else()
     message(STATUS "RAJA support is OFF" )
     set(RAJA_FOUND FALSE CACHE BOOL "")
@@ -279,10 +308,10 @@ endif()
 #------------------------------------------------------------------------------
 # Targets that need to be exported but don't have a CMake config file
 #------------------------------------------------------------------------------
-blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
-blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF ENABLE_HIP)
-blt_list_append(TO TPL_DEPS ELEMENTS openmp IF ENABLE_OPENMP)
-blt_list_append(TO TPL_DEPS ELEMENTS mpi IF ENABLE_MPI)
+blt_list_append(TO TPL_DEPS ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
+blt_list_append(TO TPL_DEPS ELEMENTS blt_hip blt_hip_runtime IF AXOM_ENABLE_HIP)
+blt_list_append(TO TPL_DEPS ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
+blt_list_append(TO TPL_DEPS ELEMENTS mpi IF AXOM_ENABLE_MPI)
 
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set

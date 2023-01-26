@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,11 +46,9 @@ blt_list_append(
     IF       MFEM_FOUND 
                )
 
-set(primal_test_depends axom fmt gtest)
+set(primal_test_depends axom ${axom_device_depends} fmt gtest)
 
-blt_list_append( TO primal_test_depends ELEMENTS cuda IF ENABLE_CUDA )
-blt_list_append( TO primal_test_depends ELEMENTS blt::hip IF ENABLE_HIP )
-blt_list_append( TO primal_test_depends ELEMENTS openmp IF ENABLE_OPENMP )
+blt_list_append( TO primal_test_depends ELEMENTS openmp IF AXOM_ENABLE_OPENMP )
 
 foreach ( test ${primal_tests} )
 
