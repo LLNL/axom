@@ -7,10 +7,13 @@
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
+
+#include <cmath>
 
 namespace primal = axom::primal;
 
@@ -426,6 +429,91 @@ TEST(primal_polyhedron, polyhedron_decomposition)
   }
 
   EXPECT_NEAR(1.000, sum, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_polyhedron, polygonal_cone)
+{
+  namespace numerics = axom::numerics;
+
+  using Polygon2D = primal::Polygon<double, 2>;
+  using Polyhedron3D = primal::Polyhedron<double, 3>;
+  using Vector3D = primal::Vector<double, 3>;
+  using Point3D = primal::Point<double, 3>;
+  using MatrixType = numerics::Matrix<double>;
+
+  // Lambda to generate a 3D rotation matrix from an angle and axis
+  // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
+  auto angleAxisRotMatrix = [](double theta, const Vector3D& axis) -> MatrixType {
+    const auto unitized = axis.unitVector();
+    const double x = unitized[0], y = unitized[1], z = unitized[2];
+    const double c = cos(theta), s = sin(theta), C = 1 - c;
+
+    auto matx = numerics::Matrix<double>::zeros(3, 3);
+
+    matx(0, 0) = x * x * C + c;
+    matx(0, 1) = x * y * C - z * s;
+    matx(0, 2) = x * z * C + y * s;
+
+    matx(1, 0) = y * x * C + z * s;
+    matx(1, 1) = y * y * C + c;
+    matx(1, 2) = y * z * C - x * s;
+
+    matx(2, 0) = z * x * C - y * s;
+    matx(2, 1) = z * y * C + x * s;
+    matx(2, 2) = z * z * C + c;
+
+    return matx;
+  };
+
+  // Lambda to rotate the input point using the provided rotation matrix
+  auto rotatePoint = [](const MatrixType& matx, const Point3D input) -> Point3D {
+    Point3D rotated;
+    numerics::matrix_vector_multiply(matx, input.data(), rotated.data());
+    return rotated;
+  };
+
+  // Create a regular pentagon in the XY plane
+  constexpr int N = 5;
+  Polygon2D penta(N);
+  for(int i = 0; i < N; ++i)
+  {
+    const double alpha = 2. * M_PI * i / N;
+    penta.addVertex({cos(alpha), sin(alpha), 0});
+  }
+  SLIC_INFO(axom::fmt::format("Pentagon w/ signed area {}", penta.signedArea()));
+
+  // Create several rotated cones with a polygonal base.
+  // The volume of a cone is 1/3 * base_area * height, so it should equal
+  // the area of the polygon when the height is 3.
+  for(auto matx : {angleAxisRotMatrix(0., Vector3D {0, 0, 1}),
+                   angleAxisRotMatrix(M_PI / 3., Vector3D {0, 1, 0}),
+                   angleAxisRotMatrix(M_PI / 2., Vector3D {1, 1, 0}),
+                   angleAxisRotMatrix(2 * M_PI / 3., Vector3D {1, 1, 1}),
+                   angleAxisRotMatrix(7 * M_PI / 8., Vector3D {1, 0, 0})})
+  {
+    Polyhedron3D poly;
+
+    // Add vertices for base of pentagonal cone
+    for(int i = 0; i < N; ++i)
+    {
+      poly.addVertex(rotatePoint(matx, Point3D {penta[i][0], penta[i][1], 0}));
+    }
+    // Add apex of cone; z is at 3 since
+    poly.addVertex(rotatePoint(matx, Point3D {0, 0, 3}));
+
+    // Set up edge adjacencies
+    poly.addNeighbors(0, {5, 4, 1});
+    poly.addNeighbors(1, {5, 0, 2});
+    poly.addNeighbors(2, {5, 1, 3});
+    poly.addNeighbors(3, {5, 2, 4});
+    poly.addNeighbors(4, {5, 3, 0});
+    poly.addNeighbors(5, {0, 1, 2, 3, 4});
+
+    SLIC_INFO(axom::fmt::format("Polyhedron {}", poly));
+
+    EXPECT_DOUBLE_EQ(penta.area(), poly.volume());
+  }
 }
 
 //------------------------------------------------------------------------------
