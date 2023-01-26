@@ -25,6 +25,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `Array::back()`: returns a reference to the last element
   - `Array::resize(size, T value)`: resizes the array, and sets any new elements to `value`.
 - Adds an `ArrayView::empty()` method to return whether the view is empty or not.
+- Adds an `area()` function to `primal::Polygon`
 
 ### Changed
 - `axom::Array` move constructors are now `noexcept`.
@@ -47,6 +48,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
   for CUDA/non-gpu builds.
+- Checks validity of bounding boxes in `primal`'s intersection operators against planes 
+  and triangles before using the geometry.
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
