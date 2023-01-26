@@ -520,18 +520,18 @@ public:
 
       const PointType& origin = m_vertices[0];
 
-      for(int i = 0; i < face_count; i++)
+      for(int i = 0; i < face_count; ++i)
       {
-        int n = face_size[i];
-        VectorType v0 = m_vertices[faces[face_offset[i]]] - origin;
+        const int N = face_size[i];
+        const int i_offset = face_offset[i];
+        const VectorType v0 = m_vertices[faces[i_offset]] - origin;
 
-        for(int j = 1; j < n - 1; ++j)
+        for(int j = 1, k = 2; j < N - 1; ++j, ++k)
         {
-          const int k = (j + 1) < n ? j + 1 : 0;
           retVol += VectorType::scalar_triple_product(
             v0,
-            m_vertices[faces[face_offset[i] + j]] - origin,
-            m_vertices[faces[face_offset[i] + k]] - origin);
+            m_vertices[faces[i_offset + j]] - origin,
+            m_vertices[faces[i_offset + k]] - origin);
         }
       }
     }
