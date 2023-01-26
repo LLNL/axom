@@ -29,8 +29,8 @@
 #include <string>
 #include <vector>
 
-// Comment out this macro to run tests faster.
-#define RUN_AXOM_SEQ_TESTS
+// Uncomment this macro to run sequential tests (they take a long time).
+//#define RUN_AXOM_SEQ_TESTS
 
 // Uncomment this macro to regenerate baseline YAML files.
 //#define GENERATE_BASELINES
