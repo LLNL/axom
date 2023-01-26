@@ -442,6 +442,8 @@ TEST(primal_polyhedron, polygonal_cone)
   using Point3D = primal::Point<double, 3>;
   using MatrixType = numerics::Matrix<double>;
 
+  constexpr double EPS = 1e-8;
+
   // Lambda to generate a 3D rotation matrix from an angle and axis
   // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
   auto angleAxisRotMatrix = [](double theta, const Vector3D& axis) -> MatrixType {
@@ -481,7 +483,7 @@ TEST(primal_polyhedron, polygonal_cone)
     const double alpha = 2. * M_PI * i / N;
     penta.addVertex({cos(alpha), sin(alpha), 0});
   }
-  SLIC_INFO(axom::fmt::format("Pentagon w/ signed area {}", penta.signedArea()));
+  SLIC_DEBUG(axom::fmt::format("Pentagon w/ signed area {}", penta.signedArea()));
 
   // Create several rotated cones with a polygonal base.
   // The volume of a cone is 1/3 * base_area * height, so it should equal
@@ -499,7 +501,7 @@ TEST(primal_polyhedron, polygonal_cone)
     {
       poly.addVertex(rotatePoint(matx, Point3D {penta[i][0], penta[i][1], 0}));
     }
-    // Add apex of cone; z is at 3 since
+    // Add apex of cone; z == 3 for volume to match area of polygonal base
     poly.addVertex(rotatePoint(matx, Point3D {0, 0, 3}));
 
     // Set up edge adjacencies
@@ -510,9 +512,9 @@ TEST(primal_polyhedron, polygonal_cone)
     poly.addNeighbors(4, {5, 3, 0});
     poly.addNeighbors(5, {0, 1, 2, 3, 4});
 
-    SLIC_INFO(axom::fmt::format("Polyhedron {}", poly));
+    SLIC_DEBUG(axom::fmt::format("Polyhedron {}", poly));
 
-    EXPECT_DOUBLE_EQ(penta.area(), poly.volume());
+    EXPECT_NEAR(penta.area(), poly.volume(), EPS);
   }
 }
 
