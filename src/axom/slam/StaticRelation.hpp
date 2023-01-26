@@ -50,12 +50,13 @@ public:
 
   using IndicesIndirectionPolicy = RelationIndicesIndirectionPolicy;
 
-  using RelationSubset = OrderedSet<SetPosition,
-                                    SetElement,
-                                    BeginsSizePolicy,
-                                    policies::RuntimeOffset<SetPosition>,
-                                    policies::StrideOne<SetPosition>,
-                                    IndicesIndirectionPolicy>;
+  using RelationSubset =
+    typename OrderedSet<SetPosition,
+                        SetElement,
+                        BeginsSizePolicy,
+                        policies::RuntimeOffset<SetPosition>,
+                        policies::StrideOne<SetPosition>,
+                        IndicesIndirectionPolicy>::ConcreteSet;
 
   using IndicesSet = OrderedSet<SetPosition,
                                 SetElement,
@@ -152,9 +153,11 @@ public:
   };
 
 public:
-  const RelationSubset operator[](SetPosition fromSetInd) const
+  AXOM_HOST_DEVICE const RelationSubset operator[](SetPosition fromSetInd) const
   {
+#ifndef AXOM_HOST_DEVICE
     SLIC_ASSERT(m_relationIndices.isValid(true));
+#endif
 
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
@@ -163,9 +166,11 @@ public:
       .data(m_relationIndices.ptr());
   }
 
-  RelationSubset operator[](SetPosition fromSetInd)
+  AXOM_HOST_DEVICE RelationSubset operator[](SetPosition fromSetInd)
   {
+#ifndef AXOM_HOST_DEVICE
     SLIC_ASSERT(m_relationIndices.isValid(true));
+#endif
 
     using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()

@@ -230,7 +230,7 @@ public:
       return *this;
     }
 
-    SetBuilder& data(DataType bufPtr)
+    AXOM_HOST_DEVICE SetBuilder& data(DataType bufPtr)
     {
       m_data = IndirectionPolicyType(bufPtr);
       return *this;

@@ -355,7 +355,9 @@ public:
    * \warning For sparse BivariateSet type, this function may have to do a
    *          linear search and can be slow.
    */
-  const DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0) const
+  AXOM_HOST_DEVICE const DataType* findValue(SetPosition s1,
+                                             SetPosition s2,
+                                             SetPosition comp = 0) const
   {
     SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
@@ -366,7 +368,9 @@ public:
     return &(m_map(i, comp));
   }
 
-  DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  AXOM_HOST_DEVICE DataType* findValue(SetPosition s1,
+                                       SetPosition s2,
+                                       SetPosition comp = 0)
   {
     SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
