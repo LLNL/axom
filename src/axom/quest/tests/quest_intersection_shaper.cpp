@@ -29,7 +29,8 @@
 #include <string>
 #include <vector>
 
-//#define AXOM_SEQ_INTERSECTION_SHAPER_WORKS
+// Comment out this macro to run tests faster.
+#define RUN_AXOM_SEQ_TESTS
 
 // Uncomment this macro to regenerate baseline YAML files.
 //#define GENERATE_BASELINES
@@ -402,7 +403,7 @@ void replacementRuleTestSet(const std::vector<std::string> &cases,
 }
 
 // Define testing functions for different modes.
-#if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
+#if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case1_seq)
 {
   constexpr double tolerance = 1.e-10;
@@ -439,7 +440,7 @@ TEST(IntersectionShaperTest, case1_hip)
 #endif
 
 // case2
-#if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
+#if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case2_seq)
 {
   constexpr double tolerance = 1.e-10;
@@ -469,7 +470,7 @@ TEST(IntersectionShaperTest, case2_hip)
 #endif
 
 // case3
-#if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
+#if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case3_seq)
 {
   constexpr double tolerance = 1.e-10;
@@ -499,7 +500,7 @@ TEST(IntersectionShaperTest, case3_hip)
 #endif
 
 // case4
-#if defined(AXOM_SEQ_INTERSECTION_SHAPER_WORKS)
+#if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case4_seq)
 {
   constexpr double tolerance = 1.e-10;
