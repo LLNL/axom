@@ -1641,6 +1641,57 @@ TEST(core_array, check_multidimensional_view)
   }
 }
 
+struct Elem { double earth, wind, fire; };
+//------------------------------------------------------------------------------
+TEST(core_array, check_multidimensional_view_spacing)
+{
+  constexpr int NUM_COMPS = 3;
+  constexpr int NUM_DIMS = 3;
+
+  // Initialize a multidimensional, multicomponent array.
+  StackArray<IndexType, NUM_DIMS> shape {3, 2, 4};
+  Array<Elem, 3> mdElemArray(shape[0], shape[1], shape[2]);
+  for(int i=0; i<shape[0]; ++i)
+  {
+    for(int j=0; j<shape[1]; ++j)
+    {
+      for(int k=0; k<shape[2]; ++k)
+      {
+        int pvalue = 1000*i + 100*j + 10*k;
+        mdElemArray(i, j, k).earth = pvalue + .1;
+        mdElemArray(i, j, k).wind = pvalue + .2;
+        mdElemArray(i, j, k).fire = pvalue + .3;
+      }
+    }
+  }
+
+  // Verify views of the 3 individual components in mdElemArray.
+  // NUM_COMPS is the spacing between consecutive values of the
+  // same type (earth, wind or fire).
+  ArrayView<double, 3> earthOnly(&mdElemArray(0, 0, 0).earth, shape, NUM_COMPS);
+  ArrayView<double, 3> windOnly(&mdElemArray(0, 0, 0).wind, shape, NUM_COMPS);
+  ArrayView<double, 3> fireOnly(&mdElemArray(0, 0, 0).fire, shape, NUM_COMPS);
+
+  for(int i=0; i<shape[0]; ++i)
+  {
+    for(int j=0; j<shape[1]; ++j)
+    {
+      for(int k=0; k<shape[2]; ++k)
+      {
+        int pvalue = 1000*i + 100*j + 10*k;
+        EXPECT_EQ(earthOnly(i, j, k), pvalue + .1);
+        EXPECT_EQ(windOnly(i, j, k), pvalue + .2);
+        EXPECT_EQ(fireOnly(i, j, k), pvalue + .3);
+
+        EXPECT_EQ(&earthOnly(i, j, k), &mdElemArray(i, j, k).earth);
+        EXPECT_EQ(&windOnly(i, j, k), &mdElemArray(i, j, k).wind);
+        EXPECT_EQ(&fireOnly(i, j, k), &mdElemArray(i, j, k).fire);
+      }
+    }
+  }
+
+}
+
 //------------------------------------------------------------------------------
 TEST(core_array, checkDevice)
 {
