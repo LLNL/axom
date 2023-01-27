@@ -104,8 +104,7 @@ private:
   */
   const conduit::Node *_dom;
   int _ndim;
-  axom::Array<axom::IndexType> _shape;  //!< @brief Number of cells in each direction
-  axom::Array<axom::IndexType> _rshape;  //!< @brief _shape, backward order
+  axom::Array<axom::IndexType> _cShape;  //!< @brief Shape of cell-centered data arrays in _dom.
   axom::Array<axom::IndexType> _logicalOrigin;  //!< @brief First domain cell in each direction.
 
   const std::string _coordsetPath;

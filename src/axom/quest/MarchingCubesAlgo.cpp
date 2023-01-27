@@ -109,7 +109,7 @@ MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node& dom,
                                        const std::string& maskField)
   : _dom(nullptr)
   , _ndim(0)
-  , _shape()
+  , _cShape()
   , _logicalOrigin()
   , _coordsetPath("coordsets/" + coordsetName)
   , _fcnPath()
@@ -143,12 +143,10 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node& dom)
 
   _ndim = dimsNode.number_of_children();
 
-  _shape.resize(_ndim);
-  _rshape.resize(_ndim);
+  _cShape.resize(_ndim);
   for(int d = 0; d < _ndim; ++d)
   {
-    _shape[d] = dimsNode[d].as_int();
-    _rshape[d] = dimsNode[_ndim - 1 - d].as_int();
+    _cShape[d] = dimsNode[_ndim - 1 - d].as_int();
   }
 
   _logicalOrigin.resize(_ndim, 0);
@@ -226,6 +224,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
   const conduit::Node& coordValues =
     _dom->fetch_existing(_coordsetPath + "/values");
+  bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+  const int coordSp = isInterleaved ? _ndim : 1;
   const double* xPtr = coordValues["x"].as_double_ptr();
   const double* yPtr = _ndim >= 2 ? coordValues["y"].as_double_ptr() : nullptr;
   const double* zPtr = _ndim >= 3 ? coordValues["z"].as_double_ptr() : nullptr;
@@ -248,17 +248,6 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
   _contourVal = contourVal;
 
-  /*
-    We need to know whether data is row-major to index into it
-    correctly and to use cache efficiently.  Col-major layout
-    of MxN data is the same as row-major layout of NxM data.
-
-    When I can determine data layout from blueprint metadata,
-    set dataIsRowMajor accordingly.
-  */
-  bool dataIsRowMajor = false;
-  const axom::Array<axom::IndexType>& shape = dataIsRowMajor ? _shape : _rshape;
-
   if(_ndim == 2)
   {
     /*
@@ -266,19 +255,23 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
       Eventually, we'll have to support index offsets to
       handle data with ghosts.
 
-      Nested loops are memory efficient for row-major data.
-      If data is column-major, use _rshape to make it look
-      row-major.
+      By using ArrayView, we're assuming row-major layout.  To support
+      column-major layout as well, we have to extend ArrayView to
+      compute column-major strides.  We should also use an iteration
+      scheme that's efficient for both layouts.
     */
-    axom::ArrayView<const double, 2> fcnView(fcnPtr, 1 + shape[0], 1 + shape[1]);
-    axom::ArrayView<const double, 2> xView(xPtr, 1 + shape[0], 1 + shape[1]);
-    axom::ArrayView<const double, 2> yView(yPtr, 1 + shape[0], 1 + shape[1]);
-    axom::ArrayView<const int, 2> maskView(maskPtr, shape[0], shape[1]);
+    const axom::StackArray<axom::IndexType, 2> cShape {_cShape[0], _cShape[1]};
+    const axom::StackArray<axom::IndexType, 2> pShape {1 + _cShape[0],
+                                                       1 + _cShape[1]};
+    axom::ArrayView<const double, 2> xView(xPtr, pShape, coordSp);
+    axom::ArrayView<const double, 2> yView(yPtr, pShape, coordSp);
+    axom::ArrayView<const double, 2> fcnView(fcnPtr, pShape);
+    axom::ArrayView<const int, 2> maskView(maskPtr, cShape);
 
     // Write as regular nested loops.
-    for(int i = 0; i < shape[0]; ++i)
+    for(int i = 0; i < cShape[0]; ++i)
     {
-      for(int j = 0; j < shape[1]; ++j)
+      for(int j = 0; j < cShape[1]; ++j)
       {
         const bool skipZone = maskPtr && bool(maskView(i, j));
         if(!skipZone)
@@ -308,7 +301,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
           if(nNew > nPrev && !_cellIdField.empty())
           {
-            int zoneIdx = i + j * shape[0];  // TODO: Fix for ghost layer size.
+            int zoneIdx = i + j * cShape[0];  // TODO: Fix for ghost layer size.
             auto* cellIdPtr =
               _surfaceMesh->getFieldPtr<int>(_cellIdField,
                                              axom::mint::CELL_CENTERED);
@@ -323,29 +316,23 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
   }
   else
   {
-    axom::ArrayView<const double, 3> fcnView(fcnPtr,
-                                             1 + shape[0],
-                                             1 + shape[1],
-                                             1 + shape[2]);
-    axom::ArrayView<const double, 3> xView(xPtr,
-                                           1 + shape[0],
-                                           1 + shape[1],
-                                           1 + shape[2]);
-    axom::ArrayView<const double, 3> yView(yPtr,
-                                           1 + shape[0],
-                                           1 + shape[1],
-                                           1 + shape[2]);
-    axom::ArrayView<const double, 3> zView(zPtr,
-                                           1 + shape[0],
-                                           1 + shape[1],
-                                           1 + shape[2]);
-    axom::ArrayView<const int, 3> maskView(maskPtr, shape[0], shape[1], shape[2]);
+    const axom::StackArray<axom::IndexType, 3> cShape {_cShape[0],
+                                                       _cShape[1],
+                                                       _cShape[2]};
+    const axom::StackArray<axom::IndexType, 3> pShape {1 + _cShape[0],
+                                                       1 + _cShape[1],
+                                                       1 + _cShape[2]};
+    axom::ArrayView<const double, 3> xView(xPtr, pShape, coordSp);
+    axom::ArrayView<const double, 3> yView(yPtr, pShape, coordSp);
+    axom::ArrayView<const double, 3> zView(zPtr, pShape, coordSp);
+    axom::ArrayView<const double, 3> fcnView(fcnPtr, pShape);
+    axom::ArrayView<const int, 3> maskView(maskPtr, cShape);
     // Write as regular nested loops.
-    for(int i = 0; i < shape[0]; ++i)
+    for(int i = 0; i < cShape[0]; ++i)
     {
-      for(int j = 0; j < shape[1]; ++j)
+      for(int j = 0; j < cShape[1]; ++j)
       {
-        for(int k = 0; k < shape[2]; ++k)
+        for(int k = 0; k < cShape[2]; ++k)
         {
           const bool skipZone = maskPtr && bool(maskView(i, j, k));
           if(!skipZone)
@@ -397,8 +384,8 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 
             if(nNew > nPrev && !_cellIdField.empty())
             {
-              int zoneIdx = i + j * shape[0] +
-                k * shape[0] * shape[1];  // TODO: Fix for ghost layer size.
+              int zoneIdx = i + j * cShape[0] +
+                k * cShape[0] * cShape[1];  // TODO: Fix for ghost layer size.
               auto* cellIdPtr =
                 _surfaceMesh->getFieldPtr<int>(_cellIdField,
                                                axom::mint::CELL_CENTERED);
