@@ -336,13 +336,19 @@ public:
   }
 
   /*!
-    \brief Returns spacing between adjacent items (stride in fastest index direction)
+    \brief Returns spacing between adjacent items.
 
     Spacing is set by constructor and cannot change.
   */
   AXOM_HOST_DEVICE IndexType spacing() const { return m_spacing; }
 
-  /// \brief Returns the strides of the Array
+  /*!
+    \brief Returns the logical strides of the Array
+
+    The logical stride is always 1 in the fastest changing direction,
+    regardless of spacing.  Actual memory stride differs from logical
+    stride by the spacing() factor, which is 1 by default.
+  */
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
   {
     return m_strides;
@@ -519,13 +525,19 @@ public:
   }
 
   /*!
-    \brief Returns spacing between adjacent items (stride in fastest index direction)
+    \brief Returns memory spacing between adjacent items.
 
     Spacing is set by constructor and cannot change.
   */
   AXOM_HOST_DEVICE IndexType spacing() const { return m_spacing; }
 
-  /// \brief Returns the strides of the Array
+  /*!
+    \brief Returns the logical strides of the Array
+
+    The logical stride is always 1 in the fastest changing direction,
+    regardless of spacing.  Actual memory stride differs from logical
+    stride by the spacing() factor, which is 1 by default.
+  */
   AXOM_HOST_DEVICE const StackArray<IndexType, 1>& strides() const
   {
     return m_strides;
