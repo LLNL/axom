@@ -67,7 +67,10 @@ public:
    *
    * This constructor doesn't support non-unit spacing.
    */
-  template <typename... Args>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   ArrayView(T* data, Args... args);
 
   /*!
@@ -192,7 +195,7 @@ using MCArrayView = ArrayView<T, 2>;
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args>
+template <typename... Args, typename Enable>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   : ArrayView(data, StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
 {
