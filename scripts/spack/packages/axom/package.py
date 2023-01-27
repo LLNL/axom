@@ -8,6 +8,7 @@ import socket
 from os.path import join as pjoin
 
 from spack.package import *
+from spack.util.executable import which_string
 
 
 def get_spec_path(spec, package_name, path_replacements={}, use_bin=False):
@@ -397,7 +398,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         # Replace srun MPIEXEC info with flux on tioga
         hostname = socket.gethostname()
         if "tioga" in hostname:
-            flux = which("flux")
+            flux = which_string("flux")
             if (flux):
                 mpi_exe_indices = sorted(set([index for index,entry in enumerate(entries)
                                               if "MPIEXEC_EXECUTABLE" in entry
@@ -408,11 +409,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     del entries[i]
 
                 if spec["cmake"].satisfies("@3.10:"):
-                    entries.append(cmake_cache_path("MPIEXEC_EXECUTABLE", flux))
+                    entries.append(cmake_cache_path("MPIEXEC_EXECUTABLE", flux + " mini run"))
                 else:
-                    entries.append(cmake_cache_path("MPIEXEC", flux))
+                    entries.append(cmake_cache_path("MPIEXEC", flux + " mini run"))
 
-                entries.append(cmake_cache_string("MPIEXEC_NUMPROC_FLAG", "mini;run;-n"))
+                entries.append(cmake_cache_string("MPIEXEC_NUMPROC_FLAG", "-n"))
             else:
                 entries.append("# flux could not be found\n\n")
 
