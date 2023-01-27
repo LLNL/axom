@@ -70,7 +70,6 @@ public:
   template <typename... Args>
   ArrayView(T* data, Args... args);
 
-
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
    *
@@ -80,7 +79,8 @@ public:
    *
    * This constructor supports non-unit spacing.
    */
-  AXOM_HOST_DEVICE ArrayView(T* data, const StackArray<IndexType, DIM>& shape,
+  AXOM_HOST_DEVICE ArrayView(T* data,
+                             const StackArray<IndexType, DIM>& shape,
                              IndexType spacing_ = 1);
 
   /*! 
