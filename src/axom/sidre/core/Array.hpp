@@ -379,7 +379,7 @@ Array<T, DIM>::Array(View* view) : axom::Array<T, 1>()
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
   SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
 
-  axom::StackArray<axom::IndexType, 1> newShape{getViewShape(0)};
+  axom::StackArray<axom::IndexType, 1> newShape {getViewShape(0)};
   this->set_shape(newShape);
   this->m_num_elements = newShape[0];
 
@@ -417,7 +417,8 @@ Array<T, DIM>::Array(View* view) : axom::Array<T, 2>()
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
   SLIC_ERROR_IF(m_view->isEmpty(), "Provided View cannot be empty.");
 
-  axom::StackArray<axom::IndexType, 2> newShape{getViewShape(0), getViewShape(1)};
+  axom::StackArray<axom::IndexType, 2> newShape {getViewShape(0),
+                                                 getViewShape(1)};
   this->set_shape(newShape);
 
   axom::IndexType buffer_size = m_view->getBuffer()->getNumElements();
