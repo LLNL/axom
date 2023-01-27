@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,12 +65,26 @@ public:
    *
    * \pre sizeof...(Args) == DIM
    *
-   * \post size() == num_elements
+   * This constructor doesn't support non-unit spacing.
    */
-  template <typename... Args>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   ArrayView(T* data, Args... args);
 
-  AXOM_HOST_DEVICE ArrayView(T* data, const StackArray<IndexType, DIM>& shape);
+  /*!
+   * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
+   *
+   * \param [in] data the external data this ArrayView will wrap.
+   * \param [in] shape Array size in each dimension.
+   * \param [in] spacing_ Spacing between consecutive items.
+   *
+   * This constructor supports non-unit spacing.
+   */
+  AXOM_HOST_DEVICE ArrayView(T* data,
+                             const StackArray<IndexType, DIM>& shape,
+                             IndexType spacing_ = 1);
 
   /*! 
    * \brief Constructor for transferring between memory spaces
@@ -181,7 +195,7 @@ using MCArrayView = ArrayView<T, 2>;
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args>
+template <typename... Args, typename Enable>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   : ArrayView(data, StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
 {
@@ -193,8 +207,9 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
 template <typename T, int DIM, MemorySpace SPACE>
 AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
   T* data,
-  const StackArray<IndexType, DIM>& shape)
-  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape)
+  const StackArray<IndexType, DIM>& shape,
+  IndexType spacing_)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, spacing_)
   , m_data(data)
 #ifndef AXOM_DEVICE_CODE
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())

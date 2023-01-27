@@ -133,7 +133,6 @@ if(CONDUIT_FOUND)
                   set(_dir 1.0 0.4 1.2)
                   set(_center 1.0 0.4 1.2)
                 endif()
-                message("_sizes=${_sizes} _ndim=${_ndim} _dir=${_dir} _center=${_center}")
 
                 set(_test "quest_marching_cubes_run_${_ndim}D_${_pol}_${_mesh}")
                 axom_add_test(
