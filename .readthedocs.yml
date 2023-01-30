@@ -5,6 +5,15 @@
 # Required
 version: 2
 
+# Print tree
+build:
+  os: "ubuntu-20.04"
+  tools:
+    python: "3.7"
+  jobs:
+    post_build:
+      - tree -J
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: src/conf.py
@@ -18,9 +27,3 @@ python:
   install:
     - requirements: src/docs/requirements.txt
 
-# Print tree
-build:
-  os: "ubuntu-20.04"
-  jobs:
-    post_build:
-      - tree -J
