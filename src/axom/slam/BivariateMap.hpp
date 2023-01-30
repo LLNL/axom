@@ -308,17 +308,21 @@ public:
    *        first set index
    * \pre 0 <= firstIdx < size(firstIdx)
    */
-  ConstSubMapType operator()(SetPosition firstIdx) const
+  AXOM_HOST_DEVICE ConstSubMapType operator()(SetPosition firstIdx) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyFirstSetIndex(firstIdx);
+#endif
     auto s = set()->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return ConstSubMapType(this, s, hasInd);
   }
 
-  SubMapType operator()(SetPosition firstIdx)
+  AXOM_HOST_DEVICE SubMapType operator()(SetPosition firstIdx)
   {
+#ifndef AXOM_DEVICE_CODE
     verifyFirstSetIndex(firstIdx);
+#endif
     auto s = set()->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return SubMapType(this, s, hasInd);
@@ -636,16 +640,28 @@ public:
 
 public:
   /** BivariateMap iterator functions */
-  iterator begin() { return iterator(this, 0); }
-  iterator end() { return iterator(this, totalSize()); }
-  const_iterator begin() const { return const_iterator(this, 0); }
-  const_iterator end() const { return const_iterator(this, totalSize()); }
+  AXOM_HOST_DEVICE iterator begin() { return iterator(this, 0); }
+  AXOM_HOST_DEVICE iterator end() { return iterator(this, totalSize()); }
+  AXOM_HOST_DEVICE const_iterator begin() const
+  {
+    return const_iterator(this, 0);
+  }
+  AXOM_HOST_DEVICE const_iterator end() const
+  {
+    return const_iterator(this, totalSize());
+  }
 
   /** Iterator via Submap */
-  SubMapIterator begin(int i) { return (*this)(i).begin(); }
-  SubMapIterator end(int i) { return (*this)(i).end(); }
-  ConstSubMapIterator begin(int i) const { return (*this)(i).begin(); }
-  ConstSubMapIterator end(int i) const { return (*this)(i).end(); }
+  AXOM_HOST_DEVICE SubMapIterator begin(int i) { return (*this)(i).begin(); }
+  AXOM_HOST_DEVICE SubMapIterator end(int i) { return (*this)(i).end(); }
+  AXOM_HOST_DEVICE ConstSubMapIterator begin(int i) const
+  {
+    return (*this)(i).begin();
+  }
+  AXOM_HOST_DEVICE ConstSubMapIterator end(int i) const
+  {
+    return (*this)(i).end();
+  }
 
 public:
   AXOM_HOST_DEVICE const BivariateSetType* set() const { return m_bset.get(); }
