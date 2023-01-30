@@ -20,7 +20,7 @@ python:
 
 # Print tree
 build:
+  os: "ubuntu-20.04"
   jobs:
     post_build:
       - tree -J
-
