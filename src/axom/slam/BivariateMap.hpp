@@ -106,9 +106,15 @@ public:
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol, IfacePol>;
 
+  template <bool Const>
+  class BivariateMapIterator;
+  using iterator = BivariateMapIterator<false>;
+  using const_iterator = BivariateMapIterator<true>;
+
   using SubMapType = SubMap<BivariateMapType, SetType, IfacePol>;
   using ConstSubMapType = const SubMap<const BivariateMapType, SetType, IfacePol>;
-  using SubMapIterator = typename SubMapType::SubMapIterator;
+  using SubMapIterator = typename SubMapType::iterator;
+  using ConstSubMapIterator = typename ConstSubMapType::const_iterator;
 
   using NullBivariateSetType =
     NullBivariateSet<typename BSet::FirstSetType, typename BSet::SecondSetType>;
@@ -302,7 +308,7 @@ public:
    *        first set index
    * \pre 0 <= firstIdx < size(firstIdx)
    */
-  const ConstSubMapType operator()(SetPosition firstIdx) const
+  ConstSubMapType operator()(SetPosition firstIdx) const
   {
     verifyFirstSetIndex(firstIdx);
     auto s = set()->elementRangeSet(firstIdx);
@@ -456,8 +462,9 @@ public:
    * second sparse index (secondSparseIdx). The advance() function is
    * implemented to update those three additional indices.
    */
+  template <bool Const>
   class BivariateMapIterator
-    : public IteratorBase<BivariateMapIterator, SetPosition>
+    : public IteratorBase<BivariateMapIterator<Const>, SetPosition>
   {
   private:
     using iterator_category = std::random_access_iterator_tag;
@@ -469,6 +476,10 @@ public:
     using iter = BivariateMapIterator;
 
   public:
+    using DataRefType = std::conditional_t<Const, const DataType&, DataType&>;
+    using BivariateMapPtr =
+      std::conditional_t<Const, const BivariateMap*, BivariateMap*>;
+
     using PositionType = SetPosition;
     static constexpr PositionType INVALID_POS = -2;
 
@@ -476,7 +487,7 @@ public:
     /**
      * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
      */
-    BivariateMapIterator(BivariateMap* sMap, PositionType pos)
+    BivariateMapIterator(BivariateMapPtr sMap, PositionType pos)
       : IterBase(pos)
       , m_map(sMap)
       , firstIdx(INVALID_POS)
@@ -497,25 +508,25 @@ public:
      *        multiple components, this will return the first component.
      *        To access the other components, use iter(comp)
      */
-    DataType& operator*() { return (*m_map)(firstIdx, secondIdx, 0); }
+    DataRefType operator*() { return (*m_map)(firstIdx, secondIdx, 0); }
 
     /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  (Optional) Zero-based index of the component.
      */
-    DataType& operator()(PositionType comp_idx = 0)
+    DataRefType operator()(PositionType comp_idx = 0)
     {
       return (*m_map)(firstIdx, secondIdx, comp_idx);
     }
 
     /** \brief Returns the first component value after n increments.  */
-    DataType& operator[](PositionType n) { return *(this->operator+(n)); }
+    DataRefType operator[](PositionType n) { return *(this->operator+(n)); }
 
     /**
      * \brief Return the value at the iterator's position. Same as operator()
      */
-    DataType& value(PositionType comp = 0)
+    DataRefType value(PositionType comp = 0)
     {
       return (*m_map)(firstIdx, secondIdx, comp);
     }
@@ -617,7 +628,7 @@ public:
     }
 
   private:
-    BivariateMap* m_map;
+    BivariateMapPtr m_map;
     PositionType firstIdx;
     PositionType secondIdx;
     PositionType secondSparseIdx;
@@ -625,12 +636,16 @@ public:
 
 public:
   /** BivariateMap iterator functions */
-  BivariateMapIterator begin() { return BivariateMapIterator(this, 0); }
-  BivariateMapIterator end() { return BivariateMapIterator(this, totalSize()); }
+  iterator begin() { return iterator(this, 0); }
+  iterator end() { return iterator(this, totalSize()); }
+  const_iterator begin() const { return const_iterator(this, 0); }
+  const_iterator end() const { return const_iterator(this, totalSize()); }
 
   /** Iterator via Submap */
   SubMapIterator begin(int i) { return (*this)(i).begin(); }
   SubMapIterator end(int i) { return (*this)(i).end(); }
+  ConstSubMapIterator begin(int i) const { return (*this)(i).begin(); }
+  ConstSubMapIterator end(int i) const { return (*this)(i).end(); }
 
 public:
   AXOM_HOST_DEVICE const BivariateSetType* set() const { return m_bset.get(); }
