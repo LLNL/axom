@@ -131,7 +131,7 @@ private:
   {
     BSetContainer(const USet* set) : m_pSet(set) { }
 
-    const USet* get() const { return m_pSet; }
+    AXOM_HOST_DEVICE const USet* get() const { return m_pSet; }
 
     const USet* m_pSet;
   };
@@ -678,7 +678,7 @@ public:
   ///
 
   /** \brief Returns the BivariateSet size. */
-  SetPosition size() const { return set()->size(); }
+  AXOM_HOST_DEVICE SetPosition size() const { return set()->size(); }
   /** \brief Returns the BivariateSet size. */
   SetPosition totalSize() const { return set()->size(); }
 

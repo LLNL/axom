@@ -57,7 +57,7 @@ public:
   inline IntType operator()() const { return size(); }
   inline IntType& operator()() { return size(); }
 
-  inline bool empty() const { return m_sz == IntType(); }
+  AXOM_HOST_DEVICE inline bool empty() const { return m_sz == IntType(); }
   inline bool isValid(bool) const
   {
     // We do not (currently) allow negatively sized sets
@@ -129,7 +129,7 @@ struct CompileTimeSize
 
   inline IntType operator()() const { return size(); }
 
-  inline bool empty() const { return INT_VAL == IntType {}; }
+  AXOM_HOST_DEVICE inline bool empty() const { return INT_VAL == IntType {}; }
   inline bool isValid(bool) const
   {
     // We do not (currently) allow negatively sized sets
@@ -156,7 +156,7 @@ struct ZeroSize
 
   AXOM_HOST_DEVICE inline IntType size() const { return DEFAULT_VALUE; }
   inline IntType operator()() const { return size(); }
-  inline bool empty() const { return true; }
+  AXOM_HOST_DEVICE inline bool empty() const { return true; }
   inline bool isValid(bool) const { return true; }
 };
 

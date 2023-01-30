@@ -480,7 +480,7 @@ public:
   {
     return SizePolicyType::size();
   }
-  inline bool empty() const { return SizePolicyType::empty(); }
+  AXOM_HOST_DEVICE inline bool empty() const { return SizePolicyType::empty(); }
 
   bool isValid(bool verboseOutput = false) const;
 

@@ -190,7 +190,7 @@ public:
   ///
 
   /** \brief returns the size of the SubMap  */
-  IndexType size() const { return m_subsetIdx.size(); }
+  AXOM_HOST_DEVICE IndexType size() const { return m_subsetIdx.size(); }
 
   /** \brief returns the number of components (aka. stride) of the SubMap  */
   AXOM_HOST_DEVICE IndexType numComp() const

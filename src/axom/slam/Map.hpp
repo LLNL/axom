@@ -108,7 +108,7 @@ private:
   {
     SetContainer(const USet* set) : m_pSet(set) { }
 
-    const USet* get() const { return m_pSet; }
+    AXOM_HOST_DEVICE const USet* get() const { return m_pSet; }
 
     const USet* m_pSet;
   };
@@ -119,7 +119,7 @@ private:
     SetContainer(const USet* set) : m_pSet(set) { }
     SetContainer(const USet& set) : m_set(set) { }
 
-    const USet* get() const
+    AXOM_HOST_DEVICE const USet* get() const
     {
       if(m_pSet)
       {
@@ -297,7 +297,7 @@ public:
    *
    * The total storage size for the map's values is `size() * numComp()`
    */
-  SetPosition size() const
+  AXOM_HOST_DEVICE SetPosition size() const
   {
     return !policies::EmptySetTraits<SetType>::isEmpty(m_set.get())
       ? static_cast<SetPosition>(m_set.get()->size())

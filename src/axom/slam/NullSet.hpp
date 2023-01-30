@@ -55,7 +55,7 @@ public:
     return true;
   }
 
-  bool empty() const { return true; }
+  AXOM_HOST_DEVICE bool empty() const { return true; }
 
   // TODO: Do we need to add iterator stubs here to satisfy some interface?
   //       The result will be invalid, but it may be useful to get the code
