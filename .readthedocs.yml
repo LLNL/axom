@@ -17,3 +17,10 @@ python:
   version: 3.7
   install:
     - requirements: src/docs/requirements.txt
+
+# Print tree
+build:
+  jobs:
+    post_build:
+      - tree -J
+
