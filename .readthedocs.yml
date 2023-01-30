@@ -12,7 +12,8 @@ build:
     python: "3.7"
   jobs:
     post_build:
-      - tree -J
+      - tree 
+      #- tree -J // tree not found?
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
