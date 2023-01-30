@@ -14,6 +14,7 @@ set(multimat_example_headers
 
 set(multimat_example_sources
     calculate.cpp
+    calculate_gpu.cpp
     traversal.cpp )
 
 foreach(example_source ${multimat_example_sources})
