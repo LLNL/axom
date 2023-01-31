@@ -160,7 +160,6 @@ public:
   {
     m_strides[DIM - 1] = 1;
     updateStrides();
-    m_spacing = 1;
   }
 
   /*!
@@ -173,9 +172,8 @@ public:
                              IndexType spacing_ = 1)
     : m_dims {shape}
   {
-    m_strides[DIM - 1] = 1;
+    m_strides[DIM - 1] = spacing_;
     updateStrides();
-    m_spacing = spacing_;
   }
 
   /*!
@@ -189,7 +187,6 @@ public:
   ArrayBase(
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_dims(other.shape())
-    , m_spacing(other.spacing())
     , m_strides(other.strides())
   { }
 
@@ -198,7 +195,6 @@ public:
   ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_dims(other.shape())
-    , m_spacing(other.spacing())
     , m_strides(other.strides())
   { }
 
@@ -314,7 +310,6 @@ public:
   void swap(ArrayBase& other)
   {
     std::swap(m_dims, other.m_dims);
-    std::swap(m_spacing, other.m_spacing);
     std::swap(m_strides, other.m_strides);
   }
 
@@ -338,16 +333,17 @@ public:
   /*!
     \brief Returns spacing between adjacent items.
 
-    Spacing is set by constructor and cannot change.
+    Spacing is the stride in the fastest direction.
+    It's set by constructor and cannot change.
   */
-  AXOM_HOST_DEVICE IndexType spacing() const { return m_spacing; }
+  AXOM_HOST_DEVICE IndexType spacing() const { return m_strides[DIM - 1]; }
 
   /*!
-    \brief Returns the logical strides of the Array
+    \brief Returns the memory strides of the Array
 
-    The logical stride is always 1 in the fastest changing direction,
-    regardless of spacing.  Actual memory stride differs from logical
-    stride by the spacing() factor, which is 1 by default.
+    Memory stride differs from logical stride by the spacing() factor,
+    which is 1 by default.  Logical stride is always 1 in the fastest
+    changing direction, regardless of spacing.
   */
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
   {
@@ -361,7 +357,7 @@ protected:
    * This is used when resizing/reallocating; it wouldn't make sense to have a
    * capacity of 3 in the array described above.
    */
-  IndexType blockSize() const { return m_strides[0] * m_spacing; }
+  IndexType blockSize() const { return m_strides[0]; }
 
   /*!
    * \brief Updates the internal striding information to a row-major format
@@ -459,8 +455,8 @@ private:
   {
     const IndexType baseIdx =
       numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
-    assert(inLogicalBounds(baseIdx));
-    return asDerived().data()[baseIdx * m_spacing];
+    assert(inMemoryBounds(baseIdx));
+    return asDerived().data()[baseIdx];
   }
 
   /// \overload
@@ -469,16 +465,14 @@ private:
   {
     const IndexType baseIdx =
       numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
-    assert(inLogicalBounds(baseIdx));
-    return asDerived().data()[baseIdx * m_spacing];
+    assert(inMemoryBounds(baseIdx));
+    return asDerived().data()[baseIdx];
   }
   /// @}
 
 protected:
   /// \brief The sizes (extents?) in each dimension
   StackArray<IndexType, DIM> m_dims;
-  /// \brief Spacing between consecutive elements
-  IndexType m_spacing;
   /// \brief The strides in each dimension
   StackArray<IndexType, DIM> m_strides;
 };
@@ -502,33 +496,25 @@ public:
 
   AXOM_HOST_DEVICE ArrayBase(IndexType = 0)
   {
-    m_dims[0] = 0;
-    m_strides[0] = 1;
-    m_spacing = 1;
+    m_stride = 1;
   }
 
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&,
                              IndexType spacing = 1)
   {
-    m_dims[0] = 0;
-    m_strides[0] = 1;
-    m_spacing = spacing;
+    m_stride = spacing;
   }
 
   template <typename OtherArrayType>
   ArrayBase(
     const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>& other)
-    : m_dims(other.shape())
-    , m_spacing(other.spacing())
-    , m_strides(other.strides())
+    : m_stride(other.strides()[0])
   { }
 
   template <typename OtherArrayType>
   ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>& other)
-    : m_dims(other.shape())
-    , m_spacing(other.spacing())
-    , m_strides(other.strides())
+    : m_stride(other.strides()[0])
   { }
 
   /// \brief Returns the dimensions of the Array
@@ -541,9 +527,9 @@ public:
   /*!
     \brief Returns memory spacing between adjacent items.
 
-    Spacing is set by constructor and cannot change.
+    In 1D, the spacing is the stride.
   */
-  AXOM_HOST_DEVICE IndexType spacing() const { return m_spacing; }
+  AXOM_HOST_DEVICE IndexType spacing() const { return m_stride; }
 
   /*!
     \brief Returns the logical strides of the Array
@@ -552,9 +538,9 @@ public:
     regardless of spacing.  Actual memory stride differs from logical
     stride by the spacing() factor, which is 1 by default.
   */
-  AXOM_HOST_DEVICE const StackArray<IndexType, 1>& strides() const
+  AXOM_HOST_DEVICE const StackArray<IndexType, 1> strides() const
   {
-    return m_strides;
+    return StackArray<IndexType, 1> {m_stride};
   }
 
   /*!
@@ -606,40 +592,27 @@ public:
   /// \brief Swaps two ArrayBases
   void swap(ArrayBase& other)
   {
-    std::swap(m_dims, other.m_dims);
-    std::swap(m_spacing, other.m_spacing);
-    std::swap(m_strides, other.m_strides);
+    std::swap(m_stride, other.m_stride);
   }
 
   /// \brief Set the shape
   AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, 1>& shape_)
   {
     assert(shape_[0] >= 0);
-    m_dims = shape_;
   }
 
 protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    */
-  IndexType blockSize() const { return m_strides[0]; }
+  IndexType blockSize() const { return m_stride; }
 
   /*!
    * \brief Updates the internal dimensions and striding based on the insertion
    *  of a range of elements.
    */
   void updateShapeOnInsert(const StackArray<IndexType, 1>& range_shape)
-  {
-#ifdef AXOM_DEBUG
-    if(!std::equal(m_dims.begin() + 1, m_dims.end(), range_shape.begin() + 1))
-    {
-      std::cerr << "Cannot append a multidimensional array of incorrect shape.";
-      utilities::processAbort();
-    }
-#endif
-    // First update the dimensions - we're adding only to the leading dimension
-    m_dims[0] += range_shape[0];
-  }
+  { }
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
@@ -678,12 +651,8 @@ private:
 
   /// @}
 protected:
-  /// \brief The sizes (extents?) in each dimension
-  StackArray<IndexType, 1> m_dims;
-  /// \brief Spacing between consecutive elements
-  IndexType m_spacing;
-  /// \brief The strides in each dimension
-  StackArray<IndexType, 1> m_strides;
+  /// \brief The stride between adjacent items.
+  IndexType m_stride;
 };
 
 //------------------------------------------------------------------------------
