@@ -163,9 +163,9 @@ public:
   }
 
   /*!
-   * \brief Parameterized constructor that sets up the default strides
+   * \brief Parameterized constructor that sets up the array shape.
    *
-   * \param [in] shape Array size in each dimension.
+   * \param [in] shape Array size in each direction.
    * \param [in] spacing_ Spacing between consecutive items.
    */
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
@@ -365,7 +365,7 @@ protected:
    * In the future, this class will support different striding schemes (e.g., column-major)
    * and/or user-provided striding
    *
-   * Note that the fastest stride is not updated, * because it's unaffected by shape.
+   * Note that the fastest stride is not updated, because it's unaffected by shape.
    */
   AXOM_HOST_DEVICE void updateStrides()
   {
@@ -472,7 +472,7 @@ private:
 protected:
   /// \brief The extent in each direction
   StackArray<IndexType, DIM> m_shape;
-  /// \brief The strides in each dimension, computed from shape and spacing.
+  /// \brief Memory strides in each direction, computed from shape and spacing.
   StackArray<IndexType, DIM> m_strides;
 };
 
@@ -493,16 +493,12 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
-  AXOM_HOST_DEVICE ArrayBase(IndexType = 0)
-  {
-    m_stride = 1;
-  }
+  AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { m_stride = 1; }
 
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&,
                              IndexType spacing = 1)
-  {
-    m_stride = spacing;
-  }
+    : m_stride(spacing)
+  { }
 
   template <typename OtherArrayType>
   ArrayBase(
@@ -531,11 +527,11 @@ public:
   AXOM_HOST_DEVICE IndexType spacing() const { return m_stride; }
 
   /*!
-    \brief Returns the logical strides of the Array
+    \brief Returns the memory strides of the Array
 
-    The logical stride is always 1 in the fastest changing direction,
-    regardless of spacing.  Actual memory stride differs from logical
-    stride by the spacing() factor, which is 1 by default.
+    The logical stride is always 1, regardless of spacing.  Actual
+    memory stride differs from logical stride by the spacing() factor,
+    which is 1 by default.
   */
   AXOM_HOST_DEVICE const StackArray<IndexType, 1> strides() const
   {
@@ -589,10 +585,7 @@ public:
   /// @}
 
   /// \brief Swaps two ArrayBases
-  void swap(ArrayBase& other)
-  {
-    std::swap(m_stride, other.m_stride);
-  }
+  void swap(ArrayBase& other) { std::swap(m_stride, other.m_stride); }
 
   /// \brief Set the shape
   AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, 1>& shape_)
@@ -610,8 +603,7 @@ protected:
    * \brief Updates the internal dimensions and striding based on the insertion
    *  of a range of elements.
    */
-  void updateShapeOnInsert(const StackArray<IndexType, 1>& range_shape)
-  { }
+  void updateShapeOnInsert(const StackArray<IndexType, 1>& range_shape) { }
 
 private:
   /// \brief Returns a reference to the Derived CRTP object - see https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/
@@ -650,7 +642,7 @@ private:
 
   /// @}
 protected:
-  /// \brief The stride between adjacent items.
+  /// \brief Memory stride between adjacent items.
   IndexType m_stride;
 };
 
