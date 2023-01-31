@@ -68,7 +68,7 @@ struct SubsliceProxy<T, SliceDim, const ArraySubslice<T, OldSliceDim, BaseArray>
 /// \name Overloaded ArrayBase Operator(s)
 /// @{
 
-/*! 
+/*!
  * \brief Overloaded output stream operator. Outputs the Array-like to the
  *  given output stream.
  *
@@ -294,13 +294,13 @@ public:
    */
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
-    assert(inLogicalBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx * asDerived().spacing()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
-    assert(inLogicalBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx * asDerived().spacing()];
   }
   /// @}
@@ -329,22 +329,10 @@ public:
     return m_shape;
   }
 
-#if 0
-  /*!
-    \brief Returns spacing between adjacent items.
-
-    Spacing is the stride in the fastest direction.
-    It's set by constructor and cannot change.
-  */
-  AXOM_HOST_DEVICE IndexType spacing() const { return m_strides[DIM - 1]; }
-#endif
-
   /*!
     \brief Returns the logical strides of the Array.
 
-    Memory stride differs from logical stride by the spacing() factor,
-    which is 1 by default.  Logical stride is always 1 in the fastest
-    changing direction, regardless of spacing.
+    Note: Memory stride is logical stride times spacing.
   */
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
   {
@@ -365,12 +353,11 @@ protected:
    * Intended to be called after shape is updated.
    * In the future, this class will support different striding schemes (e.g., column-major)
    * and/or user-provided striding
-   *
-   * Note that the fastest stride is not updated, because it's unaffected by shape.
    */
   AXOM_HOST_DEVICE void updateStrides()
   {
     // Row-major
+    // Note that the fastest stride is not updated.  It's unaffected by shape.
     for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
     {
       m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
@@ -413,7 +400,7 @@ private:
 
     To get from logical offset to memory offset, multiply by spacing().
   */
-  IndexType offset(const StackArray<IndexType, DIM>& idx) const
+  AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, DIM>& idx) const
   {
     return numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
   }
@@ -430,24 +417,10 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
-  /*! \brief Test if idx is within logical bounds
-   *
-   * The difference between inLogicalBounds() and inMemoryBounds()
-   * is that logical bounds are independent of spacing and memory
-   * bound includes the spacing.
-   */
-  AXOM_HOST_DEVICE inline bool inLogicalBounds(IndexType idx) const
+  /*! \brief Test if idx is within bounds */
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
-  }
-
-  /*! \brief Test if idx is within memory bounds
-   *
-   * @see inLogicalBounds.
-   */
-  AXOM_HOST_DEVICE inline bool inMemoryBounds(IndexType idx) const
-  {
-    return idx >= 0 && idx < asDerived().size() * asDerived().spacing();
   }
   /// @}
 
@@ -473,7 +446,7 @@ private:
   AXOM_HOST_DEVICE SliceType<DIM> sliceImpl(const StackArray<IndexType, DIM>& idx)
   {
     const IndexType baseIdx = offset(idx);
-    assert(inMemoryBounds(baseIdx));
+    assert(inBounds(baseIdx));
     return asDerived().data()[baseIdx * asDerived().spacing()];
   }
 
@@ -482,7 +455,7 @@ private:
     const StackArray<IndexType, DIM>& idx) const
   {
     const IndexType baseIdx = offset(idx);
-    assert(inMemoryBounds(baseIdx));
+    assert(inBounds(baseIdx));
     return asDerived().data()[baseIdx * asDerived().spacing()];
   }
   /// @}
@@ -490,7 +463,7 @@ private:
 protected:
   /// \brief The extent in each direction
   StackArray<IndexType, DIM> m_shape;
-  /// \brief Memory strides in each direction, computed from shape and spacing.
+  /// \brief Logical strides in each direction
   StackArray<IndexType, DIM> m_strides;
 };
 
@@ -511,19 +484,19 @@ public:
    */
   using RealConstT = typename std::conditional<is_array_view, T, const T>::type;
 
-  AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { m_stride = 1; }
+  AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { }
 
-  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&)
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&) { }
+
+  // Emtpy implementation because no member data
+  template <typename OtherArrayType>
+  ArrayBase(const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
 
+  // Emtpy implementation because no member data
   template <typename OtherArrayType>
   ArrayBase(
-    const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>& other)
-  { }
-
-  template <typename OtherArrayType>
-  ArrayBase(
-    const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>& other)
+    const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
 
   /// \brief Returns the dimensions of the Array
@@ -533,47 +506,26 @@ public:
     return {{asDerived().size()}};
   }
 
-#if 0
-  /*!
-    \brief Returns memory spacing between adjacent items.
-
-    In 1D, the spacing is the stride.
-  */
-  AXOM_HOST_DEVICE IndexType spacing() const { return m_stride; }
-#endif
-
-  /*!
-    \brief Returns the logical strides of the Array
-
-    The logical stride is always 1, regardless of spacing.  Actual
-    memory stride differs from logical stride by the spacing() factor,
-    which is 1 by default.
-  */
-  AXOM_HOST_DEVICE const StackArray<IndexType, 1> strides() const
-  {
-    return StackArray<IndexType, 1> {1};
-  }
-
   /*!
    * \brief Accessor, returns a reference to the given value.
    * For multidimensional arrays, indexes into the (flat) raw data.
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.data() + idx * spacing()).
+   * \note equivalent to *(array.data() + idx * array.spacing()).
    *
    * \pre 0 <= idx < asDerived().size()
    */
   /// @{
   AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
-    assert(inLogicalBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx * asDerived().spacing()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
   {
-    assert(inLogicalBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx * asDerived().spacing()];
   }
 
@@ -583,31 +535,30 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.data() + idx * spacing()).
+   * \note equivalent to *(array.data() + idx * array.spacing()).
    *
    * \pre 0 <= idx < asDerived().size()
    */
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
-    assert(inLogicalBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx * asDerived().spacing()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
-    assert(inLogicalBounds(idx));
+    assert(inBounds(idx));
     return asDerived().data()[idx * asDerived().spacing()];
   }
   /// @}
 
   /// \brief Swaps two ArrayBases
-  void swap(ArrayBase& other) { std::swap(m_stride, other.m_stride); }
+  /// No member data, so this is a no-op
+  void swap(ArrayBase&) { }
 
   /// \brief Set the shape
-  AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, 1>& shape_)
-  {
-    assert(shape_[0] >= 0);
-  }
+  /// No member data, so this is a no-op
+  AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, 1>&) { }
 
 protected:
   /*!
@@ -618,6 +569,7 @@ protected:
   /*!
    * \brief Updates the internal dimensions and striding based on the insertion
    *  of a range of elements.
+   *  No-op, since we don't keep any shape information in this specialization.
    */
   void updateShapeOnInsert(const StackArray<IndexType, 1>&) { }
 
@@ -636,30 +588,12 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
-  /*! \brief Test if idx is within logical bounds
-   *
-   * The difference between inLogicalBounds() and inMemoryBounds()
-   * is that logical bounds are independent of spacing and memory
-   * bound includes the spacing.
-   */
-  AXOM_HOST_DEVICE inline bool inLogicalBounds(IndexType idx) const
+  /*! \brief Test if idx is within bounds */
+  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
-
-  /*! \brief Test if idx is within memory bounds
-   *
-   * @see inLogicalBounds.
-   */
-  AXOM_HOST_DEVICE inline bool inMemoryBounds(IndexType idx) const
-  {
-    return idx >= 0 && idx < asDerived().size() * asDerived().spacing();
-  }
-
   /// @}
-protected:
-  /// \brief Memory stride between adjacent items.
-  IndexType m_stride;
 };
 
 //------------------------------------------------------------------------------
