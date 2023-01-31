@@ -293,20 +293,20 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.data() + idx).
+   * \note equivalent to *(array.data() + idx * spacing()).
    *
    * \pre 0 <= idx < asDerived().size()
    */
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    assert(inLogicalBounds(idx));
+    return asDerived().data()[idx * spacing()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
-    assert(inBounds(idx));
-    return asDerived().data()[idx];
+    assert(inLogicalBounds(idx));
+    return asDerived().data()[idx * spacing()];
   }
   /// @}
 
@@ -319,7 +319,7 @@ public:
   }
 
   /// \brief Set the shape
-  AXOM_HOST_DEVICE void set_shape(const StackArray<IndexType, DIM>& shape_)
+  AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, DIM>& shape_)
   {
     for(auto s : shape_)
     {
@@ -415,10 +415,24 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
-  /*! \brief Test if idx is within bounds */
-  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
+  /*! \brief Test if idx is within logical bounds
+   *
+   * The difference between inLogicalBounds() and inMemoryBounds()
+   * is that logical bounds are independent of spacing and memory
+   * bound includes the spacing.
+   */
+  AXOM_HOST_DEVICE inline bool inLogicalBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
+  }
+
+  /*! \brief Test if idx is within memory bounds
+   *
+   * @see inLogicalBounds.
+   */
+  AXOM_HOST_DEVICE inline bool inMemoryBounds(IndexType idx) const
+  {
+    return idx >= 0 && idx < asDerived().size() * spacing();
   }
   /// @}
 
@@ -445,7 +459,7 @@ private:
   {
     const IndexType baseIdx =
       numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
-    assert(inBounds(baseIdx));
+    assert(inLogicalBounds(baseIdx));
     return asDerived().data()[baseIdx * m_spacing];
   }
 
@@ -455,7 +469,7 @@ private:
   {
     const IndexType baseIdx =
       numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
-    assert(inBounds(baseIdx));
+    assert(inLogicalBounds(baseIdx));
     return asDerived().data()[baseIdx * m_spacing];
   }
   /// @}
@@ -556,13 +570,13 @@ public:
   /// @{
   AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
-    assert(inBounds(idx));
+    assert(inLogicalBounds(idx));
     return asDerived().data()[idx * spacing()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
   {
-    assert(inBounds(idx));
+    assert(inLogicalBounds(idx));
     return asDerived().data()[idx * spacing()];
   }
 
@@ -578,13 +592,13 @@ public:
    */
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
-    assert(inBounds(idx));
+    assert(inLogicalBounds(idx));
     return asDerived().data()[idx * spacing()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
-    assert(inBounds(idx));
+    assert(inLogicalBounds(idx));
     return asDerived().data()[idx * spacing()];
   }
   /// @}
@@ -598,7 +612,7 @@ public:
   }
 
   /// \brief Set the shape
-  AXOM_HOST_DEVICE void set_shape(const StackArray<IndexType, 1>& shape_)
+  AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, 1>& shape_)
   {
     assert(shape_[0] >= 0);
     m_dims = shape_;
@@ -642,11 +656,26 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
-  /*! \brief Test if idx is within bounds */
-  AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
+  /*! \brief Test if idx is within logical bounds
+   *
+   * The difference between inLogicalBounds() and inMemoryBounds()
+   * is that logical bounds are independent of spacing and memory
+   * bound includes the spacing.
+   */
+  AXOM_HOST_DEVICE inline bool inLogicalBounds(IndexType idx) const
   {
     return idx >= 0 && idx < asDerived().size();
   }
+
+  /*! \brief Test if idx is within memory bounds
+   *
+   * @see inLogicalBounds.
+   */
+  AXOM_HOST_DEVICE inline bool inMemoryBounds(IndexType idx) const
+  {
+    return idx >= 0 && idx < asDerived().size() * spacing();
+  }
+
   /// @}
 protected:
   /// \brief The sizes (extents?) in each dimension
