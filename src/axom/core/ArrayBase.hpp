@@ -156,7 +156,7 @@ public:
 
   constexpr static int Dims = DIM;
 
-  AXOM_HOST_DEVICE ArrayBase() : m_dims {}
+  AXOM_HOST_DEVICE ArrayBase() : m_shape {}
   {
     m_strides[DIM - 1] = 1;
     updateStrides();
@@ -170,7 +170,7 @@ public:
    */
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
                              IndexType spacing_ = 1)
-    : m_dims {shape}
+    : m_shape {shape}
   {
     m_strides[DIM - 1] = spacing_;
     updateStrides();
@@ -186,7 +186,7 @@ public:
   template <typename OtherArrayType>
   ArrayBase(
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
-    : m_dims(other.shape())
+    : m_shape(other.shape())
     , m_strides(other.strides())
   { }
 
@@ -194,7 +194,7 @@ public:
   template <typename OtherArrayType>
   ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
-    : m_dims(other.shape())
+    : m_shape(other.shape())
     , m_strides(other.strides())
   { }
 
@@ -208,7 +208,7 @@ public:
    * \note equivalent to *(array.data() + idx).
    *
    * \pre sizeof...(Args) <= DIM
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, sizeof...(Args))
+   * \pre 0 <= args[i] < shape()[i] for i in [0, sizeof...(Args))
    */
   template <typename... Args>
   AXOM_HOST_DEVICE SliceType<sizeof...(Args)> operator()(Args... args)
@@ -236,7 +236,7 @@ public:
    *
    * \param [in] idx the index of the first dimension.
    *
-   * \pre 0 <= idx < m_dims[0]
+   * \pre 0 <= idx < shape()[0]
    */
   AXOM_HOST_DEVICE SliceType<1> operator[](const IndexType idx)
   {
@@ -261,7 +261,7 @@ public:
    * \note equivalent to *(array.data() + idx).
    *
    * \pre UDim <= DIM
-   * \pre 0 <= args[i] < m_dims[i] for i in [0, UDim)
+   * \pre 0 <= args[i] < shape()[i] for i in [0, UDim)
    */
   template <int UDim>
   AXOM_HOST_DEVICE SliceType<UDim> operator[](const StackArray<IndexType, UDim>& idx)
@@ -309,7 +309,7 @@ public:
   /// \brief Swaps two ArrayBases
   void swap(ArrayBase& other)
   {
-    std::swap(m_dims, other.m_dims);
+    std::swap(m_shape, other.m_shape);
     std::swap(m_strides, other.m_strides);
   }
 
@@ -320,14 +320,14 @@ public:
     {
       assert(s >= 0);
     }
-    m_dims = shape_;
+    m_shape = shape_;
     updateStrides();
   }
 
   /// \brief Returns the dimensions of the Array
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& shape() const
   {
-    return m_dims;
+    return m_shape;
   }
 
   /*!
@@ -361,19 +361,18 @@ protected:
 
   /*!
    * \brief Updates the internal striding information to a row-major format
-   * Intended to be called after @p m_dims is updated.
+   * Intended to be called after shape is updated.
    * In the future, this class will support different striding schemes (e.g., column-major)
    * and/or user-provided striding
    *
-   * Note that the fastest stride, m_strides[DIM-1], is not updated,
-   * because it's unaffected by m_dims.
+   * Note that the fastest stride is not updated, * because it's unaffected by shape.
    */
   AXOM_HOST_DEVICE void updateStrides()
   {
     // Row-major
     for(int i = static_cast<int>(DIM) - 2; i >= 0; i--)
     {
-      m_strides[i] = m_strides[i + 1] * m_dims[i + 1];
+      m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
     }
   }
 
@@ -385,14 +384,14 @@ protected:
   void updateShapeOnInsert(const StackArray<IndexType, DIM>& range_shape)
   {
 #ifdef AXOM_DEBUG
-    if(!std::equal(m_dims.begin() + 1, m_dims.end(), range_shape.begin() + 1))
+    if(!std::equal(m_shape.begin() + 1, m_shape.end(), range_shape.begin() + 1))
     {
       std::cerr << "Cannot append a multidimensional array of incorrect shape.";
       utilities::processAbort();
     }
 #endif
     // First update the dimensions - we're adding only to the leading dimension
-    m_dims[0] += range_shape[0];
+    m_shape[0] += range_shape[0];
     updateStrides();
   }
 
@@ -471,9 +470,9 @@ private:
   /// @}
 
 protected:
-  /// \brief The sizes (extents?) in each dimension
-  StackArray<IndexType, DIM> m_dims;
-  /// \brief The strides in each dimension
+  /// \brief The extent in each direction
+  StackArray<IndexType, DIM> m_shape;
+  /// \brief The strides in each dimension, computed from shape and spacing.
   StackArray<IndexType, DIM> m_strides;
 };
 

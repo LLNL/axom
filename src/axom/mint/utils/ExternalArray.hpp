@@ -74,7 +74,7 @@ public:
   {
     SLIC_ASSERT(data != nullptr);
 
-    this->m_dims = shape;
+    this->m_shape = shape;
     this->updateStrides();
 
     SLIC_ERROR_IF(!detail::allNonNegative(shape.m_data),
