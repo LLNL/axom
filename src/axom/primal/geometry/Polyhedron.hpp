@@ -388,14 +388,17 @@ public:
     return PointType(sum);
   }
 
-private:
+public:
   /*!
-   * \brief Finds the faces of the Polyhedron, assuming the vertex neighbors
-   *        are in counter-clockwise ordering.
+   * \brief Helper function to find the faces of the Polyhedron, assuming the
+   *        vertex neighbors are in counter-clockwise ordering.
    *
    * param [out] faces is the vertex indices for faces
    * param [out] face_offset is the offset for each face
    * param [out] face_size is the number of vertices for each face
+   *
+   * \warning Function is experimental, input parameters and/or output may
+   *          change in the future.
    *
    * \note Function is based off extractFaces() in Mike Owen's PolyClipper.
    *
@@ -483,7 +486,6 @@ private:
     face_count = facesAdded;
   }
 
-public:
   /*!
    * \brief Finds the volume of the polyhedron.
    *
