@@ -139,8 +139,7 @@ public:
   /*!
     \brief Returns spacing between adjacent items.
 
-    Spacing is the stride in the fastest direction.
-    It's set by constructor and cannot change.
+    Spacing is set by constructor and cannot change.
   */
   AXOM_HOST_DEVICE IndexType spacing() const { return m_spacing; }
 

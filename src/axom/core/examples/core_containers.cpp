@@ -186,11 +186,10 @@ void demoArrayBasic()
   // An array of tuples can be viewed as a tuple of arrays, by specifying
   // the spacing between elements to include.  The spacing skips over the
   // elements to exclude from the view.
-  const axom::StackArray<int, 2> shape {2, 3};  // Shape of 2x3 array.
-  constexpr int TUPSIZE = 4;
-  axom::Array<std::string, 3> arrayOf4tuples(shape[0],
-                                             shape[1],
-                                             TUPSIZE);  // 2D array of tuples.
+  const axom::StackArray<axom::IndexType, 2> shape {2, 3};  // Shape of 2x3 array.
+  constexpr axom::IndexType TUPSIZE = 4;
+  // 2D array of tuples (stored as a 3D array).
+  axom::Array<std::string, 3> arrayOf4tuples(shape[0], shape[1], TUPSIZE);
   for(int i = 0; i < shape[0]; ++i)
   {
     for(int j = 0; j < shape[1]; ++j)
@@ -201,7 +200,7 @@ void demoArrayBasic()
       }
     }
   }
-  // Print the 3rd of the 4-tuples, as if they were in their own array.
+  // View the 3rd of the 4-tuples, as if they were in their own array.
   axom::ArrayView<std::string, 2> viewOfThird(
     arrayOf4tuples.data() + 2,
     shape,
