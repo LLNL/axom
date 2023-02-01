@@ -21,6 +21,7 @@
 #include "axom/core/ArrayView.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/memory_management.hpp"
+#include "axom/fmt/format.h"
 
 #ifdef AXOM_USE_RAJA
   #include "axom/core/execution/execution_space.hpp"
@@ -64,6 +65,18 @@ void showTupleArrayView(axom::MCArrayView<int>& a, const char* name)
               << std::endl;
   }
   std::cout << "]" << std::endl;
+}
+
+template <typename T>
+void show2DArrayView(axom::ArrayView<T, 2>& a)
+{
+  for(int i = 0; i < a.shape()[0]; ++i)
+  {
+    for(int j = 0; j < a.shape()[1]; ++j)
+    {
+      std::cout << "a(" << i << ',' << j << ") = " << a(i, j) << std::endl;
+    }
+  }
 }
 
 void demoArrayBasic()
@@ -168,6 +181,34 @@ void demoArrayBasic()
   }
   std::cout << std::endl;
   // _iteration_end
+
+  // _spacing_start
+  // An array of tuples can be viewed as a tuple of arrays, by specifying
+  // the spacing between elements to include.  The spacing skips over the
+  // elements to exclude from the view.
+  const axom::StackArray<int, 2> shape {2, 3};  // Shape of 2x3 array.
+  constexpr int TUPSIZE = 4;
+  axom::Array<std::string, 3> arrayOf4tuples(shape[0],
+                                             shape[1],
+                                             TUPSIZE);  // 2D array of tuples.
+  for(int i = 0; i < shape[0]; ++i)
+  {
+    for(int j = 0; j < shape[1]; ++j)
+    {
+      for(int t = 0; t < TUPSIZE; ++t)
+      {
+        arrayOf4tuples(i, j, t) = axom::fmt::format("({},{}).{}", i, j, t);
+      }
+    }
+  }
+  // Print the 3rd of the 4-tuples, as if they were in their own array.
+  axom::ArrayView<std::string, 2> viewOfThird(
+    arrayOf4tuples.data() + 2,
+    shape,
+    TUPSIZE);  // 2D array of the third component of each tuple
+  std::cout << "Third components of 2D array of 4-tuples:" << std::endl;
+  show2DArrayView(viewOfThird);
+  // _spacing_end
 }
 
 // The following example requires CUDA or HIP + Umpire + unified memory
