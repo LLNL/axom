@@ -238,12 +238,12 @@ public:
     m_relationIndices = typename IndicesSet::SetBuilder().size(size).data(data);
   }
 
-  IndirectionRefType relationData()
+  AXOM_HOST_DEVICE IndirectionRefType relationData()
   {
     return m_relationIndices.data();
   }
 
-  IndirectionConstRefType relationData() const
+  AXOM_HOST_DEVICE IndirectionConstRefType relationData() const
   {
     return m_relationIndices.data();
   }

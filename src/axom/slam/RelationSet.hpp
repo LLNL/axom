@@ -166,7 +166,7 @@ public:
    *
    * \return pos2  The to-set index.
    */
-  PositionType flatToSecondIndex(PositionType flatIndex) const
+  AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType flatIndex) const
   {
     if(flatIndex < 0 || flatIndex > size())
     {
@@ -183,7 +183,7 @@ public:
    *
    * \return pos1  The from-set index.
    */
-  PositionType flatToFirstIndex(PositionType flatIndex) const
+  AXOM_HOST_DEVICE PositionType flatToFirstIndex(PositionType flatIndex) const
   {
     if(flatIndex < 0 || flatIndex > size())
     {
@@ -261,7 +261,7 @@ public:
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
   // KW -- made this public to use from BivariateMap
-  PositionType size() const
+  AXOM_HOST_DEVICE PositionType size() const
   {
     return PositionType(m_relation->relationData().size());
   }

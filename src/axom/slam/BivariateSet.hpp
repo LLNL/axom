@@ -169,7 +169,8 @@ public:
    *
    * \return pos1  The from-set index.
    */
-  virtual PositionType flatToFirstIndex(PositionType flatIndex) const = 0;
+  AXOM_HOST_DEVICE virtual PositionType flatToFirstIndex(
+    PositionType flatIndex) const = 0;
 
   /**
    * \brief Given the flat index, return the associated to-set index in the
@@ -179,7 +180,8 @@ public:
    *
    * \return pos2  The to-set index.
    */
-  virtual PositionType flatToSecondIndex(PositionType flatIndex) const = 0;
+  AXOM_HOST_DEVICE virtual PositionType flatToSecondIndex(
+    PositionType flatIndex) const = 0;
 
   /**
    * \brief Finds the range of indices of valid elements in the second set,
@@ -193,7 +195,7 @@ public:
    * \brief Size of the BivariateSet, which is the number of non-zero entries
    *        in the BivariateSet.
    */
-  virtual PositionType size() const = 0;
+  AXOM_HOST_DEVICE virtual PositionType size() const = 0;
 
   /**
    * \brief Number of elements of the BivariateSet whose first index is \a pos
@@ -203,7 +205,7 @@ public:
   virtual PositionType size(PositionType pos1) const = 0;  //size of a row
 
   /** \brief Size of the first set.   */
-  inline PositionType firstSetSize() const
+  AXOM_HOST_DEVICE inline PositionType firstSetSize() const
   {
     return getSize<FirstSetType>(m_set1);
   }
@@ -314,12 +316,12 @@ public:
     return findElementFlatIndex(s1, 0);
   }
 
-  PositionType flatToFirstIndex(PositionType) const override
+  AXOM_HOST_DEVICE PositionType flatToFirstIndex(PositionType) const override
   {
     return PositionType();
   }
 
-  PositionType flatToSecondIndex(PositionType) const override
+  AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType) const override
   {
     return PositionType();
   }
@@ -331,7 +333,7 @@ public:
 
   ElementType at(PositionType) const override { return PositionType(); }
 
-  PositionType size() const override { return PositionType(); }
+  AXOM_HOST_DEVICE PositionType size() const override { return PositionType(); }
 
   PositionType size(PositionType) const override { return PositionType(); }
 

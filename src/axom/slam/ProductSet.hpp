@@ -182,7 +182,7 @@ public:
    *
    * \return pos2  The to-set index.
    */
-  PositionType flatToSecondIndex(PositionType flatIndex) const
+  AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType flatIndex) const
   {
     if(flatIndex < 0 || flatIndex > size())
     {
@@ -199,7 +199,7 @@ public:
    *
    * \return pos1  The from-set index.
    */
-  PositionType flatToFirstIndex(PositionType flatIndex) const
+  AXOM_HOST_DEVICE PositionType flatToFirstIndex(PositionType flatIndex) const
   {
     if(flatIndex < 0 || flatIndex > size())
     {
@@ -225,7 +225,7 @@ public:
 
   ElementType at(PositionType pos) const { return pos % this->secondSetSize(); }
 
-  PositionType size() const
+  AXOM_HOST_DEVICE PositionType size() const
   {
     return this->firstSetSize() * this->secondSetSize();
   }
