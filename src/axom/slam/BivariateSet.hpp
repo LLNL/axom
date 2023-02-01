@@ -162,6 +162,26 @@ public:
   virtual PositionType findElementFlatIndex(PositionType pos1) const = 0;
 
   /**
+   * \brief Given the flat index, return the associated from-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos1  The from-set index.
+   */
+  virtual PositionType flatToFirstIndex(PositionType flatIndex) const = 0;
+
+  /**
+   * \brief Given the flat index, return the associated to-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos2  The to-set index.
+   */
+  virtual PositionType flatToSecondIndex(PositionType flatIndex) const = 0;
+
+  /**
    * \brief Finds the range of indices of valid elements in the second set,
    *        given the index of an element in the first set.
    * \param Position of the element in the first set
@@ -292,6 +312,16 @@ public:
   PositionType findElementFlatIndex(PositionType s1) const override
   {
     return findElementFlatIndex(s1, 0);
+  }
+
+  PositionType flatToFirstIndex(PositionType) const override
+  {
+    return PositionType();
+  }
+
+  PositionType flatToSecondIndex(PositionType) const override
+  {
+    return PositionType();
   }
 
   AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType) const override

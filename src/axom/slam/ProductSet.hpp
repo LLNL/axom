@@ -175,6 +175,40 @@ public:
   }
 
   /**
+   * \brief Given the flat index, return the associated to-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos2  The to-set index.
+   */
+  PositionType flatToSecondIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return flatIndex % this->secondSetSize();
+  }
+
+  /**
+   * \brief Given the flat index, return the associated from-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos1  The from-set index.
+   */
+  PositionType flatToFirstIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return flatIndex / this->secondSetSize();
+  }
+
+  /**
    * \brief Return all elements from the second set associated with position
    *        \a pos1 in the first set.
    *

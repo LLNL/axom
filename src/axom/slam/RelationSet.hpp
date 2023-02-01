@@ -158,6 +158,48 @@ public:
     return BaseType::INVALID_POS;
   }
 
+  /**
+   * \brief Given the flat index, return the associated to-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos2  The to-set index.
+   */
+  PositionType flatToSecondIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return getRelationBuf(m_relation->relationData())[flatIndex];
+  }
+
+  /**
+   * \brief Given the flat index, return the associated from-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos1  The from-set index.
+   */
+  PositionType flatToFirstIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    for(PositionType firstIdx = 0; firstIdx < this->firstSetSize(); firstIdx++)
+    {
+      // keep looping until the first subset after flatIndex
+      if((*m_relation)[firstIdx].offset() > flatIndex)
+      {
+        return firstIdx - 1;
+      }
+    }
+    return this->firstSetSize() - 1;
+  }
+
   AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
   {
     return typename RangeSetType::SetBuilder()
