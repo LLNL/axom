@@ -113,10 +113,14 @@ template <typename T>
 using SparseField2D = mmat::MultiMat::SparseField2D<T>;
 
 template <typename ExecSpace>
-void avgDensityCompactDirect(mmat::MultiMat& mm)
+void avgDensityCompactFlat(mmat::MultiMat& mm)
 {
+  axom::fmt::print("Running average density compact - flat\n");
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
+
+  auto* relationSet = mm.getSparse2dFieldSet(mmat::DataLayout::CELL_DOM);
+  int nthreads = relationSet->totalSize();
 
   auto density = mm.getSparse2dField<double>("Densityfrac");
   auto vf = mm.getSparse2dField<double>("Volfrac");
@@ -127,17 +131,20 @@ void avgDensityCompactDirect(mmat::MultiMat& mm)
   const auto densityAvg_view = densityAvg.view();
 
   axom::for_all<ExecSpace>(
-    ncells,
-    AXOM_LAMBDA(int cellid) {
-      double density_avg = 0.0;
-      auto density_row = density(cellid);
-      auto volfrac_row = vf(cellid);
+    nthreads,
+    AXOM_LAMBDA(int flatid) {
+      int cell_id = relationSet->flatToFirstIndex(flatid);
+      int mat_id = relationSet->flatToSecondIndex(flatid);
 
-      for(int slotid = 0; slotid < volfrac_row.size(); slotid++)
-      {
-        density_avg += density_row(slotid) * volfrac_row(slotid);
-      }
-      densityAvg_view[cellid] = density_avg / vol[cellid];
+      double density_avg_slot = density[flatid] * vf[flatid];
+
+#if defined(AXOM_USE_RAJA)
+      using AtomPolicy = typename axom::execution_space<ExecSpace>::atomic_policy;
+      RAJA::atomicAdd<AtomPolicy>(&densityAvg_view[cell_id],
+                                  density_avg_slot / vol[cell_id]);
+#else
+      densityAvg_view[cell_id] += density_avg_slot / vol[cell_id];
+#endif
     });
 }
 
@@ -277,6 +284,7 @@ void traverseCells(mmat::MultiMat& mm)
 
   mm.convertLayoutToSparse();
 
+  avgDensityCompactFlat<ExecSpace>(mm);
   avgDensityCompactSubmap<ExecSpace>(mm);
 }
 
