@@ -237,12 +237,13 @@ endif()
 #------------------------------------------------------------------------------
 if (LUA_DIR)
     include(cmake/thirdparty/FindLUA.cmake)
-    blt_import_library(
-        NAME          lua
-        INCLUDES      ${LUA_INCLUDE_DIR}
-        LIBRARIES     ${LUA_LIBRARY}
-        TREAT_INCLUDES_AS_SYSTEM ON
-        EXPORTABLE    ON)
+    if(NOT TARGET lua)
+        blt_import_library( NAME        lua
+                            LIBRARIES   ${LUA_LIBRARIES}
+                            INCLUDES    ${LUA_INCLUDE_DIR}
+                            EXPORTABLE  ON)
+    endif()
+    blt_patch_target(NAME lua TREAT_INCLUDES_AS_SYSTEM ON)
     blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
     message(STATUS "LUA support is OFF")
