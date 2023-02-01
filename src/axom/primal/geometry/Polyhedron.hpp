@@ -220,6 +220,8 @@ private:
  * \note The polyhedron neighbors should be ordered counter clockwise
  *       as when viewing the polyhedron externally.
  *
+ *       <pre>
+ *
  *          4--------7
  *         /|       /|
  *        / |      / |
@@ -228,6 +230,8 @@ private:
  *       | /      | /
  *       |/       |/
  *       1--------2
+ *
+ *       </pre>
  *
  *       For example, vertex 5 above should have neighbors (4,1,6).
  *
@@ -393,9 +397,10 @@ public:
    * \brief Helper function to find the faces of the Polyhedron, assuming the
    *        vertex neighbors are in counter-clockwise ordering.
    *
-   * param [out] faces is the vertex indices for faces
-   * param [out] face_offset is the offset for each face
-   * param [out] face_size is the number of vertices for each face
+   * \param [out] faces is the vertex indices for faces
+   * \param [out] face_offset is the offset for each face
+   * \param [out] face_size is the number of vertices for each face
+   * \param [out] face_count is the number of faces
    *
    * \warning Function is experimental, input parameters and/or output may
    *          change in the future.
