@@ -67,6 +67,10 @@ public:
 
   using IndirectionBufferType =
     typename IndicesIndirectionPolicy::IndirectionBufferType;
+  using IndirectionRefType =
+    typename IndicesIndirectionPolicy::IndirectionRefType;
+  using IndirectionConstRefType =
+    typename IndicesIndirectionPolicy::IndirectionConstRefType;
   using IndirectionPtrType =
     typename IndicesIndirectionPolicy::IndirectionPtrType;
 
@@ -234,12 +238,17 @@ public:
     m_relationIndices = typename IndicesSet::SetBuilder().size(size).data(data);
   }
 
-  const IndirectionPtrType relationData() const
+  IndirectionRefType relationData()
   {
-    return m_relationIndices.ptr();
+    return m_relationIndices.data();
   }
 
-  IndirectionPtrType relationData() { return m_relationIndices.ptr(); }
+  IndirectionConstRefType relationData() const
+  {
+    return m_relationIndices.data();
+  }
+
+  IndirectionPtrType& relationBinding() { return m_relationIndices.ptr(); }
 
 private:
   FromSetType* m_fromSet;
