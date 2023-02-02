@@ -66,12 +66,14 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   std::vector<int> vec_faces = {faces, faces + 24};
 
   // Cube - 6 faces, 4 vertex indices for each face.
+  // clang-format off
   std::vector<int> vec_expect = {0, 1, 5, 4,
                                  0, 4, 7, 3,
                                  0, 3, 2, 1,
                                  1, 2, 6, 5,
                                  2, 3, 7, 6,
                                  4, 5, 6, 7};
+  // clang-format on
   EXPECT_EQ(vec_faces, vec_expect);
   EXPECT_EQ(face_count, 6);
 }
