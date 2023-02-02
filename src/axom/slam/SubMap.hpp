@@ -75,12 +75,15 @@ public:
   using SubsetBuilder = typename SubsetType::SetBuilder;
 
   //iterator type aliases
-  template <bool Const>
   class SubMapIterator;
-  using const_iterator = SubMapIterator<true>;
-  using const_iterator_pair = std::pair<const_iterator, const_iterator>;
-  using iterator = SubMapIterator<false>;
+  using iterator = SubMapIterator;
   using iterator_pair = std::pair<iterator, iterator>;
+
+  using ValueType = typename IndirectionPolicyType::IndirectionResult;
+  using ConstValueType = typename IndirectionPolicyType::ConstIndirectionResult;
+
+  using DataRefType =
+    std::conditional_t<std::is_const<SuperMapType>::value, ConstValueType, ValueType>;
 
 public:
   /** Default Constructor */
@@ -113,15 +116,7 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= idx < size() * numComp()
    */
-  const DataType& operator[](IndexType idx) const
-  {
-    verifyPositionImpl(idx);
-    IndexType flat_idx = getMapCompFlatIndex(idx);
-    return (*m_superMap)[flat_idx];
-  }
-
-  //non-const version
-  DataType& operator[](IndexType idx)
+  DataRefType operator[](IndexType idx) const
   {
     verifyPositionImpl(idx);
     IndexType flat_idx = getMapCompFlatIndex(idx);
@@ -135,19 +130,7 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  AXOM_HOST_DEVICE const DataType& operator()(IndexType idx,
-                                              IndexType comp = 0) const
-  {
-#ifndef AXOM_DEVICE_CODE
-    verifyPositionImpl(idx, comp);
-#endif
-    SLIC_ASSERT_MSG(m_superMap != nullptr, "Submap's super map was null.");
-
-    return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
-  }
-
-  //non-const version
-  AXOM_HOST_DEVICE DataType& operator()(IndexType idx, IndexType comp = 0)
+  AXOM_HOST_DEVICE DataRefType operator()(IndexType idx, IndexType comp = 0) const
   {
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(idx, comp);
@@ -164,12 +147,7 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& value(IndexType idx, IndexType comp = 0) const
-  {
-    return operator()(idx, comp);
-  }
-
-  DataType& value(IndexType idx, IndexType comp = 0)
+  DataRefType value(IndexType idx, IndexType comp = 0) const
   {
     return operator()(idx, comp);
   }
@@ -266,8 +244,7 @@ public:
    *
    * \see MapIterator
    */
-  template <bool Const>
-  class SubMapIterator : public IteratorBase<SubMapIterator<Const>, SetPosition>
+  class SubMapIterator : public IteratorBase<SubMapIterator, SetPosition>
   {
   public:
     using iterator_category = std::random_access_iterator_tag;
@@ -279,10 +256,7 @@ public:
     using iter = SubMapIterator;
     using PositionType = SetPosition;
 
-    using DataRefType = std::conditional_t<Const, const DataType&, DataType&>;
-    using SubMapPtr = std::conditional_t<Const, const SubMap*, SubMap*>;
-
-    AXOM_HOST_DEVICE SubMapIterator(PositionType pos, SubMapPtr sMap)
+    AXOM_HOST_DEVICE SubMapIterator(PositionType pos, SubMap sMap)
       : IterBase(pos)
       , m_submap(sMap)
     { }
@@ -292,48 +266,40 @@ public:
      *        components, this will return the first component. To access
      *        the other components, use iter(comp)
      */
-    AXOM_HOST_DEVICE DataRefType operator*() { return (*m_submap)(m_pos, 0); }
+    AXOM_HOST_DEVICE DataRefType operator*() { return m_submap(m_pos, 0); }
 
     /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  (Optional) Zero-based index of the component.
      */
-    DataRefType operator()(IndexType comp = 0)
-    {
-      return (*m_submap)(m_pos, comp);
-    }
+    DataRefType operator()(IndexType comp = 0) { return m_submap(m_pos, comp); }
 
     /** \brief Returns the first component value after n increments.  */
     DataRefType operator[](PositionType n) { return *(*this + n); }
 
     /** \brief Same as operator() */
-    DataRefType value(IndexType comp = 0) { return (*m_submap)(m_pos, comp); }
+    DataRefType value(IndexType comp = 0) { return m_submap(m_pos, comp); }
 
     /** \brief Returns the Set element at the iterator's position */
-    IndexType index() { return m_submap->index(m_pos); }
+    IndexType index() { return m_submap.index(m_pos); }
 
     /** \brief Returns the number of component per element in the SubMap. */
-    PositionType numComp() const { return m_submap->numComp(); }
+    PositionType numComp() const { return m_submap.numComp(); }
 
   protected:
     /* Implementation of advance() as required by IteratorBase */
     AXOM_HOST_DEVICE void advance(PositionType pos) { m_pos += pos; }
 
   private:
-    SubMapPtr m_submap;
+    SubMap m_submap;
   };
 
 public:  // Functions related to iteration
-  AXOM_HOST_DEVICE iterator begin() { return iterator(0, this); }
-  AXOM_HOST_DEVICE iterator end() { return iterator(m_subsetIdx.size(), this); }
-  AXOM_HOST_DEVICE const_iterator begin() const
+  AXOM_HOST_DEVICE iterator begin() const { return iterator(0, *this); }
+  AXOM_HOST_DEVICE iterator end() const
   {
-    return const_iterator(0, this);
-  }
-  AXOM_HOST_DEVICE const_iterator end() const
-  {
-    return const_iterator(m_subsetIdx.size(), this);
+    return iterator(m_subsetIdx.size(), *this);
   }
 
 protected:  //Member variables
