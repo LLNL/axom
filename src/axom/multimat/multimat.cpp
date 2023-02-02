@@ -419,18 +419,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c,
   SLIC_ASSERT(hasValidStaticRelation(DataLayout::CELL_DOM));
   SLIC_ASSERT(0 <= c && c < (int)m_ncells);
 
-  if(sparsity == SparsityLayout::SPARSE)
-  {
-    int start_idx = m_cellMatRel_beginsVec[c];
-    int end_idx = m_cellMatRel_beginsVec[c + 1];
-    return RangeSetType(start_idx, end_idx);
-  }
-  else
-  {
-    SLIC_ASSERT(sparsity == SparsityLayout::DENSE);
-    int size2 = relDenseSet(DataLayout::CELL_DOM).secondSetSize();
-    return RangeSetType(c * size2, (c + 1) * size2);
-  }
+  return get_mapped_biSet(DataLayout::CELL_DOM, sparsity)->elementRangeSet(c);
 }
 
 MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m,
@@ -439,18 +428,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m,
   SLIC_ASSERT(hasValidStaticRelation(DataLayout::MAT_DOM));
   SLIC_ASSERT(0 <= m && m < (int)m_nmats);
 
-  if(sparsity == SparsityLayout::SPARSE)
-  {
-    int start_idx = m_matCellRel_beginsVec[m];
-    int end_idx = m_matCellRel_beginsVec[m + 1];
-    return RangeSetType::SetBuilder().range(start_idx, end_idx);
-  }
-  else
-  {
-    SLIC_ASSERT(sparsity == SparsityLayout::DENSE);
-    int size2 = relDenseSet(DataLayout::MAT_DOM).secondSetSize();
-    return RangeSetType::SetBuilder().range(m * size2, (m + 1) * size2 - 1);
-  }
+  return get_mapped_biSet(DataLayout::MAT_DOM, sparsity)->elementRangeSet(m);
 }
 
 void MultiMat::convertToDynamic()
