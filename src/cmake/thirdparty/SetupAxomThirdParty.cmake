@@ -77,7 +77,7 @@ if (UMPIRE_DIR)
         message(FATAL_ERROR "Umpire failed to load: ${UMPIRE_DIR}")
     else()
         message(STATUS "Umpire loaded: ${UMPIRE_DIR}")
-        set_property(TARGET umpire 
+        set_property(TARGET umpire
                      APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                     ${UMPIRE_INCLUDE_DIRS})
         set(UMPIRE_FOUND TRUE CACHE BOOL "")
@@ -110,7 +110,7 @@ if (RAJA_DIR)
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
 
-    # Suppress warnings from cub and cuda related to the (low) version 
+    # Suppress warnings from cub and cuda related to the (low) version
     # of clang that XL compiler pretends to be.
     if(C_COMPILER_FAMILY_IS_XL)
         if(TARGET RAJA::cub)
@@ -142,11 +142,11 @@ if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
 
     # Manually set includes as system includes
-    set_property(TARGET conduit::conduit 
+    set_property(TARGET conduit::conduit
                  APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                  "${CONDUIT_INSTALL_PREFIX}/include/")
 
-    set_property(TARGET conduit::conduit 
+    set_property(TARGET conduit::conduit
                  APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                  "${CONDUIT_INSTALL_PREFIX}/include/conduit/")
 else()
@@ -243,6 +243,9 @@ if (LUA_DIR)
                             INCLUDES    ${LUA_INCLUDE_DIR}
                             EXPORTABLE  ON)
     endif()
+    blt_print_target_properties(TARGET lua)
+    blt_print_variables(NAME_REGEX lua IGNORE_CASE)
+
     blt_patch_target(NAME lua TREAT_INCLUDES_AS_SYSTEM ON)
     blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
