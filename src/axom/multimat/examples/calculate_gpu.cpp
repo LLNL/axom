@@ -213,8 +213,8 @@ void avgDensitySubmap(mmat::MultiMat& mm)
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
 
-  auto density = mm.getSparse2dField<double>("Densityfrac");
-  auto vf = mm.getSparse2dField<double>("Volfrac");
+  auto density = mm.getDense2dField<double>("Densityfrac");
+  auto vf = mm.getDense2dField<double>("Volfrac");
 
   auto vol = mm.get1dField<double>("Vol");
 
@@ -243,8 +243,8 @@ void avgDensityIter(mmat::MultiMat& mm)
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
 
-  auto density = mm.getSparse2dField<double>("Densityfrac");
-  auto vf = mm.getSparse2dField<double>("Volfrac");
+  auto density = mm.getDense2dField<double>("Densityfrac");
+  auto vf = mm.getDense2dField<double>("Volfrac");
 
   auto vol = mm.get1dField<double>("Vol");
 
