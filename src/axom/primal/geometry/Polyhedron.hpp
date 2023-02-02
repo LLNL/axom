@@ -206,16 +206,16 @@ private:
 /*!
  * \class Polyhedron
  *
- * \brief Represents a polyhedron defined by an array of points and optionally
- *        their neighbors (a point is a neighbor of another point if there is
- *        an edge between them)
+ * \brief Represents a convex polyhedron defined by an array of points and
+ *        optionally their neighbors (a point is a neighbor of another point if
+ *        there is an edge between them)
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
  * \note The Polyhedron functions do not check that points defining a face are
  *       coplanar. It is the responsibility of the caller to pass a
- *       valid set of points and neighbors.
+ *       valid set of points and neighbors representing a convex polyhedron.
  *
  * \note The polyhedron neighbors should be ordered counter clockwise
  *       as when viewing the polyhedron externally.

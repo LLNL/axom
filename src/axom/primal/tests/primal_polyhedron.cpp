@@ -14,6 +14,7 @@
 #include "axom/slic.hpp"
 
 #include <cmath>
+#include <vector>
 
 namespace primal = axom::primal;
 
@@ -53,6 +54,26 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   poly.addNeighbors(poly[7], {4, 6, 3});
 
   EXPECT_EQ(1, poly.volume());
+
+  // Example usage of experimental getFaces() function
+  // (input parameters and/or output may change in the future)
+  int faces[24];
+  int face_size[6];
+  int face_offset[6];
+  int face_count;
+  poly.getFaces(faces, face_size, face_offset, face_count);
+
+  std::vector<int> vec_faces = {faces, faces + 24};
+
+  // Cube - 6 faces, 4 vertex indices for each face.
+  std::vector<int> vec_expect = {0, 1, 5, 4,
+                                 0, 4, 7, 3,
+                                 0, 3, 2, 1,
+                                 1, 2, 6, 5,
+                                 2, 3, 7, 6,
+                                 4, 5, 6, 7};
+  EXPECT_EQ(vec_faces, vec_expect);
+  EXPECT_EQ(face_count, 6);
 }
 
 //------------------------------------------------------------------------------
