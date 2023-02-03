@@ -421,16 +421,22 @@ class Conduit(CMakePackage):
 
         # extra fun for blueos
         if on_blueos:
-            # All of BlueOS compilers report clang due to nvcc,
-            # override to proper compiler family
-            if "xlc" in c_compiler:
-                cfg.write(cmake_cache_entry("CMAKE_C_COMPILER_ID", "XL"))
-            if "xlC" in cpp_compiler:
-                cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL"))
+
+            # AXOM EDIT START
+            # Don't override compiler family!
+            ## All of BlueOS compilers report clang due to nvcc,
+            ## override to proper compiler family
+            #if "xlc" in c_compiler:
+            #    cfg.write(cmake_cache_entry("CMAKE_C_COMPILER_ID", "XL"))
+            #if "xlC" in cpp_compiler:
+            #    cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL"))
+            # AXOM EDIT END
 
             if "+fortran" in spec:
-                if "xlf" in f_compiler:
-                    cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL"))
+                # AXOM EDIT START
+                #if "xlf" in f_compiler:
+                #    cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL"))
+                # AXOM EDIT START
 
                 if (f_compiler is not None) and ("xlf" in f_compiler):
                     # Fix missing std linker flag in xlc compiler
