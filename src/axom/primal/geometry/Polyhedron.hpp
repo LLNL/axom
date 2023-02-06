@@ -405,6 +405,10 @@ public:
    * \warning Function is experimental, input parameters and/or output may
    *          change in the future.
    *
+   * \note This function does not check that the provided buffers are
+   *       large enough to hold all values. It is the responsibility of the
+   *       caller to know ahead of time and pass buffers with appropriate size.
+   *
    * \note Function is based off extractFaces() in Mike Owen's PolyClipper.
    *
    * \pre polyhedron vertex neighbors are defined
