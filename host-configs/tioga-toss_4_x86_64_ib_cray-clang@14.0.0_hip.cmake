@@ -41,9 +41,9 @@ set(MPI_CXX_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.16-rocmcc-
 
 set(MPI_Fortran_COMPILER "/usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.16-rocmcc-5.2.3/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC_EXECUTABLE "/usr/bin/flux" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "srun" CACHE PATH "")
 
-set(MPIEXEC_NUMPROC_FLAG "mini;run;-n" CACHE STRING "")
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE STRING "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
