@@ -493,7 +493,7 @@ public:
   ArrayBase(const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
 
-  // Emtpy implementation because no member data
+  // Empty implementation because no member data
   template <typename OtherArrayType>
   ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>&)
