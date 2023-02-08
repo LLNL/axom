@@ -45,12 +45,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
 - Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
 - Updates [conduit dependency to v0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
+- Adds `vcpkg` port for `lua` as optional dependency on Windows
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
   for CUDA/non-gpu builds.
 - Checks validity of bounding boxes in `primal`'s intersection operators against planes 
   and triangles before using the geometry.
+- Improves import logic for `lua` dependency
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
