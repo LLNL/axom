@@ -78,8 +78,7 @@ packages:
 
 # Globally lock version of third party libraries
   conduit:
-    version: [0.7.2axom]
-    variants: ~shared~test
+    require: "@0.8.6~shared~test~examples~utilities"
   hdf5:
     variants: ~shared~mpi
   mfem:
