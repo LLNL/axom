@@ -186,7 +186,7 @@ TEST(spio_parallel, parallel_writeread)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), root_name);
+  reader.read(ds2->getRoot(), root_name, PROTOCOL);
   // _parallel_io_load_end
 
   /*
@@ -958,7 +958,7 @@ TEST(spio_parallel, parallel_decrease_procs)
 
   MPI_Comm_free(&split_comm);
 
-#endif
+#endif  // AXOM_USE_HDF5
 }
 
 TEST(spio_parallel, sidre_simple_blueprint_example)
@@ -1027,5 +1027,5 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
                                        "out_spio_blueprint_example.root",
                                        "mesh");
 
-#endif
+#endif  // AXOM_USE_HDF5
 }
