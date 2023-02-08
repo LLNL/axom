@@ -244,23 +244,8 @@ if (LUA_DIR)
                             EXPORTABLE  ON)
     endif()
 
-    blt_print_target_properties(TARGET lua)
-    blt_print_variables(NAME_REGEX lua IGNORE_CASE)
-
-    # Mark includes as SYSTEM if target is not IMPORTED
-    # Includes for IMPORTED are already marked as system
-    # and calling it would generate a CMake error.
-    # TODO: This logic should be incorporated into blt_patch_target
-    get_target_property(_is_lua_imported lua IMPORTED)
-    if(NOT ${_is_lua_imported})
-        blt_patch_target(NAME lua TREAT_INCLUDES_AS_SYSTEM ON)
-    endif()
-
+    blt_convert_to_system_includes(TARGET lua)
     blt_list_append(TO TPL_DEPS ELEMENTS lua)
-
-    blt_print_target_properties(TARGET lua)
-    blt_print_variables(NAME_REGEX lua IGNORE_CASE)
-    blt_print_variables(VALUE_REGEX lua IGNORE_CASE)
 else()
     message(STATUS "LUA support is OFF")
     set(LUA_FOUND OFF CACHE BOOL "")
