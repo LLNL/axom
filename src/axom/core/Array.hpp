@@ -340,6 +340,11 @@ public:
 
   /// @}
 
+  /*!
+    \brief Returns spacing between adjacent items.
+  */
+  AXOM_HOST_DEVICE IndexType spacing() const { return 1; }
+
   /// @}
 
   /// \name Array methods to modify the data.
