@@ -534,7 +534,7 @@ TEST(primal_OBBox, obb_to_local)
 
   // can roughly compute local coords of pt2
   QVector vec2(obbox2.toLocal(pt2));
-  EXPECT_EQ(vec2[0], 0.);
+  EXPECT_DOUBLE_EQ(vec2[0], 0.);
   EXPECT_TRUE(((vec2[1] - 14.142) < 0.1) && ((14.142 - vec2[1]) < 0.1));
   EXPECT_TRUE(((vec2[2] - 10.) < 0.1) && ((10. - vec2[2]) < 0.1));
 }
