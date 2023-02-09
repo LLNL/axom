@@ -196,6 +196,23 @@ else()
     message(STATUS "MFEM support is OFF")
 endif()
 
+# caliper-enabled mfem in cuda configs depends on cupti, which is not properly exported
+if(TARGET mfem AND ENABLE_CUDA)
+    # check if mfem depends on caliper; if so, patch it with cupti
+    get_target_property(_mfem_libs mfem INTERFACE_LINK_LIBRARIES)
+    if("${_mfem_libs}" MATCHES "caliper")
+        if(NOT TARGET CUDA::toolkit)
+            find_package(CUDAToolkit REQUIRED)
+        endif()
+
+        if(TARGET CUDA::toolkit)
+            blt_patch_target(NAME mfem DEPENDS_ON CUDA::toolkit)
+        endif()
+        if(TARGET CUDA::cupti)
+            blt_patch_target(NAME mfem DEPENDS_ON CUDA::cupti)
+        endif()
+    endif()
+endif()
 
 #------------------------------------------------------------------------------
 # Shroud - Generates C/Fortran/Python bindings
