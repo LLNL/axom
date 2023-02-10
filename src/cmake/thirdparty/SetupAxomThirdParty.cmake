@@ -189,18 +189,23 @@ elseif (MFEM_DIR)
                             TREAT_INCLUDES_AS_SYSTEM ON
                             EXPORTABLE ON)
         blt_list_append(TO TPL_DEPS ELEMENTS mfem)
-    else()
-        target_include_directories(mfem SYSTEM INTERFACE ${MFEM_INCLUDE_DIRS} )
     endif()
+    blt_convert_to_system_includes(TARGET mfem)
 else()
     message(STATUS "MFEM support is OFF")
 endif()
 
-# caliper-enabled mfem in cuda configs depends on cupti, which is not properly exported
-if(TARGET mfem AND ENABLE_CUDA)
-    # check if mfem depends on caliper; if so, patch it with CUDAToolkit's cupti
+# caliper-enabled mfem in device configs have extra dependencies which are not properly exported
+if(TARGET mfem)
+    # check if mfem depends on caliper
+    set(_mfem_depends_on_caliper FALSE)
     get_target_property(_mfem_libs mfem INTERFACE_LINK_LIBRARIES)
     if("${_mfem_libs}" MATCHES "caliper")
+        set(_mfem_depends_on_caliper TRUE)
+    endif()
+
+    # patch with CUDAToolkit's cupti in cuda configs
+    if(_mfem_depends_on_caliper AND ENABLE_CUDA)
         if(NOT TARGET CUDA::cupti)
             find_package(CUDAToolkit REQUIRED)
         endif()
@@ -209,6 +214,17 @@ if(TARGET mfem AND ENABLE_CUDA)
             blt_patch_target(NAME mfem DEPENDS_ON CUDA::cupti)
         endif()
     endif()
+
+    # patch with roctracer in hip configs
+    if(_mfem_depends_on_caliper AND ENABLE_HIP)
+        if(NOT TARGET roctracer)
+            include(cmake/thirdparty/FindROCTracer.cmake)
+            blt_list_append(TO TPL_DEPS ELEMENTS roctracer)
+        endif()
+
+        blt_patch_target(NAME mfem DEPENDS_ON roctracer)
+    endif()
+
 endif()
 
 #------------------------------------------------------------------------------
