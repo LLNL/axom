@@ -147,11 +147,11 @@ packages:
 
   # Packages we may want to build in the future with specific versions
   cmake:
-    version: [3.14.5]
+    version: [3.21.1]
     buildable: false
     externals:
-    - spec: cmake@3.14.5
-      prefix: /usr/tce/packages/cmake/cmake-3.14.5
+    - spec: cmake@3.21.1
+      prefix: /usr/tce/packages/cmake/cmake-3.21.1
   llvm:
     version: [10.0.0]
     buildable: false

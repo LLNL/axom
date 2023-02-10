@@ -199,8 +199,12 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
       }
 
       c[cellIdx] = range.getCentroid();
+
 #ifndef AXOM_DEVICE_CODE
-      EXPECT_EQ(c[cellIdx], sum);
+      for(int dim = 0; dim < NDIMS; dim++)
+      {
+        EXPECT_DOUBLE_EQ(c[cellIdx][dim], sum[dim]);
+      }
 #endif
 
       aabbs[cellIdx] = range;

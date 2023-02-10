@@ -171,10 +171,10 @@ endif()
 cmake_dependent_option(
     AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
     "Enable extra regression tests for quest" OFF
-    "AXOM_ENABLE_MPI;AXOM_ENABLE_SIDRE;AXOM_DATA_DIR" OFF )
+    "AXOM_ENABLE_MPI;AXOM_ENABLE_SIDRE;AXOM_DATA_DIR;AXOM_ENABLE_HDF5" OFF )
 mark_as_advanced(AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS)
 
-if (AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE)
+if (AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_HDF5)
 
     set(quest_regression_depends
         ${quest_tests_depends}

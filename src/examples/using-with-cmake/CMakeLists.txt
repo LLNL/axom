@@ -56,6 +56,11 @@ endif()
 # Required to create Conduit's MPI dependencies
 if (ENABLE_MPI)
     find_package(MPI REQUIRED)
+    
+    if(NOT TARGET mpi AND TARGET MPI::MPI_CXX)
+        add_library(mpi INTERFACE)
+        target_link_libraries(mpi INTERFACE MPI::MPI_CXX)
+    endif()
 endif()
 
 find_package(axom REQUIRED
