@@ -131,6 +131,34 @@ foreach(test ${quest_mpi_tests})
     endif()
 endforeach()
 
+#------------------------------------------------------------------------------
+# These tests require MPI+MFEM+C2C+Axom data+...
+#------------------------------------------------------------------------------
+if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
+              AND AXOM_ENABLE_KLEE AND AXOM_DATA_DIR
+              AND C2C_FOUND)
+    set(quest_mpi_mfem_c2c_data_tests
+        quest_intersection_shaper.cpp
+       )
+    foreach(test ${quest_mpi_mfem_c2c_data_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        blt_add_executable(
+            NAME ${test_name}_test
+            SOURCES ${test_name}.cpp
+            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON ${quest_tests_depends} mfem mpi
+            FOLDER axom/quest/tests
+        )
+
+        set(_numMPITasks 1)
+        axom_add_test(
+            NAME ${test_name}
+            COMMAND ${test_name}_test
+            NUM_MPI_TASKS ${_numMPITasks}
+        )
+    endforeach()
+endif()
 
 #------------------------------------------------------------------------------
 # Regression tests for quest signed distance and inout queries

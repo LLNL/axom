@@ -69,6 +69,24 @@ public:
    */
   const Geometry &getGeometry() const { return m_geometry; }
 
+  /**
+   * Get the vector of materials that this shape can replace.
+   * \return A reference to the material name vector.
+   */
+  const std::vector<std::string> &getMaterialsReplaced() const
+  {
+    return m_materialsReplaced;
+  }
+
+  /**
+   * Get the vector of materials that this shape cannot replace.
+   * \return A reference to the material name vector.
+   */
+  const std::vector<std::string> &getMaterialsNotReplaced() const
+  {
+    return m_materialsNotReplaced;
+  }
+
 private:
   std::string m_name;
   std::string m_material;
