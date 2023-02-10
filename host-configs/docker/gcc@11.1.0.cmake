@@ -69,7 +69,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 set(TPL_ROOT "/home/axom/axom_tpls/gcc-11.1.0" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.3" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6" CACHE PATH "")
 
 # C2C not built
 

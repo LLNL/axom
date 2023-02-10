@@ -77,7 +77,7 @@ if (UMPIRE_DIR)
         message(FATAL_ERROR "Umpire failed to load: ${UMPIRE_DIR}")
     else()
         message(STATUS "Umpire loaded: ${UMPIRE_DIR}")
-        set_property(TARGET umpire 
+        set_property(TARGET umpire
                      APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                     ${UMPIRE_INCLUDE_DIRS})
         set(UMPIRE_FOUND TRUE CACHE BOOL "")
@@ -110,7 +110,7 @@ if (RAJA_DIR)
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
 
-    # Suppress warnings from cub and cuda related to the (low) version 
+    # Suppress warnings from cub and cuda related to the (low) version
     # of clang that XL compiler pretends to be.
     if(C_COMPILER_FAMILY_IS_XL)
         if(TARGET RAJA::cub)
@@ -142,11 +142,11 @@ if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
 
     # Manually set includes as system includes
-    set_property(TARGET conduit::conduit 
+    set_property(TARGET conduit::conduit
                  APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                  "${CONDUIT_INSTALL_PREFIX}/include/")
 
-    set_property(TARGET conduit::conduit 
+    set_property(TARGET conduit::conduit
                  APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                  "${CONDUIT_INSTALL_PREFIX}/include/conduit/")
 else()
@@ -196,6 +196,20 @@ else()
     message(STATUS "MFEM support is OFF")
 endif()
 
+# caliper-enabled mfem in cuda configs depends on cupti, which is not properly exported
+if(TARGET mfem AND ENABLE_CUDA)
+    # check if mfem depends on caliper; if so, patch it with CUDAToolkit's cupti
+    get_target_property(_mfem_libs mfem INTERFACE_LINK_LIBRARIES)
+    if("${_mfem_libs}" MATCHES "caliper")
+        if(NOT TARGET CUDA::cupti)
+            find_package(CUDAToolkit REQUIRED)
+        endif()
+
+        if(TARGET CUDA::cupti)
+            blt_patch_target(NAME mfem DEPENDS_ON CUDA::cupti)
+        endif()
+    endif()
+endif()
 
 #------------------------------------------------------------------------------
 # Shroud - Generates C/Fortran/Python bindings
@@ -237,12 +251,14 @@ endif()
 #------------------------------------------------------------------------------
 if (LUA_DIR)
     include(cmake/thirdparty/FindLUA.cmake)
-    blt_import_library(
-        NAME          lua
-        INCLUDES      ${LUA_INCLUDE_DIR}
-        LIBRARIES     ${LUA_LIBRARY}
-        TREAT_INCLUDES_AS_SYSTEM ON
-        EXPORTABLE    ON)
+    if(NOT TARGET lua)
+        blt_import_library( NAME        lua
+                            LIBRARIES   ${LUA_LIBRARIES}
+                            INCLUDES    ${LUA_INCLUDE_DIR}
+                            EXPORTABLE  ON)
+    endif()
+
+    blt_convert_to_system_includes(TARGET lua)
     blt_list_append(TO TPL_DEPS ELEMENTS lua)
 else()
     message(STATUS "LUA support is OFF")

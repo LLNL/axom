@@ -142,6 +142,11 @@ set(AXOM_ENABLE_INLET OFF CACHE BOOL "")
 set(AXOM_ENABLE_KLEE OFF CACHE BOOL "")
 ]=])
 
+set(_lua_dep [=[
+
+set(LUA_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
 set(_mfem_dep [=[
 
 set(MFEM_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
@@ -170,7 +175,7 @@ set(BLT_OPENMP_LINK_FLAGS " " CACHE STRING "")
 ]=])
 
 # TODO:
-#  * Add features/TPLs: lua, mpi
+#  * Add features/TPLs: mpi
 #  * Add tools: uncrustify, sphinx, doxygen
 
 # Create a copyright file
@@ -187,15 +192,17 @@ message(STATUS "FEATURES: ${FEATURES}")
 
 file(WRITE ${_hc_file}.in "${_host-config_hdr}")
 
-if("conduit" IN_LIST FEATURES)
+if(conduit IN_LIST FEATURES)
   file(APPEND ${_hc_file}.in "${_conduit_dep_on}")
 else()
   file(APPEND ${_hc_file}.in "${_conduit_dep_off}")
 endif()
 
-foreach(_dep openmp mfem raja umpire)
+foreach(_dep lua mfem openmp raja umpire)
   if(${_dep} IN_LIST FEATURES)
     file(APPEND ${_hc_file}.in "${_${_dep}_dep}")
+  else()
+    file(APPEND ${_hc_file}.in "# ${_dep} dependency disabled")
   endif()
 endforeach()
 
