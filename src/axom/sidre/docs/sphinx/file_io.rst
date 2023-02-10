@@ -96,10 +96,10 @@ Protocols for file I/O
 
 ``conduit_hdf5``
 
-    This saves group as a conduit node hierarchy. Datatypes are preserved, but
-    no information about Buffers or external arrays is saved. Data arrays for
-    each View are saved; if multiple Views use data from the same Buffer, the
-    values from that Buffer will duplicated.
+    This saves a group as a conduit node hierarchy. Datatypes are preserved,
+    but no information about Buffers or external arrays is saved. Data arrays
+    for each View are saved; if multiple Views use data from the same Buffer,
+    the values from that Buffer will duplicated.
 
 ``conduit_json``
 
@@ -110,14 +110,14 @@ Protocols for file I/O
 ``conduit_bin``
 
     This protocol writes data in conduit's native binary format, and also
-    produces an anccompanying JSON file that contains the schema describing
+    produces an accompanying JSON file that contains the schema describing
     how to parse the binary data. The hierarchal layout of the data is the
     same as ``conduit_hdf5`` and ``conduit_json``. The binary accuracy of
     floating-point values is preserved. 
 
 ``json``
 
-    This protocol saves the smallest amount of information, as it Writes all
+    This protocol saves the smallest amount of information, as it writes all
     data in a basic JSON hierarchy with no type information beyond
     what can be interpreted implicitly. When loading, the library will allocate 
     the largest supported bit width for integer or floating-point values.
