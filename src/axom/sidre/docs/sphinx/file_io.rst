@@ -71,8 +71,8 @@ Protocols for file I/O
     describing the datatypes in each View are saved, and all numerical data is
     saved with full binary accuracy.
      
-    ``sidre_hdf5`` is the only protocal that supports the
-    ``loadExternalData()`` method and is the only protocoal that allows
+    ``sidre_hdf5`` is the only protocol that supports the
+    ``loadExternalData()`` method and is the only protocol that allows
     data to be added to root files produced by ``IOManager`` after they are
     first created.
 
