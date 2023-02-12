@@ -51,9 +51,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
   for CUDA/non-gpu builds.
-- Checks validity of bounding boxes in `primal`'s intersection operators against planes 
+- Checks validity of bounding boxes in `primal`'s intersection operators against planes
   and triangles before using the geometry.
 - Improves import logic for `lua` dependency
+- Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
