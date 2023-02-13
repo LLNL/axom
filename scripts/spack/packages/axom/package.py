@@ -140,9 +140,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     depends_on("c2c", when="+c2c")
 
-    depends_on("mfem", when="+mfem")
-    depends_on("mfem@4.5.0:", when="@0.7.0:")
-    depends_on("mfem~mpi", when="~mpi")
+    with when("+mfem"):
+        depends_on("mfem+mpi", when="+mpi")
+        depends_on("mfem~mpi", when="~mpi")
+        depends_on("mfem@4.5.0:", when="@0.7.0:")
 
     depends_on("python", when="+python")
 
