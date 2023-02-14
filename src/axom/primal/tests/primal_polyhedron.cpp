@@ -53,6 +53,47 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   poly.addNeighbors(poly[7], {4, 6, 3});
 
   EXPECT_EQ(1, poly.volume());
+
+  // Example usage of experimental getFaces() function
+  // (input parameters and/or output may change in the future)
+
+  // Euler characteristic to verify provided sizes are adequate
+  // (Characteristic = 2 for convex polyhedron)
+  constexpr int EULER_CHAR = 2;
+  constexpr int NUM_VERTICES = 8;
+  constexpr int NUM_EDGES = 12;
+  constexpr int NUM_FACES = 6;
+
+  EXPECT_EQ(EULER_CHAR, NUM_VERTICES - NUM_EDGES + NUM_FACES);
+
+  // Cube - 6 faces, 4 vertex indices for each face.
+  int faces[NUM_FACES * 4];
+  int face_size[NUM_FACES];
+  int face_offset[NUM_FACES];
+  int face_count;
+  poly.getFaces(faces, face_size, face_offset, face_count);
+
+  // Verify we got the expected number of faces
+  EXPECT_EQ(face_count, NUM_FACES);
+
+  // Verify face vertex indices
+  // clang-format off
+  int faces_expect [NUM_FACES * 4] = {0, 1, 5, 4,
+                                      0, 4, 7, 3,
+                                      0, 3, 2, 1,
+                                      1, 2, 6, 5,
+                                      2, 3, 7, 6,
+                                      4, 5, 6, 7};
+  // clang-format on
+
+  for(int f = 0; f < face_count; ++f)
+  {
+    for(int f_index = face_offset[f]; f_index < face_offset[f] + face_size[f];
+        f_index++)
+    {
+      EXPECT_EQ(faces[f_index], faces_expect[f_index]);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -515,6 +556,50 @@ TEST(primal_polyhedron, polygonal_cone)
     SLIC_DEBUG(axom::fmt::format("Polyhedron {}", poly));
 
     EXPECT_NEAR(penta.area(), poly.volume(), EPS);
+
+    // Example usage of experimental getFaces() function
+    // (input parameters and/or output may change in the future)
+
+    // Euler characteristic to verify provided sizes are adequate
+    // (Characteristic = 2 for convex polyhedron)
+    constexpr int EULER_CHAR = 2;
+    constexpr int NUM_VERTICES = 6;
+    constexpr int NUM_EDGES = 10;
+    constexpr int NUM_FACES = 6;
+
+    EXPECT_EQ(EULER_CHAR, NUM_VERTICES - NUM_EDGES + NUM_FACES);
+
+    // Pentagonal Cone - 6 faces,
+    // 1 face with 5 vertex indices,
+    // 5 faces with 3 vertex indices
+    constexpr int FACE_IDX_SIZE = 1 * 5 + 5 * 3;
+    int faces[FACE_IDX_SIZE];
+    int face_size[NUM_FACES];
+    int face_offset[NUM_FACES];
+    int face_count;
+    poly.getFaces(faces, face_size, face_offset, face_count);
+
+    // Verify we got the expected number of faces
+    EXPECT_EQ(face_count, NUM_FACES);
+
+    // Verify face vertex indices
+    // clang-format off
+    int faces_expect [FACE_IDX_SIZE] = {0, 5, 4,
+                                        0, 4, 3, 2, 1,
+                                        0, 1, 5,
+                                        1, 2, 5,
+                                        2, 3, 5,
+                                        3, 4, 5};
+    // clang-format on
+
+    for(int f = 0; f < face_count; ++f)
+    {
+      for(int f_index = face_offset[f]; f_index < face_offset[f] + face_size[f];
+          f_index++)
+      {
+        EXPECT_EQ(faces[f_index], faces_expect[f_index]);
+      }
+    }
   }
 }
 

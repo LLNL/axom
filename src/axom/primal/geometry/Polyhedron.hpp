@@ -206,19 +206,21 @@ private:
 /*!
  * \class Polyhedron
  *
- * \brief Represents a polyhedron defined by an array of points and optionally
- *        their neighbors (a point is a neighbor of another point if there is
- *        an edge between them)
+ * \brief Represents a convex polyhedron defined by an array of points and
+ *        optionally their neighbors (a point is a neighbor of another point if
+ *        there is an edge between them)
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
  * \note The Polyhedron functions do not check that points defining a face are
  *       coplanar. It is the responsibility of the caller to pass a
- *       valid set of points and neighbors.
+ *       valid set of points and neighbors representing a convex polyhedron.
  *
  * \note The polyhedron neighbors should be ordered counter clockwise
  *       as when viewing the polyhedron externally.
+ *
+ *       <pre>
  *
  *          4--------7
  *         /|       /|
@@ -228,6 +230,8 @@ private:
  *       | /      | /
  *       |/       |/
  *       1--------2
+ *
+ *       </pre>
  *
  *       For example, vertex 5 above should have neighbors (4,1,6).
  *
@@ -388,14 +392,22 @@ public:
     return PointType(sum);
   }
 
-private:
+public:
   /*!
-   * \brief Finds the faces of the Polyhedron, assuming the vertex neighbors
-   *        are in counter-clockwise ordering.
+   * \brief Helper function to find the faces of the Polyhedron, assuming the
+   *        vertex neighbors are in counter-clockwise ordering.
    *
-   * param [out] faces is the vertex indices for faces
-   * param [out] face_offset is the offset for each face
-   * param [out] face_size is the number of vertices for each face
+   * \param [out] faces is the vertex indices for faces
+   * \param [out] face_offset is the offset for each face
+   * \param [out] face_size is the number of vertices for each face
+   * \param [out] face_count is the number of faces
+   *
+   * \warning Function is experimental, input parameters and/or output may
+   *          change in the future.
+   *
+   * \note This function does not check that the provided buffers are
+   *       large enough to hold all values. It is the responsibility of the
+   *       caller to know ahead of time and pass buffers with appropriate size.
    *
    * \note Function is based off extractFaces() in Mike Owen's PolyClipper.
    *
@@ -483,7 +495,6 @@ private:
     face_count = facesAdded;
   }
 
-public:
   /*!
    * \brief Finds the volume of the polyhedron.
    *
