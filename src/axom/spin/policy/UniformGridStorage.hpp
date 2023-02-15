@@ -205,7 +205,7 @@ struct FlatGridStorage
       m_binData.resize(total_elems.get());
       return;
     }
-#else
+#endif
     IndexType total_elems = binSizes[0];
     m_binOffsets[0] = 0;
     for(int i = 1; i < binSizes.size(); i++)
@@ -214,8 +214,7 @@ struct FlatGridStorage
       total_elems += binSizes[i];
     }
     m_binData.resize(total_elems);
-#endif
-  };
+  }
 
   void insert(IndexType gridIdx, T elem)
   {
