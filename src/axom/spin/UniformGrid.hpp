@@ -562,7 +562,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
     });
 
   // 2. Resize bins with counts
-  StoragePolicy::initialize(binCounts);
+  StoragePolicy::template initialize<ExecSpace>(binCounts);
 
   // 3. Reset bin-specific counters
   binCounts.fill(0);
