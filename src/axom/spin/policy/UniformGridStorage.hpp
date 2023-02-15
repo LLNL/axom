@@ -66,7 +66,7 @@ struct DynamicGridStorage
   }
 
   template <typename ExecSpace>
-  void initialize(axom::ArrayView<const IndexType> binSizes)
+  void initialize(const axom::ArrayView<const IndexType> binSizes)
   {
     m_bins.clear();
     for(int i = 0; i < binSizes.size(); i++)
@@ -183,7 +183,7 @@ struct FlatGridStorage
   }
 
   template <typename ExecSpace>
-  void initialize(axom::ArrayView<const IndexType> binSizes)
+  void initialize(const axom::ArrayView<const IndexType> binSizes)
   {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     using loop_pol = typename axom::execution_space<ExecSpace>::loop_policy;
