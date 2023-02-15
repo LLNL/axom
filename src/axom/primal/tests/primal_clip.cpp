@@ -27,6 +27,7 @@ namespace Primal3D
 using PointType = axom::primal::Point<double, 3>;
 using VectorType = axom::primal::Vector<double, 3>;
 using BoundingBoxType = axom::primal::BoundingBox<double, 3>;
+using HexahedronType = axom::primal::Hexahedron<double, 3>;
 using TriangleType = axom::primal::Triangle<double, 3>;
 using TetrahedronType = axom::primal::Tetrahedron<double, 3>;
 using OctahedronType = axom::primal::Octahedron<double, 3>;
@@ -510,6 +511,149 @@ TEST(primal_clip, clip_tet_tet_hip)
   #endif /* AXOM_USE_HIP */
 
 #endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
+
+// Tetrahedron does not clip hexahedron.
+TEST(primal_clip, hex_tet_clip_nonintersect)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet(PointType {-1, -1, -1},
+                      PointType {-1, 0, 0},
+                      PointType {-1, -1, 0},
+                      PointType {0, 0, 0});
+  HexahedronType hex(PointType {1, 0, 0},
+                     PointType {2, 0, 0},
+                     PointType {2, 1, 0},
+                     PointType {1, 1, 0},
+                     PointType {1, 0, 1},
+                     PointType {2, 0, 1},
+                     PointType {2, 1, 1},
+                     PointType {1, 1, 1});
+
+  PolyhedronType poly = axom::primal::clip(hex, tet);
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron is encapsulated by the hexahedron
+TEST(primal_clip, hex_tet_clip_encapsulate)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-4;
+
+  TetrahedronType tet(PointType {1, 0, 0},
+                      PointType {1, 1, 0},
+                      PointType {0, 1, 0},
+                      PointType {1, 0, 1});
+  HexahedronType hex(PointType {0, 0, 0},
+                     PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1},
+                     PointType {1, 1, 1},
+                     PointType {0, 1, 1});
+
+  PolyhedronType poly = axom::primal::clip(hex, tet);
+
+  // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
+  EXPECT_NEAR(0.1666, poly.volume(), EPS);
+}
+
+// Hexahedron is encapsulated inside the tetrahedron
+TEST(primal_clip, hex_tet_clip_encapsulate_inv)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-4;
+
+  TetrahedronType tet(PointType {0, 0, 0},
+                      PointType {0, 3, 0},
+                      PointType {0, 0, 3},
+                      PointType {3, 0, 0});
+  HexahedronType hex(PointType {0, 0, 0},
+                     PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1},
+                     PointType {1, 1, 1},
+                     PointType {0, 1, 1});
+
+  PolyhedronType poly = axom::primal::clip(hex, tet);
+
+  // Expected result should be 1.0, volume of hex.
+  EXPECT_NEAR(1.0, poly.volume(), EPS);
+}
+
+// Half of the hexahedron is clipped by the tetrahedron
+TEST(primal_clip, hex_tet_clip_half)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-4;
+
+  TetrahedronType tet(PointType {0, 0, 0},
+                      PointType {0, 3, 0},
+                      PointType {0, 0, 3},
+                      PointType {3, 0, 0});
+  HexahedronType hex(PointType {-1, 0, 0},
+                     PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {-1, 1, 0},
+                     PointType {-1, 0, 1},
+                     PointType {1, 0, 1},
+                     PointType {1, 1, 1},
+                     PointType {-1, 1, 1});
+
+  PolyhedronType poly = axom::primal::clip(hex, tet);
+
+  // Expected result should be 1.0, half the volume of hex.
+  EXPECT_NEAR(1.0, poly.volume(), EPS);
+}
+
+// Hexahedron is adjacent to tetrahedron
+TEST(primal_clip, hex_tet_clip_adjacent)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet(PointType {0, -1, 0},
+                      PointType {0, 0, 1},
+                      PointType {1, 0, 1},
+                      PointType {1, 0, 0});
+  HexahedronType hex(PointType {0, 0, 0},
+                     PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1},
+                     PointType {1, 1, 1},
+                     PointType {0, 1, 1});
+
+  PolyhedronType poly = axom::primal::clip(hex, tet);
+
+  EXPECT_EQ(0.0, poly.volume());
+}
+
+// Tetrahedron clips hexahedron at a single vertex
+TEST(primal_clip, hex_tet_clip_point)
+{
+  using namespace Primal3D;
+
+  TetrahedronType tet(PointType {0, -1, 0},
+                      PointType {0, 0, 1},
+                      PointType {1, 0, 1},
+                      PointType {1, 0, 0});
+  HexahedronType hex(PointType {-1, -2, -1},
+                     PointType {1, -2, -1},
+                     PointType {1, -1, -1},
+                     PointType {-1, -1, -1},
+                     PointType {-1, -2, 1},
+                     PointType {1, -2, 1},
+                     PointType {1, -1, 1},
+                     PointType {-1, -1, 1});
+
+  PolyhedronType poly = axom::primal::clip(hex, tet);
+
+  EXPECT_EQ(0.0, poly.volume());
+}
 
 // Tetrahedron does not clip octahedron.
 TEST(primal_clip, oct_tet_clip_nonintersect)
