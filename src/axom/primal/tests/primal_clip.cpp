@@ -357,6 +357,48 @@ void unit_check_poly_clip()
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 template <typename ExecPolicy>
+void check_hex_tet_clip(double EPS)
+{
+  using namespace Primal3D;
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Set new default to device if available
+  axom::setDefaultAllocator(axom::execution_space<ExecPolicy>::allocatorID());
+
+  // Allocate memory for shapes
+  TetrahedronType* tet = axom::allocate<TetrahedronType>(1);
+  HexahedronType* hex = axom::allocate<HexahedronType>(1);
+  PolyhedronType* res = axom::allocate<PolyhedronType>(1);
+
+  tet[0] = TetrahedronType(PointType {1, 0, 0},
+                           PointType {1, 1, 0},
+                           PointType {0, 1, 0},
+                           PointType {1, 0, 1});
+
+  hex[0] = HexahedronType(PointType {0, 0, 0},
+                          PointType {1, 0, 0},
+                          PointType {1, 1, 0},
+                          PointType {0, 1, 0},
+                          PointType {0, 0, 1},
+                          PointType {1, 0, 1},
+                          PointType {1, 1, 1},
+                          PointType {0, 1, 1});
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(hex[i], tet[i]); });
+
+  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+
+  axom::deallocate(tet);
+  axom::deallocate(hex);
+  axom::deallocate(res);
+
+  axom::setDefaultAllocator(current_allocator);
+}
+
+template <typename ExecPolicy>
 void check_oct_tet_clip(double EPS)
 {
   using namespace Primal3D;
@@ -441,6 +483,12 @@ TEST(primal_clip, unit_poly_clip_vertices_sequential)
   unit_check_poly_clip<axom::SEQ_EXEC>();
 }
 
+TEST(primal_clip, clip_hex_tet_sequential)
+{
+  constexpr double EPS = 1e-4;
+  check_hex_tet_clip<axom::SEQ_EXEC>(EPS);
+}
+
 TEST(primal_clip, clip_oct_tet_sequential)
 {
   constexpr double EPS = 1e-4;
@@ -457,6 +505,12 @@ TEST(primal_clip, clip_tet_tet_sequential)
 TEST(primal_clip, unit_poly_clip_vertices_omp)
 {
   unit_check_poly_clip<axom::OMP_EXEC>();
+}
+
+TEST(primal_clip, clip_hex_tet_omp)
+{
+  constexpr double EPS = 1e-4;
+  check_hex_tet_clip<axom::OMP_EXEC>(EPS);
 }
 
 TEST(primal_clip, clip_oct_tet_omp)
@@ -478,6 +532,12 @@ AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_cuda)
   unit_check_poly_clip<axom::CUDA_EXEC<256>>();
 }
 
+AXOM_CUDA_TEST(primal_clip, clip_hex_tet_cuda)
+{
+  constexpr double EPS = 1e-4;
+  check_hex_tet_clip<axom::CUDA_EXEC<256>>(EPS);
+}
+
 AXOM_CUDA_TEST(primal_clip, clip_oct_tet_cuda)
 {
   constexpr double EPS = 1e-4;
@@ -495,6 +555,12 @@ TEST(primal_clip, clip_tet_tet_cuda)
 TEST(primal_clip, unit_poly_clip_vertices_hip)
 {
   unit_check_poly_clip<axom::HIP_EXEC<256>>();
+}
+
+TEST(primal_clip, clip_hex_tet_hip)
+{
+  constexpr double EPS = 1e-4;
+  check_hex_tet_clip<axom::HIP_EXEC<256>>(EPS);
 }
 
 TEST(primal_clip, clip_oct_tet_hip)
