@@ -46,7 +46,14 @@ struct DynamicGridStorage
   DynamicGridStorage(int allocID)
     : m_bins(0, 0, allocID)
     , m_allocatorID(allocID)
-  { }
+  {
+#ifdef AXOM_USE_UMPIRE
+    SLIC_ASSERT_MSG(
+      axom::detail::getAllocatorSpace(allocID) != MemorySpace::Device,
+      "Umpire device-only memory is not a supported allocator type for dynamic "
+      "UniformGrid storage.");
+#endif
+  }
 
   int getAllocatorID() const { return m_allocatorID; }
 
