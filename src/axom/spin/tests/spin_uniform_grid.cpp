@@ -482,6 +482,15 @@ struct ExecTraits
     return axom::getDefaultAllocatorID();
 #endif
   }
+  static int getUnifiedAllocatorId()
+  {
+#ifdef AXOM_USE_UMPIRE
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Host);
+#else
+    return axom::getDefaultAllocatorID();
+#endif
+  }
 };
 
 #ifdef AXOM_USE_CUDA
@@ -492,6 +501,11 @@ struct ExecTraits<axom::CUDA_EXEC<BLK_SZ>>
   {
     return axom::getUmpireResourceAllocatorID(
       umpire::resource::MemoryResourceType::Device);
+  }
+  static int getUnifiedAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
   }
 };
 #endif
@@ -505,6 +519,11 @@ struct ExecTraits<axom::HIP_EXEC<BLK_SZ>>
     return axom::getUmpireResourceAllocatorID(
       umpire::resource::MemoryResourceType::Device);
   }
+  static int getUnifiedAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
+  }
 };
 #endif
 //------------------------------------------------------------------------------
@@ -516,17 +535,21 @@ class spin_uniform_grid_templated : public ::testing::Test
 public:
   using PointType = axom::primal::Point<double, DIM>;
   using BoxType = axom::primal::BoundingBox<double, DIM>;
+
+  using DynamicUniformGridType = axom::spin::UniformGrid<int, DIM, ExecSpace>;
+
   using FlatStorageType = axom::spin::policy::FlatGridStorage<int>;
-  using UniformGridType =
+  using FlatUniformGridType =
     axom::spin::UniformGrid<int, DIM, ExecSpace, FlatStorageType>;
 
   spin_uniform_grid_templated()
     : m_allocatorID(ExecTraits<ExecSpace>::getAllocatorId())
+    , m_unifiedAllocatorID(ExecTraits<ExecSpace>::getUnifiedAllocatorId())
   { }
 
   void setNumObjects(int num_objects) { this->m_numObjects = num_objects; }
 
-  void initializeUniformGrid()
+  void initialize()
   {
     this->m_boundingBoxes =
       axom::Array<BoxType>(0, this->m_numObjects, m_allocatorID);
@@ -554,23 +577,35 @@ public:
     axom::for_all<ExecSpace>(
       this->m_numObjects,
       AXOM_LAMBDA(int idx) { iota_v[idx] = idx; });
+  }
 
+  std::unique_ptr<DynamicUniformGridType> constructUniformGridDynamic()
+  {
     const int res_raw[3] = {2, 3, 4};
     const axom::primal::NumericArray<int, DIM> resolution(res_raw);
-    this->m_grid = std::make_unique<UniformGridType>(resolution,
-                                                     m_boundingBoxes.view(),
-                                                     m_iota.view(),
-                                                     m_allocatorID);
+    return std::make_unique<DynamicUniformGridType>(resolution,
+                                                    m_boundingBoxes.view(),
+                                                    m_iota.view(),
+                                                    m_unifiedAllocatorID);
+  }
+
+  std::unique_ptr<FlatUniformGridType> constructUniformGridFlat()
+  {
+    const int res_raw[3] = {2, 3, 4};
+    const axom::primal::NumericArray<int, DIM> resolution(res_raw);
+    return std::make_unique<FlatUniformGridType>(resolution,
+                                                 m_boundingBoxes.view(),
+                                                 m_iota.view(),
+                                                 m_allocatorID);
   }
 
 private:
   int m_allocatorID;
+  int m_unifiedAllocatorID;
 
   int m_numObjects;
   axom::Array<BoxType> m_boundingBoxes;
   axom::Array<int> m_iota;
-
-  std::unique_ptr<UniformGridType> m_grid;
 };
 
 template <typename ExecSpace>
@@ -597,13 +632,19 @@ TYPED_TEST_SUITE(UniformGrid3DTest, MyTypes);
 AXOM_TYPED_TEST(UniformGrid2DTest, initialize_tmpl)
 {
   this->setNumObjects(1000);
-  this->initializeUniformGrid();
+  this->initialize();
+
+  auto dynGrid = this->constructUniformGridDynamic();
+  auto flatGrid = this->constructUniformGridFlat();
 }
 
 AXOM_TYPED_TEST(UniformGrid3DTest, initialize_tmpl)
 {
   this->setNumObjects(1000);
-  this->initializeUniformGrid();
+  this->initialize();
+
+  auto dynGrid = this->constructUniformGridDynamic();
+  auto flatGrid = this->constructUniformGridFlat();
 }
 
 }  // namespace testing
