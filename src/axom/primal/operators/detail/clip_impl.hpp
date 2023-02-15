@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
@@ -476,6 +477,66 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
   }
 
   return poly;
+}
+
+/*!
+ * \brief Finds the clipped intersection Polyhedron between Hexahedron
+ *        hex and Tetrahedron tet.
+ *
+ * \param [in] hex The hexahedron
+ * \param [in] tet The tetrahedron
+ * \param [in] eps The tolerance for plane point orientation.
+ * \return The Polyhedron formed from clipping the hexahedron with a tetrahedron.
+ *
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
+  const Hexahedron<T, NDIMS>& hex,
+  const Tetrahedron<T, NDIMS>& tet,
+  double eps)
+{
+  using PointType = Point<T, NDIMS>;
+  using PlaneType = Plane<T, NDIMS>;
+
+  // Initialize our polyhedron to return
+  Polyhedron<T, NDIMS> poly;
+
+  poly.addVertex(hex[0]);
+  poly.addVertex(hex[1]);
+  poly.addVertex(hex[2]);
+  poly.addVertex(hex[3]);
+  poly.addVertex(hex[4]);
+  poly.addVertex(hex[5]);
+  poly.addVertex(hex[6]);
+  poly.addVertex(hex[7]);
+
+  poly.addNeighbors(0, {1, 4, 3});
+  poly.addNeighbors(1, {0, 2, 5});
+  poly.addNeighbors(2, {1, 3, 6});
+  poly.addNeighbors(3, {2, 0, 7});
+  poly.addNeighbors(4, {0, 5, 7});
+  poly.addNeighbors(5, {1, 6, 4});
+  poly.addNeighbors(6, {2, 7, 5});
+  poly.addNeighbors(7, {3, 4, 6});
+
+  // Reverses order of vertices 1,3 and 5,7 if volume is negative
+  if(poly.volume() < 0)
+  {
+    axom::utilities::swap<PointType>(poly[1], poly[3]);
+    axom::utilities::swap<PointType>(poly[5], poly[7]);
+  }
+
+  // Initialize planes from tetrahedron vertices
+  // (Ordering here matters to get the correct winding)
+  PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
+                         make_plane(tet[0], tet[2], tet[3]),
+                         make_plane(tet[0], tet[3], tet[1]),
+                         make_plane(tet[0], tet[1], tet[2])};
+
+  axom::StackArray<IndexType, 1> planeSize = {4};
+  axom::ArrayView<PlaneType> planesView(planes, planeSize);
+
+  return clipPolyhedron(poly, planesView, eps);
 }
 
 /*!

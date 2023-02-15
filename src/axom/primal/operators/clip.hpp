@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
@@ -96,6 +97,37 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
   }
 
   return *currentPoly;
+}
+
+/*!
+ * \brief Clips a 3D hexahedron against a tetrahedron in 3D, returning
+ *        the geometric intersection of the hexahedron and the tetrahedron
+ *        as a polyhedron
+ *
+ *  This function clips the hexahedron by the 4 planes obtained from the
+ *  tetrahedron's faces (normals point inward). Clipping the
+ *  hexahedron/polyhedron by each plane gives the polyhedron above that plane.
+ *  Clipping the polyhedron by a plane involves
+ *  finding new vertices at the intersection of the polyhedron edges and
+ *  the plane, removing vertices from the polyhedron that are below the
+ *  plane, and redefining the neighbors for each vertex (a vertex is a
+ *  neighbor of another vertex if there is an edge between them).
+ *
+ *
+ * \param [in] hex The hexahedron to clip
+ * \param [in] tet The tetrahedron to clip against
+ * \param [in] eps The epsilon value
+ * \return A polyhedron of the hexahedron clipped against the tetrahedron.
+ *
+ * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& oct,
+                                       const Tetrahedron<T, 3>& tet,
+                                       double eps = 1.e-10)
+{
+  return detail::clipHexahedron(oct, tet, eps);
 }
 
 /*!
