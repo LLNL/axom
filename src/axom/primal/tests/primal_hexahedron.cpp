@@ -146,7 +146,7 @@ TEST_F(HexahedronTest, equals)
 
   QHex hex0(pt0[0], pt0[1], pt0[2], pt0[3], pt0[4], pt0[5], pt0[6], pt0[7]);
   // Permute the points (but keep the same shape)
-  QHex hex0a(pt0[0], pt0[1], pt0[2], pt0[3], pt0[4], pt0[5], pt0[6], pt0[7]);
+  QHex hex0a(pt0[4], pt0[5], pt0[6], pt0[7], pt0[0], pt0[1], pt0[2], pt0[3]);
   // Different shape
   QHex hex1(pt1[0], pt1[1], pt1[2], pt1[3], pt1[4], pt1[5], pt1[6], pt1[7]);
 

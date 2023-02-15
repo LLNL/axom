@@ -777,7 +777,6 @@ public:
                            axom::for_all<ExecSpace>(
                              NE,
                              AXOM_LAMBDA(axom::IndexType i) {
-
                                TetHexArray cur_tets;
                                local_hexes[i].triangulate(cur_tets);
 
