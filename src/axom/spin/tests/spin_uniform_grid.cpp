@@ -467,3 +467,184 @@ TEST(spin_uniform_grid, delete_stuff_2D)
     checkBinCounts(valid, check);
   }
 }
+
+namespace testing
+{
+template <typename ExecSpace>
+struct ExecTraits
+{
+  static int getAllocatorId()
+  {
+#ifdef AXOM_USE_UMPIRE
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Host);
+#else
+    return axom::getDefaultAllocatorID();
+#endif
+  }
+  static int getUnifiedAllocatorId()
+  {
+#ifdef AXOM_USE_UMPIRE
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Host);
+#else
+    return axom::getDefaultAllocatorID();
+#endif
+  }
+};
+
+#ifdef AXOM_USE_CUDA
+template <int BLK_SZ>
+struct ExecTraits<axom::CUDA_EXEC<BLK_SZ>>
+{
+  static int getAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+  static int getUnifiedAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
+  }
+};
+#endif
+
+#ifdef AXOM_USE_HIP
+template <int BLK_SZ>
+struct ExecTraits<axom::HIP_EXEC<BLK_SZ>>
+{
+  static int getAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+  static int getUnifiedAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
+  }
+};
+#endif
+//------------------------------------------------------------------------------
+//  This test harness defines some types that are useful for the tests below
+//------------------------------------------------------------------------------
+template <typename ExecSpace, int DIM>
+class spin_uniform_grid_templated : public ::testing::Test
+{
+public:
+  using PointType = axom::primal::Point<double, DIM>;
+  using BoxType = axom::primal::BoundingBox<double, DIM>;
+
+  using DynamicUniformGridType = axom::spin::UniformGrid<int, DIM, ExecSpace>;
+
+  using FlatStorageType = axom::spin::policy::FlatGridStorage<int>;
+  using FlatUniformGridType =
+    axom::spin::UniformGrid<int, DIM, ExecSpace, FlatStorageType>;
+
+  spin_uniform_grid_templated()
+    : m_allocatorID(ExecTraits<ExecSpace>::getAllocatorId())
+    , m_unifiedAllocatorID(ExecTraits<ExecSpace>::getUnifiedAllocatorId())
+  { }
+
+  void setNumObjects(int num_objects) { this->m_numObjects = num_objects; }
+
+  void initialize()
+  {
+    this->m_boundingBoxes =
+      axom::Array<BoxType>(0, this->m_numObjects, m_allocatorID);
+    this->m_iota =
+      axom::Array<int>(this->m_numObjects, this->m_numObjects, m_allocatorID);
+    // generate n random objects to insert into the uniform grid.
+    for(int i = 0; i < this->m_numObjects; i++)
+    {
+      PointType min, max;
+      for(int idim = 0; idim < DIM; idim++)
+      {
+        double val1 = axom::utilities::random_real(0., 1.);
+        double val2 = axom::utilities::random_real(0., 1.);
+        if(val1 > val2)
+        {
+          axom::utilities::swap(val1, val2);
+        }
+        min[idim] = val1;
+        max[idim] = val2;
+      }
+      this->m_boundingBoxes.push_back(BoxType(min, max));
+    }
+
+    const auto iota_v = m_iota.view();
+    axom::for_all<ExecSpace>(
+      this->m_numObjects,
+      AXOM_LAMBDA(int idx) { iota_v[idx] = idx; });
+  }
+
+  std::unique_ptr<DynamicUniformGridType> constructUniformGridDynamic()
+  {
+    const int res_raw[3] = {2, 3, 4};
+    const axom::primal::NumericArray<int, DIM> resolution(res_raw);
+    return std::make_unique<DynamicUniformGridType>(resolution,
+                                                    m_boundingBoxes.view(),
+                                                    m_iota.view(),
+                                                    m_unifiedAllocatorID);
+  }
+
+  std::unique_ptr<FlatUniformGridType> constructUniformGridFlat()
+  {
+    const int res_raw[3] = {2, 3, 4};
+    const axom::primal::NumericArray<int, DIM> resolution(res_raw);
+    return std::make_unique<FlatUniformGridType>(resolution,
+                                                 m_boundingBoxes.view(),
+                                                 m_iota.view(),
+                                                 m_allocatorID);
+  }
+
+private:
+  int m_allocatorID;
+  int m_unifiedAllocatorID;
+
+  int m_numObjects;
+  axom::Array<BoxType> m_boundingBoxes;
+  axom::Array<int> m_iota;
+};
+
+template <typename ExecSpace>
+using UniformGrid2DTest = spin_uniform_grid_templated<ExecSpace, 2>;
+
+template <typename ExecSpace>
+using UniformGrid3DTest = spin_uniform_grid_templated<ExecSpace, 2>;
+
+using MyTypes = ::testing::Types<
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+  axom::OMP_EXEC,
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  axom::CUDA_EXEC<256>,
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  axom::HIP_EXEC<256>,
+#endif
+  axom::SEQ_EXEC>;
+
+TYPED_TEST_SUITE(UniformGrid2DTest, MyTypes);
+TYPED_TEST_SUITE(UniformGrid3DTest, MyTypes);
+
+AXOM_TYPED_TEST(UniformGrid2DTest, initialize_tmpl)
+{
+  this->setNumObjects(1000);
+  this->initialize();
+
+  auto dynGrid = this->constructUniformGridDynamic();
+  auto flatGrid = this->constructUniformGridFlat();
+}
+
+AXOM_TYPED_TEST(UniformGrid3DTest, initialize_tmpl)
+{
+  this->setNumObjects(1000);
+  this->initialize();
+
+  auto dynGrid = this->constructUniformGridDynamic();
+  auto flatGrid = this->constructUniformGridFlat();
+}
+
+}  // namespace testing
