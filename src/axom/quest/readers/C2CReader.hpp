@@ -37,7 +37,7 @@ public:
   virtual ~C2CReader() = default;
 
   /// Sets the name of the contour file to load. Must be called before \a read()
-  void setFileName(const std::string& fileName) { m_fileName = fileName; }
+  void setFileName(const std::string &fileName) { m_fileName = fileName; }
 
   /// Sets the length unit. All lengths will be converted to this unit when reading the mesh
   void setLengthUnit(c2c::LengthUnit lengthUnit) { m_lengthUnit = lengthUnit; }
@@ -67,19 +67,18 @@ public:
    * 
    * Knot spans are the sub-intervals within a spline
    */
-  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
                      int segmentsPerKnotSpan);
 
 #if 1
   // NOTE: Temporary API
-  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
                      int segmentsPerKnotSpan,
                      std::vector<double> &d1,
                      std::vector<double> &d2,
                      std::vector<double> &u,
                      std::vector<double> &curv,
-                     std::vector<double> &sp
-                     );
+                     std::vector<double> &sp);
 #endif
 protected:
   int readContour();
