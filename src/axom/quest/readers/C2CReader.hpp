@@ -70,6 +70,17 @@ public:
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                      int segmentsPerKnotSpan);
 
+#if 1
+  // NOTE: Temporary API
+  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+                     int segmentsPerKnotSpan,
+                     std::vector<double> &d1,
+                     std::vector<double> &d2,
+                     std::vector<double> &u,
+                     std::vector<double> &curv,
+                     std::vector<double> &sp
+                     );
+#endif
 protected:
   int readContour();
 
