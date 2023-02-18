@@ -363,6 +363,112 @@ struct NURBSInterpolator
     return numerator * one_over_denominator;
   }
 
+  double curvatureDerivative(double u) const
+  {
+    // Evaluate 1st, 2nd, 3rd derivatives at u.
+    PointType derivs[3];
+    derivativesAt(u, 3, derivs);
+    const PointType& D1 = derivs[0];
+    const PointType& D2 = derivs[1];
+    const PointType& D3 = derivs[2];
+
+    double xp   = D1.data()[0]; // x'
+    double xpp  = D2.data()[0]; // x''
+    double xppp = D3.data()[0]; // x'''
+
+    double yp   = D1.data()[1]; // y'
+    double ypp  = D2.data()[1]; // y''
+    double yppp = D3.data()[1]; // y'''
+
+    double xp2_plus_yp2 = xp * xp + yp * yp;
+    double A = -3. * (xp * ypp - yp * xpp) * 2 *(xp * xpp + yp * ypp);
+    double B = 2. * pow(xp2_plus_yp2, 5. / 2.);
+    double C = xp * yppp - yp * xppp;
+    double D = pow(xp2_plus_yp2, 3. / 2.);
+
+    double Cp = A/B + C/D;
+    return Cp;
+  }
+
+  /* \brief Solve for a zero crossing for the curvature derivative and use the
+            determined u value to return the curvature there.
+   *
+   */
+  double curvatureExtreme(double umin, double umax, double &u) const
+  {
+    constexpr double EPS = 1.e-6;
+    double c = 0.;
+
+    // Use the middle of the range as a 1st guess.
+    u = umin; //(umin + umax) * 0.5;
+
+    // See whether there is enough curvature to bother with.
+    double c0 = curvature(umin);
+    double cmid = curvature(u);
+    double c1 = curvature(umax);
+    double dc0c1 = fabs(c1 - c0);
+    double dc0cmid = fabs(cmid - c0);
+    double dcmidc1 = fabs(c1 - cmid);
+    if(dc0c1 > EPS || dc0cmid > EPS || dcmidc1 > EPS)
+    {
+      bool keepGoing = true;
+      // Find a zero-crossing in the curvature derivative using Newton's Method.
+      int iteration = 0;
+      while(keepGoing && iteration < 20)
+      {
+        double cp = curvatureDerivative(u);
+        c = curvature(u);
+std::cout << iteration << ": u=" << u << ", c=" << c << ", cp=" << cp << std::endl;
+        if(axom::utilities::isNearlyEqual(cp, 0., EPS))
+        {
+std::cout << iteration << ": Stopping. u=" << u << ", c=" << c << ", cp=" << cp << std::endl;
+          keepGoing = false;
+        }
+        else
+        {
+          // Next step.
+          u = u - c / cp;
+
+#if 1
+          if(u <= umin)
+          {
+            std::cout << iteration << ": ERROR new u is less than umin " << umin << std::endl;
+            u = umin;
+            keepGoing = false;
+          }
+          if(u >= umax)
+          {
+            std::cout << iteration << ": ERROR new u is greater than umax " << umax << std::endl;
+            u = umax;
+            keepGoing = false;
+          }
+#endif
+        }
+        iteration++;
+      }
+
+      // Check to see whether we're close to the endpoints. If so, use the
+      // endpoints.
+      if(axom::utilities::isNearlyEqual(u, umin, EPS))
+      {
+        u = umin;
+        c = curvature(u);
+      }
+      else if(axom::utilities::isNearlyEqual(u, umax, EPS))
+      {
+        u = umax;
+        c = curvature(u);
+      }
+    }
+    else
+    {
+      c = c0;
+      u = umin;
+    }
+
+    return c;
+  }
+
 private:
   const c2c::NURBSData& m_curve;
   std::vector<std::pair<double, double>> m_spanIntervals;
@@ -518,6 +624,16 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         double denom = static_cast<double>(segmentsPerKnotSpan);
         double curvStart = interpolator.curvature(startParameter);
         double curvEnd = interpolator.curvature(endParameter);
+
+        // Maybe a function to get the curvature range for this span would be best.
+        double uExtreme = 0;
+        double curvExtreme = interpolator.curvatureExtreme(startParameter, endParameter, uExtreme);
+std::cout << "curvStart=" << std::setw(12) << curvStart << ", "
+          << "curvEnd=" << std::setw(12) << curvEnd << ", "
+          << "curvExtreme=" << std::setw(12) << curvExtreme << ", "
+          << "uExtreme=" << std::setw(12) << uExtreme
+          << std::endl;
+
         constexpr double EPS = 1.e-6;
         if(axom::utilities::isNearlyEqual(curvStart, curvEnd, EPS))
         {
@@ -537,13 +653,38 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
           // those curvature values. We assume for the time being that within
           // a span that there are no curvature values outside the range determined
           // by the span endpoints.
-          pts.emplace_back(interpolator.at(startParameter));
-          uvalues.push_back(startParameter);
-          std::cout << "span,curveStart,curveEnd,targetCurv,i,t,s,u" << std::endl;
+//          pts.emplace_back(interpolator.at(startParameter));
+//          uvalues.push_back(startParameter);
+          std::cout << "span,startParameter,endParameter,curveStart,curveEnd,targetCurv,i,t,s,u" << std::endl;
 
-          double CURV_EPS = fabs(curvEnd - curvStart) / 1000.;
-          for(int i = 1; i < segmentsPerKnotSpan; ++i)
+          double CURV_EPS = fabs(curvEnd - curvStart) / 1000000.;
+//          for(int i = 1; i < segmentsPerKnotSpan; ++i)
+          for(int i = 0; i <= segmentsPerKnotSpan; ++i)
           {
+#if 0
+// In the last span, we have a problem where the first point we make through searching
+// is far away from the startParameter and it does not get better. Is the curvature
+// really just flat at the start? I think a big flat curvature plateau might be a 
+// problem for my algorithm.
+if(span == 4 && i == 0)
+{
+   // Sample the curvature for the entire span and print it out.
+   int N = 200;
+   double u0 = startParameter;
+   double u1 = endParameter; //0.875908;
+   std::cout << "u0,u1,tt,curv,Cp" << std::endl;
+   for(int q = 0; q < N; q++)
+   {
+      double tt = lerp(u0, u1, double(q)/double(N-1));
+      std::cout << std::setw(12) << u0 << ", "
+                << std::setw(12) << u1 << ", "
+                << std::setw(12) << tt << ", "
+                << std::setw(12) << interpolator.curvature(tt) << ", "
+                << std::setw(12) << interpolator.curvatureDerivative(tt)
+                << std::endl;
+   }
+}
+#endif
             // Divide curvature range uniformly.
             double t = i / denom;
             // Feed the uniform value through some other functions to highlight
@@ -552,8 +693,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
             double s1 = pow(tanh(4.) * tanh(3.), 0.4);
             if(curvStart > curvEnd)
             {
-              t = 1. - t;
-              s = pow(tanh(4 * t * t) * tanh(3 * t * t), 0.4) / s1;
+              double t1 = 1. - t;
+              s = pow(tanh(4 * t1 * t1) * tanh(3 * t1 * t1), 0.4) / s1;
               targetCurv = lerp(curvEnd, curvStart, s);
             }
             else
@@ -590,15 +731,23 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                   left = umid;
               }
             }
-            std::cout << span << ", " << curvStart << ", " << curvEnd << ", "
-                      << targetCurv << ", " << i << ", " << t << ", " << s
-                      << ", " << u << std::endl;
+            std::cout << std::setw(2)  << span << ", "
+                      << std::setw(12) << startParameter << ", "
+                      << std::setw(12) << endParameter << ", "
+                      << std::setw(12) << curvStart << ", "
+                      << std::setw(12) << curvEnd << ", "
+                      << std::setw(12) << targetCurv << ", "
+                      << std::setw(2)  << i << ", "
+                      << std::setw(12) << t << ", "
+                      << std::setw(12) << s << ", "
+                      << std::setw(12) << u
+                      << std::endl;
 
             pts.emplace_back(interpolator.at(u));
             uvalues.push_back(u);
           }
-          pts.emplace_back(interpolator.at(endParameter));
-          uvalues.push_back(endParameter);
+//          pts.emplace_back(interpolator.at(endParameter));
+//          uvalues.push_back(endParameter);
         }
       }
       // Now that we know all the u values for this span, compute some quantities of interest.
