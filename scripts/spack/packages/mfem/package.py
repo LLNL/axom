@@ -655,7 +655,12 @@ class Mfem(Package, CudaPackage, ROCmPackage):
             all_hypre_libs = hypre.libs + hypre["lapack"].libs + hypre["blas"].libs
             hypre_gpu_libs = ""
             if "+cuda" in hypre:
+            # AXOM EDIT START
+            # This change is also awaiting approval on spack PR
+            # https://github.com/spack/spack/pull/35608
+            #    hypre_gpu_libs = " -lcusparse -lcurand"
                 hypre_gpu_libs = " -lcusparse -lcurand -lcublas"
+            # AXOM EDIT END
             elif "+rocm" in hypre:
                 hypre_rocm_libs = LibraryList([])
                 if "^rocsparse" in hypre:
