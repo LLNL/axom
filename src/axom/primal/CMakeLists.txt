@@ -43,6 +43,7 @@ set( primal_headers
     operators/clip.hpp
     operators/closest_point.hpp
     operators/intersect.hpp
+    operators/intersection_volume.hpp
     operators/orientation.hpp
     operators/squared_distance.hpp
     operators/compute_bounding_box.hpp

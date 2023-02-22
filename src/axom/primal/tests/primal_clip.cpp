@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Plane.hpp"
 
 #include "axom/primal/operators/clip.hpp"
+#include "axom/primal/operators/intersection_volume.hpp"
 #include "axom/primal/operators/split.hpp"
 
 #include <limits>
@@ -390,6 +391,9 @@ void check_hex_tet_clip(double EPS)
     AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(hex[i], tet[i]); });
 
   EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+  EXPECT_NEAR(0.1666,
+              axom::primal::intersection_volume<double>(hex[0], tet[0]),
+              EPS);
 
   axom::deallocate(tet);
   axom::deallocate(hex);
@@ -431,6 +435,9 @@ void check_oct_tet_clip(double EPS)
     AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(oct[i], tet[i]); });
 
   EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+  EXPECT_NEAR(0.1666,
+              axom::primal::intersection_volume<double>(oct[0], tet[0]),
+              EPS);
 
   axom::deallocate(tet);
   axom::deallocate(oct);
@@ -470,6 +477,9 @@ void check_tet_tet_clip(double EPS)
     AXOM_LAMBDA(int i) { res[i] = axom::primal::clip(tet1[i], tet2[i]); });
 
   EXPECT_NEAR(0.0833, res[0].volume(), EPS);
+  EXPECT_NEAR(0.0833,
+              axom::primal::intersection_volume<double>(tet1[0], tet2[0]),
+              EPS);
 
   axom::deallocate(tet1);
   axom::deallocate(tet2);
@@ -598,6 +608,7 @@ TEST(primal_clip, hex_tet_clip_nonintersect)
 
   PolyhedronType poly = axom::primal::clip(hex, tet);
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(hex, tet));
 }
 
 // Tetrahedron is encapsulated by the hexahedron
@@ -623,6 +634,7 @@ TEST(primal_clip, hex_tet_clip_encapsulate)
 
   // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
   EXPECT_NEAR(0.1666, poly.volume(), EPS);
+  EXPECT_NEAR(0.1666, axom::primal::intersection_volume<double>(hex, tet), EPS);
 }
 
 // Hexahedron is encapsulated inside the tetrahedron
@@ -648,6 +660,7 @@ TEST(primal_clip, hex_tet_clip_encapsulate_inv)
 
   // Expected result should be 1.0, volume of hex.
   EXPECT_NEAR(1.0, poly.volume(), EPS);
+  EXPECT_NEAR(1.0, axom::primal::intersection_volume<double>(hex, tet), EPS);
 }
 
 // Half of the hexahedron is clipped by the tetrahedron
@@ -673,6 +686,7 @@ TEST(primal_clip, hex_tet_clip_half)
 
   // Expected result should be 1.0, half the volume of hex.
   EXPECT_NEAR(1.0, poly.volume(), EPS);
+  EXPECT_NEAR(1.0, axom::primal::intersection_volume<double>(hex, tet), EPS);
 }
 
 // Hexahedron is adjacent to tetrahedron
@@ -696,6 +710,7 @@ TEST(primal_clip, hex_tet_clip_adjacent)
   PolyhedronType poly = axom::primal::clip(hex, tet);
 
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(hex, tet));
 }
 
 // Tetrahedron clips hexahedron at a single vertex
@@ -719,6 +734,7 @@ TEST(primal_clip, hex_tet_clip_point)
   PolyhedronType poly = axom::primal::clip(hex, tet);
 
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(hex, tet));
 }
 
 // Tetrahedron does not clip octahedron.
@@ -739,6 +755,7 @@ TEST(primal_clip, oct_tet_clip_nonintersect)
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(oct, tet));
 }
 
 // Tetrahedron is encapsulated by the octahedron
@@ -762,6 +779,7 @@ TEST(primal_clip, oct_tet_clip_encapsulate)
 
   // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
   EXPECT_NEAR(0.1666, poly.volume(), EPS);
+  EXPECT_NEAR(0.1666, axom::primal::intersection_volume<double>(oct, tet), EPS);
 }
 
 // Octahedron is encapsulated inside the tetrahedron
@@ -785,6 +803,7 @@ TEST(primal_clip, oct_tet_clip_encapsulate_inv)
 
   // Expected result should be 0.6666, volume of oct.
   EXPECT_NEAR(0.6666, poly.volume(), EPS);
+  EXPECT_NEAR(0.6666, axom::primal::intersection_volume<double>(oct, tet), EPS);
 }
 
 // Half of the octahedron is clipped by the tetrahedron
@@ -808,6 +827,7 @@ TEST(primal_clip, oct_tet_clip_half)
 
   // Expected result should be 0.3333, half the volume of oct.
   EXPECT_NEAR(0.3333, poly.volume(), EPS);
+  EXPECT_NEAR(0.3333, axom::primal::intersection_volume<double>(oct, tet), EPS);
 }
 
 // Octahedron is adjacent to tetrahedron
@@ -829,6 +849,7 @@ TEST(primal_clip, oct_tet_clip_adjacent)
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(oct, tet));
 }
 
 // Tetrahedron clips octahedron at a single vertex
@@ -850,6 +871,7 @@ TEST(primal_clip, oct_tet_clip_point)
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(oct, tet));
 }
 
 TEST(primal_clip, oct_tet_clip_special_case_1)
@@ -891,6 +913,7 @@ TEST(primal_clip, oct_tet_clip_special_case_1)
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
+  EXPECT_NEAR(0.0041, axom::primal::intersection_volume<double>(oct, tet), EPS);
 }
 
 TEST(primal_clip, oct_tet_clip_special_case_2)
@@ -932,6 +955,7 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
+  EXPECT_NEAR(0.0041, axom::primal::intersection_volume<double>(oct, tet), EPS);
 }
 
 // Tetrahedron does not clip tetrahedron.
@@ -954,6 +978,7 @@ TEST(primal_clip, tet_tet_clip_nonintersect)
 
     PolyhedronType poly = axom::primal::clip(tet1, tet2);
     EXPECT_EQ(0.0, poly.volume());
+    EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(tet1, tet2));
   }
 
   // User-provided test case; tetrahedra do not overlap
@@ -972,6 +997,7 @@ TEST(primal_clip, tet_tet_clip_nonintersect)
 
     PolyhedronType poly = axom::primal::clip(tet1, tet2);
     EXPECT_EQ(0.0, poly.volume());
+    EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(tet1, tet2));
   }
 }
 
@@ -992,6 +1018,7 @@ TEST(primal_clip, tet_tet_clip_adjacent)
 
   PolyhedronType poly = axom::primal::clip(tet1, tet2);
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(tet1, tet2));
 }
 
 // Tetrahedron clips tetrahedron at a single vertex
@@ -1011,6 +1038,7 @@ TEST(primal_clip, tet_tet_clip_point)
 
   PolyhedronType poly = axom::primal::clip(tet1, tet2);
   EXPECT_EQ(0.0, poly.volume());
+  EXPECT_EQ(0.0, axom::primal::intersection_volume<double>(tet1, tet2));
 }
 
 // Tetrahedrons are the same
@@ -1028,6 +1056,7 @@ TEST(primal_clip, tet_tet_equal)
 
   // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
   EXPECT_NEAR(0.1666, poly.volume(), EPS);
+  EXPECT_NEAR(0.1666, axom::primal::intersection_volume<double>(tet, tet), EPS);
 }
 
 // Tetrahedron is encapsulated inside the other tetrahedron
@@ -1050,6 +1079,7 @@ TEST(primal_clip, tet_tet_encapsulate)
 
   // Expected result should be 0.666 / 4 = 0.1666, volume of tet.
   EXPECT_NEAR(0.1666, poly.volume(), EPS);
+  EXPECT_NEAR(0.1666, axom::primal::intersection_volume<double>(tet1, tet2), EPS);
 }
 
 // Half of the tetrahedron is clipped by the other tetrahedron
@@ -1072,6 +1102,7 @@ TEST(primal_clip, tet_tet_half)
 
   // Expected result should be 0.666 / 4 / 2 = 0.0833, volume of tet.
   EXPECT_NEAR(0.0833, poly.volume(), EPS);
+  EXPECT_NEAR(0.0833, axom::primal::intersection_volume<double>(tet1, tet2), EPS);
 }
 
 // Half of the octahedron is clipped by the tetrahedron.
@@ -1098,6 +1129,7 @@ TEST(primal_clip, tet_tet_clip_split)
 
   // Expected result should be 0.3333, half the volume of oct.
   EXPECT_NEAR(0.3333, poly.volume(), EPS);
+  EXPECT_NEAR(0.3333, axom::primal::intersection_volume<double>(oct, tet), EPS);
 
   // Split the octahedron into 8 tetrahedrons
   double tet_volumes = 0.0;
