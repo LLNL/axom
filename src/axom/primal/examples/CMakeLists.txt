@@ -8,6 +8,7 @@
 
 set( primal_examples 
     primal_introduction.cpp
+    hex_tet_volume.cpp
    )
 
 set(primal_example_depends
