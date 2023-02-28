@@ -4,10 +4,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
-#include "axom/core/utilities/Timer.hpp"
-#include "axom/quest/PointInCell.hpp"
-
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
+#include "axom/primal.hpp"
+#include "axom/quest/PointInCell.hpp"
 
 #include "axom/CLI11.hpp"
 #include "axom/fmt.hpp"
@@ -24,6 +24,16 @@ namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace utilities = axom::utilities;
 
+namespace
+{
+#ifdef AXOM_USE_GPU
+  #ifdef AXOM_USE_HIP
+using GPUExec = axom::HIP_EXEC<256>;
+  #else
+using GPUExec = axom::CUDA_EXEC<256>;
+  #endif
+#endif
+
 enum class ExecPolicy
 {
   CPU,
@@ -31,20 +41,19 @@ enum class ExecPolicy
   GPU
 };
 
-/* clang-format off */
-const std::map<std::string, ExecPolicy> validExecPolicies
-{
-    {"seq", ExecPolicy::CPU},
+const std::map<std::string, ExecPolicy> validExecPolicies {
+  {"seq", ExecPolicy::CPU},
 #ifdef AXOM_USE_RAJA
   #ifdef AXOM_USE_OPENMP
-    {"omp", ExecPolicy::OpenMP},
+  {"omp", ExecPolicy::OpenMP},
   #endif
   #ifdef AXOM_USE_GPU
-    {"gpu", ExecPolicy::GPU}
+  {"gpu", ExecPolicy::GPU}
   #endif
 #endif
 };
-/* clang-format on */
+
+}  // namespace
 
 template <int NDIMS>
 primal::Point<double, NDIMS> get_rand_pt(
@@ -94,6 +103,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
                               timeInitQuery.elapsed()));
 
   axom::Array<IndexType> outCellIds(npts, npts, axom::getDefaultAllocatorID());
+
   // Run query
   utilities::Timer timeRunQuery(true);
   query.locatePoints(pts.view(), outCellIds.data());
@@ -143,15 +153,14 @@ struct Arguments
                    this->num_bins,
                    "the number of bins to construct for each dimension");
 
-    std::string pol_info =
-      "Sets execution space of the SignedDistance query.\n";
-    pol_info += "Set to \'seq\' to use sequential execution policy.";
+    std::string pol_info = "Sets execution space of the PointInCell query.\n";
+    pol_info += "Set to 'seq' to use sequential execution policy.";
 #ifdef AXOM_USE_RAJA
   #ifdef AXOM_USE_OPENMP
-    pol_info += "\nSet to \'omp\' to use an OpenMP execution policy.";
+    pol_info += "\nSet to 'omp' to use an OpenMP execution policy.";
   #endif
   #ifdef AXOM_USE_GPU
-    pol_info += "\nSet to \'gpu\' to use a GPU execution policy.";
+    pol_info += "\nSet to 'gpu' to use a GPU execution policy.";
   #endif
 #endif
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
@@ -185,14 +194,10 @@ int main(int argc, char** argv)
     retval = app.exit(e);
     return retval;
   }
+
 #ifdef AXOM_USE_GPU
   if(args.exec_space == ExecPolicy::GPU)
   {
-  #ifdef AXOM_USE_HIP
-    using GPUExec = axom::HIP_EXEC<256>;
-  #else
-    using GPUExec = axom::CUDA_EXEC<256>;
-  #endif
     axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
   }
 #endif
@@ -200,9 +205,15 @@ int main(int argc, char** argv)
   // Open MFEM mesh
   utilities::Timer ctorMeshTimer(true);
   mfem::Mesh testMesh(args.file_name.c_str());
-  SLIC_INFO(axom::fmt::format("Initialized MFEM mesh {} in {} s.",
-                              args.file_name,
-                              ctorMeshTimer.elapsed()));
+  testMesh.EnsureNodes();
+  SLIC_INFO(
+    axom::fmt::format("Initialized MFEM mesh '{}' in {} s. \n"
+                      "\tThe mesh has {} {}d elements and its order is {}.",
+                      args.file_name,
+                      ctorMeshTimer.elapsed(),
+                      testMesh.GetNE(),
+                      testMesh.Dimension(),
+                      testMesh.GetNodalFESpace()->FEColl()->GetOrder()));
 
   switch(args.exec_space)
   {
@@ -221,11 +232,6 @@ int main(int argc, char** argv)
   #endif
   #ifdef AXOM_USE_GPU
   case ExecPolicy::GPU:
-    #ifdef AXOM_USE_HIP
-    using GPUExec = axom::HIP_EXEC<256>;
-    #else
-    using GPUExec = axom::CUDA_EXEC<256>;
-    #endif
     benchmark_point_in_cell<GPUExec>(testMesh, args.num_rand_pts, args.num_bins);
     break;
   #endif
