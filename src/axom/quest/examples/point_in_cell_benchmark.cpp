@@ -61,108 +61,70 @@ primal::Point<double, NDIMS> get_rand_pt(
   return rnd_pt;
 }
 
+template <typename ExecSpace, int DIM>
+void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
+{
+  using PointType = primal::Point<double, DIM>;
+  using BoxType = primal::BoundingBox<double, DIM>;
+  using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
+  using IndexType = typename quest::PointInCellTraits<mesh_tag>::IndexType;
+
+  BoxType meshBb;
+  {
+    mfem::Vector meshMin, meshMax;
+    mesh.GetBoundingBox(meshMin, meshMax);
+    meshBb.addPoint(PointType(meshMin.GetData()));
+    meshBb.addPoint(PointType(meshMax.GetData()));
+  }
+
+  PointType* pts = axom::allocate<PointType>(npts);
+
+  utilities::Timer timeInitRandPts(true);
+  // Generate random points
+  for(int i = 0; i < npts; i++)
+  {
+    pts[i] = get_rand_pt(meshBb);
+  }
+  SLIC_INFO(axom::fmt::format("Constructed {} random points in {} s.",
+                              npts,
+                              timeInitRandPts.elapsed()));
+
+  primal::Point<int, DIM> bins(nbins);
+
+  utilities::Timer timeInitQuery(true);
+  quest::PointInCell<mesh_tag, ExecSpace> query(&mesh, bins.data());
+  SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
+                              timeInitQuery.elapsed()));
+
+  IndexType* outCellIds = axom::allocate<IndexType>(npts);
+  // Run query
+  utilities::Timer timeRunQuery(true);
+  query.locatePoints(axom::ArrayView<const PointType>(pts, npts), outCellIds);
+  double time = timeRunQuery.elapsed();
+  SLIC_INFO(axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
+                              npts,
+                              time,
+                              npts / time));
+
+  axom::deallocate(pts);
+}
+
 template <typename ExecSpace>
 void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
 {
-  if(mesh.SpaceDimension() == 2)
+  switch(mesh.SpaceDimension())
   {
-    using PointType = primal::Point<double, 2>;
-    using BoxType = primal::BoundingBox<double, 2>;
-    using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
-    using IndexType = typename quest::PointInCellTraits<mesh_tag>::IndexType;
-
-    BoxType meshBb;
-    {
-      mfem::Vector meshMin, meshMax;
-      mesh.GetBoundingBox(meshMin, meshMax);
-      meshBb.addPoint(PointType(meshMin.GetData()));
-      meshBb.addPoint(PointType(meshMax.GetData()));
-    }
-
-    PointType* pts = axom::allocate<PointType>(npts);
-
-    utilities::Timer timeInitRandPts(true);
-    // Generate random points
-    for(int i = 0; i < npts; i++)
-    {
-      pts[i] = get_rand_pt(meshBb);
-    }
-    SLIC_INFO(axom::fmt::format("Constructed {} random points in {} s.",
-                                npts,
-                                timeInitRandPts.elapsed()));
-
-    primal::Point<int, 2> bins(nbins);
-
-    utilities::Timer timeInitQuery(true);
-    // Create PointInCell query object
-    quest::PointInCell<mesh_tag, ExecSpace> query(&mesh, bins.data());
-    SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
-                                timeInitQuery.elapsed()));
-
-    IndexType* outCellIds = axom::allocate<IndexType>(npts);
-    // Run query
-    utilities::Timer timeRunQuery(true);
-    query.locatePoints(axom::ArrayView<const PointType>(pts, npts), outCellIds);
-    double time = timeRunQuery.elapsed();
-    SLIC_INFO(
-      axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
-                        npts,
-                        time,
-                        npts / time));
-
-    axom::deallocate(pts);
+  case 2:
+    benchmark_point_in_cell<ExecSpace, 2>(mesh, npts, nbins);
+    break;
+  case 3:
+    benchmark_point_in_cell<ExecSpace, 3>(mesh, npts, nbins);
+    break;
+  default:
+    SLIC_ERROR("Unsupported dimension (" << mesh.SpaceDimension() << ")");
+    break;
   }
-  else if(mesh.SpaceDimension() == 3)
-  {
-    using PointType = primal::Point<double, 3>;
-    using BoxType = primal::BoundingBox<double, 3>;
-    using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
-    using IndexType = typename quest::PointInCellTraits<mesh_tag>::IndexType;
-
-    BoxType meshBb;
-    {
-      mfem::Vector meshMin, meshMax;
-      mesh.GetBoundingBox(meshMin, meshMax);
-      meshBb.addPoint(PointType(meshMin.GetData()));
-      meshBb.addPoint(PointType(meshMax.GetData()));
-    }
-
-    PointType* pts = axom::allocate<PointType>(npts);
-
-    // Generate random points
-
-    utilities::Timer timeInitRandPts(true);
-    // Generate random points
-    for(int i = 0; i < npts; i++)
-    {
-      pts[i] = get_rand_pt(meshBb);
-    }
-    SLIC_INFO(axom::fmt::format("Constructed {} random points in {} s.",
-                                npts,
-                                timeInitRandPts.elapsed()));
-
-    primal::Point<int, 3> bins(nbins);
-
-    utilities::Timer timeInitQuery(true);
-    // Create PointInCell query object
-    quest::PointInCell<mesh_tag, ExecSpace> query(&mesh, bins.data());
-    SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
-                                timeInitQuery.elapsed()));
-
-    IndexType* outCellIds = axom::allocate<IndexType>(npts);
-    // Run query
-    utilities::Timer timeRunQuery(true);
-    query.locatePoints(axom::ArrayView<const PointType>(pts, npts), outCellIds);
-    double time = timeRunQuery.elapsed();
-    SLIC_INFO(
-      axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
-                        npts,
-                        time,
-                        npts / time));
-
-    axom::deallocate(pts);
-  }
-};
+}
 
 struct Arguments
 {
