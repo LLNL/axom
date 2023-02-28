@@ -46,9 +46,6 @@ const std::map<std::string, ExecPolicy> validExecPolicies
 };
 /* clang-format on */
 
-void initialize_logger();
-void finalize_logger();
-
 template <int NDIMS>
 primal::Point<double, NDIMS> get_rand_pt(
   const primal::BoundingBox<double, NDIMS>& bbox)
@@ -172,8 +169,7 @@ struct Arguments
 
 int main(int argc, char** argv)
 {
-  // STEP 1: initialize the logger
-  initialize_logger();
+  slic::SimpleLogger logger(slic::message::Info);
 
   // STEP 2: parse command line arguments
   Arguments args;
@@ -187,7 +183,6 @@ int main(int argc, char** argv)
   {
     int retval = -1;
     retval = app.exit(e);
-    finalize_logger();
     return retval;
   }
 #ifdef AXOM_USE_GPU
@@ -239,31 +234,6 @@ int main(int argc, char** argv)
     SLIC_ERROR("Unsupported execution space.");
     return 1;
   }
-  finalize_logger();
+
   return 0;
-}
-
-//------------------------------------------------------------------------------
-void initialize_logger()
-{
-  // initialize logger
-  slic::initialize();
-  slic::setLoggingMsgLevel(slic::message::Info);
-
-  // setup the logstreams
-  std::string fmt = "";
-  slic::LogStream* logStream = nullptr;
-
-  fmt = "[<LEVEL>]: <MESSAGE>\n";
-  logStream = new slic::GenericOutputStream(&std::cout, fmt);
-
-  // register stream objects with the logger
-  slic::addStreamToAllMsgLevels(logStream);
-}
-
-//------------------------------------------------------------------------------
-void finalize_logger()
-{
-  slic::flushStreams();
-  slic::finalize();
 }
