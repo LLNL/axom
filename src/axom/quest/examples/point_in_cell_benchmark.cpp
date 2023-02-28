@@ -68,12 +68,13 @@ primal::Point<double, NDIMS> get_rand_pt(
 }
 
 template <typename ExecSpace, int DIM>
-void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
+void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyPoints)
 {
   using PointType = primal::Point<double, DIM>;
   using BoxType = primal::BoundingBox<double, DIM>;
   using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
   using IndexType = typename quest::PointInCellTraits<mesh_tag>::IndexType;
+  constexpr auto NO_CELL = quest::PointInCellTraits<mesh_tag>::NO_CELL;
 
   BoxType meshBb;
   {
@@ -85,7 +86,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
 
   axom::Array<PointType> pts(npts, npts, axom::getDefaultAllocatorID());
 
-  utilities::Timer timeInitRandPts(true);
+  utilities::Timer timer(true);
   // Generate random points
   for(int i = 0; i < npts; i++)
   {
@@ -93,37 +94,89 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
   }
   SLIC_INFO(axom::fmt::format("Constructed {} random points in {} s.",
                               npts,
-                              timeInitRandPts.elapsed()));
+                              timer.elapsed()));
 
   primal::Point<int, DIM> bins(nbins);
 
-  utilities::Timer timeInitQuery(true);
+  timer.start();
   quest::PointInCell<mesh_tag, ExecSpace> query(&mesh, bins.data());
   SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
-                              timeInitQuery.elapsed()));
+                              timer.elapsed()));
 
   axom::Array<IndexType> outCellIds(npts, npts, axom::getDefaultAllocatorID());
+  axom::Array<PointType> outIsoParams(npts, npts, axom::getDefaultAllocatorID());
 
   // Run query
-  utilities::Timer timeRunQuery(true);
-  query.locatePoints(pts.view(), outCellIds.data());
-  double time = timeRunQuery.elapsed();
+  timer.start();
+  query.locatePoints(pts.view(), outCellIds.data(), outIsoParams.data());
+  double time = timer.elapsed();
   SLIC_INFO(axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
                               npts,
                               time,
                               npts / time));
+
+  if(verifyPoints)
+  {
+    constexpr double EPS = 1e-16;
+    int num_not_found = 0;
+    int num_wrong = 0;
+    int num_found = 0;
+
+    for(int i = 0; i < npts; ++i)
+    {
+      if(outCellIds[i] != NO_CELL)
+      {
+        PointType reconstructed;
+        query.reconstructPoint(outCellIds[i],
+                               outIsoParams[i].data(),
+                               reconstructed.data());
+        if(primal::squared_distance(pts[i], reconstructed) > EPS)
+        {
+          ++num_wrong;
+          SLIC_DEBUG(axom::fmt::format(
+            "Incorrect reconstruction: Original point {}; "
+            "reconstructed point {} found in cell {} w/ isoparametric "
+            "coordinates {}; distance between these is {}",
+            pts[i],
+            reconstructed[i],
+            outCellIds[i],
+            outIsoParams[i],
+            sqrt(primal::squared_distance(pts[i], reconstructed))));
+        }
+        else
+        {
+          ++num_found;
+        }
+      }
+      else
+      {
+        ++num_not_found;
+        SLIC_DEBUG(axom::fmt::format("Did not reconstruct point {}", pts[i]));
+      }
+    }
+
+    SLIC_INFO(
+      axom::fmt::format("Correctly reconstructed {} of {} points ({:.2f}%).\n"
+                        "\t{} points were not reconstructed; "
+                        "{} points were incorrectly reconstructed",
+                        num_found,
+                        npts,
+                        num_found * 100. / npts,
+                        num_not_found,
+                        num_wrong));
+  }
 }
 
 template <typename ExecSpace>
-void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
+void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyPoints)
 {
   switch(mesh.SpaceDimension())
   {
   case 2:
-    benchmark_point_in_cell<ExecSpace, 2>(mesh, npts, nbins);
+    benchmark_point_in_cell<ExecSpace, 2>(mesh, npts, nbins, verifyPoints);
     break;
   case 3:
-    benchmark_point_in_cell<ExecSpace, 3>(mesh, npts, nbins);
+    benchmark_point_in_cell<ExecSpace, 3>(mesh, npts, nbins, verifyPoints);
     break;
   default:
     SLIC_ERROR("Unsupported dimension (" << mesh.SpaceDimension() << ")");
@@ -137,6 +190,7 @@ struct Arguments
   int num_rand_pts {10000};
   int num_bins {25};
   ExecPolicy exec_space {ExecPolicy::CPU};
+  bool should_verify_points {false};
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
@@ -152,6 +206,10 @@ struct Arguments
     app.add_option("-b,--num-bins",
                    this->num_bins,
                    "the number of bins to construct for each dimension");
+
+    app.add_flag("--verify",
+                 this->should_verify_points,
+                 "verify query by reconstructing points after locating them");
 
     std::string pol_info = "Sets execution space of the PointInCell query.\n";
     pol_info += "Set to 'seq' to use sequential execution policy.";
@@ -171,8 +229,6 @@ struct Arguments
 
     // could throw an exception
     app.parse(argc, argv);
-
-    slic::flushStreams();
   }
 };
 
@@ -220,19 +276,24 @@ int main(int argc, char** argv)
   case ExecPolicy::CPU:
     benchmark_point_in_cell<axom::SEQ_EXEC>(testMesh,
                                             args.num_rand_pts,
-                                            args.num_bins);
+                                            args.num_bins,
+                                            args.should_verify_points);
     break;
 #ifdef AXOM_USE_RAJA
   #ifdef AXOM_USE_OPENMP
   case ExecPolicy::OpenMP:
     benchmark_point_in_cell<axom::OMP_EXEC>(testMesh,
                                             args.num_rand_pts,
-                                            args.num_bins);
+                                            args.num_bins,
+                                            args.should_verify_points);
     break;
   #endif
   #ifdef AXOM_USE_GPU
   case ExecPolicy::GPU:
-    benchmark_point_in_cell<GPUExec>(testMesh, args.num_rand_pts, args.num_bins);
+    benchmark_point_in_cell<GPUExec>(testMesh,
+                                     args.num_rand_pts,
+                                     args.num_bins,
+                                     args.should_verify_points);
     break;
   #endif
 #endif
