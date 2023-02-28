@@ -77,7 +77,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
     meshBb.addPoint(PointType(meshMax.GetData()));
   }
 
-  PointType* pts = axom::allocate<PointType>(npts);
+  axom::Array<PointType> pts(npts, npts, axom::getDefaultAllocatorID());
 
   utilities::Timer timeInitRandPts(true);
   // Generate random points
@@ -96,17 +96,15 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins)
   SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
                               timeInitQuery.elapsed()));
 
-  IndexType* outCellIds = axom::allocate<IndexType>(npts);
+  axom::Array<IndexType> outCellIds(npts, npts, axom::getDefaultAllocatorID());
   // Run query
   utilities::Timer timeRunQuery(true);
-  query.locatePoints(axom::ArrayView<const PointType>(pts, npts), outCellIds);
+  query.locatePoints(pts.view(), outCellIds.data());
   double time = timeRunQuery.elapsed();
   SLIC_INFO(axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
                               npts,
                               time,
                               npts / time));
-
-  axom::deallocate(pts);
 }
 
 template <typename ExecSpace>
