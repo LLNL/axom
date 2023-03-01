@@ -188,6 +188,22 @@ public:
   mfem::Mesh* getMesh() const { return m_mesh; }
 
   /*!
+   * \brief Sets the print verbosity level for the query
+   *
+   * \param [in] level The verbosity level (increases with level)
+   *  
+   * This is useful for debugging the point in cell query
+   * 
+   *  The valid options are: 
+   *  - -1: never print (default)
+   *  -  0: print only errors
+   *  -  1: print the first and last iterations
+   *  -  2: print every iteration
+   *  -  3: print every iteration including point coordinates.
+   */
+  void setPrintLevel(int level) { m_printLevel = level; }
+
+  /*!
    * Computes the bounding boxes of all mesh elements
    *
    * \param [in] bboxScaleFactor A scaling factor to expand the bounding boxes
@@ -264,6 +280,9 @@ public:
 
     invTrans.SetSolverType(InvTransform::Newton);
     invTrans.SetInitialGuessType(InvTransform::ClosestPhysNode);
+    invTrans.SetPrintLevel(m_printLevel);
+
+    SLIC_DEBUG_IF(m_printLevel >= 0, "Checking element " << eltIdx);
 
     // Status codes: {0 -> successful; 1 -> outside elt; 2-> did not converge}
     int err = invTrans.Transform(ptSpace, ipRef);
@@ -432,6 +451,9 @@ private:
 private:
   mfem::Mesh* m_mesh;
   bool m_isHighOrder;
+
+  // Parameters for inverse transformation
+  int m_printLevel {-1};
 };
 
 }  // end namespace detail

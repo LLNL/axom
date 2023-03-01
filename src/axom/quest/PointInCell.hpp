@@ -265,6 +265,22 @@ public:
   /*! Returns the dimension of the mesh */
   int meshDimension() const { return m_meshWrapper.meshDimension(); }
 
+  /*!
+   * \brief Sets the print verbosity level for the point in cell query
+   *
+   * \param [in] level The verbosity level (increases with level)
+   *  
+   * This is useful for debugging the point in cell query
+   * 
+   *  For the mfem mesh wrapper, the valid options are: 
+   *  - -1: never print (default)
+   *  -  0: print only errors
+   *  -  1: print the first and last iterations
+   *  -  2: print every iteration
+   *  -  3: print every iteration including point coordinates.
+   */
+  void setPrintLevel(int level) { m_meshWrapper.setPrintLevel(level); }
+
 private:
   MeshWrapperType m_meshWrapper;
 
