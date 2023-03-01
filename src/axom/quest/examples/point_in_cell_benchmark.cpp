@@ -41,17 +41,18 @@ enum class ExecPolicy
   GPU
 };
 
-const std::map<std::string, ExecPolicy> validExecPolicies {
-  {"seq", ExecPolicy::CPU},
-#ifdef AXOM_USE_RAJA
-  #ifdef AXOM_USE_OPENMP
-  {"omp", ExecPolicy::OpenMP},
-  #endif
-  #ifdef AXOM_USE_GPU
-  {"gpu", ExecPolicy::GPU}
-  #endif
+// clang-format off
+const std::map<std::string, ExecPolicy> validExecPolicies
+{
+    {"seq", ExecPolicy::CPU}
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+  , {"omp", ExecPolicy::OpenMP}
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_GPU)
+  , {"gpu", ExecPolicy::GPU}
 #endif
 };
+// clang-format on
 
 }  // namespace
 
@@ -83,11 +84,12 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyP
     meshBb.addPoint(PointType(meshMin.GetData()));
     meshBb.addPoint(PointType(meshMax.GetData()));
   }
+  SLIC_DEBUG("Mesh bounding box " << meshBb);
 
   axom::Array<PointType> pts(npts, npts, axom::getDefaultAllocatorID());
 
-  utilities::Timer timer(true);
   // Generate random points
+  utilities::Timer timer(true);
   for(int i = 0; i < npts; i++)
   {
     pts[i] = get_rand_pt(meshBb);
@@ -98,15 +100,15 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyP
 
   primal::Point<int, DIM> bins(nbins);
 
+  // Initialize the spatial index
   timer.start();
   quest::PointInCell<mesh_tag, ExecSpace> query(&mesh, bins.data());
   SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
                               timer.elapsed()));
 
+  // Run query
   axom::Array<IndexType> outCellIds(npts, npts, axom::getDefaultAllocatorID());
   axom::Array<PointType> outIsoParams(npts, npts, axom::getDefaultAllocatorID());
-
-  // Run query
   timer.start();
   query.locatePoints(pts.view(), outCellIds.data(), outIsoParams.data());
   double time = timer.elapsed();
@@ -115,6 +117,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyP
                               time,
                               npts / time));
 
+  // Verify the results by reconstructing physical points from refrerence coordinates
   if(verifyPoints)
   {
     constexpr double EPS = 1e-16;
@@ -191,36 +194,40 @@ struct Arguments
   int num_bins {25};
   ExecPolicy exec_space {ExecPolicy::CPU};
   bool should_verify_points {false};
+  bool verbose {false};
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
+    std::string pol_info = "Sets execution space of the PointInCell query.\n";
+    pol_info += "Set to 'seq' to use sequential execution policy.";
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+    pol_info += "\nSet to 'omp' to use an OpenMP execution policy.";
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_GPU)
+    pol_info += "\nSet to 'gpu' to use a GPU execution policy.";
+#endif
+
     app
       .add_option("-f,--file", this->file_name, "specifies the input mesh file")
       ->check(axom::CLI::ExistingFile)
       ->required();
 
-    app.add_option("-n,--num_pts",
-                   this->num_rand_pts,
-                   "the number of points to query");
+    app.add_option("-n,--num_pts", this->num_rand_pts)
+      ->description("the number of points to query")
+      ->capture_default_str();
 
-    app.add_option("-b,--num-bins",
-                   this->num_bins,
-                   "the number of bins to construct for each dimension");
+    app.add_option("-b,--num-bins", this->num_bins)
+      ->description("the number of bins to construct for each dimension")
+      ->capture_default_str();
 
-    app.add_flag("--verify",
-                 this->should_verify_points,
-                 "verify query by reconstructing points after locating them");
+    app.add_flag("-v, --verbose", this->verbose)
+      ->description("verbose output")
+      ->capture_default_str();
 
-    std::string pol_info = "Sets execution space of the PointInCell query.\n";
-    pol_info += "Set to 'seq' to use sequential execution policy.";
-#ifdef AXOM_USE_RAJA
-  #ifdef AXOM_USE_OPENMP
-    pol_info += "\nSet to 'omp' to use an OpenMP execution policy.";
-  #endif
-  #ifdef AXOM_USE_GPU
-    pol_info += "\nSet to 'gpu' to use a GPU execution policy.";
-  #endif
-#endif
+    app.add_flag("--verify", this->should_verify_points)
+      ->description("verify query by reconstructing points after locating them")
+      ->capture_default_str();
+
     app.add_option("-e, --exec_space", this->exec_space, pol_info)
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(validExecPolicies));
@@ -236,7 +243,6 @@ int main(int argc, char** argv)
 {
   slic::SimpleLogger logger(slic::message::Info);
 
-  // STEP 2: parse command line arguments
   Arguments args;
   axom::CLI::App app {"Driver for signed distance query"};
 
@@ -257,6 +263,11 @@ int main(int argc, char** argv)
     axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
   }
 #endif
+
+  if(args.verbose)
+  {
+    slic::setLoggingMsgLevel(slic::message::Debug);
+  }
 
   // Open MFEM mesh
   utilities::Timer ctorMeshTimer(true);
@@ -279,23 +290,21 @@ int main(int argc, char** argv)
                                             args.num_bins,
                                             args.should_verify_points);
     break;
-#ifdef AXOM_USE_RAJA
-  #ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
   case ExecPolicy::OpenMP:
     benchmark_point_in_cell<axom::OMP_EXEC>(testMesh,
                                             args.num_rand_pts,
                                             args.num_bins,
                                             args.should_verify_points);
     break;
-  #endif
-  #ifdef AXOM_USE_GPU
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_GPU)
   case ExecPolicy::GPU:
     benchmark_point_in_cell<GPUExec>(testMesh,
                                      args.num_rand_pts,
                                      args.num_bins,
                                      args.should_verify_points);
     break;
-  #endif
 #endif
   default:
     SLIC_ERROR("Unsupported execution space.");
