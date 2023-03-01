@@ -526,12 +526,30 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
     axom::utilities::swap<PointType>(poly[5], poly[7]);
   }
 
+  // Check tetrahedron volume in polyhedron form to verify ordering is valid
+  Polyhedron<T, NDIMS> tet_poly;
+  tet_poly.addVertex(tet[0]);
+  tet_poly.addVertex(tet[1]);
+  tet_poly.addVertex(tet[2]);
+  tet_poly.addVertex(tet[3]);
+
+  tet_poly.addNeighbors(0, {1, 3, 2});
+  tet_poly.addNeighbors(1, {0, 2, 3});
+  tet_poly.addNeighbors(2, {0, 3, 1});
+  tet_poly.addNeighbors(3, {0, 1, 2});
+
+  // Reverses order of vertices 1 and 2 if volume is negative
+  if(tet_poly.volume() < 0)
+  {
+    axom::utilities::swap<PointType>(tet_poly[1], tet_poly[2]);
+  }
+
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
-  PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
-                         make_plane(tet[0], tet[2], tet[3]),
-                         make_plane(tet[0], tet[3], tet[1]),
-                         make_plane(tet[0], tet[1], tet[2])};
+  PlaneType planes[4] = {make_plane(tet_poly[1], tet_poly[3], tet_poly[2]),
+                         make_plane(tet_poly[0], tet_poly[2], tet_poly[3]),
+                         make_plane(tet_poly[0], tet_poly[3], tet_poly[1]),
+                         make_plane(tet_poly[0], tet_poly[1], tet_poly[2])};
 
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
@@ -582,12 +600,30 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
     axom::utilities::swap<PointType>(poly[4], poly[5]);
   }
 
+  // Check tetrahedron volume in polyhedron form to verify ordering is valid
+  Polyhedron<T, NDIMS> tet_poly;
+  tet_poly.addVertex(tet[0]);
+  tet_poly.addVertex(tet[1]);
+  tet_poly.addVertex(tet[2]);
+  tet_poly.addVertex(tet[3]);
+
+  tet_poly.addNeighbors(0, {1, 3, 2});
+  tet_poly.addNeighbors(1, {0, 2, 3});
+  tet_poly.addNeighbors(2, {0, 3, 1});
+  tet_poly.addNeighbors(3, {0, 1, 2});
+
+  // Reverses order of vertices 1 and 2 if volume is negative
+  if(tet_poly.volume() < 0)
+  {
+    axom::utilities::swap<PointType>(tet_poly[1], tet_poly[2]);
+  }
+
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
-  PlaneType planes[4] = {make_plane(tet[1], tet[3], tet[2]),
-                         make_plane(tet[0], tet[2], tet[3]),
-                         make_plane(tet[0], tet[3], tet[1]),
-                         make_plane(tet[0], tet[1], tet[2])};
+  PlaneType planes[4] = {make_plane(tet_poly[1], tet_poly[3], tet_poly[2]),
+                         make_plane(tet_poly[0], tet_poly[2], tet_poly[3]),
+                         make_plane(tet_poly[0], tet_poly[3], tet_poly[1]),
+                         make_plane(tet_poly[0], tet_poly[1], tet_poly[2])};
 
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
@@ -600,7 +636,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
  *        tet1 and Tetrahedron tet2.
  *
  * \param [in] tet1 The tetrahedron to clip
- * \param [in] tet2 TThe tetrahedron to clip against
+ * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The tolerance for plane point orientation.
  * \return The Polyhedron formed from clipping the tetrahedron with a tetrahedron.
  *
@@ -633,12 +669,30 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
     axom::utilities::swap<PointType>(poly[1], poly[2]);
   }
 
+  // Check tetrahedron volume in polyhedron form to verify ordering is valid
+  Polyhedron<T, NDIMS> tet_poly;
+  tet_poly.addVertex(tet2[0]);
+  tet_poly.addVertex(tet2[1]);
+  tet_poly.addVertex(tet2[2]);
+  tet_poly.addVertex(tet2[3]);
+
+  tet_poly.addNeighbors(0, {1, 3, 2});
+  tet_poly.addNeighbors(1, {0, 2, 3});
+  tet_poly.addNeighbors(2, {0, 3, 1});
+  tet_poly.addNeighbors(3, {0, 1, 2});
+
+  // Reverses order of vertices 1 and 2 if volume is negative
+  if(tet_poly.volume() < 0)
+  {
+    axom::utilities::swap<PointType>(tet_poly[1], tet_poly[2]);
+  }
+
   // Initialize planes from tetrahedron vertices
   // (Ordering here matters to get the correct winding)
-  PlaneType planes[4] = {make_plane(tet2[1], tet2[3], tet2[2]),
-                         make_plane(tet2[0], tet2[2], tet2[3]),
-                         make_plane(tet2[0], tet2[3], tet2[1]),
-                         make_plane(tet2[0], tet2[1], tet2[2])};
+  PlaneType planes[4] = {make_plane(tet_poly[1], tet_poly[3], tet_poly[2]),
+                         make_plane(tet_poly[0], tet_poly[2], tet_poly[3]),
+                         make_plane(tet_poly[0], tet_poly[3], tet_poly[1]),
+                         make_plane(tet_poly[0], tet_poly[1], tet_poly[2])};
 
   axom::StackArray<IndexType, 1> planeSize = {4};
   axom::ArrayView<PlaneType> planesView(planes, planeSize);
