@@ -35,18 +35,22 @@ using TetrahedronType = typename axom::primal::Tetrahedron<double, 3>;
 enum RuntimePolicy
 {
   seq = 0,
+#ifdef AXOM_USE_OPENMP
   omp = 1,
-  #ifdef AXOM_USE_CUDA
+#endif
+#ifdef AXOM_USE_CUDA
   cuda = 2,
-  #endif
-  #ifdef AXOM_USE_HIP
+#endif
+#ifdef AXOM_USE_HIP
   hip = 3
-  #endif
+#endif
 };
 
 struct Input
 {
 public:
+  int hexLevel {2};
+  int tetLevel {1};
   RuntimePolicy policy {seq};
 
   void parse(int argc, char** argv, axom::CLI::App& app)
@@ -69,6 +73,16 @@ public:
     app.add_option("-p, --policy", this->policy, pol_str)
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(validExecPolicies));
+
+    app.add_option("-x,--hex-level", hexLevel)
+      ->description("Number of hexahedra to generate")
+      ->capture_default_str()
+      ->check(axom::CLI::PositiveNumber);
+
+    app.add_option("-t,--tet-level", tetLevel)
+      ->description("Number of tetrahedra to generate")
+      ->capture_default_str()
+      ->check(axom::CLI::PositiveNumber);
 
     app.get_formatter()->column_width(50);
 
@@ -127,7 +141,7 @@ void check_intersection_volumes(const Input& params)
 
   // Generate hexahedra subdividing the unit cube with corner points (-1,-1,-1) and (1,1,1)
   // and corresponding bounding boxes
-  int const HEX_LEVEL = 2;
+  int const HEX_LEVEL = params.hexLevel;
   int hex_index = 0;
   int const NUM_HEXES = HEX_LEVEL * HEX_LEVEL * HEX_LEVEL;
   HexahedronType* hexes = axom::allocate<HexahedronType>(NUM_HEXES);
@@ -150,20 +164,20 @@ void check_intersection_volumes(const Input& params)
                                              edge_length * j - 1,
                                              edge_length * k - 1),
                        edge_length);
-        SLIC_INFO("Hex " << hex_index << " volume is "
-                         << hexes[hex_index].volume() << "\n");
-        SLIC_INFO("Hex " << hex_index << " is \n" << hexes[hex_index]);
+        // SLIC_INFO("Hex " << hex_index << " volume is "
+        //                  << hexes[hex_index].volume() << "\n");
+        // SLIC_INFO("Hex " << hex_index << " is \n" << hexes[hex_index]);
         hex_index++;
       }
     }
   }
 
   // Generate tetrahedra from unit sphere with center (0,0,0) and corresponding bounding boxes
-  int const TET_LEVEL = 1;
+  int const TET_LEVEL = params.tetLevel;
   int tet_index = 0;
   int const NUM_TETS = 4 * std::pow(2, TET_LEVEL);
   TetrahedronType* tets = axom::allocate<TetrahedronType>(NUM_TETS);
-  double step = 1.0 / (TET_LEVEL * 2);
+  double step_size = 1.0 / std::pow(2, TET_LEVEL);
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
@@ -172,7 +186,7 @@ void check_intersection_volumes(const Input& params)
       NUM_TETS,
       TET_LEVEL)));
 
-  for(int i = 0; i < TET_LEVEL * 2; i++)
+  for(int i = 0; i < std::pow(2, TET_LEVEL); i++)
   {
     for(int j = 0; j <= 1; j++)
     {
@@ -185,18 +199,18 @@ void check_intersection_volumes(const Input& params)
         double pole_sign = j ? 1 : -1;
         double z_sign = k ? 1 : -1;
 
-        double x1 = axom::utilities::lerp<double>(-1.0, 1.0, step * i);
+        double x1 = axom::utilities::lerp<double>(-1.0, 1.0, step_size * i);
         double z1 = std::sqrt(1 - (x1 * x1)) * z_sign;
-        double x2 = axom::utilities::lerp<double>(-1.0, 1.0, step * (i + 1));
+        double x2 = axom::utilities::lerp<double>(-1.0, 1.0, step_size * (i + 1));
         double z2 = std::sqrt(1 - (x2 * x2)) * z_sign;
 
         tets[tet_index] = TetrahedronType(PointType::make_point(x1, 0, z1),
                                           PointType::zero(),
                                           PointType::make_point(x2, 0, z2),
                                           PointType::make_point(0, pole_sign, 0));
-        SLIC_INFO("Tet " << tet_index << " volume is "
-                         << tets[tet_index].volume() << "\n");
-        SLIC_INFO("Tet " << tet_index << " is \n" << tets[tet_index]);
+        // SLIC_INFO("Tet " << tet_index << " volume is "
+        //                  << tets[tet_index].volume() << "\n");
+        // SLIC_INFO("Tet " << tet_index << " is \n" << tets[tet_index]);
         tet_index++;
       }
     }
@@ -211,28 +225,53 @@ void check_intersection_volumes(const Input& params)
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
-    axom::fmt::format("Total volume of all tetrahedra is {}", total_tet_vol)));
+    axom::fmt::format("Total volume of all tetrahedra is {} ", total_tet_vol)));
 
-  // May not need bounding boxes, if our algorithm is actually good,
-  // and we can just do a clip() for each pair...
+  using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
 
-  double total_intersect_vol = 0.0;
+  RAJA::ReduceSum<REDUCE_POL, double> total_intersect_vol_device(0.0);
+
+  axom::for_all<ExecSpace>(
+    NUM_HEXES * NUM_TETS,
+    AXOM_LAMBDA(axom::IndexType i) {
+      // Should check if an if(vol > 0) { increment } would make things slower or faster on GPU
+      if(NUM_HEXES > NUM_TETS)
+      {
+        // printf("Pairing for %d is %d and %d \n", i, i / NUM_TETS, i % NUM_TETS);
+        total_intersect_vol_device +=
+          intersection_volume(hexes[i / NUM_TETS], tets[i % NUM_TETS]);
+      }
+      else
+      {
+        // printf("Pairing for %d is %d and %d \n", i, i % NUM_HEXES, i / NUM_HEXES);
+        total_intersect_vol_device +=
+          intersection_volume(hexes[i % NUM_HEXES], tets[i / NUM_HEXES]);
+      }
+    });
+
+  SLIC_INFO(axom::fmt::format(
+    "{:-^80}",
+    axom::fmt::format("DEVICE: Total intersect volume between all hexahedra "
+                      "and tetrahedra is {} ",
+                      total_intersect_vol_device.get())));
 
   // Calculate intersection volume for each hexahedra and tetrahedra pair.
+  double total_intersect_vol = 0.0;
+
   for(int i = 0; i < NUM_HEXES; i++)
   {
     for(int j = 0; j < NUM_TETS; j++)
     {
       total_intersect_vol += intersection_volume(hexes[i], tets[j]);
-      SLIC_INFO("Volume " << i << " " << j << " is "
-                          << intersection_volume(hexes[i], tets[j]) << "\n");
+      // SLIC_INFO("Volume " << i << " " << j << " is "
+      //                     << intersection_volume(hexes[i], tets[j]) << "\n");
     }
   }
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
     axom::fmt::format(
-      "Total intersect volume between all hexahedra and tetrahedra is {}",
+      "Total intersect volume between all hexahedra and tetrahedra is {} ",
       total_intersect_vol)));
 
   // Verify sum of intersection volumes is same as sum of all tetradra volumes
