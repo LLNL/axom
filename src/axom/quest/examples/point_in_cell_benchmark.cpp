@@ -52,7 +52,112 @@ const std::map<std::string, ExecPolicy> validExecPolicies
   , {"gpu", ExecPolicy::GPU}
 #endif
 };
+
+const std::map<std::string, mfem::InverseElementTransformation::InitGuessType> validGuessTypes
+{
+  {"center", mfem::InverseElementTransformation::Center},
+  {"phys"  , mfem::InverseElementTransformation::ClosestPhysNode},
+  {"ref"   , mfem::InverseElementTransformation::ClosestRefNode}
+};
+
+const std::map<std::string, mfem::InverseElementTransformation::SolverType> validSolverProjectionTypes
+{
+  {"none",     mfem::InverseElementTransformation::Newton},
+  {"segment",  mfem::InverseElementTransformation::NewtonSegmentProject},
+  {"boundary", mfem::InverseElementTransformation::NewtonElementProject}
+};
 // clang-format on
+
+struct Arguments
+{
+  std::string file_name;
+  int num_rand_pts {10000};
+  int num_bins {25};
+  ExecPolicy exec_space {ExecPolicy::CPU};
+  bool should_verify_points {false};
+
+  int verbosity {-1};
+  int init_guess_type {mfem::InverseElementTransformation::ClosestPhysNode};
+  int init_guess_order {-1};
+  int solver_projection_type {
+    mfem::InverseElementTransformation::NewtonElementProject};
+
+  void parse(int argc, char** argv, axom::CLI::App& app)
+  {
+    std::string pol_info = "Sets execution space of the PointInCell query.\n";
+    pol_info += "Set to 'seq' to use sequential execution policy.";
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+    pol_info += "\nSet to 'omp' to use an OpenMP execution policy.";
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_GPU)
+    pol_info += "\nSet to 'gpu' to use a GPU execution policy.";
+#endif
+
+    app
+      .add_option("-f,--file", this->file_name, "specifies the input mesh file")
+      ->check(axom::CLI::ExistingFile)
+      ->required();
+
+    app.add_option("-n,--num_pts", this->num_rand_pts)
+      ->description("the number of points to query")
+      ->capture_default_str();
+
+    app.add_option("-b,--num-bins", this->num_bins)
+      ->description("the number of bins to construct for each dimension")
+      ->capture_default_str();
+
+    app.add_flag("--verify", this->should_verify_points)
+      ->description("verify query by reconstructing points after locating them")
+      ->capture_default_str();
+
+    app.add_option("-e, --exec_space", this->exec_space, pol_info)
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(validExecPolicies));
+
+    auto* xform_opts = app.add_option_group("inverse transformation options")
+                         ->description(
+                           "Extra parameters for controlling the per-element "
+                           "point-in-cell queries");
+
+    xform_opts->add_option("-v, --verbosity", this->verbosity)
+      ->description(
+        "controls verbosity of output for point location. "
+        "\n-1: minimal"
+        "\n 0: print only errors"
+        "\n 1: print first and last iteration"
+        "\n 2: print every iteration"
+        "\n 3: print every iteration including point coordinates")
+      ->capture_default_str()
+      ->check(axom::CLI::Range(-1, 3));
+
+    xform_opts->add_option("--guess-type", this->init_guess_type)
+      ->description(
+        "controls the initial guess type"
+        "\n 'center': Use center of element in reference space"
+        "\n 'phys': Use closest point to a grid in physical space"
+        "\n 'ref': Use closest point to a grid in reference space")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(validGuessTypes));
+
+    xform_opts->add_option("--guess-order", this->init_guess_order)
+      ->description("controls the number of grid points for the initial guess")
+      ->capture_default_str();
+
+    xform_opts->add_option("--projection-type", this->solver_projection_type)
+      ->description(
+        "controls handling of points that leave reference space element"
+        "\n 'none': Allow search to continue outside element"
+        "\n 'segment': Project along current segment leaving the element"
+        "\n 'boundary': Project to closest reference space point on boundary")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(validSolverProjectionTypes));
+
+    app.get_formatter()->column_width(40);
+
+    // could throw an exception
+    app.parse(argc, argv);
+  }
+};
 
 }  // namespace
 
@@ -69,13 +174,17 @@ primal::Point<double, NDIMS> get_rand_pt(
 }
 
 template <typename ExecSpace, int DIM>
-void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyPoints)
+void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
 {
   using PointType = primal::Point<double, DIM>;
   using BoxType = primal::BoundingBox<double, DIM>;
   using mesh_tag = axom::quest::quest_point_in_cell_mfem_tag;
   using IndexType = typename quest::PointInCellTraits<mesh_tag>::IndexType;
   constexpr auto NO_CELL = quest::PointInCellTraits<mesh_tag>::NO_CELL;
+
+  const int npts = args.num_rand_pts;
+  const int nbins = args.num_bins;
+  const bool verifyPoints = args.should_verify_points;
 
   BoxType meshBb;
   {
@@ -94,7 +203,8 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyP
   {
     pts[i] = get_rand_pt(meshBb);
   }
-  SLIC_INFO(axom::fmt::format("Constructed {} random points in {} s.",
+  SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
+                              "Constructed {:L} random points in {} s.",
                               npts,
                               timer.elapsed()));
 
@@ -103,6 +213,11 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyP
   // Initialize the spatial index
   timer.start();
   quest::PointInCell<mesh_tag, ExecSpace> query(&mesh, bins.data());
+  query.setPrintLevel(args.verbosity);
+  query.setInitialGuessType(args.init_guess_type);
+  query.setInitialGridOrder(args.init_guess_order);
+  query.setSolverProjectionType(args.solver_projection_type);
+
   SLIC_INFO(axom::fmt::format("Initialized point-in-cell query in {} s.",
                               timer.elapsed()));
 
@@ -112,10 +227,12 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyP
   timer.start();
   query.locatePoints(pts.view(), outCellIds.data(), outIsoParams.data());
   double time = timer.elapsed();
-  SLIC_INFO(axom::fmt::format("Ran query on {} points in {} s -- rate: {} q/s",
-                              npts,
-                              time,
-                              npts / time));
+  SLIC_INFO(
+    axom::fmt::format(std::locale("en_US.UTF-8"),
+                      "Ran query on {:L} points in {} s -- rate: {:L} q/s",
+                      npts,
+                      time,
+                      npts / time));
 
   // Verify the results by reconstructing physical points from refrerence coordinates
   if(verifyPoints)
@@ -158,86 +275,35 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyP
       }
     }
 
-    SLIC_INFO(
-      axom::fmt::format("Correctly reconstructed {} of {} points ({:.2f}%).\n"
-                        "\t{} points were not reconstructed; "
-                        "{} points were incorrectly reconstructed",
-                        num_found,
-                        npts,
-                        num_found * 100. / npts,
-                        num_not_found,
-                        num_wrong));
+    SLIC_INFO(axom::fmt::format(
+      std::locale("en_US.UTF-8"),
+      "Correctly reconstructed {:L} of {:L} points ({:.3f}%).\n"
+      "\t{:L} points were not reconstructed; "
+      "{:L} points were incorrectly reconstructed",
+      num_found,
+      npts,
+      num_found * 100. / npts,
+      num_not_found,
+      num_wrong));
   }
 }
 
 template <typename ExecSpace>
-void benchmark_point_in_cell(mfem::Mesh& mesh, int npts, int nbins, bool verifyPoints)
+void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
 {
   switch(mesh.SpaceDimension())
   {
   case 2:
-    benchmark_point_in_cell<ExecSpace, 2>(mesh, npts, nbins, verifyPoints);
+    benchmark_point_in_cell<ExecSpace, 2>(mesh, args);
     break;
   case 3:
-    benchmark_point_in_cell<ExecSpace, 3>(mesh, npts, nbins, verifyPoints);
+    benchmark_point_in_cell<ExecSpace, 3>(mesh, args);
     break;
   default:
     SLIC_ERROR("Unsupported dimension (" << mesh.SpaceDimension() << ")");
     break;
   }
 }
-
-struct Arguments
-{
-  std::string file_name;
-  int num_rand_pts {10000};
-  int num_bins {25};
-  ExecPolicy exec_space {ExecPolicy::CPU};
-  bool should_verify_points {false};
-  bool verbose {false};
-
-  void parse(int argc, char** argv, axom::CLI::App& app)
-  {
-    std::string pol_info = "Sets execution space of the PointInCell query.\n";
-    pol_info += "Set to 'seq' to use sequential execution policy.";
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
-    pol_info += "\nSet to 'omp' to use an OpenMP execution policy.";
-#endif
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_GPU)
-    pol_info += "\nSet to 'gpu' to use a GPU execution policy.";
-#endif
-
-    app
-      .add_option("-f,--file", this->file_name, "specifies the input mesh file")
-      ->check(axom::CLI::ExistingFile)
-      ->required();
-
-    app.add_option("-n,--num_pts", this->num_rand_pts)
-      ->description("the number of points to query")
-      ->capture_default_str();
-
-    app.add_option("-b,--num-bins", this->num_bins)
-      ->description("the number of bins to construct for each dimension")
-      ->capture_default_str();
-
-    app.add_flag("-v, --verbose", this->verbose)
-      ->description("verbose output")
-      ->capture_default_str();
-
-    app.add_flag("--verify", this->should_verify_points)
-      ->description("verify query by reconstructing points after locating them")
-      ->capture_default_str();
-
-    app.add_option("-e, --exec_space", this->exec_space, pol_info)
-      ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(validExecPolicies));
-
-    app.get_formatter()->column_width(40);
-
-    // could throw an exception
-    app.parse(argc, argv);
-  }
-};
 
 int main(int argc, char** argv)
 {
@@ -264,46 +330,38 @@ int main(int argc, char** argv)
   }
 #endif
 
-  if(args.verbose)
+  if(args.verbosity >= 0)
   {
     slic::setLoggingMsgLevel(slic::message::Debug);
   }
 
   // Open MFEM mesh
-  utilities::Timer ctorMeshTimer(true);
+  utilities::Timer timer(true);
   mfem::Mesh testMesh(args.file_name.c_str());
   testMesh.EnsureNodes();
   SLIC_INFO(
     axom::fmt::format("Initialized MFEM mesh '{}' in {} s. \n"
                       "\tThe mesh has {} {}d elements and its order is {}.",
                       args.file_name,
-                      ctorMeshTimer.elapsed(),
+                      timer.elapsed(),
                       testMesh.GetNE(),
                       testMesh.Dimension(),
                       testMesh.GetNodalFESpace()->FEColl()->GetOrder()));
 
+  // Run the benchmark
   switch(args.exec_space)
   {
   case ExecPolicy::CPU:
-    benchmark_point_in_cell<axom::SEQ_EXEC>(testMesh,
-                                            args.num_rand_pts,
-                                            args.num_bins,
-                                            args.should_verify_points);
+    benchmark_point_in_cell<axom::SEQ_EXEC>(testMesh, args);
     break;
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
   case ExecPolicy::OpenMP:
-    benchmark_point_in_cell<axom::OMP_EXEC>(testMesh,
-                                            args.num_rand_pts,
-                                            args.num_bins,
-                                            args.should_verify_points);
+    benchmark_point_in_cell<axom::OMP_EXEC>(testMesh, args);
     break;
 #endif
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_GPU)
   case ExecPolicy::GPU:
-    benchmark_point_in_cell<GPUExec>(testMesh,
-                                     args.num_rand_pts,
-                                     args.num_bins,
-                                     args.should_verify_points);
+    benchmark_point_in_cell<GPUExec>(testMesh, args);
     break;
 #endif
   default:
