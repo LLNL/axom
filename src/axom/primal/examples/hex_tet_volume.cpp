@@ -221,19 +221,20 @@ void check_intersection_volumes(const Input& params)
   }
 
   // Calculate expected sum of all tetrahedra volume
-  double total_tet_vol = 0.0;
-  for(int i = 0; i < NUM_TETS; i++)
-  {
-    total_tet_vol += tets[i].volume();
-  }
-
-  SLIC_INFO(axom::fmt::format(
-    "{:-^80}",
-    axom::fmt::format("Total volume of all tetrahedra is {} ", total_tet_vol)));
-
-  // Calculate intersection volume for each hexahedra and tetrahedra pair.
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
 
+  RAJA::ReduceSum<REDUCE_POL, double> total_tet_vol(0.0);
+
+  axom::for_all<ExecSpace>(
+    NUM_TETS,
+    AXOM_LAMBDA(axom::IndexType i) { total_tet_vol += tets[i].volume(); });
+
+  SLIC_INFO(
+    axom::fmt::format("{:-^80}",
+                      axom::fmt::format("Total volume of all tetrahedra is {} ",
+                                        total_tet_vol.get())));
+
+  // Calculate intersection volume for each hexahedra and tetrahedra pair.
   RAJA::ReduceSum<REDUCE_POL, double> total_intersect_vol(0.0);
 
   axom::for_all<ExecSpace>(
@@ -261,7 +262,7 @@ void check_intersection_volumes(const Input& params)
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
     axom::fmt::format("Difference between sums is {}",
-                      std::abs(total_intersect_vol.get() - total_tet_vol))));
+                      std::abs(total_intersect_vol.get() - total_tet_vol.get()))));
 
   // Reset default allocator
   axom::setDefaultAllocator(current_allocator);
