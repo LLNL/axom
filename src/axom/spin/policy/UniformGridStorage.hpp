@@ -46,7 +46,14 @@ struct DynamicGridStorage
   DynamicGridStorage(int allocID)
     : m_bins(0, 0, allocID)
     , m_allocatorID(allocID)
-  { }
+  {
+#ifdef AXOM_USE_UMPIRE
+    SLIC_ASSERT_MSG(
+      axom::detail::getAllocatorSpace(allocID) != MemorySpace::Device,
+      "Umpire device-only memory is not a supported allocator type for dynamic "
+      "UniformGrid storage.");
+#endif
+  }
 
   int getAllocatorID() const { return m_allocatorID; }
 
@@ -58,7 +65,8 @@ struct DynamicGridStorage
     return index >= 0 && index < getNumBins();
   }
 
-  void initialize(axom::ArrayView<const IndexType> binSizes)
+  template <typename ExecSpace>
+  void initialize(const axom::ArrayView<const IndexType> binSizes)
   {
     m_bins.clear();
     for(int i = 0; i < binSizes.size(); i++)
@@ -162,13 +170,7 @@ struct FlatGridStorage
     : m_binData(0, 0, allocID)
     , m_binOffsets(0, 0, allocID)
     , m_allocatorID(allocID)
-    , m_executeOnDevice(false)
-  {
-#ifdef AXOM_USE_UMPIRE
-    m_executeOnDevice =
-      (axom::detail::getAllocatorSpace(allocID) == axom::MemorySpace::Device);
-#endif
-  }
+  { }
 
   int getAllocatorID() const { return m_allocatorID; }
 
@@ -180,31 +182,22 @@ struct FlatGridStorage
     return index >= 0 && index < getNumBins();
   }
 
-  void initialize(axom::ArrayView<const IndexType> binSizes)
+  template <typename ExecSpace>
+  void initialize(const axom::ArrayView<const IndexType> binSizes)
   {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_GPU)
-    if(m_executeOnDevice)
-    {
-  #ifdef AXOM_USE_CUDA
-      using gpu_exec = axom::CUDA_EXEC<256>;
-  #else
-      using gpu_exec = axom::HIP_EXEC<256>;
-  #endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    using loop_pol = typename axom::execution_space<ExecSpace>::loop_policy;
+    using reduce_pol = typename axom::execution_space<ExecSpace>::reduce_policy;
 
-      using loop_pol = typename axom::execution_space<gpu_exec>::loop_policy;
-      using reduce_pol = typename axom::execution_space<gpu_exec>::reduce_policy;
-
-      RAJA::exclusive_scan<loop_pol>(
-        RAJA::make_span(binSizes.data(), binSizes.size()),
-        RAJA::make_span(m_binOffsets.data(), binSizes.size()),
-        RAJA::operators::plus<IndexType> {});
-      RAJA::ReduceSum<reduce_pol, IndexType> total_elems(0);
-      for_all<gpu_exec>(
-        binSizes.size(),
-        AXOM_LAMBDA(IndexType idx) { total_elems += binSizes[idx]; });
-      m_binData.resize(total_elems.get());
-      return;
-    }
+    RAJA::exclusive_scan<loop_pol>(
+      RAJA::make_span(binSizes.data(), binSizes.size()),
+      RAJA::make_span(m_binOffsets.data(), binSizes.size()),
+      RAJA::operators::plus<IndexType> {});
+    RAJA::ReduceSum<reduce_pol, IndexType> total_elems(0);
+    for_all<ExecSpace>(
+      binSizes.size(),
+      AXOM_LAMBDA(IndexType idx) { total_elems += binSizes[idx]; });
+    m_binData.resize(total_elems.get());
 #else
     IndexType total_elems = binSizes[0];
     m_binOffsets[0] = 0;
@@ -215,7 +208,7 @@ struct FlatGridStorage
     }
     m_binData.resize(total_elems);
 #endif
-  };
+  }
 
   void insert(IndexType gridIdx, T elem)
   {
@@ -276,7 +269,6 @@ struct FlatGridStorage
   axom::Array<T> m_binData;
   axom::Array<IndexType> m_binOffsets;
   int m_allocatorID;
-  bool m_executeOnDevice;
 };
 
 template <typename T>

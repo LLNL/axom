@@ -27,13 +27,10 @@ blt_list_append(TO       quest_tests
 
 set(quest_tests_depends
     axom
+    ${axom_device_depends}
     fmt
     gtest
    )
-
-blt_list_append( TO quest_tests_depends ELEMENTS mpi IF ENABLE_MPI )
-blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
-blt_list_append( TO quest_tests_depends ELEMENTS blt::hip IF ENABLE_HIP )
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
@@ -75,7 +72,7 @@ if(MFEM_FOUND)
 
     string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
 
-    if (ENABLE_CUDA)
+    if (AXOM_ENABLE_CUDA)
         set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
     endif()
 
@@ -120,7 +117,7 @@ foreach(test ${quest_mpi_tests})
         set(_numMPITasks 1)
     endif()
 
-    if (ENABLE_MPI)
+    if (AXOM_ENABLE_MPI)
         axom_add_test(
             NAME ${test_name}
             COMMAND ${test_name}_test
@@ -134,6 +131,34 @@ foreach(test ${quest_mpi_tests})
     endif()
 endforeach()
 
+#------------------------------------------------------------------------------
+# These tests require MPI+MFEM+C2C+Axom data+...
+#------------------------------------------------------------------------------
+if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+              AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
+              AND AXOM_ENABLE_KLEE AND AXOM_DATA_DIR
+              AND C2C_FOUND)
+    set(quest_mpi_mfem_c2c_data_tests
+        quest_intersection_shaper.cpp
+       )
+    foreach(test ${quest_mpi_mfem_c2c_data_tests})
+        get_filename_component( test_name ${test} NAME_WE )
+        blt_add_executable(
+            NAME ${test_name}_test
+            SOURCES ${test_name}.cpp
+            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+            DEPENDS_ON ${quest_tests_depends} mfem mpi
+            FOLDER axom/quest/tests
+        )
+
+        set(_numMPITasks 1)
+        axom_add_test(
+            NAME ${test_name}
+            COMMAND ${test_name}_test
+            NUM_MPI_TASKS ${_numMPITasks}
+        )
+    endforeach()
+endif()
 
 #------------------------------------------------------------------------------
 # Regression tests for quest signed distance and inout queries
@@ -146,10 +171,10 @@ endforeach()
 cmake_dependent_option(
     AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
     "Enable extra regression tests for quest" OFF
-    "ENABLE_MPI;AXOM_ENABLE_SIDRE;AXOM_DATA_DIR" OFF )
+    "AXOM_ENABLE_MPI;AXOM_ENABLE_SIDRE;AXOM_DATA_DIR;AXOM_ENABLE_HDF5" OFF )
 mark_as_advanced(AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS)
 
-if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
+if (AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_HDF5)
 
     set(quest_regression_depends
         ${quest_tests_depends}
@@ -169,10 +194,10 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         FOLDER axom/quest/tests
         )
 
-    if ( NOT ENABLE_OPENMP )
+    if ( NOT AXOM_ENABLE_OPENMP )
         set(extra_compile_flags "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
 
-        if ( ENABLE_CUDA )
+        if ( AXOM_ENABLE_CUDA )
             string(STRIP "${extra_compile_flags}" extra_compile_flags)
             set(extra_compile_flags "-Xcompiler=${extra_compile_flags}")
         endif()

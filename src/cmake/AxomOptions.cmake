@@ -20,6 +20,11 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 endif()
 
+cmake_dependent_option(AXOM_ENABLE_CUDA "Enables Axom with CUDA support" ON "ENABLE_CUDA" OFF)
+cmake_dependent_option(AXOM_ENABLE_HIP "Enables Axom with HIP support" ON "ENABLE_HIP" OFF)
+cmake_dependent_option(AXOM_ENABLE_MPI "Enables Axom with MPI support" ON "ENABLE_MPI" OFF)
+cmake_dependent_option(AXOM_ENABLE_OPENMP "Enables Axom with OPENMP support" ON "ENABLE_OPENMP" OFF)
+
 cmake_dependent_option(AXOM_ENABLE_TESTS "Enables Axom Tests" ON "ENABLE_TESTS" OFF)
 cmake_dependent_option(AXOM_ENABLE_DOCS "Enables Axom Docs" ON "ENABLE_DOCS" OFF)
 cmake_dependent_option(AXOM_ENABLE_EXAMPLES "Enables Axom Examples" ON "ENABLE_EXAMPLES" OFF)

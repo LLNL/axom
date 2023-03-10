@@ -14,10 +14,9 @@ axom_add_code_checks(PREFIX thirdparty_tests)
 #------------------------------------------------------------------------------
 if ( UMPIRE_FOUND )
 
-  set( umpire_smoke_dependencies umpire gtest )
+  set( umpire_smoke_dependencies umpire ${axom_device_depends} gtest )
 
-  blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
-  blt_list_append( TO umpire_smoke_dependencies ELEMENTS cuda_runtime IF ENABLE_CUDA)
+  blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
 
   blt_add_executable( NAME umpire_smoke_test
                       SOURCES umpire_smoke.cpp
@@ -35,13 +34,11 @@ endif()
 #------------------------------------------------------------------------------
 if ( RAJA_FOUND )
 
-  set( raja_smoke_dependencies RAJA gtest )
+  set( raja_smoke_dependencies RAJA ${axom_device_depends} gtest )
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP)
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
   blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS blt::hip IF ENABLE_HIP)
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi    IF AXOM_ENABLE_MPI)
 
   blt_add_executable( NAME raja_smoke_test
                       SOURCES raja_smoke.cpp
@@ -66,7 +63,7 @@ if( HDF5_FOUND AND CONDUIT_FOUND)
 
     set( hdf5_smoke_dependencies conduit::conduit gtest )
 
-    blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+    blt_list_append( TO hdf5_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
 
     blt_add_executable(NAME hdf5_smoke_test
                        SOURCES hdf5_smoke.cpp
@@ -112,7 +109,7 @@ endif()
 #------------------------------------------------------------------------------
 if (MFEM_FOUND)
     set( mfem_smoke_dependencies mfem gtest )
-    blt_list_append( TO mfem_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+    blt_list_append( TO mfem_smoke_dependencies ELEMENTS mpi IF AXOM_ENABLE_MPI)
     blt_add_executable(NAME mfem_smoke_test
                        SOURCES mfem_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -131,7 +128,7 @@ endif()
 # Smoke test for fmt third party library
 #------------------------------------------------------------------------------
 set(fmt_smoke_dependencies fmt gtest)
-blt_list_append( TO fmt_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
+blt_list_append( TO fmt_smoke_dependencies ELEMENTS cuda IF AXOM_ENABLE_CUDA)
 
 blt_add_executable(
     NAME fmt_smoke_test

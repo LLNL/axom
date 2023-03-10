@@ -194,9 +194,10 @@ packages:
       prefix: /usr
 
 # Globally lock version of third party libraries
-# TODO: These are preferences not hard requirements. We should move away from them here.
+# TODO: Several of these are preferences not hard requirements.
+#       We should move away from them here.
   conduit:
-    variants: ~shared~test
+    require: "@0.8.6~shared~test~examples~utilities"
   hdf5:
     variants: ~shared~mpi
   hypre:
@@ -210,11 +211,11 @@ packages:
 
 # Globally lock in versions of Devtools
   cmake:
-    version: [3.16.8]
+    version: [3.21.1]
     buildable: false
     externals:
-    - spec: cmake@3.16.8
-      prefix: /usr/tce/packages/cmake/cmake-3.16.8
+    - spec: cmake@3.21.1
+      prefix: /usr/tce/packages/cmake/cmake-3.21.1
   cppcheck:
     version: [2.8]
     buildable: false

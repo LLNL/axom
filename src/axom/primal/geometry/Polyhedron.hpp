@@ -18,7 +18,7 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 
-#include <ostream>  // for std::ostream
+#include <ostream>
 
 namespace axom
 {
@@ -206,19 +206,21 @@ private:
 /*!
  * \class Polyhedron
  *
- * \brief Represents a polyhedron defined by an array of points and optionally
- *        their neighbors (a point is a neighbor of another point if there is
- *        an edge between them)
+ * \brief Represents a convex polyhedron defined by an array of points and
+ *        optionally their neighbors (a point is a neighbor of another point if
+ *        there is an edge between them)
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
  * \note The Polyhedron functions do not check that points defining a face are
  *       coplanar. It is the responsibility of the caller to pass a
- *       valid set of points and neighbors.
+ *       valid set of points and neighbors representing a convex polyhedron.
  *
  * \note The polyhedron neighbors should be ordered counter clockwise
  *       as when viewing the polyhedron externally.
+ *
+ *       <pre>
  *
  *          4--------7
  *         /|       /|
@@ -228,6 +230,8 @@ private:
  *       | /      | /
  *       |/       |/
  *       1--------2
+ *
+ *       </pre>
  *
  *       For example, vertex 5 above should have neighbors (4,1,6).
  *
@@ -376,23 +380,34 @@ public:
 
     NumArrayType sum;
 
-    for(int i = 0; i < numVertices(); ++i)
+    const int nVerts = numVertices();
+    if(nVerts > 0)
     {
-      sum += m_vertices[i].array();
+      for(int i = 0; i < nVerts; ++i)
+      {
+        sum += m_vertices[i].array();
+      }
+      sum /= nVerts;
     }
-    sum /= numVertices();
-
     return PointType(sum);
   }
 
-private:
+public:
   /*!
-   * \brief Finds the faces of the Polyhedron, assuming the vertex neighbors
-   *        are in counter-clockwise ordering.
+   * \brief Helper function to find the faces of the Polyhedron, assuming the
+   *        vertex neighbors are in counter-clockwise ordering.
    *
-   * param [out] faces is the vertex indices for faces
-   * param [out] face_offset is the offset for each face
-   * param [out] face_size is the number of vertices for each face
+   * \param [out] faces is the vertex indices for faces
+   * \param [out] face_offset is the offset for each face
+   * \param [out] face_size is the number of vertices for each face
+   * \param [out] face_count is the number of faces
+   *
+   * \warning Function is experimental, input parameters and/or output may
+   *          change in the future.
+   *
+   * \note This function does not check that the provided buffers are
+   *       large enough to hold all values. It is the responsibility of the
+   *       caller to know ahead of time and pass buffers with appropriate size.
    *
    * \note Function is based off extractFaces() in Mike Owen's PolyClipper.
    *
@@ -408,7 +423,7 @@ private:
     axom::int8 checkedEdges[MAX_VERTS * 2 * 2] = {0};
 
     // Check each vertex
-    for(int i = 0; i < numVertices(); i++)
+    for(int i = 0; i < numVertices(); ++i)
     {
       // Check each neighbor index (edge) of the vertex
       for(int j = 0; j < m_neighbors.getNumNeighbors(i); j++)
@@ -480,7 +495,6 @@ private:
     face_count = facesAdded;
   }
 
-public:
   /*!
    * \brief Finds the volume of the polyhedron.
    *
@@ -495,8 +509,7 @@ public:
   {
     double retVol = 0.0;
 
-    // 0 if less than 4 vertices
-    if(numVertices() < 4)
+    if(!isValid())
     {
       return retVol;
     }
@@ -516,27 +529,25 @@ public:
       int face_count;
       getFaces(faces, face_size, face_offset, face_count);
 
-      VectorType origin(m_vertices[0].data());
+      const PointType& origin = m_vertices[0];
 
-      for(int i = 0; i < face_count; i++)
+      for(int i = 0; i < face_count; ++i)
       {
-        int n = face_size[i];
-        VectorType v0(m_vertices[faces[face_offset[i]]].data());
-        v0 -= origin;
+        const int N = face_size[i];
+        const int i_offset = face_offset[i];
+        const VectorType v0 = m_vertices[faces[i_offset]] - origin;
 
-        for(int j = 1; j < n - 1; ++j)
+        for(int j = 1, k = 2; j < N - 1; ++j, ++k)
         {
-          VectorType v1(m_vertices[faces[face_offset[i] + j]].data());
-          v1 -= origin;
-          VectorType v2(m_vertices[faces[face_offset[i] + ((j + 1) % n)]].data());
-          v2 -= origin;
-          double partialVol = v0.dot(VectorType::cross_product(v1, v2));
-          retVol += partialVol;
+          retVol += VectorType::scalar_triple_product(
+            v0,
+            m_vertices[faces[i_offset + j]] - origin,
+            m_vertices[faces[i_offset + k]] - origin);
         }
       }
     }
 
-    return retVol / 6.0;
+    return retVol / 6.;
   }
 
   /*!
@@ -634,5 +645,10 @@ std::ostream& operator<<(std::ostream& os, const Polyhedron<T, NDIMS>& poly)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Polyhedron using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Polyhedron<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_POLYHEDRON_HPP_

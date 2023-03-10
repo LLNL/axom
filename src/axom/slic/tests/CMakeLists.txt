@@ -16,12 +16,14 @@ set(serial_slic_tests
     slic_macros.cpp
     slic_uninit.cpp )
 
+set(slic_tests_depends axom ${axom_device_depends} gtest fmt)
+
 foreach(test ${serial_slic_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(NAME       ${test_name}_test
                        SOURCES    ${test}
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON axom gtest fmt
+                       DEPENDS_ON ${slic_tests_depends}
                        FOLDER     axom/slic/tests )
     axom_add_test(NAME    ${test_name}
                   COMMAND ${test_name}_test )
@@ -31,7 +33,7 @@ endforeach()
 #
 # Parallel Unit Tests
 #
-if (ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
+if (AXOM_ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
     set(parallel_slic_tests
         slic_macros_parallel.cpp )
 
@@ -40,7 +42,7 @@ if (ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
         blt_add_executable(NAME       ${test_name}_test
                            SOURCES    ${test}
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON axom gtest fmt
+                           DEPENDS_ON ${slic_tests_depends}
                            FOLDER     axom/slic/tests )
         axom_add_test(NAME          ${test_name}
                       COMMAND       ${test_name}_test 
@@ -84,7 +86,7 @@ if (ENABLE_FORTRAN)
         blt_add_executable(NAME ${test_name}_test
                            SOURCES ${test}
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON slic fruit
+                           DEPENDS_ON slic ${axom_device_depends} fruit
                            FOLDER axom/slic/tests )
         axom_add_test(NAME    ${test_name}
                       COMMAND ${test_name}_test )

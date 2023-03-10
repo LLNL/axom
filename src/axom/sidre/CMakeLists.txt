@@ -42,7 +42,7 @@ set(sidre_sources
     core/AttrValues.cpp )
 
 # Add spio headers and sources when MPI is available
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
    list(APPEND sidre_headers
         spio/IOManager.hpp
         spio/IOBaton.hpp )
@@ -80,7 +80,7 @@ if (ENABLE_FORTRAN)
     )
 
     # Add spio's C API when MPI is available
-    if(ENABLE_MPI)
+    if(AXOM_ENABLE_MPI)
         list(APPEND sidre_headers
              spio/interface/c_fortran/wrapIOManager.h
              spio/interface/c_fortran/typesSPIO.h
@@ -112,10 +112,10 @@ if(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     blt_list_append(TO sidre_depends ELEMENTS fmt)
 endif()
 
-# Include additional dependencides for spio when MPI is available
-if(ENABLE_MPI)
+# Include additional dependencies for spio when MPI is available
+if(AXOM_ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)
-    blt_list_append(TO sidre_depends ELEMENTS conduit::conduit_mpi IF ENABLE_MPI)
+    blt_list_append(TO sidre_depends ELEMENTS conduit::conduit_mpi IF AXOM_ENABLE_MPI)
     blt_list_append(TO sidre_depends ELEMENTS scr IF SCR_FOUND)
 endif()
 
@@ -134,7 +134,7 @@ axom_install_component(NAME    sidre
                        HEADERS ${sidre_headers}
                        )
 
-if(ENABLE_FORTRAN AND ENABLE_MPI)
+if(ENABLE_FORTRAN AND AXOM_ENABLE_MPI)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)
 endif()
 

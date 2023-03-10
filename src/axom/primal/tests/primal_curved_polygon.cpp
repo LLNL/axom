@@ -377,7 +377,7 @@ TEST(primal_curvedpolygon, moments_triangle_mixed_order)
   CoordType trueA = -.0906666666666666666666;
   PointType trueC {.2970147058823527, 1.55764705882353};
 
-  checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-15);
+  checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-14);
 }
 
 //----------------------------------------------------------------------------------

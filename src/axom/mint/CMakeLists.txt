@@ -122,6 +122,7 @@ set( mint_sources
 set( mint_dependencies
      core
      slic
+     ${axom_device_depends}
      )
 
 if (AXOM_MINT_USE_SIDRE)
@@ -130,10 +131,6 @@ if (AXOM_MINT_USE_SIDRE)
 endif()
 
 blt_list_append( TO mint_dependencies ELEMENTS RAJA IF RAJA_FOUND )
-
-blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
-
-blt_list_append( TO mint_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 blt_add_library(
     NAME       mint

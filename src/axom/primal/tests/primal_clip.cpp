@@ -101,7 +101,7 @@ TEST(primal_clip, simple_clip)
 TEST(primal_clip, unit_simplex)
 {
   using namespace Primal3D;
-  double delta = 1e-5;
+  constexpr double delta = 1e-5;
 
   // Test the "unit simplex", and a jittered version
   PointType points[] = {PointType {1, 0, 0},
@@ -143,8 +143,8 @@ TEST(primal_clip, boundingBoxOptimization)
   SLIC_INFO("Checking correctness of optimization for skipping clipping "
             << " of planes that the triangle's bounding box doesn't cover");
 
-  const double VAL1 = 3.;
-  const double VAL2 = 2.;
+  constexpr double VAL1 = 3.;
+  constexpr double VAL2 = 2.;
 
   BoundingBoxType bbox;
   bbox.addPoint(PointType(-1.));
@@ -187,7 +187,7 @@ TEST(primal_clip, experimentalData)
 {
   using namespace Primal3D;
 
-  const double EPS = 1e-8;
+  constexpr double EPS = 1e-8;
 
   // Triangle 248 from sphere mesh
   TriangleType tri(PointType {0.405431, 3.91921, 3.07821},
@@ -371,17 +371,17 @@ void check_oct_tet_clip(double EPS)
   OctahedronType* oct = axom::allocate<OctahedronType>(1);
   PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
-  tet[0] = TetrahedronType(PointType({1, 0, 0}),
-                           PointType({1, 1, 0}),
-                           PointType({0, 1, 0}),
-                           PointType({1, 0, 1}));
+  tet[0] = TetrahedronType(PointType {1, 0, 0},
+                           PointType {1, 1, 0},
+                           PointType {0, 1, 0},
+                           PointType {1, 0, 1});
 
-  oct[0] = OctahedronType(PointType({1, 0, 0}),
-                          PointType({1, 1, 0}),
-                          PointType({0, 1, 0}),
-                          PointType({0, 1, 1}),
-                          PointType({0, 0, 1}),
-                          PointType({1, 0, 1}));
+  oct[0] = OctahedronType(PointType {1, 0, 0},
+                          PointType {1, 1, 0},
+                          PointType {0, 1, 0},
+                          PointType {0, 1, 1},
+                          PointType {0, 0, 1},
+                          PointType {1, 0, 1});
 
   axom::for_all<ExecPolicy>(
     1,
@@ -412,15 +412,15 @@ void check_tet_tet_clip(double EPS)
   TetrahedronType* tet2 = axom::allocate<TetrahedronType>(1);
   PolyhedronType* res = axom::allocate<PolyhedronType>(1);
 
-  tet1[0] = TetrahedronType(PointType({1, 0, 0}),
-                            PointType({1, 1, 0}),
-                            PointType({0, 1, 0}),
-                            PointType({1, 1, 1}));
+  tet1[0] = TetrahedronType(PointType {1, 0, 0},
+                            PointType {1, 1, 0},
+                            PointType {0, 1, 0},
+                            PointType {1, 1, 1});
 
-  tet2[0] = TetrahedronType(PointType({0, 0, 0}),
-                            PointType({1, 0, 0}),
-                            PointType({1, 1, 0}),
-                            PointType({1, 1, 1}));
+  tet2[0] = TetrahedronType(PointType {0, 0, 0},
+                            PointType {1, 0, 0},
+                            PointType {1, 1, 0},
+                            PointType {1, 1, 1});
 
   axom::for_all<ExecPolicy>(
     1,
@@ -442,13 +442,13 @@ TEST(primal_clip, unit_poly_clip_vertices_sequential)
 
 TEST(primal_clip, clip_oct_tet_sequential)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_oct_tet_clip<axom::SEQ_EXEC>(EPS);
 }
 
 TEST(primal_clip, clip_tet_tet_sequential)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::SEQ_EXEC>(EPS);
 }
 
@@ -460,13 +460,13 @@ TEST(primal_clip, unit_poly_clip_vertices_omp)
 
 TEST(primal_clip, clip_oct_tet_omp)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_oct_tet_clip<axom::OMP_EXEC>(EPS);
 }
 
 TEST(primal_clip, clip_tet_tet_omp)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::OMP_EXEC>(EPS);
 }
   #endif /* AXOM_USE_OPENMP */
@@ -479,13 +479,13 @@ AXOM_CUDA_TEST(primal_clip, unit_poly_clip_vertices_cuda)
 
 AXOM_CUDA_TEST(primal_clip, clip_oct_tet_cuda)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_oct_tet_clip<axom::CUDA_EXEC<256>>(EPS);
 }
 
 TEST(primal_clip, clip_tet_tet_cuda)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::CUDA_EXEC<256>>(EPS);
 }
   #endif /* AXOM_USE_CUDA */
@@ -498,13 +498,13 @@ TEST(primal_clip, unit_poly_clip_vertices_hip)
 
 TEST(primal_clip, clip_oct_tet_hip)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_oct_tet_clip<axom::HIP_EXEC<256>>(EPS);
 }
 
 TEST(primal_clip, clip_tet_tet_hip)
 {
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
   check_tet_tet_clip<axom::HIP_EXEC<256>>(EPS);
 }
   #endif /* AXOM_USE_HIP */
@@ -516,16 +516,16 @@ TEST(primal_clip, oct_tet_clip_nonintersect)
 {
   using namespace Primal3D;
 
-  TetrahedronType tet(PointType({-1, -1, -1}),
-                      PointType({-1, 0, 0}),
-                      PointType({-1, -1, 0}),
-                      PointType({0, 0, 0}));
-  OctahedronType oct(PointType({1, 0, 0}),
-                     PointType({1, 1, 0}),
-                     PointType({0, 1, 0}),
-                     PointType({0, 1, 1}),
-                     PointType({0, 0, 1}),
-                     PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {-1, -1, -1},
+                      PointType {-1, 0, 0},
+                      PointType {-1, -1, 0},
+                      PointType {0, 0, 0});
+  OctahedronType oct(PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 1, 1},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
   EXPECT_EQ(0.0, poly.volume());
@@ -535,18 +535,18 @@ TEST(primal_clip, oct_tet_clip_nonintersect)
 TEST(primal_clip, oct_tet_clip_encapsulate)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet(PointType({1, 0, 0}),
-                      PointType({1, 1, 0}),
-                      PointType({0, 1, 0}),
-                      PointType({1, 0, 1}));
-  OctahedronType oct(PointType({1, 0, 0}),
-                     PointType({1, 1, 0}),
-                     PointType({0, 1, 0}),
-                     PointType({0, 1, 1}),
-                     PointType({0, 0, 1}),
-                     PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {1, 0, 0},
+                      PointType {1, 1, 0},
+                      PointType {0, 1, 0},
+                      PointType {1, 0, 1});
+  OctahedronType oct(PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 1, 1},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
@@ -558,18 +558,18 @@ TEST(primal_clip, oct_tet_clip_encapsulate)
 TEST(primal_clip, oct_tet_clip_encapsulate_inv)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet(PointType({0, 0, 0}),
-                      PointType({0, 2, 0}),
-                      PointType({0, 0, 2}),
-                      PointType({2, 0, 0}));
-  OctahedronType oct(PointType({1, 0, 0}),
-                     PointType({1, 1, 0}),
-                     PointType({0, 1, 0}),
-                     PointType({0, 1, 1}),
-                     PointType({0, 0, 1}),
-                     PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {0, 0, 0},
+                      PointType {0, 2, 0},
+                      PointType {0, 0, 2},
+                      PointType {2, 0, 0});
+  OctahedronType oct(PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 1, 1},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
@@ -581,18 +581,18 @@ TEST(primal_clip, oct_tet_clip_encapsulate_inv)
 TEST(primal_clip, oct_tet_clip_half)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet(PointType({0.5, 0.5, 2}),
-                      PointType({2, -1, 0}),
-                      PointType({-1, -1, 0}),
-                      PointType({-1, 2, 0}));
-  OctahedronType oct(PointType({1, 0, 0}),
-                     PointType({1, 1, 0}),
-                     PointType({0, 1, 0}),
-                     PointType({0, 1, 1}),
-                     PointType({0, 0, 1}),
-                     PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {0.5, 0.5, 2},
+                      PointType {2, -1, 0},
+                      PointType {-1, -1, 0},
+                      PointType {-1, 2, 0});
+  OctahedronType oct(PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 1, 1},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
@@ -605,16 +605,16 @@ TEST(primal_clip, oct_tet_clip_adjacent)
 {
   using namespace Primal3D;
 
-  TetrahedronType tet(PointType({0, -1, 0}),
-                      PointType({0, 0, 1}),
-                      PointType({1, 0, 1}),
-                      PointType({1, 0, 0}));
-  OctahedronType oct(PointType({1, 0, 0}),
-                     PointType({1, 1, 0}),
-                     PointType({0, 1, 0}),
-                     PointType({0, 1, 1}),
-                     PointType({0, 0, 1}),
-                     PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {0, -1, 0},
+                      PointType {0, 0, 1},
+                      PointType {1, 0, 1},
+                      PointType {1, 0, 0});
+  OctahedronType oct(PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 1, 1},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
@@ -626,16 +626,16 @@ TEST(primal_clip, oct_tet_clip_point)
 {
   using namespace Primal3D;
 
-  TetrahedronType tet(PointType({-1, -1, 0}),
-                      PointType({-0.5, 0.5, 0}),
-                      PointType({0, 0, 2}),
-                      PointType({0.5, -0.5, 0}));
-  OctahedronType oct(PointType({1, 0, 0}),
-                     PointType({1, 1, 0}),
-                     PointType({0, 1, 0}),
-                     PointType({0, 1, 1}),
-                     PointType({0, 0, 1}),
-                     PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {-1, -1, 0},
+                      PointType {-0.5, 0.5, 0},
+                      PointType {0, 0, 2},
+                      PointType {0.5, -0.5, 0});
+  OctahedronType oct(PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 1, 1},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
 
@@ -645,29 +645,29 @@ TEST(primal_clip, oct_tet_clip_point)
 TEST(primal_clip, oct_tet_clip_special_case_1)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet(PointType({0.5, 0.5, 0.5}),
-                      PointType({1, 1, 0}),
-                      PointType({1, 0, 0}),
-                      PointType({0.5, 0.5, 0}));
+  TetrahedronType tet(PointType {0.5, 0.5, 0.5},
+                      PointType {1, 1, 0},
+                      PointType {1, 0, 0},
+                      PointType {0.5, 0.5, 0});
 
-  OctahedronType oct(PointType({0.5, 0.853553, 0.146447}),
-                     PointType({0.853553, 0.853553, 0.5}),
-                     PointType({0.853553, 0.5, 0.146447}),
-                     PointType({1, 0.5, 0.5}),
-                     PointType({0.5, 0.5, 0}),
-                     PointType({0.5, 1, 0.5}));
+  OctahedronType oct(PointType {0.5, 0.853553, 0.146447},
+                     PointType {0.853553, 0.853553, 0.5},
+                     PointType {0.853553, 0.5, 0.146447},
+                     PointType {1, 0.5, 0.5},
+                     PointType {0.5, 0.5, 0},
+                     PointType {0.5, 1, 0.5});
 
   // NOTE: Order of vertices 1,2 and 4,5 are flipped due
   // to winding being opposite of what volume() expects
   PolyhedronType octPoly;
-  octPoly.addVertex(PointType({0.5, 0.853553, 0.146447}));
-  octPoly.addVertex(PointType({0.853553, 0.5, 0.146447}));
-  octPoly.addVertex(PointType({0.853553, 0.853553, 0.5}));
-  octPoly.addVertex(PointType({1, 0.5, 0.5}));
-  octPoly.addVertex(PointType({0.5, 1, 0.5}));
-  octPoly.addVertex(PointType({0.5, 0.5, 0}));
+  octPoly.addVertex(PointType {0.5, 0.853553, 0.146447});
+  octPoly.addVertex(PointType {0.853553, 0.5, 0.146447});
+  octPoly.addVertex(PointType {0.853553, 0.853553, 0.5});
+  octPoly.addVertex(PointType {1, 0.5, 0.5});
+  octPoly.addVertex(PointType {0.5, 1, 0.5});
+  octPoly.addVertex(PointType {0.5, 0.5, 0});
 
   octPoly.addNeighbors(0, {1, 5, 4, 2});
   octPoly.addNeighbors(1, {0, 2, 3, 5});
@@ -686,29 +686,29 @@ TEST(primal_clip, oct_tet_clip_special_case_1)
 TEST(primal_clip, oct_tet_clip_special_case_2)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet(PointType({0.5, 0.5, 0.5}),
-                      PointType({0, 1, 0}),
-                      PointType({1, 1, 0}),
-                      PointType({0.5, 0.5, 0}));
+  TetrahedronType tet(PointType {0.5, 0.5, 0.5},
+                      PointType {0, 1, 0},
+                      PointType {1, 1, 0},
+                      PointType {0.5, 0.5, 0});
 
-  OctahedronType oct(PointType({0.5, 0.853553, 0.146447}),
-                     PointType({0.853553, 0.853553, 0.5}),
-                     PointType({0.853553, 0.5, 0.146447}),
-                     PointType({1, 0.5, 0.5}),
-                     PointType({0.5, 0.5, 0}),
-                     PointType({0.5, 1, 0.5}));
+  OctahedronType oct(PointType {0.5, 0.853553, 0.146447},
+                     PointType {0.853553, 0.853553, 0.5},
+                     PointType {0.853553, 0.5, 0.146447},
+                     PointType {1, 0.5, 0.5},
+                     PointType {0.5, 0.5, 0},
+                     PointType {0.5, 1, 0.5});
 
   // NOTE: Order of vertices 1,2 and 4,5 are flipped due
   // to winding being opposite of what volume() expects
   PolyhedronType octPoly;
-  octPoly.addVertex(PointType({0.5, 0.853553, 0.146447}));
-  octPoly.addVertex(PointType({0.853553, 0.5, 0.146447}));
-  octPoly.addVertex(PointType({0.853553, 0.853553, 0.5}));
-  octPoly.addVertex(PointType({1, 0.5, 0.5}));
-  octPoly.addVertex(PointType({0.5, 1, 0.5}));
-  octPoly.addVertex(PointType({0.5, 0.5, 0}));
+  octPoly.addVertex(PointType {0.5, 0.853553, 0.146447});
+  octPoly.addVertex(PointType {0.853553, 0.5, 0.146447});
+  octPoly.addVertex(PointType {0.853553, 0.853553, 0.5});
+  octPoly.addVertex(PointType {1, 0.5, 0.5});
+  octPoly.addVertex(PointType {0.5, 1, 0.5});
+  octPoly.addVertex(PointType {0.5, 0.5, 0});
 
   octPoly.addNeighbors(0, {1, 5, 4, 2});
   octPoly.addNeighbors(1, {0, 2, 3, 5});
@@ -729,18 +729,40 @@ TEST(primal_clip, tet_tet_clip_nonintersect)
 {
   using namespace Primal3D;
 
-  TetrahedronType tet1(PointType({-1, -1, -1}),
-                       PointType({-1, 0, 0}),
-                       PointType({-1, -1, 0}),
-                       PointType({0, 0, 0}));
+  {
+    TetrahedronType tet1(PointType {-1, -1, -1},
+                         PointType {-1, 0, 0},
+                         PointType {-1, -1, 0},
+                         PointType {0, 0, 0});
+    EXPECT_TRUE(tet1.signedVolume() > 0.);
 
-  TetrahedronType tet2(PointType({1, 0, 0}),
-                       PointType({1, 1, 0}),
-                       PointType({0, 1, 0}),
-                       PointType({1, 0, 1}));
+    TetrahedronType tet2(PointType {1, 0, 0},
+                         PointType {1, 1, 0},
+                         PointType {0, 1, 0},
+                         PointType {1, 0, 1});
+    EXPECT_TRUE(tet2.signedVolume() > 0.);
 
-  PolyhedronType poly = axom::primal::clip(tet1, tet2);
-  EXPECT_EQ(0.0, poly.volume());
+    PolyhedronType poly = axom::primal::clip(tet1, tet2);
+    EXPECT_EQ(0.0, poly.volume());
+  }
+
+  // User-provided test case; tetrahedra do not overlap
+  {
+    TetrahedronType tet1(PointType {0, 1, 0},
+                         PointType {-1, 0, 0},
+                         PointType {0, -1, 0},
+                         PointType {-0.25, 0, 0.25});
+    EXPECT_TRUE(tet1.signedVolume() > 0.);
+
+    TetrahedronType tet2(PointType {0.74899999999999922, 0, 1},
+                         PointType {1.7489999999999992, 0, 0},
+                         PointType {0.74899999999999922, -1, 0},
+                         PointType {0.99899999999999922, 0, 0.25});
+    EXPECT_TRUE(tet2.signedVolume() > 0.);
+
+    PolyhedronType poly = axom::primal::clip(tet1, tet2);
+    EXPECT_EQ(0.0, poly.volume());
+  }
 }
 
 // Tetrahedron is adjacent to tetrahedron
@@ -748,15 +770,15 @@ TEST(primal_clip, tet_tet_clip_adjacent)
 {
   using namespace Primal3D;
 
-  TetrahedronType tet1(PointType({1, 0, 0}),
-                       PointType({1, 1, 0}),
-                       PointType({0, 1, 0}),
-                       PointType({1, 0, 1}));
+  TetrahedronType tet1(PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {0, 1, 0},
+                       PointType {1, 0, 1});
 
-  TetrahedronType tet2(PointType({1, 0, 1}),
-                       PointType({0, 1, 0}),
-                       PointType({1, 0, 0}),
-                       PointType({0, 0, 0}));
+  TetrahedronType tet2(PointType {1, 0, 1},
+                       PointType {0, 1, 0},
+                       PointType {1, 0, 0},
+                       PointType {0, 0, 0});
 
   PolyhedronType poly = axom::primal::clip(tet1, tet2);
   EXPECT_EQ(0.0, poly.volume());
@@ -767,15 +789,15 @@ TEST(primal_clip, tet_tet_clip_point)
 {
   using namespace Primal3D;
 
-  TetrahedronType tet1(PointType({1, 0, 0}),
-                       PointType({1, 1, 0}),
-                       PointType({0, 1, 0}),
-                       PointType({1, 0, 1}));
+  TetrahedronType tet1(PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {0, 1, 0},
+                       PointType {1, 0, 1});
 
-  TetrahedronType tet2(PointType({0, 1, 0}),
-                       PointType({0, 0, 0}),
-                       PointType({-1, 0, 0}),
-                       PointType({0, 0, 1}));
+  TetrahedronType tet2(PointType {0, 1, 0},
+                       PointType {0, 0, 0},
+                       PointType {-1, 0, 0},
+                       PointType {0, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(tet1, tet2);
   EXPECT_EQ(0.0, poly.volume());
@@ -787,10 +809,10 @@ TEST(primal_clip, tet_tet_equal)
   using namespace Primal3D;
   const double EPS = 1e-4;
 
-  TetrahedronType tet(PointType({1, 0, 0}),
-                      PointType({1, 1, 0}),
-                      PointType({0, 1, 0}),
-                      PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {1, 0, 0},
+                      PointType {1, 1, 0},
+                      PointType {0, 1, 0},
+                      PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(tet, tet);
 
@@ -802,17 +824,17 @@ TEST(primal_clip, tet_tet_equal)
 TEST(primal_clip, tet_tet_encapsulate)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet1(PointType({1, 0, 0}),
-                       PointType({1, 1, 0}),
-                       PointType({0, 1, 0}),
-                       PointType({1, 0, 1}));
+  TetrahedronType tet1(PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {0, 1, 0},
+                       PointType {1, 0, 1});
 
-  TetrahedronType tet2(PointType({3, 0, 0}),
-                       PointType({0, 3, 0}),
-                       PointType({-3, 0, 0}),
-                       PointType({0, 0, 3}));
+  TetrahedronType tet2(PointType {3, 0, 0},
+                       PointType {0, 3, 0},
+                       PointType {-3, 0, 0},
+                       PointType {0, 0, 3});
 
   PolyhedronType poly = axom::primal::clip(tet1, tet2);
 
@@ -824,17 +846,17 @@ TEST(primal_clip, tet_tet_encapsulate)
 TEST(primal_clip, tet_tet_half)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet1(PointType({1, 0, 0}),
-                       PointType({1, 1, 0}),
-                       PointType({0, 1, 0}),
-                       PointType({1, 1, 1}));
+  TetrahedronType tet1(PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {0, 1, 0},
+                       PointType {1, 1, 1});
 
-  TetrahedronType tet2(PointType({0, 0, 0}),
-                       PointType({1, 0, 0}),
-                       PointType({1, 1, 0}),
-                       PointType({1, 1, 1}));
+  TetrahedronType tet2(PointType {0, 0, 0},
+                       PointType {1, 0, 0},
+                       PointType {1, 1, 0},
+                       PointType {1, 1, 1});
 
   PolyhedronType poly = axom::primal::clip(tet1, tet2);
 
@@ -849,18 +871,18 @@ TEST(primal_clip, tet_tet_half)
 TEST(primal_clip, tet_tet_clip_split)
 {
   using namespace Primal3D;
-  const double EPS = 1e-4;
+  constexpr double EPS = 1e-4;
 
-  TetrahedronType tet(PointType({0.5, 0.5, 2}),
-                      PointType({2, -1, 0}),
-                      PointType({-1, -1, 0}),
-                      PointType({-1, 2, 0}));
-  OctahedronType oct(PointType({1, 0, 0}),
-                     PointType({1, 1, 0}),
-                     PointType({0, 1, 0}),
-                     PointType({0, 1, 1}),
-                     PointType({0, 0, 1}),
-                     PointType({1, 0, 1}));
+  TetrahedronType tet(PointType {0.5, 0.5, 2},
+                      PointType {2, -1, 0},
+                      PointType {-1, -1, 0},
+                      PointType {-1, 2, 0});
+  OctahedronType oct(PointType {1, 0, 0},
+                     PointType {1, 1, 0},
+                     PointType {0, 1, 0},
+                     PointType {0, 1, 1},
+                     PointType {0, 0, 1},
+                     PointType {1, 0, 1});
 
   PolyhedronType poly = axom::primal::clip(oct, tet);
 

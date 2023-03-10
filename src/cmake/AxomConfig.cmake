@@ -21,7 +21,7 @@ foreach(dep ${TPL_DEPS})
 endforeach()
 
 # Handle MPI Fortran headers
-if(ENABLE_MPI AND ENABLE_FORTRAN)
+if(AXOM_ENABLE_MPI AND ENABLE_FORTRAN)
   if(MPI_Fortran_USE_MPIF)
     set(AXOM_USE_MPIF_HEADER TRUE)
   endif()
@@ -158,8 +158,8 @@ install(
 # Add it to a temporary list before creating the cache variable to use list(APPEND)
 set(_axom_exported_targets axom)
 
-blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF ENABLE_CUDA)
-blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF ENABLE_HIP)
+blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
+blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF AXOM_ENABLE_HIP)
 
 set(_optional_targets cli11 fmt hdf5 lua openmp sol sparsehash)
 foreach(_tar ${_optional_targets})

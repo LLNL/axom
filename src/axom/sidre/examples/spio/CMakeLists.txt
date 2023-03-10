@@ -43,14 +43,8 @@ if(SCR_FOUND AND AXOM_ENABLE_TESTS)
         FOLDER     axom/sidre/examples
         )
 
-    if(ENABLE_MPI)
-        axom_add_test(
-            NAME          spio_IO_SCR_Checkpoint
-            COMMAND       spio_IO_SCR_Checkpoint_ex
-            NUM_MPI_TASKS 4 )
-    else()
-        axom_add_test(
-            NAME    spio_IO_SCR_Checkpoint
-            COMMAND spio_IO_SCR_Checkpoint_ex )
-    endif()
+    axom_add_test(
+        NAME          spio_IO_SCR_Checkpoint
+        COMMAND       spio_IO_SCR_Checkpoint_ex
+        NUM_MPI_TASKS 4 )
 endif()
