@@ -49,6 +49,7 @@ set( quest_headers
 
     ## File readers
     readers/STLReader.hpp
+    readers/ProEReader.hpp
 
     ## quest interface
     interface/internal/mpicomm_wrapper.hpp
@@ -74,6 +75,7 @@ set( quest_sources
 
     ## File readers
     readers/STLReader.cpp
+    readers/ProEReader.cpp
 
     ## quest interface
     interface/internal/QuestHelpers.cpp
