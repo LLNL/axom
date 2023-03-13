@@ -175,7 +175,7 @@ public:
 
   ElementType at(PositionType pos) const
   {
-    verifyPosition(pos);
+    RelationSet::verifyPosition(pos);
     return (*m_relation->relationData())[pos];
   }
 
