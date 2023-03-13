@@ -29,6 +29,7 @@
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/PolicyTraits.hpp"
+#include "axom/slam/policies/MapInterfacePolicies.hpp"
 
 namespace axom
 {
@@ -65,8 +66,10 @@ template <typename T,
           typename S = Set<>,
           typename IndPol =
             policies::STLVectorIndirection<typename S::PositionType, T>,
-          typename StrPol = policies::StrideOne<typename S::PositionType>>
-class Map : public MapBase<typename S::PositionType>, public StrPol
+          typename StrPol = policies::StrideOne<typename S::PositionType>,
+          typename IfacePol = policies::VirtualInterface>
+class Map : public StrPol,
+            public policies::MapInterface<IfacePol, typename S::PositionType>
 {
 public:
   using DataType = T;
@@ -88,6 +91,10 @@ public:
   using const_iterator_pair = std::pair<const_iterator, const_iterator>;
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
+
+public:
+  using ConcreteMap = Map<T, S, IndPol, StrPol, policies::ConcreteInterface>;
+  using VirtualMap = Map<T, S, IndPol, StrPol, policies::VirtualInterface>;
 
 private:
   template <typename USet = SetType, bool HasValue = !std::is_abstract<USet>::value>
@@ -456,8 +463,8 @@ private:
   OrderedMap m_data;
 };
 
-template <typename T, typename S, typename IndPol, typename StrPol>
-bool Map<T, S, IndPol, StrPol>::isValid(bool verboseOutput) const
+template <typename T, typename S, typename IndPol, typename StrPol, typename IfacePol>
+bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -515,8 +522,8 @@ bool Map<T, S, IndPol, StrPol>::isValid(bool verboseOutput) const
   return bValid;
 }
 
-template <typename T, typename S, typename IndPol, typename StrPol>
-void Map<T, S, IndPol, StrPol>::print() const
+template <typename T, typename S, typename IndPol, typename StrPol, typename IfacePol>
+void Map<T, S, IndPol, StrPol, IfacePol>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;

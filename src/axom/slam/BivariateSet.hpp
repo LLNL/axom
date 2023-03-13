@@ -19,6 +19,7 @@
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/NullSet.hpp"
 #include "axom/slam/RangeSet.hpp"
+#include "axom/slam/policies/PolicyTraits.hpp"
 
 #include <cassert>
 #include <type_traits>
@@ -85,7 +86,7 @@ public:
   using ElementType = typename FirstSetType::ElementType;
   using NullSetType = NullSet<PositionType, ElementType>;
 
-  using OrderedSetType =
+  using SubsetType =
     OrderedSet<PositionType,
                ElementType,
                policies::RuntimeSize<PositionType>,
@@ -206,13 +207,13 @@ public:
    * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual const OrderedSetType getElements(PositionType s1) const = 0;
+  virtual SubsetType getElements(PositionType s1) const = 0;
 
   virtual bool isValid(bool verboseOutput = false) const;
 
+private:
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
 
-private:
   template <typename SetType>
   typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
   getSize(const SetType* s) const
@@ -266,7 +267,7 @@ public:
   using BSet = BivariateSet<FirstSetType, SecondSetType>;
   using PositionType = typename BSet::PositionType;
   using ElementType = typename BSet::ElementType;
-  using OrderedSetType = typename BSet::OrderedSetType;
+  using SubsetType = typename BSet::SubsetType;
   using RangeSetType = typename BSet::RangeSetType;
 
 public:
@@ -301,9 +302,9 @@ public:
 
   PositionType size(PositionType) const override { return PositionType(); }
 
-  const OrderedSetType getElements(PositionType) const override
+  SubsetType getElements(PositionType) const override
   {
-    using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
+    using OrderedSetBuilder = typename SubsetType::SetBuilder;
     return OrderedSetBuilder();
   }
 
