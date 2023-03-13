@@ -17,6 +17,11 @@ namespace policies
 {
 namespace detail
 {
+/*!
+ * \brief The base class of concrete-interface bivariate sets.
+ *
+ *  This is effectively slam::BivariateSet without the virtual functions.
+ */
 template <typename Set1 = slam::Set<>, typename Set2 = slam::Set<>>
 struct ConcreteBivariateSet
 {
@@ -97,6 +102,24 @@ protected:
   const FirstSetType* m_set1;
   const SecondSetType* m_set2;
 };
+
+/*!
+ * \brief Templated helper class to select the correct base class to inherit
+ *  for instances of RelationSets or ProductSets.
+ *
+ *  This class helps select a virtual or non-virtual interface depending on
+ *  the interface type:
+ *  * In the ConcreteInterface case, the base class ConcreteBivariateSet
+ *    is used to avoid virtual function calls in the derived instance.
+ *  * In the VirtualInterface case, the base class is BivariateSet, which
+ *    contains a common virtual interface between Relation/ProductSets.
+ *
+ * \tparam InterfaceTag the interface type to select (virtual or concrete)
+ *
+ * \see InterfacePolicies.hpp
+ */
+template <typename InterfaceTag, typename Set1, typename Set2>
+struct BSetInterfaceSelector;
 
 template <typename InterfaceTag, typename Set1, typename Set2>
 struct BSetInterfaceSelector

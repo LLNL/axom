@@ -19,6 +19,24 @@ namespace policies
 {
 namespace detail
 {
+/*!
+ * \brief Templated helper class to select the correct base class to inherit
+ *  for instances of OrderedSet.
+ *
+ *  This class helps select a virtual or non-virtual interface depending on
+ *  the interface type:
+ *  * In the ConcreteInterface case, we use ConcreteInterface as an empty
+ *    base class to avoid virtual function calls in the derived instance.
+ *  * In the VirtualInterface case, the base class is Set, which contains a
+ *    common virtual interface between instances of OrderedSet.
+ *
+ * \tparam InterfaceTag the interface type to select (virtual or concrete)
+ *
+ * \see InterfacePolicies.hpp
+ */
+template <typename InterfaceTag, typename PosType, typename ElemType>
+struct SetInterfaceSelector;
+
 template <typename InterfaceTag, typename PosType, typename ElemType>
 struct SetInterfaceSelector
 {
