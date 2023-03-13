@@ -30,18 +30,18 @@ namespace detail
  *  * In the VirtualInterface case, the base class is Set, which contains a
  *    common virtual interface between instances of OrderedSet.
  *
- * \tparam InterfaceTag the interface type to select (virtual or concrete)
+ * \tparam InterfacePolicy the interface type to select (virtual or concrete)
  *
  * \see InterfacePolicies.hpp
  */
-template <typename InterfaceTag, typename PosType, typename ElemType>
+template <typename InterfacePolicy, typename PosType, typename ElemType>
 struct SetInterfaceSelector;
 
-template <typename InterfaceTag, typename PosType, typename ElemType>
+template <typename InterfacePolicy, typename PosType, typename ElemType>
 struct SetInterfaceSelector
 {
-  static_assert(std::is_same<InterfaceTag, ConcreteInterface>::value,
-                "InterfaceTag must be one of policies::ConcreteInterface or "
+  static_assert(std::is_same<InterfacePolicy, ConcreteInterface>::value,
+                "InterfacePolicy must be one of policies::ConcreteInterface or "
                 "policies::VirtualInterface.");
   using Type = ConcreteInterface;
 };
@@ -53,9 +53,9 @@ struct SetInterfaceSelector<VirtualInterface, PosType, ElemType>
 };
 }  // namespace detail
 
-template <typename InterfaceTag, typename PosType, typename ElemType>
+template <typename InterfacePolicy, typename PosType, typename ElemType>
 using SetInterface =
-  typename detail::SetInterfaceSelector<InterfaceTag, PosType, ElemType>::Type;
+  typename detail::SetInterfaceSelector<InterfacePolicy, PosType, ElemType>::Type;
 
 }  // end namespace policies
 }  // end namespace slam

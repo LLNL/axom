@@ -20,11 +20,11 @@ namespace policies
 {
 namespace detail
 {
-template <typename InterfaceTag, typename PosType>
+template <typename InterfacePolicy, typename PosType>
 struct MapInterfaceSelector
 {
-  static_assert(std::is_same<InterfaceTag, ConcreteInterface>::value,
-                "InterfaceTag must be one of policies::ConcreteInterface or "
+  static_assert(std::is_same<InterfacePolicy, ConcreteInterface>::value,
+                "InterfacePolicy must be one of policies::ConcreteInterface or "
                 "policies::VirtualInterface.");
   using Type = ConcreteInterface;
 };
@@ -36,9 +36,9 @@ struct MapInterfaceSelector<VirtualInterface, PosType>
 };
 }  // namespace detail
 
-template <typename InterfaceTag, typename SetPositionType>
+template <typename InterfacePolicy, typename SetPositionType>
 using MapInterface =
-  typename detail::MapInterfaceSelector<InterfaceTag, SetPositionType>::Type;
+  typename detail::MapInterfaceSelector<InterfacePolicy, SetPositionType>::Type;
 
 }  // end namespace policies
 }  // end namespace slam

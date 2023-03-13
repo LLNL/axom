@@ -114,18 +114,18 @@ protected:
  *  * In the VirtualInterface case, the base class is BivariateSet, which
  *    contains a common virtual interface between Relation/ProductSets.
  *
- * \tparam InterfaceTag the interface type to select (virtual or concrete)
+ * \tparam InterfacePolicy the interface type to select (virtual or concrete)
  *
  * \see InterfacePolicies.hpp
  */
-template <typename InterfaceTag, typename Set1, typename Set2>
+template <typename InterfacePolicy, typename Set1, typename Set2>
 struct BSetInterfaceSelector;
 
-template <typename InterfaceTag, typename Set1, typename Set2>
+template <typename InterfacePolicy, typename Set1, typename Set2>
 struct BSetInterfaceSelector
 {
-  static_assert(std::is_same<InterfaceTag, ConcreteInterface>::value,
-                "InterfaceTag must be one of policies::ConcreteInterface or "
+  static_assert(std::is_same<InterfacePolicy, ConcreteInterface>::value,
+                "InterfacePolicy must be one of policies::ConcreteInterface or "
                 "policies::VirtualInterface.");
   using Type = ConcreteBivariateSet<Set1, Set2>;
 };
@@ -137,9 +137,9 @@ struct BSetInterfaceSelector<VirtualInterface, Set1, Set2>
 };
 }  // namespace detail
 
-template <typename InterfaceTag, typename FromSet, typename ToSet>
+template <typename InterfacePolicy, typename FromSet, typename ToSet>
 using BivariateSetInterface =
-  typename detail::BSetInterfaceSelector<InterfaceTag, FromSet, ToSet>::Type;
+  typename detail::BSetInterfaceSelector<InterfacePolicy, FromSet, ToSet>::Type;
 
 }  // end namespace policies
 }  // end namespace slam
