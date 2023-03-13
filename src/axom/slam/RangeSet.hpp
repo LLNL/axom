@@ -69,7 +69,7 @@ public:
   using ConcreteSet =
     ConvertibleRangeSet<IndirectionPolicy, policies::ConcreteInterface>;
 
-  using PolymorphicSet =
+  using VirtualSet =
     ConvertibleRangeSet<IndirectionPolicy, policies::VirtualInterface>;
 
 public:

@@ -59,13 +59,13 @@ public:
 public:
   using ConcreteSet =
     RelationSet<Relation, SetType1, SetType2, policies::ConcreteInterface>;
-  using PolymorphicSet =
+  using VirtualSet =
     RelationSet<Relation, SetType1, SetType2, policies::VirtualInterface>;
 
   using OtherSet =
     std::conditional_t<std::is_same<InterfaceType, policies::VirtualInterface>::value,
                        ConcreteSet,
-                       PolymorphicSet>;
+                       VirtualSet>;
 
   RelationSet(const OtherSet& other)
     : BaseType(other.getFirstSet(), other.getSecondSet())

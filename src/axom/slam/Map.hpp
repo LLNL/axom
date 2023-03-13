@@ -94,7 +94,7 @@ public:
 
 public:
   using ConcreteMap = Map<T, S, IndPol, StrPol, policies::ConcreteInterface>;
-  using PolymorphicMap = Map<T, S, IndPol, StrPol, policies::VirtualInterface>;
+  using VirtualMap = Map<T, S, IndPol, StrPol, policies::VirtualInterface>;
 
 private:
   template <typename USet = SetType, bool HasValue = !std::is_abstract<USet>::value>

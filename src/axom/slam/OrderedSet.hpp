@@ -161,7 +161,7 @@ public:
   using ConcreteSet =
     ConvertibleOrderedSet<IndirectionPolicy, policies::ConcreteInterface>;
 
-  using PolymorphicSet =
+  using VirtualSet =
     ConvertibleOrderedSet<IndirectionPolicy, policies::VirtualInterface>;
 
   /*!

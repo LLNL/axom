@@ -93,13 +93,12 @@ private:
 
 public:
   using ConcreteSet = ProductSet<SetType1, SetType2, policies::ConcreteInterface>;
-  using PolymorphicSet =
-    ProductSet<SetType1, SetType2, policies::VirtualInterface>;
+  using VirtualSet = ProductSet<SetType1, SetType2, policies::VirtualInterface>;
 
   using OtherSet =
     std::conditional_t<std::is_same<InterfaceType, policies::VirtualInterface>::value,
                        ConcreteSet,
-                       PolymorphicSet>;
+                       VirtualSet>;
 
   ProductSet(const OtherSet& other)
     : BaseType(other.getFirstSet(), other.getSecondSet())

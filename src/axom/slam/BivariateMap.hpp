@@ -116,7 +116,7 @@ private:
 public:
   using ConcreteMap =
     BivariateMap<T, BSet, IndPol, StrPol, policies::ConcreteInterface>;
-  using PolymorphicMap =
+  using VirtualMap =
     BivariateMap<T, BSet, IndPol, StrPol, policies::VirtualInterface>;
 
 public:
