@@ -104,7 +104,9 @@ if(CONDUIT_FOUND)
             )
 
     if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
-        set(_nranks 3)
+        if (ENABLE_MPI)
+            set(_nranks 1)
+        endif()
 
         # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")

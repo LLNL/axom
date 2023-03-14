@@ -25,9 +25,11 @@
 #include "axom/core/Types.hpp"
 
 #include "conduit_blueprint.hpp"
-#include "conduit_blueprint_mpi.hpp"
 #include "conduit_relay_io_blueprint.hpp"
-#include "conduit_relay_mpi_io_blueprint.hpp"
+#ifdef AXOM_USE_MPI
+  #include "conduit_blueprint_mpi.hpp"
+  #include "conduit_relay_mpi_io_blueprint.hpp"
+#endif
 
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
@@ -59,7 +61,7 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-using RuntimePolicy = axom::quest::DistributedClosestPoint::RuntimePolicy;
+using RuntimePolicy = axom::quest::MarchingCubesAlgo::RuntimePolicy;
 
 ///////////////////////////////////////////////////////////////
 // converts the input string into an 80 character string
@@ -331,8 +333,10 @@ public:
       localRval = std::max(localRval, max_spacing1(dom));
     }
 
-    double rval;
+    double rval = localRval;
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(&localRval, &rval, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+#endif
 
     return rval;
   }
@@ -392,7 +396,11 @@ public:
   bool isValid() const
   {
     conduit::Node info;
+#ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", _mdMesh, info, MPI_COMM_WORLD))
+#else
+    if(!conduit::blueprint::verify("mesh", _mdMesh, info))
+#endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -419,9 +427,13 @@ private:
     SLIC_ASSERT(!meshFilename.empty());
 
     _mdMesh.reset();
+#ifdef AXOM_USE_MPI
     conduit::relay::mpi::io::blueprint::load_mesh(meshFilename,
                                                   _mdMesh,
                                                   MPI_COMM_WORLD);
+#else
+    conduit::relay::io::blueprint::load_mesh(meshFilename, _mdMesh);
+#endif
     assert(conduit::blueprint::mesh::is_multi_domain(_mdMesh));
     _domCount = conduit::blueprint::mesh::number_of_domains(_mdMesh);
 
@@ -430,7 +442,9 @@ private:
       const conduit::Node coordsetNode = _mdMesh[0].fetch_existing(_coordsetPath);
       _ndims = conduit::blueprint::mesh::coordset::dims(coordsetNode);
     }
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(MPI_IN_PLACE, &_ndims, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+#endif
     SLIC_ASSERT(_ndims > 0);
 
     bool valid = isValid();
@@ -443,9 +457,15 @@ void print_timing_stats(axom::utilities::Timer& t, const std::string& descriptio
 {
   auto getDoubleMinMax =
     [](double inVal, double& minVal, double& maxVal, double& sumVal) {
+#ifdef AXOM_USE_MPI
       MPI_Allreduce(&inVal, &minVal, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &maxVal, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
       MPI_Allreduce(&inVal, &sumVal, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#else
+      minVal = inVal;
+      maxVal = inVal;
+      sumVal = inVal;
+#endif
     };
 
   {
@@ -469,6 +489,7 @@ void add_rank_offset_to_surface_mesh_domain_ids(
   int localDomainCount,
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& surfaceMesh)
 {
+#ifdef AXOM_USE_MPI
   // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
   axom::Array<int> starts(numRanks, numRanks);
   {
@@ -497,15 +518,20 @@ void add_rank_offset_to_surface_mesh_domain_ids(
   {
     domainIdPtr[i] += starts[myRank];
   }
+#endif
 }
 
 /// Write blueprint mesh to disk
 void save_mesh(const conduit::Node& mesh, const std::string& filename)
 {
+#ifdef AXOM_USE_MPI
   conduit::relay::mpi::io::blueprint::save_mesh(mesh,
                                                 filename,
                                                 "hdf5",
                                                 MPI_COMM_WORLD);
+#else
+  conduit::relay::io::blueprint::save_mesh(mesh, filename, "hdf5");
+#endif
 }
 
 /// Write blueprint mesh to disk
@@ -515,7 +541,11 @@ void save_mesh(const sidre::Group& mesh, const std::string& filename)
   mesh.createNativeLayout(tmpMesh);
   {
     conduit::Node info;
+#ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", tmpMesh, info, MPI_COMM_WORLD))
+#else
+    if(!conduit::blueprint::verify("mesh", tmpMesh, info))
+#endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -523,10 +553,14 @@ void save_mesh(const sidre::Group& mesh, const std::string& filename)
     }
     // info.print();
   }
+#ifdef AXOM_USE_MPI
   conduit::relay::mpi::io::blueprint::save_mesh(tmpMesh,
                                                 filename,
                                                 "hdf5",
                                                 MPI_COMM_WORLD);
+#else
+  conduit::relay::io::blueprint::save_mesh(tmpMesh, filename, "hdf5");
+#endif
 }
 
 template <int DIM>
@@ -562,7 +596,9 @@ struct ContourTestBase
     mca.set_output_mesh(&surfaceMesh);
 
     axom::utilities::Timer computeTimer(false);
+#ifdef AXOM_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
     computeTimer.start();
     mca.compute_iso_surface(params.contourVal);
     computeTimer.stop();
@@ -879,7 +915,11 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
   int errCount = 0;
   if(params.checkResults)
   {
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(&localErrCount, &errCount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+#else
+    errCount = localErrCount;
+#endif
 
     if(errCount)
     {
@@ -901,9 +941,14 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+#ifdef AXOM_USE_MPI
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
   MPI_Comm_size(MPI_COMM_WORLD, &numRanks);
+#else
+  numRanks = 1;
+  myRank = 0;
+#endif
 
   initializeLogger();
   //slic::setAbortOnWarning(true);
@@ -925,8 +970,10 @@ int main(int argc, char** argv)
       retval = app.exit(e);
     }
 
+#ifdef AXOM_USE_MPI
     MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Finalize();
+#endif
 
     exit(retval);
   }
@@ -970,9 +1017,15 @@ int main(int argc, char** argv)
   slic::flushStreams();
 
   auto getIntMinMax = [](int inVal, int& minVal, int& maxVal, int& sumVal) {
+#ifdef AXOM_USE_MPI
     MPI_Allreduce(&inVal, &minVal, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
     MPI_Allreduce(&inVal, &maxVal, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     MPI_Allreduce(&inVal, &sumVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+#else
+    minVal = inVal;
+    maxVal = inVal;
+    sumVal = inVal;
+#endif
   };
 
   // Output some global mesh size stats
@@ -1010,7 +1063,9 @@ int main(int argc, char** argv)
   }
 
   finalizeLogger();
+#ifdef AXOM_USE_MPI
   MPI_Finalize();
+#endif
 
   return errCount != 0;
 }
