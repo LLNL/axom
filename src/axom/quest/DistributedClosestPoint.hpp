@@ -621,6 +621,7 @@ public:
                              mpi_traits<double>::type,
                              m_mpiComm);
     SLIC_ASSERT(errf == MPI_SUCCESS);
+    AXOM_UNUSED_VAR(errf);
 
     all_aabbs.clear();
     all_aabbs.reserve(m_nranks);
