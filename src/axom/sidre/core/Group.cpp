@@ -1222,33 +1222,26 @@ void Group::createNoDataLayout(Node& n, const Attribute* attr) const
   n.set(DataType::object());
 
   // Dump the group's views
-  IndexType vidx = getFirstValidViewIndex();
-  while(indexIsValid(vidx))
+  for(auto& view : views())
   {
-    const View* view = getView(vidx);
-
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view.getName()),
                    SIDRE_GROUP_LOG_PREPEND
-                     << "'" << view->getName()
+                     << "'" << view.getName()
                      << "' is the name of both a group and a view.");
 
-    if(attr == nullptr || view->hasAttributeValue(attr))
+    if(attr == nullptr || view.hasAttributeValue(attr))
     {
-      conduit::Node& child_node = m_is_list ? n.append() : n[view->getName()];
-      view->copyMetadataToNode(child_node);
+      conduit::Node& child_node = m_is_list ? n.append() : n[view.getName()];
+      view.copyMetadataToNode(child_node);
     }
-    vidx = getNextValidViewIndex(vidx);
   }
 
   // Recursively dump the child groups
-  IndexType gidx = getFirstValidGroupIndex();
-  while(indexIsValid(gidx))
+  for(auto& group : groups())
   {
-    const Group* group = getGroup(gidx);
-    conduit::Node& child_node = m_is_list ? n.append() : n[group->getName()];
-    group->createNoDataLayout(child_node, attr);
-    gidx = getNextValidGroupIndex(gidx);
+    conduit::Node& child_node = m_is_list ? n.append() : n[group.getName()];
+    group.createNoDataLayout(child_node, attr);
   }
 }
 

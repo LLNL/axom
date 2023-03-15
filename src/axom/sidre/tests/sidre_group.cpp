@@ -2738,7 +2738,7 @@ TEST(sidre_group, save_layout_protocols)
 
   DataStore::setConduitSLICMessageHandlers();
 
-  const std::string file_path_base("sidre_save_layout_protocols.");
+  const std::string file_path_base("sidre_save_layout_protocols_");
   DataStore ds;
 
   Group* flds = ds.getRoot()->createGroup("fields");
