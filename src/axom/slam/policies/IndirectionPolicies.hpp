@@ -418,7 +418,7 @@ struct ArrayViewIndirectionBase
   using ElemType = ElementType;
 
   using IndirectionResult = ElementType&;
-  using ConstIndirectionResult = const ElementType&;
+  using ConstIndirectionResult = ElementType&;
 
   using VectorType = axom::ArrayView<ElementType>;
   using IndirectionBufferType = VectorType;
