@@ -159,8 +159,8 @@ using ConcreteProdSet = slam::ProductSet<RangeSet, RangeSet>;
 using MMRelationType = typename MultiMat::RelationSetType::RelationType;
 using ConcreteRelationSet = slam::RelationSet<MMRelationType, RangeSet, RangeSet>;
 
-std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet> g_concretizedProdSets;
-std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>
+std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet>* g_concretizedProdSets;
+std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>*
   g_concretizedRelSets;
 
 template <DataLayout Layout>
@@ -173,13 +173,13 @@ struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetTy
   {
     auto field =
       mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedProdSets.find(field.set()) == g_concretizedProdSets.end())
+    if(g_concretizedProdSets->find(field.set()) == g_concretizedProdSets->end())
     {
       BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
                    static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      g_concretizedProdSets[field.set()] = prodSet;
+      (*g_concretizedProdSets)[field.set()] = prodSet;
     }
-    SlamBMap fieldStrided(&(g_concretizedProdSets[field.set()]));
+    SlamBMap fieldStrided(&((*g_concretizedProdSets)[field.set()]));
     fieldStrided.copy(field.getMap()->data().data());
     return fieldStrided;
   }
@@ -199,13 +199,13 @@ struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::Produc
   {
     auto field =
       mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedProdSets.find(field.set()) == g_concretizedProdSets.end())
+    if(g_concretizedProdSets->find(field.set()) == g_concretizedProdSets->end())
     {
       BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
                    static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      g_concretizedProdSets[field.set()] = prodSet;
+      (*g_concretizedProdSets)[field.set()] = prodSet;
     }
-    SlamBMapStrided fieldStrided(&(g_concretizedProdSets[field.set()]));
+    SlamBMapStrided fieldStrided(&((*g_concretizedProdSets)[field.set()]));
     fieldStrided.copy(field.getMap()->data().data());
     return fieldStrided;
   }
@@ -225,12 +225,12 @@ struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::RelationSetT
   {
     auto field =
       mm.get2dFieldAsSlamBivarMap<double, MultiMat::RelationSetType>(fieldName);
-    if(g_concretizedRelSets.find(field.set()) == g_concretizedRelSets.end())
+    if(g_concretizedRelSets->find(field.set()) == g_concretizedRelSets->end())
     {
       BSet relSet(field.set()->getRelation());
-      g_concretizedRelSets[field.set()] = relSet;
+      (*g_concretizedRelSets)[field.set()] = relSet;
     }
-    SlamBMapStrided fieldStrided(&(g_concretizedRelSets[field.set()]));
+    SlamBMapStrided fieldStrided(&((*g_concretizedRelSets)[field.set()]));
     fieldStrided.copy(field.getMap()->data().data());
     return fieldStrided;
   }
@@ -4518,6 +4518,13 @@ int main(int argc, char** argv)
   //using RelType = MultiMat::SparseRelationType;
   //using RelationSetType = slam::RelationSet<RelType, SetType, SetType>;
   using RelationSetType = MultiMat::RelationSetType;
+
+  // Note: we keep the below mappings within the lifetime context of main()
+  // This avoids an issue with static destruction order wrt Umpire.
+  std::unordered_map<const ProductSetType*, ConcreteProdSet> concretizedProdSets;
+  std::unordered_map<const RelationSetType*, ConcreteRelationSet> concretizedRelSets;
+  g_concretizedProdSets = &concretizedProdSets;
+  g_concretizedRelSets = &concretizedRelSets;
 
   // test out field by field change
   mm.convertFieldToCellDom(1);
