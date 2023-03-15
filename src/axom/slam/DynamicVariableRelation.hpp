@@ -31,13 +31,16 @@ namespace axom
 {
 namespace slam
 {
-template <typename PosType = slam::DefaultPositionType,
-          typename ElemType = slam::DefaultElementType>
-class DynamicVariableRelation : public Relation<PosType, ElemType>
+template <typename FirstSetType = slam::Set<>, typename SecondSetType = slam::Set<>>
+class DynamicVariableRelation
+  : public Relation<typename FirstSetType::PositionType, typename FirstSetType::ElementType>
 {
 public:
-  using SetType = Set<PosType, ElemType>;
-  using SetPosition = PosType;
+  using FromSetType = FirstSetType;
+  using ToSetType = SecondSetType;
+
+  using SetPosition = typename FirstSetType::PositionType;
+  using SetElement = typename FirstSetType::ElementType;
 
   using RelationVec = std::vector<SetPosition>;
   using RelationVecIterator = typename RelationVec::iterator;
@@ -50,11 +53,10 @@ public:
   using RelationsContainerCIt = typename RelationsContainer::const_iterator;
   using RelationsContainerIt = typename RelationsContainer::iterator;
 
-  using Relation<PosType, ElemType>::s_nullSet;
-
 public:
-  DynamicVariableRelation(SetType* fromSet = &s_nullSet,
-                          SetType* toSet = &s_nullSet)
+  DynamicVariableRelation(
+    FirstSetType* fromSet = policies::EmptySetTraits<FirstSetType>::emptySet(),
+    SecondSetType* toSet = policies::EmptySetTraits<SecondSetType>::emptySet())
     : m_fromSet(fromSet)
     , m_toSet(toSet)
   {
@@ -108,17 +110,17 @@ public:
 
   bool hasFromSet() const
   {
-    return !policies::EmptySetTraits<SetType>::isEmpty(m_fromSet);
+    return !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
   }
-  SetType* fromSet() { return m_fromSet; }
-  const SetType* fromSet() const { return m_fromSet; }
+  FromSetType* fromSet() { return m_fromSet; }
+  const FromSetType* fromSet() const { return m_fromSet; }
 
   bool hasToSet() const
   {
-    return !policies::EmptySetTraits<SetType>::isEmpty(m_toSet);
+    return !policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
   }
-  SetType* toSet() { return m_toSet; }
-  const SetType* toSet() const { return m_toSet; }
+  ToSetType* toSet() { return m_toSet; }
+  const ToSetType* toSet() const { return m_toSet; }
 
   SetPosition fromSetSize() const { return m_relationsVec.size(); }
 
@@ -196,30 +198,29 @@ private:
   }
 
 private:
-  SetType* m_fromSet;
-  SetType* m_toSet;
+  FromSetType* m_fromSet;
+  ToSetType* m_toSet;
 
   RelationsContainer m_relationsVec;
 };
 
-template <typename PosType, typename ElemType>
-bool DynamicVariableRelation<PosType, ElemType>::isValid(bool verboseOutput) const
+template <typename FirstSetType, typename SecondSetType>
+bool DynamicVariableRelation<FirstSetType, SecondSetType>::isValid(
+  bool verboseOutput) const
 {
   bool bValid = true;
 
   std::stringstream sstr;
 
-  if(*m_fromSet == s_nullSet || *m_toSet == s_nullSet)
+  if(!hasFromSet() || !hasToSet())
   {
     if(!m_relationsVec.empty())
     {
       if(verboseOutput)
       {
         sstr << "\n\t* relations vector was not empty "
-             << " -- fromSet was " << (*m_fromSet == s_nullSet ? "" : " not ")
-             << "null"
-             << " , toSet was " << (*m_toSet == s_nullSet ? "" : " not ")
-             << "null";
+             << " -- fromSet was " << (!hasFromSet() ? "" : " not ") << "null"
+             << " , toSet was " << (!hasToSet() ? "" : " not ") << "null";
       }
 
       bValid = false;

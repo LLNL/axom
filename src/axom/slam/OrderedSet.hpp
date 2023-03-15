@@ -26,6 +26,7 @@
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/SubsettingPolicies.hpp"
+#include "axom/slam/policies/SetInterfacePolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
 #include "axom/core/IteratorBase.hpp"
@@ -54,13 +55,15 @@ template <typename PosType = slam::DefaultPositionType,
           typename OffsetPolicy = policies::ZeroOffset<PosType>,
           typename StridePolicy = policies::StrideOne<PosType>,
           typename IndirectionPolicy = policies::NoIndirection<PosType, ElemType>,
-          typename SubsettingPolicy = policies::NoSubset>
-struct OrderedSet : public Set<PosType, ElemType>,
-                    SizePolicy,
-                    OffsetPolicy,
-                    StridePolicy,
-                    IndirectionPolicy,
-                    SubsettingPolicy
+          typename SubsettingPolicy = policies::NoSubset,
+          typename InterfacePolicy = policies::VirtualInterface>
+struct OrderedSet
+  : public policies::SetInterface<InterfacePolicy, PosType, ElemType>,
+    SizePolicy,
+    OffsetPolicy,
+    StridePolicy,
+    IndirectionPolicy,
+    SubsettingPolicy
 {
 public:
   using PositionType = PosType;
@@ -110,8 +113,75 @@ public:
     , SubsettingPolicyType(builder.m_parent)
   { }
 
-  OrderedSet(const OrderedSet& oset) = default;
-  OrderedSet& operator=(const OrderedSet& other) = default;
+private:
+  template <typename OtherPosType,
+            typename OtherElemType,
+            typename OtherSizePolicy,
+            typename OtherOffsetPolicy,
+            typename OtherStridePolicy,
+            typename OtherIndirectionPolicy,
+            typename OtherSubsettingPolicy,
+            typename OtherInterfacePolicy>
+  friend struct OrderedSet;
+
+  /*!
+   * \brief Helper tag class to call OrderedSet conversion constructor.
+   */
+  struct ConversionTag
+  { };
+
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  using ConvertibleOrderedSet = OrderedSet<PosType,
+                                           ElemType,
+                                           SizePolicyType,
+                                           OffsetPolicyType,
+                                           StridePolicyType,
+                                           OtherIndirectionPolicy,
+                                           SubsettingPolicyType,
+                                           OtherInterfaceType>;
+
+  /*!
+   * \brief Private constructor to create an OrderedSet from another OrderedSet
+   *  with different IndirectionPolicy and InterfacePolicy.
+   *
+   *  Used by the conversion function defined below.
+   */
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  OrderedSet(
+    ConversionTag,
+    const ConvertibleOrderedSet<OtherIndirectionPolicy, OtherInterfaceType>& other)
+    : SizePolicyType(other)
+    , OffsetPolicyType(other)
+    , StridePolicyType(other)
+    , IndirectionPolicyType(other)
+    , SubsettingPolicyType(other)
+  { }
+
+public:
+  using ConcreteSet =
+    ConvertibleOrderedSet<IndirectionPolicy, policies::ConcreteInterface>;
+
+  using VirtualSet =
+    ConvertibleOrderedSet<IndirectionPolicy, policies::VirtualInterface>;
+
+  /*!
+   * \brief Converts this OrderedSet to an OrderedSet of another indirection
+   *  policy and/or interface policy.
+   */
+  template <typename OtherIndirectionPolicy, typename OtherInterfaceType>
+  operator OrderedSet<PosType,
+                      ElemType,
+                      SizePolicyType,
+                      OffsetPolicyType,
+                      StridePolicyType,
+                      OtherIndirectionPolicy,
+                      SubsettingPolicyType,
+                      OtherInterfaceType>() const
+  {
+    using ToOrderedSet =
+      ConvertibleOrderedSet<OtherIndirectionPolicy, OtherInterfaceType>;
+    return ToOrderedSet(typename ToOrderedSet::ConversionTag {}, *this);
+  }
 
 public:
   /**
@@ -456,14 +526,16 @@ template <typename PosType,
           typename OffsetPolicy,
           typename StridePolicy,
           typename IndirectionPolicy,
-          typename SubsettingPolicy>
+          typename SubsettingPolicy,
+          typename InterfacePolicy>
 bool OrderedSet<PosType,
                 ElemType,
                 SizePolicy,
                 OffsetPolicy,
                 StridePolicy,
                 IndirectionPolicy,
-                SubsettingPolicy>::isValid(bool verboseOutput) const
+                SubsettingPolicy,
+                InterfacePolicy>::isValid(bool verboseOutput) const
 {
   bool bValid = SizePolicyType::isValid(verboseOutput) &&
     OffsetPolicyType::isValid(verboseOutput) &&
