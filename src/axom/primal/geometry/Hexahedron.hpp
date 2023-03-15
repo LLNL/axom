@@ -226,6 +226,7 @@ public:
    *
    * \return The volume of the hexahedron
    */
+  AXOM_HOST_DEVICE
   double volume()
   {
     double retVol = 0.0;

@@ -163,9 +163,6 @@ void check_intersection_volumes(const Input& params)
                                              edge_length * j - 1,
                                              edge_length * k - 1),
                        edge_length);
-        // SLIC_INFO("Hex " << hex_index << " volume is "
-        //                  << hexes[hex_index].volume() << "\n");
-        // SLIC_INFO("Hex " << hex_index << " is \n" << hexes[hex_index]);
         hex_index++;
       }
     }
@@ -212,9 +209,6 @@ void check_intersection_volumes(const Input& params)
                                           PointType::zero(),
                                           PointType::make_point(x2, 0, z2),
                                           PointType::make_point(0, pole_sign, 0));
-        // SLIC_INFO("Tet " << tet_index << " volume is "
-        //                  << tets[tet_index].volume() << "\n");
-        // SLIC_INFO("Tet " << tet_index << " is \n" << tets[tet_index]);
         tet_index++;
       }
     }
@@ -240,7 +234,6 @@ void check_intersection_volumes(const Input& params)
   axom::for_all<ExecSpace>(
     NUM_HEXES * NUM_TETS,
     AXOM_LAMBDA(axom::IndexType i) {
-      // Should check if an if(vol > 0) { increment } would make things slower or faster on GPU
       if(NUM_HEXES > NUM_TETS)
       {
         total_intersect_vol +=
