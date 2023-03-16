@@ -997,18 +997,20 @@ void MFEMSidreDataCollection::addMaterialSetToIndex()
 {
   if(myid == 0)
   {
-    for(auto it = m_matset_associations.begin(); it != m_matset_associations.end(); it++)
+    for(auto it = m_matset_associations.begin();
+        it != m_matset_associations.end();
+        it++)
     {
-      const std::string &mat_prefix = it->first;
-      const std::string &matset_name = it->second;
+      const std::string& mat_prefix = it->first;
+      const std::string& matset_name = it->second;
 
       conduit::Node matnames;
       int nmats = 0;
       // Iterate over the fields in their group order.
       sidre::Group* fields_grp = m_bp_grp->getGroup("fields");
-      for (auto& group : fields_grp->groups())
+      for(auto& group : fields_grp->groups())
       {
-        const std::string &field_name = group.getName();
+        const std::string& field_name = group.getName();
         const auto tokens = utilities::string::rsplitN(field_name, 2, '_');
         // Expecting [base_field_name, material_id]
         if(tokens.size() != 2)
@@ -1024,13 +1026,16 @@ void MFEMSidreDataCollection::addMaterialSetToIndex()
       // Now we know the material names for the current matset.
       if(nmats > 0)
       {
-        Group *bp_matset_index_grp = m_bp_index_grp->createGroup("matsets/" + matset_name);
+        Group* bp_matset_index_grp =
+          m_bp_index_grp->createGroup("matsets/" + matset_name);
         bp_matset_index_grp->createViewString("topology", s_mesh_topology_name);
-        Group *bp_materials_index_grp = bp_matset_index_grp->createGroup("materials");
+        Group* bp_materials_index_grp =
+          bp_matset_index_grp->createGroup("materials");
         bp_materials_index_grp->importConduitTree(matnames);
 
         Group* bp_matset_group = m_bp_grp->getGroup("matsets/" + matset_name);
-        bp_matset_index_grp->createViewString("path", bp_matset_group->getPathName());
+        bp_matset_index_grp->createViewString("path",
+                                              bp_matset_group->getPathName());
       }
     }
   }

@@ -1198,7 +1198,7 @@ public:
     populateMaterials();
 
     // Get the free material so it is created first.
-    mfem::GridFunction *freeMat = getCompletelyFree<ExecSpace>();
+    mfem::GridFunction* freeMat = getCompletelyFree<ExecSpace>();
 
     // Get this shape's material, creating the GridFunction if needed.
     auto matVF = getMaterial(shape.getMaterial());
