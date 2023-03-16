@@ -126,6 +126,11 @@ private:
   */
   mutable axom::mint::Mesh *_surfaceMesh;
 
+  /* @brief Field name for recording computational-mesh cell id.
+
+     This is for looking up the computational-mesh cell id that
+     contributed a surface-mesh cell.
+  */
   std::string _cellIdField;
 
   double _contourVal;
@@ -242,7 +247,13 @@ private:
   */
   mutable axom::mint::Mesh *_surfaceMesh;
 
+  //! @brief See MarchingCubesAlgo1::_cellIdField.
   std::string _cellIdField;
+  /* @brief Field name for recording computational-mesh domain id.
+
+     This is for looking up the computational-mesh domain id that
+     contributed a surface-mesh cell.
+  */
   std::string _domainIdField;
 
   // Use simple pointers for now.  Later, maybe sidre.
