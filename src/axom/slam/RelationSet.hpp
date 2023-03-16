@@ -46,13 +46,15 @@ private:
   using BaseType =
     policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>;
   using RangeSetType = typename BaseType::RangeSetType;
+  using BaseSubsetType = typename BaseType::SubsetType;
 
 public:
   using PositionType = typename RelationType::SetPosition;
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
-  using SubsetType = typename BaseType::SubsetType;
+  using SubsetType =
+    std::conditional_t<std::is_same<void, BaseSubsetType>::value, RelationSubset, BaseSubsetType>;
 
   using BaseType::INVALID_POS;
 
