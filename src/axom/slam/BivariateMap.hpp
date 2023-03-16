@@ -103,6 +103,8 @@ public:
 
   using ValueType = typename IndirectionPolicy::IndirectionResult;
   using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
+  using PointerType = std::remove_reference_t<ValueType>*;
+  using ConstPointerType = std::remove_reference_t<ConstValueType>*;
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol, IfacePol>;
 
@@ -365,9 +367,9 @@ public:
    * \warning For sparse BivariateSet type, this function may have to do a
    *          linear search and can be slow.
    */
-  AXOM_HOST_DEVICE const DataType* findValue(SetPosition s1,
-                                             SetPosition s2,
-                                             SetPosition comp = 0) const
+  AXOM_HOST_DEVICE ConstPointerType findValue(SetPosition s1,
+                                              SetPosition s2,
+                                              SetPosition comp = 0) const
   {
     SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
@@ -378,9 +380,9 @@ public:
     return &(m_map(i, comp));
   }
 
-  AXOM_HOST_DEVICE DataType* findValue(SetPosition s1,
-                                       SetPosition s2,
-                                       SetPosition comp = 0)
+  AXOM_HOST_DEVICE PointerType findValue(SetPosition s1,
+                                         SetPosition s2,
+                                         SetPosition comp = 0)
   {
     SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
