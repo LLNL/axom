@@ -12,6 +12,7 @@ set(quest_tests
     quest_inout_quadtree.cpp
     quest_signed_distance.cpp
     quest_discretize.cpp
+    quest_pro_e_reader.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
    )
