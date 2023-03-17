@@ -134,6 +134,8 @@ public:
 
   /*!
     * \brief Test if this Octahedron is equal to another, within a tolerance
+    *
+    * \note This function can be an expensive operation
     */
   AXOM_HOST_DEVICE
   bool equals(const Octahedron& other, double eps = 1.e-24) const

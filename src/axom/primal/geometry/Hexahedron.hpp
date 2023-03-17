@@ -126,30 +126,30 @@ public:
   }
 
   /*!
-   * \brief Computes the centroid as the average of the hexahedron's vertex
+   * \brief Computes the average of the hexahedron's vertex
    *  positions
    *
-   * \return The centroid of the hexahedron's vertices
+   * \return A point at the mean of the hexahedron's vertices
    */
   AXOM_HOST_DEVICE
-  PointType centroid() const
+  PointType vertexMean() const
   {
-    NumArrayType sum;
+    PointType sum;
 
     for(int i = 0; i < NUM_HEX_VERTS; ++i)
     {
-      sum += m_points[i].array();
+      sum.array() += m_points[i].array();
     }
-    sum /= NUM_HEX_VERTS;
+    sum.array() /= NUM_HEX_VERTS;
 
-    return PointType(sum);
+    return sum;
   }
 
   /**
    * \brief Method to decompose a Hexahedron
    *        into 24 Tetrahedrons.
    *        Each Tetrahedron consists of 4 points:
-   *          (1) The mean of all Hexahedron points (centroid)
+   *          (1) The mean of all Hexahedron points
    *          (2,3) Two adjacent vertices on a Hexahedron face
    *          (4) The mean of the current Hexahedron face
    *
@@ -161,7 +161,7 @@ public:
   void triangulate(TetrahedronType* tets)
   {
     // Hex center (hc)
-    PointType hc = centroid();
+    PointType hc = vertexMean();
 
     //Face means (fm)
     PointType fm1 =
@@ -244,6 +244,8 @@ public:
 
   /*!
     * \brief Test if this Hexahedron is equal to another, within a tolerance
+    *
+    * \note This function can be an expensive operation
     */
   AXOM_HOST_DEVICE
   bool equals(const Hexahedron& other, double eps = 1.e-24) const
