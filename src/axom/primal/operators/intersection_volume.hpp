@@ -43,6 +43,23 @@ AXOM_HOST_DEVICE T intersection_volume(const Hexahedron<T, 3>& hex,
 }
 
 /*!
+ * \brief Finds the intersection volume between a tetrahedron and a hexahedron
+ *
+ * \param [in] hex The tetrahedron
+ * \param [in] tet The hexahedron
+ * \param [in] eps The tolerance for determining the intersection
+ * \return Intersection volume between the tetrahedron and hexahedron
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
+                                       const Hexahedron<T, 3>& hex,
+                                       double eps = 1.e-10)
+{
+  return intersection_volume(hex, tet, eps);
+}
+
+/*!
  * \brief Finds the intersection volume between a octahedron and a tetrahedron
  *
  * \param [in] oct The octahedron
@@ -57,6 +74,24 @@ AXOM_HOST_DEVICE T intersection_volume(const Octahedron<T, 3>& oct,
                                        double eps = 1.e-10)
 {
   return clip(oct, tet, eps).volume();
+}
+
+/*!
+ * \brief Finds the intersection volume between a tetrahedron and a octahedron
+ *
+ * \param [in] oct The tetrahedron
+ * \param [in] tet The octahedron
+ * \param [in] eps The tolerance for determining the intersection
+ * \return Intersection volume between the tetrahedron and octahedron
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
+                                       const Octahedron<T, 3>& oct,
+
+                                       double eps = 1.e-10)
+{
+  return intersection_volume(oct, tet, eps);
 }
 
 /*!
