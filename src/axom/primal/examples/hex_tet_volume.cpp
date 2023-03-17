@@ -144,9 +144,10 @@ void check_intersection_volumes(const Input& params)
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
-    axom::fmt::format("Generating {} hexahedra with hexahedra resolution set to {}",
-                      NUM_HEXES,
-                      HEX_RESOLUTION)));
+    axom::fmt::format(
+      "Generating {} hexahedra with hexahedra resolution set to {}",
+      NUM_HEXES,
+      HEX_RESOLUTION)));
 
   SLIC_INFO(axom::fmt::format(
     "{: ^80}",
@@ -231,11 +232,15 @@ void check_intersection_volumes(const Input& params)
                                         total_tet_vol.get())));
 
   // Calculate intersection volume for each hexahedra and tetrahedra pair.
+  // Typically, a spatial index (e.g. Bounding Volume Hierarchy) can be used to
+  // reduce the number of operations.
   RAJA::ReduceSum<REDUCE_POL, double> total_intersect_vol(0.0);
 
   axom::for_all<ExecSpace>(
     NUM_HEXES * NUM_TETS,
     AXOM_LAMBDA(axom::IndexType i) {
+      // The lower of the two sizes is used to factor out every pair of
+      // hexahedron and tetrahedron indices.
       if(NUM_HEXES > NUM_TETS)
       {
         total_intersect_vol +=

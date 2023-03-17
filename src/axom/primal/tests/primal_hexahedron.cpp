@@ -21,9 +21,9 @@ class HexahedronTest : public ::testing::Test
 public:
   static const int DIM = 3;
 
-  typedef double CoordType;
-  typedef primal::Point<CoordType, DIM> QPoint;
-  typedef primal::Hexahedron<CoordType, DIM> QHex;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using Hex = primal::Hexahedron<CoordType, DIM>;
 
 protected:
   virtual void SetUp()
@@ -71,8 +71,8 @@ protected:
 //------------------------------------------------------------------------------
 TEST_F(HexahedronTest, defaultConstructor)
 {
-  typedef HexahedronTest::QPoint QPoint;
-  typedef HexahedronTest::QHex QHex;
+  using QPoint = HexahedronTest::QPoint;
+  using QHex = HexahedronTest::Hex;
 
   const QHex hex;
 
@@ -92,8 +92,8 @@ TEST_F(HexahedronTest, defaultConstructor)
 
 TEST_F(HexahedronTest, constructFromPoints)
 {
-  typedef HexahedronTest::QPoint QPoint;
-  typedef HexahedronTest::QHex QHex;
+  using QPoint = HexahedronTest::QPoint;
+  using QHex = HexahedronTest::Hex;
 
   // Access the test data
   const QPoint* pt = this->qData0;
@@ -116,8 +116,8 @@ TEST_F(HexahedronTest, constructFromPoints)
 
 TEST_F(HexahedronTest, volume)
 {
-  typedef HexahedronTest::QPoint QPoint;
-  typedef HexahedronTest::QHex QHex;
+  using QPoint = HexahedronTest::QPoint;
+  using QHex = HexahedronTest::Hex;
 
   // Access the test data
   const QPoint* pt0 = this->qData0;
@@ -137,8 +137,8 @@ TEST_F(HexahedronTest, volume)
 
 TEST_F(HexahedronTest, equals)
 {
-  typedef HexahedronTest::QPoint QPoint;
-  typedef HexahedronTest::QHex QHex;
+  using QPoint = HexahedronTest::QPoint;
+  using QHex = HexahedronTest::Hex;
 
   // Access the test data
   const QPoint* pt0 = this->qData0;
