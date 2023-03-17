@@ -425,8 +425,8 @@ void MultiMat::convertToDynamic()
     }
     StaticVariableRelationType& rel = relStatic(layout);
 
-    SetType* set1 = rel.fromSet();
-    SetType* set2 = rel.toSet();
+    RangeSetType* set1 = &relDominantSet(layout);
+    RangeSetType* set2 = &relSecondarySet(layout);
 
     DynamicVariableRelationType relDyn(set1, set2);
     for(int i = 0; i < rel.fromSetSize(); i++)

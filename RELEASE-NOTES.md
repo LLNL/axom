@@ -47,6 +47,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
 - Updates [conduit dependency to v0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
 - Adds `vcpkg` port for `lua` as optional dependency on Windows
+- Adds additional parameters to quest's `PointInCell` query to control the Newton solve
+  from physical to reference space for a given element
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
