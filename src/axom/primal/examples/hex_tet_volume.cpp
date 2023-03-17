@@ -110,13 +110,13 @@ HexahedronType generateCube(const PointType& point, double length)
 {
   return HexahedronType(
     point,
-    PointType::make_point(point[0], point[1], point[2] + length),
-    PointType::make_point(point[0] + length, point[1], point[2] + length),
-    PointType::make_point(point[0] + length, point[1], point[2]),
-    PointType::make_point(point[0], point[1] + length, point[2]),
-    PointType::make_point(point[0], point[1] + length, point[2] + length),
-    PointType::make_point(point[0] + length, point[1] + length, point[2] + length),
-    PointType::make_point(point[0] + length, point[1] + length, point[2]));
+    PointType {point[0], point[1], point[2] + length},
+    PointType {point[0] + length, point[1], point[2] + length},
+    PointType {point[0] + length, point[1], point[2]},
+    PointType {point[0], point[1] + length, point[2]},
+    PointType {point[0], point[1] + length, point[2] + length},
+    PointType {point[0] + length, point[1] + length, point[2] + length},
+    PointType {point[0] + length, point[1] + length, point[2]});
 }
 
 // Function to check intersection volumes of generated hexahedra and tetrahedra
@@ -161,11 +161,10 @@ void check_intersection_volumes(const Input& params)
       for(int k = 0; k < HEX_RESOLUTION; k++)
       {
         double edge_length = 2.0 / HEX_RESOLUTION;
-        hexes[hex_index] =
-          generateCube(PointType::make_point(edge_length * i - 1,
-                                             edge_length * j - 1,
-                                             edge_length * k - 1),
-                       edge_length);
+        hexes[hex_index] = generateCube(PointType {edge_length * i - 1,
+                                                   edge_length * j - 1,
+                                                   edge_length * k - 1},
+                                        edge_length);
         hex_index++;
       }
     }
@@ -208,10 +207,10 @@ void check_intersection_volumes(const Input& params)
         double x2 = axom::utilities::lerp<double>(-1.0, 1.0, step_size * (i + 1));
         double z2 = std::sqrt(1 - (x2 * x2)) * z_sign;
 
-        tets[tet_index] = TetrahedronType(PointType::make_point(x1, 0, z1),
+        tets[tet_index] = TetrahedronType(PointType {x1, 0, z1},
                                           PointType::zero(),
-                                          PointType::make_point(x2, 0, z2),
-                                          PointType::make_point(0, pole_sign, 0));
+                                          PointType {x2, 0, z2},
+                                          PointType {0, pole_sign, 0});
         tet_index++;
       }
     }
