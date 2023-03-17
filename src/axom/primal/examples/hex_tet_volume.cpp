@@ -7,8 +7,10 @@
  * \file hex_tet_volume.cpp
  *
  * Example that demonstrates use of Primal's intersection_volume operator to find
- * the volume of intersection between hexahedra and tetrahedra.  Supports host
+ * the volume of intersection between hexahedra and tetrahedra. Supports host
  * and device execution using RAJA.
+ *
+ * \note This example requires RAJA and Umpire.
  */
 
 #include "axom/primal.hpp"
@@ -26,7 +28,7 @@ using PointType = typename axom::primal::Point<double, 3>;
 using TetrahedronType = typename axom::primal::Tetrahedron<double, 3>;
 
 /// Choose runtime policy for RAJA
-enum RuntimePolicy
+enum class RuntimePolicy
 {
   seq = 0,
 #ifdef AXOM_USE_OPENMP
@@ -43,9 +45,9 @@ enum RuntimePolicy
 struct Input
 {
 public:
-  int hexLevel {5};
-  int tetLevel {5};
-  RuntimePolicy policy {seq};
+  int hexResolution {5};
+  int tetResolution {5};
+  RuntimePolicy policy {RuntimePolicy::seq};
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
@@ -68,12 +70,12 @@ public:
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(validExecPolicies));
 
-    app.add_option("-x,--hex-level", hexLevel)
+    app.add_option("-x,--hex-resolution", hexResolution)
       ->description("Number of hexahedra to generate")
       ->capture_default_str()
       ->check(axom::CLI::PositiveNumber);
 
-    app.add_option("-t,--tet-level", tetLevel)
+    app.add_option("-t,--tet-resolution", tetResolution)
       ->description("Number of tetrahedra to generate")
       ->capture_default_str()
       ->check(axom::CLI::PositiveNumber);
@@ -86,16 +88,16 @@ public:
 private:
   // clang-format off
   const std::map<std::string, RuntimePolicy> validExecPolicies{
-      {"seq", seq}
+      {"seq", RuntimePolicy::seq}
     #if defined(AXOM_USE_RAJA)
       #ifdef AXOM_USE_OPENMP
-    , {"omp", omp}
+    , {"omp", RuntimePolicy::omp}
       #endif
       #ifdef AXOM_USE_CUDA
-    , {"cuda", cuda}
+    , {"cuda", RuntimePolicy::cuda}
       #endif
       #ifdef AXOM_USE_HIP
-    , {"hip", hip}
+    , {"hip", RuntimePolicy::hip}
       #endif
     #endif
   };
@@ -135,29 +137,29 @@ void check_intersection_volumes(const Input& params)
 
   // Generate hexahedra subdividing the unit cube with corner points
   // (-1,-1,-1) and (1,1,1)
-  int const HEX_LEVEL = params.hexLevel;
+  int const HEX_RESOLUTION = params.hexResolution;
   int hex_index = 0;
-  int const NUM_HEXES = HEX_LEVEL * HEX_LEVEL * HEX_LEVEL;
+  int const NUM_HEXES = HEX_RESOLUTION * HEX_RESOLUTION * HEX_RESOLUTION;
   HexahedronType* hexes = axom::allocate<HexahedronType>(NUM_HEXES);
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
-    axom::fmt::format("Generating {} hexahedra with hexahedra level set to {}",
+    axom::fmt::format("Generating {} hexahedra with hexahedra resolution set to {}",
                       NUM_HEXES,
-                      HEX_LEVEL)));
+                      HEX_RESOLUTION)));
 
   SLIC_INFO(axom::fmt::format(
     "{: ^80}",
     "Hexahedra subdivide the unit cube with corner points (-1,-1,-1) "
     "and (1,1,1)"));
 
-  for(int i = 0; i < HEX_LEVEL; i++)
+  for(int i = 0; i < HEX_RESOLUTION; i++)
   {
-    for(int j = 0; j < HEX_LEVEL; j++)
+    for(int j = 0; j < HEX_RESOLUTION; j++)
     {
-      for(int k = 0; k < HEX_LEVEL; k++)
+      for(int k = 0; k < HEX_RESOLUTION; k++)
       {
-        double edge_length = 2.0 / HEX_LEVEL;
+        double edge_length = 2.0 / HEX_RESOLUTION;
         hexes[hex_index] =
           generateCube(PointType::make_point(edge_length * i - 1,
                                              edge_length * j - 1,
@@ -169,25 +171,25 @@ void check_intersection_volumes(const Input& params)
   }
 
   // Generate tetrahedra from unit sphere with center (0,0,0)
-  int const TET_LEVEL = params.tetLevel;
+  int const TET_RESOLUTION = params.tetResolution;
   int tet_index = 0;
-  int const NUM_TETS = 4 * std::pow(2, TET_LEVEL);
+  int const NUM_TETS = 4 * std::pow(2, TET_RESOLUTION);
   TetrahedronType* tets = axom::allocate<TetrahedronType>(NUM_TETS);
-  double step_size = 1.0 / std::pow(2, TET_LEVEL);
+  double step_size = 1.0 / std::pow(2, TET_RESOLUTION);
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
     axom::fmt::format(
-      "Generating {} tetrahedra with tetrahedra level set to {}",
+      "Generating {} tetrahedra with tetrahedra resolution set to {}",
       NUM_TETS,
-      TET_LEVEL)));
+      TET_RESOLUTION)));
 
   SLIC_INFO(axom::fmt::format(
     "{: ^80}",
     axom::fmt::format(
       "Tetrahedra are encapsulated by the unit sphere at the origin")));
 
-  for(int i = 0; i < std::pow(2, TET_LEVEL); i++)
+  for(int i = 0; i < std::pow(2, TET_RESOLUTION); i++)
   {
     for(int j = 0; j <= 1; j++)
     {
