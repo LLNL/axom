@@ -1167,9 +1167,11 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
       {
         View* num_domains =
           m_bp_index_grp->getView("state/number_of_domains")->setScalar(num_procs);
+
         SLIC_ASSERT_MSG(num_domains,
                         "Failed to reset View 'state/number_of_domains' "
                         "in blueprint index to correct number of domains.");
+        AXOM_UNUSED_VAR(num_domains);
       }
       else
       {
