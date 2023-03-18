@@ -253,6 +253,35 @@ AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
 #endif
 
 //---------------------------------------------------------------------------
+/**
+ * \class
+ * \brief Revolves contours and intersects the solid with the input mesh to
+ *        produce volume fractions.
+ *
+ * The IntersectionShaper generates material volume fractions using an input
+ * set of 2D contours and replacement rules. Each contour covers an area from
+ * the curve down to the axis of revolution about which the area is revolved
+ * to produce a volume that is intersected with the input mesh to produce
+ * volume fractions. Contours are refined into smaller linear spans that are
+ * revolved to produce a set of truncated cones, which are divided into a set
+ * set of progressively refined octahedra that can be intersected with the
+ * mesh.
+ *
+ * Volume fractions are represented as a GridFunction with a special prefix,
+ * currently "vol_frac_", followed by a material name. Volume fractions
+ * can be present in the input data collection prior to shaping and the
+ * IntersectionShaper will augment them when changes are needed such as when
+ * a material overwrites them. If a new material is not yet represented by
+ * a grid function, one will be added.
+ *
+ * In addition to user-specified materials, the IntersectionShaper creates
+ * a "free" material that is used to account for volume fractions that are
+ * not assigned to any other material. The free material mainly is used to
+ * account for materials when using replacement rules. The free material
+ * starts out as all 1's indicating that it contains 100% of all possible
+ * material in a zone. Volume fractions for other materials are then
+ * subtracted from the free material so no zone exceeds 100% of material.
+ */
 class IntersectionShaper : public Shaper
 {
 public:
@@ -1079,7 +1108,8 @@ private:
 public:
   /*!
    * \brief Set the name of the material used to account for free volume fractions.
-   * \param name The new name of the material.
+   * \param name The new name of the material. This name cannot contain 
+   *             underscores and it cannot be set once shaping has started.
    * \note This should not be called once any shaping has occurred.
    */
   void setFreeMaterialName(const std::string& name)
@@ -1087,6 +1117,11 @@ public:
     if(name.find("_") != std::string::npos)
     {
       SLIC_ERROR("The free material name cannot contain underscores.");
+    }
+    if(m_num_elements > 0)
+    {
+      SLIC_ERROR(
+        "The free material name cannot be set once shaping has occurred.");
     }
     m_free_mat_name = name;
   }
