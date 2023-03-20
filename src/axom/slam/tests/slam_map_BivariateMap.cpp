@@ -656,7 +656,7 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
   RealData realBacking(backingSize, backingSize, m_allocatorId);
 
   SLIC_INFO("\nCreating double map with stride 1 on the set ");
-  MapType m(prodSet, realBacking.view(), stride);
+  const MapType m(prodSet, realBacking.view(), stride);
 
   EXPECT_EQ(m.stride(), stride);
   SLIC_INFO("\nSetting the elements.");
