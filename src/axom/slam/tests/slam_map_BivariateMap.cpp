@@ -779,7 +779,8 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
 
   RealData realBacking(backingSize, backingSize, m_allocatorId);
 
-  SLIC_INFO("\nCreating double map with stride 1 on the RelationSet ");
+  SLIC_INFO("\nCreating double map with stride " << stride << " on the RelationSet ");
+
   MapType m(relSet, realBacking.view(), stride);
 
   EXPECT_EQ(m.stride(), stride);
