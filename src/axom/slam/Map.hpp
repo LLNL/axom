@@ -77,7 +77,7 @@ public:
   using IndirectionPolicy = IndPol;
   using StridePolicyType = StrPol;
 
-  using OrderedMap = typename IndirectionPolicy::VectorType;
+  using OrderedMap = typename IndirectionPolicy::IndirectionBufferType;
 
   using SetPosition = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;

@@ -272,6 +272,7 @@ struct CArrayIndirectionBase
   using IndirectionConstRefType = const IndirectionBufferType&;
 
   static constexpr bool DeviceAccessible = true;
+  static constexpr bool IsMutableBuffer = false;
   static constexpr const char* Name = "SLAM::CArrayIndirection";
 
   AXOM_HOST_DEVICE CArrayIndirectionBase(IndirectionPtrType buf = nullptr)
@@ -309,8 +310,7 @@ struct STLVectorIndirectionBase
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType&;
 
-  using VectorType = std::vector<ElementType>;
-  using IndirectionBufferType = VectorType;
+  using IndirectionBufferType = std::vector<ElementType>;
   using IndirectionPtrType = IndirectionBufferType*;
   using IndirectionRefType = IndirectionBufferType&;
   using IndirectionConstRefType = const IndirectionBufferType&;
@@ -364,8 +364,7 @@ struct ArrayIndirectionBase
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType&;
 
-  using VectorType = axom::Array<ElementType>;
-  using IndirectionBufferType = VectorType;
+  using IndirectionBufferType = axom::Array<ElementType>;
   using IndirectionPtrType = IndirectionBufferType*;
   using IndirectionRefType = IndirectionBufferType&;
   using IndirectionConstRefType = const IndirectionBufferType&;
@@ -420,8 +419,7 @@ struct ArrayViewIndirectionBase
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = ElementType&;
 
-  using VectorType = axom::ArrayView<ElementType>;
-  using IndirectionBufferType = VectorType;
+  using IndirectionBufferType = axom::ArrayView<ElementType>;
   using IndirectionPtrType = IndirectionBufferType;
   using IndirectionRefType = IndirectionBufferType;
   using IndirectionConstRefType = const IndirectionBufferType;
@@ -440,10 +438,6 @@ struct ArrayViewIndirectionBase
 
   ArrayViewIndirectionBase(STLVectorIndirection<PositionType, ElementType> ind)
     : m_vecBuf(ind.data().data(), ind.data().size())
-  { }
-
-  ArrayViewIndirectionBase(NoIndirection<PositionType, ElementType>)
-    : m_vecBuf(nullptr, 0)
   { }
 
   AXOM_HOST_DEVICE IndirectionBufferType data() { return m_vecBuf; }
