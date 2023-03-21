@@ -190,10 +190,9 @@ public:
 
   /// \overload
   template <typename UBSet,
-            typename TBSet = BivariateSetType,
-            typename Enable =
-              typename std::enable_if<!std::is_abstract<TBSet>::value &&
-                                      std::is_base_of<TBSet, UBSet>::value>::type>
+            typename Enable = typename std::enable_if<
+              !std::is_abstract<BivariateSetType>::value &&
+              std::is_base_of<BivariateSetType, UBSet>::value>::type>
   BivariateMap(const UBSet& bSet,
                DataType defaultValue = DataType(),
                SetPosition stride = StridePolicyType::DEFAULT_VALUE,
