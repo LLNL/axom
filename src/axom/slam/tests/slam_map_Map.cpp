@@ -533,7 +533,7 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTestStride1)
   SLIC_INFO("\nChecking the elements.");
   int totalSize = this->m_set.size() * stride;
   axom::Array<int> isValid(totalSize, totalSize, this->m_unifiedAllocatorId);
-  const auto isValid_view = isValid.data();
+  const auto isValid_view = isValid.view();
 
   axom::for_all<ExecSpace>(
     this->m_set.size(),
