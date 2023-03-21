@@ -558,6 +558,36 @@ TEST(primal_triangle, triangle_3D_normal)
   }
 }
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST(primal_triangle, triangle_device)
+{
+  constexpr int DIM = 3;
+  constexpr double EPS = 1e-9;
+  using CoordType = double;
+  using QPoint = primal::Point<CoordType, DIM>;
+  using QVec = primal::Vector<CoordType, DIM>;
+  using QTri = primal::Triangle<CoordType, DIM>;
+
+  // Save current/default allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
+
+  // Set new default allocator
+  axom::setDefaultAllocator(axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID());
+
+  // Initialize axom's Array of triangle
+  axom::Array<QTri> tris (1, 1, axom::getDefaultAllocatorID());
+
+  axom::for_all<axom::CUDA_EXEC<256>>(
+    1,
+    AXOM_LAMBDA(axom::IndexType i) { tris[i].normal(); });
+
+  // Reset default allocator
+  axom::setDefaultAllocator(current_allocator);
+
+}
+#endif
+
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])
