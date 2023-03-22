@@ -195,9 +195,11 @@ void check_intersection_volumes(const Input& params)
     {
       for(int k = 0; k <= 1; k++)
       {
-        // Tetrahedron coordinates consist of two points on the sphere where y = 0,
-        // the origin, and one of the "poles" of the unit sphere, either (0,1,0) or
-        // (0, -1, 0)
+        // Tetrahedron coordinates consist of:
+        //   - two points on the sphere where y = 0
+        //   - the origin
+        //   - one of the "poles" of the sphere, either (0,1,0) or (0, -1, 0)
+        // The generated tetrahedra are all encapsulated by the unit cube.
 
         double pole_sign = j ? 1 : -1;
         double z_sign = k ? 1 : -1;
@@ -235,22 +237,26 @@ void check_intersection_volumes(const Input& params)
   // reduce the number of operations.
   RAJA::ReduceSum<REDUCE_POL, double> total_intersect_vol(0.0);
 
-  axom::for_all<ExecSpace>(
-    NUM_HEXES * NUM_TETS,
-    AXOM_LAMBDA(axom::IndexType i) {
-      // The lower of the two sizes is used to factor out every pair of
-      // hexahedron and tetrahedron indices.
-      if(NUM_HEXES > NUM_TETS)
-      {
+  // The lower of the two sizes (NUM_HEXES, NUM_TETS) is used to factor out
+  // every pair of hexahedron and tetrahedron indices.
+  if(NUM_HEXES > NUM_TETS)
+  {
+    axom::for_all<ExecSpace>(
+      NUM_HEXES * NUM_TETS,
+      AXOM_LAMBDA(axom::IndexType i) {
         total_intersect_vol +=
           intersection_volume(hexes[i / NUM_TETS], tets[i % NUM_TETS]);
-      }
-      else
-      {
+      });
+  }
+  else
+  {
+    axom::for_all<ExecSpace>(
+      NUM_HEXES * NUM_TETS,
+      AXOM_LAMBDA(axom::IndexType i) {
         total_intersect_vol +=
           intersection_volume(hexes[i % NUM_HEXES], tets[i / NUM_HEXES]);
-      }
-    });
+      });
+  }
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
