@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -88,6 +88,7 @@ class PointInCellMeshWrapper<quest_point_in_cell_mfem_tag>
 public:
   using IndexType = int;
   using MeshWrapper = PointInCellMeshWrapper<quest_point_in_cell_mfem_tag>;
+  using InvTransform = mfem::InverseElementTransformation;
 
   PointInCellMeshWrapper(mfem::Mesh* mesh) : m_mesh(mesh)
   {
@@ -188,6 +189,68 @@ public:
   mfem::Mesh* getMesh() const { return m_mesh; }
 
   /*!
+   * \brief Sets the print verbosity level for the query
+   *
+   * \param [in] level The verbosity level (increases with level)
+   *  
+   * This is useful for debugging the point in cell query
+   * 
+   *  The valid options are: 
+   *  - -1: never print (default)
+   *  -  0: print only errors
+   *  -  1: print the first and last iterations
+   *  -  2: print every iteration
+   *  -  3: print every iteration including point coordinates.
+   */
+  void setPrintLevel(int level) { m_printLevel = level; }
+
+  /*!
+   * \brief Sets the initial guess type for the element-based point in cell query
+   *
+   * \param [in] guessType The guess type
+   *  
+   *  The valid options are: 
+   *  - 0: Use the center of the reference element
+   *  - 1: Use the closest physical node on a grid of points in physical space
+   *  - 2: Use the closest reference node on a grid of points in reference space
+   * 
+   *  The grid size is controlled by setInitialGridOrder()
+   */
+  void setInitialGuessType(int guessType)
+  {
+    m_initGuessType = static_cast<InvTransform::InitGuessType>(guessType);
+  }
+
+  /*!
+   * \brief Sets the grid size for the initial guess in the element-based point in cell query
+   *
+   * \param [in] order The order for the grid size 
+   *  
+   *  The number of points in each spatial direction 
+   *  is given by `max(trans_order+order,0)+1`, where trans_order is the order 
+   *  of the current element.
+   * 
+   *  \sa setInitialGuessType
+   */
+  void setInitialGridOrder(int order) { m_grid_order = order; }
+
+  /*!
+   * \brief Sets the solution strategy for the element-based point in cell query
+   *
+   * \param [in] type The strategy type
+   *  
+   *  The valid options all use a Newton solve
+   *  but differ in their handling of iterates that leave the reference element
+   *  - 0: Allow the iterates to leave the reference element
+   *  - 1: Project external iterates to the reference space boundary along their current line
+   *  - 2: Project external iterates to the closest reference space boundary location
+   */
+  void setSolverProjectionType(int type)
+  {
+    m_solverType = static_cast<InvTransform::SolverType>(type);
+  }
+
+  /*!
    * Computes the bounding boxes of all mesh elements
    *
    * \param [in] bboxScaleFactor A scaling factor to expand the bounding boxes
@@ -259,11 +322,14 @@ public:
     mfem::IntegrationPoint ipRef;
 
     // Set up the inverse element transformation
-    typedef mfem::InverseElementTransformation InvTransform;
     InvTransform invTrans(&tr);
 
-    invTrans.SetSolverType(InvTransform::Newton);
-    invTrans.SetInitialGuessType(InvTransform::ClosestPhysNode);
+    invTrans.SetPrintLevel(m_printLevel);
+    invTrans.SetInitialGuessType(m_initGuessType);
+    invTrans.SetInitGuessRelOrder(m_grid_order);
+    invTrans.SetSolverType(m_solverType);
+
+    SLIC_DEBUG_IF(m_printLevel >= 0, "Checking element " << eltIdx);
 
     // Status codes: {0 -> successful; 1 -> outside elt; 2-> did not converge}
     int err = invTrans.Transform(ptSpace, ipRef);
@@ -432,6 +498,12 @@ private:
 private:
   mfem::Mesh* m_mesh;
   bool m_isHighOrder;
+
+  // Parameters for inverse transformation
+  int m_printLevel {-1};
+  InvTransform::InitGuessType m_initGuessType {InvTransform::ClosestPhysNode};
+  int m_grid_order {-1};
+  InvTransform::SolverType m_solverType {InvTransform::Newton};
 };
 
 }  // end namespace detail

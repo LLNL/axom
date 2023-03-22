@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,7 +10,7 @@
 
 #include "axom/config.hpp"
 
-#include "axom/core/Macros.hpp"  // for AXOM_HOST__DEVICE
+#include "axom/core/Macros.hpp"
 #include "axom/core/numerics/floating_point_limits.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
@@ -67,10 +67,10 @@ template <typename T, int NDIMS>
 class BoundingBox
 {
 public:
-  typedef T CoordType;
-  typedef Point<T, NDIMS> PointType;
-  typedef Vector<T, NDIMS> VectorType;
-  typedef BoundingBox<T, NDIMS> BoxType;
+  using CoordType = T;
+  using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
+  using BoxType = BoundingBox<T, NDIMS>;
 
   static constexpr T InvalidMin = std::numeric_limits<T>::max();
   static constexpr T InvalidMax = std::numeric_limits<T>::lowest();

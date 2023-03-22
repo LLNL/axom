@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -492,6 +492,8 @@ def full_build_and_test_of_tpls(builds_dir, timestamp, spec, report_to_stdout = 
     if not os.path.exists(prefix):
         os.mkdir(prefix)
     prefix = pjoin(prefix, timestamp)
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
 
     # create a mirror
     uberenv_create_mirror(prefix, spec, "", mirror_dir)
@@ -675,6 +677,9 @@ def get_system_type():
 def get_platform():
     return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
 
+
+def get_supported_sys_types():
+    return ["blueos_3_ppc64le_ib_p9", "darwin-x86_64", "toss_3_x86_64_ib", "toss_4_x86_64_ib", "toss_4_x86_64_ib_cray"]
 
 def get_username():
     return getpass.getuser()

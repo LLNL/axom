@@ -1671,9 +1671,10 @@ TEST(core_array, check_multidimensional_view_spacing)
   }
 
   // Verify views of the 3 individual components in mdElemArray.
-  ArrayView<double, 3> earthOnly(&mdElemArray(0, 0, 0).earth, shape, NUM_COMPS);
-  ArrayView<double, 3> windOnly(&mdElemArray(0, 0, 0).wind, shape, NUM_COMPS);
-  ArrayView<double, 3> fireOnly(&mdElemArray(0, 0, 0).fire, shape, NUM_COMPS);
+  IndexType spacing = NUM_COMPS;
+  ArrayView<double, 3> earthOnly(&mdElemArray(0, 0, 0).earth, shape, spacing);
+  ArrayView<double, 3> windOnly(&mdElemArray(0, 0, 0).wind, shape, spacing);
+  ArrayView<double, 3> fireOnly(&mdElemArray(0, 0, 0).fire, shape, spacing);
 
   for(int i = 0; i < shape[0]; ++i)
   {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -339,6 +339,11 @@ public:
   AXOM_HOST_DEVICE inline const T* data() const { return m_data; }
 
   /// @}
+
+  /*!
+    \brief Returns spacing between adjacent items.
+  */
+  AXOM_HOST_DEVICE IndexType spacing() const { return 1; }
 
   /// @}
 

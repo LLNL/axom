@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -70,6 +70,189 @@ namespace axom
 {
 namespace quest
 {
+/*!
+ * \class GridFunctionView
+ *
+ * \brief Provides a view over an MFEM grid function. MFEM grid functions are
+ *        assumed to live in host memory. This class performs data movement
+ *        needed to access the grid function data within a GPU device lambda. This
+ *        view is limited in scope, though could be expanded in the future.
+ *
+ * \tparam ExecSpace The execution space where the grid function data will
+ *                   be accessed.
+ */
+template <typename ExecSpace>
+class GridFunctionView
+{
+public:
+  /*!
+   * \brief Host constructor that accepts the grid function.
+   *
+   * \param gf The grid function that will be accessed/modified by the view.
+   * \param _needResult Whether the data needs to be brought back to the host
+   *                    from the device.
+   */
+  AXOM_HOST GridFunctionView(mfem::GridFunction* gf, bool _needResult = true)
+  {
+    initialize(gf->GetData(), gf->Size(), _needResult);
+  }
+
+  /*!
+   * \brief Copy constructor, which is called to make a copy of the host
+   *        object so it is accessible inside a RAJA kernel. Any data movement
+   *        happened in the host constructor. This version sets hostData to
+   *        nullptr so we know not to clean up in the destructor.
+   */
+  AXOM_HOST_DEVICE GridFunctionView(const GridFunctionView& obj)
+    : m_hostData(nullptr)
+    , m_deviceData(obj.m_deviceData)
+    , m_numElements(obj.m_numElements)
+    , m_needResult(obj.m_needResult)
+  { }
+
+  /*!
+   * \brief Destructor. On the host, this method may move data from the 
+            device and deallocate device storage.
+   */
+  AXOM_HOST_DEVICE ~GridFunctionView() { finalize(); }
+
+  /*!
+   * \brief Indexing operator for accessing the data.
+   *
+   * \param i The index at which to access the data.
+   *
+   * \return A reference to the data at index i.
+   */
+  AXOM_HOST_DEVICE double& operator[](int i) { return m_deviceData[i]; }
+  // non-const return on purpose.
+  AXOM_HOST_DEVICE double& operator[](int i) const { return m_deviceData[i]; }
+
+private:
+  /*!
+   * \brief Initializes members using data from the grid function. This method
+   *        is called on the host.
+   *
+   * \param hostPtr The grid function data pointer on the host.
+   * \param nElem   The grid function size.
+   * \param _needResult Whether any data are copied from device.
+   */
+  AXOM_HOST void initialize(double* hostPtr, int nElem, bool _needResult)
+  {
+    m_hostData = m_deviceData = hostPtr;
+    m_numElements = nElem;
+    m_needResult = _needResult;
+  }
+
+  /*!
+   * \brief Helps during destruction.
+   */
+  AXOM_HOST_DEVICE void finalize() { m_deviceData = nullptr; }
+
+#if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+  /*!
+   * \brief Initializes members using data from the grid function. This method
+   *        is called on the host and it copies data to the device.
+   *
+   * \param hostPtr The grid function data pointer on the host.
+   * \param nElem   The grid function size.
+   * \param _needResult Whether any data are copied from device.
+   */
+  AXOM_HOST void initializeDevice(double* hostPtr, int nElem, bool _needResult)
+  {
+    m_hostData = hostPtr;
+    m_numElements = nElem;
+    m_needResult = _needResult;
+    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    auto dataSize = sizeof(double) * m_numElements;
+    m_deviceData = axom::allocate<double>(dataSize, execSpaceAllocatorID);
+    axom::copy(m_deviceData, m_hostData, dataSize);
+  }
+
+  /*!
+   * \brief Helps during destruction. On the host, it copies device data back
+   *        into the grid function on the host.
+   */
+  AXOM_HOST_DEVICE void finalizeDevice()
+  {
+  #ifndef AXOM_DEVICE_CODE
+    // Only the host will do this work.
+    if(m_hostData != nullptr)
+    {
+      if(m_needResult)
+      {
+        auto dataSize = sizeof(double) * m_numElements;
+        axom::copy(m_hostData, m_deviceData, dataSize);
+      }
+      axom::deallocate(m_deviceData);
+      m_deviceData = nullptr;
+    }
+  #endif
+  }
+#endif
+
+private:
+  double* m_hostData {nullptr};
+  double* m_deviceData {nullptr};
+  int m_numElements {0};
+  bool m_needResult {false};
+};
+
+#if defined(AXOM_USE_CUDA)
+/*!
+ * \brief CUDA specialization that calls initializeDevice to copy data
+ *        from the host to the device.
+ *
+ * \param hostPtr The grid function data pointer on the host.
+ * \param nElem   The grid function size.
+ * \param _needResult Whether any data are copied from device.
+ */
+template <>
+AXOM_HOST inline void GridFunctionView<cuda_exec>::initialize(double* hostPtr,
+                                                              int nElem,
+                                                              bool _needResult)
+{
+  initializeDevice(hostPtr, nElem, _needResult);
+}
+
+/*!
+ * \brief CUDA specialization that may copy data back from the device
+ *        and deallocate any associated device data.
+ */
+template <>
+AXOM_HOST_DEVICE inline void GridFunctionView<cuda_exec>::finalize()
+{
+  finalizeDevice();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+/*!
+ * \brief HIP specialization that calls initializeDevice to copy data
+ *        from the host to the device.
+ *
+ * \param hostPtr The grid function data pointer on the host.
+ * \param nElem   The grid function size.
+ * \param _needResult Whether any data are copied from device.
+ */
+template <>
+AXOM_HOST inline void GridFunctionView<hip_exec>::initialize(double* hostPtr,
+                                                             int nElem,
+                                                             bool _needResult)
+{
+  initializeDevice(hostPtr, nElem, _needResult);
+}
+
+/*!
+ * \brief HIP specialization that may copy data back from the device
+ *        and deallocate any associated device data.
+ */
+template <>
+AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
+{
+  finalizeDevice();
+}
+#endif
+
+//---------------------------------------------------------------------------
 class IntersectionShaper : public Shaper
 {
 public:
@@ -791,24 +974,60 @@ public:
   }  // end of runShapeQuery() function
 #endif
 
-  void applyReplacementRules(const klee::Shape& shape) override
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  // These methods are private in support of replacement rules.
+private:
+  /*!
+   * \brief Turn a material name into a grid function name.
+   *
+   * \param materialName The name of the material.
+   *
+   * \return The name of the material's grid function.
+   */
+  std::string materialNameToFieldName(const std::string& materialName) const
   {
-    const auto& shapeName = shape.getName();
-    const auto& materialName = shape.getMaterial();
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      axom::fmt::format(
-        "Applying replacement rules for shape '{}' of material {}",
-        shapeName,
-        materialName)));
+    const std::string vol_frac_fmt("vol_frac_{}");
+    auto name = axom::fmt::format(vol_frac_fmt, materialName);
+    return name;
+  }
 
-    auto shapeVolFracName = axom::fmt::format("shape_vol_frac_{}", shapeName);
-    auto materialVolFracName = axom::fmt::format("vol_frac_{}", materialName);
+  /*!
+   * \brief Turn a grid function name into a material name.
+   *
+   * \param fieldName The name of the grid function.
+   *
+   * \return The name of the material material.
+   */
+  std::string fieldNameToMaterialName(const std::string& fieldName) const
+  {
+    const std::string vol_frac_("vol_frac_");
+    std::string name;
+    if(fieldName.find(vol_frac_) == 0)
+      name = fieldName.substr(vol_frac_.size());
+    return name;
+  }
 
-    auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
-    SLIC_ASSERT(shapeVolFrac != nullptr);
+  /*!
+   * \brief Gets the grid function and material number for a material name.
+   *
+   * \param materialName The name of the material.
+   *
+   * \return A pair containing the associated grid function and material
+   *         number (its order in the list).
+   */
+  std::pair<mfem::GridFunction*, int> getMaterial(const std::string& materialName)
+  {
+    // If we already know about the material, return it.
+    for(size_t i = 0; i < m_vf_material_names.size(); i++)
+    {
+      if(m_vf_material_names[i] == materialName)
+      {
+        return std::make_pair(m_vf_grid_functions[i], static_cast<int>(i));
+      }
+    }
 
     // Get or create the volume fraction field for this shape's material
+    auto materialVolFracName = materialNameToFieldName(materialName);
     mfem::GridFunction* matVolFrac = nullptr;
     if(this->getDC()->HasField(materialVolFracName))
     {
@@ -818,17 +1037,359 @@ public:
     {
       matVolFrac = newVolFracGridFunction();
       this->getDC()->RegisterField(materialVolFracName, matVolFrac);
+      // Zero out the volume fractions (on host).
+      memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
     }
 
-    // update material volume fractions
-    for(int i = 0; i < m_num_elements; i++)
+    // Add the material to our vectors.
+    int idx = static_cast<int>(m_vf_grid_functions.size());
+    m_vf_grid_functions.push_back(matVolFrac);
+    m_vf_material_names.push_back(materialName);
+
+    return std::make_pair(matVolFrac, idx);
+  }
+
+  /*!
+   * \brief Scans the grid functions in the data collection and creates
+   *        a material entry for any that do not already exist. We maintain
+   *        our own vectors because we assume that the order of materials
+   *        does not change. The mfem::DataCollection uses a map internally
+   *        so if we add materials, it could change the traversal order.
+   *
+   */
+  void populateMaterials()
+  {
+    std::vector<std::string> materialNames;
+    for(auto it : this->getDC()->GetFieldMap())
     {
-      (*matVolFrac)(i) = m_overlap_volumes[i] / m_hex_volumes[i];
+      std::string materialName = fieldNameToMaterialName(it.first);
+      if(!materialName.empty()) materialNames.emplace_back(materialName);
+    }
+    // Add any of these existing fields to this class' bookkeeping.
+    for(const auto& materialName : materialNames)
+    {
+      (void)getMaterial(materialName);
+    }
+  }
+
+  // Switch back to public. This is done here because the CUDA compiler
+  // does not like the following template functions to be private.
+public:
+  /*!
+   * \brief Make a new grid function that contains all of the free space not
+   *        occupied by existing materials.
+   *
+   * \note We currently leave completely_free in the data collection,
+   *       even after the shaper has executed.
+   *
+   * \tparam ExecSpace The execution space where the data are computed.
+   *
+   * \return The grid function that represents the amount of completely
+   *         free space in each zone.
+   */
+  template <typename ExecSpace>
+  mfem::GridFunction* getCompletelyFree()
+  {
+    const std::string fieldName("completely_free");
+    mfem::GridFunction* cfgf = nullptr;
+    if(this->getDC()->HasField(fieldName))
+      cfgf = this->getDC()->GetField(fieldName);
+    else
+    {
+      // Make the new grid function.
+      cfgf = newVolFracGridFunction();
+      this->getDC()->RegisterField(fieldName, cfgf);
+
+      AXOM_PERF_MARK_SECTION("compute_completely_free", {
+        int dataSize = cfgf->Size();
+        GridFunctionView<ExecSpace> cfView(cfgf);
+        axom::for_all<ExecSpace>(
+          dataSize,
+          AXOM_LAMBDA(axom::IndexType i) { cfView[i] = 1.; });
+
+        // Iterate over all materials and subtract off their VFs from cfgf.
+        for(auto& gf : m_vf_grid_functions)
+        {
+          GridFunctionView<ExecSpace> matVFView(gf, false);
+          axom::for_all<ExecSpace>(
+            dataSize,
+            AXOM_LAMBDA(axom::IndexType i) {
+              cfView[i] -= matVFView[i];
+              cfView[i] = (cfView[i] < 0.) ? 0. : cfView[i];
+            });
+        }
+      });
+    }
+    return cfgf;
+  }
+
+  /*!
+   * \brief Set the volume fractions for the current shape into the grid
+   *        function for the material and adjust any other material volume
+   *        fraction grid functions.
+   *
+   * \tparam ExecSpace The execution space where the data are computed.
+   * \param shape The shape whose volume fractions are being stored.
+   *
+   * The replacement rules operate on the current shape's material as well as the
+   * rest of the materials since they need to be updated to sum to 1. When adding
+   * a volume fraction to a zone, the code adds the allowed amount to the zone.
+   * In most cases, this is just the computed material volume, though it can be
+   * restricted by amounts of other materials if replacing materials. Once a
+   * volume fraction has been added, a list of update materials is iterated and
+   * a corresponding amount is subtracted from them. This update list consists of
+   * "completely free", all non-shape  materials, and finally the shape material
+   * itself. The shape material is added at the end in case the initial volume
+   * fraction addition exceeded 1.
+   *
+   * The "completely free" material (CF) represents any volume fraction in the
+   * zones that has not been assigned to any material. We subtract from CF first
+   * as part of the update process so we do not have to subtract from real materials
+   * in the event that a zone is not full.
+   *
+   * The list of update materials depends on the shape's material replacement rule.
+   *
+   * Example:
+   *                        update mats
+   *                        |---->
+   *
+   *                  mat1  |  CF     mat0
+   *                  ---------------------
+   * add 0.4 mat1  -> | 0.4 | 0.2  | 0.4  |
+   *                  ---------------------
+   *
+   *                  mat1     CF     mat0     subtract
+   *                  ---------------------    -------
+   *                  | 0.8 | 0.2  | 0.4  |    | 0.4 |  (added 0.4 to mat1)
+   *                  ---------------------    -------
+   *
+   *                  mat1     CF     mat0     subtract
+   *                  ---------------------    -------
+   *                  | 0.8 | 0.0  | 0.4  |    | 0.2 |  (subtracted 0.2 from CF)
+   *                  ---------------------    -------
+   *
+   *                  mat1     CF     mat0     subtract
+   *                  ---------------------    -------
+   *                  | 0.8 | 0.0  | 0.2  |    | 0.0 |  (subtracted 0.2 from mat0)
+   *                  ---------------------    -------
+   */
+  template <typename ExecSpace>
+  void applyReplacementRulesImpl(const klee::Shape& shape)
+  {
+    // Make sure the material lists are up to date.
+    populateMaterials();
+
+    // Get this shape's material, creating the GridFunction if needed.
+    auto matVF = getMaterial(shape.getMaterial());
+    int dataSize = matVF.first->Size();
+
+    // Get this shape's array.
+    auto shapeVolFracName =
+      axom::fmt::format("shape_vol_frac_{}", shape.getName());
+    auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
+    SLIC_ASSERT(shapeVolFrac != nullptr);
+
+    // Allocate some memory for the replacement rule data arrays.
+    int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    Array<double> vf_subtract_array(dataSize, dataSize, execSpaceAllocatorID);
+    Array<double> vf_writable_array(dataSize, dataSize, execSpaceAllocatorID);
+    ArrayView<double> vf_subtract(vf_subtract_array);
+    ArrayView<double> vf_writable(vf_writable_array);
+
+    // Determine which grid functions need to be considered for VF updates.
+    std::vector<std::pair<mfem::GridFunction*, int>> gf_order_by_matnumber;
+    std::vector<mfem::GridFunction*> updateVFs, excludeVFs;
+    if(!shape.getMaterialsReplaced().empty())
+    {
+      // Include materials replaced in updateVFs.
+      for(const auto& name : shape.getMaterialsReplaced())
+      {
+        gf_order_by_matnumber.emplace_back(getMaterial(name));
+      }
+    }
+    else
+    {
+      // Include all materials except those in "does_not_replace".
+      // We'll also sort them by material number since the field map
+      // sorts them by name rather than order added.
+      for(auto it : this->getDC()->GetFieldMap())
+      {
+        // Check whether the field name looks like a VF field.
+        std::string name = fieldNameToMaterialName(it.first);
+        if(!name.empty())
+        {
+          // See if the field is in the exclusion list. For the normal
+          // case, the list is empty so we'd add the material.
+          auto it2 = std::find(shape.getMaterialsNotReplaced().cbegin(),
+                               shape.getMaterialsNotReplaced().cend(),
+                               name);
+          // The field is not in the exclusion list so add it to vfs.
+          if(it2 == shape.getMaterialsNotReplaced().cend())
+          {
+            // Do not add the current shape material since it should
+            // not end up in updateVFs.
+            if(name != shape.getMaterial())
+              gf_order_by_matnumber.emplace_back(getMaterial(name));
+          }
+          else
+          {
+            // The material was in the exclusion list. This means that
+            // cannot write to materials that have volume fraction in
+            // that zone.
+            excludeVFs.emplace_back(getMaterial(name).first);
+          }
+        }
+      }
+    }
+    // Sort eligible update materials by material number.
+    std::sort(gf_order_by_matnumber.begin(),
+              gf_order_by_matnumber.end(),
+              [&](const std::pair<mfem::GridFunction*, int>& lhs,
+                  const std::pair<mfem::GridFunction*, int>& rhs) {
+                return lhs.second < rhs.second;
+              });
+
+    // Append the completely free grid function to the materials we update
+    // Add it first so it is the highest priority material. This helps us
+    // account for how much we need to deduct from the real materials during
+    // subtraction.
+    updateVFs.push_back(getCompletelyFree<ExecSpace>());
+
+    // Append the grid functions in mat number order.
+    for(const auto& mat : gf_order_by_matnumber)
+    {
+      updateVFs.push_back(mat.first);
     }
 
-    /// Implementation here -- update material volume fractions based on replacement rules
-    // Note: we're not yet updating the shape volume fractions
-    AXOM_UNUSED_VAR(shapeVolFrac);
+    // We put the current shape's material at the end of the update list,
+    // in the case that adding to its VF initially exceeds 1.
+    updateVFs.push_back(getMaterial(shape.getMaterial()).first);
+
+    // Figure out how much VF in each zone can be written.
+    if(!shape.getMaterialsReplaced().empty())
+    {
+      // Replaces - We'll sum up the VFs that we can replace in a zone.
+      AXOM_PERF_MARK_SECTION("compute_vf_writable", {
+        axom::for_all<ExecSpace>(
+          dataSize,
+          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 0.; });
+        for(const auto& name : shape.getMaterialsReplaced())
+        {
+          auto mat = getMaterial(name);
+          GridFunctionView<ExecSpace> matVFView(mat.first, false);
+          axom::for_all<ExecSpace>(
+            dataSize,
+            AXOM_LAMBDA(axom::IndexType i) {
+              vf_writable[i] += matVFView[i];
+              vf_writable[i] = (vf_writable[i] > 1.) ? 1. : vf_writable[i];
+            });
+        }
+      });
+    }
+    else
+    {
+      // Does not replace. We can replace all except for listed mats.
+      AXOM_PERF_MARK_SECTION("compute_vf_writable", {
+        axom::for_all<ExecSpace>(
+          dataSize,
+          AXOM_LAMBDA(axom::IndexType i) { vf_writable[i] = 1.; });
+        for(auto& gf : excludeVFs)
+        {
+          GridFunctionView<ExecSpace> matVFView(gf, false);
+          axom::for_all<ExecSpace>(
+            dataSize,
+            AXOM_LAMBDA(axom::IndexType i) {
+              vf_writable[i] -= matVFView[i];
+              vf_writable[i] = (vf_writable[i] < 0.) ? 0. : vf_writable[i];
+            });
+        }
+      });
+    }
+
+    // Compute the volume fractions for the current shape's material.
+    AXOM_PERF_MARK_SECTION("compute_vf", {
+      GridFunctionView<ExecSpace> matVFView(matVF.first);
+      GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
+
+      // Workaround for HIP so we do not capture through "this" pointer.
+      const double* local_overlap_volumes = m_overlap_volumes;
+      const double* local_hex_volumes = m_hex_volumes;
+      axom::for_all<ExecSpace>(
+        dataSize,
+        AXOM_LAMBDA(axom::IndexType i) {
+          // Update this material's VF and vf_subtract, which is the
+          // amount to subtract from the gf's in updateVF.
+          double vf = (local_overlap_volumes[i] / local_hex_volumes[i]);
+
+          // Write at most the writable amount.
+          double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
+
+          // NOTE: if matVFView[i] temporarily exceeds 1, it will be corrected
+          //       during the subtraction stage.
+          matVFView[i] += vf_actual;
+          vf_subtract[i] = vf_actual;
+
+          // Store the max shape VF.
+          shapeVFView[i] = vf;
+        });
+    });
+
+    // Iterate over updateVFs to subtract off VFs we allocated to the
+    // current shape's material.
+    AXOM_PERF_MARK_SECTION("update_vf", {
+      for(auto& gf : updateVFs)
+      {
+        GridFunctionView<ExecSpace> matVFView(gf);
+        axom::for_all<ExecSpace>(
+          dataSize,
+          AXOM_LAMBDA(axom::IndexType i) {
+            constexpr double INSIGNIFICANT_VOLFRAC = 1.e-14;
+            double s =
+              (matVFView[i] <= vf_subtract[i]) ? matVFView[i] : vf_subtract[i];
+            matVFView[i] -= s;
+            // Turn any slight negatives or positive insignificant volume fractions to zero.
+            matVFView[i] =
+              (matVFView[i] < INSIGNIFICANT_VOLFRAC) ? 0. : matVFView[i];
+            vf_subtract[i] -= s;
+          });
+      }
+    });
+  }
+#endif
+
+  /*!
+   * \brief Apply material replacement rules for the current shape, using
+   *        the appropriate execution policy.
+   */
+  void applyReplacementRules(const klee::Shape& shape) override
+  {
+    switch(m_execPolicy)
+    {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    case seq:
+      applyReplacementRulesImpl<seq_exec>(shape);
+      break;
+  #if defined(AXOM_USE_OPENMP)
+    case omp:
+      applyReplacementRulesImpl<omp_exec>(shape);
+      break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA)
+    case cuda:
+      applyReplacementRulesImpl<cuda_exec>(shape);
+      break;
+  #endif  // AXOM_USE_CUDA
+  #if defined(AXOM_USE_HIP)
+    case hip:
+      applyReplacementRulesImpl<hip_exec>(shape);
+      break;
+  #endif  // AXOM_USE_HIP
+#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
+    default:
+      AXOM_UNUSED_VAR(shape);
+      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+      break;
+    }
   }
 
   void finalizeShapeQuery() override
@@ -948,9 +1509,10 @@ private:
   BoundingBoxType* m_aabbs {nullptr};
   PolyhedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};
+
+  std::vector<mfem::GridFunction*> m_vf_grid_functions;
+  std::vector<std::string> m_vf_material_names;
 #endif
-  // What do I need here?
-  // Probably size of stuff
 };
 
 }  // end namespace quest

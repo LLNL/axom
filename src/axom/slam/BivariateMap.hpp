@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,8 +82,11 @@ template <typename T,
           typename BSet = BivariateSet<>,
           typename IndPol =
             policies::STLVectorIndirection<typename BSet::PositionType, T>,
-          typename StrPol = policies::StrideOne<typename BSet::PositionType>>
-class BivariateMap : public MapBase<typename BSet::PositionType>, public StrPol
+          typename StrPol = policies::StrideOne<typename BSet::PositionType>,
+          typename IfacePol = policies::VirtualInterface>
+class BivariateMap
+  : public policies::MapInterface<IfacePol, typename BSet::PositionType>,
+    public StrPol
 {
 public:
   using DataType = T;
@@ -94,14 +97,14 @@ public:
   using SetPosition = typename BSet::PositionType;
   using SetElement = typename BSet::ElementType;
 
-  using SetType = slam::RangeSet<SetPosition, SetElement>;
-  using MapType = Map<DataType, SetType, IndPol, StrPol>;
-  using OrderedSetType = typename BSet::OrderedSetType;
+  using SetType = typename slam::RangeSet<SetPosition, SetElement>::ConcreteSet;
+  using MapType = Map<DataType, SetType, IndPol, StrPol, IfacePol>;
+  using OrderedSetType = typename BSet::SubsetType;
 
-  using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
+  using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol, IfacePol>;
 
-  using SubMapType = SubMap<BivariateMapType, SetType>;
-  using ConstSubMapType = const SubMap<const BivariateMapType, SetType>;
+  using SubMapType = SubMap<BivariateMapType, SetType, IfacePol>;
+  using ConstSubMapType = const SubMap<const BivariateMapType, SetType, IfacePol>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType =
@@ -109,6 +112,12 @@ public:
 
 private:
   static const NullBivariateSetType s_nullBiSet;
+
+public:
+  using ConcreteMap =
+    BivariateMap<T, BSet, IndPol, StrPol, policies::ConcreteInterface>;
+  using VirtualMap =
+    BivariateMap<T, BSet, IndPol, StrPol, policies::VirtualInterface>;
 
 public:
   /**
@@ -123,14 +132,13 @@ public:
    * \note  When using a compile time StridePolicy, \a stride must be equal to
    *        \a StridePolicy::stride(), when provided.
    */
-
   BivariateMap(const BivariateSetType* bSet = &s_nullBiSet,
                DataType defaultValue = DataType(),
-               SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+               SetPosition stride = StridePolicyType::DEFAULT_VALUE,
+               int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(stride)
     , m_bset(bSet)
-    , m_map(SetType(bSet->size()), defaultValue, stride)
-    , m_managesBSet(false)
+    , m_map(SetType(bSet->size()), defaultValue, stride, allocatorID)
   { }
 
   // (KW) Problem -- does not work with RelationSet
@@ -141,8 +149,8 @@ public:
   {
     using OuterSet = const typename BivariateSetRetType::FirstSetType;
     using InnerSet = const typename BivariateSetRetType::SecondSetType;
-    OuterSet* outer = dynamic_cast<OuterSet*>(m_bset->getFirstSet());
-    InnerSet* inner = dynamic_cast<InnerSet*>(m_bset->getSecondSet());
+    OuterSet* outer = dynamic_cast<OuterSet*>(set()->getFirstSet());
+    InnerSet* inner = dynamic_cast<InnerSet*>(set()->getSecondSet());
 
     return BivariateSetRetType(outer, inner);
   }
@@ -185,7 +193,7 @@ public:
   const ConstSubMapType operator()(SetPosition firstIdx) const
   {
     verifyFirstSetIndex(firstIdx);
-    auto s = m_bset->elementRangeSet(firstIdx);
+    auto s = set()->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return ConstSubMapType(this, s, hasInd);
   }
@@ -193,7 +201,7 @@ public:
   SubMapType operator()(SetPosition firstIdx)
   {
     verifyFirstSetIndex(firstIdx);
-    auto s = m_bset->elementRangeSet(firstIdx);
+    auto s = set()->elementRangeSet(firstIdx);
     const bool hasInd = submapIndicesHaveIndirection();
     return SubMapType(this, s, hasInd);
   }
@@ -235,7 +243,7 @@ public:
    */
   const DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0) const
   {
-    SetPosition i = m_bset->findElementFlatIndex(s1, s2);
+    SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -246,7 +254,7 @@ public:
 
   DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0)
   {
-    SetPosition i = m_bset->findElementFlatIndex(s1, s2);
+    SetPosition i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -269,7 +277,7 @@ public:
    */
   SetPosition index(SetPosition s1, SetPosition s2) const
   {
-    return m_bset->findElementIndex(s1, s2);
+    return set()->findElementIndex(s1, s2);
   }
 
   /**
@@ -280,7 +288,7 @@ public:
    */
   OrderedSetType indexSet(SetPosition s1) const
   {
-    return m_bset->getElements(s1);
+    return set()->getElements(s1);
   }
 
   /**
@@ -289,7 +297,7 @@ public:
    */
   inline SetPosition flatIndex(SetPosition s1, SetPosition s2) const
   {
-    return m_bset->findElementFlatIndex(s1, s2);
+    return set()->findElementFlatIndex(s1, s2);
   }
 
   /// @}
@@ -315,7 +323,7 @@ protected:
   constexpr bool submapIndicesHaveIndirection() const
   {
     return traits::indices_use_indirection<BivariateSetType>::value ||
-      (m_bset->getSecondSet()->at(0) != 0);
+      (set()->getSecondSet()->at(0) != 0);
   }
 
 public:
@@ -511,9 +519,9 @@ public:
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 
-  virtual bool isValid(bool verboseOutput = false) const override
+  bool isValid(bool verboseOutput = false) const
   {
-    return m_bset->isValid(verboseOutput) && m_map.isValid(verboseOutput);
+    return set()->isValid(verboseOutput) && m_map.isValid(verboseOutput);
   }
 
   /// \name BivariateMap cardinality functions
@@ -521,15 +529,15 @@ public:
   ///
 
   /** \brief Returns the BivariateSet size. */
-  SetPosition size() const override { return m_bset->size(); }
+  SetPosition size() const { return set()->size(); }
   /** \brief Returns the BivariateSet size. */
-  SetPosition totalSize() const { return m_bset->size(); }
+  SetPosition totalSize() const { return set()->size(); }
 
-  SetPosition firstSetSize() const { return m_bset->firstSetSize(); }
-  SetPosition secondSetSize() const { return m_bset->secondSetSize(); }
+  SetPosition firstSetSize() const { return set()->firstSetSize(); }
+  SetPosition secondSetSize() const { return set()->secondSetSize(); }
   /** \brief Returns the number of the BivariateSet ordered pairs with
    *         the given first set index. */
-  SetPosition size(SetPosition s) const { return m_bset->size(s); }
+  SetPosition size(SetPosition s) const { return set()->size(s); }
   /** \brief Return the number of components of the map  */
   SetPosition numComp() const { return StrPol::stride(); }
 
@@ -559,11 +567,11 @@ private:
   /** \brief Check the indices (DenseIndex) are valid   */
   void verifyPosition(SetPosition s1, SetPosition s2) const
   {
-    m_bset->verifyPosition(s1, s2);
+    set()->verifyPosition(s1, s2);
   }
 
   /** \brief Check the given ElementFlatIndex is valid.  */
-  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const override
+  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const
   {
     SLIC_ASSERT_MSG(pos >= 0 && pos < SetPosition(m_map.size()),
                     "Attempted to access element "
@@ -582,13 +590,11 @@ private:
 private:
   const BivariateSetType* m_bset;
   MapType m_map;
-  bool m_managesBSet;
-
 };  //end BivariateMap
 
-template <typename T, typename BSet, typename IndPol, typename StrPol>
-typename BivariateMap<T, BSet, IndPol, StrPol>::NullBivariateSetType const
-  BivariateMap<T, BSet, IndPol, StrPol>::s_nullBiSet;
+template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
+typename BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::NullBivariateSetType const
+  BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::s_nullBiSet;
 
 }  // end namespace slam
 }  // end namespace axom

@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2022, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2023, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -25,8 +25,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `Array::back()`: returns a reference to the last element
   - `Array::resize(size, T value)`: resizes the array, and sets any new elements to `value`.
 - Adds an `ArrayView::empty()` method to return whether the view is empty or not.
+- Adds an `area()` function to `primal::Polygon`
 
 ### Changed
+- `IntersectionShaper` now implements material replacement rules.
 - `axom::Array` move constructors are now `noexcept`.
 - Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`
   to guard against conflicts.
@@ -43,6 +45,18 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updates blt submodule to HEAD of develop on 28Dec2022
 - Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
 - Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
+- Updates [conduit dependency to v0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
+- Adds `vcpkg` port for `lua` as optional dependency on Windows
+- Adds additional parameters to quest's `PointInCell` query to control the Newton solve
+  from physical to reference space for a given element
+
+###  Fixed
+- Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
+  for CUDA/non-gpu builds.
+- Checks validity of bounding boxes in `primal`'s intersection operators against planes
+  and triangles before using the geometry.
+- Improves import logic for `lua` dependency
+- Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
 
 ## [Version 0.7.0] - Release date 2022-08-30
 

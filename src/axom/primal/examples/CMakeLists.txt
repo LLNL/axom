@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,10 +12,9 @@ set( primal_examples
 
 set(primal_example_depends
         axom
+        ${axom_device_depends}
         fmt
         )
-
-blt_list_append( TO primal_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach ( example ${primal_examples} )
 

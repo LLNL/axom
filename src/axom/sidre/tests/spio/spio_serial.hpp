@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -177,6 +177,7 @@ TEST(spio_serial, write_read_write)
 }
 
 //------------------------------------------------------------------------------
+#ifdef AXOM_USE_HDF5
 TEST(spio_serial, rootfile_suffix)
 {
   // This test verifies the usage of the string passed to writer.write() to
@@ -221,3 +222,4 @@ TEST(spio_serial, rootfile_suffix)
   EXPECT_EQ(ds_suffix.getRoot()->getView("grp/i")->getData<int>(),
             ds_nosuffix.getRoot()->getView("grp/i")->getData<int>());
 }
+#endif  // AXOM_USE_HDF5

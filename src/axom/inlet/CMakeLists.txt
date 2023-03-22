@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -53,7 +53,7 @@ blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF SOL_FOUND)
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(inlet_depends core slic sidre fmt)
+set(inlet_depends sidre slic core ${axom_device_depends} fmt)
 
 blt_list_append(TO inlet_depends ELEMENTS sol lua IF SOL_FOUND)
 
@@ -63,6 +63,9 @@ blt_add_library( NAME        inlet
                  DEPENDS_ON  ${inlet_depends}
                  FOLDER      axom/inlet
                  OBJECT      TRUE )
+
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(LuaReader.cpp PROPERTIES LANGUAGE CXX)
 
 axom_write_unified_header(NAME    inlet
                           HEADERS ${inlet_headers} )

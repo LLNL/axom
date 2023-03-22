@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -39,7 +39,7 @@ set(klee_sources
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(klee_depends core primal slic sidre inlet fmt)
+set(klee_depends core primal slic sidre inlet ${axom_device_depends} fmt)
 
 blt_add_library(NAME        klee
                 SOURCES     ${klee_sources}

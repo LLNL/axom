@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -392,13 +392,13 @@ Axom build options, compiler support, and parallelism
 +------------------------------+---------+----------------------------------------+
 | ENABLE_FORTRAN               | OFF     | Enable Fortran compiler support        |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_MPI                   | OFF     | Enable MPI                             |
+| AXOM_ENABLE_MPI              | OFF     | Enable MPI                             |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_OPENMP                | OFF     | Enable OpenMP                          |
+| AXOM_ENABLE_OPENMP           | OFF     | Enable OpenMP                          |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_CUDA                  | OFF     | Enable CUDA                            |
+| AXOM_ENABLE_CUDA             | OFF     | Enable CUDA                            |
 +------------------------------+---------+----------------------------------------+
-| ENABLE_HIP                   | OFF     | Enable HIP                             |
+| AXOM_ENABLE_HIP              | OFF     | Enable HIP                             |
 +------------------------------+---------+----------------------------------------+
 
 Note that, in most Axom components, node-level parallelism features, enabled with 

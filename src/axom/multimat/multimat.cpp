@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -425,8 +425,8 @@ void MultiMat::convertToDynamic()
     }
     StaticVariableRelationType& rel = relStatic(layout);
 
-    SetType* set1 = rel.fromSet();
-    SetType* set2 = rel.toSet();
+    RangeSetType* set1 = &relDominantSet(layout);
+    RangeSetType* set2 = &relSecondarySet(layout);
 
     DynamicVariableRelationType relDyn(set1, set2);
     for(int i = 0; i < rel.fromSetSize(); i++)

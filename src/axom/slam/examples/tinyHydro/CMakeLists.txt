@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,7 +24,7 @@ set(tinyHydro_lib_sources
     )
 
 
-set(slam_tiny_hydro_lib_depends_on core slam slic fmt)
+set(slam_tiny_hydro_lib_depends_on core slam slic ${axom_device_depends} fmt)
 
 #------------------------------------------------------------------------------
 # Build the tinyHydro library
@@ -37,7 +37,7 @@ blt_add_library(
     FOLDER      axom/slam/examples 
     OBJECT      TRUE )
 
-list(APPEND slam_tiny_hydro_tests_depends_on slam_tinyHydro_ex)
+list(APPEND slam_tiny_hydro_tests_depends_on slam_tinyHydro_ex ${axom_device_depends})
 
 #------------------------------------------------------------------------------
 # Add gtest based tests for tinyHydro

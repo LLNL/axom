@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1118,9 +1118,11 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
       {
         View* num_domains =
           m_bp_index_grp->getView("state/number_of_domains")->setScalar(num_procs);
+
         SLIC_ASSERT_MSG(num_domains,
                         "Failed to reset View 'state/number_of_domains' "
                         "in blueprint index to correct number of domains.");
+        AXOM_UNUSED_VAR(num_domains);
       }
       else
       {

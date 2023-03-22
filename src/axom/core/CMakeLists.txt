@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -97,11 +97,17 @@ set( core_depends fmt )
 blt_list_append( TO core_depends ELEMENTS camp IF CAMP_FOUND )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
+list(APPEND core_depends ${axom_device_depends})
+blt_list_append( TO core_depends ELEMENTS nvToolsExt IF AXOM_ENABLE_CUDA )
 
-blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ENABLE_CUDA )
-blt_list_append( TO core_depends ELEMENTS blt::hip_runtime IF ENABLE_HIP)
-blt_list_append( TO core_depends ELEMENTS openmp IF ENABLE_OPENMP)
-blt_list_append( TO core_depends ELEMENTS mpi IF ENABLE_MPI )
+blt_list_append( TO core_depends ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
+blt_list_append( TO core_depends ELEMENTS mpi IF AXOM_ENABLE_MPI )
+
+# HACK: RAJA's dependencies are not getting added to core due to a bug in
+# dependency propagation in blt_register_library. Explicitly add it in the short term.
+if(TARGET RAJA::roctx)
+    list(APPEND core_depends RAJA::roctx)
+endif()
 
 #------------------------------------------------------------------------------
 # Make/Install the library

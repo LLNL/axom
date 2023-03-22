@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -621,6 +621,7 @@ public:
                              mpi_traits<double>::type,
                              m_mpiComm);
     SLIC_ASSERT(errf == MPI_SUCCESS);
+    AXOM_UNUSED_VAR(errf);
 
     all_aabbs.clear();
     all_aabbs.reserve(m_nranks);

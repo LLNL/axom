@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,6 +36,10 @@ set(slam_headers
     policies/IndirectionPolicies.hpp
     policies/SubsettingPolicies.hpp
     policies/PolicyTraits.hpp
+    policies/InterfacePolicies.hpp
+    policies/SetInterfacePolicies.hpp
+    policies/MapInterfacePolicies.hpp
+    policies/BivariateSetInterfacePolicies.hpp
 
     # SRM Set headers
     IndirectionSet.hpp
@@ -82,7 +86,7 @@ set(slam_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(slam_depends_on core slic)
+set(slam_depends_on core slic ${axom_device_depends})
 
 blt_add_library(
     NAME        slam

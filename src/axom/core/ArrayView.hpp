@@ -137,6 +137,13 @@ public:
   /// @}
 
   /*!
+    \brief Returns spacing between adjacent items.
+
+    Spacing is set by constructor and cannot change.
+  */
+  AXOM_HOST_DEVICE IndexType spacing() const { return m_spacing; }
+
+  /*!
    * \brief Get the ID for the umpire allocator
    */
   int getAllocatorID() const { return m_allocator_id; }
@@ -181,6 +188,7 @@ private:
   /// \brief The full number of elements in the array
   ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
   IndexType m_num_elements = 0;
+  IndexType m_spacing = 1;
   /// \brief The allocator ID for the memory space in which m_data was allocated
   int m_allocator_id;
 };
@@ -209,8 +217,9 @@ AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
   T* data,
   const StackArray<IndexType, DIM>& shape,
   IndexType spacing_)
-  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, spacing_)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape)
   , m_data(data)
+  , m_spacing(spacing_)
 #ifndef AXOM_DEVICE_CODE
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 #endif
@@ -259,6 +268,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
   , m_data(static_cast<OtherArrayType&>(other).data())
   , m_num_elements(static_cast<OtherArrayType&>(other).size())
+  , m_spacing(static_cast<OtherArrayType&>(other).spacing())
   , m_allocator_id(static_cast<OtherArrayType&>(other).getAllocatorID())
 {
 #ifdef AXOM_DEBUG
@@ -282,6 +292,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
   , m_data(static_cast<const OtherArrayType&>(other).data())
   , m_num_elements(static_cast<const OtherArrayType&>(other).size())
+  , m_spacing(static_cast<const OtherArrayType&>(other).spacing())
   , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
 {
   static_assert(

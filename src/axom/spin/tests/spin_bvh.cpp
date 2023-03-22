@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,9 +15,6 @@
 // gtest includes
 #include "gtest/gtest.h"
 
-using namespace axom;
-namespace xargs = mint::xargs;
-
 // Uncomment the following for debugging
 //#define VTK_DEBUG
 
@@ -26,6 +23,16 @@ namespace xargs = mint::xargs;
 //------------------------------------------------------------------------------
 namespace
 {
+namespace primal = axom::primal;
+namespace spin = axom::spin;
+namespace mint = axom::mint;
+namespace numerics = axom::numerics;
+namespace xargs = mint::xargs;
+
+using IndexType = axom::IndexType;
+
+constexpr double EPS = 1e-6;
+
 //------------------------------------------------------------------------------
 template <typename FloatType, int NDIMS>
 void dump_ray(const std::string& file,
@@ -177,30 +184,28 @@ void generate_aabbs_and_centroids(const mint::Mesh* mesh,
                 numerics::Matrix<double> & coords,
                 const IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
       BoxType range;
-
-      PointType sum(0.0);
+      PointType sum;
 
       for(IndexType inode = 0; inode < NUM_NODES_PER_CELL; ++inode)
       {
         const double* node = coords.getColumn(inode);
 
         PointType coords;
-        for(int dim = 0; dim < NDIMS; dim++)
+        for(int dim = 0; dim < NDIMS; ++dim)
         {
           coords[dim] = node[dim];
           sum[dim] += node[dim];
         }
 
         range.addPoint(coords);
-      }  // END for all cells nodes
-      for(int dim = 0; dim < NDIMS; dim++)
-      {
-        sum[dim] /= NUM_NODES_PER_CELL;
       }
 
+      sum.array() /= NUM_NODES_PER_CELL;
+
       c[cellIdx] = range.getCentroid();
+
 #ifndef AXOM_DEVICE_CODE
-      EXPECT_EQ(c[cellIdx], sum);
+      EXPECT_NEAR(primal::squared_distance(c[cellIdx], sum), 0., EPS);
 #endif
 
       aabbs[cellIdx] = range;
@@ -244,8 +249,8 @@ void check_build_bvh2d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
+    EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], 2.0, EPS);
   }
 
   axom::deallocate(boxes);
@@ -286,8 +291,8 @@ void check_build_bvh3d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
+    EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], 2.0, EPS);
   }
 
   axom::deallocate(boxes);
@@ -340,8 +345,8 @@ void check_find_bounding_boxes3d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
@@ -457,8 +462,8 @@ void check_find_bounding_boxes2d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the bounding boxes
@@ -561,8 +566,8 @@ void check_find_rays3d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -691,8 +696,8 @@ void check_find_rays2d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -801,8 +806,8 @@ void check_find_points3d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -893,8 +898,8 @@ void check_find_points2d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -967,8 +972,8 @@ void check_single_box2d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 1.0);
+    EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], 1.0, EPS);
   }
 
   // run the find algorithm w/ the centroid of the bounding box as input.
@@ -1033,8 +1038,8 @@ void check_single_box3d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 1.0);
+    EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], 1.0, EPS);
   }
 
   // run the find algorithm w/ the centroid of the bounding box as input.
@@ -1111,8 +1116,8 @@ void check_build_bvh_zip3d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], 0.0);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], 2.0);
+    EXPECT_NEAR(bounds.getMin()[idim], 0.0, EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], 2.0, EPS);
   }
 
   axom::deallocate(xmin);
@@ -1190,8 +1195,8 @@ void check_find_points_zip3d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -1281,8 +1286,8 @@ void check_find_points_zip2d()
 
   for(int idim = 0; idim < NDIMS; ++idim)
   {
-    EXPECT_DOUBLE_EQ(bounds.getMin()[idim], lo[idim]);
-    EXPECT_DOUBLE_EQ(bounds.getMax()[idim], hi[idim]);
+    EXPECT_NEAR(bounds.getMin()[idim], lo[idim], EPS);
+    EXPECT_NEAR(bounds.getMax()[idim], hi[idim], EPS);
   }
 
   // traverse the BVH to find the candidates for all the centroids
@@ -1393,12 +1398,13 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
   npts = query_pts.size();
   axom::for_all<ExecSpace>(
     npts,
-    AXOM_LAMBDA(int32 idx) mutable {
+    AXOM_LAMBDA(axom::int32 idx) mutable {
       // Get the current query point.
       auto qpt = query_pts_view[idx];
       MinCandidate curr_min;
 
-      auto checkMinDist = [&](int32 current_node, const int32* leaf_nodes) {
+      auto checkMinDist = [&](axom::int32 current_node,
+                              const axom::int32* leaf_nodes) {
         int candidate_idx = leaf_nodes[current_node];
         const PointType candidate_pt = pointsView[candidate_idx];
         const double sq_dist = squared_distance(qpt, candidate_pt);

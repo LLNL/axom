@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -721,20 +721,24 @@ bool intersect_tri_bbox(const primal::Triangle<T, 3>& tri,
   //           1 test for the triangle face normal
   // We use early termination if we find a separating axis between the shapes
 
-  typedef typename BoundingBox<T, 3>::PointType PointType;
-  typedef typename BoundingBox<T, 3>::VectorType VectorType;
+  using PointType = typename BoundingBox<T, 3>::PointType;
+  using VectorType = typename BoundingBox<T, 3>::VectorType;
+
+  // Check for early return -- nothing intersects an empty/invalid bounding box
+  if(!bb.isValid())
+  {
+    return false;
+  }
 
   // Extent: vector center to max corner of BB
-  VectorType e = 0.5 * bb.range();
+  const VectorType e = 0.5 * bb.range();
 
   // Make the AABB center the origin by moving the triangle vertices
-  PointType center(bb.getMin().array() + e.array());
-  VectorType v[3] = {VectorType(center, tri[0]),
-                     VectorType(center, tri[1]),
-                     VectorType(center, tri[2])};
+  const PointType center = bb.getMin() + e;
+  const VectorType v[3] = {tri[0] - center, tri[1] - center, tri[2] - center};
 
   // Create the edge vectors of the triangle
-  VectorType f[3] = {v[1] - v[0], v[2] - v[1], v[0] - v[2]};
+  const VectorType f[3] = {v[1] - v[0], v[2] - v[1], v[0] - v[2]};
 
   /* clang-format off */
 
@@ -771,12 +775,13 @@ bool intersect_tri_bbox(const primal::Triangle<T, 3>& tri,
   }
 
   /// Final test -- face normal of triangle's plane
-  VectorType planeNormal = VectorType::cross_product(f[0], f[1]);
-  double planeDist = planeNormal.dot(VectorType(tri[0]));
+  const VectorType planeNormal = VectorType::cross_product(f[0], f[1]);
+  const double planeDist = planeNormal.dot(VectorType(tri[0]));
 
-  double r = e[0] * std::abs(planeNormal[0]) + e[1] * std::abs(planeNormal[1]) +
-    e[2] * std::abs(planeNormal[2]);
-  double s = planeNormal.dot(VectorType(center)) - planeDist;
+  const double r = e[0] * std::abs(planeNormal[0])  //
+    + e[1] * std::abs(planeNormal[1])               //
+    + e[2] * std::abs(planeNormal[2]);
+  const double s = planeNormal.dot(VectorType(center)) - planeDist;
 
   return std::abs(s) <= r;
 }
@@ -1136,20 +1141,19 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox<T, 3>& b1,
 
 /*!
  * \brief Determines if a 3D plane intersects a 3D bounding box.
- *        By default (checkOverlaps is false), checks if |s| <= r, 
- *        where "s" is the distance of the bounding box center to the plane,
- *        and "r" is the projected radius of the bounding box along the line
+ *        By default (i.e. \a checkOverlaps is false), checks if |s| <= r, 
+ *        where \a s is the distance of the bounding box center to the plane,
+ *        and \a r is the projected radius of the bounding box along the line
  *        parallel to the plane normal and going through the box center.
- *        If checkOverlaps is true, checks if |s| < r,
+ *        If \a checkOverlaps is true, checks if |s| < r,
  *        where the bounding box overlaps both half spaces of the plane.
  * \param [in] p A 3D plane
  * \param [in] bb A 3D bounding box
  * \param [in] checkOverlaps If true, checks if bounding box overlaps both 
- *             halfspaces of the plane.
- *             Otherwise, overlap of both halfspaces is not guaranteed.
- *             Default is false.
- * \param [in] EPS tolerance parameter for determining if "s"
- *             is just within min/max of "r".
+ *             halfspaces of the plane. Otherwise, overlap of both halfspaces 
+ *             is not guaranteed. Default is false.
+ * \param [in] EPS tolerance parameter for determining if \a s
+ *             is just within min/max of \a r.
  * \return true iff plane intersects with bounding box, otherwise, false.
  */
 template <typename T>
@@ -1158,26 +1162,26 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
                                            bool checkOverlaps = false,
                                            double EPS = 1E-12)
 {
-  typedef Vector<T, 3> VectorType;
+  using VectorType = Vector<T, 3>;
 
-  VectorType c(bb.getCentroid());
-  VectorType e(bb.getCentroid(), bb.getMax());
-
-  T r = e[0] * utilities::abs<T>(p.getNormal()[0]) +
-    e[1] * utilities::abs<T>(p.getNormal()[1]) +
-    e[2] * utilities::abs<T>(p.getNormal()[2]);
-
-  T s = p.getNormal().dot(c) - p.getOffset();
-
-  if(checkOverlaps)
+  // Check for early return -- planes cannot intersect invalid bounding boxes
+  if(!bb.isValid())
   {
-    return isLt(utilities::abs<T>(s), r, EPS);
+    return false;
   }
 
-  else
-  {
-    return isLeq(utilities::abs<T>(s), r, EPS);
-  }
+  const auto centroid = bb.getCentroid();
+  const VectorType e = bb.getMax() - centroid;
+
+  const auto& N = p.getNormal();
+  const T r = e[0] * utilities::abs<T>(N[0])  //
+    + e[1] * utilities::abs<T>(N[1])          //
+    + e[2] * utilities::abs<T>(N[2]);
+
+  const T s = p.signedDistance(centroid);
+
+  return checkOverlaps ? isLt(utilities::abs<T>(s), r, EPS)
+                       : isLeq(utilities::abs<T>(s), r, EPS);
 }
 
 /*!
@@ -1193,7 +1197,7 @@ AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
                                           const Segment<T, 3>& seg,
                                           T& t)
 {
-  typedef Vector<T, 3> VectorType;
+  using VectorType = Vector<T, 3>;
 
   VectorType ab(seg.source(), seg.target());
   VectorType normal = plane.getNormal();
