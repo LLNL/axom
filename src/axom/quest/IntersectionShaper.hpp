@@ -836,12 +836,9 @@ public:
 
     AXOM_PERF_MARK_SECTION("hex_volume",
                            axom::for_all<ExecSpace>(
-                             NE * NUM_TETS_PER_HEX,
+                             NE,
                              AXOM_LAMBDA(axom::IndexType i) {
-                               double tet_volume = tets[i].volume();
-                               RAJA::atomicAdd<ATOMIC_POL>(
-                                 local_hex_volumes + (i / NUM_TETS_PER_HEX),
-                                 tet_volume);
+                               local_hex_volumes[i] = local_hexes[i].volume();
                              }););
 
     SLIC_INFO(axom::fmt::format(
