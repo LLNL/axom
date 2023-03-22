@@ -26,6 +26,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `Array::resize(size, T value)`: resizes the array, and sets any new elements to `value`.
 - Adds an `ArrayView::empty()` method to return whether the view is empty or not.
 - Adds an `area()` function to `primal::Polygon`
+- Adds initial support for using Slam types on the GPU
+- Adds support for using `ArrayViewIndirection` indirection policy with `slam::Map` and
+  `slam::BivariateMap`
+- Adds `const_iterator` support to `slam::BivariateMap` and `slam::SubMap`
 
 ### Changed
 - `IntersectionShaper` now implements material replacement rules.
@@ -49,6 +53,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds `vcpkg` port for `lua` as optional dependency on Windows
 - Adds additional parameters to quest's `PointInCell` query to control the Newton solve
   from physical to reference space for a given element
+- Remove function pointer call in IteratorBase::advance()
+- Slam: `IndirectionPolicy::data()` now returns a reference to the underlying buffer
+  Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
+  returns a mutable pointer to the buffer.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
