@@ -66,6 +66,57 @@ public:
   { }
 
   /*!
+   * \brief Tetrahedron constructor from an array of Points
+   *
+   * \param [in] pts An array containing at least 4 Points.
+   *
+   * \note It is the responsiblity of the caller to pass
+   *       an array with at least 4 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Tetrahedron(const PointType* pts)
+  {
+    for(int i = 0; i < NUM_TET_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Tetrahedron constructor from an Array of Points.
+   *
+   * \param [in] pts An Array containing 4 Points.
+   */
+  AXOM_HOST_DEVICE
+  explicit Tetrahedron(const axom::Array<PointType>& pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_TET_VERTS);
+
+    for(int i = 0; i < NUM_TET_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Tetrahedron constructor from an initializer list of Points
+   *
+   * \param [in] pts an initializer list containing 4 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Tetrahedron(std::initializer_list<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_TET_VERTS);
+
+    int i = 0;
+    for(const auto& pt : pts)
+    {
+      m_points[i] = pt;
+      i++;
+    }
+  }
+
+  /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, or 3

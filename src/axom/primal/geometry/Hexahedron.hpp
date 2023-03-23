@@ -37,15 +37,15 @@ namespace primal
  *
  * \verbatim
  *
- * W +---------+ V
+ * U +---------+ V
  *   |\        |\
  *   |  \      |  \
- *   | T + --------+ U
- * S +---|-----+ R |
+ *   | T + --------+ W
+ * Q +---|-----+ R |
  *   \   |     \   |
  *    \  |      \  |
  *     \ |       \ |
- *   P  +----------+ Q
+ *   P  +----------+ S
  *
  * \endverbatim
  *
@@ -101,6 +101,57 @@ public:
     m_points[5] = u;
     m_points[6] = v;
     m_points[7] = w;
+  }
+
+  /*!
+   * \brief Hexahedron constructor from an array of Points
+   *
+   * \param [in] pts An array containing at least 8 Points.
+   *
+   * \note It is the responsiblity of the caller to pass
+   *       an array with at least 8 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Hexahedron(const PointType* pts)
+  {
+    for(int i = 0; i < NUM_HEX_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Hexahedron constructor from an Array of Points.
+   *
+   * \param [in] pts An Array containing 8 Points.
+   */
+  AXOM_HOST_DEVICE
+  explicit Hexahedron(const axom::Array<PointType>& pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_HEX_VERTS);
+
+    for(int i = 0; i < NUM_HEX_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Hexahedron constructor from an initializer list of Points
+   *
+   * \param [in] pts an initializer list containing 8 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Hexahedron(std::initializer_list<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_HEX_VERTS);
+
+    int i = 0;
+    for(const auto& pt : pts)
+    {
+      m_points[i] = pt;
+      i++;
+    }
   }
 
   /*!

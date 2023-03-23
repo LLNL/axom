@@ -79,7 +79,7 @@ public:
 
 public:
   /*!
-   * \brief Default constructor. Creates a degenerate octahedron.
+   * \brief Default Octahedron constructor. Creates a degenerate octahedron.
    */
   AXOM_HOST_DEVICE Octahedron() { }
 
@@ -108,6 +108,57 @@ public:
     m_points[3] = s;
     m_points[4] = t;
     m_points[5] = u;
+  }
+
+  /*!
+   * \brief Octahedron constructor from an array of Points
+   *
+   * \param [in] pts An array containing at least 6 Points.
+   *
+   * \note It is the responsiblity of the caller to pass
+   *       an array with at least 6 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(const PointType* pts)
+  {
+    for(int i = 0; i < NUM_OCT_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Octahedron constructor from an Array of Points
+   *
+   * \param [in] pts An Array containing at 6 Points.
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(const axom::Array<PointType>& pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_OCT_VERTS);
+
+    for(int i = 0; i < NUM_OCT_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Octahedron constructor from an initializer list of Points
+   *
+   * \param [in] pts an initializer list containing 6 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(std::initializer_list<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_OCT_VERTS);
+
+    int i = 0;
+    for(const auto& pt : pts)
+    {
+      m_points[i] = pt;
+      i++;
+    }
   }
 
   /*!

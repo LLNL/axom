@@ -98,20 +98,59 @@ TEST_F(HexahedronTest, constructFromPoints)
   // Access the test data
   const QPoint* pt = this->qData0;
 
-  QHex hex(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]);
+  axom::Array<QPoint> ptArray(
+    {pt[0], pt[1], pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]});
+
+  QHex hex1(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]);
+
+  QHex hex2(pt);
+
+  QHex hex3(ptArray);
+
+  QHex hex4({pt[0], pt[1], pt[2], pt[3], pt[4], pt[5], pt[6], pt[7]});
 
   // Test ostream operator
-  SLIC_INFO("Hexahedron coordinates: " << hex);
+  SLIC_INFO("Hexahedron 1 coordinates: " << hex1);
+  SLIC_INFO("Hexahedron 2 coordinates: " << hex2);
+  SLIC_INFO("Hexahedron 3 coordinates: " << hex3);
+  SLIC_INFO("Hexahedron 4 coordinates: " << hex4);
 
   // Check indirection operator
-  EXPECT_EQ(pt[0], hex[0]);
-  EXPECT_EQ(pt[1], hex[1]);
-  EXPECT_EQ(pt[2], hex[2]);
-  EXPECT_EQ(pt[3], hex[3]);
-  EXPECT_EQ(pt[4], hex[4]);
-  EXPECT_EQ(pt[5], hex[5]);
-  EXPECT_EQ(pt[6], hex[6]);
-  EXPECT_EQ(pt[7], hex[7]);
+  EXPECT_EQ(pt[0], hex1[0]);
+  EXPECT_EQ(pt[1], hex1[1]);
+  EXPECT_EQ(pt[2], hex1[2]);
+  EXPECT_EQ(pt[3], hex1[3]);
+  EXPECT_EQ(pt[4], hex1[4]);
+  EXPECT_EQ(pt[5], hex1[5]);
+  EXPECT_EQ(pt[6], hex1[6]);
+  EXPECT_EQ(pt[7], hex1[7]);
+
+  EXPECT_EQ(pt[0], hex2[0]);
+  EXPECT_EQ(pt[1], hex2[1]);
+  EXPECT_EQ(pt[2], hex2[2]);
+  EXPECT_EQ(pt[3], hex2[3]);
+  EXPECT_EQ(pt[4], hex2[4]);
+  EXPECT_EQ(pt[5], hex2[5]);
+  EXPECT_EQ(pt[6], hex2[6]);
+  EXPECT_EQ(pt[7], hex2[7]);
+
+  EXPECT_EQ(pt[0], hex3[0]);
+  EXPECT_EQ(pt[1], hex3[1]);
+  EXPECT_EQ(pt[2], hex3[2]);
+  EXPECT_EQ(pt[3], hex3[3]);
+  EXPECT_EQ(pt[4], hex3[4]);
+  EXPECT_EQ(pt[5], hex3[5]);
+  EXPECT_EQ(pt[6], hex3[6]);
+  EXPECT_EQ(pt[7], hex3[7]);
+
+  EXPECT_EQ(pt[0], hex4[0]);
+  EXPECT_EQ(pt[1], hex4[1]);
+  EXPECT_EQ(pt[2], hex4[2]);
+  EXPECT_EQ(pt[3], hex4[3]);
+  EXPECT_EQ(pt[4], hex4[4]);
+  EXPECT_EQ(pt[5], hex4[5]);
+  EXPECT_EQ(pt[6], hex4[6]);
+  EXPECT_EQ(pt[7], hex4[7]);
 }
 
 TEST_F(HexahedronTest, volume)
