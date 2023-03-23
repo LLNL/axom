@@ -144,11 +144,7 @@ if(CONDUIT_FOUND)
                                 --contourVal 1.25
                                 --check-results
                                 --verbose
-                                --policy ${_pol}
                     NUM_MPI_TASKS ${_nranks})
-                if(${_pol} STREQUAL "omp")
-                    set_property(TEST ${_test} APPEND PROPERTY ENVIRONMENT OMP_NUM_THREADS=4)
-                endif()
             endforeach()
         endforeach()
 

@@ -61,7 +61,6 @@ namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
 
-using RuntimePolicy = axom::quest::MarchingCubesAlgo::RuntimePolicy;
 
 ///////////////////////////////////////////////////////////////
 // converts the input string into an 80 character string
@@ -94,30 +93,10 @@ public:
 
   double contourVal {1.0};
 
-  RuntimePolicy policy {RuntimePolicy::seq};
-
   bool checkResults {false};
 
 private:
   bool _verboseOutput {false};
-
-  // clang-format off
-  const std::map<std::string, RuntimePolicy> s_validPolicies
-  {
-      {"seq", RuntimePolicy::seq}
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  #ifdef AXOM_USE_OPENMP
-    , {"omp", RuntimePolicy::omp}
-  #endif
-  #ifdef AXOM_USE_CUDA
-    , {"cuda", RuntimePolicy::cuda}
-  #endif
-  #ifdef AXOM_USE_HIP
-    , {"hip", RuntimePolicy::hip}
-  #endif
-#endif
-  };
-  // clang-format on
 
 public:
   bool isVerbose() const { return _verboseOutput; }
@@ -159,11 +138,6 @@ public:
     app.add_option("--contourVal", contourVal)
       ->description("Contour value")
       ->capture_default_str();
-
-    app.add_option("-p, --policy", policy)
-      ->description("Set runtime policy for marching cubes execution")
-      ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
 
     app.add_flag("-c,--check-results,!--no-check-results", checkResults)
       ->description(
@@ -977,31 +951,6 @@ int main(int argc, char** argv)
 
     exit(retval);
   }
-
-#if defined(AXOM_USE_UMPIRE)
-  //---------------------------------------------------------------------------
-  // Memory resource.  For testing, choose device memory if appropriate.
-  //---------------------------------------------------------------------------
-  #if 0
-  // Temporarily disable to prevent warnings.
-  const std::string umpireResourceName =
-    params.policy == RuntimePolicy::seq || params.policy == RuntimePolicy::omp
-    ? "HOST"
-    :
-    #if defined(UMPIRE_ENABLE_DEVICE)
-    "DEVICE"
-    #elif defined(UMPIRE_ENABLE_UM)
-    "UM"
-    #elif defined(UMPIRE_ENABLE_PINNED)
-    "PINNED"
-    #else
-    "HOST"
-    #endif
-    ;
-  auto& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator umpireAllocator = rm.getAllocator(umpireResourceName);
-  #endif
-#endif
 
   //---------------------------------------------------------------------------
   // Load computational mesh.

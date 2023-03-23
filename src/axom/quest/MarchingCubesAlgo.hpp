@@ -27,14 +27,6 @@ namespace axom
 {
 namespace quest
 {
-/// Enum for runtime execution policy
-enum class MarchingCubesAlgoRuntimePolicy
-{
-  seq = 0,
-  omp = 1,
-  cuda = 2,
-  hip = 3
-};
 /*!
  * \@brief Class implementing marching cubes algorithm on a single
  * structured mesh domain.
@@ -46,7 +38,6 @@ enum class MarchingCubesAlgoRuntimePolicy
 class MarchingCubesAlgo1
 {
 public:
-  using RuntimePolicy = MarchingCubesAlgoRuntimePolicy;
   /*!
    * \brief Constructor for applying algorithm in multi-level mesh context.
    *
@@ -165,7 +156,6 @@ private:
 class MarchingCubesAlgo
 {
 public:
-  using RuntimePolicy = MarchingCubesAlgoRuntimePolicy;
   /*!
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
