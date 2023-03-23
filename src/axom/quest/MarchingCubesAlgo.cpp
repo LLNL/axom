@@ -524,8 +524,8 @@ void MarchingCubesAlgo1::contourCell2D(double xx[4],
   SLIC_ASSERT(mesh->getCellType() == axom::mint::SEGMENT);
   SLIC_ASSERT(mesh->getDimension() == 2);
 
-  int idx = mesh->getNumberOfNodes();
-  int cell[2];
+  IndexType idx = mesh->getNumberOfNodes();
+  IndexType cell[2];
   double p[2];
 
   const int nsegs = detail::num_segments[index];
@@ -580,8 +580,8 @@ void MarchingCubesAlgo1::contourCell3D(double xx[8],
 
   const int numTriangles = detail::num_triangles[index];
 
-  int idx = mesh->getNumberOfNodes();
-  int cell[3];
+  IndexType idx = mesh->getNumberOfNodes();
+  IndexType cell[3];
   double p[3];
 
   for(int i = 0; i < numTriangles; ++i)
