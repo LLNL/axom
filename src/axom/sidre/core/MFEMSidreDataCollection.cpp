@@ -1015,7 +1015,7 @@ void MFEMSidreDataCollection::addMaterialSetToIndex()
         // Expecting [base_field_name, material_id]
         if(tokens.size() != 2)
         {
-          // The field_name did not split into 2 tokens matching 
+          // The field_name did not split into 2 tokens matching
           // [base_field_name, material_id]. It's likely not a material
           // so we can skip the field.
           continue;
