@@ -49,7 +49,7 @@ Container::Container(const std::string& name,
 
   if(reconstruct)
   {
-    for(auto& group: m_sidreGroup->groups())
+    for(auto& group : m_sidreGroup->groups())
     {
       if(group.isUsingMap() && group.hasView("InletType"))
       {
@@ -658,7 +658,7 @@ std::vector<VariantKey> collectionIndices(const Container& container,
   {
     const auto group = sidreGroup->getGroup(detail::COLLECTION_INDICES_NAME);
     indices.reserve(group->getNumViews());
-    for(auto& view: group->views())
+    for(auto& view : group->views())
     {
       if(view.getTypeID() == axom::sidre::CHAR8_STR_ID)
       {

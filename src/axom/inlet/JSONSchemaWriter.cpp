@@ -99,7 +99,7 @@ sidre::TypeID recordEnum(const sidre::View* view, conduit::Node& node)
  */
 sidre::TypeID recordEnum(const sidre::Group* group, conduit::Node& node)
 {
-  for(auto& view: group->views())
+  for(auto& view : group->views())
   {
     node["enum"].append() = std::string(view.getString());
   }

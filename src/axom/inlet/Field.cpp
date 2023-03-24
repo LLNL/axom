@@ -554,7 +554,7 @@ bool Field::searchValidValues<std::string>(const axom::sidre::View& view,
   const std::string value = view.getString();
   bool is_valid = false;
   std::vector<std::string> valid_values;
-  for(auto& view: string_group->views())
+  for(auto& view : string_group->views())
   {
     // Store the valid values so we can print them in the error message
     valid_values.push_back(view.getString());
