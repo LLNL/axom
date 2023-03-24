@@ -49,16 +49,13 @@ Container::Container(const std::string& name,
 
   if(reconstruct)
   {
-    for(auto idx = m_sidreGroup->getFirstValidGroupIndex();
-        sidre::indexIsValid(idx);
-        idx = m_sidreGroup->getNextValidGroupIndex(idx))
+    for(auto& group: m_sidreGroup->groups())
     {
-      auto group = m_sidreGroup->getGroup(idx);
-      if(group->isUsingMap() && group->hasView("InletType"))
+      if(group.isUsingMap() && group.hasView("InletType"))
       {
-        const std::string inletType = group->getView("InletType")->getString();
+        const std::string inletType = group.getView("InletType")->getString();
         const std::string childName =
-          utilities::string::appendPrefix(m_name, group->getName());
+          utilities::string::appendPrefix(m_name, group.getName());
 
         if(inletType == "Container")
         {
@@ -77,7 +74,7 @@ Container::Container(const std::string& name,
           // FIXME: We probably need to write the type to the datastore
           m_fieldChildren.emplace(
             childName,
-            std::make_unique<Field>(group,
+            std::make_unique<Field>(&group,
                                     m_sidreRootGroup,
                                     sidre::DataTypeId::NO_TYPE_ID,
                                     m_docEnabled));
@@ -661,13 +658,11 @@ std::vector<VariantKey> collectionIndices(const Container& container,
   {
     const auto group = sidreGroup->getGroup(detail::COLLECTION_INDICES_NAME);
     indices.reserve(group->getNumViews());
-    for(auto idx = group->getFirstValidViewIndex(); sidre::indexIsValid(idx);
-        idx = group->getNextValidViewIndex(idx))
+    for(auto& view: group->views())
     {
-      const auto view = group->getView(idx);
-      if(view->getTypeID() == axom::sidre::CHAR8_STR_ID)
+      if(view.getTypeID() == axom::sidre::CHAR8_STR_ID)
       {
-        std::string string_idx = view->getString();
+        std::string string_idx = view.getString();
         VariantKey key = string_idx;
         if(trimAbsolute)
         {
@@ -687,7 +682,7 @@ std::vector<VariantKey> collectionIndices(const Container& container,
       }
       else
       {
-        indices.push_back(static_cast<int>(view->getData()));
+        indices.push_back(static_cast<int>(view.getData()));
       }
     }
   }
