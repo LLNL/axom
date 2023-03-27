@@ -633,7 +633,7 @@ public:
  * \brief Creates a Polyhedron from a given Hexahedron's vertices.
  *
  * \param [in] hex The hexahedron
- * \param [in] checkSign If true (default), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volume of the
  *             Polyhedron is positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
@@ -663,7 +663,7 @@ public:
  */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Hexahedron<T, NDIMS>& hex,
-                                   bool checkSign = true)
+                                   bool checkSign = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -703,7 +703,7 @@ public:
  * \brief Creates a Polyhedron from a given Octahedron's vertices.
  *
  * \param [in] oct The octahedron
- * \param [in] checkSign If true (default), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volume of the
  *             Polyhedron is positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
@@ -733,7 +733,7 @@ public:
  */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Octahedron<T, NDIMS>& oct,
-                                   bool checkSign = true)
+                                   bool checkSign = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;
@@ -769,7 +769,7 @@ public:
  * \brief Creates a Polyhedron from a given Tetrahedron's vertices.
  *
  * \param [in] tet The tetrahedron
- * \param [in] checkSign If true (default), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volume of the
  *             Polyhedron is positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
@@ -800,7 +800,7 @@ public:
  */
   AXOM_HOST_DEVICE
   static Polyhedron from_primitive(const Tetrahedron<T, NDIMS>& tet,
-                                   bool checkSign = true)
+                                   bool checkSign = false)
   {
     // Initialize our polyhedron to return
     Polyhedron<T, NDIMS> poly;

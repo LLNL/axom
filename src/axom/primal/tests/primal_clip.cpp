@@ -902,6 +902,7 @@ TEST(primal_clip, oct_tet_clip_special_case_1)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-4;
+  constexpr bool CHECK_SIGN = true;
 
   TetrahedronType tet(PointType {0.5, 0.5, 0.5},
                       PointType {1, 1, 0},
@@ -934,18 +935,27 @@ TEST(primal_clip, oct_tet_clip_special_case_1)
 
   EXPECT_NEAR(0.0251, octPoly.volume(), EPS);
 
-  PolyhedronType poly = axom::primal::clip(oct, tet);
+  PolyhedronType poly = axom::primal::clip(oct, tet, EPS, CHECK_SIGN);
 
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
-  EXPECT_NEAR(0.0041, axom::primal::intersection_volume<double>(oct, tet), EPS);
-  EXPECT_NEAR(0.0041, axom::primal::intersection_volume<double>(tet, oct), EPS);
-  EXPECT_NEAR(axom::primal::clip(tet, oct).volume(), poly.volume(), EPS);
+  EXPECT_NEAR(
+    0.0041,
+    axom::primal::intersection_volume<double>(oct, tet, EPS, CHECK_SIGN),
+    EPS);
+  EXPECT_NEAR(
+    0.0041,
+    axom::primal::intersection_volume<double>(tet, oct, EPS, CHECK_SIGN),
+    EPS);
+  EXPECT_NEAR(axom::primal::clip(tet, oct, EPS, CHECK_SIGN).volume(),
+              poly.volume(),
+              EPS);
 }
 
 TEST(primal_clip, oct_tet_clip_special_case_2)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-4;
+  constexpr bool CHECK_SIGN = true;
 
   TetrahedronType tet(PointType {0.5, 0.5, 0.5},
                       PointType {0, 1, 0},
@@ -978,12 +988,20 @@ TEST(primal_clip, oct_tet_clip_special_case_2)
 
   EXPECT_NEAR(0.0251, octPoly.volume(), EPS);
 
-  PolyhedronType poly = axom::primal::clip(oct, tet);
+  PolyhedronType poly = axom::primal::clip(oct, tet, EPS, CHECK_SIGN);
 
   EXPECT_NEAR(0.0041, poly.volume(), EPS);
-  EXPECT_NEAR(0.0041, axom::primal::intersection_volume<double>(oct, tet), EPS);
-  EXPECT_NEAR(0.0041, axom::primal::intersection_volume<double>(tet, oct), EPS);
-  EXPECT_NEAR(axom::primal::clip(tet, oct).volume(), poly.volume(), EPS);
+  EXPECT_NEAR(
+    0.0041,
+    axom::primal::intersection_volume<double>(oct, tet, EPS, CHECK_SIGN),
+    EPS);
+  EXPECT_NEAR(
+    0.0041,
+    axom::primal::intersection_volume<double>(tet, oct, EPS, CHECK_SIGN),
+    EPS);
+  EXPECT_NEAR(axom::primal::clip(tet, oct, EPS, CHECK_SIGN).volume(),
+              poly.volume(),
+              EPS);
 }
 
 // Tetrahedron does not clip tetrahedron.
@@ -1141,6 +1159,7 @@ TEST(primal_clip, tet_tet_clip_split)
 {
   using namespace Primal3D;
   constexpr double EPS = 1e-4;
+  constexpr bool CHECK_SIGN = true;
 
   TetrahedronType tet(PointType {0.5, 0.5, 2},
                       PointType {2, -1, 0},
@@ -1169,7 +1188,8 @@ TEST(primal_clip, tet_tet_clip_split)
 
   for(int i = 0; i < split_tets.size(); i++)
   {
-    tet_volumes += (axom::primal::clip(split_tets[i], tet)).volume();
+    tet_volumes +=
+      (axom::primal::clip(split_tets[i], tet, EPS, CHECK_SIGN)).volume();
   }
 
   // Expected result should still be 0.3333
