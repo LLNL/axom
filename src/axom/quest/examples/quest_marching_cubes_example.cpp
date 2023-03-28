@@ -632,13 +632,15 @@ struct ContourTestBase
       axom::ArrayView<double, DIM> fieldView(d, shape);
 
       // Set the nodal data to the distance from center.
+      // value(pt) is the virtual function defining the
+      // distance in a derived class.
       for(int i = 0; i < pointCount; ++i)
       {
         axom::primal::Point<double, DIM> pt;
         for(int d = 0; d < DIM; ++d)
         {
           pt[d] = coordsViews[d].flatIndex(i);
-        };
+        }
         fieldView.flatIndex(i) = value(pt);
       }
     }
