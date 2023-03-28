@@ -29,9 +29,12 @@ namespace quest
 {
 /*!
  * \@brief Class implementing marching cubes algorithm on a single
- * structured mesh domain.
+ * structured mesh domain within a multi-domain mesh.
  *
- * Implementation is for 2D (marching squares) and 3D.
+ * Implementation is for 2D (marching squares) and 3D (marching cubes).
+ *
+ * The input mesh is a Conduit::Node following the Mesh Blueprint
+ * convention.
  *
  * \sa MarchingCubesAlgo
  */
@@ -133,10 +136,29 @@ private:
    */
   void set_domain(const conduit::Node &dom);
 
+  /*!
+    @brief Create the contour in a 2D cell.
+
+    The inputs are the coordinates and function values at
+    the 4 points of the cell.
+  */
   void contourCell2D(double xx[4], double yy[4], double cellValues[4]);
 
+  /*!@brief Create the contour in a 3D cell.
+
+    The inputs are the coordinates and function values at
+    the 8 points of the cell.
+  */
   void contourCell3D(double xx[8], double yy[8], double zz[8], double f[8]);
 
+  /*!
+    @brief Interpolate for intersection of the surface and a mesh edge.
+    edgeIdx is an index into axom::quest::detail::case2D
+    or axom::quest::detail::case3D.  xx, yy and zz are the
+    node coordinates for the cube (or square) cell.  nodeValues
+    are the scalar function at those nodes.  xyz is the output
+    coordinates of the intersection.
+  */
   void linear_interp(int edgeIdx,
                      const double *xx,
                      const double *yy,
@@ -144,6 +166,10 @@ private:
                      const double *nodeValues,
                      double *xyz);
 
+  /*!
+    @brief Compute the index to look up the surface topology in a cell.
+    @param f Scalar function values at the 4 or 8 nodes of the cell.
+  */
   int computeIndex(const double *f);
 
 };  // class MarchingCubesAlgo1
