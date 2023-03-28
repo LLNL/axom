@@ -10,8 +10,8 @@
  * compute iso-surface from a scalar field in a blueprint mesh.
  */
 
-#ifndef AXOM_PRIMAL_ISOSURFACE_H_
-#define AXOM_PRIMAL_ISOSURFACE_H_
+#ifndef AXOM_PRIMAL_MARCHINGCUBES_H_
+#define AXOM_PRIMAL_MARCHINGCUBES_H_
 
 // Axom includes
 #include "axom/config.hpp"
@@ -141,7 +141,7 @@ private:
                      const double *xx,
                      const double *yy,
                      const double *zz,
-                     const double *f,
+                     const double *nodeValues,
                      double *xyz);
 
   int computeIndex(const double *f);

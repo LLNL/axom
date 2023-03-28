@@ -277,14 +277,14 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
         const bool skipZone = maskPtr && bool(maskView(i, j));
         if(!skipZone)
         {
-          double vfs[4];
+          double nodalValues[4];
           double xx[4];
           double yy[4];
 
-          vfs[0] = fcnView(i + 1, j);
-          vfs[1] = fcnView(i + 1, j + 1);
-          vfs[2] = fcnView(i, j + 1);
-          vfs[3] = fcnView(i, j);
+          nodalValues[0] = fcnView(i + 1, j);
+          nodalValues[1] = fcnView(i + 1, j + 1);
+          nodalValues[2] = fcnView(i, j + 1);
+          nodalValues[3] = fcnView(i, j);
 
           xx[0] = xView(i + 1, j);
           xx[1] = xView(i + 1, j + 1);
@@ -297,7 +297,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
           yy[3] = yView(i, j);
 
           auto nPrev = m_surfaceMesh->getNumberOfCells();
-          this->contourCell2D(xx, yy, vfs);
+          this->contourCell2D(xx, yy, nodalValues);
           auto nNew = m_surfaceMesh->getNumberOfCells();
 
           if(nNew > nPrev && !m_cellIdField.empty())
@@ -328,6 +328,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
     axom::ArrayView<const double, 3> zView(zPtr, pShape, coordSp);
     axom::ArrayView<const double, 3> fcnView(fcnPtr, pShape);
     axom::ArrayView<const int, 3> maskView(maskPtr, cShape);
+
     // Write as regular nested loops.
     for(int i = 0; i < cShape[0]; ++i)
     {
@@ -338,19 +339,19 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
           const bool skipZone = maskPtr && bool(maskView(i, j, k));
           if(!skipZone)
           {
-            double vfs[8];
+            double nodalValues[8];
             double xx[8];
             double yy[8];
             double zz[8];
 
-            vfs[0] = fcnView(i + 1, j, k);
-            vfs[1] = fcnView(i + 1, j + 1, k);
-            vfs[2] = fcnView(i, j + 1, k);
-            vfs[3] = fcnView(i, j, k);
-            vfs[4] = fcnView(i + 1, j, k + 1);
-            vfs[5] = fcnView(i + 1, j + 1, k + 1);
-            vfs[6] = fcnView(i, j + 1, k + 1);
-            vfs[7] = fcnView(i, j, k + 1);
+            nodalValues[0] = fcnView(i + 1, j, k);
+            nodalValues[1] = fcnView(i + 1, j + 1, k);
+            nodalValues[2] = fcnView(i, j + 1, k);
+            nodalValues[3] = fcnView(i, j, k);
+            nodalValues[4] = fcnView(i + 1, j, k + 1);
+            nodalValues[5] = fcnView(i + 1, j + 1, k + 1);
+            nodalValues[6] = fcnView(i, j + 1, k + 1);
+            nodalValues[7] = fcnView(i, j, k + 1);
 
             xx[0] = xView(i + 1, j, k);
             xx[1] = xView(i + 1, j + 1, k);
@@ -380,7 +381,7 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
             zz[7] = zView(i, j, k + 1);
 
             auto nPrev = m_surfaceMesh->getNumberOfCells();
-            this->contourCell3D(xx, yy, zz, vfs);
+            this->contourCell3D(xx, yy, zz, nodalValues);
             auto nNew = m_surfaceMesh->getNumberOfCells();
 
             if(nNew > nPrev && !m_cellIdField.empty())
@@ -407,18 +408,18 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
                                        const double* xx,
                                        const double* yy,
                                        const double* zz,
-                                       const double* f,
+                                       const double* nodeValues,
                                        double* xyz)
 {
   SLIC_ASSERT(xx != NULL);
   SLIC_ASSERT(yy != NULL);
-  SLIC_ASSERT(f != NULL);
+  SLIC_ASSERT(nodeValues != NULL);
 
   // STEP 0: get the edge node indices
   // 2 nodes define the edge.  n1 and n2 are the indices of
   // the nodes w.r.t. the square or cubic zone.  There is a
   // agreed-on ordering of these indices in the arrays xx, yy,
-  // zz, f, xyz.
+  // zz, nodeValues, xyz.
   int n1 = edgeIdx;
   int n2 = (edgeIdx == 3) ? 0 : edgeIdx + 1;
 
@@ -438,8 +439,8 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
   }  // END if 3-D
 
   // STEP 1: get the fields and coordinates from the two points
-  const double f1 = f[n1];
-  const double f2 = f[n2];
+  const double f1 = nodeValues[n1];
+  const double f2 = nodeValues[n2];
 
   double p1[3];
   p1[0] = xx[n1];
@@ -502,14 +503,14 @@ int MarchingCubesAlgo1::computeIndex(const double* f)
 //------------------------------------------------------------------------------
 void MarchingCubesAlgo1::contourCell2D(double xx[4],
                                        double yy[4],
-                                       double cellValues[4])
+                                       double nodeValues[4])
 {
   SLIC_ASSERT(xx != NULL);
   SLIC_ASSERT(yy != NULL);
-  SLIC_ASSERT(cellValues != NULL);
+  SLIC_ASSERT(nodeValues != NULL);
 
   // compute index
-  int index = MarchingCubesAlgo1::computeIndex(cellValues);
+  int index = MarchingCubesAlgo1::computeIndex(nodeValues);
   SLIC_ASSERT((index >= 0) && (index < 16));
 
   // short-circuit
@@ -536,12 +537,12 @@ void MarchingCubesAlgo1::contourCell2D(double xx[4],
     const int e1 = detail::cases2D[index][i * 2];
     const int e2 = detail::cases2D[index][i * 2 + 1];
 
-    MarchingCubesAlgo1::linear_interp(e1, xx, yy, NULL, cellValues, p);
+    MarchingCubesAlgo1::linear_interp(e1, xx, yy, NULL, nodeValues, p);
     mesh->appendNode(p[0], p[1]);
     cell[0] = idx;
     ++idx;
 
-    MarchingCubesAlgo1::linear_interp(e2, xx, yy, NULL, cellValues, p);
+    MarchingCubesAlgo1::linear_interp(e2, xx, yy, NULL, nodeValues, p);
     mesh->appendNode(p[0], p[1]);
     cell[1] = idx;
     ++idx;
@@ -555,15 +556,15 @@ void MarchingCubesAlgo1::contourCell2D(double xx[4],
 void MarchingCubesAlgo1::contourCell3D(double xx[8],
                                        double yy[8],
                                        double zz[8],
-                                       double f[8])
+                                       double nodeValues[8])
 {
   SLIC_ASSERT(xx != NULL);
   SLIC_ASSERT(yy != NULL);
   SLIC_ASSERT(zz != NULL);
-  SLIC_ASSERT(f != NULL);
+  SLIC_ASSERT(nodeValues != NULL);
 
   // compute index
-  int index = MarchingCubesAlgo1::computeIndex(f);
+  int index = MarchingCubesAlgo1::computeIndex(nodeValues);
   SLIC_ASSERT((index >= 0) && (index < 256));
 
   // short-circuit
@@ -591,17 +592,17 @@ void MarchingCubesAlgo1::contourCell3D(double xx[8],
     const int e2 = detail::cases3D[index][i * 3 + 1];
     const int e3 = detail::cases3D[index][i * 3 + 2];
 
-    MarchingCubesAlgo1::linear_interp(e1, xx, yy, zz, f, p);
+    MarchingCubesAlgo1::linear_interp(e1, xx, yy, zz, nodeValues, p);
     mesh->appendNode(p[0], p[1], p[2]);
     cell[0] = idx;
     ++idx;
 
-    MarchingCubesAlgo1::linear_interp(e2, xx, yy, zz, f, p);
+    MarchingCubesAlgo1::linear_interp(e2, xx, yy, zz, nodeValues, p);
     mesh->appendNode(p[0], p[1], p[2]);
     cell[1] = idx;
     ++idx;
 
-    MarchingCubesAlgo1::linear_interp(e3, xx, yy, zz, f, p);
+    MarchingCubesAlgo1::linear_interp(e3, xx, yy, zz, nodeValues, p);
     mesh->appendNode(p[0], p[1], p[2]);
     cell[2] = idx;
     ++idx;
