@@ -540,6 +540,7 @@ template <int DIM>
 struct ContourTestBase
 {
   ContourTestBase() { }
+  virtual ~ContourTestBase() { }
 
   //!@brief Return field name for storing nodal function.
   virtual std::string name() const = 0;
@@ -711,6 +712,7 @@ struct RoundContourTest : public ContourTestBase<DIM>
     , _center(pt)
     , _errTol(1e-3)
   { }
+  virtual ~RoundContourTest() { }
   const axom::primal::Point<double, DIM> _center;
   double _errTol;
 
@@ -755,6 +757,7 @@ struct PlanarContourTest : public ContourTestBase<DIM>
     , _inPlane(inPlane)
     , _normal(perpDir.unitVector())
   { }
+  virtual ~PlanarContourTest() { }
   const axom::primal::Point<double, DIM> _inPlane;
   const axom::primal::Vector<double, DIM> _normal;
 
@@ -765,7 +768,7 @@ struct PlanarContourTest : public ContourTestBase<DIM>
     return std::string("dist_to_plane");
   }
 
-  double value(const axom::primal::Point<double, DIM>& pt) const
+  double value(const axom::primal::Point<double, DIM>& pt) const override
   {
     axom::primal::Vector<double, DIM> r(_inPlane, pt);
     double dist = r.dot(_normal);
