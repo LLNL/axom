@@ -845,6 +845,9 @@ public:
       "{:-^80}",
       " Calculating element overlap volume from each tet-oct pair "));
 
+    constexpr double EPS = 1e-10;
+    constexpr bool checkSign = true;
+
     AXOM_PERF_MARK_SECTION(
       "oct_tet_volume",
       axom::for_all<ExecSpace>(
@@ -853,8 +856,9 @@ public:
           int index = hexIndices[i];
           int octIndex = octCandidates[i];
           int tetIndex = tetIndices[i];
+
           PolyhedronType poly =
-            primal::clip(local_octs[octIndex], tets[tetIndex]);
+            primal::clip(local_octs[octIndex], tets[tetIndex], EPS, checkSign);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
