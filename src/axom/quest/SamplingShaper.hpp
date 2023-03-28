@@ -296,12 +296,12 @@ public:
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
-    const auto& shapeName = shape.getName();
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Generating the octree "));
 
-    internal::ScopedLogLevelChanger logLevelChanger(
-      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+    const auto& shapeName = shape.getName();
 
     switch(shapeDimension)
     {
@@ -347,12 +347,12 @@ public:
 
   void runShapeQuery(const klee::Shape& shape) override
   {
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format(" Querying the octree for shape '{}'", shape.getName())));
-
-    internal::ScopedLogLevelChanger logLevelChanger(
-      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     switch(getShapeDimension())
     {
@@ -369,14 +369,14 @@ public:
   {
     using axom::utilities::string::rsplitN;
 
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
     const auto& shapeName = shape.getName();
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format("Applying replacement rules over for shape '{}'",
                         shapeName)));
-
-    internal::ScopedLogLevelChanger logLevelChanger(
-      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     // Get inout qfunc for this shape
     auto* shapeQFunc =
