@@ -82,6 +82,7 @@ protected:
 
   axom::IndexType m_num_nodes;
   axom::IndexType m_num_tets;
+  axom::IndexType m_num_unique_nodes;
 
   std::vector<double> m_nodes;
 

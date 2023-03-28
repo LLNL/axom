@@ -61,6 +61,91 @@ TEST(quest_pro_e_reader, read_missing_file)
 }
 
 //------------------------------------------------------------------------------
+TEST(quest_pro_e_reader, read_to_invalid_mesh)
+{
+  const char* IGNORE_OUTPUT = ".*";
+  const std::string filename = "tet.creo";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  generate_pro_e_file(filename);
+
+  // STEP 1: constructs mesh object to read in the mesh to
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> trimesh(
+    2,
+    axom::mint::TRIANGLE);
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> hexmesh(3,
+                                                                 axom::mint::HEX);
+
+  // STEP 2: read in the STL mesh data
+  axom::quest::ProEReader reader;
+  reader.setFileName(filename);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 3: death tests
+
+  // read the Pro/E mesh data to a 2D axom::mint::Mesh should fail
+  EXPECT_DEATH_IF_SUPPORTED(reader.getMesh(&trimesh), IGNORE_OUTPUT);
+
+  // read the Pro/E mesh data to a axom::mint::Mesh that has a different cell type
+  EXPECT_DEATH_IF_SUPPORTED(reader.getMesh(&hexmesh), IGNORE_OUTPUT);
+
+  // STEP 4: remove Pro/E file
+  std::remove(filename.c_str());
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_pro_e_reader, read_pro_e)
+{
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
+
+  const std::string filename = "tet.creo";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  generate_pro_e_file(filename);
+
+  // STEP 1: create an Pro/E reader and read-in the mesh data
+  axom::quest::ProEReader reader;
+  reader.setFileName(filename);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 2: reading the Pro/E mesh data into a axom::mint::Mesh
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(3, axom::mint::TET);
+  reader.getMesh(&mesh);
+
+  // STEP 3: ensure the mesh is what is expected
+  EXPECT_EQ(mesh.getNumberOfCells(), 1);
+  EXPECT_EQ(mesh.getNumberOfNodes(), 4);
+
+  const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
+  const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
+  const double* z = mesh.getCoordinateArray(axom::mint::Z_COORDINATE);
+  EXPECT_TRUE(x != nullptr);
+  EXPECT_TRUE(y != nullptr);
+  EXPECT_TRUE(z != nullptr);
+
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < numNodes; ++inode)
+  {
+    EXPECT_NEAR(x[inode],
+                x_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(y[inode],
+                y_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(z[inode],
+                z_expected[inode],
+                std::numeric_limits<double>::epsilon());
+  }  // END for all nodes
+
+  // STEP 4: remove temporary STL file
+  std::remove(filename.c_str());
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
