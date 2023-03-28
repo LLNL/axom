@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -60,7 +60,7 @@ public:
                      const std::string &maskfield);
 
   //! @brief Spatial dimension of domain.
-  int dimension() const { return _ndim; }
+  int dimension() const { return m_ndim; }
 
   /*!
     @brief Set the field containing the nodal function.
@@ -83,7 +83,7 @@ public:
   */
   void set_cell_id_field(const std::string &cellIdField)
   {
-    _cellIdField = cellIdField;
+    m_cellIdField = cellIdField;
   }
 
   /*!
@@ -100,29 +100,29 @@ private:
     \brief Computational mesh as a conduit::Node.
 
     Plan for supporting blueprint mesh in sidre is to shallow-copy the
-    mesh to a conduit::Node on the heap, and point _dom to it.
+    mesh to a conduit::Node on the heap, and point m_dom to it.
   */
-  const conduit::Node *_dom;
-  int _ndim;
-  axom::Array<axom::IndexType> _cShape;  //!< @brief Shape of cell-centered data arrays in _dom.
-  axom::Array<axom::IndexType> _logicalOrigin;  //!< @brief First domain cell in each direction.
+  const conduit::Node *m_dom;
+  int m_ndim;
+  axom::Array<axom::IndexType> m_cShape;  //!< @brief Shape of cell-centered data arrays in m_dom.
+  axom::Array<axom::IndexType> m_logicalOrigin;  //!< @brief First domain cell in each direction.
 
-  const std::string _coordsetPath;
-  std::string _fcnPath;
-  std::string _maskPath;
+  const std::string m_coordsetPath;
+  std::string m_fcnPath;
+  std::string m_maskPath;
 
   /*
     Non-state variables we don't want to have to propagate down the
     stack repeatedly during computation.
   */
-  mutable axom::mint::Mesh *_surfaceMesh;
+  mutable axom::mint::Mesh *m_surfaceMesh;
 
   /* @brief Field name for recording computational-mesh cell id.
 
      This is for looking up the computational-mesh cell id that
      contributed a surface-mesh cell.
   */
-  std::string _cellIdField;
+  std::string m_cellIdField;
 
   double _contourVal;
 
@@ -197,8 +197,8 @@ public:
   */
   void set_cell_id_field(const std::string &cellIdField)
   {
-    _cellIdField = cellIdField;
-    for(auto &s : _sd)
+    m_cellIdField = cellIdField;
+    for(auto &s : m_sd)
     {
       s->set_cell_id_field(cellIdField);
     }
@@ -213,7 +213,7 @@ public:
   */
   void set_domain_id_field(const std::string &domainIdField)
   {
-    _domainIdField = domainIdField;
+    m_domainIdField = domainIdField;
   }
 
   /*!
@@ -225,26 +225,26 @@ public:
 
 private:
   //! @brief Single-domain implementations.
-  axom::Array<std::shared_ptr<MarchingCubesAlgo1>> _sd;
-  int _ndim;
-  const std::string _coordsetPath;
-  std::string _fcnPath;
-  std::string _maskPath;
+  axom::Array<std::shared_ptr<MarchingCubesAlgo1>> m_sd;
+  int m_ndim;
+  const std::string m_coordsetPath;
+  std::string m_fcnPath;
+  std::string m_maskPath;
 
   /*
     Non-state variables we don't want to have to propagate down the
     stack repeatedly during computation.
   */
-  mutable axom::mint::Mesh *_surfaceMesh;
+  mutable axom::mint::Mesh *m_surfaceMesh;
 
-  //! @brief See MarchingCubesAlgo1::_cellIdField.
-  std::string _cellIdField;
+  //! @brief See MarchingCubesAlgo1::m_cellIdField.
+  std::string m_cellIdField;
   /* @brief Field name for recording computational-mesh domain id.
 
      This is for looking up the computational-mesh domain id that
      contributed a surface-mesh cell.
   */
-  std::string _domainIdField;
+  std::string m_domainIdField;
 
   // Use simple pointers for now.  Later, maybe sidre.
 

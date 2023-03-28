@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,34 +24,34 @@ namespace quest
 MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node& bpMesh,
                                      const std::string& coordsetName,
                                      const std::string& maskField)
-  : _sd()
-  , _ndim(0)
-  , _coordsetPath("coordsets/" + coordsetName)
-  , _fcnPath()
-  , _maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
-  , _surfaceMesh(nullptr)
-  , _cellIdField()
-  , _domainIdField()
+  : m_sd()
+  , m_ndim(0)
+  , m_coordsetPath("coordsets/" + coordsetName)
+  , m_fcnPath()
+  , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
+  , m_surfaceMesh(nullptr)
+  , m_cellIdField()
+  , m_domainIdField()
 {
-  _sd.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
+  m_sd.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {
-    _sd.emplace_back(new MarchingCubesAlgo1(dom, coordsetName, maskField));
-    if(_ndim == 0)
+    m_sd.emplace_back(new MarchingCubesAlgo1(dom, coordsetName, maskField));
+    if(m_ndim == 0)
     {
-      _ndim = _sd.back()->dimension();
+      m_ndim = m_sd.back()->dimension();
     }
     else
     {
-      SLIC_ASSERT(_ndim == _sd.back()->dimension());
+      SLIC_ASSERT(m_ndim == m_sd.back()->dimension());
     }
   }
 }
 
 void MarchingCubesAlgo::set_function_field(const std::string& fcnField)
 {
-  _fcnPath = "fields/" + fcnField;
-  for(auto& s : _sd)
+  m_fcnPath = "fields/" + fcnField;
+  for(auto& s : m_sd)
   {
     s->set_function_field(fcnField);
   }
@@ -62,40 +62,41 @@ void MarchingCubesAlgo::set_function_field(const std::string& fcnField)
 */
 void MarchingCubesAlgo::set_output_mesh(axom::mint::Mesh* surfaceMesh)
 {
-  _surfaceMesh = surfaceMesh;
+  m_surfaceMesh = surfaceMesh;
 
-  for(auto& s : _sd)
+  for(auto& s : m_sd)
   {
-    s->set_output_mesh(_surfaceMesh);
+    s->set_output_mesh(m_surfaceMesh);
   }
 }
 
 void MarchingCubesAlgo::compute_iso_surface(double contourVal)
 {
-  SLIC_ASSERT_MSG(_surfaceMesh,
+  SLIC_ASSERT_MSG(m_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
   SLIC_ASSERT_MSG(
-    !_fcnPath.empty(),
+    !m_fcnPath.empty(),
     "You must call set_function_field before compute_iso_surface.");
 
-  if(!_domainIdField.empty() &&
-     !_surfaceMesh->hasField(_domainIdField, axom::mint::CELL_CENTERED))
+  if(!m_domainIdField.empty() &&
+     !m_surfaceMesh->hasField(m_domainIdField, axom::mint::CELL_CENTERED))
   {
-    _surfaceMesh->createField<int>(_domainIdField, axom::mint::CELL_CENTERED);
+    m_surfaceMesh->createField<int>(m_domainIdField, axom::mint::CELL_CENTERED);
   }
 
-  for(int dId = 0; dId < _sd.size(); ++dId)
+  for(int dId = 0; dId < m_sd.size(); ++dId)
   {
-    std::shared_ptr<MarchingCubesAlgo1>& single = _sd[dId];
+    std::shared_ptr<MarchingCubesAlgo1>& single = m_sd[dId];
 
-    auto nPrev = _surfaceMesh->getNumberOfCells();
+    auto nPrev = m_surfaceMesh->getNumberOfCells();
     single->compute_iso_surface(contourVal);
-    auto nNew = _surfaceMesh->getNumberOfCells();
+    auto nNew = m_surfaceMesh->getNumberOfCells();
 
-    if(nNew > nPrev && !_domainIdField.empty())
+    if(nNew > nPrev && !m_domainIdField.empty())
     {
       auto* domainIdPtr =
-        _surfaceMesh->getFieldPtr<int>(_domainIdField, axom::mint::CELL_CENTERED);
+        m_surfaceMesh->getFieldPtr<int>(m_domainIdField,
+                                        axom::mint::CELL_CENTERED);
       for(int n = nPrev; n < nNew; ++n)
       {
         domainIdPtr[n] = dId;
@@ -107,15 +108,15 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
 MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node& dom,
                                        const std::string& coordsetName,
                                        const std::string& maskField)
-  : _dom(nullptr)
-  , _ndim(0)
-  , _cShape()
-  , _logicalOrigin()
-  , _coordsetPath("coordsets/" + coordsetName)
-  , _fcnPath()
-  , _maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
-  , _surfaceMesh(nullptr)
-  , _cellIdField()
+  : m_dom(nullptr)
+  , m_ndim(0)
+  , m_cShape()
+  , m_logicalOrigin()
+  , m_coordsetPath("coordsets/" + coordsetName)
+  , m_fcnPath()
+  , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
+  , m_surfaceMesh(nullptr)
+  , m_cellIdField()
   , _contourVal(0.0)
 {
   set_domain(dom);
@@ -128,41 +129,41 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node& dom)
     !conduit::blueprint::mesh::is_multi_domain(dom),
     "MarchingCubesAlgo1 is single-domain only.  Try MarchingCubesAlgo.");
 
-  SLIC_ASSERT(dom.has_path(_coordsetPath));
+  SLIC_ASSERT(dom.has_path(m_coordsetPath));
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
 
-  if(!_maskPath.empty())
+  if(!m_maskPath.empty())
   {
-    SLIC_ASSERT(dom.has_path(_maskPath + "/values"));
+    SLIC_ASSERT(dom.has_path(m_maskPath + "/values"));
   }
 
-  _dom = &dom;
+  m_dom = &dom;
 
   const conduit::Node& dimsNode =
-    _dom->fetch_existing("topologies/mesh/elements/dims");
+    m_dom->fetch_existing("topologies/mesh/elements/dims");
 
-  _ndim = dimsNode.number_of_children();
+  m_ndim = dimsNode.number_of_children();
 
-  _cShape.resize(_ndim);
-  for(int d = 0; d < _ndim; ++d)
+  m_cShape.resize(m_ndim);
+  for(int d = 0; d < m_ndim; ++d)
   {
-    _cShape[d] = dimsNode[_ndim - 1 - d].as_int();
+    m_cShape[d] = dimsNode[m_ndim - 1 - d].as_int();
   }
 
-  _logicalOrigin.resize(_ndim, 0);
-  if(_dom->has_path("topologies/mesh/elements/origin"))
+  m_logicalOrigin.resize(m_ndim, 0);
+  if(m_dom->has_path("topologies/mesh/elements/origin"))
   {
     const conduit::Node& origins =
-      _dom->fetch_existing("topologies/mesh/elements/origin");
-    for(int d = 0; d < _ndim; ++d)
+      m_dom->fetch_existing("topologies/mesh/elements/origin");
+    for(int d = 0; d < m_ndim; ++d)
     {
-      _logicalOrigin[d] = origins[d].as_int();
+      m_logicalOrigin[d] = origins[d].as_int();
     }
   }
 
-  SLIC_ASSERT(_ndim >= 1 && _ndim <= 3);
+  SLIC_ASSERT(m_ndim >= 1 && m_ndim <= 3);
 
-  const conduit::Node& coordsValues = dom[_coordsetPath + "/values"];
+  const conduit::Node& coordsValues = dom[m_coordsetPath + "/values"];
   bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
   SLIC_ASSERT_MSG(
     !isInterleaved,
@@ -171,11 +172,11 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node& dom)
 
 void MarchingCubesAlgo1::set_function_field(const std::string& fcnField)
 {
-  _fcnPath = "fields/" + fcnField;
-  SLIC_ASSERT(_dom->has_path(_fcnPath));
-  SLIC_ASSERT(_dom->fetch_existing(_fcnPath + "/association").as_string() ==
+  m_fcnPath = "fields/" + fcnField;
+  SLIC_ASSERT(m_dom->has_path(m_fcnPath));
+  SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
               "vertex");
-  SLIC_ASSERT(_dom->has_path(_fcnPath + "/values"));
+  SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
 }
 
 /*!
@@ -183,28 +184,28 @@ void MarchingCubesAlgo1::set_function_field(const std::string& fcnField)
 */
 void MarchingCubesAlgo1::set_output_mesh(axom::mint::Mesh* surfaceMesh)
 {
-  _surfaceMesh = surfaceMesh;
+  m_surfaceMesh = surfaceMesh;
 
-  if(_ndim == 2)
+  if(m_ndim == 2)
   {
     using SegmentMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
-    SegmentMesh* mesh = dynamic_cast<SegmentMesh*>(_surfaceMesh);
+    SegmentMesh* mesh = dynamic_cast<SegmentMesh*>(m_surfaceMesh);
     SLIC_ASSERT_MSG(mesh, "Surface mesh for 2D problem must be a SegmentMesh");
   }
   else
   {
     using TriangleMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
-    TriangleMesh* mesh = dynamic_cast<TriangleMesh*>(_surfaceMesh);
+    TriangleMesh* mesh = dynamic_cast<TriangleMesh*>(m_surfaceMesh);
     SLIC_ASSERT_MSG(mesh, "Surface mesh for 3D problem must be a TriangleMesh");
   }
 }
 
 void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 {
-  SLIC_ASSERT_MSG(_surfaceMesh,
+  SLIC_ASSERT_MSG(m_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
   SLIC_ASSERT_MSG(
-    !_fcnPath.empty(),
+    !m_fcnPath.empty(),
     "You must call set_function_field before compute_iso_surface.");
 
   /*
@@ -223,32 +224,32 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
   */
 
   const conduit::Node& coordValues =
-    _dom->fetch_existing(_coordsetPath + "/values");
+    m_dom->fetch_existing(m_coordsetPath + "/values");
   bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-  const int coordSp = isInterleaved ? _ndim : 1;
+  const int coordSp = isInterleaved ? m_ndim : 1;
   const double* xPtr = coordValues["x"].as_double_ptr();
-  const double* yPtr = _ndim >= 2 ? coordValues["y"].as_double_ptr() : nullptr;
-  const double* zPtr = _ndim >= 3 ? coordValues["z"].as_double_ptr() : nullptr;
+  const double* yPtr = m_ndim >= 2 ? coordValues["y"].as_double_ptr() : nullptr;
+  const double* zPtr = m_ndim >= 3 ? coordValues["z"].as_double_ptr() : nullptr;
 
-  auto& fcnValues = _dom->fetch_existing(_fcnPath + "/values");
+  auto& fcnValues = m_dom->fetch_existing(m_fcnPath + "/values");
   const double* fcnPtr = fcnValues.as_double_ptr();
 
   const int* maskPtr = nullptr;
-  if(!_maskPath.empty())
+  if(!m_maskPath.empty())
   {
-    auto& maskValues = _dom->fetch_existing(_maskPath + "/values");
+    auto& maskValues = m_dom->fetch_existing(m_maskPath + "/values");
     maskPtr = maskValues.as_int_ptr();
   }
 
-  if(!_cellIdField.empty() &&
-     !_surfaceMesh->hasField(_cellIdField, axom::mint::CELL_CENTERED))
+  if(!m_cellIdField.empty() &&
+     !m_surfaceMesh->hasField(m_cellIdField, axom::mint::CELL_CENTERED))
   {
-    _surfaceMesh->createField<int>(_cellIdField, axom::mint::CELL_CENTERED);
+    m_surfaceMesh->createField<int>(m_cellIdField, axom::mint::CELL_CENTERED);
   }
 
   _contourVal = contourVal;
 
-  if(_ndim == 2)
+  if(m_ndim == 2)
   {
     /*
       For now, assume zero offsets and zero ghost width.
@@ -260,9 +261,9 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
       compute column-major strides.  We should also use an iteration
       scheme that's efficient for both layouts.
     */
-    const axom::StackArray<axom::IndexType, 2> cShape {_cShape[0], _cShape[1]};
-    const axom::StackArray<axom::IndexType, 2> pShape {1 + _cShape[0],
-                                                       1 + _cShape[1]};
+    const axom::StackArray<axom::IndexType, 2> cShape {m_cShape[0], m_cShape[1]};
+    const axom::StackArray<axom::IndexType, 2> pShape {1 + m_cShape[0],
+                                                       1 + m_cShape[1]};
     axom::ArrayView<const double, 2> xView(xPtr, pShape, coordSp);
     axom::ArrayView<const double, 2> yView(yPtr, pShape, coordSp);
     axom::ArrayView<const double, 2> fcnView(fcnPtr, pShape);
@@ -295,16 +296,16 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
           yy[2] = yView(i, j + 1);
           yy[3] = yView(i, j);
 
-          auto nPrev = _surfaceMesh->getNumberOfCells();
+          auto nPrev = m_surfaceMesh->getNumberOfCells();
           this->contourCell2D(xx, yy, vfs);
-          auto nNew = _surfaceMesh->getNumberOfCells();
+          auto nNew = m_surfaceMesh->getNumberOfCells();
 
-          if(nNew > nPrev && !_cellIdField.empty())
+          if(nNew > nPrev && !m_cellIdField.empty())
           {
             int zoneIdx = i + j * cShape[0];  // TODO: Fix for ghost layer size.
             auto* cellIdPtr =
-              _surfaceMesh->getFieldPtr<int>(_cellIdField,
-                                             axom::mint::CELL_CENTERED);
+              m_surfaceMesh->getFieldPtr<int>(m_cellIdField,
+                                              axom::mint::CELL_CENTERED);
             for(int n = nPrev; n < nNew; ++n)
             {
               cellIdPtr[n] = zoneIdx;
@@ -316,12 +317,12 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
   }
   else
   {
-    const axom::StackArray<axom::IndexType, 3> cShape {_cShape[0],
-                                                       _cShape[1],
-                                                       _cShape[2]};
-    const axom::StackArray<axom::IndexType, 3> pShape {1 + _cShape[0],
-                                                       1 + _cShape[1],
-                                                       1 + _cShape[2]};
+    const axom::StackArray<axom::IndexType, 3> cShape {m_cShape[0],
+                                                       m_cShape[1],
+                                                       m_cShape[2]};
+    const axom::StackArray<axom::IndexType, 3> pShape {1 + m_cShape[0],
+                                                       1 + m_cShape[1],
+                                                       1 + m_cShape[2]};
     axom::ArrayView<const double, 3> xView(xPtr, pShape, coordSp);
     axom::ArrayView<const double, 3> yView(yPtr, pShape, coordSp);
     axom::ArrayView<const double, 3> zView(zPtr, pShape, coordSp);
@@ -378,17 +379,17 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
             zz[6] = zView(i, j + 1, k + 1);
             zz[7] = zView(i, j, k + 1);
 
-            auto nPrev = _surfaceMesh->getNumberOfCells();
+            auto nPrev = m_surfaceMesh->getNumberOfCells();
             this->contourCell3D(xx, yy, zz, vfs);
-            auto nNew = _surfaceMesh->getNumberOfCells();
+            auto nNew = m_surfaceMesh->getNumberOfCells();
 
-            if(nNew > nPrev && !_cellIdField.empty())
+            if(nNew > nPrev && !m_cellIdField.empty())
             {
               int zoneIdx = i + j * cShape[0] +
                 k * cShape[0] * cShape[1];  // TODO: Fix for ghost layer size.
               auto* cellIdPtr =
-                _surfaceMesh->getFieldPtr<int>(_cellIdField,
-                                               axom::mint::CELL_CENTERED);
+                m_surfaceMesh->getFieldPtr<int>(m_cellIdField,
+                                                axom::mint::CELL_CENTERED);
               for(int n = nPrev; n < nNew; ++n)
               {
                 cellIdPtr[n] = zoneIdx;
@@ -421,7 +422,7 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
   int n1 = edgeIdx;
   int n2 = (edgeIdx == 3) ? 0 : edgeIdx + 1;
 
-  if(_ndim == 3)
+  if(m_ndim == 3)
   {
     SLIC_ASSERT(zz != NULL);
 
@@ -450,7 +451,7 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
   p2[1] = yy[n2];
   p2[2] = 0.0;
 
-  if(_ndim == 3)
+  if(m_ndim == 3)
   {
     // set the z--coordinate if in 3-D
     p1[2] = zz[n1];
@@ -461,13 +462,13 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
   if(axom::utilities::isNearlyEqual(_contourVal, f1) ||
      axom::utilities::isNearlyEqual(f1, f2))
   {
-    memcpy(xyz, p1, _ndim * sizeof(double));
+    memcpy(xyz, p1, m_ndim * sizeof(double));
     return;
   }
 
   if(axom::utilities::isNearlyEqual(_contourVal, f2))
   {
-    memcpy(xyz, p2, _ndim * sizeof(double));
+    memcpy(xyz, p2, m_ndim * sizeof(double));
     return;
   }
 
@@ -475,7 +476,7 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
   constexpr double ptiny = 1.0e-80;
   const double df = f2 - f1 + ptiny;  //add ptiny to avoid division by zero
   const double w = (_contourVal - f1) / df;
-  for(int i = 0; i < _ndim; ++i)
+  for(int i = 0; i < m_ndim; ++i)
   {
     xyz[i] = p1[i] + w * (p2[i] - p1[i]);
   }
@@ -484,7 +485,7 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
 //------------------------------------------------------------------------------
 int MarchingCubesAlgo1::computeIndex(const double* f)
 {
-  const int numNodes = (_ndim == 3) ? 8 : 4;
+  const int numNodes = (m_ndim == 3) ? 8 : 4;
 
   int index = 0;
   for(int i = 0; i < numNodes; ++i)
@@ -519,7 +520,7 @@ void MarchingCubesAlgo1::contourCell2D(double xx[4],
 
   // Generate line segments
   using SegmentMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
-  SegmentMesh* mesh = static_cast<SegmentMesh*>(_surfaceMesh);
+  SegmentMesh* mesh = static_cast<SegmentMesh*>(m_surfaceMesh);
   SLIC_ASSERT(mesh != NULL);
   SLIC_ASSERT(mesh->getCellType() == axom::mint::SEGMENT);
   SLIC_ASSERT(mesh->getDimension() == 2);
@@ -573,7 +574,7 @@ void MarchingCubesAlgo1::contourCell3D(double xx[8],
 
   // Generate triangles
   using TriangleMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
-  TriangleMesh* mesh = static_cast<TriangleMesh*>(_surfaceMesh);
+  TriangleMesh* mesh = static_cast<TriangleMesh*>(m_surfaceMesh);
   SLIC_ASSERT(mesh != NULL);
   SLIC_ASSERT(mesh->getCellType() == axom::mint::TRIANGLE);
   SLIC_ASSERT(mesh->getDimension() == 3);
