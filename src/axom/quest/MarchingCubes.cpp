@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/quest/MarchingCubesAlgo.hpp"
+#include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "conduit_blueprint.hpp"
@@ -21,9 +21,9 @@ namespace axom
 {
 namespace quest
 {
-MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node& bpMesh,
-                                     const std::string& coordsetName,
-                                     const std::string& maskField)
+MarchingCubes::MarchingCubes(const conduit::Node& bpMesh,
+                             const std::string& coordsetName,
+                             const std::string& maskField)
   : m_sd()
   , m_ndim(0)
   , m_coordsetPath("coordsets/" + coordsetName)
@@ -36,7 +36,7 @@ MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node& bpMesh,
   m_sd.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {
-    m_sd.emplace_back(new MarchingCubesAlgo1(dom, coordsetName, maskField));
+    m_sd.emplace_back(new MarchingCubesSingleDomain(dom, coordsetName, maskField));
     if(m_ndim == 0)
     {
       m_ndim = m_sd.back()->dimension();
@@ -48,7 +48,7 @@ MarchingCubesAlgo::MarchingCubesAlgo(const conduit::Node& bpMesh,
   }
 }
 
-void MarchingCubesAlgo::set_function_field(const std::string& fcnField)
+void MarchingCubes::set_function_field(const std::string& fcnField)
 {
   m_fcnPath = "fields/" + fcnField;
   for(auto& s : m_sd)
@@ -60,7 +60,7 @@ void MarchingCubesAlgo::set_function_field(const std::string& fcnField)
 /*!
   @brief Set the output surface mesh object.
 */
-void MarchingCubesAlgo::set_output_mesh(axom::mint::Mesh* surfaceMesh)
+void MarchingCubes::set_output_mesh(axom::mint::Mesh* surfaceMesh)
 {
   m_surfaceMesh = surfaceMesh;
 
@@ -70,7 +70,7 @@ void MarchingCubesAlgo::set_output_mesh(axom::mint::Mesh* surfaceMesh)
   }
 }
 
-void MarchingCubesAlgo::compute_iso_surface(double contourVal)
+void MarchingCubes::compute_iso_surface(double contourVal)
 {
   SLIC_ASSERT_MSG(m_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
@@ -86,7 +86,7 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
 
   for(int dId = 0; dId < m_sd.size(); ++dId)
   {
-    std::shared_ptr<MarchingCubesAlgo1>& single = m_sd[dId];
+    std::shared_ptr<MarchingCubesSingleDomain>& single = m_sd[dId];
 
     auto nPrev = m_surfaceMesh->getNumberOfCells();
     single->compute_iso_surface(contourVal);
@@ -105,9 +105,9 @@ void MarchingCubesAlgo::compute_iso_surface(double contourVal)
   }
 }
 
-MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node& dom,
-                                       const std::string& coordsetName,
-                                       const std::string& maskField)
+MarchingCubesSingleDomain::MarchingCubesSingleDomain(const conduit::Node& dom,
+                                                     const std::string& coordsetName,
+                                                     const std::string& maskField)
   : m_dom(nullptr)
   , m_ndim(0)
   , m_cShape()
@@ -123,11 +123,11 @@ MarchingCubesAlgo1::MarchingCubesAlgo1(const conduit::Node& dom,
   return;
 }
 
-void MarchingCubesAlgo1::set_domain(const conduit::Node& dom)
+void MarchingCubesSingleDomain::set_domain(const conduit::Node& dom)
 {
   SLIC_ASSERT_MSG(
     !conduit::blueprint::mesh::is_multi_domain(dom),
-    "MarchingCubesAlgo1 is single-domain only.  Try MarchingCubesAlgo.");
+    "MarchingCubesSingleDomain is single-domain only.  Try MarchingCubes.");
 
   SLIC_ASSERT(dom.has_path(m_coordsetPath));
   SLIC_ASSERT(dom["topologies/mesh/type"].as_string() == "structured");
@@ -167,10 +167,10 @@ void MarchingCubesAlgo1::set_domain(const conduit::Node& dom)
   bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
   SLIC_ASSERT_MSG(
     !isInterleaved,
-    "MarchingCubesAlgo currently requires contiguous coordinates layout.");
+    "MarchingCubes currently requires contiguous coordinates layout.");
 }
 
-void MarchingCubesAlgo1::set_function_field(const std::string& fcnField)
+void MarchingCubesSingleDomain::set_function_field(const std::string& fcnField)
 {
   m_fcnPath = "fields/" + fcnField;
   SLIC_ASSERT(m_dom->has_path(m_fcnPath));
@@ -182,7 +182,7 @@ void MarchingCubesAlgo1::set_function_field(const std::string& fcnField)
 /*!
   @brief Set the output surface mesh object.
 */
-void MarchingCubesAlgo1::set_output_mesh(axom::mint::Mesh* surfaceMesh)
+void MarchingCubesSingleDomain::set_output_mesh(axom::mint::Mesh* surfaceMesh)
 {
   m_surfaceMesh = surfaceMesh;
 
@@ -200,7 +200,7 @@ void MarchingCubesAlgo1::set_output_mesh(axom::mint::Mesh* surfaceMesh)
   }
 }
 
-void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
+void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
 {
   SLIC_ASSERT_MSG(m_surfaceMesh,
                   "You must call set_output_mesh before compute_iso_surface.");
@@ -404,12 +404,12 @@ void MarchingCubesAlgo1::compute_iso_surface(double contourVal)
 }
 
 //------------------------------------------------------------------------------
-void MarchingCubesAlgo1::linear_interp(int edgeIdx,
-                                       const double* xx,
-                                       const double* yy,
-                                       const double* zz,
-                                       const double* nodeValues,
-                                       double* xyz)
+void MarchingCubesSingleDomain::linear_interp(int edgeIdx,
+                                              const double* xx,
+                                              const double* yy,
+                                              const double* zz,
+                                              const double* nodeValues,
+                                              double* xyz)
 {
   SLIC_ASSERT(xx != NULL);
   SLIC_ASSERT(yy != NULL);
@@ -484,7 +484,7 @@ void MarchingCubesAlgo1::linear_interp(int edgeIdx,
 }
 
 //------------------------------------------------------------------------------
-int MarchingCubesAlgo1::computeIndex(const double* f)
+int MarchingCubesSingleDomain::computeIndex(const double* f)
 {
   const int numNodes = (m_ndim == 3) ? 8 : 4;
 
@@ -501,16 +501,16 @@ int MarchingCubesAlgo1::computeIndex(const double* f)
 }
 
 //------------------------------------------------------------------------------
-void MarchingCubesAlgo1::contourCell2D(double xx[4],
-                                       double yy[4],
-                                       double nodeValues[4])
+void MarchingCubesSingleDomain::contourCell2D(double xx[4],
+                                              double yy[4],
+                                              double nodeValues[4])
 {
   SLIC_ASSERT(xx != NULL);
   SLIC_ASSERT(yy != NULL);
   SLIC_ASSERT(nodeValues != NULL);
 
   // compute index
-  int index = MarchingCubesAlgo1::computeIndex(nodeValues);
+  int index = MarchingCubesSingleDomain::computeIndex(nodeValues);
   SLIC_ASSERT((index >= 0) && (index < 16));
 
   // short-circuit
@@ -537,12 +537,12 @@ void MarchingCubesAlgo1::contourCell2D(double xx[4],
     const int e1 = detail::cases2D[index][i * 2];
     const int e2 = detail::cases2D[index][i * 2 + 1];
 
-    MarchingCubesAlgo1::linear_interp(e1, xx, yy, NULL, nodeValues, p);
+    MarchingCubesSingleDomain::linear_interp(e1, xx, yy, NULL, nodeValues, p);
     mesh->appendNode(p[0], p[1]);
     cell[0] = idx;
     ++idx;
 
-    MarchingCubesAlgo1::linear_interp(e2, xx, yy, NULL, nodeValues, p);
+    MarchingCubesSingleDomain::linear_interp(e2, xx, yy, NULL, nodeValues, p);
     mesh->appendNode(p[0], p[1]);
     cell[1] = idx;
     ++idx;
@@ -553,10 +553,10 @@ void MarchingCubesAlgo1::contourCell2D(double xx[4],
 }
 
 //------------------------------------------------------------------------------
-void MarchingCubesAlgo1::contourCell3D(double xx[8],
-                                       double yy[8],
-                                       double zz[8],
-                                       double nodeValues[8])
+void MarchingCubesSingleDomain::contourCell3D(double xx[8],
+                                              double yy[8],
+                                              double zz[8],
+                                              double nodeValues[8])
 {
   SLIC_ASSERT(xx != NULL);
   SLIC_ASSERT(yy != NULL);
@@ -564,7 +564,7 @@ void MarchingCubesAlgo1::contourCell3D(double xx[8],
   SLIC_ASSERT(nodeValues != NULL);
 
   // compute index
-  int index = MarchingCubesAlgo1::computeIndex(nodeValues);
+  int index = MarchingCubesSingleDomain::computeIndex(nodeValues);
   SLIC_ASSERT((index >= 0) && (index < 256));
 
   // short-circuit
@@ -592,17 +592,17 @@ void MarchingCubesAlgo1::contourCell3D(double xx[8],
     const int e2 = detail::cases3D[index][i * 3 + 1];
     const int e3 = detail::cases3D[index][i * 3 + 2];
 
-    MarchingCubesAlgo1::linear_interp(e1, xx, yy, zz, nodeValues, p);
+    MarchingCubesSingleDomain::linear_interp(e1, xx, yy, zz, nodeValues, p);
     mesh->appendNode(p[0], p[1], p[2]);
     cell[0] = idx;
     ++idx;
 
-    MarchingCubesAlgo1::linear_interp(e2, xx, yy, zz, nodeValues, p);
+    MarchingCubesSingleDomain::linear_interp(e2, xx, yy, zz, nodeValues, p);
     mesh->appendNode(p[0], p[1], p[2]);
     cell[1] = idx;
     ++idx;
 
-    MarchingCubesAlgo1::linear_interp(e3, xx, yy, zz, nodeValues, p);
+    MarchingCubesSingleDomain::linear_interp(e3, xx, yy, zz, nodeValues, p);
     mesh->appendNode(p[0], p[1], p[2]);
     cell[2] = idx;
     ++idx;

@@ -110,13 +110,13 @@ endif()
 
 blt_list_append(
     TO       quest_headers
-    ELEMENTS MarchingCubesAlgo.hpp
+    ELEMENTS MarchingCubes.hpp
     IF       CONDUIT_FOUND
                )
 
 blt_list_append(
     TO       quest_sources
-    ELEMENTS MarchingCubesAlgo.cpp
+    ELEMENTS MarchingCubes.cpp
     IF       CONDUIT_FOUND
                )
 

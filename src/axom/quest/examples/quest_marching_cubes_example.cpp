@@ -555,7 +555,7 @@ struct ContourTestBase
   virtual double error_tolerance() const = 0;
 
   int run_test(BlueprintStructuredMesh& computationalMesh,
-               quest::MarchingCubesAlgo& mca)
+               quest::MarchingCubes& mca)
   {
     SLIC_INFO(banner(axom::fmt::format("Testing {} contour.", name())));
 
@@ -842,7 +842,7 @@ template <int DIM>
 int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 {
   // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubesAlgo mca(computationalMesh.as_conduit_node(), "coords");
+  quest::MarchingCubes mca(computationalMesh.as_conduit_node(), "coords");
 
   mca.set_cell_id_field("zoneIds");
   mca.set_domain_id_field("domainIds");

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file MarchingCubesAlgo.hpp
+ * \file MarchingCubes.hpp
  *
  * \brief Consists of class implementing marching cubes algorithm to
  * compute iso-surface from a scalar field in a blueprint mesh.
@@ -36,9 +36,9 @@ namespace quest
  * The input mesh is a Conduit::Node following the Mesh Blueprint
  * convention.
  *
- * \sa MarchingCubesAlgo
+ * \sa MarchingCubes
  */
-class MarchingCubesAlgo1
+class MarchingCubesSingleDomain
 {
 public:
   /*!
@@ -58,9 +58,9 @@ public:
    * requirement may be relaxed, possibly at the cost of a
    * transformation and storage of the temporary contiguous layout.
    */
-  MarchingCubesAlgo1(const conduit::Node &dom,
-                     const std::string &coordsetName,
-                     const std::string &maskfield);
+  MarchingCubesSingleDomain(const conduit::Node &dom,
+                            const std::string &coordsetName,
+                            const std::string &maskfield);
 
   //! @brief Spatial dimension of domain.
   int dimension() const { return m_ndim; }
@@ -172,14 +172,14 @@ private:
   */
   int computeIndex(const double *f);
 
-};  // class MarchingCubesAlgo1
+};  // class MarchingCubesSingleDomain
 
 /*!
  * \@brief Class implementing marching cubes algorithm.
  *
- * \sa MarchingCubesAlgo1
+ * \sa MarchingCubesSingleDomain
  */
-class MarchingCubesAlgo
+class MarchingCubes
 {
 public:
   /*!
@@ -199,9 +199,9 @@ public:
    * requirement may be relaxed, possibly at the cost of a
    * transformation and storage of the temporary contiguous layout.
    */
-  MarchingCubesAlgo(const conduit::Node &bpMesh,
-                    const std::string &coordsetName,
-                    const std::string &maskField = {});
+  MarchingCubes(const conduit::Node &bpMesh,
+                const std::string &coordsetName,
+                const std::string &maskField = {});
 
   /*!
     @brief Set the field containing the nodal function.
@@ -251,7 +251,7 @@ public:
 
 private:
   //! @brief Single-domain implementations.
-  axom::Array<std::shared_ptr<MarchingCubesAlgo1>> m_sd;
+  axom::Array<std::shared_ptr<MarchingCubesSingleDomain>> m_sd;
   int m_ndim;
   const std::string m_coordsetPath;
   std::string m_fcnPath;
@@ -263,7 +263,7 @@ private:
   */
   mutable axom::mint::Mesh *m_surfaceMesh;
 
-  //! @brief See MarchingCubesAlgo1::m_cellIdField.
+  //! @brief See MarchingCubesSingleDomain::m_cellIdField.
   std::string m_cellIdField;
   /* @brief Field name for recording computational-mesh domain id.
 
