@@ -197,6 +197,40 @@ public:
   }
 
   /**
+   * \brief Finds the signed volume of the hexahedron
+   *
+   * Uses algorithm in
+   * Grandy, J. Efficient computation of volume of hexahedral cells.
+   * United States: N. p., 1997. Web. doi:10.2172/632793.
+   *
+   * \return The volume of the hexahedron
+   *
+   * \note Indices are different from the original paper
+   */
+  AXOM_HOST_DEVICE
+  double signedVolume() const
+  {
+    constexpr double scale = 1. / 6.;
+    return scale *
+      (VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[0]),
+                                         VectorType(m_points[1] - m_points[0]),
+                                         VectorType(m_points[5] - m_points[2])) +
+       VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[0]),
+                                         VectorType(m_points[3] - m_points[0]),
+                                         VectorType(m_points[2] - m_points[7])) +
+       VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[0]),
+                                         VectorType(m_points[4] - m_points[0]),
+                                         VectorType(m_points[7] - m_points[5])));
+  }
+
+  /*!
+   * \brief Returns the absolute (unsigned) volume of the hexahedron
+   * \sa signedVolume()
+   */
+  AXOM_HOST_DEVICE
+  double volume() const { return axom::utilities::abs(signedVolume()); }
+
+  /**
    * \brief Method to decompose a Hexahedron
    *        into 24 Tetrahedrons.
    *        Each Tetrahedron consists of 4 points:
@@ -278,7 +312,7 @@ public:
    * \return The volume of the hexahedron
    */
   AXOM_HOST_DEVICE
-  double volume()
+  double volume_tet_decomp()
   {
     double retVol = 0.0;
     TetrahedronType tets[NUM_TRIANGULATE];

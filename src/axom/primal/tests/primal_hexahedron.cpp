@@ -32,34 +32,34 @@ protected:
 
     // Define coordinates for first hexahedron
     qData0[0] = QPoint {0, 0, 0};
-    qData0[1] = QPoint {1, 0, 0};
+    qData0[1] = QPoint {0, 0, 1};
     qData0[2] = QPoint {1, 0, 1};
-    qData0[3] = QPoint {0, 0, 1};
+    qData0[3] = QPoint {1, 0, 0};
     qData0[4] = QPoint {0, 1, 0};
-    qData0[5] = QPoint {1, 1, 0};
+    qData0[5] = QPoint {0, 1, 1};
     qData0[6] = QPoint {1, 1, 1};
-    qData0[7] = QPoint {0, 1, 1};
+    qData0[7] = QPoint {1, 1, 0};
 
     // Define coordinates for second hexahedron
     qData1[0] = QPoint {-1, 0, 0};
     qData1[1] = QPoint {0, 0, 0};
-    qData1[2] = QPoint {0, 0, 1};
-    qData1[3] = QPoint {-1, 0, 1};
-    qData1[4] = QPoint {-1, 1, 0};
-    qData1[5] = QPoint {0, 1, 0};
+    qData1[2] = QPoint {0, 1, 0};
+    qData1[3] = QPoint {-1, 1, 0};
+    qData1[4] = QPoint {-1, 0, 1};
+    qData1[5] = QPoint {0, 0, 1};
     qData1[6] = QPoint {0, 1, 1};
     qData1[7] = QPoint {-1, 1, 1};
 
     // Square frustum
     // (base side length 5, top side length 2, height 1)
     qData2[0] = QPoint {0, 0, 0};
-    qData2[1] = QPoint {5, 0, 0};
+    qData2[1] = QPoint {0, 0, 5};
     qData2[2] = QPoint {5, 0, 5};
-    qData2[3] = QPoint {0, 0, 5};
+    qData2[3] = QPoint {5, 0, 0};
     qData2[4] = QPoint {1.5, 1, 1.5};
-    qData2[5] = QPoint {3.5, 1, 1.5};
+    qData2[5] = QPoint {1.5, 1, 3.5};
     qData2[6] = QPoint {3.5, 1, 3.5};
-    qData2[7] = QPoint {1.5, 1, 3.5};
+    qData2[7] = QPoint {3.5, 1, 1.5};
   }
 
   QPoint qData0[8];
@@ -169,9 +169,17 @@ TEST_F(HexahedronTest, volume)
   QHex hex2(pt2[0], pt2[1], pt2[2], pt2[3], pt2[4], pt2[5], pt2[6], pt2[7]);
 
   // Check volume
+  EXPECT_DOUBLE_EQ(hex0.signedVolume(), 1);
+  EXPECT_DOUBLE_EQ(hex1.signedVolume(), 1);
+  EXPECT_DOUBLE_EQ(hex2.signedVolume(), 13);
+
   EXPECT_DOUBLE_EQ(hex0.volume(), 1);
   EXPECT_DOUBLE_EQ(hex1.volume(), 1);
   EXPECT_DOUBLE_EQ(hex2.volume(), 13);
+
+  EXPECT_DOUBLE_EQ(hex0.volume_tet_decomp(), 1);
+  EXPECT_DOUBLE_EQ(hex1.volume_tet_decomp(), 1);
+  EXPECT_DOUBLE_EQ(hex2.volume_tet_decomp(), 13);
 }
 
 TEST_F(HexahedronTest, equals)
