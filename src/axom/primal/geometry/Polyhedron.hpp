@@ -752,13 +752,28 @@ public:
     poly.addNeighbors(4, {0, 5, 3, 2});
     poly.addNeighbors(5, {0, 1, 3, 4});
 
-    // Reverses order of vertices 1,2 and 4,5 if volume is negative
+    // Reverses order of vertices 1,2 and 4,5 if volume is negative.
+    // Expanded swap operations for HIP workaround.
     if(checkSign)
     {
-      if(poly.volume() < 0)
+      double vol = poly.volume();
+      if(vol < 0)
       {
-        axom::utilities::swap<PointType>(poly[1], poly[2]);
-        axom::utilities::swap<PointType>(poly[4], poly[5]);
+        PointType p2({poly[4][0], poly[4][1], poly[4][2]});
+        poly[4][0] = poly[5][0];
+        poly[4][1] = poly[5][1];
+        poly[4][2] = poly[5][2];
+        poly[5][0] = p2[0];
+        poly[5][1] = p2[1];
+        poly[5][2] = p2[2];
+
+        PointType p1({poly[1][0], poly[1][1], poly[1][2]});
+        poly[1][0] = poly[2][0];
+        poly[1][1] = poly[2][1];
+        poly[1][2] = poly[2][2];
+        poly[2][0] = p1[0];
+        poly[2][1] = p1[1];
+        poly[2][2] = p1[2];
       }
     }
 

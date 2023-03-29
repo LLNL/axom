@@ -236,6 +236,8 @@ void check_intersection_volumes(const Input& params)
   // Typically, a spatial index (e.g. Bounding Volume Hierarchy) can be used to
   // reduce the number of operations.
   RAJA::ReduceSum<REDUCE_POL, double> total_intersect_vol(0.0);
+  constexpr double EPS = 1e-10;
+  constexpr bool checkSign = true;
 
   // The lower of the two sizes (NUM_HEXES, NUM_TETS) is used to factor out
   // every pair of hexahedron and tetrahedron indices.
@@ -244,8 +246,10 @@ void check_intersection_volumes(const Input& params)
     axom::for_all<ExecSpace>(
       NUM_HEXES * NUM_TETS,
       AXOM_LAMBDA(axom::IndexType i) {
-        total_intersect_vol +=
-          intersection_volume(hexes[i / NUM_TETS], tets[i % NUM_TETS]);
+        total_intersect_vol += intersection_volume(hexes[i / NUM_TETS],
+                                                   tets[i % NUM_TETS],
+                                                   EPS,
+                                                   checkSign);
       });
   }
   else
@@ -253,8 +257,10 @@ void check_intersection_volumes(const Input& params)
     axom::for_all<ExecSpace>(
       NUM_HEXES * NUM_TETS,
       AXOM_LAMBDA(axom::IndexType i) {
-        total_intersect_vol +=
-          intersection_volume(hexes[i % NUM_HEXES], tets[i / NUM_HEXES]);
+        total_intersect_vol += intersection_volume(hexes[i % NUM_HEXES],
+                                                   tets[i / NUM_HEXES],
+                                                   EPS,
+                                                   checkSign);
       });
   }
 
