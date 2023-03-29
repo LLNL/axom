@@ -139,6 +139,7 @@ if(CONDUIT_FOUND)
                     NAME    ${_test}
                     COMMAND quest_marching_cubes_ex
                                 --mesh-file ${quest_data_dir}/${_mesh}.root
+                                --fields-file ${_test}.field
                                 --dir ${_dir}
                                 --center ${_center}
                                 --contourVal 1.25
