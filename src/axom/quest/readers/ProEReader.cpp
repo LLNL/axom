@@ -72,14 +72,12 @@ int ProEReader::read()
   for(int i = 0; i < m_num_tets; i++)
   {
     ifs >> id >> tet_nodes[0] >> tet_nodes[1] >> tet_nodes[2] >> tet_nodes[3];
-    int tet_offset = i * 12;
 
     for(int j = 0; j < 4; j++)
     {
-      int vert_offset = j * 3;
       for(int k = 0; k < 3; k++)
       {
-        m_nodes[tet_offset + vert_offset + k] = nodes[tet_nodes[j]].comp[k];
+        m_nodes.push_back(nodes[tet_nodes[j]].comp[k]);
       }
     }
   }
@@ -93,11 +91,11 @@ void ProEReader::getMesh(axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh)
 {
   /* Sanity checks */
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
-  SLIC_ERROR_IF(static_cast<axom::IndexType>(m_nodes.size()) != 4 * m_num_nodes,
+  SLIC_ERROR_IF(static_cast<axom::IndexType>(m_nodes.size()) != m_num_nodes * 3,
                 "nodes vector size doesn't match expected size!");
-  SLIC_ERROR_IF(mesh->getDimension() != 3, "STL reader expects a 3D mesh!");
+  SLIC_ERROR_IF(mesh->getDimension() != 3, "Pro/E reader expects a 3D mesh!");
   SLIC_ERROR_IF(mesh->getCellType() != mint::TET,
-                "STL reader expects a tetrahedra mesh!");
+                "Pro/E reader expects a tetrahedra mesh!");
 
   // pre-allocate space to store the mesh
   if(!mesh->isExternal())
@@ -105,12 +103,12 @@ void ProEReader::getMesh(axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh)
     mesh->resize(m_num_nodes, m_num_tets);
   }
 
-  SLIC_ERROR_IF(
-    mesh->getNumberOfNodes() != m_num_nodes,
-    "mesh number of nodes does not match the number of nodes in the STL file!");
+  SLIC_ERROR_IF(mesh->getNumberOfNodes() != m_num_nodes,
+                "mesh number of nodes does not match the number of nodes in "
+                "the Pro/E file!");
   SLIC_ERROR_IF(mesh->getNumberOfCells() != m_num_tets,
                 "mesh number of cells does not match number of tetrahedra in "
-                "the STL file!");
+                "the Pro/E file!");
 
   double* x = mesh->getCoordinateArray(mint::X_COORDINATE);
   double* y = mesh->getCoordinateArray(mint::Y_COORDINATE);

@@ -35,16 +35,6 @@ void generate_pro_e_file(const std::string& file)
   ofs << "node4 0.0 0.0 1.0" << std::endl;
   ofs << "tet1 node1 node2 node3 node4" << std::endl;
 
-  // ofs << "solid triangle" << std::endl;
-  // ofs << "\t facet normal 0.0 0.0 1.0" << std::endl;
-  // ofs << "\t\t outer loop" << std::endl;
-  // ofs << "\t\t\t vertex 0.0 0.0 0.0" << std::endl;
-  // ofs << "\t\t\t vertex 1.0 0.0 0.0" << std::endl;
-  // ofs << "\t\t\t vertex 0.0 1.0 0.0" << std::endl;
-  // ofs << "\t\t endloop" << std::endl;
-  // ofs << "\t endfacet" << std::endl;
-  // ofs << "endsolid triangle" << std::endl;
-
   ofs.close();
 }
 
@@ -76,7 +66,7 @@ TEST(quest_pro_e_reader, read_to_invalid_mesh)
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> hexmesh(3,
                                                                  axom::mint::HEX);
 
-  // STEP 2: read in the STL mesh data
+  // STEP 2: read in the Pro/E mesh data
   axom::quest::ProEReader reader;
   reader.setFileName(filename);
   int status = reader.read();
@@ -141,7 +131,7 @@ TEST(quest_pro_e_reader, read_pro_e)
                 std::numeric_limits<double>::epsilon());
   }  // END for all nodes
 
-  // STEP 4: remove temporary STL file
+  // STEP 4: remove temporary Pro?E file
   std::remove(filename.c_str());
 }
 
