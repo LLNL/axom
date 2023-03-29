@@ -709,6 +709,10 @@ private:
   /// field - if it is, add it to the matset_values
   void checkForMaterialDependentField(const std::string& field_name);
 
+  /// Before saving the file, add any fields that look like materials to the
+  /// blueprint index.
+  void addMaterialSetToIndex();
+
   // /// Verifies that the contents of the mesh blueprint data is valid.
   // void verifyMeshBlueprint();
 
