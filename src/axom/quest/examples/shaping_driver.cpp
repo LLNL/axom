@@ -84,6 +84,8 @@ public:
   double weldThresh {1e-9};
   double percentError {-1.};
 
+  std::string backgroundMaterial;
+
   VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
 
 private:
@@ -157,7 +159,6 @@ public:
       ->check(axom::CLI::PositiveNumber)
       ->capture_default_str();
 
-    // Parameter to determine if we're using a file or a box mesh
     std::map<std::string, ShapingMethod> methodMap {
       {"sampling", ShapingMethod::Sampling},
       {"intersection", ShapingMethod::Intersection}};
@@ -169,64 +170,71 @@ public:
         axom::CLI::CheckedTransformer(methodMap, axom::CLI::ignore_case));
 
     // parameters that only apply to the sampling method
-    auto* sampling_options =
-      app.add_option_group("sampling",
-                           "Options related to sampling-based queries");
+    {
+      auto* sampling_options =
+        app.add_option_group("sampling",
+                             "Options related to sampling-based queries");
 
-    sampling_options->add_option("-o,--order", outputOrder)
-      ->description("order of the output grid function")
-      ->capture_default_str()
-      ->check(axom::CLI::NonNegativeNumber);
+      sampling_options->add_option("-o,--order", outputOrder)
+        ->description("order of the output grid function")
+        ->capture_default_str()
+        ->check(axom::CLI::NonNegativeNumber);
 
-    sampling_options->add_option("-q,--quadrature-order", quadratureOrder)
-      ->description(
-        "Quadrature order for sampling the inout field. \n"
-        "Determines number of samples per element in determining "
-        "volume fraction field")
-      ->capture_default_str()
-      ->check(axom::CLI::PositiveNumber);
+      sampling_options->add_option("-q,--quadrature-order", quadratureOrder)
+        ->description(
+          "Quadrature order for sampling the inout field. \n"
+          "Determines number of samples per element in determining "
+          "volume fraction field")
+        ->capture_default_str()
+        ->check(axom::CLI::PositiveNumber);
 
-    std::map<std::string, VolFracSampling> vfsamplingMap {
-      {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
-      {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
-    sampling_options->add_option("-s,--sampling-type", vfSampling)
-      ->description(
-        "Sampling strategy. \n"
-        "Sampling either at quadrature points or collocated with "
-        "degrees of freedom")
-      ->capture_default_str()
-      ->transform(
-        axom::CLI::CheckedTransformer(vfsamplingMap, axom::CLI::ignore_case));
+      std::map<std::string, VolFracSampling> vfsamplingMap {
+        {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
+        {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
+      sampling_options->add_option("-s,--sampling-type", vfSampling)
+        ->description(
+          "Sampling strategy. \n"
+          "Sampling either at quadrature points or collocated with "
+          "degrees of freedom")
+        ->capture_default_str()
+        ->transform(
+          axom::CLI::CheckedTransformer(vfsamplingMap, axom::CLI::ignore_case));
+    }
 
     // parameters that only apply to the intersection method
-    auto* intersection_options =
-      app.add_option_group("intersection",
-                           "Options related to intersection-based queries");
+    {
+      auto* intersection_options =
+        app.add_option_group("intersection",
+                             "Options related to intersection-based queries");
 
-    intersection_options->add_option("-r, --refinements", refinementLevel)
-      ->description("Number of refinements to perform for revolved contour")
-      ->capture_default_str()
-      ->check(axom::CLI::NonNegativeNumber);
+      intersection_options->add_option("-r, --refinements", refinementLevel)
+        ->description("Number of refinements to perform for revolved contour")
+        ->capture_default_str()
+        ->check(axom::CLI::NonNegativeNumber);
 
-    std::stringstream pol_sstr;
-    pol_sstr << "Set runtime policy for intersection-based sampling method.";
+      intersection_options
+        ->add_option("--background-material", backgroundMaterial)
+        ->description("Sets the name of the background material");
+
+      std::stringstream pol_sstr;
+      pol_sstr << "Set runtime policy for intersection-based sampling method.";
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    pol_sstr << "\nSet to \'seq\' or 0 to use the RAJA sequential policy.";
+      pol_sstr << "\nSet to 'seq' or 0 to use the RAJA sequential policy.";
   #ifdef AXOM_USE_OPENMP
-    pol_sstr << "\nSet to \'omp\' or 1 to use the RAJA OpenMP policy.";
+      pol_sstr << "\nSet to 'omp' or 1 to use the RAJA OpenMP policy.";
   #endif
   #ifdef AXOM_USE_CUDA
-    pol_sstr << "\nSet to \'cuda\' or 2 to use the RAJA CUDA policy.";
+      pol_sstr << "\nSet to 'cuda' or 2 to use the RAJA CUDA policy.";
   #endif
   #ifdef AXOM_USE_HIP
-    pol_sstr << "\nSet to \'hip\' or 3 to use the RAJA HIP policy.";
+      pol_sstr << "\nSet to 'hip' or 3 to use the RAJA HIP policy.";
   #endif
 #endif
 
-    intersection_options->add_option("-p, --policy", policy, pol_sstr.str())
-      ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
-
+      intersection_options->add_option("-p, --policy", policy, pol_sstr.str())
+        ->capture_default_str()
+        ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+    }
     app.get_formatter()->column_width(50);
 
     // could throw an exception
@@ -488,6 +496,11 @@ int main(int argc, char** argv)
   {
     intersectionShaper->setLevel(params.refinementLevel);
     intersectionShaper->setExecPolicy(params.policy);
+
+    if(!params.backgroundMaterial.empty())
+    {
+      intersectionShaper->setFreeMaterialName(params.backgroundMaterial);
+    }
   }
 
   //---------------------------------------------------------------------------
