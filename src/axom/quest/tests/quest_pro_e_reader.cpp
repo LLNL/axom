@@ -136,6 +136,65 @@ TEST(quest_pro_e_reader, read_pro_e)
 }
 
 //------------------------------------------------------------------------------
+TEST(quest_pro_e_reader, read_pro_e_external)
+{
+  constexpr axom::IndexType N_NODES = 4;
+  constexpr axom::IndexType N_TETS = 1;
+  const double x_expected[] = {-1.0, 1.0, 0.0, 0.0};
+  const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
+  const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
+
+  double xin[] = {-1.0, -1.0, -1.0, -1.0};
+  double yin[] = {-1.0, -1.0, -1.0, -1.0};
+  double zin[] = {-1.0, -1.0, -1.0, -1.0};
+
+  axom::IndexType conn[] = {-1, -1, -1, -1};
+
+  const std::string filename = "tet.creo";
+
+  // STEP 0: generate a temporary Pro/E file for testing
+  generate_pro_e_file(filename);
+
+  // STEP 1: create a Pro/E reader and read-in the mesh data
+  axom::quest::ProEReader reader;
+  reader.setFileName(filename);
+  int status = reader.read();
+  EXPECT_EQ(status, 0);
+
+  // STEP 2: reading the Pro/E mesh data into a mint::Mesh
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
+    mesh(axom::mint::TET, N_TETS, conn, N_NODES, xin, yin, zin);
+  EXPECT_EQ(mesh.getNumberOfCells(), N_TETS);
+  EXPECT_EQ(mesh.getNumberOfNodes(), N_NODES);
+
+  reader.getMesh(&mesh);
+
+  const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
+  const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
+  const double* z = mesh.getCoordinateArray(axom::mint::Z_COORDINATE);
+  EXPECT_TRUE(x != nullptr);
+  EXPECT_TRUE(y != nullptr);
+  EXPECT_TRUE(z != nullptr);
+
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for(axom::IndexType inode = 0; inode < numNodes; ++inode)
+  {
+    EXPECT_NEAR(x[inode],
+                x_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(y[inode],
+                y_expected[inode],
+                std::numeric_limits<double>::epsilon());
+    EXPECT_NEAR(z[inode],
+                z_expected[inode],
+                std::numeric_limits<double>::epsilon());
+  }  // END for all nodes
+
+  // STEP 4: remove temporary Pro/E file
+  std::remove(filename.c_str());
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
