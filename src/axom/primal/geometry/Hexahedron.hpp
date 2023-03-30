@@ -210,17 +210,20 @@ public:
   AXOM_HOST_DEVICE
   double signedVolume() const
   {
-    constexpr double scale = 1. / 6.;
+    constexpr double scale = 1. / 12.;
     return scale *
-      (VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[0]),
-                                         VectorType(m_points[3] - m_points[0]),
-                                         VectorType(m_points[7] - m_points[2])) +
-       VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[0]),
-                                         VectorType(m_points[1] - m_points[0]),
-                                         VectorType(m_points[2] - m_points[5])) +
-       VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[0]),
-                                         VectorType(m_points[4] - m_points[0]),
-                                         VectorType(m_points[5] - m_points[7])));
+      (VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[3]) +
+                                           VectorType(m_points[5] - m_points[0]),
+                                         VectorType(m_points[6] - m_points[4]),
+                                         VectorType(m_points[7] - m_points[0])) +
+       VectorType::scalar_triple_product(VectorType(m_points[5] - m_points[0]),
+                                         VectorType(m_points[6] - m_points[4]) +
+                                           VectorType(m_points[2] - m_points[0]),
+                                         VectorType(m_points[6] - m_points[1])) +
+       VectorType::scalar_triple_product(VectorType(m_points[6] - m_points[3]),
+                                         VectorType(m_points[2] - m_points[0]),
+                                         VectorType(m_points[6] - m_points[1]) +
+                                           VectorType(m_points[7] - m_points[0])));
   }
 
   /*!
