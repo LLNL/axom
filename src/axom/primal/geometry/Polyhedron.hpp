@@ -641,7 +641,7 @@ public:
  *         vertex neighbors
  *
  * \note The Hexahedron is assumed to have a specific vertex order:
- *       <pre>
+ * \verbatim
  *
  *          7--------6          +y
  *         /|       /|               +z
@@ -652,7 +652,7 @@ public:
  *       |/       |/
  *       0--------1
  *
- *       </pre>
+ * \endverbatim
  *
  *       The Polyhedron's vertex neighbors are created assuming this vertex
  *       ordering.
@@ -711,7 +711,7 @@ public:
  *         vertex neighbors
  *
  * \note The Octahedron is assumed to have a specific vertex order:
- *       <pre>
+ * \verbatim
  *
  *            0                +y
  *            /\                    +z
@@ -722,7 +722,7 @@ public:
  *            \/
  *            3
  *
- *       </pre>
+ * \endverbatim
  *
  *       The Polyhedron's vertex neighbors are created assuming this vertex
  *       ordering.
@@ -792,7 +792,7 @@ public:
  *         vertex neighbors
  *
  * \note The Tetrahedron is assumed to have a specific vertex order:
- *       <pre>
+ * \verbatim
  *
  *              3                    +y
  *             / \\                       +z
@@ -804,7 +804,7 @@ public:
  *       /_____________\/
  *      0               1
  *
- *       </pre>
+ * \endverbatim
  *
  *       The Polyhedron's vertex neighbors are created assuming this vertex
  *       ordering.
