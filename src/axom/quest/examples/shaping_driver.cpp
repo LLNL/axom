@@ -456,6 +456,10 @@ int main(int argc, char** argv)
   shaper->setVertexWeldThreshold(params.weldThresh);
   shaper->setVerbosity(params.isVerbose());
 
+  // Associate any fields that begin with "vol_frac" with "material" so when
+  // the data collection is written, a matset will be created.
+  shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
+
   // Set specific parameters for a SamplingShaper, if appropriate
   if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
   {
