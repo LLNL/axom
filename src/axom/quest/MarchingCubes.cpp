@@ -208,21 +208,6 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
     !m_fcnPath.empty(),
     "You must call set_function_field before compute_iso_surface.");
 
-  /*
-    Notes: how to handle non-interleaved coordinates.
-    We should be able to handle any blueprint-compatible domains.
-
-    Need an array interface that supports strides.
-
-    conduit DataArray uses DataType, which has strides.  But I'm not convinced
-    that it actually uses those strides to compute offsets.  Need to do a practice
-    problem or try it here.
-
-    axom::ArrayView doesn't have strides.  It can support multicomponent arrays
-    so I can represent an Nx3 or 3xN layout.  However, I would have to switch
-    point index and dimension index depending on which layout.  Won't work.
-  */
-
   const conduit::Node& coordValues =
     m_dom->fetch_existing(m_coordsetPath + "/values");
   bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
@@ -256,10 +241,8 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
       Eventually, we'll have to support index offsets to
       handle data with ghosts.
 
-      By using ArrayView, we're assuming row-major layout.  To support
-      column-major layout as well, we have to extend ArrayView to
-      compute column-major strides.  We should also use an iteration
-      scheme that's efficient for both layouts.
+      By using ArrayView, we're assuming row-major layout.
+      Do we need column-major layout as well.
     */
     const axom::StackArray<axom::IndexType, 2> cShape {m_cShape[0], m_cShape[1]};
     const axom::StackArray<axom::IndexType, 2> pShape {1 + m_cShape[0],
