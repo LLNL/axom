@@ -253,6 +253,35 @@ AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
 #endif
 
 //---------------------------------------------------------------------------
+/**
+ * \class
+ * \brief Revolves contours and intersects the solid with the input mesh to
+ *        produce volume fractions.
+ *
+ * The IntersectionShaper generates material volume fractions using an input
+ * set of 2D contours and replacement rules. Each contour covers an area from
+ * the curve down to the axis of revolution about which the area is revolved
+ * to produce a volume that is intersected with the input mesh to produce
+ * volume fractions. Contours are refined into smaller linear spans that are
+ * revolved to produce a set of truncated cones, which are divided into a set
+ * set of progressively refined octahedra that can be intersected with the
+ * mesh.
+ *
+ * Volume fractions are represented as a GridFunction with a special prefix,
+ * currently "vol_frac_", followed by a material name. Volume fractions
+ * can be present in the input data collection prior to shaping and the
+ * IntersectionShaper will augment them when changes are needed such as when
+ * a material overwrites them. If a new material is not yet represented by
+ * a grid function, one will be added.
+ *
+ * In addition to user-specified materials, the IntersectionShaper creates
+ * a "free" material that is used to account for volume fractions that are
+ * not assigned to any other material. The free material mainly is used to
+ * account for materials when using replacement rules. The free material
+ * starts out as all 1's indicating that it contains 100% of all possible
+ * material in a zone. Volume fractions for other materials are then
+ * subtracted from the free material so no zone exceeds 100% of material.
+ */
 class IntersectionShaper : public Shaper
 {
 public:
@@ -276,7 +305,9 @@ public:
   IntersectionShaper(const klee::ShapeSet& shapeSet,
                      sidre::MFEMSidreDataCollection* dc)
     : Shaper(shapeSet, dc)
-  { }
+  {
+    m_free_mat_name = "free";
+  }
 
   //@{
   //!  @name Functions to get and set shaping parameters related to intersection; supplements parameters in base class
@@ -1076,10 +1107,30 @@ private:
   // does not like the following template functions to be private.
 public:
   /*!
+   * \brief Set the name of the material used to account for free volume fractions.
+   * \param name The new name of the material. This name cannot contain 
+   *             underscores and it cannot be set once shaping has started.
+   * \note This should not be called once any shaping has occurred.
+   */
+  void setFreeMaterialName(const std::string& name)
+  {
+    if(name.find("_") != std::string::npos)
+    {
+      SLIC_ERROR("The free material name cannot contain underscores.");
+    }
+    if(m_num_elements > 0)
+    {
+      SLIC_ERROR(
+        "The free material name cannot be set once shaping has occurred.");
+    }
+    m_free_mat_name = name;
+  }
+
+  /*!
    * \brief Make a new grid function that contains all of the free space not
    *        occupied by existing materials.
    *
-   * \note We currently leave completely_free in the data collection,
+   * \note We currently leave the free material in the data collection,
    *       even after the shaper has executed.
    *
    * \tparam ExecSpace The execution space where the data are computed.
@@ -1090,7 +1141,9 @@ public:
   template <typename ExecSpace>
   mfem::GridFunction* getCompletelyFree()
   {
-    const std::string fieldName("completely_free");
+    // Add the material prefix so the MFEMSidreDataCollection will automatically
+    // consider the free material something it needs to write as a matset.
+    const std::string fieldName(materialNameToFieldName(m_free_mat_name));
     mfem::GridFunction* cfgf = nullptr;
     if(this->getDC()->HasField(fieldName))
       cfgf = this->getDC()->GetField(fieldName);
@@ -1100,7 +1153,7 @@ public:
       cfgf = newVolFracGridFunction();
       this->getDC()->RegisterField(fieldName, cfgf);
 
-      AXOM_PERF_MARK_SECTION("compute_completely_free", {
+      AXOM_PERF_MARK_SECTION("compute_free", {
         int dataSize = cfgf->Size();
         GridFunctionView<ExecSpace> cfView(cfgf);
         axom::for_all<ExecSpace>(
@@ -1179,6 +1232,9 @@ public:
     // Make sure the material lists are up to date.
     populateMaterials();
 
+    // Get the free material so it is created first.
+    mfem::GridFunction* freeMat = getCompletelyFree<ExecSpace>();
+
     // Get this shape's material, creating the GridFunction if needed.
     auto matVF = getMaterial(shape.getMaterial());
     int dataSize = matVF.first->Size();
@@ -1214,9 +1270,10 @@ public:
       // sorts them by name rather than order added.
       for(auto it : this->getDC()->GetFieldMap())
       {
-        // Check whether the field name looks like a VF field.
+        // Check whether the field name looks like a VF field (and is not the
+        // "free" field, which we handle specially)
         std::string name = fieldNameToMaterialName(it.first);
-        if(!name.empty())
+        if(!name.empty() && name != m_free_mat_name)
         {
           // See if the field is in the exclusion list. For the normal
           // case, the list is empty so we'd add the material.
@@ -1253,7 +1310,7 @@ public:
     // Add it first so it is the highest priority material. This helps us
     // account for how much we need to deduct from the real materials during
     // subtraction.
-    updateVFs.push_back(getCompletelyFree<ExecSpace>());
+    updateVFs.push_back(freeMat);
 
     // Append the grid functions in mat number order.
     for(const auto& mat : gf_order_by_matnumber)
@@ -1512,6 +1569,7 @@ private:
 
   std::vector<mfem::GridFunction*> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
+  std::string m_free_mat_name;
 #endif
 };
 
