@@ -833,7 +833,7 @@ public:
     // Reverses order of vertices 1 and 2 if volume is negative
     if(checkSign)
     {
-      if(poly.volume() < 0)
+      if(tet.signedVolume() < 0)
       {
         axom::utilities::swap<PointType>(poly[1], poly[2]);
       }
