@@ -49,15 +49,15 @@ struct RuntimeSize
 public:
   static const IntType DEFAULT_VALUE;
 
-  RuntimeSize(IntType sz = DEFAULT_VALUE) : m_sz(sz) { }
+  AXOM_HOST_DEVICE RuntimeSize(IntType sz = DEFAULT_VALUE) : m_sz(sz) { }
 
-  inline IntType size() const { return m_sz; }
-  inline IntType& size() { return m_sz; }
+  AXOM_HOST_DEVICE inline IntType size() const { return m_sz; }
+  AXOM_HOST_DEVICE inline IntType& size() { return m_sz; }
 
   inline IntType operator()() const { return size(); }
   inline IntType& operator()() { return size(); }
 
-  inline bool empty() const { return m_sz == IntType(); }
+  AXOM_HOST_DEVICE inline bool empty() const { return m_sz == IntType(); }
   inline bool isValid(bool) const
   {
     // We do not (currently) allow negatively sized sets
@@ -78,7 +78,7 @@ template <typename IntType>
 struct DynamicRuntimeSize : public RuntimeSize<IntType>
 {
 public:
-  DynamicRuntimeSize(IntType sz = RuntimeSize<IntType>::DEFAULT_VALUE)
+  AXOM_HOST_DEVICE DynamicRuntimeSize(IntType sz = RuntimeSize<IntType>::DEFAULT_VALUE)
     : RuntimeSize<IntType>(sz)
   { }
 
@@ -115,7 +115,7 @@ struct CompileTimeSize
 {
   static const IntType DEFAULT_VALUE = INT_VAL;
 
-  CompileTimeSize(IntType val = INT_VAL)
+  AXOM_HOST_DEVICE CompileTimeSize(IntType val = INT_VAL)
   {
     AXOM_UNUSED_VAR(val);
     SLIC_ASSERT_MSG(
@@ -125,11 +125,11 @@ struct CompileTimeSize
         << "template parameter of " << INT_VAL << ".");
   }
 
-  inline IntType size() const { return INT_VAL; }
+  AXOM_HOST_DEVICE inline IntType size() const { return INT_VAL; }
 
   inline IntType operator()() const { return size(); }
 
-  inline bool empty() const { return INT_VAL == IntType {}; }
+  AXOM_HOST_DEVICE inline bool empty() const { return INT_VAL == IntType {}; }
   inline bool isValid(bool) const
   {
     // We do not (currently) allow negatively sized sets
@@ -145,7 +145,7 @@ struct ZeroSize
 {
   static const IntType DEFAULT_VALUE;
 
-  ZeroSize(IntType val = DEFAULT_VALUE)
+  AXOM_HOST_DEVICE ZeroSize(IntType val = DEFAULT_VALUE)
   {
     AXOM_UNUSED_VAR(val);
     SLIC_ASSERT_MSG(
@@ -154,9 +154,9 @@ struct ZeroSize
         << "value with value (" << val << " ) but should always be zero.");
   }
 
-  inline IntType size() const { return DEFAULT_VALUE; }
+  AXOM_HOST_DEVICE inline IntType size() const { return DEFAULT_VALUE; }
   inline IntType operator()() const { return size(); }
-  inline bool empty() const { return true; }
+  AXOM_HOST_DEVICE inline bool empty() const { return true; }
   inline bool isValid(bool) const { return true; }
 };
 

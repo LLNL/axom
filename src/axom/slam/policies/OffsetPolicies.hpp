@@ -48,10 +48,10 @@ struct RuntimeOffset
 public:
   static const IntType DEFAULT_VALUE;
 
-  RuntimeOffset(IntType off = DEFAULT_VALUE) : m_off(off) { }
+  AXOM_HOST_DEVICE RuntimeOffset(IntType off = DEFAULT_VALUE) : m_off(off) { }
 
-  inline IntType offset() const { return m_off; }
-  inline IntType& offset() { return m_off; }
+  AXOM_HOST_DEVICE inline IntType offset() const { return m_off; }
+  AXOM_HOST_DEVICE inline IntType& offset() { return m_off; }
 
   inline IntType operator()() const { return offset(); }
   inline IntType& operator()() { return offset(); }
@@ -73,7 +73,7 @@ struct CompileTimeOffset
 {
   static constexpr IntType DEFAULT_VALUE = INT_VAL;
 
-  CompileTimeOffset(IntType val = DEFAULT_VALUE)
+  AXOM_HOST_DEVICE CompileTimeOffset(IntType val = DEFAULT_VALUE)
   {
     AXOM_UNUSED_VAR(val);
     SLIC_ASSERT_MSG(
@@ -83,7 +83,7 @@ struct CompileTimeOffset
         << "the template parameter of " << INT_VAL << ".");
   }
 
-  inline IntType offset() const { return INT_VAL; }
+  AXOM_HOST_DEVICE inline IntType offset() const { return INT_VAL; }
 
   inline IntType operator()() const { return offset(); }
 
