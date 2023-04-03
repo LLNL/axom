@@ -196,7 +196,7 @@ void check_intersection_volumes(const Input& params)
       for(int k = 0; k <= 1; k++)
       {
         // Tetrahedron coordinates consist of:
-        //   - two points on the sphere where y = 0
+        //   - two points on the unit sphere great circle where y = 0
         //   - the origin
         //   - one of the "poles" of the sphere, either (0,1,0) or (0, -1, 0)
         // The generated tetrahedra are all encapsulated by the unit cube.

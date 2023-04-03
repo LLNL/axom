@@ -176,10 +176,6 @@ TEST_F(HexahedronTest, volume)
   EXPECT_DOUBLE_EQ(hex0.volume(), 1);
   EXPECT_DOUBLE_EQ(hex1.volume(), 1);
   EXPECT_DOUBLE_EQ(hex2.volume(), 13);
-
-  EXPECT_DOUBLE_EQ(hex0.volume_tet_decomp(), 1);
-  EXPECT_DOUBLE_EQ(hex1.volume_tet_decomp(), 1);
-  EXPECT_DOUBLE_EQ(hex2.volume_tet_decomp(), 13);
 }
 
 TEST_F(HexahedronTest, equals)

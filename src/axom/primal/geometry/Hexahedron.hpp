@@ -308,28 +308,6 @@ public:
     tets[23] = TetrahedronType(hc, m_points[6], m_points[7], fm6);
   }
 
-  /**
-   * \brief Finds the volume of the hexahedron by triangulating the hexahedron
-   *        into 24 tetrahedrons and finding the total volume of the tetrahedrons
-   *
-   * \return The volume of the hexahedron
-   */
-  AXOM_HOST_DEVICE
-  double volume_tet_decomp()
-  {
-    double retVol = 0.0;
-    TetrahedronType tets[NUM_TRIANGULATE];
-
-    triangulate(tets);
-
-    for(int i = 0; i < NUM_TRIANGULATE; i++)
-    {
-      retVol += tets[i].volume();
-    }
-
-    return retVol;
-  }
-
   /*!
     * \brief Test if this Hexahedron is equal to another, within a tolerance
     *
