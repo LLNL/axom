@@ -486,7 +486,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedron(
  * \param [in] hex The hexahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for plane point orientation.
- * \param [in] checkSign Checks the volume of the shapes are positive.
+ * \param [in] checkSign Checks the volumes of the shapes are positive.
  * \return The Polyhedron formed from clipping the hexahedron with a tetrahedron.
  *
  */
@@ -533,7 +533,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
  * \param [in] oct The octahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for plane point orientation.
- * \param [in] checkSign Checks the volume of the shapes are positive.
+ * \param [in] checkSign Checks the volumes of the shapes are positive.
  * \return The Polyhedron formed from clipping the octahedron with a tetrahedron.
  *
  */
@@ -580,7 +580,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
  * \param [in] tet1 The tetrahedron to clip
  * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The tolerance for plane point orientation.
- * \param [in] checkSign Checks the volume of the shapes are positive.
+ * \param [in] checkSign Checks the volumes of the shapes are positive.
  * \return The Polyhedron formed from clipping the tetrahedron with a tetrahedron.
  *
  */

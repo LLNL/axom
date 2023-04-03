@@ -31,7 +31,7 @@ namespace primal
  * \param [in] hex The hexahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volumes of the
  *             shapes are positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
@@ -57,7 +57,7 @@ AXOM_HOST_DEVICE T intersection_volume(const Hexahedron<T, 3>& hex,
  * \param [in] hex The tetrahedron
  * \param [in] tet The hexahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volumes of the
  *             shapes are positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
@@ -83,7 +83,7 @@ AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
  * \param [in] oct The octahedron
  * \param [in] tet The tetrahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volumes of the
  *             shapes are positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
@@ -109,7 +109,7 @@ AXOM_HOST_DEVICE T intersection_volume(const Octahedron<T, 3>& oct,
  * \param [in] oct The tetrahedron
  * \param [in] tet The octahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volumes of the
  *             shapes are positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
@@ -136,7 +136,7 @@ AXOM_HOST_DEVICE T intersection_volume(const Tetrahedron<T, 3>& tet,
  * \param [in] tet1 The tetrahedron
  * \param [in] tet2 The other tetrahedron
  * \param [in] eps The tolerance for determining the intersection
- * \param [in] checkSign If true (default is false), checks the volume of the
+ * \param [in] checkSign If true (default is false), checks the volumes of the
  *             shapes are positive. If volume is negative, order of some
  *             vertices will be swapped.
  *
