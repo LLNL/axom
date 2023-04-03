@@ -93,6 +93,7 @@ endif()
 set(quest_mpi_tests
     quest_initialize.cpp
     quest_signed_distance_interface.cpp
+    quest_pro_e_reader_parallel.cpp
     )
 
 # Optionally, add tests that require AXOM_DATA_DIR
