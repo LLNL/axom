@@ -456,14 +456,13 @@ void print_timing_stats(axom::utilities::Timer& t, const std::string& descriptio
 /**
  * Change cp_domain data from a local index to a global domain index
  * by adding rank offsets.
- * This is an optional step to transform domain ids verification.
+ * This is an optional step to make domain ids globally unique.
  */
 void add_rank_offset_to_surface_mesh_domain_ids(
   int localDomainCount,
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& surfaceMesh)
 {
 #ifdef AXOM_USE_MPI
-  // perform scan on ranks to compute totalNumPoints, thetaStart and thetaEnd
   axom::Array<int> starts(numRanks, numRanks);
   {
     axom::Array<int> indivDomainCounts(numRanks, numRanks);
@@ -555,11 +554,11 @@ struct ContourTestBase
   virtual double error_tolerance() const = 0;
 
   int run_test(BlueprintStructuredMesh& computationalMesh,
-               quest::MarchingCubes& mca)
+               quest::MarchingCubes& mc)
   {
     SLIC_INFO(banner(axom::fmt::format("Testing {} contour.", name())));
 
-    mca.set_function_field(function_name());
+    mc.set_function_field(function_name());
 
     sidre::DataStore objectDS;
     sidre::Group* meshGroup = objectDS.getRoot()->createGroup(name() + "_mesh");
@@ -567,14 +566,14 @@ struct ContourTestBase
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
       meshGroup);
-    mca.set_output_mesh(&surfaceMesh);
+    mc.set_output_mesh(&surfaceMesh);
 
     axom::utilities::Timer computeTimer(false);
 #ifdef AXOM_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     computeTimer.start();
-    mca.compute_iso_surface(params.contourVal);
+    mc.compute_iso_surface(params.contourVal);
     computeTimer.stop();
     print_timing_stats(computeTimer, name() + " contour");
 
@@ -844,10 +843,10 @@ template <int DIM>
 int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 {
   // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubes mca(computationalMesh.as_conduit_node(), "coords");
+  quest::MarchingCubes mc(computationalMesh.as_conduit_node(), "coords");
 
-  mca.set_cell_id_field("zoneIds");
-  mca.set_domain_id_field("domainIds");
+  mc.set_cell_id_field("zoneIds");
+  mc.set_domain_id_field("domainIds");
 
   //---------------------------------------------------------------------------
   // params specify which tests to run.
@@ -878,13 +877,13 @@ int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 
   if(planarTest)
   {
-    localErrCount += planarTest->run_test(computationalMesh, mca);
+    localErrCount += planarTest->run_test(computationalMesh, mc);
   }
   slic::flushStreams();
 
   if(roundTest)
   {
-    localErrCount += roundTest->run_test(computationalMesh, mca);
+    localErrCount += roundTest->run_test(computationalMesh, mc);
   }
   slic::flushStreams();
 

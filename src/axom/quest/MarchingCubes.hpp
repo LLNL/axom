@@ -31,10 +31,22 @@ namespace quest
  * \@brief Class implementing marching cubes algorithm on a single
  * structured mesh domain within a multi-domain mesh.
  *
- * Implementation is for 2D (marching squares) and 3D (marching cubes).
+ * Implementation is for 2D (marching squares) and 3D (marching
+ * cubes).
  *
  * The input mesh is a Conduit::Node following the Mesh Blueprint
  * convention.
+ *
+ * Usage example:
+ * @beginverbatim
+ *   MarchingCubes computationalMesh(meshNode, "coords");
+ *   axom::mint::UnstructuredMesh<axom::mint::_SINGLe_SHAPE>
+ *     surfaceMesh(3, min::CellType::Triangle);
+ *   double contourValue = 0.0;
+ *   set_function_field("my_function");
+ *   set_output_mesh(surfaceMesh);
+ *   mc.compute_iso_surface(contourValue);
+ * @endverbatim
  *
  * \sa MarchingCubes
  */

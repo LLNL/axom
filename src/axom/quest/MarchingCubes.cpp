@@ -241,8 +241,10 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
       Eventually, we'll have to support index offsets to
       handle data with ghosts.
 
-      By using ArrayView, we're assuming row-major layout.
-      Do we need column-major layout as well.
+      By using ArrayView, we're assuming row-major layout.  To support
+      column-major layout as well, we have to extend ArrayView to
+      compute column-major strides.  We should also use an iteration
+      scheme that's cache-efficient for both layouts.
     */
     const axom::StackArray<axom::IndexType, 2> cShape {m_cShape[0], m_cShape[1]};
     const axom::StackArray<axom::IndexType, 2> pShape {1 + m_cShape[0],
