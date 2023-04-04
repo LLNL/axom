@@ -177,8 +177,8 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
       // Define a function that is called on every leaf node reached during
       // traversal. The function below simply counts the number of candidate
       // collisions with the given query object.
-      auto countCollisions = [&](axom::int32 currentNode,
-                                 const axom::int32* leafNodes) {
+      auto countCollisions = [&](std::int32_t currentNode,
+                                 const std::int32_t* leafNodes) {
         AXOM_UNUSED_VAR(leafNodes);
         if(currentNode > icell)
         {
@@ -219,8 +219,8 @@ void find_collisions_broadphase(const mint::Mesh* mesh,
       IndexType offset = v_offsets[icell];
 
       // Define a leaf node function that stores the intersection candidate.
-      auto fillCollisions = [&](axom::int32 currentNode,
-                                const axom::int32* leafs) {
+      auto fillCollisions = [&](std::int32_t currentNode,
+                                const std::int32_t* leafs) {
         if(currentNode > icell)
         {
           v_first_pair[offset] = icell;

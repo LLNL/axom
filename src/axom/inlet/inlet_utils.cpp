@@ -22,11 +22,11 @@ void setFlag(axom::sidre::Group& target,
              const std::string& flag,
              bool value)
 {
-  const int8 bval = value ? 1 : 0;
+  const std::int8_t bval = value ? 1 : 0;
   if(target.hasView(flag))
   {
     auto flagView = target.getView(flag);
-    if(flagView->getData<int8>() != bval)
+    if(flagView->getData<std::int8_t>() != bval)
     {
       const std::string msg =
         fmt::format("[Inlet] '{0}' value has already been defined for: {1}",
@@ -59,7 +59,7 @@ bool checkFlag(const axom::sidre::Group& target,
     return false;
   }
   const axom::sidre::View* valueView = target.getView(flag);
-  const int8 intValue = valueView->getScalar();
+  const std::int8_t intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
     const std::string msg = fmt::format(
@@ -90,7 +90,7 @@ bool verifyRequired(const axom::sidre::Group& target,
 
   if(target.hasView("required"))
   {
-    int8 required = target.getView("required")->getData();
+    std::int8_t required = target.getView("required")->getData();
     // If it wasn't found at all, it's only an error if the object was required and not provided
     // The retrieval_status will typically (but not always) be NotFound in these cases, but that
     // information isn't needed here unless it's a collection group - empty collections are permissible,
@@ -135,7 +135,7 @@ void markAsStructCollection(axom::sidre::Group& target)
       fmt::format(
         "[Inlet] Struct collection flag of group '{0}' was not a scalar",
         target.getName()));
-    const int8 value = flag->getScalar();
+    const std::int8_t value = flag->getScalar();
     SLIC_ERROR_IF(value != 1,
                   fmt::format("[Inlet] Struct collection flag of group '{0}' "
                               "had a value other than 1",
@@ -143,7 +143,7 @@ void markAsStructCollection(axom::sidre::Group& target)
   }
   else
   {
-    target.createViewScalar(detail::STRUCT_COLLECTION_FLAG, static_cast<int8>(1));
+    target.createViewScalar(detail::STRUCT_COLLECTION_FLAG, static_cast<std::int8_t>(1));
   }
 }
 

@@ -116,43 +116,43 @@ struct SidreTT
 };
 
 template <>
-struct SidreTT<axom::int8>
+struct SidreTT<std::int8_t>
 {
   static const DataTypeId id = INT8_ID;
 };
 template <>
-struct SidreTT<axom::int16>
+struct SidreTT<std::int16_t>
 {
   static const DataTypeId id = INT16_ID;
 };
 template <>
-struct SidreTT<axom::int32>
+struct SidreTT<std::int32_t>
 {
   static const DataTypeId id = INT32_ID;
 };
 template <>
-struct SidreTT<axom::int64>
+struct SidreTT<std::int64_t>
 {
   static const DataTypeId id = INT64_ID;
 };
 
 template <>
-struct SidreTT<axom::uint8>
+struct SidreTT<std::uint8_t>
 {
   static const DataTypeId id = UINT8_ID;
 };
 template <>
-struct SidreTT<axom::uint16>
+struct SidreTT<std::uint16_t>
 {
   static const DataTypeId id = UINT16_ID;
 };
 template <>
-struct SidreTT<axom::uint32>
+struct SidreTT<std::uint32_t>
 {
   static const DataTypeId id = UINT32_ID;
 };
 template <>
-struct SidreTT<axom::uint64>
+struct SidreTT<std::uint64_t>
 {
   static const DataTypeId id = UINT64_ID;
 };

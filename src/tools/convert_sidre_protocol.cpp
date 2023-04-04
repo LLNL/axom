@@ -264,28 +264,28 @@ void modifyFinalValues(sidre::View* view, int origSize)
   switch(view->getTypeID())
   {
   case sidre::INT8_ID:
-    modifyFinalValuesImpl<axom::int8>(view, origSize);
+    modifyFinalValuesImpl<std::int8_t>(view, origSize);
     break;
   case sidre::INT16_ID:
-    modifyFinalValuesImpl<axom::int16>(view, origSize);
+    modifyFinalValuesImpl<std::int16_t>(view, origSize);
     break;
   case sidre::INT32_ID:
-    modifyFinalValuesImpl<axom::int32>(view, origSize);
+    modifyFinalValuesImpl<std::int32_t>(view, origSize);
     break;
   case sidre::INT64_ID:
-    modifyFinalValuesImpl<axom::int64>(view, origSize);
+    modifyFinalValuesImpl<std::int64_t>(view, origSize);
     break;
   case sidre::UINT8_ID:
-    modifyFinalValuesImpl<axom::uint8>(view, origSize);
+    modifyFinalValuesImpl<std::uint8_t>(view, origSize);
     break;
   case sidre::UINT16_ID:
-    modifyFinalValuesImpl<axom::uint16>(view, origSize);
+    modifyFinalValuesImpl<std::uint16_t>(view, origSize);
     break;
   case sidre::UINT32_ID:
-    modifyFinalValuesImpl<axom::uint32>(view, origSize);
+    modifyFinalValuesImpl<std::uint32_t>(view, origSize);
     break;
   case sidre::UINT64_ID:
-    modifyFinalValuesImpl<axom::uint64>(view, origSize);
+    modifyFinalValuesImpl<std::uint64_t>(view, origSize);
     break;
   case sidre::FLOAT32_ID:
     modifyFinalValuesImpl<axom::float32>(view, origSize);

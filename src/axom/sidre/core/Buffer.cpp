@@ -140,7 +140,7 @@ Buffer* Buffer::reallocate(IndexType num_elems)
   dtype.set_number_of_elements(num_elems);
   IndexType new_size = dtype.strided_bytes();
   void* new_data_ptr =
-    axom::reallocate(static_cast<axom::uint8*>(old_data_ptr), new_size);
+    axom::reallocate(static_cast<std::uint8_t*>(old_data_ptr), new_size);
 
   if(num_elems == 0 || new_data_ptr != nullptr)
   {
@@ -409,7 +409,7 @@ void Buffer::detachFromAllViews()
 void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
-  return axom::allocate<axom::int8>(num_bytes, allocID);
+  return axom::allocate<std::int8_t>(num_bytes, allocID);
 }
 
 /*
@@ -422,7 +422,7 @@ void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 void Buffer::releaseBytes(void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  axom::int8* ptr_copy = static_cast<axom::int8*>(ptr);
+  std::int8_t* ptr_copy = static_cast<std::int8_t*>(ptr);
   axom::deallocate(ptr_copy);
 }
 

@@ -398,7 +398,7 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<bool>(
   const auto result = m_reader.getBool(lookupPath, val);
   if(forArray || result == ReaderResult::Success)
   {
-    sidreGroup->createViewScalar("value", val ? int8(1) : int8(0));
+    sidreGroup->createViewScalar("value", val ? std::int8_t(1) : std::int8_t(0));
   }
   if(!forArray)
   {

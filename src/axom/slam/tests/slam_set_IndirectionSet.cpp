@@ -165,10 +165,10 @@ bool compareData(axom::ArrayView<ElemType> a, axom::ArrayView<ElemType> b)
 
 // Tests several types of indirection sets
 using MyTypes =
-  ::testing::Types<slam::CArrayIndirectionSet<axom::int32, axom::int64>,
-                   slam::VectorIndirectionSet<axom::int32, axom::int64>,
-                   slam::ArrayIndirectionSet<axom::int32, axom::int64>,
-                   slam::ArrayViewIndirectionSet<axom::int32, axom::int64>>;
+  ::testing::Types<slam::CArrayIndirectionSet<std::int32_t, std::int64_t>,
+                   slam::VectorIndirectionSet<std::int32_t, std::int64_t>,
+                   slam::ArrayIndirectionSet<std::int32_t, std::int64_t>,
+                   slam::ArrayViewIndirectionSet<std::int32_t, std::int64_t>>;
 
 TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
 

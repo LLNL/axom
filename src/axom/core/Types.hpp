@@ -57,9 +57,9 @@ using float32 = float;
 using float64 = double;
 
 #if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
-using IndexType = int64;
+using IndexType = std::int64_t;
 #else
-using IndexType = int32;
+using IndexType = std::int32_t;
 #endif
 
 #ifdef AXOM_USE_MPI
@@ -95,42 +95,42 @@ struct mpi_traits<float32>
 
 //------------------------------------------------------------------------------
 template <>
-struct mpi_traits<int8>
+struct mpi_traits<std::int8_t>
 {
   static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template <>
-struct mpi_traits<uint8>
+struct mpi_traits<std::uint8_t>
 {
   static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template <>
-struct mpi_traits<int16>
+struct mpi_traits<std::int16_t>
 {
   static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template <>
-struct mpi_traits<uint16>
+struct mpi_traits<std::uint16_t>
 {
   static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template <>
-struct mpi_traits<int32>
+struct mpi_traits<std::int32_t>
 {
   static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template <>
-struct mpi_traits<uint32>
+struct mpi_traits<std::uint32_t>
 {
   static const MPI_Datatype type;
 };
@@ -138,14 +138,14 @@ struct mpi_traits<uint32>
   //------------------------------------------------------------------------------
   #ifndef AXOM_NO_INT64_T
 template <>
-struct mpi_traits<int64>
+struct mpi_traits<std::int64_t>
 {
   static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template <>
-struct mpi_traits<uint64>
+struct mpi_traits<std::uint64_t>
 {
   static const MPI_Datatype type;
 };

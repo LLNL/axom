@@ -1398,13 +1398,13 @@ void bvh_compute_point_distances_2d(BVHType& bvh,
   npts = query_pts.size();
   axom::for_all<ExecSpace>(
     npts,
-    AXOM_LAMBDA(axom::int32 idx) mutable {
+    AXOM_LAMBDA(std::int32_t idx) mutable {
       // Get the current query point.
       auto qpt = query_pts_view[idx];
       MinCandidate curr_min;
 
-      auto checkMinDist = [&](axom::int32 current_node,
-                              const axom::int32* leaf_nodes) {
+      auto checkMinDist = [&](std::int32_t current_node,
+                              const std::int32_t* leaf_nodes) {
         int candidate_idx = leaf_nodes[current_node];
         const PointType candidate_pt = pointsView[candidate_idx];
         const double sq_dist = squared_distance(qpt, candidate_pt);

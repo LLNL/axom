@@ -1778,7 +1778,7 @@ void MFEMSidreDataCollection::AssociateSpeciesSet(
   m_specset_associations[species_field_name] = specset_name;
   Group* specset_grp = m_bp_grp->createGroup("specsets/" + specset_name);
   specset_grp->createViewScalar("volume_dependent",
-                                static_cast<int8>(volume_dependent));
+                                static_cast<std::int8_t>(volume_dependent));
   // Since we're creating the species set, associate it with a material set
   specset_grp->createViewString("matset", matset_name);
 }

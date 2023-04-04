@@ -167,7 +167,7 @@ void recordFieldSchema(const Field& field, conduit::Node& node)
       node["default"] = std::string(default_view->getString());
       break;
     case sidre::INT8_ID:
-      node["default"] = static_cast<int8>(default_view->getData());
+      node["default"] = static_cast<std::int8_t>(default_view->getData());
       break;
     default:
       break;
