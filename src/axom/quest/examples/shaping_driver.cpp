@@ -169,6 +169,9 @@ public:
       ->transform(
         axom::CLI::CheckedTransformer(methodMap, axom::CLI::ignore_case));
 
+    app.add_option("--background-material", backgroundMaterial)
+      ->description("Sets the name of the background material");
+
     // parameters that only apply to the sampling method
     {
       auto* sampling_options =
@@ -211,10 +214,6 @@ public:
         ->description("Number of refinements to perform for revolved contour")
         ->capture_default_str()
         ->check(axom::CLI::NonNegativeNumber);
-
-      intersection_options
-        ->add_option("--background-material", backgroundMaterial)
-        ->description("Sets the name of the background material");
 
       std::stringstream pol_sstr;
       pol_sstr << "Set runtime policy for intersection-based sampling method.";
@@ -501,6 +500,42 @@ int main(int argc, char** argv)
     {
       intersectionShaper->setFreeMaterialName(params.backgroundMaterial);
     }
+  }
+
+  //---------------------------------------------------------------------------
+  // Project initial volume fractions, if applicable
+  //---------------------------------------------------------------------------
+  if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
+  {
+    std::map<std::string, mfem::GridFunction*> initial_grid_functions;
+
+    // Generate a background material (w/ volume fractions set to 1) if user provided a name
+    if(!params.backgroundMaterial.empty())
+    {
+      auto material = params.backgroundMaterial;
+      auto name = axom::fmt::format("vol_frac_{}", material);
+
+      const int order = params.outputOrder;
+      const int dim = shapingMesh->Dimension();
+      const auto basis = mfem::BasisType::Positive;
+
+      auto* coll = new mfem::L2_FECollection(order, dim, basis);
+      auto* fes = new mfem::FiniteElementSpace(shapingDC.GetMesh(), coll);
+      const int sz = fes->GetVSize();
+
+      auto* view = shapingDC.AllocNamedBuffer(name, sz);
+      auto* volFrac = new mfem::GridFunction(fes, view->getArray());
+      volFrac->MakeOwner(coll);
+
+      (*volFrac) = 1.;
+
+      shapingDC.RegisterField(name, volFrac);
+
+      initial_grid_functions[material] = shapingDC.GetField(name);
+    }
+
+    // Project volume fractions to data at quadrature points
+    samplingShaper->projectInitialVolumeFractions(initial_grid_functions);
   }
 
   //---------------------------------------------------------------------------
