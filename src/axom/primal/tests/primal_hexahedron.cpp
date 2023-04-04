@@ -15,6 +15,24 @@
 
 namespace primal = axom::primal;
 
+namespace
+{
+double volume_tet_decomp(primal::Hexahedron<double, 3> hex)
+{
+  double retVol = 0.0;
+  primal::Tetrahedron<double, 3> tets[24];
+
+  hex.triangulate(tets);
+
+  for(int i = 0; i < 24; i++)
+  {
+    retVol += tets[i].volume();
+  }
+
+  return retVol;
+}
+
+}  // namespace
 /// Test fixture for testing primal::Hexahedron
 class HexahedronTest : public ::testing::Test
 {
@@ -176,6 +194,11 @@ TEST_F(HexahedronTest, volume)
   EXPECT_DOUBLE_EQ(hex0.volume(), 1);
   EXPECT_DOUBLE_EQ(hex1.volume(), 1);
   EXPECT_DOUBLE_EQ(hex2.volume(), 13);
+
+  // Check hexahedron volume against 24-tetrahedron subvolumes
+  EXPECT_DOUBLE_EQ(hex0.volume(), volume_tet_decomp(hex0));
+  EXPECT_DOUBLE_EQ(hex1.volume(), volume_tet_decomp(hex1));
+  EXPECT_DOUBLE_EQ(hex2.volume(), volume_tet_decomp(hex2));
 }
 
 TEST_F(HexahedronTest, equals)
