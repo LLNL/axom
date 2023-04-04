@@ -456,6 +456,53 @@ public:
   //@}
 
 public:
+  /**
+   * \brief Import an initial set of material volume fractions before shaping
+   *
+   * \param [in] initialGridFuncions The input data as a map from material names to grid functions
+   * 
+   * The imported grid functions are interpolated at quadrature points and registered
+   * with the supplied names as material-based quadrature fields
+   */
+  void projectInitialVolumeFractions(
+    const std::map<std::string, mfem::GridFunction*> initialGridFunctions)
+  {
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
+    auto* mesh = m_dc->GetMesh();
+
+    // ensure we have a starting quadrature field for the positions
+    if(!m_inoutShapeQFuncs.Has("positions"))
+    {
+      shaping::generatePositionsQFunction(mesh,
+                                          m_inoutShapeQFuncs,
+                                          m_quadratureOrder);
+    }
+    auto* positionsQSpace = m_inoutShapeQFuncs.Get("positions")->GetSpace();
+
+    // Interpolate grid functions at quadrature points & register material quad functions
+    // assume all elements have same integration rule
+    for(auto& entry : initialGridFunctions)
+    {
+      const auto& name = entry.first;
+      auto* gf = entry.second;
+
+      if(gf == nullptr)
+      {
+        continue;
+      }
+
+      auto* matQFunc = new mfem::QuadratureFunction(*positionsQSpace);
+      const auto& ir = matQFunc->GetSpace()->GetIntRule(0);
+      const auto* interp = gf->FESpace()->GetQuadratureInterpolator(ir);
+      interp->Values(*gf, *matQFunc);
+
+      const auto matName = axom::fmt::format("mat_inout_{}", name);
+      m_inoutMaterialQFuncs.Register(matName, matQFunc, true);
+    }
+  }
+
   void adjustVolumeFractions() override
   {
     internal::ScopedLogLevelChanger logLevelChanger(
