@@ -32,6 +32,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds `const_iterator` support to `slam::BivariateMap` and `slam::SubMap`
 
 ### Changed
+- Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
 - `IntersectionShaper` now implements material replacement rules.
 - `axom::Array` move constructors are now `noexcept`.
 - Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`

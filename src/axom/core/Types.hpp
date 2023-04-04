@@ -25,6 +25,17 @@
 
 namespace axom
 {
+/*
+  Axom integer types are deprecated.
+  Their use can trigger an warning or an error, or be quietly allowed,
+  by using cmake -DAXOM_DEPRECATED_TYPES=<WARN|ERROR|ALLOW>
+  Eventually, these types will be removed.
+*/
+#if AXOM_DEPRECATED_TYPES_N == 1 || AXOM_DEPRECATED_TYPES_N == 2
+  #if AXOM_DEPRECATED_TYPES_N == 1
+    #warning \
+      "Using deprecated Axom types.  Please see cmake variable AXOM_DEPRECATED_TYPES"
+  #endif
 using int8 = std::int8_t;   /*!< 8-bit signed integer type      */
 using uint8 = std::uint8_t; /*!< 8-bit unsigned integer type    */
 
@@ -34,11 +45,12 @@ using uint16 = std::uint16_t; /*!< 16-bit unsigned integer type   */
 using int32 = std::int32_t;   /*!< 32-bit signed integer type     */
 using uint32 = std::uint32_t; /*!< 32-bit unsigned integer type   */
 
-// Note: KW -- We assume that AXOM_NO_INT64_T will be defined
-// on systems/compilers that do not support 64 bit integer types
-#ifndef AXOM_NO_INT64_T
+  // Note: KW -- We assume that AXOM_NO_INT64_T will be defined
+  // on systems/compilers that do not support 64 bit integer types
+  #ifndef AXOM_NO_INT64_T
 using int64 = std::int64_t;   /*!< 64-bit signed integer type     */
 using uint64 = std::uint64_t; /*!< 64-bit unsigned integer type   */
+  #endif
 #endif
 
 using float32 = float;

@@ -106,3 +106,25 @@ if(WIN32)
             TARGET_DEFINITIONS "axom_EXPORTS")
     endforeach()
 endif()
+
+
+#------------------------------------------------------------------------------
+# With C++11, some Axom types in src/axom/core/Types.hpp are obsolete.
+# They will be removed in steps, as the AXOM_DEPRECATED_TYPES variable
+# defaults to WARN, then ERROR, then eventually removed.
+#------------------------------------------------------------------------------
+if (NOT AXOM_DEPRECATED_TYPES)
+  set( AXOM_DEPRECATED_TYPES "WARN" )
+endif()
+message(STATUS "AXOM_DEPRECATED_TYPES: " ${AXOM_DEPRECATED_TYPES}  ".  (Can be WARN, ALLOW or ERROR.)")
+if (NOT ${AXOM_DEPRECATED_TYPES} MATCHES "^(WARN|ERROR|ALLOW)$")
+  message(FATAL_ERROR "AXOM_DEPRECATED_TYPES (" ${AXOM_DEPRECATED_TYPES} ") must be WARN, ERROR or ALLOW")
+endif()
+
+if ("${AXOM_DEPRECATED_TYPES}" STREQUAL "WARN")
+  set(AXOM_DEPRECATED_TYPES_N 1 CACHE STRING "Allow using deprecated Axom integer types, with a warning." FORCE)
+elseif("${AXOM_DEPRECATED_TYPES}" STREQUAL "ALLOW")
+  set(AXOM_DEPRECATED_TYPES_N 2 CACHE STRING "Allow using deprecated Axom integer types, without warning." FORCE)
+else()
+  set(AXOM_DEPRECATED_TYPES_N -1 CACHE STRING "Do not allow using deprecated Axom integer types." FORCE)
+endif()

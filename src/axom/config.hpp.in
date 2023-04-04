@@ -115,6 +115,15 @@
 
 
 /*
+ * For gradual removal of types that have been deprecated in favor of
+ * c++-11 types.  Value can be 1 to allow with compiler warnings, 2 to
+ * allow silently, and -1 to disallow.  Corresponds to cmake variable
+ * AXOM_DEPRECATED_TYPES values of WARN, ALLOW and ERROR.
+ */
+#cmakedefine AXOM_DEPRECATED_TYPES_N @AXOM_DEPRECATED_TYPES_N@
+
+
+/*
  * Compiler defines to configure the built-in fmt library
  * Redefines AXOM_FMT_DEPRECATED to workaround nvcc compiler error
  */
