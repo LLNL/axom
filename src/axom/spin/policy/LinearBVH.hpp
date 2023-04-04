@@ -339,9 +339,8 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
         PrimitiveType primitive {objs[i]};
 
         auto leafAction = [&count](std::int32_t AXOM_UNUSED_PARAM(current_node),
-                                   const std::int32_t* AXOM_UNUSED_PARAM(leaf_nodes)) {
-          count++;
-        };
+                                   const std::int32_t* AXOM_UNUSED_PARAM(
+                                     leaf_nodes)) { count++; };
 
         lbvh::bvh_traverse(inner_nodes,
                            inner_node_children,

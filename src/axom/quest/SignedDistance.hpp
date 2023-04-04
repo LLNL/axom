@@ -576,7 +576,8 @@ inline void SignedDistance<NDIMS, ExecSpace>::computeDistances(
 
         MinCandidate curr_min {};
 
-        auto searchMinDist = [&](std::int32_t current_node, const std::int32_t* leaf_nodes) {
+        auto searchMinDist = [&](std::int32_t current_node,
+                                 const std::int32_t* leaf_nodes) {
           int candidate_idx = leaf_nodes[current_node];
 
           checkCandidate(qpt,

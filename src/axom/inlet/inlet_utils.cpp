@@ -143,7 +143,8 @@ void markAsStructCollection(axom::sidre::Group& target)
   }
   else
   {
-    target.createViewScalar(detail::STRUCT_COLLECTION_FLAG, static_cast<std::int8_t>(1));
+    target.createViewScalar(detail::STRUCT_COLLECTION_FLAG,
+                            static_cast<std::int8_t>(1));
   }
 }
 
