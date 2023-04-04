@@ -330,10 +330,13 @@ public:
    * could have been deleted
    * \sa numberOfValidEntries(), isValidEntry()
    */
-  inline PositionType size() const { return SizePolicy::size(); };
+  AXOM_HOST_DEVICE inline PositionType size() const
+  {
+    return SizePolicy::size();
+  };
 
   /// \brief Uses \a SizePolicy::empty() to determine if the set is empty
-  bool empty() const { return SizePolicy::empty(); };
+  AXOM_HOST_DEVICE bool empty() const { return SizePolicy::empty(); };
 
   /// \brief Returns a positionset over the set elements
   PositionSet<PositionType> positions() const

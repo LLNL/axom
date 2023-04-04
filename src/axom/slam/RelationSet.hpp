@@ -46,13 +46,15 @@ private:
   using BaseType =
     policies::BivariateSetInterface<InterfaceType, SetType1, SetType2>;
   using RangeSetType = typename BaseType::RangeSetType;
+  using BaseSubsetType = typename BaseType::SubsetType;
 
 public:
   using PositionType = typename RelationType::SetPosition;
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
-  using SubsetType = typename BaseType::SubsetType;
+  using SubsetType =
+    std::conditional_t<std::is_same<void, BaseSubsetType>::value, RelationSubset, BaseSubsetType>;
 
   using BaseType::INVALID_POS;
 
@@ -128,7 +130,8 @@ public:
    * \return  The element's FlatIndex
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
-  PositionType findElementFlatIndex(PositionType s1, PositionType s2) const
+  AXOM_HOST_DEVICE PositionType findElementFlatIndex(PositionType s1,
+                                                     PositionType s2) const
   {
     RelationSubset ls = (*m_relation)[s1];
     for(PositionType i = 0; i < ls.size(); i++)
@@ -157,7 +160,49 @@ public:
     return BaseType::INVALID_POS;
   }
 
-  RangeSetType elementRangeSet(PositionType pos1) const
+  /**
+   * \brief Given the flat index, return the associated to-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos2  The to-set index.
+   */
+  AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return m_relation->relationData()[flatIndex];
+  }
+
+  /**
+   * \brief Given the flat index, return the associated from-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos1  The from-set index.
+   */
+  AXOM_HOST_DEVICE PositionType flatToFirstIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    for(PositionType firstIdx = 0; firstIdx < this->firstSetSize(); firstIdx++)
+    {
+      // keep looping until the first subset after flatIndex
+      if((*m_relation)[firstIdx].offset() > flatIndex)
+      {
+        return firstIdx - 1;
+      }
+    }
+    return this->firstSetSize() - 1;
+  }
+
+  AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
   {
     return typename RangeSetType::SetBuilder()
       .size(m_relation->size(pos1))
@@ -176,7 +221,7 @@ public:
   ElementType at(PositionType pos) const
   {
     RelationSet::verifyPosition(pos);
-    return (*m_relation->relationData())[pos];
+    return m_relation->relationData()[pos];
   }
 
   /** \brief Returns the relation pointer   */
@@ -187,7 +232,7 @@ public:
   /** \brief Return the size of the relation   */
   PositionType totalSize() const
   {
-    return PositionType(m_relation->relationData()->size());
+    return PositionType(m_relation->relationData().size());
   }
 
   /**
@@ -218,9 +263,9 @@ public:
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
   // KW -- made this public to use from BivariateMap
-  PositionType size() const
+  AXOM_HOST_DEVICE PositionType size() const
   {
-    return PositionType(m_relation->relationData()->size());
+    return PositionType(m_relation->relationData().size());
   }
 
 private:

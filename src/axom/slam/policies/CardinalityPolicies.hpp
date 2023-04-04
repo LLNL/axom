@@ -94,19 +94,19 @@ struct ConstantCardinality
     m_begins = builder;
   }
 
-  const ElementType size(ElementType AXOM_UNUSED_PARAM(fromPos)) const
+  AXOM_HOST_DEVICE ElementType size(ElementType AXOM_UNUSED_PARAM(fromPos)) const
   {
     return m_begins.stride();
   }
 
-  const ElementType offset(ElementType fromPos) const
+  AXOM_HOST_DEVICE ElementType offset(ElementType fromPos) const
   {
     return m_begins[fromPos];
   }
 
-  IndirectionPtrType offsetData() { return m_begins.data(); }
+  IndirectionPtrType offsetData() { return m_begins.ptr(); }
 
-  const IndirectionPtrType offsetData() const { return m_begins.data(); }
+  const IndirectionPtrType offsetData() const { return m_begins.ptr(); }
 
   void bindBeginOffsets(ElementType fromSetSize, ElementType stride)
   {
@@ -163,12 +163,12 @@ struct VariableCardinality
     m_begins = typename BeginsSet::SetBuilder().size(fromSetSize + 1).data(data);
   }
 
-  const ElementType size(ElementType fromPos) const
+  AXOM_HOST_DEVICE ElementType size(ElementType fromPos) const
   {
     return offset(fromPos + 1) - offset(fromPos);
   }
 
-  const ElementType offset(ElementType fromPos) const
+  AXOM_HOST_DEVICE ElementType offset(ElementType fromPos) const
   {
     return m_begins[fromPos];
   }
