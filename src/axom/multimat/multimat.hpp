@@ -247,6 +247,29 @@ public:
    */
   void setCellMatRel(std::vector<bool>& relation_info, DataLayout layout);
 
+  /*!
+   * \brief Set the cell-material relation.
+   *
+   * \detail This function accepts a compressed sparse row representation of a
+   *  relation.
+   *
+   * \param cardinality The number of secondary elements associated with each
+   *  dominant element, i.e.:
+   *   * cell-dominant: the number of materials associated with each cell
+   *   * material-dominant: the number of cells containing each material
+   * \param indices A compressed sparse row array of indices representing the
+   *  associated secondary-set elements, i.e.:
+   *   * cell-dominant: the index of each material in a cell
+   *   * material-dominant: the index of each cell containing the material
+   * \param layout The layout of the relation (cell- or material-dominant)
+   *
+   * \pre The number of materials and cell must be set prior to calling this
+   *  function with setNumberOfMaterials(int) and setNumberOfCells(int)
+   */
+  void setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
+                     axom::ArrayView<const SetPosType> indices,
+                     DataLayout layout);
+
   //functions related to fields
 
   int getNumberOfFields() const { return m_fieldNameVec.size(); }

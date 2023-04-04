@@ -264,38 +264,58 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
   //This step is necessary if the volfrac field is sparse
 
   SLIC_ASSERT(vecarr.size() == m_ncells * m_nmats);  //Check it's dense
-
-  StaticVariableRelationType& Rel_ptr = relStatic(layout);
-  IndBufferType& Rel_beginsVec = relBeginVec(layout);
-  IndBufferType& Rel_indicesVec = relIndVec(layout);
-
   SLIC_ASSERT(!hasValidStaticRelation(layout));
 
   RangeSetType& set1 = relDominantSet(layout);
   RangeSetType& set2 = relSecondarySet(layout);
 
-  //count the non-zeros
-  int nz_count = 0;
-  for(bool b : vecarr) nz_count += b;
+  axom::Array<SetPosType> counts(set1.size()), indices;
 
-  //Set-up the cell/mat relation
-  Rel_beginsVec.resize(set1.size() + 1, -1);
-  Rel_indicesVec.resize(nz_count);
-
-  SetPosType curIdx = SetPosType();
   for(SetPosType i = 0; i < set1.size(); ++i)
   {
-    Rel_beginsVec[i] = curIdx;
+    SetPosType cardinality = 0;
     for(SetPosType j = 0; j < set2.size(); ++j)
     {
       if(vecarr[i * set2.size() + j])
       {
-        Rel_indicesVec[curIdx] = j;
-        ++curIdx;
+        cardinality++;
+        indices.push_back(j);
       }
     }
+    counts[i] = cardinality;
   }
-  Rel_beginsVec[set1.size()] = curIdx;
+
+  setCellMatRel(counts, indices, layout);
+}
+
+void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
+                             axom::ArrayView<const SetPosType> indices,
+                             DataLayout layout)
+{
+  StaticVariableRelationType& Rel_ptr = relStatic(layout);
+  IndBufferType& Rel_beginsVec = relBeginVec(layout);
+  IndBufferType& Rel_indicesVec = relIndVec(layout);
+
+  // Check that we haven't already set up the cell-material relation.
+  // TODO: should we allow resetting the relation?
+  SLIC_ASSERT(!hasValidStaticRelation(layout));
+
+  RangeSetType& set1 = relDominantSet(layout);
+  RangeSetType& set2 = relSecondarySet(layout);
+
+  SLIC_ASSERT(set1.size() == cardinality.size());
+
+  // Offsets vector is just an inclusive scan of the cardinality
+  Rel_beginsVec.resize(set1.size() + 1);
+  Rel_beginsVec[0] = 0;
+  for(SetPosType maj_idx = 1; maj_idx < cardinality.size() + 1; maj_idx++)
+  {
+    Rel_beginsVec[maj_idx] =
+      Rel_beginsVec[maj_idx - 1] + cardinality[maj_idx - 1];
+  }
+
+  // Just copy over the indices directly
+  Rel_indicesVec = axom::Array<SetPosType>(indices);
 
   Rel_ptr = StaticVariableRelationType(&set1, &set2);
   Rel_ptr.bindBeginOffsets(set1.size(), Rel_beginsVec.view());
