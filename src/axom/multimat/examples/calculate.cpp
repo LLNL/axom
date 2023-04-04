@@ -1973,23 +1973,7 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
     {
       double xc[2] = {cen[ic * 2], cen[ic * 2 + 1]};
       const int nn = nnbrs[ic];
-      int cnbrs[8];
-      double dsqr[8];
-
-      for(int n = 0; n < nn; ++n)
-      {
-        cnbrs[n] = nbrs[ic * 8 + n];
-      }
-
-      for(int n = 0; n < nn; ++n)
-      {
-        dsqr[n] = 0.0;
-        for(int d = 0; d < 2; ++d)  //original condition was  d < 1 ???
-        {
-          const double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-          dsqr[n] += ddist * ddist;
-        }
-      }
+      const int* cnbrs = &(nbrs[ic * 8]);
 
       for(int m = 0; m < nmats; ++m)
       {
@@ -2002,7 +1986,11 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm,
             int jc = cnbrs[n];
             if(Volfrac(jc, m) > 0.0)
             {
-              MatDensity_average[ic * nmats + m] += Densityfrac(jc, m) / dsqr[n];
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
+              MatDensity_average[ic * nmats + m] += Densityfrac(jc, m) / dsqr;
               ++nnm;
             }
           }
@@ -2161,24 +2149,9 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
 
     for(int ic = 0; ic < ncells; ++ic)
     {
-      double xc[2];
-      xc[0] = cen[ic * 2];
-      xc[1] = cen[ic * 2 + 1];
+      double xc[2] = {cen[ic * 2], cen[ic * 2 + 1]};
       int nn = nnbrs[ic];
-      int cnbrs[8];
-      double dsqr[8];
-
-      for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
-
-      for(int n = 0; n < nn; ++n)
-      {
-        dsqr[n] = 0.0;
-        for(int d = 0; d < 2; ++d)  //original condition was  d < 1 ???
-        {
-          double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-          dsqr[n] += ddist * ddist;
-        }
-      }
+      const int* cnbrs = &(nbrs[ic * 8]);
 
       auto VolfracIter = Volfrac.begin(ic);
       auto VolfracIterEnd = Volfrac.end(ic);
@@ -2194,8 +2167,12 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
             auto VolfracIterJcm = Volfrac.begin(jc) + m;
             if(*(VolfracIterJcm) > 0.0)
             {
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
               auto DensityIterJcm = Densityfrac.begin(jc) + m;
-              MatDensity_average[ic * nmats + m] += *DensityIterJcm / dsqr[n];
+              MatDensity_average[ic * nmats + m] += *DensityIterJcm / dsqr;
               ++nnm;
             }
           }
@@ -2343,24 +2320,9 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm,
 
     for(int ic = 0; ic < ncells; ++ic)
     {
-      double xc[2];
-      xc[0] = cen[ic * 2];
-      xc[1] = cen[ic * 2 + 1];
+      double xc[2] = {cen[ic * 2], cen[ic * 2 + 1]};
       int nn = nnbrs[ic];
-      int cnbrs[8];
-      double dsqr[8];
-
-      for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
-
-      for(int n = 0; n < nn; ++n)
-      {
-        dsqr[n] = 0.0;
-        for(int d = 0; d < 2; ++d)  //original condition was  d < 1 ???
-        {
-          double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-          dsqr[n] += ddist * ddist;
-        }
-      }
+      const int* cnbrs = &(nbrs[ic * 8]);
 
       auto IndexSet = mm.getIndexingSetOfCell(ic, mm.getFieldSparsityLayout(0));
       auto MatId = mm.getMatInCell(ic);
@@ -2377,10 +2339,14 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm,
           {
             if(MatIdJc[jj] == m)
             {
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
               auto IndexSetJc =
                 mm.getIndexingSetOfCell(jc, mm.getFieldSparsityLayout(0));
               MatDensity_average[ic * nmats + m] +=
-                Densityfrac[IndexSetJc[jj]] / dsqr[n];
+                Densityfrac[IndexSetJc[jj]] / dsqr;
               ++nnm;
               break;
             }
@@ -2440,24 +2406,9 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm,
 
     for(int ic = 0; ic < ncells; ++ic)
     {
-      double xc[2];
-      xc[0] = cen[ic * 2];
-      xc[1] = cen[ic * 2 + 1];
+      double xc[2] = {cen[ic * 2], cen[ic * 2 + 1]};
       int nn = nnbrs[ic];
-      int cnbrs[8];
-      double dsqr[8];
-
-      for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
-
-      for(int n = 0; n < nn; ++n)
-      {
-        dsqr[n] = 0.0;
-        for(int d = 0; d < 2; ++d)  //original condition was  d < 1 ???
-        {
-          double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-          dsqr[n] += ddist * ddist;
-        }
-      }
+      const int* cnbrs = &(nbrs[ic * 8]);
 
       auto DensityfracIter = Densityfrac.begin(ic);
       auto DensityfracIterEnd = Densityfrac.end(ic);
@@ -2475,7 +2426,11 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm,
           {
             if(DensityfracIterJc.index() == m)
             {
-              MatDensity_average[ic * nmats + m] += *DensityfracIterJc / dsqr[n];
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
+              MatDensity_average[ic * nmats + m] += *DensityfracIterJc / dsqr;
               ++nnm;
               break;
             }
@@ -2700,22 +2655,9 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
       {
         if(Volfrac(m, ic) > 0.0)
         {
-          double xc[2];
-          xc[0] = cen[ic * 2];
-          xc[1] = cen[ic * 2 + 1];
+          double xc[2] = {cen[ic * 2], cen[ic * 2 + 1]};
           int nn = nnbrs[ic];
-          int cnbrs[8];
-          double dsqr[8];
-          for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
-          for(int n = 0; n < nn; ++n)
-          {
-            dsqr[n] = 0.0;
-            for(int d = 0; d < 2; ++d)
-            {  //????
-              double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-              dsqr[n] += ddist * ddist;
-            }
-          }
+          const int* cnbrs = &(nbrs[ic * 8]);
 
           int nnm = 0;  // number of nbrs with this material
           for(int n = 0; n < nn; ++n)
@@ -2723,7 +2665,11 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm,
             int jc = cnbrs[n];
             if(Volfrac(m, jc) > 0.0)
             {
-              MatDensity_average[m * ncells + ic] += Densityfrac(m, jc) / dsqr[n];
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
+              MatDensity_average[m * ncells + ic] += Densityfrac(m, jc) / dsqr;
               ++nnm;
             }
           }
@@ -2885,22 +2831,9 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
         int ic = VolfracIter.index();
         if(*VolfracIter > 0.0)
         {
-          double xc[2];
-          xc[0] = cen[ic * 2];
-          xc[1] = cen[ic * 2 + 1];
+          double xc[2] = {cen[ic * 2], cen[ic * 2 + 1]};
           int nn = nnbrs[ic];
-          int cnbrs[8];
-          double dsqr[8];
-          for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
-          for(int n = 0; n < nn; ++n)
-          {
-            dsqr[n] = 0.0;
-            for(int d = 0; d < 2; ++d)
-            {  //????
-              double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-              dsqr[n] += ddist * ddist;
-            }
-          }
+          const int* cnbrs = &(nbrs[ic * 8]);
 
           int nnm = 0;  // number of nbrs with this material
 
@@ -2910,8 +2843,12 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 
             if(*(VolfracIterBegin + jc) > 0.0)
             {
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
               MatDensity_average[m * ncells + ic] +=
-                *(DensityIterBegin + jc) / dsqr[n];
+                *(DensityIterBegin + jc) / dsqr;
               ++nnm;
             }
           }
@@ -3069,22 +3006,9 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm,
       {
         int ci = CellIdArr[k];
 
-        double xc[2];
-        xc[0] = cen[ci * 2];
-        xc[1] = cen[ci * 2 + 1];
+        double xc[2] = {cen[ci * 2], cen[ci * 2 + 1]};
         int nn = nnbrs[ci];
-        int cnbrs[9];
-        double dsqr[8];
-        for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
-        for(int n = 0; n < nn; ++n)
-        {
-          dsqr[n] = 0.0;
-          for(int d = 0; d < 2; ++d)
-          {  //???
-            double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-            dsqr[n] += ddist * ddist;
-          }
-        }
+        const int* cnbrs = &(nbrs[ci * 8]);
 
         int nnm = 0;  // number of nbrs with this material
         for(int n = 0; n < nn; ++n)
@@ -3093,8 +3017,11 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm,
           int k_j = data.dense2sparse_idx[m * ncells + C_j];
           if(k_j >= 0)
           {  //the neighbor cell does have this material
+            double dx = xc[0] - cen[C_j * 2 + 0];
+            double dy = xc[1] - cen[C_j * 2 + 1];
+            double dsqr = dx * dx + dy * dy;
             MatDensity_average[m * ncells + ci] +=
-              Densityfrac[IndexSet[k_j]] / dsqr[n];
+              Densityfrac[IndexSet[k_j]] / dsqr;
             ++nnm;
           }
         }
@@ -3160,22 +3087,9 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm,
       {
         int ci = DensityfracIter.index();
 
-        double xc[2];
-        xc[0] = cen[ci * 2];
-        xc[1] = cen[ci * 2 + 1];
+        double xc[2] = {cen[ci * 2], cen[ci * 2 + 1]};
         int nn = nnbrs[ci];
-        int cnbrs[9];
-        double dsqr[8];
-        for(int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
-        for(int n = 0; n < nn; ++n)
-        {
-          dsqr[n] = 0.0;
-          for(int d = 0; d < 2; ++d)
-          {  //???
-            double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-            dsqr[n] += ddist * ddist;
-          }
-        }
+        const int* cnbrs = &(nbrs[ci * 8]);
 
         int nnm = 0;  // number of nbrs with this material
         for(int n = 0; n < nn; ++n)
@@ -3184,8 +3098,11 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm,
           int k_j = data.dense2sparse_idx[m * ncells + C_j];
           if(k_j >= 0)
           {  //the neighbor cell does have this material
+            double dx = xc[0] - cen[C_j * 2 + 0];
+            double dy = xc[1] - cen[C_j * 2 + 1];
+            double dsqr = dx * dx + dy * dy;
             MatDensity_average[m * ncells + ci] +=
-              *(DensityfracIterBegin + k_j) / dsqr[n];
+              *(DensityfracIterBegin + k_j) / dsqr;
             ++nnm;
           }
         }
