@@ -362,6 +362,8 @@ void check_hex_tet_clip(double EPS)
 {
   using namespace Primal3D;
 
+  constexpr bool CHECK_SIGN = true;
+
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
@@ -395,6 +397,26 @@ void check_hex_tet_clip(double EPS)
               axom::primal::intersection_volume<double>(hex[0], tet[0]),
               EPS);
 
+  // Test checkSign optional parameter using shapes with negative volumes
+  axom::utilities::swap<PointType>(tet[0][1], tet[0][2]);
+  axom::utilities::swap<PointType>(hex[0][1], hex[0][3]);
+  axom::utilities::swap<PointType>(hex[0][5], hex[0][7]);
+
+  EXPECT_LT(tet[0].signedVolume(), 0.0);
+  EXPECT_LT(hex[0].signedVolume(), 0.0);
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      res[i] = axom::primal::clip(hex[i], tet[i], EPS, CHECK_SIGN);
+    });
+
+  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+  EXPECT_NEAR(
+    0.1666,
+    axom::primal::intersection_volume<double>(hex[0], tet[0], EPS, CHECK_SIGN),
+    EPS);
+
   axom::deallocate(tet);
   axom::deallocate(hex);
   axom::deallocate(res);
@@ -406,6 +428,8 @@ template <typename ExecPolicy>
 void check_oct_tet_clip(double EPS)
 {
   using namespace Primal3D;
+
+  constexpr bool CHECK_SIGN = true;
 
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
@@ -439,6 +463,25 @@ void check_oct_tet_clip(double EPS)
               axom::primal::intersection_volume<double>(oct[0], tet[0]),
               EPS);
 
+  // Test checkSign optional parameter using shapes with negative volumes
+  axom::utilities::swap<PointType>(tet[0][1], tet[0][2]);
+  axom::utilities::swap<PointType>(oct[0][1], oct[0][2]);
+  axom::utilities::swap<PointType>(oct[0][4], oct[0][5]);
+
+  EXPECT_LT(tet[0].signedVolume(), 0.0);
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      res[i] = axom::primal::clip(oct[i], tet[i], EPS, CHECK_SIGN);
+    });
+
+  EXPECT_NEAR(0.1666, res[0].volume(), EPS);
+  EXPECT_NEAR(
+    0.1666,
+    axom::primal::intersection_volume<double>(oct[0], tet[0], EPS, CHECK_SIGN),
+    EPS);
+
   axom::deallocate(tet);
   axom::deallocate(oct);
   axom::deallocate(res);
@@ -450,6 +493,8 @@ template <typename ExecPolicy>
 void check_tet_tet_clip(double EPS)
 {
   using namespace Primal3D;
+
+  constexpr bool CHECK_SIGN = true;
 
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
@@ -480,6 +525,25 @@ void check_tet_tet_clip(double EPS)
   EXPECT_NEAR(0.0833,
               axom::primal::intersection_volume<double>(tet1[0], tet2[0]),
               EPS);
+
+  // Test checkSign optional parameter using shapes with negative volumes
+  axom::utilities::swap<PointType>(tet1[0][1], tet1[0][2]);
+  axom::utilities::swap<PointType>(tet2[0][1], tet2[0][2]);
+
+  EXPECT_LT(tet1[0].signedVolume(), 0.0);
+  EXPECT_LT(tet2[0].signedVolume(), 0.0);
+
+  axom::for_all<ExecPolicy>(
+    1,
+    AXOM_LAMBDA(int i) {
+      res[i] = axom::primal::clip(tet1[i], tet2[i], EPS, CHECK_SIGN);
+    });
+
+  EXPECT_NEAR(0.0833, res[0].volume(), EPS);
+  EXPECT_NEAR(
+    0.0833,
+    axom::primal::intersection_volume<double>(tet1[0], tet2[0], EPS, CHECK_SIGN),
+    EPS);
 
   axom::deallocate(tet1);
   axom::deallocate(tet2);

@@ -215,14 +215,9 @@ void check_volume()
   // Set new default to device
   axom::setDefaultAllocator(allocator.getId());
 
-  // Initialize polyhedron on device,
-  // volume results in unified memory to check results on host.
+  // Initialize polyhedron and volume in unified memory
   PolyhedronType* polys = axom::allocate<PolyhedronType>(1);
-  bool* res =
-    (axom::execution_space<ExecSpace>::onDevice()
-       ? axom::allocate<bool>(1,
-                              rm.getAllocator(umpire::resource::Unified).getId())
-       : axom::allocate<bool>(1));
+  double* res = axom::allocate<double>(1);
 
   polys[0] = PolyhedronType();
   polys[0].addVertex({0, 0, 0});
@@ -615,6 +610,7 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   using Point3D = primal::Point<double, 3>;
 
   constexpr double EPS = 1e-4;
+  constexpr bool CHECK_SIGN = true;
 
   Polyhedron3D poly;
 
@@ -639,7 +635,7 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   EXPECT_NEAR(-1.0, poly.volume(), EPS);
 
   // Check sign
-  poly = Polyhedron3D::from_primitive(hex, true);
+  poly = Polyhedron3D::from_primitive(hex, CHECK_SIGN);
   EXPECT_NEAR(1.0, poly.volume(), EPS);
 
   // Valid octahedron
@@ -661,7 +657,7 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   EXPECT_NEAR(-0.6666, poly.volume(), EPS);
 
   // Check sign
-  poly = Polyhedron3D::from_primitive(oct, true);
+  poly = Polyhedron3D::from_primitive(oct, CHECK_SIGN);
   EXPECT_NEAR(0.6666, poly.volume(), EPS);
 
   // Valid tetrahedron
@@ -680,7 +676,7 @@ TEST(primal_polyhedron, polyhedron_from_primitive)
   EXPECT_NEAR(-2.6666, poly.volume(), EPS);
 
   // Check sign
-  poly = Polyhedron3D::from_primitive(tet, true);
+  poly = Polyhedron3D::from_primitive(tet, CHECK_SIGN);
   EXPECT_NEAR(2.6666, poly.volume(), EPS);
 }
 
