@@ -20,7 +20,7 @@ namespace
 double volume_tet_decomp(primal::Hexahedron<double, 3> hex)
 {
   double retVol = 0.0;
-  primal::Tetrahedron<double, 3> tets[24];
+  axom::StackArray<primal::Tetrahedron<double, 3>, 24> tets;
 
   hex.triangulate(tets);
 

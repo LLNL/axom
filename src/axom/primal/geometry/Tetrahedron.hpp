@@ -85,10 +85,10 @@ public:
   /*!
    * \brief Tetrahedron constructor from an Array of Points.
    *
-   * \param [in] pts An Array containing 4 Points.
+   * \param [in] pts An ArrayView containing 4 Points.
    */
   AXOM_HOST_DEVICE
-  explicit Tetrahedron(const axom::Array<PointType>& pts)
+  explicit Tetrahedron(const axom::ArrayView<PointType> pts)
   {
     SLIC_ASSERT(pts.size() == NUM_TET_VERTS);
 

@@ -6,6 +6,8 @@
 #ifndef HEXAHEDRON_HPP_
 #define HEXAHEDRON_HPP_
 
+#include "axom/core/StackArray.hpp"
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -123,10 +125,10 @@ public:
   /*!
    * \brief Hexahedron constructor from an Array of Points.
    *
-   * \param [in] pts An Array containing 8 Points.
+   * \param [in] pts An ArrayView containing 8 Points.
    */
   AXOM_HOST_DEVICE
-  explicit Hexahedron(const axom::Array<PointType>& pts)
+  explicit Hexahedron(const axom::ArrayView<PointType> pts)
   {
     SLIC_ASSERT(pts.size() == NUM_HEX_VERTS);
 
@@ -246,7 +248,7 @@ public:
    * \note Assumes tets is pre-allocated
    */
   AXOM_HOST_DEVICE
-  void triangulate(TetrahedronType* tets)
+  void triangulate(axom::StackArray<TetrahedronType, NUM_TRIANGULATE>& tets)
   {
     // Hex center (hc)
     PointType hc = vertexMean();

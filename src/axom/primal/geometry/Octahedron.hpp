@@ -130,10 +130,10 @@ public:
   /*!
    * \brief Octahedron constructor from an Array of Points
    *
-   * \param [in] pts An Array containing at 6 Points.
+   * \param [in] pts An ArrayView containing at 6 Points.
    */
   AXOM_HOST_DEVICE
-  explicit Octahedron(const axom::Array<PointType>& pts)
+  explicit Octahedron(const axom::ArrayView<PointType> pts)
   {
     SLIC_ASSERT(pts.size() == NUM_OCT_VERTS);
 
