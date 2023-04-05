@@ -30,9 +30,9 @@ public:
   MMSubField2D() : SubMapType(), m_superfield(nullptr), firstSetIndex(-1) {};
 
   // Constructor
-  MMSubField2D(Field2DType* superfield,
-               int firstIndex,
-               bool indicesHaveIndirection = true)
+  AXOM_HOST_DEVICE MMSubField2D(Field2DType* superfield,
+                                int firstIndex,
+                                bool indicesHaveIndirection = true)
     //why is without pointer type casting cause a compilation error?
     : SubMapType((SuperMapType*)superfield,
                  superfield->set()->elementRangeSet(firstIndex),

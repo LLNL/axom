@@ -68,13 +68,15 @@ private:
       //         goes from 0 to secondSetSize()
       // This requires a change to the return type of BivariateSet::getElements()
       std::iota(m_data.begin(), m_data.end(), 0);
-      m_set =
-        typename SetType::SetBuilder().size(secondSetSize).offset(0).data(&m_data);
+      m_set = typename SetType::SetBuilder()
+                .size(secondSetSize)
+                .offset(0)
+                .data(m_data.view());
     }
 
     Type get(PositionType) const { return m_set; }
 
-    std::vector<PositionType> m_data;
+    axom::Array<PositionType> m_data;
     SetType m_set;
   };
 
@@ -149,9 +151,12 @@ public:
    *
    * \return  The element's FlatIndex.
    */
-  PositionType findElementFlatIndex(PositionType pos1, PositionType pos2) const
+  AXOM_HOST_DEVICE PositionType findElementFlatIndex(PositionType pos1,
+                                                     PositionType pos2) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos1, pos2);
+#endif
     PositionType size2 = this->secondSetSize();
     PositionType pos = size2 * pos1 + pos2;
 
@@ -167,6 +172,40 @@ public:
   PositionType findElementFlatIndex(PositionType pos1) const
   {
     return findElementFlatIndex(pos1, 0);
+  }
+
+  /**
+   * \brief Given the flat index, return the associated to-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos2  The to-set index.
+   */
+  AXOM_HOST_DEVICE PositionType flatToSecondIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return flatIndex % this->secondSetSize();
+  }
+
+  /**
+   * \brief Given the flat index, return the associated from-set index in the
+   *        relation pair.
+   *
+   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   *
+   * \return pos1  The from-set index.
+   */
+  AXOM_HOST_DEVICE PositionType flatToFirstIndex(PositionType flatIndex) const
+  {
+    if(flatIndex < 0 || flatIndex > size())
+    {
+      SLIC_ASSERT("Flat index out of bounds of the relation set.");
+    }
+    return flatIndex / this->secondSetSize();
   }
 
   /**
@@ -186,14 +225,14 @@ public:
 
   ElementType at(PositionType pos) const { return pos % this->secondSetSize(); }
 
-  PositionType size() const
+  AXOM_HOST_DEVICE PositionType size() const
   {
     return this->firstSetSize() * this->secondSetSize();
   }
 
   PositionType size(PositionType) const { return this->secondSetSize(); }
 
-  RangeSetType elementRangeSet(PositionType pos1) const
+  AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const
   {
     const auto sz = this->secondSetSize();
     return typename RangeSetType::SetBuilder().size(sz).offset(sz * pos1);
