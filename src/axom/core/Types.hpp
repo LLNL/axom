@@ -33,13 +33,13 @@ namespace axom
 */
 #if AXOM_DEPRECATED_TYPES_N == 1 || AXOM_DEPRECATED_TYPES_N == 2
   #if AXOM_DEPRECATED_TYPES_N == 1
-  #if defined(_MSC_VER)
-    #pragma message( \
-      "warning: Using deprecated Axom types.  Please see cmake variable AXOM_DEPRECATED_TYPES")
-  #else
-    #warning \
-      "Using deprecated Axom types.  Please see cmake variable AXOM_DEPRECATED_TYPES"
-  #endif
+    #if defined(_MSC_VER)
+      #pragma message( \
+        "warning: Using deprecated Axom types.  Please see cmake variable AXOM_DEPRECATED_TYPES")
+    #else
+      #warning \
+        "Using deprecated Axom types.  Please see cmake variable AXOM_DEPRECATED_TYPES"
+    #endif
   #endif
 using int8 = std::int8_t;   /*!< 8-bit signed integer type      */
 using uint8 = std::uint8_t; /*!< 8-bit unsigned integer type    */
