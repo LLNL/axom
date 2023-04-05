@@ -99,7 +99,13 @@ struct IndexedIndirection : public BasePolicy
       false,
       BasePolicy::Name
         << " -- Attempting to indirect on an unsupported indirection policy.");
-    __trap();  // Disable no-return warnings from device code
+
+  // Disable no-return warnings from device code
+  #if defined(__CUDA_ARCH__)
+    __trap();
+  #elif defined(__HIP_DEVICE_COMPILE__)
+    abort();
+  #endif
 #else
     return buf[pos];
 #endif
@@ -114,7 +120,13 @@ struct IndexedIndirection : public BasePolicy
       false,
       BasePolicy::Name
         << " -- Attempting to indirect on an unsupported indirection policy.");
-    __trap();  // Disable no-return warnings from device code
+
+  // Disable no-return warnings from device code
+  #if defined(__CUDA_ARCH__)
+    __trap();
+  #elif defined(__HIP_DEVICE_COMPILE__)
+    abort();
+  #endif
 #else
     return buf[pos];
 #endif
