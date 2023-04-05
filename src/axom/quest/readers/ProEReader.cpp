@@ -38,12 +38,15 @@ void ProEReader::clear()
 //------------------------------------------------------------------------------
 int ProEReader::read()
 {
+  constexpr int NUM_NODES_PER_TET = 4;
+  constexpr int NUM_COMPS_PER_NODE = 3;
+
   std::string id;
-  std::string tet_nodes[4];
+  std::string tet_nodes[NUM_NODES_PER_TET];
 
   struct coordinate
   {
-    double comp[3];
+    double comp[NUM_COMPS_PER_NODE];
   } cur_coord;
 
   std::ifstream ifs(m_fileName.c_str());
@@ -57,8 +60,8 @@ int ProEReader::read()
   // Initialize number of nodes and tetrahedra.
   // 4 nodes per tet, 3 components per node.
   ifs >> m_num_unique_nodes >> m_num_tets;
-  m_num_nodes = m_num_tets * 4;
-  m_nodes.reserve(m_num_nodes * 3);
+  m_num_nodes = m_num_tets * NUM_NODES_PER_TET;
+  m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
 
   // Read nodes
   std::map<std::string, coordinate> nodes;
@@ -73,9 +76,9 @@ int ProEReader::read()
   {
     ifs >> id >> tet_nodes[0] >> tet_nodes[1] >> tet_nodes[2] >> tet_nodes[3];
 
-    for(int j = 0; j < 4; j++)
+    for(int j = 0; j < NUM_NODES_PER_TET; j++)
     {
-      for(int k = 0; k < 3; k++)
+      for(int k = 0; k < NUM_COMPS_PER_NODE; k++)
       {
         m_nodes.push_back(nodes[tet_nodes[j]].comp[k]);
       }

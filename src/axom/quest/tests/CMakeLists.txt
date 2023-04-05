@@ -93,8 +93,13 @@ endif()
 set(quest_mpi_tests
     quest_initialize.cpp
     quest_signed_distance_interface.cpp
-    quest_pro_e_reader_parallel.cpp
     )
+
+
+# Tests depend on MPI
+blt_list_append(TO quest_mpi_tests
+                IF AXOM_ENABLE_MPI
+                ELEMENTS quest_pro_e_reader_parallel.cpp)
 
 # Optionally, add tests that require AXOM_DATA_DIR
 blt_list_append(TO       quest_mpi_tests
