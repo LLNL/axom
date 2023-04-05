@@ -21,6 +21,378 @@ namespace axom
 {
 namespace quest
 {
+
+/*!
+  @brief Computations for MarchingCubesSingleDomain, limited to what
+  can be run on both hosts and devices.
+*/
+template<int DIM, typename ExecSpace>
+struct MarchingCubesSingleDomainImpl {
+  AXOM_HOST void set_domain(const conduit::Node& dom,
+                            const std::string& coordsetPath,
+                            const std::string& fcnPath,
+                            const std::string& maskPath)
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+      m_dom = &dom;
+
+      const conduit::Node& coordValues =
+        m_dom->fetch_existing(coordsetPath + "/values");
+      bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+
+      auto& fcnValues = m_dom->fetch_existing(fcnPath + "/values");
+      const double* fcnPtr = fcnValues.as_double_ptr();
+
+      const int* maskPtr = nullptr;
+      if(!maskPath.empty())
+      {
+        auto& maskValues = m_dom->fetch_existing(maskPath + "/values");
+        maskPtr = maskValues.as_int_ptr();
+      }
+
+      const conduit::Node& dimsNode =
+        m_dom->fetch_existing("topologies/mesh/elements/dims");
+      for(int d = 0; d < DIM; ++d)
+      {
+        m_cShape[d] = dimsNode[DIM - 1 - d].as_int();
+      }
+
+      const double* coordsPtrs[DIM];
+      for(int d=0; d<DIM; ++d) coordsPtrs[d] = coordValues[d].as_double_ptr();
+
+      set_domain(m_cShape, coordsPtrs, fcnPtr, maskPtr, isInterleaved);
+    }
+  AXOM_HOST_DEVICE void set_domain(const axom::StackArray<axom::IndexType, DIM>& cShape,
+                                   const double* coordsPtrs[DIM],
+                                   const double* fcnPtr,
+                                   const int* maskPtr,
+                                   bool isInterleaved)
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+      // TODO: check that memory is compatible with ExecSpace
+      const int coordSp = isInterleaved ? DIM : 1;
+      m_cShape = cShape;
+      m_fcnPtr = fcnPtr;
+      m_maskPtr = maskPtr;
+      m_checkMask = bool(maskPtr);
+      m_computationalCellCount = 1;
+      for( int i=0; i<DIM; ++i )
+      {
+        SLIC_ASSERT(m_cShape[i] > 0);
+        m_computationalCellCount *= m_cShape[i];
+        m_pShape[i] = 1 + m_cShape[i];
+        m_coordsPtrs[i] = coordsPtrs[i];
+      }
+      for( int i=0; i<DIM; ++i )
+      {
+        m_coordsViews[i] = axom::ArrayView<const double, DIM>(coordsPtrs[i], m_pShape, coordSp);
+      }
+      m_fcnView = axom::ArrayView<const double, DIM>(fcnPtr, m_pShape);
+      if (m_maskPtr)
+      {
+        m_maskView = axom::ArrayView<const int, DIM>(maskPtr, m_cShape);
+      }
+      m_caseIds = axom::Array<std::uint16_t, DIM, axom::MemorySpace::Dynamic>(m_cShape);
+      set_offset_pointers();
+    }
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2>::type set_offset_pointers()
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+      for(int d=0; d<DIM; ++d)
+      {
+        m_cornerCoordsPtrs[d][0] = &m_coordsViews[d](0 + 1, 0);
+        m_cornerCoordsPtrs[d][1] = &m_coordsViews[d](0 + 1, 0 + 1);
+        m_cornerCoordsPtrs[d][2] = &m_coordsViews[d](0, 0 + 1);
+        m_cornerCoordsPtrs[d][3] = &m_coordsViews[d](0, 0);
+      }
+      m_cornerFcnPtrs[0] = &m_fcnView(0 + 1, 0);
+      m_cornerFcnPtrs[1] = &m_fcnView(0 + 1, 0 + 1);
+      m_cornerFcnPtrs[2] = &m_fcnView(0, 0 + 1);
+      m_cornerFcnPtrs[3] = &m_fcnView(0, 0);
+    }
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2>::type mark_crossings()
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+      for(int i = 0; i < m_cShape[0]; ++i)
+      {
+        for(int j = 0; j < m_cShape[1]; ++j)
+        {
+          const bool skipZone = m_checkMask && bool(m_maskView(i, j));
+          if(!skipZone)
+          {
+            double nodalValues[4];
+
+            nodalValues[0] = m_fcnView(i + 1, j);
+            nodalValues[1] = m_fcnView(i + 1, j + 1);
+            nodalValues[2] = m_fcnView(i, j + 1);
+            nodalValues[3] = m_fcnView(i, j);
+
+            auto crossingCase = computeIndex(nodalValues);
+            m_caseIds(i,j) = crossingCase;
+
+          }  // END if
+        }
+      }
+    }
+  //! @brief Scan m_caseIds to count number of cell intersected and dependent data.
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2>::type scan_crossings()
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+
+      // Reserve memory for crossing info.
+      auto* caseFlatIds = m_caseIds.data();
+      const auto cellCount = m_caseIds.size();
+      axom::IndexType crossingCount = 0;
+      for(int i=0; i<cellCount; ++i)
+      {
+        auto caseId = caseFlatIds[i];
+        auto surfaceCellCount = detail::num_segments[caseId];
+        crossingCount += bool(surfaceCellCount);
+      }
+      m_crossings.reserve(crossingCount);
+
+      // Populate crossing info.
+      axom::IndexType firstSurfaceCellIdx = 0;
+      for(int i=0; i<cellCount; ++i)
+      {
+        auto caseId = caseFlatIds[i];
+        auto surfaceCellCount = detail::num_segments[caseId];
+        if(surfaceCellCount != 0)
+        {
+          m_crossings.push_back({i, caseId, firstSurfaceCellIdx});
+          firstSurfaceCellIdx += surfaceCellCount;
+        }
+      }
+      SLIC_ASSERT(m_crossings.size() == crossingCount);
+      std::cout << __WHERE << m_crossings.size() << " crossings found." << std::endl;
+    }
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2>::type generate_surface()
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+      if(m_crossings.empty())
+      {
+        return;
+      }
+
+      // Generate line segments
+      // using SegmentMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
+      // SegmentMesh* mesh = static_cast<SegmentMesh*>(m_surfaceMesh);
+      // SLIC_ASSERT(mesh != NULL);
+      // SLIC_ASSERT(mesh->getCellType() == axom::mint::SEGMENT);
+      // SLIC_ASSERT(mesh->getDimension() == 2);
+
+      // Determine needed capacity in output mesh and reserve.
+      // TODO: For multidomain mesh, capacity should be summed over domains
+      // and memory pre-allocated outside this class.
+      axom::IndexType surfaceCellCount = m_crossings.back().firstSurfaceCellIdx
+        + detail::num_segments[m_crossings.back().caseIdx];
+      axom::IndexType surfaceNodeCount = 2*surfaceCellCount;
+
+      m_surfaceNodeCoords.clear();
+      m_surfaceCellCorners.clear();
+      m_surfaceCellParents.clear();
+      m_surfaceNodeCoords.resize(surfaceNodeCount, DIM);
+      m_surfaceCellCorners.resize(surfaceCellCount, DIM);
+      m_surfaceCellParents.resize(surfaceCellCount);
+
+      for(axom::IndexType iCase=0; iCase<m_crossings.size(); ++iCase)
+      {
+        const auto& caseInfo = m_crossings[iCase];
+        IndexType compCellFlatIdx = caseInfo.compCellFlatIdx;
+        IndexType nsegs = detail::num_segments[caseInfo.caseIdx];
+        IndexType surfaceCellIdx = caseInfo.firstSurfaceCellIdx;
+        IndexType surfaceNodeIdx = caseInfo.firstSurfaceCellIdx*DIM;
+        SLIC_ASSERT(nsegs > 0);
+        double nodalValues[CELL_CORNER_COUNT];
+        double xx[CELL_CORNER_COUNT];
+        double yy[CELL_CORNER_COUNT];
+        for(int iCorner=0; iCorner<CELL_CORNER_COUNT; ++iCorner)
+        {
+          xx[iCorner] = m_cornerCoordsPtrs[0][iCorner][compCellFlatIdx];
+          yy[iCorner] = m_cornerCoordsPtrs[1][iCorner][compCellFlatIdx];
+          nodalValues[iCorner] = m_cornerFcnPtrs[iCorner][compCellFlatIdx];
+        }
+        for(int iSeg = 0; iSeg < nsegs; ++iSeg)
+        {
+          const int e1 = detail::cases2D[caseInfo.caseIdx][iSeg * 2];
+          const int e2 = detail::cases2D[caseInfo.caseIdx][iSeg * 2 + 1];
+          double p[2];
+
+          linear_interp(e1, xx, yy, NULL, nodalValues, p);
+          // mesh->appendNode(p[0], p[1]);
+          // cell[0] = surfaceNodeCount;
+          m_surfaceNodeCoords(surfaceNodeIdx, 0) = p[0];
+          m_surfaceNodeCoords(surfaceNodeIdx, 1) = p[1];
+          m_surfaceCellCorners(surfaceCellIdx, 0) = surfaceNodeCount;
+          ++surfaceNodeIdx;
+
+          linear_interp(e2, xx, yy, NULL, nodalValues, p);
+          // mesh->appendNode(p[0], p[1]);
+          // cell[1] = surfaceNodeCount;
+          m_surfaceNodeCoords(surfaceNodeIdx, 0) = p[0];
+          m_surfaceNodeCoords(surfaceNodeIdx, 1) = p[1];
+          m_surfaceCellCorners(surfaceCellIdx, 1) = surfaceNodeCount;
+          ++surfaceNodeIdx;
+
+          // mesh->appendCell(cell);
+          ++surfaceCellIdx;
+
+        }  // END for all segments
+      }
+      std::cout << __WHERE << m_surfaceNodeCoords.shape() << ' ' << m_surfaceCellCorners.shape() << std::endl;
+    }
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 2>::type linear_interp(
+    int edgeIdx,
+    const double* xx,
+    const double* yy,
+    const double* zz,
+    const double* nodeValues,
+    double* xyz)
+    {
+      // STEP 0: get the edge node indices
+      // 2 nodes define the edge.  n1 and n2 are the indices of
+      // the nodes w.r.t. the square or cubic zone.  There is a
+      // agreed-on ordering of these indices in the arrays xx, yy,
+      // zz, nodeValues, xyz.
+      int n1 = edgeIdx;
+      int n2 = (edgeIdx == 3) ? 0 : edgeIdx + 1;
+
+      // STEP 1: get the fields and coordinates from the two points
+      const double f1 = nodeValues[n1];
+      const double f2 = nodeValues[n2];
+
+      double p1[3];
+      p1[0] = xx[n1];
+      p1[1] = yy[n1];
+      p1[2] = 0.0;
+
+      double p2[3];
+      p2[0] = xx[n2];
+      p2[1] = yy[n2];
+      p2[2] = 0.0;
+
+      if(DIM == 3)
+      {
+        // set the z--coordinate if in 3-D
+        p1[2] = zz[n1];
+        p2[2] = zz[n2];
+      }
+
+      // STEP 2: check whether the interpolated point is at one of the two corners.
+      if(axom::utilities::isNearlyEqual(m_contourVal, f1) ||
+         axom::utilities::isNearlyEqual(f1, f2))
+      {
+        memcpy(xyz, p1, DIM * sizeof(double));
+        return;
+      }
+
+      if(axom::utilities::isNearlyEqual(m_contourVal, f2))
+      {
+        memcpy(xyz, p2, DIM * sizeof(double));
+        return;
+      }
+
+      // STEP 3: point is in between the edge points, interpolate its position
+      constexpr double ptiny = 1.0e-80;
+      const double df = f2 - f1 + ptiny;  //add ptiny to avoid division by zero
+      const double w = (m_contourVal - f1) / df;
+      for(int i = 0; i < DIM; ++i)
+      {
+        xyz[i] = p1[i] + w * (p2[i] - p1[i]);
+      }
+    }
+
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 3>::type set_offset_pointers()
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+    }
+  template <int TDIM = DIM>
+  typename std::enable_if<TDIM == 3>::type mark_crossings()
+    {
+      std::cout << __WHERE "dim is " << DIM << std::endl;
+    }
+
+  void set_contour_value(double contourVal)
+    {
+      m_contourVal = contourVal;
+    }
+  int computeIndex(const double* f)
+    {
+      int index = 0;
+      for(int i = 0; i < CELL_CORNER_COUNT; ++i)
+      {
+        if(f[i] >= m_contourVal)
+        {
+          const int mask = (1 << i);
+          index |= mask;
+        }
+      }
+      return (index);
+    }
+
+  /*!
+    @brief Info for a computational cell intersecting the surface.
+  */
+  struct CrossingInfo {
+    CrossingInfo(axom::IndexType compCellFlatIdx,
+                 std::uint16_t caseIdx,
+                 axom::IndexType firstSurfaceCellIdx)
+      : compCellFlatIdx (compCellFlatIdx)
+      , caseIdx (caseIdx)
+      , firstSurfaceCellIdx (firstSurfaceCellIdx) {}
+
+    axom::IndexType compCellFlatIdx; //!< @brief Flat index of computational cell.
+    std::uint16_t caseIdx;   //!< @brief Crossing topology index into cases2D or cases3D
+    axom::IndexType firstSurfaceCellIdx; //!< @brief First index for generated cells.
+  };
+  axom::Array<CrossingInfo> m_crossings;
+
+  const conduit::Node *m_dom;
+  const std::string m_coordsetPath;
+  std::string m_fcnPath;
+
+  //!@brief Number of corners (nodes) on each cell.
+  static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
+  axom::StackArray<axom::IndexType, DIM> m_cShape;  //!< @brief Shape of cell-centered data arrays in m_dom.
+  axom::StackArray<axom::IndexType, DIM> m_pShape;  //!< @brief Shape of node-centered data arrays in m_dom.
+  axom::IndexType m_computationalCellCount; //!< @brief Cell count in domain.
+
+  const double* m_coordsPtrs[DIM];
+  const double* m_fcnPtr;
+  const int* m_maskPtr;
+  axom::ArrayView<const double, DIM> m_coordsViews[DIM];
+  axom::ArrayView<const double, DIM> m_fcnView;
+  axom::ArrayView<const int, DIM> m_maskView;
+  bool m_checkMask;
+
+  //!@brief Crossing case for each computational mesh cell.
+  // TODO: Put this in correct memory space.
+  axom::Array<std::uint16_t, DIM, axom::MemorySpace::Dynamic> m_caseIds;
+
+  //!@brief Coordinates of nodes on a cell.  Points inside m_coordsPtrs.
+  const double* m_cornerCoordsPtrs[DIM][CELL_CORNER_COUNT];
+  //!@brief Function value at nodes on a cell.  Points inside m_fcnPtr.
+  const double* m_cornerFcnPtrs[CELL_CORNER_COUNT];
+
+  // Output surface mesh.
+  // Migrate away from mint mesh, which don't appear to be device-ported.
+  //!@brief Coordinates of generated surface nodes.
+  axom::Array<double, 2> m_surfaceNodeCoords;
+  //!@brief Corners (index into m_surfaceNodeCoords) of generated surface cells.
+  axom::Array<IndexType, 2> m_surfaceCellCorners;
+  //!@brief Computational cell (flat index) crossing the surface cell.
+  axom::Array<IndexType> m_surfaceCellParents;
+
+  double m_contourVal = 0.0;
+};
+
+
 MarchingCubes::MarchingCubes(const conduit::Node& bpMesh,
                              const std::string& coordsetName,
                              const std::string& maskField)
@@ -236,6 +608,26 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
 
   if(m_ndim == 2)
   {
+
+#if 1
+    MarchingCubesSingleDomainImpl<2, axom::execution_space<axom::SEQ_EXEC>> impl2d;
+    impl2d.set_domain(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
+    impl2d.set_contour_value(contourVal);
+    impl2d.mark_crossings();
+    impl2d.scan_crossings();
+    impl2d.generate_surface();
+    using SegmentMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
+    SegmentMesh* mesh = static_cast<SegmentMesh*>(m_surfaceMesh);
+    for( int i=0; i<impl2d.m_surfaceNodeCoords.shape()[0]; ++i )
+    {
+      mesh->appendNode(impl2d.m_surfaceNodeCoords(i,0), impl2d.m_surfaceNodeCoords(i,1));
+    }
+    for( int i=0; i<impl2d.m_surfaceCellCorners.shape()[0]; ++i )
+    {
+      IndexType cell[2] {impl2d.m_surfaceCellCorners(i,0), impl2d.m_surfaceCellCorners(i,1)};
+      mesh->appendCell(cell);
+    }
+#else
     /*
       For now, assume zero offsets and zero ghost width.
       Eventually, we'll have to support index offsets to
@@ -299,6 +691,7 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
         }  // END if
       }
     }
+#endif
   }
   else
   {

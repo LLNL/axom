@@ -28,6 +28,21 @@ namespace axom
 namespace quest
 {
 /*!
+  @brief Enum for runtime execution policy
+
+  The policy implicitly selects the execution space and allocator id.
+*/
+enum class MarchingCubesRuntimePolicy
+{
+  seq = 0,
+  omp = 1,
+  cuda = 2
+};
+
+template<int DIM, typename ExecSpace>
+struct MarchingCubesSingleDomainImpl;
+
+/*!
  * \@brief Class implementing marching cubes algorithm on a single
  * structured mesh domain within a multi-domain mesh.
  *
@@ -109,8 +124,10 @@ public:
    * Compute iso-surface using the marching cubes algorithm.
    */
   void compute_iso_surface(double contourVal = 0.0);
+  void new_compute_iso_surface(double contourVal = 0.0);
 
 private:
+  // MarchingCubesRuntimePolicy m_runtimePolicy;
   /*!
     \brief Computational mesh as a conduit::Node.
 
@@ -262,6 +279,8 @@ public:
   void compute_iso_surface(double contourVal = 0.0);
 
 private:
+  MarchingCubesRuntimePolicy m_runtimePolicy;
+
   //! @brief Single-domain implementations.
   axom::Array<std::shared_ptr<MarchingCubesSingleDomain>> m_sd;
   int m_ndim;
