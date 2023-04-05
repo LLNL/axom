@@ -114,7 +114,7 @@ endif()
 # defaults to WARN, then ERROR, then eventually removed.
 #------------------------------------------------------------------------------
 if (NOT AXOM_DEPRECATED_TYPES)
-  set( AXOM_DEPRECATED_TYPES "WARN" )
+  set(AXOM_DEPRECATED_TYPES "WARN")
 endif()
 message(STATUS "AXOM_DEPRECATED_TYPES: " ${AXOM_DEPRECATED_TYPES}  ".  (Can be WARN, ALLOW or ERROR.)")
 if (NOT ${AXOM_DEPRECATED_TYPES} MATCHES "^(WARN|ERROR|ALLOW)$")

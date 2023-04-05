@@ -25,20 +25,23 @@
 
 namespace axom
 {
+using float32 = float;
+using float64 = double;
+
 /*
   Axom integer types are deprecated.
   Their use can trigger an warning or an error, or be quietly allowed,
-  by using cmake -DAXOM_DEPRECATED_TYPES=<WARN|ERROR|ALLOW>
+  by using CMake -DAXOM_DEPRECATED_TYPES=<WARN|ERROR|ALLOW>
   Eventually, these types will be removed.
 */
 #if AXOM_DEPRECATED_TYPES_N == 1 || AXOM_DEPRECATED_TYPES_N == 2
   #if AXOM_DEPRECATED_TYPES_N == 1
     #if defined(_MSC_VER)
       #pragma message( \
-        "warning: Using deprecated Axom types.  Please see cmake variable AXOM_DEPRECATED_TYPES")
+        "warning: Using deprecated Axom types.  Please see CMake variable AXOM_DEPRECATED_TYPES")
     #else
       #warning \
-        "Using deprecated Axom types.  Please see cmake variable AXOM_DEPRECATED_TYPES"
+        "Using deprecated Axom types.  Please see CMake variable AXOM_DEPRECATED_TYPES"
     #endif
   #endif
 using int8 = std::int8_t;   /*!< 8-bit signed integer type      */
@@ -57,9 +60,6 @@ using int64 = std::int64_t;   /*!< 64-bit signed integer type     */
 using uint64 = std::uint64_t; /*!< 64-bit unsigned integer type   */
   #endif
 #endif
-
-using float32 = float;
-using float64 = double;
 
 #if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
 using IndexType = std::int64_t;
