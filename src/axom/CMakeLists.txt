@@ -108,15 +108,7 @@ if(WIN32)
 endif()
 
 
-#------------------------------------------------------------------------------
-# With C++11, some Axom types in src/axom/core/Types.hpp are obsolete.
-# They will be removed in steps, as the AXOM_DEPRECATED_TYPES variable
-# defaults to WARN, then ERROR, then eventually removed.
-#------------------------------------------------------------------------------
-if (NOT AXOM_DEPRECATED_TYPES)
-  set(AXOM_DEPRECATED_TYPES "WARN")
-endif()
-message(STATUS "AXOM_DEPRECATED_TYPES: " ${AXOM_DEPRECATED_TYPES}  ".  (Can be WARN, ALLOW or ERROR.)")
+message(STATUS "AXOM_DEPRECATED_TYPES: " ${AXOM_DEPRECATED_TYPES})
 if (NOT ${AXOM_DEPRECATED_TYPES} MATCHES "^(WARN|ERROR|ALLOW)$")
   message(FATAL_ERROR "AXOM_DEPRECATED_TYPES (" ${AXOM_DEPRECATED_TYPES} ") must be WARN, ERROR or ALLOW")
 endif()
