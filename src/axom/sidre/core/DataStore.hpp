@@ -115,7 +115,7 @@ public:
    *
    * Node n;
    * datastore->getBufferInfo(n);
-   * axom::IndexType num_buffers = n.value("num_buffers");
+   * axom::IndexType num_buffers = n["num_buffers"].value();
    * // etc...
    */
   void getBufferInfo(Node& n) const;
