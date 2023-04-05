@@ -99,6 +99,28 @@ public:
   bool hasBuffer(IndexType idx) const;
 
   /*!
+   * \brief Return information about DataStore Buffers in fields of given
+   *        Conduit Node.
+   *
+   *        Fields in Conduit Node will be named:
+   * 
+   *          - "num_buffers" : number of Buffer objects owned by DataStore
+   *          - "num_buffers_referenced" : number of Buffers with View attached
+   *          - "num_buffers_detached" : number of Buffers with no View attached
+   *          - "num_bytes_allocated" : total number of allocated bytes over
+   *                                    all buffers
+   *
+   * Numeric values associated with these fields may be accessed as type 
+   * axom::IndexType, which is defined at compile-time. For example,
+   *
+   * Node n;
+   * datastore->getBufferInfo(n);
+   * axom::IndexType num_buffers = n.value("num_buffers");
+   * // etc...
+   */
+  void getBufferInfo(Node& n) const;
+
+  /*!
    * \brief Return (non-const) pointer to Buffer object with the given
    *        index, or nullptr if none exists.
    */
