@@ -60,12 +60,12 @@ public:
   {
     return operator()(firstIdx);
   }
-  SubFieldType operator()(SetPosition firstIdx)
+  AXOM_HOST_DEVICE SubFieldType operator()(SetPosition firstIdx)
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
     return SubFieldType(this, firstIdx, hasInd);
   }
-  const ConstSubFieldType operator()(SetPosition firstIdx) const
+  AXOM_HOST_DEVICE const ConstSubFieldType operator()(SetPosition firstIdx) const
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
     return ConstSubFieldType(this, firstIdx, hasInd);

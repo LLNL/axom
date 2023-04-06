@@ -136,7 +136,7 @@ public:
   using FECard = slam::policies::ConstantCardinality<PositionType, FEStride>;
   using STLIndirection =
     slam::policies::STLVectorIndirection<PositionType, ElementType>;
-  using IndexVec = STLIndirection::VectorType;
+  using IndexVec = typename STLIndirection::IndirectionBufferType;
 
   using TubeElemToFaceRelation =
     slam::StaticRelation<PositionType, ElementType, EFCard, STLIndirection, ElemSubset, FaceSet>;
