@@ -35,7 +35,7 @@ int PProEReader::read()
   // Clear internal data-structures
   this->clear();
 
-  int rc = -1;  // return code
+  axom::IndexType rc = -1;  // return code
 
   switch(m_my_rank)
   {
@@ -54,7 +54,7 @@ int PProEReader::read()
     }  // END if
     else
     {
-      MPI_Bcast(&rc, 1, MPI_INT, 0, m_comm);
+      MPI_Bcast(&rc, 1, axom::mpi_traits<axom::IndexType>::type, 0, m_comm);
     }  // END else
     break;
 
