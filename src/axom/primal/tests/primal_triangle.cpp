@@ -573,18 +573,30 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   const int current_allocator = axom::getDefaultAllocatorID();
 
   // Set new default allocator
-  axom::setDefaultAllocator(axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID());
+  axom::setDefaultAllocator(
+    axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID());
 
   // Initialize axom's Array of triangle
-  axom::Array<QTri> tris (1, 1, axom::getDefaultAllocatorID());
+
+  // Not okay
+  // axom::Array<QTri> tris (1, 1, axom::getDefaultAllocatorID());
+
+  // Okay
+  // QTri * tris = axom::allocate<QTri>(1);
+
+  // Input argument allocator does not match the explicitly provided memory space (expected)
+  // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
+
+  // This was okay.
+  axom::Array<QTri> tris(1, 1, axom::getDefaultAllocatorID());
+  axom::ArrayView<QTri, 1, axom::MemorySpace::Unified> tris_view(tris);
 
   axom::for_all<axom::CUDA_EXEC<256>>(
     1,
-    AXOM_LAMBDA(axom::IndexType i) { tris[i].normal(); });
+    AXOM_LAMBDA(axom::IndexType i) { tris_view[i].normal(); });
 
   // Reset default allocator
   axom::setDefaultAllocator(current_allocator);
-
 }
 #endif
 
