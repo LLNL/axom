@@ -107,7 +107,7 @@ std::string Group::getPath() const
 /*
  *************************************************************************
  *
- * Return information about data associated with Group subtree with this 
+ * Insert information about data associated with Group subtree with this 
  * Group at root of tree (default 'recursive' is true), or for this Group 
  * only ('recursive' is false) in fields of given Conduit Node.
  *
@@ -125,7 +125,7 @@ void Group::getDataInfo(Node& n, bool recursive) const
   IndexType num_views_external = 0;
   IndexType num_views_scalar = 0;
   IndexType num_views_string = 0;
-  IndexType num_bytes_allocated = 0;
+  IndexType num_bytes_assoc_with_views = 0;
   IndexType num_bytes_external = 0;
 
   n["num_groups"] = num_groups;
@@ -135,7 +135,7 @@ void Group::getDataInfo(Node& n, bool recursive) const
   n["num_views_external"] = num_views_external;
   n["num_views_scalar"] = num_views_scalar;
   n["num_views_string"] = num_views_string;
-  n["num_bytes_allocated"] = num_bytes_allocated;
+  n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
   n["num_bytes_external"] = num_bytes_external;
 
   getDataInfoHelper(n, recursive);
@@ -160,10 +160,12 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   IndexType num_views_external = n["num_views_external"].value();
   IndexType num_views_scalar = n["num_views_scalar"].value();
   IndexType num_views_string = n["num_views_string"].value();
-  IndexType num_bytes_allocated = n["num_bytes_allocated"].value();
+  IndexType num_bytes_assoc_with_views = 
+    n["num_bytes_assoc_with_views"].value();
   IndexType num_bytes_external = n["num_bytes_external"].value();
 
   num_groups += 1;  // count this group
+  num_views += getNumViews();
 
   //
   // Gather info from Views owned by this Group
@@ -173,8 +175,6 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   {
     const View* view = getView(vidx);
 
-    num_views += 1;
-
     if(view->isExternal())
     {
       num_views_external += 1;
@@ -183,19 +183,19 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
     else if(view->isScalar())
     {
       num_views_scalar += 1;
-      num_bytes_allocated += view->getTotalBytes();
+      num_bytes_assoc_with_views += view->getTotalBytes();
     }
     else if(view->isString())
     {
       num_views_string += 1;
-      num_bytes_allocated += view->getTotalBytes();
+      num_bytes_assoc_with_views += view->getTotalBytes();
     }
     else if(view->hasBuffer())
     {
       num_views_buffer += 1;
       if(view->isAllocated())
       {
-        num_bytes_allocated += view->getTotalBytes();
+        num_bytes_assoc_with_views += view->getTotalBytes();
       }
     }
     else
@@ -216,7 +216,7 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   n["num_views_external"] = num_views_external;
   n["num_views_scalar"] = num_views_scalar;
   n["num_views_string"] = num_views_string;
-  n["num_bytes_allocated"] = num_bytes_allocated;
+  n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
   n["num_bytes_external"] = num_bytes_external;
 
   //

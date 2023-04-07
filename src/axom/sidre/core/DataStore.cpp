@@ -170,13 +170,68 @@ void DataStore::setConduitDefaultMessageHandlers()
 /*
  *************************************************************************
  *
- * Return number of Buffers in the DataStore *
+ * Return number of Buffers in the DataStore
  *
  *************************************************************************
  */
 IndexType DataStore::getNumBuffers() const
 {
   return m_buffer_coll->getNumItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return number of Buffers in the DataStore that are referenced 
+ * by at least one View
+ *
+ *************************************************************************
+ */
+IndexType DataStore::getNumReferencedBuffers() const
+{
+  IndexType num_buffers_referenced = 0;
+
+  IndexType bidx = getFirstValidBufferIndex();
+  while(indexIsValid(bidx))
+  {
+    Buffer* buf = getBuffer(bidx);
+
+    if(buf->getNumViews() > 0)
+    {
+      num_buffers_referenced++;
+    }
+
+    bidx = getNextValidBufferIndex(bidx);
+  }
+
+  return num_buffers_referenced;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return total bytes allocated in Buffers in the DataStore
+ *
+ *************************************************************************
+ */
+IndexType DataStore::getTotalAllocatedBytesInBuffers() const
+{
+  IndexType num_bytes_allocated = 0;
+
+  IndexType bidx = getFirstValidBufferIndex();
+  while(indexIsValid(bidx))
+  {
+    Buffer* buf = getBuffer(bidx);
+
+    if(buf->isAllocated())
+    {
+      num_bytes_allocated += buf->getTotalBytes();
+    }
+
+    bidx = getNextValidBufferIndex(bidx);
+  }
+
+  return num_bytes_allocated;
 }
 
 /*
@@ -194,13 +249,14 @@ bool DataStore::hasBuffer(IndexType idx) const
 /*
  *************************************************************************
  *
- * Return information about DataStore Buffers in fields of given
+ * Insert information about DataStore Buffers in fields of given
  * Conduit Node.
  *
  *************************************************************************
  */
 void DataStore::getBufferInfo(Node& n) const
 {
+#if 0
   IndexType num_buffers = 0;
   IndexType num_buffers_referenced = 0;
   IndexType num_bytes_allocated = 0;
@@ -224,6 +280,11 @@ void DataStore::getBufferInfo(Node& n) const
 
     bidx = getNextValidBufferIndex(bidx);
   }
+#else
+  IndexType num_buffers = getNumBuffers();
+  IndexType num_buffers_referenced = getNumReferencedBuffers();
+  IndexType num_bytes_allocated = getTotalAllocatedBytesInBuffers(); 
+#endif
 
   n["num_buffers"] = num_buffers;
   n["num_buffers_referenced"] = num_buffers_referenced;

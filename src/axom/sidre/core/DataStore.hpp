@@ -95,11 +95,20 @@ public:
   /// \brief Return number of Buffers in the DataStore.
   IndexType getNumBuffers() const;
 
+  /*!
+   *  \brief Return number of Buffers in the DataStore that are referenced 
+   *         by at least one View. 
+   */
+  IndexType getNumReferencedBuffers() const;
+
+  /// \brief Return total bytes allocated in Buffers in the DataStore.
+  IndexType getTotalAllocatedBytesInBuffers() const;
+
   /// \brief Return true if DataStore owns a Buffer with given index; else false
   bool hasBuffer(IndexType idx) const;
 
   /*!
-   * \brief Return information about DataStore Buffers in fields of given
+   * \brief Insert information about DataStore Buffers in fields of given
    *        Conduit Node.
    *
    *        Fields in Conduit Node will be named:

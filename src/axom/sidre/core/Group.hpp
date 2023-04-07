@@ -283,7 +283,7 @@ public:
 #endif
 
   /*!
-   * \brief Return information about data associated with Group subtree with
+   * \brief Insert information about data associated with Group subtree with
    *        this Group at root of tree (default 'recursive' is true), or for 
    *        this Group only ('recursive' is false) in fields of given 
    *        Conduit Node.
@@ -303,13 +303,20 @@ public:
    *                                 single scalar data item 
    *          - "num_views_string" : total number of Views associated with
    *                                 string data
-   *          - "num_bytes_allocated" : total number of bytes associated with 
-   *                                    Views in subtree or single Group 
-   *                                    that are allocated in Buffers in 
-   *                                    the DataStore
-   *          - "num_bytes_external" : total number of bytes in described, 
+   *          - "num_bytes_assoc_with_views" : total number of bytes 
+   *                                           associated with Views in subtree
+   *                                           or single Group that are 
+   *                                           allocated in Buffers in 
+   *                                           the DataStore. NOTE: This 
+   *                                           may be an over-count if two
+   *                                           Views data overlaps in a shared
+   *                                           Buffer. 
+   *          - "num_bytes_external" : total number of bytes described by
    *                                   external Views in Group subtree or 
-   *                                   single Group
+   *                                   single Group. NOTE: The data may or
+   *                                   may not be allocated, and there may
+   *                                   be overlaps in actual data associated
+   *                                   with external views.
    *
    * Numeric values associated with these fields may be accessed as type
    * axom::IndexType, which is defined at compile-time. For example,

@@ -3026,7 +3026,7 @@ IndexType num_views_buffer_chk = 0;
 IndexType num_views_external_chk = 0;
 IndexType num_views_scalar_chk = 0;
 IndexType num_views_string_chk = 0;
-IndexType num_bytes_allocated_chk = 0;
+IndexType num_bytes_assoc_with_views_chk = 0;
 IndexType num_bytes_external_chk = 0;
 
 // Variables used to pull test values from Conduit node
@@ -3037,7 +3037,7 @@ IndexType num_views_buffer = 0;
 IndexType num_views_external = 0;
 IndexType num_views_scalar = 0;
 IndexType num_views_string = 0;
-IndexType num_bytes_allocated = 0;
+IndexType num_bytes_assoc_with_views = 0;
 IndexType num_bytes_external = 0;
 
 void resetChkVals()
@@ -3049,7 +3049,7 @@ void resetChkVals()
   num_views_external_chk = 0;
   num_views_scalar_chk = 0;
   num_views_string_chk = 0;
-  num_bytes_allocated_chk = 0;
+  num_bytes_assoc_with_views_chk = 0;
   num_bytes_external_chk = 0;
 }
 
@@ -3062,7 +3062,7 @@ void pullTestVals(const conduit::Node& n)
   num_views_external = n["num_views_external"].value();
   num_views_scalar = n["num_views_scalar"].value();
   num_views_string = n["num_views_string"].value();
-  num_bytes_allocated = n["num_bytes_allocated"].value();
+  num_bytes_assoc_with_views = n["num_bytes_assoc_with_views"].value();
   num_bytes_external = n["num_bytes_external"].value();
 }
 
@@ -3091,7 +3091,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_external, num_views_external_chk);
   EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
   EXPECT_EQ(num_views_string, num_views_string_chk);
-  EXPECT_EQ(num_bytes_allocated, num_bytes_allocated_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
 
   //
@@ -3128,7 +3128,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_external, num_views_external_chk);
   EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
   EXPECT_EQ(num_views_string, num_views_string_chk);
-  EXPECT_EQ(num_bytes_allocated, num_bytes_allocated_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
 
   //
@@ -3142,8 +3142,8 @@ TEST(sidre_group, get_data_info)
   num_groups_chk += 1;
   num_views_chk = 3;         // "dat_A1", "dat_A2", "ext_A3" Views
   num_views_buffer_chk = 2;  // "dat_A1", "dat_A2" Views
-  num_bytes_allocated_chk += view_A1->getTotalBytes();
-  num_bytes_allocated_chk += view_A2->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_A1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_A2->getTotalBytes();
   num_views_external_chk = 1;  // "ext_A3" View
   num_bytes_external_chk += view_A3->getTotalBytes();
 
@@ -3159,7 +3159,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_external, num_views_external_chk);
   EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
   EXPECT_EQ(num_views_string, num_views_string_chk);
-  EXPECT_EQ(num_bytes_allocated, num_bytes_allocated_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
 
   //
@@ -3176,13 +3176,13 @@ TEST(sidre_group, get_data_info)
   View* view_B1 = gp_B->createViewAndAllocate("dat_B1", INT_ID, 5);
   num_views_chk += 1;
   num_views_buffer_chk += 1;
-  num_bytes_allocated_chk += view_B1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_B1->getTotalBytes();
 
   View* view_B2 =
     gp_B->createView("dat_B2")->attachBuffer(buff2)->apply(DOUBLE_ID, 5, 5);
   num_views_chk += 1;
   num_views_buffer_chk += 1;
-  num_bytes_allocated_chk += view_B2->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_B2->getTotalBytes();
 
   // "C" Group and Views
   Group* gp_C = gp_B->createGroup("C");
@@ -3191,12 +3191,12 @@ TEST(sidre_group, get_data_info)
   View* view_C1 = gp_C->createViewScalar("val_C1", 3);
   num_views_chk += 1;
   num_views_scalar_chk += 1;
-  num_bytes_allocated_chk += view_C1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_C1->getTotalBytes();
 
   View* view_C2 = gp_C->createViewString("val_C2", "Homer");
   num_views_chk += 1;
   num_views_string_chk += 1;
-  num_bytes_allocated_chk += view_C2->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_C2->getTotalBytes();
 
   // "D" Group and Views
   Group* gp_D = gp_C->createGroup("D");
@@ -3223,7 +3223,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_external, num_views_external_chk);
   EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
   EXPECT_EQ(num_views_string, num_views_string_chk);
-  EXPECT_EQ(num_bytes_allocated, num_bytes_allocated_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
 
   //
@@ -3237,8 +3237,8 @@ TEST(sidre_group, get_data_info)
   num_groups_chk += 1;        // "A" Group
   num_views_chk += 3;         // "dat_A1", "dat_A2", "ext_A3" Views
   num_views_buffer_chk += 2;  // "dat_A1", "dat_A2" Views
-  num_bytes_allocated_chk += view_A1->getTotalBytes();
-  num_bytes_allocated_chk += view_A2->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_A1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_A2->getTotalBytes();
   num_views_external_chk += 1;  // "ext_A3" View
   num_bytes_external_chk += view_A3->getTotalBytes();
 
@@ -3246,16 +3246,16 @@ TEST(sidre_group, get_data_info)
   num_groups_chk += 1;
   num_views_chk += 2;         // "dat_B1", "dat_B2" Views
   num_views_buffer_chk += 2;  // "dat_B1", "dat_B2" Views
-  num_bytes_allocated_chk += view_B1->getTotalBytes();
-  num_bytes_allocated_chk += view_B2->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_B1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_B2->getTotalBytes();
 
   // "C" Group and Views
   num_groups_chk += 1;
   num_views_chk += 2;         // "val_C1", "val_C2" Views
   num_views_scalar_chk += 1;  // "val_C1" View
   num_views_string_chk += 1;  // "val_C2" View
-  num_bytes_allocated_chk += view_C1->getTotalBytes();
-  num_bytes_allocated_chk += view_C2->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_C1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_C2->getTotalBytes();
 
   // "D" Group and Views
   num_groups_chk += 1;
@@ -3276,7 +3276,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_external, num_views_external_chk);
   EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
   EXPECT_EQ(num_views_string, num_views_string_chk);
-  EXPECT_EQ(num_bytes_allocated, num_bytes_allocated_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
 
   delete ds;
