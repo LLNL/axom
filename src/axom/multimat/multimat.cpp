@@ -983,7 +983,7 @@ void MultiMat::transposeField_helper(int field_idx)
     //copy begin vector for moving
     IndBufferType vec_idx =
       relBeginVec(new_layout);  //a copy of the beginVec to keep track
-    const IndBufferType& indicesVec = *oldRel.relationData();
+    const IndBufferType& indicesVec = oldRel.relationData();
 
     arr_data.resize(oldRel.totalSize() * stride);
     for(int i = 0; i < oldRel.totalSize(); ++i)

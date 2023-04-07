@@ -151,7 +151,8 @@ public:
   using SubField = MMSubField2D<Field2DType>;
 
   using IndexSet = RangeSetType;  //For returning set of SparseIndex
-  using IdSet = OrderedSetType;   //For returning set of DenseIndex
+  using IdSet =
+    typename BivariateSetType::SubsetType;  //For returning set of DenseIndex
 
   //Constructors
 
@@ -780,11 +781,8 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
   {
     SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
 
-    //Right now we're allowing Field2D (BivariateMap) to be returned as
-    // a Field1D (Map) so it can be accessed like a 1d array, but the
-    // indexing information would be lost.
-    auto* map_2d = dynamic_cast<BivariateMapType<T>*>(m_mapVec[fieldIdx].get());
-    return *(map_2d->getMap());
+    throw std::invalid_argument(
+      "Accessing a 2D field as a 1D field is currently unsupported");
   }
 }
 

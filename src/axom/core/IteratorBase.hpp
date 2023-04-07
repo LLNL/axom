@@ -62,11 +62,18 @@ private:
    */
   struct accessor : IterType
   {
+    AXOM_HOST_DEVICE accessor(const IterType& base) : IterType(base) { }
+
     AXOM_HOST_DEVICE
-    static void adv(IterType& derived, PosType n)
+    static void adv(IterType& instance, PosType n)
     {
-      void (IterType::*fn)(PosType) = &accessor::advance;
-      (derived.*fn)(n);
+      // Protected member functions may only be accessed from a derived class
+      // via an instance of the derived class.
+      // As a workaround, we construct an instance of accessor, call
+      // accessor::advance(), then slice it back to the base instance.
+      accessor derived(instance);
+      derived.advance(n);
+      instance = derived;
     }
   };
 

@@ -376,7 +376,7 @@ void replacementRuleTest(const std::string &shapeFile,
       {
         // Compare the baseline to the current DC.
         SLIC_INFO(axom::fmt::format("Comparing to baseline ", filename));
-        success = compareConduit(current, baselineNode, tolerance, info);
+        success = compareConduit(baselineNode, current, tolerance, info);
         info.print();
         break;
       }
