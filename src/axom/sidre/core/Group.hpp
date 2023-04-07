@@ -1602,7 +1602,7 @@ private:
    *
    * Note: This is for the "sidre_{zzz}" protocols.
    *
-   * \param export_buffer  Optional parameter, if set to false, the data
+   * \param export_buffers  Optional parameter, if set to false, the data
    *                       arrays owned by Buffers will not be copied.
    *
    * \return True if the group or any of its children have saved Views,
