@@ -684,7 +684,10 @@ public:
   SetPosition totalSize() const { return set()->size(); }
 
   SetPosition firstSetSize() const { return set()->firstSetSize(); }
-  SetPosition secondSetSize() const { return set()->secondSetSize(); }
+  AXOM_HOST_DEVICE SetPosition secondSetSize() const
+  {
+    return set()->secondSetSize();
+  }
   /** \brief Returns the number of the BivariateSet ordered pairs with
    *         the given first set index. */
   SetPosition size(SetPosition s) const { return set()->size(s); }

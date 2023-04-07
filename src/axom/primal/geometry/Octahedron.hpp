@@ -79,7 +79,7 @@ public:
 
 public:
   /*!
-   * \brief Default constructor. Creates a degenerate octahedron.
+   * \brief Default Octahedron constructor. Creates a degenerate octahedron.
    */
   AXOM_HOST_DEVICE Octahedron() { }
 
@@ -111,6 +111,57 @@ public:
   }
 
   /*!
+   * \brief Octahedron constructor from an array of Points
+   *
+   * \param [in] pts An array containing at least 6 Points.
+   *
+   * \note It is the responsiblity of the caller to pass
+   *       an array with at least 6 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(const PointType* pts)
+  {
+    for(int i = 0; i < NUM_OCT_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Octahedron constructor from an Array of Points
+   *
+   * \param [in] pts An ArrayView containing at 6 Points.
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(const axom::ArrayView<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_OCT_VERTS);
+
+    for(int i = 0; i < NUM_OCT_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Octahedron constructor from an initializer list of Points
+   *
+   * \param [in] pts an initializer list containing 6 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Octahedron(std::initializer_list<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_OCT_VERTS);
+
+    int i = 0;
+    for(const auto& pt : pts)
+    {
+      m_points[i] = pt;
+      i++;
+    }
+  }
+
+  /*!
    * \brief Index operator to get the i^th vertex
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1, 2, 3, 4, or 5
@@ -134,6 +185,8 @@ public:
 
   /*!
     * \brief Test if this Octahedron is equal to another, within a tolerance
+    *
+    * \note This function can be an expensive operation
     */
   AXOM_HOST_DEVICE
   bool equals(const Octahedron& other, double eps = 1.e-24) const

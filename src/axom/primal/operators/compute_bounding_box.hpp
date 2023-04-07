@@ -18,6 +18,7 @@
 #include "axom/core/numerics/eigen_solve.hpp"     // for eigen_solve
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
+#include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -133,6 +134,23 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
   for(int i = 1; i < 6; i++)
   {
     res.addPoint(oct[i]);
+  }
+  return res;
+}
+
+/*!
+ * \brief Creates a bounding box around a Hexahedron
+ *
+ * \param [in] hex The Hexahedron
+ */
+template <typename T, int NDIMS>
+AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
+  const Hexahedron<T, NDIMS> &hex)
+{
+  BoundingBox<T, NDIMS> res(hex[0]);
+  for(int i = 1; i < 8; i++)
+  {
+    res.addPoint(hex[i]);
   }
   return res;
 }

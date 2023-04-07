@@ -286,8 +286,9 @@ class IntersectionShaper : public Shaper
 {
 public:
   using BoundingBoxType = primal::BoundingBox<double, 3>;
-  using PolyhedronType = primal::Polyhedron<double, 3>;
+  using HexahedronType = primal::Hexahedron<double, 3>;
   using OctahedronType = primal::Octahedron<double, 3>;
+  using PolyhedronType = primal::Polyhedron<double, 3>;
   using Point2D = primal::Point<double, 2>;
   using Point3D = primal::Point<double, 3>;
   using TetrahedronType = primal::Tetrahedron<double, 3>;
@@ -318,78 +319,6 @@ public:
   //@}
 
 private:
-  /**
-   * \brief Helper method to decompose a hexahedron Polyhedron
-   *        into 24 Tetrahedrons.
-   *        Each Tetrahedron consists of 4 points:
-   *          (1) The mean of all Polyhedron points (centroid)
-   *          (2,3) Two adjacent vertices on a Polyhedron face
-   *          (4) The mean of the current Polyhedron face
-   *
-   * \param poly [in] The hexahedron Polyhedron to decompose
-   * \param tets [out] The tetrahedrons
-   *
-   * \note Assumes given Polyhedron has 8 points
-   * \note Assumes tets is pre-allocated
-   */
-
-  AXOM_HOST_DEVICE
-  void decompose_hex_to_tets(const PolyhedronType& poly, TetrahedronType* tets)
-  {
-    // Hex center (hc)
-    Point3D hc = poly.centroid();
-
-    //Face means (fm)
-    Point3D fm1 = Point3D::midpoint(Point3D::midpoint(poly[0], poly[1]),
-                                    Point3D::midpoint(poly[2], poly[3]));
-
-    Point3D fm2 = Point3D::midpoint(Point3D::midpoint(poly[0], poly[1]),
-                                    Point3D::midpoint(poly[4], poly[5]));
-
-    Point3D fm3 = Point3D::midpoint(Point3D::midpoint(poly[0], poly[3]),
-                                    Point3D::midpoint(poly[4], poly[7]));
-
-    Point3D fm4 = Point3D::midpoint(Point3D::midpoint(poly[1], poly[2]),
-                                    Point3D::midpoint(poly[5], poly[6]));
-
-    Point3D fm5 = Point3D::midpoint(Point3D::midpoint(poly[2], poly[3]),
-                                    Point3D::midpoint(poly[6], poly[7]));
-
-    Point3D fm6 = Point3D::midpoint(Point3D::midpoint(poly[4], poly[5]),
-                                    Point3D::midpoint(poly[6], poly[7]));
-
-    // Initialize tets
-    tets[0] = TetrahedronType(hc, poly[1], poly[0], fm1);
-    tets[1] = TetrahedronType(hc, poly[0], poly[3], fm1);
-    tets[2] = TetrahedronType(hc, poly[3], poly[2], fm1);
-    tets[3] = TetrahedronType(hc, poly[2], poly[1], fm1);
-
-    tets[4] = TetrahedronType(hc, poly[4], poly[0], fm2);
-    tets[5] = TetrahedronType(hc, poly[0], poly[1], fm2);
-    tets[6] = TetrahedronType(hc, poly[1], poly[5], fm2);
-    tets[7] = TetrahedronType(hc, poly[5], poly[4], fm2);
-
-    tets[8] = TetrahedronType(hc, poly[3], poly[0], fm3);
-    tets[9] = TetrahedronType(hc, poly[0], poly[4], fm3);
-    tets[10] = TetrahedronType(hc, poly[4], poly[7], fm3);
-    tets[11] = TetrahedronType(hc, poly[7], poly[3], fm3);
-
-    tets[12] = TetrahedronType(hc, poly[5], poly[1], fm4);
-    tets[13] = TetrahedronType(hc, poly[1], poly[2], fm4);
-    tets[14] = TetrahedronType(hc, poly[2], poly[6], fm4);
-    tets[15] = TetrahedronType(hc, poly[6], poly[5], fm4);
-
-    tets[16] = TetrahedronType(hc, poly[6], poly[2], fm5);
-    tets[17] = TetrahedronType(hc, poly[2], poly[3], fm5);
-    tets[18] = TetrahedronType(hc, poly[3], poly[7], fm5);
-    tets[19] = TetrahedronType(hc, poly[7], poly[6], fm5);
-
-    tets[20] = TetrahedronType(hc, poly[7], poly[4], fm6);
-    tets[21] = TetrahedronType(hc, poly[4], poly[5], fm6);
-    tets[22] = TetrahedronType(hc, poly[5], poly[6], fm6);
-    tets[23] = TetrahedronType(hc, poly[6], poly[7], fm6);
-  }
-
   /**
    * \brief Helper method to check if an Octahedron has duplicate
    *        vertices
@@ -714,11 +643,11 @@ public:
     this->getDC()->RegisterField(volFracName, volFrac);
 
     // Initialize hexahedral elements
-    m_hexes = axom::allocate<PolyhedronType>(NE);
+    m_hexes = axom::allocate<HexahedronType>(NE);
     m_hex_bbs = axom::allocate<BoundingBoxType>(NE);
 
     // Oddities required by hip to avoid capturing `this`
-    PolyhedronType* local_hexes = m_hexes;
+    HexahedronType* local_hexes = m_hexes;
     BoundingBoxType* local_hex_bbs = m_hex_bbs;
 
     // Initialize vertices from mfem mesh and
@@ -755,14 +684,14 @@ public:
       NE,
       AXOM_LAMBDA(axom::IndexType i) {
         // Set each hexahedral element vertices
-        local_hexes[i] = PolyhedronType();
+        local_hexes[i] = HexahedronType();
         for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
         {
           int vertIndex = (i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
             j * NUM_COMPS_PER_VERT;
-          local_hexes[i].addVertex({vertCoords[vertIndex],
-                                    vertCoords[vertIndex + 1],
-                                    vertCoords[vertIndex + 2]});
+          local_hexes[i][j] = Point3D({vertCoords[vertIndex],
+                                       vertCoords[vertIndex + 1],
+                                       vertCoords[vertIndex + 2]});
 
           // Set hexahedra components to zero if within threshold
           if(axom::utilities::isNearlyEqual(local_hexes[i][j][0],
@@ -880,7 +809,7 @@ public:
                              NE,
                              AXOM_LAMBDA(axom::IndexType i) {
                                TetHexArray cur_tets;
-                               decompose_hex_to_tets(local_hexes[i], cur_tets);
+                               local_hexes[i].triangulate(cur_tets);
 
                                for(int j = 0; j < NUM_TETS_PER_HEX; j++)
                                {
@@ -938,17 +867,17 @@ public:
 
     AXOM_PERF_MARK_SECTION("hex_volume",
                            axom::for_all<ExecSpace>(
-                             NE * NUM_TETS_PER_HEX,
+                             NE,
                              AXOM_LAMBDA(axom::IndexType i) {
-                               double tet_volume = tets[i].volume();
-                               RAJA::atomicAdd<ATOMIC_POL>(
-                                 local_hex_volumes + (i / NUM_TETS_PER_HEX),
-                                 tet_volume);
+                               local_hex_volumes[i] = local_hexes[i].volume();
                              }););
 
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each tet-oct pair "));
+
+    constexpr double EPS = 1e-10;
+    constexpr bool checkSign = true;
 
     AXOM_PERF_MARK_SECTION(
       "oct_tet_volume",
@@ -958,8 +887,9 @@ public:
           int index = hexIndices[i];
           int octIndex = octCandidates[i];
           int tetIndex = tetIndices[i];
+
           PolyhedronType poly =
-            primal::clip(local_octs[octIndex], tets[tetIndex]);
+            primal::clip(local_octs[octIndex], tets[tetIndex], EPS, checkSign);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
@@ -1564,7 +1494,7 @@ private:
   int m_octcount {0};
   OctahedronType* m_octs {nullptr};
   BoundingBoxType* m_aabbs {nullptr};
-  PolyhedronType* m_hexes {nullptr};
+  HexahedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};
 
   std::vector<mfem::GridFunction*> m_vf_grid_functions;
