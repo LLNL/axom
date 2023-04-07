@@ -203,7 +203,7 @@ void DataStore::getBufferInfo(Node& n) const
 {
   IndexType num_buffers = 0;
   IndexType num_buffers_referenced = 0;
-  IndexType num_bytes_allocated = 0; 
+  IndexType num_bytes_allocated = 0;
 
   IndexType bidx = getFirstValidBufferIndex();
   while(indexIsValid(bidx))
@@ -212,12 +212,12 @@ void DataStore::getBufferInfo(Node& n) const
 
     num_buffers++;
 
-    if (buf->getNumViews() > 0)
+    if(buf->getNumViews() > 0)
     {
       num_buffers_referenced++;
     }
 
-    if (buf->isAllocated())
+    if(buf->isAllocated())
     {
       num_bytes_allocated += buf->getTotalBytes();
     }

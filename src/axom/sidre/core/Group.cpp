@@ -117,7 +117,7 @@ void Group::getDataInfo(Node& n, bool recursive) const
 {
   //
   // Initialize Node fields
-  // 
+  //
   IndexType num_groups = 0;
   IndexType num_views = 0;
   IndexType num_views_empty = 0;
@@ -163,7 +163,7 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   IndexType num_bytes_allocated = n["num_bytes_allocated"].value();
   IndexType num_bytes_external = n["num_bytes_external"].value();
 
-  num_groups += 1;   // count this group
+  num_groups += 1;  // count this group
 
   //
   // Gather info from Views owned by this Group
@@ -175,31 +175,31 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
 
     num_views += 1;
 
-    if ( view->isExternal() )
+    if(view->isExternal())
     {
       num_views_external += 1;
-      num_bytes_external += view->getTotalBytes(); 
-    } 
-    else if ( view->isScalar() )
+      num_bytes_external += view->getTotalBytes();
+    }
+    else if(view->isScalar())
     {
       num_views_scalar += 1;
-      num_bytes_allocated += view->getTotalBytes(); 
-    } 
-    else if ( view->isString() )
+      num_bytes_allocated += view->getTotalBytes();
+    }
+    else if(view->isString())
     {
       num_views_string += 1;
-      num_bytes_allocated += view->getTotalBytes(); 
-    } 
-    else if ( view->hasBuffer() )
+      num_bytes_allocated += view->getTotalBytes();
+    }
+    else if(view->hasBuffer())
     {
-       num_views_buffer += 1;
-       if ( view->isAllocated() )
-       {
-         num_bytes_allocated += view->getTotalBytes(); 
-       }
-    } 
+      num_views_buffer += 1;
+      if(view->isAllocated())
+      {
+        num_bytes_allocated += view->getTotalBytes();
+      }
+    }
     else
-    { 
+    {
       num_views_empty += 1;
     }
 
@@ -222,15 +222,15 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   //
   // Recursively gather info for Group subtree, if requested
   //
-  if ( recursive ) 
+  if(recursive)
   {
     IndexType gidx = getFirstValidGroupIndex();
     while(indexIsValid(gidx))
     {
-       this->getGroup(gidx)->getDataInfoHelper(n, recursive);
+      this->getGroup(gidx)->getDataInfoHelper(n, recursive);
 
-       gidx = getNextValidGroupIndex(gidx);
-    } 
+      gidx = getNextValidGroupIndex(gidx);
+    }
   }
 }
 

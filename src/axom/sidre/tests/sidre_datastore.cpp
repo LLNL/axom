@@ -6,14 +6,14 @@
 #include "gtest/gtest.h"
 #include "axom/sidre.hpp"
 
-using axom::sidre::DataStore;
 using axom::sidre::Buffer;
+using axom::sidre::DataStore;
 using axom::sidre::Group;
 using axom::sidre::View;
 
+using axom::sidre::DOUBLE_ID;
 using axom::sidre::IndexType;
 using axom::sidre::INT_ID;
-using axom::sidre::DOUBLE_ID;
 
 #include <iostream>
 
@@ -47,7 +47,7 @@ TEST(sidre_datastore, destroy_buffer)
 }
 
 TEST(sidre_datastore, buffer_info)
-{ 
+{
   IndexType num_buffers_chk = 0;
   IndexType num_buffers_referenced_chk = 0;
   IndexType num_buffers_detached_chk = 0;
@@ -72,7 +72,6 @@ TEST(sidre_datastore, buffer_info)
   EXPECT_EQ(num_buffers_referenced_chk, num_buffers_referenced);
   EXPECT_EQ(num_buffers_detached_chk, num_buffers_detached);
   EXPECT_EQ(num_bytes_allocated_chk, num_bytes_allocated);
-
 
   //
   // More complex checks...
@@ -101,7 +100,7 @@ TEST(sidre_datastore, buffer_info)
   conduit::Node n;
   ds->getBufferInfo(n);
 
-  num_buffers = n["num_buffers"].value(); 
+  num_buffers = n["num_buffers"].value();
   num_buffers_referenced = n["num_buffers_referenced"].value();
   num_buffers_detached = n["num_buffers_detached"].value();
   num_bytes_allocated = n["num_bytes_allocated"].value();
