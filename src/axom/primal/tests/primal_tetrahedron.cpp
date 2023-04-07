@@ -157,16 +157,42 @@ TEST_F(TetrahedronTest, constructFromPoints)
   // Access the test data
   const QPoint* pt = this->qData0;
 
-  QTet tet(pt[0], pt[1], pt[2], pt[3]);
+  axom::Array<QPoint> ptArray({pt[0], pt[1], pt[2], pt[3]});
+
+  QTet tet1(pt[0], pt[1], pt[2], pt[3]);
+
+  QTet tet2(pt);
+
+  QTet tet3(ptArray);
+
+  QTet tet4({pt[0], pt[1], pt[2], pt[3]});
 
   // Test ostream operator
-  SLIC_INFO("Tetrahedron coordinates: " << tet);
+  SLIC_INFO("Tetrahedron 1 coordinates: " << tet1);
+  SLIC_INFO("Tetrahedron 2 coordinates: " << tet2);
+  SLIC_INFO("Tetrahedron 3 coordinates: " << tet3);
+  SLIC_INFO("Tetrahedron 4 coordinates: " << tet4);
 
   // Check indirection operator
-  EXPECT_EQ(pt[0], tet[0]);
-  EXPECT_EQ(pt[1], tet[1]);
-  EXPECT_EQ(pt[2], tet[2]);
-  EXPECT_EQ(pt[3], tet[3]);
+  EXPECT_EQ(pt[0], tet1[0]);
+  EXPECT_EQ(pt[1], tet1[1]);
+  EXPECT_EQ(pt[2], tet1[2]);
+  EXPECT_EQ(pt[3], tet1[3]);
+
+  EXPECT_EQ(pt[0], tet2[0]);
+  EXPECT_EQ(pt[1], tet2[1]);
+  EXPECT_EQ(pt[2], tet2[2]);
+  EXPECT_EQ(pt[3], tet2[3]);
+
+  EXPECT_EQ(pt[0], tet3[0]);
+  EXPECT_EQ(pt[1], tet3[1]);
+  EXPECT_EQ(pt[2], tet3[2]);
+  EXPECT_EQ(pt[3], tet3[3]);
+
+  EXPECT_EQ(pt[0], tet4[0]);
+  EXPECT_EQ(pt[1], tet4[1]);
+  EXPECT_EQ(pt[2], tet4[2]);
+  EXPECT_EQ(pt[3], tet4[3]);
 }
 
 TEST_F(TetrahedronTest, volume)
