@@ -136,7 +136,7 @@ Protocols for file I/O
 ``conduit_layout_json``
 
     This is the second protocol that is a debugging aid without supporting
-    the full save and load features of Sidre. It's JSON output writes the
+    the full save and load features of Sidre. Its JSON output writes the
     Sidre hierarchy layout in way that matches the ``condut_json`` protocol
     while again excluding the data arrays from the Views. This should only be
     used with ``save`` and not load.
