@@ -283,7 +283,7 @@ void DataStore::getBufferInfo(Node& n) const
 #else
   IndexType num_buffers = getNumBuffers();
   IndexType num_buffers_referenced = getNumReferencedBuffers();
-  IndexType num_bytes_allocated = getTotalAllocatedBytesInBuffers(); 
+  IndexType num_bytes_allocated = getTotalAllocatedBytesInBuffers();
 #endif
 
   n["num_buffers"] = num_buffers;

@@ -160,8 +160,7 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   IndexType num_views_external = n["num_views_external"].value();
   IndexType num_views_scalar = n["num_views_scalar"].value();
   IndexType num_views_string = n["num_views_string"].value();
-  IndexType num_bytes_assoc_with_views = 
-    n["num_bytes_assoc_with_views"].value();
+  IndexType num_bytes_assoc_with_views = n["num_bytes_assoc_with_views"].value();
   IndexType num_bytes_external = n["num_bytes_external"].value();
 
   num_groups += 1;  // count this group
