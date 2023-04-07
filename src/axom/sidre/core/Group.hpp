@@ -282,6 +282,47 @@ public:
   }
 #endif
 
+  /*!
+   * \brief Return information about data associated with Group subtree with
+   *        this Group at root of tree (default 'recursive' is true), or for 
+   *        this Group only ('recursive' is false) in fields of given 
+   *        Conduit Node.
+   *
+   *        Fields in Conduit Node will be named:
+   *
+   *          - "num_groups" : total number of Groups in subtree or single Group
+   *          - "num_views" : total number of Views in subtree or single Group
+   *          - "num_views_nodata" : total number of Views with no associated
+   *                                 Buffer or data 
+   *                                 (may or may not be described)
+   *          - "num_views_buffer" : total number of Views associated
+   *                                 with a DataStore Buffer 
+   *          - "num_views_external" : total number of Views associated with
+   *                                   external data 
+   *          - "num_views_scalar" : total number of Views associated with
+   *                                 single scalar data item 
+   *          - "num_views_string" : total number of Views associated with
+   *                                 string data
+   *          - "num_bytes_allocated" : total number of bytes associated with 
+   *                                    Views in subtree or single Group 
+   *                                    that are allocated in Buffers in 
+   *                                    the DataStore
+   *          - "num_bytes_external" : total number of bytes in described, 
+   *                                   external Views in Group subtree or 
+   *                                   single Group
+   *
+   * Numeric values associated with these fields may be accessed as type
+   * axom::IndexType, which is defined at compile-time. For example,
+   *
+   * Group* gp = ...;
+   * 
+   * Node n;
+   * gp->getDataInfo(n);
+   * axom::IndexType num_views = n["num_views"].value();
+   * // etc...
+   */
+  void getDataInfo(Node& n, bool recursive = true) const;
+
   //@}
 
   //@{
@@ -986,6 +1027,14 @@ private:
    * \sa isUsingMap, isUsingList
    */
   const MapCollection<Group>* getNamedGroups() const;
+
+  /*!
+   * \brief Method to (recursively) accumulate information about data in
+   *        a Group subtree.
+   *
+   * \sa getDataInfo
+   */
+  void getDataInfoHelper(Node& n, bool recursive) const;
 
 public:
   //@{
