@@ -1340,6 +1340,43 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
 /*
  *************************************************************************
  *
+ * Copy Group layout to the given Conduit node, including only the metadata
+ * for Views and not the actual data the Views hold.
+ *
+ *************************************************************************
+ */
+
+void Group::createNoDataLayout(Node& n, const Attribute* attr) const
+{
+  n.set(DataType::object());
+
+  // Dump the group's views
+  for(auto& view : views())
+  {
+    // Check that the view's name is not also a child group name
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view.getName()),
+                   SIDRE_GROUP_LOG_PREPEND
+                     << "'" << view.getName()
+                     << "' is the name of both a group and a view.");
+
+    if(attr == nullptr || view.hasAttributeValue(attr))
+    {
+      conduit::Node& child_node = m_is_list ? n.append() : n[view.getName()];
+      view.copyMetadataToNode(child_node);
+    }
+  }
+
+  // Recursively dump the child groups
+  for(auto& group : groups())
+  {
+    conduit::Node& child_node = m_is_list ? n.append() : n[group.getName()];
+    group.createNoDataLayout(child_node, attr);
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Adds a conduit node for this group if it has external views,
  * or if any of its children groups has an external view
  *
@@ -1619,6 +1656,14 @@ void Group::save(const std::string& path,
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
   }
+  else if(protocol == "sidre_layout_json")
+  {
+    Node n;
+    exportWithoutBufferData(n["sidre"], attr);
+    ds->saveAttributeLayout(n["sidre/attribute"]);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::save(n, path, "conduit_json");
+  }
   else if(protocol == "conduit_hdf5")
   {
     Node n;
@@ -1633,6 +1678,13 @@ void Group::save(const std::string& path,
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, protocol);
+  }
+  else if(protocol == "conduit_layout_json")
+  {
+    Node n;
+    createNoDataLayout(n, attr);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::save(n, path, "conduit_json");
   }
   else
   {
@@ -2104,7 +2156,9 @@ Group* Group::detachGroup(IndexType idx)
  *
  *************************************************************************
  */
-bool Group::exportTo(conduit::Node& result, const Attribute* attr) const
+bool Group::exportTo(conduit::Node& result,
+                     const Attribute* attr,
+                     bool export_buffer) const
 {
   result.set(DataType::object());
   // TODO - This implementation will change in the future.  We want to write
@@ -2136,7 +2190,14 @@ bool Group::exportTo(conduit::Node& result, const Attribute* attr) const
       std::ostringstream oss;
       oss << "buffer_id_" << *s_it;
       Node& n_buffer = bnode.fetch(oss.str());
-      getDataStore()->getBuffer(*s_it)->exportTo(n_buffer);
+      if(export_buffer)
+      {
+        getDataStore()->getBuffer(*s_it)->exportTo(n_buffer);
+      }
+      else
+      {
+        getDataStore()->getBuffer(*s_it)->exportMetadata(n_buffer);
+      }
     }
   }
 
@@ -2204,6 +2265,21 @@ bool Group::exportTo(conduit::Node& result,
   }
 
   return hasSavedViews;
+}
+
+/*
+ *************************************************************************
+ *
+ * Exports the contents of the Group, excluding the data arrays held
+ * by any Buffers attached to the Views.
+ *
+ *************************************************************************
+ */
+
+bool Group::exportWithoutBufferData(conduit::Node& result,
+                                    const Attribute* attr) const
+{
+  return exportTo(result, attr, false);
 }
 
 /*

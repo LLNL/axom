@@ -1209,7 +1209,7 @@ public:
   void copyToConduitNode(Node& n) const;
 
   /*!
-   * \brief Copy data Group native layout to given Conduit node.
+   * \brief Copy Group's native layout to given Conduit node.
    *
    * The native layout is a Conduit Node hierarchy that maps the Conduit Node
    * data
@@ -1222,6 +1222,21 @@ public:
    *
    */
   bool createNativeLayout(Node& n, const Attribute* attr = nullptr) const;
+
+  /*!
+   * \brief Copy Group's layout to given Conduit node without data
+   *
+   * This method copies only a metadata version of the Group's hierarchical
+   * layout to a Conduit Node.  All of the Groups and Views in the
+   * hierarchy will be represented, but the actual data held by the Views
+   * will not be present.  For every View, the Conduit schema describing
+   * its datatype will be copied but not the data.  This is intended to
+   * provide an object that can be sent to a readable output format where
+   * the overall layout of the hierarchy can be seen without sending large
+   * arrays or other data to the output.
+   *
+   */
+  void createNoDataLayout(Node& n, const Attribute* attr = nullptr) const;
 
   /*!
    * \brief Copy data Group external layout to given Conduit node.
@@ -1643,10 +1658,15 @@ private:
    *
    * Note: This is for the "sidre_{zzz}" protocols.
    *
+   * \param export_buffers  Optional parameter, if set to false, the data
+   *                       arrays owned by Buffers will not be copied.
+   *
    * \return True if the group or any of its children have saved Views,
    * false otherwise.
    */
-  bool exportTo(conduit::Node& result, const Attribute* attr) const;
+  bool exportTo(conduit::Node& result,
+                const Attribute* attr,
+                bool export_buffers = true) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1660,6 +1680,12 @@ private:
   bool exportTo(conduit::Node& data_holder,
                 const Attribute* attr,
                 std::set<IndexType>& buffer_indices) const;
+
+  /*!
+   * \brief Private method  exports the Group to a conduit Node without
+   * the data held by Buffers, enabling a save that shows the layout only
+   */
+  bool exportWithoutBufferData(conduit::Node& result, const Attribute* attr) const;
 
   /*!
    * \brief Private method to build a Group hierarchy from Conduit Node.

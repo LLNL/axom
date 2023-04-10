@@ -909,6 +909,14 @@ public:
   void createNativeLayout(Node& n) const;
 
   /*!
+   * \brief Copy metadata of the View to the given Conduit node
+   *
+   * The View's datatype schema and state information will be copied into the
+   * node, but not the data held by the View.
+   */
+  void copyMetadataToNode(Node& n) const;
+
+  /*!
    * \brief Change the name of this View.
    *
    * The name of this view is changed to the new name.  This also changes
