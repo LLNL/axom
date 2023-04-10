@@ -553,14 +553,14 @@ namespace slamLulesh {
       }
     }
 
-    m_symmX.data() = &loc_symmX;
-    m_symmY.data() = &loc_symmY;
-    m_symmZ.data() = &loc_symmZ;
+    m_symmX.ptr() = &loc_symmX;
+    m_symmY.ptr() = &loc_symmY;
+    m_symmZ.ptr() = &loc_symmZ;
 
     // Verify validity of the sets.
-    SLIC_ASSERT(  m_symmX.isValid() && m_symmX.size() == numSymmNodesX && m_symmX.data() == &loc_symmX);
-    SLIC_ASSERT(  m_symmY.isValid() && m_symmY.size() == numSymmNodesY && m_symmY.data() == &loc_symmY);
-    SLIC_ASSERT(  m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ && m_symmZ.data() == &loc_symmZ);
+    SLIC_ASSERT(  m_symmX.isValid() && m_symmX.size() == numSymmNodesX && m_symmX.ptr() == &loc_symmX);
+    SLIC_ASSERT(  m_symmY.isValid() && m_symmY.size() == numSymmNodesY && m_symmY.ptr() == &loc_symmY);
+    SLIC_ASSERT(  m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ && m_symmZ.ptr() == &loc_symmZ);
   }
 
 
