@@ -198,7 +198,7 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
     {
       num_views_empty += 1;
     }
-  } 
+  }
 
   //
   // Update Node entries with data info for this Group
