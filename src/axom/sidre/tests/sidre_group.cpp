@@ -1112,6 +1112,162 @@ TEST(sidre_group, create_destroy_has_group)
   delete ds;
 }
 
+TEST(sidre_group, destroy_group_and_data)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Group* group0 = root->createGroup("group0");
+  Group* group1 = root->createGroup("group1");
+  Group* child0 = group0->createGroup("child0");
+  Group* child1 = group0->createGroup("child1");
+  Group* child2 = group1->createGroup("child2");
+  Group* child3 = group1->createGroup("child3");
+  Group* child4 = group1->createGroup("child4");
+
+  child0->createViewAndAllocate("intview", INT_ID, 15);
+  Group* foo0 = child0->createGroup("foo");
+  child0->createGroup("empty");
+  child0->createViewScalar("sclview", 3.14159);
+  child0->createViewString("strview", "Hello world.");
+  foo0->createViewAndAllocate("fooview", FLOAT64_ID, 12);
+
+  int* int0_vals = child0->getView("intview")->getData();
+  for(int i = 0; i < 15; ++i)
+  {
+    int0_vals[i] = i;
+  }
+
+  conduit::float64* flt0_vals = foo0->getView("fooview")->getData();
+  for(int i = 0; i < 12; ++i)
+  {
+    flt0_vals[i] = (conduit::float64)(-i);
+  }
+
+  Buffer* intbuf = child0->getView("intview")->getBuffer();
+  Buffer* fltbuf = foo0->getView("fooview")->getBuffer();
+
+  //Store each Buffer's index for later testing.
+  IndexType int_idx = intbuf->getIndex();
+  IndexType flt_idx = fltbuf->getIndex();
+
+  child1->createView("intview", INT_ID, 15, intbuf);
+  Group* foo1 = child1->createGroup("foo");
+  child1->createGroup("empty");
+  child1->createViewScalar("sclview", 3.14159);
+  child1->createViewString("strview", "Hello world.");
+  foo1->createView("fooview", FLOAT64_ID, 12, fltbuf);
+
+  child2->createView("intview", INT_ID, 15, intbuf);
+  Group* foo2 = child2->createGroup("foo");
+  child2->createGroup("empty");
+  child2->createViewScalar("sclview", 3.14159);
+  child2->createViewString("strview", "Hello world.");
+  foo2->createView("fooview", FLOAT64_ID, 12, fltbuf);
+
+  child3->createView("intview", INT_ID, 15, intbuf);
+  Group* foo3 = child3->createGroup("foo");
+  child3->createGroup("empty");
+  child3->createViewScalar("sclview", 3.14159);
+  child3->createViewString("strview", "Hello world.");
+  foo3->createView("fooview", FLOAT64_ID, 12, fltbuf);
+
+  child4->createView("intview", INT_ID, 15, intbuf);
+  Group* foo4 = child4->createGroup("foo");
+  child4->createGroup("empty");
+  child4->createViewScalar("sclview", 3.14159);
+  child4->createViewString("strview", "Hello world.");
+  foo4->createView("fooview", FLOAT64_ID, 12, fltbuf);
+
+  //Beginning state:  there are 2 Buffers, each attached to 5 Views.
+  EXPECT_EQ(ds->getNumBuffers(), 2);
+  EXPECT_EQ(intbuf->getNumViews(), 5);
+  EXPECT_EQ(fltbuf->getNumViews(), 5);
+
+  //Destroy "child0/foo" by path. This destroys the View that created fltbuf.
+  EXPECT_EQ(child0->getNumGroups(), 2);
+  group0->destroyGroupAndData("child0/foo");
+
+  //Verify that fltbuf now is attached to 4 Views and child0 has only one
+  //group "empty".
+  EXPECT_EQ(fltbuf->getNumViews(), 4);
+  EXPECT_EQ(child0->getNumGroups(), 1);
+  EXPECT_TRUE(child0->hasGroup("empty"));
+
+  //Destroy child3 using index argument
+  IndexType idx3 = group1->getGroupIndex("child3");
+  group1->destroyGroupAndData(idx3);
+
+  //intbuf and fltbuf both lose one attached View.
+  EXPECT_EQ(intbuf->getNumViews(), 4);
+  EXPECT_EQ(fltbuf->getNumViews(), 3);
+
+  //Verify that the Buffers' data can be accessed by other Views.
+  int* int4_vals = child4->getView("intview")->getData();
+  for(int i = 0; i < 15; ++i)
+  {
+    EXPECT_EQ(int4_vals[i], i);
+  }
+
+  conduit::float64* flt4_vals = foo4->getView("fooview")->getData();
+  for(int i = 0; i < 12; ++i)
+  {
+    EXPECT_NEAR(flt4_vals[i], (conduit::float64)(-i), 1.0e-12);
+  }
+
+  //Destroy Groups held by child1. This removes "foo" and "empty" but leaves
+  //the Views held by child1 in place.
+  EXPECT_EQ(child1->getNumGroups(), 2);
+  EXPECT_EQ(child1->getNumViews(), 3);
+  child1->destroyGroupsAndData();
+  EXPECT_EQ(child1->getNumGroups(), 0);
+  EXPECT_EQ(child1->getNumViews(), 3);
+
+  //That removed one more View from fltbuf but left intbuf unchanged.
+  EXPECT_EQ(intbuf->getNumViews(), 4);
+  EXPECT_EQ(fltbuf->getNumViews(), 2);
+
+  //Destroy the entire subtree of child4
+  EXPECT_EQ(child4->getNumGroups(), 2);
+  EXPECT_EQ(child4->getNumViews(), 3);
+  child4->destroyGroupSubtreeAndData();
+  EXPECT_EQ(child4->getNumGroups(), 0);
+  EXPECT_EQ(child4->getNumViews(), 0);
+
+  //Both buffers lost one more View.
+  EXPECT_EQ(intbuf->getNumViews(), 3);
+  EXPECT_EQ(fltbuf->getNumViews(), 1);
+
+  //THe View at "group1/child2/foo/fooview" is the only View
+  //still attached to fltbuf.
+  EXPECT_EQ(ds->getNumBuffers(), 2);
+  EXPECT_TRUE(group1->hasView("child2/foo/fooview"));
+  EXPECT_TRUE(group1->getView("child2/foo/fooview")->hasBuffer());
+  EXPECT_EQ(group1->getView("child2/foo/fooview")->getBuffer(), fltbuf);
+
+  //Destroy entire subtree of group1. This will detach the last View
+  //from fltbuf and cause fltbuf to be destroyed.
+  group1->destroyGroupSubtreeAndData();
+  EXPECT_EQ(ds->getNumBuffers(), 1);
+  EXPECT_TRUE(ds->hasBuffer(int_idx));
+  EXPECT_FALSE(ds->hasBuffer(flt_idx));
+  EXPECT_EQ(group1->getNumViews(), 0);
+  EXPECT_EQ(group1->getNumGroups(), 0);
+
+  //intbuf still is attached to the "intview" Views in child0 and child1.
+  EXPECT_EQ(intbuf->getNumViews(), 2);
+  EXPECT_EQ(group0->getView("child0/intview")->getBuffer(), intbuf);
+  EXPECT_EQ(group0->getView("child1/intview")->getBuffer(), intbuf);
+
+  //Destroy everything below root, and the remaining buffer will be destroyed.
+  root->destroyGroupSubtreeAndData();
+  EXPECT_FALSE(ds->hasBuffer(int_idx));
+  EXPECT_EQ(ds->getNumBuffers(), 0);
+  EXPECT_EQ(root->getNumViews(), 0);
+  EXPECT_EQ(root->getNumGroups(), 0);
+
+  delete ds;
+}
+
 //------------------------------------------------------------------------------
 TEST(sidre_group, group_name_collisions)
 {

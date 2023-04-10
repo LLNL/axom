@@ -1154,6 +1154,31 @@ void Group::destroyGroup(const std::string& path)
 /*
  *************************************************************************
  *
+ * Detach child Group with given name or path and destroy it, and destroy
+ * any data that becomes disassociated from all Views
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupAndData(const std::string& path)
+{
+  std::string intpath(path);
+  bool create_groups_in_path = false;
+  Group* group = walkPath(intpath, create_groups_in_path);
+
+  if(group != nullptr)
+  {
+    Group* targetgroup = group->detachGroup(intpath);
+    if(targetgroup != nullptr)
+    {
+      targetgroup->destroyGroupSubtreeAndData();
+      delete targetgroup;
+    }
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Detach child Group with given index and destroy it.
  *
  *************************************************************************
@@ -1163,6 +1188,24 @@ void Group::destroyGroup(IndexType idx)
   Group* group = detachGroup(idx);
   if(group != nullptr)
   {
+    delete group;
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach child Group with given index and destroy it, and destroy any data
+ * that becomes disassociated from all Views
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupAndData(IndexType idx)
+{
+  Group* group = detachGroup(idx);
+  if(group != nullptr)
+  {
+    group->destroyGroupSubtreeAndData();
     delete group;
   }
 }
@@ -1186,6 +1229,41 @@ void Group::destroyGroups()
   }
 
   m_group_coll->removeAllItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach all child Groups and destroy them, and destroy any data that
+ * becomes disassociated with all Views.
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupsAndData()
+{
+  IndexType gidx = getFirstValidGroupIndex();
+  while(indexIsValid(gidx))
+  {
+    destroyGroupAndData(gidx);
+
+    gidx = getNextValidGroupIndex(gidx);
+  }
+
+  m_group_coll->removeAllItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach all child Groups and Views and destroy them, and destroy any data
+ * that becomes disassociated with all Views.
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupSubtreeAndData()
+{
+  destroyViewsAndData();
+  destroyGroupsAndData();
 }
 
 /*

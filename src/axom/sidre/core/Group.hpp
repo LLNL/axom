@@ -1127,6 +1127,54 @@ public:
   void destroyGroup(IndexType idx);
 
   /*!
+   * \brief Destroy child Group at the given path, and destroy data that is
+   * not shared elsewhere.
+   *
+   * If a View in the subtree under the destroyed Group is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   * 
+   * If no Group exists at the given path, method is a no-op.
+   */
+  void destroyGroupAndData(const std::string& path);
+
+  /*!
+   * \brief Destroy child Group with the given index, and destroy data that
+   * is not shared elsewhere.
+   *
+   * If a View in the subtree under the destroyed Group is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   * 
+   * If no Group exists with the given index, method is a no-op.
+   */
+  void destroyGroupAndData(IndexType idx);
+
+  /*!
+   * \brief Destroy all child Groups held by this Group, and destroy data that
+   * is not shared elsewhere.
+   *
+   * If a View in a subtree under any of the destroyed Groups is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   */
+  void destroyGroupsAndData();
+
+  /*!
+   * \brief Destroy the entire subtree of Groups and Views held by this Group,
+   * and destroy data that is not shared elsewhere.
+   *
+   * If a View in the subtree being destroyed is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   */
+  void destroyGroupSubtreeAndData();
+
+  /*!
    * \brief Destroy all child Groups in this Group.
    *
    * Note that this will recursively destroy entire Group sub-tree below
