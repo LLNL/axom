@@ -169,41 +169,36 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   //
   // Gather info from Views owned by this Group
   //
-  IndexType vidx = getFirstValidViewIndex();
-  while(indexIsValid(vidx))
+  for(auto& view : views())
   {
-    const View* view = getView(vidx);
-
-    if(view->isExternal())
+    if(view.isExternal())
     {
       num_views_external += 1;
-      num_bytes_external += view->getTotalBytes();
+      num_bytes_external += view.getTotalBytes();
     }
-    else if(view->isScalar())
+    else if(view.isScalar())
     {
       num_views_scalar += 1;
-      num_bytes_assoc_with_views += view->getTotalBytes();
+      num_bytes_assoc_with_views += view.getTotalBytes();
     }
-    else if(view->isString())
+    else if(view.isString())
     {
       num_views_string += 1;
-      num_bytes_assoc_with_views += view->getTotalBytes();
+      num_bytes_assoc_with_views += view.getTotalBytes();
     }
-    else if(view->hasBuffer())
+    else if(view.hasBuffer())
     {
       num_views_buffer += 1;
-      if(view->isAllocated())
+      if(view.isAllocated())
       {
-        num_bytes_assoc_with_views += view->getTotalBytes();
+        num_bytes_assoc_with_views += view.getTotalBytes();
       }
     }
     else
     {
       num_views_empty += 1;
     }
-
-    vidx = getNextValidViewIndex(vidx);
-  }
+  } 
 
   //
   // Update Node entries with data info for this Group
@@ -223,12 +218,9 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   //
   if(recursive)
   {
-    IndexType gidx = getFirstValidGroupIndex();
-    while(indexIsValid(gidx))
+    for(auto& group : groups())
     {
-      this->getGroup(gidx)->getDataInfoHelper(n, recursive);
-
-      gidx = getNextValidGroupIndex(gidx);
+      group.getDataInfoHelper(n, recursive);
     }
   }
 }
