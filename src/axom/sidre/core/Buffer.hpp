@@ -252,6 +252,11 @@ public:
   void exportTo(conduit::Node& data_holder);
 
   /*!
+   * \brief Exports Buffer's metadata to a Conduit node.
+   */
+  void exportMetadata(conduit::Node& data_holder);
+
+  /*!
    * \brief Import Buffer's state from a Conduit node.
    */
   void importFrom(conduit::Node& data_holder);
