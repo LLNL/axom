@@ -2886,6 +2886,55 @@ TEST(sidre_group, save_load_preserve_contents)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group, save_layout_protocols)
+{
+  // Tests calls to save using sidre_layout_json and conduit_layout_json
+  // protocols. No loads are attempted as these protocols are used for
+  // save only.
+
+  DataStore::setConduitSLICMessageHandlers();
+
+  const std::string file_path_base("sidre_save_layout_protocols_");
+  DataStore ds;
+
+  Group* flds = ds.getRoot()->createGroup("fields");
+
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds->createGroup("b");
+  Group* gc = flds->createGroup("c");
+  int ndata = 10;
+
+  ga->createViewScalar<conduit::int64>("i0", 100);
+  ga->createViewScalar<conduit::float64>("d0", 3000.00);
+  gb->createViewString("s0", "foo");
+
+  gc->createViewAndAllocate("int10", DataType::int64(ndata));
+  conduit::int64* data_ptr = gc->getView("int10")->getArray();
+  for(int i = 0; i < ndata; ++i)
+  {
+    data_ptr[i] = (conduit::int64)i;
+  }
+
+  int extdatasize = 20;
+  std::vector<conduit::float64> extdata(extdatasize);
+  gc->createView("ext20", FLOAT64_ID, extdatasize)->setExternalDataPtr(&extdata[0]);
+  for(int i = 0; i < extdatasize; ++i)
+  {
+    extdata[i] = (conduit::float64)(i / 3.0);
+  }
+
+  gc->createView("empty_view");
+
+  std::string file_path = file_path_base + "sidre_layout_json";
+  ds.getRoot()->save(file_path, "sidre_layout_json");
+  file_path = file_path_base + "conduit_layout_json";
+  ds.getRoot()->save(file_path, "conduit_layout_json");
+
+  //restore conduit default errors
+  DataStore::setConduitDefaultMessageHandlers();
+}
+
+//------------------------------------------------------------------------------
 TEST(sidre_group, import_conduit)
 {
   conduit::Node input;
