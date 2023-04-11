@@ -1043,6 +1043,12 @@ private:
    * \brief Method to (recursively) accumulate information about data in
    *        a Group subtree.
    *
+   * \param n Conduit node in which to insert accumulated data
+   * \param buffer_ids std::set used to gather set of unique buffer ids
+   *                   for reporting total bytes in buffers
+   * \param recursive boolean value indicating whether to recurse to child
+   *                  groups of this group.
+   *
    * \sa getDataInfo
    */
   void getDataInfoHelper(Node& n,

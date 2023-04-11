@@ -26,6 +26,7 @@ contains. For example::
 
   conduit::Node n;
   ds->getBufferInfo(n);
+  n.print();   // print Conduit node contents to std out, if desired
 
 This method call inserts four fields into the Node that have numeric values
 accessible as type ``axom::IndexType``. For example::
@@ -58,11 +59,13 @@ with the entire group subtree rooted at the group. For example::
   // get information about a single group
   conduit::Node n;
   group->getDataInfo(n, recursive);
+  n.print();   // print Conduit node contents to std out, if desired
 
   // get information about entire subtree rooted at group
   recursive = true;
   conduit::Node n1;
   group->getDataInfo(n1, recursive);
+  n1.print();   // print Conduit node contents to std out, if desired
 
 Similar to the ``Datastore::getBufferInfo`` method described above, the 
 ``Group::getDataInfo`` method inserts fields into the given Conduit Node
@@ -92,7 +95,7 @@ entire group subtree:
   * ``num_views_scalar`` : Number of views associated with a single scalar data item.
   * ``num_views_string`` : Number of views associated with string data.
   * ``num_bytes_assoc_with_views`` : Total number of bytes associated with views (buffer, string, and scalar). Note that this may be an over-count if two or more views share a buffer and their data overlap, for example.
-  * ``num_bytes_external`` : Total number of bytes described by external views. Note that this may be an over-count if two or more views share an external allocation and their data overlaps, for example.
+  * ``num_bytes_external`` : Total number of bytes described by external views. Note that this may be an over-count. For example, if two or more views share an external allocation and their data overlaps more bytes may be reported than exist.
   * ``num_bytes_in_buffers`` : Total number of bytes allocated in buffers that are attached to views. Each buffer is counted exactly once if attached to multiple views.
 
 .. important:: ``num_bytes_assoc_with_views`` and ``num_bytes_external`` may over-count the actual data that exists. For example, if two or more views share a buffer or if two or more views share an external allocation and the view data overlaps in either case.
