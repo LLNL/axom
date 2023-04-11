@@ -39,8 +39,7 @@ The variables have the following values:
 
   * ``num_buffers`` : Total number of buffer objects in the datastore.
   * ``num_buffers_referenced`` : Number of buffers referenced by a view (i.e., attached to a view.
-  * ``num_buffers_detached`` : Number of buffers not referenced by a view. Note:
- ``num_buffers_detached`` = ``num_buffers`` - ``num_buffers_referenced``.
+  * ``num_buffers_detached`` : Number of buffers not referenced by a view. Note: ``num_buffers_detached`` = ``num_buffers`` - ``num_buffers_referenced``.
   * ``num_bytes_allocated`` : Total number of bytes allocated in all buffers.
 
 --------------------
