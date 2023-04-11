@@ -1045,7 +1045,8 @@ private:
    *
    * \sa getDataInfo
    */
-  void getDataInfoHelper(Node& n, std::set<IndexType>& buffer_ids, 
+  void getDataInfoHelper(Node& n,
+                         std::set<IndexType>& buffer_ids,
                          bool recursive) const;
 
 public:

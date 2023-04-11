@@ -138,17 +138,17 @@ void Group::getDataInfo(Node& n, bool recursive) const
   n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
   n["num_bytes_external"] = num_bytes_external;
 
-  std::set<IndexType> buffer_ids; 
+  std::set<IndexType> buffer_ids;
 
   getDataInfoHelper(n, buffer_ids, recursive);
 
   const DataStore* ds = getDataStore();
   IndexType num_bytes_in_buffers = 0;
-  for (auto it = buffer_ids.begin(); it != buffer_ids.end(); ++it)
+  for(auto it = buffer_ids.begin(); it != buffer_ids.end(); ++it)
   {
     num_bytes_in_buffers += ds->getBuffer(*it)->getTotalBytes();
   }
-  n["num_bytes_in_buffers"] = num_bytes_in_buffers; 
+  n["num_bytes_in_buffers"] = num_bytes_in_buffers;
 }
 
 /*
@@ -158,7 +158,8 @@ void Group::getDataInfo(Node& n, bool recursive) const
  *
  *************************************************************************
  */
-void Group::getDataInfoHelper(Node& n, std::set<IndexType>& buffer_ids,
+void Group::getDataInfoHelper(Node& n,
+                              std::set<IndexType>& buffer_ids,
                               bool recursive) const
 {
   //
