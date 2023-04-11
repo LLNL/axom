@@ -256,35 +256,9 @@ bool DataStore::hasBuffer(IndexType idx) const
  */
 void DataStore::getBufferInfo(Node& n) const
 {
-#if 0
-  IndexType num_buffers = 0;
-  IndexType num_buffers_referenced = 0;
-  IndexType num_bytes_allocated = 0;
-
-  IndexType bidx = getFirstValidBufferIndex();
-  while(indexIsValid(bidx))
-  {
-    Buffer* buf = getBuffer(bidx);
-
-    num_buffers++;
-
-    if(buf->getNumViews() > 0)
-    {
-      num_buffers_referenced++;
-    }
-
-    if(buf->isAllocated())
-    {
-      num_bytes_allocated += buf->getTotalBytes();
-    }
-
-    bidx = getNextValidBufferIndex(bidx);
-  }
-#else
   IndexType num_buffers = getNumBuffers();
   IndexType num_buffers_referenced = getNumReferencedBuffers();
   IndexType num_bytes_allocated = getTotalAllocatedBytesInBuffers();
-#endif
 
   n["num_buffers"] = num_buffers;
   n["num_buffers_referenced"] = num_buffers_referenced;

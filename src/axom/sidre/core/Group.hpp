@@ -308,15 +308,19 @@ public:
    *                                           or single Group that are 
    *                                           allocated in Buffers in 
    *                                           the DataStore. NOTE: This 
-   *                                           may be an over-count if two
-   *                                           Views data overlaps in a shared
-   *                                           Buffer. 
+   *                                           may be an over-count if data 
+   *                                           for two or more Views overlaps 
+   *                                           in a shared Buffer. 
    *          - "num_bytes_external" : total number of bytes described by
    *                                   external Views in Group subtree or 
-   *                                   single Group. NOTE: The data may or
-   *                                   may not be allocated, and there may
-   *                                   be overlaps in actual data associated
-   *                                   with external views.
+   *                                   single Group. The data may or may not 
+   *                                   be allocated. NOTE: If there are
+   *                                   overlaps in data associated with 
+   *                                   multiple external Views, this may be 
+   *                                   an over-count.
+   *          - "num_bytes_in_buffers" : total number of bytes allocated in
+   *                                     Buffers referenced by Views in
+   *                                     subtree pr single Group 
    *
    * Numeric values associated with these fields may be accessed as type
    * axom::IndexType, which is defined at compile-time. For example,
@@ -1041,7 +1045,8 @@ private:
    *
    * \sa getDataInfo
    */
-  void getDataInfoHelper(Node& n, bool recursive) const;
+  void getDataInfoHelper(Node& n, std::set<IndexType>& buffer_ids, 
+                         bool recursive) const;
 
 public:
   //@{

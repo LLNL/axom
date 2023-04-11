@@ -3233,6 +3233,7 @@ IndexType num_views_scalar_chk = 0;
 IndexType num_views_string_chk = 0;
 IndexType num_bytes_assoc_with_views_chk = 0;
 IndexType num_bytes_external_chk = 0;
+IndexType num_bytes_in_buffers_chk = 0;
 
 // Variables used to pull test values from Conduit node
 IndexType num_groups = 0;
@@ -3244,6 +3245,7 @@ IndexType num_views_scalar = 0;
 IndexType num_views_string = 0;
 IndexType num_bytes_assoc_with_views = 0;
 IndexType num_bytes_external = 0;
+IndexType num_bytes_in_buffers = 0;
 
 void resetChkVals()
 {
@@ -3256,6 +3258,7 @@ void resetChkVals()
   num_views_string_chk = 0;
   num_bytes_assoc_with_views_chk = 0;
   num_bytes_external_chk = 0;
+  num_bytes_in_buffers_chk = 0;
 }
 
 void pullTestVals(const conduit::Node& n)
@@ -3269,6 +3272,7 @@ void pullTestVals(const conduit::Node& n)
   num_views_string = n["num_views_string"].value();
   num_bytes_assoc_with_views = n["num_bytes_assoc_with_views"].value();
   num_bytes_external = n["num_bytes_external"].value();
+  num_bytes_in_buffers = n["num_bytes_in_buffers"].value();
 }
 
 }  // end anonymous namespace
@@ -3298,6 +3302,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_string, num_views_string_chk);
   EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
 
   //
   // Check 1: Add "A" Group with Views. Then, non-recursive check from root
@@ -3335,6 +3340,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_string, num_views_string_chk);
   EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
 
   //
   // Check 2: Recursive from root Group. Count "A" Group this time.
@@ -3351,6 +3357,8 @@ TEST(sidre_group, get_data_info)
   num_bytes_assoc_with_views_chk += view_A2->getTotalBytes();
   num_views_external_chk = 1;  // "ext_A3" View
   num_bytes_external_chk += view_A3->getTotalBytes();
+  num_bytes_in_buffers_chk += view_A1->getTotalBytes();
+  num_bytes_in_buffers_chk += buff2->getTotalBytes(); // "dat_A2" View
 
   conduit::Node n2;
   root->getDataInfo(n2);
@@ -3366,6 +3374,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_string, num_views_string_chk);
   EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
 
   //
   // Check 3: Add "B" and "C" Groups. Recursive check from "B" Group,
@@ -3382,12 +3391,14 @@ TEST(sidre_group, get_data_info)
   num_views_chk += 1;
   num_views_buffer_chk += 1;
   num_bytes_assoc_with_views_chk += view_B1->getTotalBytes();
+  num_bytes_in_buffers_chk += view_B1->getTotalBytes();
 
   View* view_B2 =
     gp_B->createView("dat_B2")->attachBuffer(buff2)->apply(DOUBLE_ID, 5, 5);
   num_views_chk += 1;
   num_views_buffer_chk += 1;
   num_bytes_assoc_with_views_chk += view_B2->getTotalBytes();
+  num_bytes_in_buffers_chk += buff2->getTotalBytes();
 
   // "C" Group and Views
   Group* gp_C = gp_B->createGroup("C");
@@ -3430,6 +3441,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_string, num_views_string_chk);
   EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
 
   //
   // Check 4: Recursive check from root Group. Count entire Group hierarchy
@@ -3446,6 +3458,8 @@ TEST(sidre_group, get_data_info)
   num_bytes_assoc_with_views_chk += view_A2->getTotalBytes();
   num_views_external_chk += 1;  // "ext_A3" View
   num_bytes_external_chk += view_A3->getTotalBytes();
+  num_bytes_in_buffers_chk += view_A1->getTotalBytes();
+  num_bytes_in_buffers_chk += buff2->getTotalBytes(); // "dat_A2" View
 
   // "B" Group and Views
   num_groups_chk += 1;
@@ -3453,6 +3467,9 @@ TEST(sidre_group, get_data_info)
   num_views_buffer_chk += 2;  // "dat_B1", "dat_B2" Views
   num_bytes_assoc_with_views_chk += view_B1->getTotalBytes();
   num_bytes_assoc_with_views_chk += view_B2->getTotalBytes();
+  num_bytes_in_buffers_chk += view_B1->getTotalBytes();
+  // Note: we do not count view_B2 Buffer bytes since it shares a Buffer
+  //       with view_A2 -- only count Buffer bytes once!!
 
   // "C" Group and Views
   num_groups_chk += 1;
@@ -3483,6 +3500,7 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_views_string, num_views_string_chk);
   EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
 
   delete ds;
 }

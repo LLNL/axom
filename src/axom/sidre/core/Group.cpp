@@ -138,7 +138,17 @@ void Group::getDataInfo(Node& n, bool recursive) const
   n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
   n["num_bytes_external"] = num_bytes_external;
 
-  getDataInfoHelper(n, recursive);
+  std::set<IndexType> buffer_ids; 
+
+  getDataInfoHelper(n, buffer_ids, recursive);
+
+  const DataStore* ds = getDataStore();
+  IndexType num_bytes_in_buffers = 0;
+  for (auto it = buffer_ids.begin(); it != buffer_ids.end(); ++it)
+  {
+    num_bytes_in_buffers += ds->getBuffer(*it)->getTotalBytes();
+  }
+  n["num_bytes_in_buffers"] = num_bytes_in_buffers; 
 }
 
 /*
@@ -148,7 +158,8 @@ void Group::getDataInfo(Node& n, bool recursive) const
  *
  *************************************************************************
  */
-void Group::getDataInfoHelper(Node& n, bool recursive) const
+void Group::getDataInfoHelper(Node& n, std::set<IndexType>& buffer_ids,
+                              bool recursive) const
 {
   //
   // Grab Node entries for updating data info for this Group
@@ -189,8 +200,10 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
     else if(view.hasBuffer())
     {
       num_views_buffer += 1;
-      if(view.isAllocated())
+      const Buffer* buf = view.getBuffer();
+      if(buf->isAllocated())
       {
+        buffer_ids.insert(buf->getIndex());
         num_bytes_assoc_with_views += view.getTotalBytes();
       }
     }
@@ -220,7 +233,7 @@ void Group::getDataInfoHelper(Node& n, bool recursive) const
   {
     for(auto& group : groups())
     {
-      group.getDataInfoHelper(n, recursive);
+      group.getDataInfoHelper(n, buffer_ids, recursive);
     }
   }
 }
