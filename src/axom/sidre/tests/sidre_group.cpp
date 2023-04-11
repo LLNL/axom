@@ -3358,7 +3358,7 @@ TEST(sidre_group, get_data_info)
   num_views_external_chk = 1;  // "ext_A3" View
   num_bytes_external_chk += view_A3->getTotalBytes();
   num_bytes_in_buffers_chk += view_A1->getTotalBytes();
-  num_bytes_in_buffers_chk += buff2->getTotalBytes(); // "dat_A2" View
+  num_bytes_in_buffers_chk += buff2->getTotalBytes();  // "dat_A2" View
 
   conduit::Node n2;
   root->getDataInfo(n2);
@@ -3459,7 +3459,7 @@ TEST(sidre_group, get_data_info)
   num_views_external_chk += 1;  // "ext_A3" View
   num_bytes_external_chk += view_A3->getTotalBytes();
   num_bytes_in_buffers_chk += view_A1->getTotalBytes();
-  num_bytes_in_buffers_chk += buff2->getTotalBytes(); // "dat_A2" View
+  num_bytes_in_buffers_chk += buff2->getTotalBytes();  // "dat_A2" View
 
   // "B" Group and Views
   num_groups_chk += 1;
