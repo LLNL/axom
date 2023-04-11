@@ -292,7 +292,7 @@ public:
    *
    *          - "num_groups" : total number of Groups in subtree or single Group
    *          - "num_views" : total number of Views in subtree or single Group
-   *          - "num_views_nodata" : total number of Views with no associated
+   *          - "num_views_empty" : total number of Views with no associated
    *                                 Buffer or data 
    *                                 (may or may not be described)
    *          - "num_views_buffer" : total number of Views associated
@@ -320,7 +320,7 @@ public:
    *                                   an over-count.
    *          - "num_bytes_in_buffers" : total number of bytes allocated in
    *                                     Buffers referenced by Views in
-   *                                     subtree pr single Group 
+   *                                     subtree or single Group 
    *
    * Numeric values associated with these fields may be accessed as type
    * axom::IndexType, which is defined at compile-time. For example,
