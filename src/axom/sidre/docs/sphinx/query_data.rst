@@ -28,7 +28,9 @@ contains. For example::
   ds->getBufferInfo(n);
 
 This method call inserts four fields into the Node that have numeric values
-accessible as type axom::IndexType. For example::
+accessible as type ``axom::IndexType``. For example::
+
+  using IndexType = axom::IndexType;
 
   IndexType num_buffers = n["num_buffers"].value();
   IndexType num_buffers_referenced = n["num_buffers_referenced"].value();
@@ -64,7 +66,9 @@ with the entire group subtree rooted at the group. For example::
 
 Similar to the ``Datastore::getBufferInfo`` method described above, the 
 ``Group::getDataInfo`` method inserts fields into the given Conduit Node
-that have numeric values accessible as type axom::IndexType.  For example::
+that have numeric values accessible as type ``axom::IndexType``.  For example::
+
+  using IndexType = axom::IndexType;
 
   IndexType num_groups = n["num_groups"].value();
   IndexType num_views = n["num_views"].value();
