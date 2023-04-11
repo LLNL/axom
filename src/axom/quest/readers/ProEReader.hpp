@@ -59,6 +59,12 @@ public:
   int getNumTets() const { return m_num_tets; };
 
   /*!
+   * \brief Returns the number of unique nodes of the mesh.
+   * \return numUniqueNodes the number of unique nodes.
+   */
+  int getNumUniqueNodes() const { return m_num_unique_nodes; };
+
+  /*!
    * \brief Clears all internal data-structures
    */
   void clear();
