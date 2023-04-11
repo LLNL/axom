@@ -41,6 +41,7 @@ int ProEReader::read()
   constexpr int NUM_NODES_PER_TET = 4;
   constexpr int NUM_COMPS_PER_NODE = 3;
 
+  std::string junk;
   std::string id;
   std::string tet_nodes[NUM_NODES_PER_TET];
 
@@ -55,6 +56,12 @@ int ProEReader::read()
   {
     SLIC_WARNING("Cannot open the provided Pro/E file [" << m_fileName << "]");
     return (-1);
+  }
+
+  // Remove any comments from header
+  while(ifs.peek() == '#')
+  {
+    std::getline(ifs, junk);
   }
 
   // Initialize number of nodes and tetrahedra.

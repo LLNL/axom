@@ -28,6 +28,8 @@ void generate_pro_e_file(const std::string& file)
   std::ofstream ofs(file.c_str());
   EXPECT_TRUE(ofs.is_open());
 
+  ofs << "# Comment header to ignore" << std::endl;
+  ofs << "# Another comment" << std::endl;
   ofs << "4 1" << std::endl;
   ofs << "node1 -1.0 0.0 0.0" << std::endl;
   ofs << "node2 1.0 0.0 0.0" << std::endl;
@@ -43,7 +45,7 @@ void generate_pro_e_file(const std::string& file)
 //------------------------------------------------------------------------------
 TEST(quest_pro_e_reader, read_missing_file)
 {
-  const std::string INVALID_FILE = "foo.creo";
+  const std::string INVALID_FILE = "foo.proe";
   axom::quest::ProEReader reader;
   reader.setFileName(INVALID_FILE);
   int status = reader.read();
@@ -54,7 +56,7 @@ TEST(quest_pro_e_reader, read_missing_file)
 TEST(quest_pro_e_reader, read_to_invalid_mesh)
 {
   const char* IGNORE_OUTPUT = ".*";
-  const std::string filename = "tet.creo";
+  const std::string filename = "tet.proe";
 
   // STEP 0: generate a temporary Pro/E file for testing
   generate_pro_e_file(filename);
@@ -91,7 +93,7 @@ TEST(quest_pro_e_reader, read_pro_e)
   const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
   const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
 
-  const std::string filename = "tet.creo";
+  const std::string filename = "tet.proe";
 
   // STEP 0: generate a temporary Pro/E file for testing
   generate_pro_e_file(filename);
@@ -150,7 +152,7 @@ TEST(quest_pro_e_reader, read_pro_e_external)
 
   axom::IndexType conn[] = {-1, -1, -1, -1};
 
-  const std::string filename = "tet.creo";
+  const std::string filename = "tet.proe";
 
   // STEP 0: generate a temporary Pro/E file for testing
   generate_pro_e_file(filename);

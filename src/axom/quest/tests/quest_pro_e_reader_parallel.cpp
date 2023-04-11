@@ -45,7 +45,7 @@ void generate_pro_e_file(const std::string& file)
 //------------------------------------------------------------------------------
 TEST(quest_pro_e_reader_parallel, missing_file)
 {
-  const std::string INVALID_FILE = "foo.creo";
+  const std::string INVALID_FILE = "foo.proe";
   axom::quest::PProEReader reader(MPI_COMM_WORLD);
   reader.setFileName(INVALID_FILE);
   int status = reader.read();
@@ -62,7 +62,7 @@ TEST(quest_pro_e_reader_parallel, read_file)
   const double y_expected[] = {0.0, 0.0, 1.0, 0.0};
   const double z_expected[] = {0.0, 0.0, 0.0, 1.0};
 
-  const std::string filename = "tet.creo";
+  const std::string filename = "tet.proe";
 
   // STEP 0: generate a temporary Pro/E file for testing
   if(rank == 0)
