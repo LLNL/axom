@@ -121,3 +121,31 @@ Protocols for file I/O
     data in a basic JSON hierarchy with no type information beyond
     what can be interpreted implicitly. When loading, the library will allocate 
     the largest supported bit width for integer or floating-point values.
+
+``sidre_layout_json``
+
+    This is one of two protocols that is provided as a debugging aid and not
+    to support the full save and load features of Sidre. It is intended to
+    provide user-readable JSON output that shows the full layout of the
+    Sidre hierarchy, but it excludes the data arrays held by the buffers.
+    With the exception of those data arrays, it matches the output layout
+    of the ``sidre_conduit_json`` protocol. This protocol should only be
+    used with ``save``, as it does not output all of the data that would be
+    needed for a successful ``load``.
+
+``conduit_layout_json``
+
+    This is the second protocol that is a debugging aid without supporting
+    the full save and load features of Sidre. Its JSON output writes the
+    Sidre hierarchy layout in way that matches the ``condut_json`` protocol
+    while again excluding the data arrays from the Views. This should only be
+    used with ``save`` and not load.
+
+    Another way to create file output that has the data arrays fully or 
+    partially removed is to use the ``convert_sidre_protocol`` tool that is
+    built as part of the build of Sidre. This tool takes as input a root file
+    that was created by ``IOManager`` with the ``sidre_hdf5`` protocol
+    and converts it to output in another selected protocol. This tool has a
+    has a command-line option to strip all or part of the data arrays
+    from the output. Unlike this tool, the ``*_layout_*`` protocols
+    described above do not require usage of ``IOManager``.
