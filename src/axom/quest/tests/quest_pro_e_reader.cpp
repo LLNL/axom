@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"  // for write_vtk
 #include "axom/quest/readers/ProEReader.hpp"
 #include "axom/slic.hpp"
 
@@ -282,6 +283,9 @@ TEST(quest_pro_e_reader, cup_pro_e)
   EXPECT_NEAR(z[MID_OFFSET + 1], -112.054428, EPS);
   EXPECT_NEAR(z[MID_OFFSET + 2], -178.748301, EPS);
   EXPECT_NEAR(z[MID_OFFSET + 3], -163.120569, EPS);
+
+  // Step 5: Dump mesh file
+  axom::mint::write_vtk(&mesh, "cup.vtk");
 }
 #endif
 
