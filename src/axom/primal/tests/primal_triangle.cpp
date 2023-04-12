@@ -578,18 +578,55 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
 
   // Initialize axom's Array of triangle
 
-  // Not okay
-  // axom::Array<QTri> tris (1, 1, axom::getDefaultAllocatorID());
+  // This was okay
+  // axom::Array<QTri> tris(1, 1, axom::getDefaultAllocatorID());
+  // axom::ArrayView<QTri> tris_view(tris.data(), 1);
+
+  // This was okay
+  // axom::Array<QTri> tris(1, 1);
+  // axom::ArrayView<QTri> tris_view(tris.data(), 1);
+
+  // This was okay
+  // axom::Array<QTri> tris(1, 1);
+  // axom::ArrayView<QTri, 1> tris_view(tris.data(), 1);
 
   // Okay
   // QTri * tris = axom::allocate<QTri>(1);
 
-  // Input argument allocator does not match the explicitly provided memory space (expected)
-  // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
+  // This was okay
+  axom::Array<QTri> tris(1, 1);
+  axom::ArrayView<QTri> tris_view(tris);
+
+  // This was okay
+  // axom::Array<QTri> tris(1, 1);
+  // auto tris_view = tris.view();
 
   // This was okay.
-  axom::Array<QTri> tris(1, 1, axom::getDefaultAllocatorID());
-  axom::ArrayView<QTri, 1, axom::MemorySpace::Unified> tris_view(tris);
+  // axom::Array<QTri> tris(1, 1, axom::getDefaultAllocatorID());
+  // axom::ArrayView<QTri, 1, axom::MemorySpace::Unified> tris_view(tris);
+
+  // This was okay.
+  // axom::Array<QTri> tris(1, 1);
+  // axom::ArrayView<QTri, 1, axom::MemorySpace::Unified> tris_view = tris;
+
+  // This was okay, too
+  // axom::Array<QTri> tris(1, 1);
+  // axom::ArrayView<QTri> tris_view = tris;
+
+  // --------------------------------------------------------------------------
+
+  // Not okay
+  // axom::Array<QTri> tris (1, 1, axom::getDefaultAllocatorID());
+
+  // Not okay
+  // QTri * tris = axom::allocate<QTri>(1);
+  // axom::ArrayView<QTri> tris_view(tris.data(), 1);
+
+  // Not okay
+  // axom::Array<QTri> tris(1, 1);
+
+  // Input argument allocator does not match the explicitly provided memory space (expected)
+  // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
 
   axom::for_all<axom::CUDA_EXEC<256>>(
     1,
