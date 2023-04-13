@@ -813,72 +813,19 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                 "C2C reader expects a segment mesh!");
   SLIC_ERROR_IF(threshold <= 0.,
                 "C2C reader: Threshold must be greater than zero.");
+  SLIC_ERROR_IF(threshold >= 1.,
+                "C2C reader: Threshold must be less than one.");
 
   using PointType = primal::Point<double, 2>;
   using PointsArray = std::vector<PointType>;
 
-  constexpr size_t INITIAL_GUESS_NPTS = 100;
-  const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
-
-  for(const auto& nurbs : m_nurbsData)
+  // \brief Checks curve lengths against tolerances and determines whether more
+  //        refinement is needed.
+  //
+  // \note Assume that maxlen is longer than len because hi-res sampling should
+  //       result in a longer arc length.
+  auto keep_going = [](double len, double maxlen, double threshold)
   {
-    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
-
-    // Get the contour start/end parameters.
-    const double startParameter = interpolator.startParameter(0);
-    const double endParameter = interpolator.endParameter(interpolator.numSpans() - 1);
-
-    // Store u values for the points along the curve.
-    std::vector<double> uValues;
-    uValues.reserve(INITIAL_GUESS_NPTS);
-    uValues.push_back(startParameter);
-    uValues.push_back(endParameter);
-
-    // Store points at the u values along the curve.
-    PointsArray pts;
-    pts.reserve(INITIAL_GUESS_NPTS);
-    pts.emplace_back(interpolator.at(startParameter));
-    pts.emplace_back(interpolator.at(endParameter));
-
-//---------------------------------------------------------------
-    // Approximate the arc length of the whole curve by using a lot of line segments.
-    // Computers are fast, sampling is cheap.
-
-    // Can we move this to a method and use bezier curves for the intermediate points to compute the exact analytical arc length?
-
-    double hiCurveLen = 0.;
-    constexpr int NUMBER_OF_SAMPLES = 100000;
-    PointType prev = pts[0];
-    for(int i = 1; i < NUMBER_OF_SAMPLES; i++)
-    {
-      double u = i / static_cast<double>(NUMBER_OF_SAMPLES - 1);
-      PointType cur = interpolator.at(u);
-      hiCurveLen += sqrt(primal::squared_distance(prev, cur));
-      prev = cur;
-    }
-
-//---------------------------------------------------------------
-
-    // Compute the initial length of the curve.
-    double curveLength = sqrt(primal::squared_distance(pts[0], pts[1]));
-
-    // Iterate until the difference between iterations is under the threshold.
-    double deltaIteration = curveLength;
-int iteration = 0;
-
-std::cout << "hiCurveLen: " << hiCurveLen << std::endl;
-std::cout << "curveLength: " << curveLength << std::endl;
-std::cout << "threshold: " << threshold << std::endl;
-std::cout << "pts: " << pts << std::endl;
-std::cout << "uValues: " << uValues << std::endl;
-
-    // Assume that maxlen is longer than len because hi-res sampling should
-    // result in a longer arc length.
-    auto keep_going = [](double len, double maxlen, double threshold) {
-
-// This does not produce enough iterations when we give something like 0.01 for the threshold. That is 1 percent.
-//      double pct = fabs(len - maxlen) / maxlen;
-
       bool retval = false;
       if(maxlen > len)
       {
@@ -890,10 +837,13 @@ std::cout << "uValues: " << uValues << std::endl;
          retval = errPct > threshold;
       }
           
-std::cout << "percentage(" << len << ", " << maxlen << ") -> " << retval << std::endl;
+std::cout << "keep_going(" << len << ", " << maxlen << ") -> " << retval << std::endl;
       return retval;
     };
 
+  // \brief Determines a u value within the interval [u0, u1] that should make
+  //        the longest line segments from p0->curve(u)->p1.
+  // \return The u value for the point.
   auto solveu = [](NURBSInterpolator &interpolator, double u0, double u1, const PointType &p0, const PointType &p1)
   {
     // Set up an initial ui at the midpoint and get the point.
@@ -943,6 +893,7 @@ std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui 
       }
       else
       {
+// TODO: simplify a bit more.
         // 2nd derivative of length L(u)
         double D2L = ((-2. * pow(dx0*xp + dy0*yp, 2.) + 2 * (dx0*dx0 + dy0*dy0) * (xp*xp + yp*yp + dx0 * xpp + dy0 * ypp)) /
                       (2 * pow(dx0 * dx0 + dy0 * dy0, 3. / 2.)))
@@ -970,60 +921,110 @@ std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui 
     return ui;
   };
 
+  constexpr size_t INITIAL_GUESS_NPTS = 100;
+  const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
-//    while(deltaIteration > threshold)
-//    while(fabs(curveLength - hiCurveLen) > threshold)
-    while(keep_going(curveLength, hiCurveLen, threshold))
+  // Iterate over the contours and linearize each of them.
+  for(const auto& nurbs : m_nurbsData)
+  {
+    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
+
+    // Get the contour start/end parameters.
+    const double startParameter = interpolator.startParameter(0);
+    const double endParameter = interpolator.endParameter(interpolator.numSpans() - 1);
+
+    // Store u values for the points along the curve.
+    std::vector<double> uValues;
+    uValues.reserve(INITIAL_GUESS_NPTS);
+    uValues.push_back(startParameter);
+    uValues.push_back(endParameter);
+
+    // Store points at the u values along the curve.
+    PointsArray pts;
+    pts.reserve(INITIAL_GUESS_NPTS);
+    pts.emplace_back(interpolator.at(startParameter));
+    pts.emplace_back(interpolator.at(endParameter));
+
+    // If there is a single span in the contour then we already added its points.
+    if(interpolator.numSpans() > 1)
     {
-      // For each segment, figure out a distance from the segment midpoint to
-      // the segment endpoints (2 line segments).
-      int nSegments = pts.size() - 1;
-      double maxSegmentNewLength = 0.;
-      double maxSegmentOldLength = 0.;
-      double maxSegmentDiff = 0.;
-      double maxSegmentU = 0.;
-      PointType maxSegmentPt;
-      int maxSegmentIndex = 0;
-      for(int seg = 0; seg < nSegments; seg++)
+      //---------------------------------------------------------------------
+      // Approximate the arc length of the whole curve by using a lot of line segments.
+      // Computers are fast, sampling is cheap.
+      double hiCurveLen = 0.;
+      constexpr int NUMBER_OF_SAMPLES = 100000;
+      PointType prev = pts[0];
+      for(int i = 1; i < NUMBER_OF_SAMPLES; i++)
       {
-        // Figure out the new u value for the point we'll add in this segment.
-#if 0
-        double umid = (uValues[seg] + uValues[seg + 1]) / 2.;
-#else
-        double umid = solveu(interpolator, uValues[seg], uValues[seg + 1], pts[seg], pts[seg + 1]);
-#endif
-        // Get the point at the u value.
-        auto midpt = interpolator.at(umid);
-
-        // Old segment length.
-        double dOld = sqrt(primal::squared_distance(pts[seg], pts[seg + 1]));
-
-        // New segment length.
-        double dNew = sqrt(primal::squared_distance(pts[seg], midpt)) +
-                      sqrt(primal::squared_distance(pts[seg + 1], midpt));
-
-        // Compute the difference in length between new and old.
-        double segDiff = fabs(dNew - dOld);
-
-        // If the new segment length is longer, keep it.
-        if(segDiff > maxSegmentDiff || seg == 0)
-        {
-          // Save the new segment diff.
-          maxSegmentDiff = segDiff;
-
-          // Save other segment attributes.
-          maxSegmentNewLength = dNew;
-          maxSegmentOldLength = dOld;
-          maxSegmentIndex = seg;
-          maxSegmentU = umid;
-          maxSegmentPt = midpt;
-        }
+        double u = i / static_cast<double>(NUMBER_OF_SAMPLES - 1);
+        PointType cur = interpolator.at(u);
+        hiCurveLen += sqrt(primal::squared_distance(prev, cur));
+        prev = cur;
       }
 
-      // We know which segment contributes the most to the length. Introduce
-      // a new point in that segment.
-      pts.insert(pts.begin() + maxSegmentIndex + 1, maxSegmentPt);
-      uValues.insert(uValues.begin() + maxSegmentIndex + 1, maxSegmentU);
+      //---------------------------------------------------------------------
+      // Compute the initial length of the curve.
+      double curveLength = sqrt(primal::squared_distance(pts[0], pts[1]));
+
+std::cout << "hiCurveLen: " << hiCurveLen << std::endl;
+std::cout << "curveLength: " << curveLength << std::endl;
+std::cout << "threshold: " << threshold << std::endl;
+std::cout << "pts: " << pts << std::endl;
+std::cout << "uValues: " << uValues << std::endl;
+
+      // Iterate until the difference between iterations is under the threshold.
+      int iteration = 0;
+      while(keep_going(curveLength, hiCurveLen, threshold))
+      {
+        // For each segment, figure out a distance from the segment midpoint to
+        // the segment endpoints (2 line segments).
+        int nSegments = pts.size() - 1;
+        double maxSegmentNewLength = 0.;
+        double maxSegmentOldLength = 0.;
+        double maxSegmentDiff = 0.;
+        double maxSegmentU = 0.;
+        PointType maxSegmentPt;
+        int maxSegmentIndex = 0;
+        for(int seg = 0; seg < nSegments; seg++)
+        {
+          // Figure out the new u value for the point we'll add in this segment.
+#if 0
+          double umid = (uValues[seg] + uValues[seg + 1]) / 2.;
+#else
+          double umid = solveu(interpolator, uValues[seg], uValues[seg + 1], pts[seg], pts[seg + 1]);
+#endif
+          // Get the point at the u value.
+          auto midpt = interpolator.at(umid);
+
+          // Old segment length.
+          double dOld = sqrt(primal::squared_distance(pts[seg], pts[seg + 1]));
+
+          // New segment length.
+          double dNew = sqrt(primal::squared_distance(pts[seg], midpt)) +
+                        sqrt(primal::squared_distance(pts[seg + 1], midpt));
+
+          // Compute the difference in length between new and old.
+          double segDiff = fabs(dNew - dOld);
+
+          // If the new segment length is longer, keep it.
+          if(segDiff > maxSegmentDiff || seg == 0)
+          {
+            // Save the new segment diff.
+            maxSegmentDiff = segDiff;
+
+            // Save other segment attributes.
+            maxSegmentNewLength = dNew;
+            maxSegmentOldLength = dOld;
+            maxSegmentIndex = seg;
+            maxSegmentU = umid;
+            maxSegmentPt = midpt;
+          }
+        }
+
+        // We know which segment contributes the most to the length. Introduce
+        // a new point in that segment.
+        pts.insert(pts.begin() + maxSegmentIndex + 1, maxSegmentPt);
+        uValues.insert(uValues.begin() + maxSegmentIndex + 1, maxSegmentU);
 
 std::cout << "Iteration: " << iteration << std::endl;
 std::cout << "\thiCurveLen: " << hiCurveLen << std::endl;
@@ -1037,30 +1038,24 @@ std::cout << "\tmaxSegmentU: " << maxSegmentU << std::endl;
 std::cout << "\tpts: " << pts << std::endl;
 std::cout << "\tuValues: " << uValues << std::endl;
 
-      // Update the overall curve length with the new segment length.
-      double prevLength = curveLength;
-      curveLength = curveLength - maxSegmentOldLength + maxSegmentNewLength;
-
-      // Determine how much the length changed between this iteration and the last.
-      deltaIteration = fabs(curveLength - prevLength);
+        // Update the overall curve length with the new segment length.
+        curveLength = curveLength - maxSegmentOldLength + maxSegmentNewLength;
 
 #if 1
-      // Make a filename.
-//if(iteration % 10 == 0)
-{
-      char filename[512];
-      sprintf(filename, "lines%05d.vtk", iteration);
-      write_lines(filename, pts);
+        // Make a filename.
+        char filename[512];
+        sprintf(filename, "lines%05d.vtk", iteration);
+        write_lines(filename, pts);
 
-std::cout << "Wrote " << filename << ": hiCurveLen=" << std::setprecision(9) << hiCurveLen
-          << ", curveLength=" << std::setprecision(9) << curveLength
-          << ", dCL=" << (hiCurveLen - curveLength)
-          << ", deltaIteration=" << deltaIteration
-          << std::endl;
-}
-      iteration++;
+        std::cout << "Wrote " << filename << ": hiCurveLen=" << std::setprecision(9) << hiCurveLen
+                  << ", curveLength=" << std::setprecision(9) << curveLength
+                  << ", dCL=" << (hiCurveLen - curveLength)
+                  << std::endl;
+
+        iteration++;
 #endif
-    }
+      } // while(keep_going())
+    } // if(interpolator.numSpans() > 1)
 
     // Add the points to the mesh.
     appendPoints(mesh, pts, EPS_SQ);
