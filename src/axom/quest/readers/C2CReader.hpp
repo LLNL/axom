@@ -70,6 +70,9 @@ public:
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
                      int segmentsPerKnotSpan);
 
+  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
+                     double threshold);
+
 #if 1
   // NOTE: Temporary API
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,

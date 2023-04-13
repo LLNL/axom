@@ -683,6 +683,392 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   getLinearMesh(mesh, segmentsPerKnotSpan, d1, d2, uvec, curv, sp);
 }
 
+
+//---------------------------------------------------------------------------
+static void
+appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+             std::vector<primal::Point<double, 2>> &pts,
+             double EPS_SQ)
+{
+  // Check for simple vertex welding opportunities at endpoints of newly interpolated points
+  {
+    int numNodes = mesh->getNumberOfNodes();
+    if(numNodes > 0)  // this is not the first Piece
+    {
+      primal::Point<double, 2> meshPt;
+      // Fix start point if necessary; check against most recently added vertex in mesh
+      mesh->getNode(numNodes - 1, meshPt.data());
+      if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
+      {
+        pts[0] = meshPt;
+      }
+
+      // Fix end point if necessary; check against 0th vertex in mesh
+      const int endIdx = pts.size() - 1;
+      mesh->getNode(0, meshPt.data());
+      if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
+      {
+        pts[endIdx] = meshPt;
+      }
+    }
+    else  // This is the first, and possibly only span, check its endpoint, fix if necessary
+    {
+      int endIdx = pts.size() - 1;
+      if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
+      {
+        pts[endIdx] = pts[0];
+      }
+    }
+  }
+
+  // Add the new points and segments to the mesh, respecting welding checks from previous block
+  {
+    const int startNode = mesh->getNumberOfNodes();
+    const int numNewNodes = pts.size();
+    mesh->reserveNodes(startNode + numNewNodes);
+
+    for(int i = 0; i < numNewNodes; ++i)
+    {
+      mesh->appendNode(pts[i][0], pts[i][1]);
+    }
+
+    const int startCell = mesh->getNumberOfCells();
+    const int numNewSegments = pts.size() - 1;
+    mesh->reserveCells(startCell + numNewSegments);
+    for(int i = 0; i < numNewSegments; ++i)
+    {
+      IndexType seg[2] = {startNode + i, startNode + i + 1};
+      mesh->appendCell(seg, mint::SEGMENT);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+static void
+write_lines(const std::string &filename, std::vector<primal::Point<double, 2>> &pts)
+{
+    FILE *f = fopen(filename.c_str(), "wt");
+    fprintf(f, "# vtk DataFile Version 4.2\n");
+    fprintf(f, "vtk output\n");
+    fprintf(f, "ASCII\n");
+    fprintf(f, "DATASET POLYDATA\n");
+    fprintf(f, "FIELD FieldData 2\n");
+    fprintf(f, "CYCLE 1 1 int\n");
+    fprintf(f, "1\n");
+    fprintf(f, "TIME 1 1 double\n");
+    fprintf(f, "1.0\n");
+    // Write points
+    int npts = pts.size();
+    fprintf(f, "POINTS %d float\n", npts);
+    for(int i = 0; i < npts; i += 3)
+    {
+        fprintf(f, "%1.3lf %1.3lf 0. ", pts[i][0], pts[i][1]);
+        if((i+1) < npts)
+            fprintf(f, "%1.3lf %1.3lf 0. ", pts[i+1][0], pts[i+1][1]);
+        if((i+2) < npts)
+            fprintf(f, "%1.3lf %1.3lf 0. ", pts[i+2][0], pts[i+2][1]);
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\n");
+
+    int nspans = npts - 1;
+
+    // Write ncells
+    fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
+    for(int ispan = 0; ispan < nspans; ispan++)
+    {
+        fprintf(f, "2 %d %d\n", ispan, ispan+1);
+    }
+
+    fclose(f);
+}
+
+//---------------------------------------------------------------------------
+template <typename T>
+static std::ostream &operator << (std::ostream &os, const std::vector<T> &vec)
+{
+    os << "{";
+    for(const auto &v : vec)
+        os << v << ", ";
+    os << "}";
+    return os;
+}
+
+static std::ostream &operator << (std::ostream &os, const primal::Point<double, 2> &pt)
+{
+    os << "(" << pt[0] << ", " << pt[1] << ")";
+    return os;
+}
+
+//---------------------------------------------------------------------------
+void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+                              double threshold)
+{
+  using axom::utilities::lerp;
+
+  // Sanity checks
+  SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
+  SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
+  SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
+                "C2C reader expects a segment mesh!");
+  SLIC_ERROR_IF(threshold <= 0.,
+                "C2C reader: Threshold must be greater than zero.");
+
+  using PointType = primal::Point<double, 2>;
+  using PointsArray = std::vector<PointType>;
+
+  constexpr size_t INITIAL_GUESS_NPTS = 100;
+  const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
+
+  for(const auto& nurbs : m_nurbsData)
+  {
+    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
+
+    // Get the contour start/end parameters.
+    const double startParameter = interpolator.startParameter(0);
+    const double endParameter = interpolator.endParameter(interpolator.numSpans() - 1);
+
+    // Store u values for the points along the curve.
+    std::vector<double> uValues;
+    uValues.reserve(INITIAL_GUESS_NPTS);
+    uValues.push_back(startParameter);
+    uValues.push_back(endParameter);
+
+    // Store points at the u values along the curve.
+    PointsArray pts;
+    pts.reserve(INITIAL_GUESS_NPTS);
+    pts.emplace_back(interpolator.at(startParameter));
+    pts.emplace_back(interpolator.at(endParameter));
+
+//---------------------------------------------------------------
+    // Approximate the arc length of the whole curve by using a lot of line segments.
+    // Computers are fast, sampling is cheap.
+
+    // Can we move this to a method and use bezier curves for the intermediate points to compute the exact analytical arc length?
+
+    double hiCurveLen = 0.;
+    constexpr int NUMBER_OF_SAMPLES = 100000;
+    PointType prev = pts[0];
+    for(int i = 1; i < NUMBER_OF_SAMPLES; i++)
+    {
+      double u = i / static_cast<double>(NUMBER_OF_SAMPLES - 1);
+      PointType cur = interpolator.at(u);
+      hiCurveLen += sqrt(primal::squared_distance(prev, cur));
+      prev = cur;
+    }
+
+//---------------------------------------------------------------
+
+    // Compute the initial length of the curve.
+    double curveLength = sqrt(primal::squared_distance(pts[0], pts[1]));
+
+    // Iterate until the difference between iterations is under the threshold.
+    double deltaIteration = curveLength;
+int iteration = 0;
+
+std::cout << "hiCurveLen: " << hiCurveLen << std::endl;
+std::cout << "curveLength: " << curveLength << std::endl;
+std::cout << "threshold: " << threshold << std::endl;
+std::cout << "pts: " << pts << std::endl;
+std::cout << "uValues: " << uValues << std::endl;
+
+    // Assume that maxlen is longer than len because hi-res sampling should
+    // result in a longer arc length.
+    auto keep_going = [](double len, double maxlen, double threshold) {
+
+// This does not produce enough iterations when we give something like 0.01 for the threshold. That is 1 percent.
+//      double pct = fabs(len - maxlen) / maxlen;
+
+      bool retval = false;
+      if(maxlen > len)
+      {
+         // pct is in [0,1). Generally, as the curve gets better pct should approach 1.
+         double pct = (len / maxlen);
+         // If we have a good curve then errPct should be small.
+         double errPct = 1. - pct;
+         // Keep going if errPct is above the threshold.
+         retval = errPct > threshold;
+      }
+          
+std::cout << "percentage(" << len << ", " << maxlen << ") -> " << retval << std::endl;
+      return retval;
+    };
+
+  auto solveu = [](NURBSInterpolator &interpolator, double u0, double u1, const PointType &p0, const PointType &p1)
+  {
+    // Set up an initial ui at the midpoint and get the point.
+    double ui = (u0 + u1) / 2.;
+    double ustart = ui;
+
+    // Interval endpoints.
+    double u0x = p0[0];
+    double u0y = p0[1];
+    double u1x = p1[0];
+    double u1y = p1[1];
+
+    constexpr double EPS = 1.e-6;
+    constexpr int MAX_ITERATIONS = 32;
+    bool solved = false;
+
+    // Solve for derivative == 0.
+    for(int iteration = 0; iteration < MAX_ITERATIONS && !solved; iteration++)
+    {
+      // Get the point at ui
+      PointType p = interpolator.at(ui);
+
+      // Deltas from interval endpoints to current point at ui.
+      double dx0 = p[0] - u0x;
+      double dy0 = p[1] - u0y;
+      double dx1 = p[0] - u1x;
+      double dy1 = p[1] - u1y;
+
+      // Get the 1st and 2nd derivatives of curve at ui
+      PointType d[2];
+      interpolator.derivativesAt(ui, 2, d);
+      double xp = d[0][0];
+      double yp = d[0][1];
+      double xpp = d[1][0];
+      double ypp = d[1][1];
+
+      // 1st derivative of length L(u)
+      double D1L = (dx0 * xp + dy0 * yp) / sqrt(dx0 * dx0 + dy0 * dy0) +
+                   (dx1 * xp + dy1 * yp) / sqrt(dx1 * dx1 + dy1 * dy1);
+
+      if(axom::utilities::isNearlyEqual(D1L, 0., EPS))
+      {
+std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui << std::endl;
+
+        solved = true;
+        break;
+      }
+      else
+      {
+        // 2nd derivative of length L(u)
+        double D2L = ((-2. * pow(dx0*xp + dy0*yp, 2.) + 2 * (dx0*dx0 + dy0*dy0) * (xp*xp + yp*yp + dx0 * xpp + dy0 * ypp)) /
+                      (2 * pow(dx0 * dx0 + dy0 * dy0, 3. / 2.)))
+                     +
+                     ((-2. * pow(dx1*xp + dy1*yp, 2.) + 2 * (dx1*dx1 + dy1*dy1) * (xp*xp + yp*yp + dx1 * xpp + dy1 * ypp)) /
+                      (2 * pow(dx1 * dx1 + dy1 * dy1, 3. / 2.)));
+
+        ui = ui - D1L / D2L;
+
+        if(ui <= u0)
+        {
+          std::cout << iteration << ": ERROR new ui " << ui << " is less than u0 " << u0 << std::endl;
+          ui = (u0 + u1) / 2.;
+          break;
+        }
+        if(ui >= u1)
+        {
+          std::cout << iteration << ": ERROR new ui " << ui << " is greater than u1 " << u1 << std::endl;
+          ui = (u0 + u1) / 2.;
+          break;
+        }
+      }
+    }
+
+    return ui;
+  };
+
+
+//    while(deltaIteration > threshold)
+//    while(fabs(curveLength - hiCurveLen) > threshold)
+    while(keep_going(curveLength, hiCurveLen, threshold))
+    {
+      // For each segment, figure out a distance from the segment midpoint to
+      // the segment endpoints (2 line segments).
+      int nSegments = pts.size() - 1;
+      double maxSegmentNewLength = 0.;
+      double maxSegmentOldLength = 0.;
+      double maxSegmentDiff = 0.;
+      double maxSegmentU = 0.;
+      PointType maxSegmentPt;
+      int maxSegmentIndex = 0;
+      for(int seg = 0; seg < nSegments; seg++)
+      {
+        // Figure out the new u value for the point we'll add in this segment.
+#if 0
+        double umid = (uValues[seg] + uValues[seg + 1]) / 2.;
+#else
+        double umid = solveu(interpolator, uValues[seg], uValues[seg + 1], pts[seg], pts[seg + 1]);
+#endif
+        // Get the point at the u value.
+        auto midpt = interpolator.at(umid);
+
+        // Old segment length.
+        double dOld = sqrt(primal::squared_distance(pts[seg], pts[seg + 1]));
+
+        // New segment length.
+        double dNew = sqrt(primal::squared_distance(pts[seg], midpt)) +
+                      sqrt(primal::squared_distance(pts[seg + 1], midpt));
+
+        // Compute the difference in length between new and old.
+        double segDiff = fabs(dNew - dOld);
+
+        // If the new segment length is longer, keep it.
+        if(segDiff > maxSegmentDiff || seg == 0)
+        {
+          // Save the new segment diff.
+          maxSegmentDiff = segDiff;
+
+          // Save other segment attributes.
+          maxSegmentNewLength = dNew;
+          maxSegmentOldLength = dOld;
+          maxSegmentIndex = seg;
+          maxSegmentU = umid;
+          maxSegmentPt = midpt;
+        }
+      }
+
+      // We know which segment contributes the most to the length. Introduce
+      // a new point in that segment.
+      pts.insert(pts.begin() + maxSegmentIndex + 1, maxSegmentPt);
+      uValues.insert(uValues.begin() + maxSegmentIndex + 1, maxSegmentU);
+
+std::cout << "Iteration: " << iteration << std::endl;
+std::cout << "\thiCurveLen: " << hiCurveLen << std::endl;
+std::cout << "\tcurveLength: " << curveLength << std::endl;
+std::cout << "\tmaxSegmentIndex: " << maxSegmentIndex << std::endl;
+std::cout << "\tmaxSegmentNewLength: " << maxSegmentNewLength << std::endl;
+std::cout << "\tmaxSegmentOldLength: " << maxSegmentOldLength << std::endl;
+std::cout << "\tmaxSegmentDiff: " << maxSegmentDiff << std::endl;
+std::cout << "\tmaxSegmentPt: " << maxSegmentPt << std::endl;
+std::cout << "\tmaxSegmentU: " << maxSegmentU << std::endl;
+std::cout << "\tpts: " << pts << std::endl;
+std::cout << "\tuValues: " << uValues << std::endl;
+
+      // Update the overall curve length with the new segment length.
+      double prevLength = curveLength;
+      curveLength = curveLength - maxSegmentOldLength + maxSegmentNewLength;
+
+      // Determine how much the length changed between this iteration and the last.
+      deltaIteration = fabs(curveLength - prevLength);
+
+#if 1
+      // Make a filename.
+//if(iteration % 10 == 0)
+{
+      char filename[512];
+      sprintf(filename, "lines%05d.vtk", iteration);
+      write_lines(filename, pts);
+
+std::cout << "Wrote " << filename << ": hiCurveLen=" << std::setprecision(9) << hiCurveLen
+          << ", curveLength=" << std::setprecision(9) << curveLength
+          << ", dCL=" << (hiCurveLen - curveLength)
+          << ", deltaIteration=" << deltaIteration
+          << std::endl;
+}
+      iteration++;
+#endif
+    }
+
+    // Add the points to the mesh.
+    appendPoints(mesh, pts, EPS_SQ);
+  }
+}
+
+
+//---------------------------------------------------------------------------
 // NOTE: This API change is temporary while I am pulling data out with the curve segments.
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                               int segmentsPerKnotSpan,
@@ -854,6 +1240,72 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     }
   };
 
+  auto filter2 = [area](NURBSInterpolator &interpolator, std::vector<double> &u)
+  {
+    PointType d[2];
+    for(size_t i = 1; i < u.size() - 1; i++)
+    {
+      double u0 = u[i-1];
+      double u1 = u[i+1];
+      double ui = (u0 + u1) / 2.;
+
+      auto p0 = interpolator.at(u0);
+      auto p1 = interpolator.at(u1);
+
+      double u0x = p0[0];
+      double u0y = p0[1];
+      double u1x = p1[0];
+      double u1y = p1[1];
+
+      constexpr double EPS = 1.e-6;
+      constexpr int MAX_ITERATIONS = 32;
+      bool solved = false;
+
+      // Solve for derivative == 0.
+      for(int iteration = 0; iteration < MAX_ITERATIONS && !solved; iteration++)
+      {
+        // Get the 1st and 2nd derivatives of curve at ui
+        interpolator.derivativesAt(ui, 2, d);
+        double xp = d[0][0];
+        double yp = d[0][1];
+        double xpp = d[1][0];
+        double ypp = d[1][1];
+
+        // 1st derivative of area A(u)
+        double D1A = 0.5 * ((u0x - u1x) * yp + (u1y - u0y) * xp);
+        if(axom::utilities::isNearlyEqual(D1A, 0., EPS))
+        {
+std::cout << iteration << ": Stopping: Moved u["<<i<<"]=" << u[i] << " to " << ui << std::endl;
+
+          u[i] = ui;
+
+          solved = true;
+          break;
+        }
+        else
+        {
+          // 2nd derivative of area A(u)
+          double D2A = 0.5 * ((u0x - u1x) * ypp + (u1y - u0y) * xpp);
+
+          ui = ui - D1A / D2A;
+
+          if(ui <= u0)
+          {
+            std::cout << iteration << ": ERROR new ui " << ui << " is less than u0 " << u0 << std::endl;
+            ui = u0;
+            break;
+          }
+          if(ui >= u1)
+          {
+            std::cout << iteration << ": ERROR new ui " << ui << " is greater than u1 " << u1 << std::endl;
+            ui = u1;
+            break;
+          }
+        }
+      }
+    }
+  };
+
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
@@ -871,10 +1323,66 @@ std::cout << "span " << span << " ----------------------------------------------
 
       std::vector<double> uValues;
 
-      if(getenv("AXOM_UNIFORM") != nullptr)
+      std::string method("UNIFORM");
+      if(getenv("AXOM_METHOD") != nullptr)
+        method = getenv("AXOM_METHOD");
+      bool allowFilter = true;
+      if(method == "UNIFORM")
       {
         makeUniformPoints(interpolator, startParameter, endParameter,
                           segmentsPerKnotSpan, uValues);
+        allowFilter = false;
+      }
+      else if(method == "BISECT") 
+      {
+//------------------------------------------------------------------------------
+
+        // Start out with the start/end u value for this span.
+        uValues.reserve(segmentsPerKnotSpan + 1);
+        uValues.push_back(startParameter);
+        uValues.push_back(endParameter);
+
+        int nSegments = 1;
+        std::vector<PointType> tri(3);
+        while(nSegments < segmentsPerKnotSpan)
+        {
+          double maxa = -std::numeric_limits<double>::max(), maxu = uValues[0];
+          int maxseg = 0;
+          // Look at each segment to see which we should bisect. We do this by
+          // computing a triangle area and we select the one that makes the
+          // largest area.
+          for(int seg = 0; seg < nSegments; seg++)
+          {
+            double umid = (uValues[seg] + uValues[seg + 1]) / 2.;
+            tri[0] = interpolator.at(uValues[seg]);
+            tri[1] = interpolator.at(umid);
+            tri[2] = interpolator.at(uValues[seg + 1]);
+            double a = area(tri);
+
+if(a < 0.)
+{
+//std::cout << "a=" << a << std::endl;
+a *= -1.;
+}
+            if(a > maxa)
+            {
+              maxu = umid;
+              maxa = a;
+              maxseg = seg + 1;
+            }
+          }
+          uValues.insert(uValues.begin() + maxseg, maxu);
+          nSegments++;
+
+          // For smaller numbers of segments, allow the points to move a bit more
+          // so we converge on area slightly faster.
+          if(nSegments < 10)
+          {
+            filter2(interpolator, uValues);
+          }
+        }
+        allowFilter = false;
+//------------------------------------------------------------------------------
       }
       else
       {
@@ -1123,13 +1631,16 @@ std::cout << "\ts=" << s << ", targetCurv=" << targetCurv << std::endl;
 
 #if 1
       // Filter the points to see if it improves their distribution.
-      filter(interpolator, uValues);
+      if(allowFilter)
+        filter(interpolator, uValues);
 #endif
+
       // Make the points.
+      std::cout << "span " << span << ": u={";
       for(const double u : uValues)
       {
          pts.emplace_back(interpolator.at(u));
-std::cout << "span " << span << ": Adding point at u=" << u << std::endl;
+         std::cout << u << ", ";
 #if 1
         PointType dpts[2];
         interpolator.derivativesAt(u, 2, dpts);
@@ -1147,6 +1658,7 @@ std::cout << "span " << span << ": Adding point at u=" << u << std::endl;
         sp.push_back(span);
 #endif
       }
+      std::cout << "}" << std::endl;
 
       // Check for simple vertex welding opportunities at endpoints of newly interpolated points
       {
