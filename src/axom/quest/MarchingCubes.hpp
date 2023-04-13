@@ -63,6 +63,10 @@ struct MarchingCubesSingleDomainImpl;
  *   mc.compute_iso_surface(contourValue);
  * @endverbatim
  *
+ * To avoid confusion between the two meshes, we refer to the mesh
+ * with the computational data as "parent" and the generated mesh the
+ * "surface".
+ *
  * \sa MarchingCubes
  */
 class MarchingCubesSingleDomain
@@ -104,7 +108,8 @@ public:
   void set_output_mesh(axom::mint::Mesh *surfaceMesh);
 
   /*!
-    @brief Save the originating cell index in output mesh.
+    @brief Save the originating cell's 1D index as an int in the
+    specified cell-centered field of the mesh.
 
     For each contour mesh cell generated, the 1D index of the
     generating computational mesh cell is set in the \a cellIdField of
@@ -114,6 +119,11 @@ public:
   void set_cell_id_field(const std::string &cellIdField)
   {
     m_cellIdField = cellIdField;
+  }
+
+  const std::string& get_cell_id_field() const
+  {
+    return m_cellIdField;
   }
 
   /*!
@@ -149,10 +159,12 @@ private:
   */
   mutable axom::mint::Mesh *m_surfaceMesh;
 
-  /* @brief Field name for recording computational-mesh cell id.
+  /*
+    @brief Field name for recording computational-mesh cell id.
 
-     This is for looking up the computational-mesh cell id that
-     contributed a surface-mesh cell.
+    The field must contain an axom::IndexType type.  If the field
+    doesn't exist, it will be created.  To disable, set \a cellIdField
+    to empty.
   */
   std::string m_cellIdField;
 
@@ -164,42 +176,6 @@ private:
    * Some data from \a dom may be cached by the constructor.
    */
   void set_domain(const conduit::Node &dom);
-
-  /*!
-    @brief Create the contour in a 2D cell.
-
-    The inputs are the coordinates and function values at
-    the 4 points of the cell.
-  */
-  void contourCell2D(double xx[4], double yy[4], double cellValues[4]);
-
-  /*!@brief Create the contour in a 3D cell.
-
-    The inputs are the coordinates and function values at
-    the 8 points of the cell.
-  */
-  void contourCell3D(double xx[8], double yy[8], double zz[8], double f[8]);
-
-  /*!
-    @brief Interpolate for intersection of the surface and a mesh edge.
-    edgeIdx is an index into axom::quest::detail::case2D
-    or axom::quest::detail::case3D.  xx, yy and zz are the
-    node coordinates for the cube (or square) cell.  nodeValues
-    are the scalar function at those nodes.  xyz is the output
-    coordinates of the intersection.
-  */
-  void linear_interp(int edgeIdx,
-                     const double *xx,
-                     const double *yy,
-                     const double *zz,
-                     const double *nodeValues,
-                     double *xyz);
-
-  /*!
-    @brief Compute the index to look up the surface topology in a cell.
-    @param f Scalar function values at the 4 or 8 nodes of the cell.
-  */
-  int computeIndex(const double *f);
 
 };  // class MarchingCubesSingleDomain
 
@@ -244,11 +220,12 @@ public:
   void set_output_mesh(axom::mint::Mesh *surfaceMesh);
 
   /*!
-    @brief Save the originating 1D cell index as an int in the specified
-    cell-centered field of the mesh.
+    @brief Save the originating cell's 1D index as an int in the
+    specified cell-centered field of the mesh.
 
-    If the field doesn't exist, it will be created.  To disable, set
-    \a domainIdField to empty.
+    The field must contain an axom::IndexType type.  If the field
+    doesn't exist, it will be created.  To disable, set \a cellIdField
+    to empty.
   */
   void set_cell_id_field(const std::string &cellIdField)
   {
@@ -257,6 +234,11 @@ public:
     {
       s->set_cell_id_field(cellIdField);
     }
+  }
+
+  const std::string& get_cell_id_field() const
+  {
+    return m_cellIdField;
   }
 
   /*!
@@ -272,10 +254,9 @@ public:
   }
 
   /*!
- * \brief Computes the iso-surface.
- *
- * \param [in] contourVal iso-contour value
- */
+   \brief Computes the iso-surface.
+   \param [in] contourVal iso-contour value
+   */
   void compute_iso_surface(double contourVal = 0.0);
 
 private:
