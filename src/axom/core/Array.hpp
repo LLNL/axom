@@ -734,7 +734,7 @@ public:
     resize({size}, true, &value);
   }
 
-  void resize(const StackArray<IndexType, DIM>& size, const T& value)
+  void reshape(const StackArray<IndexType, DIM>& size, const T& value)
   {
     resize(size, true, &value);
   }
