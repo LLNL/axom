@@ -886,7 +886,9 @@ Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape)
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 {
-  initialize(detail::packProduct(shape.m_data), detail::packProduct(shape.m_data), false);
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
 }
 
 //------------------------------------------------------------------------------

@@ -15,7 +15,7 @@
 
 // Axom includes
 #include "axom/config.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // Conduit includes
 #include "conduit_node.hpp"
@@ -39,8 +39,8 @@ enum class MarchingCubesRuntimePolicy
   cuda = 2
 };
 
-template<int DIM, typename ExecSpace>
-struct MarchingCubesSingleDomainImpl;
+template <int DIM, typename ExecSpace = axom::SEQ_EXEC>
+struct MarchingCubesImpl;
 
 /*!
  * \@brief Class implementing marching cubes algorithm on a single
@@ -59,8 +59,8 @@ struct MarchingCubesSingleDomainImpl;
  *     surfaceMesh(3, min::CellType::Triangle);
  *   double contourValue = 0.0;
  *   set_function_field("my_function");
- *   set_output_mesh(surfaceMesh);
  *   mc.compute_iso_surface(contourValue);
+ *   mc.populate_surface_mesh( surfaceMesh, "cellIdField");
  * @endverbatim
  *
  * To avoid confusion between the two meshes, we refer to the mesh
@@ -103,30 +103,6 @@ public:
   void set_function_field(const std::string &fcnField);
 
   /*!
-    @brief Set the output surface mesh object.
-  */
-  void set_output_mesh(axom::mint::Mesh *surfaceMesh);
-
-  /*!
-    @brief Save the originating cell's 1D index as an int in the
-    specified cell-centered field of the mesh.
-
-    For each contour mesh cell generated, the 1D index of the
-    generating computational mesh cell is set in the \a cellIdField of
-    the contour mesh.  If the field doesn't exist, it will be created.
-    To disable, set \a outputCellIds to empty.
-  */
-  void set_cell_id_field(const std::string &cellIdField)
-  {
-    m_cellIdField = cellIdField;
-  }
-
-  const std::string& get_cell_id_field() const
-  {
-    return m_cellIdField;
-  }
-
-  /*!
    * \brief Computes the iso-surface.
    *
    * \param [in] contourVal iso-contour value
@@ -134,7 +110,24 @@ public:
    * Compute iso-surface using the marching cubes algorithm.
    */
   void compute_iso_surface(double contourVal = 0.0);
-  void new_compute_iso_surface(double contourVal = 0.0);
+
+  //!@brief Get number of cells in the generated contour mesh.
+  axom::IndexType get_surface_cell_count() const;
+  //!@brief Get number of nodes in the generated contour mesh.
+  axom::IndexType get_surface_node_count() const
+  {
+    return m_ndim * get_surface_cell_count();
+  }
+
+  /*!
+    @brief Put generated surface in a mint::UnstructuredMesh.
+    @param mesh Output mesh
+    @param cellIdField Name of field to store the prent cell ids.
+      If omitted, the data is not copied.
+  */
+  void populate_surface_mesh(
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
+    const std::string &cellIdField = {});
 
 private:
   // MarchingCubesRuntimePolicy m_runtimePolicy;
@@ -146,29 +139,13 @@ private:
   */
   const conduit::Node *m_dom;
   int m_ndim;
-  axom::Array<axom::IndexType> m_cShape;  //!< @brief Shape of cell-centered data arrays in m_dom.
-  axom::Array<axom::IndexType> m_logicalOrigin;  //!< @brief First domain cell in each direction.
 
   const std::string m_coordsetPath;
   std::string m_fcnPath;
   std::string m_maskPath;
 
-  /*
-    Non-state variables we don't want to have to propagate down the
-    stack repeatedly during computation.
-  */
-  mutable axom::mint::Mesh *m_surfaceMesh;
-
-  /*
-    @brief Field name for recording computational-mesh cell id.
-
-    The field must contain an axom::IndexType type.  If the field
-    doesn't exist, it will be created.  To disable, set \a cellIdField
-    to empty.
-  */
-  std::string m_cellIdField;
-
-  double _contourVal;
+  std::shared_ptr<MarchingCubesImpl<2, axom::execution_space<axom::SEQ_EXEC>>> m_impl2d;
+  std::shared_ptr<MarchingCubesImpl<3, axom::execution_space<axom::SEQ_EXEC>>> m_impl3d;
 
   /*!
    * \brief Set the blueprint single-domain mesh.
@@ -215,55 +192,31 @@ public:
   void set_function_field(const std::string &fcnField);
 
   /*!
-    @brief Set the output surface mesh object.
-  */
-  void set_output_mesh(axom::mint::Mesh *surfaceMesh);
-
-  /*!
-    @brief Save the originating cell's 1D index as an int in the
-    specified cell-centered field of the mesh.
-
-    The field must contain an axom::IndexType type.  If the field
-    doesn't exist, it will be created.  To disable, set \a cellIdField
-    to empty.
-  */
-  void set_cell_id_field(const std::string &cellIdField)
-  {
-    m_cellIdField = cellIdField;
-    for(auto &s : m_sd)
-    {
-      s->set_cell_id_field(cellIdField);
-    }
-  }
-
-  const std::string& get_cell_id_field() const
-  {
-    return m_cellIdField;
-  }
-
-  /*!
-    @brief Save the originating domain index as an int in the specified
-    cell-centered field of the mesh.
-
-    If the field doesn't exist, it will be created.  To disable, set
-    \a domainIdField to empty.
-  */
-  void set_domain_id_field(const std::string &domainIdField)
-  {
-    m_domainIdField = domainIdField;
-  }
-
-  /*!
    \brief Computes the iso-surface.
    \param [in] contourVal iso-contour value
    */
   void compute_iso_surface(double contourVal = 0.0);
 
+  /*!
+    @brief Put generated surface in a mint::UnstructuredMesh.
+    @param mesh Output mesh
+    @param cellIdField Name of field to store the (axom::IndexType)
+      parent cell ids. If omitted, the data is not provided.
+    @param domainIdField Name of field to store the (axom::IndexType)
+      parent domain ids. If omitted, the data is not provided.
+
+    If the fields aren't in the mesh, they will be created.
+  */
+  void populate_surface_mesh(
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
+    const std::string &cellIdField = {},
+    const std::string &domainIdField = {});
+
 private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
 
   //! @brief Single-domain implementations.
-  axom::Array<std::shared_ptr<MarchingCubesSingleDomain>> m_sd;
+  axom::Array<std::shared_ptr<MarchingCubesSingleDomain>> m_singles;
   int m_ndim;
   const std::string m_coordsetPath;
   std::string m_fcnPath;
@@ -274,15 +227,6 @@ private:
     stack repeatedly during computation.
   */
   mutable axom::mint::Mesh *m_surfaceMesh;
-
-  //! @brief See MarchingCubesSingleDomain::m_cellIdField.
-  std::string m_cellIdField;
-  /* @brief Field name for recording computational-mesh domain id.
-
-     This is for looking up the computational-mesh domain id that
-     contributed a surface-mesh cell.
-  */
-  std::string m_domainIdField;
 
   // Use simple pointers for now.  Later, maybe sidre.
 
