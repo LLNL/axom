@@ -26,7 +26,11 @@ contains. For example::
 
   conduit::Node n;
   ds->getBufferInfo(n);
-  n.print();   // print Conduit node contents to std out, if desired
+
+  // Print Conduit node contents to stdout, if desired.
+  // Note that when running with multiple MPI ranks, each rank will 
+  // independently print its node contents to stdout, which may not be wanted.
+  n.print();
 
 This method call inserts four fields into the Node that have numeric values
 accessible as type ``axom::IndexType``. For example::
@@ -59,7 +63,11 @@ associated with the entire subtree rooted at the group. For example::
   // get information about a single group
   conduit::Node n;
   group->getDataInfo(n, recursive);
-  n.print();   // print Conduit node contents to std out, if desired
+
+  // Print Conduit node contents to stdout, if desired.
+  // Note that when running with multiple MPI ranks, each rank will 
+  // independently print its node contents to stdout, which may not be wanted.
+  n.print();
 
   // get information about entire subtree rooted at group
   recursive = true;
