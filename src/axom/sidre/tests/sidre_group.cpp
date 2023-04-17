@@ -3423,7 +3423,7 @@ TEST(sidre_group, get_data_info)
   num_views_external_chk += 1;
   num_bytes_external_chk += view_D1->getTotalBytes();
 
-  gp_D->createView("dat_D2");  // NOTE: View unused in this scope
+  View* view_D2 = gp_D->createView("dat_D2");
   num_views_chk += 1;
   num_views_empty_chk += 1;
 
@@ -3501,6 +3501,165 @@ TEST(sidre_group, get_data_info)
   EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
   EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
   EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  //
+  // Miscellaneous checks to ensure expectations are met.
+  //
+  // NOTE: These checks only modify check data and query data values
+  //       that are relevant to the tests.
+  //
+
+  //
+  // Check 5: Destroy "dat_A1" View in Group "A", but leave data intact
+  //          (orphaned Buffer!)
+  //
+
+  IndexType num_buffers_datastore_chk = ds->getNumBuffers();
+  IndexType num_buffer_bytes_datastore_chk =
+    ds->getTotalAllocatedBytesInBuffers();
+
+  num_bytes_assoc_with_views_chk -= view_A1->getTotalBytes();
+  num_bytes_in_buffers_chk -= view_A1->getTotalBytes();
+
+  gp_A->destroyView("dat_A1");
+
+  num_views_chk -= 1;
+  num_views_buffer_chk -= 1;
+
+  IndexType num_buffers_datastore = ds->getNumBuffers();
+  IndexType num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n5;
+  root->getDataInfo(n5);
+
+  pullTestVals(n5);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
+
+  //
+  // Check 6: Destroy "dat_A2" View in Group "A" and attempt to destroy its
+  //          data, but its data remains because it shares its buffer with
+  //          another View
+  //
+
+  num_buffers_datastore_chk = ds->getNumBuffers();
+  num_buffer_bytes_datastore_chk = ds->getTotalAllocatedBytesInBuffers();
+
+  num_bytes_assoc_with_views_chk -= view_A2->getTotalBytes();
+  // Note: num_bytes_in_buffers_chk doesn't change b/c Views Buffer is
+  //       still attached to another View
+
+  gp_A->destroyViewAndData("dat_A2");
+
+  num_views_chk -= 1;
+  num_views_buffer_chk -= 1;
+
+  num_buffers_datastore = ds->getNumBuffers();
+  num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n6;
+  root->getDataInfo(n6);
+
+  pullTestVals(n6);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
+
+  //
+  // Check 7: Describe and allocate data for empty "dat_D2" View in Group "D".
+  //          Check data in subtree rooted at root is what we expect.
+  //
+
+  view_D2->allocate(DOUBLE_ID, 5);
+  num_views_empty_chk -= 1;
+
+  num_views_buffer_chk += 1;
+  num_bytes_assoc_with_views_chk += view_D2->getTotalBytes();
+  num_bytes_in_buffers_chk += view_D2->getTotalBytes();
+
+  num_buffers_datastore_chk += 1;
+  num_buffer_bytes_datastore_chk += view_D2->getTotalBytes();
+
+  num_buffers_datastore = ds->getNumBuffers();
+  num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n7;
+  root->getDataInfo(n7);
+
+  pullTestVals(n7);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
+
+  //
+  // Check 8: Destroy Group "C" and check data in subtree rooted at
+  //          root to make sure changes are correct.
+  //
+
+  num_groups_chk -= 2;
+  num_views_chk -= 4;
+
+  num_views_buffer_chk -= 1;
+  num_bytes_assoc_with_views_chk -= view_D2->getTotalBytes();
+  num_bytes_in_buffers_chk -= view_D2->getTotalBytes();
+
+  num_views_scalar_chk -= 1;
+  num_bytes_assoc_with_views_chk -= view_C1->getTotalBytes();
+
+  num_views_string_chk -= 1;
+  num_bytes_assoc_with_views_chk -= view_C2->getTotalBytes();
+
+  num_views_external_chk -= 1;
+  num_bytes_external_chk -= view_D1->getTotalBytes();
+
+  gp_B->destroyGroup("C");
+
+  num_buffers_datastore = ds->getNumBuffers();
+  num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n8;
+  root->getDataInfo(n8);
+
+  pullTestVals(n8);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_groups, num_groups_chk);
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_views_external, num_views_external_chk);
+  EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
+  EXPECT_EQ(num_views_string, num_views_string_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
 
   delete ds;
 }
