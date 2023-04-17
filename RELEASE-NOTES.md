@@ -19,6 +19,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Deprecated
+- Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
+
 ### Added
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element
@@ -40,7 +43,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 
 ### Changed
-- Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
 - `IntersectionShaper` now implements material replacement rules.
 - `axom::Array` move constructors are now `noexcept`.
 - Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`
