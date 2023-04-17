@@ -4,6 +4,19 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 spack:
+  config:
+    install_tree:
+      root: $spack/..
+      projections:
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
+    misc_cache: $spack/../misc_cache
+    test_stage: $spack/../test_stage
+    build_stage::
+    - $spack/../build_stage
+
+  # Regular TPLs do not need views
+  view: false
+
   compilers::
   - compiler:
       environment: {}
@@ -101,14 +114,14 @@ spack:
         lapack: [netlib-lapack]
         mpi: [spectrum-mpi]
 
-  # LLNL blueos CUDA
+    # LLNL blueos CUDA
     cuda:
       buildable: false
       externals:
       - spec: cuda@11.2.0
         prefix: /usr/tce/packages/cuda/cuda-11.2.0
 
-  # LLNL blueos mpi
+    # LLNL blueos mpi
     mpi:
       buildable: false
     spectrum-mpi:
@@ -147,7 +160,7 @@ spack:
       - spec: netlib-lapack@3.9.0%xl@16.1.1.2
         prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-P9-xl-2020.11.12/
 
-  # System level packages to not build
+    # System level packages to not build
     autoconf:
       buildable: false
       externals:
@@ -249,7 +262,7 @@ spack:
         prefix: /usr
       buildable: false
 
-  # External dependencies for SCR
+    # External dependencies for SCR
     lsf:
       buildable: False
       externals:
@@ -273,7 +286,7 @@ spack:
       - spec: pdsh@2.33
         prefix: /usr
 
-  # Globally lock version of third party libraries
+    # Globally lock version of third party libraries
     conduit:
       require: "@0.8.6~shared~test~examples~utilities"
     hdf5:
@@ -287,7 +300,7 @@ spack:
     umpire:
       variants: ~shared~examples
 
-  # Globally lock in versions of Devtools
+    # Globally lock in versions of Devtools
     cmake:
       version: [3.21.1]
       buildable: false

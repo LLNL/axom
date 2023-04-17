@@ -22,59 +22,49 @@ spack:
       modules: []
       operating_system: rhel7
       paths:
-        cc:  /usr/tce/packages/gcc/gcc-8.1.0/bin/gcc
-        cxx: /usr/tce/packages/gcc/gcc-8.1.0/bin/g++
-        f77: /usr/tce/packages/gcc/gcc-8.1.0/bin/gfortran
-        fc:  /usr/tce/packages/gcc/gcc-8.1.0/bin/gfortran
-      spec: gcc@8.1.0
-      target: x86_64
+        cc:  /usr/tce/packages/gcc/gcc-8.3.1/bin/gcc
+        cxx: /usr/tce/packages/gcc/gcc-8.3.1/bin/g++
+        f77: /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
+        fc:  /usr/tce/packages/gcc/gcc-8.3.1/bin/gfortran
+      spec: gcc@8.3.1
+      target: ppc64le
 
   packages:
     all:
-      # This defaults us to machine specific flags of ivybridge which allows
-      # us to run on broadwell as well
-      target: [ivybridge]
-      compiler: [gcc, intel, pgi, clang, xl, nag]
+      compiler: [gcc]
       providers:
         blas: [netlib-lapack]
         lapack: [netlib-lapack]
-        mpi: [mvapich2]
-        gl: [opengl]
-        glu: [openglu]
-    opengl:
-      buildable: false
-      externals:
-      - spec: opengl@1.7.0
-        prefix: /usr
-    openglu:
-      buildable: false
-      externals:
-      - spec: openglu@1.3.1
-        prefix: /usr
+        mpi: [spectrum-mpi]
 
-    # Lock down which MPI we are using
+    # LLNL blueos CUDA
+    cuda:
+      externals:
+        - spec: cuda@11.2.0
+          prefix: /usr/tce/packages/cuda/cuda-11.2.0
+      buildable: false
+
     mpi:
       buildable: false
 
-    # blas is a bit more complicated because its a virtual package so fake it with
-    # the following per spack docs
     netlib-lapack:
-      buildable: false
       externals:
-      - spec: netlib-lapack@3.6.1
-        prefix: /usr
+        # This is the one that has the trailing underscores in name mangling, needed for MFEM compat
+        - spec: netlib-lapack@3.9.0
+          prefix: /usr/tcetmp/packages/lapack/lapack-3.9.0-gcc-7.3.1/lib/
+      buildable: false
 
     # System level packages to not build
     autoconf:
-      buildable: false
+      buildable: false 
       externals:
-      - spec: autoconf@2.69
-        prefix: /usr
+        - spec: autoconf@2.69
+          prefix: /usr
     automake:
-      buildable: false
+      buildable: false 
       externals:
-      - spec: automake@1.13.4
-        prefix: /usr
+        - spec: automake@1.13.4
+          prefix: /usr
     binutils:
       buildable: false
       externals:
@@ -93,7 +83,7 @@ spack:
     epoxy:
       buildable: false
       externals:
-      - spec: epoxy@1.5.2
+      - spec: epoxy@0.0.0
         prefix: /usr
     findutils:
       buildable: false
@@ -101,10 +91,10 @@ spack:
       - spec: findutils@4.5.11
         prefix: /usr
     gettext:
-      buildable: false
+      buildable: false 
       externals:
-      - spec: gettext@0.19.8.1
-        prefix: /usr
+        - spec: gettext@0.19.8.1
+          prefix: /usr
     ghostscript:
       buildable: false
       externals:
@@ -119,11 +109,6 @@ spack:
       buildable: false
       externals:
       - spec: libtool@2.4.2
-        prefix: /usr
-    libx11:
-      buildable: false
-      externals:
-      - spec: libx11@1.20.4
         prefix: /usr
     m4:
       buildable: false
@@ -146,33 +131,17 @@ spack:
       - spec: readline@6.2
         prefix: /usr
     tar:
-      buildable: false
       externals:
-      - spec: tar@1.26
-        prefix: /usr
-    unzip:
+        - spec: tar@1.26
+          prefix: /usr
       buildable: false
-      externals:
-      - spec: unzip@6.0
-        prefix: /usr
-    xz:
-      buildable: false
-      externals:
-      - spec: xz@5.2.2
-        prefix: /usr
-    zlib:
-      buildable: false
-      externals:
-      - spec: zlib@1.2.7
-        prefix: /usr
 
-    # Packages we may want to build in the future with specific versions
+    # Lock in versions of Devtools
     cmake:
-      version: [3.21.1]
-      buildable: false
       externals:
-      - spec: cmake@3.21.1
-        prefix: /usr/tce/packages/cmake/cmake-3.21.1
+      - spec: cmake@3.18.0
+        prefix: /usr/tce/packages/cmake/cmake-3.18.0
+      buildable: false
     llvm:
       version: [10.0.0]
       buildable: false

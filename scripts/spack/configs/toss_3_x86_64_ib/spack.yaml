@@ -8,11 +8,14 @@ spack:
     install_tree:
       root: $spack/..
       projections:
-        all: '{compiler.name}-{compiler.version}/{name}-{version}'
+        all: '{compiler.name}-{compiler.version}/{name}-{version}-{hash}'
     misc_cache: $spack/../misc_cache
     test_stage: $spack/../test_stage
     build_stage::
     - $spack/../build_stage
+
+  # Regular TPLs do not need views
+  view: false
 
   compilers::
   - compiler:
@@ -103,14 +106,14 @@ spack:
         lapack: [netlib-lapack]
         mpi: [mvapich2]
 
-  # LLNL toss3 CUDA
+    # LLNL toss3 CUDA
     cuda:
       buildable: false
       externals:
       - spec: cuda@10.2
         prefix: /opt/cudatoolkit/10.2
 
-  # Lock down which MPI we are using
+    # Lock down which MPI we are using
     mpi:
       buildable: false
     mvapich2:
@@ -135,7 +138,7 @@ spack:
       - spec: netlib-lapack@3.6.1
         prefix: /usr
 
-  # System level packages to not build
+    # System level packages to not build
     autoconf:
       buildable: false
       externals:
@@ -248,7 +251,7 @@ spack:
         prefix: /usr
 
 
-  # External dependencies for SCR
+      # External dependencies for SCR
     lsf:
       buildable: False
       externals:
@@ -272,9 +275,9 @@ spack:
       - spec: pdsh@2.33
         prefix: /usr
 
-  # Globally lock version of third party libraries
-  # TODO: Several of these are preferences not hard requirements.
-  #       We should move away from them here.
+    # Globally lock version of third party libraries
+    # TODO: Several of these are preferences not hard requirements.
+    #       We should move away from them here.
     conduit:
       require: "@0.8.6~shared~test~examples~utilities"
     hdf5:
@@ -288,7 +291,7 @@ spack:
     umpire:
       variants: ~shared~examples
 
-  # Globally lock in versions of Devtools
+    # Globally lock in versions of Devtools
     cmake:
       version: [3.21.1]
       buildable: false
