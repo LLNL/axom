@@ -191,17 +191,12 @@ IndexType DataStore::getNumReferencedBuffers() const
 {
   IndexType num_buffers_referenced = 0;
 
-  IndexType bidx = getFirstValidBufferIndex();
-  while(indexIsValid(bidx))
+  for(const auto& buf : buffers())
   {
-    Buffer* buf = getBuffer(bidx);
-
-    if(buf->getNumViews() > 0)
+    if(buf.getNumViews() > 0)
     {
       num_buffers_referenced++;
     }
-
-    bidx = getNextValidBufferIndex(bidx);
   }
 
   return num_buffers_referenced;
@@ -218,17 +213,12 @@ IndexType DataStore::getTotalAllocatedBytesInBuffers() const
 {
   IndexType num_bytes_allocated = 0;
 
-  IndexType bidx = getFirstValidBufferIndex();
-  while(indexIsValid(bidx))
+  for(const auto& buf : buffers())
   {
-    Buffer* buf = getBuffer(bidx);
-
-    if(buf->isAllocated())
+    if(buf.isAllocated())
     {
-      num_bytes_allocated += buf->getTotalBytes();
+      num_bytes_allocated += buf.getTotalBytes();
     }
-
-    bidx = getNextValidBufferIndex(bidx);
   }
 
   return num_bytes_allocated;
