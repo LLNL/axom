@@ -238,8 +238,9 @@ private:
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
 
   template <typename SetType>
-  typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
-  getSize(const SetType* s) const
+  AXOM_HOST_DEVICE
+    typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
+    getSize(const SetType* s) const
   {
     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
     return s->size();

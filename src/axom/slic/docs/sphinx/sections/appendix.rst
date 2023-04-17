@@ -100,3 +100,9 @@ The table below details which SLIC macros are collective:
 +----------------------------+----------------------------------------------------------------------------+
 
 Doxygen generated API documentation on Macros can be found here: `SLIC Macros <../../../../doxygen/html/slic__macros_8hpp.html>`_
+
+.. #############################################################################
+..  CITATIONS
+.. #############################################################################
+
+.. include:: citations.rst

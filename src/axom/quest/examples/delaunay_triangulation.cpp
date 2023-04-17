@@ -30,7 +30,6 @@ struct Input
   std::vector<double> boundsMin;
   std::vector<double> boundsMax;
 
-private:
 public:
   bool shouldOutputSteps() const { return numOutputSteps != 0; }
 

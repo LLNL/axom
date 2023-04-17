@@ -257,12 +257,7 @@ void Buffer::print(std::ostream& os) const
  */
 void Buffer::exportTo(conduit::Node& data_holder)
 {
-  data_holder["id"] = m_index;
-
-  if(isDescribed())
-  {
-    data_holder["schema"] = m_node.schema().to_json();
-  }
+  exportMetadata(data_holder);
 
   // If Buffer is allocated, export it's node's data
   if(isAllocated())
@@ -276,6 +271,23 @@ void Buffer::exportTo(conduit::Node& data_holder)
     // type and length.
     // DataType& dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
     // dtype.set_number_of_elements(ds_buff->getNumElements());
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Export metadata of the buffer into a conduit node
+ *
+ *************************************************************************
+ */
+void Buffer::exportMetadata(conduit::Node& data_holder)
+{
+  data_holder["id"] = m_index;
+
+  if(isDescribed())
+  {
+    data_holder["schema"] = m_node.schema().to_json();
   }
 }
 

@@ -30,6 +30,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds support for using `ArrayViewIndirection` indirection policy with `slam::Map` and
   `slam::BivariateMap`
 - Adds `const_iterator` support to `slam::BivariateMap` and `slam::SubMap`
+- Primal: Adds a `Hexahedron` primitive
+- Primal: Adds a `clip()` operator for computing the intersection of a
+  `Hexahedron` and another `Tetrahedron` as a `Polyhedron`
+- Primal: Adds an `intersection_volume()` operator for computing the volume of
+  intersection between a primitive and a `Tetrahedron`
+- Primal: Adds a `primal::Polyhedron::from_primitive()` operator that returns a
+  `Polyhedron` object from a given primitive.
+
 
 ### Changed
 - Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
