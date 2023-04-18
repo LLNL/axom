@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/core/execution/execution_space.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -55,15 +56,16 @@ void reverse(axom::StackArray<T, DIM>& a)
     impl.set_contour_value(contourVal);
     impl.mark_crossings();
     impl.scan_crossings();
-    impl.generate_surface();
+    impl.compute_surface();
     impl.populate_surface_mesh(mesh, cellIdField);
   @endverbatim
 */
 template <int DIM, typename ExecSpace>
-struct MarchingCubesImpl
+struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 {
   using Point = axom::primal::Point<double, DIM>;
   using MdimIdx = axom::StackArray<axom::IndexType, DIM>;
+  using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   /*!
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured domain
@@ -133,64 +135,81 @@ struct MarchingCubesImpl
       axom::Array<std::uint16_t, DIM, axom::MemorySpace::Dynamic>(m_cShape);
   }
 
+  void mark_crossings() override
+    {
+      mark_crossings_dim();
+    }
   //!@brief Populate m_caseIds with crossing indices and count the crossings.
   template <int TDIM = DIM>
-  typename std::enable_if<TDIM == 2>::type mark_crossings()
+  typename std::enable_if<TDIM == 2>::type mark_crossings_dim()
   {
-    clear();
-    for(int j = 0; j < m_cShape[0]; ++j)
-    {
-      for(int i = 0; i < m_cShape[1]; ++i)
-      {
-        const bool skipZone = !m_maskView.empty() && bool(m_maskView(i, j));
-        if(!skipZone)
-        {
-          // clang-format on
-          double nodalValues[CELL_CORNER_COUNT] = {m_fcnView(j, i),
-                                                   m_fcnView(j, i + 1),
-                                                   m_fcnView(j + 1, i + 1),
-                                                   m_fcnView(j + 1, i)};
-          // clang-format off
+    using EXEC_POL =
+      RAJA::KernelPolicy<
+        RAJA::statement::For<1, LoopPolicy, // i
+                             RAJA::statement::For<0, LoopPolicy, // j
+                                                  RAJA::statement::Lambda<0>
+                                                  >
+                             >
+      >;
+    RAJA::RangeSegment jRange(0,m_cShape[0]);
+    RAJA::RangeSegment iRange(0,m_cShape[1]);
+    RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange),
+                           [=](int i, int j) {
+                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(i, j));
+                             if(!skipZone)
+                             {
+                               // clang-format on
+                               double nodalValues[CELL_CORNER_COUNT] =
+                                 { m_fcnView(j    , i    )
+                                 , m_fcnView(j    , i + 1)
+                                 , m_fcnView(j + 1, i + 1)
+                                 , m_fcnView(j + 1, i    ) };
+                               // clang-format off
 
-          auto crossingCase = compute_crossing_case(nodalValues);
-          SLIC_ASSERT(crossingCase >= 0 && crossingCase < 16);
-          m_caseIds(j,i) = crossingCase;
-        }
-      }
-    }
+                               auto crossingCase = compute_crossing_case(nodalValues);
+// std::cout<<__WHERE<<i<<','<<j<<"  "<<crossingCase<<std::endl;
+                               m_caseIds(j,i) = crossingCase;
+                             }
+                           });
   }
   template <int TDIM = DIM>
-  typename std::enable_if<TDIM == 3>::type mark_crossings()
+  typename std::enable_if<TDIM == 3>::type mark_crossings_dim()
   {
-    clear();
-    for(int k = 0; k < m_cShape[0]; ++k)
-    {
-      for(int j = 0; j < m_cShape[1]; ++j)
-      {
-        for(int i = 0; i < m_cShape[2]; ++i)
-        {
-          const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
-          if(!skipZone)
-          {
-            // clang-format off
-            double nodalValues[CELL_CORNER_COUNT] =
-              { m_fcnView(k  , j  , i+1)
-              , m_fcnView(k  , j+1, i+1)
-              , m_fcnView(k  , j+1, i  )
-              , m_fcnView(k  , j  , i  )
-              , m_fcnView(k+1, j  , i+1)
-              , m_fcnView(k+1, j+1, i+1)
-              , m_fcnView(k+1, j+1, i  )
-              , m_fcnView(k+1, j  , i  ) };
-            // clang-format on
+    using EXEC_POL =
+      RAJA::KernelPolicy<
+        RAJA::statement::For<2, LoopPolicy, // i
+                             RAJA::statement::For<1, LoopPolicy, // j
+                                                  RAJA::statement::For<0, LoopPolicy, // k
+                                                                       RAJA::statement::Lambda<0>
+                                                                       >
+                                                  >
+                             >
+      >;
+    RAJA::RangeSegment kRange(0,m_cShape[0]);
+    RAJA::RangeSegment jRange(0,m_cShape[1]);
+    RAJA::RangeSegment iRange(0,m_cShape[2]);
+    RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange, kRange),
+                           [=](int i, int j, int k) {
+                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(i, j, k));
+                             if(!skipZone)
+                             {
+// std::cout<<__WHERE<<i<<','<<j<<','<<k<<std::endl;
+                               // clang-format on
+                               double nodalValues[CELL_CORNER_COUNT] =
+                                 { m_fcnView(k  , j  , i+1)
+                                 , m_fcnView(k  , j+1, i+1)
+                                 , m_fcnView(k  , j+1, i  )
+                                 , m_fcnView(k  , j  , i  )
+                                 , m_fcnView(k+1, j  , i+1)
+                                 , m_fcnView(k+1, j+1, i+1)
+                                 , m_fcnView(k+1, j+1, i  )
+                                 , m_fcnView(k+1, j  , i  ) };
+                               // clang-format off
 
-            auto crossingCase = compute_crossing_case(nodalValues);
-            SLIC_ASSERT(crossingCase >= 0 && crossingCase < 256);
-            m_caseIds(k, j, i) = crossingCase;
-          }
-        }
-      }
-    }
+                               auto crossingCase = compute_crossing_case(nodalValues);
+                               m_caseIds(k,j,i) = crossingCase;
+                             }
+                           });
   }
 
   /*!
@@ -201,30 +220,49 @@ struct MarchingCubesImpl
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
 
-    for(axom::IndexType n = 0; n < parentCellCount; ++n)
-    {
-      m_crossingCount += bool(m_crossingCellCounts[m_caseIds.flatIndex(n)]);
-    }
+    RAJA::ReduceSum< RAJA::seq_reduce, axom::IndexType > vsum(0);
+    RAJA::forall<LoopPolicy>(
+      RAJA::RangeSegment(0, parentCellCount),
+      [=](RAJA::Index_type n) {
+        vsum += bool(m_crossingCellCounts[m_caseIds.flatIndex(n)]);
+      });
+    m_crossingCount = static_cast<axom::IndexType>(vsum.get());
     m_crossings.reserve(m_crossingCount);
 
-    axom::IndexType nextSurfaceCellId = 0;
-    for(axom::IndexType n = 0; n < parentCellCount; ++n)
-    {
-      auto caseId = m_caseIds.flatIndex(n);
-      auto ccc = m_crossingCellCounts[caseId];
-      if(ccc != 0)
-      {
-        m_crossings.push_back({n, caseId, nextSurfaceCellId});
-        nextSurfaceCellId += ccc;
-      }
-    }
-    SLIC_ASSERT(m_crossings.size() == m_crossingCount);
-    m_surfaceCellCount = nextSurfaceCellId;
+    axom::Array<int, 1> addCells(m_crossingCount, m_crossingCount);
+    axom::ArrayView<int, 1> addCellsView(addCells);
+    RAJA::forall<LoopPolicy>(
+      RAJA::RangeSegment(0, parentCellCount),
+      AXOM_LAMBDA(axom::IndexType n) {
+        auto caseId = m_caseIds.flatIndex(n);
+        auto ccc = m_crossingCellCounts[caseId];
+        if(ccc != 0)
+        {
+          addCellsView[m_crossings.size()] = ccc;
+          m_crossings.push_back({n, caseId});
+        }
+      });
+
+    axom::Array<axom::IndexType> prefixSum(m_crossingCount);
+    auto prefixSumView = prefixSum.view();
+    RAJA::exclusive_scan<LoopPolicy>(
+      RAJA::make_span(addCellsView.data(), m_crossingCount),
+      RAJA::make_span(prefixSumView.data(), m_crossingCount),
+      RAJA::operators::plus<axom::IndexType>{});
+
+    RAJA::forall<LoopPolicy>(
+      RAJA::RangeSegment(0, m_crossingCount),
+      [=](axom::IndexType n) {
+        m_crossings[n].firstSurfaceCellId =  prefixSum[n];
+      });
+    m_surfaceCellCount = m_crossings.empty() ? 0 :
+      m_crossings.back().firstSurfaceCellId +
+      m_crossingCellCounts[m_crossings.back().caseNum];
     std::cout << __WHERE << m_crossings.size() << " crossings found."
               << std::endl;
   }
 
-  void generate_surface()
+  void compute_surface()
   {
     /*
       Reserve surface mesh data space so we can add data without
@@ -239,41 +277,42 @@ struct MarchingCubesImpl
     m_surfaceCellCorners.resize(m_surfaceCellCount);
     m_surfaceCellParents.resize(m_surfaceCellCount);
 
-    for(axom::IndexType iCrossing = 0; iCrossing < m_crossings.size(); ++iCrossing)
-    {
-      const auto& crossingInfo = m_crossings[iCrossing];
-      const IndexType crossingCellCount =
-        m_crossingCellCounts[crossingInfo.caseNum];
-      SLIC_ASSERT(crossingCellCount > 0);
+    RAJA::forall<LoopPolicy>(
+      RAJA::RangeSegment(0, m_crossingCount),
+      [=](axom::IndexType iCrossing) {
+        const auto& crossingInfo = m_crossings[iCrossing];
+        const IndexType crossingCellCount =
+          m_crossingCellCounts[crossingInfo.caseNum];
+        SLIC_ASSERT(crossingCellCount > 0);
 
-      // Parent cell data for interpolating new node coordinates.
-      Point cornerCoords[CELL_CORNER_COUNT];
-      double cornerValues[CELL_CORNER_COUNT];
-      get_corner_coords_and_values(crossingInfo.parentCellNum,
-                                   cornerCoords,
-                                   cornerValues);
+        // Parent cell data for interpolating new node coordinates.
+        Point cornerCoords[CELL_CORNER_COUNT];
+        double cornerValues[CELL_CORNER_COUNT];
+        get_corner_coords_and_values(crossingInfo.parentCellNum,
+                                     cornerCoords,
+                                     cornerValues);
 
-      // Create the new cell and its DIM nodes.
-      // New node are located where a parent cell edge intersects the isosurface.
-      for(int iCell = 0; iCell < crossingCellCount; ++iCell)
-      {
-        IndexType surfaceCellId = crossingInfo.firstSurfaceCellId + iCell;
-        m_surfaceCellParents[surfaceCellId] = crossingInfo.parentCellNum;
-        for(int d = 0; d < DIM; ++d)
+        // Create the new cell and its DIM nodes.
+        // New node are located where a parent cell edge intersects the isosurface.
+        for(int iCell = 0; iCell < crossingCellCount; ++iCell)
         {
-          IndexType surfaceNodeId = surfaceCellId * DIM + d;
-          m_surfaceCellCorners[surfaceCellId][d] = surfaceNodeId;
+          IndexType surfaceCellId = crossingInfo.firstSurfaceCellId + iCell;
+          m_surfaceCellParents[surfaceCellId] = crossingInfo.parentCellNum;
+          for(int d = 0; d < DIM; ++d)
+          {
+            IndexType surfaceNodeId = surfaceCellId * DIM + d;
+            m_surfaceCellCorners[surfaceCellId][d] = surfaceNodeId;
 
-          const int edge = DIM == 2
-            ? detail::cases2D[crossingInfo.caseNum][iCell * DIM + d]
-            : detail::cases3D[crossingInfo.caseNum][iCell * DIM + d];
-          linear_interp(edge,
-                        cornerCoords,
-                        cornerValues,
-                        m_surfaceCoords[surfaceNodeId]);
+            const int edge = DIM == 2
+              ? detail::cases2D[crossingInfo.caseNum][iCell * DIM + d]
+              : detail::cases3D[crossingInfo.caseNum][iCell * DIM + d];
+            linear_interp(edge,
+                          cornerCoords,
+                          cornerValues,
+                          m_surfaceCoords[surfaceNodeId]);
+          }
         }
-      }
-    }
+      });
   }
 
   //!@brief Compute multidimensional index from flat cell index.
@@ -355,7 +394,7 @@ struct MarchingCubesImpl
 
   void populate_surface_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
-    const std::string& cellIdField)
+    const std::string& cellIdField) const
   {
     if(!cellIdField.empty() &&
        !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
@@ -378,12 +417,11 @@ struct MarchingCubesImpl
         const MdimIdx cornerIds = m_surfaceCellCorners[n] + priorNodeCount;
         mesh.appendCell(cornerIds);
       }
-      // TODO: Replace with device-capable copy.
       axom::IndexType* dst =
         mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
-      memcpy(dst + priorCellCount,
-             m_surfaceCellParents.data(),
-             sizeof(axom::IndexType) * addedCellCount);
+      axom::copy(dst + priorCellCount,
+                 m_surfaceCellParents.data(),
+                 sizeof(axom::IndexType) * addedCellCount);
     }
   }
 
@@ -524,6 +562,12 @@ struct MarchingCubesImpl
       , caseNum(caseNum_)
       , firstSurfaceCellId(firstSurfaceCellId_)
     { }
+    CrossingInfo(axom::IndexType parentCellNum_,
+                 std::uint16_t caseNum_)
+      : parentCellNum(parentCellNum_)
+      , caseNum(caseNum_)
+      , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
+    { }
     axom::IndexType parentCellNum;       //!< @brief Flat index of parent cell.
     std::uint16_t caseNum;               //!< @brief Index in cases2D or cases3D
     axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
@@ -549,6 +593,8 @@ struct MarchingCubesImpl
   axom::IndexType m_crossingCount = 0;
   //!@brief Number of surface cells from crossings.
   axom::IndexType m_surfaceCellCount = 0;
+  axom::IndexType get_surface_cell_count() const override
+    { return m_surfaceCellCount; }
 
   //!@brief Number of corners (nodes) on each cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
@@ -557,7 +603,7 @@ struct MarchingCubesImpl
   const int* const m_crossingCellCounts =
     DIM == 2 ? detail::num_segments : detail::num_triangles;
 
-  //!@name Output surface mesh.
+  //!@name Internal representation of surface mesh.
   //@{
   //!@brief Coordinates of generated surface nodes.
   axom::Array<Point> m_surfaceCoords;
@@ -630,6 +676,7 @@ void MarchingCubes::populate_surface_mesh(
     mesh.createField<axom::IndexType>(domainIdField, axom::mint::CELL_CENTERED);
   }
 
+  // Reserve space once across single domains.
   axom::IndexType surfaceCellCount = 0;
   axom::IndexType surfaceNodeCount = 0;
   for(int dId = 0; dId < m_singles.size(); ++dId)
@@ -640,6 +687,7 @@ void MarchingCubes::populate_surface_mesh(
   mesh.reserveCells(surfaceCellCount);
   mesh.reserveNodes(surfaceNodeCount);
 
+  // Populate mesh from single domains and add domain id if requested.
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
     std::shared_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
@@ -695,7 +743,7 @@ void MarchingCubesSingleDomain::set_domain(const conduit::Node& dom)
 
   m_ndim = dimsNode.number_of_children();
 
-  SLIC_ASSERT(m_ndim >= 1 && m_ndim <= 3);
+  SLIC_ASSERT(m_ndim >= 2 && m_ndim <= 3);
 
   const conduit::Node& coordsValues = dom[m_coordsetPath + "/values"];
   bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordsValues);
@@ -721,58 +769,26 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
 
   if(m_ndim == 2)
   {
-    m_impl2d =
-      std::make_shared<MarchingCubesImpl<2, axom::execution_space<axom::SEQ_EXEC>>>();
-    m_impl2d->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
-    m_impl2d->set_contour_value(contourVal);
-    m_impl2d->mark_crossings();
-    m_impl2d->scan_crossings();
-    m_impl2d->generate_surface();
+    m_impl =
+      std::make_shared<MarchingCubesImpl<2, axom::SEQ_EXEC>>();
   }
   else
   {
-    m_impl3d =
-      std::make_shared<MarchingCubesImpl<3, axom::execution_space<axom::SEQ_EXEC>>>();
-    m_impl3d->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
-    m_impl3d->set_contour_value(contourVal);
-    m_impl3d->mark_crossings();
-    m_impl3d->scan_crossings();
-    m_impl3d->generate_surface();
+    m_impl =
+      std::make_shared<MarchingCubesImpl<3, axom::SEQ_EXEC>>();
   }
-}
-
-axom::IndexType MarchingCubesSingleDomain::get_surface_cell_count() const
-{
-  axom::IndexType cellCount = 0;
-  if(m_ndim == 2)
-  {
-    SLIC_ASSERT_MSG(
-      m_impl2d,
-      "There are no surface mesh until you call compute_iso_surface()");
-    cellCount = m_impl2d->m_surfaceCellCount;
-  }
-  else
-  {
-    SLIC_ASSERT_MSG(
-      m_impl3d,
-      "There are no surface mesh until you call compute_iso_surface()");
-    cellCount = m_impl3d->m_surfaceCellCount;
-  }
-  return cellCount;
+  m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
+  m_impl->set_contour_value(contourVal);
+  m_impl->mark_crossings();
+  m_impl->scan_crossings();
+  m_impl->compute_surface();
 }
 
 void MarchingCubesSingleDomain::populate_surface_mesh(
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
-  const std::string& cellIdField)
+  const std::string& cellIdField) const
 {
-  if(m_ndim == 2)
-  {
-    m_impl2d->populate_surface_mesh(mesh, cellIdField);
-  }
-  else
-  {
-    m_impl3d->populate_surface_mesh(mesh, cellIdField);
-  }
+  m_impl->populate_surface_mesh(mesh, cellIdField);
 }
 
 }  // end namespace quest

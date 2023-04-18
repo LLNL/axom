@@ -859,8 +859,8 @@ std::cout << __WHERE << std::endl;
 for(int  i=0; i<fieldView.shape()[0]; ++i) {
   for(int j=0; j<fieldView.shape()[0]; ++j) {
     std::cout<< "pt("<<i<<','<<j<<") at "
-             << coordsViews[0](i,j)<<','<<coordsViews[1](i,j)
-             <<" = "<<fieldView(i,j)<<std::endl;
+             << coordsViews[0](j,i)<<','<<coordsViews[1](j,i)
+             <<" = "<<fieldView(j,i)<<std::endl;
   }
 }
 #endif

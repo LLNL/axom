@@ -36,11 +36,9 @@ enum class MarchingCubesRuntimePolicy
 {
   seq = 0,
   omp = 1,
-  cuda = 2
+  cuda = 2,
+  hip = 3
 };
-
-template <int DIM, typename ExecSpace = axom::SEQ_EXEC>
-struct MarchingCubesImpl;
 
 /*!
  * \@brief Class implementing marching cubes algorithm on a single
@@ -55,11 +53,12 @@ struct MarchingCubesImpl;
  * Usage example:
  * @beginverbatim
  *   MarchingCubes computationalMesh(meshNode, "coords");
- *   axom::mint::UnstructuredMesh<axom::mint::_SINGLe_SHAPE>
- *     surfaceMesh(3, min::CellType::Triangle);
  *   double contourValue = 0.0;
  *   set_function_field("my_function");
  *   mc.compute_iso_surface(contourValue);
+ *
+ *   axom::mint::UnstructuredMesh<axom::mint::_SINGLE_SHAPE>
+ *     surfaceMesh(3, min::CellType::Triangle);
  *   mc.populate_surface_mesh( surfaceMesh, "cellIdField");
  * @endverbatim
  *
@@ -112,12 +111,19 @@ public:
   void compute_iso_surface(double contourVal = 0.0);
 
   //!@brief Get number of cells in the generated contour mesh.
-  axom::IndexType get_surface_cell_count() const;
+  axom::IndexType get_surface_cell_count() const
+    {
+      SLIC_ASSERT_MSG(
+        m_impl,
+        "There are no surface mesh until you call compute_iso_surface()");
+      axom::IndexType cellCount = m_impl->get_surface_cell_count();
+      return cellCount;
+    }
   //!@brief Get number of nodes in the generated contour mesh.
   axom::IndexType get_surface_node_count() const
-  {
-    return m_ndim * get_surface_cell_count();
-  }
+    {
+      return m_ndim * get_surface_cell_count();
+    }
 
   /*!
     @brief Put generated surface in a mint::UnstructuredMesh.
@@ -127,7 +133,7 @@ public:
   */
   void populate_surface_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-    const std::string &cellIdField = {});
+    const std::string &cellIdField = {}) const;
 
 private:
   // MarchingCubesRuntimePolicy m_runtimePolicy;
@@ -144,8 +150,43 @@ private:
   std::string m_fcnPath;
   std::string m_maskPath;
 
-  std::shared_ptr<MarchingCubesImpl<2, axom::execution_space<axom::SEQ_EXEC>>> m_impl2d;
-  std::shared_ptr<MarchingCubesImpl<3, axom::execution_space<axom::SEQ_EXEC>>> m_impl3d;
+#if 0
+  //!@name Internal representation of surface mesh.
+  //@{
+  //!@brief Coordinates of generated surface nodes.
+  axom::Array<Point> m_surfaceCoords;
+
+  //!@brief Corners (index into m_surfaceCoords) of generated surface cells.
+  axom::Array<MdimIdx> m_surfaceCellCorners;
+
+  //!@brief Computational cell (flat index) crossing the surface cell.
+  axom::Array<IndexType> m_surfaceCellParents;
+  //@}
+#endif
+
+  //!@brief Base class that allows templated implementations to be same type.
+  struct MarchingCubesImplBase {
+    //!@brief Prepare internal data for operating on the given domain.
+    virtual void initialize(const conduit::Node& dom,
+                            const std::string& coordsetPath,
+                            const std::string& fcnPath,
+                            const std::string& maskPath) = 0;
+    //!@brief Set the contour value
+    virtual void set_contour_value(double contourVal) = 0;
+    //!@brief Mark domain cells that cross the contour.
+    virtual void mark_crossings() = 0;
+    //!@brief Precompute some metadata for surface mesh.
+    virtual void scan_crossings() = 0;
+    //!@brief Generate the surface mesh in internal data format.
+    virtual void compute_surface() = 0;
+    //!@brief Get the number of surface mesh cells generated.
+    virtual axom::IndexType get_surface_cell_count() const = 0;
+    //!@brief Populate output mesh object with generated surface.
+    virtual void populate_surface_mesh(
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
+      const std::string& cellIdField) const = 0;
+  };
+  std::shared_ptr<MarchingCubesImplBase> m_impl;
 
   /*!
    * \brief Set the blueprint single-domain mesh.
