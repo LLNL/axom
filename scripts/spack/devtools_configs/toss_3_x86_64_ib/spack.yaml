@@ -14,6 +14,12 @@ spack:
     build_stage::
     - $spack/../build_stage
 
+  view:
+    default:
+      root: ../view
+      projections: 
+        all: '{name}-{version}'
+
   compilers::
   - compiler:
       environment: {}
