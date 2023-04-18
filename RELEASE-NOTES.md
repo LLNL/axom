@@ -26,6 +26,19 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `Array::resize(size, T value)`: resizes the array, and sets any new elements to `value`.
 - Adds an `ArrayView::empty()` method to return whether the view is empty or not.
 - Adds an `area()` function to `primal::Polygon`
+- Adds initial support for using Slam types on the GPU
+- Adds support for using `ArrayViewIndirection` indirection policy with `slam::Map` and
+  `slam::BivariateMap`
+- Adds `const_iterator` support to `slam::BivariateMap` and `slam::SubMap`
+- Primal: Adds a `Hexahedron` primitive
+- Primal: Adds a `clip()` operator for computing the intersection of a
+  `Hexahedron` and another `Tetrahedron` as a `Polyhedron`
+- Primal: Adds an `intersection_volume()` operator for computing the volume of
+  intersection between a primitive and a `Tetrahedron`
+- Primal: Adds a `primal::Polyhedron::from_primitive()` operator that returns a
+  `Polyhedron` object from a given primitive.
+- Adds `DataStore::getBufferInfo()` and `Group::getDataInfo` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
+
 
 ### Changed
 - `IntersectionShaper` now implements material replacement rules.
@@ -47,6 +60,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
 - Updates [conduit dependency to v0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
 - Adds `vcpkg` port for `lua` as optional dependency on Windows
+- Adds additional parameters to quest's `PointInCell` query to control the Newton solve
+  from physical to reference space for a given element
+- Remove function pointer call in IteratorBase::advance()
+- Slam: `IndirectionPolicy::data()` now returns a reference to the underlying buffer
+  Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
+  returns a mutable pointer to the buffer.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+

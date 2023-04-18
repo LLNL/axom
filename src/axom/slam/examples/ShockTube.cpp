@@ -107,12 +107,14 @@ public:
   using IndexType = PositionType;
 
   /// types for Tube and {In,Out}Flow subsets
+  using RuntimeOffsetPolicy = slam::policies::RuntimeOffset<PositionType>;
   using StrideOnePolicy = slam::policies::StrideOne<PositionType>;
   using NoIndirectionPolicy =
     slam::policies::NoIndirection<PositionType, ElementType>;
   using TubeSubsetPolicy = slam::policies::ConcreteParentSubset<ElemSet>;
   using ElemSubset = slam::GenericRangeSet<PositionType,
                                            ElementType,
+                                           RuntimeOffsetPolicy,
                                            StrideOnePolicy,
                                            NoIndirectionPolicy,
                                            TubeSubsetPolicy>;
@@ -134,7 +136,7 @@ public:
   using FECard = slam::policies::ConstantCardinality<PositionType, FEStride>;
   using STLIndirection =
     slam::policies::STLVectorIndirection<PositionType, ElementType>;
-  using IndexVec = STLIndirection::VectorType;
+  using IndexVec = typename STLIndirection::IndirectionBufferType;
 
   using TubeElemToFaceRelation =
     slam::StaticRelation<PositionType, ElementType, EFCard, STLIndirection, ElemSubset, FaceSet>;

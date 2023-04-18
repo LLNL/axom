@@ -552,18 +552,16 @@ bool Field::searchValidValues<std::string>(const axom::sidre::View& view,
 {
   const auto string_group = m_sidreGroup->getGroup("validStringValues");
   const std::string value = view.getString();
-  auto idx = string_group->getFirstValidViewIndex();
   bool is_valid = false;
   std::vector<std::string> valid_values;
-  while(axom::sidre::indexIsValid(idx))
+  for(auto& view : string_group->views())
   {
     // Store the valid values so we can print them in the error message
-    valid_values.push_back(string_group->getView(idx)->getString());
+    valid_values.push_back(view.getString());
     if(valid_values.back() == value)
     {
       is_valid = true;
     }
-    idx = string_group->getNextValidViewIndex(idx);
   }
   if(!is_valid)
   {

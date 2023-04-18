@@ -51,10 +51,11 @@ namespace slam
  */
 
 template <typename SuperMapType,
-          typename SubsetType  //= slam::RangeSet<SetPosition, SetElement>
-          >
-class SubMap : public MapBase<typename SubsetType::PositionType>,
-               public SuperMapType::StridePolicyType
+          typename SubsetType,  //= slam::RangeSet<SetPosition, SetElement>
+          typename InterfacePolicy = policies::VirtualInterface>
+class SubMap
+  : public policies::MapInterface<InterfacePolicy, typename SubsetType::PositionType>,
+    public SuperMapType::StridePolicyType
 {
 public:
   static_assert(!std::is_abstract<SubsetType>::value,
@@ -75,10 +76,14 @@ public:
 
   //iterator type aliases
   class SubMapIterator;
-  using const_iterator = SubMapIterator;
-  using const_iterator_pair = std::pair<const_iterator, const_iterator>;
-  using iterator = const_iterator;
-  using iterator_pair = const_iterator_pair;
+  using iterator = SubMapIterator;
+  using iterator_pair = std::pair<iterator, iterator>;
+
+  using ValueType = typename IndirectionPolicyType::IndirectionResult;
+  using ConstValueType = typename IndirectionPolicyType::ConstIndirectionResult;
+
+  using DataRefType =
+    std::conditional_t<std::is_const<SuperMapType>::value, ConstValueType, ValueType>;
 
 public:
   /** Default Constructor */
@@ -90,33 +95,14 @@ public:
    * \param supermap The map that this SubMap is a subset of.
    * \param subset_idxset a Set of ElementFlatIndex into the SuperMap
    */
-  SubMap(SuperMapType* supermap,
-         SubsetType subset_idxset,
-         bool indicesHaveIndirection = true)
+  AXOM_HOST_DEVICE SubMap(SuperMapType* supermap,
+                          SubsetType subset_idxset,
+                          bool indicesHaveIndirection = true)
     : StridePolicyType(supermap->stride())
     , m_superMap(supermap)
     , m_subsetIdx(subset_idxset)
     , m_indicesHaveIndirection(indicesHaveIndirection)
   { }
-
-  /** Copy Constructor */
-  SubMap(const SubMap& otherMap)
-    : StridePolicyType(otherMap)
-    , m_superMap(otherMap.m_superMap)
-    , m_subsetIdx(otherMap.m_subsetIdx)
-    , m_indicesHaveIndirection(otherMap.m_indicesHaveIndirection)
-  { }
-
-  /** Assignment Operator */
-  SubMap& operator=(const SubMap& otherMap)
-  {
-    StridePolicyType::operator=(otherMap);
-    m_superMap = otherMap.m_superMap;
-    m_subsetIdx = otherMap.m_subsetIdx;
-    m_indicesHaveIndirection = otherMap.m_indicesHaveIndirection;
-
-    return *this;
-  }
 
   /// \name SubMap individual access functions
   /// @{
@@ -130,15 +116,7 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= idx < size() * numComp()
    */
-  const DataType& operator[](IndexType idx) const
-  {
-    verifyPositionImpl(idx);
-    IndexType flat_idx = getMapCompFlatIndex(idx);
-    return (*m_superMap)[flat_idx];
-  }
-
-  //non-const version
-  DataType& operator[](IndexType idx)
+  DataRefType operator[](IndexType idx) const
   {
     verifyPositionImpl(idx);
     IndexType flat_idx = getMapCompFlatIndex(idx);
@@ -152,16 +130,11 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& operator()(IndexType idx, IndexType comp = 0) const
+  AXOM_HOST_DEVICE DataRefType operator()(IndexType idx, IndexType comp = 0) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(idx, comp);
-    return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
-  }
-
-  //non-const version
-  DataType& operator()(IndexType idx, IndexType comp = 0)
-  {
-    verifyPositionImpl(idx, comp);
+#endif
     SLIC_ASSERT_MSG(m_superMap != nullptr, "Submap's super map was null.");
 
     return (*m_superMap)[getMapElemFlatIndex(idx) * numComp() + comp];
@@ -174,12 +147,7 @@ public:
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& value(IndexType idx, IndexType comp = 0) const
-  {
-    return operator()(idx, comp);
-  }
-
-  DataType& value(IndexType idx, IndexType comp = 0)
+  DataRefType value(IndexType idx, IndexType comp = 0) const
   {
     return operator()(idx, comp);
   }
@@ -200,14 +168,17 @@ public:
   ///
 
   /** \brief returns the size of the SubMap  */
-  IndexType size() const override { return m_subsetIdx.size(); }
+  AXOM_HOST_DEVICE IndexType size() const { return m_subsetIdx.size(); }
 
   /** \brief returns the number of components (aka. stride) of the SubMap  */
-  IndexType numComp() const { return StridePolicyType::stride(); }
+  AXOM_HOST_DEVICE IndexType numComp() const
+  {
+    return StridePolicyType::stride();
+  }
 
   /// @}
 
-  bool isValid(bool VerboseOutput = false) const override;
+  bool isValid(bool VerboseOutput = false) const;
 
 private:  //function inherit from StridePolicy that should not be accessible
   void setStride(IndexType)
@@ -221,7 +192,7 @@ private:  //helper functions
   /**
    * \brief Get the ElementFlatIndex into the SuperMap given the subset's index.
    */
-  IndexType getMapElemFlatIndex(IndexType idx) const
+  AXOM_HOST_DEVICE IndexType getMapElemFlatIndex(IndexType idx) const
   {
     return m_subsetIdx[idx];
   }
@@ -238,10 +209,7 @@ private:  //helper functions
   }
 
   /** Checks the ComponentFlatIndex is valid */
-  void verifyPosition(SetPosition idx) const override
-  {
-    verifyPositionImpl(idx);
-  }
+  void verifyPosition(SetPosition idx) const { verifyPositionImpl(idx); }
 
   /** Checks the ElementFlatIndex and the component index is valid */
   void verifyPosition(SetPosition idx, SetPosition comp) const
@@ -288,9 +256,9 @@ public:
     using iter = SubMapIterator;
     using PositionType = SetPosition;
 
-    SubMapIterator(PositionType pos, SubMap* sMap)
+    AXOM_HOST_DEVICE SubMapIterator(PositionType pos, SubMap sMap)
       : IterBase(pos)
-      , m_submap(*sMap)
+      , m_submap(sMap)
     { }
 
     /**
@@ -298,20 +266,20 @@ public:
      *        components, this will return the first component. To access
      *        the other components, use iter(comp)
      */
-    DataType& operator*() { return m_submap(m_pos, 0); }
+    AXOM_HOST_DEVICE DataRefType operator*() { return m_submap(m_pos, 0); }
 
     /**
      * \brief Returns the iterator's value at the specified component.
      *        Returns the first component if comp_idx is not specified.
      * \param comp_idx  (Optional) Zero-based index of the component.
      */
-    DataType& operator()(IndexType comp = 0) { return m_submap(m_pos, comp); }
+    DataRefType operator()(IndexType comp = 0) { return m_submap(m_pos, comp); }
 
     /** \brief Returns the first component value after n increments.  */
-    DataType& operator[](PositionType n) { return *(*this + n); }
+    DataRefType operator[](PositionType n) { return *(*this + n); }
 
     /** \brief Same as operator() */
-    DataType& value(IndexType comp = 0) { return m_submap(m_pos, comp); }
+    DataRefType value(IndexType comp = 0) { return m_submap(m_pos, comp); }
 
     /** \brief Returns the Set element at the iterator's position */
     IndexType index() { return m_submap.index(m_pos); }
@@ -321,15 +289,18 @@ public:
 
   protected:
     /* Implementation of advance() as required by IteratorBase */
-    void advance(PositionType pos) { m_pos += pos; }
+    AXOM_HOST_DEVICE void advance(PositionType pos) { m_pos += pos; }
 
   private:
     SubMap m_submap;
   };
 
 public:  // Functions related to iteration
-  SubMapIterator begin() { return SubMapIterator(0, this); }
-  SubMapIterator end() { return SubMapIterator(m_subsetIdx.size(), this); }
+  AXOM_HOST_DEVICE iterator begin() const { return iterator(0, *this); }
+  AXOM_HOST_DEVICE iterator end() const
+  {
+    return iterator(m_subsetIdx.size(), *this);
+  }
 
 protected:  //Member variables
   SuperMapType* m_superMap;
@@ -338,8 +309,8 @@ protected:  //Member variables
 
 };  //end SubMap
 
-template <typename SuperMapType, typename SetType>
-bool SubMap<SuperMapType, SetType>::isValid(bool verboseOutput) const
+template <typename SuperMapType, typename SetType, typename InterfacePolicy>
+bool SubMap<SuperMapType, SetType, InterfacePolicy>::isValid(bool verboseOutput) const
 {
   bool isValid = true;
   std::stringstream errStr;

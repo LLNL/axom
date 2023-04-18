@@ -315,10 +315,13 @@ public:
   /// \brief Set the shape
   AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, DIM>& shape_)
   {
+#ifndef NDEBUG
     for(auto s : shape_)
     {
       assert(s >= 0);
     }
+#endif
+
     m_shape = shape_;
     updateStrides();
   }

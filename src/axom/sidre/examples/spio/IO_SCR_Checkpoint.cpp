@@ -294,6 +294,7 @@ int main(int argc, char* argv[])
   // run the test from spio_scr.hpp
   int result = RUN_ALL_TESTS();
   SLIC_ASSERT(result == 0);
+  AXOM_UNUSED_VAR(result);
 
   int my_rank, num_ranks;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -422,6 +423,7 @@ int main(int argc, char* argv[])
   bool success = simpleTestCompare(ds_output, ds_input);
 
   SLIC_ASSERT(success);
+  AXOM_UNUSED_VAR(success);
 
   MPI_Finalize();
 

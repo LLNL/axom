@@ -153,7 +153,7 @@ private:
     {
       setIndices1.resize(SET_SIZE_1);
       m_iset1 = new ISet1(SET_SIZE_1);
-      m_iset1->data() = &setIndices1;
+      m_iset1->ptr() = &setIndices1;
       for(auto idx : m_iset1->positions())
       {
         (*m_iset1)[idx] = 2 * idx;
@@ -166,7 +166,7 @@ private:
     {
       setIndices2.resize(SET_SIZE_2);
       m_iset2 = new ISet2(SET_SIZE_2);
-      m_iset2->data() = &setIndices2;
+      m_iset2->ptr() = &setIndices2;
       for(auto idx : m_iset2->positions())
       {
         (*m_iset2)[idx] = 3 * idx;
@@ -396,6 +396,7 @@ void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
   const auto* firstSet = bset->getFirstSet();
   const auto* secondSet = bset->getSecondSet();
 
+  int flatIdx = 0;
   for(int idx = 0; idx < firstSetSize; ++idx)
   {
     auto outer = firstSet->at(idx);
@@ -404,6 +405,7 @@ void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
     sstr << idx << ": " << outer << " -> { ";
 
     auto elems = bset->getElements(idx);
+    int sparseIdx = 0;
     for(auto innerIdx : elems)
     {
       auto inner = secondSet->at(innerIdx);
@@ -413,7 +415,14 @@ void bSetTraverseTest(slam::BivariateSet<S1, S2>* bset, bool shouldCheckMod)
         EXPECT_TRUE(modCheck(outer, inner));
       }
 
+      EXPECT_EQ(sparseIdx, bset->findElementIndex(idx, innerIdx));
+      EXPECT_EQ(flatIdx, bset->findElementFlatIndex(idx, innerIdx));
+      EXPECT_EQ(idx, bset->flatToFirstIndex(flatIdx));
+      EXPECT_EQ(innerIdx, bset->flatToSecondIndex(flatIdx));
+
       sstr << "(" << outer << "," << inner << ") ";
+      sparseIdx++;
+      flatIdx++;
     }
     SLIC_INFO(sstr.str() << "}");
   }

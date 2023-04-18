@@ -52,10 +52,12 @@ public:
   static const IntType DEFAULT_VALUE = IntType(1);
   static const bool IS_COMPILE_TIME = false;
 
-  RuntimeStride(IntType stride = DEFAULT_VALUE) : m_stride(stride) { }
+  AXOM_HOST_DEVICE RuntimeStride(IntType stride = DEFAULT_VALUE)
+    : m_stride(stride)
+  { }
 
-  inline IntType stride() const { return m_stride; }
-  inline IntType& stride() { return m_stride; }
+  AXOM_HOST_DEVICE inline IntType stride() const { return m_stride; }
+  AXOM_HOST_DEVICE inline IntType& stride() { return m_stride; }
 
   void setStride(IntType str) { m_stride = str; }
 
@@ -80,12 +82,15 @@ struct CompileTimeStride
   static const IntType DEFAULT_VALUE = INT_VAL;
   static const bool IS_COMPILE_TIME = true;
 
-  CompileTimeStride(IntType val = DEFAULT_VALUE) { setStride(val); }
+  AXOM_HOST_DEVICE CompileTimeStride(IntType val = DEFAULT_VALUE)
+  {
+    setStride(val);
+  }
 
-  inline IntType stride() const { return INT_VAL; }
+  AXOM_HOST_DEVICE inline IntType stride() const { return INT_VAL; }
   inline IntType operator()() const { return stride(); }
 
-  void setStride(IntType AXOM_DEBUG_PARAM(val))
+  AXOM_HOST_DEVICE void setStride(IntType AXOM_DEBUG_PARAM(val))
   {
     SLIC_ASSERT_MSG(
       val == INT_VAL,
@@ -111,12 +116,12 @@ struct StrideOne
    * This constructor only exists to allow the derived class to not have
    * to specialize for when the stride is known at compile time
    */
-  StrideOne(IntType val = DEFAULT_VALUE) { setStride(val); }
+  AXOM_HOST_DEVICE StrideOne(IntType val = DEFAULT_VALUE) { setStride(val); }
 
-  inline const IntType stride() const { return DEFAULT_VALUE; }
+  AXOM_HOST_DEVICE inline const IntType stride() const { return DEFAULT_VALUE; }
   inline const IntType operator()() const { return stride(); }
 
-  void setStride(IntType AXOM_DEBUG_PARAM(val))
+  AXOM_HOST_DEVICE void setStride(IntType AXOM_DEBUG_PARAM(val))
   {
     SLIC_ASSERT_MSG(
       val == DEFAULT_VALUE,

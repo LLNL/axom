@@ -861,6 +861,20 @@ void View::createNativeLayout(Node& n) const
 /*
  *************************************************************************
  *
+ * Copy the metadata for the View.
+ *
+ *************************************************************************
+ */
+void View::copyMetadataToNode(Node& n) const
+{
+  n["state"] = getStateStringName(m_state);
+  n["schema"] = m_schema.to_json();
+  n["is_applied"] = m_is_applied;
+}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE ctor for View not associated with any data.
  *
  *************************************************************************

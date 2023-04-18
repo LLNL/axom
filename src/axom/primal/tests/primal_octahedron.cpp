@@ -8,6 +8,8 @@
 #include "axom/config.hpp"
 #include "axom/slic.hpp"
 
+#include "axom/core/Array.hpp"
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 
@@ -80,18 +82,50 @@ TEST_F(OctahedronTest, constructFromPoints)
   // Access the test data
   const QPoint* pt = this->qData0;
 
-  QOct oct(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]);
+  axom::Array<QPoint> ptArray({pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]});
+
+  QOct oct1(pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]);
+
+  QOct oct2(pt);
+
+  QOct oct3(ptArray);
+
+  QOct oct4({pt[0], pt[1], pt[2], pt[3], pt[4], pt[5]});
 
   // Test ostream operator
-  SLIC_INFO("Octahedron coordinates: " << oct);
+  SLIC_INFO("Octahedron 1 coordinates: " << oct1);
+  SLIC_INFO("Octahedron 2 coordinates: " << oct2);
+  SLIC_INFO("Octahedron 3 coordinates: " << oct3);
+  SLIC_INFO("Octahedron 4 coordinates: " << oct4);
 
   // Check indirection operator
-  EXPECT_EQ(pt[0], oct[0]);
-  EXPECT_EQ(pt[1], oct[1]);
-  EXPECT_EQ(pt[2], oct[2]);
-  EXPECT_EQ(pt[3], oct[3]);
-  EXPECT_EQ(pt[4], oct[4]);
-  EXPECT_EQ(pt[5], oct[5]);
+  EXPECT_EQ(pt[0], oct1[0]);
+  EXPECT_EQ(pt[1], oct1[1]);
+  EXPECT_EQ(pt[2], oct1[2]);
+  EXPECT_EQ(pt[3], oct1[3]);
+  EXPECT_EQ(pt[4], oct1[4]);
+  EXPECT_EQ(pt[5], oct1[5]);
+
+  EXPECT_EQ(pt[0], oct2[0]);
+  EXPECT_EQ(pt[1], oct2[1]);
+  EXPECT_EQ(pt[2], oct2[2]);
+  EXPECT_EQ(pt[3], oct2[3]);
+  EXPECT_EQ(pt[4], oct2[4]);
+  EXPECT_EQ(pt[5], oct2[5]);
+
+  EXPECT_EQ(pt[0], oct3[0]);
+  EXPECT_EQ(pt[1], oct3[1]);
+  EXPECT_EQ(pt[2], oct3[2]);
+  EXPECT_EQ(pt[3], oct3[3]);
+  EXPECT_EQ(pt[4], oct3[4]);
+  EXPECT_EQ(pt[5], oct3[5]);
+
+  EXPECT_EQ(pt[0], oct4[0]);
+  EXPECT_EQ(pt[1], oct4[1]);
+  EXPECT_EQ(pt[2], oct4[2]);
+  EXPECT_EQ(pt[3], oct4[3]);
+  EXPECT_EQ(pt[4], oct4[4]);
+  EXPECT_EQ(pt[5], oct4[5]);
 }
 
 TEST_F(OctahedronTest, equals)

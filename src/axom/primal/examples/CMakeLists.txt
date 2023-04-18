@@ -29,3 +29,15 @@ foreach ( example ${primal_examples} )
         )
 
 endforeach()
+
+if (AXOM_ENABLE_PRIMAL AND RAJA_FOUND AND UMPIRE_FOUND)
+
+    blt_add_executable(
+        NAME        hex_tet_volume_ex
+        SOURCES     hex_tet_volume.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${primal_example_depends}
+        FOLDER      axom/primal/examples
+        )
+
+endif()
