@@ -37,6 +37,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   intersection between a primitive and a `Tetrahedron`
 - Primal: Adds a `primal::Polyhedron::from_primitive()` operator that returns a
   `Polyhedron` object from a given primitive.
+- Adds `DataStore::getBufferInfo()` and `Group::getDataInfo` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
 
 
 ### Changed

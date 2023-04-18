@@ -282,6 +282,58 @@ public:
   }
 #endif
 
+  /*!
+   * \brief Insert information about data associated with Group subtree with
+   *        this Group at root of tree (default 'recursive' is true), or for 
+   *        this Group only ('recursive' is false) in fields of given 
+   *        Conduit Node.
+   *
+   *        Fields in Conduit Node will be named:
+   *
+   *          - "num_groups" : total number of Groups in subtree or single Group
+   *          - "num_views" : total number of Views in subtree or single Group
+   *          - "num_views_empty" : total number of Views with no associated
+   *                                 Buffer or data 
+   *                                 (may or may not be described)
+   *          - "num_views_buffer" : total number of Views associated
+   *                                 with a DataStore Buffer 
+   *          - "num_views_external" : total number of Views associated with
+   *                                   external data 
+   *          - "num_views_scalar" : total number of Views associated with
+   *                                 single scalar data item 
+   *          - "num_views_string" : total number of Views associated with
+   *                                 string data
+   *          - "num_bytes_assoc_with_views" : total number of bytes 
+   *                                           associated with Views in subtree
+   *                                           or single Group that are 
+   *                                           allocated in Buffers in 
+   *                                           the DataStore. NOTE: This 
+   *                                           may be an over-count if data 
+   *                                           for two or more Views overlaps 
+   *                                           in a shared Buffer. 
+   *          - "num_bytes_external" : total number of bytes described by
+   *                                   external Views in Group subtree or 
+   *                                   single Group. The data may or may not 
+   *                                   be allocated. NOTE: If there are
+   *                                   overlaps in data associated with 
+   *                                   multiple external Views, this may be 
+   *                                   an over-count.
+   *          - "num_bytes_in_buffers" : total number of bytes allocated in
+   *                                     Buffers referenced by Views in
+   *                                     subtree or single Group 
+   *
+   * Numeric values associated with these fields may be accessed as type
+   * axom::IndexType, which is defined at compile-time. For example,
+   *
+   * Group* gp = ...;
+   * 
+   * Node n;
+   * gp->getDataInfo(n);
+   * axom::IndexType num_views = n["num_views"].value();
+   * // etc...
+   */
+  void getDataInfo(Node& n, bool recursive = true) const;
+
   //@}
 
   //@{
@@ -986,6 +1038,22 @@ private:
    * \sa isUsingMap, isUsingList
    */
   const MapCollection<Group>* getNamedGroups() const;
+
+  /*!
+   * \brief Method to (recursively) accumulate information about data in
+   *        a Group subtree.
+   *
+   * \param n Conduit node in which to insert accumulated data
+   * \param buffer_ids std::set used to gather set of unique buffer ids
+   *                   for reporting total bytes in buffers
+   * \param recursive boolean value indicating whether to recurse to child
+   *                  groups of this group.
+   *
+   * \sa getDataInfo
+   */
+  void getDataInfoHelper(Node& n,
+                         std::set<IndexType>& buffer_ids,
+                         bool recursive) const;
 
 public:
   //@{
