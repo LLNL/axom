@@ -594,8 +594,8 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   // QTri * tris = axom::allocate<QTri>(1);
 
   // This was okay
-  axom::Array<QTri> tris(1, 1);
-  axom::ArrayView<QTri> tris_view(tris);
+  // axom::Array<QTri> tris(1, 1);
+  // axom::ArrayView<QTri> tris_view(tris);
 
   // This was okay
   // axom::Array<QTri> tris(1, 1);
@@ -613,7 +613,25 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   // axom::Array<QTri> tris(1, 1);
   // axom::ArrayView<QTri> tris_view = tris;
 
+  // Okay
+  // axom::Array<QTri> tris (1, 1, axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+  // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
+
+  // This is OK
+  // Incorrect allocator ID was provided for an Array object with explicit memory space - using default for space
+  axom::Array<QTri, 1, axom::MemorySpace::Device> tris(
+    1,
+    1,
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
+  axom::ArrayView<QTri, 1, axom::MemorySpace::Device> tris_view(tris);
+
   // --------------------------------------------------------------------------
+
+  // Not okay
+  // Incorrect allocator ID was provided for an Array object with explicit memory space - using default for space
+  // Input argument allocator does not match the explicitly provided memory space
+  // axom::Array<QTri, 1, axom::MemorySpace::Unified> tris (1, 1, axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+  // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
 
   // Not okay
   // axom::Array<QTri> tris (1, 1, axom::getDefaultAllocatorID());
@@ -626,6 +644,10 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   // axom::Array<QTri> tris(1, 1);
 
   // Input argument allocator does not match the explicitly provided memory space (expected)
+  // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
+
+  // Input argument allocator does not match the explicitly provided memory space
+  // axom::Array<QTri> tris (1, 1, axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
   // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
 
   axom::for_all<axom::CUDA_EXEC<256>>(
