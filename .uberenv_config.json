@@ -4,7 +4,7 @@
 "package_final_phase": "initconfig",
 "package_source_dir": "../..",
 "spack_url": "https://github.com/spack/spack.git",
-"spack_commit": "ddc6e233c70273dd5dfd8dab31729eaf538693b8",
+"spack_commit": "9ea7937f6de3fc0ba66cbd399f57ad976341d9b5",
 "spack_configs_path": "scripts/spack/configs",
 "spack_packages_path": "scripts/spack/packages",
 "spack_concretizer": "clingo",
