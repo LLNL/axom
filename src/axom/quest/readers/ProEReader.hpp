@@ -71,7 +71,7 @@ public:
 
   /*!
    * \brief Reads in the mesh from a Pro/E file
-   * \pre m_fileName != ""
+   * \pre path to input file has been set by calling `setFileName()`
    * \return status set to zero on success; set to a non-zero value otherwise.
    */
   virtual int read();
