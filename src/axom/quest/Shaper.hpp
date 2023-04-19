@@ -91,6 +91,16 @@ public:
   //@}
 
 protected:
+
+  /*!
+   * \brief Get a matrix that contains the shape's concatenated transforms.
+   *
+   * \param shape The shape whose transforms are being concatenated.
+   *
+   * \return A 4x4 matrix that represents the transforms.
+   */
+  numerics::Matrix<double> getTransforms(const klee::Shape& shape) const;
+
   /*!
    * \brief Helper function to get the rank associated with the current process
    *

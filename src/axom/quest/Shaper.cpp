@@ -151,8 +151,64 @@ void Shaper::loadShape(const klee::Shape& shape)
   }
 }
 
+numerics::Matrix<double> Shaper::getTransforms(const klee::Shape& shape) const
+{
+  numerics::Matrix<double> transformation = numerics::Matrix<double>::identity(4);
+  auto& geometryOperator = shape.getGeometry().getGeometryOperator();
+  auto composite =
+    std::dynamic_pointer_cast<const klee::CompositeOperator>(geometryOperator);
+  if(composite)
+  {
+    // Concatenate the transformations
+    for(auto op : composite->getOperators())
+    {
+      // Use visitor pattern to extract the affine matrix from supported operators
+      internal::AffineMatrixVisitor visitor;
+      op->accept(visitor);
+      if(!visitor.isValid())
+      {
+        continue;
+      }
+      const auto& matrix = visitor.getMatrix();
+      numerics::Matrix<double> res = numerics::Matrix<double>::identity(4);
+      numerics::matrix_multiply(matrix, transformation, res);
+      transformation = res;
+    }
+  }
+  return transformation;
+}
+
 void Shaper::applyTransforms(const klee::Shape& shape)
 {
+#if 1
+  // Concatenate the transformations
+  numerics::Matrix<double> transformation = getTransforms(shape);
+
+  // Apply transformation to coordinates of each vertex in mesh
+  if(!transformation.isIdentity())
+  {
+    const int spaceDim = m_surfaceMesh->getDimension();
+    const int numSurfaceVertices = m_surfaceMesh->getNumberOfNodes();
+    double* x = m_surfaceMesh->getCoordinateArray(mint::X_COORDINATE);
+    double* y = m_surfaceMesh->getCoordinateArray(mint::Y_COORDINATE);
+    double* z = spaceDim > 2
+      ? m_surfaceMesh->getCoordinateArray(mint::Z_COORDINATE)
+      : nullptr;
+
+    double xformed[4];
+    for(int i = 0; i < numSurfaceVertices; ++i)
+    {
+      double coords[4] = {x[i], y[i], (z == nullptr ? 0. : z[i]), 1.};
+      numerics::matrix_vector_multiply(transformation, coords, xformed);
+      x[i] = xformed[0];
+      y[i] = xformed[1];
+      if(z != nullptr)
+      {
+        z[i] = xformed[2];
+      }
+    }
+  }
+#else
   auto& geometryOperator = shape.getGeometry().getGeometryOperator();
   auto composite =
     std::dynamic_pointer_cast<const klee::CompositeOperator>(geometryOperator);
@@ -194,6 +250,7 @@ void Shaper::applyTransforms(const klee::Shape& shape)
       }
     }
   }
+#endif
 }
 
 // ----------------------------------------------------------------------------
