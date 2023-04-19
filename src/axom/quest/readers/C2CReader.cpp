@@ -322,7 +322,7 @@ struct NURBSInterpolator
     int du = std::min(d, p);
 
     const auto span = findSpan(u);
-    std::vector<BasisVector> N(du + 1);
+    std::vector<BasisVector> N(d + 1);
     derivativeBasisFunctions(span, u, d, N);
 
     for(int k = 1; k <= du; k++)
@@ -824,21 +824,19 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   //
   // \note Assume that maxlen is longer than len because hi-res sampling should
   //       result in a longer arc length.
-  auto keep_going = [](double len, double maxlen, double threshold)
+  auto error_percent = [](double len, double maxlen) -> double
   {
-      bool retval = false;
+      double errPct = 0.;
       if(maxlen > len)
       {
          // pct is in [0,1). Generally, as the curve gets better pct should approach 1.
          double pct = (len / maxlen);
          // If we have a good curve then errPct should be small.
-         double errPct = 1. - pct;
-         // Keep going if errPct is above the threshold.
-         retval = errPct > threshold;
+         errPct = 1. - pct;
       }
           
-std::cout << "keep_going(" << len << ", " << maxlen << ") -> " << retval << std::endl;
-      return retval;
+std::cout << "percent_error(" << len << ", " << maxlen << ") -> " << errPct << std::endl;
+      return errPct;
     };
 
   // \brief Determines a u value within the interval [u0, u1] that should make
@@ -924,11 +922,30 @@ std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui 
   constexpr size_t INITIAL_GUESS_NPTS = 100;
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
+#define WRITE_ERROR_CURVE
+#ifdef WRITE_ERROR_CURVE
+  FILE *ferr = fopen("error.curve", "wt");
+
+  FILE *fhcl = fopen("hicurvelen.curve", "wt");
+  fprintf(fhcl, "# hicurvelen\n");
+
+  FILE *fcl = fopen("curvelen.curve", "wt");
+  fprintf(fcl, "# curvelen\n");
+
+  FILE *fthresh = fopen("threshold.curve", "wt");
+  fprintf(fthresh, "# threshold\n");
+
+  int contourCount = -1;
+#endif
+
   // Iterate over the contours and linearize each of them.
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
-
+#ifdef WRITE_ERROR_CURVE
+    contourCount++;
+    fprintf(ferr, "# contour%d\n", contourCount);
+#endif
     // Get the contour start/end parameters.
     const double startParameter = interpolator.startParameter(0);
     const double endParameter = interpolator.endParameter(interpolator.numSpans() - 1);
@@ -974,8 +991,16 @@ std::cout << "uValues: " << uValues << std::endl;
 
       // Iterate until the difference between iterations is under the threshold.
       int iteration = 0;
-      while(keep_going(curveLength, hiCurveLen, threshold))
+      while(error_percent(curveLength, hiCurveLen) > threshold)
       {
+#ifdef WRITE_ERROR_CURVE
+        int npts = pts.size();
+        fprintf(ferr, "%d %lg\n", npts, error_percent(curveLength, hiCurveLen));
+
+        fprintf(fhcl, "%d %lg\n", npts, hiCurveLen);
+        fprintf(fcl, "%d %lg\n", npts, curveLength);
+        fprintf(fthresh, "%d %lg\n", npts, threshold);
+#endif
         // For each segment, figure out a distance from the segment midpoint to
         // the segment endpoints (2 line segments).
         int nSegments = pts.size() - 1;
@@ -1044,7 +1069,8 @@ std::cout << "\tuValues: " << uValues << std::endl;
 #if 1
         // Make a filename.
         char filename[512];
-        sprintf(filename, "lines%05d.vtk", iteration);
+        npts = pts.size();
+        sprintf(filename, "lines%d_%05d.vtk", contourCount, npts);
         write_lines(filename, pts);
 
         std::cout << "Wrote " << filename << ": hiCurveLen=" << std::setprecision(9) << hiCurveLen
@@ -1060,6 +1086,13 @@ std::cout << "\tuValues: " << uValues << std::endl;
     // Add the points to the mesh.
     appendPoints(mesh, pts, EPS_SQ);
   }
+
+#ifdef WRITE_ERROR_CURVE
+  fclose(ferr);
+  fclose(fhcl);
+  fclose(fcl);
+  fclose(fthresh);
+#endif
 }
 
 
