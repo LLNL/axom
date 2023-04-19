@@ -66,6 +66,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   using Point = axom::primal::Point<double, DIM>;
   using MdimIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
+  using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
+  static constexpr MemorySpace memory_space = execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured domain
@@ -79,7 +81,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   AXOM_HOST void initialize(const conduit::Node& dom,
                             const std::string& coordsetPath,
                             const std::string& fcnPath,
-                            const std::string& maskPath)
+                            const std::string& maskPath) override
   {
     clear();
     m_dom = &dom;
@@ -154,8 +156,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::RangeSegment jRange(0,m_cShape[0]);
     RAJA::RangeSegment iRange(0,m_cShape[1]);
     RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange),
-                           [=](int i, int j) {
-                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(i, j));
+                           AXOM_LAMBDA(int i, int j) {
+                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(j, i));
                              if(!skipZone)
                              {
                                // clang-format on
@@ -189,8 +191,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::RangeSegment jRange(0,m_cShape[1]);
     RAJA::RangeSegment iRange(0,m_cShape[2]);
     RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange, kRange),
-                           [=](int i, int j, int k) {
-                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(i, j, k));
+                           AXOM_LAMBDA(int i, int j, int k) {
+                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
                              if(!skipZone)
                              {
 // std::cout<<__WHERE<<i<<','<<j<<','<<k<<std::endl;
@@ -214,37 +216,46 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
   /*!
     @brief Populate the 1D m_crossings array, one entry for each parent cell that
-    crosses the surface.  Sum up the number of surface cells from the crossings.
+    crosses the surface.  We sum up the number of surface cells from the crossings,
+    allocate space, then populate it.
   */
-  void scan_crossings()
+  void scan_crossings() override
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
 
-    RAJA::ReduceSum< RAJA::seq_reduce, axom::IndexType > vsum(0);
+    RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, parentCellCount),
-      [=](RAJA::Index_type n) {
+      AXOM_LAMBDA(RAJA::Index_type n) {
         vsum += bool(m_crossingCellCounts[m_caseIds.flatIndex(n)]);
       });
     m_crossingCount = static_cast<axom::IndexType>(vsum.get());
-    m_crossings.reserve(m_crossingCount);
 
-    axom::Array<int, 1> addCells(m_crossingCount, m_crossingCount);
-    axom::ArrayView<int, 1> addCellsView(addCells);
-    RAJA::forall<LoopPolicy>(
+    m_crossings.resize(m_crossingCount, {0, 0});
+
+    axom::Array<int> addCells(m_crossingCount, m_crossingCount, m_crossings.getAllocatorID());
+    auto addCellsView = addCells.view();
+
+    axom::IndexType crossingId = 0;
+    RAJA::forall<RAJA::loop_exec>( // This loop doesn't parallelize. Use sequential policy.
       RAJA::RangeSegment(0, parentCellCount),
-      AXOM_LAMBDA(axom::IndexType n) {
+      [&](axom::IndexType n) {
         auto caseId = m_caseIds.flatIndex(n);
         auto ccc = m_crossingCellCounts[caseId];
         if(ccc != 0)
         {
-          addCellsView[m_crossings.size()] = ccc;
-          m_crossings.push_back({n, caseId});
+          addCells[crossingId] = ccc;
+          m_crossings[crossingId].caseNum = caseId;
+          m_crossings[crossingId].parentCellNum = n;
+          ++crossingId;
         }
       });
+    assert(crossingId == m_crossingCount);
 
-    axom::Array<axom::IndexType> prefixSum(m_crossingCount);
+    axom::Array<axom::IndexType> prefixSum(m_crossingCount, m_crossingCount, m_crossings.getAllocatorID());
     auto prefixSumView = prefixSum.view();
+    auto crossingsView = m_crossings.view();
+
     RAJA::exclusive_scan<LoopPolicy>(
       RAJA::make_span(addCellsView.data(), m_crossingCount),
       RAJA::make_span(prefixSumView.data(), m_crossingCount),
@@ -252,24 +263,19 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, m_crossingCount),
-      [=](axom::IndexType n) {
-        m_crossings[n].firstSurfaceCellId =  prefixSum[n];
+      AXOM_LAMBDA(axom::IndexType n) {
+        crossingsView[n].firstSurfaceCellId = prefixSumView[n];
       });
     m_surfaceCellCount = m_crossings.empty() ? 0 :
       m_crossings.back().firstSurfaceCellId +
       m_crossingCellCounts[m_crossings.back().caseNum];
-    std::cout << __WHERE << m_crossings.size() << " crossings found."
-              << std::endl;
   }
 
-  void compute_surface()
+  void compute_surface() override
   {
     /*
       Reserve surface mesh data space so we can add data without
       reallocation.
-
-      TODO: For multidomain mesh, capacity should be summed over domains
-      and memory pre-allocated outside this class.
     */
     const axom::IndexType surfaceNodeCount = DIM * m_surfaceCellCount;
 
@@ -279,7 +285,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, m_crossingCount),
-      [=](axom::IndexType iCrossing) {
+      AXOM_LAMBDA(axom::IndexType iCrossing) {
         const auto& crossingInfo = m_crossings[iCrossing];
         const IndexType crossingCellCount =
           m_crossingCellCounts[crossingInfo.caseNum];
@@ -293,7 +299,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
                                      cornerValues);
 
         // Create the new cell and its DIM nodes.
-        // New node are located where a parent cell edge intersects the isosurface.
+        // New node are on parent cell edges where they intersects the isosurface.
+        // linear_interp for the exact coordinates.
         for(int iCell = 0; iCell < crossingCellCount; ++iCell)
         {
           IndexType surfaceCellId = crossingInfo.firstSurfaceCellId + iCell;
@@ -315,7 +322,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       });
   }
 
-  //!@brief Compute multidimensional index from flat cell index.
+  /*!
+    @brief Compute multidimensional index from flat cell index
+    in domain data.
+  */
   AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM> multidim_cell_index(
     axom::IndexType flatId)
   {
@@ -394,7 +404,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
   void populate_surface_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
-    const std::string& cellIdField) const
+    const std::string& cellIdField) const override
   {
     if(!cellIdField.empty() &&
        !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
@@ -430,13 +440,13 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     int edgeIdx,
     const Point cornerCoords[4],
     const double nodeValues[4],
-    Point& xyz)
+    Point& crossingPt)
   {
     // STEP 0: get the edge node indices
     // 2 nodes define the edge.  n1 and n2 are the indices of
     // the nodes w.r.t. the square or cubic zone.  There is a
     // agreed-on ordering of these indices in the arrays xx, yy,
-    // zz, nodeValues, xyz.
+    // zz, nodeValues, crossingPt.
     int n1 = edgeIdx;
     int n2 = (edgeIdx == 3) ? 0 : edgeIdx + 1;
 
@@ -451,13 +461,13 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     if(axom::utilities::isNearlyEqual(m_contourVal, f1) ||
        axom::utilities::isNearlyEqual(f1, f2))
     {
-      xyz = p1;  // memcpy(xyz, p1, DIM * sizeof(double));
+      crossingPt = p1;  // memcpy(crossingPt, p1, DIM * sizeof(double));
       return;
     }
 
     if(axom::utilities::isNearlyEqual(m_contourVal, f2))
     {
-      xyz = p2;  // memcpy(xyz, p2, DIM * sizeof(double));
+      crossingPt = p2;  // memcpy(crossingPt, p2, DIM * sizeof(double));
       return;
     }
 
@@ -467,7 +477,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     const double w = (m_contourVal - f1) / df;
     for(int d = 0; d < DIM; ++d)
     {
-      xyz[d] = p1[d] + w * (p2[d] - p1[d]);
+      crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
     }
   }
   template <int TDIM = DIM>
@@ -475,13 +485,13 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     int edgeIdx,
     const Point cornerCoords[8],
     const double nodeValues[8],
-    Point& xyz)
+    Point& crossingPt)
   {
     // STEP 0: get the edge node indices
     // 2 nodes define the edge.  n1 and n2 are the indices of
     // the nodes w.r.t. the square or cubic zone.  There is a
     // agreed-on ordering of these indices in the arrays xx, yy,
-    // zz, nodeValues, xyz.
+    // zz, nodeValues, crossingPt.
     const int hex_edge_table[] = {
       0, 1, 1, 2, 2, 3, 3, 0,  // base
       4, 5, 5, 6, 6, 7, 7, 4,  // top
@@ -502,13 +512,13 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     if(axom::utilities::isNearlyEqual(m_contourVal, f1) ||
        axom::utilities::isNearlyEqual(f1, f2))
     {
-      xyz = p1;  // memcpy(&xyz, p1, DIM * sizeof(double));
+      crossingPt = p1;  // memcpy(&crossingPt, p1, DIM * sizeof(double));
       return;
     }
 
     if(axom::utilities::isNearlyEqual(m_contourVal, f2))
     {
-      xyz = p2;  // memcpy(&xyz, p2, DIM * sizeof(double));
+      crossingPt = p2;  // memcpy(&crossingPt, p2, DIM * sizeof(double));
       return;
     }
 
@@ -518,12 +528,12 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     const double w = (m_contourVal - f1) / df;
     for(int d = 0; d < DIM; ++d)
     {
-      xyz[d] = p1[d] + w * (p2[d] - p1[d]);
+      crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
     }
-    // std::cout<<__WHERE<< xyz << std::endl;
+    // std::cout<<__WHERE<< crossingPt << std::endl;
   }
 
-  void set_contour_value(double contourVal) { m_contourVal = contourVal; }
+  void set_contour_value(double contourVal) override { m_contourVal = contourVal; }
 
   //!@brief Compute the case index into case2D or case3D.
   AXOM_HOST_DEVICE int compute_crossing_case(const double* f)
@@ -550,18 +560,21 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     m_surfaceCellCount = 0;
   }
 
+  /*
+    Internal data arrays use memory compatible with memory for ExecSpace.
+  */
+  MarchingCubesImpl()
+    : m_crossings(0, 0, execution_space<ExecSpace>::allocatorID())
+    , m_surfaceCoords(0, 0, execution_space<ExecSpace>::allocatorID())
+    , m_surfaceCellCorners(0, 0, execution_space<ExecSpace>::allocatorID())
+    , m_surfaceCellParents(0, 0, execution_space<ExecSpace>::allocatorID())
+    {}
+
   /*!
     @brief Info for a parent cell intersecting the surface.
   */
   struct CrossingInfo
   {
-    CrossingInfo(axom::IndexType parentCellNum_,
-                 std::uint16_t caseNum_,
-                 axom::IndexType firstSurfaceCellId_)
-      : parentCellNum(parentCellNum_)
-      , caseNum(caseNum_)
-      , firstSurfaceCellId(firstSurfaceCellId_)
-    { }
     CrossingInfo(axom::IndexType parentCellNum_,
                  std::uint16_t caseNum_)
       : parentCellNum(parentCellNum_)
@@ -629,6 +642,7 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
+std::cout<<__WHERE<<axom::fmt::format("runtimePolicy = {}", m_runtimePolicy)<<std::endl;
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {
@@ -776,18 +790,17 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
     "You must call set_function_field before compute_iso_surface.");
 
   allocate_impl();
+std::cout<<__WHERE<<"initialize"<<std::endl;
   m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
+std::cout<<__WHERE<<"set_contour_value"<<std::endl;
   m_impl->set_contour_value(contourVal);
+std::cout<<__WHERE<<"mark_crossings"<<std::endl;
   m_impl->mark_crossings();
+std::cout<<__WHERE<<"scan_crossinga"<<std::endl;
   m_impl->scan_crossings();
+std::cout<<__WHERE<<"compute_surface"<<std::endl;
   m_impl->compute_surface();
-}
-
-void MarchingCubesSingleDomain::populate_surface_mesh(
-  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
-  const std::string& cellIdField) const
-{
-  m_impl->populate_surface_mesh(mesh, cellIdField);
+std::cout<<__WHERE<<"done"<<std::endl;
 }
 
 void MarchingCubesSingleDomain::allocate_impl()
@@ -798,7 +811,7 @@ void MarchingCubesSingleDomain::allocate_impl()
       std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>) :
       std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
   }
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2 ?
@@ -806,7 +819,7 @@ void MarchingCubesSingleDomain::allocate_impl()
       std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
   }
 #endif
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef _AXOM_MC_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2 ?
@@ -814,7 +827,7 @@ void MarchingCubesSingleDomain::allocate_impl()
       std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
   }
 #endif
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2 ?
@@ -825,7 +838,7 @@ void MarchingCubesSingleDomain::allocate_impl()
   else
   {
     SLIC_ERROR(axom::fmt::format(
-                 "No implementation for MarchingCubesRuntimePolicy {}",
+                 "MarchingCubesSingleDomain has no implementation for runtime policy {}",
                  m_runtimePolicy));
   }
 }

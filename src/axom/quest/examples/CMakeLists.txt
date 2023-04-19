@@ -108,8 +108,8 @@ if(CONDUIT_FOUND)
 
         # Run the distributed closest point example on N ranks for each enabled policy
         set(_policies "seq")
-        # Temporarily disable all execution policies except seq.
-        # blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
+        # Temporarily disable all execution policies the example doesn't yet support.
         # blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
         # blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
 

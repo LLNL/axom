@@ -23,6 +23,20 @@
 // C++ includes
 #include <string>
 
+// Add some helper preprocessor defines for using OPENMP, CUDA, and HIP policies
+// within the marching cubes implementation.
+#if defined(AXOM_USE_RAJA)
+  #ifdef AXOM_USE_OPENMP
+    #define _AXOM_MC_USE_OPENMP
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+    #define _AXOM_MC_USE_CUDA
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+    #define _AXOM_MC_USE_HIP
+  #endif
+#endif
+
 namespace axom
 {
 namespace quest
@@ -55,20 +69,20 @@ inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy)
     return true;
 
   case MarchingCubesRuntimePolicy::omp:
-#ifdef _AXOM_DCP_USE_OPENMP
+#ifdef _AXOM_MC_USE_OPENMP
     return true;
 #else
     return false;
 #endif
 
   case MarchingCubesRuntimePolicy::cuda:
-#ifdef _AXOM_DCP_USE_CUDA
+#ifdef _AXOM_MC_USE_CUDA
     return true;
 #else
     return false;
 #endif
   case MarchingCubesRuntimePolicy::hip:
-#ifdef _AXOM_DCP_USE_HIP
+#ifdef _AXOM_MC_USE_HIP
     return true;
 #else
     return false;
@@ -80,7 +94,7 @@ inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy)
 
 /*!
  * \@brief Class implementing marching cubes algorithm on a single
- * structured mesh domain within a multi-domain mesh.
+ * structured mesh domain, alone or within a multi-domain mesh.
  *
  * Implementation is for 2D (marching squares) and 3D (marching
  * cubes).
@@ -177,7 +191,10 @@ public:
   */
   void populate_surface_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-    const std::string &cellIdField = {}) const;
+    const std::string &cellIdField = {}) const
+    {
+      m_impl->populate_surface_mesh(mesh, cellIdField);
+    }
 
 private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
@@ -194,22 +211,13 @@ private:
   std::string m_fcnPath;
   std::string m_maskPath;
 
-#if 0
-  //!@name Internal representation of surface mesh.
-  //@{
-  //!@brief Coordinates of generated surface nodes.
-  axom::Array<Point> m_surfaceCoords;
-
-  //!@brief Corners (index into m_surfaceCoords) of generated surface cells.
-  axom::Array<MdimIdx> m_surfaceCellCorners;
-
-  //!@brief Computational cell (flat index) crossing the surface cell.
-  axom::Array<IndexType> m_surfaceCellParents;
-  //@}
-#endif
-
+public:
   /*!
-    @brief Base class that allows templated implementations to be same type.
+    @brief Base class for implementations templated on dimension
+    and execution space.
+
+    This class allows m_impl to refer to any implementation used
+    at run time.
   */
   struct ImplBase {
     //!@brief Prepare internal data for operating on the given domain.
@@ -232,7 +240,9 @@ private:
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
       const std::string& cellIdField) const = 0;
   };
+private:
   std::shared_ptr<ImplBase> m_impl;
+  //!@brief Allocate implementation object and set m_impl.
   void allocate_impl();
 
   /*!

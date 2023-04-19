@@ -94,14 +94,39 @@ public:
 
   bool checkResults {false};
 
+  quest::MarchingCubesRuntimePolicy policy {quest::MarchingCubesRuntimePolicy::seq};
+
 private:
   bool _verboseOutput {false};
+
+  // clang-format off
+  const std::map<std::string, quest::MarchingCubesRuntimePolicy> s_validPolicies
+  {
+      {"seq", quest::MarchingCubesRuntimePolicy::seq}
+#if defined(AXOM_USE_RAJA)
+  #ifdef AXOM_USE_OPENMP
+    , {"omp", quest::MarchingCubesRuntimePolicy::omp}
+  #endif
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+    , {"cuda", quest::MarchingCubesRuntimePolicy::cuda}
+  #endif
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+    , {"hip", quest::MarchingCubesRuntimePolicy::hip}
+  #endif
+#endif
+  };
+  // clang-format on
 
 public:
   bool isVerbose() const { return _verboseOutput; }
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
+    app.add_option("-p, --policy", policy)
+      ->description("Set runtime policy for point query method")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+
     app.add_option("-m,--mesh-file", meshFile)
       ->description(
         "Path to multidomain computational mesh following conduit blueprint "
@@ -1106,6 +1131,7 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
                        axom::fmt::format(
                          "check_cells_containing_contour: cell {}: hasContour "
                          "({}) and touchesContour ({}) don't agree.",
+                         cellIdx,
                          hasCont,
                          touchesContour));
         }
@@ -1285,7 +1311,7 @@ template <int DIM>
 int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 {
   // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubes mc(quest::MarchingCubesRuntimePolicy::seq,
+  quest::MarchingCubes mc(params.policy,
                           computationalMesh.as_conduit_node(),
                           "coords");
 
