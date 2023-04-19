@@ -32,12 +32,18 @@ void generate_pro_e_file(const std::string& file)
 
   ofs << "# Comment header to ignore" << std::endl;
   ofs << "# Another comment" << std::endl;
+
+  // Number of nodes followed by number of tetrahedra
   ofs << "4 1" << std::endl;
-  ofs << "node1 -1.0 0.0 0.0" << std::endl;
-  ofs << "node2 1.0 0.0 0.0" << std::endl;
-  ofs << "node3 0.0 1.0 0.0" << std::endl;
-  ofs << "node4 0.0 0.0 1.0" << std::endl;
-  ofs << "tet1 node1 node2 node3 node4" << std::endl;
+
+  // Node ID followed by xyz coordinates
+  ofs << "1 -1.0 0.0 0.0" << std::endl;
+  ofs << "2 1.0 0.0 0.0" << std::endl;
+  ofs << "3 0.0 1.0 0.0" << std::endl;
+  ofs << "4 0.0 0.0 1.0" << std::endl;
+
+  // Tetrahedron ID followed by corresponding Node IDs
+  ofs << "1 1 2 3 4" << std::endl;
 
   ofs.close();
 }

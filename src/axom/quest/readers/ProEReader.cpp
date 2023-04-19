@@ -42,8 +42,8 @@ int ProEReader::read()
   constexpr int NUM_COMPS_PER_NODE = 3;
 
   std::string junk;
-  std::string id;
-  std::string tet_nodes[NUM_NODES_PER_TET];
+  int id;
+  int tet_nodes[NUM_NODES_PER_TET];
 
   struct coordinate
   {
@@ -71,7 +71,7 @@ int ProEReader::read()
   m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
 
   // Read nodes
-  std::map<std::string, coordinate> nodes;
+  std::map<int, coordinate> nodes;
   for(int i = 0; i < m_num_unique_nodes; i++)
   {
     ifs >> id >> cur_coord.comp[0] >> cur_coord.comp[1] >> cur_coord.comp[2];
