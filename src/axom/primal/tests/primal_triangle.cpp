@@ -558,7 +558,7 @@ TEST(primal_triangle, triangle_3D_normal)
   }
 }
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_RAJA) && (defined(AXOM_USE_HIP) || defined(AXOM_USE_CUDA))
 //------------------------------------------------------------------------------
 AXOM_CUDA_TEST(primal_triangle, triangle_device)
 {
@@ -572,10 +572,15 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   // Save current/default allocator
   const int current_allocator = axom::getDefaultAllocatorID();
 
-  // Set new default allocator
-  axom::setDefaultAllocator(
-    axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID());
+  #if defined(AXOM_USE_HIP)
+    // Set new default allocator
+    axom::setDefaultAllocator(
+      axom::execution_space<axom::HIP_EXEC<256>>::allocatorID());
 
+  #else
+    axom::setDefaultAllocator(
+      axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID());
+  #endif
   // Initialize axom's Array of triangle
 
   // This was okay
@@ -593,13 +598,17 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   // Okay
   // QTri * tris = axom::allocate<QTri>(1);
 
+  // Okay
+    // QTri * tris = axom::allocate<QTri>(1);
+    // axom::ArrayView<QTri> tris_view(tris, 1);
+
   // This was okay
   // axom::Array<QTri> tris(1, 1);
   // axom::ArrayView<QTri> tris_view(tris);
 
   // This was okay
-  // axom::Array<QTri> tris(1, 1);
-  // auto tris_view = tris.view();
+  axom::Array<QTri> tris(1, 1);
+  auto tris_view = tris.view();
 
   // This was okay.
   // axom::Array<QTri> tris(1, 1, axom::getDefaultAllocatorID());
@@ -619,13 +628,33 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
 
   // This is OK
   // Incorrect allocator ID was provided for an Array object with explicit memory space - using default for space
-  axom::Array<QTri, 1, axom::MemorySpace::Device> tris(
-    1,
-    1,
-    axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
-  axom::ArrayView<QTri, 1, axom::MemorySpace::Device> tris_view(tris);
+  // axom::Array<QTri, 1, axom::MemorySpace::Device> tris(
+  //   1,
+  //   1,
+  //   axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
+  // axom::ArrayView<QTri, 1, axom::MemorySpace::Device> tris_view(tris);
 
   // --------------------------------------------------------------------------
+
+  // axom::Array<QTri> trisHost (1, 1, axom::getUmpireResourceAllocatorID(umpire::resource::Host));
+  // axom::Array<QTri> trisDevice (trisHost, axom::getUmpireResourceAllocatorID(umpire::resource::Device));
+  // axom::Array<QTri> trisDefault (trisHost); // host memory
+  // axom::Array<QTri, 1, axom::MemorySpace::Unified> trisUnified(trisHost);
+
+  // axom::ArrayView<QTri> tris_host_view = trisHost;
+  // axom::ArrayView<QTri> tris_device_view = trisDevice;
+  // axom::ArrayView<QTri> tris_default_view = trisDefault;
+  // axom::ArrayView<QTri> tris_unified_view = trisUnified;
+
+  // SLIC_INFO("trisHost allocator ID is " << trisHost.getAllocatorID()); // Does not work with HIP (CUDA works unexpectedly...)
+  // SLIC_INFO("trisDevice allocator ID is " << trisDevice.getAllocatorID()); // Works (expected)
+  // SLIC_INFO("trisDefault allocator ID is " << trisDefault.getAllocatorID()); // expected, fail as it's in host
+  // SLIC_INFO("trisUnified allocator ID is " << trisUnified.getAllocatorID()); // Works (expected)
+
+  // SLIC_INFO("tris_host_view allocator ID is " << tris_host_view.getAllocatorID());
+  // SLIC_INFO("tris_device_view allocator ID is " << tris_device_view.getAllocatorID());
+  // SLIC_INFO("tris_default_view allocator ID is " << tris_default_view.getAllocatorID());
+  // SLIC_INFO("tris_unified_view allocator ID is " << tris_unified_view.getAllocatorID());
 
   // Not okay
   // Incorrect allocator ID was provided for an Array object with explicit memory space - using default for space
@@ -637,10 +666,6 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   // axom::Array<QTri> tris (1, 1, axom::getDefaultAllocatorID());
 
   // Not okay
-  // QTri * tris = axom::allocate<QTri>(1);
-  // axom::ArrayView<QTri> tris_view(tris.data(), 1);
-
-  // Not okay
   // axom::Array<QTri> tris(1, 1);
 
   // Input argument allocator does not match the explicitly provided memory space (expected)
@@ -650,9 +675,24 @@ AXOM_CUDA_TEST(primal_triangle, triangle_device)
   // axom::Array<QTri> tris (1, 1, axom::getUmpireResourceAllocatorID(umpire::resource::Unified));
   // axom::ArrayView<QTri,1, axom::MemorySpace::Device> tris_view(tris);
 
-  axom::for_all<axom::CUDA_EXEC<256>>(
-    1,
-    AXOM_LAMBDA(axom::IndexType i) { tris_view[i].normal(); });
+  auto& rm = umpire::ResourceManager::getInstance();
+    for(const auto& name : rm.getAllocatorNames())
+    {
+      auto alloc = rm.getAllocator(name);
+      SLIC_INFO( "  {name: " << alloc.getName()          
+                << ", id: " << alloc.getId()               
+                << ", strategy: " << alloc.getStrategyName());
+    }
+
+  #if defined(AXOM_USE_HIP)
+    axom::for_all<axom::HIP_EXEC<256>>(
+      1,
+      AXOM_LAMBDA(axom::IndexType i) { tris_view[i].normal(); });
+  #else
+    axom::for_all<axom::CUDA_EXEC<256>>(
+      1,
+      AXOM_LAMBDA(axom::IndexType i) { tris_view[i].normal(); });
+  #endif
 
   // Reset default allocator
   axom::setDefaultAllocator(current_allocator);
