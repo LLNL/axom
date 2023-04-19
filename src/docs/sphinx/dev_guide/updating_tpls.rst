@@ -288,7 +288,7 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    To change a version of a non-system TPL, go into the 
    ``axom/scripts/spack/packages`` directory. There you will find a 
    sub-directory for each TPL Axom uses. Modify the contents of the Spack
-   package file ``spack.py`` in each package sub-directory as needed. 
+   package file ``package.py`` in each package sub-directory as needed. 
 
    .. note:: Before continuing, you should test that the installation works
              on all LC systems with the steps in :ref:`local-tpls-label`.
