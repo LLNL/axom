@@ -40,6 +40,44 @@ enum class MarchingCubesRuntimePolicy
   hip = 3
 };
 
+/// Utility function to allow formating a MarchingCubesRuntimePolicy
+inline auto format_as(MarchingCubesRuntimePolicy pol)
+{
+  return fmt::underlying(pol);
+}
+
+/// Predicate to determine if a given \a MarchingCubesRuntimePolicy is valid for this configuration
+inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy)
+{
+  switch(policy)
+  {
+  case MarchingCubesRuntimePolicy::seq:
+    return true;
+
+  case MarchingCubesRuntimePolicy::omp:
+#ifdef _AXOM_DCP_USE_OPENMP
+    return true;
+#else
+    return false;
+#endif
+
+  case MarchingCubesRuntimePolicy::cuda:
+#ifdef _AXOM_DCP_USE_CUDA
+    return true;
+#else
+    return false;
+#endif
+  case MarchingCubesRuntimePolicy::hip:
+#ifdef _AXOM_DCP_USE_HIP
+    return true;
+#else
+    return false;
+#endif
+  }
+
+  return false;
+}
+
 /*!
  * \@brief Class implementing marching cubes algorithm on a single
  * structured mesh domain within a multi-domain mesh.
@@ -71,13 +109,18 @@ enum class MarchingCubesRuntimePolicy
 class MarchingCubesSingleDomain
 {
 public:
+  using RuntimePolicy = MarchingCubesRuntimePolicy;
   /*!
    * \brief Constructor for applying algorithm in multi-level mesh context.
    *
+   * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
    * \param [in] coordsetName Name of blueprint point coordinate set.
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
+   *
+   * Mesh data in \a dom should be accessible in the \a runtimePolicy
+   * environment.  It's an error if not.
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
@@ -88,7 +131,8 @@ public:
    * requirement may be relaxed, possibly at the cost of a
    * transformation and storage of the temporary contiguous layout.
    */
-  MarchingCubesSingleDomain(const conduit::Node &dom,
+  MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
+                            const conduit::Node &dom,
                             const std::string &coordsetName,
                             const std::string &maskfield);
 
@@ -136,7 +180,7 @@ public:
     const std::string &cellIdField = {}) const;
 
 private:
-  // MarchingCubesRuntimePolicy m_runtimePolicy;
+  MarchingCubesRuntimePolicy m_runtimePolicy;
   /*!
     \brief Computational mesh as a conduit::Node.
 
@@ -164,8 +208,10 @@ private:
   //@}
 #endif
 
-  //!@brief Base class that allows templated implementations to be same type.
-  struct MarchingCubesImplBase {
+  /*!
+    @brief Base class that allows templated implementations to be same type.
+  */
+  struct ImplBase {
     //!@brief Prepare internal data for operating on the given domain.
     virtual void initialize(const conduit::Node& dom,
                             const std::string& coordsetPath,
@@ -186,7 +232,8 @@ private:
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
       const std::string& cellIdField) const = 0;
   };
-  std::shared_ptr<MarchingCubesImplBase> m_impl;
+  std::shared_ptr<ImplBase> m_impl;
+  void allocate_impl();
 
   /*!
    * \brief Set the blueprint single-domain mesh.
@@ -205,6 +252,7 @@ private:
 class MarchingCubes
 {
 public:
+  using RuntimePolicy = MarchingCubesRuntimePolicy;
   /*!
    * \brief Constructor sets up computational mesh and data for running the
    * marching cubes algorithm.
@@ -222,7 +270,8 @@ public:
    * requirement may be relaxed, possibly at the cost of a
    * transformation and storage of the temporary contiguous layout.
    */
-  MarchingCubes(const conduit::Node &bpMesh,
+  MarchingCubes(RuntimePolicy runtimePolicy,
+                const conduit::Node &bpMesh,
                 const std::string &coordsetName,
                 const std::string &maskField = {});
 

@@ -618,10 +618,12 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   double m_contourVal = 0.0;
 };
 
-MarchingCubes::MarchingCubes(const conduit::Node& bpMesh,
+MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
+                             const conduit::Node& bpMesh,
                              const std::string& coordsetName,
                              const std::string& maskField)
-  : m_singles()
+  : m_runtimePolicy(runtimePolicy)
+  , m_singles()
   , m_ndim(0)
   , m_coordsetPath("coordsets/" + coordsetName)
   , m_fcnPath()
@@ -631,7 +633,7 @@ MarchingCubes::MarchingCubes(const conduit::Node& bpMesh,
   for(auto& dom : bpMesh.children())
   {
     m_singles.emplace_back(
-      new MarchingCubesSingleDomain(dom, coordsetName, maskField));
+      new MarchingCubesSingleDomain(m_runtimePolicy, dom, coordsetName, maskField));
     if(m_ndim == 0)
     {
       m_ndim = m_singles.back()->dimension();
@@ -709,15 +711,21 @@ void MarchingCubes::populate_surface_mesh(
   }
 }
 
-MarchingCubesSingleDomain::MarchingCubesSingleDomain(const conduit::Node& dom,
+MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
+                                                     const conduit::Node& dom,
                                                      const std::string& coordsetName,
                                                      const std::string& maskField)
-  : m_dom(nullptr)
+  : m_runtimePolicy(runtimePolicy)
+  , m_dom(nullptr)
   , m_ndim(0)
   , m_coordsetPath("coordsets/" + coordsetName)
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
+  SLIC_ASSERT_MSG(
+    isValidRuntimePolicy(runtimePolicy),
+    fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
+
   set_domain(dom);
   return;
 }
@@ -767,16 +775,7 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
     !m_fcnPath.empty(),
     "You must call set_function_field before compute_iso_surface.");
 
-  if(m_ndim == 2)
-  {
-    m_impl =
-      std::make_shared<MarchingCubesImpl<2, axom::SEQ_EXEC>>();
-  }
-  else
-  {
-    m_impl =
-      std::make_shared<MarchingCubesImpl<3, axom::SEQ_EXEC>>();
-  }
+  allocate_impl();
   m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
   m_impl->set_contour_value(contourVal);
   m_impl->mark_crossings();
@@ -789,6 +788,46 @@ void MarchingCubesSingleDomain::populate_surface_mesh(
   const std::string& cellIdField) const
 {
   m_impl->populate_surface_mesh(mesh, cellIdField);
+}
+
+void MarchingCubesSingleDomain::allocate_impl()
+{
+  if(m_runtimePolicy == RuntimePolicy::seq)
+  {
+    m_impl = m_ndim == 2 ?
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>) :
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
+  }
+#ifdef _AXOM_DCP_USE_OPENMP
+  else if(m_runtimePolicy == RuntimePolicy::omp)
+  {
+    m_impl = m_ndim == 2 ?
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>) :
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
+  }
+#endif
+#ifdef _AXOM_DCP_USE_CUDA
+  else if(m_runtimePolicy == RuntimePolicy::omp)
+  {
+    m_impl = m_ndim == 2 ?
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>) :
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
+  }
+#endif
+#ifdef _AXOM_DCP_USE_HIP
+  else if(m_runtimePolicy == RuntimePolicy::hip)
+  {
+    m_impl = m_ndim == 2 ?
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>) :
+      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
+  }
+#endif
+  else
+  {
+    SLIC_ERROR(axom::fmt::format(
+                 "No implementation for MarchingCubesRuntimePolicy {}",
+                 m_runtimePolicy));
+  }
 }
 
 }  // end namespace quest

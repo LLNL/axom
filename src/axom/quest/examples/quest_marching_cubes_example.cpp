@@ -1285,7 +1285,9 @@ template <int DIM>
 int test_ndim_instance(BlueprintStructuredMesh& computationalMesh)
 {
   // Create marching cubes algorithm object and set some parameters
-  quest::MarchingCubes mc(computationalMesh.as_conduit_node(), "coords");
+  quest::MarchingCubes mc(quest::MarchingCubesRuntimePolicy::seq,
+                          computationalMesh.as_conduit_node(),
+                          "coords");
 
   //---------------------------------------------------------------------------
   // params specify which tests to run.
