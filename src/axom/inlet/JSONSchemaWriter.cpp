@@ -99,11 +99,9 @@ sidre::TypeID recordEnum(const sidre::View* view, conduit::Node& node)
  */
 sidre::TypeID recordEnum(const sidre::Group* group, conduit::Node& node)
 {
-  auto idx = group->getFirstValidViewIndex();
-  while(axom::sidre::indexIsValid(idx))
+  for(auto& view : group->views())
   {
-    node["enum"].append() = std::string(group->getView(idx)->getString());
-    idx = group->getNextValidViewIndex(idx);
+    node["enum"].append() = std::string(view.getString());
   }
   return sidre::CHAR8_STR_ID;
 }

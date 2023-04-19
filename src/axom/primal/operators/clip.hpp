@@ -18,6 +18,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
@@ -99,6 +100,86 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
 }
 
 /*!
+ * \brief Clips a 3D hexahedron against a tetrahedron in 3D, returning
+ *        the geometric intersection of the hexahedron and the tetrahedron
+ *        as a polyhedron
+ *
+ *  This function clips the hexahedron by the 4 planes obtained from the
+ *  tetrahedron's faces (normals point inward). Clipping the
+ *  hexahedron/polyhedron by each plane gives the polyhedron above that plane.
+ *  Clipping the polyhedron by a plane involves
+ *  finding new vertices at the intersection of the polyhedron edges and
+ *  the plane, removing vertices from the polyhedron that are below the
+ *  plane, and redefining the neighbors for each vertex (a vertex is a
+ *  neighbor of another vertex if there is an edge between them).
+ *
+ *
+ * \param [in] hex The hexahedron to clip
+ * \param [in] tet The tetrahedron to clip against
+ * \param [in] eps The epsilon value
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             shapes are positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
+ * \return A polyhedron of the hexahedron clipped against the tetrahedron.
+ *
+ * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ * \note checkSign flag does not guarantee the shapes' vertex orders
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       shapes with a valid vertex order.
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
+                                       const Tetrahedron<T, 3>& tet,
+                                       double eps = 1.e-10,
+                                       bool checkSign = false)
+{
+  return detail::clipHexahedron(hex, tet, eps, checkSign);
+}
+
+/*!
+ * \brief Clips a 3D hexahedron against a tetrahedron in 3D, returning
+ *        the geometric intersection of the hexahedron and the tetrahedron
+ *        as a polyhedron
+ *
+ *  This function clips the hexahedron by the 4 planes obtained from the
+ *  tetrahedron's faces (normals point inward). Clipping the
+ *  hexahedron/polyhedron by each plane gives the polyhedron above that plane.
+ *  Clipping the polyhedron by a plane involves
+ *  finding new vertices at the intersection of the polyhedron edges and
+ *  the plane, removing vertices from the polyhedron that are below the
+ *  plane, and redefining the neighbors for each vertex (a vertex is a
+ *  neighbor of another vertex if there is an edge between them).
+ *
+ *
+ * \param [in] tet The tetrahedron to clip against
+ * \param [in] hex The hexahedron to clip
+ * \param [in] eps The epsilon value
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             shapes are positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
+ * \return A polyhedron of the hexahedron clipped against the tetrahedron.
+ *
+ * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ * \note checkSign flag does not guarantee the shapes' vertex orders
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       shapes with a valid vertex order.
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
+                                       const Hexahedron<T, 3>& hex,
+                                       double eps = 1.e-10,
+                                       bool checkSign = false)
+{
+  return clip(hex, tet, eps, checkSign);
+}
+
+/*!
  * \brief Clips a 3D octahedron against a tetrahedron in 3D, returning
  *        the geometric intersection of the octahedron and the tetrahedron
  *        as a polyhedron
@@ -116,17 +197,67 @@ Polygon<T, 3> clip(const Triangle<T, 3>& tri, const BoundingBox<T, 3>& bbox)
  * \param [in] oct The octahedron to clip
  * \param [in] tet The tetrahedron to clip against
  * \param [in] eps The epsilon value
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             shapes are positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
  * \return A polyhedron of the octahedron clipped against the tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ * \note checkSign flag does not guarantee the shapes' vertex orders
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       shapes with a valid vertex order.
  *
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
                                        const Tetrahedron<T, 3>& tet,
-                                       double eps = 1.e-10)
+                                       double eps = 1.e-10,
+                                       bool checkSign = false)
 {
-  return detail::clipOctahedron(oct, tet, eps);
+  return detail::clipOctahedron(oct, tet, eps, checkSign);
+}
+
+/*!
+ * \brief Clips a 3D octahedron against a tetrahedron in 3D, returning
+ *        the geometric intersection of the octahedron and the tetrahedron
+ *        as a polyhedron
+ *
+ *  This function clips the octahedron by the 4 planes obtained from the
+ *  tetrahedron's faces (normals point inward). Clipping the
+ *  octahedron/polyhedron by each plane gives the polyhedron above that plane.
+ *  Clipping the polyhedron by a plane involves
+ *  finding new vertices at the intersection of the polyhedron edges and
+ *  the plane, removing vertices from the polyhedron that are below the
+ *  plane, and redefining the neighbors for each vertex (a vertex is a
+ *  neighbor of another vertex if there is an edge between them).
+ *
+ *
+ * \param [in] tet The tetrahedron to clip against
+ * \param [in] oct The octahedron to clip
+ * \param [in] tet The tetrahedron to clip against
+ * \param [in] eps The epsilon value
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             shapes are positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
+ * \return A polyhedron of the octahedron clipped against the tetrahedron.
+ *
+ * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
+ *
+ * \note checkSign flag does not guarantee the shapes' vertex orders
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       shapes with a valid vertex order.
+ *
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
+                                       const Octahedron<T, 3>& oct,
+                                       double eps = 1.e-10,
+                                       bool checkSign = false)
+{
+  return clip(oct, tet, eps, checkSign);
 }
 
 /*!
@@ -146,18 +277,26 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Octahedron<T, 3>& oct,
  * \param [in] tet1 The tetrahedron to clip
  * \param [in] tet2 The tetrahedron to clip against
  * \param [in] eps The epsilon value
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             shapes are positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
  * \return A polyhedron of the tetrahedron clipped against
  *         the other tetrahedron.
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
+ * \note checkSign flag does not guarantee the shapes' vertex orders
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       shapes with a valid vertex order.
  */
 template <typename T>
 AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet1,
                                        const Tetrahedron<T, 3>& tet2,
-                                       double eps = 1.e-10)
+                                       double eps = 1.e-10,
+                                       bool checkSign = false)
 {
-  return detail::clipTetrahedron(tet1, tet2, eps);
+  return detail::clipTetrahedron(tet1, tet2, eps, checkSign);
 }
 
 }  // namespace primal

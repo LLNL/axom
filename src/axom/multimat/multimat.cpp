@@ -425,8 +425,8 @@ void MultiMat::convertToDynamic()
     }
     StaticVariableRelationType& rel = relStatic(layout);
 
-    SetType* set1 = rel.fromSet();
-    SetType* set2 = rel.toSet();
+    RangeSetType* set1 = &relDominantSet(layout);
+    RangeSetType* set2 = &relSecondarySet(layout);
 
     DynamicVariableRelationType relDyn(set1, set2);
     for(int i = 0; i < rel.fromSetSize(); i++)
@@ -983,7 +983,7 @@ void MultiMat::transposeField_helper(int field_idx)
     //copy begin vector for moving
     IndBufferType vec_idx =
       relBeginVec(new_layout);  //a copy of the beginVec to keep track
-    const IndBufferType& indicesVec = *oldRel.relationData();
+    const IndBufferType& indicesVec = oldRel.relationData();
 
     arr_data.resize(oldRel.totalSize() * stride);
     for(int i = 0; i < oldRel.totalSize(); ++i)

@@ -993,6 +993,57 @@ void MFEMSidreDataCollection::UpdateStateToDS()
   }
 }
 
+void MFEMSidreDataCollection::addMaterialSetToIndex()
+{
+  if(myid == 0)
+  {
+    for(auto it = m_matset_associations.begin();
+        it != m_matset_associations.end();
+        it++)
+    {
+      const std::string& mat_prefix = it->first;
+      const std::string& matset_name = it->second;
+
+      conduit::Node matnames;
+      int nmats = 0;
+      // Iterate over the fields in their group order.
+      sidre::Group* fields_grp = m_bp_grp->getGroup("fields");
+      for(auto& group : fields_grp->groups())
+      {
+        const std::string& field_name = group.getName();
+        const auto tokens = utilities::string::rsplitN(field_name, 2, '_');
+        // Expecting [base_field_name, material_id]
+        if(tokens.size() != 2)
+        {
+          // The field_name did not split into 2 tokens matching
+          // [base_field_name, material_id]. It's likely not a material
+          // so we can skip the field.
+          continue;
+        }
+        if(mat_prefix == tokens[0])
+        {
+          matnames[tokens[1]] = nmats++;
+        }
+      }
+
+      // Now we know the material names for the current matset.
+      if(nmats > 0)
+      {
+        Group* bp_matset_index_grp =
+          m_bp_index_grp->createGroup("matsets/" + matset_name);
+        bp_matset_index_grp->createViewString("topology", s_mesh_topology_name);
+        Group* bp_materials_index_grp =
+          bp_matset_index_grp->createGroup("materials");
+        bp_materials_index_grp->importConduitTree(matnames);
+
+        Group* bp_matset_group = m_bp_grp->getGroup("matsets/" + matset_name);
+        bp_matset_index_grp->createViewString("path",
+                                              bp_matset_group->getPathName());
+      }
+    }
+  }
+}
+
 void MFEMSidreDataCollection::UpdateMeshAndFieldsFromDS()
 {
   // 1. Start by constructing the mesh
@@ -1030,6 +1081,7 @@ void MFEMSidreDataCollection::UpdateMeshAndFieldsFromDS()
 void MFEMSidreDataCollection::PrepareToSave()
 {
   verifyMeshBlueprint();
+  addMaterialSetToIndex();
   UpdateStateToDS();
 }
 
@@ -1118,9 +1170,11 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
       {
         View* num_domains =
           m_bp_index_grp->getView("state/number_of_domains")->setScalar(num_procs);
+
         SLIC_ASSERT_MSG(num_domains,
                         "Failed to reset View 'state/number_of_domains' "
                         "in blueprint index to correct number of domains.");
+        AXOM_UNUSED_VAR(num_domains);
       }
       else
       {
@@ -1788,9 +1842,12 @@ void MFEMSidreDataCollection::checkForMaterialSet(const std::string& field_name)
 
   Group* fractions_group =
     alloc_group(m_bp_grp, "matsets/" + matset_name + "/volume_fractions");
+
   View* matset_frac_view = fractions_group->copyView(vol_fractions_view);
   matset_frac_view->rename(tokens[1]);
-  // FIXME: Do we need to add anything to the index group?
+
+  // NOTE: The index group is populated with matsets prior to saving once we
+  //       know all of the volume fraction fields.
 }
 
 void MFEMSidreDataCollection::checkForSpeciesSet(const std::string& field_name)

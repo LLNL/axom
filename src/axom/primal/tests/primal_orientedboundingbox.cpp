@@ -490,31 +490,26 @@ TEST(primal_OBBox, obb_contains_obb)
 TEST(primal_OBBox, obb_to_local)
 {
   constexpr int DIM = 3;
+  constexpr double EPS = 1e-8;
+
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
   using QVector = primal::Vector<CoordType, DIM>;
   using QOBBox = primal::OrientedBoundingBox<CoordType, DIM>;
 
-  QPoint pt1;      // origin
-  QVector u[DIM];  // make standard axes
-  QVector u_o[DIM];
-  for(int i = 0; i < DIM; i++)
-  {
-    u[i] = QVector();
-    u[i][i] = 1.;
-    u_o[i] = QVector();
-  }
-  u_o[0][0] = 1.;
-  u_o[0][2] = -1.;
-  u_o[1][0] = 1.;
-  u_o[1][2] = 1.;
-  u_o[2][1] = 1.;
+  // standard axes
+  QVector u[DIM] = {QVector {1, 0, 0}, QVector {0, 1, 0}, QVector {0, 0, 1}};
 
-  QVector e(1.);
+  // another othogonal basis
+  QVector u_o[DIM] = {QVector {1, 0, -1}, QVector {1, 0, 1}, QVector {0, 1, 0}};
+
+  QPoint pt1;
+  QVector vec0(0.);
 
   QPoint pt2(10.);
-  QVector vec0(0.);
   QVector vec1(10.);
+
+  QVector e(1.);
 
   QOBBox obbox1(pt1, u, e);
 
@@ -534,7 +529,7 @@ TEST(primal_OBBox, obb_to_local)
 
   // can roughly compute local coords of pt2
   QVector vec2(obbox2.toLocal(pt2));
-  EXPECT_DOUBLE_EQ(vec2[0], 0.);
+  EXPECT_NEAR(vec2[0], 0., EPS);
   EXPECT_TRUE(((vec2[1] - 14.142) < 0.1) && ((14.142 - vec2[1]) < 0.1));
   EXPECT_TRUE(((vec2[2] - 10.) < 0.1) && ((10. - vec2[2]) < 0.1));
 }

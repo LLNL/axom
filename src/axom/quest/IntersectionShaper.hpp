@@ -253,12 +253,42 @@ AXOM_HOST_DEVICE inline void GridFunctionView<hip_exec>::finalize()
 #endif
 
 //---------------------------------------------------------------------------
+/**
+ * \class
+ * \brief Revolves contours and intersects the solid with the input mesh to
+ *        produce volume fractions.
+ *
+ * The IntersectionShaper generates material volume fractions using an input
+ * set of 2D contours and replacement rules. Each contour covers an area from
+ * the curve down to the axis of revolution about which the area is revolved
+ * to produce a volume that is intersected with the input mesh to produce
+ * volume fractions. Contours are refined into smaller linear spans that are
+ * revolved to produce a set of truncated cones, which are divided into a set
+ * set of progressively refined octahedra that can be intersected with the
+ * mesh.
+ *
+ * Volume fractions are represented as a GridFunction with a special prefix,
+ * currently "vol_frac_", followed by a material name. Volume fractions
+ * can be present in the input data collection prior to shaping and the
+ * IntersectionShaper will augment them when changes are needed such as when
+ * a material overwrites them. If a new material is not yet represented by
+ * a grid function, one will be added.
+ *
+ * In addition to user-specified materials, the IntersectionShaper creates
+ * a "free" material that is used to account for volume fractions that are
+ * not assigned to any other material. The free material mainly is used to
+ * account for materials when using replacement rules. The free material
+ * starts out as all 1's indicating that it contains 100% of all possible
+ * material in a zone. Volume fractions for other materials are then
+ * subtracted from the free material so no zone exceeds 100% of material.
+ */
 class IntersectionShaper : public Shaper
 {
 public:
   using BoundingBoxType = primal::BoundingBox<double, 3>;
-  using PolyhedronType = primal::Polyhedron<double, 3>;
+  using HexahedronType = primal::Hexahedron<double, 3>;
   using OctahedronType = primal::Octahedron<double, 3>;
+  using PolyhedronType = primal::Polyhedron<double, 3>;
   using Point2D = primal::Point<double, 2>;
   using Point3D = primal::Point<double, 3>;
   using TetrahedronType = primal::Tetrahedron<double, 3>;
@@ -276,7 +306,9 @@ public:
   IntersectionShaper(const klee::ShapeSet& shapeSet,
                      sidre::MFEMSidreDataCollection* dc)
     : Shaper(shapeSet, dc)
-  { }
+  {
+    m_free_mat_name = "free";
+  }
 
   //@{
   //!  @name Functions to get and set shaping parameters related to intersection; supplements parameters in base class
@@ -287,78 +319,6 @@ public:
   //@}
 
 private:
-  /**
-   * \brief Helper method to decompose a hexahedron Polyhedron
-   *        into 24 Tetrahedrons.
-   *        Each Tetrahedron consists of 4 points:
-   *          (1) The mean of all Polyhedron points (centroid)
-   *          (2,3) Two adjacent vertices on a Polyhedron face
-   *          (4) The mean of the current Polyhedron face
-   *
-   * \param poly [in] The hexahedron Polyhedron to decompose
-   * \param tets [out] The tetrahedrons
-   *
-   * \note Assumes given Polyhedron has 8 points
-   * \note Assumes tets is pre-allocated
-   */
-
-  AXOM_HOST_DEVICE
-  void decompose_hex_to_tets(const PolyhedronType& poly, TetrahedronType* tets)
-  {
-    // Hex center (hc)
-    Point3D hc = poly.centroid();
-
-    //Face means (fm)
-    Point3D fm1 = Point3D::midpoint(Point3D::midpoint(poly[0], poly[1]),
-                                    Point3D::midpoint(poly[2], poly[3]));
-
-    Point3D fm2 = Point3D::midpoint(Point3D::midpoint(poly[0], poly[1]),
-                                    Point3D::midpoint(poly[4], poly[5]));
-
-    Point3D fm3 = Point3D::midpoint(Point3D::midpoint(poly[0], poly[3]),
-                                    Point3D::midpoint(poly[4], poly[7]));
-
-    Point3D fm4 = Point3D::midpoint(Point3D::midpoint(poly[1], poly[2]),
-                                    Point3D::midpoint(poly[5], poly[6]));
-
-    Point3D fm5 = Point3D::midpoint(Point3D::midpoint(poly[2], poly[3]),
-                                    Point3D::midpoint(poly[6], poly[7]));
-
-    Point3D fm6 = Point3D::midpoint(Point3D::midpoint(poly[4], poly[5]),
-                                    Point3D::midpoint(poly[6], poly[7]));
-
-    // Initialize tets
-    tets[0] = TetrahedronType(hc, poly[1], poly[0], fm1);
-    tets[1] = TetrahedronType(hc, poly[0], poly[3], fm1);
-    tets[2] = TetrahedronType(hc, poly[3], poly[2], fm1);
-    tets[3] = TetrahedronType(hc, poly[2], poly[1], fm1);
-
-    tets[4] = TetrahedronType(hc, poly[4], poly[0], fm2);
-    tets[5] = TetrahedronType(hc, poly[0], poly[1], fm2);
-    tets[6] = TetrahedronType(hc, poly[1], poly[5], fm2);
-    tets[7] = TetrahedronType(hc, poly[5], poly[4], fm2);
-
-    tets[8] = TetrahedronType(hc, poly[3], poly[0], fm3);
-    tets[9] = TetrahedronType(hc, poly[0], poly[4], fm3);
-    tets[10] = TetrahedronType(hc, poly[4], poly[7], fm3);
-    tets[11] = TetrahedronType(hc, poly[7], poly[3], fm3);
-
-    tets[12] = TetrahedronType(hc, poly[5], poly[1], fm4);
-    tets[13] = TetrahedronType(hc, poly[1], poly[2], fm4);
-    tets[14] = TetrahedronType(hc, poly[2], poly[6], fm4);
-    tets[15] = TetrahedronType(hc, poly[6], poly[5], fm4);
-
-    tets[16] = TetrahedronType(hc, poly[6], poly[2], fm5);
-    tets[17] = TetrahedronType(hc, poly[2], poly[3], fm5);
-    tets[18] = TetrahedronType(hc, poly[3], poly[7], fm5);
-    tets[19] = TetrahedronType(hc, poly[7], poly[6], fm5);
-
-    tets[20] = TetrahedronType(hc, poly[7], poly[4], fm6);
-    tets[21] = TetrahedronType(hc, poly[4], poly[5], fm6);
-    tets[22] = TetrahedronType(hc, poly[5], poly[6], fm6);
-    tets[23] = TetrahedronType(hc, poly[6], poly[7], fm6);
-  }
-
   /**
    * \brief Helper method to check if an Octahedron has duplicate
    *        vertices
@@ -683,11 +643,11 @@ public:
     this->getDC()->RegisterField(volFracName, volFrac);
 
     // Initialize hexahedral elements
-    m_hexes = axom::allocate<PolyhedronType>(NE);
+    m_hexes = axom::allocate<HexahedronType>(NE);
     m_hex_bbs = axom::allocate<BoundingBoxType>(NE);
 
     // Oddities required by hip to avoid capturing `this`
-    PolyhedronType* local_hexes = m_hexes;
+    HexahedronType* local_hexes = m_hexes;
     BoundingBoxType* local_hex_bbs = m_hex_bbs;
 
     // Initialize vertices from mfem mesh and
@@ -724,14 +684,14 @@ public:
       NE,
       AXOM_LAMBDA(axom::IndexType i) {
         // Set each hexahedral element vertices
-        local_hexes[i] = PolyhedronType();
+        local_hexes[i] = HexahedronType();
         for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
         {
           int vertIndex = (i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
             j * NUM_COMPS_PER_VERT;
-          local_hexes[i].addVertex({vertCoords[vertIndex],
-                                    vertCoords[vertIndex + 1],
-                                    vertCoords[vertIndex + 2]});
+          local_hexes[i][j] = Point3D({vertCoords[vertIndex],
+                                       vertCoords[vertIndex + 1],
+                                       vertCoords[vertIndex + 2]});
 
           // Set hexahedra components to zero if within threshold
           if(axom::utilities::isNearlyEqual(local_hexes[i][j][0],
@@ -849,7 +809,7 @@ public:
                              NE,
                              AXOM_LAMBDA(axom::IndexType i) {
                                TetHexArray cur_tets;
-                               decompose_hex_to_tets(local_hexes[i], cur_tets);
+                               local_hexes[i].triangulate(cur_tets);
 
                                for(int j = 0; j < NUM_TETS_PER_HEX; j++)
                                {
@@ -907,17 +867,17 @@ public:
 
     AXOM_PERF_MARK_SECTION("hex_volume",
                            axom::for_all<ExecSpace>(
-                             NE * NUM_TETS_PER_HEX,
+                             NE,
                              AXOM_LAMBDA(axom::IndexType i) {
-                               double tet_volume = tets[i].volume();
-                               RAJA::atomicAdd<ATOMIC_POL>(
-                                 local_hex_volumes + (i / NUM_TETS_PER_HEX),
-                                 tet_volume);
+                               local_hex_volumes[i] = local_hexes[i].volume();
                              }););
 
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each tet-oct pair "));
+
+    constexpr double EPS = 1e-10;
+    constexpr bool checkSign = true;
 
     AXOM_PERF_MARK_SECTION(
       "oct_tet_volume",
@@ -927,8 +887,9 @@ public:
           int index = hexIndices[i];
           int octIndex = octCandidates[i];
           int tetIndex = tetIndices[i];
+
           PolyhedronType poly =
-            primal::clip(local_octs[octIndex], tets[tetIndex]);
+            primal::clip(local_octs[octIndex], tets[tetIndex], EPS, checkSign);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
@@ -1076,10 +1037,30 @@ private:
   // does not like the following template functions to be private.
 public:
   /*!
+   * \brief Set the name of the material used to account for free volume fractions.
+   * \param name The new name of the material. This name cannot contain 
+   *             underscores and it cannot be set once shaping has started.
+   * \note This should not be called once any shaping has occurred.
+   */
+  void setFreeMaterialName(const std::string& name)
+  {
+    if(name.find("_") != std::string::npos)
+    {
+      SLIC_ERROR("The free material name cannot contain underscores.");
+    }
+    if(m_num_elements > 0)
+    {
+      SLIC_ERROR(
+        "The free material name cannot be set once shaping has occurred.");
+    }
+    m_free_mat_name = name;
+  }
+
+  /*!
    * \brief Make a new grid function that contains all of the free space not
    *        occupied by existing materials.
    *
-   * \note We currently leave completely_free in the data collection,
+   * \note We currently leave the free material in the data collection,
    *       even after the shaper has executed.
    *
    * \tparam ExecSpace The execution space where the data are computed.
@@ -1090,7 +1071,9 @@ public:
   template <typename ExecSpace>
   mfem::GridFunction* getCompletelyFree()
   {
-    const std::string fieldName("completely_free");
+    // Add the material prefix so the MFEMSidreDataCollection will automatically
+    // consider the free material something it needs to write as a matset.
+    const std::string fieldName(materialNameToFieldName(m_free_mat_name));
     mfem::GridFunction* cfgf = nullptr;
     if(this->getDC()->HasField(fieldName))
       cfgf = this->getDC()->GetField(fieldName);
@@ -1100,7 +1083,7 @@ public:
       cfgf = newVolFracGridFunction();
       this->getDC()->RegisterField(fieldName, cfgf);
 
-      AXOM_PERF_MARK_SECTION("compute_completely_free", {
+      AXOM_PERF_MARK_SECTION("compute_free", {
         int dataSize = cfgf->Size();
         GridFunctionView<ExecSpace> cfView(cfgf);
         axom::for_all<ExecSpace>(
@@ -1179,6 +1162,9 @@ public:
     // Make sure the material lists are up to date.
     populateMaterials();
 
+    // Get the free material so it is created first.
+    mfem::GridFunction* freeMat = getCompletelyFree<ExecSpace>();
+
     // Get this shape's material, creating the GridFunction if needed.
     auto matVF = getMaterial(shape.getMaterial());
     int dataSize = matVF.first->Size();
@@ -1214,9 +1200,10 @@ public:
       // sorts them by name rather than order added.
       for(auto it : this->getDC()->GetFieldMap())
       {
-        // Check whether the field name looks like a VF field.
+        // Check whether the field name looks like a VF field (and is not the
+        // "free" field, which we handle specially)
         std::string name = fieldNameToMaterialName(it.first);
-        if(!name.empty())
+        if(!name.empty() && name != m_free_mat_name)
         {
           // See if the field is in the exclusion list. For the normal
           // case, the list is empty so we'd add the material.
@@ -1253,7 +1240,7 @@ public:
     // Add it first so it is the highest priority material. This helps us
     // account for how much we need to deduct from the real materials during
     // subtraction.
-    updateVFs.push_back(getCompletelyFree<ExecSpace>());
+    updateVFs.push_back(freeMat);
 
     // Append the grid functions in mat number order.
     for(const auto& mat : gf_order_by_matnumber)
@@ -1507,11 +1494,12 @@ private:
   int m_octcount {0};
   OctahedronType* m_octs {nullptr};
   BoundingBoxType* m_aabbs {nullptr};
-  PolyhedronType* m_hexes {nullptr};
+  HexahedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};
 
   std::vector<mfem::GridFunction*> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
+  std::string m_free_mat_name;
 #endif
 };
 
