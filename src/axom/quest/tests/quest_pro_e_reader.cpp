@@ -240,7 +240,7 @@ TEST(quest_pro_e_reader, cup_pro_e)
   // STEP 4: Verify a few tetrahedra are as expected
 
   // Node IDs for the tetrahedron
-  int nodeIDs[4];
+  axom::IndexType nodeIDs[4];
 
   // Check first tetrahedron
   mesh.getCellNodeIDs(0, nodeIDs);
