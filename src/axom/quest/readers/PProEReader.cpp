@@ -45,12 +45,9 @@ int PProEReader::read()
     if(rc == READER_SUCCESS)
     {
       MPI_Bcast(&m_num_nodes, 1, axom::mpi_traits<axom::IndexType>::type, 0, m_comm);
-      MPI_Bcast(&m_num_unique_nodes,
-                1,
-                axom::mpi_traits<axom::IndexType>::type,
-                0,
-                m_comm);
+      MPI_Bcast(&m_num_tets, 1, axom::mpi_traits<axom::IndexType>::type, 0, m_comm);
       MPI_Bcast(&m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
+      MPI_Bcast(&m_tets[0], m_num_tets * 4, MPI_INT, 0, m_comm);
     }  // END if
     else
     {
@@ -68,14 +65,11 @@ int PProEReader::read()
     if(m_num_nodes != READER_FAILED)
     {
       rc = READER_SUCCESS;
-      m_num_tets = m_num_nodes / 4;
       m_nodes.resize(m_num_nodes * 3);
-      MPI_Bcast(&m_num_unique_nodes,
-                1,
-                axom::mpi_traits<axom::IndexType>::type,
-                0,
-                m_comm);
+      MPI_Bcast(&m_num_tets, 1, axom::mpi_traits<axom::IndexType>::type, 0, m_comm);
+      m_tets.resize(m_num_tets * 4);
       MPI_Bcast(&m_nodes[0], m_num_nodes * 3, MPI_DOUBLE, 0, m_comm);
+      MPI_Bcast(&m_tets[0], m_num_tets * 4, MPI_INT, 0, m_comm);
     }
 
   }  // END switch

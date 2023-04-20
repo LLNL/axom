@@ -208,6 +208,7 @@ TEST(quest_pro_e_reader, read_pro_e_external)
 #ifdef AXOM_DATA_DIR
 TEST(quest_pro_e_reader, cup_pro_e)
 {
+  constexpr int NUM_NODES = 171;
   constexpr int NUM_TETS = 574;
   constexpr double EPS = std::numeric_limits<double>::epsilon();
 
@@ -227,7 +228,7 @@ TEST(quest_pro_e_reader, cup_pro_e)
 
   // STEP 3: ensure the mesh is what is expected
   EXPECT_EQ(mesh.getNumberOfCells(), NUM_TETS);
-  EXPECT_EQ(mesh.getNumberOfNodes(), NUM_TETS * 4);
+  EXPECT_EQ(mesh.getNumberOfNodes(), NUM_NODES);
 
   const double* x = mesh.getCoordinateArray(axom::mint::X_COORDINATE);
   const double* y = mesh.getCoordinateArray(axom::mint::Y_COORDINATE);
@@ -238,57 +239,78 @@ TEST(quest_pro_e_reader, cup_pro_e)
 
   // STEP 4: Verify a few tetrahedra are as expected
 
+  // Node IDs for the tetrahedron
+  int nodeIDs[4];
+
   // Check first tetrahedron
-  EXPECT_NEAR(x[0], -71.842646, EPS);
-  EXPECT_NEAR(x[1], 18.091620, EPS);
-  EXPECT_NEAR(x[2], 18.091620, EPS);
-  EXPECT_NEAR(x[3], 16.637112, EPS);
+  mesh.getCellNodeIDs(0, nodeIDs);
 
-  EXPECT_NEAR(y[0], -142.432949, EPS);
-  EXPECT_NEAR(y[1], -100.389772, EPS);
-  EXPECT_NEAR(y[2], -158.496833, EPS);
-  EXPECT_NEAR(y[3], -116.282419, EPS);
+  // Note: Node IDs adjusted to start at 0
+  EXPECT_EQ(nodeIDs[0], 10);
+  EXPECT_EQ(nodeIDs[1], 91);
+  EXPECT_EQ(nodeIDs[2], 90);
+  EXPECT_EQ(nodeIDs[3], 88);
 
-  EXPECT_NEAR(z[0], 0.000000, EPS);
-  EXPECT_NEAR(z[1], 0.000000, EPS);
-  EXPECT_NEAR(z[2], 0.000000, EPS);
-  EXPECT_NEAR(z[3], -53.197840, EPS);
+  EXPECT_NEAR(x[nodeIDs[0]], -71.842646, EPS);
+  EXPECT_NEAR(x[nodeIDs[1]], 18.091620, EPS);
+  EXPECT_NEAR(x[nodeIDs[2]], 18.091620, EPS);
+  EXPECT_NEAR(x[nodeIDs[3]], 16.637112, EPS);
+
+  EXPECT_NEAR(y[nodeIDs[0]], -142.432949, EPS);
+  EXPECT_NEAR(y[nodeIDs[1]], -100.389772, EPS);
+  EXPECT_NEAR(y[nodeIDs[2]], -158.496833, EPS);
+  EXPECT_NEAR(y[nodeIDs[3]], -116.282419, EPS);
+
+  EXPECT_NEAR(z[nodeIDs[0]], 0.000000, EPS);
+  EXPECT_NEAR(z[nodeIDs[1]], 0.000000, EPS);
+  EXPECT_NEAR(z[nodeIDs[2]], 0.000000, EPS);
+  EXPECT_NEAR(z[nodeIDs[3]], -53.197840, EPS);
 
   // Check last tetrahedron
-  constexpr int LAST_OFFSET = (NUM_TETS - 1) * 4;
+  mesh.getCellNodeIDs(NUM_TETS - 1, nodeIDs);
 
-  EXPECT_NEAR(x[LAST_OFFSET], 128.940529, EPS);
-  EXPECT_NEAR(x[LAST_OFFSET + 1], 68.261330, EPS);
-  EXPECT_NEAR(x[LAST_OFFSET + 2], 121.442679, EPS);
-  EXPECT_NEAR(x[LAST_OFFSET + 3], 68.137155, EPS);
+  EXPECT_EQ(nodeIDs[0], 170);
+  EXPECT_EQ(nodeIDs[1], 84);
+  EXPECT_EQ(nodeIDs[2], 143);
+  EXPECT_EQ(nodeIDs[3], 83);
 
-  EXPECT_NEAR(y[LAST_OFFSET], -93.930323, EPS);
-  EXPECT_NEAR(y[LAST_OFFSET + 1], -41.261753, EPS);
-  EXPECT_NEAR(y[LAST_OFFSET + 2], -31.346653, EPS);
-  EXPECT_NEAR(y[LAST_OFFSET + 3], -41.466486, EPS);
+  EXPECT_NEAR(x[nodeIDs[0]], 128.940529, EPS);
+  EXPECT_NEAR(x[nodeIDs[1]], 68.261330, EPS);
+  EXPECT_NEAR(x[nodeIDs[2]], 121.442679, EPS);
+  EXPECT_NEAR(x[nodeIDs[3]], 68.137155, EPS);
 
-  EXPECT_NEAR(z[LAST_OFFSET], -145.985725, EPS);
-  EXPECT_NEAR(z[LAST_OFFSET + 1], -122.672539, EPS);
-  EXPECT_NEAR(z[LAST_OFFSET + 2], -174.327849, EPS);
-  EXPECT_NEAR(z[LAST_OFFSET + 3], -173.363017, EPS);
+  EXPECT_NEAR(y[nodeIDs[0]], -93.930323, EPS);
+  EXPECT_NEAR(y[nodeIDs[1]], -41.261753, EPS);
+  EXPECT_NEAR(y[nodeIDs[2]], -31.346653, EPS);
+  EXPECT_NEAR(y[nodeIDs[3]], -41.466486, EPS);
+
+  EXPECT_NEAR(z[nodeIDs[0]], -145.985725, EPS);
+  EXPECT_NEAR(z[nodeIDs[1]], -122.672539, EPS);
+  EXPECT_NEAR(z[nodeIDs[2]], -174.327849, EPS);
+  EXPECT_NEAR(z[nodeIDs[3]], -173.363017, EPS);
 
   // Check middle tetrahedron
-  constexpr int MID_OFFSET = ((NUM_TETS / 2) - 1) * 4;
+  mesh.getCellNodeIDs((NUM_TETS / 2) - 1, nodeIDs);
 
-  EXPECT_NEAR(x[MID_OFFSET], 15.508351, EPS);
-  EXPECT_NEAR(x[MID_OFFSET + 1], -30.194340, EPS);
-  EXPECT_NEAR(x[MID_OFFSET + 2], -35.211560, EPS);
-  EXPECT_NEAR(x[MID_OFFSET + 3], 14.765131, EPS);
+  EXPECT_EQ(nodeIDs[0], 117);
+  EXPECT_EQ(nodeIDs[1], 118);
+  EXPECT_EQ(nodeIDs[2], 114);
+  EXPECT_EQ(nodeIDs[3], 115);
 
-  EXPECT_NEAR(y[MID_OFFSET], 124.048744, EPS);
-  EXPECT_NEAR(y[MID_OFFSET + 1], 109.246291, EPS);
-  EXPECT_NEAR(y[MID_OFFSET + 2], 117.715966, EPS);
-  EXPECT_NEAR(y[MID_OFFSET + 3], 78.384516, EPS);
+  EXPECT_NEAR(x[nodeIDs[0]], 15.508351, EPS);
+  EXPECT_NEAR(x[nodeIDs[1]], -30.194340, EPS);
+  EXPECT_NEAR(x[nodeIDs[2]], -35.211560, EPS);
+  EXPECT_NEAR(x[nodeIDs[3]], 14.765131, EPS);
 
-  EXPECT_NEAR(z[MID_OFFSET], -179.442905, EPS);
-  EXPECT_NEAR(z[MID_OFFSET + 1], -112.054428, EPS);
-  EXPECT_NEAR(z[MID_OFFSET + 2], -178.748301, EPS);
-  EXPECT_NEAR(z[MID_OFFSET + 3], -163.120569, EPS);
+  EXPECT_NEAR(y[nodeIDs[0]], 124.048744, EPS);
+  EXPECT_NEAR(y[nodeIDs[1]], 109.246291, EPS);
+  EXPECT_NEAR(y[nodeIDs[2]], 117.715966, EPS);
+  EXPECT_NEAR(y[nodeIDs[3]], 78.384516, EPS);
+
+  EXPECT_NEAR(z[nodeIDs[0]], -179.442905, EPS);
+  EXPECT_NEAR(z[nodeIDs[1]], -112.054428, EPS);
+  EXPECT_NEAR(z[nodeIDs[2]], -178.748301, EPS);
+  EXPECT_NEAR(z[nodeIDs[3]], -163.120569, EPS);
 
   // Step 5: Dump mesh file
   axom::mint::write_vtk(&mesh, "cup.vtk");

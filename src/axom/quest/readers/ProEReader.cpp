@@ -31,8 +31,8 @@ void ProEReader::clear()
 {
   m_num_nodes = 0;
   m_num_tets = 0;
-  m_num_unique_nodes = 0;
   m_nodes.clear();
+  m_tets.clear();
 }
 
 //------------------------------------------------------------------------------
@@ -65,30 +65,32 @@ int ProEReader::read()
   }
 
   // Initialize number of nodes and tetrahedra.
-  // 4 nodes per tet, 3 components per node.
-  ifs >> m_num_unique_nodes >> m_num_tets;
-  m_num_nodes = m_num_tets * NUM_NODES_PER_TET;
-  m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
+  // 3 components per node, 4 nodes per tet.
+  ifs >> m_num_nodes >> m_num_tets;
 
-  // Read nodes
-  std::map<int, coordinate> nodes;
-  for(int i = 0; i < m_num_unique_nodes; i++)
-  {
-    ifs >> id >> cur_coord.comp[0] >> cur_coord.comp[1] >> cur_coord.comp[2];
-    nodes[id] = {cur_coord.comp[0], cur_coord.comp[1], cur_coord.comp[2]};
-  }
+  m_nodes.reserve(m_num_nodes * NUM_COMPS_PER_NODE);
+  m_tets.reserve(m_num_tets * NUM_NODES_PER_TET);
 
   // Initialize nodes
+  for(int i = 0; i < m_num_nodes; i++)
+  {
+    ifs >> id >> cur_coord.comp[0] >> cur_coord.comp[1] >> cur_coord.comp[2];
+
+    for(int j = 0; j < NUM_COMPS_PER_NODE; j++)
+    {
+      m_nodes.push_back(cur_coord.comp[j]);
+    }
+  }
+
+  // Initialize tets
   for(int i = 0; i < m_num_tets; i++)
   {
     ifs >> id >> tet_nodes[0] >> tet_nodes[1] >> tet_nodes[2] >> tet_nodes[3];
 
     for(int j = 0; j < NUM_NODES_PER_TET; j++)
     {
-      for(int k = 0; k < NUM_COMPS_PER_NODE; k++)
-      {
-        m_nodes.push_back(nodes[tet_nodes[j]].comp[k]);
-      }
+      // Node IDs start at 1 instead of 0, adjust to 0 for indexing
+      m_tets.push_back(tet_nodes[j] - 1);
     }
   }
 
@@ -103,6 +105,8 @@ void ProEReader::getMesh(axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh)
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
   SLIC_ERROR_IF(static_cast<axom::IndexType>(m_nodes.size()) != m_num_nodes * 3,
                 "nodes vector size doesn't match expected size!");
+  SLIC_ERROR_IF(static_cast<axom::IndexType>(m_tets.size()) != m_num_tets * 4,
+                "tets vector size doesn't match expected size!");
   SLIC_ERROR_IF(mesh->getDimension() != 3, "Pro/E reader expects a 3D mesh!");
   SLIC_ERROR_IF(mesh->getCellType() != mint::TET,
                 "Pro/E reader expects a tetrahedra mesh!");
@@ -124,7 +128,7 @@ void ProEReader::getMesh(axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh)
   double* y = mesh->getCoordinateArray(mint::Y_COORDINATE);
   double* z = mesh->getCoordinateArray(mint::Z_COORDINATE);
 
-  // Load the vertices into the mesh
+  // Load the nodes into the mesh
   for(axom::IndexType i = 0; i < m_num_nodes; ++i)
   {
     const axom::IndexType offset = i * 3;
@@ -133,15 +137,15 @@ void ProEReader::getMesh(axom::mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh)
     z[i] = m_nodes[offset + 2];
   }
 
-  // Load the tetrahedra.  Note that the indices are implicitly defined.
+  // Load the tetrahedra
   axom::IndexType* conn = mesh->getCellNodesArray();
   for(axom::IndexType i = 0; i < m_num_tets; ++i)
   {
     const axom::IndexType offset = i * 4;
-    conn[offset] = offset;
-    conn[offset + 1] = offset + 1;
-    conn[offset + 2] = offset + 2;
-    conn[offset + 3] = offset + 3;
+    conn[offset] = m_tets[offset];
+    conn[offset + 1] = m_tets[offset + 1];
+    conn[offset + 2] = m_tets[offset + 2];
+    conn[offset + 3] = m_tets[offset + 3];
   }
 }
 

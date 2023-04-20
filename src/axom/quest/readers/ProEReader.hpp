@@ -26,6 +26,9 @@ namespace quest
  *        Current support for only tetrahedra.
  *
  * Pro/Engineer (also known as Creo) is a modeling application.
+ *
+ * \note Pro/E node IDs start at 1. ProEReader adjusts and stores
+ *  node IDs to start at 0 for indexing.
  */
 class ProEReader
 {
@@ -59,12 +62,6 @@ public:
   int getNumTets() const { return m_num_tets; };
 
   /*!
-   * \brief Returns the number of unique nodes of the mesh.
-   * \return numUniqueNodes the number of unique nodes.
-   */
-  int getNumUniqueNodes() const { return m_num_unique_nodes; };
-
-  /*!
    * \brief Clears all internal data-structures
    */
   void clear();
@@ -88,9 +85,9 @@ protected:
 
   axom::IndexType m_num_nodes;
   axom::IndexType m_num_tets;
-  axom::IndexType m_num_unique_nodes;
 
   std::vector<double> m_nodes;
+  std::vector<int> m_tets;
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(ProEReader);
