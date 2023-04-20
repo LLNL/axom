@@ -61,12 +61,12 @@ system instead of building them from scratch.  You will need to describe which c
 are available on your system as well.
 
 * Platform specific configuration files live under ``scripts/spack/configs/<platform name>``.
-  There are two files per platform:
+  There is one file (``spack.yaml``) per platform that handles the following:
 
-   * ``compilers.yaml``: This file contains the compiler specs that describe the location
+   * ``compilers``: This section contains the compiler specs that describe the location
      and any other required information about that compiler.  For example, compiler or 
      linker flags.
-   * ``packages.yaml``: This file describes the system level packages.  For example,
+   * ``packages``: This section describes the system level packages.  For example,
      where they are located and what version they are. This file is very imporant
      due to its ability to drastically reduce the amount of packages that Spack builds.
 
@@ -116,7 +116,7 @@ the following:
    package manager will be installed.
 #. Clone the package manager to the specific Git commit.
 #. Apply patches to package manager. For example, disabling extra config scopes in Spack.
-#. Copy project specific package recipes over the packages manager's recipes.
+#. Adds our repositories package repository to Spack, so our packages take precedence.
 #. Clean previous temporary information from previous runs that may bleed into this run.
 #. Optionally create a package source mirror.
 #. Install packages via the selected package manager.
@@ -273,16 +273,16 @@ other Axom developers to use during development, in Axom Gitlab CI testing, etc.
    or a Docker container image we use for CI testing on GitHub, go into
    the directory ``axom/scripts/spack/configs``. There you will find a 
    sub-directory for each supported LC system type. Each sub-directory
-   has a ``packages.yaml`` file which contains an entry for each system level
+   has a ``spack.yaml`` file which contains an entry for each system level
    package we rely on. Find the entry for the library you wish to update and 
    change the version number. Do this for each system you want to test/change,
    including configurations in the ``docker`` subdirectory.
 
-   .. note:: Alongside each ``packages.yaml`` in each system package directory,
-             there is a ``compilers.yaml`` file containing compiler and 
+   .. note:: Inside of the ``spack.yaml`` for each system package directory,
+             there is a ``compilers`` section containing compiler and 
              version information for compilers we use for development and 
              testing. If you wish to test and build with a new compiler or 
-             version on a system, modify the appropriate ``compilers.yaml`` 
+             version on a system, modify the appropriate ``spack.yaml`` 
              file.
 
    To change a version of a non-system TPL, go into the 
