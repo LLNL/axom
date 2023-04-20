@@ -292,6 +292,7 @@ public:
   using Point2D = primal::Point<double, 2>;
   using Point3D = primal::Point<double, 3>;
   using TetrahedronType = primal::Tetrahedron<double, 3>;
+  using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   /// Choose runtime policy for RAJA
   enum ExecPolicy
@@ -317,6 +318,17 @@ public:
 
   void setExecPolicy(int policy) { m_execPolicy = (ExecPolicy)policy; }
   //@}
+
+  virtual void loadShape(const klee::Shape& shape) override
+  {
+     // Make sure we can store the revolved volume in member m_revolvedVolume.
+     loadShapeEx(shape, m_percentError, m_revolvedVolume);
+
+     // Filter the mesh, store in m_surfaceMesh.
+     SegmentMesh *newm = filterMesh(dynamic_cast<const SegmentMesh *>(m_surfaceMesh));
+     delete m_surfaceMesh;
+     m_surfaceMesh = newm;
+  }
 
 private:
   /**
@@ -388,81 +400,11 @@ public:
         " Checking contour with {} points for degenerate segments ",
         pointcount)));
 
-    enum
-    {
-      R = 1,
-      Z = 0
-    };
-
-    // Add contour points
-    int polyline_size = 0;
-    const double EPS = m_vertexWeldThreshold;
-    const double EPS_SQ = EPS * EPS;
+    // The mesh points are filtered like we want. We need only copy
+    // them into the polyline array.
     for(int i = 0; i < pointcount; ++i)
-    {
-      Point2D cur_point;
-      m_surfaceMesh->getNode(i, cur_point.data());
-
-      // Check for degenerate segments
-      if(polyline_size > 0)
-      {
-        using axom::utilities::isNearlyEqual;
-        const Point2D& prev_point = polyline[polyline_size - 1];
-
-        // both r are (nearly) equal to 0
-        if(isNearlyEqual(cur_point[R], 0.0, EPS) &&
-           isNearlyEqual(prev_point[R], 0.0, EPS))
-        {
-          continue;
-        }
-
-        // both Z are (nearly) the same
-        if(isNearlyEqual(cur_point[Z], prev_point[Z], EPS))
-        {
-          continue;
-        }
-
-        // both points are (nearly) the same
-        if(squared_distance(cur_point, prev_point) < EPS_SQ)
-        {
-          continue;
-        }
-      }
-
-      polyline[polyline_size] = cur_point;
-      polyline_size += 1;
-    }
-
-    // Check if we need to flip the points order.
-    // discretize() is only valid if x increases as index increases
-    bool flip = false;
-    if(polyline_size > 1)
-    {
-      if(polyline[0][Z] > polyline[1][Z])
-      {
-        flip = true;
-        SLIC_INFO("Order of contour points has been reversed!"
-                  << " Discretization algorithm expects Z values of contour "
-                     "points to be increasing");
-      }
-    }
-
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      axom::fmt::format(" Discretizing contour with {} points ", polyline_size)));
-
-    // Flip point order
-    if(flip)
-    {
-      int i = polyline_size - 1;
-      int j = 0;
-      while(i > j)
-      {
-        axom::utilities::swap<Point2D>(polyline[i], polyline[j]);
-        i -= 1;
-        j += 1;
-      }
-    }
+      m_surfaceMesh->getNode(i, polyline[i].data());
+    int polyline_size = pointcount;
 
     // Generate the Octahedra
     const bool disc_status = axom::quest::discretize<ExecSpace>(polyline,
@@ -1397,6 +1339,15 @@ public:
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
+    // Save m_percentError and m_level in case refineShape needs to change them
+    // to meet the overall desired error tolerance for the volume.
+    double saved_percentError = m_percentError;
+    double saved_level = m_level;
+
+    // Refine the shape, potentially reloading it more refined.
+    refineShape(shape);
+
+    // Now that the mesh is refined, dispatch to device implementations.
     switch(m_execPolicy)
     {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -1425,6 +1376,10 @@ public:
       SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
       break;
     }
+
+    // Restore m_percentError, m_level in case refineShape changed them.
+    m_percentError = saved_percentError;
+    m_level = saved_level;
   }
 
   // Runs the shaping query, based on the policy member set
@@ -1466,6 +1421,352 @@ public:
   }
 
 private:
+  /*!
+   * \brief Filter the input mesh so it does not have any degenerate segments
+   *        (consecutive points that are the same) and the points are increasing
+   *        order on the Z (really X axis).
+   *
+   * \param m The input mesh.
+   * \return A new mint::Mesh that has been cleaned up.
+   */
+  SegmentMesh *
+  filterMesh(const SegmentMesh *m) const
+  {
+    // Number of points in polyline
+    int pointcount = m->getNumberOfNodes();
+
+    // We'll be filtering the points in the mesh. Make a new mesh to contain
+    // those points.
+    SegmentMesh *newm = new SegmentMesh(m->getDimension(), mint::SEGMENT);
+    newm->reserveNodes(pointcount);
+
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format(
+        " Checking contour with {} points for degenerate segments ",
+        pointcount)));
+
+    enum
+    {
+      R = 1,
+      Z = 0
+    };
+
+    // Add contour points
+    int polyline_size = 0;
+    const double EPS = m_vertexWeldThreshold;
+    const double EPS_SQ = EPS * EPS;
+    Point2D cur_point, prev_point;
+    for(int i = 0; i < pointcount; ++i)
+    {
+      // Get the current point.
+      m->getNode(i, cur_point.data());
+
+      // Check for degenerate segments
+      if(polyline_size > 0)
+      {
+        using axom::utilities::isNearlyEqual;
+
+        // both r are (nearly) equal to 0
+        if(isNearlyEqual(cur_point[R], 0.0, EPS) &&
+           isNearlyEqual(prev_point[R], 0.0, EPS))
+        {
+          continue;
+        }
+
+        // both Z are (nearly) the same
+        if(isNearlyEqual(cur_point[Z], prev_point[Z], EPS))
+        {
+          continue;
+        }
+
+        // both points are (nearly) the same
+        if(squared_distance(cur_point, prev_point) < EPS_SQ)
+        {
+          continue;
+        }
+      }
+
+      // Add the current point to the new mesh.
+      newm->appendNode(cur_point[Z], cur_point[R]);
+      prev_point = cur_point;
+      polyline_size += 1;
+    }
+
+    // Get the ZR coordinates.
+    double *z = newm->getCoordinateArray(mint::X_COORDINATE);
+    double *r = newm->getCoordinateArray(mint::Y_COORDINATE);
+
+    // Check if we need to flip the points order.
+    // discretize() is only valid if x increases as index increases
+    bool flip = false;
+    if(polyline_size > 1)
+    {
+      if(z[0] > z[1])
+      {
+        flip = true;
+        SLIC_INFO("Order of contour points has been reversed!"
+                  << " Discretization algorithm expects Z values of contour "
+                     "points to be increasing");
+      }
+    }
+
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format(" Discretizing contour with {} points ", polyline_size)));
+
+    // Flip point order
+    if(flip)
+    {
+      int i = polyline_size - 1;
+      int j = 0;
+      while(i > j)
+      {
+        axom::utilities::swap(z[i], z[j]);
+        axom::utilities::swap(r[i], r[j]);
+        i -= 1;
+        j += 1;
+      }
+    }
+
+    // Now make polyline_size - 1 segments.
+    int numNewSegments = polyline_size - 1;
+    newm->reserveCells(numNewSegments);
+    for(int i = 0; i < numNewSegments; ++i)
+    {
+      IndexType seg[2] = {i, i + 1};
+      newm->appendCell(seg, mint::SEGMENT);
+    }
+
+    return newm;
+  }
+
+  /*!
+   * \brief Compute the area of the polygon given by \a pts.
+   * \param pts The list of points that make up the polygon.
+   * \return The polygon area.
+   */
+  double area(const std::vector<Point2D> &pts) const
+  {
+    auto npts = static_cast<int>(pts.size());
+    // Compute the areas
+    double A = 0.;
+    for(int i = 0; i < npts; i++)
+    {
+        int nexti = (i + 1) % npts;
+        A += pts[i][0] * pts[nexti][1] - pts[i][1] * pts[nexti][0];
+    }
+    // Take absolute value just in case the polygon had reverse orientation.
+    return fabs(A * 0.5);
+  }
+
+  /*!
+   * \brief Compute the circle area of a circle of radius at \a level.
+   * \param radius The radius of the circle.
+   * \return The circle area
+   */
+  double calcCircleArea(double radius, int level) const
+  {
+    int npts = 3 * pow(2, level);
+    std::vector<Point2D> pts;
+    pts.reserve(npts);
+    for(int i = 0; i < npts; i++)
+    {
+        double angle = 2. * M_PI * static_cast<double>(i) / static_cast<double>(npts);
+        pts.push_back(Point2D{radius * cos(angle), radius * sin(angle)});
+    }
+    return area(pts);
+  }
+
+  /*!
+   * \brief Compute the area of a circle of radius at \a level.
+   * \param radius The radius of the circle.
+   * \param level The refinement level for the circle.
+   * \return The circle area
+   */
+  double circleArea(double radius, int level) const
+  {
+    // The lut should cover most values we'd use.
+    static const double lut[] = {
+    /*level 0*/ 1.29903810568,  // diff=1.84255454791
+    /*level 1*/ 2.59807621135,  // diff=0.543516442236
+    /*level 2*/ 3,              // diff=0.14159265359
+    /*level 3*/ 3.10582854123,  // diff=0.0357641123595
+    /*level 4*/ 3.13262861328,  // diff=0.00896404030856
+    /*level 5*/ 3.13935020305,  // diff=0.00224245054292
+    /*level 6*/ 3.14103195089,  // diff=0.000560702699288
+    /*level 7*/ 3.14145247229,  // diff=0.000140181304342
+    /*level 8*/ 3.14155760791,  // diff=3.50456779015e-05
+    /*level 9*/ 3.14158389215,  // diff=8.76144145456e-06
+    /*level 10*/ 3.14159046323, // diff=2.19036162807e-06
+    /*level 11*/ 3.141592106,   // diff=5.47590411681e-07
+    /*level 12*/ 3.14159251669, // diff=1.36898179903e-07
+    /*level 13*/ 3.14159261936, // diff=3.4225411838e-08
+    /*level 14*/ 3.14159264503, // diff=8.55645243547e-09
+    };
+    constexpr int MAX_LEVELS = sizeof(lut) / sizeof(double);
+    return (level < MAX_LEVELS) ? (lut[level] * radius * radius) : calcCircleArea(radius, level);
+  }
+
+  /*!
+   * \brief Iterate over line segments in the surface mesh and compute
+   *        truncated cone values with circles at given refinement and
+   *        add them all up. This will be the approximate revolved
+   *        volume that is possible with the current curve to line segment
+   *        refinement that was done.
+   *
+   * \param m The mint mesh that contains the line segments.
+   * \param level The circle refinement level.
+   *
+   * \note This function assumes that the line segments have been
+   *       processed and increase in x.
+   *
+   * \return The approximate revolved volume for the linearized curve
+   *         and circle refinement level.
+   */
+  double volume(const mint::Mesh* m, int level) const
+  {
+    const int numSurfaceVertices = m->getNumberOfNodes();
+    const int nSegments = numSurfaceVertices - 1;
+    const double* x = m->getCoordinateArray(mint::X_COORDINATE);
+    const double* y = m->getCoordinateArray(mint::Y_COORDINATE);
+    double vol_approx = 0.;
+    for(int seg = 0; seg < nSegments; seg++)
+    {
+        double r0 = y[seg];
+        double r1 = y[seg + 1];
+        double h = fabs(x[seg + 1] - x[seg]);
+        double h2 = (r0 * h / (r0 - r1)) - h;
+
+        // Truncated cone volume.
+        //double A0 = M_PI * r0 * r0;
+        //double A1 = M_PI * r1 * r1;
+        //double truncated_cone_vol = (1. / 3.) * (A0 * h + (A0 - A1) * h2);
+
+        // Approximate cone volume
+        double A2 = circleArea(r0, level);
+        double A3 = circleArea(r1, level);
+        double approx_cone_vol = (1. / 3.) * (A2 * h + (A2 - A3) * h2);
+
+        // Add the truncated cone to the volume total.
+        vol_approx += approx_cone_vol;
+    }
+
+    return vol_approx;
+  }
+
+  /*!
+   * \brief Refine the shape to get under a certain errorPercent in the
+   *        linearized revolved volume. To do this, we may end up reloading
+   *        the shape.
+   *
+   * \param shape The shape to refine.
+   *
+   * \note The m_surfaceMesh will be set to a mesh that should be fine
+   *       enough that its linearized representation is close enough to
+   *       the specified error percent.
+   */
+  void refineShape(const klee::Shape &shape)
+  {
+    // If m_percentError is not set to a valud value then we are not refining.
+    if(m_percentError < 0.)
+      return;
+
+    // If the prior loadShape call was unable to create a revolved volume for
+    // the shape then we can't do any better than the current mesh.
+    if(m_revolvedVolume <= 0.)
+      return;
+
+    // We have gone through loadShape once at this point. For C2C contours,
+    // we should have a reasonable revolved volume of the shape. We can
+    // compute the volume of the shape using the discretized mesh and see
+    // how close we are to m_percentError. If we can't get there by increasing
+    // the circle refinement, we can loadShape again using a smaller error
+    // tolerance.
+
+    // Initial values for the refinement knobs.
+    double curvePercentError = m_percentError;
+    int circleLevel = m_level;
+
+    // Try refining the curve different ways to see if we get to a refinement
+    // strategy that should 
+    bool refine = true;
+    constexpr int MAX_LEVELS = 15;
+    constexpr int MAX_ITERATIONS = 20;
+    for(int iteration = 0; iteration < MAX_ITERATIONS && refine; iteration++)
+    {
+      // Increase the circle refinement level to see if we can get to an acceptable
+      // error percentage using the line segment mesh's revolved volume.
+      for(int level = m_level; level < MAX_LEVELS; level++)
+      {
+        double currentVol = volume(m_surfaceMesh, level);
+        double pct = 1. - currentVol / m_revolvedVolume;
+
+        SLIC_INFO(
+          fmt::format("Refining... "
+            "Revolved volume = {}"
+            ", Estimated volume = {}"
+            ", Percent error = {}"
+            ", level = {}"
+            ", curve error = {}",
+            m_revolvedVolume,
+            currentVol,
+            pct,
+            level,
+            curvePercentError));
+
+        if(pct <= m_percentError)
+        {
+          SLIC_INFO(
+            fmt::format("Contour refinement complete. "
+              "Revolved volume = {}"
+              ", Estimated volume = {}"
+              ", Percent error = {}"
+              ", level = {}"
+              ", curve error = {}",
+              m_revolvedVolume,
+              currentVol,
+              pct,
+              level,
+              curvePercentError));
+
+          circleLevel = level;
+          refine = false;
+          break;
+        }
+      }
+
+      if(refine)
+      {
+        // We could not get to an acceptable error percentage.
+
+        // Free the previous surface mesh.
+        delete m_surfaceMesh;
+        m_surfaceMesh = nullptr;
+
+        // Half the error and reload the shape.
+        curvePercentError *= 0.5;
+
+        // Load the shape again using the smaller curvePercentError. This will cause
+        // a new m_surfaceMesh to be created.
+        double rv = 0.;
+        SLIC_INFO(
+          fmt::format("Reloading shape {} with error {}.",
+              shape.getName(),
+              curvePercentError));
+        loadShapeEx(shape, curvePercentError, rv);
+
+        // Filter the mesh, store in m_surfaceMesh.
+        SegmentMesh *newm = filterMesh(dynamic_cast<const SegmentMesh *>(m_surfaceMesh));
+        delete m_surfaceMesh;
+        m_surfaceMesh = newm;
+      }
+    }
+
+    // We arrived at a mesh refinement that satisfied m_percentError.
+    m_level = circleLevel;
+  }
+
   /// Create and return a new volume fraction grid function for the current mesh
   mfem::GridFunction* newVolFracGridFunction()
   {
@@ -1486,6 +1787,7 @@ private:
 private:
   ExecPolicy m_execPolicy {seq};
   int m_level {7};
+  double m_revolvedVolume{0.};
   int m_num_elements {0};
   double* m_hex_volumes {nullptr};
   double* m_overlap_volumes {nullptr};

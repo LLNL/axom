@@ -323,10 +323,6 @@ void replacementRuleTest(const std::string &shapeFile,
     shaper.loadShape(shape);
     slic::flushStreams();
 
-    // Apply the specified geometric transforms
-    shaper.applyTransforms(shape);
-    slic::flushStreams();
-
     // Generate a spatial index over the shape
     shaper.prepareShapeQuery(shapeDim, shape);
     slic::flushStreams();

@@ -47,6 +47,7 @@ public:
   void setSamplesPerKnotSpan(int nSamples);
   void setVertexWeldThreshold(double threshold);
   void setVerbosity(bool isVerbose) { m_verboseOutput = isVerbose; }
+  void setPercentError(double percent);
 
   //@}
 
@@ -69,8 +70,6 @@ public:
   /// Loads the shape from file into m_surfaceMesh
   virtual void loadShape(const klee::Shape& shape);
 
-  virtual void applyTransforms(const klee::Shape& shape);
-
   virtual void prepareShapeQuery(klee::Dimensions shapeDimension,
                                  const klee::Shape& shape) = 0;
 
@@ -91,6 +90,30 @@ public:
   //@}
 
 protected:
+  /*!
+   * \brief Loads the shape from file into m_surfaceMesh and computes a revolvedVolume
+   *        for the shape.
+   * \param shape The shape.
+   * \param percentError A percent error to use when refining the shape. If it
+   *                     positive then Axom will try to refine dynamically
+   *                     according to this error. Otherwise, it will use the
+   *                     segmentsPerKnotSpan value.
+   * \param[out] revolvedvolume A revolved volume for the shape, if possible.
+   */
+  void loadShapeEx(const klee::Shape& shape, double percentError, double &revolvedVolume);
+
+  /*!
+   * \brief Computes transforms for the shape and applies them to the surface mesh.
+   * \param shape The shape.
+   */
+  void applyTransforms(const klee::Shape& shape);
+
+  /*!
+   * \brief Computes transforms for the shape and applies them to the surface mesh.
+   * \param shape The shape.
+   * \param transform A 4x4 matrix containing the transformation to apply.
+   */
+  void applyTransforms(const numerics::Matrix<double> &transform);
 
   /*!
    * \brief Get a matrix that contains the shape's concatenated transforms.
@@ -122,6 +145,7 @@ protected:
   mint::Mesh* m_surfaceMesh {nullptr};
 
   int m_samplesPerKnotSpan {25};
+  double m_percentError{-1.}; // -1 means we're not using error-based method.
   double m_vertexWeldThreshold {1e-9};
   bool m_verboseOutput {false};
 

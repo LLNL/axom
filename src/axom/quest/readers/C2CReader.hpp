@@ -70,8 +70,21 @@ public:
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
                      int segmentsPerKnotSpan);
 
+  /*!
+   * \brief Projects high-order NURBS contours onto a linear mesh using \a percentError 
+   *        to decide when to stop refinement. The method also computes an
+   *        approximation of the revolved volume that would be created by the
+   *        contours, using quadrature.
+   * 
+   * \param[in] mesh The mesh object that will contain the linearized line segments.
+   * \param[in] transform A transformation matrix that will be applied to points.
+   * \param[in] percentError A percent of error that is acceptable to stop refinement.
+   * \param[out] revolvedVolume The revolved volume of the curve (not linearized).
+   */
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
-                     double threshold);
+                     const numerics::Matrix<double> &transform,
+                     double percentError,
+                     double &revolvedVolume);
 
 #if 1
   // NOTE: Temporary API

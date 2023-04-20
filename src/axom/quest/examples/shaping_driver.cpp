@@ -82,6 +82,7 @@ public:
   int samplesPerKnotSpan {25};
   int refinementLevel {7};
   double weldThresh {1e-9};
+  double percentError {-1.};
 
   VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
 
@@ -145,6 +146,11 @@ public:
     app.add_option("-t,--weld-threshold", weldThresh)
       ->description("Threshold for welding")
       ->check(axom::CLI::NonNegativeNumber)
+      ->capture_default_str();
+
+    app.add_option("-e,--percent-error", percentError)
+      ->description("Percent error in calculating curve refinement and revolved volume")
+      ->check(axom::CLI::PositiveNumber)
       ->capture_default_str();
 
     // Parameter to determine if we're using a file or a box mesh
@@ -455,6 +461,8 @@ int main(int argc, char** argv)
   shaper->setSamplesPerKnotSpan(params.samplesPerKnotSpan);
   shaper->setVertexWeldThreshold(params.weldThresh);
   shaper->setVerbosity(params.isVerbose());
+  if(params.percentError > 0.)
+    shaper->setPercentError(params.percentError);
 
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.
@@ -481,12 +489,8 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& shape : params.shapeSet.getShapes())
   {
-    // Load the shape from file
+    // Load the shape from file. This also applies any transformations.
     shaper->loadShape(shape);
-    slic::flushStreams();
-
-    // Apply the specified geometric transforms
-    shaper->applyTransforms(shape);
     slic::flushStreams();
 
     // Generate a spatial index over the shape

@@ -108,12 +108,42 @@ void Shaper::setVertexWeldThreshold(double threshold)
   m_vertexWeldThreshold = threshold;
 }
 
+void Shaper::setPercentError(double percent)
+{
+  using axom::utilities::clampLower;
+  using axom::utilities::clampUpper;
+  // Do not allow zero error.
+  constexpr double lower = 1.e-15;
+  constexpr double upper = 1.;
+  SLIC_WARNING_IF(
+    percent < lower,
+    axom::fmt::format(
+      "Percent error must be greater than {}. Provided value was {}",
+      lower, percent));
+  SLIC_WARNING_IF(
+    percent > upper,
+    axom::fmt::format(
+      "Percent error must be less than {}. Provided value was {}",
+      upper, percent));
+
+  m_percentError = clampUpper(clampLower(percent, lower), upper);
+}
+
 bool Shaper::isValidFormat(const std::string& format) const
 {
   return (format == "stl" || format == "c2c");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
+{
+  // Do not save the revolved volume in the default shaper.
+  double revolved = 0.;
+  loadShapeEx(shape, m_percentError, revolved);
+}
+
+void Shaper::loadShapeEx(const klee::Shape& shape,
+                         double percentError,
+                         double &revolvedVolume)
 {
   using axom::utilities::string::endsWith;
 
@@ -128,18 +158,45 @@ void Shaper::loadShape(const klee::Shape& shape)
   std::string shapePath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
   SLIC_INFO("Reading file: " << shapePath << "...");
 
+  // Initialize revolved volume.
+  revolvedVolume = 0.;
+
   if(endsWith(shapePath, ".stl"))
   {
     quest::internal::read_stl_mesh(shapePath, m_surfaceMesh, m_comm);
+    // Transform the coordinates of the linearized mesh.
+    applyTransforms(shape);
   }
 #ifdef AXOM_USE_C2C
   else if(endsWith(shapePath, ".contour"))
   {
-    quest::internal::read_c2c_mesh(shapePath,
-                                   m_samplesPerKnotSpan,
-                                   m_vertexWeldThreshold,
-                                   m_surfaceMesh,
-                                   m_comm);
+    // Get the transforms that are being applied to the mesh. Get them
+    // as a single concatenated matrix.
+    auto transform = getTransforms(shape);
+
+    // Pass in the transform so any transformations can figure into
+    // computing the revolved volume.
+    if(percentError > 0.)
+    {
+      quest::internal::read_c2c_mesh(shapePath,
+                                     transform,
+                                     percentError,
+                                     m_vertexWeldThreshold,
+                                     m_surfaceMesh,
+                                     revolvedVolume, // output arg
+                                     m_comm);
+    }
+    else
+    {
+      quest::internal::read_c2c_mesh(shapePath,
+                                     m_samplesPerKnotSpan,
+                                     m_vertexWeldThreshold,
+                                     m_surfaceMesh,
+                                     m_comm);
+    }
+
+    // Transform the coordinates of the linearized mesh.
+    applyTransforms(transform);
   }
 #endif
   else
@@ -180,10 +237,14 @@ numerics::Matrix<double> Shaper::getTransforms(const klee::Shape& shape) const
 
 void Shaper::applyTransforms(const klee::Shape& shape)
 {
-#if 1
   // Concatenate the transformations
   numerics::Matrix<double> transformation = getTransforms(shape);
+  // Transform the surface mesh coordinates.
+  applyTransforms(transformation);
+}
 
+void Shaper::applyTransforms(const numerics::Matrix<double> &transformation)
+{
   // Apply transformation to coordinates of each vertex in mesh
   if(!transformation.isIdentity())
   {
@@ -208,49 +269,6 @@ void Shaper::applyTransforms(const klee::Shape& shape)
       }
     }
   }
-#else
-  auto& geometryOperator = shape.getGeometry().getGeometryOperator();
-  auto composite =
-    std::dynamic_pointer_cast<const klee::CompositeOperator>(geometryOperator);
-  if(composite)
-  {
-    // Get surface mesh coordinates
-    const int spaceDim = m_surfaceMesh->getDimension();
-    const int numSurfaceVertices = m_surfaceMesh->getNumberOfNodes();
-    double* x = m_surfaceMesh->getCoordinateArray(mint::X_COORDINATE);
-    double* y = m_surfaceMesh->getCoordinateArray(mint::Y_COORDINATE);
-    double* z = spaceDim > 2
-      ? m_surfaceMesh->getCoordinateArray(mint::Z_COORDINATE)
-      : nullptr;
-
-    // Loop through operators and apply transformations to vertices
-    for(auto op : composite->getOperators())
-    {
-      // Use visitor pattern to extract the affine matrix from supported operators
-      internal::AffineMatrixVisitor visitor;
-      op->accept(visitor);
-      if(!visitor.isValid())
-      {
-        continue;
-      }
-      const auto& matrix = visitor.getMatrix();
-
-      // Apply transformation to coordinates of each vertex in mesh
-      double xformed[4];
-      for(int i = 0; i < numSurfaceVertices; ++i)
-      {
-        double coords[4] = {x[i], y[i], (z == nullptr ? 0. : z[i]), 1.};
-        numerics::matrix_vector_multiply(matrix, coords, xformed);
-        x[i] = xformed[0];
-        y[i] = xformed[1];
-        if(z != nullptr)
-        {
-          z[i] = xformed[2];
-        }
-      }
-    }
-  }
-#endif
 }
 
 // ----------------------------------------------------------------------------

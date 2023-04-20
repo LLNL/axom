@@ -289,6 +289,44 @@ int read_c2c_mesh(const std::string& file,
                   double vertexWeldThreshold,
                   mint::Mesh*& m,
                   MPI_Comm comm = MPI_COMM_SELF);
+
+/*!
+ * \brief Reads in the contour mesh from the specified file and refines it
+ *        according to a percent error.
+ *
+ * \param [in] file the file consisting of a C2C contour defined by one or more c2c::Piece
+ * \param [in] transform A 4x4 matrix that contains a transform to be applied to points.
+ * \param [in] percentError An acceptable percent error in the arc length of the curve.
+ * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
+ * \param [out] m user-supplied pointer to point to the mesh object
+ * \param [out] revolvedVolume An approximation of the revolved volume of the contour
+ *                             or 0 if it could not be computed.
+ * \param [in] comm the MPI communicator, only applicable when MPI is available
+ *
+ * \note The caller is responsible for properly de-allocating the mesh object
+ *  that is returned by this function
+ *
+ * \return status set to zero on success, or to a non-zero value otherwise
+ *
+ * \pre m == nullptr
+ * \pre !file.empty()
+ *
+ * \post m != nullptr
+ * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \post m->hasMixedCellTypes() == false
+ * \post m->getCellType() == mint::SEGMENT
+ * \post revolvedVolume > 0 if there was a single contour
+ *
+ * \see C2CReader
+ * \see PC2CReader
+ */
+int read_c2c_mesh(const std::string& file,
+                  const numerics::Matrix<double> &transform,
+                  double percentError,
+                  double vertexWeldThreshold,
+                  mint::Mesh*& m,
+                  double &revolvedVolume,
+                  MPI_Comm comm = MPI_COMM_SELF);
 #endif  // AXOM_USE_C2C
 
 /// @}

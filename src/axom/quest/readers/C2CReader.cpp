@@ -23,6 +23,175 @@ namespace axom
 {
 namespace quest
 {
+//---------------------------------------------------------------------------
+// TODO: Use MFEM for quadrature
+struct QuadratureElement
+{
+    double w;
+    double x;
+};
+
+// Quadrature table from: https://pomax.github.io/bezierinfo/legendre-gauss.html
+static const std::vector<QuadratureElement> quad64{
+/*1 */{0.0486909570091397,-0.0243502926634244},
+/*2 */{0.0486909570091397, 0.0243502926634244},
+/*3 */{0.0485754674415034,-0.0729931217877990},
+/*4 */{0.0485754674415034, 0.0729931217877990},
+/*5 */{0.0483447622348030,-0.1214628192961206},
+/*6 */{0.0483447622348030, 0.1214628192961206},
+/*7 */{0.0479993885964583,-0.1696444204239928},
+/*8 */{0.0479993885964583, 0.1696444204239928},
+/*9 */{0.0475401657148303,-0.2174236437400071},
+/*10*/{0.0475401657148303, 0.2174236437400071},
+/*11*/{0.0469681828162100,-0.2646871622087674},
+/*12*/{0.0469681828162100, 0.2646871622087674},
+/*13*/{0.0462847965813144,-0.3113228719902110},
+/*14*/{0.0462847965813144, 0.3113228719902110},
+/*15*/{0.0454916279274181,-0.3572201583376681},
+/*16*/{0.0454916279274181, 0.3572201583376681},
+/*17*/{0.0445905581637566,-0.4022701579639916},
+/*18*/{0.0445905581637566, 0.4022701579639916},
+/*19*/{0.0435837245293235,-0.4463660172534641},
+/*20*/{0.0435837245293235, 0.4463660172534641},
+/*21*/{0.0424735151236536,-0.4894031457070530},
+/*22*/{0.0424735151236536, 0.4894031457070530},
+/*23*/{0.0412625632426235,-0.5312794640198946},
+/*24*/{0.0412625632426235, 0.5312794640198946},
+/*25*/{0.0399537411327203,-0.5718956462026340},
+/*26*/{0.0399537411327203, 0.5718956462026340},
+/*27*/{0.0385501531786156,-0.6111553551723933},
+/*28*/{0.0385501531786156, 0.6111553551723933},
+/*29*/{0.0370551285402400,-0.6489654712546573},
+/*30*/{0.0370551285402400, 0.6489654712546573},
+/*31*/{0.0354722132568824,-0.6852363130542333},
+/*32*/{0.0354722132568824, 0.6852363130542333},
+/*33*/{0.0338051618371416,-0.7198818501716109},
+/*34*/{0.0338051618371416, 0.7198818501716109},
+/*35*/{0.0320579283548516,-0.7528199072605319},
+/*36*/{0.0320579283548516, 0.7528199072605319},
+/*37*/{0.0302346570724025,-0.7839723589433414},
+/*38*/{0.0302346570724025, 0.7839723589433414},
+/*39*/{0.0283396726142595,-0.8132653151227975},
+/*40*/{0.0283396726142595, 0.8132653151227975},
+/*41*/{0.0263774697150547,-0.8406292962525803},
+/*42*/{0.0263774697150547, 0.8406292962525803},
+/*43*/{0.0243527025687109,-0.8659993981540928},
+/*44*/{0.0243527025687109, 0.8659993981540928},
+/*45*/{0.0222701738083833,-0.8893154459951141},
+/*46*/{0.0222701738083833, 0.8893154459951141},
+/*47*/{0.0201348231535302,-0.9105221370785028},
+/*48*/{0.0201348231535302, 0.9105221370785028},
+/*49*/{0.0179517157756973,-0.9295691721319396},
+/*50*/{0.0179517157756973, 0.9295691721319396},
+/*51*/{0.0157260304760247,-0.9464113748584028},
+/*52*/{0.0157260304760247, 0.9464113748584028},
+/*53*/{0.0134630478967186,-0.9610087996520538},
+/*54*/{0.0134630478967186, 0.9610087996520538},
+/*55*/{0.0111681394601311,-0.9733268277899110},
+/*56*/{0.0111681394601311, 0.9733268277899110},
+/*57*/{0.0088467598263639,-0.9833362538846260},
+/*58*/{0.0088467598263639, 0.9833362538846260},
+/*59*/{0.0065044579689784,-0.9910133714767443},
+/*60*/{0.0065044579689784, 0.9910133714767443},
+/*61*/{0.0041470332605625,-0.9963401167719553},
+/*62*/{0.0041470332605625, 0.9963401167719553},
+/*63*/{0.0017832807216964,-0.9993050417357722},
+/*64*/{0.0017832807216964, 0.9993050417357722}
+};
+
+//---------------------------------------------------------------------------
+/*!
+ * \brief Transform a 2D point and return a 2D point.
+ *
+ * \param transform A 4x4 transformation matrix.
+ * \param pt The input 2D point.
+ *
+ * \return The transformed 2D point.
+ */
+inline primal::Point<double, 2>
+transformPoint(const numerics::Matrix<double> &transform,
+                 const primal::Point<double, 2> &pt)
+{
+  // Turn the point2 into a vec4.
+  double pt4[] = {0., 0., 0., 1.}, newpt4[] = {0., 0., 0., 1.};
+  pt4[0] = pt[0];
+  pt4[1] = pt[1];
+
+  // Transform the point.
+  axom::numerics::matrix_vector_multiply(transform, pt4, newpt4);
+
+  // Make a new 2D point from the 2D components.
+  return primal::Point<double, 2>{newpt4[0], newpt4[1]};
+}
+
+//---------------------------------------------------------------------------
+/*!
+ * \brief Append new segments to the mint mesh, performing any point-welding
+ *        that may be needed.
+ *
+ * \param mesh The input mesh to which we're adding segments/points.
+ * \param pts The input set of points.
+ * \param EPS_SQ A point-welding tolerance.
+ */
+static void
+appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+             std::vector<primal::Point<double, 2>> &pts,
+             double EPS_SQ)
+{
+  // Check for simple vertex welding opportunities at endpoints of newly interpolated points
+  {
+    int numNodes = mesh->getNumberOfNodes();
+    if(numNodes > 0)  // this is not the first Piece
+    {
+      primal::Point<double, 2> meshPt;
+      // Fix start point if necessary; check against most recently added vertex in mesh
+      mesh->getNode(numNodes - 1, meshPt.data());
+      if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
+      {
+        pts[0] = meshPt;
+      }
+
+      // Fix end point if necessary; check against 0th vertex in mesh
+      const int endIdx = pts.size() - 1;
+      mesh->getNode(0, meshPt.data());
+      if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
+      {
+        pts[endIdx] = meshPt;
+      }
+    }
+    else  // This is the first, and possibly only span, check its endpoint, fix if necessary
+    {
+      int endIdx = pts.size() - 1;
+      if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
+      {
+        pts[endIdx] = pts[0];
+      }
+    }
+  }
+
+  // Add the new points and segments to the mesh, respecting welding checks from previous block
+  {
+    const int startNode = mesh->getNumberOfNodes();
+    const int numNewNodes = pts.size();
+    mesh->reserveNodes(startNode + numNewNodes);
+
+    for(int i = 0; i < numNewNodes; ++i)
+    {
+      mesh->appendNode(pts[i][0], pts[i][1]);
+    }
+
+    const int startCell = mesh->getNumberOfCells();
+    const int numNewSegments = pts.size() - 1;
+    mesh->reserveCells(startCell + numNewSegments);
+    for(int i = 0; i < numNewSegments; ++i)
+    {
+      IndexType seg[2] = {startNode + i, startNode + i + 1};
+      mesh->appendCell(seg, mint::SEGMENT);
+    }
+  }
+}
+
+//---------------------------------------------------------------------------
 /*!
  * \brief Helper class for interpolating points on a NURBS curve
  *
@@ -154,7 +323,7 @@ struct NURBSInterpolator
    * 
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
    */
-  BasisVector calculateBasisFunctions(int span, double u)
+  BasisVector calculateBasisFunctions(int span, double u) const
   {
     const int p = m_curve.order - 1;
     const auto& U = m_curve.knots;
@@ -188,7 +357,7 @@ struct NURBSInterpolator
    *
    * Adapted from Algorithm A4.1 on page 124 of "The NURBS Book"
    */
-  PointType at(double u)
+  PointType at(double u) const
   {
     using GrassmanPoint = primal::Point<double, 3>;
     GrassmanPoint cw {0.0};
@@ -331,7 +500,7 @@ struct NURBSInterpolator
       for(int j = 0; j <= p; j++)
       {
         int offset = span - p + j;
-        // TODO: We likely need to include the weights and then compensate.
+        // TODO: We may need to include weights.
         x = x + N[k][j] * m_curve.controlPoints[offset].getZ().getValue();
         y = y + N[k][j] * m_curve.controlPoints[offset].getR().getValue();
       }
@@ -377,6 +546,14 @@ struct NURBSInterpolator
 #endif
   }
 
+  /*!
+   * \brief Evaluates the B-spline curvature derivatives (up to 2nd) at
+   *        parameter value \a u
+   * 
+   * \param[in] u The parameter value.
+   * \param[in] d The number of derivatives to compute (1=1st deriv, 2=1st & 2nd derivs)
+   * \param[out] ders An array that will contain the curvature derivatives.
+   */
   void curvatureDerivatives(double u, int d, double *ders) const
   {
     // Evaluate 1st, 2nd, 3rd curve derivatives at u.
@@ -404,25 +581,13 @@ struct NURBSInterpolator
 
     if(d >= 2)
     {
-#if 0
-    // 2nd derivative of curvature.
-    double xpxpp_plus_ypypp = xp * xpp + yp * ypp;
-    double E = pow(xp2_plus_yp2, -7. / 2.);
-    double F = -15. * (yp * xpp - xp * ypp) * (xpxpp_plus_ypypp * xpxpp_plus_ypypp) -
-                6. * xp2_plus_yp2 * xpxpp_plus_ypypp * (xp * yppp - yp * xppp);
-    double G = 3. * xp2_plus_yp2 * (xp * ypp - yp * xpp) * (xpp * xpp + ypp * ypp + xp * xppp + yp * yppp);
-    // xpppp, ypppp are zero because of cubic basis functions so we do not include them.
-    double H = xp2_plus_yp2 * xp2_plus_yp2 * (-ypp * xppp + xpp * yppp /* - yp * xpppp + xp * ypppp */);
-    ders[1] = E * (F - G + H);
-#else
-    // 2nd derivative of curvature.
-    double E = 15. * (-yp*xpp + xp * ypp) * pow(2. * xp * xpp + 2. * yp * ypp, 2.) / (4. * pow(xp2_plus_yp2, 7. / 2.));
-    double F = 3. * (2. * xp * xpp + 2. * yp * ypp) * (-yp * xppp + xp*yppp) / pow(xp2_plus_yp2, 5. / 2.);
-    double G = 3. * (-yp*xpp + xp*ypp)* (2.*(xpp*xpp)+2.*(ypp*ypp) + 2.*xp*xppp + 2.*yp*yppp) / (2. * pow(xp2_plus_yp2, 5. / 2.));
-    double H = (-ypp*xppp + xpp*yppp) / pow(xp2_plus_yp2, 3. / 2.);
+      // 2nd derivative of curvature.
+      double E = 15. * (-yp*xpp + xp * ypp) * pow(2. * xp * xpp + 2. * yp * ypp, 2.) / (4. * pow(xp2_plus_yp2, 7. / 2.));
+      double F = 3. * (2. * xp * xpp + 2. * yp * ypp) * (-yp * xppp + xp*yppp) / pow(xp2_plus_yp2, 5. / 2.);
+      double G = 3. * (-yp*xpp + xp*ypp)* (2.*(xpp*xpp)+2.*(ypp*ypp) + 2.*xp*xppp + 2.*yp*yppp) / (2. * pow(xp2_plus_yp2, 5. / 2.));
+      double H = (-ypp*xppp + xpp*yppp) / pow(xp2_plus_yp2, 3. / 2.);
 
-    ders[1] = E - F - G + H;
-#endif
+      ders[1] = E - F - G + H;
     }
   }
 
@@ -601,15 +766,58 @@ std::cout << iteration << ": next u=" << u << std::endl;
     return c;
   }
 
+  /*!
+   * \brief Compute the revolved volume of the curve across its entire
+   *        parametric interval [0,1] using quadrature.
+   *
+   * \note We include a transformation of the points so any transforms
+   *       can figure into the integration.
+   *
+   * \return The revolved curve volume.
+   */
+  double revolvedVolume(const numerics::Matrix<double> &transform) const
+  {
+    constexpr double a = 0, b = 1;
+    constexpr double scale = M_PI * ((b - a) / 2.);
+
+    // Make a transform with no translation. We use this to transform
+    // the derivative since we want to permit scaling and rotation but
+    // translating it does not make sense.
+    numerics::Matrix<double> transform2 = transform;
+    transform2(0, 3) = 0.;
+    transform2(1, 3) = 0.;
+    transform2(2, 3) = 0.;
+
+    // Approximate the integral "Int pi*x'(u)*y(u)^2du" using quadrature.
+    double sum = 0.;
+    size_t n = quad64.size();
+    for(size_t i = 0; i < n; i++)
+    {
+      // Map quad point x value [-1,1] to [a,b].
+      double u = quad64[i].x * ((b - a) / 2.) + ((b + a) / 2.);
+
+      // Compute y(u) to get radius
+      PointType p_u = at(u);
+      PointType p_uT = transformPoint(transform, p_u);
+      double r = p_uT[1];
+
+      // Compute x'(u)
+      PointType xprime;
+      derivativesAt(u, 1, &xprime);
+      PointType xprimeT = transformPoint(transform2, xprime);
+      double xp = xprimeT[0];
+
+      // Accumulate weight times dx*r^2.
+      sum += quad64[i].w * xp * (r * r);
+    }
+    double vol = fabs(scale * sum);
+    return vol;
+  }
+
 private:
   const c2c::NURBSData& m_curve;
   std::vector<std::pair<double, double>> m_spanIntervals;
 };
-
-// NOTE: We would eventually like to be able to pass an error term to the
-//       c2c reader that lets it figure out how many segements it needs to make
-//       to get a linearized curve that is precise enough (when integrated) that
-//       analytic_solution - this_linearization < error_tolerance.
 
 void C2CReader::clear() { m_nurbsData.clear(); }
 
@@ -683,66 +891,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   getLinearMesh(mesh, segmentsPerKnotSpan, d1, d2, uvec, curv, sp);
 }
 
-
-//---------------------------------------------------------------------------
-static void
-appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-             std::vector<primal::Point<double, 2>> &pts,
-             double EPS_SQ)
-{
-  // Check for simple vertex welding opportunities at endpoints of newly interpolated points
-  {
-    int numNodes = mesh->getNumberOfNodes();
-    if(numNodes > 0)  // this is not the first Piece
-    {
-      primal::Point<double, 2> meshPt;
-      // Fix start point if necessary; check against most recently added vertex in mesh
-      mesh->getNode(numNodes - 1, meshPt.data());
-      if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
-      {
-        pts[0] = meshPt;
-      }
-
-      // Fix end point if necessary; check against 0th vertex in mesh
-      const int endIdx = pts.size() - 1;
-      mesh->getNode(0, meshPt.data());
-      if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
-      {
-        pts[endIdx] = meshPt;
-      }
-    }
-    else  // This is the first, and possibly only span, check its endpoint, fix if necessary
-    {
-      int endIdx = pts.size() - 1;
-      if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
-      {
-        pts[endIdx] = pts[0];
-      }
-    }
-  }
-
-  // Add the new points and segments to the mesh, respecting welding checks from previous block
-  {
-    const int startNode = mesh->getNumberOfNodes();
-    const int numNewNodes = pts.size();
-    mesh->reserveNodes(startNode + numNewNodes);
-
-    for(int i = 0; i < numNewNodes; ++i)
-    {
-      mesh->appendNode(pts[i][0], pts[i][1]);
-    }
-
-    const int startCell = mesh->getNumberOfCells();
-    const int numNewSegments = pts.size() - 1;
-    mesh->reserveCells(startCell + numNewSegments);
-    for(int i = 0; i < numNewSegments; ++i)
-    {
-      IndexType seg[2] = {startNode + i, startNode + i + 1};
-      mesh->appendCell(seg, mint::SEGMENT);
-    }
-  }
-}
-
 //----------------------------------------------------------------------------
 static void
 write_lines(const std::string &filename, std::vector<primal::Point<double, 2>> &pts)
@@ -802,19 +950,19 @@ static std::ostream &operator << (std::ostream &os, const primal::Point<double, 
 
 //---------------------------------------------------------------------------
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              double threshold)
+                              const numerics::Matrix<double> &transform,
+                              double percentError,
+                              double &revolvedVolume)
 {
-  using axom::utilities::lerp;
-
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
   SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
   SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
                 "C2C reader expects a segment mesh!");
-  SLIC_ERROR_IF(threshold <= 0.,
-                "C2C reader: Threshold must be greater than zero.");
-  SLIC_ERROR_IF(threshold >= 1.,
-                "C2C reader: Threshold must be less than one.");
+  SLIC_ERROR_IF(percentError <= 0.,
+                "C2C reader: percentError must be greater than zero.");
+  SLIC_ERROR_IF(percentError >= 1.,
+                "C2C reader: percentError must be less than one.");
 
   using PointType = primal::Point<double, 2>;
   using PointsArray = std::vector<PointType>;
@@ -834,8 +982,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
          // If we have a good curve then errPct should be small.
          errPct = 1. - pct;
       }
-          
-std::cout << "percent_error(" << len << ", " << maxlen << ") -> " << errPct << std::endl;
+
+      //std::cout << "percent_error(" << len << ", " << maxlen << ") -> " << errPct << std::endl;
       return errPct;
     };
 
@@ -846,8 +994,9 @@ std::cout << "percent_error(" << len << ", " << maxlen << ") -> " << errPct << s
   {
     // Set up an initial ui at the midpoint and get the point.
     double ui = (u0 + u1) / 2.;
+#ifdef VERBOSE_SOLVEU
     double ustart = ui;
-
+#endif
     // Interval endpoints.
     double u0x = p0[0];
     double u0y = p0[1];
@@ -884,8 +1033,9 @@ std::cout << "percent_error(" << len << ", " << maxlen << ") -> " << errPct << s
 
       if(axom::utilities::isNearlyEqual(D1L, 0., EPS))
       {
-std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui << std::endl;
-
+#ifdef VERBOSE_SOLVEU
+         std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui << std::endl;
+#endif
         solved = true;
         break;
       }
@@ -903,13 +1053,17 @@ std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui 
 
         if(ui <= u0)
         {
+#ifdef VERBOSE_SOLVEU
           std::cout << iteration << ": ERROR new ui " << ui << " is less than u0 " << u0 << std::endl;
+#endif
           ui = (u0 + u1) / 2.;
           break;
         }
         if(ui >= u1)
         {
+#ifdef VERBOSE_SOLVEU
           std::cout << iteration << ": ERROR new ui " << ui << " is greater than u1 " << u1 << std::endl;
+#endif
           ui = (u0 + u1) / 2.;
           break;
         }
@@ -922,7 +1076,10 @@ std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui 
   constexpr size_t INITIAL_GUESS_NPTS = 100;
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
-#define WRITE_ERROR_CURVE
+  // Initialize the revolved volume.
+  revolvedVolume = 0.;
+
+//#define WRITE_ERROR_CURVE
 #ifdef WRITE_ERROR_CURVE
   FILE *ferr = fopen("error.curve", "wt");
 
@@ -946,6 +1103,9 @@ std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui 
     contourCount++;
     fprintf(ferr, "# contour%d\n", contourCount);
 #endif
+    // Add the contour's revolved volume to the total.
+    revolvedVolume += interpolator.revolvedVolume(transform);
+
     // Get the contour start/end parameters.
     const double startParameter = interpolator.startParameter(0);
     const double endParameter = interpolator.endParameter(interpolator.numSpans() - 1);
@@ -982,16 +1142,16 @@ std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui 
       //---------------------------------------------------------------------
       // Compute the initial length of the curve.
       double curveLength = sqrt(primal::squared_distance(pts[0], pts[1]));
-
+#if 1
 std::cout << "hiCurveLen: " << hiCurveLen << std::endl;
 std::cout << "curveLength: " << curveLength << std::endl;
-std::cout << "threshold: " << threshold << std::endl;
-std::cout << "pts: " << pts << std::endl;
-std::cout << "uValues: " << uValues << std::endl;
-
-      // Iterate until the difference between iterations is under the threshold.
+std::cout << "percentError: " << percentError << std::endl;
+//std::cout << "pts: " << pts << std::endl;
+//std::cout << "uValues: " << uValues << std::endl;
+#endif
+      // Iterate until the difference between iterations is under the percent error.
       int iteration = 0;
-      while(error_percent(curveLength, hiCurveLen) > threshold)
+      while(error_percent(curveLength, hiCurveLen) > percentError)
       {
 #ifdef WRITE_ERROR_CURVE
         int npts = pts.size();
@@ -999,7 +1159,7 @@ std::cout << "uValues: " << uValues << std::endl;
 
         fprintf(fhcl, "%d %lg\n", npts, hiCurveLen);
         fprintf(fcl, "%d %lg\n", npts, curveLength);
-        fprintf(fthresh, "%d %lg\n", npts, threshold);
+        fprintf(fthresh, "%d %lg\n", npts, percentError);
 #endif
         // For each segment, figure out a distance from the segment midpoint to
         // the segment endpoints (2 line segments).
@@ -1013,11 +1173,8 @@ std::cout << "uValues: " << uValues << std::endl;
         for(int seg = 0; seg < nSegments; seg++)
         {
           // Figure out the new u value for the point we'll add in this segment.
-#if 0
-          double umid = (uValues[seg] + uValues[seg + 1]) / 2.;
-#else
           double umid = solveu(interpolator, uValues[seg], uValues[seg + 1], pts[seg], pts[seg + 1]);
-#endif
+
           // Get the point at the u value.
           auto midpt = interpolator.at(umid);
 
@@ -1050,7 +1207,7 @@ std::cout << "uValues: " << uValues << std::endl;
         // a new point in that segment.
         pts.insert(pts.begin() + maxSegmentIndex + 1, maxSegmentPt);
         uValues.insert(uValues.begin() + maxSegmentIndex + 1, maxSegmentU);
-
+#if 0
 std::cout << "Iteration: " << iteration << std::endl;
 std::cout << "\thiCurveLen: " << hiCurveLen << std::endl;
 std::cout << "\tcurveLength: " << curveLength << std::endl;
@@ -1062,11 +1219,11 @@ std::cout << "\tmaxSegmentPt: " << maxSegmentPt << std::endl;
 std::cout << "\tmaxSegmentU: " << maxSegmentU << std::endl;
 std::cout << "\tpts: " << pts << std::endl;
 std::cout << "\tuValues: " << uValues << std::endl;
-
+#endif
         // Update the overall curve length with the new segment length.
         curveLength = curveLength - maxSegmentOldLength + maxSegmentNewLength;
 
-#if 1
+#ifdef WRITE_ERROR_CURVE
         // Make a filename.
         char filename[512];
         npts = pts.size();
