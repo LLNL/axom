@@ -141,7 +141,7 @@ void check_intersection_volumes(const Input& params)
   int hex_index = 0;
   int const NUM_HEXES = HEX_RESOLUTION * HEX_RESOLUTION * HEX_RESOLUTION;
   axom::Array<HexahedronType> hexes(NUM_HEXES, NUM_HEXES);
-  axom::ArrayView<HexahedronType> hexes_view(hexes);
+  const axom::ArrayView<HexahedronType> hexes_view(hexes);
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
@@ -176,7 +176,7 @@ void check_intersection_volumes(const Input& params)
   int tet_index = 0;
   int const NUM_TETS = 4 * std::pow(2, TET_RESOLUTION);
   axom::Array<TetrahedronType> tets(NUM_TETS, NUM_TETS);
-  axom::ArrayView<TetrahedronType> tets_view(tets);
+  const axom::ArrayView<TetrahedronType> tets_view(tets);
   double step_size = 1.0 / std::pow(2, TET_RESOLUTION);
 
   SLIC_INFO(axom::fmt::format(
