@@ -145,18 +145,24 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type mark_crossings_dim()
   {
+    RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
+    RAJA_INDEX_VALUE_T(JIDX, axom::IndexType, "JIDX");
+    RAJA::TypedRangeSegment<JIDX> jRange(0, m_cShape[0]);
+    RAJA::TypedRangeSegment<IIDX> iRange(0, m_cShape[1]);
     using EXEC_POL =
       RAJA::KernelPolicy<
-        RAJA::statement::For<1, LoopPolicy, // i
-                             RAJA::statement::For<0, LoopPolicy, // j
-                                                  RAJA::statement::Lambda<0>
-                                                  >
-                             >
+        // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
+        RAJA::statement::For<1, LoopPolicy,
+          RAJA::statement::For<0, LoopPolicy,
+            RAJA::statement::Lambda<0>
+          >
+        >
       >;
-    RAJA::RangeSegment jRange(0,m_cShape[0]);
-    RAJA::RangeSegment iRange(0,m_cShape[1]);
     RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange),
-                           AXOM_LAMBDA(int i, int j) {
+                           // TODO: Why does AXOM_LAMBDA here not compile on rzansel with cuda?
+                           AXOM_LAMBDA(IIDX it, JIDX jt) {
+                             auto& i = *it;
+                             auto& j = *jt;
                              const bool skipZone = !m_maskView.empty() && bool(m_maskView(j, i));
                              if(!skipZone)
                              {
@@ -169,33 +175,38 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
                                // clang-format off
 
                                auto crossingCase = compute_crossing_case(nodalValues);
-// std::cout<<__WHERE<<i<<','<<j<<"  "<<crossingCase<<std::endl;
                                m_caseIds(j,i) = crossingCase;
+// std::cout<<"cell ("<<i<<','<<j<<") "<<(&m_fcnView(j,i)-&m_fcnView(0,0))<<"  "<<m_fcnView(j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
                              }
                            });
   }
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type mark_crossings_dim()
   {
+    RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
+    RAJA_INDEX_VALUE_T(JIDX, axom::IndexType, "JIDX");
+    RAJA_INDEX_VALUE_T(KIDX, axom::IndexType, "KIDX");
+    RAJA::TypedRangeSegment<KIDX> kRange(0, m_cShape[0]);
+    RAJA::TypedRangeSegment<JIDX> jRange(0, m_cShape[1]);
+    RAJA::TypedRangeSegment<IIDX> iRange(0, m_cShape[2]);
     using EXEC_POL =
       RAJA::KernelPolicy<
-        RAJA::statement::For<2, LoopPolicy, // i
-                             RAJA::statement::For<1, LoopPolicy, // j
-                                                  RAJA::statement::For<0, LoopPolicy, // k
-                                                                       RAJA::statement::Lambda<0>
-                                                                       >
-                                                  >
-                             >
+        RAJA::statement::For<2, LoopPolicy,
+          RAJA::statement::For<1, LoopPolicy,
+            RAJA::statement::For<0, LoopPolicy,
+              RAJA::statement::Lambda<0>
+            >
+          >
+        >
       >;
-    RAJA::RangeSegment kRange(0,m_cShape[0]);
-    RAJA::RangeSegment jRange(0,m_cShape[1]);
-    RAJA::RangeSegment iRange(0,m_cShape[2]);
     RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange, kRange),
-                           AXOM_LAMBDA(int i, int j, int k) {
+                           AXOM_LAMBDA(IIDX it, JIDX jt, KIDX kt) {
+                             auto& i = *it;
+                             auto& j = *jt;
+                             auto& k = *kt;
                              const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
                              if(!skipZone)
                              {
-// std::cout<<__WHERE<<i<<','<<j<<','<<k<<std::endl;
                                // clang-format on
                                double nodalValues[CELL_CORNER_COUNT] =
                                  { m_fcnView(k  , j  , i+1)
@@ -210,6 +221,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
                                auto crossingCase = compute_crossing_case(nodalValues);
                                m_caseIds(k,j,i) = crossingCase;
+// std::cout<<"cell ("<<i<<','<<j<<','<<k<<") "<<(&m_fcnView(k,j,i)-&m_fcnView(0,0,0))<<"  "<<m_fcnView(k,j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
                              }
                            });
   }
@@ -819,6 +831,7 @@ void MarchingCubesSingleDomain::allocate_impl()
       std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
   }
 #endif
+#if 0
 #ifdef _AXOM_MC_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
@@ -834,6 +847,7 @@ void MarchingCubesSingleDomain::allocate_impl()
       std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>) :
       std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
   }
+#endif
 #endif
   else
   {

@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/core/Macros.hpp"
+
 namespace axom
 {
 namespace quest
@@ -23,7 +25,7 @@ namespace detail
   Values in cases2D refer to edges that intersect isosurface.
 */
 // clang-format off
-static const int cases2D[ 16 ][ 4 ] = {
+static const AXOM_DEVICE int cases2D[ 16 ][ 4 ] = {
 #define X -1
     {X, X, X, X}, //  0
     {0, 3, X, X}, //  1
@@ -44,7 +46,7 @@ static const int cases2D[ 16 ][ 4 ] = {
 #undef X
 };
 
-static const int num_segments[ 16 ] = {
+static const AXOM_DEVICE int num_segments[ 16 ] = {
     0, // {X, X, X, X}, //  0
     1, // {0, 3, X, X}, //  1
     1, // {1, 0, X, X}, //  2
@@ -91,7 +93,7 @@ static const int num_segments[ 16 ] = {
   Values in cases3D refer to edges that intersect isosurface.
 */
 // clang-format off
-static const int cases3D[ 256 ][ 16 ] = {
+static const AXOM_DEVICE int cases3D[ 256 ][ 16 ] = {
 #define X -1
     {X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X},
     {0, 8, 3, X, X, X, X, X, X, X, X, X, X, X, X, X},
@@ -353,7 +355,7 @@ static const int cases3D[ 256 ][ 16 ] = {
 };
 
 // stores number of triangles for each case above
-static const int num_triangles[ 256 ] = {
+static const AXOM_DEVICE int num_triangles[ 256 ] = {
   0,
   1,
   1,
