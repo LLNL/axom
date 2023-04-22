@@ -14,6 +14,12 @@
 #include "axom/primal.hpp"
 #include "axom/fmt.hpp"
 
+// These macros enable some debugging utilities for linearization.
+// #define AXOM_DEBUG_LINEARIZE_VERBOSE
+// #define AXOM_DEBUG_SOLVEU_VERBOSE
+// #define AXOM_DEBUG_WRITE_ERROR_CURVES
+// #define AXOM_DEBUG_WRITE_LINES
+
 /// Overload to format a c2c::Point using fmt
 template <>
 struct axom::fmt::formatter<c2c::Point> : ostream_formatter
@@ -133,6 +139,7 @@ transformPoint(const numerics::Matrix<double> &transform,
  * \param pts The input set of points.
  * \param EPS_SQ A point-welding tolerance.
  */
+/*
 static void
 appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
              std::vector<primal::Point<double, 2>> &pts,
@@ -182,6 +189,135 @@ appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
     const int startCell = mesh->getNumberOfCells();
     const int numNewSegments = pts.size() - 1;
+    mesh->reserveCells(startCell + numNewSegments);
+    for(int i = 0; i < numNewSegments; ++i)
+    {
+      IndexType seg[2] = {startNode + i, startNode + i + 1};
+      mesh->appendCell(seg, mint::SEGMENT);
+    }
+  }
+}
+*/
+
+class Segments
+{
+public:
+  using PointType = primal::Point<double, 2>;
+
+  struct segment
+  {
+    double    u;              // The u parameter for the start of the segment.
+    PointType point;          // The point at parameter u.
+    double    length;         // Distance from point to next segment's point.
+
+    double    next_u;         // Best place to split this segment.
+    double    next_length[2]; // left/right length values at next_u.
+  };
+
+  Segments() : segments()
+  {
+  }
+
+  void reserve(size_t n)
+  {
+    segments.reserve(n);
+  }
+
+  size_t size() const
+  {
+    return segments.size();
+  }
+
+  size_t next_longest() const
+  {
+    size_t maxIdx = 0;
+    double max_length = 0.;
+    size_t n = segments.size();
+    for(size_t i = 0; i < n; i++)
+    {
+      double next_length = segments[i].next_length[0] + segments[i].next_length[1];
+      if(next_length > max_length)
+      {
+        max_length = next_length;
+        maxIdx = i;
+      }
+    }
+    return maxIdx;
+  }
+
+  segment &operator[](size_t idx)
+  {
+    return segments[idx];
+  }
+
+  const segment &operator[](size_t idx) const
+  {
+    return segments[idx];
+  }
+
+  void push_back(const segment &seg)
+  {
+    segments.push_back(seg);
+  }
+
+  void insert(size_t idx, const segment &seg)
+  {
+    segments.insert(segments.begin() + idx, seg);
+  }
+
+private:
+  std::vector<segment> segments;
+};
+
+static void
+appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+             Segments &S,
+             double EPS_SQ)
+{
+  // Check for simple vertex welding opportunities at endpoints of newly interpolated points
+  {
+    int numNodes = mesh->getNumberOfNodes();
+    if(numNodes > 0)  // this is not the first Piece
+    {
+      primal::Point<double, 2> meshPt;
+      // Fix start point if necessary; check against most recently added vertex in mesh
+      mesh->getNode(numNodes - 1, meshPt.data());
+      if(primal::squared_distance(S[0].point, meshPt) < EPS_SQ)
+      {
+        S[0].point = meshPt;
+      }
+
+      // Fix end point if necessary; check against 0th vertex in mesh
+      const int endIdx = S.size() - 1;
+      mesh->getNode(0, meshPt.data());
+      if(primal::squared_distance(S[endIdx].point, meshPt) < EPS_SQ)
+      {
+        S[endIdx].point = meshPt;
+      }
+    }
+    else  // This is the first, and possibly only span, check its endpoint, fix if necessary
+    {
+      int endIdx = S.size() - 1;
+      if(primal::squared_distance(S[0].point, S[endIdx].point) < EPS_SQ)
+      {
+        S[endIdx].point = S[0].point;
+      }
+    }
+  }
+
+  // Add the new points and segments to the mesh, respecting welding checks from previous block
+  {
+    const int startNode = mesh->getNumberOfNodes();
+    const int numNewNodes = S.size();
+    mesh->reserveNodes(startNode + numNewNodes);
+
+    for(int i = 0; i < numNewNodes; ++i)
+    {
+      mesh->appendNode(S[i].point[0], S[i].point[1]);
+    }
+
+    const int startCell = mesh->getNumberOfCells();
+    const int numNewSegments = S.size() - 1;
     mesh->reserveCells(startCell + numNewSegments);
     for(int i = 0; i < numNewSegments; ++i)
     {
@@ -892,7 +1028,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 }
 
 //----------------------------------------------------------------------------
-static void
+/*static void
 write_lines(const std::string &filename, std::vector<primal::Point<double, 2>> &pts)
 {
     FILE *f = fopen(filename.c_str(), "wt");
@@ -910,11 +1046,50 @@ write_lines(const std::string &filename, std::vector<primal::Point<double, 2>> &
     fprintf(f, "POINTS %d float\n", npts);
     for(int i = 0; i < npts; i += 3)
     {
-        fprintf(f, "%1.3lf %1.3lf 0. ", pts[i][0], pts[i][1]);
+        fprintf(f, "%1.16lf %1.16lf 0. ", pts[i][0], pts[i][1]);
         if((i+1) < npts)
-            fprintf(f, "%1.3lf %1.3lf 0. ", pts[i+1][0], pts[i+1][1]);
+            fprintf(f, "%1.16lf %1.16lf 0. ", pts[i+1][0], pts[i+1][1]);
         if((i+2) < npts)
-            fprintf(f, "%1.3lf %1.3lf 0. ", pts[i+2][0], pts[i+2][1]);
+            fprintf(f, "%1.16lf %1.16lf 0. ", pts[i+2][0], pts[i+2][1]);
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\n");
+
+    int nspans = npts - 1;
+
+    // Write ncells
+    fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
+    for(int ispan = 0; ispan < nspans; ispan++)
+    {
+        fprintf(f, "2 %d %d\n", ispan, ispan+1);
+    }
+
+    fclose(f);
+}*/
+
+static void
+write_lines(const std::string &filename, Segments &S)
+{
+    FILE *f = fopen(filename.c_str(), "wt");
+    fprintf(f, "# vtk DataFile Version 4.2\n");
+    fprintf(f, "vtk output\n");
+    fprintf(f, "ASCII\n");
+    fprintf(f, "DATASET POLYDATA\n");
+    fprintf(f, "FIELD FieldData 2\n");
+    fprintf(f, "CYCLE 1 1 int\n");
+    fprintf(f, "1\n");
+    fprintf(f, "TIME 1 1 double\n");
+    fprintf(f, "1.0\n");
+    // Write points
+    int npts = S.size();
+    fprintf(f, "POINTS %d float\n", npts);
+    for(int i = 0; i < npts; i += 3)
+    {
+        fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
+        if((i+1) < npts)
+            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+1].point[0], S[i+1].point[1]);
+        if((i+2) < npts)
+            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+2].point[0], S[i+2].point[1]);
         fprintf(f, "\n");
     }
     fprintf(f, "\n");
@@ -967,11 +1142,16 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   using PointType = primal::Point<double, 2>;
   using PointsArray = std::vector<PointType>;
 
-  // \brief Checks curve lengths against tolerances and determines whether more
-  //        refinement is needed.
-  //
-  // \note Assume that maxlen is longer than len because hi-res sampling should
-  //       result in a longer arc length.
+  /*!
+   * \brief Checks curve lengths against tolerances and determines whether more
+   *        refinement is needed.
+   *
+   * \param len The curve length that has been calculated.
+   * \param maxlen The upper bound curve length that was calculated with a lot of segments.
+   *
+   * \note Assume that maxlen is longer than len because hi-res sampling should
+   *       result in a longer arc length.
+   */
   auto error_percent = [](double len, double maxlen) -> double
   {
       double errPct = 0.;
@@ -982,21 +1162,28 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
          // If we have a good curve then errPct should be small.
          errPct = 1. - pct;
       }
-
-      //std::cout << "percent_error(" << len << ", " << maxlen << ") -> " << errPct << std::endl;
       return errPct;
     };
 
-  // \brief Determines a u value within the interval [u0, u1] that should make
-  //        the longest line segments from p0->curve(u)->p1.
-  // \return The u value for the point.
-  auto solveu = [](NURBSInterpolator &interpolator, double u0, double u1, const PointType &p0, const PointType &p1)
+  /*!
+   * \brief Determines a u value within the interval [u0, u1] that should make
+   *        the longest line segments from p0->curve(u)->p1.
+   *
+   * \param interpolator The NURBSInterpolator we can use to query the curve.
+   * \param u0 The parametric value for the start of the interval.
+   * \param u1 The parametric value for the end of the interval.
+   * \param p0 The point at the start of the interval.
+   * \param p1 The point at the end of the interval.
+   *
+   * \return The u value for the new point.
+   */
+  auto solveu = [](NURBSInterpolator &interpolator, double u0, double u1,
+                   const PointType &p0, const PointType &p1) -> double
   {
     // Set up an initial ui at the midpoint and get the point.
     double ui = (u0 + u1) / 2.;
-#ifdef VERBOSE_SOLVEU
     double ustart = ui;
-#endif
+
     // Interval endpoints.
     double u0x = p0[0];
     double u0y = p0[1];
@@ -1027,13 +1214,13 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       double xpp = d[1][0];
       double ypp = d[1][1];
 
-      // 1st derivative of length L(u)
+      // 1st derivative of length L(u), the length of the new line segment pair.
       double D1L = (dx0 * xp + dy0 * yp) / sqrt(dx0 * dx0 + dy0 * dy0) +
                    (dx1 * xp + dy1 * yp) / sqrt(dx1 * dx1 + dy1 * dy1);
 
       if(axom::utilities::isNearlyEqual(D1L, 0., EPS))
       {
-#ifdef VERBOSE_SOLVEU
+#ifdef AXOM_DEBUG_SOLVEU_VERBOSE
          std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui << std::endl;
 #endif
         solved = true;
@@ -1041,7 +1228,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       }
       else
       {
-// TODO: simplify a bit more.
         // 2nd derivative of length L(u)
         double D2L = ((-2. * pow(dx0*xp + dy0*yp, 2.) + 2 * (dx0*dx0 + dy0*dy0) * (xp*xp + yp*yp + dx0 * xpp + dy0 * ypp)) /
                       (2 * pow(dx0 * dx0 + dy0 * dy0, 3. / 2.)))
@@ -1049,22 +1235,24 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                      ((-2. * pow(dx1*xp + dy1*yp, 2.) + 2 * (dx1*dx1 + dy1*dy1) * (xp*xp + yp*yp + dx1 * xpp + dy1 * ypp)) /
                       (2 * pow(dx1 * dx1 + dy1 * dy1, 3. / 2.)));
 
+        // Newton step
         ui = ui - D1L / D2L;
 
+        // If we go out of bounds, use the ustart value.
         if(ui <= u0)
         {
-#ifdef VERBOSE_SOLVEU
+#ifdef AXOM_DEBUG_SOLVEU_VERBOSE
           std::cout << iteration << ": ERROR new ui " << ui << " is less than u0 " << u0 << std::endl;
 #endif
-          ui = (u0 + u1) / 2.;
+          ui = ustart;
           break;
         }
         if(ui >= u1)
         {
-#ifdef VERBOSE_SOLVEU
+#ifdef AXOM_DEBUG_SOLVEU_VERBOSE
           std::cout << iteration << ": ERROR new ui " << ui << " is greater than u1 " << u1 << std::endl;
 #endif
-          ui = (u0 + u1) / 2.;
+          ui = ustart;
           break;
         }
       }
@@ -1073,14 +1261,59 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     return ui;
   };
 
+  /*!
+   * \brief Examines the history values to determine if the deltas between
+   *        iterations are sufficiently small that the iterations should
+   *        terminate, even though it might not have reached the desired
+   *        target error.
+   *
+   * \param iteration The solve iteration.
+   * \param history A circular buffer of the last several history values.
+   * \param nhistory The number of history values.
+   * \param percentError The percent error to achieve.
+   *
+   * \note This function assumes that history values increase.
+   */
+  auto diminishing_returns = [](int iteration,
+                                const double *history,
+                                int nhistory,
+                                double percentError) -> bool
+  {
+    bool dr = false;
+    // We have enough history to decide if there are diminishing returns.
+    if(iteration >= nhistory)
+    {
+      // Compute a series of percents between pairs of history values.
+      double sum = 0.;
+      for(int i = 0; i < nhistory - 1; i++)
+      {
+        int cur = (iteration - i) % nhistory;
+        int prev = (iteration - i - 1) % nhistory;
+        double pct = 1. - history[prev] / history[cur];
+        sum += fabs(pct);
+      }
+      double avg_pct = sum / static_cast<double>(nhistory - 1);
+#if 1//def AXOM_DEBUG_LINEARIZE_VERBOSE
+      std::cout << "Diminishing returns. iteration = " << iteration
+                << ", avg_pct = " << avg_pct
+                << ", percentError = " << percentError<< "." << std::endl;
+#endif
+      dr = avg_pct < percentError;
+    }
+    return dr;
+  };
+
   constexpr size_t INITIAL_GUESS_NPTS = 100;
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
   // Initialize the revolved volume.
   revolvedVolume = 0.;
 
-//#define WRITE_ERROR_CURVE
-#ifdef WRITE_ERROR_CURVE
+  // Clamp the lower error bound so it does not get impractically small.
+  percentError = axom::utilities::clampLower(percentError, 1.e-10);
+
+//#define AXOM_DEBUG_WRITE_ERROR_CURVES
+#ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
   FILE *ferr = fopen("error.curve", "wt");
 
   FILE *fhcl = fopen("hicurvelen.curve", "wt");
@@ -1091,36 +1324,52 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
   FILE *fthresh = fopen("threshold.curve", "wt");
   fprintf(fthresh, "# threshold\n");
-
-  int contourCount = -1;
 #endif
+  int contourCount = -1;
 
   // Iterate over the contours and linearize each of them.
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
-#ifdef WRITE_ERROR_CURVE
     contourCount++;
+#ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
     fprintf(ferr, "# contour%d\n", contourCount);
 #endif
     // Add the contour's revolved volume to the total.
     revolvedVolume += interpolator.revolvedVolume(transform);
 
     // Get the contour start/end parameters.
-    const double startParameter = interpolator.startParameter(0);
-    const double endParameter = interpolator.endParameter(interpolator.numSpans() - 1);
+    const double u0 = interpolator.startParameter(0);
+    const double u1 = interpolator.endParameter(interpolator.numSpans() - 1);
 
-    // Store u values for the points along the curve.
-    std::vector<double> uValues;
-    uValues.reserve(INITIAL_GUESS_NPTS);
-    uValues.push_back(startParameter);
-    uValues.push_back(endParameter);
+    // Compute the start/end points of the whole curve.
+    const PointType p0 = interpolator.at(u0);
+    const PointType p1 = interpolator.at(u1);
 
-    // Store points at the u values along the curve.
-    PointsArray pts;
-    pts.reserve(INITIAL_GUESS_NPTS);
-    pts.emplace_back(interpolator.at(startParameter));
-    pts.emplace_back(interpolator.at(endParameter));
+    // This segment represents the whole [0,1] interval.
+    Segments::segment first;
+    first.u = u0;
+    first.point = p0;
+    first.length = sqrt(primal::squared_distance(p0, p1));
+    first.next_u = solveu(interpolator, u0, u1, p0, p1);
+    PointType next_point = interpolator.at(first.next_u);
+    first.next_length[0] = sqrt(primal::squared_distance(p0, next_point));
+    first.next_length[1] = sqrt(primal::squared_distance(next_point, p1));
+
+    // This segment just contains the end point of the interval.
+    Segments::segment last;
+    last.u = u1;
+    last.point = p1;
+    last.length = 0.;
+    last.next_u = u1;
+    last.next_length[0] = 0.;
+    last.next_length[1] = 0.;
+
+    // Store the initial segments.
+    Segments S;
+    S.reserve(INITIAL_GUESS_NPTS);
+    S.push_back(first);
+    S.push_back(last);
 
     // If there is a single span in the contour then we already added its points.
     if(interpolator.numSpans() > 1)
@@ -1129,8 +1378,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       // Approximate the arc length of the whole curve by using a lot of line segments.
       // Computers are fast, sampling is cheap.
       double hiCurveLen = 0.;
-      constexpr int NUMBER_OF_SAMPLES = 100000;
-      PointType prev = pts[0];
+      constexpr int NUMBER_OF_SAMPLES = 2000;
+      PointType prev = first.point;
       for(int i = 1; i < NUMBER_OF_SAMPLES; i++)
       {
         double u = i / static_cast<double>(NUMBER_OF_SAMPLES - 1);
@@ -1138,120 +1387,121 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         hiCurveLen += sqrt(primal::squared_distance(prev, cur));
         prev = cur;
       }
-
       //---------------------------------------------------------------------
-      // Compute the initial length of the curve.
-      double curveLength = sqrt(primal::squared_distance(pts[0], pts[1]));
-#if 1
-std::cout << "hiCurveLen: " << hiCurveLen << std::endl;
-std::cout << "curveLength: " << curveLength << std::endl;
-std::cout << "percentError: " << percentError << std::endl;
-//std::cout << "pts: " << pts << std::endl;
-//std::cout << "uValues: " << uValues << std::endl;
+
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+      // Print initial iteration.
+      SLIC_INFO(fmt::format("hiCurveLen: {}", hiCurveLen);
+      SLIC_INFO(fmt::format("curveLength: {}", curveLength);
+      SLIC_INFO(fmt::format("percentError: {}", percentError);
 #endif
-      // Iterate until the difference between iterations is under the percent error.
+
+      // The initial curve length.
+      double curveLength = first.length;
+      constexpr double ADAPTIVE_CUTOFF = 0.;//01;
+
+      // Iterate until the difference between iterations is under the percent error
+      // or there are diminishing returns to continuing.
+      constexpr int MAX_HISTORY = 10;
+      double history[MAX_HISTORY] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
       int iteration = 0;
-      while(error_percent(curveLength, hiCurveLen) > percentError)
+      while((error_percent(curveLength, hiCurveLen) > percentError)// &&
+//            !diminishing_returns(iteration - 1, history, MAX_HISTORY, percentError)
+           )
       {
-#ifdef WRITE_ERROR_CURVE
-        int npts = pts.size();
-        fprintf(ferr, "%d %lg\n", npts, error_percent(curveLength, hiCurveLen));
+        // Get the index of the segment we'll split.
+        size_t splitIndex = S.next_longest();
+        size_t nextIndex = splitIndex + 1;
 
-        fprintf(fhcl, "%d %lg\n", npts, hiCurveLen);
-        fprintf(fcl, "%d %lg\n", npts, curveLength);
-        fprintf(fthresh, "%d %lg\n", npts, percentError);
+        // Partition segment.
+        Segments::segment &left = S[splitIndex];
+        Segments::segment right;
+
+        // The old segment length pre-split.
+        double oldSegLength = left.length;
+
+        // The left and right segments will be the sum of the parent
+        // segment's 2 pieces.
+        double newSegLength = left.next_length[0] + left.next_length[1];
+
+        // Split the left segment into left, right. Note that if the interval is
+        // small enough, we stop using solveu and just use the midpoint to save time.
+        right.u = left.next_u;
+        right.point = interpolator.at(right.u);
+        right.length = left.next_length[1];
+
+// NOTE: the solveu must be making it worse...
+
+//        if((S[nextIndex].u - right.u) > ADAPTIVE_CUTOFF)
+//          right.next_u = solveu(interpolator, right.u, S[nextIndex].u, right.point, S[nextIndex].point);
+//        else
+          right.next_u = (right.u + S[nextIndex].u) / 2.;
+        PointType right_next = interpolator.at(right.next_u);
+        right.next_length[0] = sqrt(primal::squared_distance(right.point, right_next));
+        right.next_length[1] = sqrt(primal::squared_distance(right_next, S[nextIndex].point));
+
+        left.length = left.next_length[0];
+//        if((right.u - left.u) > ADAPTIVE_CUTOFF)
+//          left.next_u = solveu(interpolator, left.u, right.u, left.point, right.point);
+//        else
+          left.next_u = (left.u + right.u) / 2.;
+        PointType left_next = interpolator.at(left.next_u);
+        left.next_length[0] = sqrt(primal::squared_distance(left.point, left_next));
+        left.next_length[1] = sqrt(primal::squared_distance(left_next, right.point));
+
+        // Insert the right segment after the left segment.
+        S.insert(nextIndex, right);
+
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+        // Print initial iteration.
+        SLIC_INFO(fmt::format("Iteration: {}", iteration));
+        SLIC_INFO(fmt::format("\thiCurveLen: {}", hiCurveLen));
+        SLIC_INFO(fmt::format("\tcurveLength: {}", curveLength));
 #endif
-        // For each segment, figure out a distance from the segment midpoint to
-        // the segment endpoints (2 line segments).
-        int nSegments = pts.size() - 1;
-        double maxSegmentNewLength = 0.;
-        double maxSegmentOldLength = 0.;
-        double maxSegmentDiff = 0.;
-        double maxSegmentU = 0.;
-        PointType maxSegmentPt;
-        int maxSegmentIndex = 0;
-        for(int seg = 0; seg < nSegments; seg++)
-        {
-          // Figure out the new u value for the point we'll add in this segment.
-          double umid = solveu(interpolator, uValues[seg], uValues[seg + 1], pts[seg], pts[seg + 1]);
 
-          // Get the point at the u value.
-          auto midpt = interpolator.at(umid);
+        // Update the curve length.
+        curveLength = curveLength - oldSegLength + newSegLength;
 
-          // Old segment length.
-          double dOld = sqrt(primal::squared_distance(pts[seg], pts[seg + 1]));
+        // Save in history. This is used in diminishing_returns.
+        history[iteration % MAX_HISTORY] = curveLength;
 
-          // New segment length.
-          double dNew = sqrt(primal::squared_distance(pts[seg], midpt)) +
-                        sqrt(primal::squared_distance(pts[seg + 1], midpt));
-
-          // Compute the difference in length between new and old.
-          double segDiff = fabs(dNew - dOld);
-
-          // If the new segment length is longer, keep it.
-          if(segDiff > maxSegmentDiff || seg == 0)
-          {
-            // Save the new segment diff.
-            maxSegmentDiff = segDiff;
-
-            // Save other segment attributes.
-            maxSegmentNewLength = dNew;
-            maxSegmentOldLength = dOld;
-            maxSegmentIndex = seg;
-            maxSegmentU = umid;
-            maxSegmentPt = midpt;
-          }
-        }
-
-        // We know which segment contributes the most to the length. Introduce
-        // a new point in that segment.
-        pts.insert(pts.begin() + maxSegmentIndex + 1, maxSegmentPt);
-        uValues.insert(uValues.begin() + maxSegmentIndex + 1, maxSegmentU);
-#if 0
-std::cout << "Iteration: " << iteration << std::endl;
-std::cout << "\thiCurveLen: " << hiCurveLen << std::endl;
-std::cout << "\tcurveLength: " << curveLength << std::endl;
-std::cout << "\tmaxSegmentIndex: " << maxSegmentIndex << std::endl;
-std::cout << "\tmaxSegmentNewLength: " << maxSegmentNewLength << std::endl;
-std::cout << "\tmaxSegmentOldLength: " << maxSegmentOldLength << std::endl;
-std::cout << "\tmaxSegmentDiff: " << maxSegmentDiff << std::endl;
-std::cout << "\tmaxSegmentPt: " << maxSegmentPt << std::endl;
-std::cout << "\tmaxSegmentU: " << maxSegmentU << std::endl;
-std::cout << "\tpts: " << pts << std::endl;
-std::cout << "\tuValues: " << uValues << std::endl;
-#endif
-        // Update the overall curve length with the new segment length.
-        curveLength = curveLength - maxSegmentOldLength + maxSegmentNewLength;
-
-#ifdef WRITE_ERROR_CURVE
+#ifdef AXOM_DEBUG_WRITE_LINES
         // Make a filename.
         char filename[512];
-        npts = pts.size();
+        int npts = S.size();
         sprintf(filename, "lines%d_%05d.vtk", contourCount, npts);
-        write_lines(filename, pts);
+        write_lines(filename, S);
 
         std::cout << "Wrote " << filename << ": hiCurveLen=" << std::setprecision(9) << hiCurveLen
                   << ", curveLength=" << std::setprecision(9) << curveLength
                   << ", dCL=" << (hiCurveLen - curveLength)
                   << std::endl;
+#endif
 
         iteration++;
-#endif
       } // while(keep_going())
+
+      SLIC_INFO(
+        fmt::format("getLinearMesh: "
+                "percentError = {}"
+                ", hiCurveLength = {}"
+                ", curveLength = {}",
+                percentError,
+                hiCurveLen,
+                curveLength));
     } // if(interpolator.numSpans() > 1)
 
     // Add the points to the mesh.
-    appendPoints(mesh, pts, EPS_SQ);
+    appendPoints(mesh, S, EPS_SQ);
   }
 
-#ifdef WRITE_ERROR_CURVE
+#ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
   fclose(ferr);
   fclose(fhcl);
   fclose(fcl);
   fclose(fthresh);
 #endif
 }
-
 
 //---------------------------------------------------------------------------
 // NOTE: This API change is temporary while I am pulling data out with the curve segments.

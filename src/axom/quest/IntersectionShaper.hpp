@@ -1586,7 +1586,7 @@ private:
    */
   double circleArea(double radius, int level) const
   {
-    // The lut should cover most values we'd use.
+    // The lut covers most values we'd use.
     static const double lut[] = {
     /*level 0*/ 1.29903810568,  // diff=1.84255454791
     /*level 1*/ 2.59807621135,  // diff=0.543516442236
@@ -1677,6 +1677,51 @@ private:
     if(m_revolvedVolume <= 0.)
       return;
 
+    /*!
+     * \brief Examines the history values to determine if the deltas between
+     *        iterations are sufficiently small that the iterations should
+     *        terminate, even though it might not have reached the desired
+     *        target error.
+     *
+     * \param iteration The solve iteration.
+     * \param history A circular buffer of the last several history values.
+     * \param nhistory The number of history values.
+     * \param percentError The percent error to achieve.
+     *
+     * \note This function assumes that history values increase.
+     */
+    auto diminishing_returns = [](int iteration,
+                                  const double *history,
+                                  int nhistory,
+                                  double percentError) -> bool
+    {
+      bool dr = false;
+      // We have enough history to decide if there are diminishing returns.
+      if(iteration >= nhistory)
+      {
+        // Compute a series of percents between pairs of history values.
+        double sum = 0.;
+        for(int i = 0; i < nhistory - 1; i++)
+        {
+          int cur = (iteration - i) % nhistory;
+          int prev = (iteration - i - 1) % nhistory;
+          double pct = 1. - history[prev] / history[cur];
+          sum += fabs(pct);
+        }
+        double avg_pct = sum / static_cast<double>(nhistory - 1);
+        // Check whether the pct is less than the percentError. It may be
+        // good enough.
+        dr = avg_pct < percentError;
+        if(dr)
+        {
+          SLIC_INFO(
+            fmt::format("Dimishing returns triggered: {} < {}.",
+                avg_pct, percentError));
+        }
+      }
+      return dr;
+    };
+
     // We have gone through loadShape once at this point. For C2C contours,
     // we should have a reasonable revolved volume of the shape. We can
     // compute the volume of the shape using the discretized mesh and see
@@ -1688,43 +1733,51 @@ private:
     double curvePercentError = m_percentError;
     int circleLevel = m_level;
 
+    // Save the revolvedVolume
+    double revolvedVolume = m_revolvedVolume;
+
     // Try refining the curve different ways to see if we get to a refinement
     // strategy that should 
     bool refine = true;
-    constexpr int MAX_LEVELS = 15;
+    constexpr int MAX_LEVELS = 8; //12; // Even 12 makes too many octahedra
     constexpr int MAX_ITERATIONS = 20;
+    constexpr int MAX_HISTORY = 7;
+    constexpr double minCurvePercentError = 1.e-10;
+    double history[MAX_HISTORY] = {0., 0., 0., 0., 0., 0., 0.};
     for(int iteration = 0; iteration < MAX_ITERATIONS && refine; iteration++)
     {
       // Increase the circle refinement level to see if we can get to an acceptable
       // error percentage using the line segment mesh's revolved volume.
+      double pct = 0., currentVol = 0.;
       for(int level = m_level; level < MAX_LEVELS; level++)
       {
-        double currentVol = volume(m_surfaceMesh, level);
-        double pct = 1. - currentVol / m_revolvedVolume;
-
+        // Compute the revolved volume of the surface mesh at level.
+        currentVol = volume(m_surfaceMesh, level);
+        pct = 1. - currentVol / revolvedVolume;
+#if 1
         SLIC_INFO(
           fmt::format("Refining... "
-            "Revolved volume = {}"
-            ", Estimated volume = {}"
-            ", Percent error = {}"
-            ", level = {}"
-            ", curve error = {}",
-            m_revolvedVolume,
+            "revolvedVolume = {}"
+            ", currentVol = {}"
+            ", pct = {}"
+            ", circleLevel = {}"
+            ", curvePercentError = {}",
+            revolvedVolume,
             currentVol,
             pct,
             level,
             curvePercentError));
-
+#endif
         if(pct <= m_percentError)
         {
           SLIC_INFO(
             fmt::format("Contour refinement complete. "
-              "Revolved volume = {}"
-              ", Estimated volume = {}"
-              ", Percent error = {}"
-              ", level = {}"
-              ", curve error = {}",
-              m_revolvedVolume,
+              "revolvedVolume = {}"
+              ", currentVol = {}"
+              ", pct = {}"
+              ", circleLevel = {}"
+              ", curvePercentError = {}",
+              revolvedVolume,
               currentVol,
               pct,
               level,
@@ -1736,30 +1789,67 @@ private:
         }
       }
 
+      // Check whether there are diminishing returns. In other words, no level
+      // of refinement can quite get to the target error percent.
+      history[iteration % MAX_HISTORY] = currentVol;
+      if(diminishing_returns(iteration - 1, history, MAX_HISTORY, m_percentError))
+      {
+        circleLevel = MAX_LEVELS - 1;
+        refine = false;
+
+        SLIC_INFO(
+          fmt::format("Stop refining due to diminishing returns. "
+            "revolvedVolume = {}"
+            ", currentVol = {}"
+            ", pct = {}"
+            ", circleLevel = {}"
+            ", curvePercentError = {}",
+            revolvedVolume,
+            currentVol,
+            pct,
+            circleLevel,
+            curvePercentError));
+
+        // NOTE: Trying to increase circleLevel at this point does not help.
+      }
+
       if(refine)
       {
-        // We could not get to an acceptable error percentage.
+        // We could not get to an acceptable error percentage and we should refine.
 
-        // Free the previous surface mesh.
-        delete m_surfaceMesh;
-        m_surfaceMesh = nullptr;
+        // Check whether to permit the curve to further refine.
+        constexpr double CURVE_PERCENT_SCALING = 0.25;
+        double ce = curvePercentError * CURVE_PERCENT_SCALING;
+        if(ce > minCurvePercentError)
+        {
+          // Set the new curve error.
+          curvePercentError = ce;
 
-        // Half the error and reload the shape.
-        curvePercentError *= 0.5;
+          // Free the previous surface mesh.
+          delete m_surfaceMesh;
+          m_surfaceMesh = nullptr;
 
-        // Load the shape again using the smaller curvePercentError. This will cause
-        // a new m_surfaceMesh to be created.
-        double rv = 0.;
-        SLIC_INFO(
-          fmt::format("Reloading shape {} with error {}.",
-              shape.getName(),
-              curvePercentError));
-        loadShapeEx(shape, curvePercentError, rv);
+          // Reload the shape using new curvePercentError. This will cause
+          // a new m_surfaceMesh to be created.
+          double rv = 0.;
+          SLIC_INFO(
+            fmt::format("Reloading shape {} with curvePercentError = {}.",
+                shape.getName(),
+                curvePercentError));
+          loadShapeEx(shape, curvePercentError, rv);
 
-        // Filter the mesh, store in m_surfaceMesh.
-        SegmentMesh *newm = filterMesh(dynamic_cast<const SegmentMesh *>(m_surfaceMesh));
-        delete m_surfaceMesh;
-        m_surfaceMesh = newm;
+          // Filter the mesh, store in m_surfaceMesh.
+          SegmentMesh *newm = filterMesh(dynamic_cast<const SegmentMesh *>(m_surfaceMesh));
+          delete m_surfaceMesh;
+          m_surfaceMesh = newm;
+        }
+        else
+        {
+          SLIC_INFO(
+            fmt::format("Stopping refinement due to curvePercentError {} being too small.",
+                ce));
+          refine = false;
+        }
       }
     }
 
