@@ -239,6 +239,7 @@ public:
     virtual void populate_surface_mesh(
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
       const std::string& cellIdField) const = 0;
+    virtual ~ImplBase() {}
   };
 private:
   std::shared_ptr<ImplBase> m_impl;
