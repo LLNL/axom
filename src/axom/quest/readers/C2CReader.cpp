@@ -199,6 +199,7 @@ appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 }
 */
 
+// I can probably get rid of this and keep the next_longest function.
 class Segments
 {
 public:
@@ -913,6 +914,69 @@ std::cout << iteration << ": next u=" << u << std::endl;
    */
   double revolvedVolume(const numerics::Matrix<double> &transform) const
   {
+#if 1
+    // ndiv 100 makes: 2269.665720108277
+    // ndiv 10 makes:  2269.6657201085764
+
+    // Use 5-point Gauss Quadrature.
+    const double X[] = {-0.906179845938664,
+                        -0.538469310105683,
+                         0,
+                         0.538469310105683,
+                         0.906179845938664
+                       };
+    const double W[] = {0.23692688505618908,
+                        0.47862867049936647,
+                        0.5688888888888889,
+                        0.47862867049936647,
+                        0.23692688505618908
+                       };
+
+    // Make a transform with no translation. We use this to transform
+    // the derivative since we want to permit scaling and rotation but
+    // translating it does not make sense.
+    numerics::Matrix<double> transform2 = transform;
+    transform2(0, 3) = 0.;
+    transform2(1, 3) = 0.;
+    transform2(2, 3) = 0.;
+
+    // Break up the [0,1] interval and compute quadrature in the subintervals.
+    constexpr double a = 0, b = 1;
+    constexpr int ndiv = 10;
+    constexpr double div = (b - a) / static_cast<double>(ndiv);
+    double vol = 0.;
+    for(int di = 0; di < ndiv; di++)
+    {
+      double ad = a + div * di;
+      double bd = ad + div;
+
+      double scale = M_PI * ((bd - ad) / 2.);
+
+      // Approximate the integral "Int pi*x'(u)*y(u)^2du" using quadrature.
+      double sum = 0.;
+      for(size_t i = 0; i < 5; i++)
+      {
+        // Map quad point x value [-1,1] to [a,b].
+        double u = X[i] * ((bd - ad) / 2.) + ((bd + ad) / 2.);
+
+        // Compute y(u) to get radius
+        PointType p_u = at(u);
+        PointType p_uT = transformPoint(transform, p_u);
+        double r = p_uT[1];
+
+        // Compute x'(u)
+        PointType xprime;
+        derivativesAt(u, 1, &xprime);
+        PointType xprimeT = transformPoint(transform2, xprime);
+        double xp = xprimeT[0];
+
+        // Accumulate weight times dx*r^2.
+        sum += W[i] * xp * (r * r);
+      }
+      vol += fabs(scale * sum);
+    }
+    return vol;
+#else
     constexpr double a = 0, b = 1;
     constexpr double scale = M_PI * ((b - a) / 2.);
 
@@ -948,6 +1012,7 @@ std::cout << iteration << ": next u=" << u << std::endl;
     }
     double vol = fabs(scale * sum);
     return vol;
+#endif
   }
 
 private:
