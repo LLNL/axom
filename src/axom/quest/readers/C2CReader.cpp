@@ -613,6 +613,20 @@ struct NURBSInterpolator
   }
 
   /*!
+   * \brief Determine whether the curve looks rational.
+   * \return True if the curve looks rational; false otherwise.
+   */
+  bool rational() const
+  {
+    bool r = true;
+    // Scan through the weights. If there are any non-unity values then
+    // assume rational.
+    for(const auto &w : m_curve.weights)
+      r &= (w != 1.);
+    return r;
+  }
+
+  /*!
    * \brief Evaluates derivatives at the provided value \a u.
    *
    * \param u The u value at which to evaluate derivatives.
@@ -621,27 +635,67 @@ struct NURBSInterpolator
    * \param[out] CK An array of points to contain the output derivatives.
    *
    * Implementation adapted from Algorithm A3.2 on p. 93 of "The NURBS Book".
+   * Rational derivatives from Algorithm A4.2 on p. 127 of "The NURBS Book".
    */
   void derivativesAt(double u, int d, PointType* CK) const
   {
     const int p = m_curve.order - 1;
     int du = std::min(d, p);
 
+    // Compute the basis functions for the curve and its d derivatives.
     const auto span = findSpan(u);
     std::vector<BasisVector> N(d + 1);
     derivativeBasisFunctions(span, u, d, N);
 
-    for(int k = 1; k <= du; k++)
+    // Store w(u) in wders[0], w'(u) in wders[1], ...
+    std::vector<PointType> Aders(d + 1);
+    std::vector<double> wders(d + 1);
+
+    // Table of binomial coefficients up to cubic.
+    const double binomial[5][5] = {
+    {1., 0., 0., 0., 0.},
+    {1., 1., 0., 0., 0.},
+    {1., 2., 1., 0., 0.},
+    {1., 3., 3., 1., 0.},
+    {1., 4., 6., 4., 1.}
+    };
+
+    // Compute the point and d derivatives
+    for(int k = 0; k <= du; k++)
     {
-      double x = 0., y = 0.;
+      double x = 0., y = 0., w = 0.;
       for(int j = 0; j <= p; j++)
       {
         int offset = span - p + j;
+        const double weight = m_curve.weights[offset];
+
+        // Compute the weighted point.
+        double Pw[3];
+        Pw[0] = weight * m_curve.controlPoints[offset].getZ().getValue();
+        Pw[1] = weight * m_curve.controlPoints[offset].getR().getValue();
+        Pw[2] = weight;
+
         // TODO: We may need to include weights.
-        x = x + N[k][j] * m_curve.controlPoints[offset].getZ().getValue();
-        y = y + N[k][j] * m_curve.controlPoints[offset].getR().getValue();
+        x = x + N[k][j] * Pw[0];
+        y = y + N[k][j] * Pw[1];
+        w = w + N[k][j] * Pw[2];
       }
-      CK[k - 1] = PointType {x, y};
+      Aders[k] = PointType {x, y};
+      wders[k] = w;
+    }
+
+    // Do the rational part from A4.2. Note that Aders[0] is the point A(u)
+    // and wders[0] is w(u).
+    for(int k = 0; k <= d; k++)
+    {
+      PointType v = Aders[k];
+      for(int i = 1; i <= k; i++)
+      {
+        v[0] = v[0] - binomial[k][i] * wders[i] * CK[k - 1][0];
+        v[1] = v[1] - binomial[k][i] * wders[i] * CK[k - 1][1];
+      }
+      CK[k][0] = v[0] / wders[0];
+      CK[k][1] = v[1] / wders[0];
     }
   }
 
@@ -904,6 +958,126 @@ std::cout << iteration << ": next u=" << u << std::endl;
   }
 
   /*!
+   * \brief Split the NURBS curve into Bezier curve segments.
+   * \return A vector of cubic Bezier curves.
+
+    pp.173-176
+   */
+  std::vector<primal::BezierCurve<double,2>> split() const
+  {
+     // Output nb, Qw
+     std::vector<primal::BezierCurve<double,2>> output;
+
+    const int p = m_curve.order - 1;
+    int n = m_curve.controlPoints.size(); //m_curve.knots.size();
+    const auto& U = m_curve.knots;
+    const auto &Pw = m_curve.controlPoints;
+
+    int m = n + p + 1;
+    int a = p;
+    int b = p + 1;
+    int nb = 0;
+    // Assume cubic
+    PointType ** Qw = new PointType*[m];
+    for(int i = 0; i < m; i++)
+       Qw[i]=  new PointType[4];
+    double *alphas = new double[m];
+
+
+std::cout << "!!! p=" << p << std::endl;
+std::cout << "!!! n=" << n << std::endl;
+std::cout << "!!! U={";
+for(auto val : U)
+    std::cout << val << ", ";
+std::cout << "}" << std::endl;
+std::cout << "!!! Pw={";
+for(auto val : Pw)
+    std::cout << "(" << val.getZ().getValue() << ", " << val.getR().getValue() << "), ";
+std::cout << "}" << std::endl;
+std::cout << "!!! a=" << a << std::endl;
+std::cout << "!!! b=" << b << std::endl;
+
+
+    for(int i = 0; i <= p; i++)
+    {
+      double w = 1.;//m_curve.weights[i];
+      Qw[nb][i] = PointType{w * Pw[i].getZ().getValue(), w * Pw[i].getR().getValue()};
+    }
+
+    while(b < m)
+    {
+      int b0 = b;
+      while(b < m && U[b + 1] == U[b])
+        b++;
+      int mult = b - b0 + 1;
+      if(mult < p)
+      {
+        double numer = U[b] - U[a];
+        for(int j = p; j > mult; j--)
+          alphas[j - mult - 1] = numer / (U[a+j] - U[a]);
+
+        int r = p - mult; // Insert knot r times
+        for(int j = 1; j <= r; j++)
+        {
+          int save = r - j;
+          int s = mult + j;
+          for(int k = p; k >= s; k--)
+          {
+            double alpha = alphas[k - s];
+
+            Qw[nb][k][0] = alpha * Qw[nb][k][0] + (1. - alpha) * Qw[nb][k - 1][0];
+            Qw[nb][k][1] = alpha * Qw[nb][k][1] + (1. - alpha) * Qw[nb][k - 1][1];
+          }
+          // Control point of next segment
+          if(b < m)
+            Qw[nb + 1][save] = Qw[nb][p];
+        }
+      }
+      // Bezier segment completed.
+      primal::BezierCurve<double, 2> B(Qw[nb], m_curve.order);
+      output.push_back(B);
+
+      nb = nb + 1;
+      if(b < m)
+      {
+        // Initialize next segment
+        for(int i = p - mult; i <= p; i++)
+        {
+          double w = 1.;//m_curve.weights[b - p + i];
+          Qw[nb][i] = PointType{w * Pw[b - p + i].getZ().getValue(), w * Pw[b - p + i].getR().getValue()};
+        }
+        a = b;
+        b = b + 1;
+      }
+    }
+
+    delete [] Qw;
+    delete [] alphas;
+
+#if 1
+    int idx = 0;
+    FILE *f = fopen("decompose.curve", "wt");
+    for(const auto &B : output)
+    {
+      fprintf(f, "# curve%d\n", idx++);
+      
+      double u = 0.;
+      double du = 0.01;
+      while(u <= 1.)
+      {
+        auto pt = B.evaluate(u);
+        fprintf(f, "%lg %lg\n", pt[0], pt[1]);
+        u += du;
+      }
+      idx++;
+    }
+    fclose(f);
+#endif
+
+    return output;
+  }
+
+  /*!
    * \brief Compute the revolved volume of the curve across its entire
    *        parametric interval [0,1] using quadrature.
    *
@@ -917,6 +1091,7 @@ std::cout << iteration << ": next u=" << u << std::endl;
 #if 1
     // ndiv 100 makes: 2269.665720108277
     // ndiv 10 makes:  2269.6657201085764
+    // just using spans: 2269.6479183796237
 
     // Use 5-point Gauss Quadrature.
     const double X[] = {-0.906179845938664,
@@ -932,6 +1107,10 @@ std::cout << iteration << ": next u=" << u << std::endl;
                         0.23692688505618908
                        };
 
+    // Calling split!
+//    std::cout << "!!! Calling split!" << std::endl;
+//    split();
+
     // Make a transform with no translation. We use this to transform
     // the derivative since we want to permit scaling and rotation but
     // translating it does not make sense.
@@ -945,10 +1124,16 @@ std::cout << iteration << ": next u=" << u << std::endl;
     constexpr int ndiv = 10;
     constexpr double div = (b - a) / static_cast<double>(ndiv);
     double vol = 0.;
-    for(int di = 0; di < ndiv; di++)
+std::cout << "revolvedVolume" << std::endl;
+    //for(int di = 0; di < ndiv; di++)
+    //{
+    //  double ad = a + div * di;
+    //  double bd = ad + div;
+    for(const auto &interval : m_spanIntervals)
     {
-      double ad = a + div * di;
-      double bd = ad + div;
+      double ad = interval.first;
+      double bd = interval.second;
+std::cout << "interval (" << ad << ", " << bd << ")" << std::endl;
 
       double scale = M_PI * ((bd - ad) / 2.);
 
@@ -961,20 +1146,26 @@ std::cout << iteration << ": next u=" << u << std::endl;
 
         // Compute y(u) to get radius
         PointType p_u = at(u);
-        PointType p_uT = transformPoint(transform, p_u);
-        double r = p_uT[1];
+        double r = p_u[1];
+//        PointType p_uT = transformPoint(transform, p_u);
+//        double r = p_uT[1];
 
         // Compute x'(u)
-        PointType xprime;
-        derivativesAt(u, 1, &xprime);
-        PointType xprimeT = transformPoint(transform2, xprime);
-        double xp = xprimeT[0];
+        PointType xprime[2];
+        derivativesAt(u, 1, xprime);
+        double xp = xprime[1][0]; // 1st component of 1st deriv.
+//        PointType xprimeT = transformPoint(transform2, xprime);
+//        double xp = xprimeT[0];
+
+std::cout << "\ti=" << i << ", u=" << u << ", p(u)=(" << p_u[0] << ", " << p_u[1] << "), xp=(" << xprime[0] << ", " << xprime[1] << ")" << std::endl;
 
         // Accumulate weight times dx*r^2.
         sum += W[i] * xp * (r * r);
       }
+      // Guard against volumes being negative (if the curve went the wrong way)
       vol += fabs(scale * sum);
     }
+std::cout << "!!! revolvedVolume = " << std::setprecision(16) << vol << std::endl;
     return vol;
 #else
     constexpr double a = 0, b = 1;
