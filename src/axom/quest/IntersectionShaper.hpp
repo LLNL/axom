@@ -1628,14 +1628,26 @@ private:
   {
     const int numSurfaceVertices = m->getNumberOfNodes();
     const int nSegments = numSurfaceVertices - 1;
-    const double* x = m->getCoordinateArray(mint::X_COORDINATE);
-    const double* y = m->getCoordinateArray(mint::Y_COORDINATE);
+    const double* z = m->getCoordinateArray(mint::X_COORDINATE);
+    const double* r = m->getCoordinateArray(mint::Y_COORDINATE);
+    constexpr double EPS = 1.e-15;
     double vol_approx = 0.;
     for(int seg = 0; seg < nSegments; seg++)
     {
-        double r0 = y[seg];
-        double r1 = y[seg + 1];
-        double h = fabs(x[seg + 1] - x[seg]);
+      double r0 = r[seg];
+      double r1 = r[seg + 1];
+      double h = fabs(z[seg + 1] - z[seg]);
+      if(axom::utilities::isNearlyEqual(r0, r1, EPS))
+      {
+        // cylinder
+        double A = circleArea(r0, level);
+
+        // Add the cylinder to the volume total.
+        vol_approx += A * h;
+      }
+      else
+      {
+        // truncated cone
         double h2 = (r0 * h / (r0 - r1)) - h;
 
         // Truncated cone volume.
@@ -1650,6 +1662,7 @@ private:
 
         // Add the truncated cone to the volume total.
         vol_approx += approx_cone_vol;
+      }
     }
 
     return vol_approx;
@@ -1741,9 +1754,9 @@ private:
     bool refine = true;
     constexpr int MAX_LEVELS = 8; //12; // Even 12 makes too many octahedra
     constexpr int MAX_ITERATIONS = 20;
-    constexpr int MAX_HISTORY = 7;
+    constexpr int MAX_HISTORY = 4;
     constexpr double minCurvePercentError = 1.e-10;
-    double history[MAX_HISTORY] = {0., 0., 0., 0., 0., 0., 0.};
+    double history[MAX_HISTORY] = {0., 0., 0., 0.};
     for(int iteration = 0; iteration < MAX_ITERATIONS && refine; iteration++)
     {
       // Increase the circle refinement level to see if we can get to an acceptable
@@ -1818,7 +1831,7 @@ private:
         // We could not get to an acceptable error percentage and we should refine.
 
         // Check whether to permit the curve to further refine.
-        constexpr double CURVE_PERCENT_SCALING = 0.25;
+        constexpr double CURVE_PERCENT_SCALING = 0.5;
         double ce = curvePercentError * CURVE_PERCENT_SCALING;
         if(ce > minCurvePercentError)
         {
