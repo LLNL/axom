@@ -270,6 +270,13 @@ private:
   std::vector<segment> segments;
 };
 
+//---------------------------------------------------------------------------
+/*!
+ * \brief Append a set of segments to a mint mesh, filtering out like points.
+ * \param mesh The mint mesh to which we're adding points/cells.
+ * \param S The segments to write.
+ * \param EPS_SQ The squared distance for point matching.
+ */
 static void
 appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
              Segments &S,
@@ -327,6 +334,53 @@ appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     }
   }
 }
+
+//---------------------------------------------------------------------------
+#ifdef AXOM_DEBUG_WRITE_LINES
+/*!
+ * \brief Write line segments to a VTK file for visualization.
+ * \param filename The name of the file to write.
+ * \param S The segments to write.
+ */
+static void
+write_lines(const std::string &filename, Segments &S)
+{
+    FILE *f = fopen(filename.c_str(), "wt");
+    fprintf(f, "# vtk DataFile Version 4.2\n");
+    fprintf(f, "vtk output\n");
+    fprintf(f, "ASCII\n");
+    fprintf(f, "DATASET POLYDATA\n");
+    fprintf(f, "FIELD FieldData 2\n");
+    fprintf(f, "CYCLE 1 1 int\n");
+    fprintf(f, "1\n");
+    fprintf(f, "TIME 1 1 double\n");
+    fprintf(f, "1.0\n");
+    // Write points
+    int npts = S.size();
+    fprintf(f, "POINTS %d float\n", npts);
+    for(int i = 0; i < npts; i += 3)
+    {
+        fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
+        if((i+1) < npts)
+            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+1].point[0], S[i+1].point[1]);
+        if((i+2) < npts)
+            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+2].point[0], S[i+2].point[1]);
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\n");
+
+    int nspans = npts - 1;
+
+    // Write ncells
+    fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
+    for(int ispan = 0; ispan < nspans; ispan++)
+    {
+        fprintf(f, "2 %d %d\n", ispan, ispan+1);
+    }
+
+    fclose(f);
+}
+#endif
 
 //---------------------------------------------------------------------------
 /*!
@@ -640,9 +694,10 @@ struct NURBSInterpolator
   void derivativesAt(double u, int d, PointType* CK) const
   {
     const int p = m_curve.order - 1;
-    int du = std::min(d, p);
+    SLIC_ERROR_IF(p > 5, "Curves with p > 5 require new binomial table!");
 
     // Compute the basis functions for the curve and its d derivatives.
+    int du = std::min(d, p);
     const auto span = findSpan(u);
     std::vector<BasisVector> N(d + 1);
     derivativeBasisFunctions(span, u, d, N);
@@ -651,13 +706,16 @@ struct NURBSInterpolator
     std::vector<PointType> Aders(d + 1);
     std::vector<double> wders(d + 1);
 
-    // Table of binomial coefficients up to cubic.
-    const double binomial[5][5] = {
-    {1., 0., 0., 0., 0.},
-    {1., 1., 0., 0., 0.},
-    {1., 2., 1., 0., 0.},
-    {1., 3., 3., 1., 0.},
-    {1., 4., 6., 4., 1.}
+    // Table of binomial coefficients up to quintic.
+    // We more than likely will not ever go beyond cubic since each NURBS
+    // span is probably blended using cubics.
+    static const double binomial[6][6] = {
+    {1., 0., 0., 0., 0., 0.},
+    {1., 1., 0., 0., 0., 0.},
+    {1., 2., 1., 0., 0., 0.},
+    {1., 3., 3., 1., 0., 0.},
+    {1., 4., 6., 4., 1., 0.},
+    {1., 5., 10., 10., 5., 1.}
     };
 
     // Compute the point and d derivatives
@@ -675,7 +733,6 @@ struct NURBSInterpolator
         Pw[1] = weight * m_curve.controlPoints[offset].getR().getValue();
         Pw[2] = weight;
 
-        // TODO: We may need to include weights.
         x = x + N[k][j] * Pw[0];
         y = y + N[k][j] * Pw[1];
         w = w + N[k][j] * Pw[2];
@@ -709,11 +766,11 @@ struct NURBSInterpolator
   double curvature(double u) const
   {
     // Evaluate 1st and 2nd derivatives at u.
-    PointType derivs[2];
+    PointType derivs[3];
     derivativesAt(u, 2, derivs);
-    const PointType& D1 = derivs[0];
-    const PointType& D2 = derivs[1];
-#if 1
+    const PointType& D1 = derivs[1];
+    const PointType& D2 = derivs[2];
+
     double xp   = D1.data()[0]; // x'
     double xpp  = D2.data()[0]; // x''
 
@@ -725,16 +782,6 @@ struct NURBSInterpolator
     // k = (x'y'' - y'x'') / pow(x'x' + y'y', 3./2.)
     double xp2_plus_yp2 = xp * xp + yp * yp;
     return (xp * ypp - yp * xpp) / pow(xp2_plus_yp2, 3. / 2.);
-#else
-    // This is signed curvature as formulated at:
-    // https://en.wikipedia.org/wiki/Curvature#Curvature_of_a_graph
-    // k = (x'y'' - y'x'') / pow(x'x' + y'y', 3./2.)
-    double numerator =
-      (D1.data()[0] * D2.data()[1]) - (D2.data()[0] * D1.data()[1]);
-    double D1mag2 = (D1.data()[0] * D1.data()[0]) + (D1.data()[1] * D1.data()[1]);
-    double one_over_denominator = pow(D1mag2, -3. / 2.);
-    return numerator * one_over_denominator;
-#endif
   }
 
   /*!
@@ -748,11 +795,11 @@ struct NURBSInterpolator
   void curvatureDerivatives(double u, int d, double *ders) const
   {
     // Evaluate 1st, 2nd, 3rd curve derivatives at u.
-    PointType derivs[3];
+    PointType derivs[4];
     derivativesAt(u, 3, derivs);
-    const PointType& D1 = derivs[0];
-    const PointType& D2 = derivs[1];
-    const PointType& D3 = derivs[2];
+    const PointType& D1 = derivs[1];
+    const PointType& D2 = derivs[2];
+    const PointType& D3 = derivs[3];
 
     double xp   = D1.data()[0]; // x'
     double xpp  = D2.data()[0]; // x''
@@ -868,214 +915,7 @@ std::cout << iteration << ": next u=" << u << std::endl;
     }
     return solved;
   }
-  
 
-  /* \brief Solve for a zero crossing for the curvature derivative and use the
-            determined u value to return the curvature there.
-   *
-   */
-  double curvatureExtreme(double umin, double umax, double &u) const
-  {
-    constexpr double EPS = 1.e-6;
-    double c = 0.;
-
-    // Use the middle of the range as a 1st guess.
-    u = umin; //(umin + umax) * 0.5;
-
-    // See whether there is enough curvature to bother with.
-    double c0 = curvature(umin);
-    double cmid = curvature(u);
-    double c1 = curvature(umax);
-    double dc0c1 = fabs(c1 - c0);
-    double dc0cmid = fabs(cmid - c0);
-    double dcmidc1 = fabs(c1 - cmid);
-    if(dc0c1 > EPS || dc0cmid > EPS || dcmidc1 > EPS)
-    {
-std::cout <<"!! Solve for curvature extremes" << std::endl;
-std::cout <<"umin=" << umin << std::endl;
-std::cout <<"umax=" << umax << std::endl;
-std::cout <<"u=" << u << std::endl;
-
-      bool keepGoing = true;
-      // Find a zero-crossing in the curvature derivative using Newton's Method.
-      int iteration = 0;
-      while(keepGoing && iteration < 20)
-      {
-        double ders[2];
-        curvatureDerivatives(u, 2, ders);
-
-std::cout << iteration << ": u=" << u << ", cp=" << ders[0] << ", cpp=" << ders[1] << std::endl;
-        if(axom::utilities::isNearlyEqual(ders[0], 0., EPS))
-        {
-std::cout << iteration << ": Stopping: u=" << u << ", cp=" << ders[0] << ", cpp=" << ders[1] << std::endl;
-          keepGoing = false;
-        }
-        else
-        {
-
-          // Next step.
-          u = u - ders[0] / ders[1];
-std::cout << iteration << ": next u=" << u << std::endl;
-
-#if 1
-          if(u <= umin)
-          {
-            std::cout << iteration << ": ERROR new u " << u << " is less than umin " << umin << std::endl;
-            u = umin;
-            keepGoing = false;
-          }
-          if(u >= umax)
-          {
-            std::cout << iteration << ": ERROR new u " << u << " is greater than umax " << umax << std::endl;
-            u = umax;
-            keepGoing = false;
-          }
-#endif
-        }
-        iteration++;
-      }
-
-      // Check to see whether we're close to the endpoints. If so, use the
-      // endpoints.
-      if(axom::utilities::isNearlyEqual(u, umin, EPS))
-      {
-        u = umin;
-        c = curvature(u);
-      }
-      else if(axom::utilities::isNearlyEqual(u, umax, EPS))
-      {
-        u = umax;
-        c = curvature(u);
-      }
-    }
-    else
-    {
-      c = c0;
-      u = umin;
-    }
-
-    return c;
-  }
-
-  /*!
-   * \brief Split the NURBS curve into Bezier curve segments.
-   * \return A vector of cubic Bezier curves.
-
-    pp.173-176
-   */
-  std::vector<primal::BezierCurve<double,2>> split() const
-  {
-     // Output nb, Qw
-     std::vector<primal::BezierCurve<double,2>> output;
-
-    const int p = m_curve.order - 1;
-    int n = m_curve.controlPoints.size(); //m_curve.knots.size();
-    const auto& U = m_curve.knots;
-    const auto &Pw = m_curve.controlPoints;
-
-    int m = n + p + 1;
-    int a = p;
-    int b = p + 1;
-    int nb = 0;
-    // Assume cubic
-    PointType ** Qw = new PointType*[m];
-    for(int i = 0; i < m; i++)
-       Qw[i]=  new PointType[4];
-    double *alphas = new double[m];
-
-
-std::cout << "!!! p=" << p << std::endl;
-std::cout << "!!! n=" << n << std::endl;
-std::cout << "!!! U={";
-for(auto val : U)
-    std::cout << val << ", ";
-std::cout << "}" << std::endl;
-std::cout << "!!! Pw={";
-for(auto val : Pw)
-    std::cout << "(" << val.getZ().getValue() << ", " << val.getR().getValue() << "), ";
-std::cout << "}" << std::endl;
-std::cout << "!!! a=" << a << std::endl;
-std::cout << "!!! b=" << b << std::endl;
-
-
-    for(int i = 0; i <= p; i++)
-    {
-      double w = 1.;//m_curve.weights[i];
-      Qw[nb][i] = PointType{w * Pw[i].getZ().getValue(), w * Pw[i].getR().getValue()};
-    }
-
-    while(b < m)
-    {
-      int b0 = b;
-      while(b < m && U[b + 1] == U[b])
-        b++;
-      int mult = b - b0 + 1;
-      if(mult < p)
-      {
-        double numer = U[b] - U[a];
-        for(int j = p; j > mult; j--)
-          alphas[j - mult - 1] = numer / (U[a+j] - U[a]);
-
-        int r = p - mult; // Insert knot r times
-        for(int j = 1; j <= r; j++)
-        {
-          int save = r - j;
-          int s = mult + j;
-          for(int k = p; k >= s; k--)
-          {
-            double alpha = alphas[k - s];
-
-            Qw[nb][k][0] = alpha * Qw[nb][k][0] + (1. - alpha) * Qw[nb][k - 1][0];
-            Qw[nb][k][1] = alpha * Qw[nb][k][1] + (1. - alpha) * Qw[nb][k - 1][1];
-          }
-          // Control point of next segment
-          if(b < m)
-            Qw[nb + 1][save] = Qw[nb][p];
-        }
-      }
-      // Bezier segment completed.
-      primal::BezierCurve<double, 2> B(Qw[nb], m_curve.order);
-      output.push_back(B);
-
-      nb = nb + 1;
-      if(b < m)
-      {
-        // Initialize next segment
-        for(int i = p - mult; i <= p; i++)
-        {
-          double w = 1.;//m_curve.weights[b - p + i];
-          Qw[nb][i] = PointType{w * Pw[b - p + i].getZ().getValue(), w * Pw[b - p + i].getR().getValue()};
-        }
-        a = b;
-        b = b + 1;
-      }
-    }
-
-    delete [] Qw;
-    delete [] alphas;
-
-#if 1
-    int idx = 0;
-    FILE *f = fopen("decompose.curve", "wt");
-    for(const auto &B : output)
-    {
-      fprintf(f, "# curve%d\n", idx++);
-      
-      double u = 0.;
-      double du = 0.01;
-      while(u <= 1.)
-      {
-        auto pt = B.evaluate(u);
-        fprintf(f, "%lg %lg\n", pt[0], pt[1]);
-        u += du;
-      }
-      idx++;
-    }
-    fclose(f);
-#endif
-
-    return output;
-  }
 
   /*!
    * \brief Compute the revolved volume of the curve across its entire
@@ -1107,10 +947,6 @@ std::cout << "!!! b=" << b << std::endl;
                         0.23692688505618908
                        };
 
-    // Calling split!
-//    std::cout << "!!! Calling split!" << std::endl;
-//    split();
-
     // Make a transform with no translation. We use this to transform
     // the derivative since we want to permit scaling and rotation but
     // translating it does not make sense.
@@ -1125,10 +961,6 @@ std::cout << "!!! b=" << b << std::endl;
     constexpr double div = (b - a) / static_cast<double>(ndiv);
     double vol = 0.;
 std::cout << "revolvedVolume" << std::endl;
-    //for(int di = 0; di < ndiv; di++)
-    //{
-    //  double ad = a + div * di;
-    //  double bd = ad + div;
     for(const auto &interval : m_spanIntervals)
     {
       double ad = interval.first;
@@ -1146,16 +978,14 @@ std::cout << "interval (" << ad << ", " << bd << ")" << std::endl;
 
         // Compute y(u) to get radius
         PointType p_u = at(u);
-        double r = p_u[1];
-//        PointType p_uT = transformPoint(transform, p_u);
-//        double r = p_uT[1];
+        PointType p_uT = transformPoint(transform, p_u);
+        double r = p_uT[1];
 
         // Compute x'(u)
         PointType xprime[2];
         derivativesAt(u, 1, xprime);
-        double xp = xprime[1][0]; // 1st component of 1st deriv.
-//        PointType xprimeT = transformPoint(transform2, xprime);
-//        double xp = xprimeT[0];
+        PointType xprimeT = transformPoint(transform2, xprime[1]);
+        double xp = xprimeT[0];
 
 std::cout << "\ti=" << i << ", u=" << u << ", p(u)=(" << p_u[0] << ", " << p_u[1] << "), xp=(" << xprime[0] << ", " << xprime[1] << ")" << std::endl;
 
@@ -1193,9 +1023,9 @@ std::cout << "!!! revolvedVolume = " << std::setprecision(16) << vol << std::end
       double r = p_uT[1];
 
       // Compute x'(u)
-      PointType xprime;
-      derivativesAt(u, 1, &xprime);
-      PointType xprimeT = transformPoint(transform2, xprime);
+      PointType xprime[2];
+      derivativesAt(u, 1, xprime);
+      PointType xprimeT = transformPoint(transform2, xprime[1]);
       double xp = xprimeT[0];
 
       // Accumulate weight times dx*r^2.
@@ -1276,92 +1106,6 @@ void C2CReader::log()
   SLIC_INFO(sstr.str());
 }
 
-void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              int segmentsPerKnotSpan)
-{
-  std::vector<double> d1, d2, uvec, curv, sp;
-  getLinearMesh(mesh, segmentsPerKnotSpan, d1, d2, uvec, curv, sp);
-}
-
-//----------------------------------------------------------------------------
-/*static void
-write_lines(const std::string &filename, std::vector<primal::Point<double, 2>> &pts)
-{
-    FILE *f = fopen(filename.c_str(), "wt");
-    fprintf(f, "# vtk DataFile Version 4.2\n");
-    fprintf(f, "vtk output\n");
-    fprintf(f, "ASCII\n");
-    fprintf(f, "DATASET POLYDATA\n");
-    fprintf(f, "FIELD FieldData 2\n");
-    fprintf(f, "CYCLE 1 1 int\n");
-    fprintf(f, "1\n");
-    fprintf(f, "TIME 1 1 double\n");
-    fprintf(f, "1.0\n");
-    // Write points
-    int npts = pts.size();
-    fprintf(f, "POINTS %d float\n", npts);
-    for(int i = 0; i < npts; i += 3)
-    {
-        fprintf(f, "%1.16lf %1.16lf 0. ", pts[i][0], pts[i][1]);
-        if((i+1) < npts)
-            fprintf(f, "%1.16lf %1.16lf 0. ", pts[i+1][0], pts[i+1][1]);
-        if((i+2) < npts)
-            fprintf(f, "%1.16lf %1.16lf 0. ", pts[i+2][0], pts[i+2][1]);
-        fprintf(f, "\n");
-    }
-    fprintf(f, "\n");
-
-    int nspans = npts - 1;
-
-    // Write ncells
-    fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
-    for(int ispan = 0; ispan < nspans; ispan++)
-    {
-        fprintf(f, "2 %d %d\n", ispan, ispan+1);
-    }
-
-    fclose(f);
-}*/
-
-static void
-write_lines(const std::string &filename, Segments &S)
-{
-    FILE *f = fopen(filename.c_str(), "wt");
-    fprintf(f, "# vtk DataFile Version 4.2\n");
-    fprintf(f, "vtk output\n");
-    fprintf(f, "ASCII\n");
-    fprintf(f, "DATASET POLYDATA\n");
-    fprintf(f, "FIELD FieldData 2\n");
-    fprintf(f, "CYCLE 1 1 int\n");
-    fprintf(f, "1\n");
-    fprintf(f, "TIME 1 1 double\n");
-    fprintf(f, "1.0\n");
-    // Write points
-    int npts = S.size();
-    fprintf(f, "POINTS %d float\n", npts);
-    for(int i = 0; i < npts; i += 3)
-    {
-        fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
-        if((i+1) < npts)
-            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+1].point[0], S[i+1].point[1]);
-        if((i+2) < npts)
-            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+2].point[0], S[i+2].point[1]);
-        fprintf(f, "\n");
-    }
-    fprintf(f, "\n");
-
-    int nspans = npts - 1;
-
-    // Write ncells
-    fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
-    for(int ispan = 0; ispan < nspans; ispan++)
-    {
-        fprintf(f, "2 %d %d\n", ispan, ispan+1);
-    }
-
-    fclose(f);
-}
-
 //---------------------------------------------------------------------------
 template <typename T>
 static std::ostream &operator << (std::ostream &os, const std::vector<T> &vec)
@@ -1422,102 +1166,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     };
 
   /*!
-   * \brief Determines a u value within the interval [u0, u1] that should make
-   *        the longest line segments from p0->curve(u)->p1.
-   *
-   * \param interpolator The NURBSInterpolator we can use to query the curve.
-   * \param u0 The parametric value for the start of the interval.
-   * \param u1 The parametric value for the end of the interval.
-   * \param p0 The point at the start of the interval.
-   * \param p1 The point at the end of the interval.
-   *
-   * \return The u value for the new point.
-   */
-  auto solveu = [](NURBSInterpolator &interpolator, double u0, double u1,
-                   const PointType &p0, const PointType &p1) -> double
-  {
-    // Set up an initial ui at the midpoint and get the point.
-    double ui = (u0 + u1) / 2.;
-    double ustart = ui;
-
-    // Interval endpoints.
-    double u0x = p0[0];
-    double u0y = p0[1];
-    double u1x = p1[0];
-    double u1y = p1[1];
-
-    constexpr double EPS = 1.e-6;
-    constexpr int MAX_ITERATIONS = 32;
-    bool solved = false;
-
-    // Solve for derivative == 0.
-    for(int iteration = 0; iteration < MAX_ITERATIONS && !solved; iteration++)
-    {
-      // Get the point at ui
-      PointType p = interpolator.at(ui);
-
-      // Deltas from interval endpoints to current point at ui.
-      double dx0 = p[0] - u0x;
-      double dy0 = p[1] - u0y;
-      double dx1 = p[0] - u1x;
-      double dy1 = p[1] - u1y;
-
-      // Get the 1st and 2nd derivatives of curve at ui
-      PointType d[2];
-      interpolator.derivativesAt(ui, 2, d);
-      double xp = d[0][0];
-      double yp = d[0][1];
-      double xpp = d[1][0];
-      double ypp = d[1][1];
-
-      // 1st derivative of length L(u), the length of the new line segment pair.
-      double D1L = (dx0 * xp + dy0 * yp) / sqrt(dx0 * dx0 + dy0 * dy0) +
-                   (dx1 * xp + dy1 * yp) / sqrt(dx1 * dx1 + dy1 * dy1);
-
-      if(axom::utilities::isNearlyEqual(D1L, 0., EPS))
-      {
-#ifdef AXOM_DEBUG_SOLVEU_VERBOSE
-         std::cout << iteration << ": Stopping: Moved u from " << ustart << " to " << ui << std::endl;
-#endif
-        solved = true;
-        break;
-      }
-      else
-      {
-        // 2nd derivative of length L(u)
-        double D2L = ((-2. * pow(dx0*xp + dy0*yp, 2.) + 2 * (dx0*dx0 + dy0*dy0) * (xp*xp + yp*yp + dx0 * xpp + dy0 * ypp)) /
-                      (2 * pow(dx0 * dx0 + dy0 * dy0, 3. / 2.)))
-                     +
-                     ((-2. * pow(dx1*xp + dy1*yp, 2.) + 2 * (dx1*dx1 + dy1*dy1) * (xp*xp + yp*yp + dx1 * xpp + dy1 * ypp)) /
-                      (2 * pow(dx1 * dx1 + dy1 * dy1, 3. / 2.)));
-
-        // Newton step
-        ui = ui - D1L / D2L;
-
-        // If we go out of bounds, use the ustart value.
-        if(ui <= u0)
-        {
-#ifdef AXOM_DEBUG_SOLVEU_VERBOSE
-          std::cout << iteration << ": ERROR new ui " << ui << " is less than u0 " << u0 << std::endl;
-#endif
-          ui = ustart;
-          break;
-        }
-        if(ui >= u1)
-        {
-#ifdef AXOM_DEBUG_SOLVEU_VERBOSE
-          std::cout << iteration << ": ERROR new ui " << ui << " is greater than u1 " << u1 << std::endl;
-#endif
-          ui = ustart;
-          break;
-        }
-      }
-    }
-
-    return ui;
-  };
-
-  /*!
    * \brief Examines the history values to determine if the deltas between
    *        iterations are sufficiently small that the iterations should
    *        terminate, even though it might not have reached the desired
@@ -1549,10 +1197,9 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         sum += fabs(pct);
       }
       double avg_pct = sum / static_cast<double>(nhistory - 1);
-#if 1//def AXOM_DEBUG_LINEARIZE_VERBOSE
-      std::cout << "Diminishing returns. iteration = " << iteration
-                << ", avg_pct = " << avg_pct
-                << ", percentError = " << percentError<< "." << std::endl;
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+      SLIC_INFO(fmt::format("Diminishing returns. iteration={}, avg_pct={}, percentError={}",
+                iteration, avg_pct, percentError));
 #endif
       dr = avg_pct < percentError;
     }
@@ -1568,7 +1215,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   // Clamp the lower error bound so it does not get impractically small.
   percentError = axom::utilities::clampLower(percentError, 1.e-10);
 
-//#define AXOM_DEBUG_WRITE_ERROR_CURVES
 #ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
   FILE *ferr = fopen("error.curve", "wt");
 
@@ -1607,7 +1253,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     first.u = u0;
     first.point = p0;
     first.length = sqrt(primal::squared_distance(p0, p1));
-    first.next_u = solveu(interpolator, u0, u1, p0, p1);
+    first.next_u = (u0 + u1) / 2.;
     PointType next_point = interpolator.at(first.next_u);
     first.next_length[0] = sqrt(primal::squared_distance(p0, next_point));
     first.next_length[1] = sqrt(primal::squared_distance(next_point, p1));
@@ -1632,7 +1278,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     {
       //---------------------------------------------------------------------
       // Approximate the arc length of the whole curve by using a lot of line segments.
-      // Computers are fast, sampling is cheap.
+      // Should we use quadrature instead here?
       double hiCurveLen = 0.;
       constexpr int NUMBER_OF_SAMPLES = 2000;
       PointType prev = first.point;
@@ -1654,7 +1300,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
       // The initial curve length.
       double curveLength = first.length;
-      constexpr double ADAPTIVE_CUTOFF = 0.;//01;
 
       // Iterate until the difference between iterations is under the percent error
       // or there are diminishing returns to continuing.
@@ -1686,21 +1331,13 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         right.point = interpolator.at(right.u);
         right.length = left.next_length[1];
 
-// NOTE: the solveu must be making it worse...
-
-//        if((S[nextIndex].u - right.u) > ADAPTIVE_CUTOFF)
-//          right.next_u = solveu(interpolator, right.u, S[nextIndex].u, right.point, S[nextIndex].point);
-//        else
-          right.next_u = (right.u + S[nextIndex].u) / 2.;
+        right.next_u = (right.u + S[nextIndex].u) / 2.;
         PointType right_next = interpolator.at(right.next_u);
         right.next_length[0] = sqrt(primal::squared_distance(right.point, right_next));
         right.next_length[1] = sqrt(primal::squared_distance(right_next, S[nextIndex].point));
 
         left.length = left.next_length[0];
-//        if((right.u - left.u) > ADAPTIVE_CUTOFF)
-//          left.next_u = solveu(interpolator, left.u, right.u, left.point, right.point);
-//        else
-          left.next_u = (left.u + right.u) / 2.;
+        left.next_u = (left.u + right.u) / 2.;
         PointType left_next = interpolator.at(left.next_u);
         left.next_length[0] = sqrt(primal::squared_distance(left.point, left_next));
         left.next_length[1] = sqrt(primal::squared_distance(left_next, right.point));
@@ -1727,11 +1364,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         int npts = S.size();
         sprintf(filename, "lines%d_%05d.vtk", contourCount, npts);
         write_lines(filename, S);
-
-        std::cout << "Wrote " << filename << ": hiCurveLen=" << std::setprecision(9) << hiCurveLen
-                  << ", curveLength=" << std::setprecision(9) << curveLength
-                  << ", dCL=" << (hiCurveLen - curveLength)
-                  << std::endl;
+        SLIC_INFO(fmt::format("Wrote {}", filename));
 #endif
 
         iteration++;
@@ -1759,15 +1392,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 #endif
 }
 
-//---------------------------------------------------------------------------
-// NOTE: This API change is temporary while I am pulling data out with the curve segments.
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              int segmentsPerKnotSpan,
-                              std::vector<double>& d1vec,
-                              std::vector<double>& d2vec,
-                              std::vector<double>& uvec,
-                              std::vector<double>& curvvec,
-                              std::vector<double>& sp)
+                              int segmentsPerKnotSpan)
 {
   using axom::utilities::lerp;
 
@@ -1784,219 +1410,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
-  // Makes a set of uniformly spaced points in the interval.
-  auto makeUniformPoints = [](NURBSInterpolator &interpolator,
-                              double startParameter,
-                              double endParameter,
-                              int segmentsPerKnotSpan,
-                              std::vector<double> &uValues)//PointsArray &pts)
-  {
-    double denom = static_cast<double>(segmentsPerKnotSpan);
-    for(int i = 0; i <= segmentsPerKnotSpan; ++i)
-    {
-      double u = lerp(startParameter, endParameter, i / denom);
-      //pts.emplace_back(interpolator.at(u));
-      uValues.push_back(u);
-    }
-  };
-
-  // Examine the vector of curvature values for the intervals and see if they
-  // seem flat.
-  auto looksFlat = [](const std::vector<double> &curvatures) -> bool
-  {
-    constexpr double EPS = 1.e-4;
-    bool flat = true;
-    for(size_t j = 0; j < curvatures.size(); j++)
-    {
-      for(size_t i = 0; i < j; i++)
-      {
-        flat &= axom::utilities::isNearlyEqual(curvatures[j], curvatures[i], EPS);
-      }
-    }
-    return flat;
-  };
-
-  // Determine the u value that produces targetCurv.
-  auto solveForU = [](NURBSInterpolator &interpolator,
-                      double startParameter,
-                      double endParameter,
-                      double startCurv,
-                      double endCurv,
-                      double targetCurv,
-                      double curvTolerance) -> double
-  {
-    double left = startParameter;
-    double right = endParameter;
-    double u = left;
-    while(left <= right)
-    {
-      double umid = (left + right) / 2;
-      double curv_at_umid = interpolator.curvature(umid);
-      if(axom::utilities::isNearlyEqual(curv_at_umid, targetCurv, curvTolerance))
-      {
-        u = umid;
-        break;
-      }
-      else if(startCurv < endCurv)
-      {
-        if(targetCurv > curv_at_umid)
-          left = umid;
-        else
-          right = umid;
-      }
-      else
-      {
-        if(targetCurv > curv_at_umid)
-          right = umid;
-        else
-          left = umid;
-      }
-    }
-    return u;
-  };
-
-  // Non-uniform sampling in [0,1].
-  auto sample = [](double t) -> double
-  {
-// sigmoid - highlight the higher curvature areas.
-//    double s1 = pow(tanh(4.) * tanh(3.), 0.4);
-//    double s = pow(tanh(4 * t * t) * tanh(3 * t * t), 0.4) / s1;
-
-// highlight middle curvature
-//    double s = (4. * pow(t - 0.5, 3) + 0.5 + t) / 2;
-
-// highlight lower curvature.
-//    double s = pow((t*t + t) / 2., 4./3.);
-
-// highlight lower curvature even more
-    double s = (t*t*t + t/50.) / 1.02;
-    return s;
-  };
-
-  auto area = [](const std::vector<PointType> &pts) -> double
-  {
-    auto npts = static_cast<int>(pts.size());
-    // Compute the areas
-    double A = 0.;
-    for(int i = 0; i < npts; i++)
-    {
-        int nexti = (i + 1) % npts;
-        A += pts[i][0] * pts[nexti][1] - pts[i][1] * pts[nexti][0];
-    }
-    return A * 0.5;
-  };
-
-  auto filter = [area](NURBSInterpolator &interpolator, std::vector<double> &u)
-  {
-    // Make the curve points.
-    std::vector<PointType> pts(u.size());
-    for(size_t i = 0; i < u.size(); i++)
-      pts[i] = interpolator.at(u[i]);
-
-    std::vector<PointType> tri(3);
-
-    double m = 0.01;
-    for(size_t i = 1; i < u.size() - 1; i++)
-    {
-      double u0 = u[i-1];
-      double u1 = u[i+1];
-      double du = (u1 - u0) * m;
-      double ustart = u0 + du;
-      double uend = u1 - du;
-
-      tri[0] = pts[i+1];
-      tri[1] = pts[i-1];
-      double a = -1.e6;
-
-      // Sweep the point through the interval and see if we can increase
-      // the triangle area. If we can, we move the point.
-      while(ustart < uend)
-      {
-        // Make a new point using ustart
-        tri[2] = interpolator.at(ustart);
-
-        // Make the area of this new triangle.
-        double newa = fabs(area(tri));
-
-        if(newa > a)
-        {
-          // The area increased. keep the point.
-          a = newa;
-          u[i] = ustart;
-          pts[i] = tri[2];
-        }
-
-        ustart += du;
-      }
-    }
-  };
-
-  auto filter2 = [area](NURBSInterpolator &interpolator, std::vector<double> &u)
-  {
-    PointType d[2];
-    for(size_t i = 1; i < u.size() - 1; i++)
-    {
-      double u0 = u[i-1];
-      double u1 = u[i+1];
-      double ui = (u0 + u1) / 2.;
-
-      auto p0 = interpolator.at(u0);
-      auto p1 = interpolator.at(u1);
-
-      double u0x = p0[0];
-      double u0y = p0[1];
-      double u1x = p1[0];
-      double u1y = p1[1];
-
-      constexpr double EPS = 1.e-6;
-      constexpr int MAX_ITERATIONS = 32;
-      bool solved = false;
-
-      // Solve for derivative == 0.
-      for(int iteration = 0; iteration < MAX_ITERATIONS && !solved; iteration++)
-      {
-        // Get the 1st and 2nd derivatives of curve at ui
-        interpolator.derivativesAt(ui, 2, d);
-        double xp = d[0][0];
-        double yp = d[0][1];
-        double xpp = d[1][0];
-        double ypp = d[1][1];
-
-        // 1st derivative of area A(u)
-        double D1A = 0.5 * ((u0x - u1x) * yp + (u1y - u0y) * xp);
-        if(axom::utilities::isNearlyEqual(D1A, 0., EPS))
-        {
-std::cout << iteration << ": Stopping: Moved u["<<i<<"]=" << u[i] << " to " << ui << std::endl;
-
-          u[i] = ui;
-
-          solved = true;
-          break;
-        }
-        else
-        {
-          // 2nd derivative of area A(u)
-          double D2A = 0.5 * ((u0x - u1x) * ypp + (u1y - u0y) * xpp);
-
-          ui = ui - D1A / D2A;
-
-          if(ui <= u0)
-          {
-            std::cout << iteration << ": ERROR new ui " << ui << " is less than u0 " << u0 << std::endl;
-            ui = u0;
-            break;
-          }
-          if(ui >= u1)
-          {
-            std::cout << iteration << ": ERROR new ui " << ui << " is greater than u1 " << u1 << std::endl;
-            ui = u1;
-            break;
-          }
-        }
-      }
-    }
-  };
-
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
@@ -2004,7 +1417,6 @@ std::cout << iteration << ": Stopping: Moved u["<<i<<"]=" << u[i] << " to " << u
     // For each knot span
     for(int span = 0; span < interpolator.numSpans(); ++span)
     {
-std::cout << "span " << span << " --------------------------------------------------" << std::endl;
       // Generate points on the curve
       PointsArray pts;
       pts.reserve(segmentsPerKnotSpan + 1);
@@ -2012,344 +1424,12 @@ std::cout << "span " << span << " ----------------------------------------------
       const double startParameter = interpolator.startParameter(span);
       const double endParameter = interpolator.endParameter(span);
 
-      std::vector<double> uValues;
-
-      std::string method("UNIFORM");
-      if(getenv("AXOM_METHOD") != nullptr)
-        method = getenv("AXOM_METHOD");
-      bool allowFilter = true;
-      if(method == "UNIFORM")
+      double denom = static_cast<double>(segmentsPerKnotSpan);
+      for(int i = 0; i <= segmentsPerKnotSpan; ++i)
       {
-        makeUniformPoints(interpolator, startParameter, endParameter,
-                          segmentsPerKnotSpan, uValues);
-        allowFilter = false;
+        double u = lerp(startParameter, endParameter, i / denom);
+        pts.emplace_back(interpolator.at(u));
       }
-      else if(method == "BISECT") 
-      {
-//------------------------------------------------------------------------------
-
-        // Start out with the start/end u value for this span.
-        uValues.reserve(segmentsPerKnotSpan + 1);
-        uValues.push_back(startParameter);
-        uValues.push_back(endParameter);
-
-        int nSegments = 1;
-        std::vector<PointType> tri(3);
-        while(nSegments < segmentsPerKnotSpan)
-        {
-          double maxa = -std::numeric_limits<double>::max(), maxu = uValues[0];
-          int maxseg = 0;
-          // Look at each segment to see which we should bisect. We do this by
-          // computing a triangle area and we select the one that makes the
-          // largest area.
-          for(int seg = 0; seg < nSegments; seg++)
-          {
-            double umid = (uValues[seg] + uValues[seg + 1]) / 2.;
-            tri[0] = interpolator.at(uValues[seg]);
-            tri[1] = interpolator.at(umid);
-            tri[2] = interpolator.at(uValues[seg + 1]);
-            double a = area(tri);
-
-if(a < 0.)
-{
-//std::cout << "a=" << a << std::endl;
-a *= -1.;
-}
-            if(a > maxa)
-            {
-              maxu = umid;
-              maxa = a;
-              maxseg = seg + 1;
-            }
-          }
-          uValues.insert(uValues.begin() + maxseg, maxu);
-          nSegments++;
-
-          // For smaller numbers of segments, allow the points to move a bit more
-          // so we converge on area slightly faster.
-          if(nSegments < 10)
-          {
-            filter2(interpolator, uValues);
-          }
-        }
-        allowFilter = false;
-//------------------------------------------------------------------------------
-      }
-      else
-      {
-        // Get the intervals for this span.
-        std::vector<double> intervals(interpolator.curvatureIntervals(startParameter, endParameter));
-        std::cout << "intervals for (" << startParameter << ", " << endParameter << ") = {";
-        for(auto value : intervals)
-           std::cout << value << ", ";
-        std::cout << "}" << std::endl;
-        // Get the curvatures for the interval values.
-        std::vector<double> curvatures(intervals.size());
-        for(size_t i = 0; i < intervals.size(); i++)
-          curvatures[i] = interpolator.curvature(intervals[i]);
-
-        if(segmentsPerKnotSpan == 1 || looksFlat(curvatures))
-        {
-std::cout << "span " << span << ": looks flat. Make uniform points. " << std::endl;
-          makeUniformPoints(interpolator, startParameter, endParameter,
-                            segmentsPerKnotSpan, uValues);
-        }
-        else if(static_cast<int>(intervals.size()-1) == segmentsPerKnotSpan)
-        {
-std::cout << "span " << span << ": Number of intervals matches segmentsPerKnotSpan." << std::endl;
-          // The intervals define the u values for the segment points.
-          uValues = intervals;
-/*          for(const double u : intervals)
-          {
-            pts.emplace_back(interpolator.at(u));
-std::cout << "span " << span << ": Adding point at u=" << u << std::endl;
-          }
-*/
-        }
-        else if(intervals.size() == 2)
-        {
-std::cout << "span " << span << ": Single interval: segmentsPerKnotSpan=" << segmentsPerKnotSpan << std::endl;
-          // We have 2 interval points so the curvature is monotonic.
-          double curvStart = curvatures[0];
-          double curvEnd = curvatures[1];
-          double curvTolerance = fabs(curvEnd - curvStart) / 10000.;
-          double denom = static_cast<double>(segmentsPerKnotSpan);
-//          pts.emplace_back(interpolator.at(startParameter));
-//std::cout << "span " << span << ": Adding point at u=" << startParameter << std::endl;
-uValues.push_back(startParameter);
-          for(int i = 1; i < segmentsPerKnotSpan; ++i)
-          {
-            // Divide curvature range uniformly.
-            double t = i / denom;
-            // Feed the uniform value through some other functions to highlight
-            // higher curvature values. Then make the target curvature value
-            double s, targetCurv;
-            if(curvStart > curvEnd)
-            {
-              s = sample(1. - t);
-              targetCurv = lerp(curvEnd, curvStart, s);
-            }
-            else
-            {
-              s = sample(t);
-              targetCurv = lerp(curvStart, curvEnd, s);
-            }
-#if 1
-            std::cout << std::setw(2)  << span << ", "
-                      << std::setw(12) << intervals[0] << ", "
-                      << std::setw(12) << intervals[1] << ", "
-                      << std::setw(12) << curvStart << ", "
-                      << std::setw(12) << curvEnd << ", "
-                      << std::setw(12) << i << ", "
-                      << std::setw(12) << t << ", "
-                      << std::setw(12) << s << ", "
-                      << std::setw(12) << targetCurv
-                      << std::endl;
-#endif
-            // Solve for the u value that has curvature targetCurv.
-            double u = solveForU(interpolator,
-                                 intervals[0],
-                                 intervals[1],
-                                 curvStart,
-                                 curvEnd,
-                                 targetCurv,
-                                 curvTolerance);
-
-            // Make the new point at u.
-//            pts.emplace_back(interpolator.at(u));
-//std::cout << "span " << span << ": Adding point at u=" << u << std::endl;
-            uValues.push_back(u);
-
-          }
-//          pts.emplace_back(interpolator.at(endParameter));
-//std::cout << "span " << span << ": Adding point at u=" << endParameter << std::endl;
-          uValues.push_back(endParameter);
-
-        }
-        else
-        {
-std::cout << "span " << span << ": Divide span into intervals." << std::endl;
-          int numIntervals = static_cast<int>(intervals.size() - 1);
-
-          // If we get here then these conditions are true:
-          // 1. segmentsPerKnotSpan > 1
-          // 2. numIntervals > 1
-          // 3. segmentsPerKnotSpan != numIntervals
-
-          if(segmentsPerKnotSpan < numIntervals)
-          {
-std::cout << "span " << span << ": segmentsPerKnotSpan < numIntervals: "
-          << segmentsPerKnotSpan << " < " << numIntervals << std::endl;
-
-            // We desire fewer segments than are prescribed for this span.
-            // Combine the 2 lowest curvature intervals until we have the
-            // desired number of segments.
-            while(numIntervals > segmentsPerKnotSpan)
-            {
-              size_t removeIdx = 0;
-              double lowestDC = 0.;
-              for(int ii = 1; ii < numIntervals; ii++)
-              {
-                double dC = fabs(curvatures[ii + 1] - curvatures[ii - 1]);
-                if(ii == 1 || dC < lowestDC)
-                {
-                  lowestDC = dC;
-                  removeIdx = ii;
-                }
-              }
-
-              // We found the index of the interval value we can remove (not
-              // endpoints) that we can remove. Doing this combines the intervals.
-std::cout << "span " << span << ": Removing index " << removeIdx << std::endl;
-              intervals.erase(intervals.begin() + removeIdx);
-              curvatures.erase(curvatures.begin() + removeIdx);
-              numIntervals = static_cast<int>(intervals.size() - 1);
-            }
-
-            // Now we can add all the interval points.
-//            for(const double u : intervals)
-//            {
-//              pts.emplace_back(interpolator.at(u));
-//std::cout << "span " << span << ": Adding point at u=" << u << std::endl;
-//            }
-            uValues = intervals;
-          }
-          else
-          {
-std::cout << "span " << span << ": More segments than intervals" << std::endl;
-
-            // numIntervals < segmentsPerKnotSpan. This means we can give
-            // each interval 1 segment and then apportion the remaining
-            // segments to intervals that have higher curvature differences.
-            double totalCurvature = 0.;
-            std::vector<double> curvatureRange(numIntervals);
-            for(size_t ii = 1; ii < intervals.size(); ii++)
-            {
-              double dC = fabs(curvatures[ii] - curvatures[ii - 1]);
-              curvatureRange[ii - 1] = dC;
-              totalCurvature += dC;
-            }
-std::cout << "span " << span << ": totalCurvature=" << totalCurvature << std::endl;
-
-            // Start each interval out with 1 segment.
-            std::vector<int> segments(intervals.size() - 1, 1);
-            // Iterate over the ranges and determine the fair share of line segments
-            // for each interval based on total curvature difference.
-            int availableSegments = segmentsPerKnotSpan - (numIntervals);
-            int totalSegments = 0;
-            for(size_t ii = 0; ii < curvatureRange.size(); ii++)
-            {
-              double segFraction = segmentsPerKnotSpan * (curvatureRange[ii] / totalCurvature);
-              double dseg = static_cast<double>(segments[ii]);
-              if(segFraction > dseg)
-              {
-                auto additionalSegments = static_cast<int>(std::round(segFraction - dseg));
-                int allowableSegments = std::min(additionalSegments, availableSegments);
-                segments[ii] += allowableSegments;
-                availableSegments -= allowableSegments;
-              }
-              totalSegments += segments[ii];
-            }
-
-            if(totalSegments != segmentsPerKnotSpan)
-            {
-              std::cout << "The number of segments " << totalSegments
-                        << " != " << segmentsPerKnotSpan << std::endl;
-            }
-            for(const auto &seg : segments)
-              std::cout << "\t" << seg << " segments." << std::endl;
-
-            // Iterate over the intervals.
-            for(size_t ii = 1; ii < intervals.size(); ii++)
-            {
-              double curvStart = curvatures[ii - 1];
-              double curvEnd = curvatures[ii];
-              double curvTolerance = fabs(curvEnd - curvStart) / 10000.;
-
-              int iend = (ii == intervals.size()-1) ? segments[ii-1] : (segments[ii-1] - 1);
-std::cout << "span " << span << ": ii=" << ii << ", curvStart=" << curvStart << ", curvEnd=" << curvEnd << ", curvTolerance=" << curvTolerance << ", iend=" << iend << std::endl;
-
-              for(int i = 0; i <= iend; ++i)
-              {
-                // Divide curvature range uniformly.
-                double t = i / static_cast<double>(segments[ii-1]);
-std::cout << "\ti=" << i << ", t=" << t << std::endl;
-
-                // Feed the uniform value through some other functions to highlight
-                // higher curvature values. Then make the target curvature value
-                double s, targetCurv;
-                if(curvStart > curvEnd)
-                {
-                  s = sample(1. - t);
-                  targetCurv = lerp(curvEnd, curvStart, s);
-                }
-                else
-                {
-                  s = sample(t);
-                  targetCurv = lerp(curvStart, curvEnd, s);
-                }
-std::cout << "\ts=" << s << ", targetCurv=" << targetCurv << std::endl;
-
-                // Solve for the u value that has curvature targetCurv.
-                double u = solveForU(interpolator,
-                                     intervals[ii - 1],
-                                     intervals[ii],
-                                     curvStart,
-                                     curvEnd,
-                                     targetCurv,
-                                     curvTolerance);
-#if 1
-                std::cout << std::setw(2)  << span << ", "
-                          << std::setw(12) << intervals[ii - 1] << ", "
-                          << std::setw(12) << intervals[ii] << ", "
-                          << std::setw(12) << curvStart << ", "
-                          << std::setw(12) << curvEnd << ", "
-                          << std::setw(12) << u << ", "
-                          << std::setw(12) << targetCurv
-                          << std::endl;
-#endif
-                // Make the new point at u.
-//                pts.emplace_back(interpolator.at(u));
-//std::cout << "span " << span << ": Adding point at u=" << u << std::endl;
-
-                uValues.push_back(u);
-
-              }
-            } // for intervals
-          }
-        }
-      }
-
-#if 1
-      // Filter the points to see if it improves their distribution.
-      if(allowFilter)
-        filter(interpolator, uValues);
-#endif
-
-      // Make the points.
-      std::cout << "span " << span << ": u={";
-      for(const double u : uValues)
-      {
-         pts.emplace_back(interpolator.at(u));
-         std::cout << u << ", ";
-#if 1
-        PointType dpts[2];
-        interpolator.derivativesAt(u, 2, dpts);
-
-        d1vec.push_back(dpts[0].data()[0]);
-        d1vec.push_back(dpts[0].data()[1]);
-
-        d2vec.push_back(dpts[1].data()[0]);
-        d2vec.push_back(dpts[1].data()[1]);
-
-        uvec.push_back(u);
-
-        curvvec.push_back(interpolator.curvature(u));
-
-        sp.push_back(span);
-#endif
-      }
-      std::cout << "}" << std::endl;
 
       // Check for simple vertex welding opportunities at endpoints of newly interpolated points
       {
