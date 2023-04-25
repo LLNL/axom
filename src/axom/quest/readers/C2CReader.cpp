@@ -132,143 +132,42 @@ transformPoint(const numerics::Matrix<double> &transform,
 
 //---------------------------------------------------------------------------
 /*!
- * \brief Append new segments to the mint mesh, performing any point-welding
- *        that may be needed.
- *
- * \param mesh The input mesh to which we're adding segments/points.
- * \param pts The input set of points.
- * \param EPS_SQ A point-welding tolerance.
+ * \brief This data type stores a segment, which is used in refining curves.
  */
-/*
-static void
-appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-             std::vector<primal::Point<double, 2>> &pts,
-             double EPS_SQ)
+struct Segment
 {
-  // Check for simple vertex welding opportunities at endpoints of newly interpolated points
-  {
-    int numNodes = mesh->getNumberOfNodes();
-    if(numNodes > 0)  // this is not the first Piece
-    {
-      primal::Point<double, 2> meshPt;
-      // Fix start point if necessary; check against most recently added vertex in mesh
-      mesh->getNode(numNodes - 1, meshPt.data());
-      if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
-      {
-        pts[0] = meshPt;
-      }
-
-      // Fix end point if necessary; check against 0th vertex in mesh
-      const int endIdx = pts.size() - 1;
-      mesh->getNode(0, meshPt.data());
-      if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
-      {
-        pts[endIdx] = meshPt;
-      }
-    }
-    else  // This is the first, and possibly only span, check its endpoint, fix if necessary
-    {
-      int endIdx = pts.size() - 1;
-      if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
-      {
-        pts[endIdx] = pts[0];
-      }
-    }
-  }
-
-  // Add the new points and segments to the mesh, respecting welding checks from previous block
-  {
-    const int startNode = mesh->getNumberOfNodes();
-    const int numNewNodes = pts.size();
-    mesh->reserveNodes(startNode + numNewNodes);
-
-    for(int i = 0; i < numNewNodes; ++i)
-    {
-      mesh->appendNode(pts[i][0], pts[i][1]);
-    }
-
-    const int startCell = mesh->getNumberOfCells();
-    const int numNewSegments = pts.size() - 1;
-    mesh->reserveCells(startCell + numNewSegments);
-    for(int i = 0; i < numNewSegments; ++i)
-    {
-      IndexType seg[2] = {startNode + i, startNode + i + 1};
-      mesh->appendCell(seg, mint::SEGMENT);
-    }
-  }
-}
-*/
-
-// I can probably get rid of this and keep the next_longest function.
-class Segments
-{
-public:
   using PointType = primal::Point<double, 2>;
 
-  struct segment
-  {
-    double    u;              // The u parameter for the start of the segment.
-    PointType point;          // The point at parameter u.
-    double    length;         // Distance from point to next segment's point.
+  double    u;              // The u parameter for the start of the segment.
+  PointType point;          // The point at parameter u.
+  double    length;         // Distance from point to next segment's point.
 
-    double    next_u;         // Best place to split this segment.
-    double    next_length[2]; // left/right length values at next_u.
-  };
-
-  Segments() : segments()
-  {
-  }
-
-  void reserve(size_t n)
-  {
-    segments.reserve(n);
-  }
-
-  size_t size() const
-  {
-    return segments.size();
-  }
-
-  size_t next_longest() const
-  {
-    size_t maxIdx = 0;
-    double max_length = 0.;
-    size_t n = segments.size();
-    for(size_t i = 0; i < n; i++)
-    {
-      double next_length = segments[i].next_length[0] + segments[i].next_length[1];
-      if(next_length > max_length)
-      {
-        max_length = next_length;
-        maxIdx = i;
-      }
-    }
-    return maxIdx;
-  }
-
-  segment &operator[](size_t idx)
-  {
-    return segments[idx];
-  }
-
-  const segment &operator[](size_t idx) const
-  {
-    return segments[idx];
-  }
-
-  void push_back(const segment &seg)
-  {
-    segments.push_back(seg);
-  }
-
-  void insert(size_t idx, const segment &seg)
-  {
-    segments.insert(segments.begin() + idx, seg);
-  }
-
-private:
-  std::vector<segment> segments;
+  double    next_u;         // Best place to split this segment.
+  double    next_length[2]; // left/right length values at next_u.
 };
+
+/*!
+ * \brief Returns the index of the longest segment in the segments.
+ * \param segments A vector of Segments.
+ * \return The index of the element with the longest next_length value.
+ */
+size_t
+next_longest(const std::vector<Segment> &segments)
+{
+  size_t maxIdx = 0;
+  double max_length = 0.;
+  size_t n = segments.size();
+  for(size_t i = 0; i < n; i++)
+  {
+    double next_length = segments[i].next_length[0] + segments[i].next_length[1];
+    if(next_length > max_length)
+    {
+      max_length = next_length;
+      maxIdx = i;
+    }
+  }
+  return maxIdx;
+}
 
 //---------------------------------------------------------------------------
 /*!
@@ -279,7 +178,7 @@ private:
  */
 static void
 appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-             Segments &S,
+             std::vector<Segment> &S,
              double EPS_SQ)
 {
   // Check for simple vertex welding opportunities at endpoints of newly interpolated points
@@ -343,7 +242,7 @@ appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
  * \param S The segments to write.
  */
 static void
-write_lines(const std::string &filename, Segments &S)
+write_lines(const std::string &filename, const std::vector<Segment> &S)
 {
     FILE *f = fopen(filename.c_str(), "wt");
     fprintf(f, "# vtk DataFile Version 4.2\n");
@@ -928,7 +827,7 @@ std::cout << iteration << ": next u=" << u << std::endl;
    */
   double revolvedVolume(const numerics::Matrix<double> &transform) const
   {
-#if 1
+#if 0
     // ndiv 100 makes: 2269.665720108277
     // ndiv 10 makes:  2269.6657201085764
     // just using spans: 2269.6479183796237
@@ -956,9 +855,6 @@ std::cout << iteration << ": next u=" << u << std::endl;
     transform2(2, 3) = 0.;
 
     // Break up the [0,1] interval and compute quadrature in the subintervals.
-    constexpr double a = 0, b = 1;
-    constexpr int ndiv = 10;
-    constexpr double div = (b - a) / static_cast<double>(ndiv);
     double vol = 0.;
 std::cout << "revolvedVolume" << std::endl;
     for(const auto &interval : m_spanIntervals)
@@ -1147,7 +1043,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
    *        refinement is needed.
    *
    * \param len The curve length that has been calculated.
-   * \param maxlen The upper bound curve length that was calculated with a lot of segments.
+   * \param maxlen The upper bound curve length that was calculated with a lot
+   *               of segments.
    *
    * \note Assume that maxlen is longer than len because hi-res sampling should
    *       result in a longer arc length.
@@ -1249,7 +1146,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     const PointType p1 = interpolator.at(u1);
 
     // This segment represents the whole [0,1] interval.
-    Segments::segment first;
+    Segment first;
     first.u = u0;
     first.point = p0;
     first.length = sqrt(primal::squared_distance(p0, p1));
@@ -1259,7 +1156,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     first.next_length[1] = sqrt(primal::squared_distance(next_point, p1));
 
     // This segment just contains the end point of the interval.
-    Segments::segment last;
+    Segment last;
     last.u = u1;
     last.point = p1;
     last.length = 0.;
@@ -1268,7 +1165,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     last.next_length[1] = 0.;
 
     // Store the initial segments.
-    Segments S;
+    std::vector<Segment> S;
     S.reserve(INITIAL_GUESS_NPTS);
     S.push_back(first);
     S.push_back(last);
@@ -1277,8 +1174,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     if(interpolator.numSpans() > 1)
     {
       //---------------------------------------------------------------------
-      // Approximate the arc length of the whole curve by using a lot of line segments.
-      // Should we use quadrature instead here?
+      // Approximate the arc length of the whole curve by using a lot of
+      // line segments. Should we use quadrature instead here?
       double hiCurveLen = 0.;
       constexpr int NUMBER_OF_SAMPLES = 2000;
       PointType prev = first.point;
@@ -1311,12 +1208,12 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
            )
       {
         // Get the index of the segment we'll split.
-        size_t splitIndex = S.next_longest();
+        size_t splitIndex = next_longest(S);
         size_t nextIndex = splitIndex + 1;
 
         // Partition segment.
-        Segments::segment &left = S[splitIndex];
-        Segments::segment right;
+        Segment &left = S[splitIndex];
+        Segment right;
 
         // The old segment length pre-split.
         double oldSegLength = left.length;
@@ -1343,7 +1240,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         left.next_length[1] = sqrt(primal::squared_distance(left_next, right.point));
 
         // Insert the right segment after the left segment.
-        S.insert(nextIndex, right);
+        S.insert(S.begin() + nextIndex, right);
 
 #ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
         // Print initial iteration.
