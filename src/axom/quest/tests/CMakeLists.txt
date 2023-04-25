@@ -12,6 +12,7 @@ set(quest_tests
     quest_inout_quadtree.cpp
     quest_signed_distance.cpp
     quest_discretize.cpp
+    quest_pro_e_reader.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
    )
@@ -93,6 +94,12 @@ set(quest_mpi_tests
     quest_initialize.cpp
     quest_signed_distance_interface.cpp
     )
+
+
+# Tests depend on MPI
+blt_list_append(TO quest_mpi_tests
+                IF AXOM_ENABLE_MPI
+                ELEMENTS quest_pro_e_reader_parallel.cpp)
 
 # Optionally, add tests that require AXOM_DATA_DIR
 blt_list_append(TO       quest_mpi_tests
