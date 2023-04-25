@@ -321,13 +321,14 @@ public:
 
   virtual void loadShape(const klee::Shape& shape) override
   {
-     // Make sure we can store the revolved volume in member m_revolvedVolume.
-     loadShapeEx(shape, m_percentError, m_revolvedVolume);
+    // Make sure we can store the revolved volume in member m_revolvedVolume.
+    loadShapeEx(shape, m_percentError, m_revolvedVolume);
 
-     // Filter the mesh, store in m_surfaceMesh.
-     SegmentMesh *newm = filterMesh(dynamic_cast<const SegmentMesh *>(m_surfaceMesh));
-     delete m_surfaceMesh;
-     m_surfaceMesh = newm;
+    // Filter the mesh, store in m_surfaceMesh.
+    SegmentMesh* newm =
+      filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
+    delete m_surfaceMesh;
+    m_surfaceMesh = newm;
   }
 
 private:
@@ -1429,15 +1430,14 @@ private:
    * \param m The input mesh.
    * \return A new mint::Mesh that has been cleaned up.
    */
-  SegmentMesh *
-  filterMesh(const SegmentMesh *m) const
+  SegmentMesh* filterMesh(const SegmentMesh* m) const
   {
     // Number of points in polyline
     int pointcount = m->getNumberOfNodes();
 
     // We'll be filtering the points in the mesh. Make a new mesh to contain
     // those points.
-    SegmentMesh *newm = new SegmentMesh(m->getDimension(), mint::SEGMENT);
+    SegmentMesh* newm = new SegmentMesh(m->getDimension(), mint::SEGMENT);
     newm->reserveNodes(pointcount);
 
     SLIC_INFO(axom::fmt::format(
@@ -1494,8 +1494,8 @@ private:
     }
 
     // Get the ZR coordinates.
-    double *z = newm->getCoordinateArray(mint::X_COORDINATE);
-    double *r = newm->getCoordinateArray(mint::Y_COORDINATE);
+    double* z = newm->getCoordinateArray(mint::X_COORDINATE);
+    double* r = newm->getCoordinateArray(mint::Y_COORDINATE);
 
     // Check if we need to flip the points order.
     // discretize() is only valid if x increases as index increases
@@ -1546,15 +1546,15 @@ private:
    * \param pts The list of points that make up the polygon.
    * \return The polygon area.
    */
-  double area(const std::vector<Point2D> &pts) const
+  double area(const std::vector<Point2D>& pts) const
   {
     auto npts = static_cast<int>(pts.size());
     // Compute the areas
     double A = 0.;
     for(int i = 0; i < npts; i++)
     {
-        int nexti = (i + 1) % npts;
-        A += pts[i][0] * pts[nexti][1] - pts[i][1] * pts[nexti][0];
+      int nexti = (i + 1) % npts;
+      A += pts[i][0] * pts[nexti][1] - pts[i][1] * pts[nexti][0];
     }
     // Take absolute value just in case the polygon had reverse orientation.
     return fabs(A * 0.5);
@@ -1572,8 +1572,9 @@ private:
     pts.reserve(npts);
     for(int i = 0; i < npts; i++)
     {
-        double angle = 2. * M_PI * static_cast<double>(i) / static_cast<double>(npts);
-        pts.push_back(Point2D{radius * cos(angle), radius * sin(angle)});
+      double angle =
+        2. * M_PI * static_cast<double>(i) / static_cast<double>(npts);
+      pts.push_back(Point2D {radius * cos(angle), radius * sin(angle)});
     }
     return area(pts);
   }
@@ -1590,24 +1591,25 @@ private:
   {
     // The lut covers most values we'd use.
     static const double lut[] = {
-    /*level 0*/ 1.29903810568,  // diff=1.84255454791
-    /*level 1*/ 2.59807621135,  // diff=0.543516442236
-    /*level 2*/ 3,              // diff=0.14159265359
-    /*level 3*/ 3.10582854123,  // diff=0.0357641123595
-    /*level 4*/ 3.13262861328,  // diff=0.00896404030856
-    /*level 5*/ 3.13935020305,  // diff=0.00224245054292
-    /*level 6*/ 3.14103195089,  // diff=0.000560702699288
-    /*level 7*/ 3.14145247229,  // diff=0.000140181304342
-    /*level 8*/ 3.14155760791,  // diff=3.50456779015e-05
-    /*level 9*/ 3.14158389215,  // diff=8.76144145456e-06
-    /*level 10*/ 3.14159046323, // diff=2.19036162807e-06
-    /*level 11*/ 3.141592106,   // diff=5.47590411681e-07
-    /*level 12*/ 3.14159251669, // diff=1.36898179903e-07
-    /*level 13*/ 3.14159261936, // diff=3.4225411838e-08
-    /*level 14*/ 3.14159264503, // diff=8.55645243547e-09
+      /*level 0*/ 1.29903810568,   // diff=1.84255454791
+      /*level 1*/ 2.59807621135,   // diff=0.543516442236
+      /*level 2*/ 3,               // diff=0.14159265359
+      /*level 3*/ 3.10582854123,   // diff=0.0357641123595
+      /*level 4*/ 3.13262861328,   // diff=0.00896404030856
+      /*level 5*/ 3.13935020305,   // diff=0.00224245054292
+      /*level 6*/ 3.14103195089,   // diff=0.000560702699288
+      /*level 7*/ 3.14145247229,   // diff=0.000140181304342
+      /*level 8*/ 3.14155760791,   // diff=3.50456779015e-05
+      /*level 9*/ 3.14158389215,   // diff=8.76144145456e-06
+      /*level 10*/ 3.14159046323,  // diff=2.19036162807e-06
+      /*level 11*/ 3.141592106,    // diff=5.47590411681e-07
+      /*level 12*/ 3.14159251669,  // diff=1.36898179903e-07
+      /*level 13*/ 3.14159261936,  // diff=3.4225411838e-08
+      /*level 14*/ 3.14159264503,  // diff=8.55645243547e-09
     };
     constexpr int MAX_LEVELS = sizeof(lut) / sizeof(double);
-    return (level < MAX_LEVELS) ? (lut[level] * radius * radius) : calcCircleArea(radius, level);
+    return (level < MAX_LEVELS) ? (lut[level] * radius * radius)
+                                : calcCircleArea(radius, level);
   }
 
   /*!
@@ -1677,16 +1679,14 @@ private:
    *       the specified error percent. m_level will be set to the circle
    *       refinement level that let us meet the percent error target.
    */
-  void refineShape(const klee::Shape &shape)
+  void refineShape(const klee::Shape& shape)
   {
     // If m_percentError is not set to a valud value then we are not refining.
-    if(m_percentError < 0.)
-      return;
+    if(m_percentError < 0.) return;
 
     // If the prior loadShape call was unable to create a revolved volume for
     // the shape then we can't do any better than the current mesh.
-    if(m_revolvedVolume <= 0.)
-      return;
+    if(m_revolvedVolume <= 0.) return;
 
     /*!
      * \brief Examines the history values to determine if the deltas between
@@ -1702,10 +1702,9 @@ private:
      * \note This function assumes that history values increase.
      */
     auto diminishing_returns = [](int iteration,
-                                  const double *history,
+                                  const double* history,
                                   int nhistory,
-                                  double percentError) -> bool
-    {
+                                  double percentError) -> bool {
       bool dr = false;
       // We have enough history to decide if there are diminishing returns.
       if(iteration >= nhistory)
@@ -1725,9 +1724,9 @@ private:
         dr = avg_pct < percentError;
         if(dr)
         {
-          SLIC_INFO(
-            fmt::format("Dimishing returns triggered: {} < {}.",
-                avg_pct, percentError));
+          SLIC_INFO(fmt::format("Dimishing returns triggered: {} < {}.",
+                                avg_pct,
+                                percentError));
         }
       }
       return dr;
@@ -1748,7 +1747,7 @@ private:
     double revolvedVolume = m_revolvedVolume;
 
     // Try refining the curve different ways to see if we get to a refinement
-    // strategy that meets the error tolerance. 
+    // strategy that meets the error tolerance.
     bool refine = true;
     // Limit level refinement for now since it makes too many octahedra.
     int MAX_LEVELS = m_level + 1;
@@ -1769,31 +1768,31 @@ private:
 
         SLIC_INFO(
           fmt::format("Refining... "
-            "revolvedVolume = {}"
-            ", currentVol = {}"
-            ", pct = {}"
-            ", level = {}"
-            ", curvePercentError = {}",
-            revolvedVolume,
-            currentVol,
-            pct,
-            level,
-            curvePercentError));
+                      "revolvedVolume = {}"
+                      ", currentVol = {}"
+                      ", pct = {}"
+                      ", level = {}"
+                      ", curvePercentError = {}",
+                      revolvedVolume,
+                      currentVol,
+                      pct,
+                      level,
+                      curvePercentError));
 
         if(pct <= m_percentError)
         {
           SLIC_INFO(
             fmt::format("Contour refinement complete. "
-              "revolvedVolume = {}"
-              ", currentVol = {}"
-              ", pct = {}"
-              ", level = {}"
-              ", curvePercentError = {}",
-              revolvedVolume,
-              currentVol,
-              pct,
-              level,
-              curvePercentError));
+                        "revolvedVolume = {}"
+                        ", currentVol = {}"
+                        ", pct = {}"
+                        ", level = {}"
+                        ", curvePercentError = {}",
+                        revolvedVolume,
+                        currentVol,
+                        pct,
+                        level,
+                        curvePercentError));
 
           circleLevel = level;
           refine = false;
@@ -1811,16 +1810,16 @@ private:
 
         SLIC_INFO(
           fmt::format("Stop refining due to diminishing returns. "
-            "revolvedVolume = {}"
-            ", currentVol = {}"
-            ", pct = {}"
-            ", level = {}"
-            ", curvePercentError = {}",
-            revolvedVolume,
-            currentVol,
-            pct,
-            circleLevel,
-            curvePercentError));
+                      "revolvedVolume = {}"
+                      ", currentVol = {}"
+                      ", pct = {}"
+                      ", level = {}"
+                      ", curvePercentError = {}",
+                      revolvedVolume,
+                      currentVol,
+                      pct,
+                      circleLevel,
+                      curvePercentError));
 
         // NOTE: Trying to increase circleLevel at this point does not help.
       }
@@ -1846,20 +1845,21 @@ private:
           double rv = 0.;
           SLIC_INFO(
             fmt::format("Reloading shape {} with curvePercentError = {}.",
-                shape.getName(),
-                curvePercentError));
+                        shape.getName(),
+                        curvePercentError));
           loadShapeEx(shape, curvePercentError, rv);
 
           // Filter the mesh, store in m_surfaceMesh.
-          SegmentMesh *newm = filterMesh(dynamic_cast<const SegmentMesh *>(m_surfaceMesh));
+          SegmentMesh* newm =
+            filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
           delete m_surfaceMesh;
           m_surfaceMesh = newm;
         }
         else
         {
-          SLIC_INFO(
-            fmt::format("Stopping refinement due to curvePercentError {} being too small.",
-                ce));
+          SLIC_INFO(fmt::format(
+            "Stopping refinement due to curvePercentError {} being too small.",
+            ce));
           refine = false;
         }
       }
@@ -1889,7 +1889,7 @@ private:
 private:
   ExecPolicy m_execPolicy {seq};
   int m_level {7};
-  double m_revolvedVolume{0.};
+  double m_revolvedVolume {0.};
   int m_num_elements {0};
   double* m_hex_volumes {nullptr};
   double* m_overlap_volumes {nullptr};

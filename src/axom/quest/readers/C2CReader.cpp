@@ -28,7 +28,6 @@ namespace axom
 {
 namespace quest
 {
-
 //---------------------------------------------------------------------------
 /*!
  * \brief Transform a 2D point and return a 2D point.
@@ -38,9 +37,9 @@ namespace quest
  *
  * \return The transformed 2D point.
  */
-inline primal::Point<double, 2>
-transformPoint(const numerics::Matrix<double> &transform,
-                 const primal::Point<double, 2> &pt)
+inline primal::Point<double, 2> transformPoint(
+  const numerics::Matrix<double>& transform,
+  const primal::Point<double, 2>& pt)
 {
   // Turn the point2 into a vec4.
   double pt4[] = {0., 0., 0., 1.}, newpt4[] = {0., 0., 0., 1.};
@@ -51,7 +50,7 @@ transformPoint(const numerics::Matrix<double> &transform,
   axom::numerics::matrix_vector_multiply(transform, pt4, newpt4);
 
   // Make a new 2D point from the 2D components.
-  return primal::Point<double, 2>{newpt4[0], newpt4[1]};
+  return primal::Point<double, 2> {newpt4[0], newpt4[1]};
 }
 
 //---------------------------------------------------------------------------
@@ -62,12 +61,12 @@ struct Segment
 {
   using PointType = primal::Point<double, 2>;
 
-  double    u;              // The u parameter for the start of the segment.
-  PointType point;          // The point at parameter u.
-  double    length;         // Distance from point to next segment's point.
+  double u;         // The u parameter for the start of the segment.
+  PointType point;  // The point at parameter u.
+  double length;    // Distance from point to next segment's point.
 
-  double    next_u;         // Best place to split this segment.
-  double    next_length[2]; // left/right length values at next_u.
+  double next_u;          // Best place to split this segment.
+  double next_length[2];  // left/right length values at next_u.
 };
 
 /*!
@@ -75,8 +74,7 @@ struct Segment
  * \param segments A vector of Segments.
  * \return The index of the element with the longest next_length value.
  */
-size_t
-next_longest(const std::vector<Segment> &segments)
+size_t next_longest(const std::vector<Segment>& segments)
 {
   size_t maxIdx = 0;
   double max_length = 0.;
@@ -100,10 +98,9 @@ next_longest(const std::vector<Segment> &segments)
  * \param S The segments to write.
  * \param EPS_SQ The squared distance for point matching.
  */
-static void
-appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-             std::vector<Segment> &S,
-             double EPS_SQ)
+static void appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+                         std::vector<Segment>& S,
+                         double EPS_SQ)
 {
   // Check for simple vertex welding opportunities at endpoints of newly interpolated points
   {
@@ -165,10 +162,9 @@ appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
  * \param filename The name of the file to write.
  * \param S The segments to write.
  */
-static void
-write_lines(const std::string &filename, const std::vector<Segment> &S)
+static void write_lines(const std::string& filename, const std::vector<Segment>& S)
 {
-  FILE *f = fopen(filename.c_str(), "wt");
+  FILE* f = fopen(filename.c_str(), "wt");
   fprintf(f, "# vtk DataFile Version 4.2\n");
   fprintf(f, "vtk output\n");
   fprintf(f, "ASCII\n");
@@ -184,10 +180,10 @@ write_lines(const std::string &filename, const std::vector<Segment> &S)
   for(int i = 0; i < npts; i += 3)
   {
     fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
-    if((i+1) < npts)
-      fprintf(f, "%1.16lf %1.16lf 0. ", S[i+1].point[0], S[i+1].point[1]);
-    if((i+2) < npts)
-      fprintf(f, "%1.16lf %1.16lf 0. ", S[i+2].point[0], S[i+2].point[1]);
+    if((i + 1) < npts)
+      fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 1].point[0], S[i + 1].point[1]);
+    if((i + 2) < npts)
+      fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 2].point[0], S[i + 2].point[1]);
     fprintf(f, "\n");
   }
   fprintf(f, "\n");
@@ -198,7 +194,7 @@ write_lines(const std::string &filename, const std::vector<Segment> &S)
   fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
   for(int ispan = 0; ispan < nspans; ispan++)
   {
-    fprintf(f, "2 %d %d\n", ispan, ispan+1);
+    fprintf(f, "2 %d %d\n", ispan, ispan + 1);
   }
 
   fclose(f);
@@ -483,8 +479,7 @@ struct NURBSInterpolator
     double r = static_cast<double>(p);
     for(int k = 1; k <= n; k++)
     {
-      for(int j = 0; j <= p; j++)
-        ders[k][j] *= r;
+      for(int j = 0; j <= p; j++) ders[k][j] *= r;
       r *= static_cast<double>(p - k);
     }
   }
@@ -518,14 +513,12 @@ struct NURBSInterpolator
     // Table of binomial coefficients up to quintic.
     // We more than likely will not ever go beyond cubic since each NURBS
     // span is probably blended using cubics.
-    static const double binomial[6][6] = {
-    {1., 0., 0., 0., 0., 0.},
-    {1., 1., 0., 0., 0., 0.},
-    {1., 2., 1., 0., 0., 0.},
-    {1., 3., 3., 1., 0., 0.},
-    {1., 4., 6., 4., 1., 0.},
-    {1., 5., 10., 10., 5., 1.}
-    };
+    static const double binomial[6][6] = {{1., 0., 0., 0., 0., 0.},
+                                          {1., 1., 0., 0., 0., 0.},
+                                          {1., 2., 1., 0., 0., 0.},
+                                          {1., 3., 3., 1., 0., 0.},
+                                          {1., 4., 6., 4., 1., 0.},
+                                          {1., 5., 10., 10., 5., 1.}};
 
     // Compute the point and d derivatives
     for(int k = 0; k <= du; k++)
@@ -580,11 +573,11 @@ struct NURBSInterpolator
     const PointType& D1 = derivs[1];
     const PointType& D2 = derivs[2];
 
-    double xp   = D1.data()[0]; // x'
-    double xpp  = D2.data()[0]; // x''
+    double xp = D1.data()[0];   // x'
+    double xpp = D2.data()[0];  // x''
 
-    double yp   = D1.data()[1]; // y'
-    double ypp  = D2.data()[1]; // y''
+    double yp = D1.data()[1];   // y'
+    double ypp = D2.data()[1];  // y''
 
     // This is signed curvature as formulated at:
     // https://en.wikipedia.org/wiki/Curvature#Curvature_of_a_graph
@@ -601,7 +594,7 @@ struct NURBSInterpolator
    * \param[in] d The number of derivatives to compute (1=1st deriv, 2=1st & 2nd derivs)
    * \param[out] ders An array that will contain the curvature derivatives.
    */
-  void curvatureDerivatives(double u, int d, double *ders) const
+  void curvatureDerivatives(double u, int d, double* ders) const
   {
     // Evaluate 1st, 2nd, 3rd curve derivatives at u.
     PointType derivs[4];
@@ -610,29 +603,34 @@ struct NURBSInterpolator
     const PointType& D2 = derivs[2];
     const PointType& D3 = derivs[3];
 
-    double xp   = D1.data()[0]; // x'
-    double xpp  = D2.data()[0]; // x''
-    double xppp = D3.data()[0]; // x'''
+    double xp = D1.data()[0];    // x'
+    double xpp = D2.data()[0];   // x''
+    double xppp = D3.data()[0];  // x'''
 
-    double yp   = D1.data()[1]; // y'
-    double ypp  = D2.data()[1]; // y''
-    double yppp = D3.data()[1]; // y'''
+    double yp = D1.data()[1];    // y'
+    double ypp = D2.data()[1];   // y''
+    double yppp = D3.data()[1];  // y'''
 
     // 1st derivative of curvature.
     double xp2_plus_yp2 = xp * xp + yp * yp;
-    double A = -3. * (xp * ypp - yp * xpp) * 2 *(xp * xpp + yp * ypp);
+    double A = -3. * (xp * ypp - yp * xpp) * 2 * (xp * xpp + yp * ypp);
     double B = 2. * pow(xp2_plus_yp2, 5. / 2.);
     double C = xp * yppp - yp * xppp;
     double D = pow(xp2_plus_yp2, 3. / 2.);
-    ders[0] = A/B + C/D;
+    ders[0] = A / B + C / D;
 
     if(d >= 2)
     {
       // 2nd derivative of curvature.
-      double E = 15. * (-yp*xpp + xp * ypp) * pow(2. * xp * xpp + 2. * yp * ypp, 2.) / (4. * pow(xp2_plus_yp2, 7. / 2.));
-      double F = 3. * (2. * xp * xpp + 2. * yp * ypp) * (-yp * xppp + xp*yppp) / pow(xp2_plus_yp2, 5. / 2.);
-      double G = 3. * (-yp*xpp + xp*ypp)* (2.*(xpp*xpp)+2.*(ypp*ypp) + 2.*xp*xppp + 2.*yp*yppp) / (2. * pow(xp2_plus_yp2, 5. / 2.));
-      double H = (-ypp*xppp + xpp*yppp) / pow(xp2_plus_yp2, 3. / 2.);
+      double E = 15. * (-yp * xpp + xp * ypp) *
+        pow(2. * xp * xpp + 2. * yp * ypp, 2.) /
+        (4. * pow(xp2_plus_yp2, 7. / 2.));
+      double F = 3. * (2. * xp * xpp + 2. * yp * ypp) *
+        (-yp * xppp + xp * yppp) / pow(xp2_plus_yp2, 5. / 2.);
+      double G = 3. * (-yp * xpp + xp * ypp) *
+        (2. * (xpp * xpp) + 2. * (ypp * ypp) + 2. * xp * xppp + 2. * yp * yppp) /
+        (2. * pow(xp2_plus_yp2, 5. / 2.));
+      double H = (-ypp * xppp + xpp * yppp) / pow(xp2_plus_yp2, 3. / 2.);
 
       ders[1] = E - F - G + H;
     }
@@ -647,21 +645,19 @@ struct NURBSInterpolator
    *
    * \return The revolved curve volume.
    */
-  double revolvedVolume(const numerics::Matrix<double> &transform) const
+  double revolvedVolume(const numerics::Matrix<double>& transform) const
   {
     // Use 5-point Gauss Quadrature.
     const double X[] = {-0.906179845938664,
                         -0.538469310105683,
-                         0,
-                         0.538469310105683,
-                         0.906179845938664
-                       };
+                        0,
+                        0.538469310105683,
+                        0.906179845938664};
     const double W[] = {0.23692688505618908,
                         0.47862867049936647,
                         0.5688888888888889,
                         0.47862867049936647,
-                        0.23692688505618908
-                       };
+                        0.23692688505618908};
 
     // Make a transform with no translation. We use this to transform
     // the derivative since we want to permit scaling and rotation but
@@ -677,7 +673,7 @@ struct NURBSInterpolator
 
     // Break up the [0,1] interval and compute quadrature in the subintervals.
     double vol = 0.;
-    for(const auto &interval : m_spanIntervals)
+    for(const auto& interval : m_spanIntervals)
     {
       double ad = interval.first;
       double bd = interval.second;
@@ -706,7 +702,12 @@ struct NURBSInterpolator
 
 #ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
         SLIC_INFO(fmt::format("\ti={}, u={}, p(u)=({},{}), xp=({},{})",
-                  i, u, p_u[0], p_u[1], xprime[0], xprime[1]));
+                              i,
+                              u,
+                              p_u[0],
+                              p_u[1],
+                              xprime[0],
+                              xprime[1]));
 #endif
 
         // Accumulate weight times dx*r^2.
@@ -793,20 +794,19 @@ void C2CReader::log()
 
 //---------------------------------------------------------------------------
 template <typename T>
-static std::ostream &operator << (std::ostream &os, const std::vector<T> &vec)
+static std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
 {
-    os << "{";
-    for(const auto &v : vec)
-        os << v << ", ";
-    os << "}";
-    return os;
+  os << "{";
+  for(const auto& v : vec) os << v << ", ";
+  os << "}";
+  return os;
 }
 
 //---------------------------------------------------------------------------
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              const numerics::Matrix<double> &transform,
+                              const numerics::Matrix<double>& transform,
                               double percentError,
-                              double &revolvedVolume)
+                              double& revolvedVolume)
 {
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
@@ -831,18 +831,17 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
    * \note Assume that maxlen is longer than len because hi-res sampling should
    *       result in a longer arc length.
    */
-  auto error_percent = [](double len, double maxlen) -> double
-  {
-      double errPct = 0.;
-      if(maxlen > len)
-      {
-         // pct is in [0,1). Generally, as the curve gets better pct should approach 1.
-         double pct = (len / maxlen);
-         // If we have a good curve then errPct should be small.
-         errPct = 1. - pct;
-      }
-      return errPct;
-    };
+  auto error_percent = [](double len, double maxlen) -> double {
+    double errPct = 0.;
+    if(maxlen > len)
+    {
+      // pct is in [0,1). Generally, as the curve gets better pct should approach 1.
+      double pct = (len / maxlen);
+      // If we have a good curve then errPct should be small.
+      errPct = 1. - pct;
+    }
+    return errPct;
+  };
 
   constexpr size_t INITIAL_GUESS_NPTS = 100;
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
@@ -855,15 +854,15 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
 #ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
   // Make some curves for debugging.
-  FILE *ferr = fopen("error.curve", "wt");
+  FILE* ferr = fopen("error.curve", "wt");
 
-  FILE *fhcl = fopen("hicurvelen.curve", "wt");
+  FILE* fhcl = fopen("hicurvelen.curve", "wt");
   fprintf(fhcl, "# hicurvelen\n");
 
-  FILE *fcl = fopen("curvelen.curve", "wt");
+  FILE* fcl = fopen("curvelen.curve", "wt");
   fprintf(fcl, "# curvelen\n");
 
-  FILE *fthresh = fopen("threshold.curve", "wt");
+  FILE* fthresh = fopen("threshold.curve", "wt");
   fprintf(fthresh, "# threshold\n");
 #endif
   int contourCount = -1;
@@ -949,15 +948,14 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       // an acceptable arc length before we reach MAX_NUMBER_OF_SAMPLES.
       int iteration = 0;
       while((error_percent(curveLength, hiCurveLen) > percentError) &&
-            (iteration < MAX_NUMBER_OF_SAMPLES)
-           )
+            (iteration < MAX_NUMBER_OF_SAMPLES))
       {
         // Get the index of the segment we'll split.
         size_t splitIndex = next_longest(S);
         size_t nextIndex = splitIndex + 1;
 
         // Partition segment.
-        Segment &left = S[splitIndex];
+        Segment& left = S[splitIndex];
         Segment right;
 
         // The old segment length pre-split.
@@ -977,14 +975,18 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
         right.next_u = (right.u + S[nextIndex].u) / 2.;
         PointType right_next = interpolator.at(right.next_u);
-        right.next_length[0] = sqrt(primal::squared_distance(right.point, right_next));
-        right.next_length[1] = sqrt(primal::squared_distance(right_next, S[nextIndex].point));
+        right.next_length[0] =
+          sqrt(primal::squared_distance(right.point, right_next));
+        right.next_length[1] =
+          sqrt(primal::squared_distance(right_next, S[nextIndex].point));
 
         left.length = left.next_length[0];
         left.next_u = (left.u + right.u) / 2.;
         PointType left_next = interpolator.at(left.next_u);
-        left.next_length[0] = sqrt(primal::squared_distance(left.point, left_next));
-        left.next_length[1] = sqrt(primal::squared_distance(left_next, right.point));
+        left.next_length[0] =
+          sqrt(primal::squared_distance(left.point, left_next));
+        left.next_length[1] =
+          sqrt(primal::squared_distance(left_next, right.point));
 
         // Insert the right segment after the left segment.
         S.insert(S.begin() + nextIndex, right);
@@ -1009,17 +1011,17 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 #endif
 
         iteration++;
-      } // while(keep_going())
+      }  // while(keep_going())
 
       SLIC_INFO(
         fmt::format("getLinearMesh: "
-                "percentError = {}"
-                ", hiCurveLength = {}"
-                ", curveLength = {}",
-                percentError,
-                hiCurveLen,
-                curveLength));
-    } // if(interpolator.numSpans() > 1)
+                    "percentError = {}"
+                    ", hiCurveLength = {}"
+                    ", curveLength = {}",
+                    percentError,
+                    hiCurveLen,
+                    curveLength));
+    }  // if(interpolator.numSpans() > 1)
 
     // Add the points to the mesh.
     appendPoints(mesh, S, EPS_SQ);

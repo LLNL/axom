@@ -119,12 +119,13 @@ void Shaper::setPercentError(double percent)
     percent < lower,
     axom::fmt::format(
       "Percent error must be greater than {}. Provided value was {}",
-      lower, percent));
-  SLIC_WARNING_IF(
-    percent > upper,
-    axom::fmt::format(
-      "Percent error must be less than {}. Provided value was {}",
-      upper, percent));
+      lower,
+      percent));
+  SLIC_WARNING_IF(percent > upper,
+                  axom::fmt::format(
+                    "Percent error must be less than {}. Provided value was {}",
+                    upper,
+                    percent));
 
   m_percentError = clampUpper(clampLower(percent, lower), upper);
 }
@@ -143,7 +144,7 @@ void Shaper::loadShape(const klee::Shape& shape)
 
 void Shaper::loadShapeEx(const klee::Shape& shape,
                          double percentError,
-                         double &revolvedVolume)
+                         double& revolvedVolume)
 {
   using axom::utilities::string::endsWith;
 
@@ -183,7 +184,7 @@ void Shaper::loadShapeEx(const klee::Shape& shape,
                                      percentError,
                                      m_vertexWeldThreshold,
                                      m_surfaceMesh,
-                                     revolvedVolume, // output arg
+                                     revolvedVolume,  // output arg
                                      m_comm);
     }
     else
@@ -243,7 +244,7 @@ void Shaper::applyTransforms(const klee::Shape& shape)
   applyTransforms(transformation);
 }
 
-void Shaper::applyTransforms(const numerics::Matrix<double> &transformation)
+void Shaper::applyTransforms(const numerics::Matrix<double>& transformation)
 {
   // Apply transformation to coordinates of each vertex in mesh
   if(!transformation.isIdentity())

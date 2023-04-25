@@ -149,7 +149,8 @@ public:
       ->capture_default_str();
 
     app.add_option("-e,--percent-error", percentError)
-      ->description("Percent error in calculating curve refinement and revolved volume")
+      ->description(
+        "Percent error in calculating curve refinement and revolved volume")
       ->check(axom::CLI::PositiveNumber)
       ->capture_default_str();
 
@@ -461,8 +462,7 @@ int main(int argc, char** argv)
   shaper->setSamplesPerKnotSpan(params.samplesPerKnotSpan);
   shaper->setVertexWeldThreshold(params.weldThresh);
   shaper->setVerbosity(params.isVerbose());
-  if(params.percentError > 0.)
-    shaper->setPercentError(params.percentError);
+  if(params.percentError > 0.) shaper->setPercentError(params.percentError);
 
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.

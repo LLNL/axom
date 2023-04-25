@@ -100,7 +100,9 @@ protected:
    *                     segmentsPerKnotSpan value.
    * \param[out] revolvedvolume A revolved volume for the shape, if possible.
    */
-  void loadShapeEx(const klee::Shape& shape, double percentError, double &revolvedVolume);
+  void loadShapeEx(const klee::Shape& shape,
+                   double percentError,
+                   double& revolvedVolume);
 
   /*!
    * \brief Computes transforms for the shape and applies them to the surface mesh.
@@ -113,7 +115,7 @@ protected:
    * \param shape The shape.
    * \param transform A 4x4 matrix containing the transformation to apply.
    */
-  void applyTransforms(const numerics::Matrix<double> &transform);
+  void applyTransforms(const numerics::Matrix<double>& transform);
 
   /*!
    * \brief Get a matrix that contains the shape's concatenated transforms.
@@ -145,7 +147,7 @@ protected:
   mint::Mesh* m_surfaceMesh {nullptr};
 
   int m_samplesPerKnotSpan {25};
-  double m_percentError{-1.}; // -1 means we're not using error-based method.
+  double m_percentError {-1.};  // -1 means we're not using error-based method.
   double m_vertexWeldThreshold {1e-9};
   bool m_verboseOutput {false};
 

@@ -321,11 +321,11 @@ int read_c2c_mesh(const std::string& file,
  * \see PC2CReader
  */
 int read_c2c_mesh(const std::string& file,
-                  const numerics::Matrix<double> &transform,
+                  const numerics::Matrix<double>& transform,
                   double percentError,
                   double vertexWeldThreshold,
                   mint::Mesh*& m,
-                  double &revolvedVolume,
+                  double& revolvedVolume,
                   MPI_Comm comm = MPI_COMM_SELF);
 #endif  // AXOM_USE_C2C
 

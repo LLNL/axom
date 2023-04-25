@@ -404,11 +404,11 @@ int read_c2c_mesh(const std::string& file,
  * to an error tolerance.
  */
 int read_c2c_mesh(const std::string& file,
-                  const numerics::Matrix<double> &transform,
+                  const numerics::Matrix<double>& transform,
                   double percentError,
                   double vertexWeldThreshold,
                   mint::Mesh*& m,
-                  double &revolvedVolume,
+                  double& revolvedVolume,
                   MPI_Comm comm)
 {
   // NOTE: C2C meshes are always 2D
@@ -439,7 +439,10 @@ int read_c2c_mesh(const std::string& file,
   int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader.getLinearMesh(static_cast<SegmentMesh*>(m), transform, percentError, revolvedVolume);
+    reader.getLinearMesh(static_cast<SegmentMesh*>(m),
+                         transform,
+                         percentError,
+                         revolvedVolume);
   }
   else
   {
