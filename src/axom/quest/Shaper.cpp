@@ -112,22 +112,29 @@ void Shaper::setPercentError(double percent)
 {
   using axom::utilities::clampLower;
   using axom::utilities::clampUpper;
-  // Do not allow zero error.
-  constexpr double lower = 1.e-15;
+  constexpr double lower = 0.;
   constexpr double upper = 1.;
   SLIC_WARNING_IF(
-    percent < lower,
-    axom::fmt::format(
-      "Percent error must be greater than {}. Provided value was {}",
-      lower,
-      percent));
+    percent <= lower,
+    axom::fmt::format("Percent error must be greater than {}. Provided value "
+                      "was {}. Dynamic refinement will not be used.",
+                      lower,
+                      percent));
   SLIC_WARNING_IF(percent > upper,
                   axom::fmt::format(
                     "Percent error must be less than {}. Provided value was {}",
                     upper,
                     percent));
+  if(percent <= 0.)
+  {
+    m_refinementType = RefinementUniformSegments;
+  }
+  m_percentError = clampUpper(clampLower(percent, 0.), upper);
+}
 
-  m_percentError = clampUpper(clampLower(percent, lower), upper);
+void Shaper::setRefinementType(Shaper::RefinementType t)
+{
+  m_refinementType = t;
 }
 
 bool Shaper::isValidFormat(const std::string& format) const
@@ -177,7 +184,7 @@ void Shaper::loadShapeEx(const klee::Shape& shape,
 
     // Pass in the transform so any transformations can figure into
     // computing the revolved volume.
-    if(percentError > 0.)
+    if(m_refinementType == RefinementDynamic && percentError > 0.)
     {
       quest::internal::read_c2c_mesh(shapePath,
                                      transform,

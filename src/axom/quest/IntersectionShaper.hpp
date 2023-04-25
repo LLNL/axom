@@ -319,6 +319,22 @@ public:
   void setExecPolicy(int policy) { m_execPolicy = (ExecPolicy)policy; }
   //@}
 
+  /*!
+   * \brief Return the revolved volume that was computed during dynamic refinement.
+   * \return The revolved volume (or zero).
+   */
+  double getRevolvedVolume() const { return m_revolvedVolume; }
+
+  /*!
+   * \brief Return the revolved volume for the m_surfaceMesh at m_level circle refinement.
+   * \note loadShape should have been called before this method.
+   * \return The revolved volume (or zero).
+   */
+  double getApproximateRevolvedVolume() const
+  {
+    return volume(m_surfaceMesh, m_level);
+  }
+
   virtual void loadShape(const klee::Shape& shape) override
   {
     // Make sure we can store the revolved volume in member m_revolvedVolume.
@@ -1681,8 +1697,8 @@ private:
    */
   void refineShape(const klee::Shape& shape)
   {
-    // If m_percentError is not set to a valud value then we are not refining.
-    if(m_percentError < 0.) return;
+    // If we are not refining dynamically, return.
+    if(m_percentError <= 0. || m_refinementType != RefinementDynamic) return;
 
     // If the prior loadShape call was unable to create a revolved volume for
     // the shape then we can't do any better than the current mesh.

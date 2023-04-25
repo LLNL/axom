@@ -41,6 +41,13 @@ public:
   virtual ~Shaper() = default;
 
 public:
+  /// Refinement type.
+  typedef enum
+  {
+    RefinementUniformSegments,
+    RefinementDynamic
+  } RefinementType;
+
   //@{
   //!  @name Functions to get and set shaping parameters
 
@@ -48,6 +55,7 @@ public:
   void setVertexWeldThreshold(double threshold);
   void setVerbosity(bool isVerbose) { m_verboseOutput = isVerbose; }
   void setPercentError(double percent);
+  void setRefinementType(RefinementType t);
 
   //@}
 
@@ -147,7 +155,8 @@ protected:
   mint::Mesh* m_surfaceMesh {nullptr};
 
   int m_samplesPerKnotSpan {25};
-  double m_percentError {-1.};  // -1 means we're not using error-based method.
+  double m_percentError {-1.};
+  RefinementType m_refinementType {RefinementUniformSegments};
   double m_vertexWeldThreshold {1e-9};
   bool m_verboseOutput {false};
 

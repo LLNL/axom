@@ -462,7 +462,11 @@ int main(int argc, char** argv)
   shaper->setSamplesPerKnotSpan(params.samplesPerKnotSpan);
   shaper->setVertexWeldThreshold(params.weldThresh);
   shaper->setVerbosity(params.isVerbose());
-  if(params.percentError > 0.) shaper->setPercentError(params.percentError);
+  if(params.percentError > 0.)
+  {
+    shaper->setPercentError(params.percentError);
+    shaper->setRefinementType(quest::Shaper::RefinementDynamic);
+  }
 
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.
