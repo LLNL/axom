@@ -16,7 +16,6 @@
 
 // These macros enable some debugging utilities for linearization.
 // #define AXOM_DEBUG_LINEARIZE_VERBOSE
-// #define AXOM_DEBUG_SOLVEU_VERBOSE
 // #define AXOM_DEBUG_WRITE_ERROR_CURVES
 // #define AXOM_DEBUG_WRITE_LINES
 
@@ -29,81 +28,6 @@ namespace axom
 {
 namespace quest
 {
-//---------------------------------------------------------------------------
-// TODO: Use MFEM for quadrature
-struct QuadratureElement
-{
-    double w;
-    double x;
-};
-
-// Quadrature table from: https://pomax.github.io/bezierinfo/legendre-gauss.html
-static const std::vector<QuadratureElement> quad64{
-/*1 */{0.0486909570091397,-0.0243502926634244},
-/*2 */{0.0486909570091397, 0.0243502926634244},
-/*3 */{0.0485754674415034,-0.0729931217877990},
-/*4 */{0.0485754674415034, 0.0729931217877990},
-/*5 */{0.0483447622348030,-0.1214628192961206},
-/*6 */{0.0483447622348030, 0.1214628192961206},
-/*7 */{0.0479993885964583,-0.1696444204239928},
-/*8 */{0.0479993885964583, 0.1696444204239928},
-/*9 */{0.0475401657148303,-0.2174236437400071},
-/*10*/{0.0475401657148303, 0.2174236437400071},
-/*11*/{0.0469681828162100,-0.2646871622087674},
-/*12*/{0.0469681828162100, 0.2646871622087674},
-/*13*/{0.0462847965813144,-0.3113228719902110},
-/*14*/{0.0462847965813144, 0.3113228719902110},
-/*15*/{0.0454916279274181,-0.3572201583376681},
-/*16*/{0.0454916279274181, 0.3572201583376681},
-/*17*/{0.0445905581637566,-0.4022701579639916},
-/*18*/{0.0445905581637566, 0.4022701579639916},
-/*19*/{0.0435837245293235,-0.4463660172534641},
-/*20*/{0.0435837245293235, 0.4463660172534641},
-/*21*/{0.0424735151236536,-0.4894031457070530},
-/*22*/{0.0424735151236536, 0.4894031457070530},
-/*23*/{0.0412625632426235,-0.5312794640198946},
-/*24*/{0.0412625632426235, 0.5312794640198946},
-/*25*/{0.0399537411327203,-0.5718956462026340},
-/*26*/{0.0399537411327203, 0.5718956462026340},
-/*27*/{0.0385501531786156,-0.6111553551723933},
-/*28*/{0.0385501531786156, 0.6111553551723933},
-/*29*/{0.0370551285402400,-0.6489654712546573},
-/*30*/{0.0370551285402400, 0.6489654712546573},
-/*31*/{0.0354722132568824,-0.6852363130542333},
-/*32*/{0.0354722132568824, 0.6852363130542333},
-/*33*/{0.0338051618371416,-0.7198818501716109},
-/*34*/{0.0338051618371416, 0.7198818501716109},
-/*35*/{0.0320579283548516,-0.7528199072605319},
-/*36*/{0.0320579283548516, 0.7528199072605319},
-/*37*/{0.0302346570724025,-0.7839723589433414},
-/*38*/{0.0302346570724025, 0.7839723589433414},
-/*39*/{0.0283396726142595,-0.8132653151227975},
-/*40*/{0.0283396726142595, 0.8132653151227975},
-/*41*/{0.0263774697150547,-0.8406292962525803},
-/*42*/{0.0263774697150547, 0.8406292962525803},
-/*43*/{0.0243527025687109,-0.8659993981540928},
-/*44*/{0.0243527025687109, 0.8659993981540928},
-/*45*/{0.0222701738083833,-0.8893154459951141},
-/*46*/{0.0222701738083833, 0.8893154459951141},
-/*47*/{0.0201348231535302,-0.9105221370785028},
-/*48*/{0.0201348231535302, 0.9105221370785028},
-/*49*/{0.0179517157756973,-0.9295691721319396},
-/*50*/{0.0179517157756973, 0.9295691721319396},
-/*51*/{0.0157260304760247,-0.9464113748584028},
-/*52*/{0.0157260304760247, 0.9464113748584028},
-/*53*/{0.0134630478967186,-0.9610087996520538},
-/*54*/{0.0134630478967186, 0.9610087996520538},
-/*55*/{0.0111681394601311,-0.9733268277899110},
-/*56*/{0.0111681394601311, 0.9733268277899110},
-/*57*/{0.0088467598263639,-0.9833362538846260},
-/*58*/{0.0088467598263639, 0.9833362538846260},
-/*59*/{0.0065044579689784,-0.9910133714767443},
-/*60*/{0.0065044579689784, 0.9910133714767443},
-/*61*/{0.0041470332605625,-0.9963401167719553},
-/*62*/{0.0041470332605625, 0.9963401167719553},
-/*63*/{0.0017832807216964,-0.9993050417357722},
-/*64*/{0.0017832807216964, 0.9993050417357722}
-};
 
 //---------------------------------------------------------------------------
 /*!
@@ -244,40 +168,40 @@ appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 static void
 write_lines(const std::string &filename, const std::vector<Segment> &S)
 {
-    FILE *f = fopen(filename.c_str(), "wt");
-    fprintf(f, "# vtk DataFile Version 4.2\n");
-    fprintf(f, "vtk output\n");
-    fprintf(f, "ASCII\n");
-    fprintf(f, "DATASET POLYDATA\n");
-    fprintf(f, "FIELD FieldData 2\n");
-    fprintf(f, "CYCLE 1 1 int\n");
-    fprintf(f, "1\n");
-    fprintf(f, "TIME 1 1 double\n");
-    fprintf(f, "1.0\n");
-    // Write points
-    int npts = S.size();
-    fprintf(f, "POINTS %d float\n", npts);
-    for(int i = 0; i < npts; i += 3)
-    {
-        fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
-        if((i+1) < npts)
-            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+1].point[0], S[i+1].point[1]);
-        if((i+2) < npts)
-            fprintf(f, "%1.16lf %1.16lf 0. ", S[i+2].point[0], S[i+2].point[1]);
-        fprintf(f, "\n");
-    }
+  FILE *f = fopen(filename.c_str(), "wt");
+  fprintf(f, "# vtk DataFile Version 4.2\n");
+  fprintf(f, "vtk output\n");
+  fprintf(f, "ASCII\n");
+  fprintf(f, "DATASET POLYDATA\n");
+  fprintf(f, "FIELD FieldData 2\n");
+  fprintf(f, "CYCLE 1 1 int\n");
+  fprintf(f, "1\n");
+  fprintf(f, "TIME 1 1 double\n");
+  fprintf(f, "1.0\n");
+  // Write points
+  int npts = S.size();
+  fprintf(f, "POINTS %d float\n", npts);
+  for(int i = 0; i < npts; i += 3)
+  {
+    fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
+    if((i+1) < npts)
+      fprintf(f, "%1.16lf %1.16lf 0. ", S[i+1].point[0], S[i+1].point[1]);
+    if((i+2) < npts)
+      fprintf(f, "%1.16lf %1.16lf 0. ", S[i+2].point[0], S[i+2].point[1]);
     fprintf(f, "\n");
+  }
+  fprintf(f, "\n");
 
-    int nspans = npts - 1;
+  int nspans = npts - 1;
 
-    // Write ncells
-    fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
-    for(int ispan = 0; ispan < nspans; ispan++)
-    {
-        fprintf(f, "2 %d %d\n", ispan, ispan+1);
-    }
+  // Write ncells
+  fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
+  for(int ispan = 0; ispan < nspans; ispan++)
+  {
+    fprintf(f, "2 %d %d\n", ispan, ispan+1);
+  }
 
-    fclose(f);
+  fclose(f);
 }
 #endif
 
@@ -566,20 +490,6 @@ struct NURBSInterpolator
   }
 
   /*!
-   * \brief Determine whether the curve looks rational.
-   * \return True if the curve looks rational; false otherwise.
-   */
-  bool rational() const
-  {
-    bool r = true;
-    // Scan through the weights. If there are any non-unity values then
-    // assume rational.
-    for(const auto &w : m_curve.weights)
-      r &= (w != 1.);
-    return r;
-  }
-
-  /*!
    * \brief Evaluates derivatives at the provided value \a u.
    *
    * \param u The u value at which to evaluate derivatives.
@@ -728,94 +638,6 @@ struct NURBSInterpolator
     }
   }
 
-  /* \brief Looks at the curvature function and returns intervals that
-   *        need to be sampled. We'd like to include curvature values
-   *        at any of the u values returned here. We try to include
-   *        starting endpoints and any u values within that cause
-   *        curvature extrema.
-   *
-   * \brief umin The minimum u value for the starting interval.
-   * \brief umax The maximum u value for the starting interval.
-   */
-  std::vector<double> curvatureIntervals(double umin, double umax) const
-  {
-    using axom::utilities::lerp;
-    constexpr int numSamples = 10;
-    constexpr double denom = static_cast<double>(numSamples - 1);
-    // Sample curvature 1st derivatives across the interval.
-    std::vector<double> uValues(numSamples), curvDeriv(numSamples);
-    for(int i = 0; i < numSamples; i++)
-    {
-       uValues[i] = lerp(umin, umax, i / denom);
-       curvatureDerivatives(uValues[i], 1, &curvDeriv[i]);
-    }
-    // Build intervals.
-    std::vector<double> intervals;
-    intervals.push_back(umin);
-    for(int i = 1; i < numSamples; i++)
-    {
-      int s0 = (curvDeriv[i - 1] < 0) ? -1 : 1;
-      int s1 = (curvDeriv[i] < 0) ? -1 : 1;
-      if(s0 != s1)
-      {
-        // There is a derivative sign change in this interval so there must be
-        // a zero crossing, indicating a max or a min in the curvature.
-        double newu = 0.;
-        if(solveCurvature(uValues[i-1], uValues[i], newu))
-          intervals.push_back(newu);
-      }
-    }
-    intervals.push_back(umax);
-    return std::move(intervals);
-  }
-
-  bool solveCurvature(double umin, double umax, double &u) const
-  {
-    constexpr double EPS = 1.e-6;
-    constexpr int MAX_ITERATIONS = 32;
-    bool solved = false;
-
-    // Use the middle of the range as a 1st guess.
-    u = (umin + umax) * 0.5;
-
-    // Find a zero-crossing in the curvature derivative using Newton's Method.
-    for(int iteration = 0; iteration < MAX_ITERATIONS && !solved; iteration++)
-    {
-      double ders[2];
-      curvatureDerivatives(u, 2, ders);
-
-      if(axom::utilities::isNearlyEqual(ders[0], 0., EPS))
-      {
-std::cout << iteration << ": Stopping: u=" << u << ", cp=" << ders[0] << ", cpp=" << ders[1] << std::endl;
-        solved = true;
-        break;
-      }
-      else
-      {
-        // Next step.
-        u = u - ders[0] / ders[1];
-std::cout << iteration << ": next u=" << u << std::endl;
-
-#if 1
-        if(u <= umin)
-        {
-          std::cout << iteration << ": ERROR new u " << u << " is less than umin " << umin << std::endl;
-          u = umin;
-          break;
-        }
-        if(u >= umax)
-        {
-          std::cout << iteration << ": ERROR new u " << u << " is greater than umax " << umax << std::endl;
-          u = umax;
-          break;
-        }
-#endif
-      }
-    }
-    return solved;
-  }
-
-
   /*!
    * \brief Compute the revolved volume of the curve across its entire
    *        parametric interval [0,1] using quadrature.
@@ -827,11 +649,6 @@ std::cout << iteration << ": next u=" << u << std::endl;
    */
   double revolvedVolume(const numerics::Matrix<double> &transform) const
   {
-#if 0
-    // ndiv 100 makes: 2269.665720108277
-    // ndiv 10 makes:  2269.6657201085764
-    // just using spans: 2269.6479183796237
-
     // Use 5-point Gauss Quadrature.
     const double X[] = {-0.906179845938664,
                         -0.538469310105683,
@@ -854,18 +671,22 @@ std::cout << iteration << ": next u=" << u << std::endl;
     transform2(1, 3) = 0.;
     transform2(2, 3) = 0.;
 
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+    SLIC_INFO(fmt::format("revolvedVolume"));
+#endif
+
     // Break up the [0,1] interval and compute quadrature in the subintervals.
     double vol = 0.;
-std::cout << "revolvedVolume" << std::endl;
     for(const auto &interval : m_spanIntervals)
     {
       double ad = interval.first;
       double bd = interval.second;
-std::cout << "interval (" << ad << ", " << bd << ")" << std::endl;
-
-      double scale = M_PI * ((bd - ad) / 2.);
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+      SLIC_INFO(fmt::format("interval ({}, {})", ad, bd));
+#endif
 
       // Approximate the integral "Int pi*x'(u)*y(u)^2du" using quadrature.
+      double scale = M_PI * ((bd - ad) / 2.);
       double sum = 0.;
       for(size_t i = 0; i < 5; i++)
       {
@@ -883,7 +704,10 @@ std::cout << "interval (" << ad << ", " << bd << ")" << std::endl;
         PointType xprimeT = transformPoint(transform2, xprime[1]);
         double xp = xprimeT[0];
 
-std::cout << "\ti=" << i << ", u=" << u << ", p(u)=(" << p_u[0] << ", " << p_u[1] << "), xp=(" << xprime[0] << ", " << xprime[1] << ")" << std::endl;
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+        SLIC_INFO(fmt::format("\ti={}, u={}, p(u)=({},{}), xp=({},{})",
+                  i, u, p_u[0], p_u[1], xprime[0], xprime[1]));
+#endif
 
         // Accumulate weight times dx*r^2.
         sum += W[i] * xp * (r * r);
@@ -891,45 +715,10 @@ std::cout << "\ti=" << i << ", u=" << u << ", p(u)=(" << p_u[0] << ", " << p_u[1
       // Guard against volumes being negative (if the curve went the wrong way)
       vol += fabs(scale * sum);
     }
-std::cout << "!!! revolvedVolume = " << std::setprecision(16) << vol << std::endl;
-    return vol;
-#else
-    constexpr double a = 0, b = 1;
-    constexpr double scale = M_PI * ((b - a) / 2.);
-
-    // Make a transform with no translation. We use this to transform
-    // the derivative since we want to permit scaling and rotation but
-    // translating it does not make sense.
-    numerics::Matrix<double> transform2 = transform;
-    transform2(0, 3) = 0.;
-    transform2(1, 3) = 0.;
-    transform2(2, 3) = 0.;
-
-    // Approximate the integral "Int pi*x'(u)*y(u)^2du" using quadrature.
-    double sum = 0.;
-    size_t n = quad64.size();
-    for(size_t i = 0; i < n; i++)
-    {
-      // Map quad point x value [-1,1] to [a,b].
-      double u = quad64[i].x * ((b - a) / 2.) + ((b + a) / 2.);
-
-      // Compute y(u) to get radius
-      PointType p_u = at(u);
-      PointType p_uT = transformPoint(transform, p_u);
-      double r = p_uT[1];
-
-      // Compute x'(u)
-      PointType xprime[2];
-      derivativesAt(u, 1, xprime);
-      PointType xprimeT = transformPoint(transform2, xprime[1]);
-      double xp = xprimeT[0];
-
-      // Accumulate weight times dx*r^2.
-      sum += quad64[i].w * xp * (r * r);
-    }
-    double vol = fabs(scale * sum);
-    return vol;
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+    SLIC_INFO(fmt::format("revolvedVolume={}", vol));
 #endif
+    return vol;
   }
 
 private:
@@ -1013,12 +802,6 @@ static std::ostream &operator << (std::ostream &os, const std::vector<T> &vec)
     return os;
 }
 
-static std::ostream &operator << (std::ostream &os, const primal::Point<double, 2> &pt)
-{
-    os << "(" << pt[0] << ", " << pt[1] << ")";
-    return os;
-}
-
 //---------------------------------------------------------------------------
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                               const numerics::Matrix<double> &transform,
@@ -1036,7 +819,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                 "C2C reader: percentError must be less than one.");
 
   using PointType = primal::Point<double, 2>;
-  using PointsArray = std::vector<PointType>;
 
   /*!
    * \brief Checks curve lengths against tolerances and determines whether more
@@ -1062,47 +844,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       return errPct;
     };
 
-  /*!
-   * \brief Examines the history values to determine if the deltas between
-   *        iterations are sufficiently small that the iterations should
-   *        terminate, even though it might not have reached the desired
-   *        target error.
-   *
-   * \param iteration The solve iteration.
-   * \param history A circular buffer of the last several history values.
-   * \param nhistory The number of history values.
-   * \param percentError The percent error to achieve.
-   *
-   * \note This function assumes that history values increase.
-   */
-  auto diminishing_returns = [](int iteration,
-                                const double *history,
-                                int nhistory,
-                                double percentError) -> bool
-  {
-    bool dr = false;
-    // We have enough history to decide if there are diminishing returns.
-    if(iteration >= nhistory)
-    {
-      // Compute a series of percents between pairs of history values.
-      double sum = 0.;
-      for(int i = 0; i < nhistory - 1; i++)
-      {
-        int cur = (iteration - i) % nhistory;
-        int prev = (iteration - i - 1) % nhistory;
-        double pct = 1. - history[prev] / history[cur];
-        sum += fabs(pct);
-      }
-      double avg_pct = sum / static_cast<double>(nhistory - 1);
-#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
-      SLIC_INFO(fmt::format("Diminishing returns. iteration={}, avg_pct={}, percentError={}",
-                iteration, avg_pct, percentError));
-#endif
-      dr = avg_pct < percentError;
-    }
-    return dr;
-  };
-
   constexpr size_t INITIAL_GUESS_NPTS = 100;
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
@@ -1113,6 +854,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   percentError = axom::utilities::clampLower(percentError, 1.e-10);
 
 #ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
+  // Make some curves for debugging.
   FILE *ferr = fopen("error.curve", "wt");
 
   FILE *fhcl = fopen("hicurvelen.curve", "wt");
@@ -1127,6 +869,8 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   int contourCount = -1;
 
   // Iterate over the contours and linearize each of them.
+  std::vector<Segment> S;
+  S.reserve(INITIAL_GUESS_NPTS);
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
@@ -1165,8 +909,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     last.next_length[1] = 0.;
 
     // Store the initial segments.
-    std::vector<Segment> S;
-    S.reserve(INITIAL_GUESS_NPTS);
+    S.clear();
     S.push_back(first);
     S.push_back(last);
 
@@ -1177,34 +920,36 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
       // Approximate the arc length of the whole curve by using a lot of
       // line segments. Should we use quadrature instead here?
       double hiCurveLen = 0.;
-      constexpr int NUMBER_OF_SAMPLES = 2000;
+      constexpr int MAX_NUMBER_OF_SAMPLES = 2000;
       PointType prev = first.point;
-      for(int i = 1; i < NUMBER_OF_SAMPLES; i++)
+      for(int i = 1; i < MAX_NUMBER_OF_SAMPLES; i++)
       {
-        double u = i / static_cast<double>(NUMBER_OF_SAMPLES - 1);
+        double u = i / static_cast<double>(MAX_NUMBER_OF_SAMPLES - 1);
         PointType cur = interpolator.at(u);
         hiCurveLen += sqrt(primal::squared_distance(prev, cur));
         prev = cur;
       }
       //---------------------------------------------------------------------
 
-#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
-      // Print initial iteration.
-      SLIC_INFO(fmt::format("hiCurveLen: {}", hiCurveLen);
-      SLIC_INFO(fmt::format("curveLength: {}", curveLength);
-      SLIC_INFO(fmt::format("percentError: {}", percentError);
-#endif
-
       // The initial curve length.
       double curveLength = first.length;
 
-      // Iterate until the difference between iterations is under the percent error
-      // or there are diminishing returns to continuing.
-      constexpr int MAX_HISTORY = 10;
-      double history[MAX_HISTORY] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+      // Print initial iteration.
+      SLIC_INFO(fmt::format("hiCurveLen: {}", hiCurveLen));
+      SLIC_INFO(fmt::format("curveLength: {}", curveLength));
+      SLIC_INFO(fmt::format("percentError: {}", percentError));
+#endif
+
+      // Iterate until the difference between iterations is under the percent
+      // error or we've reached the max number of samples. Each iteration, we
+      // split the longest line segment so the line overall should get longer
+      // until it reaches/approaches the upfront arc length. We get to put the
+      // new points where they matter most early on so we should ideally get to
+      // an acceptable arc length before we reach MAX_NUMBER_OF_SAMPLES.
       int iteration = 0;
-      while((error_percent(curveLength, hiCurveLen) > percentError)// &&
-//            !diminishing_returns(iteration - 1, history, MAX_HISTORY, percentError)
+      while((error_percent(curveLength, hiCurveLen) > percentError) &&
+            (iteration < MAX_NUMBER_OF_SAMPLES)
            )
       {
         // Get the index of the segment we'll split.
@@ -1222,8 +967,10 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
         // segment's 2 pieces.
         double newSegLength = left.next_length[0] + left.next_length[1];
 
-        // Split the left segment into left, right. Note that if the interval is
-        // small enough, we stop using solveu and just use the midpoint to save time.
+        // Split the left segment into left, right. We set next_u as the midpoint
+        // of the subintervals. It was being set via a Newton solveu() function
+        // that yielded the u value with the longest left+right line segments but
+        // using the midpoint ended up with better behavior.
         right.u = left.next_u;
         right.point = interpolator.at(right.u);
         right.length = left.next_length[1];
@@ -1251,9 +998,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 
         // Update the curve length.
         curveLength = curveLength - oldSegLength + newSegLength;
-
-        // Save in history. This is used in diminishing_returns.
-        history[iteration % MAX_HISTORY] = curveLength;
 
 #ifdef AXOM_DEBUG_WRITE_LINES
         // Make a filename.

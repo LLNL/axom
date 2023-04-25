@@ -1583,6 +1583,8 @@ private:
    * \param radius The radius of the circle.
    * \param level The refinement level for the circle.
    * \return The circle area
+   * \note If the requested circle area is not in the table, it will be
+   *       computed but that gets SLOW.
    */
   double circleArea(double radius, int level) const
   {
@@ -1650,11 +1652,6 @@ private:
         // truncated cone
         double h2 = (r0 * h / (r0 - r1)) - h;
 
-        // Truncated cone volume.
-        //double A0 = M_PI * r0 * r0;
-        //double A1 = M_PI * r1 * r1;
-        //double truncated_cone_vol = (1. / 3.) * (A0 * h + (A0 - A1) * h2);
-
         // Approximate cone volume
         double A2 = circleArea(r0, level);
         double A3 = circleArea(r1, level);
@@ -1677,7 +1674,8 @@ private:
    *
    * \note The m_surfaceMesh will be set to a mesh that should be fine
    *       enough that its linearized representation is close enough to
-   *       the specified error percent.
+   *       the specified error percent. m_level will be set to the circle
+   *       refinement level that let us meet the percent error target.
    */
   void refineShape(const klee::Shape &shape)
   {
@@ -1750,9 +1748,10 @@ private:
     double revolvedVolume = m_revolvedVolume;
 
     // Try refining the curve different ways to see if we get to a refinement
-    // strategy that should 
+    // strategy that meets the error tolerance. 
     bool refine = true;
-    constexpr int MAX_LEVELS = 8; //12; // Even 12 makes too many octahedra
+    // Limit level refinement for now since it makes too many octahedra.
+    int MAX_LEVELS = m_level + 1;
     constexpr int MAX_ITERATIONS = 20;
     constexpr int MAX_HISTORY = 4;
     constexpr double minCurvePercentError = 1.e-10;
@@ -1767,20 +1766,20 @@ private:
         // Compute the revolved volume of the surface mesh at level.
         currentVol = volume(m_surfaceMesh, level);
         pct = 1. - currentVol / revolvedVolume;
-#if 1
+
         SLIC_INFO(
           fmt::format("Refining... "
             "revolvedVolume = {}"
             ", currentVol = {}"
             ", pct = {}"
-            ", circleLevel = {}"
+            ", level = {}"
             ", curvePercentError = {}",
             revolvedVolume,
             currentVol,
             pct,
             level,
             curvePercentError));
-#endif
+
         if(pct <= m_percentError)
         {
           SLIC_INFO(
@@ -1788,7 +1787,7 @@ private:
               "revolvedVolume = {}"
               ", currentVol = {}"
               ", pct = {}"
-              ", circleLevel = {}"
+              ", level = {}"
               ", curvePercentError = {}",
               revolvedVolume,
               currentVol,
@@ -1815,7 +1814,7 @@ private:
             "revolvedVolume = {}"
             ", currentVol = {}"
             ", pct = {}"
-            ", circleLevel = {}"
+            ", level = {}"
             ", curvePercentError = {}",
             revolvedVolume,
             currentVol,
