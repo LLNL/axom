@@ -12,6 +12,7 @@
 #include "axom/mint/mesh/Mesh.hpp"
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 #include "axom/quest/readers/STLReader.hpp"
+#include "axom/quest/readers/ProEReader.hpp"
 
 // C/C++ includes
 #include <string>
@@ -335,6 +336,33 @@ int read_c2c_mesh_non_uniform(const std::string& file,
                               double& revolvedVolume,
                               MPI_Comm comm = MPI_COMM_SELF);
 #endif  // AXOM_USE_C2C
+
+/*!
+ * \brief Reads in the Pro/E tetrahedral mesh from the specified file.
+ *
+ * \param [in] file the file consisting of the Pro/E mesh
+ * \param [out] m user-supplied pointer to point to the mesh object.
+ * \param [in] comm the MPI communicator, only applicable when MPI is available.
+ *
+ * \note The caller is responsible for properly de-allocating the mesh object
+ *  that is returned by this function.
+ *
+ * \return status set to zero on success, or to a non-zero value otherwise.
+ *
+ * \pre m == nullptr
+ * \pre !file.empty()
+ *
+ * \post m != nullptr
+ * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \post m->hasMixedCellTypes() == false
+ * \post m->getCellType() == mint::TET
+ *
+ * \see ProEReader
+ * \see PProEReader
+ */
+int read_pro_e_mesh(const std::string& file,
+                    mint::Mesh*& m,
+                    MPI_Comm comm = MPI_COMM_SELF);
 
 /// @}
 

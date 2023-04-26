@@ -11,6 +11,7 @@
 // Quest includes
 #ifdef AXOM_USE_MPI
   #include "axom/quest/readers/PSTLReader.hpp"
+  #include "axom/quest/readers/PProEReader.hpp"
 #endif
 
 #if defined(AXOM_USE_C2C)
@@ -458,6 +459,49 @@ int read_c2c_mesh_non_uniform(const std::string& file,
   return rc;
 }
 #endif  // AXOM_USE_C2C
+
+/*
+ * Reads in the Pro/E tetrahedral from the specified file.
+ */
+int read_pro_e_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
+{
+  constexpr int DIMENSION = 3;
+  using TetMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+
+  // STEP 0: check input mesh pointer
+  if(m != nullptr)
+  {
+    SLIC_WARNING("supplied mesh pointer is not null!");
+    return READ_FAILED;
+  }
+
+  // STEP 1: allocate output mesh object
+  m = new TetMesh(DIMENSION, mint::TET);
+
+  // STEP 2: construct STL reader
+#ifdef AXOM_USE_MPI
+  quest::PProEReader reader(comm);
+#else
+  AXOM_UNUSED_VAR(comm);
+  quest::ProEReader reader;
+#endif
+
+  // STEP 3: read the mesh from the Pro/E file
+  reader.setFileName(file);
+  int rc = reader.read();
+  if(rc == READ_SUCCESS)
+  {
+    reader.getMesh(static_cast<TetMesh*>(m));
+  }
+  else
+  {
+    SLIC_WARNING("reading Pro/E file failed, setting mesh to NULL");
+    delete m;
+    m = nullptr;
+  }
+
+  return rc;
+}
 
 /// Mesh Helper Methods
 
