@@ -79,6 +79,7 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  *
  * \tparam T the type of the values to hold.
  * \tparam DIM The dimension of the array.
+ * \tparam SPACE The memory space of the array.
  * 
  * \pre T must be CopyAssignable and Erasable
  * \see https://en.cppreference.com/w/cpp/named_req
