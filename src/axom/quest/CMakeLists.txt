@@ -49,6 +49,7 @@ set( quest_headers
 
     ## File readers
     readers/STLReader.hpp
+    readers/ProEReader.hpp
 
     ## quest interface
     interface/internal/mpicomm_wrapper.hpp
@@ -74,6 +75,7 @@ set( quest_sources
 
     ## File readers
     readers/STLReader.cpp
+    readers/ProEReader.cpp
 
     ## quest interface
     interface/internal/QuestHelpers.cpp
@@ -124,10 +126,12 @@ if(C2C_FOUND)
 endif()
 
 if (AXOM_ENABLE_MPI)
-    list(APPEND quest_headers readers/PSTLReader.hpp)
+    list(APPEND quest_headers readers/PSTLReader.hpp
+                              readers/PProEReader.hpp)
     blt_list_append(TO quest_headers IF C2C_FOUND ELEMENTS readers/PC2CReader.hpp)
 
-    list(APPEND quest_sources readers/PSTLReader.cpp)
+    list(APPEND quest_sources readers/PSTLReader.cpp
+                              readers/PProEReader.cpp)
     blt_list_append(TO quest_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
     
     list(APPEND quest_depends_on mpi)

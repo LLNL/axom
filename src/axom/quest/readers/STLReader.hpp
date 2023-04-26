@@ -66,7 +66,7 @@ public:
 
   /*!
    * \brief Reads in the surface mesh from an STL file.
-   * \pre m_fileName != ""
+   * \pre path to input file has been set by calling `setFileName()`
    * \return status set to zero on success; set to a non-zero value otherwise.
    */
   virtual int read();
