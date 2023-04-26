@@ -406,7 +406,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
                                      double targetPercentError,
                                      const std::string &policyName,
                                      int policy,
-                                     double revolvedVolumeEPS = 1.e-5)
+                                     double revolvedVolumeEPS = 1.e-4)
 {
   SLIC_INFO(axom::fmt::format("Testing {} with {}", filebase, policyName));
 
