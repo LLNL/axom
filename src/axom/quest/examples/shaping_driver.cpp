@@ -545,17 +545,23 @@ int main(int argc, char** argv)
   for(const auto& shape : params.shapeSet.getShapes())
   {
     std::string shapeFormat = shape.getGeometry().getFormat();
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      axom::fmt::format("Shape format is {}", shapeFormat)));
+    SLIC_INFO(
+      axom::fmt::format("{:-^80}",
+                        axom::fmt::format("Shape format is {}", shapeFormat)));
 
     // Testing separate workflow for Pro/E
-    if (shapeFormat == "proe")
+    if(shapeFormat == "proe")
     {
       SLIC_INFO(axom::fmt::format("{:*^80}", "Processing Pro/E shape!"));
 
       // Load the shape from file
       shaper->loadShape(shape);
+      slic::flushStreams();
+
+      axom::mint::write_vtk(shaper->getSurfaceMesh(), "cup_shaping_driver.vtk");
+
+      // Apply the specified geometric transforms
+      shaper->applyTransforms(shape);
       slic::flushStreams();
     }
 
