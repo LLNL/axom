@@ -544,25 +544,43 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& shape : params.shapeSet.getShapes())
   {
-    // Load the shape from file. This also applies any transformations.
-    shaper->loadShape(shape);
-    slic::flushStreams();
+    std::string shapeFormat = shape.getGeometry().getFormat();
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format("Shape format is {}", shapeFormat)));
 
-    // Generate a spatial index over the shape
-    shaper->prepareShapeQuery(shapeDim, shape);
-    slic::flushStreams();
+    // Testing separate workflow for Pro/E
+    if (shapeFormat == "proe")
+    {
+      SLIC_INFO(axom::fmt::format("{:*^80}", "Processing Pro/E shape!"));
 
-    // Query the mesh against this shape
-    shaper->runShapeQuery(shape);
-    slic::flushStreams();
+      // Load the shape from file
+      shaper->loadShape(shape);
+      slic::flushStreams();
+    }
 
-    // Apply the replacement rules for this shape against the existing materials
-    shaper->applyReplacementRules(shape);
-    slic::flushStreams();
+    else
+    {
+      // Load the shape from file
+      shaper->loadShape(shape);
+      slic::flushStreams();
 
-    // Finalize data structures associated with this shape and spatial index
-    shaper->finalizeShapeQuery();
-    slic::flushStreams();
+      // Generate a spatial index over the shape
+      shaper->prepareShapeQuery(shapeDim, shape);
+      slic::flushStreams();
+
+      // Query the mesh against this shape
+      shaper->runShapeQuery(shape);
+      slic::flushStreams();
+
+      // Apply the replacement rules for this shape against the existing materials
+      shaper->applyReplacementRules(shape);
+      slic::flushStreams();
+
+      // Finalize data structures associated with this shape and spatial index
+      shaper->finalizeShapeQuery();
+      slic::flushStreams();
+    }
   }
 
   //---------------------------------------------------------------------------
