@@ -87,7 +87,7 @@ void getDirName(std::string& dir, const std::string& path);
  * \brief Remove the specified file.
  * \param filename The name of the file.
  */
-void removeFile(const std::string &filename);
+void removeFile(const std::string& filename);
 
 }  // end namespace filesystem
 }  // end namespace utilities

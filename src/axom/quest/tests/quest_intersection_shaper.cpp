@@ -402,7 +402,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
                                      const std::string &contour,
                                      const std::string &shapeYAML,
                                      double expectedRevolvedVolume,
-                                     int    refinementLevel,
+                                     int refinementLevel,
                                      double targetPercentError,
                                      const std::string &policyName,
                                      int policy,
@@ -485,11 +485,14 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
     // Now check the analytical revolved volume vs the value we expect. This makes
     // sure the quadrature-computed value is "close enough".
     double revolvedVolume = shaper.getRevolvedVolume();
-    EXPECT_TRUE(axom::utilities::isNearlyEqual(revolvedVolume, expectedRevolvedVolume, revolvedVolumeEPS));
+    EXPECT_TRUE(axom::utilities::isNearlyEqual(revolvedVolume,
+                                               expectedRevolvedVolume,
+                                               revolvedVolumeEPS));
 
     // Now check the precent error derived from the revolved volume and the
     // linearized revolved volume
-    double actualPercentError = 1. - shaper.getApproximateRevolvedVolume() / revolvedVolume;
+    double actualPercentError =
+      1. - shaper.getApproximateRevolvedVolume() / revolvedVolume;
     EXPECT_LT(actualPercentError, targetPercentError);
   }
 
@@ -499,8 +502,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
 }
 
 //---------------------------------------------------------------------------
-void dynamicRefinementTest_Line(const std::string &policyName,
-                                int policy)
+void dynamicRefinementTest_Line(const std::string &policyName, int policy)
 {
   const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
 )";
@@ -518,8 +520,8 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 25.132741228718345;
 
-  const std::vector<double> percentError{0.01, 0.001, 0.0001};
-  const std::vector<int> refinementLevel{7, 7, 7};
+  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
     IntersectionWithErrorTolerances(filebase,
@@ -534,8 +536,7 @@ shapes:
 }
 
 //---------------------------------------------------------------------------
-void dynamicRefinementTest_Cone(const std::string &policyName,
-                                int policy)
+void dynamicRefinementTest_Cone(const std::string &policyName, int policy)
 {
   const std::string contour = R"(piece = line(start=(2cm,0cm), end=(3cm,2cm))
 )";
@@ -553,8 +554,8 @@ shapes:
   const std::string filebase = "cone";
   const double expectedRevolvedVolume = 39.79350694547071;
 
-  const std::vector<double> percentError{0.01, 0.001, 0.0001};
-  const std::vector<int> refinementLevel{7, 7, 7};
+  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
     IntersectionWithErrorTolerances(filebase,
@@ -569,8 +570,7 @@ shapes:
 }
 
 //---------------------------------------------------------------------------
-void dynamicRefinementTest_Spline(const std::string &policyName,
-                                  int policy)
+void dynamicRefinementTest_Spline(const std::string &policyName, int policy)
 {
   const std::string contour = R"(piece = rz(units=cm,
   rz=2 0
@@ -592,8 +592,8 @@ shapes:
   const std::string filebase = "spline";
   const double expectedRevolvedVolume = 71.53270589320876;
 
-  const std::vector<double> percentError{0.01, 0.001, 0.0001};
-  const std::vector<int> refinementLevel{7, 7, 7};
+  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
     IntersectionWithErrorTolerances(filebase,
@@ -608,10 +608,10 @@ shapes:
 }
 
 //---------------------------------------------------------------------------
-void dynamicRefinementTest_Circle(const std::string &policyName,
-                                  int policy)
+void dynamicRefinementTest_Circle(const std::string &policyName, int policy)
 {
-  const std::string contour = R"(piece = circle(origin=(0cm,0cm), radius=8cm, start=0deg, end=180deg)
+  const std::string contour =
+    R"(piece = circle(origin=(0cm,0cm), radius=8cm, start=0deg, end=180deg)
 )";
 
   const std::string yaml = R"(# Order 0, 1, 2
@@ -627,8 +627,8 @@ shapes:
   const std::string filebase = "circle";
   const double expectedRevolvedVolume = 2144.660584850632;
 
-  const std::vector<double> percentError{0.01, 0.001, 0.0001};
-  const std::vector<int> refinementLevel{7, 7, 7};
+  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
     IntersectionWithErrorTolerances(filebase,
@@ -644,8 +644,7 @@ shapes:
 }
 
 //---------------------------------------------------------------------------
-void dynamicRefinementTest_LineTranslate(const std::string &policyName,
-                                         int policy)
+void dynamicRefinementTest_LineTranslate(const std::string &policyName, int policy)
 {
   const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
 )";
@@ -667,8 +666,8 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 56.548667764616276;
 
-  const std::vector<double> percentError{0.01, 0.001, 0.0001};
-  const std::vector<int> refinementLevel{7, 7, 7};
+  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
     IntersectionWithErrorTolerances(filebase,
@@ -683,8 +682,7 @@ shapes:
 }
 
 //---------------------------------------------------------------------------
-void dynamicRefinementTest_LineScale(const std::string &policyName,
-                                     int policy)
+void dynamicRefinementTest_LineScale(const std::string &policyName, int policy)
 {
   const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
 )";
@@ -706,8 +704,8 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 201.06192982974676;
 
-  const std::vector<double> percentError{0.01, 0.001, 0.0001};
-  const std::vector<int> refinementLevel{7, 7, 7};
+  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
     IntersectionWithErrorTolerances(filebase,
@@ -722,8 +720,7 @@ shapes:
 }
 
 //---------------------------------------------------------------------------
-void dynamicRefinementTest_LineRotate(const std::string &policyName,
-                                      int policy)
+void dynamicRefinementTest_LineRotate(const std::string &policyName, int policy)
 {
   const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
 )";
@@ -747,8 +744,8 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 33.299824325764874;
 
-  const std::vector<double> percentError{0.01, 0.001, 0.0001};
-  const std::vector<int> refinementLevel{7, 7, 7};
+  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
     IntersectionWithErrorTolerances(filebase,
