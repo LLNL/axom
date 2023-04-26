@@ -143,7 +143,7 @@ void Shaper::setRefinementType(Shaper::RefinementType t)
 
 bool Shaper::isValidFormat(const std::string& format) const
 {
-  return (format == "stl" || format == "c2c");
+  return (format == "stl" || format == "proe" || format == "c2c");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
@@ -181,6 +181,10 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     quest::internal::read_stl_mesh(shapePath, m_surfaceMesh, m_comm);
     // Transform the coordinates of the linearized mesh.
     applyTransforms(shape);
+  }
+  else if(endsWith(shapePath, ".proe"))
+  {
+    quest::internal::read_pro_e_mesh(shapePath, m_surfaceMesh, m_comm);
   }
 #ifdef AXOM_USE_C2C
   else if(endsWith(shapePath, ".contour"))
