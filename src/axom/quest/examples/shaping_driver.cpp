@@ -179,7 +179,7 @@ public:
                              "Options related to sampling-based queries");
 
       sampling_options->add_option("-o,--order", outputOrder)
-        ->description("order of the output grid function")
+        ->description("Order of the output grid function")
         ->capture_default_str()
         ->check(axom::CLI::NonNegativeNumber);
 
@@ -534,8 +534,8 @@ int main(int argc, char** argv)
       initial_grid_functions[material] = shapingDC.GetField(name);
     }
 
-    // Project volume fractions to data at quadrature points
-    samplingShaper->projectInitialVolumeFractions(initial_grid_functions);
+    // Project provided volume fraction grid functions as quadrature point data
+    samplingShaper->importInitialVolumeFractions(initial_grid_functions);
   }
 
   //---------------------------------------------------------------------------

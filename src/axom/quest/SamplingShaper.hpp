@@ -464,7 +464,7 @@ public:
    * The imported grid functions are interpolated at quadrature points and registered
    * with the supplied names as material-based quadrature fields
    */
-  void projectInitialVolumeFractions(
+  void importInitialVolumeFractions(
     const std::map<std::string, mfem::GridFunction*> initialGridFunctions)
   {
     internal::ScopedLogLevelChanger logLevelChanger(

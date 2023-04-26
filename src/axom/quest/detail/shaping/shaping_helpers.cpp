@@ -188,7 +188,7 @@ void computeVolumeFractions(const std::string& matField,
     mfem::DomainLFIntegrator rhs(qfc);
 
     const auto& ir =
-      inout->GetSpace()->GetIntRule(0);  // assume all elts are the same
+      inout->GetSpace()->GetIntRule(0);  // assume all elements are the same
     rhs.SetIntRule(&ir);
 
     mfem::DenseMatrix m;
