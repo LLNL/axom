@@ -318,32 +318,6 @@ public:
   void setExecPolicy(int policy) { m_execPolicy = (ExecPolicy)policy; }
   //@}
 
-private:
-  /**
-   * \brief Helper method to check if an Octahedron has duplicate
-   *        vertices
-   *
-   * \param poly [in] The Octahedron to check for duplicate vertices
-   * \return True if duplicate vertices found, false otherwise
-   */
-  AXOM_HOST_DEVICE
-  bool oct_has_duplicate_verts(const OctahedronType& oct) const
-  {
-    for(int i = 0; i < 6; i++)
-    {
-      for(int j = i + 1; j < OctahedronType::NUM_OCT_VERTS; j++)
-      {
-        // operator= for Point does not want to play nice...
-        if(oct[i][0] == oct[j][0] && oct[i][1] == oct[j][1] &&
-           oct[i][2] == oct[j][2])
-        {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
 public:
 //@{
 //!  @name Functions related to the stages for a given shape
@@ -831,7 +805,8 @@ public:
           for(int j = 0; j < counts_v[i]; j++)
           {
             int octIdx = candidates_v[offsets_v[i] + j];
-            if(!oct_has_duplicate_verts(local_octs[octIdx]))
+
+            if(!local_octs[octIdx].has_duplicate_vertices())
             {
               for(int k = 0; k < NUM_TETS_PER_HEX; k++)
               {
