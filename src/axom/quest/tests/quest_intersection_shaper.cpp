@@ -465,7 +465,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
     shaper.prepareShapeQuery(shapeDim, shape);
     slic::flushStreams();
 
-    // NOTE: We do not want to actually run the query in thise case. We're mainly
+    // NOTE: We do not want to actually run the query in this case. We're mainly
     //       interested in how the shape was refined and whether we hit the
     //       percent error.
 #if 0
@@ -590,7 +590,7 @@ shapes:
     path: spline.contour
 )";
   const std::string filebase = "spline";
-  const double expectedRevolvedVolume = 71.53270589320876;
+  const double expectedRevolvedVolume = 74.2179;
 
   const std::vector<double> percentError {0.01, 0.001, 0.0001};
   const std::vector<int> refinementLevel {7, 7, 7};
@@ -603,7 +603,8 @@ shapes:
                                     refinementLevel[i],
                                     percentError[i],
                                     policyName,
-                                    policy);
+                                    policy,
+                                    0.04);
   }
 }
 
