@@ -303,6 +303,9 @@ public:
     hip = 3
   };
 
+  static constexpr int DEFAULT_CIRCLE_REFINEMENT_LEVEL {7};
+  static constexpr double DEFAULT_REVOLVED_VOLUME {0.};
+
 public:
   IntersectionShaper(const klee::ShapeSet& shapeSet,
                      sidre::MFEMSidreDataCollection* dc)
@@ -338,7 +341,7 @@ public:
   virtual void loadShape(const klee::Shape& shape) override
   {
     // Make sure we can store the revolved volume in member m_revolvedVolume.
-    loadShapeEx(shape, m_percentError, m_revolvedVolume);
+    loadShapeInternal(shape, m_percentError, m_revolvedVolume);
 
     // Filter the mesh, store in m_surfaceMesh.
     SegmentMesh* newm =
@@ -1650,14 +1653,13 @@ private:
     const int nSegments = numSurfaceVertices - 1;
     const double* z = m->getCoordinateArray(mint::X_COORDINATE);
     const double* r = m->getCoordinateArray(mint::Y_COORDINATE);
-    constexpr double EPS = 1.e-15;
     double vol_approx = 0.;
     for(int seg = 0; seg < nSegments; seg++)
     {
       double r0 = r[seg];
       double r1 = r[seg + 1];
       double h = fabs(z[seg + 1] - z[seg]);
-      if(axom::utilities::isNearlyEqual(r0, r1, EPS))
+      if(axom::utilities::isNearlyEqual(r0, r1, m_vertexWeldThreshold))
       {
         // cylinder
         double A = circleArea(r0, level);
@@ -1698,11 +1700,11 @@ private:
   void refineShape(const klee::Shape& shape)
   {
     // If we are not refining dynamically, return.
-    if(m_percentError <= 0. || m_refinementType != RefinementDynamic) return;
+    if(m_percentError <= MINIMUM_PERCENT_ERROR || m_refinementType != RefinementDynamic) return;
 
     // If the prior loadShape call was unable to create a revolved volume for
     // the shape then we can't do any better than the current mesh.
-    if(m_revolvedVolume <= 0.) return;
+    if(m_revolvedVolume <= DEFAULT_REVOLVED_VOLUME) return;
 
     /*!
      * \brief Examines the history values to determine if the deltas between
@@ -1731,7 +1733,7 @@ private:
         {
           int cur = (iteration - i) % nhistory;
           int prev = (iteration - i - 1) % nhistory;
-          double pct = 1. - history[prev] / history[cur];
+          double pct = 100. * (1. - history[prev] / history[cur]);
           sum += fabs(pct);
         }
         double avg_pct = sum / static_cast<double>(nhistory - 1);
@@ -1769,7 +1771,8 @@ private:
     int MAX_LEVELS = m_level + 1;
     constexpr int MAX_ITERATIONS = 20;
     constexpr int MAX_HISTORY = 4;
-    constexpr double minCurvePercentError = 1.e-10;
+    constexpr double MINIMUM_CURVE_PERCENT_ERROR = 1.e-10;
+    constexpr double CURVE_PERCENT_SCALING = 0.5;
     double history[MAX_HISTORY] = {0., 0., 0., 0.};
     for(int iteration = 0; iteration < MAX_ITERATIONS && refine; iteration++)
     {
@@ -1780,7 +1783,7 @@ private:
       {
         // Compute the revolved volume of the surface mesh at level.
         currentVol = volume(m_surfaceMesh, level);
-        pct = 1. - currentVol / revolvedVolume;
+        pct = 100. * (1. - currentVol / revolvedVolume);
 
         SLIC_INFO(
           fmt::format("Refining... "
@@ -1845,9 +1848,8 @@ private:
         // We could not get to an acceptable error percentage and we should refine.
 
         // Check whether to permit the curve to further refine.
-        constexpr double CURVE_PERCENT_SCALING = 0.5;
         double ce = curvePercentError * CURVE_PERCENT_SCALING;
-        if(ce > minCurvePercentError)
+        if(ce > MINIMUM_CURVE_PERCENT_ERROR)
         {
           // Set the new curve error.
           curvePercentError = ce;
@@ -1863,7 +1865,7 @@ private:
             fmt::format("Reloading shape {} with curvePercentError = {}.",
                         shape.getName(),
                         curvePercentError));
-          loadShapeEx(shape, curvePercentError, rv);
+          loadShapeInternal(shape, curvePercentError, rv);
 
           // Filter the mesh, store in m_surfaceMesh.
           SegmentMesh* newm =
@@ -1904,8 +1906,8 @@ private:
 
 private:
   ExecPolicy m_execPolicy {seq};
-  int m_level {7};
-  double m_revolvedVolume {0.};
+  int m_level {DEFAULT_CIRCLE_REFINEMENT_LEVEL};
+  double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
   int m_num_elements {0};
   double* m_hex_volumes {nullptr};
   double* m_overlap_volumes {nullptr};

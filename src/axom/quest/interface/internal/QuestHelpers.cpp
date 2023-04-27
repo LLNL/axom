@@ -354,9 +354,11 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
  * Reads in the contour mesh from the specified file.
  */
 int read_c2c_mesh(const std::string& file,
+                  const numerics::Matrix<double>& transform,
                   int segmentsPerPiece,
                   double vertexWeldThreshold,
                   mint::Mesh*& m,
+                  double& revolvedVolume,
                   MPI_Comm comm)
 {
   // NOTE: C2C meshes are always 2D
@@ -364,6 +366,7 @@ int read_c2c_mesh(const std::string& file,
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   // STEP 0: check input mesh pointer
+  revolvedVolume = 0.;
   if(m != nullptr)
   {
     SLIC_WARNING("supplied mesh pointer is not null!");
@@ -388,6 +391,7 @@ int read_c2c_mesh(const std::string& file,
   if(rc == READ_SUCCESS)
   {
     reader.getLinearMesh(static_cast<SegmentMesh*>(m), segmentsPerPiece);
+    revolvedVolume = reader.getRevolvedVolume(transform);
   }
   else
   {
@@ -416,6 +420,7 @@ int read_c2c_mesh(const std::string& file,
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   // STEP 0: check input mesh pointer
+  revolvedVolume = 0.;
   if(m != nullptr)
   {
     SLIC_WARNING("supplied mesh pointer is not null!");
@@ -439,10 +444,8 @@ int read_c2c_mesh(const std::string& file,
   int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader.getLinearMesh(static_cast<SegmentMesh*>(m),
-                         transform,
-                         percentError,
-                         revolvedVolume);
+    reader.getLinearMesh(static_cast<SegmentMesh*>(m), percentError);
+    revolvedVolume = reader.getRevolvedVolume(transform);
   }
   else
   {

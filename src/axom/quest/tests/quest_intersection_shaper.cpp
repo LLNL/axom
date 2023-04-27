@@ -491,8 +491,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
 
     // Now check the precent error derived from the revolved volume and the
     // linearized revolved volume
-    double actualPercentError =
-      1. - shaper.getApproximateRevolvedVolume() / revolvedVolume;
+    double actualPercentError = 100. * (1. - shaper.getApproximateRevolvedVolume() / revolvedVolume);
     EXPECT_LT(actualPercentError, targetPercentError);
   }
 
@@ -520,7 +519,7 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 25.132741228718345;
 
-  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<double> percentError {1., 0.1, 0.01};
   const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
@@ -554,7 +553,7 @@ shapes:
   const std::string filebase = "cone";
   const double expectedRevolvedVolume = 39.79350694547071;
 
-  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<double> percentError {1., 0.1, 0.01};
   const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
@@ -597,7 +596,7 @@ shapes:
   const std::string filebase = "spline";
   const double expectedRevolvedVolume = 71.53270589320874;
 
-  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<double> percentError {1., 0.1, 0.01};
   const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
@@ -634,7 +633,7 @@ shapes:
   const std::string filebase = "circle";
   const double expectedRevolvedVolume = 2144.660584850632;
 
-  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<double> percentError {1., 0.1, 0.01};
   const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
@@ -673,7 +672,7 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 56.548667764616276;
 
-  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<double> percentError {1., 0.1, 0.01};
   const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
@@ -711,7 +710,7 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 201.06192982974676;
 
-  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<double> percentError {1., 0.1, 0.01};
   const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {
@@ -751,7 +750,7 @@ shapes:
   const std::string filebase = "line";
   const double expectedRevolvedVolume = 33.299824325764874;
 
-  const std::vector<double> percentError {0.01, 0.001, 0.0001};
+  const std::vector<double> percentError {1., 0.1, 0.01};
   const std::vector<int> refinementLevel {7, 7, 7};
   for(size_t i = 0; i < percentError.size(); i++)
   {

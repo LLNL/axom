@@ -41,6 +41,12 @@ public:
   virtual ~Shaper() = default;
 
 public:
+  // Some default values.
+  static constexpr int DEFAULT_SAMPLES_PER_KNOT_SPAN {25};
+  static constexpr double MINIMUM_PERCENT_ERROR {0.};
+  static constexpr double MAXIMUM_PERCENT_ERROR {100};
+  static constexpr double DEFAULT_VERTEX_WELD_THRESHOLD {1e-9};
+
   /// Refinement type.
   typedef enum
   {
@@ -108,9 +114,9 @@ protected:
    *                     segmentsPerKnotSpan value.
    * \param[out] revolvedvolume A revolved volume for the shape, if possible.
    */
-  void loadShapeEx(const klee::Shape& shape,
-                   double percentError,
-                   double& revolvedVolume);
+  void loadShapeInternal(const klee::Shape& shape,
+                         double percentError,
+                         double& revolvedVolume);
 
   /*!
    * \brief Computes transforms for the shape and applies them to the surface mesh.
@@ -154,10 +160,10 @@ protected:
 
   mint::Mesh* m_surfaceMesh {nullptr};
 
-  int m_samplesPerKnotSpan {25};
-  double m_percentError {-1.};
+  int m_samplesPerKnotSpan {DEFAULT_SAMPLES_PER_KNOT_SPAN};
+  double m_percentError {MINIMUM_PERCENT_ERROR};
   RefinementType m_refinementType {RefinementUniformSegments};
-  double m_vertexWeldThreshold {1e-9};
+  double m_vertexWeldThreshold {DEFAULT_VERTEX_WELD_THRESHOLD};
   bool m_verboseOutput {false};
 
   MPI_Comm m_comm {MPI_COMM_SELF};

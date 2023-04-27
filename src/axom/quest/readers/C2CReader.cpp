@@ -793,20 +793,104 @@ void C2CReader::log()
 }
 
 //---------------------------------------------------------------------------
-template <typename T>
-static std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+                              int segmentsPerKnotSpan)
 {
-  os << "{";
-  for(const auto& v : vec) os << v << ", ";
-  os << "}";
-  return os;
+  using axom::utilities::lerp;
+
+  // Sanity checks
+  SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
+  SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
+  SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
+                "C2C reader expects a segment mesh!");
+  SLIC_ERROR_IF(segmentsPerKnotSpan < 1,
+                "C2C reader: Need at least one segment per NURBs span");
+
+  using PointType = primal::Point<double, 2>;
+  using PointsArray = std::vector<PointType>;
+
+  const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
+
+  for(const auto& nurbs : m_nurbsData)
+  {
+    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
+
+    // For each knot span
+    for(int span = 0; span < interpolator.numSpans(); ++span)
+    {
+      // Generate points on the curve
+      PointsArray pts;
+      pts.reserve(segmentsPerKnotSpan + 1);
+
+      const double startParameter = interpolator.startParameter(span);
+      const double endParameter = interpolator.endParameter(span);
+
+      double denom = static_cast<double>(segmentsPerKnotSpan);
+      for(int i = 0; i <= segmentsPerKnotSpan; ++i)
+      {
+        double u = lerp(startParameter, endParameter, i / denom);
+        pts.emplace_back(interpolator.at(u));
+      }
+
+      // Check for simple vertex welding opportunities at endpoints of newly interpolated points
+      {
+        int numNodes = mesh->getNumberOfNodes();
+        if(numNodes > 0)  // this is not the first Piece
+        {
+          PointType meshPt;
+          // Fix start point if necessary; check against most recently added vertex in mesh
+          mesh->getNode(numNodes - 1, meshPt.data());
+          if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
+          {
+            pts[0] = meshPt;
+          }
+
+          // Fix end point if necessary; check against 0th vertex in mesh
+          const int endIdx = pts.size() - 1;
+          mesh->getNode(0, meshPt.data());
+          if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
+          {
+            pts[endIdx] = meshPt;
+          }
+        }
+        else  // This is the first, and possibly only span, check its endpoint, fix if necessary
+        {
+          int endIdx = pts.size() - 1;
+          if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
+          {
+            pts[endIdx] = pts[0];
+          }
+        }
+      }
+
+      // Add the new points and segments to the mesh, respecting welding checks from previous block
+      {
+        const int startNode = mesh->getNumberOfNodes();
+        const int numNewNodes = pts.size();
+        mesh->reserveNodes(startNode + numNewNodes);
+
+        for(int i = 0; i < numNewNodes; ++i)
+        {
+          mesh->appendNode(pts[i][0], pts[i][1]);
+        }
+
+        const int startCell = mesh->getNumberOfCells();
+        const int numNewSegments = pts.size() - 1;
+        mesh->reserveCells(startCell + numNewSegments);
+        for(int i = 0; i < numNewSegments; ++i)
+        {
+          IndexType seg[2] = {startNode + i, startNode + i + 1};
+          mesh->appendCell(seg, mint::SEGMENT);
+        }
+      }
+
+    }  // end for each knot span
+  }    // end for each NURBS curve
 }
 
 //---------------------------------------------------------------------------
 void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              const numerics::Matrix<double>& transform,
-                              double percentError,
-                              double& revolvedVolume)
+                              double percentError)
 {
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
@@ -814,9 +898,9 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
                 "C2C reader expects a segment mesh!");
   SLIC_ERROR_IF(percentError <= 0.,
-                "C2C reader: percentError must be greater than zero.");
-  SLIC_ERROR_IF(percentError >= 1.,
-                "C2C reader: percentError must be less than one.");
+                axom::fmt::format("C2C reader: percentError must be greater than 0. {} supplied.", percentError));
+  SLIC_ERROR_IF(percentError >= 100.,
+                axom::fmt::format("C2C reader: percentError must be less than 100. {} supplied.", percentError));
 
   using PointType = primal::Point<double, 2>;
 
@@ -835,19 +919,13 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     double errPct = 0.;
     if(maxlen > len)
     {
-      // pct is in [0,1). Generally, as the curve gets better pct should approach 1.
-      double pct = (len / maxlen);
-      // If we have a good curve then errPct should be small.
-      errPct = 1. - pct;
+      errPct = 100. * (1. - (len / maxlen));
     }
     return errPct;
   };
 
   constexpr size_t INITIAL_GUESS_NPTS = 100;
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
-
-  // Initialize the revolved volume.
-  revolvedVolume = 0.;
 
   // Clamp the lower error bound so it does not get impractically small.
   percentError = axom::utilities::clampLower(percentError, 1.e-10);
@@ -877,8 +955,6 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 #ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
     fprintf(ferr, "# contour%d\n", contourCount);
 #endif
-    // Add the contour's revolved volume to the total.
-    revolvedVolume += interpolator.revolvedVolume(transform);
 
     // Get the contour start/end parameters.
     const double u0 = interpolator.startParameter(0);
@@ -1011,7 +1087,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 #endif
 
         iteration++;
-      }  // while(keep_going())
+      }  // while(error_percent())
 
       SLIC_INFO(
         fmt::format("getLinearMesh: "
@@ -1035,99 +1111,17 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 #endif
 }
 
-void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              int segmentsPerKnotSpan)
+double C2CReader::getRevolvedVolume(const numerics::Matrix<double> &transform) const
 {
-  using axom::utilities::lerp;
-
-  // Sanity checks
-  SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
-  SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
-  SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
-                "C2C reader expects a segment mesh!");
-  SLIC_ERROR_IF(segmentsPerKnotSpan < 1,
-                "C2C reader: Need at least one segment per NURBs span");
-
-  using PointType = primal::Point<double, 2>;
-  using PointsArray = std::vector<PointType>;
-
-  const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
-
+  double revolvedVolume = 0.;
   for(const auto& nurbs : m_nurbsData)
   {
     NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
 
-    // For each knot span
-    for(int span = 0; span < interpolator.numSpans(); ++span)
-    {
-      // Generate points on the curve
-      PointsArray pts;
-      pts.reserve(segmentsPerKnotSpan + 1);
-
-      const double startParameter = interpolator.startParameter(span);
-      const double endParameter = interpolator.endParameter(span);
-
-      double denom = static_cast<double>(segmentsPerKnotSpan);
-      for(int i = 0; i <= segmentsPerKnotSpan; ++i)
-      {
-        double u = lerp(startParameter, endParameter, i / denom);
-        pts.emplace_back(interpolator.at(u));
-      }
-
-      // Check for simple vertex welding opportunities at endpoints of newly interpolated points
-      {
-        int numNodes = mesh->getNumberOfNodes();
-        if(numNodes > 0)  // this is not the first Piece
-        {
-          PointType meshPt;
-          // Fix start point if necessary; check against most recently added vertex in mesh
-          mesh->getNode(numNodes - 1, meshPt.data());
-          if(primal::squared_distance(pts[0], meshPt) < EPS_SQ)
-          {
-            pts[0] = meshPt;
-          }
-
-          // Fix end point if necessary; check against 0th vertex in mesh
-          const int endIdx = pts.size() - 1;
-          mesh->getNode(0, meshPt.data());
-          if(primal::squared_distance(pts[endIdx], meshPt) < EPS_SQ)
-          {
-            pts[endIdx] = meshPt;
-          }
-        }
-        else  // This is the first, and possibly only span, check its endpoint, fix if necessary
-        {
-          int endIdx = pts.size() - 1;
-          if(primal::squared_distance(pts[0], pts[endIdx]) < EPS_SQ)
-          {
-            pts[endIdx] = pts[0];
-          }
-        }
-      }
-
-      // Add the new points and segments to the mesh, respecting welding checks from previous block
-      {
-        const int startNode = mesh->getNumberOfNodes();
-        const int numNewNodes = pts.size();
-        mesh->reserveNodes(startNode + numNewNodes);
-
-        for(int i = 0; i < numNewNodes; ++i)
-        {
-          mesh->appendNode(pts[i][0], pts[i][1]);
-        }
-
-        const int startCell = mesh->getNumberOfCells();
-        const int numNewSegments = pts.size() - 1;
-        mesh->reserveCells(startCell + numNewSegments);
-        for(int i = 0; i < numNewSegments; ++i)
-        {
-          IndexType seg[2] = {startNode + i, startNode + i + 1};
-          mesh->appendCell(seg, mint::SEGMENT);
-        }
-      }
-
-    }  // end for each knot span
-  }    // end for each NURBS curve
+    // Add the contour's revolved volume to the total.
+    revolvedVolume += interpolator.revolvedVolume(transform);
+  }
+  return revolvedVolume;
 }
 
 }  // end namespace quest

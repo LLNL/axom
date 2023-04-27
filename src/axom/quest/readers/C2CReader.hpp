@@ -72,19 +72,27 @@ public:
 
   /*!
    * \brief Projects high-order NURBS contours onto a linear mesh using \a percentError 
-   *        to decide when to stop refinement. The method also computes an
-   *        approximation of the revolved volume that would be created by the
-   *        contours, using quadrature.
+   *        to decide when to stop refinement.
    * 
    * \param[in] mesh The mesh object that will contain the linearized line segments.
-   * \param[in] transform A transformation matrix that will be applied to points.
    * \param[in] percentError A percent of error that is acceptable to stop refinement.
-   * \param[out] revolvedVolume The revolved volume of the curve (not linearized).
    */
   void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
-                     const numerics::Matrix<double> &transform,
-                     double percentError,
-                     double &revolvedVolume);
+                     double percentError);
+
+  /*!
+   * \brief Compute the revolved volume of the shape using quadrature.
+   *
+   * \param transform A 4x4 matrix transform to apply to the shape before computing
+   *                  the revolved volume.
+   *
+   * \note We compute revolved volume on the actual shapes so we can get a
+   *       real revolved volume computed using the curve functions rather than
+   *       relying on a linearized curve.
+   *
+   * \return The revolved volume.
+   */
+  double getRevolvedVolume(const numerics::Matrix<double> &transform) const;
 
 protected:
   int readContour();

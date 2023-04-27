@@ -27,7 +27,6 @@
 
 // C/C++ includes
 #include <cmath>   /* for std::exp */
-#include <cstdio>  /* for std::remove */
 #include <fstream> /* for std::ifstream */
 #include <iomanip> /* for std::setfill, std::setw */
 #include <string>  /* for std::string */
@@ -821,7 +820,7 @@ void test_mesh(MeshType* mesh, const std::string& path)
   file.close();
   delete mesh;
 #if DELETE_VTK_FILES
-  std::remove(path.c_str());
+  axom::utilities::filesystem::removeFile(path);
 #endif
 }
 

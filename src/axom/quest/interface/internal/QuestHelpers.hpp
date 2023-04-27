@@ -263,9 +263,12 @@ int read_stl_mesh(const std::string& file,
  * \brief Reads in the contour mesh from the specified file
  *
  * \param [in] file the file consisting of a C2C contour defined by one or more c2c::Piece
+ * \param [in] transform A 4x4 matrix that contains a transform to be applied to points.
  * \param [in] segmentsPerPiece number of segments to sample per contour Piece
  * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
  * \param [out] m user-supplied pointer to point to the mesh object
+ * \param [out] revolvedVolume An approximation of the revolved volume of the contour
+ *                             or 0 if it could not be computed.
  * \param [in] comm the MPI communicator, only applicable when MPI is available
  *
  * \note The caller is responsible for properly de-allocating the mesh object
@@ -280,14 +283,17 @@ int read_stl_mesh(const std::string& file,
  * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
  * \post m->hasMixedCellTypes() == false
  * \post m->getCellType() == mint::SEGMENT
+ * \post revolvedVolume > 0 if it could be computed.
  *
  * \see C2CReader
  * \see PC2CReader
  */
 int read_c2c_mesh(const std::string& file,
+                  const numerics::Matrix<double>& transform,
                   int segmentsPerPiece,
                   double vertexWeldThreshold,
                   mint::Mesh*& m,
+                  double& revolvedVolume,
                   MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
@@ -315,7 +321,7 @@ int read_c2c_mesh(const std::string& file,
  * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
  * \post m->hasMixedCellTypes() == false
  * \post m->getCellType() == mint::SEGMENT
- * \post revolvedVolume > 0 if there was a single contour
+ * \post revolvedVolume > 0 if it could be computed.
  *
  * \see C2CReader
  * \see PC2CReader

@@ -123,7 +123,7 @@ void getDirName(std::string& dir, const std::string& path)
 }
 
 //-----------------------------------------------------------------------------
-void removeFile(const std::string& filename) { Unlink(filename.c_str()); }
+int removeFile(const std::string& filename) { return Unlink(filename.c_str()); }
 
 }  // end namespace filesystem
 }  // end namespace utilities

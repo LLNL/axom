@@ -76,6 +76,12 @@ private:
 
 }  // end namespace internal
 
+// These were needed for linking - but why? They are constexpr.
+constexpr int Shaper::DEFAULT_SAMPLES_PER_KNOT_SPAN;
+constexpr double Shaper::MINIMUM_PERCENT_ERROR;
+constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
+constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
+
 Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
@@ -110,26 +116,23 @@ void Shaper::setVertexWeldThreshold(double threshold)
 
 void Shaper::setPercentError(double percent)
 {
-  using axom::utilities::clampLower;
-  using axom::utilities::clampUpper;
-  constexpr double lower = 0.;
-  constexpr double upper = 1.;
+  using axom::utilities::clampVal;
   SLIC_WARNING_IF(
-    percent <= lower,
+    percent <= MINIMUM_PERCENT_ERROR,
     axom::fmt::format("Percent error must be greater than {}. Provided value "
                       "was {}. Dynamic refinement will not be used.",
-                      lower,
+                      MINIMUM_PERCENT_ERROR,
                       percent));
-  SLIC_WARNING_IF(percent > upper,
+  SLIC_WARNING_IF(percent > MAXIMUM_PERCENT_ERROR,
                   axom::fmt::format(
                     "Percent error must be less than {}. Provided value was {}",
-                    upper,
+                    MAXIMUM_PERCENT_ERROR,
                     percent));
-  if(percent <= 0.)
+  if(percent <= MINIMUM_PERCENT_ERROR)
   {
     m_refinementType = RefinementUniformSegments;
   }
-  m_percentError = clampUpper(clampLower(percent, 0.), upper);
+  m_percentError = clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
 }
 
 void Shaper::setRefinementType(Shaper::RefinementType t)
@@ -146,12 +149,12 @@ void Shaper::loadShape(const klee::Shape& shape)
 {
   // Do not save the revolved volume in the default shaper.
   double revolved = 0.;
-  loadShapeEx(shape, m_percentError, revolved);
+  loadShapeInternal(shape, m_percentError, revolved);
 }
 
-void Shaper::loadShapeEx(const klee::Shape& shape,
-                         double percentError,
-                         double& revolvedVolume)
+void Shaper::loadShapeInternal(const klee::Shape& shape,
+                               double percentError,
+                               double& revolvedVolume)
 {
   using axom::utilities::string::endsWith;
 
@@ -184,22 +187,24 @@ void Shaper::loadShapeEx(const klee::Shape& shape,
 
     // Pass in the transform so any transformations can figure into
     // computing the revolved volume.
-    if(m_refinementType == RefinementDynamic && percentError > 0.)
+    if(m_refinementType == RefinementDynamic && percentError > MINIMUM_PERCENT_ERROR)
     {
       quest::internal::read_c2c_mesh(shapePath,
                                      transform,
                                      percentError,
                                      m_vertexWeldThreshold,
                                      m_surfaceMesh,
-                                     revolvedVolume,  // output arg
+                                     revolvedVolume, // output arg
                                      m_comm);
     }
     else
     {
       quest::internal::read_c2c_mesh(shapePath,
+                                     transform,
                                      m_samplesPerKnotSpan,
                                      m_vertexWeldThreshold,
                                      m_surfaceMesh,
+                                     revolvedVolume, // output arg
                                      m_comm);
     }
 
@@ -218,7 +223,8 @@ void Shaper::loadShapeEx(const klee::Shape& shape,
 
 numerics::Matrix<double> Shaper::getTransforms(const klee::Shape& shape) const
 {
-  numerics::Matrix<double> transformation = numerics::Matrix<double>::identity(4);
+  const auto identity4x4 = numerics::Matrix<double>::identity(4);
+  numerics::Matrix<double> transformation(identity4x4);
   auto& geometryOperator = shape.getGeometry().getGeometryOperator();
   auto composite =
     std::dynamic_pointer_cast<const klee::CompositeOperator>(geometryOperator);
@@ -235,7 +241,7 @@ numerics::Matrix<double> Shaper::getTransforms(const klee::Shape& shape) const
         continue;
       }
       const auto& matrix = visitor.getMatrix();
-      numerics::Matrix<double> res = numerics::Matrix<double>::identity(4);
+      numerics::Matrix<double> res(identity4x4);
       numerics::matrix_multiply(matrix, transformation, res);
       transformation = res;
     }
