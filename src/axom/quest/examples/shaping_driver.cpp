@@ -150,7 +150,8 @@ public:
 
     app.add_option("-e,--percent-error", percentError)
       ->description(
-        "Percent error used for calculating curve refinement and revolved volume.\n"
+        "Percent error used for calculating curve refinement and revolved "
+        "volume.\n"
         "If this value is provided then dynamic curve refinement will be used\n"
         "instead of segment-based curve refinement.")
       ->check(axom::CLI::PositiveNumber)

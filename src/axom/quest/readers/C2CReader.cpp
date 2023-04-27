@@ -897,10 +897,16 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
   SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
   SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
                 "C2C reader expects a segment mesh!");
-  SLIC_ERROR_IF(percentError <= 0.,
-                axom::fmt::format("C2C reader: percentError must be greater than 0. {} supplied.", percentError));
-  SLIC_ERROR_IF(percentError >= 100.,
-                axom::fmt::format("C2C reader: percentError must be less than 100. {} supplied.", percentError));
+  SLIC_ERROR_IF(
+    percentError <= 0.,
+    axom::fmt::format(
+      "C2C reader: percentError must be greater than 0. {} supplied.",
+      percentError));
+  SLIC_ERROR_IF(
+    percentError >= 100.,
+    axom::fmt::format(
+      "C2C reader: percentError must be less than 100. {} supplied.",
+      percentError));
 
   using PointType = primal::Point<double, 2>;
 
@@ -1111,7 +1117,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 #endif
 }
 
-double C2CReader::getRevolvedVolume(const numerics::Matrix<double> &transform) const
+double C2CReader::getRevolvedVolume(const numerics::Matrix<double>& transform) const
 {
   double revolvedVolume = 0.;
   for(const auto& nurbs : m_nurbsData)

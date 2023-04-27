@@ -1700,7 +1700,9 @@ private:
   void refineShape(const klee::Shape& shape)
   {
     // If we are not refining dynamically, return.
-    if(m_percentError <= MINIMUM_PERCENT_ERROR || m_refinementType != RefinementDynamic) return;
+    if(m_percentError <= MINIMUM_PERCENT_ERROR ||
+       m_refinementType != RefinementDynamic)
+      return;
 
     // If the prior loadShape call was unable to create a revolved volume for
     // the shape then we can't do any better than the current mesh.

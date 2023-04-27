@@ -132,7 +132,8 @@ void Shaper::setPercentError(double percent)
   {
     m_refinementType = RefinementUniformSegments;
   }
-  m_percentError = clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
+  m_percentError =
+    clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
 }
 
 void Shaper::setRefinementType(Shaper::RefinementType t)
@@ -187,14 +188,15 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
 
     // Pass in the transform so any transformations can figure into
     // computing the revolved volume.
-    if(m_refinementType == RefinementDynamic && percentError > MINIMUM_PERCENT_ERROR)
+    if(m_refinementType == RefinementDynamic &&
+       percentError > MINIMUM_PERCENT_ERROR)
     {
       quest::internal::read_c2c_mesh(shapePath,
                                      transform,
                                      percentError,
                                      m_vertexWeldThreshold,
                                      m_surfaceMesh,
-                                     revolvedVolume, // output arg
+                                     revolvedVolume,  // output arg
                                      m_comm);
     }
     else
@@ -204,7 +206,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
                                      m_samplesPerKnotSpan,
                                      m_vertexWeldThreshold,
                                      m_surfaceMesh,
-                                     revolvedVolume, // output arg
+                                     revolvedVolume,  // output arg
                                      m_comm);
     }
 

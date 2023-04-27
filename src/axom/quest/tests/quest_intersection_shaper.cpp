@@ -491,7 +491,8 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
 
     // Now check the precent error derived from the revolved volume and the
     // linearized revolved volume
-    double actualPercentError = 100. * (1. - shaper.getApproximateRevolvedVolume() / revolvedVolume);
+    double actualPercentError =
+      100. * (1. - shaper.getApproximateRevolvedVolume() / revolvedVolume);
     EXPECT_LT(actualPercentError, targetPercentError);
   }
 
