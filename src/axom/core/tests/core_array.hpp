@@ -1286,8 +1286,6 @@ void checkIteratorDeviceImpl()
   axom::Array<int, 1, axom::MemorySpace::Host> v_int_host(SIZE);
   axom::Array<int, 1, axom::MemorySpace::Device> v_int(SIZE);
 
-  //auto v_int_view = v_int.view();
-
   /* Push 0...999 elements */
   for(int i = 0; i < SIZE; i++)
   {
