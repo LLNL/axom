@@ -229,8 +229,8 @@ public:
       for(int j = i + 1; j < NUM_OCT_VERTS; j++)
       {
         // operator= for Point does not want to play nice...
-        if(m_points[i][0] == m_points[j][0] && m_points[i][1] == m_points[j][1] &&
-           m_points[i][2] == m_points[j][2])
+        if(m_points[i][0] == m_points[j][0] &&
+           m_points[i][1] == m_points[j][1] && m_points[i][2] == m_points[j][2])
         {
           return true;
         }
