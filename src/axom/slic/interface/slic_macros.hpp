@@ -492,14 +492,38 @@
 /// @}
 
 // Use assert when on device (HIP does not yet support assert())
-#elif defined(AXOM_DEBUG) && defined(AXOM_DEVICE_CODE) && \
-  !defined(__HIP_DEVICE_COMPILE__)
-
-  #define SLIC_ASSERT(EXP) assert(EXP)
-  #define SLIC_ASSERT_MSG(EXP, msg) assert(EXP)
-  #define SLIC_CHECK(EXP) assert(EXP)
-  #define SLIC_CHECK_MSG(EXP, msg) assert(EXP)
-
+#elif defined(AXOM_DEBUG) && defined(AXOM_DEVICE_CODE)
+  #if !defined(__HIP_DEVICE_COMPILE__)
+    #define SLIC_ASSERT(EXP) assert(EXP)
+    #define SLIC_ASSERT_MSG(EXP, msg) assert(EXP)
+    #define SLIC_CHECK(EXP) assert(EXP)
+    #define SLIC_CHECK_MSG(EXP, msg) assert(EXP)
+  #else
+    // AXOM_DEBUG is defined so the expression and message cannot be ignored
+    // as they probably contain parameters that were decorated with AXOM_UNUSED_PARAM
+    // which will require the expression and message to be used to avoid warnings.
+    // Here we use them in a way that will not really have a runtime effect.
+    // The msg code block may contain << operators so we need a stream-like object
+    // but we enclose it in "if(false)" so it never executes.
+    namespace axom
+    {
+    namespace slic
+    {
+    namespace internal
+    {
+      class blackhole {};
+      // Write an object to a blackhole.
+      template <typename T>
+      AXOM_HOST_DEVICE
+      inline blackhole &operator << (blackhole &bh, T) { return bh; }
+    }
+    }
+    }
+    #define SLIC_ASSERT(EXP) ((void)(EXP))
+    #define SLIC_ASSERT_MSG(EXP, msg) {((void)(EXP)); if(false){axom::slic::internal::blackhole __oss; __oss << msg;}}
+    #define SLIC_CHECK(EXP) ((void)(EXP))
+    #define SLIC_CHECK_MSG(EXP, msg) {((void)(EXP)); if(false){axom::slic::internal::blackhole __oss; __oss << msg;}}
+  #endif
 #else  // turn off debug macros and asserts
 
   #define SLIC_ASSERT(ignore_EXP) ((void)0)

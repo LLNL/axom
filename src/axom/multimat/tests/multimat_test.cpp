@@ -301,7 +301,7 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
   EXPECT_EQ(data.stride, map.stride());
 
   //check via findValue(...)
-  int sparse_idx = 0;
+  // int sparse_idx = 0;
   for(int ci = 0; ci < data.num_cells; ++ci)
   {
     for(int mi = 0; mi < data.num_mats; ++mi)
@@ -328,7 +328,7 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
           {
             EXPECT_NE(d, nullptr);
             EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx * data.stride + s]);
-            if(s == data.stride - 1) sparse_idx += 1;
+            // if(s == data.stride - 1) sparse_idx += 1;
           }
           else
           {
