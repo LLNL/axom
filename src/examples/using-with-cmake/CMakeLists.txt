@@ -53,27 +53,9 @@ if (ENABLE_HIP)
     find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH})
 endif()
 
-# Required to create Conduit's MPI dependencies
-if (ENABLE_MPI)
-    find_package(MPI REQUIRED)
-    
-    if(NOT TARGET mpi AND TARGET MPI::MPI_CXX)
-        add_library(mpi INTERFACE)
-        target_link_libraries(mpi INTERFACE MPI::MPI_CXX)
-    endif()
-endif()
-
-find_package(axom REQUIRED
-             NO_DEFAULT_PATH 
-             PATHS ${AXOM_DIR}/lib/cmake)
-
-# BEGIN FIXME:
-# Create fake empty target, this stops CMake from adding -lcuda_runtime to the link line
-add_library(cuda_runtime INTERFACE)
-
-# Create fake empty target, this stops CMake from adding -lblt_hip_runtime to the link line
-add_library(blt_hip_runtime INTERFACE)
-# END FIXME
+find_dependency(axom REQUIRED
+                NO_DEFAULT_PATH 
+                PATHS ${AXOM_DIR}/lib/cmake)
 
 # Remove implicitly added link directories added by CMake that are problematic when
 # the default system libraries are older than the ones used by the compiler
