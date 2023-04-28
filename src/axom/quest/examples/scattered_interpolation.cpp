@@ -444,7 +444,7 @@ struct Input
   int dimension {2};
   std::vector<double> boundsMin;
   std::vector<double> boundsMax;
-  std::string outputProtocol = SIDRE_DEFAULT_PROTOCOL;
+  std::string outputProtocol = sidre::Group::getDefaultIOProtocol();
 
   const std::set<std::string> s_validProtocols {"json",
                                                 "sidre_json"

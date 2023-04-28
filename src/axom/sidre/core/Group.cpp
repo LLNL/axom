@@ -37,6 +37,10 @@ namespace sidre
 // support path syntax.
 const char Group::s_path_delimiter = '/';
 
+// Initialization of static members holding I/O protocol strings
+std::vector<std::string> Group::s_io_protocols = std::vector<std::string>();
+std::string Group::s_default_protocol = SIDRE_DEFAULT_PROTOCOL;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Private utility functions to cast ItemCollections to (named) MapCollections.

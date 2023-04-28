@@ -155,6 +155,38 @@ public:
   char getPathDelimiter() const { return s_path_delimiter; }
 
   /*!
+   * \brief static method to get valid protocols for Group I/O methods.
+   *
+   * Only protocols that work for both input and output are returned.
+   */
+  static const std::vector<std::string>& getValidIOProtocols()
+  {
+    // The first time this is called, fill the vector with valid protocols.
+    if(s_io_protocols.empty())
+    {
+#ifdef AXOM_USE_HDF5
+      s_io_protocols.push_back("sidre_hdf5");
+      s_io_protocols.push_back("conduit_hdf5");
+#endif
+      s_io_protocols.push_back("sidre_json");
+      s_io_protocols.push_back("sidre_conduit_json");
+      s_io_protocols.push_back("conduit_bin");
+      s_io_protocols.push_back("conduit_json");
+      s_io_protocols.push_back("json");
+    }
+
+    return s_io_protocols;
+  }
+
+  /*!
+   * \brief static method to get the default I/O protocol.
+   */
+  static const std::string& getDefaultIOProtocol()
+  {
+    return s_default_protocol;
+  }
+
+  /*!
    * \brief Return index of Group object within parent Group.
    */
   IndexType getIndex() const { return m_index; }
@@ -1834,6 +1866,9 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
+
+  static std::vector<std::string> s_io_protocols;
+  static std::string s_default_protocol;
 };
 
 } /* end namespace sidre */
