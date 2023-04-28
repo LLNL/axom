@@ -191,7 +191,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     if(m_refinementType == RefinementDynamic &&
        percentError > MINIMUM_PERCENT_ERROR)
     {
-      quest::internal::read_c2c_mesh(shapePath,
+      quest::internal::read_c2c_mesh_non_uniform(shapePath,
                                      transform,
                                      percentError,
                                      m_vertexWeldThreshold,
@@ -201,7 +201,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     }
     else
     {
-      quest::internal::read_c2c_mesh(shapePath,
+      quest::internal::read_c2c_mesh_uniform(shapePath,
                                      transform,
                                      m_samplesPerKnotSpan,
                                      m_vertexWeldThreshold,

@@ -410,7 +410,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
 {
   SLIC_INFO(axom::fmt::format("Testing {} with {}", filebase, policyName));
 
-  // Save the contour and YAML data to files to klee can read them.
+  // Save the contour and YAML data to files so klee can read them.
   std::vector<std::string> filenames;
   filenames.emplace_back(filebase + ".contour");
   filenames.emplace_back(filebase + ".yaml");

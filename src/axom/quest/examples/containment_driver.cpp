@@ -78,7 +78,7 @@ public:
 
     // Create surface mesh
     m_surfaceMesh = new UMesh(2, mint::SEGMENT);
-    reader.getLinearMesh(static_cast<UMesh*>(m_surfaceMesh), segmentsPerKnotSpan);
+    reader.getLinearMeshUniform(static_cast<UMesh*>(m_surfaceMesh), segmentsPerKnotSpan);
   }
 #else
   void loadContourMesh(const std::string& inputFile, int segmentsPerKnotSpan)

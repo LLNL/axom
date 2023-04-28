@@ -288,7 +288,7 @@ int read_stl_mesh(const std::string& file,
  * \see C2CReader
  * \see PC2CReader
  */
-int read_c2c_mesh(const std::string& file,
+int read_c2c_mesh_uniform(const std::string& file,
                   const numerics::Matrix<double>& transform,
                   int segmentsPerPiece,
                   double vertexWeldThreshold,
@@ -316,6 +316,7 @@ int read_c2c_mesh(const std::string& file,
  *
  * \pre m == nullptr
  * \pre !file.empty()
+ * \pre percentError should be in the range (0,1) non-inclusive.
  *
  * \post m != nullptr
  * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
@@ -326,7 +327,7 @@ int read_c2c_mesh(const std::string& file,
  * \see C2CReader
  * \see PC2CReader
  */
-int read_c2c_mesh(const std::string& file,
+int read_c2c_mesh_non_uniform(const std::string& file,
                   const numerics::Matrix<double>& transform,
                   double percentError,
                   double vertexWeldThreshold,

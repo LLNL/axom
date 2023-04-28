@@ -1581,6 +1581,10 @@ private:
 
   /*!
    * \brief Compute the circle area of a circle of radius at \a level.
+   *        The area is approximated by a set of line segments around
+   *        the perimeter of the circle where the number of line segments
+   *        is determined by \a level.
+   *
    * \param radius The radius of the circle.
    * \return The circle area
    */

@@ -42,9 +42,7 @@ inline primal::Point<double, 2> transformPoint(
   const primal::Point<double, 2>& pt)
 {
   // Turn the point2 into a vec4.
-  double pt4[] = {0., 0., 0., 1.}, newpt4[] = {0., 0., 0., 1.};
-  pt4[0] = pt[0];
-  pt4[1] = pt[1];
+  double pt4[] = {pt[0], pt[1], 0., 1.}, newpt4[] = {0., 0., 0., 1.};
 
   // Transform the point.
   axom::numerics::matrix_vector_multiply(transform, pt4, newpt4);
@@ -498,7 +496,6 @@ struct NURBSInterpolator
   void derivativesAt(double u, int d, PointType* CK) const
   {
     const int p = m_curve.order - 1;
-    SLIC_ERROR_IF(p > 5, "Curves with p > 5 require new binomial table!");
 
     // Compute the basis functions for the curve and its d derivatives.
     int du = std::min(d, p);
@@ -509,16 +506,6 @@ struct NURBSInterpolator
     // Store w(u) in wders[0], w'(u) in wders[1], ...
     std::vector<PointType> Aders(d + 1);
     std::vector<double> wders(d + 1);
-
-    // Table of binomial coefficients up to quintic.
-    // We more than likely will not ever go beyond cubic since each NURBS
-    // span is probably blended using cubics.
-    static const double binomial[6][6] = {{1., 0., 0., 0., 0., 0.},
-                                          {1., 1., 0., 0., 0., 0.},
-                                          {1., 2., 1., 0., 0., 0.},
-                                          {1., 3., 3., 1., 0., 0.},
-                                          {1., 4., 6., 4., 1., 0.},
-                                          {1., 5., 10., 10., 5., 1.}};
 
     // Compute the point and d derivatives
     for(int k = 0; k <= du; k++)
@@ -550,8 +537,9 @@ struct NURBSInterpolator
       PointType v = Aders[k];
       for(int i = 1; i <= k; i++)
       {
-        v[0] = v[0] - binomial[k][i] * wders[i] * CK[k - 1][0];
-        v[1] = v[1] - binomial[k][i] * wders[i] * CK[k - 1][1];
+        auto bin = axom::utilities::binomialCoefficient(k, i);
+        v[0] = v[0] - bin * wders[i] * CK[k - 1][0];
+        v[1] = v[1] - bin * wders[i] * CK[k - 1][1];
       }
       CK[k][0] = v[0] / wders[0];
       CK[k][1] = v[1] / wders[0];
@@ -640,6 +628,9 @@ struct NURBSInterpolator
    * \brief Compute the revolved volume of the curve across its entire
    *        parametric interval [0,1] using quadrature.
    *
+   * \param transform A 4x4 transformation matrix that we use to transform
+   *                  the points and the derivative values.
+   *
    * \note We include a transformation of the points so any transforms
    *       can figure into the integration.
    *
@@ -722,6 +713,31 @@ struct NURBSInterpolator
     return vol;
   }
 
+  /*!
+   * \brief Approximate the arc length of the whole curve by using
+   *        the segments between a number of points.
+   *
+   * \param nSamples The number of points to use when making segments.
+   *
+   * \note Quadrature could probably be used too.
+   *
+   * \return The arc length of the whole curve when broken into segments.
+   */
+  double getArcLength(int nSamples) const
+  {
+    constexpr double u0 = 0.;
+    double arcLength = 0.;
+    PointType prev = at(u0);
+    for(int i = 1; i < nSamples; i++)
+    {
+      double u = i / static_cast<double>(nSamples - 1);
+      PointType cur = at(u);
+      arcLength += sqrt(primal::squared_distance(prev, cur));
+      prev = cur;
+    }
+    return arcLength;
+  }
+
 private:
   const c2c::NURBSData& m_curve;
   std::vector<std::pair<double, double>> m_spanIntervals;
@@ -793,7 +809,7 @@ void C2CReader::log()
 }
 
 //---------------------------------------------------------------------------
-void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                               int segmentsPerKnotSpan)
 {
   using axom::utilities::lerp;
@@ -889,7 +905,7 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
 }
 
 //---------------------------------------------------------------------------
-void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                               double percentError)
 {
   // Sanity checks
@@ -997,20 +1013,9 @@ void C2CReader::getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
     // If there is a single span in the contour then we already added its points.
     if(interpolator.numSpans() > 1)
     {
-      //---------------------------------------------------------------------
-      // Approximate the arc length of the whole curve by using a lot of
-      // line segments. Should we use quadrature instead here?
-      double hiCurveLen = 0.;
+      // Compute the arc length of the curve.
       constexpr int MAX_NUMBER_OF_SAMPLES = 2000;
-      PointType prev = first.point;
-      for(int i = 1; i < MAX_NUMBER_OF_SAMPLES; i++)
-      {
-        double u = i / static_cast<double>(MAX_NUMBER_OF_SAMPLES - 1);
-        PointType cur = interpolator.at(u);
-        hiCurveLen += sqrt(primal::squared_distance(prev, cur));
-        prev = cur;
-      }
-      //---------------------------------------------------------------------
+      double hiCurveLen = interpolator.getArcLength(MAX_NUMBER_OF_SAMPLES);
 
       // The initial curve length.
       double curveLength = first.length;

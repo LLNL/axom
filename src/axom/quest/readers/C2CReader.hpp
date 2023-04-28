@@ -67,7 +67,7 @@ public:
    * 
    * Knot spans are the sub-intervals within a spline
    */
-  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
+  void getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
                      int segmentsPerKnotSpan);
 
   /*!
@@ -77,7 +77,7 @@ public:
    * \param[in] mesh The mesh object that will contain the linearized line segments.
    * \param[in] percentError A percent of error that is acceptable to stop refinement.
    */
-  void getLinearMesh(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
+  void getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
                      double percentError);
 
   /*!
@@ -88,7 +88,9 @@ public:
    *
    * \note We compute revolved volume on the actual shapes so we can get a
    *       real revolved volume computed using the curve functions rather than
-   *       relying on a linearized curve.
+   *       relying on a linearized curve. The revolved volume is the volume
+   *       enclosed by the surface of revolution when the shape is revolved
+   *       about axis of revolution.
    *
    * \return The revolved volume.
    */

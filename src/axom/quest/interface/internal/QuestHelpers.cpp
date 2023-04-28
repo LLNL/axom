@@ -353,7 +353,7 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
 /*
  * Reads in the contour mesh from the specified file.
  */
-int read_c2c_mesh(const std::string& file,
+int read_c2c_mesh_uniform(const std::string& file,
                   const numerics::Matrix<double>& transform,
                   int segmentsPerPiece,
                   double vertexWeldThreshold,
@@ -390,7 +390,7 @@ int read_c2c_mesh(const std::string& file,
   int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader.getLinearMesh(static_cast<SegmentMesh*>(m), segmentsPerPiece);
+    reader.getLinearMeshUniform(static_cast<SegmentMesh*>(m), segmentsPerPiece);
     revolvedVolume = reader.getRevolvedVolume(transform);
   }
   else
@@ -407,7 +407,7 @@ int read_c2c_mesh(const std::string& file,
  * Reads in the contour mesh from the specified file and refines it according
  * to an error tolerance.
  */
-int read_c2c_mesh(const std::string& file,
+int read_c2c_mesh_non_uniform(const std::string& file,
                   const numerics::Matrix<double>& transform,
                   double percentError,
                   double vertexWeldThreshold,
@@ -444,7 +444,7 @@ int read_c2c_mesh(const std::string& file,
   int rc = reader.read();
   if(rc == READ_SUCCESS)
   {
-    reader.getLinearMesh(static_cast<SegmentMesh*>(m), percentError);
+    reader.getLinearMeshNonUniform(static_cast<SegmentMesh*>(m), percentError);
     revolvedVolume = reader.getRevolvedVolume(transform);
   }
   else
