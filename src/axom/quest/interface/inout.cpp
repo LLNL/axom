@@ -103,12 +103,12 @@ struct InOutHelper
     case 2:
 #ifdef AXOM_USE_C2C
       rc = internal::read_c2c_mesh_uniform(file,
-                                   numerics::Matrix<double>::identity(4),
-                                   m_params.m_segmentsPerKnotSpan,
-                                   m_params.m_vertexWeldThreshold,
-                                   mesh,
-                                   revolvedVolume,
-                                   comm);
+                                           numerics::Matrix<double>::identity(4),
+                                           m_params.m_segmentsPerKnotSpan,
+                                           m_params.m_vertexWeldThreshold,
+                                           mesh,
+                                           revolvedVolume,
+                                           comm);
 #else
       SLIC_WARNING(fmt::format(
         "Cannot read contour file: C2C not enabled in this configuration.",

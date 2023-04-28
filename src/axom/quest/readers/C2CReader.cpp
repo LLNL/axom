@@ -810,7 +810,7 @@ void C2CReader::log()
 
 //---------------------------------------------------------------------------
 void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              int segmentsPerKnotSpan)
+                                     int segmentsPerKnotSpan)
 {
   using axom::utilities::lerp;
 
@@ -905,8 +905,9 @@ void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>*
 }
 
 //---------------------------------------------------------------------------
-void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-                              double percentError)
+void C2CReader::getLinearMeshNonUniform(
+  mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+  double percentError)
 {
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");

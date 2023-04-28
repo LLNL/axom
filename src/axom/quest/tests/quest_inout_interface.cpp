@@ -149,11 +149,11 @@ TYPED_TEST(InOutInterfaceTest, initialize_from_mesh)
     double revolvedVolume = 0.;
     auto identity = axom::numerics::Matrix<double>::identity(4);
     rc = axom::quest::internal::read_c2c_mesh_uniform(this->meshfile,
-                                              identity,
-                                              segmentsPerKnotSpan,
-                                              weldThreshold,
-                                              mesh,
-                                              revolvedVolume);
+                                                      identity,
+                                                      segmentsPerKnotSpan,
+                                                      weldThreshold,
+                                                      mesh,
+                                                      revolvedVolume);
 #endif  // AXOM_USE_C2C
   }
   else  // DIM == 3

@@ -192,22 +192,22 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
        percentError > MINIMUM_PERCENT_ERROR)
     {
       quest::internal::read_c2c_mesh_non_uniform(shapePath,
-                                     transform,
-                                     percentError,
-                                     m_vertexWeldThreshold,
-                                     m_surfaceMesh,
-                                     revolvedVolume,  // output arg
-                                     m_comm);
+                                                 transform,
+                                                 percentError,
+                                                 m_vertexWeldThreshold,
+                                                 m_surfaceMesh,
+                                                 revolvedVolume,  // output arg
+                                                 m_comm);
     }
     else
     {
       quest::internal::read_c2c_mesh_uniform(shapePath,
-                                     transform,
-                                     m_samplesPerKnotSpan,
-                                     m_vertexWeldThreshold,
-                                     m_surfaceMesh,
-                                     revolvedVolume,  // output arg
-                                     m_comm);
+                                             transform,
+                                             m_samplesPerKnotSpan,
+                                             m_vertexWeldThreshold,
+                                             m_surfaceMesh,
+                                             revolvedVolume,  // output arg
+                                             m_comm);
     }
 
     // Transform the coordinates of the linearized mesh.

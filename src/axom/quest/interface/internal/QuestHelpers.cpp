@@ -354,12 +354,12 @@ int read_stl_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
  * Reads in the contour mesh from the specified file.
  */
 int read_c2c_mesh_uniform(const std::string& file,
-                  const numerics::Matrix<double>& transform,
-                  int segmentsPerPiece,
-                  double vertexWeldThreshold,
-                  mint::Mesh*& m,
-                  double& revolvedVolume,
-                  MPI_Comm comm)
+                          const numerics::Matrix<double>& transform,
+                          int segmentsPerPiece,
+                          double vertexWeldThreshold,
+                          mint::Mesh*& m,
+                          double& revolvedVolume,
+                          MPI_Comm comm)
 {
   // NOTE: C2C meshes are always 2D
   constexpr int DIMENSION = 2;
@@ -408,12 +408,12 @@ int read_c2c_mesh_uniform(const std::string& file,
  * to an error tolerance.
  */
 int read_c2c_mesh_non_uniform(const std::string& file,
-                  const numerics::Matrix<double>& transform,
-                  double percentError,
-                  double vertexWeldThreshold,
-                  mint::Mesh*& m,
-                  double& revolvedVolume,
-                  MPI_Comm comm)
+                              const numerics::Matrix<double>& transform,
+                              double percentError,
+                              double vertexWeldThreshold,
+                              mint::Mesh*& m,
+                              double& revolvedVolume,
+                              MPI_Comm comm)
 {
   // NOTE: C2C meshes are always 2D
   constexpr int DIMENSION = 2;

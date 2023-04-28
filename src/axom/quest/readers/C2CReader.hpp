@@ -68,7 +68,7 @@ public:
    * Knot spans are the sub-intervals within a spline
    */
   void getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
-                     int segmentsPerKnotSpan);
+                            int segmentsPerKnotSpan);
 
   /*!
    * \brief Projects high-order NURBS contours onto a linear mesh using \a percentError 
@@ -78,7 +78,7 @@ public:
    * \param[in] percentError A percent of error that is acceptable to stop refinement.
    */
   void getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
-                     double percentError);
+                               double percentError);
 
   /*!
    * \brief Compute the revolved volume of the shape using quadrature.
