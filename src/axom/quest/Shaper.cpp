@@ -76,6 +76,12 @@ private:
 
 }  // end namespace internal
 
+// These were needed for linking - but why? They are constexpr.
+constexpr int Shaper::DEFAULT_SAMPLES_PER_KNOT_SPAN;
+constexpr double Shaper::MINIMUM_PERCENT_ERROR;
+constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
+constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
+
 Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
@@ -108,12 +114,48 @@ void Shaper::setVertexWeldThreshold(double threshold)
   m_vertexWeldThreshold = threshold;
 }
 
+void Shaper::setPercentError(double percent)
+{
+  using axom::utilities::clampVal;
+  SLIC_WARNING_IF(
+    percent <= MINIMUM_PERCENT_ERROR,
+    axom::fmt::format("Percent error must be greater than {}. Provided value "
+                      "was {}. Dynamic refinement will not be used.",
+                      MINIMUM_PERCENT_ERROR,
+                      percent));
+  SLIC_WARNING_IF(percent > MAXIMUM_PERCENT_ERROR,
+                  axom::fmt::format(
+                    "Percent error must be less than {}. Provided value was {}",
+                    MAXIMUM_PERCENT_ERROR,
+                    percent));
+  if(percent <= MINIMUM_PERCENT_ERROR)
+  {
+    m_refinementType = RefinementUniformSegments;
+  }
+  m_percentError =
+    clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
+}
+
+void Shaper::setRefinementType(Shaper::RefinementType t)
+{
+  m_refinementType = t;
+}
+
 bool Shaper::isValidFormat(const std::string& format) const
 {
   return (format == "stl" || format == "c2c");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
+{
+  // Do not save the revolved volume in the default shaper.
+  double revolved = 0.;
+  loadShapeInternal(shape, m_percentError, revolved);
+}
+
+void Shaper::loadShapeInternal(const klee::Shape& shape,
+                               double percentError,
+                               double& revolvedVolume)
 {
   using axom::utilities::string::endsWith;
 
@@ -128,18 +170,48 @@ void Shaper::loadShape(const klee::Shape& shape)
   std::string shapePath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
   SLIC_INFO("Reading file: " << shapePath << "...");
 
+  // Initialize revolved volume.
+  revolvedVolume = 0.;
+
   if(endsWith(shapePath, ".stl"))
   {
     quest::internal::read_stl_mesh(shapePath, m_surfaceMesh, m_comm);
+    // Transform the coordinates of the linearized mesh.
+    applyTransforms(shape);
   }
 #ifdef AXOM_USE_C2C
   else if(endsWith(shapePath, ".contour"))
   {
-    quest::internal::read_c2c_mesh(shapePath,
-                                   m_samplesPerKnotSpan,
-                                   m_vertexWeldThreshold,
-                                   m_surfaceMesh,
-                                   m_comm);
+    // Get the transforms that are being applied to the mesh. Get them
+    // as a single concatenated matrix.
+    auto transform = getTransforms(shape);
+
+    // Pass in the transform so any transformations can figure into
+    // computing the revolved volume.
+    if(m_refinementType == RefinementDynamic &&
+       percentError > MINIMUM_PERCENT_ERROR)
+    {
+      quest::internal::read_c2c_mesh_non_uniform(shapePath,
+                                                 transform,
+                                                 percentError,
+                                                 m_vertexWeldThreshold,
+                                                 m_surfaceMesh,
+                                                 revolvedVolume,  // output arg
+                                                 m_comm);
+    }
+    else
+    {
+      quest::internal::read_c2c_mesh_uniform(shapePath,
+                                             transform,
+                                             m_samplesPerKnotSpan,
+                                             m_vertexWeldThreshold,
+                                             m_surfaceMesh,
+                                             revolvedVolume,  // output arg
+                                             m_comm);
+    }
+
+    // Transform the coordinates of the linearized mesh.
+    applyTransforms(transform);
   }
 #endif
   else
@@ -151,23 +223,16 @@ void Shaper::loadShape(const klee::Shape& shape)
   }
 }
 
-void Shaper::applyTransforms(const klee::Shape& shape)
+numerics::Matrix<double> Shaper::getTransforms(const klee::Shape& shape) const
 {
+  const auto identity4x4 = numerics::Matrix<double>::identity(4);
+  numerics::Matrix<double> transformation(identity4x4);
   auto& geometryOperator = shape.getGeometry().getGeometryOperator();
   auto composite =
     std::dynamic_pointer_cast<const klee::CompositeOperator>(geometryOperator);
   if(composite)
   {
-    // Get surface mesh coordinates
-    const int spaceDim = m_surfaceMesh->getDimension();
-    const int numSurfaceVertices = m_surfaceMesh->getNumberOfNodes();
-    double* x = m_surfaceMesh->getCoordinateArray(mint::X_COORDINATE);
-    double* y = m_surfaceMesh->getCoordinateArray(mint::Y_COORDINATE);
-    double* z = spaceDim > 2
-      ? m_surfaceMesh->getCoordinateArray(mint::Z_COORDINATE)
-      : nullptr;
-
-    // Loop through operators and apply transformations to vertices
+    // Concatenate the transformations
     for(auto op : composite->getOperators())
     {
       // Use visitor pattern to extract the affine matrix from supported operators
@@ -178,19 +243,45 @@ void Shaper::applyTransforms(const klee::Shape& shape)
         continue;
       }
       const auto& matrix = visitor.getMatrix();
+      numerics::Matrix<double> res(identity4x4);
+      numerics::matrix_multiply(matrix, transformation, res);
+      transformation = res;
+    }
+  }
+  return transformation;
+}
 
-      // Apply transformation to coordinates of each vertex in mesh
-      double xformed[4];
-      for(int i = 0; i < numSurfaceVertices; ++i)
+void Shaper::applyTransforms(const klee::Shape& shape)
+{
+  // Concatenate the transformations
+  numerics::Matrix<double> transformation = getTransforms(shape);
+  // Transform the surface mesh coordinates.
+  applyTransforms(transformation);
+}
+
+void Shaper::applyTransforms(const numerics::Matrix<double>& transformation)
+{
+  // Apply transformation to coordinates of each vertex in mesh
+  if(!transformation.isIdentity())
+  {
+    const int spaceDim = m_surfaceMesh->getDimension();
+    const int numSurfaceVertices = m_surfaceMesh->getNumberOfNodes();
+    double* x = m_surfaceMesh->getCoordinateArray(mint::X_COORDINATE);
+    double* y = m_surfaceMesh->getCoordinateArray(mint::Y_COORDINATE);
+    double* z = spaceDim > 2
+      ? m_surfaceMesh->getCoordinateArray(mint::Z_COORDINATE)
+      : nullptr;
+
+    double xformed[4];
+    for(int i = 0; i < numSurfaceVertices; ++i)
+    {
+      double coords[4] = {x[i], y[i], (z == nullptr ? 0. : z[i]), 1.};
+      numerics::matrix_vector_multiply(transformation, coords, xformed);
+      x[i] = xformed[0];
+      y[i] = xformed[1];
+      if(z != nullptr)
       {
-        double coords[4] = {x[i], y[i], (z == nullptr ? 0. : z[i]), 1.};
-        numerics::matrix_vector_multiply(matrix, coords, xformed);
-        x[i] = xformed[0];
-        y[i] = xformed[1];
-        if(z != nullptr)
-        {
-          z[i] = xformed[2];
-        }
+        z[i] = xformed[2];
       }
     }
   }
