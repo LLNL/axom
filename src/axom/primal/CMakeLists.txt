@@ -88,19 +88,16 @@ blt_list_append(
 #------------------------------------------------------------------------------
 set( primal_dependencies
      slic
-     core
-     ${axom_device_depends}
      )
 
 blt_list_append( TO primal_dependencies ELEMENTS mfem IF MFEM_FOUND )
 
-blt_add_library(
+axom_add_library(
     NAME                  primal
     SOURCES               ${primal_sources}
     HEADERS               ${primal_headers}
     FOLDER                axom/primal
     DEPENDS_ON            ${primal_dependencies}
-    OBJECT                TRUE
     )
 
 axom_write_unified_header(NAME    primal

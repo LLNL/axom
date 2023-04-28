@@ -32,12 +32,11 @@ set(lumberjack_sources
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-blt_add_library( NAME        lumberjack
+axom_add_library(NAME        lumberjack
                  SOURCES     ${lumberjack_sources}
                  HEADERS     ${lumberjack_headers}
                  DEPENDS_ON  core mpi
                  FOLDER      axom/lumberjack
-                 OBJECT      TRUE
                  )
 
 axom_write_unified_header(NAME    lumberjack

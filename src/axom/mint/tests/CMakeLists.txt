@@ -43,17 +43,15 @@ set( mint_tests
      mint_deprecated_mcarray.cpp
    )
 
-set( mint_test_dependencies axom ${axom_device_depends})
-
 foreach( test ${mint_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
 
-   blt_add_executable(
+   axom_add_executable(
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${mint_test_dependencies} gtest
+        DEPENDS_ON mint gtest
         FOLDER     axom/mint/tests
         )
 

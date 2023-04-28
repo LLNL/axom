@@ -20,15 +20,14 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MPI AND HDF5_FOUND )
         convert_sidre_protocol.cpp
     )
     set(datastore_converter_depends
-        axom
-        ${axom_device_depends}
-        mpi
+        slam
+        sidre
         cli11
         fmt)
 
     blt_list_append(TO datastore_converter_depends ELEMENTS scr IF SCR_FOUND)
 
-    blt_add_executable(
+    axom_add_executable(
         NAME       convert_sidre_protocol
         SOURCES    ${datastore_converter_sources}
         OUTPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
@@ -43,19 +42,18 @@ endif()
 #------------------------------------------------------------------------------
 # mesh_tester is a utility that tests a mesh for a variety of problems.
 #------------------------------------------------------------------------------
-set(mesh_tester_sources
-    mesh_tester.cpp
-)
-set(mesh_tester_depends
-    axom
-    ${axom_device_depends}
-    )
-
-blt_list_append(TO mesh_tester_depends ELEMENTS umpire IF UMPIRE_FOUND)
-blt_list_append(TO mesh_tester_depends ELEMENTS RAJA IF RAJA_FOUND)
-
 if(AXOM_ENABLE_QUEST)
-    blt_add_executable(
+    set(mesh_tester_sources
+        mesh_tester.cpp
+    )
+    set(mesh_tester_depends
+        quest
+        )
+
+    blt_list_append(TO mesh_tester_depends ELEMENTS umpire IF UMPIRE_FOUND)
+    blt_list_append(TO mesh_tester_depends ELEMENTS RAJA IF RAJA_FOUND)
+
+    axom_add_executable(
         NAME        mesh_tester
         SOURCES     ${mesh_tester_sources}
         OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
@@ -84,16 +82,15 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
         data_collection_util.cpp
     )
     set(data_collection_util_depends
-        axom
-        ${axom_device_depends}
-        mfem
+        sidre
+        primal
         cli11
         fmt
         )
 
     blt_list_append(TO data_collection_util_depends ELEMENTS mpi IF AXOM_ENABLE_MPI)
 
-    blt_add_executable(
+    axom_add_executable(
         NAME        data_collection_util
         SOURCES     ${data_collection_util}
         OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}

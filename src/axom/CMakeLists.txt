@@ -10,17 +10,16 @@
 #------------------------------------------------------------------------------
 
 # Core is an essential part of Axom and cannot be turned off
-add_subdirectory(core)
-set(AXOM_ENABLE_CORE ON CACHE BOOL "" FORCE)
-set(AXOM_COMPONENTS_FULL core CACHE STRING "List of all components in Axom" FORCE)
-set(AXOM_COMPONENTS_ENABLED core
-    CACHE STRING "List of all enabled components in Axom" FORCE)
+axom_add_component(COMPONENT_NAME core DEFAULT_STATE ON)
+if(NOT AXOM_ENABLE_CORE)
+    message(FATAL_ERROR "Core is an essential part of Axom and cannot be turned off")
+endif()
 
 # Lumberjack is a parallel message filtering and reduction library. It can be used
 # by itself or as a SLIC Log Stream. It is not meant for serial (non-mpi) executables.
 if(AXOM_ENABLE_MPI)
-    axom_add_component( COMPONENT_NAME lumberjack
-                        DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
+    axom_add_component(COMPONENT_NAME lumberjack
+                       DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
 else()
     message(STATUS "Axom Component Lumberjack turned off due to AXOM_ENABLE_MPI=OFF")
     set(AXOM_ENABLE_LUMBERJACK OFF CACHE BOOL "")
@@ -39,32 +38,31 @@ axom_add_component(COMPONENT_NAME klee   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME multimat DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
-# Combine all component object libraries into a unified library
-blt_add_library(NAME       axom
-                SOURCES    Axom.cpp
-                DEPENDS_ON ${AXOM_COMPONENTS_ENABLED})
-
-install(TARGETS              axom
+install(TARGETS              ${AXOM_COMPONENTS_ENABLED}
         EXPORT               axom-targets
         DESTINATION          lib)
-install(EXPORT axom-targets DESTINATION lib/cmake)
+install(EXPORT               axom-targets 
+        NAMESPACE            axom::
+        DESTINATION          lib/cmake)
 
 #------------------------------------------------------------------------------
 # Generate export symbols
 #------------------------------------------------------------------------------
 include(GenerateExportHeader)
 set(_export_header ${PROJECT_BINARY_DIR}/axom_export_symbols)
-generate_export_header(axom  EXPORT_FILE_NAME ${_export_header})
+generate_export_header(core
+                       BASE_NAME axom
+                       EXPORT_FILE_NAME ${_export_header})
 
 #------------------------------------------------------------------------------
 # Output some information about the configuration
 #------------------------------------------------------------------------------
-foreach(comp ${AXOM_COMPONENTS_FULL})
-    string(TOUPPER ${comp} COMPONENT_NAME_UPPERCASE)
+foreach(_component ${AXOM_COMPONENTS_FULL})
+    string(TOUPPER ${_component} COMPONENT_NAME_UPPERCASE)
     if(AXOM_ENABLE_${COMPONENT_NAME_UPPERCASE})
-        message(STATUS "Axom component ${comp} is ON")
+        message(STATUS "Axom component ${_component} is ON")
     else()
-        message(STATUS "Axom component ${comp} is OFF")
+        message(STATUS "Axom component ${_component} is OFF")
     endif()
 endforeach()
 
@@ -99,9 +97,9 @@ endif()
 # Each axom component needs to have 'axom_EXPORTS' defined when building
 #------------------------------------------------------------------------------
 if(WIN32)
-    foreach(c ${AXOM_COMPONENTS_ENABLED})
+    foreach(_component ${AXOM_COMPONENTS_ENABLED})
         blt_add_target_definitions(
-            TO                 ${c}
+            TO                 ${_component}
             SCOPE              PRIVATE
             TARGET_DEFINITIONS "axom_EXPORTS")
     endforeach()

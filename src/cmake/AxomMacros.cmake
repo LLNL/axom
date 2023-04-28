@@ -116,6 +116,96 @@ endmacro(axom_add_component)
 
 
 ##------------------------------------------------------------------------------
+## axom_add_executable(
+##                     NAME        <name>
+##                     SOURCES     [source1 [source2 ...]]
+##                     HEADERS     [header1 [header2 ...]]
+##                     INCLUDES    [dir1 [dir2 ...]]
+##                     DEFINES     [define1 [define2 ...]]
+##                     DEPENDS_ON  [dep1 [dep2 ...]]
+##                     OUTPUT_DIR  [dir]
+##                     OUTPUT_NAME [name]
+##                     FOLDER      [name])
+##
+## Wrapper around blt_add_executable
+##------------------------------------------------------------------------------
+macro(axom_add_executable)
+
+    set(options )
+    set(singleValueArgs NAME OUTPUT_DIR OUTPUT_NAME FOLDER)
+    set(multiValueArgs HEADERS SOURCES INCLUDES DEFINES DEPENDS_ON)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Blanket add openmp as a dependency to get around not propagating
+    # openmp to fortran dependencies
+    blt_list_append(TO arg_DEPENDS_ON ELEMENTS openmp IF ENABLE_OPENMP)
+
+    blt_add_executable(NAME        ${arg_NAME}
+                       SOURCES     ${arg_SOURCES}
+                       HEADERS     ${arg_HEADERS}
+                       INCLUDES    ${arg_INCLUDES}
+                       DEFINES     ${arg_DEFINES}
+                       DEPENDS_ON  ${arg_DEPENDS_ON} ${axom_device_depends}
+                       OUTPUT_DIR  ${arg_OUTPUT_DIR}
+                       OUTPUT_NAME ${arg_OUTPUT_NAME}
+                       FOLDER      ${arg_FOLDER})
+
+endmacro(axom_add_executable)
+
+
+##------------------------------------------------------------------------------
+## axom_add_library(
+##                  NAME         <libname>
+##                  SOURCES      [source1 [source2 ...]]
+##                  HEADERS      [header1 [header2 ...]]
+##                  INCLUDES     [dir1 [dir2 ...]]
+##                  DEFINES      [define1 [define2 ...]]
+##                  DEPENDS_ON   [dep1 ...] 
+##                  OUTPUT_NAME  [name]
+##                  OUTPUT_DIR   [dir]
+##                  SHARED       [TRUE | FALSE]
+##                  OBJECT       [TRUE | FALSE]
+##                  CLEAR_PREFIX [TRUE | FALSE]
+##                  FOLDER       [name])
+##
+## Wrapper around blt_add_library
+##------------------------------------------------------------------------------
+macro(axom_add_library)
+
+    set(options)
+    set(singleValueArgs NAME OUTPUT_NAME OUTPUT_DIR SHARED OBJECT CLEAR_PREFIX FOLDER)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON)
+
+    # parse the arguments
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    if("openmp" IN_LIST arg_DEPENDS_ON)
+        message(FATAL_ERROR "Do not add 'openmp' to Axom libraries to avoid propegation. It is handled automatically.")
+    endif()
+
+    blt_add_library(NAME        ${arg_NAME}
+                    SOURCES     ${arg_SOURCES}
+                    HEADERS     ${arg_HEADERS}
+                    INCLUDES    ${arg_INCLUDES}
+                    DEFINES     ${arg_DEFINES}
+                    DEPENDS_ON  ${arg_DEPENDS_ON} ${axom_device_depends}
+                    OUTPUT_DIR  ${arg_OUTPUT_DIR}
+                    OUTPUT_NAME ${arg_OUTPUT_NAME}
+                    FOLDER      ${arg_FOLDER})
+
+    if(ENABLE_OPENMP AND (NOT "${arg_SOURCES}" STREQUAL ""))
+        # Do not propegate OpenMP due to generator expressions evaluating early
+        target_link_libraries(${arg_NAME} PRIVATE openmp)
+    endif()
+
+endmacro(axom_add_library)
+
+
+##------------------------------------------------------------------------------
 ## axom_add_test(NAME            [name]
 ##               COMMAND         [command] 
 ##               NUM_MPI_TASKS   [n]

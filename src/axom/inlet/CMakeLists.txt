@@ -53,16 +53,15 @@ blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF SOL_FOUND)
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(inlet_depends sidre slic core ${axom_device_depends} fmt)
+set(inlet_depends sidre fmt)
 
 blt_list_append(TO inlet_depends ELEMENTS sol lua IF SOL_FOUND)
 
-blt_add_library( NAME        inlet
+axom_add_library(NAME        inlet
                  SOURCES     ${inlet_sources}
                  HEADERS     ${inlet_headers}
                  DEPENDS_ON  ${inlet_depends}
-                 FOLDER      axom/inlet
-                 OBJECT      TRUE )
+                 FOLDER      axom/inlet )
 
 # Set file back to C++ due to nvcc compiler error
 set_source_files_properties(LuaReader.cpp PROPERTIES LANGUAGE CXX)
@@ -84,7 +83,7 @@ endif()
 #------------------------------------------------------------------------------
 # Add tests
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_TESTS AND ENABLE_GMOCK)
+if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
