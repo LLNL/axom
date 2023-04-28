@@ -72,7 +72,7 @@ struct Segment
  * \param segments A vector of Segments.
  * \return The index of the element with the longest next_length value.
  */
-size_t next_longest(const std::vector<Segment>& segments)
+size_t nextLongest(const std::vector<Segment>& segments)
 {
   size_t maxIdx = 0;
   double max_length = 0.;
@@ -160,7 +160,7 @@ static void appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
  * \param filename The name of the file to write.
  * \param S The segments to write.
  */
-static void write_lines(const std::string& filename, const std::vector<Segment>& S)
+static void writeLines(const std::string& filename, const std::vector<Segment>& S)
 {
   FILE* f = fopen(filename.c_str(), "wt");
   fprintf(f, "# vtk DataFile Version 4.2\n");
@@ -1039,7 +1039,7 @@ void C2CReader::getLinearMeshNonUniform(
             (iteration < MAX_NUMBER_OF_SAMPLES))
       {
         // Get the index of the segment we'll split.
-        size_t splitIndex = next_longest(S);
+        size_t splitIndex = nextLongest(S);
         size_t nextIndex = splitIndex + 1;
 
         // Partition segment.
@@ -1094,7 +1094,7 @@ void C2CReader::getLinearMeshNonUniform(
         char filename[512];
         int npts = S.size();
         sprintf(filename, "lines%d_%05d.vtk", contourCount, npts);
-        write_lines(filename, S);
+        writeLines(filename, S);
         SLIC_INFO(fmt::format("Wrote {}", filename));
 #endif
 

@@ -39,12 +39,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `Polyhedron` object from a given primitive.
 - Adds `DataStore::getBufferInfo()` and `Group::getDataInfo` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
 - Quest: Adds a `quest::ProEReader` for reading in Pro/E tetrahedral meshes
-- Quest: NURBS curve linearization now supports a method that can dynamically refine the curve
-  according to an error percentage. This is in addition to the existing segment-based
-  refinement method. The dynamic method is activated using `Shaper::setRefinementType()`
-  and by calling `Shaper::setPercentError()` to set a refinement error percentage. The
-  IntersectionShaper can use the percent error to determine whether the revolved volume
-  for a shape is sufficiently accurate or whether the shape must be further refined.
+- Quest: The `quest::IntersectionShaper` class can now use a percent error to determine
+  whether the revolved volume for a shape is sufficiently accurate or whether the shape
+  must be further refined. This new dynamic method of shaping complements the existing
+  segment-based curve refinement method and it is activated using `Shaper::setRefinementType()`
+  and by calling `Shaper::setPercentError()` to set a refinement error percentage.
 
 ### Changed
 - `IntersectionShaper` now implements material replacement rules.

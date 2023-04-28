@@ -465,22 +465,9 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
     shaper.prepareShapeQuery(shapeDim, shape);
     slic::flushStreams();
 
-    // NOTE: We do not want to actually run the query in this case. We're mainly
-    //       interested in how the shape was refined and whether we hit the
-    //       percent error.
-#if 0
-    // Query the mesh against this shape
-    shaper.runShapeQuery(shape);
-    slic::flushStreams();
-
-    // Apply the replacement rules for this shape against the existing materials
-    shaper.applyReplacementRules(shape);
-    slic::flushStreams();
-
-    // Finalize data structures associated with this shape and spatial index
-    shaper.finalizeShapeQuery();
-    slic::flushStreams();
-#endif
+    // NOTE: We do not actually run the query. We're mainly interested
+    //       in how the shape was refined and whether we hit the percent
+    //       error.
 
     // Now check the analytical revolved volume vs the value we expect. This makes
     // sure the quadrature-computed value is "close enough".

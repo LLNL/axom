@@ -1361,8 +1361,8 @@ public:
   {
     // Save m_percentError and m_level in case refineShape needs to change them
     // to meet the overall desired error tolerance for the volume.
-    double saved_percentError = m_percentError;
-    double saved_level = m_level;
+    const double saved_percentError = m_percentError;
+    const double saved_level = m_level;
 
     // Refine the shape, potentially reloading it more refined.
     refineShape(shape);
@@ -1465,11 +1465,8 @@ private:
         " Checking contour with {} points for degenerate segments ",
         pointcount)));
 
-    enum
-    {
-      R = 1,
-      Z = 0
-    };
+    constexpr int R = 1;
+    constexpr int Z = 0;
 
     // Add contour points
     int polyline_size = 0;
@@ -1706,11 +1703,16 @@ private:
     // If we are not refining dynamically, return.
     if(m_percentError <= MINIMUM_PERCENT_ERROR ||
        m_refinementType != RefinementDynamic)
+    {
       return;
+    }
 
     // If the prior loadShape call was unable to create a revolved volume for
     // the shape then we can't do any better than the current mesh.
-    if(m_revolvedVolume <= DEFAULT_REVOLVED_VOLUME) return;
+    if(m_revolvedVolume <= DEFAULT_REVOLVED_VOLUME)
+    {
+      return;
+    }
 
     /*!
      * \brief Examines the history values to determine if the deltas between

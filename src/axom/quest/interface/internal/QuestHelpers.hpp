@@ -304,7 +304,7 @@ int read_c2c_mesh_uniform(const std::string& file,
  * \param [in] transform A 4x4 matrix that contains a transform to be applied to points.
  * \param [in] percentError An acceptable percent error in the arc length of the curve.
  * \param [in] vertexWeldThreshold threshold for welding vertices of adjacent curves
- * \param [out] m user-supplied pointer to point to the mesh object
+ * \param [out] m user-supplied pointer to the mesh object
  * \param [out] revolvedVolume An approximation of the revolved volume of the contour
  *                             or 0 if it could not be computed.
  * \param [in] comm the MPI communicator, only applicable when MPI is available
