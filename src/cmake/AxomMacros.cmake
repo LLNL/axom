@@ -141,7 +141,7 @@ macro(axom_add_executable)
 
     # Blanket add openmp as a dependency to get around not propagating
     # openmp to fortran dependencies
-    blt_list_append(TO arg_DEPENDS_ON ELEMENTS openmp IF ENABLE_OPENMP)
+    blt_list_append(TO arg_DEPENDS_ON ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
 
     blt_add_executable(NAME        ${arg_NAME}
                        SOURCES     ${arg_SOURCES}
