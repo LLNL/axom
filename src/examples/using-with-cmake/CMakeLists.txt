@@ -53,6 +53,8 @@ if (ENABLE_HIP)
     find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH})
 endif()
 
+include(CMakeFindDependencyMacro)
+
 find_dependency(axom REQUIRED
                 NO_DEFAULT_PATH 
                 PATHS ${AXOM_DIR}/lib/cmake)
