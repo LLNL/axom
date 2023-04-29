@@ -197,7 +197,7 @@ macro(axom_add_library)
                     OUTPUT_NAME ${arg_OUTPUT_NAME}
                     FOLDER      ${arg_FOLDER})
 
-    if(ENABLE_OPENMP AND (NOT "${arg_SOURCES}" STREQUAL ""))
+    if(AXOM_ENABLE_OPENMP AND (NOT "${arg_SOURCES}" STREQUAL ""))
         # Do not propegate OpenMP due to generator expressions evaluating early
         target_link_libraries(${arg_NAME} PRIVATE openmp)
     endif()
