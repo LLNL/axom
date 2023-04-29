@@ -525,9 +525,9 @@ AXOM_HOST_DEVICE inline blackhole &operator<<(blackhole &bh, T)
     #define SLIC_ASSERT(EXP) ((void)(EXP))
     #define SLIC_ASSERT_MSG(EXP, msg)            \
       {                                          \
-        ((void)(EXP));                           \
         if(false)                                \
         {                                        \
+          ((void)(EXP));                         \
           axom::slic::internal::blackhole __oss; \
           __oss << msg;                          \
         }                                        \
@@ -535,9 +535,9 @@ AXOM_HOST_DEVICE inline blackhole &operator<<(blackhole &bh, T)
     #define SLIC_CHECK(EXP) ((void)(EXP))
     #define SLIC_CHECK_MSG(EXP, msg)             \
       {                                          \
-        ((void)(EXP));                           \
         if(false)                                \
         {                                        \
+          ((void)(EXP));                         \
           axom::slic::internal::blackhole __oss; \
           __oss << msg;                          \
         }                                        \
