@@ -205,13 +205,13 @@ This file also adds source subdirectories as needed (using the CMake
 adds target definitions for dependencies. For example, the command to 
 add *sidre* as a library is::
 
-  blt_add_library( NAME
+  axom_add_library( NAME
                        sidre
                    SOURCES
-                       "${sidre_sources}"
-                       "${sidre_fortran_sources}"
+                       ${sidre_sources}
+                       ${sidre_fortran_sources}
                    HEADERS
-                       "${sidre_headers}"
+                       ${sidre_headers}
                    DEPENDS_ON
                        ${sidre_depends}
                    )
