@@ -40,10 +40,6 @@ set( spin_headers
      policy/UniformGridStorage.hpp
    )
 
-set( spin_sources
-     dummy.cpp
-   )
-
 #------------------------------------------------------------------------------
 # Specify spin dependencies
 #------------------------------------------------------------------------------
@@ -60,7 +56,6 @@ blt_list_append( TO spin_depends_on ELEMENTS umpire IF UMPIRE_FOUND )
 #------------------------------------------------------------------------------
 axom_add_library(
     NAME                  spin
-    SOURCES               ${spin_sources}
     HEADERS               ${spin_headers}
     FOLDER                axom/spin
     DEPENDS_ON            ${spin_depends_on})

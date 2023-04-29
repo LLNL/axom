@@ -70,12 +70,6 @@ set( primal_headers
     utils/ZipVector.hpp
    )
 
-set( primal_sources
-
-     ## Empty source file
-     dummy.cpp
-   )
-
 blt_list_append(
     TO       primal_headers 
     ELEMENTS operators/evaluate_integral.hpp
@@ -94,7 +88,6 @@ blt_list_append( TO primal_dependencies ELEMENTS mfem IF MFEM_FOUND )
 
 axom_add_library(
     NAME                  primal
-    SOURCES               ${primal_sources}
     HEADERS               ${primal_headers}
     FOLDER                axom/primal
     DEPENDS_ON            ${primal_dependencies}
