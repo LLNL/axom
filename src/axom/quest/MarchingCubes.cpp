@@ -146,24 +146,36 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   */
   void mark_crossings() override { mark_crossings_dim(); }
 
+// RAJA_INDEX_VALUE_T doesn't work on rzansel.  Maybe old RAJA?
+#define USE_RAJA_INDEX_VALUE_TYPES 0
+
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type mark_crossings_dim()
   {
+#if USE_RAJA_INDEX_VALUE_TYPES == 1
     RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
     RAJA_INDEX_VALUE_T(JIDX, axom::IndexType, "JIDX");
     RAJA::TypedRangeSegment<JIDX> jRange(0, m_cShape[0]);
     RAJA::TypedRangeSegment<IIDX> iRange(0, m_cShape[1]);
+#else
+    RAJA::RangeSegment jRange(0, m_cShape[0]);
+    RAJA::RangeSegment iRange(0, m_cShape[1]);
+#endif
     using EXEC_POL = RAJA::KernelPolicy<
       // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
       RAJA::statement::
         For<1, LoopPolicy, RAJA::statement::For<0, LoopPolicy, RAJA::statement::Lambda<0>>>>;
     RAJA::kernel<EXEC_POL>(
       RAJA::make_tuple(iRange, jRange),
+#if USE_RAJA_INDEX_VALUE_TYPES == 1
       // TODO: Why does AXOM_LAMBDA here not compile on rzansel with cuda?
       AXOM_LAMBDA(IIDX it, JIDX jt) {
         auto& i = *it;
         auto& j = *jt;
+#else
+      AXOM_LAMBDA(int i, int j) {
+#endif
         const bool skipZone = !m_maskView.empty() && bool(m_maskView(j, i));
         if(!skipZone)
         {
@@ -185,12 +197,18 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type mark_crossings_dim()
   {
+#if USE_RAJA_INDEX_VALUE_TYPES == 1
     RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
     RAJA_INDEX_VALUE_T(JIDX, axom::IndexType, "JIDX");
     RAJA_INDEX_VALUE_T(KIDX, axom::IndexType, "KIDX");
     RAJA::TypedRangeSegment<KIDX> kRange(0, m_cShape[0]);
     RAJA::TypedRangeSegment<JIDX> jRange(0, m_cShape[1]);
     RAJA::TypedRangeSegment<IIDX> iRange(0, m_cShape[2]);
+#else
+    RAJA::RangeSegment kRange(0, m_cShape[0]);
+    RAJA::RangeSegment jRange(0, m_cShape[1]);
+    RAJA::RangeSegment iRange(0, m_cShape[2]);
+#endif
     using EXEC_POL = RAJA::KernelPolicy<RAJA::statement::For<
       2,
       LoopPolicy,
@@ -198,10 +216,14 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
         For<1, LoopPolicy, RAJA::statement::For<0, LoopPolicy, RAJA::statement::Lambda<0>>>>>;
     RAJA::kernel<EXEC_POL>(
       RAJA::make_tuple(iRange, jRange, kRange),
+#if USE_RAJA_INDEX_VALUE_TYPES == 1
       AXOM_LAMBDA(IIDX it, JIDX jt, KIDX kt) {
         auto& i = *it;
         auto& j = *jt;
         auto& k = *kt;
+#else
+      AXOM_LAMBDA(int i, int j, int k) {
+#endif
         const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
         if(!skipZone)
         {
@@ -826,6 +848,9 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
 
 void MarchingCubesSingleDomain::allocate_impl()
 {
+// This code doesn't compile for devices yet.  It's close though.
+// TODO: Get this running for devices.
+#define MARCHING_CUBES_USE_DEVICES 0
   if(m_runtimePolicy == RuntimePolicy::seq)
   {
     m_impl = m_ndim == 2
@@ -840,21 +865,23 @@ void MarchingCubesSingleDomain::allocate_impl()
       : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
   }
 #endif
-#ifdef _AXOM_MC_USE_CUDA
-  else if(m_runtimePolicy == RuntimePolicy::omp)
+#if MARCHING_CUBES_USE_DEVICES == 1
+  #ifdef _AXOM_MC_USE_CUDA
+  else if(m_runtimePolicy == RuntimePolicy::cuda)
   {
     m_impl = m_ndim == 2
       ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
       : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
   }
-#endif
-#ifdef _AXOM_MC_USE_HIP
+  #endif
+  #ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2
       ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
       : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
   }
+  #endif
 #endif
   else
   {
