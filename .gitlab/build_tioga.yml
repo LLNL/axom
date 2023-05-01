@@ -13,6 +13,8 @@
     - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_TIOGA == "OFF"' #run except if ...
       when: never
     - when: on_success
+  before_script:
+    - module load cmake/3.21.1
 
 ####
 # Template
