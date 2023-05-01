@@ -91,7 +91,7 @@ TEST(quest_pro_e_reader, read_to_invalid_mesh)
   EXPECT_DEATH_IF_SUPPORTED(reader.getMesh(&hexmesh), IGNORE_OUTPUT);
 
   // STEP 4: remove Pro/E file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------
@@ -142,7 +142,7 @@ TEST(quest_pro_e_reader, read_pro_e)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro?E file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------
@@ -201,7 +201,7 @@ TEST(quest_pro_e_reader, read_pro_e_external)
   }  // END for all nodes
 
   // STEP 4: remove temporary Pro/E file
-  std::remove(filename.c_str());
+  axom::utilities::filesystem::removeFile(filename);
 }
 
 //------------------------------------------------------------------------------

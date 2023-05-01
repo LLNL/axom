@@ -39,7 +39,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `Polyhedron` object from a given primitive.
 - Adds `DataStore::getBufferInfo()` and `Group::getDataInfo` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
 - Quest: Adds a `quest::ProEReader` for reading in Pro/E tetrahedral meshes
-
+- Quest: The `quest::IntersectionShaper` class can now use a percent error to determine
+  whether the revolved volume for a shape is sufficiently accurate or whether the shape
+  must be further refined. This new dynamic method of shaping complements the existing
+  segment-based curve refinement method and it is activated using `Shaper::setRefinementType()`
+  and by calling `Shaper::setPercentError()` to set a refinement error percentage.
 
 ### Changed
 - `IntersectionShaper` now implements material replacement rules.
@@ -67,6 +71,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Slam: `IndirectionPolicy::data()` now returns a reference to the underlying buffer
   Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
   returns a mutable pointer to the buffer.
+- Quest: `Shaper::applyTransforms()` is no longer a public method.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+

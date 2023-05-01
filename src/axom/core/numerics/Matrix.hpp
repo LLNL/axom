@@ -486,6 +486,13 @@ public:
    */
   Matrix<T>& operator=(const Matrix<T>& rhs);
 
+  /*!
+   * \brief Determines whether matrix is identity matrix.
+   *
+   * \return True if matrix is identity, false otherwise.
+   */
+  bool isIdentity() const;
+
   /// @}
 
   /// \name Static Methods
@@ -835,6 +842,25 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& rhs)
   }
 
   return *this;
+}
+
+//-----------------------------------------------------------------------------
+template <typename T>
+bool Matrix<T>::isIdentity() const
+{
+  bool ok = (m_rows == m_cols);
+  if(ok)
+  {
+    for(IndexType i = 0; i < m_rows && ok; ++i)
+    {
+      for(IndexType j = 0; j < m_cols && ok; ++j)
+      {
+        T expected = (i == j) ? 1.0 : 0.0;
+        ok = (this->operator()(i, j) == expected);
+      }  // END for all columns
+    }    // END for all rows
+  }
+  return ok;
 }
 
 //-----------------------------------------------------------------------------

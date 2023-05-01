@@ -323,10 +323,6 @@ void replacementRuleTest(const std::string &shapeFile,
     shaper.loadShape(shape);
     slic::flushStreams();
 
-    // Apply the specified geometric transforms
-    shaper.applyTransforms(shape);
-    slic::flushStreams();
-
     // Generate a spatial index over the shape
     shaper.prepareShapeQuery(shapeDim, shape);
     slic::flushStreams();
@@ -402,6 +398,362 @@ void replacementRuleTestSet(const std::vector<std::string> &cases,
   }
 }
 
+void IntersectionWithErrorTolerances(const std::string &filebase,
+                                     const std::string &contour,
+                                     const std::string &shapeYAML,
+                                     double expectedRevolvedVolume,
+                                     int refinementLevel,
+                                     double targetPercentError,
+                                     const std::string &policyName,
+                                     int policy,
+                                     double revolvedVolumeEPS = 1.e-4)
+{
+  SLIC_INFO(axom::fmt::format("Testing {} with {}", filebase, policyName));
+
+  // Save the contour and YAML data to files so klee can read them.
+  std::vector<std::string> filenames;
+  filenames.emplace_back(filebase + ".contour");
+  filenames.emplace_back(filebase + ".yaml");
+
+  std::ofstream ofs;
+  ofs.open(filenames[0].c_str(), std::ofstream::out);
+  ofs << contour;
+  ofs.close();
+
+  ofs.open(filenames[1].c_str(), std::ofstream::out);
+  ofs << shapeYAML;
+  ofs.close();
+
+  // Need to make a target mesh
+  SLIC_INFO(axom::fmt::format("Creating dc {}", filebase));
+  sidre::MFEMSidreDataCollection dc(filebase, nullptr, true);
+  bool initialMats = false;
+  makeTestMesh(dc, initialMats);
+
+  // Set up shapes.
+  SLIC_INFO(axom::fmt::format("Reading shape set from {}", filenames[1]));
+  klee::ShapeSet shapeSet(klee::readShapeSet(filenames[1]));
+
+  // Need to do the pipeline of the shaping driver.
+  SLIC_INFO(axom::fmt::format("Shaping materials..."));
+#ifdef AXOM_USE_MPI
+  // This has to happen here because the shaper gets its communicator from it.
+  // If we do it before the mfem mesh is added to the data collection then the
+  // data collection communicator gets set to MPI_COMM_NULL, which is bad for
+  // the C2C reader.
+  dc.SetComm(MPI_COMM_WORLD);
+#endif
+  quest::IntersectionShaper shaper(shapeSet, &dc);
+  shaper.setLevel(refinementLevel);
+  shaper.setPercentError(targetPercentError);
+  shaper.setRefinementType(quest::Shaper::RefinementDynamic);
+  shaper.setExecPolicy(policy);
+
+  // Borrowed from shaping_driver (there should just be one shape)
+  const klee::Dimensions shapeDim = shapeSet.getDimensions();
+  for(const auto &shape : shapeSet.getShapes())
+  {
+    SLIC_INFO(axom::fmt::format("\tshape {} -> material {}",
+                                shape.getName(),
+                                shape.getMaterial()));
+
+    // Load the shape from file
+    shaper.loadShape(shape);
+    slic::flushStreams();
+
+    // Refine the shape to tolerance
+    shaper.prepareShapeQuery(shapeDim, shape);
+    slic::flushStreams();
+
+    // NOTE: We do not actually run the query. We're mainly interested
+    //       in how the shape was refined and whether we hit the percent
+    //       error.
+
+    // Now check the analytical revolved volume vs the value we expect. This makes
+    // sure the quadrature-computed value is "close enough".
+    double revolvedVolume = shaper.getRevolvedVolume();
+    EXPECT_TRUE(axom::utilities::isNearlyEqual(revolvedVolume,
+                                               expectedRevolvedVolume,
+                                               revolvedVolumeEPS));
+
+    // Now check the precent error derived from the revolved volume and the
+    // linearized revolved volume
+    double actualPercentError =
+      100. * (1. - shaper.getApproximateRevolvedVolume() / revolvedVolume);
+    EXPECT_LT(actualPercentError, targetPercentError);
+  }
+
+  // Clean up files.
+  for(const auto &filename : filenames)
+    axom::utilities::filesystem::removeFile(filename);
+}
+
+//---------------------------------------------------------------------------
+void dynamicRefinementTest_Line(const std::string &policyName, int policy)
+{
+  const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
+)";
+
+  const std::string yaml = R"(# Order 0, 1, 2
+dimensions: 3
+
+shapes:
+- name: line
+  material: line
+  geometry:
+    format: c2c
+    path: line.contour
+)";
+  const std::string filebase = "line";
+  const double expectedRevolvedVolume = 25.132741228718345;
+
+  const std::vector<double> percentError {1., 0.1, 0.01};
+  const std::vector<int> refinementLevel {7, 7, 7};
+  for(size_t i = 0; i < percentError.size(); i++)
+  {
+    IntersectionWithErrorTolerances(filebase,
+                                    contour,
+                                    yaml,
+                                    expectedRevolvedVolume,
+                                    refinementLevel[i],
+                                    percentError[i],
+                                    policyName,
+                                    policy);
+  }
+}
+
+//---------------------------------------------------------------------------
+void dynamicRefinementTest_Cone(const std::string &policyName, int policy)
+{
+  const std::string contour = R"(piece = line(start=(2cm,0cm), end=(3cm,2cm))
+)";
+
+  const std::string yaml = R"(# Order 0, 1, 2
+dimensions: 3
+
+shapes:
+- name: cone
+  material: cone
+  geometry:
+    format: c2c
+    path: cone.contour
+)";
+  const std::string filebase = "cone";
+  const double expectedRevolvedVolume = 39.79350694547071;
+
+  const std::vector<double> percentError {1., 0.1, 0.01};
+  const std::vector<int> refinementLevel {7, 7, 7};
+  for(size_t i = 0; i < percentError.size(); i++)
+  {
+    IntersectionWithErrorTolerances(filebase,
+                                    contour,
+                                    yaml,
+                                    expectedRevolvedVolume,
+                                    refinementLevel[i],
+                                    percentError[i],
+                                    policyName,
+                                    policy);
+  }
+}
+
+//---------------------------------------------------------------------------
+// NOTE: This test was baselined with a C2C that had a fix for splines. It
+//       must not be updated on all platforms since some produce a revolved
+//       volume that looks off. We can re-enable this test once C2C is updated
+//       everywhere.
+#ifdef ENABLE_WHEN_C2C_IS_UPDATED_ON_ALL_PLATFORMS
+void dynamicRefinementTest_Spline(const std::string &policyName, int policy)
+{
+  const std::string contour = R"(piece = rz(units=cm,
+  rz=2 0
+     3 2
+     3 3
+)
+)";
+
+  const std::string yaml = R"(# Order 0, 1, 2
+dimensions: 3
+
+shapes:
+- name: spline
+  material: spline
+  geometry:
+    format: c2c
+    path: spline.contour
+)";
+  const std::string filebase = "spline";
+  const double expectedRevolvedVolume = 71.53270589320874;
+
+  const std::vector<double> percentError {1., 0.1, 0.01};
+  const std::vector<int> refinementLevel {7, 7, 7};
+  for(size_t i = 0; i < percentError.size(); i++)
+  {
+    IntersectionWithErrorTolerances(filebase,
+                                    contour,
+                                    yaml,
+                                    expectedRevolvedVolume,
+                                    refinementLevel[i],
+                                    percentError[i],
+                                    policyName,
+                                    policy,
+                                    0.04);
+  }
+}
+#endif
+
+//---------------------------------------------------------------------------
+void dynamicRefinementTest_Circle(const std::string &policyName, int policy)
+{
+  const std::string contour =
+    R"(piece = circle(origin=(0cm,0cm), radius=8cm, start=0deg, end=180deg)
+)";
+
+  const std::string yaml = R"(# Order 0, 1, 2
+dimensions: 3
+
+shapes:
+- name: circle
+  material: circle
+  geometry:
+    format: c2c
+    path: circle.contour
+)";
+  const std::string filebase = "circle";
+  const double expectedRevolvedVolume = 2144.660584850632;
+
+  const std::vector<double> percentError {1., 0.1, 0.01};
+  const std::vector<int> refinementLevel {7, 7, 7};
+  for(size_t i = 0; i < percentError.size(); i++)
+  {
+    IntersectionWithErrorTolerances(filebase,
+                                    contour,
+                                    yaml,
+                                    expectedRevolvedVolume,
+                                    refinementLevel[i],
+                                    percentError[i],
+                                    policyName,
+                                    policy,
+                                    0.1);
+  }
+}
+
+//---------------------------------------------------------------------------
+void dynamicRefinementTest_LineTranslate(const std::string &policyName, int policy)
+{
+  const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
+)";
+
+  const std::string yaml = R"(# Order 0, 1, 2
+dimensions: 3
+
+shapes:
+- name: line
+  material: line
+  geometry:
+    format: c2c
+    path: line.contour
+    start_units: cm
+    end_units: cm
+    operators:
+      - translate: [1., 1., 0.]
+)";
+  const std::string filebase = "line";
+  const double expectedRevolvedVolume = 56.548667764616276;
+
+  const std::vector<double> percentError {1., 0.1, 0.01};
+  const std::vector<int> refinementLevel {7, 7, 7};
+  for(size_t i = 0; i < percentError.size(); i++)
+  {
+    IntersectionWithErrorTolerances(filebase,
+                                    contour,
+                                    yaml,
+                                    expectedRevolvedVolume,
+                                    refinementLevel[i],
+                                    percentError[i],
+                                    policyName,
+                                    policy);
+  }
+}
+
+//---------------------------------------------------------------------------
+void dynamicRefinementTest_LineScale(const std::string &policyName, int policy)
+{
+  const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
+)";
+
+  const std::string yaml = R"(# Order 0, 1, 2
+dimensions: 3
+
+shapes:
+- name: line
+  material: line
+  geometry:
+    format: c2c
+    path: line.contour
+    start_units: cm
+    end_units: cm
+    operators:
+      - scale: 2.
+)";
+  const std::string filebase = "line";
+  const double expectedRevolvedVolume = 201.06192982974676;
+
+  const std::vector<double> percentError {1., 0.1, 0.01};
+  const std::vector<int> refinementLevel {7, 7, 7};
+  for(size_t i = 0; i < percentError.size(); i++)
+  {
+    IntersectionWithErrorTolerances(filebase,
+                                    contour,
+                                    yaml,
+                                    expectedRevolvedVolume,
+                                    refinementLevel[i],
+                                    percentError[i],
+                                    policyName,
+                                    policy);
+  }
+}
+
+//---------------------------------------------------------------------------
+void dynamicRefinementTest_LineRotate(const std::string &policyName, int policy)
+{
+  const std::string contour = R"(piece = line(start=(2cm,0cm), end=(2cm,2cm))
+)";
+
+  const std::string yaml = R"(# Order 0, 1, 2
+dimensions: 3
+
+shapes:
+- name: line
+  material: line
+  geometry:
+    format: c2c
+    path: line.contour
+    start_units: cm
+    end_units: cm
+    operators:
+      - rotate: 45
+        center: [0., 2., 0.]
+        axis: [0., 0., 1.]
+)";
+  const std::string filebase = "line";
+  const double expectedRevolvedVolume = 33.299824325764874;
+
+  const std::vector<double> percentError {1., 0.1, 0.01};
+  const std::vector<int> refinementLevel {7, 7, 7};
+  for(size_t i = 0; i < percentError.size(); i++)
+  {
+    IntersectionWithErrorTolerances(filebase,
+                                    contour,
+                                    yaml,
+                                    expectedRevolvedVolume,
+                                    refinementLevel[i],
+                                    percentError[i],
+                                    policyName,
+                                    policy);
+  }
+}
+
+//---------------------------------------------------------------------------
 // Define testing functions for different modes.
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case1_seq)
@@ -529,6 +881,198 @@ TEST(IntersectionShaperTest, case4_hip)
 }
 #endif
 
+//---------------------------------------------------------------------------
+// Line
+#if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, line_seq)
+{
+  dynamicRefinementTest_Line("seq", quest::IntersectionShaper::seq);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, line_omp)
+{
+  dynamicRefinementTest_Line("omp", quest::IntersectionShaper::omp);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, line_cuda)
+{
+  dynamicRefinementTest_Line("cuda", quest::IntersectionShaper::cuda);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, line_hip)
+{
+  dynamicRefinementTest_Line("hip", quest::IntersectionShaper::hip);
+}
+#endif
+
+//---------------------------------------------------------------------------
+// Cone
+#if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, cone_seq)
+{
+  dynamicRefinementTest_Cone("seq", quest::IntersectionShaper::seq);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, cone_omp)
+{
+  dynamicRefinementTest_Cone("omp", quest::IntersectionShaper::omp);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, cone_cuda)
+{
+  dynamicRefinementTest_Cone("cuda", quest::IntersectionShaper::cuda);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, cone_hip)
+{
+  dynamicRefinementTest_Cone("hip", quest::IntersectionShaper::hip);
+}
+#endif
+
+//---------------------------------------------------------------------------
+// Spline
+#ifdef ENABLE_WHEN_C2C_IS_UPDATED_ON_ALL_PLATFORMS
+  #if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, spline_seq)
+{
+  dynamicRefinementTest_Spline("seq", quest::IntersectionShaper::seq);
+}
+  #endif
+  #if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, spline_omp)
+{
+  dynamicRefinementTest_Spline("omp", quest::IntersectionShaper::omp);
+}
+  #endif
+  #if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, spline_cuda)
+{
+  dynamicRefinementTest_Spline("cuda", quest::IntersectionShaper::cuda);
+}
+  #endif
+  #if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, spline_hip)
+{
+  dynamicRefinementTest_Spline("hip", quest::IntersectionShaper::hip);
+}
+  #endif
+#endif
+
+//---------------------------------------------------------------------------
+// Circle
+#if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, circle_seq)
+{
+  dynamicRefinementTest_Circle("seq", quest::IntersectionShaper::seq);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, circle_omp)
+{
+  dynamicRefinementTest_Circle("omp", quest::IntersectionShaper::omp);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, circle_cuda)
+{
+  dynamicRefinementTest_Circle("cuda", quest::IntersectionShaper::cuda);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, circle_hip)
+{
+  dynamicRefinementTest_Circle("hip", quest::IntersectionShaper::hip);
+}
+#endif
+
+//---------------------------------------------------------------------------
+// LineTranslate
+#if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, line_translate_seq)
+{
+  dynamicRefinementTest_LineTranslate("seq", quest::IntersectionShaper::seq);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, line_translate_omp)
+{
+  dynamicRefinementTest_LineTranslate("omp", quest::IntersectionShaper::omp);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, line_translate_cuda)
+{
+  dynamicRefinementTest_LineTranslate("cuda", quest::IntersectionShaper::cuda);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, line_translate_hip)
+{
+  dynamicRefinementTest_LineTranslate("hip", quest::IntersectionShaper::hip);
+}
+#endif
+
+//---------------------------------------------------------------------------
+// LineScale
+#if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, line_scale_seq)
+{
+  dynamicRefinementTest_LineScale("seq", quest::IntersectionShaper::seq);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, line_scale_omp)
+{
+  dynamicRefinementTest_LineScale("omp", quest::IntersectionShaper::omp);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, line_scale_cuda)
+{
+  dynamicRefinementTest_LineScale("cuda", quest::IntersectionShaper::cuda);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, line_scale_hip)
+{
+  dynamicRefinementTest_LineScale("hip", quest::IntersectionShaper::hip);
+}
+#endif
+
+//---------------------------------------------------------------------------
+// LineRotate
+#if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, line_rotate_seq)
+{
+  dynamicRefinementTest_LineRotate("seq", quest::IntersectionShaper::seq);
+}
+#endif
+#if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, line_rotate_omp)
+{
+  dynamicRefinementTest_LineRotate("omp", quest::IntersectionShaper::omp);
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, line_rotate_cuda)
+{
+  dynamicRefinementTest_LineRotate("cuda", quest::IntersectionShaper::cuda);
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, line_rotate_hip)
+{
+  dynamicRefinementTest_LineRotate("hip", quest::IntersectionShaper::hip);
+}
+#endif
+
+//---------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;
