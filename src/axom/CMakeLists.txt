@@ -54,6 +54,21 @@ generate_export_header(core
                        BASE_NAME axom
                        EXPORT_FILE_NAME ${_export_header})
 
+if(WIN32)
+    foreach(_component ${AXOM_COMPONENTS_ENABLED})
+        # Skip header only libraries
+        get_property(_targetType TARGET ${arg_TARGET} PROPERTY TYPE)
+        if(${_targetType} STREQUAL "INTERFACE_LIBRARY")
+            continue()
+        endif()
+
+        blt_add_target_definitions(
+            TO                 ${_component}
+            SCOPE              PRIVATE
+            TARGET_DEFINITIONS "axom_EXPORTS")
+    endforeach()
+endif()
+
 #------------------------------------------------------------------------------
 # Output some information about the configuration
 #------------------------------------------------------------------------------
@@ -75,10 +90,6 @@ endif()
 #------------------------------------------------------------------------------
 # Fix FOLDER property for some targets
 #------------------------------------------------------------------------------
-if(TARGET axom)
-    set_target_properties(axom PROPERTIES FOLDER "axom")
-endif()
-
 # If Axom is the main project, set FOLDER property for top-level check targets
 if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     set(_code_check_targets "docs" "doxygen_docs"
@@ -88,19 +99,5 @@ if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
         if(TARGET ${_tgt})
             set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")
         endif()
-    endforeach()
-endif()
-
-
-#------------------------------------------------------------------------------
-# Bugfix for dllimport/dllexport functionality in msvc with object libraries
-# Each axom component needs to have 'axom_EXPORTS' defined when building
-#------------------------------------------------------------------------------
-if(WIN32)
-    foreach(_component ${AXOM_COMPONENTS_ENABLED})
-        blt_add_target_definitions(
-            TO                 ${_component}
-            SCOPE              PRIVATE
-            TARGET_DEFINITIONS "axom_EXPORTS")
     endforeach()
 endif()
