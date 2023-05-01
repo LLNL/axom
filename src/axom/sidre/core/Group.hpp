@@ -40,13 +40,6 @@
 #include "View.hpp"
 #include "ItemCollection.hpp"
 
-// Define the default protocol for sidre I/O
-#ifdef AXOM_USE_HDF5
-  #define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
-#else
-  #define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
-#endif
-
 namespace axom
 {
 namespace sidre
@@ -161,29 +154,19 @@ public:
    */
   static const std::vector<std::string>& getValidIOProtocols()
   {
-    // The first time this is called, fill the vector with valid protocols.
-    if(s_io_protocols.empty())
-    {
-#ifdef AXOM_USE_HDF5
-      s_io_protocols.push_back("sidre_hdf5");
-      s_io_protocols.push_back("conduit_hdf5");
-#endif
-      s_io_protocols.push_back("sidre_json");
-      s_io_protocols.push_back("sidre_conduit_json");
-      s_io_protocols.push_back("conduit_bin");
-      s_io_protocols.push_back("conduit_json");
-      s_io_protocols.push_back("json");
-    }
-
     return s_io_protocols;
   }
 
   /*!
    * \brief static method to get the default I/O protocol.
    */
-  static const std::string& getDefaultIOProtocol()
+  static const std::string getDefaultIOProtocol()
   {
-    return s_default_protocol;
+#if defined(AXOM_USE_HDF5)
+    return std::string("sidre_hdf5");
+#else
+    return std::string("sidre_conduit_json");
+#endif
   }
 
   /*!
@@ -1416,7 +1399,7 @@ public:
    * \param attr      Save Views that have Attribute set.
    */
   void save(const std::string& path,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
   /*!
@@ -1438,7 +1421,7 @@ public:
    *                           loading data from the file.
    */
   void load(const std::string& path,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
   /*!
@@ -1525,7 +1508,7 @@ public:
    * \param attr       Save Views that have Attribute set.
    */
   void save(const hid_t& h5_id,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
   /*!
@@ -1543,7 +1526,7 @@ public:
    *                           loading data from the file.
    */
   void load(const hid_t& h5_id,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
   /*!
@@ -1867,8 +1850,8 @@ private:
   int m_default_allocator_id;
 #endif
 
-  static std::vector<std::string> s_io_protocols;
-  static std::string s_default_protocol;
+  // Collection of the valid I/O protocols for save and load.
+  static const std::vector<std::string> s_io_protocols;
 };
 
 } /* end namespace sidre */

@@ -38,8 +38,16 @@ namespace sidre
 const char Group::s_path_delimiter = '/';
 
 // Initialization of static members holding I/O protocol strings
-std::vector<std::string> Group::s_io_protocols = std::vector<std::string>();
-std::string Group::s_default_protocol = SIDRE_DEFAULT_PROTOCOL;
+const std::vector<std::string> Group::s_io_protocols = {
+#ifdef AXOM_USE_HDF5
+  "sidre_hdf5",
+  "conduit_hdf5",
+#endif
+  "sidre_json",
+  "sidre_conduit_json",
+  "conduit_bin",
+  "conduit_json",
+  "json"};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
