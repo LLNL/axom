@@ -148,6 +148,9 @@ axom_add_executable(
     DEPENDS_ON cli11
     FOLDER     axom/thirdparty/tests )
 
+# Set file back to C++ due to nvcc compiler error
+set_source_files_properties(cli11_smoke.cpp PROPERTIES LANGUAGE CXX)
+
 axom_add_test(
     NAME cli11_smoke_help
     COMMAND cli11_smoke_test --help)
@@ -184,10 +187,8 @@ if (SOL_FOUND)
         DEPENDS_ON sol lua gtest
         FOLDER     axom/thirdparty/tests )
 
-    if (SOL_FOUND)
-        # Set file back to C++ due to nvcc compiler error
-        set_source_files_properties(sol_smoke.cpp PROPERTIES LANGUAGE CXX)
-    endif()
+    # Set file back to C++ due to nvcc compiler error
+    set_source_files_properties(sol_smoke.cpp PROPERTIES LANGUAGE CXX)
 
     axom_add_test(NAME    sol_smoke
                   COMMAND sol_smoke_test)
