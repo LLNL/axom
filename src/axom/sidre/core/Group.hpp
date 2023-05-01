@@ -160,7 +160,7 @@ public:
   /*!
    * \brief static method to get the default I/O protocol.
    */
-  static const std::string getDefaultIOProtocol()
+  static std::string getDefaultIOProtocol()
   {
 #if defined(AXOM_USE_HDF5)
     return std::string("sidre_hdf5");
