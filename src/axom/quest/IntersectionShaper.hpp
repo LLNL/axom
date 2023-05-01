@@ -371,8 +371,113 @@ public:
   }
 
 public:
-//@{
-//!  @name Functions related to the stages for a given shape
+  //@{
+  //!  @name Functions related to the stages for a given shape
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  template <typename ExecSpace>
+  void proePrepareShapeQueryImpl(klee::Dimensions shapeDimension,
+                                 const klee::Shape& shape)
+  {
+    SLIC_INFO(axom::fmt::format("{:-^80}", "proePrepareShapeQueryImpl called!"));
+
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format(
+        "Running intersection-based shaper in execution Space: {}",
+        axom::execution_space<ExecSpace>::name())));
+
+    // Save current/default allocator
+    const int current_allocator = axom::getDefaultAllocatorID();
+
+    // Determine new allocator (for CUDA/HIP policy, set to Unified)
+    // Set new default to device
+    axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+    const auto& shapeName = shape.getName();
+    AXOM_UNUSED_VAR(shapeDimension);
+    AXOM_UNUSED_VAR(shapeName);
+
+    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
+
+    int m_tetcount = m_surfaceMesh->getNumberOfCells();
+
+    SLIC_INFO("Number of tets is " << m_tetcount);
+
+    m_tets = axom::Array<TetrahedronType>(m_tetcount, m_tetcount);
+    auto m_tets_view = m_tets.view();
+
+    SLIC_INFO("current_allocator ID is " << current_allocator);
+    SLIC_INFO("SET allocator ID is " << axom::getDefaultAllocatorID());
+    SLIC_INFO("m_tets allocator ID is " << m_tets.getAllocatorID());
+
+    // Initialize tetrahedra
+    axom::Array<int> nodeIds(4);
+    axom::Array<Point3D> pts(4);
+
+    for(int i = 0; i < m_tetcount; i++)
+    {
+      m_surfaceMesh->getCellNodeIDs(i, nodeIds.data());
+
+      m_surfaceMesh->getNode(nodeIds[0], pts[0].data());
+      m_surfaceMesh->getNode(nodeIds[1], pts[1].data());
+      m_surfaceMesh->getNode(nodeIds[2], pts[2].data());
+      m_surfaceMesh->getNode(nodeIds[3], pts[3].data());
+
+      m_tets[i] = TetrahedronType({pts[0], pts[1], pts[2], pts[3]});
+
+      // SLIC_INFO("Tet " << i << " is " << m_tets[i]);
+    }
+
+    if(this->isVerbose())
+    {
+      // Print out the bounding box containing all the tetrahedra
+      BoundingBoxType all_tet_bb;
+      for(int i = 0; i < m_tetcount; i++)
+      {
+        all_tet_bb.addBox(primal::compute_bounding_box(m_tets_view[i]));
+      }
+      SLIC_INFO(axom::fmt::format(
+        "DEBUG: Bounding box containing all generated tetrahedra "
+        "has dimensions:\n\t{}",
+        all_tet_bb));
+
+      // Print out the total volume of all the tetrahedra
+      using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
+      RAJA::ReduceSum<REDUCE_POL, double> total_tet_vol(0.0);
+      axom::for_all<ExecSpace>(
+        m_tetcount,
+        AXOM_LAMBDA(axom::IndexType i) {
+          total_tet_vol += m_tets_view[i].volume();
+        });
+
+      SLIC_INFO(axom::fmt::format(
+        "DEBUG: Total volume of all generated tetrahedra is {}",
+        total_tet_vol.get()));
+
+      // Check if any Tetrahedron are degenerate with all points {0,0,0}
+      RAJA::ReduceSum<REDUCE_POL, int> num_degenerate(0);
+      axom::for_all<ExecSpace>(
+        m_tetcount,
+        AXOM_LAMBDA(axom::IndexType i) {
+          if(m_tets_view[i].degenerate())
+          {
+            num_degenerate += 1;
+          }
+        });
+
+      SLIC_INFO(
+        axom::fmt::format("DEBUG: {} Tetrahedra found with all points (0,0,0)",
+                          num_degenerate.get()));
+
+      // Dump tet mesh
+      axom::mint::write_vtk(m_surfaceMesh, "cup_verbose.vtk");
+
+    }  // end of verbose output for contour
+
+    axom::setDefaultAllocator(current_allocator);
+  }
+#endif
 
 /// Initializes the spatial index for shaping
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -1332,6 +1437,41 @@ public:
 public:
   // Prepares the shaping query, based on the policy member set
   // (default is sequential)
+  void proePrepareShapeQuery(klee::Dimensions shapeDimension,
+                             const klee::Shape& shape)
+  {
+    switch(m_execPolicy)
+    {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    case seq:
+      proePrepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
+      break;
+  #if defined(AXOM_USE_OPENMP)
+    case omp:
+      proePrepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
+      break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA)
+    case cuda:
+      proePrepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
+      break;
+  #endif  // AXOM_USE_CUDA
+  #if defined(AXOM_USE_HIP)
+    case hip:
+      proePrepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
+      break;
+  #endif  // AXOM_USE_HIP
+#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
+    default:
+      AXOM_UNUSED_VAR(shapeDimension);
+      AXOM_UNUSED_VAR(shape);
+      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+      break;
+    }
+  }
+
+  // Prepares the shaping query, based on the policy member set
+  // (default is sequential)
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
@@ -1900,7 +2040,12 @@ private:
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   double m_vertexWeldThreshold {1.e-10};
   int m_octcount {0};
+  int m_tetcount {0};
+
+  // This probably should be templated?
   OctahedronType* m_octs {nullptr};
+  axom::Array<TetrahedronType> m_tets;
+
   BoundingBoxType* m_aabbs {nullptr};
   HexahedronType* m_hexes {nullptr};
   BoundingBoxType* m_hex_bbs {nullptr};

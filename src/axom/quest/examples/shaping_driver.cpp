@@ -563,6 +563,10 @@ int main(int argc, char** argv)
       // Apply the specified geometric transforms
       shaper->applyTransforms(shape);
       slic::flushStreams();
+
+      (dynamic_cast<quest::IntersectionShaper*>(shaper))
+        ->proePrepareShapeQuery(shapeDim, shape);
+      slic::flushStreams();
     }
 
     else
