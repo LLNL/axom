@@ -184,6 +184,11 @@ if (SOL_FOUND)
         DEPENDS_ON sol lua gtest
         FOLDER     axom/thirdparty/tests )
 
+    if (SOL_FOUND)
+        # Set file back to C++ due to nvcc compiler error
+        set_source_files_properties(sol_smoke.cpp PROPERTIES LANGUAGE CXX)
+    endif()
+
     axom_add_test(NAME    sol_smoke
                   COMMAND sol_smoke_test)
 endif()
