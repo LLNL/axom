@@ -527,6 +527,12 @@ TEST(multimat, construct_multimat_1_array)
         }
       }
 
+      SLIC_INFO("Testing removal of field with name \"" << array_name << "\"...");
+      int field_idx = mm_ptr->getFieldIdx(array_name);
+      mm_ptr->removeField(array_name);
+      EXPECT_EQ(mm_ptr->getFieldIdx(array_name), -1);
+      EXPECT_EQ(mm_ptr->getFieldName(field_idx), "");
+
       delete mm_ptr;
     }
   }

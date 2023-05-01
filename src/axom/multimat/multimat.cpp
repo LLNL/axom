@@ -344,6 +344,39 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
   SLIC_ASSERT(m_fieldStrideVec.size() == 1);
 }
 
+void MultiMat::removeField(const std::string& field_name)
+{
+  int field_index = getFieldIdx(field_name);
+
+  if(field_index == 0)
+  {
+    // This is the volume fractions array. Issue a warning to the user.
+    SLIC_WARNING("Multimat Error: cannot remove volume fractions array.");
+  }
+  else if(field_index < 0)
+  {
+    // Field does not exist.
+    SLIC_WARNING("Multimat Error: field with name \"" << field_name
+                                                      << "\" does not exist.");
+  }
+  else
+  {
+    m_fieldNameVec.erase(m_fieldNameVec.begin() + field_index);
+    m_fieldMappingVec.erase(m_fieldMappingVec.begin() + field_index);
+    m_fieldBackingVec.erase(m_fieldBackingVec.begin() + field_index);
+    m_fieldDataLayoutVec.erase(m_fieldDataLayoutVec.begin() + field_index);
+    m_fieldSparsityLayoutVec.erase(m_fieldSparsityLayoutVec.begin() + field_index);
+    m_fieldStrideVec.erase(m_fieldStrideVec.begin() + field_index);
+    m_dataTypeVec.erase(m_dataTypeVec.begin() + field_index);
+  }
+
+  SLIC_ASSERT(m_fieldNameVec.size() == m_dataTypeVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldMappingVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldDataLayoutVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldSparsityLayoutVec.size());
+  SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
+}
+
 int MultiMat::setVolfracField(double* arr,
                               DataLayout layout,
                               SparsityLayout sparsity)

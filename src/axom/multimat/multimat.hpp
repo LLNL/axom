@@ -297,6 +297,13 @@ public:
                T* data_array,
                int ncomp = 1);
 
+  /**
+   * \brief Delete a field from the MultiMat object.
+   *
+   * \param name The name of the field to remove.
+   */
+  void removeField(const std::string& name);
+
 private:
   template <typename T>
   int addFieldArray_impl(const std::string&,
