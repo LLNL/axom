@@ -364,10 +364,13 @@ public:
     loadShapeInternal(shape, m_percentError, m_revolvedVolume);
 
     // Filter the mesh, store in m_surfaceMesh.
-    SegmentMesh* newm =
-      filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
-    delete m_surfaceMesh;
-    m_surfaceMesh = newm;
+    if(shape.getGeometry().getFormat() == "c2c")
+    {
+      SegmentMesh* newm =
+        filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
+      delete m_surfaceMesh;
+      m_surfaceMesh = newm;
+    }
   }
 
 public:

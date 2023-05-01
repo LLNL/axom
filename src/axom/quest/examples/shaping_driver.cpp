@@ -560,10 +560,6 @@ int main(int argc, char** argv)
 
       axom::mint::write_vtk(shaper->getSurfaceMesh(), "cup_shaping_driver.vtk");
 
-      // Apply the specified geometric transforms
-      shaper->applyTransforms(shape);
-      slic::flushStreams();
-
       (dynamic_cast<quest::IntersectionShaper*>(shaper))
         ->proePrepareShapeQuery(shapeDim, shape);
       slic::flushStreams();
