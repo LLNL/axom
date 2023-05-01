@@ -57,7 +57,7 @@ generate_export_header(core
 if(WIN32)
     foreach(_component ${AXOM_COMPONENTS_ENABLED})
         # Skip header only libraries
-        get_property(_targetType TARGET ${arg_TARGET} PROPERTY TYPE)
+        get_property(_targetType TARGET ${_component} PROPERTY TYPE)
         if(${_targetType} STREQUAL "INTERFACE_LIBRARY")
             continue()
         endif()
