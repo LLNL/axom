@@ -170,18 +170,18 @@ public:
 
   //!@brief Get number of cells in the generated contour mesh.
   axom::IndexType get_surface_cell_count() const
-    {
-      SLIC_ASSERT_MSG(
-        m_impl,
-        "There are no surface mesh until you call compute_iso_surface()");
-      axom::IndexType cellCount = m_impl->get_surface_cell_count();
-      return cellCount;
-    }
+  {
+    SLIC_ASSERT_MSG(
+      m_impl,
+      "There are no surface mesh until you call compute_iso_surface()");
+    axom::IndexType cellCount = m_impl->get_surface_cell_count();
+    return cellCount;
+  }
   //!@brief Get number of nodes in the generated contour mesh.
   axom::IndexType get_surface_node_count() const
-    {
-      return m_ndim * get_surface_cell_count();
-    }
+  {
+    return m_ndim * get_surface_cell_count();
+  }
 
   /*!
     @brief Put generated surface in a mint::UnstructuredMesh.
@@ -192,9 +192,9 @@ public:
   void populate_surface_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
     const std::string &cellIdField = {}) const
-    {
-      m_impl->populate_surface_mesh(mesh, cellIdField);
-    }
+  {
+    m_impl->populate_surface_mesh(mesh, cellIdField);
+  }
 
 private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
@@ -219,12 +219,13 @@ public:
     This class allows m_impl to refer to any implementation used
     at run time.
   */
-  struct ImplBase {
+  struct ImplBase
+  {
     //!@brief Prepare internal data for operating on the given domain.
-    virtual void initialize(const conduit::Node& dom,
-                            const std::string& coordsetPath,
-                            const std::string& fcnPath,
-                            const std::string& maskPath) = 0;
+    virtual void initialize(const conduit::Node &dom,
+                            const std::string &coordsetPath,
+                            const std::string &fcnPath,
+                            const std::string &maskPath) = 0;
     //!@brief Set the contour value
     virtual void set_contour_value(double contourVal) = 0;
     //!@brief Mark domain cells that cross the contour.
@@ -237,10 +238,11 @@ public:
     virtual axom::IndexType get_surface_cell_count() const = 0;
     //!@brief Populate output mesh object with generated surface.
     virtual void populate_surface_mesh(
-      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
-      const std::string& cellIdField) const = 0;
-    virtual ~ImplBase() {}
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
+      const std::string &cellIdField) const = 0;
+    virtual ~ImplBase() { }
   };
+
 private:
   std::shared_ptr<ImplBase> m_impl;
   //!@brief Allocate implementation object and set m_impl.

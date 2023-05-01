@@ -67,7 +67,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   using MdimIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
-  static constexpr MemorySpace memory_space = execution_space<ExecSpace>::memory_space;
+  static constexpr MemorySpace memory_space =
+    execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured domain
@@ -137,11 +138,15 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       axom::Array<std::uint16_t, DIM, axom::MemorySpace::Dynamic>(m_cShape);
   }
 
-  void mark_crossings() override
-    {
-      mark_crossings_dim();
-    }
-  //!@brief Populate m_caseIds with crossing indices and count the crossings.
+  /*!
+    @brief Implementation of virtual mark_crossings.
+
+    Virtual methods cannot be templated, so this implementation
+    delegates to methods templated on DIM.
+  */
+  void mark_crossings() override { mark_crossings_dim(); }
+
+  //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type mark_crossings_dim()
   {
@@ -149,37 +154,34 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA_INDEX_VALUE_T(JIDX, axom::IndexType, "JIDX");
     RAJA::TypedRangeSegment<JIDX> jRange(0, m_cShape[0]);
     RAJA::TypedRangeSegment<IIDX> iRange(0, m_cShape[1]);
-    using EXEC_POL =
-      RAJA::KernelPolicy<
-        // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
-        RAJA::statement::For<1, LoopPolicy,
-          RAJA::statement::For<0, LoopPolicy,
-            RAJA::statement::Lambda<0>
-          >
-        >
-      >;
-    RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange),
-                           // TODO: Why does AXOM_LAMBDA here not compile on rzansel with cuda?
-                           AXOM_LAMBDA(IIDX it, JIDX jt) {
-                             auto& i = *it;
-                             auto& j = *jt;
-                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(j, i));
-                             if(!skipZone)
-                             {
-                               // clang-format on
-                               double nodalValues[CELL_CORNER_COUNT] =
-                                 { m_fcnView(j    , i    )
-                                 , m_fcnView(j    , i + 1)
-                                 , m_fcnView(j + 1, i + 1)
-                                 , m_fcnView(j + 1, i    ) };
-                               // clang-format off
+    using EXEC_POL = RAJA::KernelPolicy<
+      // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
+      RAJA::statement::
+        For<1, LoopPolicy, RAJA::statement::For<0, LoopPolicy, RAJA::statement::Lambda<0>>>>;
+    RAJA::kernel<EXEC_POL>(
+      RAJA::make_tuple(iRange, jRange),
+      // TODO: Why does AXOM_LAMBDA here not compile on rzansel with cuda?
+      AXOM_LAMBDA(IIDX it, JIDX jt) {
+        auto& i = *it;
+        auto& j = *jt;
+        const bool skipZone = !m_maskView.empty() && bool(m_maskView(j, i));
+        if(!skipZone)
+        {
+          // clang-format off
+          double nodalValues[CELL_CORNER_COUNT] =
+            {m_fcnView(j    , i    ),
+             m_fcnView(j    , i + 1),
+             m_fcnView(j + 1, i + 1),
+             m_fcnView(j + 1, i    )};
+          // clang-format on
 
-                               auto crossingCase = compute_crossing_case(nodalValues);
-                               m_caseIds(j,i) = crossingCase;
-// std::cout<<"cell ("<<i<<','<<j<<") "<<(&m_fcnView(j,i)-&m_fcnView(0,0))<<"  "<<m_fcnView(j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
-                             }
-                           });
+          auto crossingCase = compute_crossing_case(nodalValues);
+          m_caseIds(j, i) = crossingCase;
+          // std::cout<<"cell ("<<i<<','<<j<<") "<<(&m_fcnView(j,i)-&m_fcnView(0,0))<<"  "<<m_fcnView(j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
+        }
+      });
   }
+  //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type mark_crossings_dim()
   {
@@ -189,41 +191,37 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::TypedRangeSegment<KIDX> kRange(0, m_cShape[0]);
     RAJA::TypedRangeSegment<JIDX> jRange(0, m_cShape[1]);
     RAJA::TypedRangeSegment<IIDX> iRange(0, m_cShape[2]);
-    using EXEC_POL =
-      RAJA::KernelPolicy<
-        RAJA::statement::For<2, LoopPolicy,
-          RAJA::statement::For<1, LoopPolicy,
-            RAJA::statement::For<0, LoopPolicy,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >;
-    RAJA::kernel<EXEC_POL>(RAJA::make_tuple(iRange, jRange, kRange),
-                           AXOM_LAMBDA(IIDX it, JIDX jt, KIDX kt) {
-                             auto& i = *it;
-                             auto& j = *jt;
-                             auto& k = *kt;
-                             const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
-                             if(!skipZone)
-                             {
-                               // clang-format on
-                               double nodalValues[CELL_CORNER_COUNT] =
-                                 { m_fcnView(k  , j  , i+1)
-                                 , m_fcnView(k  , j+1, i+1)
-                                 , m_fcnView(k  , j+1, i  )
-                                 , m_fcnView(k  , j  , i  )
-                                 , m_fcnView(k+1, j  , i+1)
-                                 , m_fcnView(k+1, j+1, i+1)
-                                 , m_fcnView(k+1, j+1, i  )
-                                 , m_fcnView(k+1, j  , i  ) };
-                               // clang-format off
+    using EXEC_POL = RAJA::KernelPolicy<RAJA::statement::For<
+      2,
+      LoopPolicy,
+      RAJA::statement::
+        For<1, LoopPolicy, RAJA::statement::For<0, LoopPolicy, RAJA::statement::Lambda<0>>>>>;
+    RAJA::kernel<EXEC_POL>(
+      RAJA::make_tuple(iRange, jRange, kRange),
+      AXOM_LAMBDA(IIDX it, JIDX jt, KIDX kt) {
+        auto& i = *it;
+        auto& j = *jt;
+        auto& k = *kt;
+        const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
+        if(!skipZone)
+        {
+          // clang-format off
+          double nodalValues[CELL_CORNER_COUNT] =
+            {m_fcnView(k    , j    , i + 1),
+             m_fcnView(k    , j + 1, i + 1),
+             m_fcnView(k    , j + 1, i    ),
+             m_fcnView(k    , j    , i    ),
+             m_fcnView(k + 1, j    , i + 1),
+             m_fcnView(k + 1, j + 1, i + 1),
+             m_fcnView(k + 1, j + 1, i    ),
+             m_fcnView(k + 1, j    , i    )};
+          // clang-format on
 
-                               auto crossingCase = compute_crossing_case(nodalValues);
-                               m_caseIds(k,j,i) = crossingCase;
-// std::cout<<"cell ("<<i<<','<<j<<','<<k<<") "<<(&m_fcnView(k,j,i)-&m_fcnView(0,0,0))<<"  "<<m_fcnView(k,j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
-                             }
-                           });
+          auto crossingCase = compute_crossing_case(nodalValues);
+          m_caseIds(k, j, i) = crossingCase;
+          // std::cout<<"cell ("<<i<<','<<j<<','<<k<<") "<<(&m_fcnView(k,j,i)-&m_fcnView(0,0,0))<<"  "<<m_fcnView(k,j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
+        }
+      });
   }
 
   /*!
@@ -245,11 +243,13 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
     m_crossings.resize(m_crossingCount, {0, 0});
 
-    axom::Array<int> addCells(m_crossingCount, m_crossingCount, m_crossings.getAllocatorID());
+    axom::Array<int> addCells(m_crossingCount,
+                              m_crossingCount,
+                              m_crossings.getAllocatorID());
     auto addCellsView = addCells.view();
 
     axom::IndexType crossingId = 0;
-    RAJA::forall<RAJA::loop_exec>( // This loop doesn't parallelize. Use sequential policy.
+    RAJA::forall<RAJA::loop_exec>(  // This loop doesn't parallelize. Use sequential policy.
       RAJA::RangeSegment(0, parentCellCount),
       [&](axom::IndexType n) {
         auto caseId = m_caseIds.flatIndex(n);
@@ -264,23 +264,26 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       });
     assert(crossingId == m_crossingCount);
 
-    axom::Array<axom::IndexType> prefixSum(m_crossingCount, m_crossingCount, m_crossings.getAllocatorID());
+    axom::Array<axom::IndexType> prefixSum(m_crossingCount,
+                                           m_crossingCount,
+                                           m_crossings.getAllocatorID());
     auto prefixSumView = prefixSum.view();
     auto crossingsView = m_crossings.view();
 
     RAJA::exclusive_scan<LoopPolicy>(
       RAJA::make_span(addCellsView.data(), m_crossingCount),
       RAJA::make_span(prefixSumView.data(), m_crossingCount),
-      RAJA::operators::plus<axom::IndexType>{});
+      RAJA::operators::plus<axom::IndexType> {});
 
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, m_crossingCount),
       AXOM_LAMBDA(axom::IndexType n) {
         crossingsView[n].firstSurfaceCellId = prefixSumView[n];
       });
-    m_surfaceCellCount = m_crossings.empty() ? 0 :
-      m_crossings.back().firstSurfaceCellId +
-      m_crossingCellCounts[m_crossings.back().caseNum];
+    m_surfaceCellCount = m_crossings.empty()
+      ? 0
+      : m_crossings.back().firstSurfaceCellId +
+        m_crossingCellCounts[m_crossings.back().caseNum];
   }
 
   void compute_surface() override
@@ -502,8 +505,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     // STEP 0: get the edge node indices
     // 2 nodes define the edge.  n1 and n2 are the indices of
     // the nodes w.r.t. the square or cubic zone.  There is a
-    // agreed-on ordering of these indices in the arrays xx, yy,
-    // zz, nodeValues, crossingPt.
+    // agreed-on ordering of these indices in the arrays
+    // cornerCoords, nodeValues, hex_edge_table.
     const int hex_edge_table[] = {
       0, 1, 1, 2, 2, 3, 3, 0,  // base
       4, 5, 5, 6, 6, 7, 7, 4,  // top
@@ -545,7 +548,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     // std::cout<<__WHERE<< crossingPt << std::endl;
   }
 
-  void set_contour_value(double contourVal) override { m_contourVal = contourVal; }
+  void set_contour_value(double contourVal) override
+  {
+    m_contourVal = contourVal;
+  }
 
   //!@brief Compute the case index into case2D or case3D.
   AXOM_HOST_DEVICE int compute_crossing_case(const double* f)
@@ -580,15 +586,14 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     , m_surfaceCoords(0, 0, execution_space<ExecSpace>::allocatorID())
     , m_surfaceCellCorners(0, 0, execution_space<ExecSpace>::allocatorID())
     , m_surfaceCellParents(0, 0, execution_space<ExecSpace>::allocatorID())
-    {}
+  { }
 
   /*!
     @brief Info for a parent cell intersecting the surface.
   */
   struct CrossingInfo
   {
-    CrossingInfo(axom::IndexType parentCellNum_,
-                 std::uint16_t caseNum_)
+    CrossingInfo(axom::IndexType parentCellNum_, std::uint16_t caseNum_)
       : parentCellNum(parentCellNum_)
       , caseNum(caseNum_)
       , firstSurfaceCellId(std::numeric_limits<axom::IndexType>::max())
@@ -619,7 +624,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   //!@brief Number of surface cells from crossings.
   axom::IndexType m_surfaceCellCount = 0;
   axom::IndexType get_surface_cell_count() const override
-    { return m_surfaceCellCount; }
+  {
+    return m_surfaceCellCount;
+  }
 
   //!@brief Number of corners (nodes) on each cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
@@ -654,7 +661,9 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-std::cout<<__WHERE<<axom::fmt::format("runtimePolicy = {}", m_runtimePolicy)<<std::endl;
+  std::cout << __WHERE
+            << axom::fmt::format("runtimePolicy = {}", m_runtimePolicy)
+            << std::endl;
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {
@@ -802,58 +811,56 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
     "You must call set_function_field before compute_iso_surface.");
 
   allocate_impl();
-std::cout<<__WHERE<<"initialize"<<std::endl;
+  std::cout << __WHERE << "initialize" << std::endl;
   m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
-std::cout<<__WHERE<<"set_contour_value"<<std::endl;
+  std::cout << __WHERE << "set_contour_value" << std::endl;
   m_impl->set_contour_value(contourVal);
-std::cout<<__WHERE<<"mark_crossings"<<std::endl;
+  std::cout << __WHERE << "mark_crossings" << std::endl;
   m_impl->mark_crossings();
-std::cout<<__WHERE<<"scan_crossinga"<<std::endl;
+  std::cout << __WHERE << "scan_crossings" << std::endl;
   m_impl->scan_crossings();
-std::cout<<__WHERE<<"compute_surface"<<std::endl;
+  std::cout << __WHERE << "compute_surface" << std::endl;
   m_impl->compute_surface();
-std::cout<<__WHERE<<"done"<<std::endl;
+  std::cout << __WHERE << "done" << std::endl;
 }
 
 void MarchingCubesSingleDomain::allocate_impl()
 {
   if(m_runtimePolicy == RuntimePolicy::seq)
   {
-    m_impl = m_ndim == 2 ?
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>) :
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
+    m_impl = m_ndim == 2
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
   }
 #ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
-    m_impl = m_ndim == 2 ?
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>) :
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
+    m_impl = m_ndim == 2
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
   }
 #endif
-#if 0
 #ifdef _AXOM_MC_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
-    m_impl = m_ndim == 2 ?
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>) :
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
+    m_impl = m_ndim == 2
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
   }
 #endif
 #ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
-    m_impl = m_ndim == 2 ?
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>) :
-      std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
+    m_impl = m_ndim == 2
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
   }
-#endif
 #endif
   else
   {
     SLIC_ERROR(axom::fmt::format(
-                 "MarchingCubesSingleDomain has no implementation for runtime policy {}",
-                 m_runtimePolicy));
+      "MarchingCubesSingleDomain has no implementation for runtime policy {}",
+      m_runtimePolicy));
   }
 }
 

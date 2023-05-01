@@ -94,7 +94,8 @@ public:
 
   bool checkResults {false};
 
-  quest::MarchingCubesRuntimePolicy policy {quest::MarchingCubesRuntimePolicy::seq};
+  quest::MarchingCubesRuntimePolicy policy {
+    quest::MarchingCubesRuntimePolicy::seq};
 
 private:
   bool _verboseOutput {false};
