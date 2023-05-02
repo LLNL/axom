@@ -10,6 +10,7 @@
  */
 
 #include "gtest/gtest.h"
+#include <map>
 
 #include "axom/multimat/multimat.hpp"
 
@@ -476,6 +477,12 @@ TEST(multimat, construct_multimat_1_array)
                                           DataLayout::MAT_DOM};
   std::vector<SparsityLayout> sparsity_layouts = {SparsityLayout::DENSE,
                                                   SparsityLayout::SPARSE};
+  std::map<std::pair<DataLayout, SparsityLayout>, axom::Array<double>> fieldDataMap {
+    {{DataLayout::CELL_DOM, SparsityLayout::DENSE}, data.cellmat_dense_arr},
+    {{DataLayout::CELL_DOM, SparsityLayout::SPARSE}, data.cellmat_sparse_arr},
+    {{DataLayout::MAT_DOM, SparsityLayout::DENSE}, data.matcell_dense_arr},
+    {{DataLayout::MAT_DOM, SparsityLayout::SPARSE}, data.matcell_sparse_arr},
+  };
 
   std::string array_name = "Array 1";
 
@@ -500,11 +507,21 @@ TEST(multimat, construct_multimat_1_array)
           SLIC_INFO("Making a copy...");
           //Make Copies to test conversion
           MultiMat mm_c(mm);
+          axom::Array<double> unowned_array =
+            fieldDataMap.find({layout_used, sparsity_used})->second;
+          int ext_field_idx = mm_c.addExternalField("UnownedField",
+                                                    FieldMapping::PER_CELL_MAT,
+                                                    layout_used,
+                                                    sparsity_used,
+                                                    unowned_array.view(),
+                                                    data.stride);
+
           EXPECT_TRUE(mm_c.isValid(true));
           EXPECT_EQ(mm_c.getNumberOfCells(), data.num_cells);
           EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
 
           check_values<double>(mm_c, array_name, data);
+          check_values<double>(mm_c, "UnownedField", data);
 
           SLIC_INFO("Converting layout...");
           mm_c.convertLayout(layout_to_convert, sparsity_to_convert);
@@ -520,8 +537,31 @@ TEST(multimat, construct_multimat_1_array)
           EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
           for(int i = 0; i < mm.getNumberOfFields(); ++i)
           {
-            EXPECT_EQ(mm_c.getFieldDataLayout(i), layout_to_convert);
-            EXPECT_EQ(mm_c.getFieldSparsityLayout(i), sparsity_to_convert);
+            if(i != ext_field_idx)
+            {
+              EXPECT_EQ(mm_c.getFieldDataLayout(i), layout_to_convert);
+              EXPECT_EQ(mm_c.getFieldSparsityLayout(i), sparsity_to_convert);
+            }
+            else
+            {
+              // An externally-owned field should convert layout but not sparsity,
+              // since sparsity requires a reallocation.
+              EXPECT_EQ(mm_c.getFieldDataLayout(i), layout_to_convert);
+              EXPECT_EQ(mm_c.getFieldSparsityLayout(i), sparsity_used);
+            }
+          }
+          if(sparsity_to_convert != sparsity_used)
+          {
+            if(sparsity_to_convert == SparsityLayout::DENSE)
+            {
+              EXPECT_THROW(mm_c.convertFieldToDense(ext_field_idx),
+                           std::runtime_error);
+            }
+            else
+            {
+              EXPECT_THROW(mm_c.convertFieldToSparse(ext_field_idx),
+                           std::runtime_error);
+            }
           }
           check_values<double>(mm_c, array_name, data);
         }
