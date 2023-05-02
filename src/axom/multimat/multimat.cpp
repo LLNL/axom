@@ -43,6 +43,49 @@ axom::Array<double>& MultiMat::FieldBacking::getArray<double>()
   return m_dblData;
 }
 
+template <>
+void MultiMat::FieldBacking::setArrayView<unsigned char>(
+  axom::ArrayView<unsigned char> view)
+{
+  m_ucharView = view;
+}
+template <>
+void MultiMat::FieldBacking::setArrayView<int>(axom::ArrayView<int> view)
+{
+  m_intView = view;
+}
+template <>
+void MultiMat::FieldBacking::setArrayView<float>(axom::ArrayView<float> view)
+{
+  m_floatView = view;
+}
+template <>
+void MultiMat::FieldBacking::setArrayView<double>(axom::ArrayView<double> view)
+{
+  m_dblView = view;
+}
+
+template <>
+axom::ArrayView<unsigned char> MultiMat::FieldBacking::getArrayView<unsigned char>()
+{
+  return m_isOwned ? m_ucharData.view() : m_ucharView;
+}
+template <>
+axom::ArrayView<int> MultiMat::FieldBacking::getArrayView<int>()
+{
+  return m_isOwned ? m_intData.view() : m_intView;
+}
+template <>
+axom::ArrayView<float> MultiMat::FieldBacking::getArrayView<float>()
+{
+  return m_isOwned ? m_floatData.view() : m_floatView;
+}
+template <>
+axom::ArrayView<double> MultiMat::FieldBacking::getArrayView<double>()
+{
+  return m_isOwned ? m_dblData.view() : m_dblView;
+}
+
 MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
                    SparsityLayout AXOM_UNUSED_PARAM(s))
   : m_allocatorId(axom::getDefaultAllocatorID())
@@ -176,10 +219,46 @@ MultiMat::MultiMat(const MultiMat& other)
     {
       m_fieldBackingVec.push_back(nullptr);
     }
-    else
+    else if(other.m_fieldBackingVec[idx]->isOwned())
     {
       m_fieldBackingVec.emplace_back(
         new FieldBacking(*(other.m_fieldBackingVec[idx])));
+    }
+    else
+    {
+      m_fieldBackingVec.emplace_back(new FieldBacking);
+      switch(other.m_dataTypeVec[idx])
+      {
+      case DataTypeSupported::TypeFloat:
+        *(m_fieldBackingVec[idx]) =
+          FieldBacking(other.m_fieldBackingVec[idx]->getArrayView<float>(),
+                       true,
+                       m_allocatorId);
+        break;
+      case DataTypeSupported::TypeDouble:
+        *(m_fieldBackingVec[idx]) =
+          FieldBacking(other.m_fieldBackingVec[idx]->getArrayView<double>(),
+                       true,
+                       m_allocatorId);
+        break;
+      case DataTypeSupported::TypeInt:
+        *(m_fieldBackingVec[idx]) =
+          FieldBacking(other.m_fieldBackingVec[idx]->getArrayView<int>(),
+                       true,
+                       m_allocatorId);
+        break;
+      case DataTypeSupported::TypeUnsignChar:
+        *(m_fieldBackingVec[idx]) = FieldBacking(
+          other.m_fieldBackingVec[idx]->getArrayView<unsigned char>(),
+          true,
+          m_allocatorId);
+        break;
+      case DataTypeSupported::TypeUnknown:
+      default:
+        SLIC_ERROR("Multimat: Unknown field type for field \""
+                   << other.m_fieldNameVec[idx] << "\"");
+        break;
+      }
     }
   }
 }
@@ -799,7 +878,16 @@ void MultiMat::convertLayoutToSparse()
 {
   for(unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
   {
-    convertFieldToSparse(map_i);
+    try
+    {
+      convertFieldToSparse(map_i);
+    }
+    catch(const std::runtime_error& ex)
+    {
+      SLIC_WARNING("Multimat: cannot convert field \""
+                   << m_fieldNameVec[map_i]
+                   << "\" to sparse layout, skipping...");
+    }
   }
 }
 
@@ -807,7 +895,15 @@ void MultiMat::convertLayoutToDense()
 {
   for(unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
   {
-    convertFieldToDense(map_i);
+    try
+    {
+      convertFieldToDense(map_i);
+    }
+    catch(const std::runtime_error& ex)
+    {
+      SLIC_WARNING("Multimat: cannot convert field \""
+                   << m_fieldNameVec[map_i] << "\" to dense layout, skipping...");
+    }
   }
 }
 
@@ -888,6 +984,12 @@ void MultiMat::convertFieldToSparse(int field_idx)
     return;
   }
 
+  if(!m_fieldBackingVec[field_idx]->isOwned())
+  {
+    throw std::runtime_error("Multimat error: cannot convert unowned field \"" +
+                             m_fieldNameVec[field_idx] + "\" to sparse layout.");
+  }
+
   if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeDouble)
   {
     convertToSparse_helper<double>(field_idx);
@@ -924,6 +1026,12 @@ void MultiMat::convertFieldToDense(int field_idx)
     return;
   }
 
+  if(!m_fieldBackingVec[field_idx]->isOwned())
+  {
+    throw std::runtime_error("Multimat error: cannot convert unowned field \"" +
+                             m_fieldNameVec[field_idx] + "\" to dense layout.");
+  }
+
   if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeDouble)
   {
     convertToDense_helper<double>(field_idx);
@@ -950,6 +1058,7 @@ template <typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
   SLIC_ASSERT(m_fieldSparsityLayoutVec[map_i] != SparsityLayout::SPARSE);
+  SLIC_ASSERT(m_fieldBackingVec[map_i]->isOwned());
 
   //Skip if no volume fraction array is set-up
   if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
@@ -987,6 +1096,7 @@ template <typename DataType>
 void MultiMat::convertToDense_helper(int map_i)
 {
   SLIC_ASSERT(m_fieldSparsityLayoutVec[map_i] != SparsityLayout::DENSE);
+  SLIC_ASSERT(m_fieldBackingVec[map_i]->isOwned());
 
   //Skip if no volume fraction array is set-up
   if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
@@ -1107,7 +1217,19 @@ void MultiMat::transposeField_helper(int field_idx)
     arr_data = axom::Array<DataType>(arr_data, m_allocatorId);
   }
 
-  m_fieldBackingVec[field_idx]->getArray<DataType>() = std::move(arr_data);
+  if(m_fieldBackingVec[field_idx]->isOwned())
+  {
+    m_fieldBackingVec[field_idx]->getArray<DataType>() = std::move(arr_data);
+  }
+  else
+  {
+    // We don't own the underlying buffer, just copy the data.
+    const auto old_view = m_fieldBackingVec[field_idx]->getArrayView<DataType>();
+    for(IndexType flat_idx = 0; flat_idx < old_view.size(); flat_idx++)
+    {
+      old_view[flat_idx] = arr_data[flat_idx];
+    }
+  }
   m_fieldDataLayoutVec[field_idx] = new_layout;
 }
 

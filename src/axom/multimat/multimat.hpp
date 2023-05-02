@@ -462,7 +462,28 @@ public:
 
   void convertFieldLayout(int field_idx, SparsityLayout, DataLayout);
 
+  /*!
+   * \brief Converts a field with a given index to a sparse layout.
+   *  No-op if the field is already in sparse layout, or if the field is not a
+   *  2D cell-material field.
+   *
+   * \param field_idx the index of the field to convert
+   * \exception std::runtime_error if field is in externally-owned memory
+   *
+   * \post getFieldSparsityLayout(field_idx) == SparsityLayout::SPARSE
+   */
   void convertFieldToSparse(int field_idx);
+
+  /*!
+   * \brief Converts a field with a given index to a dense layout.
+   *  No-op if the field is already in dense layout, or if the field is not a
+   *  2D cell-material field.
+   *
+   * \param field_idx the index of the field to convert
+   * \exception std::runtime_error if field is in externally-owned memory
+   *
+   * \post getFieldSparsityLayout(field_idx) == SparsityLayout::DENSE
+   */
   void convertFieldToDense(int field_idx);
   SparsityLayout getFieldSparsityLayout(int field_idx) const;
 
@@ -717,34 +738,62 @@ private:
 
   struct FieldBacking
   {
+  private:
+    bool m_isOwned {false};
+
     axom::Array<unsigned char> m_ucharData;
     axom::Array<int> m_intData;
     axom::Array<float> m_floatData;
     axom::Array<double> m_dblData;
 
+    axom::ArrayView<unsigned char> m_ucharView;
+    axom::ArrayView<int> m_intView;
+    axom::ArrayView<float> m_floatView;
+    axom::ArrayView<double> m_dblView;
+
+    template <typename T>
+    void setArrayView(axom::ArrayView<T> new_array);
+
+  public:
     template <typename T>
     axom::Array<T>& getArray();
 
     template <typename T>
-    axom::ArrayView<T> getArrayView()
-    {
-      return getArray<std::remove_const_t<T>>().view();
-    }
+    axom::ArrayView<T> getArrayView();
 
-    FieldBacking(int alloc_id)
-      : m_ucharData(0, 0, alloc_id)
-      , m_intData(0, 0, alloc_id)
-      , m_floatData(0, 0, alloc_id)
-      , m_dblData(0, 0, alloc_id)
-    { }
+    FieldBacking() = default;
+
+    template <typename T>
+    FieldBacking(axom::ArrayView<T> input_array, bool owned, int allocatorID)
+    {
+      if(owned)
+      {
+        m_isOwned = true;
+        getArray<T>() = axom::Array<T>(input_array, allocatorID);
+      }
+      else
+      {
+        m_isOwned = false;
+        setArrayView<T>(input_array);
+      }
+    }
 
     void moveSpaces(int new_alloc_id)
     {
-      m_ucharData = axom::Array<unsigned char>(m_ucharData, new_alloc_id);
-      m_intData = axom::Array<int>(m_intData, new_alloc_id);
-      m_floatData = axom::Array<float>(m_floatData, new_alloc_id);
-      m_dblData = axom::Array<double>(m_dblData, new_alloc_id);
+      if(m_isOwned)
+      {
+        m_ucharData = axom::Array<unsigned char>(m_ucharData, new_alloc_id);
+        m_intData = axom::Array<int>(m_intData, new_alloc_id);
+        m_floatData = axom::Array<float>(m_floatData, new_alloc_id);
+        m_dblData = axom::Array<double>(m_dblData, new_alloc_id);
+      }
+      else
+      {
+        SLIC_ERROR("Cannot move unowned array to a different allocator ID.");
+      }
     }
+
+    bool isOwned() const { return m_isOwned; }
   };
 
   //std::vector of information for each fields
@@ -825,13 +874,14 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
                                  DataLayout data_layout,
                                  SparsityLayout sparsity_layout,
                                  T* data_arr,
+
                                  int stride)
 {
   unsigned int new_arr_idx = m_fieldNameVec.size();
 
   m_fieldNameVec.push_back(field_name);
   m_fieldMappingVec.push_back(field_mapping);
-  m_fieldBackingVec.emplace_back(new FieldBacking(m_allocatorId));
+  m_fieldBackingVec.emplace_back(new FieldBacking());
   m_fieldDataLayoutVec.push_back(data_layout);
   m_fieldSparsityLayoutVec.push_back(sparsity_layout);
   m_fieldStrideVec.push_back(stride);
@@ -853,23 +903,24 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldSparsityLayoutVec.size());
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
 
+  axom::IndexType set_size = 0;
   if(field_mapping == FieldMapping::PER_CELL_MAT)
   {
     const BivariateSetType* s = get_mapped_biSet(data_layout, sparsity_layout);
     SLIC_ASSERT(s != nullptr);
-
-    axom::Array<T>& array = m_fieldBackingVec.back()->getArray<T>();
-    array.insert(0, s->size() * stride, data_arr);
+    set_size = s->size();
   }
   else
   {
     SLIC_ASSERT(field_mapping == FieldMapping::PER_CELL ||
                 field_mapping == FieldMapping::PER_MAT);
     const RangeSetType& s = *getMappedRangeSet(field_mapping);
-
-    axom::Array<T>& array = m_fieldBackingVec.back()->getArray<T>();
-    array.insert(0, s.size() * stride, data_arr);
+    set_size = s.size();
   }
+
+  axom::ArrayView<T> data_view(data_arr, set_size * stride);
+  m_fieldBackingVec.back() =
+    std::make_unique<FieldBacking>(data_view, true, m_allocatorId);
 
   return new_arr_idx;
 }
@@ -924,9 +975,10 @@ MultiMat::Field1D<T> MultiMat::get1dFieldImpl(int fieldIdx) const
   if(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL ||
      m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
   {
-    return Field1D<T>(*getMappedRangeSet(m_fieldMappingVec[fieldIdx]),
-                      m_fieldBackingVec[fieldIdx]->getArray<T>().view(),
-                      m_fieldStrideVec[fieldIdx]);
+    return Field1D<T>(
+      *getMappedRangeSet(m_fieldMappingVec[fieldIdx]),
+      m_fieldBackingVec[fieldIdx]->getArrayView<std::remove_const_t<T>>(),
+      m_fieldStrideVec[fieldIdx]);
   }
   else
   {
@@ -936,9 +988,10 @@ MultiMat::Field1D<T> MultiMat::get1dFieldImpl(int fieldIdx) const
     // a Field1D (Map) so it can be accessed like a 1d array, but the
     // indexing information would be lost.
     RangeSetType bisetFlat(get_mapped_biSet(fieldIdx)->size());
-    return Field1D<T>(bisetFlat,
-                      m_fieldBackingVec[fieldIdx]->getArrayView<T>(),
-                      m_fieldStrideVec[fieldIdx]);
+    return Field1D<T>(
+      bisetFlat,
+      m_fieldBackingVec[fieldIdx]->getArrayView<std::remove_const_t<T>>(),
+      m_fieldStrideVec[fieldIdx]);
   }
 }
 
@@ -947,11 +1000,12 @@ MultiMat::Field2D<T> MultiMat::get2dFieldImpl(int fieldIdx) const
 {
   SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
 
-  return Field2D<T>(*this,
-                    get_mapped_biSet(fieldIdx),
-                    fieldIdx,
-                    m_fieldBackingVec[fieldIdx]->getArrayView<T>(),
-                    m_fieldStrideVec[fieldIdx]);
+  return Field2D<T>(
+    *this,
+    get_mapped_biSet(fieldIdx),
+    fieldIdx,
+    m_fieldBackingVec[fieldIdx]->getArrayView<std::remove_const_t<T>>(),
+    m_fieldStrideVec[fieldIdx]);
 }
 
 template <typename T, typename BSetType>
