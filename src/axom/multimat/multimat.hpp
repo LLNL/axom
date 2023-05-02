@@ -322,7 +322,7 @@ public:
    * \param data_array the array containing the volumn fraction information
    * \return int the volume fraction field index, which is always zero.
    */
-  int setVolfracField(double* data_array,
+  int setVolfracField(axom::ArrayView<double> data_array,
                       DataLayout layout,
                       SparsityLayout sparsity);
 
@@ -844,8 +844,7 @@ int MultiMat::addField(const std::string& arr_name,
   {  //this is the vol frac array. call setVolfrac instead
     SLIC_ASSERT(arr_mapping == FieldMapping::PER_CELL_MAT);
     SLIC_ASSERT(stride == 1);
-    SLIC_ASSERT(data_arr.data() != nullptr);
-    setVolfracField(data_arr.data(), data_layout, sparsity_layout);
+    setVolfracField(data_arr, data_layout, sparsity_layout);
     return 0;
   }
   else if(fieldIdx > 0)

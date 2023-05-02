@@ -111,7 +111,7 @@ void various_traversal_methods(int nmats,
     }
   }
 
-  mm.setVolfracField(volfrac_arr.data(), layout, sparsity);
+  mm.setVolfracField(volfrac_arr, layout, sparsity);
   mm.addField("Cell Array",
               FieldMapping::PER_CELL,
               layout,

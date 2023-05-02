@@ -33,10 +33,10 @@ struct MM_test_data
 
   std::vector<int> matcount;
 
-  std::vector<double> volfrac_cellcen_dense;
-  std::vector<double> volfrac_matcen_dense;
-  std::vector<double> volfrac_cellcen_sparse;
-  std::vector<double> volfrac_matcen_sparse;
+  axom::Array<double> volfrac_cellcen_dense;
+  axom::Array<double> volfrac_matcen_dense;
+  axom::Array<double> volfrac_cellcen_sparse;
+  axom::Array<double> volfrac_matcen_sparse;
 
   axom::Array<DataType> cellmat_dense_arr;
   axom::Array<DataType> cellmat_sparse_arr;
@@ -359,22 +359,22 @@ MultiMat* newMM(MM_test_data<T>& data,
   if(layout_used == DataLayout::CELL_DOM)
   {
     if(sparsity_used == SparsityLayout::DENSE)
-      mm.setVolfracField(data.volfrac_cellcen_dense.data(),
+      mm.setVolfracField(data.volfrac_cellcen_dense,
                          DataLayout::CELL_DOM,
                          SparsityLayout::DENSE);
     else
-      mm.setVolfracField(data.volfrac_cellcen_sparse.data(),
+      mm.setVolfracField(data.volfrac_cellcen_sparse,
                          DataLayout::CELL_DOM,
                          SparsityLayout::SPARSE);
   }
   else
   {
     if(sparsity_used == SparsityLayout::DENSE)
-      mm.setVolfracField(data.volfrac_matcen_dense.data(),
+      mm.setVolfracField(data.volfrac_matcen_dense,
                          DataLayout::MAT_DOM,
                          SparsityLayout::DENSE);
     else
-      mm.setVolfracField(data.volfrac_matcen_sparse.data(),
+      mm.setVolfracField(data.volfrac_matcen_sparse,
                          DataLayout::MAT_DOM,
                          SparsityLayout::SPARSE);
   }

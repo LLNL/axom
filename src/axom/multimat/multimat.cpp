@@ -456,7 +456,7 @@ void MultiMat::removeField(const std::string& field_name)
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
 }
 
-int MultiMat::setVolfracField(double* arr,
+int MultiMat::setVolfracField(axom::ArrayView<double> arr,
                               DataLayout layout,
                               SparsityLayout sparsity)
 {
@@ -465,12 +465,11 @@ int MultiMat::setVolfracField(double* arr,
   //and delete the new map.
 
   //Volfrac map is a CellxMat mapping, named "Volfrac", and is stride 1.
-  const BivariateSetType* s = get_mapped_biSet(layout, sparsity);
   int arr_i = addFieldArray_impl<double>("Volfrac",
                                          FieldMapping::PER_CELL_MAT,
                                          layout,
                                          sparsity,
-                                         axom::ArrayView<double>(arr, s->size()),
+                                         arr,
                                          1);
 
   //move the data to the first one (index 0) in the list
