@@ -187,10 +187,13 @@ macro(axom_add_library)
         message(FATAL_ERROR "Do not add 'openmp' to Axom libraries to avoid propegation. It is handled automatically.")
     endif()
 
-    # Prefix the output name with "axom_" for component libraries
     if(DEFINED arg_OUTPUT_NAME)
         set(_output_name "${arg_OUTPUT_NAME}")
+    elseif(NOT DEFINED arg_SOURCES)
+        # Can't set OUTPUT_NAME on header only libraries
+        set(_output_NAME)
     elseif(${arg_NAME} IN_LIST AXOM_COMPONENTS_FULL)
+        # Prefix the output name with "axom_" for component libraries
         set(_output_name "axom_${arg_NAME}")
     else()
         set(_output_name "${arg_NAME}")
