@@ -10,7 +10,7 @@
     - shell
     - rzgenie
   before_script:
-    - module load cmake/3.14.5
+    - module load cmake/3.18.0
 
 
 ####

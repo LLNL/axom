@@ -14,13 +14,9 @@
     - if: '$CI_COMMIT_BRANCH =~ /_lnone/ || $ON_LASSEN == "OFF"' #run except if ...
       when: never
     - when: on_success
-
-####
-# Load required CUDA module
-.with_cuda:
   before_script:
     - module load cuda/11.2.0
-    - module load cmake/3.21.1
+    - module load cmake/3.18.0
 
 ####
 # Template
@@ -50,7 +46,7 @@ lassen-clang_10_0_1_cuda-src:
   variables:
     COMPILER: "clang@10.0.1.2_cuda"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.src_build_on_lassen, .with_cuda]
+  extends: [.src_build_on_lassen]
 
 lassen-gcc_8_3_1-src:
   variables:
@@ -62,7 +58,7 @@ lassen-gcc_8_3_1_cuda-src:
   variables:
     COMPILER: "gcc@8.3.1.2_cuda"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.src_build_on_lassen, .with_cuda]
+  extends: [.src_build_on_lassen]
 
 lassen-xl_16_1_1-src:
   variables:
@@ -74,7 +70,7 @@ lassen-xl_16_1_1_cuda-src:
   variables:
     COMPILER: "xl@16.1.1.2_cuda"
     HOST_CONFIG: "lassen-blueos_3_ppc64le_ib_p9-${COMPILER}.cmake"
-  extends: [.src_build_on_lassen, .with_cuda]
+  extends: [.src_build_on_lassen]
 
 ####
 # Full Build jobs
@@ -89,7 +85,7 @@ lassen-clang_10_0_1_cuda-full:
     COMPILER: "clang@10.0.1.2"
     SPEC: "%${COMPILER}+mfem+cuda~openmp"
     EXTRA_SPEC: "cuda_arch=70"
-  extends: [.full_build_on_lassen, .with_cuda]
+  extends: [.full_build_on_lassen]
 
 lassen-gcc_8_3_1-full:
   variables:
@@ -102,7 +98,7 @@ lassen-gcc_8_3_1_cuda-full:
     COMPILER: "gcc@8.3.1.2"
     SPEC: "%${COMPILER}~mfem+cuda"
     EXTRA_SPEC: "cuda_arch=70"
-  extends: [.full_build_on_lassen, .with_cuda]
+  extends: [.full_build_on_lassen]
 
 lassen-xl_16_1_1-full:
   variables:
@@ -115,4 +111,4 @@ lassen-xl_16_1_1_cuda-full:
     COMPILER: "xl@16.1.1.2"
     SPEC: "%${COMPILER}+mfem+cuda~openmp~cpp14"
     EXTRA_SPEC: "cuda_arch=70"
-  extends: [.full_build_on_lassen, .with_cuda]
+  extends: [.full_build_on_lassen]

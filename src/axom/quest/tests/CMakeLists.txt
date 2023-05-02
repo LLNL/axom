@@ -27,21 +27,19 @@ blt_list_append(TO       quest_tests
                 ELEMENTS quest_meshtester.cpp)
 
 set(quest_tests_depends
-    axom
-    ${axom_device_depends}
-    fmt
+    quest
     gtest
    )
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
 
-    blt_add_executable(
-        NAME ${test_name}_test
-        SOURCES ${test}
+    axom_add_executable(
+        NAME       ${test_name}_test
+        SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
-        FOLDER axom/quest/tests
+        FOLDER     axom/quest/tests
         )
 
     axom_add_test(
@@ -63,12 +61,12 @@ endif()
 
 if(MFEM_FOUND)
     set(test_name quest_point_in_cell_mfem)
-    blt_add_executable(
-        NAME ${test_name}
-        SOURCES ${test_name}.cpp
+    axom_add_executable(
+        NAME       ${test_name}
+        SOURCES    ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends} mfem
-        FOLDER axom/quest/tests
+        FOLDER      axom/quest/tests
         )
 
     string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
@@ -108,12 +106,12 @@ blt_list_append(TO       quest_mpi_tests
 
 foreach(test ${quest_mpi_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable(
-        NAME ${test_name}_test
-        SOURCES ${test_name}.cpp
+    axom_add_executable(
+        NAME       ${test_name}_test
+        SOURCES    ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_tests_depends}
-        FOLDER axom/quest/tests
+        FOLDER     axom/quest/tests
     )
 
     set(_numMPITasks 4)
@@ -150,11 +148,11 @@ if(ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
        )
     foreach(test ${quest_mpi_mfem_c2c_data_tests})
         get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable(
+        axom_add_executable(
             NAME ${test_name}_test
             SOURCES ${test_name}.cpp
             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON ${quest_tests_depends} mfem mpi
+            DEPENDS_ON ${quest_tests_depends} mfem
             FOLDER axom/quest/tests
         )
 
@@ -193,12 +191,12 @@ if (AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_HDF5)
 
     set(test_name quest_regression_test)
 
-    blt_add_executable(
-        NAME ${test_name}
-        SOURCES quest_regression.cpp
+    axom_add_executable(
+        NAME       ${test_name}
+        SOURCES    quest_regression.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_regression_depends}
-        FOLDER axom/quest/tests
+        FOLDER     axom/quest/tests
         )
 
     if ( NOT AXOM_ENABLE_OPENMP )

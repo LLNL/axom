@@ -7,12 +7,11 @@
 #------------------------------------------------------------------------------
 
 set(spin_example_depends
-        axom
-        ${axom_device_depends}
+        spin
         fmt
         )
 
-blt_add_executable(
+axom_add_executable(
     NAME        spin_introduction_ex
     SOURCES     spin_introduction.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -22,13 +21,13 @@ blt_add_executable(
 
 # Note: The following example uses quest to read in an STL file
 #       and mint for meshing
-if (AXOM_ENABLE_MINT AND AXOM_ENABLE_QUEST AND RAJA_FOUND AND UMPIRE_FOUND)
+if (AXOM_ENABLE_QUEST AND RAJA_FOUND AND UMPIRE_FOUND)
 
-    blt_add_executable(
+    axom_add_executable(
         NAME        spin_bvh_two_pass_ex
         SOURCES     spin_bvh_two_pass.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${spin_example_depends}
+        DEPENDS_ON  quest
         FOLDER      axom/spin/examples
         )
 

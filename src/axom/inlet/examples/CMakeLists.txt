@@ -34,10 +34,10 @@ blt_list_append(
 
 foreach(example ${inlet_examples})
     get_filename_component( ex_name ${example} NAME_WE )
-    blt_add_executable( NAME       inlet_${ex_name}_ex
+    axom_add_executable(NAME       inlet_${ex_name}_ex
                         SOURCES    ${example}
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON axom ${axom_device_depends}
+                        DEPENDS_ON inlet
                         FOLDER     axom/inlet/examples )
 endforeach()
 
@@ -47,10 +47,10 @@ if (SOL_FOUND)
 endif()
 
 if (SOL_FOUND AND MFEM_FOUND)
-    blt_add_executable( NAME       inlet_mfem_coefficient_ex
+    axom_add_executable(NAME       inlet_mfem_coefficient_ex
                         SOURCES    mfem_coefficient.cpp
                         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-                        DEPENDS_ON axom ${axom_device_depends} mfem
+                        DEPENDS_ON inlet
                         FOLDER     axom/inlet/examples )
 endif()
 

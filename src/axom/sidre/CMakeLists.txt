@@ -101,9 +101,9 @@ endif()
 # Build and install the library
 #------------------------------------------------------------------------------
 set(sidre_depends
-    core
+    slic
     conduit::conduit
-    slic)
+    )
 
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO sidre_depends ELEMENTS sparsehash IF SPARSEHASH_FOUND)
@@ -114,18 +114,16 @@ endif()
 
 # Include additional dependencies for spio when MPI is available
 if(AXOM_ENABLE_MPI)
-    list(APPEND sidre_depends fmt mpi)
-    blt_list_append(TO sidre_depends ELEMENTS conduit::conduit_mpi IF AXOM_ENABLE_MPI)
+    list(APPEND sidre_depends conduit::conduit_mpi fmt)
     blt_list_append(TO sidre_depends ELEMENTS scr IF SCR_FOUND)
 endif()
 
 
-blt_add_library( NAME       sidre
+axom_add_library(NAME       sidre
                  SOURCES    ${sidre_sources}
                  HEADERS    ${sidre_headers}
                  DEPENDS_ON ${sidre_depends}
-                 FOLDER     axom/sidre
-                 OBJECT     TRUE )
+                 FOLDER     axom/sidre)
 
 axom_write_unified_header(NAME    sidre
                           HEADERS ${sidre_headers})
