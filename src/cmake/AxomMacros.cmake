@@ -187,6 +187,15 @@ macro(axom_add_library)
         message(FATAL_ERROR "Do not add 'openmp' to Axom libraries to avoid propegation. It is handled automatically.")
     endif()
 
+    # Prefix the output name with "axom_" for component libraries
+    if(DEFINED arg_OUTPUT_NAME)
+        set(_output_name "${arg_OUTPUT_NAME}")
+    elseif(${arg_NAME} IN_LIST AXOM_COMPONENTS_FULL)
+        set(_output_name "axom_${arg_NAME}")
+    else()
+        set(_output_name "${arg_NAME}")
+    endif()
+
     blt_add_library(NAME        ${arg_NAME}
                     SOURCES     ${arg_SOURCES}
                     HEADERS     ${arg_HEADERS}
@@ -194,7 +203,7 @@ macro(axom_add_library)
                     DEFINES     ${arg_DEFINES}
                     DEPENDS_ON  ${arg_DEPENDS_ON} ${axom_device_depends}
                     OUTPUT_DIR  ${arg_OUTPUT_DIR}
-                    OUTPUT_NAME ${arg_OUTPUT_NAME}
+                    OUTPUT_NAME ${_output_name}
                     FOLDER      ${arg_FOLDER})
 
     if(AXOM_ENABLE_OPENMP AND (NOT "${arg_SOURCES}" STREQUAL ""))

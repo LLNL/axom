@@ -18,7 +18,7 @@ set(_ordered_component_list quest multimat slam mint klee inlet sidre slic lumbe
 set(AXOM_ORDERED_LIBS)
 foreach(_component ${_ordered_component_list})
   if(_component IN_LIST AXOM_COMPONENTS_ENABLED)
-    set(AXOM_ORDERED_LIBS "${AXOM_ORDERED_LIBS} -l${_component}")
+    set(AXOM_ORDERED_LIBS "${AXOM_ORDERED_LIBS} -laxom_${_component}")
   endif()
 endforeach()
 
