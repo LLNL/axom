@@ -46,6 +46,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and by calling `Shaper::setPercentError()` to set a refinement error percentage.
 
 ### Changed
+- The Axom library has been broken down into its component libraries (prefixed with `axom_`).
+  This change requires no change to downstream CMake users who import our targets.
+  The exported CMake target `axom` includes all components, but users who do not import our targets
+  will need to create the link line themselves. The following replacement can be used:
+  `-laxom` -> `-laxom_quest -laxom_multimat -laxom_slam -laxom_mint -laxom_klee -laxom_inlet -laxom_sidre -laxom_slic -laxom_lumberjack -laxom_core`
+  If you only need a subset of the components, you can now use those targets directly, ie. `axom::inlet`.
 - `IntersectionShaper` now implements material replacement rules.
 - `axom::Array` move constructors are now `noexcept`.
 - Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`

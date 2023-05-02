@@ -14,18 +14,16 @@ set(example_sources
     core_containers.cpp 
     core_acceleration.cpp)
 
-set( core_examples_depends axom ${axom_device_depends})
-
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
 #------------------------------------------------------------------------------
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
-    blt_add_executable(
+    axom_add_executable(
         NAME        ${exe_name}_ex
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${core_examples_depends}
+        DEPENDS_ON  core
         FOLDER      axom/core/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -36,26 +34,26 @@ foreach(example_source ${example_sources})
 endforeach()
 
 if(AXOM_ENABLE_CUDA)
-    blt_add_executable(
+    axom_add_executable(
           NAME        core_acceleration_cuda_on_ex
           SOURCES     core_acceleration.cpp
           OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-          DEPENDS_ON  ${core_examples_depends}
+          DEPENDS_ON  core
           FOLDER      axom/core/examples )
 
-    blt_add_executable(
+    axom_add_executable(
           NAME        core_containers_cuda_on_ex
           SOURCES     core_containers.cpp
           OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-          DEPENDS_ON  ${core_examples_depends}
+          DEPENDS_ON  core
           FOLDER      axom/core/examples )
 endif()
 
-blt_add_executable(
+axom_add_executable(
     NAME        core_utilities_ex
     SOURCES     core_utilities.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${core_examples_depends}
+    DEPENDS_ON  core
     FOLDER      axom/core/examples )
 
 if(AXOM_ENABLE_TESTS)

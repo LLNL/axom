@@ -156,7 +156,7 @@ install(
 #------------------------------------------------------------------------------
 
 # Add it to a temporary list before creating the cache variable to use list(APPEND)
-set(_axom_exported_targets axom)
+set(_axom_exported_targets ${AXOM_COMPONENTS_ENABLED})
 
 blt_list_append(TO _axom_exported_targets ELEMENTS cuda cuda_runtime IF AXOM_ENABLE_CUDA)
 blt_list_append(TO _axom_exported_targets ELEMENTS hip hip_runtime IF AXOM_ENABLE_HIP)

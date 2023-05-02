@@ -14,12 +14,12 @@ set(lumberjack_serial_tests
     lumberjack_Message.hpp
     lumberjack_TextEqualityCombiner.hpp )
 
-blt_add_executable(NAME       lumberjack_serial_tests
-                   SOURCES    lumberjack_serial_main.cpp
-                   HEADERS    ${lumberjack_serial_tests}
-                   OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON axom gtest 
-                   FOLDER     axom/lumberjack/tests )
+axom_add_executable(NAME       lumberjack_serial_tests
+                    SOURCES    lumberjack_serial_main.cpp
+                    HEADERS    ${lumberjack_serial_tests}
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON lumberjack gtest 
+                    FOLDER     axom/lumberjack/tests )
 
 foreach(test_suite ${lumberjack_serial_tests})
     get_filename_component(test_suite ${test_suite} NAME_WE)
@@ -35,12 +35,12 @@ set(lumberjack_mpi_tests
     lumberjack_BinaryCommunicator.hpp
     lumberjack_RootCommunicator.hpp )
 
-blt_add_executable(NAME       lumberjack_mpi_tests
-                   SOURCES    lumberjack_mpi_main.cpp
-                   HEADERS    ${lumberjack_mpi_tests}
-                   OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON axom gtest 
-                   FOLDER     axom/lumberjack/tests )
+axom_add_executable(NAME       lumberjack_mpi_tests
+                    SOURCES    lumberjack_mpi_main.cpp
+                    HEADERS    ${lumberjack_mpi_tests}
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON lumberjack gtest 
+                    FOLDER     axom/lumberjack/tests )
 
 foreach(test_suite ${lumberjack_mpi_tests})
     get_filename_component( test_suite ${test_suite} NAME_WE )
@@ -54,11 +54,11 @@ endforeach()
 #------------------------------------------------------------------------------
 # Single source file tests
 #------------------------------------------------------------------------------
-blt_add_executable(NAME       lumberjack_speed_test
-                   SOURCES    lumberjack_speedTest.cpp
-                   OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                   DEPENDS_ON axom
-                   FOLDER     axom/lumberjack/tests )
+axom_add_executable(NAME       lumberjack_speed_test
+                    SOURCES    lumberjack_speedTest.cpp
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON lumberjack
+                    FOLDER     axom/lumberjack/tests )
 
 set(lumberjack_sample_input_dir ${PROJECT_SOURCE_DIR}/axom/lumberjack/tests/sampleInput)
 axom_add_test(NAME          lumberjack_speedTest_binary

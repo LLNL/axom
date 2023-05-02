@@ -28,15 +28,12 @@ set(multimat_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(multimat_depends_on core slam slic ${axom_device_depends})
-
-blt_add_library(
+axom_add_library(
     NAME        multimat
     SOURCES     ${multimat_sources}
     HEADERS     ${multimat_headers}
-    DEPENDS_ON  ${multimat_depends_on}
+    DEPENDS_ON  slam
     FOLDER      axom/multimat
-    OBJECT      TRUE
     )
 
 # Set file back to C++ due to nvcc compiler error

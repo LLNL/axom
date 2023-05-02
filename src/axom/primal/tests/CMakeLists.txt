@@ -47,15 +47,13 @@ blt_list_append(
     IF       MFEM_FOUND 
                )
 
-set(primal_test_depends axom ${axom_device_depends} fmt gtest)
-
-blt_list_append( TO primal_test_depends ELEMENTS openmp IF AXOM_ENABLE_OPENMP )
+set(primal_test_depends primal fmt gtest)
 
 foreach ( test ${primal_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
 
-   blt_add_executable(
+   axom_add_executable(
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
