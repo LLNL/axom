@@ -470,6 +470,7 @@ int MultiMat::setVolfracField(axom::ArrayView<double> arr,
                                          layout,
                                          sparsity,
                                          arr,
+                                         true,
                                          1);
 
   //move the data to the first one (index 0) in the list

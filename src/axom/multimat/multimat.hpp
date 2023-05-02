@@ -298,6 +298,29 @@ public:
                int ncomp = 1);
 
   /**
+   * \brief Add an externally-managed field to the MultiMat object
+   *
+   * \tparam T The data type (double, float...) of the field
+   * \param field_name The name of the field, used to retrieve the field later
+   * \param field_mapping
+   * \param data_layout
+   * \param sparsity_layout
+   * \param data_array The array containing data to the field. The length of the
+   *            array should be `num_mats * num_cells * ncomp` if the current
+   *            format is Dense, or `num_nonzero * ncomp` if the current format
+   *            is Sprase.
+   * \param (optional) ncomp The number of component of the field. Default is 1
+   * \return int the index of the field, can be used to retrieve the field later
+   */
+  template <typename T>
+  int addExternalField(const std::string& field_name,
+                       FieldMapping field_mapping,
+                       DataLayout data_layout,
+                       SparsityLayout sparsity_layout,
+                       axom::ArrayView<T> data_array,
+                       int ncomp = 1);
+
+  /**
    * \brief Delete a field from the MultiMat object.
    *
    * \param name The name of the field to remove.
@@ -311,6 +334,7 @@ private:
                          DataLayout,
                          SparsityLayout,
                          axom::ArrayView<T>,
+                         bool,
                          int);
 
 public:
@@ -863,6 +887,50 @@ int MultiMat::addField(const std::string& arr_name,
                                 data_layout,
                                 sparsity_layout,
                                 data_arr,
+                                true,
+                                stride);
+  }
+}
+
+template <class T>
+int MultiMat::addExternalField(const std::string& arr_name,
+                               FieldMapping arr_mapping,
+                               DataLayout data_layout,
+                               SparsityLayout sparsity_layout,
+                               axom::ArrayView<T> data_arr,
+                               int stride)
+{
+  SLIC_ASSERT(stride > 0);
+
+  //make sure the name does not conflict
+  int fieldIdx = getFieldIdx(arr_name);
+  if(fieldIdx == 0)
+  {  //this is the vol frac array. call setVolfrac instead
+    SLIC_ASSERT(arr_mapping == FieldMapping::PER_CELL_MAT);
+    SLIC_ASSERT(stride == 1);
+    SLIC_WARNING(
+      "Multimat: attempting to add volume fraction field as an external "
+      "field. This will be ignored and the underlying data will be copied.");
+    setVolfracField(data_arr, data_layout, sparsity_layout);
+    return 0;
+  }
+  else if(fieldIdx > 0)
+  {
+    // There is already an array with the current name. And it's not Volfrac.
+    // Don't add the new field.
+    SLIC_ASSERT(false);
+
+    return fieldIdx;
+  }
+  else
+  {
+    //No field with this name. Proceed with adding the field
+    return addFieldArray_impl<>(arr_name,
+                                arr_mapping,
+                                data_layout,
+                                sparsity_layout,
+                                data_arr,
+                                false,
                                 stride);
   }
 }
@@ -873,6 +941,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
                                  DataLayout data_layout,
                                  SparsityLayout sparsity_layout,
                                  axom::ArrayView<T> data_arr,
+                                 bool owned,
                                  int stride)
 {
   unsigned int new_arr_idx = m_fieldNameVec.size();
@@ -918,7 +987,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   SLIC_ASSERT(set_size * stride == data_arr.size());
 
   m_fieldBackingVec.back() =
-    std::make_unique<FieldBacking>(data_arr, true, m_allocatorId);
+    std::make_unique<FieldBacking>(data_arr, owned, m_allocatorId);
 
   return new_arr_idx;
 }
