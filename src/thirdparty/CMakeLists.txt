@@ -24,7 +24,6 @@ if (LUA_FOUND)
   install(FILES        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol.hpp
                        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol_forward.hpp
           DESTINATION include/axom )
-  install(EXPORT axom-targets DESTINATION lib/cmake)
 
   set(SOL_FOUND TRUE CACHE INTERNAL "")
 else()
@@ -49,7 +48,6 @@ install(TARGETS              cli11
         INCLUDES DESTINATION include)
 install(FILES       ${PROJECT_SOURCE_DIR}/thirdparty/axom/CLI11.hpp
         DESTINATION include/axom )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(CLI11_FOUND)
@@ -112,7 +110,6 @@ install(FILES   ${axom_fmt_headers}
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/fmt
         DESTINATION include/axom
         )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -178,8 +175,6 @@ if (AXOM_ENABLE_SPARSEHASH)
 
     install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/sparsehash
             DESTINATION include/axom)
-
-    install(EXPORT axom-targets DESTINATION lib/cmake)
 endif()
 
 #------------------------------------------------------------------------------
