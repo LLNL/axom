@@ -166,14 +166,9 @@ if(NOT AXOM_FOUND)
   endforeach()
 
   # HACK: Clear INTERFACE_COMPILE_OPTIONS to avoid requiring OpenMP in user code
-  # This can (hopefully) be removed when we fix axom/blt's treatment of OpenMP
-  if(AXOM_USE_OPENMP)
-    set(_fix_tgts axom)
-    if(AXOM_USE_RAJA)
-      list(APPEND _fix_tgts RAJA)
-    endif()
-    set_target_properties(${_fix_tgts} PROPERTIES INTERFACE_COMPILE_OPTIONS "")
-    unset(_fix_tgts)
+  # This can (hopefully) be removed when we fix blt's treatment of OpenMP
+  if(TARGET RAJA AND AXOM_USE_OPENMP)
+    set_target_properties(RAJA PROPERTIES INTERFACE_COMPILE_OPTIONS "")
   endif()
 
   #----------------------------------------------------------------------------
