@@ -11,7 +11,7 @@
 
 # Core is an essential part of Axom and cannot be turned off
 axom_add_component(COMPONENT_NAME core DEFAULT_STATE ON)
-if(NOT AXOM_ENABLE_CORE)
+if(DEFINED AXOM_ENABLE_CORE)
     message(FATAL_ERROR "Core is an essential part of Axom and cannot be turned off")
 endif()
 
@@ -73,8 +73,7 @@ endif()
 # Output some information about the configuration
 #------------------------------------------------------------------------------
 foreach(_component ${AXOM_COMPONENTS_FULL})
-    string(TOUPPER ${_component} COMPONENT_NAME_UPPERCASE)
-    if(AXOM_ENABLE_${COMPONENT_NAME_UPPERCASE})
+    if(${_component} IN_LIST AXOM_COMPONENTS_ENABLED)
         message(STATUS "Axom component ${_component} is ON")
     else()
         message(STATUS "Axom component ${_component} is OFF")

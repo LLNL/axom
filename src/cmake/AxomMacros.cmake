@@ -97,14 +97,16 @@ macro(axom_add_component)
     string(TOUPPER ${arg_COMPONENT_NAME} COMPONENT_NAME_CAPITALIZED)
     string(TOLOWER ${arg_COMPONENT_NAME} COMPONENT_NAME_LOWERED)
 
-    option( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED}
-            "Enables ${arg_COMPONENT_NAME}"
-            ${arg_DEFAULT_STATE})
+    if(NOT "${COMPONENT_NAME_LOWERED}" STREQUAL "core")
+        option(AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED}
+              "Enables ${arg_COMPONENT_NAME}"
+              ${arg_DEFAULT_STATE})
+    endif()
 
     set(AXOM_COMPONENTS_FULL ${AXOM_COMPONENTS_FULL} ${COMPONENT_NAME_LOWERED}
         CACHE STRING "List of all components in Axom" FORCE)
 
-    if ( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED} )
+    if ( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED} OR "${COMPONENT_NAME_LOWERED}" STREQUAL "core")
         set(AXOM_COMPONENTS_ENABLED ${AXOM_COMPONENTS_ENABLED} ${COMPONENT_NAME_LOWERED}
             CACHE STRING "List of all enabled components in Axom" FORCE)
         add_subdirectory( ${arg_COMPONENT_NAME} )
