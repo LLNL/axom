@@ -97,14 +97,16 @@ macro(axom_add_component)
     string(TOUPPER ${arg_COMPONENT_NAME} COMPONENT_NAME_CAPITALIZED)
     string(TOLOWER ${arg_COMPONENT_NAME} COMPONENT_NAME_LOWERED)
 
-    option( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED}
-            "Enables ${arg_COMPONENT_NAME}"
-            ${arg_DEFAULT_STATE})
+    if(NOT "${COMPONENT_NAME_LOWERED}" STREQUAL "core")
+        option(AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED}
+              "Enables ${arg_COMPONENT_NAME}"
+              ${arg_DEFAULT_STATE})
+    endif()
 
     set(AXOM_COMPONENTS_FULL ${AXOM_COMPONENTS_FULL} ${COMPONENT_NAME_LOWERED}
         CACHE STRING "List of all components in Axom" FORCE)
 
-    if ( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED} )
+    if ( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED} OR "${COMPONENT_NAME_LOWERED}" STREQUAL "core")
         set(AXOM_COMPONENTS_ENABLED ${AXOM_COMPONENTS_ENABLED} ${COMPONENT_NAME_LOWERED}
             CACHE STRING "List of all enabled components in Axom" FORCE)
         add_subdirectory( ${arg_COMPONENT_NAME} )
@@ -113,6 +115,108 @@ macro(axom_add_component)
     unset(COMPONENT_NAME_CAPITALIZED)
     unset(COMPONENT_NAME_LOWERED)
 endmacro(axom_add_component)
+
+
+##------------------------------------------------------------------------------
+## axom_add_executable(
+##                     NAME        <name>
+##                     SOURCES     [source1 [source2 ...]]
+##                     HEADERS     [header1 [header2 ...]]
+##                     INCLUDES    [dir1 [dir2 ...]]
+##                     DEFINES     [define1 [define2 ...]]
+##                     DEPENDS_ON  [dep1 [dep2 ...]]
+##                     OUTPUT_DIR  [dir]
+##                     OUTPUT_NAME [name]
+##                     FOLDER      [name])
+##
+## Wrapper around blt_add_executable
+##------------------------------------------------------------------------------
+macro(axom_add_executable)
+
+    set(options )
+    set(singleValueArgs NAME OUTPUT_DIR OUTPUT_NAME FOLDER)
+    set(multiValueArgs HEADERS SOURCES INCLUDES DEFINES DEPENDS_ON)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Blanket add openmp as a dependency to get around not propagating
+    # openmp to fortran dependencies
+    blt_list_append(TO arg_DEPENDS_ON ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
+
+    blt_add_executable(NAME        ${arg_NAME}
+                       SOURCES     ${arg_SOURCES}
+                       HEADERS     ${arg_HEADERS}
+                       INCLUDES    ${arg_INCLUDES}
+                       DEFINES     ${arg_DEFINES}
+                       DEPENDS_ON  ${arg_DEPENDS_ON} ${axom_device_depends}
+                       OUTPUT_DIR  ${arg_OUTPUT_DIR}
+                       OUTPUT_NAME ${arg_OUTPUT_NAME}
+                       FOLDER      ${arg_FOLDER})
+
+endmacro(axom_add_executable)
+
+
+##------------------------------------------------------------------------------
+## axom_add_library(
+##                  NAME         <libname>
+##                  SOURCES      [source1 [source2 ...]]
+##                  HEADERS      [header1 [header2 ...]]
+##                  INCLUDES     [dir1 [dir2 ...]]
+##                  DEFINES      [define1 [define2 ...]]
+##                  DEPENDS_ON   [dep1 ...] 
+##                  OUTPUT_NAME  [name]
+##                  OUTPUT_DIR   [dir]
+##                  SHARED       [TRUE | FALSE]
+##                  OBJECT       [TRUE | FALSE]
+##                  CLEAR_PREFIX [TRUE | FALSE]
+##                  FOLDER       [name])
+##
+## Wrapper around blt_add_library
+##------------------------------------------------------------------------------
+macro(axom_add_library)
+
+    set(options)
+    set(singleValueArgs NAME OUTPUT_NAME OUTPUT_DIR SHARED OBJECT CLEAR_PREFIX FOLDER)
+    set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON)
+
+    # parse the arguments
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    if("openmp" IN_LIST arg_DEPENDS_ON)
+        message(FATAL_ERROR "Do not add 'openmp' to Axom libraries to avoid propegation. It is handled automatically.")
+    endif()
+
+    if(DEFINED arg_OUTPUT_NAME)
+        set(_output_name "${arg_OUTPUT_NAME}")
+    elseif(NOT DEFINED arg_SOURCES)
+        # Can't set OUTPUT_NAME on header only libraries
+        set(_output_NAME)
+    elseif(${arg_NAME} IN_LIST AXOM_COMPONENTS_FULL)
+        # Prefix the output name with "axom_" for component libraries
+        set(_output_name "axom_${arg_NAME}")
+    else()
+        set(_output_name "${arg_NAME}")
+    endif()
+
+    blt_add_library(NAME        ${arg_NAME}
+                    SOURCES     ${arg_SOURCES}
+                    HEADERS     ${arg_HEADERS}
+                    INCLUDES    ${arg_INCLUDES}
+                    DEFINES     ${arg_DEFINES}
+                    DEPENDS_ON  ${arg_DEPENDS_ON} ${axom_device_depends}
+                    OUTPUT_DIR  ${arg_OUTPUT_DIR}
+                    OUTPUT_NAME ${_output_name}
+                    FOLDER      ${arg_FOLDER})
+
+    if(AXOM_ENABLE_OPENMP AND (NOT "${arg_SOURCES}" STREQUAL ""))
+        # Do not propegate OpenMP due to generator expressions evaluating early
+        target_link_libraries(${arg_NAME} PRIVATE openmp)
+    endif()
+
+endmacro(axom_add_library)
 
 
 ##------------------------------------------------------------------------------

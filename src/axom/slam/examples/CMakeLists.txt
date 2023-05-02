@@ -23,11 +23,11 @@ set(example_sources
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
-    blt_add_executable(
-        NAME        "slam_${example_name}_ex"
+    axom_add_executable(
+        NAME        slam_${example_name}_ex
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  axom ${axom_device_depends}
+        DEPENDS_ON  slam
         FOLDER      axom/slam/examples )
 
     if(AXOM_ENABLE_TESTS)
@@ -47,11 +47,11 @@ add_subdirectory(tinyHydro)
 #------------------------------------------------------------------------------
 # Unstructured hexahedral mesh example
 #------------------------------------------------------------------------------
-blt_add_executable(
+axom_add_executable(
     NAME        slam_unstructMesh_ex
     SOURCES     UnstructMeshField.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  axom ${axom_device_depends} fmt
+    DEPENDS_ON  slam fmt
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)

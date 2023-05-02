@@ -18,15 +18,12 @@ if (LUA_FOUND)
   target_include_directories(sol SYSTEM INTERFACE
               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
-  set_target_properties(sol PROPERTIES EXPORT_NAME axom::sol)
-
   install(TARGETS              sol
           EXPORT               axom-targets
           INCLUDES DESTINATION include)
   install(FILES        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol.hpp
                        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol_forward.hpp
           DESTINATION include/axom )
-  install(EXPORT axom-targets DESTINATION lib/cmake)
 
   set(SOL_FOUND TRUE CACHE INTERNAL "")
 else()
@@ -46,14 +43,11 @@ blt_add_library(NAME    cli11
 target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
-set_target_properties(cli11 PROPERTIES EXPORT_NAME axom::cli11)
-
 install(TARGETS              cli11
         EXPORT               axom-targets
         INCLUDES DESTINATION include)
 install(FILES       ${PROJECT_SOURCE_DIR}/thirdparty/axom/CLI11.hpp
         DESTINATION include/axom )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(CLI11_FOUND)
@@ -105,8 +99,6 @@ target_include_directories(fmt INTERFACE
 set(AXOM_FMT_EXCEPTIONS FALSE PARENT_SCOPE)
 set(AXOM_FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 
-set_target_properties(fmt PROPERTIES EXPORT_NAME axom::fmt)
-
 install(TARGETS              fmt
         EXPORT               axom-targets
         INCLUDES DESTINATION include)
@@ -118,7 +110,6 @@ install(FILES   ${axom_fmt_headers}
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/fmt
         DESTINATION include/axom
         )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -178,16 +169,12 @@ if (AXOM_ENABLE_SPARSEHASH)
             $<$<AND:$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CXX>>:-Wno-class-memaccess>)
     endif()
 
-    set_target_properties(sparsehash PROPERTIES EXPORT_NAME axom::sparsehash)
-
     install(TARGETS              sparsehash
             EXPORT               axom-targets
             INCLUDES DESTINATION include)
 
     install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/sparsehash
             DESTINATION include/axom)
-
-    install(EXPORT axom-targets DESTINATION lib/cmake)
 endif()
 
 #------------------------------------------------------------------------------

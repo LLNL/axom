@@ -20,17 +20,15 @@ set( mint_examples
      user_guide/mint_getting_started.cpp
    )
 
-set( mint_example_dependencies axom ${axom_device_depends})
-
 foreach( example ${mint_examples} )
 
    get_filename_component( example_name ${example} NAME_WE )
 
-   blt_add_executable(
+   axom_add_executable(
         NAME       ${example_name}_ex
         SOURCES    ${example}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${mint_example_dependencies}
+        DEPENDS_ON mint
         FOLDER     axom/mint/examples
         )
 

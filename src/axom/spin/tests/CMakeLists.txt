@@ -16,8 +16,7 @@ set(spin_tests
    )
 
 set(spin_tests_depends
-    axom
-    ${axom_device_depends}
+    spin
     gtest
     fmt
     )
@@ -26,7 +25,7 @@ foreach ( test ${spin_tests} )
 
     get_filename_component( test_name ${test} NAME_WE )
 
-    blt_add_executable(
+    axom_add_executable(
       NAME       ${test_name}_test
       SOURCES    ${test}
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -43,11 +42,11 @@ endforeach()
 
 if (AXOM_ENABLE_MINT)
 
-    blt_add_executable(
+    axom_add_executable(
       NAME       spin_bvh_test
       SOURCES    spin_bvh.cpp
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-      DEPENDS_ON ${spin_tests_depends}
+      DEPENDS_ON ${spin_tests_depends} mint
       FOLDER     axom/spin/tests
       )
 

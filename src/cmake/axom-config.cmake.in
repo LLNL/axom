@@ -36,6 +36,8 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_OPENMP         "@AXOM_USE_OPENMP@")
 
   # Axom components
+  set(AXOM_COMPONENTS_ENABLED @AXOM_COMPONENTS_ENABLED@)
+
   set(AXOM_ENABLE_INLET       "@AXOM_ENABLE_INLET@")
   set(AXOM_ENABLE_KLEE        "@AXOM_ENABLE_KLEE@")
   set(AXOM_ENABLE_LUMBERJACK  "@AXOM_ENABLE_LUMBERJACK@")
@@ -150,15 +152,23 @@ if(NOT AXOM_FOUND)
   get_filename_component(AXOM_CMAKE_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
   include(${AXOM_CMAKE_CONFIG_DIR}/axom-targets.cmake)
 
+  # Create convenience target that bundles all Axom targets (axom)
+  add_library(axom INTERFACE IMPORTED)
+
+  set_property(TARGET axom
+               APPEND PROPERTY
+               INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_ROOT}/include/")
+
+  foreach(_component ${AXOM_COMPONENTS_ENABLED})
+    set_property(TARGET axom
+                 PROPERTY INTERFACE_LINK_LIBRARIES
+                 axom::${_component})
+  endforeach()
+
   # HACK: Clear INTERFACE_COMPILE_OPTIONS to avoid requiring OpenMP in user code
-  # This can (hopefully) be removed when we fix axom/blt's treatment of OpenMP
-  if(AXOM_USE_OPENMP)
-    set(_fix_tgts axom)
-    if(AXOM_USE_RAJA)
-      list(APPEND _fix_tgts RAJA)
-    endif()
-    set_target_properties(${_fix_tgts} PROPERTIES INTERFACE_COMPILE_OPTIONS "")
-    unset(_fix_tgts)
+  # This can (hopefully) be removed when we fix blt's treatment of OpenMP
+  if(TARGET RAJA AND AXOM_USE_OPENMP)
+    set_target_properties(RAJA PROPERTIES INTERFACE_COMPILE_OPTIONS "")
   endif()
 
   #----------------------------------------------------------------------------

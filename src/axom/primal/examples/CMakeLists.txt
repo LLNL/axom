@@ -6,21 +6,20 @@
 # Primal examples
 #------------------------------------------------------------------------------
 
-set( primal_examples 
+set(primal_examples 
     primal_introduction.cpp
-   )
+    )
 
 set(primal_example_depends
-        axom
-        ${axom_device_depends}
-        fmt
-        )
+    primal
+    fmt
+    )
 
 foreach ( example ${primal_examples} )
 
     get_filename_component( example_name ${example} NAME_WE )
 
-    blt_add_executable(
+    axom_add_executable(
         NAME        ${example_name}_ex
         SOURCES     ${example}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -30,9 +29,9 @@ foreach ( example ${primal_examples} )
 
 endforeach()
 
-if (AXOM_ENABLE_PRIMAL AND RAJA_FOUND AND UMPIRE_FOUND)
+if (RAJA_FOUND AND UMPIRE_FOUND)
 
-    blt_add_executable(
+    axom_add_executable(
         NAME        hex_tet_volume_ex
         SOURCES     hex_tet_volume.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}

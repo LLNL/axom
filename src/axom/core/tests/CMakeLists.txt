@@ -47,8 +47,7 @@ set(core_serial_tests
     )
 
 set(core_test_depends
-    axom
-    ${axom_device_depends}
+    core
     gtest
     )
 
@@ -61,7 +60,7 @@ if (NOT AXOM_ENABLE_MPI)
   list(APPEND core_serial_tests core_types.hpp)
 endif()
 
-blt_add_executable( NAME       core_serial_tests
+axom_add_executable(NAME       core_serial_tests
                     SOURCES    core_serial_main.cpp
                     HEADERS    ${core_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -82,7 +81,7 @@ if (AXOM_ENABLE_MPI)
        core_types.hpp
        )
 
-  blt_add_executable( NAME       core_mpi_tests
+  axom_add_executable(NAME       core_mpi_tests
                       SOURCES    core_mpi_main.cpp
                       HEADERS    ${core_mpi_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -105,11 +104,11 @@ if (AXOM_ENABLE_OPENMP AND AXOM_USE_RAJA)
        core_openmp_map.hpp
        )
 
-  blt_add_executable( NAME       core_openmp_tests
+  axom_add_executable(NAME       core_openmp_tests
                       SOURCES    core_openmp_main.cpp
                       HEADERS    ${core_mpi_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON ${core_test_depends} openmp
+                      DEPENDS_ON ${core_test_depends}
                       FOLDER     axom/core/tests )
 
   foreach( test_suite ${core_openmp_tests} )
@@ -123,11 +122,11 @@ endif()
 #------------------------------------------------------------------------------
 # Add a test to query properties of the configuration
 #------------------------------------------------------------------------------
-set(utils_config_test_depends core ${axom_device_depends} gtest )
+set(utils_config_test_depends core gtest )
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 
-blt_add_executable( NAME       utils_config_test
+axom_add_executable(NAME       utils_config_test
                     SOURCES    utils_config.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${utils_config_test_depends}

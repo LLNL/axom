@@ -16,11 +16,11 @@ if (ENABLE_BENCHMARKS)
         get_filename_component( test_name ${test} NAME_WE )
         set(test_name "${test_name}_benchmark")
         
-        blt_add_executable(
+        axom_add_executable(
             NAME        ${test_name}
             SOURCES     ${test}
             OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON  slic slam ${axom_device_depends} gbenchmark
+            DEPENDS_ON  slam gbenchmark
             FOLDER      axom/slam/benchmarks
             )
 

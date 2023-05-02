@@ -17,21 +17,13 @@ set(lulesh_sources
     lulesh-util.cc
     lulesh-viz.cc )
 
-set(lulesh_depends
-    sidre
-    slic
-    core
-    ${axom_device_depends} )
-
-blt_list_append( TO lulesh_depends ELEMENTS hdf5   IF HDF5_FOUND )
-
-blt_add_executable(
-    NAME sidre_lulesh2_ex
-    SOURCES ${lulesh_sources}
-    HEADERS ${lulesh_headers}
+axom_add_executable(
+    NAME       sidre_lulesh2_ex
+    SOURCES    ${lulesh_sources}
+    HEADERS    ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON ${lulesh_depends}
-    FOLDER axom/sidre/examples )
+    DEPENDS_ON sidre
+    FOLDER     axom/sidre/examples )
 
 if(AXOM_ENABLE_TESTS)
     if(AXOM_ENABLE_MPI)
