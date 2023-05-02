@@ -10,13 +10,28 @@
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# install 'using-with-make' example (no configuration, so just copy files)
+# install 'using-with-make' example
 #------------------------------------------------------------------------------
+# Create a link line string that has all the component libraries in the proper order
+# This list is ordered by hand, then we only add components that are enabled
+set(_ordered_component_list quest multimat slam mint klee inlet sidre slic lumberjack core)
+set(AXOM_ORDERED_LIBS)
+foreach(_component ${_ordered_component_list})
+  if(_component IN_LIST AXOM_COMPONENTS_ENABLED)
+    set(AXOM_ORDERED_LIBS "${AXOM_ORDERED_LIBS} -l${_component}")
+  endif()
+endforeach()
+
+configure_file(
+    using-with-make/Makefile.in
+    ${PROJECT_BINARY_DIR}/examples/using-with-make/Makefile)
+
 install(
-    DIRECTORY 
-        using-with-make
+    FILES
+        ${PROJECT_BINARY_DIR}/examples/using-with-make/Makefile
+        using-with-make/example.cpp
     DESTINATION 
-        examples/axom
+        examples/axom/using-with-make
 )
 
 #------------------------------------------------------------------------------
