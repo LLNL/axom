@@ -215,6 +215,22 @@ public:
    */
   void setAllocatorID(int alloc_id);
 
+  /**
+   * \brief Sets the allocator ID to use for Slam object allocations.
+   *  This should point to either a host Umpire pool if only being used on the
+   *  host, or a unified memory pool if also being used on the GPU.
+   *
+   * \param alloc_id the Umpire allocator ID to use
+   */
+  void setSlamAllocatorID(int alloc_id);
+
+  /**
+   * \brief Sets the allocator ID to use for field allocations.
+   *
+   * \param alloc_id the Umpire allocator ID to use
+   */
+  void setFieldAllocatorID(int alloc_id);
+
   /// \brief Returns a pointer to the dense 2d field set
   const ProductSetType* getDense2dFieldSet(DataLayout layout) const
   {
@@ -737,7 +753,8 @@ private:  //private functions
   };
 
 private:
-  int m_allocatorId;
+  int m_slamAllocatorId;
+  int m_fieldAllocatorId;
   unsigned int m_ncells, m_nmats;
 
   //slam set variables
@@ -987,7 +1004,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
   SLIC_ASSERT(set_size * stride == data_arr.size());
 
   m_fieldBackingVec.back() =
-    std::make_unique<FieldBacking>(data_arr, owned, m_allocatorId);
+    std::make_unique<FieldBacking>(data_arr, owned, m_fieldAllocatorId);
 
   return new_arr_idx;
 }

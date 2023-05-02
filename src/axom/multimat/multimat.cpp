@@ -88,14 +88,15 @@ axom::ArrayView<double> MultiMat::FieldBacking::getArrayView<double>()
 
 MultiMat::MultiMat(DataLayout AXOM_UNUSED_PARAM(d),
                    SparsityLayout AXOM_UNUSED_PARAM(s))
-  : m_allocatorId(axom::getDefaultAllocatorID())
+  : m_slamAllocatorId(axom::getDefaultAllocatorID())
+  , m_fieldAllocatorId(axom::getDefaultAllocatorID())
   , m_ncells(0)
   , m_nmats(0)
-  , m_sets(2, 2, m_allocatorId)
-  , m_staticRelations(2, 2, m_allocatorId)
-  , m_dynamicRelations(2, 2, m_allocatorId)
-  , m_sparseBivarSet(2, 2, m_allocatorId)
-  , m_denseBivarSet(2, 2, m_allocatorId)
+  , m_sets(2, 2, m_slamAllocatorId)
+  , m_staticRelations(2, 2, m_slamAllocatorId)
+  , m_dynamicRelations(2, 2, m_slamAllocatorId)
+  , m_sparseBivarSet(2, 2, m_slamAllocatorId)
+  , m_denseBivarSet(2, 2, m_slamAllocatorId)
   , m_dynamic_mode(false)
 { }
 
@@ -167,7 +168,8 @@ bool MultiMat::hasValidDynamicRelation(DataLayout layout) const
 
 // Copy constructor
 MultiMat::MultiMat(const MultiMat& other)
-  : m_allocatorId(other.m_allocatorId)
+  : m_slamAllocatorId(other.m_slamAllocatorId)
+  , m_fieldAllocatorId(other.m_fieldAllocatorId)
   , m_ncells(other.m_ncells)
   , m_nmats(other.m_nmats)
   , m_sets(other.m_sets)
@@ -233,25 +235,25 @@ MultiMat::MultiMat(const MultiMat& other)
         *(m_fieldBackingVec[idx]) =
           FieldBacking(other.m_fieldBackingVec[idx]->getArrayView<float>(),
                        true,
-                       m_allocatorId);
+                       m_fieldAllocatorId);
         break;
       case DataTypeSupported::TypeDouble:
         *(m_fieldBackingVec[idx]) =
           FieldBacking(other.m_fieldBackingVec[idx]->getArrayView<double>(),
                        true,
-                       m_allocatorId);
+                       m_fieldAllocatorId);
         break;
       case DataTypeSupported::TypeInt:
         *(m_fieldBackingVec[idx]) =
           FieldBacking(other.m_fieldBackingVec[idx]->getArrayView<int>(),
                        true,
-                       m_allocatorId);
+                       m_fieldAllocatorId);
         break;
       case DataTypeSupported::TypeUnsignChar:
         *(m_fieldBackingVec[idx]) = FieldBacking(
           other.m_fieldBackingVec[idx]->getArrayView<unsigned char>(),
           true,
-          m_allocatorId);
+          m_fieldAllocatorId);
         break;
       case DataTypeSupported::TypeUnknown:
       default:
@@ -283,23 +285,35 @@ void MultiMat::setNumberOfCells(int c)
 
 void MultiMat::setAllocatorID(int alloc_id)
 {
+  setSlamAllocatorID(alloc_id);
+  setFieldAllocatorID(alloc_id);
+}
+
+void MultiMat::setSlamAllocatorID(int alloc_id)
+{
   bool hasCellDomRelation = hasValidStaticRelation(DataLayout::CELL_DOM);
   bool hasMatDomRelation = hasValidStaticRelation(DataLayout::MAT_DOM);
-  m_allocatorId = alloc_id;
-  m_sets = axom::Array<RangeSetType>(m_sets, m_allocatorId);
+  m_slamAllocatorId = alloc_id;
+  m_sets = axom::Array<RangeSetType>(m_sets, m_slamAllocatorId);
 
-  m_cellMatRel_beginsVec = IndBufferType(m_cellMatRel_beginsVec, m_allocatorId);
-  m_cellMatRel_indicesVec = IndBufferType(m_cellMatRel_indicesVec, m_allocatorId);
-  m_matCellRel_beginsVec = IndBufferType(m_matCellRel_beginsVec, m_allocatorId);
-  m_matCellRel_indicesVec = IndBufferType(m_matCellRel_indicesVec, m_allocatorId);
+  m_cellMatRel_beginsVec =
+    IndBufferType(m_cellMatRel_beginsVec, m_slamAllocatorId);
+  m_cellMatRel_indicesVec =
+    IndBufferType(m_cellMatRel_indicesVec, m_slamAllocatorId);
+  m_matCellRel_beginsVec =
+    IndBufferType(m_matCellRel_beginsVec, m_slamAllocatorId);
+  m_matCellRel_indicesVec =
+    IndBufferType(m_matCellRel_indicesVec, m_slamAllocatorId);
 
-  m_staticRelations =
-    axom::Array<StaticVariableRelationType>(m_staticRelations, m_allocatorId);
+  m_staticRelations = axom::Array<StaticVariableRelationType>(m_staticRelations,
+                                                              m_slamAllocatorId);
   m_dynamicRelations =
-    axom::Array<DynamicVariableRelationType>(m_dynamicRelations, m_allocatorId);
+    axom::Array<DynamicVariableRelationType>(m_dynamicRelations,
+                                             m_slamAllocatorId);
   m_sparseBivarSet =
-    axom::Array<RelationSetType>(m_sparseBivarSet, m_allocatorId);
-  m_denseBivarSet = axom::Array<ProductSetType>(m_denseBivarSet, m_allocatorId);
+    axom::Array<RelationSetType>(m_sparseBivarSet, m_slamAllocatorId);
+  m_denseBivarSet =
+    axom::Array<ProductSetType>(m_denseBivarSet, m_slamAllocatorId);
 
   if(hasCellDomRelation)
   {
@@ -327,12 +341,16 @@ void MultiMat::setAllocatorID(int alloc_id)
     relDenseSet(DataLayout::MAT_DOM) =
       ProductSetType(&getMatSet(), &getCellSet());
   }
+}
 
+void MultiMat::setFieldAllocatorID(int alloc_id)
+{
+  m_fieldAllocatorId = alloc_id;
   for(size_t idx = 0; idx < m_fieldBackingVec.size(); idx++)
   {
     if(m_fieldBackingVec[idx] != nullptr)
     {
-      m_fieldBackingVec[idx]->moveSpaces(m_allocatorId);
+      m_fieldBackingVec[idx]->moveSpaces(m_fieldAllocatorId);
     }
   }
 }
@@ -1084,9 +1102,9 @@ void MultiMat::convertToSparse_helper(int map_i)
   }
   SLIC_ASSERT(idx == Rel->totalSize() * stride);
 
-  if(arr_data.getAllocatorID() != m_allocatorId)
+  if(arr_data.getAllocatorID() != m_fieldAllocatorId)
   {
-    arr_data = axom::Array<DataType>(arr_data, m_allocatorId);
+    arr_data = axom::Array<DataType>(arr_data, m_fieldAllocatorId);
   }
 
   auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
@@ -1119,9 +1137,9 @@ void MultiMat::convertToDense_helper(int map_i)
     }
   }
 
-  if(arr_data.getAllocatorID() != m_allocatorId)
+  if(arr_data.getAllocatorID() != m_fieldAllocatorId)
   {
-    arr_data = axom::Array<DataType>(arr_data, m_allocatorId);
+    arr_data = axom::Array<DataType>(arr_data, m_fieldAllocatorId);
   }
 
   auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
@@ -1213,9 +1231,9 @@ void MultiMat::transposeField_helper(int field_idx)
     }
   }
 
-  if(arr_data.getAllocatorID() != m_allocatorId)
+  if(arr_data.getAllocatorID() != m_fieldAllocatorId)
   {
-    arr_data = axom::Array<DataType>(arr_data, m_allocatorId);
+    arr_data = axom::Array<DataType>(arr_data, m_fieldAllocatorId);
   }
 
   if(m_fieldBackingVec[field_idx]->isOwned())
