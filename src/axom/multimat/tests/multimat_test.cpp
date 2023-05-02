@@ -38,10 +38,10 @@ struct MM_test_data
   std::vector<double> volfrac_cellcen_sparse;
   std::vector<double> volfrac_matcen_sparse;
 
-  std::vector<DataType> cellmat_dense_arr;
-  std::vector<DataType> cellmat_sparse_arr;
-  std::vector<DataType> matcell_dense_arr;
-  std::vector<DataType> matcell_sparse_arr;
+  axom::Array<DataType> cellmat_dense_arr;
+  axom::Array<DataType> cellmat_sparse_arr;
+  axom::Array<DataType> matcell_dense_arr;
+  axom::Array<DataType> matcell_sparse_arr;
 
   std::vector<int> cellmat_beginvecs;
   std::vector<int> matcell_beginvecs;
@@ -388,14 +388,14 @@ MultiMat* newMM(MM_test_data<T>& data,
                   FieldMapping::PER_CELL_MAT,
                   layout_used,
                   sparsity_used,
-                  data.cellmat_dense_arr.data(),
+                  data.cellmat_dense_arr.view(),
                   data.stride);
     else
       mm.addField(array_name,
                   FieldMapping::PER_CELL_MAT,
                   layout_used,
                   sparsity_used,
-                  data.cellmat_sparse_arr.data(),
+                  data.cellmat_sparse_arr.view(),
                   data.stride);
   }
   else
@@ -405,14 +405,14 @@ MultiMat* newMM(MM_test_data<T>& data,
                   FieldMapping::PER_CELL_MAT,
                   layout_used,
                   sparsity_used,
-                  data.matcell_dense_arr.data(),
+                  data.matcell_dense_arr.view(),
                   data.stride);
     else
       mm.addField(array_name,
                   FieldMapping::PER_CELL_MAT,
                   layout_used,
                   sparsity_used,
-                  data.matcell_sparse_arr.data(),
+                  data.matcell_sparse_arr.view(),
                   data.stride);
   }
 

@@ -289,12 +289,12 @@ public:
    * \param (optional) ncomp The number of component of the field. Default is 1
    * \return int the index of the field, can be used to retrieve the field later
    */
-  template <class T>
+  template <typename T>
   int addField(const std::string& field_name,
                FieldMapping field_mapping,
                DataLayout data_layout,
                SparsityLayout sparsity_layout,
-               T* data_array,
+               axom::ArrayView<T> data_array,
                int ncomp = 1);
 
   /**
@@ -310,7 +310,7 @@ private:
                          FieldMapping,
                          DataLayout,
                          SparsityLayout,
-                         T*,
+                         axom::ArrayView<T>,
                          int);
 
 public:
@@ -833,7 +833,7 @@ int MultiMat::addField(const std::string& arr_name,
                        FieldMapping arr_mapping,
                        DataLayout data_layout,
                        SparsityLayout sparsity_layout,
-                       T* data_arr,
+                       axom::ArrayView<T> data_arr,
                        int stride)
 {
   SLIC_ASSERT(stride > 0);
@@ -844,8 +844,8 @@ int MultiMat::addField(const std::string& arr_name,
   {  //this is the vol frac array. call setVolfrac instead
     SLIC_ASSERT(arr_mapping == FieldMapping::PER_CELL_MAT);
     SLIC_ASSERT(stride == 1);
-    SLIC_ASSERT(data_arr != nullptr);
-    setVolfracField(data_arr, data_layout, sparsity_layout);
+    SLIC_ASSERT(data_arr.data() != nullptr);
+    setVolfracField(data_arr.data(), data_layout, sparsity_layout);
     return 0;
   }
   else if(fieldIdx > 0)
@@ -873,8 +873,7 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
                                  FieldMapping field_mapping,
                                  DataLayout data_layout,
                                  SparsityLayout sparsity_layout,
-                                 T* data_arr,
-
+                                 axom::ArrayView<T> data_arr,
                                  int stride)
 {
   unsigned int new_arr_idx = m_fieldNameVec.size();
@@ -917,10 +916,10 @@ int MultiMat::addFieldArray_impl(const std::string& field_name,
     const RangeSetType& s = *getMappedRangeSet(field_mapping);
     set_size = s.size();
   }
+  SLIC_ASSERT(set_size * stride == data_arr.size());
 
-  axom::ArrayView<T> data_view(data_arr, set_size * stride);
   m_fieldBackingVec.back() =
-    std::make_unique<FieldBacking>(data_view, true, m_allocatorId);
+    std::make_unique<FieldBacking>(data_arr, true, m_allocatorId);
 
   return new_arr_idx;
 }

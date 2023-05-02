@@ -323,37 +323,37 @@ int main(int argc, char** argv)
                 mmat::FieldMapping::PER_CELL_MAT,
                 mmat::DataLayout::CELL_DOM,
                 mmat::SparsityLayout::DENSE,
-                &data.Densityfrac[0]);
+                data.Densityfrac.view());
   mm.addField<>("Vol",
                 mmat::FieldMapping::PER_CELL,
                 mmat::DataLayout::CELL_DOM,
                 mmat::SparsityLayout::DENSE,
-                &data.Vol[0]);
+                data.Vol.view());
   mm.addField<>("Volfrac",
                 mmat::FieldMapping::PER_CELL_MAT,
                 mmat::DataLayout::CELL_DOM,
                 mmat::SparsityLayout::DENSE,
-                &data.Volfrac[0]);
+                data.Volfrac.view());
   mm.addField<>("Tempfrac",
                 mmat::FieldMapping::PER_CELL_MAT,
                 mmat::DataLayout::CELL_DOM,
                 mmat::SparsityLayout::DENSE,
-                &data.Temperaturefrac[0]);
+                data.Temperaturefrac.view());
   mm.addField<>("Pressurefrac",
                 mmat::FieldMapping::PER_CELL_MAT,
                 mmat::DataLayout::CELL_DOM,
                 mmat::SparsityLayout::DENSE,
-                &data.Pressurefrac[0]);
+                data.Pressurefrac.view());
   mm.addField<>("nmatconsts",
                 mmat::FieldMapping::PER_MAT,
                 mmat::DataLayout::CELL_DOM,
                 mmat::SparsityLayout::DENSE,
-                &data.nmatconsts[0]);
+                data.nmatconsts.view());
   mm.addField<>("MatDensityAverage",
                 mmat::FieldMapping::PER_CELL_MAT,
                 mmat::DataLayout::CELL_DOM,
                 mmat::SparsityLayout::DENSE,
-                &data.Pressurefrac[0]);
+                data.Pressurefrac.view());
 
   //printself and check
   mm.isValid(true);

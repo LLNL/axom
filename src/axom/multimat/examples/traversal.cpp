@@ -69,7 +69,7 @@ void various_traversal_methods(int nmats,
   mm.setCellMatRel(cellMatRel, layout);
 
   //create the std::vector data for the field arrays
-  std::vector<double> cell_arr(ncells * ncomp);
+  axom::Array<double> cell_arr(ncells * ncomp);
   double c_sum = 0;
   for(int i = 0; i < ncells; ++i)
   {
@@ -80,7 +80,7 @@ void various_traversal_methods(int nmats,
     }
   }
 
-  std::vector<double> cellmat_arr;
+  axom::Array<double> cellmat_arr;
   cellmat_arr.resize((use_sparse ? nfilled : nmats * ncells) * ncomp);
   double x_sum = 0;
   for(unsigned int i = 0; i < cellmat_arr.size() / ncomp; i++)
@@ -96,7 +96,7 @@ void various_traversal_methods(int nmats,
   }
 
   //create volfrac array
-  std::vector<double> volfrac_arr(ncells * nmats, 0);
+  axom::Array<double> volfrac_arr(ncells * nmats, 0);
   for(auto i = 0; i < ncells; ++i)
   {
     int matcount = 0;
@@ -116,13 +116,13 @@ void various_traversal_methods(int nmats,
               FieldMapping::PER_CELL,
               layout,
               sparsity,
-              &cell_arr[0],
+              cell_arr.view(),
               ncomp);
   mm.addField("CellMat Array",
               FieldMapping::PER_CELL_MAT,
               layout,
               sparsity,
-              &cellmat_arr[0],
+              cellmat_arr.view(),
               ncomp);
 
   double sum = 0;

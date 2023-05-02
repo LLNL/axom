@@ -255,9 +255,9 @@ void average_density_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Vol = data.Vol;
 
   SLIC_INFO("-- Averaging Density, Cell-Dominant Full Matrix Array Access --");
   std::vector<double> Density_average(ncells);
@@ -298,9 +298,9 @@ void average_density_cell_dom_full(Robey_data& data)
 void average_density_cell_dom_compact(Robey_data& data)
 {
   int ncells = data.ncells;
-  std::vector<double>& Volfrac = data.Volfrac_sparse;
-  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac_sparse;
+  const auto& Densityfrac = data.Densityfrac_sparse;
+  const auto& Vol = data.Vol;
   std::vector<int>& begin_idx = data.begin_idx;
 
   SLIC_INFO("-- Averaging Density cell-dominant compact array-access --");
@@ -621,9 +621,9 @@ double average_density_mat_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Vol = data.Vol;
 
   SLIC_INFO(
     "-- Averaging Density material-dominant full matrix array-access --");
@@ -672,9 +672,9 @@ double average_density_mat_dom_compact(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac_sparse;
-  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac_sparse;
+  const auto& Densityfrac = data.Densityfrac_sparse;
+  const auto& Vol = data.Vol;
   std::vector<int>& begin_idx = data.begin_idx;
   std::vector<int>& cell_id = data.col_idx;
 
@@ -1017,9 +1017,9 @@ void average_density_cell_dom_with_if(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Vol = data.Vol;
 
   SLIC_INFO("-- Averaging Density with if --");
 
@@ -1067,10 +1067,10 @@ void calculate_pressure_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Temperaturefrac = data.Temperaturefrac;
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Temperaturefrac = data.Temperaturefrac;
+  const auto& nmatconsts = data.nmatconsts;
 
   SLIC_INFO("-- Calculating pressure Cell-Dominant Full Matrix array access--");
   std::vector<double> Pressurefrac(ncells * nmats, 0);
@@ -1118,7 +1118,7 @@ void calculate_pressure_cell_dom_compact(Robey_data& data)
   std::vector<double>& Densityfrac = data.Densityfrac_sparse;
   std::vector<double>& Temperaturefrac = data.Temperaturefrac_sparse;
 
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& nmatconsts = data.nmatconsts;
   std::vector<int>& begin_idx = data.begin_idx;
   std::vector<int>& mat_id = data.col_idx;
 
@@ -1417,10 +1417,10 @@ void calculate_pressure_mat_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Temperaturefrac = data.Temperaturefrac;
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Temperaturefrac = data.Temperaturefrac;
+  const auto& nmatconsts = data.nmatconsts;
 
   SLIC_INFO(
     "-- Calculating pressure Material-Dominant Full Matrix array access--");
@@ -1472,7 +1472,7 @@ void calculate_pressure_mat_dom_compact(Robey_data& data)
   std::vector<double>& Volfrac = data.Volfrac_sparse;
   std::vector<double>& Densityfrac = data.Densityfrac_sparse;
   std::vector<double>& Temperaturefrac = data.Temperaturefrac_sparse;
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& nmatconsts = data.nmatconsts;
   std::vector<int>& begin_idx = data.begin_idx;
   std::vector<int>& cell_id = data.col_idx;
 
@@ -1780,8 +1780,8 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
@@ -2507,8 +2507,8 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
@@ -3250,37 +3250,37 @@ int main(int argc, char** argv)
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Densityfrac[0]);
+                data.Densityfrac.view());
   mm.addField<>("Vol",
                 FieldMapping::PER_CELL,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Vol[0]);
+                data.Vol.view());
   mm.addField<>("Volfrac",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Volfrac[0]);
+                data.Volfrac.view());
   mm.addField<>("Tempfrac",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Temperaturefrac[0]);
+                data.Temperaturefrac.view());
   mm.addField<>("Pressurefrac",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Pressurefrac[0]);
+                data.Pressurefrac.view());
   mm.addField<>("nmatconsts",
                 FieldMapping::PER_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.nmatconsts[0]);
+                data.nmatconsts.view());
   mm.addField<>("MatDensityAverage",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Pressurefrac[0]);
+                data.Pressurefrac.view());
 
   //printself and check
   mm.isValid(true);

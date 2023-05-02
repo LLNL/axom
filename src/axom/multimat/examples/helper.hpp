@@ -136,11 +136,11 @@ struct multirun_timer
 void make_other_field_data_celldom(int ncells,
                                    int nmats,
                                    std::vector<double>& i_Volfrac_CD,
-                                   std::vector<double>& o_Volfrac,
-                                   std::vector<double>& o_Vol,
-                                   std::vector<double>& o_Densityfrac,
-                                   std::vector<double>& o_Temperaturefrac,
-                                   std::vector<double>& o_Pressurefrac,
+                                   axom::Array<double>& o_Volfrac,
+                                   axom::Array<double>& o_Vol,
+                                   axom::Array<double>& o_Densityfrac,
+                                   axom::Array<double>& o_Temperaturefrac,
+                                   axom::Array<double>& o_Pressurefrac,
                                    std::vector<double>& o_Volfrac_sparse,
                                    std::vector<double>& o_Densityfrac_sparse,
                                    std::vector<double>& o_Temperaturefrac_sparse,
@@ -223,11 +223,11 @@ void make_other_field_data_celldom(int ncells,
 void make_other_field_data_matdom(int ncells,
                                   int nmats,
                                   std::vector<double>& i_Volfrac_CD,
-                                  std::vector<double>& o_Volfrac,
-                                  std::vector<double>& o_Vol,
-                                  std::vector<double>& o_Densityfrac,
-                                  std::vector<double>& o_Temperaturefrac,
-                                  std::vector<double>& o_Pressurefrac,
+                                  axom::Array<double>& o_Volfrac,
+                                  axom::Array<double>& o_Vol,
+                                  axom::Array<double>& o_Densityfrac,
+                                  axom::Array<double>& o_Temperaturefrac,
+                                  axom::Array<double>& o_Pressurefrac,
                                   std::vector<double>& o_Volfrac_sparse,
                                   std::vector<double>& o_Densityfrac_sparse,
                                   std::vector<double>& o_Temperaturefrac_sparse,
@@ -726,17 +726,17 @@ struct Robey_data
   std::vector<bool> Volfrac_bool;
   std::vector<double> Volfrac_CD;  //cell-dominant full volfrac array
 
-  std::vector<double> Vol;  //per cell, for all layouts
+  axom::Array<double> Vol;  //per cell, for all layouts
 
   //Per cellmat
-  std::vector<double> Volfrac;
-  std::vector<double> Densityfrac;
-  std::vector<double> Temperaturefrac;
-  std::vector<double> Pressurefrac;
+  axom::Array<double> Volfrac;
+  axom::Array<double> Densityfrac;
+  axom::Array<double> Temperaturefrac;
+  axom::Array<double> Pressurefrac;
 
   int cellmatcount;
 
-  std::vector<double> nmatconsts;
+  axom::Array<double> nmatconsts;
 
   int nnbrs_max;           //max number of neighbor = 8 for a 2d structured mesh
   std::vector<int> nnbrs;  //number of neighbors
