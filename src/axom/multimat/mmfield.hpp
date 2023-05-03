@@ -23,8 +23,7 @@ class MMField2D : public MultiMat::BivariateMapType<DataType, BiSet>
 {
 public:
   using BiVarSetType = BiSet;
-  using BiVarMapType =
-    MultiMat::BivariateMapType<DataType, BiVarSetType>;
+  using BiVarMapType = MultiMat::BivariateMapType<DataType, BiVarSetType>;
   using ProductSetType = MultiMat::ProductSetType;
   using RelationSetType = MultiMat::RelationSetType;
 

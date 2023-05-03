@@ -589,14 +589,15 @@ void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
   const int num_cells = 20;
   const int num_mats = 10;
   const int stride_val = Stride;
-  SLIC_INFO("\n--------------------------------------------------\n"
-            << " Testing Multimat construction and conversion \n"
-            << axom::fmt::format(" Cells: {} Mats: {} Data type: {} Stride: {}\n",
-                                 num_cells,
-                                 num_mats,
-                                 std::string(typeid(DataType).name()),
-                                 Stride)
-            << "--------------------------------------------------\n");
+  SLIC_INFO(
+    "\n--------------------------------------------------\n"
+    << " Testing Multimat construction and conversion \n"
+    << axom::fmt::format(" Cells: {} Mats: {} Data type: {} Stride: {}\n",
+                         num_cells,
+                         num_mats,
+                         std::string(typeid(DataType).name()),
+                         Stride)
+    << "--------------------------------------------------\n");
   MM_test_data<DataType> data(num_cells, num_mats, stride_val);
 
   const std::map<DataLayout, std::vector<bool>> relationMap {
