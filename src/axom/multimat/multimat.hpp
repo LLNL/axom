@@ -100,8 +100,8 @@ private:
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
 
   template <typename T>
-  using MapType = typename slam::
-    Map<T, RangeSetType, IndViewPolicy<T>, MapStrideType>::ConcreteMap;
+  using MapType =
+    typename slam::Map<T, RangeSetType, IndViewPolicy<T>, MapStrideType>::ConcreteMap;
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapType =  //this one has runtime stride
