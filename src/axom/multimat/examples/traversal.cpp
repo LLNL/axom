@@ -111,7 +111,11 @@ void various_traversal_methods(int nmats,
     }
   }
 
-  mm.setVolfracField(volfrac_arr, layout, sparsity);
+  mm.setVolfracField(volfrac_arr, layout, SparsityLayout::DENSE);
+  if(sparsity == SparsityLayout::SPARSE)
+  {
+    mm.convertFieldToSparse(0);
+  }
   mm.addField("Cell Array",
               FieldMapping::PER_CELL,
               layout,
