@@ -755,6 +755,7 @@ shapes:
 
 //---------------------------------------------------------------------------
 // Define testing functions for different modes.
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case1_seq)
 {
@@ -790,8 +791,10 @@ TEST(IntersectionShaperTest, case1_hip)
   replacementRuleTestSet(case1, "hip", quest::IntersectionShaper::hip, tolerance);
 }
 #endif
+#endif
 
 // case2
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case2_seq)
 {
@@ -820,8 +823,10 @@ TEST(IntersectionShaperTest, case2_hip)
   replacementRuleTestSet(case2, "hip", quest::IntersectionShaper::hip, tolerance);
 }
 #endif
+#endif
 
 // case3
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case3_seq)
 {
@@ -850,8 +855,10 @@ TEST(IntersectionShaperTest, case3_hip)
   replacementRuleTestSet(case3, "hip", quest::IntersectionShaper::hip, tolerance);
 }
 #endif
+#endif
 
 // case4
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case4_seq)
 {
@@ -880,9 +887,11 @@ TEST(IntersectionShaperTest, case4_hip)
   replacementRuleTestSet(case4, "hip", quest::IntersectionShaper::hip, tolerance);
 }
 #endif
+#endif
 
 //---------------------------------------------------------------------------
 // Line
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_seq)
 {
@@ -907,9 +916,11 @@ TEST(IntersectionShaperTest, line_hip)
   dynamicRefinementTest_Line("hip", quest::IntersectionShaper::hip);
 }
 #endif
+#endif
 
 //---------------------------------------------------------------------------
 // Cone
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, cone_seq)
 {
@@ -934,9 +945,11 @@ TEST(IntersectionShaperTest, cone_hip)
   dynamicRefinementTest_Cone("hip", quest::IntersectionShaper::hip);
 }
 #endif
+#endif
 
 //---------------------------------------------------------------------------
 // Spline
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #ifdef ENABLE_WHEN_C2C_IS_UPDATED_ON_ALL_PLATFORMS
   #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, spline_seq)
@@ -963,9 +976,11 @@ TEST(IntersectionShaperTest, spline_hip)
 }
   #endif
 #endif
+#endif
 
 //---------------------------------------------------------------------------
 // Circle
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, circle_seq)
 {
@@ -990,9 +1005,11 @@ TEST(IntersectionShaperTest, circle_hip)
   dynamicRefinementTest_Circle("hip", quest::IntersectionShaper::hip);
 }
 #endif
+#endif
 
 //---------------------------------------------------------------------------
 // LineTranslate
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_translate_seq)
 {
@@ -1017,9 +1034,11 @@ TEST(IntersectionShaperTest, line_translate_hip)
   dynamicRefinementTest_LineTranslate("hip", quest::IntersectionShaper::hip);
 }
 #endif
+#endif
 
 //---------------------------------------------------------------------------
 // LineScale
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_scale_seq)
 {
@@ -1044,9 +1063,11 @@ TEST(IntersectionShaperTest, line_scale_hip)
   dynamicRefinementTest_LineScale("hip", quest::IntersectionShaper::hip);
 }
 #endif
+#endif
 
 //---------------------------------------------------------------------------
 // LineRotate
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_rotate_seq)
 {
@@ -1070,6 +1091,7 @@ TEST(IntersectionShaperTest, line_rotate_hip)
 {
   dynamicRefinementTest_LineRotate("hip", quest::IntersectionShaper::hip);
 }
+#endif
 #endif
 
 //---------------------------------------------------------------------------
