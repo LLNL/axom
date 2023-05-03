@@ -426,7 +426,7 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
 
   //Create a field for VolFrac as the 0th field
   m_fieldNameVec.push_back("Volfrac");
-  m_fieldBackingVec.push_back(nullptr);
+  m_fieldBackingVec.emplace_back(new FieldBacking);
   m_fieldMappingVec.push_back(FieldMapping::PER_CELL_MAT);
   m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
   m_fieldDataLayoutVec.push_back(DataLayout::CELL_DOM);
@@ -474,39 +474,19 @@ void MultiMat::removeField(const std::string& field_name)
   SLIC_ASSERT(m_fieldNameVec.size() == m_fieldStrideVec.size());
 }
 
-int MultiMat::setVolfracField(axom::ArrayView<double> arr,
+int MultiMat::setVolfracField(axom::ArrayView<const double> arr,
                               DataLayout layout,
                               SparsityLayout sparsity)
 {
-  //m_mapVec[0] should already be a volfrac map. This functions add a new map,
-  //with the input arr, then swap the new map with the 0th map,
-  //and delete the new map.
+  // m_mapVec[0] should already be a volfrac map. Copy over the array to the
+  // backing entry.
+  SLIC_ASSERT(m_fieldNameVec[0] == "Volfrac");
+  SLIC_ASSERT(m_fieldStrideVec[0] == 1);
+  SLIC_ASSERT(arr.size() == get_mapped_biSet(layout, sparsity)->size());
 
-  //Volfrac map is a CellxMat mapping, named "Volfrac", and is stride 1.
-  int arr_i = addFieldArray_impl<double>("Volfrac",
-                                         FieldMapping::PER_CELL_MAT,
-                                         layout,
-                                         sparsity,
-                                         arr,
-                                         true,
-                                         1);
-
-  //move the data to the first one (index 0) in the list
-  std::iter_swap(m_fieldBackingVec.begin(), m_fieldBackingVec.begin() + arr_i);
-  std::iter_swap(m_dataTypeVec.begin(), m_dataTypeVec.begin() + arr_i);
+  *(m_fieldBackingVec[0]) = FieldBacking(arr, true, m_fieldAllocatorId);
   m_fieldDataLayoutVec[0] = layout;
   m_fieldSparsityLayoutVec[0] = sparsity;
-  m_fieldStrideVec[0] = 1;
-
-  //remove the new entry...
-  int nfield = m_fieldNameVec.size() - 1;
-  m_fieldBackingVec.resize(nfield);
-  m_fieldMappingVec.resize(nfield);
-  m_fieldNameVec.resize(nfield);
-  m_dataTypeVec.resize(nfield);
-  m_fieldDataLayoutVec.resize(nfield);
-  m_fieldSparsityLayoutVec.resize(nfield);
-  m_fieldStrideVec.resize(nfield);
 
   return 0;
 }

@@ -362,7 +362,13 @@ public:
    * \param data_array the array containing the volumn fraction information
    * \return int the volume fraction field index, which is always zero.
    */
-  int setVolfracField(axom::ArrayView<double> data_array,
+  template <typename T>
+  int setVolfracField(axom::ArrayView<T> data_array,
+                      DataLayout layout,
+                      SparsityLayout sparsity);
+
+  /// \overload
+  int setVolfracField(axom::ArrayView<const double> data_array,
                       DataLayout layout,
                       SparsityLayout sparsity);
 
@@ -819,6 +825,14 @@ private:
       }
     }
 
+    template <typename T>
+    FieldBacking(axom::ArrayView<const T> input_array, bool owned, int allocatorID)
+    {
+      SLIC_ASSERT(owned == true);
+      m_isOwned = true;
+      getArray<T>() = axom::Array<T>(input_array, allocatorID);
+    }
+
     void moveSpaces(int new_alloc_id)
     {
       if(m_isOwned)
@@ -950,6 +964,20 @@ int MultiMat::addExternalField(const std::string& arr_name,
                                 false,
                                 stride);
   }
+}
+
+template <typename T>
+int MultiMat::setVolfracField(axom::ArrayView<T> data_array,
+                              DataLayout layout,
+                              SparsityLayout sparsity)
+{
+  axom::Array<double> volfrac_dbls(data_array.size());
+  for(int i = 0; i < data_array.size(); i++)
+  {
+    volfrac_dbls[i] = data_array[i];
+  }
+  axom::ArrayView<const double> volfrac_view = volfrac_dbls;
+  return setVolfracField(volfrac_view, layout, sparsity);
 }
 
 template <typename T>
