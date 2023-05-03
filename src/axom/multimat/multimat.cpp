@@ -355,7 +355,7 @@ void MultiMat::setFieldAllocatorID(int alloc_id)
   }
 }
 
-void MultiMat::setCellMatRel(vector<bool>& vecarr, DataLayout layout)
+void MultiMat::setCellMatRel(const vector<bool>& vecarr, DataLayout layout)
 {
   //Setup the SLAM cell to mat relation
   //This step is necessary if the volfrac field is sparse

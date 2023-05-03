@@ -261,7 +261,7 @@ public:
    * on if a materials is present in a cell.
    *
    */
-  void setCellMatRel(std::vector<bool>& relation_info, DataLayout layout);
+  void setCellMatRel(const std::vector<bool>& relation_info, DataLayout layout);
 
   /*!
    * \brief Set the cell-material relation.
