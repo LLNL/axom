@@ -19,12 +19,12 @@ namespace multimat
  * layout (dense/sparse, mat/cell dom, and maybe more). 
  */
 template <typename DataType, typename BiSet = MultiMat::BivariateSetType>
-class MMField2D : public MultiMat::BivariateMapTypeStrideOne<DataType, BiSet>
+class MMField2D : public MultiMat::BivariateMapType<DataType, BiSet>
 {
 public:
   using BiVarSetType = BiSet;
   using BiVarMapType =
-    MultiMat::BivariateMapTypeStrideOne<DataType, BiVarSetType>;
+    MultiMat::BivariateMapType<DataType, BiVarSetType>;
   using ProductSetType = MultiMat::ProductSetType;
   using RelationSetType = MultiMat::RelationSetType;
 
