@@ -38,8 +38,10 @@ using Field2DT = MultiMat::Field2D<double, B>;
 template <DataLayout D, typename B>
 using Field2DTempT = MultiMat::Field2DTemplated<double, D, B>;
 
+using ArrayViewIndirection = slam::policies::ArrayViewIndirection<slam::DefaultPositionType, double>;
+
 template <typename B>
-using BiVarMapT = slam::BivariateMap<double, B, MultiMat::IndViewPolicy<double>>;
+using BiVarMapT = slam::BivariateMap<double, B, ArrayViewIndirection>;
 
 enum class MMFieldMethod
 {
