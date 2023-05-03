@@ -122,10 +122,10 @@ void avgDensityCompactFlat(mmat::MultiMat& mm)
   auto* relationSet = mm.getSparse2dFieldSet(mmat::DataLayout::CELL_DOM);
   int nthreads = relationSet->totalSize();
 
-  auto density = mm.getSparse2dField<double>("Densityfrac");
-  auto vf = mm.getSparse2dField<double>("Volfrac");
+  const auto density = mm.getSparse2dField<double>("Densityfrac");
+  const auto vf = mm.getSparse2dField<double>("Volfrac");
 
-  auto vol = mm.get1dField<double>("Vol");
+  const auto vol = mm.get1dField<double>("Vol");
 
   axom::Array<double> densityAvg(ncells, ncells, allocator_id);
   const auto densityAvg_view = densityAvg.view();
@@ -155,10 +155,10 @@ void avgDensityCompactSubmap(mmat::MultiMat& mm)
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
 
-  auto density = mm.getSparse2dField<double>("Densityfrac");
-  auto vf = mm.getSparse2dField<double>("Volfrac");
+  const auto density = mm.getSparse2dField<double>("Densityfrac");
+  const auto vf = mm.getSparse2dField<double>("Volfrac");
 
-  auto vol = mm.get1dField<double>("Vol");
+  const auto vol = mm.get1dField<double>("Vol");
 
   axom::Array<double> densityAvg(ncells, ncells, allocator_id);
   const auto densityAvg_view = densityAvg.view();
@@ -185,10 +185,10 @@ void avgDensityDirect(mmat::MultiMat& mm)
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
 
-  auto density = mm.getDense2dField<double>("Densityfrac");
-  auto vf = mm.getDense2dField<double>("Volfrac");
+  const auto density = mm.getDense2dField<double>("Densityfrac");
+  const auto vf = mm.getDense2dField<double>("Volfrac");
 
-  auto vol = mm.get1dField<double>("Vol");
+  const auto vol = mm.get1dField<double>("Vol");
 
   axom::Array<double> densityAvg(ncells, ncells, allocator_id);
   const auto densityAvg_view = densityAvg.view();
@@ -213,10 +213,10 @@ void avgDensitySubmap(mmat::MultiMat& mm)
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
 
-  auto density = mm.getDense2dField<double>("Densityfrac");
-  auto vf = mm.getDense2dField<double>("Volfrac");
+  const auto density = mm.getDense2dField<double>("Densityfrac");
+  const auto vf = mm.getDense2dField<double>("Volfrac");
 
-  auto vol = mm.get1dField<double>("Vol");
+  const auto vol = mm.get1dField<double>("Vol");
 
   axom::Array<double> densityAvg(ncells, ncells, allocator_id);
   const auto densityAvg_view = densityAvg.view();
@@ -243,10 +243,10 @@ void avgDensityIter(mmat::MultiMat& mm)
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
 
-  auto density = mm.getDense2dField<double>("Densityfrac");
-  auto vf = mm.getDense2dField<double>("Volfrac");
+  const auto density = mm.getDense2dField<double>("Densityfrac");
+  const auto vf = mm.getDense2dField<double>("Volfrac");
 
-  auto vol = mm.get1dField<double>("Vol");
+  const auto vol = mm.get1dField<double>("Vol");
 
   axom::Array<double> densityAvg(ncells, ncells, allocator_id);
   const auto densityAvg_view = densityAvg.view();
