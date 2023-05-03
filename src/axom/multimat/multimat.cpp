@@ -10,6 +10,7 @@
  */
 
 #include "axom/multimat/multimat.hpp"
+#include "axom/core/execution/for_all.hpp"
 #include "axom/slic.hpp"
 
 #include <iostream>
@@ -1041,6 +1042,32 @@ void MultiMat::convertFieldToDense(int field_idx)
   m_fieldSparsityLayoutVec[field_idx] = SparsityLayout::DENSE;
 }
 
+template <typename ExecSpace, typename DataType>
+axom::Array<DataType> ConvertToSparseImpl(
+  const MultiMat::DenseField2D<DataType> oldField,
+  const MultiMat::RelationSetType* relationSet,
+  int allocatorId)
+{
+  int stride = oldField.stride();
+  int sparseSize = relationSet->totalSize() * stride;
+  axom::Array<DataType> sparseField(sparseSize, sparseSize, allocatorId);
+  const auto sparseFieldView = sparseField.view();
+
+  axom::for_all<ExecSpace>(
+    relationSet->totalSize() * stride,
+    AXOM_LAMBDA(int index) {
+      int flatIdx = index / stride;
+      int comp = index % stride;
+
+      auto firstIdx = relationSet->flatToFirstIndex(flatIdx);
+      auto secondIdx = relationSet->flatToSecondIndex(flatIdx);
+
+      sparseFieldView[index] = oldField(firstIdx, secondIdx, comp);
+    });
+
+  return sparseField;
+}
+
 template <typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
@@ -1050,33 +1077,15 @@ void MultiMat::convertToSparse_helper(int map_i)
   //Skip if no volume fraction array is set-up
   if(map_i == 0 && m_fieldBackingVec[0] == nullptr) return;
 
-  StaticVariableRelationType* Rel = getRel(map_i);
+  const RelationSetType* rel_set = &relSparseSet(m_fieldDataLayoutVec[map_i]);
 
-  Field2D<DataType> old_map = get2dFieldImpl<DataType>(map_i);
-  int stride = old_map.stride();
-  axom::Array<DataType> arr_data(Rel->totalSize() * stride);
-  int idx = 0;
-  for(int i = 0; i < Rel->fromSetSize(); ++i)
-  {
-    auto relset = (*Rel)[i];
-    auto submap = old_map(i);
-    for(int j = 0; j < relset.size(); ++j)
-    {
-      for(int s = 0; s < stride; ++s)
-      {
-        arr_data[idx++] = submap[relset[j] * stride + s];
-      }
-    }
-  }
-  SLIC_ASSERT(idx == Rel->totalSize() * stride);
+  DenseField2D<DataType> dense_field =
+    getDense2dField<DataType>(m_fieldNameVec[map_i]);
 
-  if(arr_data.getAllocatorID() != m_fieldAllocatorId)
-  {
-    arr_data = axom::Array<DataType>(arr_data, m_fieldAllocatorId);
-  }
+  axom::Array<DataType> sparseFieldData =
+    ConvertToSparseImpl<axom::SEQ_EXEC>(dense_field, rel_set, m_fieldAllocatorId);
 
-  auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
-  backingArray = std::move(arr_data);
+  m_fieldBackingVec[map_i]->getArray<DataType>() = std::move(sparseFieldData);
 }
 
 template <typename DataType>
