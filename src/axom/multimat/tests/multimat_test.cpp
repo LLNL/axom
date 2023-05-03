@@ -308,7 +308,7 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
     {
       for(int s = 0; s < data.stride; ++s)
       {
-        double* d;
+        DataType* d;
         if(mm.getFieldDataLayout(map_i) == DataLayout::CELL_DOM)
           d = map.findValue(ci, mi, s);
         else
@@ -465,115 +465,272 @@ TEST(multimat, test_data_setval)
   }
 }
 
-/* Test constructing MultiMat object and converting it to another layout. */
-TEST(multimat, construct_multimat_1_array)
+template <typename DataType, int Stride>
+void test_multimat_add_remove(std::pair<DataLayout, SparsityLayout> layout)
 {
   const int num_cells = 20;
   const int num_mats = 10;
-  const int stride_val = 1;
-  MM_test_data<double> data(num_cells, num_mats, stride_val);
+  const int stride_val = Stride;
+  SLIC_INFO("--------------------------------------------------\n"
+            << " Testing Multimat construction \n"
+            << axom::fmt::format("Cells: {} Mats: {} Data type: {} Stride: {}",
+                                 num_cells,
+                                 num_mats,
+                                 typeid(DataType).name(),
+                                 Stride)
+            << "--------------------------------------------------");
+  MM_test_data<DataType> data(num_cells, num_mats, stride_val);
 
-  std::vector<DataLayout> data_layouts = {DataLayout::CELL_DOM,
-                                          DataLayout::MAT_DOM};
-  std::vector<SparsityLayout> sparsity_layouts = {SparsityLayout::DENSE,
-                                                  SparsityLayout::SPARSE};
-  std::map<std::pair<DataLayout, SparsityLayout>, axom::Array<double>> fieldDataMap {
-    {{DataLayout::CELL_DOM, SparsityLayout::DENSE}, data.cellmat_dense_arr},
-    {{DataLayout::CELL_DOM, SparsityLayout::SPARSE}, data.cellmat_sparse_arr},
-    {{DataLayout::MAT_DOM, SparsityLayout::DENSE}, data.matcell_dense_arr},
-    {{DataLayout::MAT_DOM, SparsityLayout::SPARSE}, data.matcell_sparse_arr},
+  const std::map<DataLayout, std::vector<bool>> relationMap {
+    {DataLayout::CELL_DOM, data.fillBool_cellcen},
+    {DataLayout::MAT_DOM, data.fillBool_matcen}};
+
+  const std::map<std::pair<DataLayout, SparsityLayout>, axom::Array<double>> volFracMap {
+    {{DataLayout::CELL_DOM, SparsityLayout::DENSE}, data.volfrac_cellcen_dense},
+    {{DataLayout::CELL_DOM, SparsityLayout::SPARSE}, data.volfrac_cellcen_sparse},
+    {{DataLayout::MAT_DOM, SparsityLayout::DENSE}, data.volfrac_matcen_dense},
+    {{DataLayout::MAT_DOM, SparsityLayout::SPARSE}, data.volfrac_matcen_sparse},
   };
 
-  std::string array_name = "Array 1";
+  const std::map<std::pair<DataLayout, SparsityLayout>, axom::Array<DataType>>
+    fieldDataMap {
+      {{DataLayout::CELL_DOM, SparsityLayout::DENSE}, data.cellmat_dense_arr},
+      {{DataLayout::CELL_DOM, SparsityLayout::SPARSE}, data.cellmat_sparse_arr},
+      {{DataLayout::MAT_DOM, SparsityLayout::DENSE}, data.matcell_dense_arr},
+      {{DataLayout::MAT_DOM, SparsityLayout::SPARSE}, data.matcell_sparse_arr},
+    };
 
-  for(auto layout_used : data_layouts)
+  DataLayout layout_used = layout.first;
+  SparsityLayout sparsity_used = layout.second;
+
+  // Construct a Multimat object with a given layout
+  MultiMat mm(layout.first, layout.second);
+  mm.setNumberOfCells(data.num_cells);
+  mm.setNumberOfMaterials(data.num_mats);
+  mm.setCellMatRel(relationMap.find(layout_used)->second, layout_used);
+  mm.setVolfracField(volFracMap.find(layout)->second.view(),
+                     layout_used,
+                     sparsity_used);
+
+  SLIC_INFO(axom::fmt::format("Constructing Multimat object with layout {}/{}",
+                              mm.getFieldDataLayoutAsString(0),
+                              mm.getFieldSparsityLayoutAsString(0)));
+
+  EXPECT_TRUE(mm.isValid(true));
+  EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
+  EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
+  EXPECT_EQ(mm.getNumberOfFields(), 1);
+
+  EXPECT_EQ(mm.getFieldIdx("OwnedField"), -1);
+
+  // Add an owned field to the Multimat instance.
+  axom::Array<DataType> owned_array = fieldDataMap.find(layout)->second;
+  int field_idx = mm.addField("OwnedField",
+                              FieldMapping::PER_CELL_MAT,
+                              layout_used,
+                              sparsity_used,
+                              owned_array.view(),
+                              data.stride);
+
+  EXPECT_EQ(mm.getFieldDataLayout(field_idx), layout_used);
+  EXPECT_EQ(mm.getFieldSparsityLayout(field_idx), sparsity_used);
+  EXPECT_EQ(mm.getFieldName(field_idx), "OwnedField");
+  EXPECT_EQ(mm.getFieldIdx("OwnedField"), field_idx);
+  EXPECT_EQ(mm.getNumberOfFields(), 2);
+
+  check_values<DataType>(mm, "OwnedField", data);
+
+  // Remove the field.
+  mm.removeField("OwnedField");
+
+  EXPECT_EQ(mm.getFieldName(field_idx), "");
+  EXPECT_EQ(mm.getFieldIdx("OwnedField"), -1);
+  EXPECT_EQ(mm.getNumberOfFields(), 1);
+}
+
+TEST(multimat, construct_multimat_1_array)
+{
+  std::vector<std::pair<DataLayout, SparsityLayout>> layouts {
+    {DataLayout::CELL_DOM, SparsityLayout::DENSE},
+    {DataLayout::CELL_DOM, SparsityLayout::SPARSE},
+    {DataLayout::MAT_DOM, SparsityLayout::DENSE},
+    {DataLayout::MAT_DOM, SparsityLayout::SPARSE},
+  };
+
+  for(auto layout : layouts)
   {
-    for(auto sparsity_used : sparsity_layouts)
+    test_multimat_add_remove<int, 1>(layout);
+    test_multimat_add_remove<float, 1>(layout);
+    test_multimat_add_remove<double, 1>(layout);
+  }
+}
+
+TEST(multimat, construct_multimat_3_array)
+{
+  std::vector<std::pair<DataLayout, SparsityLayout>> layouts {
+    {DataLayout::CELL_DOM, SparsityLayout::DENSE},
+    {DataLayout::CELL_DOM, SparsityLayout::SPARSE},
+    {DataLayout::MAT_DOM, SparsityLayout::DENSE},
+    {DataLayout::MAT_DOM, SparsityLayout::SPARSE},
+  };
+
+  for(auto layout : layouts)
+  {
+    test_multimat_add_remove<int, 3>(layout);
+    test_multimat_add_remove<float, 3>(layout);
+    test_multimat_add_remove<double, 3>(layout);
+  }
+}
+
+template <typename DataType, int Stride>
+void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
+                              std::pair<DataLayout, SparsityLayout> to)
+{
+  const int num_cells = 20;
+  const int num_mats = 10;
+  const int stride_val = Stride;
+  SLIC_INFO("\n--------------------------------------------------\n"
+            << " Testing Multimat construction and conversion \n"
+            << axom::fmt::format(" Cells: {} Mats: {} Data type: {} Stride: {}\n",
+                                 num_cells,
+                                 num_mats,
+                                 std::string(typeid(DataType).name()),
+                                 Stride)
+            << "--------------------------------------------------\n");
+  MM_test_data<DataType> data(num_cells, num_mats, stride_val);
+
+  const std::map<DataLayout, std::vector<bool>> relationMap {
+    {DataLayout::CELL_DOM, data.fillBool_cellcen},
+    {DataLayout::MAT_DOM, data.fillBool_matcen}};
+
+  const std::map<std::pair<DataLayout, SparsityLayout>, axom::Array<double>> volFracMap {
+    {{DataLayout::CELL_DOM, SparsityLayout::DENSE}, data.volfrac_cellcen_dense},
+    {{DataLayout::CELL_DOM, SparsityLayout::SPARSE}, data.volfrac_cellcen_sparse},
+    {{DataLayout::MAT_DOM, SparsityLayout::DENSE}, data.volfrac_matcen_dense},
+    {{DataLayout::MAT_DOM, SparsityLayout::SPARSE}, data.volfrac_matcen_sparse},
+  };
+
+  const std::map<std::pair<DataLayout, SparsityLayout>, axom::Array<DataType>>
+    fieldDataMap {
+      {{DataLayout::CELL_DOM, SparsityLayout::DENSE}, data.cellmat_dense_arr},
+      {{DataLayout::CELL_DOM, SparsityLayout::SPARSE}, data.cellmat_sparse_arr},
+      {{DataLayout::MAT_DOM, SparsityLayout::DENSE}, data.matcell_dense_arr},
+      {{DataLayout::MAT_DOM, SparsityLayout::SPARSE}, data.matcell_sparse_arr},
+    };
+
+  DataLayout layout_used = from.first;
+  SparsityLayout sparsity_used = from.second;
+
+  // Construct a Multimat object with a given layout
+  MultiMat mm(from.first, from.second);
+  mm.setNumberOfCells(data.num_cells);
+  mm.setNumberOfMaterials(data.num_mats);
+  mm.setCellMatRel(relationMap.find(layout_used)->second, layout_used);
+  mm.setVolfracField(volFracMap.find(from)->second.view(),
+                     layout_used,
+                     sparsity_used);
+
+  SLIC_INFO(axom::fmt::format("Constructing Multimat object with layout {}/{}",
+                              mm.getFieldDataLayoutAsString(0),
+                              mm.getFieldSparsityLayoutAsString(0)));
+
+  EXPECT_TRUE(mm.isValid(true));
+  EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
+  EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
+
+  // Add an owned field and an unowned field to the Multimat instance.
+  axom::Array<DataType> owned_array = fieldDataMap.find(from)->second;
+  int int_field_idx = mm.addField("OwnedField",
+                                  FieldMapping::PER_CELL_MAT,
+                                  layout_used,
+                                  sparsity_used,
+                                  owned_array.view(),
+                                  data.stride);
+
+  int ext_field_idx = mm.addExternalField("UnownedField",
+                                          FieldMapping::PER_CELL_MAT,
+                                          layout_used,
+                                          sparsity_used,
+                                          owned_array.view(),
+                                          data.stride);
+
+  check_values<DataType>(mm, "OwnedField", data);
+  check_values<DataType>(mm, "UnownedField", data);
+
+  DataLayout to_layout = to.first;
+  SparsityLayout to_sparsity = to.second;
+
+  mm.convertLayout(to_layout, to_sparsity);
+
+  SLIC_INFO(axom::fmt::format("Converted multimat instance to layout {}/{}",
+                              mm.getFieldDataLayoutAsString(0),
+                              mm.getFieldSparsityLayoutAsString(0)));
+
+  // Check owned fields for conversion.
+  EXPECT_EQ(mm.getFieldDataLayout(0), to_layout);
+  EXPECT_EQ(mm.getFieldSparsityLayout(0), to_sparsity);
+  EXPECT_EQ(mm.getFieldDataLayout(int_field_idx), to_layout);
+  EXPECT_EQ(mm.getFieldSparsityLayout(int_field_idx), to_sparsity);
+
+  // Special case: externally-owned fields can only be transposed between
+  // material- and cell-dominant layouts; they cannot be converted between
+  // sparse and dense layouts.
+  EXPECT_EQ(mm.getFieldDataLayout(ext_field_idx), to_layout);
+  EXPECT_EQ(mm.getFieldSparsityLayout(ext_field_idx), sparsity_used);
+
+  // Converting a single external field between sparse/dense should throw.
+  if(to_sparsity != sparsity_used)
+  {
+    if(to_sparsity == SparsityLayout::DENSE)
     {
-      SLIC_INFO("--------------------\nConstructing MultiMat object...");
-      MultiMat* mm_ptr = newMM(data, layout_used, sparsity_used, array_name);
-      MultiMat& mm = *mm_ptr;
+      EXPECT_THROW(mm.convertFieldToDense(ext_field_idx), std::runtime_error);
+    }
+    else
+    {
+      EXPECT_THROW(mm.convertFieldToSparse(ext_field_idx), std::runtime_error);
+    }
+  }
 
-      EXPECT_TRUE(mm.isValid(true));
-      EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
-      EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
+  check_values<DataType>(mm, "OwnedField", data);
+  check_values<DataType>(mm, "UnownedField", data);
+}
 
-      check_values<double>(mm, array_name, data);
+TEST(multimat, convert_multimat_1_array)
+{
+  std::vector<std::pair<DataLayout, SparsityLayout>> layouts {
+    {DataLayout::CELL_DOM, SparsityLayout::DENSE},
+    {DataLayout::CELL_DOM, SparsityLayout::SPARSE},
+    {DataLayout::MAT_DOM, SparsityLayout::DENSE},
+    {DataLayout::MAT_DOM, SparsityLayout::SPARSE},
+  };
 
-      for(auto layout_to_convert : data_layouts)
-      {
-        for(auto sparsity_to_convert : sparsity_layouts)
-        {
-          SLIC_INFO("Making a copy...");
-          //Make Copies to test conversion
-          MultiMat mm_c(mm);
-          axom::Array<double> unowned_array =
-            fieldDataMap.find({layout_used, sparsity_used})->second;
-          int ext_field_idx = mm_c.addExternalField("UnownedField",
-                                                    FieldMapping::PER_CELL_MAT,
-                                                    layout_used,
-                                                    sparsity_used,
-                                                    unowned_array.view(),
-                                                    data.stride);
+  for(auto layout_from : layouts)
+  {
+    for(auto layout_to : layouts)
+    {
+      test_multimat_conversion<int, 1>(layout_from, layout_to);
+      test_multimat_conversion<float, 1>(layout_from, layout_to);
+      test_multimat_conversion<double, 1>(layout_from, layout_to);
+    }
+  }
+}
 
-          EXPECT_TRUE(mm_c.isValid(true));
-          EXPECT_EQ(mm_c.getNumberOfCells(), data.num_cells);
-          EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
+TEST(multimat, convert_multimat_3_array)
+{
+  std::vector<std::pair<DataLayout, SparsityLayout>> layouts {
+    {DataLayout::CELL_DOM, SparsityLayout::DENSE},
+    {DataLayout::CELL_DOM, SparsityLayout::SPARSE},
+    {DataLayout::MAT_DOM, SparsityLayout::DENSE},
+    {DataLayout::MAT_DOM, SparsityLayout::SPARSE},
+  };
 
-          check_values<double>(mm_c, array_name, data);
-          check_values<double>(mm_c, "UnownedField", data);
-
-          SLIC_INFO("Converting layout...");
-          mm_c.convertLayout(layout_to_convert, sparsity_to_convert);
-          SLIC_INFO("Layout converted from "
-                    << mm.getFieldDataLayoutAsString(0) << " and "
-                    << mm.getFieldSparsityLayoutAsString(0)
-                    << "\n                          to "
-                    << mm_c.getFieldDataLayoutAsString(0) << " and "
-                    << mm_c.getFieldSparsityLayoutAsString(0) << "...");
-
-          EXPECT_TRUE(mm_c.isValid(true));
-          EXPECT_EQ(mm_c.getNumberOfCells(), data.num_cells);
-          EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
-          for(int i = 0; i < mm.getNumberOfFields(); ++i)
-          {
-            if(i != ext_field_idx)
-            {
-              EXPECT_EQ(mm_c.getFieldDataLayout(i), layout_to_convert);
-              EXPECT_EQ(mm_c.getFieldSparsityLayout(i), sparsity_to_convert);
-            }
-            else
-            {
-              // An externally-owned field should convert layout but not sparsity,
-              // since sparsity requires a reallocation.
-              EXPECT_EQ(mm_c.getFieldDataLayout(i), layout_to_convert);
-              EXPECT_EQ(mm_c.getFieldSparsityLayout(i), sparsity_used);
-            }
-          }
-          if(sparsity_to_convert != sparsity_used)
-          {
-            if(sparsity_to_convert == SparsityLayout::DENSE)
-            {
-              EXPECT_THROW(mm_c.convertFieldToDense(ext_field_idx),
-                           std::runtime_error);
-            }
-            else
-            {
-              EXPECT_THROW(mm_c.convertFieldToSparse(ext_field_idx),
-                           std::runtime_error);
-            }
-          }
-          check_values<double>(mm_c, array_name, data);
-        }
-      }
-
-      SLIC_INFO("Testing removal of field with name \"" << array_name << "\"...");
-      int field_idx = mm_ptr->getFieldIdx(array_name);
-      mm_ptr->removeField(array_name);
-      EXPECT_EQ(mm_ptr->getFieldIdx(array_name), -1);
-      EXPECT_EQ(mm_ptr->getFieldName(field_idx), "");
-
-      delete mm_ptr;
+  for(auto layout_from : layouts)
+  {
+    for(auto layout_to : layouts)
+    {
+      test_multimat_conversion<int, 3>(layout_from, layout_to);
+      test_multimat_conversion<float, 3>(layout_from, layout_to);
+      test_multimat_conversion<double, 3>(layout_from, layout_to);
     }
   }
 }
