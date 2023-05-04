@@ -538,6 +538,30 @@ void test_multimat_add_remove(std::pair<DataLayout, SparsityLayout> layout)
   EXPECT_EQ(mm.getFieldIdx("OwnedField"), field_idx);
   EXPECT_EQ(mm.getNumberOfFields(), 2);
 
+  // Check field returned from the multimat instance.
+  MMField2D<DataType> field = mm.get2dField<DataType>("OwnedField");
+  EXPECT_EQ(field.isDense(), sparsity_used == SparsityLayout::DENSE);
+  EXPECT_EQ(field.isCellDom(), layout_used == DataLayout::CELL_DOM);
+  EXPECT_EQ(field.stride(), stride_val);
+
+  // Check dense/sparse-typed fields as well.
+  if(sparsity_used == SparsityLayout::DENSE)
+  {
+    MultiMat::DenseField2D<DataType> field_dense =
+      mm.getDense2dField<DataType>("OwnedField");
+    EXPECT_EQ(field_dense.isDense(), sparsity_used == SparsityLayout::DENSE);
+    EXPECT_EQ(field_dense.isCellDom(), layout_used == DataLayout::CELL_DOM);
+    EXPECT_EQ(field_dense.stride(), stride_val);
+  }
+  else
+  {
+    MultiMat::SparseField2D<DataType> field_sparse =
+      mm.getSparse2dField<DataType>("OwnedField");
+    EXPECT_EQ(field_sparse.isDense(), sparsity_used == SparsityLayout::DENSE);
+    EXPECT_EQ(field_sparse.isCellDom(), layout_used == DataLayout::CELL_DOM);
+    EXPECT_EQ(field_sparse.stride(), stride_val);
+  }
+
   check_values<DataType>(mm, "OwnedField", data);
 
   // Remove the field.

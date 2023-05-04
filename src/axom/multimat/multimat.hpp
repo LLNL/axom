@@ -1133,7 +1133,11 @@ MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_nam
 
   BSetType bsetValue = getCompatibleBivarSet<BSetType>(fi);
 
-  Field2D<T, BSetType> typedBMap(*this, bsetValue, fi, bmap.getMap()->data());
+  Field2D<T, BSetType> typedBMap(*this,
+                                 bsetValue,
+                                 fi,
+                                 bmap.getMap()->data(),
+                                 bmap.stride());
 
   return typedBMap;
 }
@@ -1159,7 +1163,11 @@ MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_nam
   typename ProductSetType::ConcreteSet prod_set =
     relDenseSet(m_fieldDataLayoutVec[fieldIdx]);
 
-  DenseField2D<T> typedBMap(*this, prod_set, fieldIdx, bmap.getMap()->data());
+  DenseField2D<T> typedBMap(*this,
+                            prod_set,
+                            fieldIdx,
+                            bmap.getMap()->data(),
+                            bmap.stride());
 
   return typedBMap;
 }
@@ -1185,7 +1193,11 @@ MultiMat::SparseField2D<T> MultiMat::getSparse2dField(const std::string& field_n
   typename RelationSetType::ConcreteSet rel_set =
     relSparseSet(m_fieldDataLayoutVec[fieldIdx]);
 
-  SparseField2D<T> typedBMap(*this, rel_set, fieldIdx, bmap.getMap()->data());
+  SparseField2D<T> typedBMap(*this,
+                             rel_set,
+                             fieldIdx,
+                             bmap.getMap()->data(),
+                             bmap.stride());
 
   return typedBMap;
 }
@@ -1199,7 +1211,10 @@ MultiMat::Field2DTemplated<T, D, B> MultiMat::getTemplated2DField(
 
   int fieldIdx = getFieldIdx(field_name);
 
-  Field2DTemplated<T, D, B> typedBMap(*this, fieldIdx, bmap.getMap()->data());
+  Field2DTemplated<T, D, B> typedBMap(*this,
+                                      fieldIdx,
+                                      bmap.getMap()->data(),
+                                      bmap.stride());
 
   return typedBMap;
 }
@@ -1219,7 +1234,8 @@ MultiMat::get2dFieldAsSlamBivarMap(const std::string& field_name)
   // Create instance of templated BivariateMap
   slam::BivariateMap<T, BSetType, IndViewPolicy<T>> typedBMap(
     bsetValue,
-    bmap.getMap()->data());
+    bmap.getMap()->data(),
+    bmap.stride());
 
   return typedBMap;
 }
