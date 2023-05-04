@@ -1088,6 +1088,35 @@ void MultiMat::convertToSparse_helper(int map_i)
   m_fieldBackingVec[map_i]->getArray<DataType>() = std::move(sparseFieldData);
 }
 
+template <typename ExecSpace, typename DataType>
+axom::Array<DataType> ConvertToDenseImpl(
+  const MultiMat::SparseField2D<DataType> oldField,
+  const MultiMat::ProductSetType* prodSet,
+  int allocatorId)
+{
+  const auto* relationSet = oldField.set();
+  int stride = oldField.stride();
+  int denseSize = prodSet->size() * stride;
+  axom::Array<DataType> denseField(denseSize, denseSize, allocatorId);
+  const auto denseFieldView = denseField.view();
+
+  axom::for_all<ExecSpace>(
+    relationSet->totalSize() * stride,
+    AXOM_LAMBDA(int index) {
+      int flatIdx = index / stride;
+      int comp = index % stride;
+
+      auto firstIdx = relationSet->flatToFirstIndex(flatIdx);
+      auto secondIdx = relationSet->flatToSecondIndex(flatIdx);
+
+      int denseIdx = prodSet->findElementFlatIndex(firstIdx, secondIdx);
+
+      denseFieldView[denseIdx * stride + comp] = oldField[index];
+    });
+
+  return denseField;
+}
+
 template <typename DataType>
 void MultiMat::convertToDense_helper(int map_i)
 {
@@ -1099,28 +1128,13 @@ void MultiMat::convertToDense_helper(int map_i)
 
   ProductSetType* prod_set = &relDenseSet(m_fieldDataLayoutVec[map_i]);
 
-  Field2D<DataType> old_map = get2dFieldImpl<DataType>(map_i);
-  int stride = old_map.stride();
-  axom::Array<DataType> arr_data(prod_set->size() * stride);
-  for(int i = 0; i < old_map.firstSetSize(); ++i)
-  {
-    for(auto iter = old_map.begin(i); iter != old_map.end(i); ++iter)
-    {
-      int elem_idx = i * old_map.secondSetSize() + iter.index();
-      for(int c = 0; c < stride; ++c)
-      {
-        arr_data[elem_idx * stride + c] = iter.value(c);
-      }
-    }
-  }
+  SparseField2D<DataType> oldField =
+    getSparse2dField<DataType>(m_fieldNameVec[map_i]);
 
-  if(arr_data.getAllocatorID() != m_fieldAllocatorId)
-  {
-    arr_data = axom::Array<DataType>(arr_data, m_fieldAllocatorId);
-  }
+  axom::Array<DataType> denseFieldData =
+    ConvertToDenseImpl<axom::SEQ_EXEC>(oldField, prod_set, m_fieldAllocatorId);
 
-  auto& backingArray = m_fieldBackingVec[map_i]->getArray<DataType>();
-  backingArray = std::move(arr_data);
+  m_fieldBackingVec[map_i]->getArray<DataType>() = std::move(denseFieldData);
 }
 
 DataLayout MultiMat::getFieldDataLayout(int field_idx) const
