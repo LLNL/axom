@@ -563,6 +563,11 @@ int main(int argc, char** argv)
       (dynamic_cast<quest::IntersectionShaper*>(shaper))
         ->proePrepareShapeQuery(shapeDim, shape);
       slic::flushStreams();
+
+      // Query the mesh against this shape
+      (dynamic_cast<quest::IntersectionShaper*>(shaper))->proeRunShapeQuery(shape);
+
+      slic::flushStreams();
     }
 
     else
