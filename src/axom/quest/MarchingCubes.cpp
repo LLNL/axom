@@ -729,6 +729,12 @@ void MarchingCubes::populate_surface_mesh(
   const std::string& cellIdField,
   const std::string& domainIdField)
 {
+  if(!cellIdField.empty() &&
+     !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
+  {
+    mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
+  }
+
   if(!domainIdField.empty() &&
      !mesh.hasField(domainIdField, axom::mint::CELL_CENTERED))
   {
@@ -766,6 +772,8 @@ void MarchingCubes::populate_surface_mesh(
       }
     }
   }
+  SLIC_ASSERT(mesh.getNumberOfNodes() == surfaceNodeCount);
+  SLIC_ASSERT(mesh.getNumberOfCells() == surfaceCellCount);
 }
 
 MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,

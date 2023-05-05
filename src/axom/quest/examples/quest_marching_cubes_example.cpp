@@ -1044,7 +1044,6 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     return errCount;
   }
 
-#if 1
   /*!
     Check that computational cells that contain the contour value
     have at least one contour mesh cell.
@@ -1145,7 +1144,6 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
                                    errCount));
     return errCount;
   }
-#endif
 
   void get_coords_views(conduit::Node& domain,
                         const std::string& coordsetPath,

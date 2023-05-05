@@ -109,7 +109,7 @@ inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy)
  *   set_function_field("my_function");
  *   mc.compute_iso_surface(contourValue);
  *
- *   axom::mint::UnstructuredMesh<axom::mint::_SINGLE_SHAPE>
+ *   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
  *     surfaceMesh(3, min::CellType::Triangle);
  *   mc.populate_surface_mesh( surfaceMesh, "cellIdField");
  * @endverbatim
