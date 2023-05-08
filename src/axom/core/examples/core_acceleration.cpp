@@ -189,7 +189,7 @@ void demoAxomExecution()
   // Increment sum 100 times
   axom::for_all<ExecSpace>(
     100,
-    AXOM_LAMBDA(axom::IndexType i) { RAJA::atomicAdd<atomic_pol>(sum, 1); });
+    AXOM_LAMBDA(axom::IndexType) { RAJA::atomicAdd<atomic_pol>(sum, 1); });
 
   std::cout << "\nTotal Atomic Sum (" << axom::execution_space<ExecSpace>::name()
             << ") :" << sum[0] << std::endl;
