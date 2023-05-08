@@ -1088,7 +1088,7 @@ void MFEMSidreDataCollection::PrepareToSave()
 void MFEMSidreDataCollection::Save()
 {
   std::string filename = name;
-  std::string protocol = "sidre_hdf5";
+  std::string protocol = Group::getDefaultIOProtocol();
 
   Save(filename, protocol);
 }
