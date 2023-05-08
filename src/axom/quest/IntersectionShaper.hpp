@@ -415,7 +415,7 @@ public:
     SLIC_INFO("m_tets allocator ID is " << m_tets.getAllocatorID());
 
     // Initialize tetrahedra
-    axom::Array<int> nodeIds(4);
+    axom::Array<IndexType> nodeIds(4);
     axom::Array<Point3D> pts(4);
 
     for(int i = 0; i < m_tetcount; i++)
