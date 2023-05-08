@@ -21,6 +21,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic.hpp"
+#include "axom/export/sidre.h"
 
 // Standard C++ headers
 #include <memory>
@@ -1838,7 +1839,7 @@ private:
   bool m_is_list;
 
   /// Character used to denote a path string passed to get/create calls.
-  AXOM_EXPORT static const char s_path_delimiter;
+  AXOM_SIDRE_EXPORT static const char s_path_delimiter;
 
   /// Collection of Views
   ViewCollection* m_view_coll;
