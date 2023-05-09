@@ -26,40 +26,6 @@ using axom::sidre::nameIsValid;
 using axom::sidre::TypeID;
 using axom::sidre::View;
 
-namespace
-{
-// Test protocols
-#ifdef AXOM_USE_HDF5
-int nprotocols = 3;
-std::string const protocols[] = {"sidre_json", "sidre_hdf5", "json"};
-#else
-int nprotocols = 2;
-std::string const protocols[] = {"sidre_json", "json"};
-#endif
-
-// Function to return a vector of available sidre protocols
-std::vector<std::string> getAvailableSidreProtocols()
-{
-  std::vector<std::string> protocols;
-
-#ifdef AXOM_USE_HDF5
-  protocols.push_back("sidre_hdf5");
-#endif
-  protocols.push_back("sidre_json");
-  protocols.push_back("sidre_conduit_json");
-
-#ifdef AXOM_USE_HDF5
-  protocols.push_back("conduit_hdf5");
-#endif
-  protocols.push_back("conduit_bin");
-  protocols.push_back("conduit_json");
-  protocols.push_back("json");
-
-  return protocols;
-}
-
-}  // end anonymous namespace
-
 // API coverage tests
 // Each test should be documented with the interface functions being tested
 
@@ -1712,22 +1678,23 @@ TEST(sidre_group, save_restore_empty_datastore)
   const std::string file_path_base("sidre_empty_datastore_");
   DataStore* ds1 = new DataStore();
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    ds1->getRoot()->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    ds1->getRoot()->save(file_path, protocol);
   }
 
   delete ds1;
 
-  // Only restore conduit_hdf5
-  for(int i = 1; i < 2; ++i)
+  // Only restore default protocol
   {
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string& default_protocol = Group::getDefaultIOProtocol();
+    const std::string file_path = file_path_base + default_protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, default_protocol);
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0);
     EXPECT_TRUE(root2->getNumGroups() == 0);
@@ -1818,33 +1785,34 @@ TEST(sidre_group, save_root_restore_as_child)
   }
 
   // Save the DataStore's root
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root->save(file_path, protocol);
   }
 
   // Restore the original DataStore into a child group
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
     DataStore* dscopy = new DataStore();
     Group* dsroot = dscopy->getRoot();
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     const std::string group_base("group_");
-    const std::string group_name = group_base + protocols[i];
+    const std::string group_name = group_base + protocol;
     Group* cg = dsroot->createGroup(group_name);
 
     if(axom::utilities::filesystem::pathExists(file_path))
     {
       std::cout << "loading " << file_path << std::endl;
-      cg->load(file_path, protocols[i]);
+      cg->load(file_path, protocol);
 
       EXPECT_TRUE(cg->isEquivalentTo(root, false));
       EXPECT_TRUE(root->isEquivalentTo(cg, false));
@@ -1900,26 +1868,27 @@ TEST(sidre_group, save_child_restore_as_root)
   }
 
   // Save the Group in question (child1) into an archive
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    child1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    child1->save(file_path, protocol);
   }
 
   // Restore the saved child1 into a root group
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
     DataStore* dscopy = new DataStore();
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
     if(axom::utilities::filesystem::pathExists(file_path))
     {
-      dscopy->getRoot()->load(file_path, protocols[i]);
+      dscopy->getRoot()->load(file_path, protocol);
 
       EXPECT_TRUE(dscopy->getRoot()->isEquivalentTo(child1, false));
       EXPECT_TRUE(child1->isEquivalentTo(dscopy->getRoot(), false));
@@ -1950,10 +1919,11 @@ TEST(sidre_group, save_restore_api)
   // No group provided, defaults to root group
   root1->save("sidre_save_fulltree_conduit", "json");
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   //These are commented out because createViewScalar<int> creates a scalar View
@@ -2061,28 +2031,29 @@ TEST(sidre_group, save_restore_scalars_and_strings)
   root1->createViewScalar<double>("d0", 10.0);
   root1->createViewString("s0", "I am a string");
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    //      if ( protocols[i] == "conduit_hdf5")
+    //      if ( protocol == "conduit_hdf5")
     //    continue;   // XXX - Does not work
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     EXPECT_TRUE(root1->isEquivalentTo(root2));
 
@@ -2159,24 +2130,25 @@ TEST(sidre_group, save_restore_name_change)
   EXPECT_FALSE(child1->hasView("s0"));
   EXPECT_TRUE(child1->hasView("s0_renamed"));
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    //      if ( protocols[i] == "conduit_hdf5")
+    //      if ( protocol == "conduit_hdf5")
     //    continue;   // XXX - Does not work
-    const std::string file_path = file_path_base + protocols[i];
-    child1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    child1->save(file_path, protocol);
   }
 
   std::string groupname;
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
@@ -2184,7 +2156,7 @@ TEST(sidre_group, save_restore_name_change)
 
     EXPECT_EQ(child2->getName(), "child2");
 
-    child2->load(file_path, protocols[i], false, groupname);
+    child2->load(file_path, protocol, false, groupname);
 
     EXPECT_EQ(child2->getName(), "child2");
 
@@ -2237,31 +2209,32 @@ TEST(sidre_group, save_restore_external_data)
   root1->createView("external_undescribed")->setExternalDataPtr(foo4);
   root1->createViewWithShape("int2d", INT_ID, 2, shape, int2d1);
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   delete ds1;
 
   // Now load back in.
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
     IndexType extents[7];
     int rank;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     // load has set the type and size of the view.
     // Now set the external address before calling loadExternal.
@@ -2311,11 +2284,11 @@ TEST(sidre_group, save_restore_external_data)
     EXPECT_TRUE(view3->getVoidPtr() == static_cast<void*>(foo2));
     EXPECT_TRUE(view4->getVoidPtr() == static_cast<void*>(int2d2));
 
-    for(int j = 0; i < nfoo; ++i)
+    for(int j = 0; j < nfoo; ++j)
     {
       EXPECT_TRUE(foo1[j] == foo2[j]);
     }
-    for(int j = 0; i < 2 * nfoo; ++i)
+    for(int j = 0; j < 2 * nfoo; ++j)
     {
       EXPECT_TRUE(int2d1[j] == int2d2[j]);
     }
@@ -2450,27 +2423,28 @@ TEST(sidre_group, save_restore_buffer)
 
   save_restore_buffer_association("original datastore", ds1);
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   // Now load back in.
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     bool isequivalent = root1->isEquivalentTo(root2);
     EXPECT_TRUE(isequivalent);
@@ -2511,31 +2485,32 @@ TEST(sidre_group, save_restore_other)
     }
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   delete ds1;
 
   // Now load back in.
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
     IndexType shape2[7];
     int rank;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     View* view1 = root2->getView("empty_view");
     EXPECT_TRUE(view1->isEmpty());
@@ -2596,25 +2571,26 @@ TEST(sidre_group, save_restore_complex)
     data_ptr[i] = i;
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    ds1->getRoot()->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    ds1->getRoot()->save(file_path, protocol);
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
 
-    ds2->getRoot()->load(file_path, protocols[i]);
+    ds2->getRoot()->load(file_path, protocol);
 
     EXPECT_TRUE(ds1->getRoot()->isEquivalentTo(ds2->getRoot()));
 
@@ -2736,18 +2712,18 @@ TEST(sidre_group, save_load_all_protocols)
   //
   // test all protocols
   //
-  std::vector<std::string> protocols = getAvailableSidreProtocols();
-  for(size_t i = 0; i < protocols.size(); ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    SLIC_INFO("Testing protocol: " << protocols[i]);
-    const std::string file_path = file_path_base + protocols[i];
+    SLIC_INFO("Testing protocol: " << protocol);
+    const std::string file_path = file_path_base + protocol;
     // save using current protocol
-    ds.getRoot()->save(file_path, protocols[i]);
+    ds.getRoot()->save(file_path, protocol);
 
     DataStore ds_load;
-    ds_load.getRoot()->load(file_path, protocols[i]);
+    ds_load.getRoot()->load(file_path, protocol);
 
-    SLIC_INFO("Tree from protocol: " << protocols[i]);
+    SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
     ds_load.print();
 
@@ -2808,12 +2784,10 @@ TEST(sidre_group, save_load_preserve_contents)
     data_ptr[i] = (conduit::int64)i;
   }
 
-  std::vector<std::string> protocols = getAvailableSidreProtocols();
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
   std::string groupname;
-  for(size_t i = 0; i < protocols.size(); ++i)
+  for(const auto& protocol : protocols)
   {
-    std::string& protocol = protocols[i];
-
     std::string file_path0 = file_path_tree0 + protocol;
     tree0->save(file_path0, protocol);
 
