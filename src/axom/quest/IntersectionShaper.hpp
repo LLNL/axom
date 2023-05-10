@@ -1808,150 +1808,156 @@ public:
 public:
   // Prepares the shaping query, based on the policy member set
   // (default is sequential)
-  void proePrepareShapeQuery(klee::Dimensions shapeDimension,
-                             const klee::Shape& shape)
-  {
-    switch(m_execPolicy)
-    {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
-      proePrepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
-      break;
-  #if defined(AXOM_USE_OPENMP)
-    case omp:
-      proePrepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
-      break;
-  #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
-    case cuda:
-      proePrepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
-      break;
-  #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
-    case hip:
-      proePrepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
-      break;
-  #endif  // AXOM_USE_HIP
-#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shapeDimension);
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
-    }
-  }
-
-  // Runs the shaping query, based on the policy member set
-  // (default is sequential)
-  void proeRunShapeQuery(const klee::Shape& shape)
-  {
-    switch(m_execPolicy)
-    {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
-      proeRunShapeQueryImpl<seq_exec>(shape);
-      break;
-  #if defined(AXOM_USE_OPENMP)
-    case omp:
-      proeRunShapeQueryImpl<omp_exec>(shape);
-      break;
-  #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
-    case cuda:
-      proeRunShapeQueryImpl<cuda_exec>(shape);
-      break;
-  #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
-    case hip:
-      proeRunShapeQueryImpl<hip_exec>(shape);
-      break;
-  #endif  // AXOM_USE_HIP
-#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
-    }
-  }
-
-  // Prepares the shaping query, based on the policy member set
-  // (default is sequential)
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
-    // Save m_percentError and m_level in case refineShape needs to change them
-    // to meet the overall desired error tolerance for the volume.
-    const double saved_percentError = m_percentError;
-    const double saved_level = m_level;
+    std::string shapeFormat = shape.getGeometry().getFormat();
 
-    // Refine the shape, potentially reloading it more refined.
-    refineShape(shape);
-
-    // Now that the mesh is refined, dispatch to device implementations.
-    switch(m_execPolicy)
+    // Testing separate workflow for Pro/E
+    if(shapeFormat == "proe")
     {
+      switch(m_execPolicy)
+      {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
-      prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
-      break;
+      case seq:
+        proePrepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
+        break;
   #if defined(AXOM_USE_OPENMP)
-    case omp:
-      prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
-      break;
+      case omp:
+        proePrepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
+        break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-    case cuda:
-      prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
-      break;
+      case cuda:
+        proePrepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
+        break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-    case hip:
-      prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
-      break;
+      case hip:
+        proePrepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
+        break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shapeDimension);
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
+      default:
+        AXOM_UNUSED_VAR(shapeDimension);
+        AXOM_UNUSED_VAR(shape);
+        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+        break;
+      }
     }
 
-    // Restore m_percentError, m_level in case refineShape changed them.
-    m_percentError = saved_percentError;
-    m_level = saved_level;
+    else
+    {
+      // Save m_percentError and m_level in case refineShape needs to change them
+      // to meet the overall desired error tolerance for the volume.
+      const double saved_percentError = m_percentError;
+      const double saved_level = m_level;
+
+      // Refine the shape, potentially reloading it more refined.
+      refineShape(shape);
+
+      // Now that the mesh is refined, dispatch to device implementations.
+      switch(m_execPolicy)
+      {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+      case seq:
+        prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
+        break;
+  #if defined(AXOM_USE_OPENMP)
+      case omp:
+        prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
+        break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA)
+      case cuda:
+        prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
+        break;
+  #endif  // AXOM_USE_CUDA
+  #if defined(AXOM_USE_HIP)
+      case hip:
+        prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
+        break;
+  #endif  // AXOM_USE_HIP
+#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
+      default:
+        AXOM_UNUSED_VAR(shapeDimension);
+        AXOM_UNUSED_VAR(shape);
+        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+        break;
+      }
+
+      // Restore m_percentError, m_level in case refineShape changed them.
+      m_percentError = saved_percentError;
+      m_level = saved_level;
+    }
   }
 
   // Runs the shaping query, based on the policy member set
   // (default is sequential)
   void runShapeQuery(const klee::Shape& shape) override
   {
-    switch(m_execPolicy)
+    std::string shapeFormat = shape.getGeometry().getFormat();
+
+    // Testing separate workflow for Pro/E
+    if(shapeFormat == "proe")
     {
+      switch(m_execPolicy)
+      {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    case seq:
-      runShapeQueryImpl<seq_exec>(shape);
-      break;
+      case seq:
+        proeRunShapeQueryImpl<seq_exec>(shape);
+        break;
   #if defined(AXOM_USE_OPENMP)
-    case omp:
-      runShapeQueryImpl<omp_exec>(shape);
-      break;
+      case omp:
+        proeRunShapeQueryImpl<omp_exec>(shape);
+        break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-    case cuda:
-      runShapeQueryImpl<cuda_exec>(shape);
-      break;
+      case cuda:
+        proeRunShapeQueryImpl<cuda_exec>(shape);
+        break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-    case hip:
-      runShapeQueryImpl<hip_exec>(shape);
-      break;
+      case hip:
+        proeRunShapeQueryImpl<hip_exec>(shape);
+        break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-    default:
-      AXOM_UNUSED_VAR(shape);
-      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-      break;
+      default:
+        AXOM_UNUSED_VAR(shape);
+        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+        break;
+      }
+    }
+    else
+    {
+      switch(m_execPolicy)
+      {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+      case seq:
+        runShapeQueryImpl<seq_exec>(shape);
+        break;
+  #if defined(AXOM_USE_OPENMP)
+      case omp:
+        runShapeQueryImpl<omp_exec>(shape);
+        break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA)
+      case cuda:
+        runShapeQueryImpl<cuda_exec>(shape);
+        break;
+  #endif  // AXOM_USE_CUDA
+  #if defined(AXOM_USE_HIP)
+      case hip:
+        runShapeQueryImpl<hip_exec>(shape);
+        break;
+  #endif  // AXOM_USE_HIP
+#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
+      default:
+        AXOM_UNUSED_VAR(shape);
+        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+        break;
+      }
     }
   }
 

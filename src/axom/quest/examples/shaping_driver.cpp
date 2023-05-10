@@ -549,49 +549,25 @@ int main(int argc, char** argv)
       axom::fmt::format("{:-^80}",
                         axom::fmt::format("Shape format is {}", shapeFormat)));
 
-    // Testing separate workflow for Pro/E
-    if(shapeFormat == "proe")
-    {
-      SLIC_INFO(axom::fmt::format("{:*^80}", "Processing Pro/E shape!"));
+    // Load the shape from file
+    shaper->loadShape(shape);
+    slic::flushStreams();
 
-      // Load the shape from file
-      shaper->loadShape(shape);
-      slic::flushStreams();
+    // Generate a spatial index over the shape
+    shaper->prepareShapeQuery(shapeDim, shape);
+    slic::flushStreams();
 
-      axom::mint::write_vtk(shaper->getSurfaceMesh(), "cup_shaping_driver.vtk");
+    // Query the mesh against this shape
+    shaper->runShapeQuery(shape);
+    slic::flushStreams();
 
-      (dynamic_cast<quest::IntersectionShaper*>(shaper))
-        ->proePrepareShapeQuery(shapeDim, shape);
-      slic::flushStreams();
+    // Apply the replacement rules for this shape against the existing materials
+    shaper->applyReplacementRules(shape);
+    slic::flushStreams();
 
-      // Query the mesh against this shape
-      (dynamic_cast<quest::IntersectionShaper*>(shaper))->proeRunShapeQuery(shape);
-
-      slic::flushStreams();
-    }
-
-    else
-    {
-      // Load the shape from file
-      shaper->loadShape(shape);
-      slic::flushStreams();
-
-      // Generate a spatial index over the shape
-      shaper->prepareShapeQuery(shapeDim, shape);
-      slic::flushStreams();
-
-      // Query the mesh against this shape
-      shaper->runShapeQuery(shape);
-      slic::flushStreams();
-
-      // Apply the replacement rules for this shape against the existing materials
-      shaper->applyReplacementRules(shape);
-      slic::flushStreams();
-
-      // Finalize data structures associated with this shape and spatial index
-      shaper->finalizeShapeQuery();
-      slic::flushStreams();
-    }
+    // Finalize data structures associated with this shape and spatial index
+    shaper->finalizeShapeQuery();
+    slic::flushStreams();
   }
 
   //---------------------------------------------------------------------------
