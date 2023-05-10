@@ -755,14 +755,15 @@ shapes:
 
 //---------------------------------------------------------------------------
 // Define testing functions for different modes.
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case1_seq)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case1, "seq", quest::IntersectionShaper::seq, tolerance);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, case1_omp)
 {
   constexpr double tolerance = 1.e-10;
@@ -775,301 +776,322 @@ TEST(IntersectionShaperTest, case1_omp)
                          tolerance,
                          true);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, case1_cuda)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case1, "cuda", quest::IntersectionShaper::cuda, tolerance);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, case1_hip)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case1, "hip", quest::IntersectionShaper::hip, tolerance);
 }
+  #endif
 #endif
 
 // case2
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case2_seq)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case2, "seq", quest::IntersectionShaper::seq, tolerance);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, case2_omp)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case2, "omp", quest::IntersectionShaper::omp, tolerance);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, case2_cuda)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case2, "cuda", quest::IntersectionShaper::cuda, tolerance);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, case2_hip)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case2, "hip", quest::IntersectionShaper::hip, tolerance);
 }
+  #endif
 #endif
 
 // case3
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case3_seq)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case3, "seq", quest::IntersectionShaper::seq, tolerance);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, case3_omp)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case3, "omp", quest::IntersectionShaper::omp, tolerance);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, case3_cuda)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case3, "cuda", quest::IntersectionShaper::cuda, tolerance);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, case3_hip)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case3, "hip", quest::IntersectionShaper::hip, tolerance);
 }
+  #endif
 #endif
 
 // case4
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, case4_seq)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case4, "seq", quest::IntersectionShaper::seq, tolerance);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, case4_omp)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case4, "omp", quest::IntersectionShaper::omp, tolerance);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, case4_cuda)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case4, "cuda", quest::IntersectionShaper::cuda, tolerance);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, case4_hip)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case4, "hip", quest::IntersectionShaper::hip, tolerance);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
 // Line
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_seq)
 {
   dynamicRefinementTest_Line("seq", quest::IntersectionShaper::seq);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, line_omp)
 {
   dynamicRefinementTest_Line("omp", quest::IntersectionShaper::omp);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, line_cuda)
 {
   dynamicRefinementTest_Line("cuda", quest::IntersectionShaper::cuda);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, line_hip)
 {
   dynamicRefinementTest_Line("hip", quest::IntersectionShaper::hip);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
 // Cone
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, cone_seq)
 {
   dynamicRefinementTest_Cone("seq", quest::IntersectionShaper::seq);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, cone_omp)
 {
   dynamicRefinementTest_Cone("omp", quest::IntersectionShaper::omp);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, cone_cuda)
 {
   dynamicRefinementTest_Cone("cuda", quest::IntersectionShaper::cuda);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, cone_hip)
 {
   dynamicRefinementTest_Cone("hip", quest::IntersectionShaper::hip);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
 // Spline
-#ifdef ENABLE_WHEN_C2C_IS_UPDATED_ON_ALL_PLATFORMS
-  #if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #ifdef ENABLE_WHEN_C2C_IS_UPDATED_ON_ALL_PLATFORMS
+    #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, spline_seq)
 {
   dynamicRefinementTest_Spline("seq", quest::IntersectionShaper::seq);
 }
-  #endif
-  #if defined(AXOM_USE_OPENMP)
+    #endif
+    #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, spline_omp)
 {
   dynamicRefinementTest_Spline("omp", quest::IntersectionShaper::omp);
 }
-  #endif
-  #if defined(AXOM_USE_CUDA)
+    #endif
+    #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, spline_cuda)
 {
   dynamicRefinementTest_Spline("cuda", quest::IntersectionShaper::cuda);
 }
-  #endif
-  #if defined(AXOM_USE_HIP)
+    #endif
+    #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, spline_hip)
 {
   dynamicRefinementTest_Spline("hip", quest::IntersectionShaper::hip);
 }
+    #endif
   #endif
 #endif
 
 //---------------------------------------------------------------------------
 // Circle
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, circle_seq)
 {
   dynamicRefinementTest_Circle("seq", quest::IntersectionShaper::seq);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, circle_omp)
 {
   dynamicRefinementTest_Circle("omp", quest::IntersectionShaper::omp);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, circle_cuda)
 {
   dynamicRefinementTest_Circle("cuda", quest::IntersectionShaper::cuda);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, circle_hip)
 {
   dynamicRefinementTest_Circle("hip", quest::IntersectionShaper::hip);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
 // LineTranslate
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_translate_seq)
 {
   dynamicRefinementTest_LineTranslate("seq", quest::IntersectionShaper::seq);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, line_translate_omp)
 {
   dynamicRefinementTest_LineTranslate("omp", quest::IntersectionShaper::omp);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, line_translate_cuda)
 {
   dynamicRefinementTest_LineTranslate("cuda", quest::IntersectionShaper::cuda);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, line_translate_hip)
 {
   dynamicRefinementTest_LineTranslate("hip", quest::IntersectionShaper::hip);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
 // LineScale
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_scale_seq)
 {
   dynamicRefinementTest_LineScale("seq", quest::IntersectionShaper::seq);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, line_scale_omp)
 {
   dynamicRefinementTest_LineScale("omp", quest::IntersectionShaper::omp);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, line_scale_cuda)
 {
   dynamicRefinementTest_LineScale("cuda", quest::IntersectionShaper::cuda);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, line_scale_hip)
 {
   dynamicRefinementTest_LineScale("hip", quest::IntersectionShaper::hip);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
 // LineRotate
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, line_rotate_seq)
 {
   dynamicRefinementTest_LineRotate("seq", quest::IntersectionShaper::seq);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, line_rotate_omp)
 {
   dynamicRefinementTest_LineRotate("omp", quest::IntersectionShaper::omp);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, line_rotate_cuda)
 {
   dynamicRefinementTest_LineRotate("cuda", quest::IntersectionShaper::cuda);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, line_rotate_hip)
 {
   dynamicRefinementTest_LineRotate("hip", quest::IntersectionShaper::hip);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
