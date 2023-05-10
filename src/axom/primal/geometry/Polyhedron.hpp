@@ -601,11 +601,27 @@ public:
   /*!
    * \brief Simple check for validity of a polyhedron
    *
-   * Initial check is that the polyhedron has four or more vertices
+   * Initial check is that the polyhedron has four or more unique vertices
    * \return True, if the polyhedron is valid, False otherwise
    */
   AXOM_HOST_DEVICE
-  bool isValid() const { return m_num_vertices >= 4; }
+  bool isValid() const
+  {
+    for(int i = 0; i < m_num_vertices; i++)
+    {
+      for(int j = i + 1; j < m_num_vertices; j++)
+      {
+        // operator= for Point does not want to play nice...
+        if(m_vertices[i][0] == m_vertices[j][0] &&
+           m_vertices[i][1] == m_vertices[j][1] &&
+           m_vertices[i][2] == m_vertices[j][2])
+        {
+          return false;
+        }
+      }
+    }
+    return m_num_vertices >= 4;
+  }
 
   /*!
    * \brief Check if vertex neighbors information is available

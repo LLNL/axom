@@ -1260,6 +1260,36 @@ TEST(primal_clip, tet_tet_clip_split)
   EXPECT_NEAR(0.3333, tet_volumes, EPS);
 }
 
+TEST(primal_clip, tet_tet_clip_special_case_1)
+{
+  using namespace Primal3D;
+  constexpr double EPS = 1e-10;
+  constexpr bool CHECK_SIGN = true;
+
+  // Tets do not intersect, but share a coplanar face
+  TetrahedronType tet1(PointType {0.5, 0.5, -0.125},
+                       PointType {0, 0, -0.25},
+                       PointType {1, 0, -0.25},
+                       PointType {0.5, 0, -0.125});
+
+  TetrahedronType tet2(PointType {0.1875, 0.0625, -0.234375},
+                       PointType {0.125, 0.125, -0.25},
+                       PointType {0.125, 0, -0.25},
+                       PointType {0.125, 0.0625, -0.234375});
+
+  PolyhedronType poly = axom::primal::clip(tet1, tet2, EPS, CHECK_SIGN);
+
+  EXPECT_NEAR(0.00, poly.volume(), EPS);
+  EXPECT_NEAR(
+    0.00,
+    axom::primal::intersection_volume<double>(tet2, tet1, EPS, CHECK_SIGN),
+    EPS);
+  EXPECT_NEAR(
+    0.00,
+    axom::primal::intersection_volume<double>(tet1, tet2, EPS, CHECK_SIGN),
+    EPS);
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
