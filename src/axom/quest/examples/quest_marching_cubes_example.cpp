@@ -499,8 +499,6 @@ public:
       // Verify that i is slowest in m_coordsViews.
       // It appears conduit stores column major and ArrayView computes offsets
       // assuming row major.
-      std::cout << __WHERE << "array shape: " << shape[0] << ',' << shape[1]
-                << std::endl;
       int n = 0, errCount = 0;
       for(int j = 0; j < shape[0]; ++j)
       {
@@ -625,46 +623,6 @@ void print_timing_stats(axom::utilities::Timer& t, const std::string& descriptio
   }
 }
 
-/**
- * Change cp_domain data from a local index to a global domain index
- * by adding rank offsets.
- * This is an optional step to make domain ids globally unique.
- */
-void add_rank_offset_to_surface_mesh_domain_ids(
-  int localDomainCount,
-  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& surfaceMesh)
-{
-#ifdef AXOM_USE_MPI
-  axom::Array<int> starts(numRanks, numRanks);
-  {
-    axom::Array<int> indivDomainCounts(numRanks, numRanks);
-    indivDomainCounts.fill(-1);
-    MPI_Allgather(&localDomainCount,
-                  1,
-                  MPI_INT,
-                  indivDomainCounts.data(),
-                  1,
-                  MPI_INT,
-                  MPI_COMM_WORLD);
-    starts[0] = 0;
-    for(int i = 1; i < numRanks; ++i)
-    {
-      starts[i] = starts[i - 1] + indivDomainCounts[i - 1];
-    }
-  }
-
-  const std::string domainIdField = "domainIds";
-  auto* domainIdPtr =
-    surfaceMesh.getFieldPtr<int>(domainIdField, axom::mint::CELL_CENTERED);
-  int cellCount = surfaceMesh.getNumberOfCells();
-
-  for(int i = 0; i < cellCount; ++i)
-  {
-    domainIdPtr[i] += starts[myRank];
-  }
-#endif
-}
-
 /// Write blueprint mesh to disk
 void save_mesh(const conduit::Node& mesh, const std::string& filename)
 {
@@ -766,7 +724,10 @@ axom::StackArray<axom::IndexType, DIM> flat_to_multidim_index(
 template <int DIM>
 struct ContourTestBase
 {
-  ContourTestBase() { }
+  ContourTestBase()
+    : m_parentCellIdField("parentCellIds")
+    , m_domainIdField("domainIdField")
+    { }
   virtual ~ContourTestBase() { }
 
   //!@brief Return field name for storing nodal function.
@@ -780,6 +741,9 @@ struct ContourTestBase
 
   //!@brief Return error tolerance for contour surface accuracy check.
   virtual double error_tolerance() const = 0;
+
+  const std::string m_parentCellIdField;
+  const std::string m_domainIdField;
 
   int run_test(BlueprintStructuredMesh& computationalMesh,
                quest::MarchingCubes& mc)
@@ -804,7 +768,7 @@ struct ContourTestBase
     computeTimer.stop();
     print_timing_stats(computeTimer, name() + " contour");
 
-    mc.populate_surface_mesh(surfaceMesh, "zoneIds", "domainIds");
+    mc.populate_surface_mesh(surfaceMesh, m_parentCellIdField, m_domainIdField);
     // Non-essential.  Fails for certain hdf5 configs.   meshGroup->save("contourmesh.sidre.hdf5", "sidre_hdf5");
     SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
                                 surfaceMesh.getNumberOfCells(),
@@ -951,6 +915,34 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     return errCount;
   }
 
+  //!@brief Get view of output domain id data.
+  axom::ArrayView<const axom::IndexType> get_domain_id_view(
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
+  {
+    const auto* ptr =
+      contourMesh.getFieldPtr<axom::IndexType>(m_domainIdField,
+                                               axom::mint::CELL_CENTERED);
+    axom::ArrayView<const axom::IndexType> view(ptr,
+                                                contourMesh.getNumberOfCells());
+    return view;
+  }
+
+  //!@brief Get view of output parent cell idx data.
+  axom::ArrayView<const axom::StackArray<axom::IndexType, DIM>> get_parent_cell_idx_view(
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh) const
+  {
+    axom::IndexType numIdxComponents = -1;
+    axom::IndexType* ptr =
+      contourMesh.getFieldPtr<axom::IndexType>(m_parentCellIdField, axom::mint::CELL_CENTERED, numIdxComponents);
+
+    SLIC_ASSERT(numIdxComponents == DIM);
+
+    axom::ArrayView<const axom::StackArray<axom::IndexType, DIM>> view(
+      (axom::StackArray<axom::IndexType, DIM>*)ptr,
+      contourMesh.getNumberOfCells());
+    return view;
+  }
+
   /**
      Check that generated cells fall within their parents.
   */
@@ -960,24 +952,9 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
   {
     int errCount = 0;
     const axom::IndexType cellCount = contourMesh.getNumberOfCells();
-#if 1
-    const auto* parentCellIds =
-      contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
-                                               axom::mint::CELL_CENTERED);
-    axom::IndexType numIdxComponents = -1;
-    axom::IndexType* parentCellIdxPtr =
-      contourMesh.getFieldPtr<axom::IndexType>("zoneIds", axom::mint::CELL_CENTERED, numIdxComponents);
-    SLIC_ASSERT(numIdxComponents == DIM);
-    axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> parentCellIdxView(
-      (axom::StackArray<axom::IndexType, DIM>*)parentCellIdxPtr, cellCount);
-#else
-    const auto* parentCellIds =
-      contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
-                                               axom::mint::CELL_CENTERED);
-#endif
-    const auto* domainIds =
-      contourMesh.getFieldPtr<axom::IndexType>("domainIds",
-                                               axom::mint::CELL_CENTERED);
+
+    auto parentCellIdxView = get_parent_cell_idx_view(contourMesh);
+    auto domainIdView = get_domain_id_view(contourMesh);
 
     const axom::IndexType domainCount = computationalMesh.domain_count();
     axom::Array<axom::ArrayView<const double, DIM>> coordsViews(domainCount * DIM);
@@ -991,28 +968,18 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
         &coordsViews[DIM * n];
       get_coords_views(domain, computationalMesh.coordset_path(), domainCoordsView);
 
-      axom::Array<axom::IndexType> domLengths =
-        computationalMesh.domain_lengths(n);
+      axom::Array<axom::IndexType> domLengths = computationalMesh.domain_lengths(n);
       for(int d = 0; d < DIM; ++d)
-      {
-        domainLengths[n][d] = domLengths[d];
-      }
+        { domainLengths[n][d] = domLengths[d]; }
     }
 
     for(axom::IndexType cn = 0; cn < cellCount; ++cn)
     {
-      axom::IndexType domainId = domainIds[cn];
+      axom::IndexType domainId = domainIdView[cn];
       const axom::StackArray<axom::IndexType, DIM>& domainSize =
         domainLengths[domainId];
-      // conduit::Node& domain = computationalMesh.as_conduit_node()[domainId];
 
-#if 1
       axom::StackArray<axom::IndexType, DIM> parentCellIdx = parentCellIdxView[cn];
-#else
-      axom::IndexType parentCellId = parentCellIds[cn];
-      axom::StackArray<axom::IndexType, DIM> parentCellIdx =
-        flat_to_multidim_index(parentCellId, domainSize);
-#endif
       reverse(parentCellIdx);  // ArrayView expects indices in reverse order.
       axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
 
@@ -1069,25 +1036,10 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
     int errCount = 0;
-#if 1
     const axom::IndexType cellCount = contourMesh.getNumberOfCells();
-    const auto* parentCellIds =
-      contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
-                                               axom::mint::CELL_CENTERED);
-    axom::IndexType numIdxComponents = -1;
-    axom::IndexType* parentCellIdxPtr =
-      contourMesh.getFieldPtr<axom::IndexType>("zoneIds", axom::mint::CELL_CENTERED, numIdxComponents);
-    SLIC_ASSERT(numIdxComponents == DIM);
-    axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> parentCellIdxView(
-      (axom::StackArray<axom::IndexType, DIM>*)parentCellIdxPtr, cellCount);
-#else
-    const auto* parentCellIds =
-      contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
-                                               axom::mint::CELL_CENTERED);
-#endif
-    const auto* domainIds =
-      contourMesh.getFieldPtr<axom::IndexType>("domainIds",
-                                               axom::mint::CELL_CENTERED);
+
+    auto parentCellIdxView = get_parent_cell_idx_view(contourMesh);
+    auto domainIdView = get_domain_id_view(contourMesh);
 
     const axom::IndexType domainCount = computationalMesh.domain_count();
 
@@ -1115,14 +1067,9 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     }
     for(axom::IndexType cn = 0; cn < cellCount; ++cn)
     {
-      axom::IndexType domainId = domainIds[cn];
-#if 1
+      axom::IndexType domainId = domainIdView[cn];
       const axom::StackArray<axom::IndexType, DIM>& parentCellIdx = parentCellIdxView[cn];
       hasContours[domainId][parentCellIdx] = true;
-#else
-      axom::IndexType parentCellId = parentCellIds[cn];
-      hasContours[domainId].flatIndex(parentCellId) = true;
-#endif
     }
 
     // Verify that marked cells contain the contour value
@@ -1158,11 +1105,7 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
 
         const bool touchesContour =
           (minFcnValue <= params.contourVal && maxFcnValue >= params.contourVal);
-#if 1
         const bool hasCont = hasContours[domId][cellIdx];
-#else
-        const bool hasCont = hasContours[domId].flatIndex(cellId);
-#endif
         if(touchesContour != hasCont)
         {
           ++errCount;
@@ -1205,6 +1148,46 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
       coordsViews[d] =
         axom::ArrayView<const double, DIM>(coordsPtr, coordsViewShape, coordSp);
     }
+  }
+
+  /**
+   * Change cp_domain data from a local index to a global domain index
+   * by adding rank offsets.
+   * This is an optional step to make domain ids globally unique.
+   */
+  void add_rank_offset_to_surface_mesh_domain_ids(
+    int localDomainCount,
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& surfaceMesh)
+  {
+#ifdef AXOM_USE_MPI
+    axom::Array<int> starts(numRanks, numRanks);
+    {
+      axom::Array<int> indivDomainCounts(numRanks, numRanks);
+      indivDomainCounts.fill(-1);
+      MPI_Allgather(&localDomainCount,
+                    1,
+                    MPI_INT,
+                    indivDomainCounts.data(),
+                    1,
+                    MPI_INT,
+                    MPI_COMM_WORLD);
+      starts[0] = 0;
+      for(int i = 1; i < numRanks; ++i)
+      {
+        starts[i] = starts[i - 1] + indivDomainCounts[i - 1];
+      }
+    }
+
+    const std::string domainIdField = m_domainIdField;
+    auto* domainIdPtr =
+      surfaceMesh.getFieldPtr<int>(domainIdField, axom::mint::CELL_CENTERED);
+    int cellCount = surfaceMesh.getNumberOfCells();
+
+    for(int i = 0; i < cellCount; ++i)
+    {
+      domainIdPtr[i] += starts[myRank];
+    }
+#endif
   }
 };
 

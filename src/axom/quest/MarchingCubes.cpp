@@ -451,13 +451,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     if(!cellIdField.empty() &&
        !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
     {
-#if 1
       mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, DIM);
-#else
-      // TODO: Make cell indices type StackArray<axom::IndexType, DIM>.
-      // It's a pain for the app to make this conversion.
-      mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
-#endif
     }
 
     const axom::IndexType addedCellCount = m_surfaceCellCorners.size();
@@ -476,7 +470,6 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
         const MdimIdx cornerIds = m_surfaceCellCorners[n] + priorNodeCount;
         mesh.appendCell(cornerIds);
       }
-#if 1
       axom::IndexType numComponents = -1;
       axom::IndexType* dstPtr =
         mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, numComponents);
@@ -488,13 +481,6 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       {
         dstView[priorCellCount+i] = multidim_cell_index(m_surfaceCellParents[i]);
       }
-#else
-      axom::IndexType* dst =
-        mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
-      axom::copy(dst + priorCellCount,
-                 m_surfaceCellParents.data(),
-                 sizeof(axom::IndexType) * addedCellCount);
-#endif
     }
   }
 
@@ -747,11 +733,7 @@ void MarchingCubes::populate_surface_mesh(
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
-#if 1
     mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, mesh.getDimension());
-#else
-    mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
-#endif
   }
 
   if(!domainIdField.empty() &&
@@ -785,16 +767,9 @@ void MarchingCubes::populate_surface_mesh(
       auto* domainIdPtr =
         mesh.getFieldPtr<axom::IndexType>(domainIdField,
                                           axom::mint::CELL_CENTERED);
-#if 1
       // TODO: Verify that UnstructuredMesh only supports host memory.
       axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
         domainIdPtr, nPrev, nNew-nPrev, execution_space<axom::SEQ_EXEC>::allocatorID(), dId);
-#else
-      for(int n = nPrev; n < nNew; ++n)
-      {
-        domainIdPtr[n] = dId;
-      }
-#endif
     }
   }
   SLIC_ASSERT(mesh.getNumberOfNodes() == surfaceNodeCount);
