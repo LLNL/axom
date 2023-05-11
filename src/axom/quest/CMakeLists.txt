@@ -49,6 +49,7 @@ set( quest_headers
 
     ## File readers
     readers/STLReader.hpp
+    readers/ProEReader.hpp
 
     ## quest interface
     interface/internal/mpicomm_wrapper.hpp
@@ -74,6 +75,7 @@ set( quest_sources
 
     ## File readers
     readers/STLReader.cpp
+    readers/ProEReader.cpp
 
     ## quest interface
     interface/internal/QuestHelpers.cpp
@@ -84,13 +86,8 @@ set( quest_sources
 
 
 set( quest_depends_on
-    core
-    slic
-    mint
-    slam
     spin
-    primal
-    ${axom_device_depends}
+    mint
     fmt
     )
 
@@ -115,6 +112,7 @@ if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SI
                               detail/shaping/shaping_helpers.hpp)
     list(APPEND quest_sources Shaper.cpp
                               detail/shaping/shaping_helpers.cpp)
+    list(APPEND quest_depends_on klee)
 endif()
 
 if(C2C_FOUND)
@@ -124,13 +122,13 @@ if(C2C_FOUND)
 endif()
 
 if (AXOM_ENABLE_MPI)
-    list(APPEND quest_headers readers/PSTLReader.hpp)
+    list(APPEND quest_headers readers/PSTLReader.hpp
+                              readers/PProEReader.hpp)
     blt_list_append(TO quest_headers IF C2C_FOUND ELEMENTS readers/PC2CReader.hpp)
 
-    list(APPEND quest_sources readers/PSTLReader.cpp)
+    list(APPEND quest_sources readers/PSTLReader.cpp
+                              readers/PProEReader.cpp)
     blt_list_append(TO quest_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
-    
-    list(APPEND quest_depends_on mpi)
 endif()
 
 if (SHROUD_FOUND)
@@ -156,13 +154,12 @@ endif()
 #------------------------------------------------------------------------------
 # Make and install the library
 #------------------------------------------------------------------------------
-blt_add_library(
+axom_add_library(
     NAME        quest
     SOURCES     ${quest_sources}
     HEADERS     ${quest_headers}
     DEPENDS_ON  ${quest_depends_on}
     FOLDER      axom/quest
-    OBJECT      TRUE
     )
 
 axom_write_unified_header(NAME    quest

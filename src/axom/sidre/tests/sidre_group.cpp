@@ -15,6 +15,7 @@
 using axom::sidre::Buffer;
 using axom::sidre::DataStore;
 using axom::sidre::DataType;
+using axom::sidre::DOUBLE_ID;
 using axom::sidre::FLOAT64_ID;
 using axom::sidre::Group;
 using axom::sidre::indexIsValid;
@@ -24,40 +25,6 @@ using axom::sidre::InvalidIndex;
 using axom::sidre::nameIsValid;
 using axom::sidre::TypeID;
 using axom::sidre::View;
-
-namespace
-{
-// Test protocols
-#ifdef AXOM_USE_HDF5
-int nprotocols = 3;
-std::string const protocols[] = {"sidre_json", "sidre_hdf5", "json"};
-#else
-int nprotocols = 2;
-std::string const protocols[] = {"sidre_json", "json"};
-#endif
-
-// Function to return a vector of available sidre protocols
-std::vector<std::string> getAvailableSidreProtocols()
-{
-  std::vector<std::string> protocols;
-
-#ifdef AXOM_USE_HDF5
-  protocols.push_back("sidre_hdf5");
-#endif
-  protocols.push_back("sidre_json");
-  protocols.push_back("sidre_conduit_json");
-
-#ifdef AXOM_USE_HDF5
-  protocols.push_back("conduit_hdf5");
-#endif
-  protocols.push_back("conduit_bin");
-  protocols.push_back("conduit_json");
-  protocols.push_back("json");
-
-  return protocols;
-}
-
-}  // end anonymous namespace
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -1711,22 +1678,23 @@ TEST(sidre_group, save_restore_empty_datastore)
   const std::string file_path_base("sidre_empty_datastore_");
   DataStore* ds1 = new DataStore();
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    ds1->getRoot()->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    ds1->getRoot()->save(file_path, protocol);
   }
 
   delete ds1;
 
-  // Only restore conduit_hdf5
-  for(int i = 1; i < 2; ++i)
+  // Only restore default protocol
   {
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string& default_protocol = Group::getDefaultIOProtocol();
+    const std::string file_path = file_path_base + default_protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, default_protocol);
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0);
     EXPECT_TRUE(root2->getNumGroups() == 0);
@@ -1817,33 +1785,34 @@ TEST(sidre_group, save_root_restore_as_child)
   }
 
   // Save the DataStore's root
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root->save(file_path, protocol);
   }
 
   // Restore the original DataStore into a child group
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
     DataStore* dscopy = new DataStore();
     Group* dsroot = dscopy->getRoot();
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     const std::string group_base("group_");
-    const std::string group_name = group_base + protocols[i];
+    const std::string group_name = group_base + protocol;
     Group* cg = dsroot->createGroup(group_name);
 
     if(axom::utilities::filesystem::pathExists(file_path))
     {
       std::cout << "loading " << file_path << std::endl;
-      cg->load(file_path, protocols[i]);
+      cg->load(file_path, protocol);
 
       EXPECT_TRUE(cg->isEquivalentTo(root, false));
       EXPECT_TRUE(root->isEquivalentTo(cg, false));
@@ -1899,26 +1868,27 @@ TEST(sidre_group, save_child_restore_as_root)
   }
 
   // Save the Group in question (child1) into an archive
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    child1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    child1->save(file_path, protocol);
   }
 
   // Restore the saved child1 into a root group
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
     DataStore* dscopy = new DataStore();
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
     if(axom::utilities::filesystem::pathExists(file_path))
     {
-      dscopy->getRoot()->load(file_path, protocols[i]);
+      dscopy->getRoot()->load(file_path, protocol);
 
       EXPECT_TRUE(dscopy->getRoot()->isEquivalentTo(child1, false));
       EXPECT_TRUE(child1->isEquivalentTo(dscopy->getRoot(), false));
@@ -1949,10 +1919,11 @@ TEST(sidre_group, save_restore_api)
   // No group provided, defaults to root group
   root1->save("sidre_save_fulltree_conduit", "json");
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   //These are commented out because createViewScalar<int> creates a scalar View
@@ -2060,28 +2031,29 @@ TEST(sidre_group, save_restore_scalars_and_strings)
   root1->createViewScalar<double>("d0", 10.0);
   root1->createViewString("s0", "I am a string");
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    //      if ( protocols[i] == "conduit_hdf5")
+    //      if ( protocol == "conduit_hdf5")
     //    continue;   // XXX - Does not work
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     EXPECT_TRUE(root1->isEquivalentTo(root2));
 
@@ -2158,24 +2130,25 @@ TEST(sidre_group, save_restore_name_change)
   EXPECT_FALSE(child1->hasView("s0"));
   EXPECT_TRUE(child1->hasView("s0_renamed"));
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    //      if ( protocols[i] == "conduit_hdf5")
+    //      if ( protocol == "conduit_hdf5")
     //    continue;   // XXX - Does not work
-    const std::string file_path = file_path_base + protocols[i];
-    child1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    child1->save(file_path, protocol);
   }
 
   std::string groupname;
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
@@ -2183,7 +2156,7 @@ TEST(sidre_group, save_restore_name_change)
 
     EXPECT_EQ(child2->getName(), "child2");
 
-    child2->load(file_path, protocols[i], false, groupname);
+    child2->load(file_path, protocol, false, groupname);
 
     EXPECT_EQ(child2->getName(), "child2");
 
@@ -2236,31 +2209,32 @@ TEST(sidre_group, save_restore_external_data)
   root1->createView("external_undescribed")->setExternalDataPtr(foo4);
   root1->createViewWithShape("int2d", INT_ID, 2, shape, int2d1);
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   delete ds1;
 
   // Now load back in.
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
     IndexType extents[7];
     int rank;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     // load has set the type and size of the view.
     // Now set the external address before calling loadExternal.
@@ -2310,11 +2284,11 @@ TEST(sidre_group, save_restore_external_data)
     EXPECT_TRUE(view3->getVoidPtr() == static_cast<void*>(foo2));
     EXPECT_TRUE(view4->getVoidPtr() == static_cast<void*>(int2d2));
 
-    for(int j = 0; i < nfoo; ++i)
+    for(int j = 0; j < nfoo; ++j)
     {
       EXPECT_TRUE(foo1[j] == foo2[j]);
     }
-    for(int j = 0; i < 2 * nfoo; ++i)
+    for(int j = 0; j < 2 * nfoo; ++j)
     {
       EXPECT_TRUE(int2d1[j] == int2d2[j]);
     }
@@ -2449,27 +2423,28 @@ TEST(sidre_group, save_restore_buffer)
 
   save_restore_buffer_association("original datastore", ds1);
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   // Now load back in.
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     bool isequivalent = root1->isEquivalentTo(root2);
     EXPECT_TRUE(isequivalent);
@@ -2510,31 +2485,32 @@ TEST(sidre_group, save_restore_other)
     }
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    root1->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    root1->save(file_path, protocol);
   }
 
   delete ds1;
 
   // Now load back in.
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
     IndexType shape2[7];
     int rank;
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, protocols[i]);
+    root2->load(file_path, protocol);
 
     View* view1 = root2->getView("empty_view");
     EXPECT_TRUE(view1->isEmpty());
@@ -2595,25 +2571,26 @@ TEST(sidre_group, save_restore_complex)
     data_ptr[i] = i;
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    const std::string file_path = file_path_base + protocols[i];
-    ds1->getRoot()->save(file_path, protocols[i]);
+    const std::string file_path = file_path_base + protocol;
+    ds1->getRoot()->save(file_path, protocol);
   }
 
-  for(int i = 0; i < nprotocols; ++i)
+  for(const auto& protocol : protocols)
   {
     // Only restore sidre_hdf5 protocol
-    if(protocols[i] != "sidre_hdf5")
+    if(protocol != "sidre_hdf5")
     {
       continue;
     }
 
-    const std::string file_path = file_path_base + protocols[i];
+    const std::string file_path = file_path_base + protocol;
 
     DataStore* ds2 = new DataStore();
 
-    ds2->getRoot()->load(file_path, protocols[i]);
+    ds2->getRoot()->load(file_path, protocol);
 
     EXPECT_TRUE(ds1->getRoot()->isEquivalentTo(ds2->getRoot()));
 
@@ -2735,18 +2712,18 @@ TEST(sidre_group, save_load_all_protocols)
   //
   // test all protocols
   //
-  std::vector<std::string> protocols = getAvailableSidreProtocols();
-  for(size_t i = 0; i < protocols.size(); ++i)
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
+  for(const auto& protocol : protocols)
   {
-    SLIC_INFO("Testing protocol: " << protocols[i]);
-    const std::string file_path = file_path_base + protocols[i];
+    SLIC_INFO("Testing protocol: " << protocol);
+    const std::string file_path = file_path_base + protocol;
     // save using current protocol
-    ds.getRoot()->save(file_path, protocols[i]);
+    ds.getRoot()->save(file_path, protocol);
 
     DataStore ds_load;
-    ds_load.getRoot()->load(file_path, protocols[i]);
+    ds_load.getRoot()->load(file_path, protocol);
 
-    SLIC_INFO("Tree from protocol: " << protocols[i]);
+    SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
     ds_load.print();
 
@@ -2807,12 +2784,10 @@ TEST(sidre_group, save_load_preserve_contents)
     data_ptr[i] = (conduit::int64)i;
   }
 
-  std::vector<std::string> protocols = getAvailableSidreProtocols();
+  const std::vector<std::string>& protocols = Group::getValidIOProtocols();
   std::string groupname;
-  for(size_t i = 0; i < protocols.size(); ++i)
+  for(const auto& protocol : protocols)
   {
-    std::string& protocol = protocols[i];
-
     std::string file_path0 = file_path_tree0 + protocol;
     tree0->save(file_path0, protocol);
 
@@ -3216,6 +3191,454 @@ TEST(sidre_group, import_conduit_lists)
   }
 }
 
+//------------------------------------------------------------------------------
+// getDataInfo()
+//------------------------------------------------------------------------------
+// Local variables and methods to avoid redundant code
+namespace
+{
+// Variables used to set check values
+IndexType num_groups_chk = 0;
+IndexType num_views_chk = 0;
+IndexType num_views_empty_chk = 0;
+IndexType num_views_buffer_chk = 0;
+IndexType num_views_external_chk = 0;
+IndexType num_views_scalar_chk = 0;
+IndexType num_views_string_chk = 0;
+IndexType num_bytes_assoc_with_views_chk = 0;
+IndexType num_bytes_external_chk = 0;
+IndexType num_bytes_in_buffers_chk = 0;
+
+// Variables used to pull test values from Conduit node
+IndexType num_groups = 0;
+IndexType num_views = 0;
+IndexType num_views_empty = 0;
+IndexType num_views_buffer = 0;
+IndexType num_views_external = 0;
+IndexType num_views_scalar = 0;
+IndexType num_views_string = 0;
+IndexType num_bytes_assoc_with_views = 0;
+IndexType num_bytes_external = 0;
+IndexType num_bytes_in_buffers = 0;
+
+void resetChkVals()
+{
+  num_groups_chk = 0;
+  num_views_chk = 0;
+  num_views_empty_chk = 0;
+  num_views_buffer_chk = 0;
+  num_views_external_chk = 0;
+  num_views_scalar_chk = 0;
+  num_views_string_chk = 0;
+  num_bytes_assoc_with_views_chk = 0;
+  num_bytes_external_chk = 0;
+  num_bytes_in_buffers_chk = 0;
+}
+
+void pullTestVals(const conduit::Node& n)
+{
+  num_groups = n["num_groups"].value();
+  num_views = n["num_views"].value();
+  num_views_empty = n["num_views_empty"].value();
+  num_views_buffer = n["num_views_buffer"].value();
+  num_views_external = n["num_views_external"].value();
+  num_views_scalar = n["num_views_scalar"].value();
+  num_views_string = n["num_views_string"].value();
+  num_bytes_assoc_with_views = n["num_bytes_assoc_with_views"].value();
+  num_bytes_external = n["num_bytes_external"].value();
+  num_bytes_in_buffers = n["num_bytes_in_buffers"].value();
+}
+
+}  // end anonymous namespace
+
+TEST(sidre_group, get_data_info)
+{
+  //
+  // Check 0: Ha-ha check -- empty DataStore
+  //
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  conduit::Node n0;
+  root->getDataInfo(n0);
+
+  resetChkVals();
+  num_groups_chk += 1;  // count root Group
+
+  pullTestVals(n0);
+
+  EXPECT_EQ(num_groups, num_groups_chk);
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_views_external, num_views_external_chk);
+  EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
+  EXPECT_EQ(num_views_string, num_views_string_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  //
+  // Check 1: Add "A" Group with Views. Then, non-recursive check from root
+  //          Group; i.e., don't count "A" Group
+  //
+
+  // Add some buffers, 'cause it's fun....
+  ds->createBuffer(INT_ID, 10)->allocate();  // NOTE: Buffer unused
+                                             // in this scope
+  Buffer* buff2 = ds->createBuffer(DOUBLE_ID, 10)->allocate();
+
+  // array for external views
+  int extdata[20];
+
+  Group* gp_A = root->createGroup("A");
+
+  View* view_A1 = gp_A->createViewAndAllocate("dat_A1", INT_ID, 5);
+  View* view_A2 = gp_A->createView("dat_A2", DOUBLE_ID, 5)->attachBuffer(buff2);
+  View* view_A3 = gp_A->createView("ext_A3", INT_ID, 10, &extdata);
+
+  conduit::Node n1;
+  root->getDataInfo(n1, false /* not recursive */);
+
+  resetChkVals();
+  num_groups_chk += 1;  // count root Group
+
+  pullTestVals(n1);
+
+  EXPECT_EQ(num_groups, num_groups_chk);
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_views_external, num_views_external_chk);
+  EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
+  EXPECT_EQ(num_views_string, num_views_string_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  //
+  // Check 2: Recursive from root Group. Count "A" Group this time.
+  //
+
+  resetChkVals();
+  num_groups_chk += 1;  // count root Group
+
+  // "A" Group and Views
+  num_groups_chk += 1;
+  num_views_chk = 3;         // "dat_A1", "dat_A2", "ext_A3" Views
+  num_views_buffer_chk = 2;  // "dat_A1", "dat_A2" Views
+  num_bytes_assoc_with_views_chk += view_A1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_A2->getTotalBytes();
+  num_views_external_chk = 1;  // "ext_A3" View
+  num_bytes_external_chk += view_A3->getTotalBytes();
+  num_bytes_in_buffers_chk += view_A1->getTotalBytes();
+  num_bytes_in_buffers_chk += buff2->getTotalBytes();  // "dat_A2" View
+
+  conduit::Node n2;
+  root->getDataInfo(n2);
+
+  pullTestVals(n2);
+
+  EXPECT_EQ(num_groups, num_groups_chk);
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_views_external, num_views_external_chk);
+  EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
+  EXPECT_EQ(num_views_string, num_views_string_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  //
+  // Check 3: Add "B" and "C" Groups. Recursive check from "B" Group,
+  //          counting "B" and "C" Groups
+  //
+
+  resetChkVals();
+
+  // "B" Group and Views
+  Group* gp_B = root->createGroup("B");
+  num_groups_chk += 1;
+
+  View* view_B1 = gp_B->createViewAndAllocate("dat_B1", INT_ID, 5);
+  num_views_chk += 1;
+  num_views_buffer_chk += 1;
+  num_bytes_assoc_with_views_chk += view_B1->getTotalBytes();
+  num_bytes_in_buffers_chk += view_B1->getTotalBytes();
+
+  View* view_B2 =
+    gp_B->createView("dat_B2")->attachBuffer(buff2)->apply(DOUBLE_ID, 5, 5);
+  num_views_chk += 1;
+  num_views_buffer_chk += 1;
+  num_bytes_assoc_with_views_chk += view_B2->getTotalBytes();
+  num_bytes_in_buffers_chk += buff2->getTotalBytes();
+
+  // "C" Group and Views
+  Group* gp_C = gp_B->createGroup("C");
+  num_groups_chk += 1;
+
+  View* view_C1 = gp_C->createViewScalar("val_C1", 3);
+  num_views_chk += 1;
+  num_views_scalar_chk += 1;
+  num_bytes_assoc_with_views_chk += view_C1->getTotalBytes();
+
+  View* view_C2 = gp_C->createViewString("val_C2", "Homer");
+  num_views_chk += 1;
+  num_views_string_chk += 1;
+  num_bytes_assoc_with_views_chk += view_C2->getTotalBytes();
+
+  // "D" Group and Views
+  Group* gp_D = gp_C->createGroup("D");
+  num_groups_chk += 1;
+
+  View* view_D1 = gp_D->createView("ext_D1", INT_ID, 10, &extdata + 10);
+  num_views_chk += 1;
+  num_views_external_chk += 1;
+  num_bytes_external_chk += view_D1->getTotalBytes();
+
+  View* view_D2 = gp_D->createView("dat_D2");
+  num_views_chk += 1;
+  num_views_empty_chk += 1;
+
+  conduit::Node n3;
+  gp_B->getDataInfo(n3);
+
+  pullTestVals(n3);
+
+  EXPECT_EQ(num_groups, num_groups_chk);
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_views_external, num_views_external_chk);
+  EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
+  EXPECT_EQ(num_views_string, num_views_string_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  //
+  // Check 4: Recursive check from root Group. Count entire Group hierarchy
+  //
+
+  resetChkVals();
+  num_groups_chk += 1;  // count root Group
+
+  // "A" Group and Views
+  num_groups_chk += 1;        // "A" Group
+  num_views_chk += 3;         // "dat_A1", "dat_A2", "ext_A3" Views
+  num_views_buffer_chk += 2;  // "dat_A1", "dat_A2" Views
+  num_bytes_assoc_with_views_chk += view_A1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_A2->getTotalBytes();
+  num_views_external_chk += 1;  // "ext_A3" View
+  num_bytes_external_chk += view_A3->getTotalBytes();
+  num_bytes_in_buffers_chk += view_A1->getTotalBytes();
+  num_bytes_in_buffers_chk += buff2->getTotalBytes();  // "dat_A2" View
+
+  // "B" Group and Views
+  num_groups_chk += 1;
+  num_views_chk += 2;         // "dat_B1", "dat_B2" Views
+  num_views_buffer_chk += 2;  // "dat_B1", "dat_B2" Views
+  num_bytes_assoc_with_views_chk += view_B1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_B2->getTotalBytes();
+  num_bytes_in_buffers_chk += view_B1->getTotalBytes();
+  // Note: we do not count view_B2 Buffer bytes since it shares a Buffer
+  //       with view_A2 -- only count Buffer bytes once!!
+
+  // "C" Group and Views
+  num_groups_chk += 1;
+  num_views_chk += 2;         // "val_C1", "val_C2" Views
+  num_views_scalar_chk += 1;  // "val_C1" View
+  num_views_string_chk += 1;  // "val_C2" View
+  num_bytes_assoc_with_views_chk += view_C1->getTotalBytes();
+  num_bytes_assoc_with_views_chk += view_C2->getTotalBytes();
+
+  // "D" Group and Views
+  num_groups_chk += 1;
+  num_views_chk += 2;           // "ext_D1", "dat_D2" Views
+  num_views_external_chk += 1;  // "ext_D1" View
+  num_views_empty_chk += 1;     // "dat_D2" View
+  num_bytes_external_chk += view_D1->getTotalBytes();
+
+  conduit::Node n4;
+  root->getDataInfo(n4);
+
+  pullTestVals(n4);
+
+  EXPECT_EQ(num_groups, num_groups_chk);
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_views_external, num_views_external_chk);
+  EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
+  EXPECT_EQ(num_views_string, num_views_string_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  //
+  // Miscellaneous checks to ensure expectations are met.
+  //
+  // NOTE: These checks only modify check data and query data values
+  //       that are relevant to the tests.
+  //
+
+  //
+  // Check 5: Destroy "dat_A1" View in Group "A", but leave data intact
+  //          (orphaned Buffer!)
+  //
+
+  IndexType num_buffers_datastore_chk = ds->getNumBuffers();
+  IndexType num_buffer_bytes_datastore_chk =
+    ds->getTotalAllocatedBytesInBuffers();
+
+  num_bytes_assoc_with_views_chk -= view_A1->getTotalBytes();
+  num_bytes_in_buffers_chk -= view_A1->getTotalBytes();
+
+  gp_A->destroyView("dat_A1");
+
+  num_views_chk -= 1;
+  num_views_buffer_chk -= 1;
+
+  IndexType num_buffers_datastore = ds->getNumBuffers();
+  IndexType num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n5;
+  root->getDataInfo(n5);
+
+  pullTestVals(n5);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
+
+  //
+  // Check 6: Destroy "dat_A2" View in Group "A" and attempt to destroy its
+  //          data, but its data remains because it shares its buffer with
+  //          another View
+  //
+
+  num_buffers_datastore_chk = ds->getNumBuffers();
+  num_buffer_bytes_datastore_chk = ds->getTotalAllocatedBytesInBuffers();
+
+  num_bytes_assoc_with_views_chk -= view_A2->getTotalBytes();
+  // Note: num_bytes_in_buffers_chk doesn't change b/c Views Buffer is
+  //       still attached to another View
+
+  gp_A->destroyViewAndData("dat_A2");
+
+  num_views_chk -= 1;
+  num_views_buffer_chk -= 1;
+
+  num_buffers_datastore = ds->getNumBuffers();
+  num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n6;
+  root->getDataInfo(n6);
+
+  pullTestVals(n6);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
+
+  //
+  // Check 7: Describe and allocate data for empty "dat_D2" View in Group "D".
+  //          Check data in subtree rooted at root is what we expect.
+  //
+
+  view_D2->allocate(DOUBLE_ID, 5);
+  num_views_empty_chk -= 1;
+
+  num_views_buffer_chk += 1;
+  num_bytes_assoc_with_views_chk += view_D2->getTotalBytes();
+  num_bytes_in_buffers_chk += view_D2->getTotalBytes();
+
+  num_buffers_datastore_chk += 1;
+  num_buffer_bytes_datastore_chk += view_D2->getTotalBytes();
+
+  num_buffers_datastore = ds->getNumBuffers();
+  num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n7;
+  root->getDataInfo(n7);
+
+  pullTestVals(n7);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
+
+  //
+  // Check 8: Destroy Group "C" and check data in subtree rooted at
+  //          root to make sure changes are correct.
+  //
+
+  num_groups_chk -= 2;
+  num_views_chk -= 4;
+
+  num_views_buffer_chk -= 1;
+  num_bytes_assoc_with_views_chk -= view_D2->getTotalBytes();
+  num_bytes_in_buffers_chk -= view_D2->getTotalBytes();
+
+  num_views_scalar_chk -= 1;
+  num_bytes_assoc_with_views_chk -= view_C1->getTotalBytes();
+
+  num_views_string_chk -= 1;
+  num_bytes_assoc_with_views_chk -= view_C2->getTotalBytes();
+
+  num_views_external_chk -= 1;
+  num_bytes_external_chk -= view_D1->getTotalBytes();
+
+  gp_B->destroyGroup("C");
+
+  num_buffers_datastore = ds->getNumBuffers();
+  num_buffer_bytes_datastore = ds->getTotalAllocatedBytesInBuffers();
+
+  conduit::Node n8;
+  root->getDataInfo(n8);
+
+  pullTestVals(n8);
+
+  // Checks for Group data query
+  EXPECT_EQ(num_groups, num_groups_chk);
+  EXPECT_EQ(num_views, num_views_chk);
+  EXPECT_EQ(num_views_empty, num_views_empty_chk);
+  EXPECT_EQ(num_views_buffer, num_views_buffer_chk);
+  EXPECT_EQ(num_views_external, num_views_external_chk);
+  EXPECT_EQ(num_views_scalar, num_views_scalar_chk);
+  EXPECT_EQ(num_views_string, num_views_string_chk);
+  EXPECT_EQ(num_bytes_assoc_with_views, num_bytes_assoc_with_views_chk);
+  EXPECT_EQ(num_bytes_external, num_bytes_external_chk);
+  EXPECT_EQ(num_bytes_in_buffers, num_bytes_in_buffers_chk);
+
+  // Checks for DataStore Buffers
+  EXPECT_EQ(num_buffers_datastore, num_buffers_datastore_chk);
+  EXPECT_EQ(num_buffer_bytes_datastore, num_buffer_bytes_datastore_chk);
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
 #ifdef AXOM_USE_UMPIRE
 
 class UmpireTest : public ::testing::TestWithParam<int>

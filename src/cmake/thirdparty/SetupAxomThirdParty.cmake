@@ -352,7 +352,5 @@ foreach(dep ${TPL_DEPS})
         install(TARGETS              ${dep}
                 EXPORT               axom-targets
                 DESTINATION          lib)
-        # Namespace target to avoid conflicts
-        set_target_properties(${dep} PROPERTIES EXPORT_NAME axom::${dep})
     endif()
 endforeach()

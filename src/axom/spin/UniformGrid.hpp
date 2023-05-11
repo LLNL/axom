@@ -797,11 +797,11 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
     for_all<ExecSpace>(
       qsize,
       AXOM_LAMBDA(IndexType i) {
-        int startIdx = offsets_view[i];
         int count = counts_view[i];
         if(count > 0)
         {
   #ifndef AXOM_DEVICE_CODE
+          int startIdx = offsets_view[i];
           std::sort(candidates_view.begin() + startIdx,
                     candidates_view.begin() + startIdx + count);
   #endif

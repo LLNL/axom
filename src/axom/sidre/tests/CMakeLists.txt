@@ -47,14 +47,14 @@ set(fruit_sidre_tests
    sidre_allocatable_F.f
    )
 
-set(sidre_gtests_depends_on axom ${axom_device_depends} fmt gtest)
+set(sidre_gtests_depends_on sidre fmt gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest C++ tests
 #------------------------------------------------------------------------------
 foreach(test ${gtest_sidre_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}_test
+    axom_add_executable(NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${sidre_gtests_depends_on}
@@ -73,10 +73,10 @@ if (ENABLE_FORTRAN)
     # Sidre's C API is only built to provide a Fortran interface.
     foreach(test ${gtest_sidre_C_tests})
         get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable( NAME ${test_name}_test
+        axom_add_executable(NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre ${axom_device_depends} gtest
+                            DEPENDS_ON sidre gtest
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
@@ -91,10 +91,10 @@ endif()
 if (ENABLE_FORTRAN)
     foreach(test ${fruit_sidre_tests})
         get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable( NAME ${test_name}_test
+        axom_add_executable(NAME ${test_name}_test
                             SOURCES ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON sidre ${axom_device_depends} fruit
+                            DEPENDS_ON sidre fruit
                             FOLDER axom/sidre/tests
                             )
         axom_add_test( NAME    ${test_name}
@@ -107,12 +107,10 @@ endif()
 # Add MFEMSidreDataCollection tests
 #------------------------------------------------------------------------------
 if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
-    set(_sidre_mfem_dc_depends axom ${axom_device_depends} gtest)
-
-    blt_add_executable( NAME sidre_mfem_datacollection_test
+    axom_add_executable(NAME sidre_mfem_datacollection_test
                         SOURCES sidre_mfem_datacollection.cpp
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${_sidre_mfem_dc_depends}
+                        DEPENDS_ON sidre gtest
                         FOLDER axom/sidre/tests
                         )
     if (AXOM_ENABLE_MPI)

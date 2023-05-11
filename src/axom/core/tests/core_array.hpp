@@ -825,7 +825,7 @@ void check_device(Array<T, DIM, SPACE>& v)
 template <typename T>
 __global__ void assign_raw_2d(T* data, int M, int N)
 {
-  for(int i = 0; i < N; i++)
+  for(int i = 0; i < M; i++)
   {
     for(int j = 0; j < N; j++)
     {
@@ -1285,8 +1285,6 @@ void checkIteratorDeviceImpl()
   constexpr int SIZE = 1000;
   axom::Array<int, 1, axom::MemorySpace::Host> v_int_host(SIZE);
   axom::Array<int, 1, axom::MemorySpace::Device> v_int(SIZE);
-
-  auto v_int_view = v_int.view();
 
   /* Push 0...999 elements */
   for(int i = 0; i < SIZE; i++)

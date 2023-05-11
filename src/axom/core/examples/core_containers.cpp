@@ -269,6 +269,13 @@ void demoArrayDevice()
   // Create an explicit ArrayView using Array::view()
   auto view_of_array_using_view_method = device_array_dynamic.view();
   takesDeviceArrayView(view_of_array_using_view_method);
+
+  DeviceArrayView view_of_array_using_operator_equals = device_array_dynamic;
+  takesDeviceArrayView(view_of_array_using_operator_equals);
+
+  DeviceArrayView view_of_array_from_pointer(device_array_dynamic.data(), N);
+  takesDeviceArrayView(view_of_array_from_pointer);
+
   // _basic_array_device_explicit_end
 
   // _device_array_create_start

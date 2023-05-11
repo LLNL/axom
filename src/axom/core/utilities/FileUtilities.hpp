@@ -83,6 +83,14 @@ int makeDirsForPath(const std::string& path);
  */
 void getDirName(std::string& dir, const std::string& path);
 
+/*!
+ * \brief Remove the specified file.
+ * \param filename The name of the file.
+ * \return 0 on success, -1 on failure. errno can obtain more information
+ *         about the failure.
+ */
+int removeFile(const std::string& filename);
+
 }  // end namespace filesystem
 }  // end namespace utilities
 }  // end namespace axom

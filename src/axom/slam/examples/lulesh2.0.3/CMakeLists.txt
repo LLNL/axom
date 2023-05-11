@@ -27,14 +27,12 @@ if ( NOT AXOM_ENABLE_OPENMP )
         PROPERTIES COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
-set(slam_tests_depends_on core slic slam ${axom_device_depends})
-
-blt_add_executable(
+axom_add_executable(
     NAME        slam_lulesh_ex
     SOURCES     ${lulesh_sources}
     HEADERS     ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tests_depends_on}
+    DEPENDS_ON  slam
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS)

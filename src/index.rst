@@ -170,7 +170,7 @@ of our email lists:
 Chat Room
 ---------
 
-We also have the 'Axom' chat room on the LLNL Microsoft Teams server. This 
+We also have the 'Axom Users' chat room on the LLNL Microsoft Teams server. This 
 is open to anyone with access to the LLNL network. Just log onto Teams and 
 join the room.
 

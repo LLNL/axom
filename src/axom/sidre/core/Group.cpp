@@ -37,6 +37,18 @@ namespace sidre
 // support path syntax.
 const char Group::s_path_delimiter = '/';
 
+// Initialization of static members holding I/O protocol strings
+const std::vector<std::string> Group::s_io_protocols = {
+#ifdef AXOM_USE_HDF5
+  "sidre_hdf5",
+  "conduit_hdf5",
+#endif
+  "sidre_json",
+  "sidre_conduit_json",
+  "conduit_bin",
+  "conduit_json",
+  "json"};
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Private utility functions to cast ItemCollections to (named) MapCollections.
@@ -102,6 +114,141 @@ std::string Group::getPath() const
   }
 
   return thePath;
+}
+
+/*
+ *************************************************************************
+ *
+ * Insert information about data associated with Group subtree with this 
+ * Group at root of tree (default 'recursive' is true), or for this Group 
+ * only ('recursive' is false) in fields of given Conduit Node.
+ *
+ *************************************************************************
+ */
+void Group::getDataInfo(Node& n, bool recursive) const
+{
+  //
+  // Initialize Node fields
+  //
+  IndexType num_groups = 0;
+  IndexType num_views = 0;
+  IndexType num_views_empty = 0;
+  IndexType num_views_buffer = 0;
+  IndexType num_views_external = 0;
+  IndexType num_views_scalar = 0;
+  IndexType num_views_string = 0;
+  IndexType num_bytes_assoc_with_views = 0;
+  IndexType num_bytes_external = 0;
+
+  n["num_groups"] = num_groups;
+  n["num_views"] = num_views;
+  n["num_views_empty"] = num_views_empty;
+  n["num_views_buffer"] = num_views_buffer;
+  n["num_views_external"] = num_views_external;
+  n["num_views_scalar"] = num_views_scalar;
+  n["num_views_string"] = num_views_string;
+  n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
+  n["num_bytes_external"] = num_bytes_external;
+
+  std::set<IndexType> buffer_ids;
+
+  getDataInfoHelper(n, buffer_ids, recursive);
+
+  const DataStore* ds = getDataStore();
+  IndexType num_bytes_in_buffers = 0;
+  for(auto it = buffer_ids.begin(); it != buffer_ids.end(); ++it)
+  {
+    num_bytes_in_buffers += ds->getBuffer(*it)->getTotalBytes();
+  }
+  n["num_bytes_in_buffers"] = num_bytes_in_buffers;
+}
+
+/*
+ *************************************************************************
+ *
+ * Private helper method to support getDataInfo() method.
+ *
+ *************************************************************************
+ */
+void Group::getDataInfoHelper(Node& n,
+                              std::set<IndexType>& buffer_ids,
+                              bool recursive) const
+{
+  //
+  // Grab Node entries for updating data info for this Group
+  //
+  IndexType num_groups = n["num_groups"].value();
+  IndexType num_views = n["num_views"].value();
+  IndexType num_views_empty = n["num_views_empty"].value();
+  IndexType num_views_buffer = n["num_views_buffer"].value();
+  IndexType num_views_external = n["num_views_external"].value();
+  IndexType num_views_scalar = n["num_views_scalar"].value();
+  IndexType num_views_string = n["num_views_string"].value();
+  IndexType num_bytes_assoc_with_views = n["num_bytes_assoc_with_views"].value();
+  IndexType num_bytes_external = n["num_bytes_external"].value();
+
+  num_groups += 1;  // count this group
+  num_views += getNumViews();
+
+  //
+  // Gather info from Views owned by this Group
+  //
+  for(auto& view : views())
+  {
+    if(view.isExternal())
+    {
+      num_views_external += 1;
+      num_bytes_external += view.getTotalBytes();
+    }
+    else if(view.isScalar())
+    {
+      num_views_scalar += 1;
+      num_bytes_assoc_with_views += view.getTotalBytes();
+    }
+    else if(view.isString())
+    {
+      num_views_string += 1;
+      num_bytes_assoc_with_views += view.getTotalBytes();
+    }
+    else if(view.hasBuffer())
+    {
+      num_views_buffer += 1;
+      const Buffer* buf = view.getBuffer();
+      if(buf->isAllocated())
+      {
+        buffer_ids.insert(buf->getIndex());
+        num_bytes_assoc_with_views += view.getTotalBytes();
+      }
+    }
+    else
+    {
+      num_views_empty += 1;
+    }
+  }
+
+  //
+  // Update Node entries with data info for this Group
+  //
+  n["num_groups"] = num_groups;
+  n["num_views"] = num_views;
+  n["num_views_empty"] = num_views_empty;
+  n["num_views_buffer"] = num_views_buffer;
+  n["num_views_external"] = num_views_external;
+  n["num_views_scalar"] = num_views_scalar;
+  n["num_views_string"] = num_views_string;
+  n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
+  n["num_bytes_external"] = num_bytes_external;
+
+  //
+  // Recursively gather info for Group subtree, if requested
+  //
+  if(recursive)
+  {
+    for(auto& group : groups())
+    {
+      group.getDataInfoHelper(n, buffer_ids, recursive);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////

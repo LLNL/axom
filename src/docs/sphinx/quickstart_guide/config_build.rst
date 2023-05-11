@@ -34,7 +34,7 @@ Supported Compilers
 ~~~~~~~~~~~~~~~~~~~
 
 Axom supports a wide variety of compilers. Please see the file 
-``axom/scripts/spack/configs/<platform>/compilers.yaml``
+``axom/scripts/spack/configs/<platform>/spack.yaml``
 for the current list of supported and tested compilers for the platforms we
 test on.
 

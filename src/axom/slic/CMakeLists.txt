@@ -63,18 +63,20 @@ endif()
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(slic_depends core ${axom_device_depends})
+set(slic_depends core)
 
 blt_list_append( TO slic_depends ELEMENTS lumberjack IF ${AXOM_ENABLE_LUMBERJACK} )
 blt_list_append( TO slic_depends ELEMENTS dbghelp IF ${WIN32} )
+if (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  list( APPEND slic_depends execinfo )
+endif()
 
-blt_add_library(NAME        slic
-                SOURCES     ${slic_sources}
-                HEADERS     ${slic_headers}
-                DEPENDS_ON  ${slic_depends}
-                FOLDER      axom/slic
-                OBJECT      TRUE
-                )
+axom_add_library(NAME        slic
+                 SOURCES     ${slic_sources}
+                 HEADERS     ${slic_headers}
+                 DEPENDS_ON  ${slic_depends}
+                 FOLDER      axom/slic
+                 )
 
 axom_write_unified_header( NAME slic
                            HEADERS ${slic_headers}

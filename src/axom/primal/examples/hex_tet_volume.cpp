@@ -140,7 +140,8 @@ void check_intersection_volumes(const Input& params)
   int const HEX_RESOLUTION = params.hexResolution;
   int hex_index = 0;
   int const NUM_HEXES = HEX_RESOLUTION * HEX_RESOLUTION * HEX_RESOLUTION;
-  HexahedronType* hexes = axom::allocate<HexahedronType>(NUM_HEXES);
+  axom::Array<HexahedronType> hexes(NUM_HEXES, NUM_HEXES);
+  const axom::ArrayView<HexahedronType> hexes_view(hexes);
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
@@ -161,10 +162,10 @@ void check_intersection_volumes(const Input& params)
       for(int k = 0; k < HEX_RESOLUTION; k++)
       {
         double edge_length = 2.0 / HEX_RESOLUTION;
-        hexes[hex_index] = generateCube(PointType {edge_length * i - 1,
-                                                   edge_length * j - 1,
-                                                   edge_length * k - 1},
-                                        edge_length);
+        hexes_view[hex_index] = generateCube(PointType {edge_length * i - 1,
+                                                        edge_length * j - 1,
+                                                        edge_length * k - 1},
+                                             edge_length);
         hex_index++;
       }
     }
@@ -174,7 +175,8 @@ void check_intersection_volumes(const Input& params)
   int const TET_RESOLUTION = params.tetResolution;
   int tet_index = 0;
   int const NUM_TETS = 4 * std::pow(2, TET_RESOLUTION);
-  TetrahedronType* tets = axom::allocate<TetrahedronType>(NUM_TETS);
+  axom::Array<TetrahedronType> tets(NUM_TETS, NUM_TETS);
+  const axom::ArrayView<TetrahedronType> tets_view(tets);
   double step_size = 1.0 / std::pow(2, TET_RESOLUTION);
 
   SLIC_INFO(axom::fmt::format(
@@ -209,10 +211,10 @@ void check_intersection_volumes(const Input& params)
         double x2 = axom::utilities::lerp<double>(-1.0, 1.0, step_size * (i + 1));
         double z2 = std::sqrt(1 - (x2 * x2)) * z_sign;
 
-        tets[tet_index] = TetrahedronType(PointType {x1, 0, z1},
-                                          PointType::zero(),
-                                          PointType {x2, 0, z2},
-                                          PointType {0, pole_sign, 0});
+        tets_view[tet_index] = TetrahedronType(PointType {x1, 0, z1},
+                                               PointType::zero(),
+                                               PointType {x2, 0, z2},
+                                               PointType {0, pole_sign, 0});
         tet_index++;
       }
     }
@@ -225,7 +227,7 @@ void check_intersection_volumes(const Input& params)
 
   axom::for_all<ExecSpace>(
     NUM_TETS,
-    AXOM_LAMBDA(axom::IndexType i) { total_tet_vol += tets[i].volume(); });
+    AXOM_LAMBDA(axom::IndexType i) { total_tet_vol += tets_view[i].volume(); });
 
   SLIC_INFO(
     axom::fmt::format("{:-^80}",
@@ -246,8 +248,8 @@ void check_intersection_volumes(const Input& params)
     axom::for_all<ExecSpace>(
       NUM_HEXES * NUM_TETS,
       AXOM_LAMBDA(axom::IndexType i) {
-        total_intersect_vol += intersection_volume(hexes[i / NUM_TETS],
-                                                   tets[i % NUM_TETS],
+        total_intersect_vol += intersection_volume(hexes_view[i / NUM_TETS],
+                                                   tets_view[i % NUM_TETS],
                                                    EPS,
                                                    checkSign);
       });
@@ -257,8 +259,8 @@ void check_intersection_volumes(const Input& params)
     axom::for_all<ExecSpace>(
       NUM_HEXES * NUM_TETS,
       AXOM_LAMBDA(axom::IndexType i) {
-        total_intersect_vol += intersection_volume(hexes[i % NUM_HEXES],
-                                                   tets[i / NUM_HEXES],
+        total_intersect_vol += intersection_volume(hexes_view[i % NUM_HEXES],
+                                                   tets_view[i / NUM_HEXES],
                                                    EPS,
                                                    checkSign);
       });
@@ -277,9 +279,6 @@ void check_intersection_volumes(const Input& params)
 
   // Reset default allocator
   axom::setDefaultAllocator(current_allocator);
-
-  axom::deallocate(hexes);
-  axom::deallocate(tets);
 }
 
 int main(int argc, char** argv)

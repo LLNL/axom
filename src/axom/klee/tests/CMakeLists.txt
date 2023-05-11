@@ -22,11 +22,11 @@ set(gtest_klee_tests
     klee_units.cpp
    )
 
-blt_add_library(
+axom_add_library(
         NAME        klee_test_utils
         SOURCES     KleeTestUtils.cpp
         HEADERS     KleeTestUtils.hpp KleeMatchers.hpp
-        DEPENDS_ON  axom ${axom_device_depends} gtest gmock
+        DEPENDS_ON  klee gtest gmock
         FOLDER      axom/klee/tests)
 
 #
@@ -34,10 +34,10 @@ blt_add_library(
 #
 foreach(test ${gtest_klee_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( NAME ${test_name}_test
-                        SOURCES ${test}
-                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON gtest klee_test_utils ${axom_device_depends}
+    axom_add_executable(NAME        ${test_name}_test
+                        SOURCES     ${test}
+                        OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON  klee_test_utils
                         FOLDER      axom/klee/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
