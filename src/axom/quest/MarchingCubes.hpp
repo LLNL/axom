@@ -228,6 +228,8 @@ public:
                             const std::string &maskPath) = 0;
     //!@brief Set the contour value
     virtual void set_contour_value(double contourVal) = 0;
+    //@{
+    //!@name Phases of the computation
     //!@brief Mark domain cells that cross the contour.
     virtual void mark_crossings() = 0;
     //!@brief Precompute some metadata for surface mesh.
@@ -235,6 +237,7 @@ public:
     //!@brief Generate the surface mesh in internal data format.
     virtual void compute_surface() = 0;
     //!@brief Get the number of surface mesh cells generated.
+    //@}
     virtual axom::IndexType get_surface_cell_count() const = 0;
     //!@brief Populate output mesh object with generated surface.
     virtual void populate_surface_mesh(
@@ -320,7 +323,6 @@ private:
 
   //! @brief Single-domain implementations.
   axom::Array<std::shared_ptr<MarchingCubesSingleDomain>> m_singles;
-  int m_ndim;
   const std::string m_coordsetPath;
   std::string m_fcnPath;
   std::string m_maskPath;

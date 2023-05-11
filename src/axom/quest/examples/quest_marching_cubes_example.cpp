@@ -805,7 +805,7 @@ struct ContourTestBase
     print_timing_stats(computeTimer, name() + " contour");
 
     mc.populate_surface_mesh(surfaceMesh, "zoneIds", "domainIds");
-    meshGroup->save("contourmesh.sidre.hdf5", "sidre_hdf5");
+    // Non-essential.  Fails for certain hdf5 configs.   meshGroup->save("contourmesh.sidre.hdf5", "sidre_hdf5");
     SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
                                 surfaceMesh.getNumberOfCells(),
                                 surfaceMesh.getNumberOfNodes()));
@@ -960,9 +960,21 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
   {
     int errCount = 0;
     const axom::IndexType cellCount = contourMesh.getNumberOfCells();
+#if 1
     const auto* parentCellIds =
       contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
                                                axom::mint::CELL_CENTERED);
+    axom::IndexType numIdxComponents = -1;
+    axom::IndexType* parentCellIdxPtr =
+      contourMesh.getFieldPtr<axom::IndexType>("zoneIds", axom::mint::CELL_CENTERED, numIdxComponents);
+    SLIC_ASSERT(numIdxComponents == DIM);
+    axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> parentCellIdxView(
+      (axom::StackArray<axom::IndexType, DIM>*)parentCellIdxPtr, cellCount);
+#else
+    const auto* parentCellIds =
+      contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
+                                               axom::mint::CELL_CENTERED);
+#endif
     const auto* domainIds =
       contourMesh.getFieldPtr<axom::IndexType>("domainIds",
                                                axom::mint::CELL_CENTERED);
@@ -994,9 +1006,13 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
         domainLengths[domainId];
       // conduit::Node& domain = computationalMesh.as_conduit_node()[domainId];
 
+#if 1
+      axom::StackArray<axom::IndexType, DIM> parentCellIdx = parentCellIdxView[cn];
+#else
       axom::IndexType parentCellId = parentCellIds[cn];
       axom::StackArray<axom::IndexType, DIM> parentCellIdx =
         flat_to_multidim_index(parentCellId, domainSize);
+#endif
       reverse(parentCellIdx);  // ArrayView expects indices in reverse order.
       axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
 
@@ -1053,9 +1069,22 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
     int errCount = 0;
+#if 1
+    const axom::IndexType cellCount = contourMesh.getNumberOfCells();
     const auto* parentCellIds =
       contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
                                                axom::mint::CELL_CENTERED);
+    axom::IndexType numIdxComponents = -1;
+    axom::IndexType* parentCellIdxPtr =
+      contourMesh.getFieldPtr<axom::IndexType>("zoneIds", axom::mint::CELL_CENTERED, numIdxComponents);
+    SLIC_ASSERT(numIdxComponents == DIM);
+    axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> parentCellIdxView(
+      (axom::StackArray<axom::IndexType, DIM>*)parentCellIdxPtr, cellCount);
+#else
+    const auto* parentCellIds =
+      contourMesh.getFieldPtr<axom::IndexType>("zoneIds",
+                                               axom::mint::CELL_CENTERED);
+#endif
     const auto* domainIds =
       contourMesh.getFieldPtr<axom::IndexType>("domainIds",
                                                axom::mint::CELL_CENTERED);
@@ -1071,23 +1100,29 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     {
       axom::StackArray<axom::IndexType, DIM> domLengths;
       computationalMesh.domain_lengths(domId, domLengths);
-      reverse(domLengths);
 
       axom::Array<bool, DIM>& hasContour = hasContours[domId];
       hasContour.reshape(domLengths, false);
 
+      // Add 1 to count nodes.  Reverse to match Conduit data.
+      reverse(domLengths);
       domLengths = domLengths + 1;
+
       conduit::Node& dom = computationalMesh.domain(domId);
       double* fcnPtr =
         dom.fetch_existing("fields/" + function_name() + "/values").as_double_ptr();
       fcnViews[domId] = axom::ArrayView<const double, DIM>(fcnPtr, domLengths);
     }
-    const axom::IndexType cellCount = contourMesh.getNumberOfCells();
     for(axom::IndexType cn = 0; cn < cellCount; ++cn)
     {
       axom::IndexType domainId = domainIds[cn];
+#if 1
+      const axom::StackArray<axom::IndexType, DIM>& parentCellIdx = parentCellIdxView[cn];
+      hasContours[domainId][parentCellIdx] = true;
+#else
       axom::IndexType parentCellId = parentCellIds[cn];
       hasContours[domainId].flatIndex(parentCellId) = true;
+#endif
     }
 
     // Verify that marked cells contain the contour value
@@ -1108,7 +1143,7 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
         // Compute min and max function value in the cell.
         double minFcnValue = std::numeric_limits<double>::max();
         double maxFcnValue = std::numeric_limits<double>::min();
-        constexpr short int cornerCount = (1 << DIM);
+        constexpr short int cornerCount = (1 << DIM); // Number of nodes in a cell.
         for(short int cornerId = 0; cornerId < cornerCount; ++cornerId)
         {
           axom::StackArray<axom::IndexType, DIM> cornerIdx = cellIdx;
@@ -1123,7 +1158,11 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
 
         const bool touchesContour =
           (minFcnValue <= params.contourVal && maxFcnValue >= params.contourVal);
+#if 1
+        const bool hasCont = hasContours[domId][cellIdx];
+#else
         const bool hasCont = hasContours[domId].flatIndex(cellId);
+#endif
         if(touchesContour != hasCont)
         {
           ++errCount;

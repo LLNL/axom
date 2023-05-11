@@ -189,7 +189,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
           auto crossingCase = compute_crossing_case(nodalValues);
           m_caseIds(j, i) = crossingCase;
-          // std::cout<<"cell ("<<i<<','<<j<<") "<<(&m_fcnView(j,i)-&m_fcnView(0,0))<<"  "<<m_fcnView(j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
+// std::cout<<"cell ("<<i<<','<<j<<") "<<(&m_fcnView(j,i)-&m_fcnView(0,0))<<"  "<<m_fcnView(j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
         }
       });
   }
@@ -217,12 +217,15 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::kernel<EXEC_POL>(
       RAJA::make_tuple(iRange, jRange, kRange),
 #if USE_RAJA_INDEX_VALUE_TYPES == 1
-      AXOM_LAMBDA(IIDX it, JIDX jt, KIDX kt) {
+      AXOM_LAMBDA(IIDX it, JIDX jt, KIDX kt)
+#else
+      AXOM_LAMBDA(int i, int j, int k)
+#endif
+      {
+#if USE_RAJA_INDEX_VALUE_TYPES == 1
         auto& i = *it;
         auto& j = *jt;
         auto& k = *kt;
-#else
-      AXOM_LAMBDA(int i, int j, int k) {
 #endif
         const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
         if(!skipZone)
@@ -241,7 +244,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
           auto crossingCase = compute_crossing_case(nodalValues);
           m_caseIds(k, j, i) = crossingCase;
-          // std::cout<<"cell ("<<i<<','<<j<<','<<k<<") "<<(&m_fcnView(k,j,i)-&m_fcnView(0,0,0))<<"  "<<m_fcnView(k,j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
+// std::cout<<"cell ("<<i<<','<<j<<','<<k<<") "<<(&m_fcnView(k,j,i)-&m_fcnView(0,0,0))<<"  "<<m_fcnView(k,j,i)<<std::endl; // confirm that the indices are correct and I am accessing memory with stride-1.
         }
       });
   }
@@ -271,7 +274,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     auto addCellsView = addCells.view();
 
     axom::IndexType crossingId = 0;
-    RAJA::forall<RAJA::loop_exec>(  // This loop doesn't parallelize. Use sequential policy.
+    // This loop can't be parallelized due to the if statement.
+    // Use sequential policy.
+    RAJA::forall<RAJA::loop_exec>(
       RAJA::RangeSegment(0, parentCellCount),
       [&](axom::IndexType n) {
         auto caseId = m_caseIds.flatIndex(n);
@@ -364,7 +369,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     in domain data.
   */
   AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM> multidim_cell_index(
-    axom::IndexType flatId)
+    axom::IndexType flatId) const
   {
     axom::IndexType strides[DIM] = {1};
     for(int d = 1; d < DIM; ++d) strides[d] = strides[d - 1] * m_bShape[d - 1];
@@ -446,7 +451,13 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     if(!cellIdField.empty() &&
        !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
     {
+#if 1
+      mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, DIM);
+#else
+      // TODO: Make cell indices type StackArray<axom::IndexType, DIM>.
+      // It's a pain for the app to make this conversion.
       mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
+#endif
     }
 
     const axom::IndexType addedCellCount = m_surfaceCellCorners.size();
@@ -455,6 +466,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     {
       const axom::IndexType priorCellCount = mesh.getNumberOfCells();
       const axom::IndexType priorNodeCount = mesh.getNumberOfNodes();
+      const axom::IndexType newCellCount = priorCellCount + addedCellCount;
       mesh.reserveNodes(priorNodeCount + addedNodeCount);
       mesh.reserveCells(priorCellCount + addedCellCount);
 
@@ -464,11 +476,25 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
         const MdimIdx cornerIds = m_surfaceCellCorners[n] + priorNodeCount;
         mesh.appendCell(cornerIds);
       }
+#if 1
+      axom::IndexType numComponents = -1;
+      axom::IndexType* dstPtr =
+        mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, numComponents);
+      SLIC_ASSERT(numComponents == DIM);
+      axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> dstView(
+        (axom::StackArray<axom::IndexType, DIM>*)dstPtr,
+        priorCellCount + addedCellCount);
+      for(axom::IndexType i=0; i<addedCellCount; ++i)
+      {
+        dstView[priorCellCount+i] = multidim_cell_index(m_surfaceCellParents[i]);
+      }
+#else
       axom::IndexType* dst =
         mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
       axom::copy(dst + priorCellCount,
                  m_surfaceCellParents.data(),
                  sizeof(axom::IndexType) * addedCellCount);
+#endif
     }
   }
 
@@ -567,7 +593,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     {
       crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
     }
-    // std::cout<<__WHERE<< crossingPt << std::endl;
+// std::cout<<__WHERE<< crossingPt << std::endl;
   }
 
   void set_contour_value(double contourVal) override
@@ -678,27 +704,16 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
                              const std::string& maskField)
   : m_runtimePolicy(runtimePolicy)
   , m_singles()
-  , m_ndim(0)
   , m_coordsetPath("coordsets/" + coordsetName)
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-  std::cout << __WHERE
-            << axom::fmt::format("runtimePolicy = {}", m_runtimePolicy)
-            << std::endl;
+// std::cout << __WHERE << axom::fmt::format("runtimePolicy = {}", m_runtimePolicy) << std::endl;
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {
     m_singles.emplace_back(
       new MarchingCubesSingleDomain(m_runtimePolicy, dom, coordsetName, maskField));
-    if(m_ndim == 0)
-    {
-      m_ndim = m_singles.back()->dimension();
-    }
-    else
-    {
-      SLIC_ASSERT(m_ndim == m_singles.back()->dimension());
-    }
   }
 }
 
@@ -732,7 +747,11 @@ void MarchingCubes::populate_surface_mesh(
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
+#if 1
+    mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, mesh.getDimension());
+#else
     mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED);
+#endif
   }
 
   if(!domainIdField.empty() &&
@@ -766,10 +785,16 @@ void MarchingCubes::populate_surface_mesh(
       auto* domainIdPtr =
         mesh.getFieldPtr<axom::IndexType>(domainIdField,
                                           axom::mint::CELL_CENTERED);
+#if 1
+      // TODO: Verify that UnstructuredMesh only supports host memory.
+      axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
+        domainIdPtr, nPrev, nNew-nPrev, execution_space<axom::SEQ_EXEC>::allocatorID(), dId);
+#else
       for(int n = nPrev; n < nNew; ++n)
       {
         domainIdPtr[n] = dId;
       }
+#endif
     }
   }
   SLIC_ASSERT(mesh.getNumberOfNodes() == surfaceNodeCount);
@@ -841,17 +866,17 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
     "You must call set_function_field before compute_iso_surface.");
 
   allocate_impl();
-  std::cout << __WHERE << "initialize" << std::endl;
+// std::cout << __WHERE << "initialize" << std::endl;
   m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
-  std::cout << __WHERE << "set_contour_value" << std::endl;
+// std::cout << __WHERE << "set_contour_value" << std::endl;
   m_impl->set_contour_value(contourVal);
-  std::cout << __WHERE << "mark_crossings" << std::endl;
+// std::cout << __WHERE << "mark_crossings" << std::endl;
   m_impl->mark_crossings();
-  std::cout << __WHERE << "scan_crossings" << std::endl;
+// std::cout << __WHERE << "scan_crossings" << std::endl;
   m_impl->scan_crossings();
-  std::cout << __WHERE << "compute_surface" << std::endl;
+// std::cout << __WHERE << "compute_surface" << std::endl;
   m_impl->compute_surface();
-  std::cout << __WHERE << "done" << std::endl;
+// std::cout << __WHERE << "done" << std::endl;
 }
 
 void MarchingCubesSingleDomain::allocate_impl()
