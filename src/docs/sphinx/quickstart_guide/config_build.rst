@@ -347,6 +347,9 @@ Axom components, tests, examples, etc.
 +------------------------------+---------+----------------------------------------+
 | AXOM_ENABLE_TOOLS            | ON      | Enable Axom development tools          |
 +------------------------------+---------+----------------------------------------+
+| AXOM_DEPRECATED_TYPES        | WARN    | WARN, ALLOW or ERROR on using          |
+|                              |         | deprecated types                       |
++------------------------------+---------+----------------------------------------+
 
 If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable a desired
 component (other than 'core', which is always enabled). Similarly, if 
