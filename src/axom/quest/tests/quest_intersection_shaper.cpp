@@ -62,7 +62,8 @@ std::vector<std::string> case3 {"shaping/case3/case3_012.yaml",
 std::vector<std::string> case4 {"shaping/case4/case4.yaml",
                                 "shaping/case4/case4_overwrite.yaml"};
 
-std::vector<std::string> proeCase {"shaping/proeCase/proeCase1.yaml"};
+std::vector<std::string> proeCase {"shaping/proeCase/proeCase1.yaml",
+                                   "shaping/proeCase/proeCase2.yaml"};
 
 namespace quest = axom::quest;
 namespace slic = axom::slic;
