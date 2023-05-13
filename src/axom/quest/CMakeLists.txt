@@ -38,6 +38,9 @@ set( quest_headers
     detail/inout/InOutOctreeStats.hpp
     detail/inout/InOutOctreeValidator.hpp
 
+    ## Marching cubes
+    detail/MarchingCubesImpl.hpp
+
     # Mesh tester
     MeshTester.hpp
     detail/MeshTester_detail.hpp
