@@ -20,7 +20,9 @@
 
 // Check for and setup defines for platform-specific intrinsics
 // Note: `__GNUC__` is defined for the gnu, clang and intel compilers
-#if defined(_WIN64) && (_MSC_VER >= 1600)
+#if defined(__CUDACC__)
+  // Intrinsics included implicitly
+#elif defined(_WIN64) && (_MSC_VER >= 1600)
   #define _AXOM_CORE_USE_INTRINSICS_MSVC
   #include <intrin.h>
 #elif defined(__x86_64__) && defined(__GNUC__)
