@@ -19,6 +19,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Deprecated
+- Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
+
 ### Added
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element

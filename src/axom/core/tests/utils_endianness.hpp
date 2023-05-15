@@ -25,9 +25,9 @@ TEST(utils_endianness, endianness_16)
 {
   union SixteenBit
   {
-    axom::uint8 raw[2];
-    axom::int16 i_val;
-    axom::uint16 ui_val;
+    std::uint8_t raw[2];
+    std::int16_t i_val;
+    std::uint16_t ui_val;
     short short_val;
     unsigned short ushort_val;
   };
@@ -59,9 +59,9 @@ TEST(utils_endianness, endianness_16)
 
   // Test int16
   {
-    axom::int16 v1 = valOrig.i_val;
-    axom::int16 v2 = axom::utilities::swapEndian(v1);
-    axom::int16 v3 = axom::utilities::swapEndian(v2);
+    std::int16_t v1 = valOrig.i_val;
+    std::int16_t v2 = axom::utilities::swapEndian(v1);
+    std::int16_t v3 = axom::utilities::swapEndian(v2);
 
     EXPECT_EQ(valOrig.i_val, v1);
     EXPECT_EQ(valSwap.i_val, v2);
@@ -70,9 +70,9 @@ TEST(utils_endianness, endianness_16)
 
   // Test uint16
   {
-    axom::uint16 v1 = valOrig.i_val;
-    axom::uint16 v2 = axom::utilities::swapEndian(v1);
-    axom::uint16 v3 = axom::utilities::swapEndian(v2);
+    std::uint16_t v1 = valOrig.i_val;
+    std::uint16_t v2 = axom::utilities::swapEndian(v1);
+    std::uint16_t v3 = axom::utilities::swapEndian(v2);
 
     EXPECT_EQ(valOrig.ui_val, v1);
     EXPECT_EQ(valSwap.ui_val, v2);
@@ -84,9 +84,9 @@ TEST(utils_endianness, endianness_32)
 {
   union ThirtyTwoBit
   {
-    axom::uint8 raw[4];
-    axom::int32 i_val;
-    axom::uint32 ui_val;
+    std::uint8_t raw[4];
+    std::int32_t i_val;
+    std::uint32_t ui_val;
     int int_val;
     unsigned int uint_val;
     float f_val;
@@ -119,9 +119,9 @@ TEST(utils_endianness, endianness_32)
 
   // Test int32
   {
-    axom::int32 v1 = valOrig.i_val;
-    axom::int32 v2 = axom::utilities::swapEndian(v1);
-    axom::int32 v3 = axom::utilities::swapEndian(v2);
+    std::int32_t v1 = valOrig.i_val;
+    std::int32_t v2 = axom::utilities::swapEndian(v1);
+    std::int32_t v3 = axom::utilities::swapEndian(v2);
 
     EXPECT_EQ(valOrig.i_val, v1);
     EXPECT_EQ(valSwap.i_val, v2);
@@ -130,9 +130,9 @@ TEST(utils_endianness, endianness_32)
 
   // Test uint32
   {
-    axom::uint32 v1 = valOrig.i_val;
-    axom::uint32 v2 = axom::utilities::swapEndian(v1);
-    axom::uint32 v3 = axom::utilities::swapEndian(v2);
+    std::uint32_t v1 = valOrig.i_val;
+    std::uint32_t v2 = axom::utilities::swapEndian(v1);
+    std::uint32_t v3 = axom::utilities::swapEndian(v2);
 
     EXPECT_EQ(valOrig.ui_val, v1);
     EXPECT_EQ(valSwap.ui_val, v2);
@@ -155,10 +155,10 @@ TEST(utils_endianness, endianness_64)
 {
   union SixtyFourBit
   {
-    axom::uint8 raw[8];
+    std::uint8_t raw[8];
 #ifndef AXOM_NO_INT64_T
-    axom::int64 i_val;
-    axom::uint64 ui_val;
+    std::int64_t i_val;
+    std::uint64_t ui_val;
 #endif
     double d_val;
   };
@@ -169,9 +169,9 @@ TEST(utils_endianness, endianness_64)
 #ifndef AXOM_NO_INT64_T
   // Test int64
   {
-    axom::int64 v1 = valOrig.i_val;
-    axom::int64 v2 = axom::utilities::swapEndian(v1);
-    axom::int64 v3 = axom::utilities::swapEndian(v2);
+    std::int64_t v1 = valOrig.i_val;
+    std::int64_t v2 = axom::utilities::swapEndian(v1);
+    std::int64_t v3 = axom::utilities::swapEndian(v2);
 
     EXPECT_EQ(valOrig.i_val, v1);
     EXPECT_EQ(valSwap.i_val, v2);
@@ -180,9 +180,9 @@ TEST(utils_endianness, endianness_64)
 
   // Test uint64
   {
-    axom::uint64 v1 = valOrig.i_val;
-    axom::uint64 v2 = axom::utilities::swapEndian(v1);
-    axom::uint64 v3 = axom::utilities::swapEndian(v2);
+    std::uint64_t v1 = valOrig.i_val;
+    std::uint64_t v2 = axom::utilities::swapEndian(v1);
+    std::uint64_t v3 = axom::utilities::swapEndian(v2);
 
     EXPECT_EQ(valOrig.ui_val, v1);
     EXPECT_EQ(valSwap.ui_val, v2);
@@ -208,15 +208,15 @@ TEST(utils_endianness, endianness_64)
 TEST(utils_endianness,invalid_byte_width)
 {
   {
-    axom::int8 v1 = 5;
-    axom::int8 v2 = axom::utilities::swapEndian(v1);
+    std::int8_t v1 = 5;
+    std::int8_t v2 = axom::utilities::swapEndian(v1);
 
     EXPECT_EQ(v1, v2);
   }
 
   {
-    axom::uint8 v1 = 5;
-    axom::uint8 v2 = axom::utilities::swapEndian(v1);
+    std::uint8_t v1 = 5;
+    std::uint8_t v2 = axom::utilities::swapEndian(v1);
 
     EXPECT_EQ(v1, v2);
   }
@@ -230,8 +230,8 @@ TEST(utils_endianness,invalid_non_native_types)
 {
   struct AxomUtilsTestsNonNative
   {
-    axom::uint16 a;
-    axom::uint16 b;
+    std::uint16_t a;
+    std::uint16_t b;
   };
 
   AxomUtilsTestsNonNative v1;

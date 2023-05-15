@@ -227,7 +227,7 @@ inline int isend_using_schema(conduit::Node& node,
   request->m_buffer.set_schema(s_msg_compact);
 
   // set up the message's node using this schema
-  request->m_buffer["schema_len"].set((int64)snd_schema_json.length());
+  request->m_buffer["schema_len"].set((std::int64_t)snd_schema_json.length());
   request->m_buffer["schema"].set(snd_schema_json);
   request->m_buffer["data"].update(node);
 
@@ -298,12 +298,12 @@ inline int recv_using_schema(conduit::Node& node, int src, int tag, MPI_Comm com
                        comm,
                        &status);
 
-  uint8* n_buff_ptr = (uint8*)n_buffer.data_ptr();
+  std::uint8_t* n_buff_ptr = (std::uint8_t*)n_buffer.data_ptr();
 
   conduit::Node n_msg;
   // length of the schema is sent as a 64-bit signed int
   // NOTE: we aren't using this value  ...
-  n_msg["schema_len"].set_external((int64*)n_buff_ptr);
+  n_msg["schema_len"].set_external((std::int64_t*)n_buff_ptr);
   n_buff_ptr += 8;
   // wrap the schema string
   n_msg["schema"].set_external_char8_str((char*)(n_buff_ptr));
@@ -1141,7 +1141,6 @@ public:
   {
     using ExecSpace = typename BVHTreeType::ExecSpaceType;
     using axom::primal::squared_distance;
-    using int32 = axom::int32;
 
     // Note: There is some additional computation the first time this function
     // is called for a query node, even if the local object mesh is empty
@@ -1250,7 +1249,7 @@ public:
           "ComputeClosestPoints",
           axom::for_all<ExecSpace>(
             qPtCount,
-            AXOM_LAMBDA(int32 idx) mutable {
+            AXOM_LAMBDA(std::int32_t idx) mutable {
               PointType qpt = query_pts[idx];
 
               MinCandidate curr_min {};
@@ -1263,8 +1262,8 @@ public:
                 curr_min.rank = query_ranks[idx];
               }
 
-              auto checkMinDist = [&](int32 current_node,
-                                      const int32* leaf_nodes) {
+              auto checkMinDist = [&](std::int32_t current_node,
+                                      const std::int32_t* leaf_nodes) {
                 const int candidate_point_idx = leaf_nodes[current_node];
                 const int candidate_domain_idx =
                   ptDomainIdsView[candidate_point_idx];

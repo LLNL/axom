@@ -22,8 +22,8 @@ void write_box2d(const FloatType& xmin,
                  const FloatType& ymin,
                  const FloatType& xmax,
                  const FloatType& ymax,
-                 int32& numPoints,
-                 int32& numBins,
+                 std::int32_t& numPoints,
+                 std::int32_t& numBins,
                  std::ostringstream& nodes,
                  std::ostringstream& cells)
 {
@@ -32,10 +32,10 @@ void write_box2d(const FloatType& xmin,
   nodes << xmax << " " << ymax << " 0.0\n";
   nodes << xmin << " " << ymax << " 0.0\n";
 
-  constexpr int32 NUM_NODES = 4;
-  int32 offset = numPoints;
+  constexpr std::int32_t NUM_NODES = 4;
+  std::int32_t offset = numPoints;
   cells << NUM_NODES << " ";
-  for(int32 i = 0; i < NUM_NODES; ++i)
+  for(std::int32_t i = 0; i < NUM_NODES; ++i)
   {
     cells << (offset + i) << " ";
   }
@@ -53,8 +53,8 @@ void write_box3d(const FloatType& xmin,
                  const FloatType& xmax,
                  const FloatType& ymax,
                  const FloatType& zmax,
-                 int32& numPoints,
-                 int32& numBins,
+                 std::int32_t& numPoints,
+                 std::int32_t& numBins,
                  std::ostringstream& nodes,
                  std::ostringstream& cells)
 {
@@ -68,10 +68,10 @@ void write_box3d(const FloatType& xmin,
   nodes << xmax << " " << ymax << " " << zmax << std::endl;
   nodes << xmin << " " << ymax << " " << zmax << std::endl;
 
-  constexpr int32 NUM_NODES = 8;
-  int32 offset = numPoints;
+  constexpr std::int32_t NUM_NODES = 8;
+  std::int32_t offset = numPoints;
   cells << NUM_NODES << " ";
-  for(int32 i = 0; i < NUM_NODES; ++i)
+  for(std::int32_t i = 0; i < NUM_NODES; ++i)
   {
     cells << (offset + i) << " ";
   }
@@ -84,8 +84,8 @@ void write_box3d(const FloatType& xmin,
 //------------------------------------------------------------------------------
 template <typename FloatType, int NDIMS>
 void write_box(const primal::BoundingBox<FloatType, NDIMS>& box,
-               int32& numPoints,
-               int32& numBins,
+               std::int32_t& numPoints,
+               std::int32_t& numBins,
                std::ostringstream& nodes,
                std::ostringstream& cells)
 {
@@ -111,8 +111,8 @@ void write_box(const primal::BoundingBox<FloatType, NDIMS>& box,
 //------------------------------------------------------------------------------
 template <typename FloatType>
 void write_root(const primal::BoundingBox<FloatType, 2>& root,
-                int32& numPoints,
-                int32& numBins,
+                std::int32_t& numPoints,
+                std::int32_t& numBins,
                 std::ostringstream& nodes,
                 std::ostringstream& cells,
                 std::ostringstream& levels)
@@ -131,8 +131,8 @@ void write_root(const primal::BoundingBox<FloatType, 2>& root,
 //------------------------------------------------------------------------------
 template <typename FloatType>
 void write_root(const primal::BoundingBox<FloatType, 3>& root,
-                int32& numPoints,
-                int32& numBins,
+                std::int32_t& numPoints,
+                std::int32_t& numBins,
                 std::ostringstream& nodes,
                 std::ostringstream& cells,
                 std::ostringstream& levels)
@@ -153,11 +153,11 @@ void write_root(const primal::BoundingBox<FloatType, 3>& root,
 //------------------------------------------------------------------------------
 template <typename FloatType, int NDIMS>
 void write_recursive(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> inner_nodes,
-                     ArrayView<const int32> inner_node_children,
-                     int32 current_node,
-                     int32 level,
-                     int32& numPoints,
-                     int32& numBins,
+                     ArrayView<const std::int32_t> inner_node_children,
+                     std::int32_t current_node,
+                     std::int32_t level,
+                     std::int32_t& numPoints,
+                     std::int32_t& numBins,
                      std::ostringstream& nodes,
                      std::ostringstream& cells,
                      std::ostringstream& levels)
@@ -167,8 +167,8 @@ void write_recursive(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> inne
   primal::BoundingBox<FloatType, NDIMS> r_box = inner_nodes[current_node + 1];
 
   // STEP 1: extract children information
-  int32 l_child = inner_node_children[current_node + 0];
-  int32 r_child = inner_node_children[current_node + 1];
+  std::int32_t l_child = inner_node_children[current_node + 0];
+  std::int32_t r_child = inner_node_children[current_node + 1];
 
   write_box<FloatType, NDIMS>(l_box, numPoints, numBins, nodes, cells);
   levels << level << std::endl;

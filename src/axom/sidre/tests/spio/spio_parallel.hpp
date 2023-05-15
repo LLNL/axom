@@ -993,7 +993,7 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   n_mesh["fields/rank/values"].set(conduit::DataType::int64(4));
 
   // fill rank field values
-  axom::int64* rank_vals_ptr = n_mesh["fields/rank/values"].value();
+  std::int64_t* rank_vals_ptr = n_mesh["fields/rank/values"].value();
 
   for(int i = 0; i < 4; i++)
   {

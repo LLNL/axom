@@ -431,10 +431,10 @@ private:
     MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  using DenseOctLevType = DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
-  using Sparse16OctLevType = SparseOctreeLevel<DIM, BlockDataType, axom::uint16>;
-  using Sparse32OctLevType = SparseOctreeLevel<DIM, BlockDataType, axom::uint32>;
-  using Sparse64OctLevType = SparseOctreeLevel<DIM, BlockDataType, axom::uint64>;
+  using DenseOctLevType = DenseOctreeLevel<DIM, BlockDataType, std::uint16_t>;
+  using Sparse16OctLevType = SparseOctreeLevel<DIM, BlockDataType, std::uint16_t>;
+  using Sparse32OctLevType = SparseOctreeLevel<DIM, BlockDataType, std::uint32_t>;
+  using Sparse64OctLevType = SparseOctreeLevel<DIM, BlockDataType, std::uint64_t>;
   using SparsePtOctLevType = SparseOctreeLevel<DIM, BlockDataType, GridPt>;
 
   using DenseOctLevPtr = DenseOctLevType*;

@@ -28,8 +28,8 @@ mint::Field* getFieldFromView(const std::string& name, sidre::View* view)
   SLIC_ASSERT(view != nullptr);
   SLIC_ASSERT(!view->isEmpty());
 
-  using int32 = axom::int32;
-  using int64 = axom::int64;
+  using int32 = std::int32_t;
+  using int64 = std::int64_t;
 
   mint::Field* f = nullptr;
 

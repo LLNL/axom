@@ -46,7 +46,7 @@ public:
   static constexpr int MAX_VERTS = 32;
   static constexpr int MAX_NBRS_PER_VERT = 8;
 
-  using VertexNbrs = axom::StackArray<axom::int8, MAX_NBRS_PER_VERT>;
+  using VertexNbrs = axom::StackArray<std::int8_t, MAX_NBRS_PER_VERT>;
 
 public:
   /*!
@@ -121,14 +121,14 @@ public:
    *
    * \pre vtx < MAX_VERTS
    */
-  AXOM_HOST_DEVICE void addNeighbors(axom::int8 vtx,
-                                     std::initializer_list<axom::int8> nbrIds)
+  AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx,
+                                     std::initializer_list<std::int8_t> nbrIds)
   {
     SLIC_ASSERT(num_nbrs[vtx] + nbrIds.size() <= MAX_NBRS_PER_VERT);
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
-    for(axom::int8 nbr : nbrIds)
+    for(std::int8_t nbr : nbrIds)
     {
-      axom::int8 idx_insert = num_nbrs[vtx];
+      std::int8_t idx_insert = num_nbrs[vtx];
       nbrs[vtx][idx_insert] = nbr;
       num_nbrs[vtx]++;
     }
@@ -142,11 +142,11 @@ public:
    *
    * \pre vtx < MAX_VERTS
    */
-  AXOM_HOST_DEVICE void addNeighbors(axom::int8 vtx, axom::int8 nbrId)
+  AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx, std::int8_t nbrId)
   {
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
-    axom::int8 idx_insert = num_nbrs[vtx];
+    std::int8_t idx_insert = num_nbrs[vtx];
     nbrs[vtx][idx_insert] = nbrId;
     num_nbrs[vtx]++;
   };
@@ -162,14 +162,14 @@ public:
    * \pre vtx < MAX_VERTS
    * \pre pos <= num_nbrs[vtx]
    */
-  AXOM_HOST_DEVICE void insertNeighborAtPos(axom::int8 vtx,
-                                            axom::int8 nbr,
-                                            axom::int8 pos)
+  AXOM_HOST_DEVICE void insertNeighborAtPos(std::int8_t vtx,
+                                            std::int8_t nbr,
+                                            std::int8_t pos)
   {
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     SLIC_ASSERT(pos <= num_nbrs[vtx]);
-    axom::uint8 old_nbrs[MAX_NBRS_PER_VERT];
+    std::uint8_t old_nbrs[MAX_NBRS_PER_VERT];
     // copy elements from [pos, nnbrs)
     for(int ip = pos; ip < num_nbrs[vtx]; ip++)
     {
@@ -202,7 +202,7 @@ public:
   }
 
 private:
-  axom::int8 num_nbrs[MAX_VERTS];
+  std::int8_t num_nbrs[MAX_VERTS];
   VertexNbrs nbrs[MAX_VERTS];
 };
 
@@ -287,7 +287,7 @@ public:
    * \param [in] nbrs The neighbors to add to the list of neighbors
    */
   AXOM_HOST_DEVICE
-  void addNeighbors(const PointType& pt, std::initializer_list<axom::int8> nbrs)
+  void addNeighbors(const PointType& pt, std::initializer_list<std::int8_t> nbrs)
   {
     for(int i = 0; i < m_num_vertices; i++)
     {
@@ -310,7 +310,7 @@ public:
    * \pre vtxId < getVertices()
    */
   AXOM_HOST_DEVICE
-  void addNeighbors(int vtxId, std::initializer_list<axom::int8> nbrs)
+  void addNeighbors(int vtxId, std::initializer_list<std::int8_t> nbrs)
   {
     m_neighbors.addNeighbors(vtxId, nbrs);
   }
@@ -418,11 +418,11 @@ public:
   AXOM_HOST_DEVICE
   void getFaces(int* faces, int* face_size, int* face_offset, int& face_count) const
   {
-    axom::int8 curFaceIndex = 0;
-    axom::int8 checkedSize = 0;
-    axom::int8 facesAdded = 0;
+    std::int8_t curFaceIndex = 0;
+    std::int8_t checkedSize = 0;
+    std::int8_t facesAdded = 0;
     // # edges * (# vertices per edge) * (# orientation per edge)
-    axom::int8 checkedEdges[MAX_VERTS * 2 * 2] = {0};
+    std::int8_t checkedEdges[MAX_VERTS * 2 * 2] = {0};
 
     // Check each vertex
     for(int i = 0; i < numVertices(); ++i)
@@ -450,10 +450,10 @@ public:
         {
           face_offset[facesAdded] = curFaceIndex;
           faces[curFaceIndex++] = i;
-          axom::int8 curFaceSize = 1;
-          axom::int8 vstart = i;
-          axom::int8 vnext = ni;
-          axom::int8 vprev = i;
+          std::int8_t curFaceSize = 1;
+          std::int8_t vstart = i;
+          std::int8_t vnext = ni;
+          std::int8_t vprev = i;
 
           // Add neighboring vertices until we reach the starting vertex.
           while(vnext != vstart)
