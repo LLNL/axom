@@ -239,7 +239,12 @@ public:
     //!@brief Get the number of surface mesh cells generated.
     //@}
     virtual axom::IndexType get_surface_cell_count() const = 0;
-    //!@brief Populate output mesh object with generated surface.
+    /*!
+      @brief Populate output mesh object with generated surface.
+
+      Note: Output format is in flux.  We will likely output
+      a blueprint object in the future.
+    */
     virtual void populate_surface_mesh(
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
       const std::string &cellIdField) const = 0;

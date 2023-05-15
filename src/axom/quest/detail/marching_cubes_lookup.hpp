@@ -11,9 +11,15 @@ namespace quest
 {
 namespace detail
 {
+namespace marching_cubes
+{
 // 2D case table
-/*
+// clang-format off
+/*!
+  @brief Look-up table in 2D.
+
   Node and edge indices:
+  @verbatim
        j
        |
        3--2--2
@@ -21,10 +27,18 @@ namespace detail
        3     1
        |     |
        0--0--1--i
+  @endverbatim
 
-  Values in cases2D refer to edges that intersect isosurface.
+  When dereferenced with the value from compute_crossing_case(), this
+  table gives an array of integers denoting the edges that the surface
+  crosses.  See figure for edge ids.  In 2D there are 16 topologically
+  unique ways the surface can cross the cell.  Each case generates 0-2
+  segments for the surface mesh.  See num_segments.
+
+  There are up to 4 integers per case: up to 2 segments generated,
+  with 2 end points per segment.  Each end point is denoted by the
+  edge it lies on.
 */
-// clang-format off
 static const AXOM_DEVICE int cases2D[ 16 ][ 4 ] = {
 #define X -1
     {X, X, X, X}, //  0
@@ -67,9 +81,12 @@ static const AXOM_DEVICE int num_segments[ 16 ] = {
 // clang-format on
 
 // triangulation case table
-/*
-  Node and edge indices:
+// clang-format off
+/*!
+  @brief Look-up table in 3D.
 
+  Node and edge indices:
+  @verbatim
              j
              |
              3-----2-----2
@@ -89,10 +106,21 @@ static const AXOM_DEVICE int num_segments[ 16 ] = {
          4-----4-----5
         /
        k
+  @endverbatim
 
-  Values in cases3D refer to edges that intersect isosurface.
+  When dereferenced with the value from compute_crossing_case(), this
+  table gives an array of integers denoting the edges that the surface
+  crosses.  See figure for edge ids.  In 3D there are 256
+  topologically unique ways the surface can cross the cell.  Each case
+  generates 0-5 triangles for the surface mesh.  See num_triangles.
+
+  There are up to 15 integers per case: up to 5 triangles generated,
+  with 3 corners per triangle.  Each corner is denoted by the edge it
+  lies on.
+
+  BTNG: I don't know why 16 spaces are allocated instead of 15.  The
+  last one is never used.  Maybe some kind of optimization?
 */
-// clang-format off
 static const AXOM_DEVICE int cases3D[ 256 ][ 16 ] = {
 #define X -1
     {X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X},
@@ -615,6 +643,7 @@ static const AXOM_DEVICE int num_triangles[ 256 ] = {
 };
 // clang-format on
 
+}  // namespace marching_cubes
 }  // namespace detail
 }  // namespace quest
 }  // namespace axom

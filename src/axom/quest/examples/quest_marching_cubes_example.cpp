@@ -727,7 +727,7 @@ struct ContourTestBase
   ContourTestBase()
     : m_parentCellIdField("parentCellIds")
     , m_domainIdField("domainIdField")
-    { }
+  { }
   virtual ~ContourTestBase() { }
 
   //!@brief Return field name for storing nodal function.
@@ -933,7 +933,9 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
   {
     axom::IndexType numIdxComponents = -1;
     axom::IndexType* ptr =
-      contourMesh.getFieldPtr<axom::IndexType>(m_parentCellIdField, axom::mint::CELL_CENTERED, numIdxComponents);
+      contourMesh.getFieldPtr<axom::IndexType>(m_parentCellIdField,
+                                               axom::mint::CELL_CENTERED,
+                                               numIdxComponents);
 
     SLIC_ASSERT(numIdxComponents == DIM);
 
@@ -968,9 +970,12 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
         &coordsViews[DIM * n];
       get_coords_views(domain, computationalMesh.coordset_path(), domainCoordsView);
 
-      axom::Array<axom::IndexType> domLengths = computationalMesh.domain_lengths(n);
+      axom::Array<axom::IndexType> domLengths =
+        computationalMesh.domain_lengths(n);
       for(int d = 0; d < DIM; ++d)
-        { domainLengths[n][d] = domLengths[d]; }
+      {
+        domainLengths[n][d] = domLengths[d];
+      }
     }
 
     for(axom::IndexType cn = 0; cn < cellCount; ++cn)
@@ -979,7 +984,8 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
       const axom::StackArray<axom::IndexType, DIM>& domainSize =
         domainLengths[domainId];
 
-      axom::StackArray<axom::IndexType, DIM> parentCellIdx = parentCellIdxView[cn];
+      axom::StackArray<axom::IndexType, DIM> parentCellIdx =
+        parentCellIdxView[cn];
       reverse(parentCellIdx);  // ArrayView expects indices in reverse order.
       axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
 
@@ -1068,7 +1074,8 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     for(axom::IndexType cn = 0; cn < cellCount; ++cn)
     {
       axom::IndexType domainId = domainIdView[cn];
-      const axom::StackArray<axom::IndexType, DIM>& parentCellIdx = parentCellIdxView[cn];
+      const axom::StackArray<axom::IndexType, DIM>& parentCellIdx =
+        parentCellIdxView[cn];
       hasContours[domainId][parentCellIdx] = true;
     }
 
@@ -1090,7 +1097,8 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
         // Compute min and max function value in the cell.
         double minFcnValue = std::numeric_limits<double>::max();
         double maxFcnValue = std::numeric_limits<double>::min();
-        constexpr short int cornerCount = (1 << DIM); // Number of nodes in a cell.
+        constexpr short int cornerCount =
+          (1 << DIM);  // Number of nodes in a cell.
         for(short int cornerId = 0; cornerId < cornerCount; ++cornerId)
         {
           axom::StackArray<axom::IndexType, DIM> cornerIdx = cellIdx;

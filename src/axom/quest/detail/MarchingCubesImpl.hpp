@@ -24,6 +24,8 @@ namespace quest
 {
 namespace detail
 {
+namespace marching_cubes
+{
 //!@brief Add scalar value to every component in StackArray.
 template <typename T, int DIM>
 static axom::StackArray<T, DIM> operator+(const axom::StackArray<T, DIM>& left,
@@ -279,19 +281,18 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     axom::IndexType crossingId = 0;
     // This loop can't be parallelized due to the if statement.
     // Use sequential policy.
-    RAJA::forall<RAJA::loop_exec>(
-      RAJA::RangeSegment(0, parentCellCount),
-      [&](axom::IndexType n) {
-        auto caseId = m_caseIds.flatIndex(n);
-        auto ccc = m_crossingCellCounts[caseId];
-        if(ccc != 0)
-        {
-          addCells[crossingId] = ccc;
-          m_crossings[crossingId].caseNum = caseId;
-          m_crossings[crossingId].parentCellNum = n;
-          ++crossingId;
-        }
-      });
+    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, parentCellCount),
+                                  [&](axom::IndexType n) {
+                                    auto caseId = m_caseIds.flatIndex(n);
+                                    auto ccc = m_crossingCellCounts[caseId];
+                                    if(ccc != 0)
+                                    {
+                                      addCells[crossingId] = ccc;
+                                      m_crossings[crossingId].caseNum = caseId;
+                                      m_crossings[crossingId].parentCellNum = n;
+                                      ++crossingId;
+                                    }
+                                  });
     assert(crossingId == m_crossingCount);
 
     axom::Array<axom::IndexType> prefixSum(m_crossingCount,
@@ -356,8 +357,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
             m_surfaceCellCorners[surfaceCellId][d] = surfaceNodeId;
 
             const int edge = DIM == 2
-              ? detail::cases2D[crossingInfo.caseNum][iCell * DIM + d]
-              : detail::cases3D[crossingInfo.caseNum][iCell * DIM + d];
+              ? cases2D[crossingInfo.caseNum][iCell * DIM + d]
+              : cases3D[crossingInfo.caseNum][iCell * DIM + d];
             linear_interp(edge,
                           cornerCoords,
                           cornerValues,
@@ -454,7 +455,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     if(!cellIdField.empty() &&
        !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
     {
-      mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, DIM);
+      mesh.createField<axom::IndexType>(cellIdField,
+                                        axom::mint::CELL_CENTERED,
+                                        DIM);
     }
 
     const axom::IndexType addedCellCount = m_surfaceCellCorners.size();
@@ -474,14 +477,17 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       }
       axom::IndexType numComponents = -1;
       axom::IndexType* dstPtr =
-        mesh.getFieldPtr<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, numComponents);
+        mesh.getFieldPtr<axom::IndexType>(cellIdField,
+                                          axom::mint::CELL_CENTERED,
+                                          numComponents);
       SLIC_ASSERT(numComponents == DIM);
       axom::ArrayView<axom::StackArray<axom::IndexType, DIM>> dstView(
         (axom::StackArray<axom::IndexType, DIM>*)dstPtr,
         priorCellCount + addedCellCount);
-      for(axom::IndexType i=0; i<addedCellCount; ++i)
+      for(axom::IndexType i = 0; i < addedCellCount; ++i)
       {
-        dstView[priorCellCount+i] = multidim_cell_index(m_surfaceCellParents[i]);
+        dstView[priorCellCount + i] =
+          multidim_cell_index(m_surfaceCellParents[i]);
       }
     }
   }
@@ -563,17 +569,17 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     if(axom::utilities::isNearlyEqual(m_contourVal, f1) ||
        axom::utilities::isNearlyEqual(f1, f2))
     {
-      crossingPt = p1;  // memcpy(&crossingPt, p1, DIM * sizeof(double));
+      crossingPt = p1;
       return;
     }
 
     if(axom::utilities::isNearlyEqual(m_contourVal, f2))
     {
-      crossingPt = p2;  // memcpy(&crossingPt, p2, DIM * sizeof(double));
+      crossingPt = p2;
       return;
     }
 
-    // STEP 3: point is in between the edge points, interpolate its position
+    // STEP 3: point is not at corner; interpolate its position
     constexpr double ptiny = 1.0e-80;
     const double df = f2 - f1 + ptiny;  //add ptiny to avoid division by zero
     const double w = (m_contourVal - f1) / df;
@@ -581,7 +587,6 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     {
       crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
     }
-// std::cout<<__WHERE<< crossingPt << std::endl;
   }
 
   void set_contour_value(double contourVal) override
@@ -589,7 +594,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     m_contourVal = contourVal;
   }
 
-  //!@brief Compute the case index into case2D or case3D.
+  //!@brief Compute the case index into cases2D or cases3D.
   AXOM_HOST_DEVICE int compute_crossing_case(const double* f)
   {
     int index = 0;
@@ -667,11 +672,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   //!@brief Number of corners (nodes) on each cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
 
-  //!@brief Number of cells a crossing can generate:
-  const int* const m_crossingCellCounts =
-    DIM == 2 ? detail::num_segments : detail::num_triangles;
+  //!@brief Number of cells a crossing generates for surface mesh:
+  const int* const m_crossingCellCounts = DIM == 2 ? num_segments : num_triangles;
 
-  //!@name Internal representation of surface mesh.
+  //!@name Internal representation of generated surface mesh.
   //@{
   //!@brief Coordinates of generated surface nodes.
   axom::Array<Point> m_surfaceCoords;
@@ -686,6 +690,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   double m_contourVal = 0.0;
 };
 
+}  // end namespace marching_cubes
 }  // end namespace detail
 }  // end namespace quest
 }  // end namespace axom

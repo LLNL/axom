@@ -9,19 +9,10 @@
 #include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
 
-#ifndef __WHERE
-  #define __STRINGIZE(x) __STRINGIZE2(x)
-  #define __STRINGIZE2(x) #x
-  //!@brief String literal for code location
-  #define __WHERE \
-    __FILE__ ":" __STRINGIZE(__LINE__) "(" + std::string(__func__) + ") "
-#endif
-
 namespace axom
 {
 namespace quest
 {
-
 MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
                              const conduit::Node& bpMesh,
                              const std::string& coordsetName,
@@ -32,7 +23,6 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
-// std::cout << __WHERE << axom::fmt::format("runtimePolicy = {}", m_runtimePolicy) << std::endl;
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {
@@ -71,7 +61,9 @@ void MarchingCubes::populate_surface_mesh(
   if(!cellIdField.empty() &&
      !mesh.hasField(cellIdField, axom::mint::CELL_CENTERED))
   {
-    mesh.createField<axom::IndexType>(cellIdField, axom::mint::CELL_CENTERED, mesh.getDimension());
+    mesh.createField<axom::IndexType>(cellIdField,
+                                      axom::mint::CELL_CENTERED,
+                                      mesh.getDimension());
   }
 
   if(!domainIdField.empty() &&
@@ -107,7 +99,11 @@ void MarchingCubes::populate_surface_mesh(
                                           axom::mint::CELL_CENTERED);
       // TODO: Verify that UnstructuredMesh only supports host memory.
       axom::detail::ArrayOps<axom::IndexType, MemorySpace::Dynamic>::fill(
-        domainIdPtr, nPrev, nNew-nPrev, execution_space<axom::SEQ_EXEC>::allocatorID(), dId);
+        domainIdPtr,
+        nPrev,
+        nNew - nPrev,
+        execution_space<axom::SEQ_EXEC>::allocatorID(),
+        dId);
     }
   }
   SLIC_ASSERT(mesh.getNumberOfNodes() == surfaceNodeCount);
@@ -128,6 +124,11 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   SLIC_ASSERT_MSG(
     isValidRuntimePolicy(runtimePolicy),
     fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
+  SLIC_ASSERT_MSG(
+    m_runtimePolicy != MarchingCubesRuntimePolicy::cuda &&
+      m_runtimePolicy != MarchingCubesRuntimePolicy::hip,
+    std::string(
+      "MarchingCubes is not yet correctly running on devices.  Sorry."));
 
   set_domain(dom);
   return;
@@ -188,21 +189,22 @@ void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
 
 void MarchingCubesSingleDomain::allocate_impl()
 {
+  using namespace detail::marching_cubes;
 // This code doesn't compile for devices yet.  It's close though.
 // TODO: Get this running for devices.
 #define MARCHING_CUBES_USE_DEVICES 0
   if(m_runtimePolicy == RuntimePolicy::seq)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<2, axom::SEQ_EXEC>)
-      : std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<3, axom::SEQ_EXEC>);
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
   }
 #ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<2, axom::OMP_EXEC>)
-      : std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<3, axom::OMP_EXEC>);
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
   }
 #endif
 #if MARCHING_CUBES_USE_DEVICES == 1
@@ -210,16 +212,16 @@ void MarchingCubesSingleDomain::allocate_impl()
   else if(m_runtimePolicy == RuntimePolicy::cuda)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
-      : std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
   }
   #endif
   #ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
-      : std::shared_ptr<ImplBase>(new detail::MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
+      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
+      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
   }
   #endif
 #endif

@@ -46,6 +46,11 @@ if dim not in (2,3)	\
    or len(opts.mu) != dim:
   raise RuntimeError('dc, ms, ml and mu options must have the same dimensions (2 or 3)')
 
+# Must have enough cells for requested partitioning.
+goodDc = [opts.ms[i] >= opts.dc[i] for i in range(dim)]
+if sum(goodDc) < dim:
+  raise RuntimeError(f'ms ({opts.ms}) must be >= dc ({opts.dc}) in all directions.')
+
 def scale_structured_domain(n, startCoord, endCoord):
   '''This function scales and shifts a blueprint structured domain after
   it has been created.  There's no way to specify the physical extent
