@@ -97,7 +97,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     }
     m_cShape = m_bShape;
     reverse(m_cShape);
-    m_pShape = StackArray<axom::IndexType, DIM>(m_cShape + 1);
+    for(int d = 0; d < DIM; ++d)
+    {
+      m_pShape[d] = m_cShape[d] + 1;
+    }
 
     // Domain's node coordinates
     {
