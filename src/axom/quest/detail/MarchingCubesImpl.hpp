@@ -273,7 +273,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     axom::Array<int> addCells(m_crossingCount,
                               m_crossingCount,
                               m_crossings.getAllocatorID());
-    auto addCellsView = addCells.view();
+    axom::ArrayView<int> addCellsView = addCells.view();
 
     axom::IndexType crossingId = 0;
     // This loop can't be parallelized due to the if statement.
@@ -295,8 +295,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     axom::Array<axom::IndexType> prefixSum(m_crossingCount,
                                            m_crossingCount,
                                            m_crossings.getAllocatorID());
-    auto prefixSumView = prefixSum.view();
-    auto crossingsView = m_crossings.view();
+    axom::ArrayView<axom::IndexType> prefixSumView = prefixSum.view();
+    axom::ArrayView<CrossingInfo> crossingsView = m_crossings.view();
 
     RAJA::exclusive_scan<LoopPolicy>(
       RAJA::make_span(addCellsView.data(), m_crossingCount),
