@@ -110,8 +110,8 @@ if(CONDUIT_FOUND)
         set(_policies "seq")
         blt_list_append(TO _policies ELEMENTS "omp" IF ENABLE_OPENMP)
         # Temporarily disable all execution policies the example doesn't yet support.
-        # blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
-        # blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF ENABLE_HIP)
 
         # Non-zero empty-rank probability tests domain underloading case
         set(_meshes "mdmesh.2x1" "mdmesh.2x3" "mdmesh.2x2x1")
