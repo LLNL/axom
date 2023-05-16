@@ -504,13 +504,6 @@ public:
       {
         for(int i = 0; i < shape[1]; ++i)
         {
-#if 0
-          std::cout << __WHERE
-                    << i<<','<<j<<" has coords: "
-                    << coordsViews[0](j,i)<<','<<coordsViews[1](j,i)
-                    << " offset " << &coordsViews[0](j,i)-&coordsViews[0](0,0)
-                    << std::endl;
-#endif
           errCount += (&coordsViews[0].data()[n++] != &coordsViews[0](j, i));
         }
       }
@@ -540,13 +533,6 @@ public:
         {
           for(int i = 0; i < shape[2]; ++i)
           {
-#if 0
-            std::cout << __WHERE
-                      << i<<','<<j<<','<<k<<" has coords: "
-                      << coordsViews[0](k,j,i)<<','<<coordsViews[1](k,j,i)<<','<<coordsViews[2](k,j,i)
-                      << " offset " << &coordsViews[0](k,j,i)-&coordsViews[0](0,0,0)
-                      << std::endl;
-#endif
             errCount += (&coordsViews[0].data()[n++] != &coordsViews[0](k, j, i));
           }
         }
@@ -684,13 +670,10 @@ T product(const axom::StackArray<T, DIM>& a)
   return rval;
 }
 
-//!@brief Add scalar value to every component in StackArray.
-template <typename T, int DIM>
-axom::StackArray<T, DIM> operator+(const axom::StackArray<T, DIM>& left, T right)
+template <typename T, int DIM, typename U>
+static void add_to_StackArray(axom::StackArray<T, DIM>& a, U b)
 {
-  axom::StackArray<T, DIM> rval = left;
-  for(int d = 0; d < DIM; ++d) rval[d] += right;
-  return rval;
+  for(int d = 0; d < DIM; ++d) a[d] += b;
 }
 
 /*!
@@ -844,16 +827,6 @@ struct ContourTestBase
         }
         fieldView.flatIndex(n) = value(pt);
       }
-#if 0
-std::cout << __WHERE << std::endl;
-for(int  i=0; i<fieldView.shape()[0]; ++i) {
-  for(int j=0; j<fieldView.shape()[0]; ++j) {
-    std::cout<< "pt("<<i<<','<<j<<") at "
-             << coordsViews[0](j,i)<<','<<coordsViews[1](j,i)
-             <<" = "<<fieldView(j,i)<<std::endl;
-  }
-}
-#endif
     }
   }
 
@@ -988,10 +961,7 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
       // This should work but breaks gcc11 on 64-bit linux:
       // axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
       axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
-      for(int d = 0; d < DIM; ++d)
-      {
-        upperIdx[d] += 1;
-      }
+      add_to_StackArray(upperIdx, 1);
 
       axom::ArrayView<const double, DIM>* domainCoordsView =
         &coordsViews[DIM * domainId];
@@ -1070,10 +1040,7 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
       reverse(domLengths);
       // This should work but breaks gcc11 on 64-bit linux:
       // domLengths = domLengths + 1;
-      for(int d = 0; d < DIM; ++d)
-      {
-        domLengths[d] = domLengths[d] + 1;
-      }
+      add_to_StackArray(domLengths, 1);
 
       conduit::Node& dom = computationalMesh.domain(domId);
       double* fcnPtr =

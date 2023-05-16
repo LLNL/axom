@@ -26,14 +26,10 @@ namespace detail
 {
 namespace marching_cubes
 {
-//!@brief Add scalar value to every component in StackArray.
-template <typename T, int DIM>
-static axom::StackArray<T, DIM> operator+(const axom::StackArray<T, DIM>& left,
-                                          T right)
+template <typename T, int DIM, typename U>
+static void add_to_StackArray(axom::StackArray<T, DIM>& a, U b)
 {
-  axom::StackArray<T, DIM> rval = left;
-  for(int d = 0; d < DIM; ++d) rval[d] += right;
-  return rval;
+  for(int d = 0; d < DIM; ++d) a[d] += b;
 }
 
 //!@brief Reverse the order of a StackArray.
@@ -99,10 +95,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     reverse(m_cShape);
     // This should work but breaks gcc11 on 64-bit linux:
     // m_pShape = m_cShape + 1;
-    for(int d = 0; d < DIM; ++d)
-    {
-      m_pShape[d] = m_cShape[d] + 1;
-    }
+    m_pShape = m_cShape;
+    add_to_StackArray(m_pShape, 1);
 
     // Domain's node coordinates
     {
@@ -521,7 +515,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       mesh.appendNodes((double*)m_surfaceCoords.data(), m_surfaceCoords.size());
       for(int n = 0; n < addedCellCount; ++n)
       {
-        const MdimIdx cornerIds = m_surfaceCellCorners[n] + priorNodeCount;
+        MdimIdx cornerIds = m_surfaceCellCorners[n];
+        add_to_StackArray(cornerIds, priorNodeCount);
         mesh.appendCell(cornerIds);
       }
       axom::IndexType numComponents = -1;
