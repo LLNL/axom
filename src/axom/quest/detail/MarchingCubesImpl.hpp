@@ -97,6 +97,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     }
     m_cShape = m_bShape;
     reverse(m_cShape);
+    // This should work but breaks gcc11 on 64-bit linux:
+    // m_pShape = m_cShape + 1;
     for(int d = 0; d < DIM; ++d)
     {
       m_pShape[d] = m_cShape[d] + 1;

@@ -981,13 +981,17 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
     for(axom::IndexType cn = 0; cn < cellCount; ++cn)
     {
       axom::IndexType domainId = domainIdView[cn];
-      const axom::StackArray<axom::IndexType, DIM>& domainSize =
-        domainLengths[domainId];
 
       axom::StackArray<axom::IndexType, DIM> parentCellIdx =
         parentCellIdxView[cn];
       reverse(parentCellIdx);  // ArrayView expects indices in reverse order.
-      axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
+      // This should work but breaks gcc11 on 64-bit linux:
+      // axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx + 1;
+      axom::StackArray<axom::IndexType, DIM> upperIdx = parentCellIdx;
+      for(int d = 0; d < DIM; ++d)
+      {
+        upperIdx[d] += 1;
+      }
 
       axom::ArrayView<const double, DIM>* domainCoordsView =
         &coordsViews[DIM * domainId];
@@ -1064,7 +1068,12 @@ for(int  i=0; i<fieldView.shape()[0]; ++i) {
 
       // Add 1 to count nodes.  Reverse to match Conduit data.
       reverse(domLengths);
-      domLengths = domLengths + 1;
+      // This should work but breaks gcc11 on 64-bit linux:
+      // domLengths = domLengths + 1;
+      for(int d = 0; d < DIM; ++d)
+      {
+        domLengths[d] = domLengths[d] + 1;
+      }
 
       conduit::Node& dom = computationalMesh.domain(domId);
       double* fcnPtr =
