@@ -370,9 +370,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, int>::type num_surface_cells(
     int iCase) const
   {
-  #define _MC_LOOKUP_NUM_SEGMENTS
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_NUM_SEGMENTS
+#define _MC_LOOKUP_NUM_SEGMENTS
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_NUM_SEGMENTS
     SLIC_ASSERT(iCase >= 0 && iCase < 16);
     return num_segments[iCase];
   }
@@ -382,9 +382,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     int iCase,
     int iEdge) const
   {
-  #define _MC_LOOKUP_CASES2D
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_CASES2D
+#define _MC_LOOKUP_CASES2D
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_CASES2D
     SLIC_ASSERT(iCase >= 0 && iCase < 16);
     return cases2D[iCase][iEdge];
   }
@@ -393,9 +393,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, int>::type num_surface_cells(
     int iCase) const
   {
-  #define _MC_LOOKUP_NUM_TRIANGLES
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_NUM_TRIANGLES
+#define _MC_LOOKUP_NUM_TRIANGLES
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_NUM_TRIANGLES
     SLIC_ASSERT(iCase >= 0 && iCase < 256);
     return num_triangles[iCase];
   }
@@ -405,9 +405,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     int iCase,
     int iEdge) const
   {
-  #define _MC_LOOKUP_CASES3D
-  #include "marching_cubes_lookup.hpp"
-  #undef _MC_LOOKUP_CASES3D
+#define _MC_LOOKUP_CASES3D
+#include "marching_cubes_lookup.hpp"
+#undef _MC_LOOKUP_CASES3D
     SLIC_ASSERT(iCase >= 0 && iCase < 256);
     return cases3D[iCase][iEdge];
   }
