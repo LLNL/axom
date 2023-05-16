@@ -38,7 +38,7 @@ static axom::StackArray<T, DIM> operator+(const axom::StackArray<T, DIM>& left,
 
 //!@brief Reverse the order of a StackArray.
 template <typename T, int DIM>
-void reverse(axom::StackArray<T, DIM>& a)
+static void reverse(axom::StackArray<T, DIM>& a)
 {
   for(int d = 0; d < DIM / 2; ++d)
   {
@@ -71,8 +71,6 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   using MdimIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
-  static constexpr MemorySpace memory_space =
-    execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.
     @param dom Blueprint structured domain
@@ -80,8 +78,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     @param fcnPath Where nodal function is in dom
     @param maskPath Where cell mask function is in dom
 
-    Set up views to external data and allocate internal data to work
-    on the given domain.
+    Set up views to domain data and allocate other data to work on the
+    given domain.
   */
   AXOM_HOST void initialize(const conduit::Node& dom,
                             const std::string& coordsetPath,
@@ -89,11 +87,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
                             const std::string& maskPath) override
   {
     clear();
-    m_dom = &dom;
 
     // Data sizes
     const conduit::Node& dimsNode =
-      m_dom->fetch_existing("topologies/mesh/elements/dims");
+      dom.fetch_existing("topologies/mesh/elements/dims");
     for(int d = 0; d < DIM; ++d)
     {
       m_bShape[d] = dimsNode[d].as_int();
@@ -105,7 +102,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     // Domain's node coordinates
     {
       const conduit::Node& coordValues =
-        m_dom->fetch_existing(coordsetPath + "/values");
+        dom.fetch_existing(coordsetPath + "/values");
       const bool isInterleaved =
         conduit::blueprint::mcarray::is_interleaved(coordValues);
       const int coordSp = isInterleaved ? DIM : 1;
@@ -119,7 +116,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
     // Nodal function
     {
-      auto& fcnValues = m_dom->fetch_existing(fcnPath + "/values");
+      auto& fcnValues = dom.fetch_existing(fcnPath + "/values");
       const double* fcnPtr = fcnValues.as_double_ptr();
       m_fcnView = axom::ArrayView<const double, DIM>(fcnPtr, m_pShape);
     }
@@ -129,7 +126,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       const int* maskPtr = nullptr;
       if(!maskPath.empty())
       {
-        auto& maskValues = m_dom->fetch_existing(maskPath + "/values");
+        auto& maskValues = dom.fetch_existing(maskPath + "/values");
         maskPtr = maskValues.as_int_ptr();
       }
       if(maskPtr)
@@ -267,7 +264,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, parentCellCount),
       AXOM_LAMBDA(RAJA::Index_type n) {
-        vsum += bool(m_crossingCellCounts[m_caseIds.flatIndex(n)]);
+        vsum += bool(num_surface_cells(m_caseIds.flatIndex(n)));
       });
     m_crossingCount = static_cast<axom::IndexType>(vsum.get());
 
@@ -284,7 +281,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, parentCellCount),
                                   [&](axom::IndexType n) {
                                     auto caseId = m_caseIds.flatIndex(n);
-                                    auto ccc = m_crossingCellCounts[caseId];
+                                    auto ccc = num_surface_cells(caseId);
                                     if(ccc != 0)
                                     {
                                       addCells[crossingId] = ccc;
@@ -314,7 +311,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     m_surfaceCellCount = m_crossings.empty()
       ? 0
       : m_crossings.back().firstSurfaceCellId +
-        m_crossingCellCounts[m_crossings.back().caseNum];
+        num_surface_cells(m_crossings.back().caseNum);
   }
 
   void compute_surface() override
@@ -334,7 +331,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       AXOM_LAMBDA(axom::IndexType iCrossing) {
         const auto& crossingInfo = m_crossings[iCrossing];
         const IndexType crossingCellCount =
-          m_crossingCellCounts[crossingInfo.caseNum];
+          num_surface_cells(crossingInfo.caseNum);
         SLIC_ASSERT(crossingCellCount > 0);
 
         // Parent cell data for interpolating new node coordinates.
@@ -356,9 +353,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
             IndexType surfaceNodeId = surfaceCellId * DIM + d;
             m_surfaceCellCorners[surfaceCellId][d] = surfaceNodeId;
 
-            const int edge = DIM == 2
-              ? cases2D[crossingInfo.caseNum][iCell * DIM + d]
-              : cases3D[crossingInfo.caseNum][iCell * DIM + d];
+            const int edge = cases_table(crossingInfo.caseNum, iCell * DIM + d);
             linear_interp(edge,
                           cornerCoords,
                           cornerValues,
@@ -366,6 +361,55 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
           }
         }
       });
+  }
+
+  // These 4 functions provides access to the look-up table
+  // whether on host or device.  Is there a more elegant way
+  // to put static 1D and 2D arrays on host and device?  BTNG.
+  template <int TDIM = DIM>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, int>::type num_surface_cells(
+    int iCase) const
+  {
+  #define _MC_LOOKUP_NUM_SEGMENTS
+  #include "marching_cubes_lookup.hpp"
+  #undef _MC_LOOKUP_NUM_SEGMENTS
+    SLIC_ASSERT(iCase >= 0 && iCase < 16);
+    return num_segments[iCase];
+  }
+
+  template <int TDIM = DIM>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, int>::type cases_table(
+    int iCase,
+    int iEdge) const
+  {
+  #define _MC_LOOKUP_CASES2D
+  #include "marching_cubes_lookup.hpp"
+  #undef _MC_LOOKUP_CASES2D
+    SLIC_ASSERT(iCase >= 0 && iCase < 16);
+    return cases2D[iCase][iEdge];
+  }
+
+  template <int TDIM = DIM>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, int>::type num_surface_cells(
+    int iCase) const
+  {
+  #define _MC_LOOKUP_NUM_TRIANGLES
+  #include "marching_cubes_lookup.hpp"
+  #undef _MC_LOOKUP_NUM_TRIANGLES
+    SLIC_ASSERT(iCase >= 0 && iCase < 256);
+    return num_triangles[iCase];
+  }
+
+  template <int TDIM = DIM>
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, int>::type cases_table(
+    int iCase,
+    int iEdge) const
+  {
+  #define _MC_LOOKUP_CASES3D
+  #include "marching_cubes_lookup.hpp"
+  #undef _MC_LOOKUP_CASES3D
+    SLIC_ASSERT(iCase >= 0 && iCase < 256);
+    return cases3D[iCase][iEdge];
   }
 
   /*!
@@ -645,8 +689,6 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   };
   axom::Array<CrossingInfo> m_crossings;
 
-  const conduit::Node* m_dom = nullptr;
-
   MdimIdx m_bShape;  //!< @brief Blueprint cell data shape.
   MdimIdx m_cShape;  //!< @brief Cell-centered array shape for ArrayViews.
   MdimIdx m_pShape;  //!< @brief Node-centered array shape for ArrayViews.
@@ -671,9 +713,6 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
   //!@brief Number of corners (nodes) on each cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
-
-  //!@brief Number of cells a crossing generates for surface mesh:
-  const int* const m_crossingCellCounts = DIM == 2 ? num_segments : num_triangles;
 
   //!@name Internal representation of generated surface mesh.
   //@{

@@ -3,18 +3,13 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Macros.hpp"
+/*!
+  @file Static look-up tables for MarchingCubesImpl.
+*/
 
-namespace axom
-{
-namespace quest
-{
-namespace detail
-{
-namespace marching_cubes
-{
 // 2D case table
 // clang-format off
+#ifdef _MC_LOOKUP_CASES2D
 /*!
   @brief Look-up table in 2D.
 
@@ -39,7 +34,7 @@ namespace marching_cubes
   with 2 end points per segment.  Each end point is denoted by the
   edge it lies on.
 */
-static const AXOM_DEVICE int cases2D[ 16 ][ 4 ] = {
+static const int cases2D[ 16 ][ 4 ] = {
 #define X -1
     {X, X, X, X}, //  0
     {0, 3, X, X}, //  1
@@ -59,8 +54,10 @@ static const AXOM_DEVICE int cases2D[ 16 ][ 4 ] = {
     {X, X, X, X}  // 15
 #undef X
 };
+#endif
 
-static const AXOM_DEVICE int num_segments[ 16 ] = {
+#ifdef _MC_LOOKUP_NUM_SEGMENTS
+static const int num_segments[ 16 ] = {
     0, // {X, X, X, X}, //  0
     1, // {0, 3, X, X}, //  1
     1, // {1, 0, X, X}, //  2
@@ -78,10 +75,12 @@ static const AXOM_DEVICE int num_segments[ 16 ] = {
     1, // {3, 0, X, X}, // 14
     0, // {X, X, X, X}  // 15
 };
+#endif
 // clang-format on
 
 // triangulation case table
 // clang-format off
+#ifdef _MC_LOOKUP_CASES3D
 /*!
   @brief Look-up table in 3D.
 
@@ -121,7 +120,7 @@ static const AXOM_DEVICE int num_segments[ 16 ] = {
   BTNG: I don't know why 16 spaces are allocated instead of 15.  The
   last one is never used.  Maybe some kind of optimization?
 */
-static const AXOM_DEVICE int cases3D[ 256 ][ 16 ] = {
+static const int cases3D[ 256 ][ 16 ] = {
 #define X -1
     {X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X},
     {0, 8, 3, X, X, X, X, X, X, X, X, X, X, X, X, X},
@@ -381,9 +380,11 @@ static const AXOM_DEVICE int cases3D[ 256 ][ 16 ] = {
     {X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X}
 #undef X
 };
+#endif
 
+#ifdef _MC_LOOKUP_NUM_TRIANGLES
 // stores number of triangles for each case above
-static const AXOM_DEVICE int num_triangles[ 256 ] = {
+static const int num_triangles[ 256 ] = {
   0,
   1,
   1,
@@ -641,9 +642,5 @@ static const AXOM_DEVICE int num_triangles[ 256 ] = {
   1,
   0
 };
+#endif
 // clang-format on
-
-}  // namespace marching_cubes
-}  // namespace detail
-}  // namespace quest
-}  // namespace axom
