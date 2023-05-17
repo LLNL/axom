@@ -1052,7 +1052,8 @@ MultiMat::Field1D<T> MultiMat::get1dField(const std::string& field_name)
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
-    SLIC_ERROR("Multimat: No field with the name \"" + field_name + "\" was found.");
+    SLIC_ERROR("Multimat: No field with the name \"" + field_name +
+               "\" was found.");
 
   return get1dFieldImpl<T>(fieldIdx);
 }
@@ -1063,7 +1064,8 @@ MultiMat::Field1D<const T> MultiMat::get1dField(const std::string& field_name) c
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
-    SLIC_ERROR("Multimat: No field with the name \"" + field_name + "\" was found.");
+    SLIC_ERROR("Multimat: No field with the name \"" + field_name +
+               "\" was found.");
 
   return get1dFieldImpl<const T>(fieldIdx);
 }
@@ -1074,7 +1076,8 @@ MultiMat::Field2D<T> MultiMat::get2dField(const std::string& field_name)
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
-    SLIC_ERROR("Multimat: No field with the name \"" + field_name + "\" was found.");
+    SLIC_ERROR("Multimat: No field with the name \"" + field_name +
+               "\" was found.");
 
   return get2dFieldImpl<T>(fieldIdx);
 }
