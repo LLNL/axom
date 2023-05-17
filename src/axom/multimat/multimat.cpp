@@ -412,11 +412,14 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
   }
 
   // Just copy over the indices directly
-  Rel_indicesVec = axom::Array<SetPosType>(indices);
+  Rel_indicesVec = axom::Array<SetPosType>(indices, m_slamAllocatorId);
 
   Rel_ptr = StaticVariableRelationType(&set1, &set2);
   Rel_ptr.bindBeginOffsets(set1.size(), Rel_beginsVec.view());
   Rel_ptr.bindIndices(Rel_indicesVec.size(), Rel_indicesVec.view());
+
+  SLIC_ASSERT(relBeginVec(layout).getAllocatorID() == m_slamAllocatorId);
+  SLIC_ASSERT(relIndVec(layout).getAllocatorID() == m_slamAllocatorId);
 
   SLIC_ASSERT(Rel_ptr.isValid());
 
