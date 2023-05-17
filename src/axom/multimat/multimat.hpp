@@ -795,13 +795,13 @@ private:
   private:
     bool m_isOwned {false};
 
-    axom::Array<unsigned char> m_ucharData;
-    axom::Array<int> m_intData;
+    axom::Array<std::uint8_t> m_ucharData;
+    axom::Array<std::int32_t> m_intData;
     axom::Array<float> m_floatData;
     axom::Array<double> m_dblData;
 
-    axom::ArrayView<unsigned char> m_ucharView;
-    axom::ArrayView<int> m_intView;
+    axom::ArrayView<std::uint8_t> m_ucharView;
+    axom::ArrayView<std::int32_t> m_intView;
     axom::ArrayView<float> m_floatView;
     axom::ArrayView<double> m_dblView;
 
