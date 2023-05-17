@@ -515,7 +515,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   // we use int64 and float64 b/c those types persist even with
   // json or yaml output
 
-  axom::int64 sidre_vals_1[5] = {0, 1, 2, 3, 4};
+  std::int64_t sidre_vals_1[5] = {0, 1, 2, 3, 4};
   axom::float64 sidre_vals_2[6] = {
     1.0,
     2.0,
@@ -540,7 +540,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   View* a5_view =
     group3->createViewAndAllocate("a5_i64", axom::sidre::DataType::int64(5));
 
-  axom::int64* a5_view_ptr = a5_view->getData();
+  std::int64_t* a5_view_ptr = a5_view->getData();
 
   for(int i = 0; i < 5; i++)
   {
@@ -613,7 +613,7 @@ TEST(sidre_native_layout, basic_demo_compare)
   // create an equiv conduit tree for testing
   //
 
-  axom::int64 conduit_vals_1[5] = {0, 1, 2, 3, 4};
+  std::int64_t conduit_vals_1[5] = {0, 1, 2, 3, 4};
   axom::float64 conduit_vals_2[6] = {
     1.0,
     2.0,

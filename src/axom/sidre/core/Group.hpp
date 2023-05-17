@@ -40,13 +40,6 @@
 #include "View.hpp"
 #include "ItemCollection.hpp"
 
-// Define the default protocol for sidre I/O
-#ifdef AXOM_USE_HDF5
-  #define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
-#else
-  #define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
-#endif
-
 namespace axom
 {
 namespace sidre
@@ -153,6 +146,28 @@ public:
    * \brief Return the path delimiter
    */
   char getPathDelimiter() const { return s_path_delimiter; }
+
+  /*!
+   * \brief static method to get valid protocols for Group I/O methods.
+   *
+   * Only protocols that work for both input and output are returned.
+   */
+  static const std::vector<std::string>& getValidIOProtocols()
+  {
+    return s_io_protocols;
+  }
+
+  /*!
+   * \brief static method to get the default I/O protocol.
+   */
+  static std::string getDefaultIOProtocol()
+  {
+#if defined(AXOM_USE_HDF5)
+    return std::string("sidre_hdf5");
+#else
+    return std::string("sidre_conduit_json");
+#endif
+  }
 
   /*!
    * \brief Return index of Group object within parent Group.
@@ -281,6 +296,58 @@ public:
     return this;
   }
 #endif
+
+  /*!
+   * \brief Insert information about data associated with Group subtree with
+   *        this Group at root of tree (default 'recursive' is true), or for 
+   *        this Group only ('recursive' is false) in fields of given 
+   *        Conduit Node.
+   *
+   *        Fields in Conduit Node will be named:
+   *
+   *          - "num_groups" : total number of Groups in subtree or single Group
+   *          - "num_views" : total number of Views in subtree or single Group
+   *          - "num_views_empty" : total number of Views with no associated
+   *                                 Buffer or data 
+   *                                 (may or may not be described)
+   *          - "num_views_buffer" : total number of Views associated
+   *                                 with a DataStore Buffer 
+   *          - "num_views_external" : total number of Views associated with
+   *                                   external data 
+   *          - "num_views_scalar" : total number of Views associated with
+   *                                 single scalar data item 
+   *          - "num_views_string" : total number of Views associated with
+   *                                 string data
+   *          - "num_bytes_assoc_with_views" : total number of bytes 
+   *                                           associated with Views in subtree
+   *                                           or single Group that are 
+   *                                           allocated in Buffers in 
+   *                                           the DataStore. NOTE: This 
+   *                                           may be an over-count if data 
+   *                                           for two or more Views overlaps 
+   *                                           in a shared Buffer. 
+   *          - "num_bytes_external" : total number of bytes described by
+   *                                   external Views in Group subtree or 
+   *                                   single Group. The data may or may not 
+   *                                   be allocated. NOTE: If there are
+   *                                   overlaps in data associated with 
+   *                                   multiple external Views, this may be 
+   *                                   an over-count.
+   *          - "num_bytes_in_buffers" : total number of bytes allocated in
+   *                                     Buffers referenced by Views in
+   *                                     subtree or single Group 
+   *
+   * Numeric values associated with these fields may be accessed as type
+   * axom::IndexType, which is defined at compile-time. For example,
+   *
+   * Group* gp = ...;
+   * 
+   * Node n;
+   * gp->getDataInfo(n);
+   * axom::IndexType num_views = n["num_views"].value();
+   * // etc...
+   */
+  void getDataInfo(Node& n, bool recursive = true) const;
 
   //@}
 
@@ -987,6 +1054,22 @@ private:
    */
   const MapCollection<Group>* getNamedGroups() const;
 
+  /*!
+   * \brief Method to (recursively) accumulate information about data in
+   *        a Group subtree.
+   *
+   * \param n Conduit node in which to insert accumulated data
+   * \param buffer_ids std::set used to gather set of unique buffer ids
+   *                   for reporting total bytes in buffers
+   * \param recursive boolean value indicating whether to recurse to child
+   *                  groups of this group.
+   *
+   * \sa getDataInfo
+   */
+  void getDataInfoHelper(Node& n,
+                         std::set<IndexType>& buffer_ids,
+                         bool recursive) const;
+
 public:
   //@{
   //!  @name Group iteration methods.
@@ -1071,6 +1154,54 @@ public:
   void destroyGroup(IndexType idx);
 
   /*!
+   * \brief Destroy child Group at the given path, and destroy data that is
+   * not shared elsewhere.
+   *
+   * If a View in the subtree under the destroyed Group is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   * 
+   * If no Group exists at the given path, method is a no-op.
+   */
+  void destroyGroupAndData(const std::string& path);
+
+  /*!
+   * \brief Destroy child Group with the given index, and destroy data that
+   * is not shared elsewhere.
+   *
+   * If a View in the subtree under the destroyed Group is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   * 
+   * If no Group exists with the given index, method is a no-op.
+   */
+  void destroyGroupAndData(IndexType idx);
+
+  /*!
+   * \brief Destroy all child Groups held by this Group, and destroy data that
+   * is not shared elsewhere.
+   *
+   * If a View in a subtree under any of the destroyed Groups is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   */
+  void destroyGroupsAndData();
+
+  /*!
+   * \brief Destroy the entire subtree of Groups and Views held by this Group,
+   * and destroy data that is not shared elsewhere.
+   *
+   * If a View in the subtree being destroyed is the last View
+   * attached to a Buffer, the Buffer and its data will also be destroyed.
+   * Buffer data will not be destroyed if there are other Views associated
+   * with the Buffer.
+   */
+  void destroyGroupSubtreeAndData();
+
+  /*!
    * \brief Destroy all child Groups in this Group.
    *
    * Note that this will recursively destroy entire Group sub-tree below
@@ -1153,7 +1284,7 @@ public:
   void copyToConduitNode(Node& n) const;
 
   /*!
-   * \brief Copy data Group native layout to given Conduit node.
+   * \brief Copy Group's native layout to given Conduit node.
    *
    * The native layout is a Conduit Node hierarchy that maps the Conduit Node
    * data
@@ -1166,6 +1297,21 @@ public:
    *
    */
   bool createNativeLayout(Node& n, const Attribute* attr = nullptr) const;
+
+  /*!
+   * \brief Copy Group's layout to given Conduit node without data
+   *
+   * This method copies only a metadata version of the Group's hierarchical
+   * layout to a Conduit Node.  All of the Groups and Views in the
+   * hierarchy will be represented, but the actual data held by the Views
+   * will not be present.  For every View, the Conduit schema describing
+   * its datatype will be copied but not the data.  This is intended to
+   * provide an object that can be sent to a readable output format where
+   * the overall layout of the hierarchy can be seen without sending large
+   * arrays or other data to the output.
+   *
+   */
+  void createNoDataLayout(Node& n, const Attribute* attr = nullptr) const;
 
   /*!
    * \brief Copy data Group external layout to given Conduit node.
@@ -1253,7 +1399,7 @@ public:
    * \param attr      Save Views that have Attribute set.
    */
   void save(const std::string& path,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
   /*!
@@ -1275,7 +1421,7 @@ public:
    *                           loading data from the file.
    */
   void load(const std::string& path,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
   /*!
@@ -1362,7 +1508,7 @@ public:
    * \param attr       Save Views that have Attribute set.
    */
   void save(const hid_t& h5_id,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
   /*!
@@ -1380,7 +1526,7 @@ public:
    *                           loading data from the file.
    */
   void load(const hid_t& h5_id,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
   /*!
@@ -1587,10 +1733,15 @@ private:
    *
    * Note: This is for the "sidre_{zzz}" protocols.
    *
+   * \param export_buffers  Optional parameter, if set to false, the data
+   *                       arrays owned by Buffers will not be copied.
+   *
    * \return True if the group or any of its children have saved Views,
    * false otherwise.
    */
-  bool exportTo(conduit::Node& result, const Attribute* attr) const;
+  bool exportTo(conduit::Node& result,
+                const Attribute* attr,
+                bool export_buffers = true) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1604,6 +1755,12 @@ private:
   bool exportTo(conduit::Node& data_holder,
                 const Attribute* attr,
                 std::set<IndexType>& buffer_indices) const;
+
+  /*!
+   * \brief Private method  exports the Group to a conduit Node without
+   * the data held by Buffers, enabling a save that shows the layout only
+   */
+  bool exportWithoutBufferData(conduit::Node& result, const Attribute* attr) const;
 
   /*!
    * \brief Private method to build a Group hierarchy from Conduit Node.
@@ -1692,6 +1849,9 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
+
+  // Collection of the valid I/O protocols for save and load.
+  static const std::vector<std::string> s_io_protocols;
 };
 
 } /* end namespace sidre */

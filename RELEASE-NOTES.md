@@ -19,6 +19,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Deprecated
+- Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
+
 ### Added
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element
@@ -26,8 +29,32 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   - `Array::resize(size, T value)`: resizes the array, and sets any new elements to `value`.
 - Adds an `ArrayView::empty()` method to return whether the view is empty or not.
 - Adds an `area()` function to `primal::Polygon`
+- Adds initial support for using Slam types on the GPU
+- Adds support for using `ArrayViewIndirection` indirection policy with `slam::Map` and
+  `slam::BivariateMap`
+- Adds `const_iterator` support to `slam::BivariateMap` and `slam::SubMap`
+- Primal: Adds a `Hexahedron` primitive
+- Primal: Adds a `clip()` operator for computing the intersection of a
+  `Hexahedron` and another `Tetrahedron` as a `Polyhedron`
+- Primal: Adds an `intersection_volume()` operator for computing the volume of
+  intersection between a primitive and a `Tetrahedron`
+- Primal: Adds a `primal::Polyhedron::from_primitive()` operator that returns a
+  `Polyhedron` object from a given primitive.
+- Adds `DataStore::getBufferInfo()` and `Group::getDataInfo` methods that insert information into a Conduit `Node` about buffers in a `DataStore` object or data in a `Group` subtree. The information can be accessed from the `Node` by the caller from specifically named fields in the `Node`.
+- Quest: Adds a `quest::ProEReader` for reading in Pro/E tetrahedral meshes
+- Quest: The `quest::IntersectionShaper` class can now use a percent error to determine
+  whether the revolved volume for a shape is sufficiently accurate or whether the shape
+  must be further refined. This new dynamic method of shaping complements the existing
+  segment-based curve refinement method and it is activated using `Shaper::setRefinementType()`
+  and by calling `Shaper::setPercentError()` to set a refinement error percentage.
 
 ### Changed
+- The Axom library has been broken down into its component libraries (prefixed with `axom_`).
+  This change requires no change to downstream CMake users who import our targets.
+  The exported CMake target `axom` includes all components, but users who do not import our targets
+  will need to create the link line themselves. The following replacement can be used:
+  `-laxom` -> `-laxom_quest -laxom_multimat -laxom_slam -laxom_mint -laxom_klee -laxom_inlet -laxom_sidre -laxom_slic -laxom_lumberjack -laxom_core`
+  If you only need a subset of the components, you can now use those targets directly, ie. `axom::inlet`.
 - `IntersectionShaper` now implements material replacement rules.
 - `axom::Array` move constructors are now `noexcept`.
 - Exported CMake targets, `cli11`, `fmt`, `sol`, and `sparsehash`, have been prefixed with `axom::`
@@ -49,6 +76,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds `vcpkg` port for `lua` as optional dependency on Windows
 - Adds additional parameters to quest's `PointInCell` query to control the Newton solve
   from physical to reference space for a given element
+- Remove function pointer call in IteratorBase::advance()
+- Slam: `IndirectionPolicy::data()` now returns a reference to the underlying buffer
+  Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
+  returns a mutable pointer to the buffer.
+- Quest: `Shaper::applyTransforms()` is no longer a public method.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+

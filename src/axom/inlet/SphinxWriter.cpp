@@ -218,7 +218,7 @@ std::string SphinxWriter::getValueAsString(const axom::sidre::View* view)
   axom::sidre::TypeID type = view->getTypeID();
   if(type == axom::sidre::TypeID::INT8_ID)
   {
-    int8 val = view->getData();
+    std::int8_t val = view->getData();
     return val ? "True" : "False";
   }
   else if(type == axom::sidre::TypeID::INT_ID)
@@ -324,7 +324,7 @@ void SphinxWriter::extractFieldMetadata(const axom::sidre::Group* sidreGroup,
 
   if(sidreGroup->hasView("required"))
   {
-    int8 required = sidreGroup->getView("required")->getData();
+    std::int8_t required = sidreGroup->getView("required")->getData();
     fieldAttributes[4] = required ? "|check|" : "|uncheck|";
   }
   else
@@ -381,7 +381,7 @@ void SphinxWriter::extractFunctionMetadata(const axom::sidre::Group* sidreGroup,
 
   if(sidreGroup->hasView("required"))
   {
-    int8 required = sidreGroup->getView("required")->getData();
+    std::int8_t required = sidreGroup->getView("required")->getData();
     functionAttributes[3] = required ? "|check|" : "|uncheck|";
   }
   else

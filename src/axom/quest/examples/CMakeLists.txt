@@ -6,14 +6,14 @@
 # Quest examples
 #------------------------------------------------------------------------------
 
-set(quest_example_depends axom ${axom_device_depends} fmt cli11)
+set(quest_example_depends quest fmt cli11)
 
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
 
 # In/out octree containment example -------------------------------------------
-blt_add_executable(
+axom_add_executable(
     NAME        quest_containment_driver_ex
     SOURCES     containment_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -25,7 +25,7 @@ blt_add_executable(
 if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                    AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
                    AND AXOM_ENABLE_KLEE)
-    blt_add_executable(
+    axom_add_executable(
         NAME        quest_shaping_driver_ex
         SOURCES     shaping_driver.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -36,7 +36,7 @@ endif()
 
 # Distributed closest point example -------------------------------------------
 if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_HDF5)
-    blt_add_executable(
+    axom_add_executable(
             NAME        quest_distributed_distance_query_ex
             SOURCES     quest_distributed_distance_query_example.cpp
             OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -158,7 +158,7 @@ endif()
 
 # Point in cell example -------------------------------------------------------
 if(MFEM_FOUND)
-    blt_add_executable(
+    axom_add_executable(
         NAME        quest_point_in_cell_benchmark_ex
         SOURCES     point_in_cell_benchmark.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -168,7 +168,7 @@ if(MFEM_FOUND)
 endif()
 
 # Delaunay triangulation example ----------------------------------------------
-blt_add_executable(
+axom_add_executable(
     NAME        quest_delaunay_triangulation_ex
     SOURCES     delaunay_triangulation.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -187,7 +187,7 @@ endif()
 
 # Scattered interpolation example --------------------------------------------
 if(AXOM_ENABLE_SIDRE)
-    blt_add_executable(
+    axom_add_executable(
         NAME        quest_scattered_interpolation_ex
         SOURCES     scattered_interpolation.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -208,7 +208,7 @@ endif()
 
 # Quest signed distance and inout interface examples (C++ and Fortran) --------
 
-blt_add_executable(
+axom_add_executable(
     NAME       quest_signed_distance_interface_ex
     SOURCES    quest_signed_distance_interface.cpp
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -216,7 +216,7 @@ blt_add_executable(
     FOLDER      axom/quest/examples
     )
 
-blt_add_executable(
+axom_add_executable(
     NAME        quest_inout_interface_ex
     SOURCES     quest_inout_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -267,7 +267,7 @@ if (ENABLE_FORTRAN)
 
     foreach(_t ${quest_fortran_examples})
         set(_example_name "${_t}_F_ex")
-        blt_add_executable(
+        axom_add_executable(
             NAME       ${_example_name}
             SOURCES    ${_t}.F
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}

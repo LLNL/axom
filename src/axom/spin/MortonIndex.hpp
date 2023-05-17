@@ -43,7 +43,7 @@ struct NumReps
 };
 
 template <>
-struct NumReps<axom::int64>
+struct NumReps<std::int64_t>
 {
   enum
   {
@@ -51,7 +51,7 @@ struct NumReps<axom::int64>
   };
 };
 template <>
-struct NumReps<axom::uint64>
+struct NumReps<std::uint64_t>
 {
   enum
   {
@@ -60,7 +60,7 @@ struct NumReps<axom::uint64>
 };
 
 template <>
-struct NumReps<axom::int32>
+struct NumReps<std::int32_t>
 {
   enum
   {
@@ -68,7 +68,7 @@ struct NumReps<axom::int32>
   };
 };
 template <>
-struct NumReps<axom::uint32>
+struct NumReps<std::uint32_t>
 {
   enum
   {
@@ -77,7 +77,7 @@ struct NumReps<axom::uint32>
 };
 
 template <>
-struct NumReps<axom::int16>
+struct NumReps<std::int16_t>
 {
   enum
   {
@@ -85,7 +85,7 @@ struct NumReps<axom::int16>
   };
 };
 template <>
-struct NumReps<axom::uint16>
+struct NumReps<std::uint16_t>
 {
   enum
   {
@@ -94,7 +94,7 @@ struct NumReps<axom::uint16>
 };
 
 template <>
-struct NumReps<axom::int8>
+struct NumReps<std::int8_t>
 {
   enum
   {
@@ -102,7 +102,7 @@ struct NumReps<axom::int8>
   };
 };
 template <>
-struct NumReps<axom::uint8>
+struct NumReps<std::uint8_t>
 {
   enum
   {

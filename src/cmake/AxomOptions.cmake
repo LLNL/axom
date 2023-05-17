@@ -41,3 +41,12 @@ mark_as_advanced(AXOM_ENABLE_MPI3)
 #--------------------------------------------------------------------------
 set(AXOM_DEBUG_DEFINE "DEFAULT" CACHE STRING "Controls whether AXOM_DEBUG compiler define is enabled")
 set_property(CACHE AXOM_DEBUG_DEFINE PROPERTY STRINGS "DEFAULT" "ON" "OFF")
+
+#------------------------------------------------------------------------------
+# Option to gradually phase out deprecated types.
+# With C++11, some Axom types in src/axom/core/Types.hpp are obsolete.
+# They will be removed in steps, as the AXOM_DEPRECATED_TYPES variable
+# defaults to WARN, then ERROR, then eventually removed.
+#------------------------------------------------------------------------------
+set(AXOM_DEPRECATED_TYPES "WARN" CACHE STRING "Controls deprecated types removal phase")
+set_property(CACHE AXOM_DEPRECATED_TYPES PROPERTY STRINGS "WARN" "ERROR" "ALLOW")

@@ -34,4 +34,4 @@ of these Sidre classes.
    view 
    attribute
    data_vs_metadata
-
+   query_data

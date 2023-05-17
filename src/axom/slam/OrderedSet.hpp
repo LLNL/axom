@@ -105,7 +105,7 @@ public:
   //, SubsettingPolicyType(parentSet)
   { }
 
-  OrderedSet(const SetBuilder& builder)
+  AXOM_HOST_DEVICE OrderedSet(const SetBuilder& builder)
     : SizePolicyType(builder.m_size)
     , OffsetPolicyType(builder.m_offset)
     , StridePolicyType(builder.m_stride)
@@ -198,7 +198,7 @@ public:
     using DataType = typename IndirectionPolicyType::IndirectionPtrType;
     using ParentSetType = typename SubsettingPolicyType::ParentSetType;
 
-    SetBuilder& size(PositionType sz)
+    AXOM_HOST_DEVICE SetBuilder& size(PositionType sz)
     {
       SLIC_ASSERT_MSG(
         !m_hasRange,
@@ -208,7 +208,7 @@ public:
       return *this;
     }
 
-    SetBuilder& offset(PositionType off)
+    AXOM_HOST_DEVICE SetBuilder& offset(PositionType off)
     {
       SLIC_ASSERT(!m_hasRange || off == m_offset.offset());
 
@@ -230,7 +230,7 @@ public:
       return *this;
     }
 
-    SetBuilder& data(DataType bufPtr)
+    AXOM_HOST_DEVICE SetBuilder& data(DataType bufPtr)
     {
       m_data = IndirectionPolicyType(bufPtr);
       return *this;
@@ -340,14 +340,6 @@ public:
       , m_orderedSet(oSet)
     { }
 
-    OrderedSetIterator(const OrderedSetIterator& it) = default;
-
-    OrderedSetIterator& operator=(const OrderedSetIterator& it)
-    {
-      this->m_pos = it.m_pos;
-      this->m_orderedSet = const_cast<OrderedSet&>(it.m_orderedSet);
-      return *this;
-    }
     /// \}
 
     /// \name Member and pointer operators
@@ -414,10 +406,10 @@ public:
 
   protected:
     /** Implementation of advance() as required by IteratorBase */
-    void advance(PositionType n) { m_pos += n * stride(); }
+    AXOM_HOST_DEVICE void advance(PositionType n) { m_pos += n * stride(); }
 
   private:
-    inline const PositionType stride() const
+    AXOM_HOST_DEVICE inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
     }
@@ -462,24 +454,33 @@ public:
    * \brief Given a position in the Set, return a position in the larger index
    *  space
    */
+  AXOM_HOST_DEVICE
   inline typename IndirectionPolicy::ConstIndirectionResult operator[](
     PositionType pos) const
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos);
+#endif
     return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
                                           OffsetPolicyType::offset());
   }
 
+  AXOM_HOST_DEVICE
   inline typename IndirectionPolicy::IndirectionResult operator[](PositionType pos)
   {
+#ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(pos);
+#endif
     return IndirectionPolicy::indirection(pos * StridePolicyType::stride() +
                                           OffsetPolicyType::offset());
   }
   inline ElementType at(PositionType pos) const { return operator[](pos); }
 
-  inline PositionType size() const { return SizePolicyType::size(); }
-  inline bool empty() const { return SizePolicyType::empty(); }
+  AXOM_HOST_DEVICE inline PositionType size() const
+  {
+    return SizePolicyType::size();
+  }
+  AXOM_HOST_DEVICE inline bool empty() const { return SizePolicyType::empty(); }
 
   bool isValid(bool verboseOutput = false) const;
 

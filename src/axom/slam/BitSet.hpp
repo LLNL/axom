@@ -114,7 +114,7 @@ class BitSet
 {
 public:
   using Index = int;
-  using Word = axom::uint64;
+  using Word = std::uint64_t;
 
   // TODO: update using a policy
   using ArrayType = axom::Array<Word, 1>;

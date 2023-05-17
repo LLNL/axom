@@ -73,9 +73,9 @@ struct EmptySetTraits
 {
   using EmptySetType = SetType;
 
-  static EmptySetType* emptySet() { return nullptr; }
+  AXOM_HOST_DEVICE static EmptySetType* emptySet() { return nullptr; }
 
-  static bool isEmpty(const EmptySetType* set)
+  AXOM_HOST_DEVICE static bool isEmpty(const EmptySetType* set)
   {
     return (set == emptySet() || set->empty());
   }
@@ -91,15 +91,19 @@ struct EmptySetTraits<slam::Set<P, E>>
 {
   using EmptySetType = slam::Set<P, E>;
 
-  static EmptySetType* emptySet()
+  AXOM_HOST_DEVICE static EmptySetType* emptySet()
   {
-    static slam::NullSet<P, E> s_nullSet;
+#ifndef AXOM_DEVICE_CODE
+    static slam::NullSet<P, E> s_nullSet {};
     return &s_nullSet;
+#else
+    return nullptr;
+#endif
   }
 
-  static bool isEmpty(const EmptySetType* set)
+  AXOM_HOST_DEVICE static bool isEmpty(const EmptySetType* set)
   {
-    return *set == *(emptySet()) || set->empty();
+    return set == nullptr || set->empty();
   }
 };
 

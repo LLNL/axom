@@ -47,7 +47,7 @@ struct NoSubset
   AXOM_EXPORT static const NullSet<> s_nullSet;
   using ParentSetType = const Set<>;
 
-  NoSubset() { }
+  AXOM_HOST_DEVICE NoSubset() { }
 
   // This empty .ctor is here to satisfy the SubsettingPolicy API
   NoSubset(ParentSetType*) { }

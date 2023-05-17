@@ -34,7 +34,7 @@ Supported Compilers
 ~~~~~~~~~~~~~~~~~~~
 
 Axom supports a wide variety of compilers. Please see the file 
-``axom/scripts/spack/configs/<platform>/compilers.yaml``
+``axom/scripts/spack/configs/<platform>/spack.yaml``
 for the current list of supported and tested compilers for the platforms we
 test on.
 
@@ -346,6 +346,9 @@ Axom components, tests, examples, etc.
 |                              |         | as a make target                       |
 +------------------------------+---------+----------------------------------------+
 | AXOM_ENABLE_TOOLS            | ON      | Enable Axom development tools          |
++------------------------------+---------+----------------------------------------+
+| AXOM_DEPRECATED_TYPES        | WARN    | WARN, ALLOW or ERROR on using          |
+|                              |         | deprecated types                       |
 +------------------------------+---------+----------------------------------------+
 
 If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable a desired

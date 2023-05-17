@@ -14,9 +14,6 @@
 // gtest includes
 #include "gtest/gtest.h"
 
-// C/C++ includes
-#include <cstdio> /* for std::remove() */
-
 namespace mint = axom::mint;
 
 //------------------------------------------------------------------------------
@@ -158,7 +155,7 @@ TEST(mint_su2_io, write_read_mixed_cell_topology_mesh)
 
   // cleanup
   delete test_mesh;
-  std::remove(su2File.c_str());
+  axom::utilities::filesystem::removeFile(su2File);
 }
 
 //------------------------------------------------------------------------------
@@ -215,7 +212,7 @@ TEST(mint_su2_io, write_read_single_cell_topology_mesh)
 
   // cleanup
   delete test_mesh;
-  std::remove(su2File.c_str());
+  axom::utilities::filesystem::removeFile(su2File);
 }
 
 //------------------------------------------------------------------------------

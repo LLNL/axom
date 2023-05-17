@@ -23,6 +23,7 @@ set( primal_headers
     geometry/BezierCurve.hpp
     geometry/BoundingBox.hpp
     geometry/CurvedPolygon.hpp
+    geometry/Hexahedron.hpp
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
     geometry/NumericArray.hpp
@@ -42,6 +43,7 @@ set( primal_headers
     operators/clip.hpp
     operators/closest_point.hpp
     operators/intersect.hpp
+    operators/intersection_volume.hpp
     operators/orientation.hpp
     operators/squared_distance.hpp
     operators/compute_bounding_box.hpp
@@ -68,12 +70,6 @@ set( primal_headers
     utils/ZipVector.hpp
    )
 
-set( primal_sources
-
-     ## Empty source file
-     dummy.cpp
-   )
-
 blt_list_append(
     TO       primal_headers 
     ELEMENTS operators/evaluate_integral.hpp
@@ -86,19 +82,15 @@ blt_list_append(
 #------------------------------------------------------------------------------
 set( primal_dependencies
      slic
-     core
-     ${axom_device_depends}
      )
 
 blt_list_append( TO primal_dependencies ELEMENTS mfem IF MFEM_FOUND )
 
-blt_add_library(
+axom_add_library(
     NAME                  primal
-    SOURCES               ${primal_sources}
     HEADERS               ${primal_headers}
     FOLDER                axom/primal
     DEPENDS_ON            ${primal_dependencies}
-    OBJECT                TRUE
     )
 
 axom_write_unified_header(NAME    primal

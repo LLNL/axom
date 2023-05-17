@@ -20,20 +20,19 @@ set(lulesh_sources
 
 # Add some extra configuration flags for MPI, OpenMP and allowing unused
 # parameters (in 3rd party source code)
-set(lulesh_depends_on ${axom_device_depends})
 set(luleshExtraCompileFlags ${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS})
 if (NOT AXOM_ENABLE_OPENMP )
     set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
 endif()
 
+set(lulesh_depends_on)
 blt_list_append(TO lulesh_depends_on ELEMENTS mpi IF AXOM_ENABLE_MPI)
-blt_list_append(TO lulesh_depends_on ELEMENTS openmp IF AXOM_ENABLE_OPENMP)
 
 set_source_files_properties(${lulesh_sources} ${lulesh_headers}
     PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
 
 if ( lulesh_depends_on )
-    blt_add_executable(
+    axom_add_executable(
         NAME        slam_lulesh_orig_ex
         SOURCES     ${lulesh_sources}
         HEADERS     ${lulesh_headers}
@@ -41,7 +40,7 @@ if ( lulesh_depends_on )
         DEPENDS_ON  ${lulesh_depends_on}
         FOLDER      axom/slam/examples )
 else()
-    blt_add_executable(
+    axom_add_executable(
         NAME        slam_lulesh_orig_ex
         SOURCES     ${lulesh_sources}
         HEADERS     ${lulesh_headers}

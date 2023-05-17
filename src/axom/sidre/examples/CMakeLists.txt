@@ -35,19 +35,17 @@ elseif(UNIX)
     set(EXTRA_LIBS rt)
 endif()
 
-list(APPEND EXTRA_LIBS ${axom_device_depends} )
-
 #------------------------------------------------------------------------------
 # Add targets and tests for serial examples
 #------------------------------------------------------------------------------
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
-    blt_add_executable(
-        NAME ${exe_name}_ex
-        SOURCES ${example_source}
+    axom_add_executable(
+        NAME       ${exe_name}_ex
+        SOURCES    ${example_source}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  axom ${EXTRA_LIBS}
-        FOLDER axom/sidre/examples )
+        DEPENDS_ON  sidre ${EXTRA_LIBS}
+        FOLDER      axom/sidre/examples )
 
     if(AXOM_ENABLE_TESTS)
         axom_add_test(
@@ -62,11 +60,11 @@ endforeach()
 if(AXOM_ENABLE_MPI)
     foreach(example_source ${example_parallel_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
-        blt_add_executable(
-            NAME ${exe_name}_ex
-            SOURCES ${example_source}
+        axom_add_executable(
+            NAME       ${exe_name}_ex
+            SOURCES    ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  axom ${EXTRA_LIBS} mpi
+            DEPENDS_ON sidre ${EXTRA_LIBS}
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
@@ -98,16 +96,14 @@ if(MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
         sidre_mfem_datacollection_restart.cpp
         sidre_mfem_datacollection_vis.cpp)
 
-    set(_mfem_dc_test_depends axom mfem ${EXTRA_LIBS})
-
     foreach(example_source ${_mfem_dc_tests})
         get_filename_component(exe_name ${example_source} NAME_WE)
-        blt_add_executable(
-            NAME ${exe_name}_ex
-            SOURCES ${example_source}
-            OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-            DEPENDS_ON  ${_mfem_dc_test_depends}
-            FOLDER axom/sidre/examples)
+        axom_add_executable(
+            NAME        ${exe_name}_ex
+            SOURCES     ${example_source}
+            OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+            DEPENDS_ON  sidre ${EXTRA_LIBS}
+            FOLDER      axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
             if(AXOM_ENABLE_MPI)
@@ -135,7 +131,7 @@ endif()
 if(ENABLE_FORTRAN)
     foreach(example_source ${F_example_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
-        blt_add_executable(
+        axom_add_executable(
             NAME ${exe_name}_ex
             SOURCES ${example_source}
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}

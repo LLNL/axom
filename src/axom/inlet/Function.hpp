@@ -128,7 +128,7 @@ struct FunctionBuffer
   static constexpr size_t Alignment = alignof(std::function<void()>);
   static constexpr size_t Size = sizeof(std::function<void()>);
 
-  alignas(Alignment) axom::uint8 m_bytes[Size];
+  alignas(Alignment) std::uint8_t m_bytes[Size];
 };
 
 template <typename Func>
