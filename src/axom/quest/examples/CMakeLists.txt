@@ -35,7 +35,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
 endif()
 
 # Distributed closest point example -------------------------------------------
-if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_HDF5)
+if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
     axom_add_executable(
             NAME        quest_distributed_distance_query_ex
             SOURCES     quest_distributed_distance_query_example.cpp
