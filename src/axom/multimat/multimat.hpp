@@ -293,6 +293,11 @@ public:
   /**
    * \brief Add a field to the MultiMat object
    *
+   *  If a field has the special name 'VolFrac', calling addField will have the
+   *  same behavior as calling setVolfracField.
+   *  If a field already exists, the call to addExternalField is a no-op, and
+   *  the index of the already-existing field will be returned.
+   *
    * \tparam T The data type (double, float...) of the field
    * \param field_name The name of the field, used to retrieve the field later
    * \param field_mapping
@@ -315,6 +320,12 @@ public:
 
   /**
    * \brief Add an externally-managed field to the MultiMat object
+   *
+   *  If a field has the special name 'VolFrac', calling addField will have the
+   *  same behavior as calling setVolfracField. A volume fraction field will
+   *  always be internally-managed.
+   *  If a field already exists, the call to addExternalField is a no-op, and
+   *  the index of the already-existing field will be returned.
    *
    * \tparam T The data type (double, float...) of the field
    * \param field_name The name of the field, used to retrieve the field later
@@ -906,7 +917,8 @@ int MultiMat::addField(const std::string& arr_name,
   {
     // There is already an array with the current name. And it's not Volfrac.
     // Don't add the new field.
-    SLIC_ASSERT(false);
+    SLIC_WARNING("Multimat: field with name \""
+                 << arr_name << "\" already exists. Skipping.");
 
     return fieldIdx;
   }
@@ -949,7 +961,8 @@ int MultiMat::addExternalField(const std::string& arr_name,
   {
     // There is already an array with the current name. And it's not Volfrac.
     // Don't add the new field.
-    SLIC_ASSERT(false);
+    SLIC_WARNING("Multimat: field with name \""
+                 << arr_name << "\" already exists. Skipping.");
 
     return fieldIdx;
   }
