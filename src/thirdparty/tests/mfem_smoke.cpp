@@ -13,6 +13,19 @@
 #include "gtest/gtest.h"
 
 //-----------------------------------------------------------------------------
+TEST(mfem_smoke, check_version)
+{
+  std::cout << "Using mfem version: "     //
+            << MFEM_VERSION_MAJOR << "."  //
+            << MFEM_VERSION_MINOR << "."  //
+            << MFEM_VERSION_PATCH << std::endl;
+
+  EXPECT_TRUE(MFEM_VERSION_MAJOR >= 0);
+  EXPECT_TRUE(MFEM_VERSION_MINOR >= 0);
+  EXPECT_TRUE(MFEM_VERSION_PATCH >= 0);
+}
+
+//-----------------------------------------------------------------------------
 TEST(mfem_smoke, basic_use)
 {
   // Simple usage of a basic mfem type
