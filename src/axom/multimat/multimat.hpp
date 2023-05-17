@@ -370,7 +370,7 @@ public:
    * \detail volume fraction field is assumed to be a double. Its field index is
    * always 0, and the name of the field is "Volfrac"
    *
-   * \param data_array the array containing the volumn fraction information
+   * \param data_array the array containing the volume fraction information
    * \return int the volume fraction field index, which is always zero.
    */
   template <typename T>
@@ -613,7 +613,7 @@ public:
   bool isValid(bool verboseOutput = false) const;
 
 protected:
-  //Return the Set pointer associalted with the given FieldMapping or field idx
+  //Return the Set pointer associated with the given FieldMapping or field idx
   const RangeSetType* getMappedRangeSet(FieldMapping mapping) const
   {
     if(mapping == FieldMapping::PER_CELL)
