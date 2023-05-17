@@ -877,16 +877,7 @@ void MultiMat::convertLayoutToSparse()
 {
   for(unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
   {
-    try
-    {
-      convertFieldToSparse(map_i);
-    }
-    catch(const std::runtime_error& ex)
-    {
-      SLIC_WARNING("Multimat: cannot convert field \""
-                   << m_fieldNameVec[map_i]
-                   << "\" to sparse layout, skipping...");
-    }
+    convertFieldToSparse(map_i);
   }
 }
 
@@ -894,15 +885,7 @@ void MultiMat::convertLayoutToDense()
 {
   for(unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
   {
-    try
-    {
-      convertFieldToDense(map_i);
-    }
-    catch(const std::runtime_error& ex)
-    {
-      SLIC_WARNING("Multimat: cannot convert field \""
-                   << m_fieldNameVec[map_i] << "\" to dense layout, skipping...");
-    }
+    convertFieldToDense(map_i);
   }
 }
 
@@ -985,8 +968,9 @@ void MultiMat::convertFieldToSparse(int field_idx)
 
   if(!m_fieldBackingVec[field_idx]->isOwned())
   {
-    throw std::runtime_error("Multimat error: cannot convert unowned field \"" +
-                             m_fieldNameVec[field_idx] + "\" to sparse layout.");
+    SLIC_WARNING("Multimat: cannot convert unowned field \"" +
+                 m_fieldNameVec[field_idx] + "\" to sparse layout. Skipping.");
+    return;
   }
 
   if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeDouble)
@@ -1027,8 +1011,9 @@ void MultiMat::convertFieldToDense(int field_idx)
 
   if(!m_fieldBackingVec[field_idx]->isOwned())
   {
-    throw std::runtime_error("Multimat error: cannot convert unowned field \"" +
-                             m_fieldNameVec[field_idx] + "\" to dense layout.");
+    SLIC_WARNING("Multimat: cannot convert unowned field \"" +
+                 m_fieldNameVec[field_idx] + "\" to dense layout. Skipping.");
+    return;
   }
 
   if(m_dataTypeVec[field_idx] == DataTypeSupported::TypeDouble)

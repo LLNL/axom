@@ -403,7 +403,6 @@ public:
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field1D, containing an entry for each cell
    * or material. To retrieve a field of type Field2D, use get2dField().
-   * Throws exception if \a field_name is not found.
    *
    * \tparam T The data type of the field
    * \param field_name the name of the field
@@ -420,7 +419,6 @@ public:
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field2D, containing an entry for each cell and
    * each material. To retrieve a field of type Field1D, use get1dField().
-   * Throws exception if \a field_name is not found.
    *
    * \tparam T The data type of the field
    * \param field_name the name of the field
@@ -525,7 +523,6 @@ public:
    *  2D cell-material field.
    *
    * \param field_idx the index of the field to convert
-   * \exception std::runtime_error if field is in externally-owned memory
    *
    * \post getFieldSparsityLayout(field_idx) == SparsityLayout::SPARSE
    */
@@ -537,7 +534,6 @@ public:
    *  2D cell-material field.
    *
    * \param field_idx the index of the field to convert
-   * \exception std::runtime_error if field is in externally-owned memory
    *
    * \post getFieldSparsityLayout(field_idx) == SparsityLayout::DENSE
    */
@@ -1056,7 +1052,7 @@ MultiMat::Field1D<T> MultiMat::get1dField(const std::string& field_name)
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
-    throw std::invalid_argument("No field with this name is found");
+    SLIC_ERROR("Multimat: No field with the name \"" + field_name + "\" was found.");
 
   return get1dFieldImpl<T>(fieldIdx);
 }
@@ -1067,7 +1063,7 @@ MultiMat::Field1D<const T> MultiMat::get1dField(const std::string& field_name) c
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
-    throw std::invalid_argument("No field with this name is found");
+    SLIC_ERROR("Multimat: No field with the name \"" + field_name + "\" was found.");
 
   return get1dFieldImpl<const T>(fieldIdx);
 }
@@ -1078,7 +1074,7 @@ MultiMat::Field2D<T> MultiMat::get2dField(const std::string& field_name)
   int fieldIdx = getFieldIdx(field_name);
 
   if(fieldIdx < 0)
-    throw std::invalid_argument("No field with this name is found");
+    SLIC_ERROR("Multimat: No field with the name \"" + field_name + "\" was found.");
 
   return get2dFieldImpl<T>(fieldIdx);
 }
