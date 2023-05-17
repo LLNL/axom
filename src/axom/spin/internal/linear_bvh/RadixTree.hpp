@@ -32,36 +32,38 @@ struct RadixTree
 {
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
 
-  int32 m_size;
-  int32 m_inner_size;
+  std::int32_t m_size;
+  std::int32_t m_inner_size;
 
-  axom::Array<int32> m_left_children;
-  axom::Array<int32> m_right_children;
-  axom::Array<int32> m_parents;
+  axom::Array<std::int32_t> m_left_children;
+  axom::Array<std::int32_t> m_right_children;
+  axom::Array<std::int32_t> m_parents;
   axom::Array<BoxType> m_inner_aabbs;
 
-  axom::Array<int32> m_leafs;
-  axom::Array<uint32> m_mcodes;
+  axom::Array<std::int32_t> m_leafs;
+  axom::Array<std::uint32_t> m_mcodes;
   axom::Array<BoxType> m_leaf_aabbs;
 
-  void allocate(int32 size, int allocID)
+  void allocate(std::int32_t size, int allocID)
   {
     AXOM_PERF_MARK_FUNCTION("RadixTree::allocate");
 
     m_size = size;
     m_inner_size = m_size - 1;
-    int32 parent_size = m_size + m_inner_size;
+    std::int32_t parent_size = m_size + m_inner_size;
 
-    m_left_children = axom::Array<int32>(m_inner_size, m_inner_size, allocID);
-    m_right_children = axom::Array<int32>(m_inner_size, m_inner_size, allocID);
-    m_parents = axom::Array<int32>(parent_size, parent_size, allocID);
+    m_left_children =
+      axom::Array<std::int32_t>(m_inner_size, m_inner_size, allocID);
+    m_right_children =
+      axom::Array<std::int32_t>(m_inner_size, m_inner_size, allocID);
+    m_parents = axom::Array<std::int32_t>(parent_size, parent_size, allocID);
     m_inner_aabbs = axom::Array<BoxType>(ArrayOptions::Uninitialized {},
                                          m_inner_size,
                                          m_inner_size,
                                          allocID);
 
-    m_leafs = axom::Array<int32>(m_size, m_size, allocID);
-    m_mcodes = axom::Array<uint32>(m_size, m_size, allocID);
+    m_leafs = axom::Array<std::int32_t>(m_size, m_size, allocID);
+    m_mcodes = axom::Array<std::uint32_t>(m_size, m_size, allocID);
     m_leaf_aabbs =
       axom::Array<BoxType>(ArrayOptions::Uninitialized {}, m_size, m_size, allocID);
   }

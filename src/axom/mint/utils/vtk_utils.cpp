@@ -282,10 +282,10 @@ void write_scalar_data(const Field* field, std::ofstream& file)
     write_scalar_helper<double>("double", field, file);
     break;
   case INT32_FIELD_TYPE:
-    write_scalar_helper<axom::int32>("int", field, file);
+    write_scalar_helper<std::int32_t>("int", field, file);
     break;
   case INT64_FIELD_TYPE:
-    write_scalar_helper<axom::int64>("long", field, file);
+    write_scalar_helper<std::int64_t>("long", field, file);
     break;
   default:
     SLIC_WARNING(
@@ -347,10 +347,10 @@ void write_vector_data(const Field* field, std::ofstream& file)
     write_vector_helper<double>("double", field, file);
     break;
   case INT32_FIELD_TYPE:
-    write_vector_helper<axom::int32>("int", field, file);
+    write_vector_helper<std::int32_t>("int", field, file);
     break;
   case INT64_FIELD_TYPE:
-    write_vector_helper<axom::int64>("long", field, file);
+    write_vector_helper<std::int64_t>("long", field, file);
     break;
   default:
     SLIC_WARNING(
@@ -410,10 +410,10 @@ void write_multidim_data(const Field* field, std::ofstream& file)
     write_multidim_helper<double>("double", field, file);
     break;
   case INT32_FIELD_TYPE:
-    write_multidim_helper<axom::int32>("int", field, file);
+    write_multidim_helper<std::int32_t>("int", field, file);
     break;
   case INT64_FIELD_TYPE:
-    write_multidim_helper<axom::int64>("long", field, file);
+    write_multidim_helper<std::int64_t>("long", field, file);
     break;
   default:
     SLIC_WARNING(

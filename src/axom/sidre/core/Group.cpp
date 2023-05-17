@@ -37,6 +37,18 @@ namespace sidre
 // support path syntax.
 const char Group::s_path_delimiter = '/';
 
+// Initialization of static members holding I/O protocol strings
+const std::vector<std::string> Group::s_io_protocols = {
+#ifdef AXOM_USE_HDF5
+  "sidre_hdf5",
+  "conduit_hdf5",
+#endif
+  "sidre_json",
+  "sidre_conduit_json",
+  "conduit_bin",
+  "conduit_json",
+  "json"};
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Private utility functions to cast ItemCollections to (named) MapCollections.

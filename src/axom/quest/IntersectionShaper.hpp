@@ -311,7 +311,9 @@ public:
                      sidre::MFEMSidreDataCollection* dc)
     : Shaper(shapeSet, dc)
   {
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     m_free_mat_name = "free";
+#endif
   }
 
   //@{

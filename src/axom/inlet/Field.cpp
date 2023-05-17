@@ -107,7 +107,7 @@ Field& Field::defaultValue(bool value)
     SLIC_WARNING("[Inlet] Field value type did not match BOOL");
     setWarningFlag(m_sidreRootGroup);
   }
-  setDefaultValue((int8)value);
+  setDefaultValue((std::int8_t)value);
   return *this;
 }
 
@@ -207,8 +207,8 @@ template <>
 bool Field::get<bool>() const
 {
   const auto valueView = checkExistenceAndType(axom::sidre::INT8_ID);
-  // There is no boolean type in conduit/sidre so we use int8
-  const int8 intValue = valueView->getScalar();
+  // There is no boolean type in conduit/sidre so we use std::int8_t
+  const std::int8_t intValue = valueView->getScalar();
   if(intValue < 0 || intValue > 1)
   {
     const std::string msg = fmt::format(

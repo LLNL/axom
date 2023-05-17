@@ -206,7 +206,7 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
 
   // Loop over Polyhedron vertices
   int numVerts = poly.numVertices();
-  for(axom::int8 i = 0; i < numVerts; i++)
+  for(std::int8_t i = 0; i < numVerts; i++)
   {
     int orientation = plane.getOrientation(poly[i], eps);
 
@@ -220,7 +220,7 @@ AXOM_HOST_DEVICE void poly_clip_vertices(Polyhedron<T, NDIMS>& poly,
       int numNeighbors = poly.getNumNeighbors(i);
       for(int j = 0; j < numNeighbors; j++)
       {
-        axom::int8 neighborIndex = poly.getNeighbors(i)[j];
+        std::int8_t neighborIndex = poly.getNeighbors(i)[j];
 
         int neighborOrientation = plane.getOrientation(poly[neighborIndex], eps);
 
@@ -358,7 +358,7 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
                                         const unsigned int clipped)
 {
   // Dictionary for old indices to new indices positions
-  axom::int8 newIndices[Polyhedron<T, NDIMS>::MAX_VERTS] = {0};
+  std::int8_t newIndices[Polyhedron<T, NDIMS>::MAX_VERTS] = {0};
 
   Polyhedron<T, NDIMS> old_poly;
 

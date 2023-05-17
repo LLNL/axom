@@ -67,6 +67,9 @@ set(slic_depends core)
 
 blt_list_append( TO slic_depends ELEMENTS lumberjack IF ${AXOM_ENABLE_LUMBERJACK} )
 blt_list_append( TO slic_depends ELEMENTS dbghelp IF ${WIN32} )
+if (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  list( APPEND slic_depends execinfo )
+endif()
 
 axom_add_library(NAME        slic
                  SOURCES     ${slic_sources}

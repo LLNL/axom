@@ -40,13 +40,6 @@
 #include "View.hpp"
 #include "ItemCollection.hpp"
 
-// Define the default protocol for sidre I/O
-#ifdef AXOM_USE_HDF5
-  #define SIDRE_DEFAULT_PROTOCOL "sidre_hdf5"
-#else
-  #define SIDRE_DEFAULT_PROTOCOL "sidre_conduit_json"
-#endif
-
 namespace axom
 {
 namespace sidre
@@ -153,6 +146,28 @@ public:
    * \brief Return the path delimiter
    */
   char getPathDelimiter() const { return s_path_delimiter; }
+
+  /*!
+   * \brief static method to get valid protocols for Group I/O methods.
+   *
+   * Only protocols that work for both input and output are returned.
+   */
+  static const std::vector<std::string>& getValidIOProtocols()
+  {
+    return s_io_protocols;
+  }
+
+  /*!
+   * \brief static method to get the default I/O protocol.
+   */
+  static std::string getDefaultIOProtocol()
+  {
+#if defined(AXOM_USE_HDF5)
+    return std::string("sidre_hdf5");
+#else
+    return std::string("sidre_conduit_json");
+#endif
+  }
 
   /*!
    * \brief Return index of Group object within parent Group.
@@ -1384,7 +1399,7 @@ public:
    * \param attr      Save Views that have Attribute set.
    */
   void save(const std::string& path,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
   /*!
@@ -1406,7 +1421,7 @@ public:
    *                           loading data from the file.
    */
   void load(const std::string& path,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
   /*!
@@ -1493,7 +1508,7 @@ public:
    * \param attr       Save Views that have Attribute set.
    */
   void save(const hid_t& h5_id,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             const Attribute* attr = nullptr) const;
 
   /*!
@@ -1511,7 +1526,7 @@ public:
    *                           loading data from the file.
    */
   void load(const hid_t& h5_id,
-            const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+            const std::string& protocol = Group::getDefaultIOProtocol(),
             bool preserve_contents = false);
 
   /*!
@@ -1834,6 +1849,9 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
+
+  // Collection of the valid I/O protocols for save and load.
+  static const std::vector<std::string> s_io_protocols;
 };
 
 } /* end namespace sidre */

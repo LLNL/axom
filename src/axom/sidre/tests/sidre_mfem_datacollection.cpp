@@ -469,7 +469,7 @@ TEST(sidre_datacollection, create_specset)
   EXPECT_TRUE(bp_grp->hasGroup("specsets"));
   EXPECT_TRUE(bp_grp->hasGroup("specsets/specset"));
   EXPECT_TRUE(bp_grp->hasView("specsets/specset/volume_dependent"));
-  EXPECT_FALSE(static_cast<axom::int8>(
+  EXPECT_FALSE(static_cast<std::int8_t>(
     bp_grp->getView("specsets/specset/volume_dependent")->getScalar()));
   EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset"));
   EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
@@ -523,7 +523,7 @@ TEST(sidre_datacollection, create_specset_multi_fraction)
   EXPECT_TRUE(bp_grp->hasGroup("specsets"));
   EXPECT_TRUE(bp_grp->hasGroup("specsets/specset"));
   EXPECT_TRUE(bp_grp->hasView("specsets/specset/volume_dependent"));
-  EXPECT_FALSE(static_cast<axom::int8>(
+  EXPECT_FALSE(static_cast<std::int8_t>(
     bp_grp->getView("specsets/specset/volume_dependent")->getScalar()));
   EXPECT_TRUE(bp_grp->hasView("specsets/specset/matset"));
   EXPECT_EQ(std::string(bp_grp->getView("specsets/specset/matset")->getString()),
