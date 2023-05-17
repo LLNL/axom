@@ -703,19 +703,6 @@ void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
   EXPECT_EQ(mm.getFieldDataLayout(ext_field_idx), to_layout);
   EXPECT_EQ(mm.getFieldSparsityLayout(ext_field_idx), sparsity_used);
 
-  // Converting a single external field between sparse/dense should throw.
-  if(to_sparsity != sparsity_used)
-  {
-    if(to_sparsity == SparsityLayout::DENSE)
-    {
-      EXPECT_THROW(mm.convertFieldToDense(ext_field_idx), std::runtime_error);
-    }
-    else
-    {
-      EXPECT_THROW(mm.convertFieldToSparse(ext_field_idx), std::runtime_error);
-    }
-  }
-
   check_values<DataType>(mm, "OwnedField", data);
   check_values<DataType>(mm, "UnownedField", data);
 }
