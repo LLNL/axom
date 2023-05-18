@@ -113,6 +113,12 @@ MultiMat::IndBufferType& MultiMat::relIndVec(DataLayout layout)
                                           : m_matCellRel_indicesVec;
 }
 
+MultiMat::IndBufferType& MultiMat::relFirstIndVec(DataLayout layout)
+{
+  return (layout == DataLayout::CELL_DOM) ? m_cellMatRel_firstIndicesVec
+                                          : m_matCellRel_firstIndicesVec;
+}
+
 MultiMat::StaticVariableRelationType& MultiMat::relStatic(DataLayout layout)
 {
   return m_staticRelations[(int)layout];
@@ -176,8 +182,10 @@ MultiMat::MultiMat(const MultiMat& other)
   , m_sets(other.m_sets)
   , m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec)
   , m_cellMatRel_indicesVec(other.m_cellMatRel_indicesVec)
+  , m_cellMatRel_firstIndicesVec(other.m_cellMatRel_firstIndicesVec)
   , m_matCellRel_beginsVec(other.m_matCellRel_beginsVec)
   , m_matCellRel_indicesVec(other.m_matCellRel_indicesVec)
+  , m_matCellRel_firstIndicesVec(other.m_matCellRel_firstIndicesVec)
   , m_staticRelations(other.m_staticRelations)
   , m_dynamicRelations(other.m_dynamicRelations)
   , m_sparseBivarSet(other.m_sparseBivarSet)
@@ -199,6 +207,9 @@ MultiMat::MultiMat(const MultiMat& other)
                                 m_cellMatRel_beginsVec.view());
     cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
                            m_cellMatRel_indicesVec.view());
+    cellMatRel.bindFirstIndices(m_cellMatRel_firstIndicesVec.size(),
+                                m_cellMatRel_firstIndicesVec.view(),
+                                false);
     relSparseSet(DataLayout::CELL_DOM) = RelationSetType(&cellMatRel);
     relDenseSet(DataLayout::CELL_DOM) =
       ProductSetType(&getCellSet(), &getMatSet());
@@ -210,6 +221,9 @@ MultiMat::MultiMat(const MultiMat& other)
     matCellRel = StaticVariableRelationType(&getMatSet(), &getCellSet());
     matCellRel.bindBeginOffsets(getMatSet().size(),
                                 m_matCellRel_beginsVec.view());
+    matCellRel.bindFirstIndices(m_matCellRel_firstIndicesVec.size(),
+                                m_matCellRel_firstIndicesVec.view(),
+                                false);
     matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
                            m_matCellRel_indicesVec.view());
     relSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
@@ -301,10 +315,14 @@ void MultiMat::setSlamAllocatorID(int alloc_id)
     IndBufferType(m_cellMatRel_beginsVec, m_slamAllocatorId);
   m_cellMatRel_indicesVec =
     IndBufferType(m_cellMatRel_indicesVec, m_slamAllocatorId);
+  m_cellMatRel_firstIndicesVec =
+    IndBufferType(m_cellMatRel_firstIndicesVec, m_slamAllocatorId);
   m_matCellRel_beginsVec =
     IndBufferType(m_matCellRel_beginsVec, m_slamAllocatorId);
   m_matCellRel_indicesVec =
     IndBufferType(m_matCellRel_indicesVec, m_slamAllocatorId);
+  m_matCellRel_firstIndicesVec =
+    IndBufferType(m_matCellRel_firstIndicesVec, m_slamAllocatorId);
 
   m_staticRelations = axom::Array<StaticVariableRelationType>(m_staticRelations,
                                                               m_slamAllocatorId);
@@ -325,6 +343,9 @@ void MultiMat::setSlamAllocatorID(int alloc_id)
                                 m_cellMatRel_beginsVec.view());
     cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(),
                            m_cellMatRel_indicesVec.view());
+    cellMatRel.bindFirstIndices(m_cellMatRel_firstIndicesVec.size(),
+                                m_cellMatRel_firstIndicesVec.view(),
+                                false);
     relSparseSet(DataLayout::CELL_DOM) = RelationSetType(&cellMatRel);
     relDenseSet(DataLayout::CELL_DOM) =
       ProductSetType(&getCellSet(), &getMatSet());
@@ -338,6 +359,9 @@ void MultiMat::setSlamAllocatorID(int alloc_id)
                                 m_matCellRel_beginsVec.view());
     matCellRel.bindIndices(m_matCellRel_indicesVec.size(),
                            m_matCellRel_indicesVec.view());
+    matCellRel.bindFirstIndices(m_matCellRel_firstIndicesVec.size(),
+                                m_matCellRel_firstIndicesVec.view(),
+                                false);
     relSparseSet(DataLayout::MAT_DOM) = RelationSetType(&matCellRel);
     relDenseSet(DataLayout::MAT_DOM) =
       ProductSetType(&getMatSet(), &getCellSet());
@@ -393,6 +417,7 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
   StaticVariableRelationType& Rel_ptr = relStatic(layout);
   IndBufferType& Rel_beginsVec = relBeginVec(layout);
   IndBufferType& Rel_indicesVec = relIndVec(layout);
+  IndBufferType& Rel_firstIndicesVec = relFirstIndVec(layout);
 
   // Check that we haven't already set up the cell-material relation.
   // TODO: should we allow resetting the relation?
@@ -418,6 +443,11 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
   Rel_ptr = StaticVariableRelationType(&set1, &set2);
   Rel_ptr.bindBeginOffsets(set1.size(), Rel_beginsVec.view());
   Rel_ptr.bindIndices(Rel_indicesVec.size(), Rel_indicesVec.view());
+
+  Rel_firstIndicesVec =
+    axom::Array<SetPosType>(indices.size(), indices.size(), m_slamAllocatorId);
+  Rel_ptr.bindFirstIndices(Rel_firstIndicesVec.size(),
+                           Rel_firstIndicesVec.view());
 
   SLIC_ASSERT(relBeginVec(layout).getAllocatorID() == m_slamAllocatorId);
   SLIC_ASSERT(relIndVec(layout).getAllocatorID() == m_slamAllocatorId);
@@ -658,6 +688,7 @@ void MultiMat::convertToStatic()
 
     IndBufferType& rel_beginvec = relBeginVec(layout);
     IndBufferType& rel_indicesVec = relIndVec(layout);
+    IndBufferType& rel_firstIndicesVec = relFirstIndVec(layout);
 
     SLIC_ASSERT(SetPosType(rel_beginvec.size()) == set1.size() + 1);
     int rel_data_size = 0;
@@ -669,6 +700,7 @@ void MultiMat::convertToStatic()
     }
     rel_beginvec.back() = rel_data_size;
     rel_indicesVec.resize(rel_data_size);
+    rel_firstIndicesVec.resize(rel_data_size);
     int idx = 0;
     for(int i = 0; i < relDyn.fromSetSize(); i++)
     {
@@ -685,6 +717,7 @@ void MultiMat::convertToStatic()
     rel = StaticVariableRelationType(&set1, &set2);
     rel.bindBeginOffsets(set1.size(), rel_beginvec.view());
     rel.bindIndices(rel_indicesVec.size(), rel_indicesVec.view());
+    rel.bindFirstIndices(rel_firstIndicesVec.size(), rel_firstIndicesVec.view());
 
     SLIC_ASSERT(rel.isValid());
 
@@ -808,6 +841,7 @@ void MultiMat::makeOtherRelation(DataLayout layout)
   StaticVariableRelationType& newRel = relStatic(layout);
   IndBufferType& newBeginVec = relBeginVec(layout);
   IndBufferType& newIndicesVec = relIndVec(layout);
+  IndBufferType& newFirstIndicesVec = relFirstIndVec(layout);
 
   RangeSetType& set1 = *(oldRel.fromSet());
   RangeSetType& set2 = *(oldRel.toSet());
@@ -817,6 +851,7 @@ void MultiMat::makeOtherRelation(DataLayout layout)
 
   newBeginVec.resize(set2.size() + 1, 0);
   newIndicesVec.resize(nz_count, -1);
+  newFirstIndicesVec.resize(nz_count);
 
   //construct the new transposed relation
 
@@ -856,6 +891,7 @@ void MultiMat::makeOtherRelation(DataLayout layout)
   newRel = StaticVariableRelationType(&set2, &set1);
   newRel.bindBeginOffsets(set2.size(), newBeginVec.view());
   newRel.bindIndices(newIndicesVec.size(), newIndicesVec.view());
+  newRel.bindFirstIndices(newFirstIndicesVec.size(), newFirstIndicesVec.view());
 
   relSparseSet(layout) = RelationSetType(&newRel);
   relDenseSet(layout) = ProductSetType(&set2, &set1);

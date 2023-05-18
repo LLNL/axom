@@ -84,7 +84,7 @@ private:
   using IndViewPolicy = slam::policies::ArrayViewIndirection<SetPosType, T>;
 
   using VariableCardinality =
-    slam::policies::VariableCardinality<SetPosType, IndViewPolicy<SetElemType>>;
+    slam::policies::MappedVariableCardinality<SetPosType, IndViewPolicy<SetElemType>>;
   using StaticVariableRelationType =
     slam::StaticRelation<SetPosType,
                          SetElemType,
@@ -681,6 +681,14 @@ private:  //private functions
   IndBufferType& relIndVec(DataLayout layout);
 
   /*!
+   * \brief Returns a reference to the corresponding array of indices for
+   *        a static relation corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  IndBufferType& relFirstIndVec(DataLayout layout);
+
+  /*!
    * \brief Returns a reference to the static relation corresponding to a
    *        layout.
    *
@@ -780,9 +788,11 @@ private:
   //cell to mat relation data
   IndBufferType m_cellMatRel_beginsVec;
   IndBufferType m_cellMatRel_indicesVec;
+  IndBufferType m_cellMatRel_firstIndicesVec;
   //mat to cell relation data
   IndBufferType m_matCellRel_beginsVec;
   IndBufferType m_matCellRel_indicesVec;
+  IndBufferType m_matCellRel_firstIndicesVec;
   //relation objects stored in unified memory
   axom::Array<StaticVariableRelationType> m_staticRelations;
   axom::Array<DynamicVariableRelationType> m_dynamicRelations;
