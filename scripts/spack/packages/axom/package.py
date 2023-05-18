@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2023 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -397,26 +397,29 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         return entries
 
+    def find_path_replacement(self, path1, path2, path_replacements, name, entries):
+        root = os.path.commonprefix([path1, path2])
+        if root.endswith(os.path.sep):
+            root = root[:-len(os.path.sep)]
+        if root:
+            path_replacements[root] = "${" + name + "}"
+            entries.append(cmake_cache_path(name, root))
+
     def initconfig_package_entries(self):
         spec = self.spec
         entries = []
+        path_replacements = {}
 
         # TPL locations
         entries.append("#------------------{0}".format("-" * 60))
         entries.append("# TPLs")
         entries.append("#------------------{0}\n".format("-" * 60))
 
-        # Try to find the common prefix of the TPL directory, including the
-        # compiler. If found, we will use this in the TPL paths
-        compiler_str = str(spec.compiler).replace("@", "-")
-        prefix_paths = prefix.split(compiler_str)
-        path_replacements = {}
-
-        if len(prefix_paths) == 2:
-            tpl_root = os.path.realpath(pjoin(prefix_paths[0], compiler_str))
-            path_replacements[tpl_root] = "${TPL_ROOT}"
-            entries.append("# Root directory for generated TPLs\n")
-            entries.append(cmake_cache_path("TPL_ROOT", tpl_root))
+        # Try to find the common prefix of the TPL directory. 
+        # If found, we will use this in the TPL paths
+        path1 = os.path.realpath(spec["conduit"].prefix)
+        path2 = os.path.realpath(self.prefix)
+        self.find_path_replacement(path1, path2, path_replacements, "TPL_ROOT", entries)
 
         conduit_dir = get_spec_path(spec, "conduit", path_replacements)
         entries.append(cmake_cache_path("CONDUIT_DIR", conduit_dir))
@@ -471,10 +474,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # Grab common devtools root and strip the trailing slash
             path1 = os.path.realpath(spec["cppcheck"].prefix)
             path2 = os.path.realpath(spec["doxygen"].prefix)
-            devtools_root = os.path.commonprefix([path1, path2])[:-1]
-            path_replacements[devtools_root] = "${DEVTOOLS_ROOT}"
-            entries.append("# Root directory for generated developer tools\n")
-            entries.append(cmake_cache_path("DEVTOOLS_ROOT", devtools_root))
+            self.find_path_replacement(path1, path2, path_replacements, "DEVTOOLS_ROOT", entries)
 
         if "+devtools" in spec and "toss_4" not in self._get_sys_type(spec):
             # Only turn on clangformat support if devtools is on and not TOSS4
