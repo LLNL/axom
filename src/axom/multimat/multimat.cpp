@@ -833,68 +833,96 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
   return true;
 }
 
+template <typename ExecSpace, typename IndexType>
+void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
+                           axom::Array<IndexType>& beginOffsets,
+                           axom::Array<IndexType>& secondIndexes,
+                           axom::Array<IndexType>& firstIndexes,
+                           int slamAllocatorID)
+{
+  using IndBufferType = axom::Array<IndexType>;
+
+  int numCols = oldRelationSet->secondSetSize() + 1;
+  int relationSize = oldRelationSet->totalSize();
+  IndBufferType counts(numCols, numCols, slamAllocatorID);
+  beginOffsets = IndBufferType(numCols, numCols, slamAllocatorID);
+  firstIndexes = IndBufferType(relationSize, relationSize, slamAllocatorID);
+  secondIndexes = IndBufferType(relationSize, relationSize, slamAllocatorID);
+
+  const auto countsView = counts.view();
+
+  // Count the number of entries for each second set index
+  axom::for_all<ExecSpace>(
+    oldRelationSet->totalSize(),
+    AXOM_LAMBDA(int flatIndex) {
+      int secondIdx = oldRelationSet->flatToSecondIndex(flatIndex);
+      countsView[secondIdx]++;  // TODO: make atomic
+    });
+
+  const auto beginView = beginOffsets.view();
+
+  // Scan to get begin offsets array
+  // TODO: use raja scan?
+  axom::for_all<axom::SEQ_EXEC>(
+    oldRelationSet->secondSetSize(),
+    AXOM_LAMBDA(int secondIdx) {
+      beginView[secondIdx + 1] = beginView[secondIdx] + countsView[secondIdx];
+    });
+
+  const auto firstIdxView = firstIndexes.view();
+  const auto secondIdxView = secondIndexes.view();
+
+  // Fill first and second index arrays
+  // TODO: on the GPU, this should be a RAJA::stable_sort_pairs
+  axom::for_all<axom::SEQ_EXEC>(
+    oldRelationSet->totalSize(),
+    AXOM_LAMBDA(int flatIndex) {
+      int firstIdx = oldRelationSet->flatToFirstIndex(flatIndex);
+      int secondIdx = oldRelationSet->flatToSecondIndex(flatIndex);
+
+      // Start from end of the second set element's range.
+      int reverse_offset = beginView[secondIdx + 1];
+
+      // Use countsView to keep track of indexes to place elements at.
+      reverse_offset -= countsView[secondIdx];
+      countsView[secondIdx]--;
+
+      firstIdxView[reverse_offset] = secondIdx;
+      secondIdxView[reverse_offset] = firstIdx;
+    });
+}
+
 void MultiMat::makeOtherRelation(DataLayout layout)
 {
   DataLayout old_layout =
     (layout == DataLayout::CELL_DOM ? DataLayout::MAT_DOM : DataLayout::CELL_DOM);
-  StaticVariableRelationType& oldRel = relStatic(old_layout);
-  StaticVariableRelationType& newRel = relStatic(layout);
+  RelationSetType* oldRelationSet = &relSparseSet(old_layout);
   IndBufferType& newBeginVec = relBeginVec(layout);
   IndBufferType& newIndicesVec = relIndVec(layout);
   IndBufferType& newFirstIndicesVec = relFirstIndVec(layout);
 
-  RangeSetType& set1 = *(oldRel.fromSet());
-  RangeSetType& set2 = *(oldRel.toSet());
-
-  auto nz_count = oldRel.totalSize();
-  //auto nz_count = m_cellMatRel_indicesVec.size();
-
-  newBeginVec.resize(set2.size() + 1, 0);
-  newIndicesVec.resize(nz_count, -1);
-  newFirstIndicesVec.resize(nz_count);
-
   //construct the new transposed relation
+  TransposeRelationImpl<axom::SEQ_EXEC>(oldRelationSet,
+                                        newBeginVec,
+                                        newIndicesVec,
+                                        newFirstIndicesVec,
+                                        m_slamAllocatorId);
 
-  //count the non-zero in each rows
-  for(auto idx1 = 0; idx1 < oldRel.fromSetSize(); ++idx1)
-  {
-    IdSet relSubset = oldRel[idx1];
-    for(auto j = 0; j < relSubset.size(); ++j)
-    {
-      auto idx2 = relSubset[j];
-      newBeginVec[idx2] += 1;
-    }
-  }
+  RangeSetType& newFirstSet = relDominantSet(layout);
+  RangeSetType& newSecondSet = relSecondarySet(layout);
 
-  //add them to make this the end index
-  {
-    axom::IndexType i;
-    for(i = 1; i < newBeginVec.size() - 1; i++)
-    {
-      newBeginVec[i] += newBeginVec[i - 1];
-    }
-    newBeginVec[i] = newBeginVec[i - 1];
-  }
+  SLIC_ASSERT(newBeginVec.size() == newFirstSet.size() + 1);
 
-  //fill in the indicesVec and the move_indices backward
-  for(auto idx1 = oldRel.fromSetSize() - 1; idx1 >= 0; --idx1)
-  {
-    IdSet relSubset = oldRel[idx1];
-    for(auto j = relSubset.size() - 1; j >= 0; --j)
-    {
-      auto idx2 = relSubset[j];
-      auto compress_idx = --newBeginVec[idx2];
-      newIndicesVec[compress_idx] = idx1;
-    }
-  }
-
-  newRel = StaticVariableRelationType(&set2, &set1);
-  newRel.bindBeginOffsets(set2.size(), newBeginVec.view());
+  StaticVariableRelationType& newRel = relStatic(layout);
+  newRel = StaticVariableRelationType(&newFirstSet, &newSecondSet);
+  newRel.bindBeginOffsets(newFirstSet.size(), newBeginVec.view());
   newRel.bindIndices(newIndicesVec.size(), newIndicesVec.view());
-  newRel.bindFirstIndices(newFirstIndicesVec.size(), newFirstIndicesVec.view());
+  newRel.bindFirstIndices(newFirstIndicesVec.size(),
+                          newFirstIndicesVec.view(),
+                          false);
 
   relSparseSet(layout) = RelationSetType(&newRel);
-  relDenseSet(layout) = ProductSetType(&set2, &set1);
+  relDenseSet(layout) = ProductSetType(&newFirstSet, &newSecondSet);
 }
 
 void MultiMat::convertLayoutToCellDominant()
