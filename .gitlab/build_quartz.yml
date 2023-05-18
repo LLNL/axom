@@ -85,11 +85,12 @@ quartz-gcc_10_3_1-src:
     HOST_CONFIG: "quartz-toss_4_x86_64_ib-${COMPILER}.cmake"
   extends: .src_build_on_quartz
 
-quartz-gcc_10_3_1_no_fortran-src:
-  variables:
-    COMPILER: "gcc@10.3.1"
-    HOST_CONFIG: "quartz-toss_4_x86_64_ib-${COMPILER}_nofortran.cmake"
-  extends: .src_build_on_quartz
+# TODO: turn back on
+#quartz-gcc_10_3_1_no_fortran-src:
+#  variables:
+#    COMPILER: "gcc@10.3.1"
+#    HOST_CONFIG: "quartz-toss_4_x86_64_ib-${COMPILER}_nofortran.cmake"
+#  extends: .src_build_on_quartz
 
 # disabled due to not actually having a host-config yet
 # quartz-intel_19_0_4-src:
