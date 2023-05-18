@@ -17,6 +17,7 @@ spack:
   view:
     default:
       root: ../view
+      #TODO: add python to this list
       select: [llvm, cppcheck, doxygen, py-ats, py-sphinx]
       projections:
         all: '{name}-{version}'
