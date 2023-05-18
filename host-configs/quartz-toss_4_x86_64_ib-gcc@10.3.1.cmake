@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_07_57_03/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_12_46_06/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_07_57_03/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_12_46_06/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_07_57_03/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_12_46_06/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
 
 else()
 
@@ -61,15 +61,15 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_07_57_03/gcc-10.3.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib/2023_05_18_12_46_06/gcc-10.3.1" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-3dqvvrncvbesq6dtzpfzwnwdhs4ofkq7" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-vqoghwn564urazonynsmjxsf2ow3wlbo" CACHE PATH "")
 
 set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0-d5zxxbu3otbfazlw2c2l7x3gqfxvwb3f" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-puo6dakeucs4bf73mgkswqok2awwyodd" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-zne4nxalzmzh27of5dmn23q5ahamgj6x" CACHE PATH "")
 
-# HDF5 not built
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-xp4gvbrrgfqn2xfdyejutlvqy73flpcp" CACHE PATH "")
 
 set(LUA_DIR "/usr" CACHE PATH "")
 
@@ -85,19 +85,17 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-skind35qqh5qqmtm2gzfx5w7x3naka5v" CACHE
 # Devtools
 #------------------------------------------------------------------------------
 
-set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_00_10_54/._view/if3mvrcfyezs6ftljp5agtvcgzq24dsy" CACHE PATH "")
+set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_11_52_05/._view/sxuebswl4ldukumumvfeorinjdzkyher" CACHE PATH "")
 
-set(CLANGFORMAT_EXECUTABLE "${DEVTOOLS_ROOT}/llvm-10.0.0/bin/clang-format" CACHE PATH "")
+set(CLANGFORMAT_EXECUTABLE "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0/bin/clang-format" CACHE PATH "")
 
-set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
-
-set(PYTHON_EXECUTABLE "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_00_10_54/gcc-10.3.1/python-3.10.10-ax5o3trottgkiawhosee64lend3smkm2/bin/python3.10" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/python3.10" CACHE PATH "")
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 
 set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/sphinx-build" CACHE PATH "")
 
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/py-shroud-0.12.2-s2uh742gipnalg3r3czhotb65aj3rbwp/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/shroud" CACHE PATH "")
 
 set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-2.9/bin/cppcheck" CACHE PATH "")
 
