@@ -191,15 +191,7 @@ public:
     {
       SLIC_ASSERT("Flat index out of bounds of the relation set.");
     }
-    for(PositionType firstIdx = 0; firstIdx < this->firstSetSize(); firstIdx++)
-    {
-      // keep looping until the first subset after flatIndex
-      if((*m_relation)[firstIdx].offset() > flatIndex)
-      {
-        return firstIdx - 1;
-      }
-    }
-    return this->firstSetSize() - 1;
+    return m_relation->firstIndex(flatIndex);
   }
 
   AXOM_HOST_DEVICE RangeSetType elementRangeSet(PositionType pos1) const

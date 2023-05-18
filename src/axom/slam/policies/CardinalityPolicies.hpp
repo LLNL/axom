@@ -28,6 +28,9 @@
  *  * offset(ElementType idx) : const ElementType
  *     -- returns the offset to the first element of the ToSet for element
  *        with index idx of the FromSet
+ *  * firstIndex(ElementType offset) : const ElementType
+ *     -- returns the element index in the FromSet given an offset into the
+ *        relation
  *  * totalSize(): int
  *     -- returns the total number of elements in this relation.
  *        That is, the sum of size(idx) for each element (with index idx)
@@ -104,6 +107,11 @@ struct ConstantCardinality
     return m_begins[fromPos];
   }
 
+  AXOM_HOST_DEVICE ElementType firstIndex(ElementType offset) const
+  {
+    return offset / m_begins.stride();
+  }
+
   IndirectionPtrType offsetData() { return m_begins.ptr(); }
 
   const IndirectionPtrType offsetData() const { return m_begins.ptr(); }
@@ -171,6 +179,18 @@ struct VariableCardinality
   AXOM_HOST_DEVICE ElementType offset(ElementType fromPos) const
   {
     return m_begins[fromPos];
+  }
+
+  AXOM_HOST_DEVICE ElementType firstIndex(ElementType relationOffset) const
+  {
+    for(ElementType firstIdx = 0; firstIdx < m_begins.size() - 1; firstIdx++)
+    {
+      if(offset(firstIdx + 1) > relationOffset)
+      {
+        return firstIdx;
+      }
+    }
+    return -1;
   }
 
   IndirectionPtrType offsetData() { return m_begins.data(); }
