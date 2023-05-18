@@ -215,6 +215,103 @@ struct VariableCardinality
   BeginsSet m_begins;
 };
 
+template <typename ElementType = int,
+          typename IndirectionPolicy = STLVectorIndirection<ElementType, ElementType>>
+struct MappedVariableCardinality
+{
+  using BeginsSizePolicy = RuntimeSize<ElementType>;
+  using BeginsOffsetPolicy = ZeroOffset<ElementType>;
+  using BeginsStridePolicy = StrideOne<ElementType>;
+  using BeginsIndirectionPolicy = IndirectionPolicy;
+
+  // runtime size (fromSet.size()), striding from template parameter, no offset
+  using IndexSet = OrderedSet<ElementType,
+                              ElementType,
+                              BeginsSizePolicy,
+                              BeginsOffsetPolicy,
+                              BeginsStridePolicy,
+                              IndirectionPolicy>;
+  using BeginsSet = IndexSet;
+
+  // The cardinality of each relational operator is determined by the
+  // StridePolicy of the relation
+  using RelationalOperatorSizeType = BeginsSizePolicy;
+
+  using IndirectionBufferType = typename IndirectionPolicy::IndirectionBufferType;
+  using IndirectionPtrType = typename IndirectionPolicy::IndirectionPtrType;
+
+  MappedVariableCardinality() : m_begins() { }
+  MappedVariableCardinality(BeginsSet begins) : m_begins(begins) { }
+  MappedVariableCardinality(ElementType fromSetSize,
+                            typename BeginsSet::SetBuilder& builder)
+  {
+    builder.size(fromSetSize + 1);
+    m_begins = builder;
+  }
+
+  void bindBeginOffsets(ElementType fromSetSize, IndirectionPtrType data)
+  {
+    m_begins = typename BeginsSet::SetBuilder().size(fromSetSize + 1).data(data);
+  }
+
+  void bindFirstIndices(ElementType relationSize,
+                        IndirectionPtrType data,
+                        bool fillIndices = true)
+  {
+    m_firstIndexes =
+      typename IndexSet::SetBuilder().size(relationSize + 1).data(data);
+    if(fillIndices)
+    {
+      // Construct the flat-to-first mapping.
+      for(int fromIdx = 0; fromIdx < m_begins.size() - 1; fromIdx++)
+      {
+        int beginIdx = offset(fromIdx);
+        for(int slotIdx = 0; slotIdx < size(fromIdx); slotIdx++)
+        {
+          m_firstIndexes[slotIdx + beginIdx] = fromIdx;
+        }
+      }
+    }
+  }
+
+  AXOM_HOST_DEVICE ElementType size(ElementType fromPos) const
+  {
+    return offset(fromPos + 1) - offset(fromPos);
+  }
+
+  AXOM_HOST_DEVICE ElementType offset(ElementType fromPos) const
+  {
+    return m_begins[fromPos];
+  }
+
+  AXOM_HOST_DEVICE ElementType firstIndex(ElementType offset) const
+  {
+    return m_firstIndexes[offset];
+  }
+
+  IndirectionPtrType offsetData() { return m_begins.data(); }
+
+  const IndirectionPtrType offsetData() const { return m_begins.data(); }
+
+  ElementType totalSize() const
+  {
+    return m_begins.empty() ? ElementType() : offset(m_begins.size() - 1);
+  }
+
+  template <typename FromSetType>
+  bool isValid(const FromSetType* fromSet, bool verboseOutput = false) const
+  {
+    return m_begins.size() == (fromSet->size() + 1) &&
+      static_cast<IndirectionPolicy>(m_begins).isValid(m_begins.size(),
+                                                       m_begins.offset(),
+                                                       m_begins.stride(),
+                                                       verboseOutput);
+  }
+
+  IndexSet m_firstIndexes;
+  BeginsSet m_begins;
+};
+
 }  // end namespace policies
 
 }  // end namespace slam
