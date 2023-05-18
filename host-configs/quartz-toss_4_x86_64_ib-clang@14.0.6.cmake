@@ -89,7 +89,7 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-ug3vynwpuw3zbkvpscygelocijatm3fu" CACHE
 
 set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_00_10_54/._view/if3mvrcfyezs6ftljp5agtvcgzq24dsy" CACHE PATH "")
 
-# ClangFormat disabled due to disabled devtools
+set(CLANGFORMAT_EXECUTABLE "${DEVTOOLS_ROOT}/llvm-10.0.0/bin/clang-format" CACHE PATH "")
 
 set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
 

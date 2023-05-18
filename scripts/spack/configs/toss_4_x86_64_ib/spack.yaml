@@ -291,6 +291,12 @@ spack:
       externals:
       - spec: llvm+clang@10.0.0
         prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0
+    py-shroud:
+      version: [0.12.2]
+      buildable: false
+      externals:
+      - spec: py-shroud@0.12.2
+        prefix: collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_00_10_54/gcc-10.3.1/py-shroud-0.12.2-s2uh742gipnalg3r3czhotb65aj3rbwp
     py-sphinx:
       version: [4.4.0]
       buildable: false

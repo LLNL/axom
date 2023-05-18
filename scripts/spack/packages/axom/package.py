@@ -476,12 +476,12 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             path2 = os.path.realpath(spec["doxygen"].prefix)
             self.find_path_replacement(path1, path2, path_replacements, "DEVTOOLS_ROOT", entries)
 
-        if "+devtools" in spec and "toss_4" not in self._get_sys_type(spec):
+        if "+devtools" in spec and spec.satisfies("^llvm"):
             # Only turn on clangformat support if devtools is on and not TOSS4
             clang_fmt_path = spec["llvm"].prefix.bin.join("clang-format")
             entries.append(cmake_cache_path("CLANGFORMAT_EXECUTABLE", clang_fmt_path))
         else:
-            entries.append("# ClangFormat disabled due to disabled devtools\n")
+            entries.append("# ClangFormat disabled due to llvm and devtools not in spec\n")
             entries.append(cmake_cache_option("ENABLE_CLANGFORMAT", False))
 
         if "+python" in spec or "+devtools" in spec:

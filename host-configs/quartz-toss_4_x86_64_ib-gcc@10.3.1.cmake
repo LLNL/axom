@@ -87,7 +87,7 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-skind35qqh5qqmtm2gzfx5w7x3naka5v" CACHE
 
 set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_00_10_54/._view/if3mvrcfyezs6ftljp5agtvcgzq24dsy" CACHE PATH "")
 
-# ClangFormat disabled due to disabled devtools
+set(CLANGFORMAT_EXECUTABLE "${DEVTOOLS_ROOT}/llvm-10.0.0/bin/clang-format" CACHE PATH "")
 
 set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
 
@@ -95,9 +95,9 @@ set(PYTHON_EXECUTABLE "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 
-set(SPHINX_EXECUTABLE "/usr/WS1/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.10.10/bin/sphinx-build" CACHE PATH "")
 
-set(SHROUD_EXECUTABLE "${TPL_ROOT}/py-shroud-0.12.2-p36qlwonv2w2ngcqjvskyvxh274c6hi7/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/py-shroud-0.12.2-s2uh742gipnalg3r3czhotb65aj3rbwp/bin/shroud" CACHE PATH "")
 
 set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-2.9/bin/cppcheck" CACHE PATH "")
 
