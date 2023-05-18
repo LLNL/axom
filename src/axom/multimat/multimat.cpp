@@ -190,6 +190,8 @@ MultiMat::MultiMat(const MultiMat& other)
   , m_dynamicRelations(other.m_dynamicRelations)
   , m_sparseBivarSet(other.m_sparseBivarSet)
   , m_denseBivarSet(other.m_denseBivarSet)
+  , m_flatCellToMatIndexMap(other.m_flatCellToMatIndexMap)
+  , m_flatMatToCellIndexMap(other.m_flatMatToCellIndexMap)
   , m_fieldNameVec(other.m_fieldNameVec)
   , m_fieldMappingVec(other.m_fieldMappingVec)
   , m_dataTypeVec(other.m_dataTypeVec)
@@ -333,6 +335,11 @@ void MultiMat::setSlamAllocatorID(int alloc_id)
     axom::Array<RelationSetType>(m_sparseBivarSet, m_slamAllocatorId);
   m_denseBivarSet =
     axom::Array<ProductSetType>(m_denseBivarSet, m_slamAllocatorId);
+
+  m_flatCellToMatIndexMap =
+    IndBufferType(m_flatCellToMatIndexMap, m_slamAllocatorId);
+  m_flatMatToCellIndexMap =
+    IndBufferType(m_flatMatToCellIndexMap, m_slamAllocatorId);
 
   if(hasCellDomRelation)
   {
@@ -838,6 +845,8 @@ void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
                            axom::Array<IndexType>& beginOffsets,
                            axom::Array<IndexType>& secondIndexes,
                            axom::Array<IndexType>& firstIndexes,
+                           axom::Array<IndexType>& flatOldToNew,
+                           axom::Array<IndexType>& flatNewToOld,
                            int slamAllocatorID)
 {
   using IndBufferType = axom::Array<IndexType>;
@@ -848,6 +857,8 @@ void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
   beginOffsets = IndBufferType(numCols, numCols, slamAllocatorID);
   firstIndexes = IndBufferType(relationSize, relationSize, slamAllocatorID);
   secondIndexes = IndBufferType(relationSize, relationSize, slamAllocatorID);
+  flatOldToNew = IndBufferType(relationSize, relationSize, slamAllocatorID);
+  flatNewToOld = IndBufferType(relationSize, relationSize, slamAllocatorID);
 
   const auto countsView = counts.view();
 
@@ -872,23 +883,30 @@ void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
   const auto firstIdxView = firstIndexes.view();
   const auto secondIdxView = secondIndexes.view();
 
+  const auto flatOldToNewView = flatOldToNew.view();
+  const auto flatNewToOldView = flatNewToOld.view();
+
   // Fill first and second index arrays
   // TODO: on the GPU, this should be a RAJA::stable_sort_pairs
   axom::for_all<axom::SEQ_EXEC>(
     oldRelationSet->totalSize(),
-    AXOM_LAMBDA(int flatIndex) {
-      int firstIdx = oldRelationSet->flatToFirstIndex(flatIndex);
-      int secondIdx = oldRelationSet->flatToSecondIndex(flatIndex);
+    AXOM_LAMBDA(int oldFlatIndex) {
+      int firstIdx = oldRelationSet->flatToFirstIndex(oldFlatIndex);
+      int secondIdx = oldRelationSet->flatToSecondIndex(oldFlatIndex);
 
       // Start from end of the second set element's range.
       int reverse_offset = beginView[secondIdx + 1];
 
       // Use countsView to keep track of indexes to place elements at.
-      reverse_offset -= countsView[secondIdx];
+      int newFlatIndex = reverse_offset - countsView[secondIdx];
       countsView[secondIdx]--;
 
-      firstIdxView[reverse_offset] = secondIdx;
-      secondIdxView[reverse_offset] = firstIdx;
+      firstIdxView[newFlatIndex] = secondIdx;
+      secondIdxView[newFlatIndex] = firstIdx;
+
+      // Build transposition maps while we have both the old and the new flat index.
+      flatOldToNewView[oldFlatIndex] = newFlatIndex;
+      flatNewToOldView[newFlatIndex] = oldFlatIndex;
     });
 }
 
@@ -902,11 +920,26 @@ void MultiMat::makeOtherRelation(DataLayout layout)
   IndBufferType& newFirstIndicesVec = relFirstIndVec(layout);
 
   //construct the new transposed relation
-  TransposeRelationImpl<axom::SEQ_EXEC>(oldRelationSet,
-                                        newBeginVec,
-                                        newIndicesVec,
-                                        newFirstIndicesVec,
-                                        m_slamAllocatorId);
+  if(old_layout == DataLayout::CELL_DOM)
+  {
+    TransposeRelationImpl<axom::SEQ_EXEC>(oldRelationSet,
+                                          newBeginVec,
+                                          newIndicesVec,
+                                          newFirstIndicesVec,
+                                          m_flatCellToMatIndexMap,
+                                          m_flatMatToCellIndexMap,
+                                          m_slamAllocatorId);
+  }
+  else
+  {
+    TransposeRelationImpl<axom::SEQ_EXEC>(oldRelationSet,
+                                          newBeginVec,
+                                          newIndicesVec,
+                                          newFirstIndicesVec,
+                                          m_flatMatToCellIndexMap,
+                                          m_flatCellToMatIndexMap,
+                                          m_slamAllocatorId);
+  }
 
   RangeSetType& newFirstSet = relDominantSet(layout);
   RangeSetType& newSecondSet = relSecondarySet(layout);

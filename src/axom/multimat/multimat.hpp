@@ -802,6 +802,11 @@ private:
   // dense layout bivariate sets
   axom::Array<ProductSetType> m_denseBivarSet;
 
+  // Transposition maps for sparse conversions of data layout
+  // These map flat indices between cell-dominant and material-dominant layouts
+  IndBufferType m_flatCellToMatIndexMap;
+  IndBufferType m_flatMatToCellIndexMap;
+
   struct FieldBacking
   {
   private:
