@@ -1322,11 +1322,7 @@ void MultiMat::transposeField_helper(int field_idx)
   //Skip if no volume fraction array is set-up
   if(field_idx == 0 && m_fieldBackingVec[0] == nullptr) return;
 
-  Field2D<DataType> old_map = get2dFieldImpl<DataType>(field_idx);
-  int stride = old_map.stride();
-
   DataLayout oldDataLayout = getFieldDataLayout(field_idx);
-  StaticVariableRelationType& oldRel = relStatic(oldDataLayout);
   DataLayout new_layout;
   if(oldDataLayout == DataLayout::CELL_DOM)
   {
@@ -1341,12 +1337,6 @@ void MultiMat::transposeField_helper(int field_idx)
   {
     makeOtherRelation(new_layout);
   }
-
-  auto& set1 = *(oldRel.fromSet());
-  auto& set2 = *(oldRel.toSet());
-
-  int set1Size = set1.size();
-  int set2Size = set2.size();
 
   axom::Array<DataType> arr_data;
   RelationSetType* fromRelSet = &relSparseSet(m_fieldDataLayoutVec[field_idx]);
@@ -1378,10 +1368,7 @@ void MultiMat::transposeField_helper(int field_idx)
       TransposeDenseImpl<axom::SEQ_EXEC>(oldField, fromRelSet, m_fieldAllocatorId);
   }
 
-  if(arr_data.getAllocatorID() != m_fieldAllocatorId)
-  {
-    arr_data = axom::Array<DataType>(arr_data, m_fieldAllocatorId);
-  }
+  SLIC_ASSERT(arr_data.getAllocatorID() == m_fieldAllocatorId);
 
   if(m_fieldBackingVec[field_idx]->isOwned())
   {
