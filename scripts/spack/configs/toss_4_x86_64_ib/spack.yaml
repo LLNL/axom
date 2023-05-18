@@ -296,16 +296,15 @@ spack:
       buildable: false
       externals:
       - spec: py-shroud@0.12.2
-        prefix: collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_00_10_54/gcc-10.3.1/py-shroud-0.12.2-s2uh742gipnalg3r3czhotb65aj3rbwp
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10
     py-sphinx:
       version: [4.4.0]
       buildable: false
       externals:
       - spec: py-sphinx@4.4.0
         prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10
-    #TODO: fix this path after python is added to view select list
     python:
       buildable: false
       externals:
       - spec: python@3.10.10
-        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_00_10_54/gcc-10.3.1/python-3.10.10-ax5o3trottgkiawhosee64lend3smkm2
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10

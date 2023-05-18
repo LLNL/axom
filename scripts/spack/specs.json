@@ -21,8 +21,8 @@
       "intel@19.0.4~openmp+devtools+mfem+c2c" ],
 
     "toss_4_x86_64_ib":
-    [ "gcc@10.3.1+devtools+mfem+c2c",
-      "clang@14.0.6+devtools+mfem+c2c" ],
+    [ "gcc@10.3.1+devtools+hdf5+mfem+c2c",
+      "clang@14.0.6+devtools+hdf5+mfem+c2c" ],
 
     "__comment__":"# Use amdgpu_target=gfx90a for tioga/rzvernal; and gfx908 for rznevada",
     "toss_4_x86_64_ib_cray":
