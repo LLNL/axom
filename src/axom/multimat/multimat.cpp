@@ -1250,6 +1250,34 @@ SparsityLayout MultiMat::getFieldSparsityLayout(int field_idx) const
   return m_fieldSparsityLayoutVec[field_idx];
 }
 
+template <typename ExecSpace, typename DataType, typename IndexType>
+axom::Array<DataType> TransposeSparseImpl(
+  const MultiMat::SparseField2D<DataType> oldField,
+  const MultiMat::RelationSetType* relationSet,
+  const axom::Array<IndexType>& flatTransposeMap,
+  int allocatorId)
+{
+  int stride = oldField.stride();
+  int sparseSize = relationSet->totalSize() * stride;
+  axom::Array<DataType> sparseField(sparseSize, sparseSize, allocatorId);
+
+  const auto sparseFieldView = sparseField.view();
+  const auto flatTransposeMapView = flatTransposeMap.view();
+
+  axom::for_all<ExecSpace>(
+    relationSet->totalSize() * stride,
+    AXOM_LAMBDA(int index) {
+      int flatIdx = index / stride;
+      int comp = index % stride;
+
+      int newFlatIdx = flatTransposeMapView[flatIdx];
+
+      sparseFieldView[newFlatIdx * stride + comp] = oldField[index];
+    });
+
+  return sparseField;
+}
+
 template <typename ExecSpace, typename DataType>
 axom::Array<DataType> TransposeDenseImpl(
   const MultiMat::DenseField2D<DataType> oldField,
@@ -1321,29 +1349,30 @@ void MultiMat::transposeField_helper(int field_idx)
   int set2Size = set2.size();
 
   axom::Array<DataType> arr_data;
+  RelationSetType* fromRelSet = &relSparseSet(m_fieldDataLayoutVec[field_idx]);
   if(m_fieldSparsityLayoutVec[field_idx] == SparsityLayout::SPARSE)
   {
-    //copy begin vector for moving
-    IndBufferType vec_idx =
-      relBeginVec(new_layout);  //a copy of the beginVec to keep track
-    const IndBufferType& indicesVec = oldRel.relationData();
-
-    arr_data.resize(oldRel.totalSize() * stride);
-    for(int i = 0; i < oldRel.totalSize(); ++i)
+    SparseField2D<DataType> oldField =
+      getSparse2dField<DataType>(m_fieldNameVec[field_idx]);
+    if(oldDataLayout == DataLayout::CELL_DOM)
     {
-      int col = indicesVec[i];
-      for(int c = 0; c < stride; ++c)
-      {
-        arr_data[vec_idx[col] * stride + c] = (*old_map.getMap())(i, c);
-      }
-      ++vec_idx[col];
+      arr_data = TransposeSparseImpl<axom::SEQ_EXEC>(oldField,
+                                                     fromRelSet,
+                                                     m_flatCellToMatIndexMap,
+                                                     m_fieldAllocatorId);
+    }
+    else
+    {
+      arr_data = TransposeSparseImpl<axom::SEQ_EXEC>(oldField,
+                                                     fromRelSet,
+                                                     m_flatMatToCellIndexMap,
+                                                     m_fieldAllocatorId);
     }
   }
   else  //dense
   {
     DenseField2D<DataType> oldField =
       getDense2dField<DataType>(m_fieldNameVec[field_idx]);
-    RelationSetType* fromRelSet = &relSparseSet(m_fieldDataLayoutVec[field_idx]);
 
     arr_data =
       TransposeDenseImpl<axom::SEQ_EXEC>(oldField, fromRelSet, m_fieldAllocatorId);
