@@ -296,7 +296,7 @@ spack:
       buildable: false
       externals:
       - spec: py-sphinx@4.4.0
-        prefix: /usr/workspace/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/python-3.10.10
     #TODO: fix this path after python is added to view select list
     python:
       buildable: false
