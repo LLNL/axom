@@ -1378,10 +1378,9 @@ void MultiMat::transposeField_helper(int field_idx)
   {
     // We don't own the underlying buffer, just copy the data.
     const auto old_view = m_fieldBackingVec[field_idx]->getArrayView<DataType>();
-    for(IndexType flat_idx = 0; flat_idx < old_view.size(); flat_idx++)
-    {
-      old_view[flat_idx] = arr_data[flat_idx];
-    }
+    axom::copy(old_view.data(),
+               arr_data.data(),
+               old_view.size() * sizeof(DataType));
   }
   m_fieldDataLayoutVec[field_idx] = new_layout;
 }
