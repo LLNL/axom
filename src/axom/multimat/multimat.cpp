@@ -1289,19 +1289,20 @@ axom::Array<DataType> ConvertToDenseImpl(
   const MultiMat::ProductSetType* prodSet,
   int allocatorId)
 {
-  const auto* relationSet = oldField.set();
   int stride = oldField.stride();
   int denseSize = prodSet->size() * stride;
   axom::Array<DataType> denseField(denseSize, denseSize, allocatorId);
   const auto denseFieldView = denseField.view();
+  const auto* relationSetHost = oldField.set();
 
   ExecLambdaForMemory(
-    relationSet->totalSize() * stride,
+    relationSetHost->totalSize() * stride,
     allocatorId,
     AXOM_LAMBDA(int index) {
       int flatIdx = index / stride;
       int comp = index % stride;
 
+      const auto* relationSet = oldField.set();
       auto firstIdx = relationSet->flatToFirstIndex(flatIdx);
       auto secondIdx = relationSet->flatToSecondIndex(flatIdx);
 
