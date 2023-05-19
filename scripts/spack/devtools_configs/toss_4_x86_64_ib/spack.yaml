@@ -17,7 +17,7 @@ spack:
   view:
     default:
       root: ../view
-      select: [llvm, cppcheck, doxygen, py-shroud, py-sphinx, ^python]
+      select: [llvm, cppcheck, doxygen, py-shroud, py-sphinx, python, ^python]
       projections:
         all: '{name}-{version}'
 
