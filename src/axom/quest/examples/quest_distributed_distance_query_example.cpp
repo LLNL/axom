@@ -631,7 +631,7 @@ private:
 
     auto* fieldsGroup = domainGroup->createGroup("fields");
 
-    domainGroup->createViewScalar<axom::int64>("state/domain_id", m_rank);
+    domainGroup->createViewScalar<std::int64_t>("state/domain_id", m_rank);
 
     m_domainGroups.push_back(domainGroup);
     m_coordsGroups.push_back(coordsGroup);
