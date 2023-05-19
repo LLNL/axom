@@ -1441,10 +1441,44 @@ void MultiMat::transposeField_helper(int field_idx)
 
   axom::Array<DataType> arr_data;
   RelationSetType* fromRelSet = &relSparseSet(m_fieldDataLayoutVec[field_idx]);
+
+  auto old_data_view = m_fieldBackingVec[field_idx]->getArrayView<DataType>();
+#ifdef AXOM_USE_UMPIRE
+  bool shallow_data_on_device = false;
+  auto shallow_data_space =
+    axom::detail::getAllocatorSpace(old_data_view.getAllocatorID());
+  if(shallow_data_space == axom::MemorySpace::Device ||
+     shallow_data_space == axom::MemorySpace::Unified)
+  {
+    shallow_data_on_device = true;
+  }
+
+  bool field_allocator_on_device = false;
+  auto field_allocator_space =
+    axom::detail::getAllocatorSpace(m_fieldAllocatorId);
+  if(field_allocator_space == axom::MemorySpace::Device ||
+     field_allocator_space == axom::MemorySpace::Unified)
+  {
+    field_allocator_on_device = true;
+  }
+
+  axom::Array<DataType> copied_old_data;
+  if(shallow_data_on_device != field_allocator_on_device)
+  {
+    // Move data to expected field memory space.
+    copied_old_data = axom::Array<DataType>(old_data_view, m_fieldAllocatorId);
+    old_data_view = copied_old_data.view();
+  }
+#endif
   if(m_fieldSparsityLayoutVec[field_idx] == SparsityLayout::SPARSE)
   {
-    SparseField2D<DataType> oldField =
-      getSparse2dField<DataType>(m_fieldNameVec[field_idx]);
+    typename RelationSetType::ConcreteSet rel_set = relSparseSet(oldDataLayout);
+    SparseField2D<DataType> oldField(*this,
+                                     rel_set,
+                                     field_idx,
+                                     old_data_view,
+                                     m_fieldStrideVec[field_idx]);
+
     if(oldDataLayout == DataLayout::CELL_DOM)
     {
       arr_data = TransposeSparseImpl(oldField,
@@ -1462,8 +1496,12 @@ void MultiMat::transposeField_helper(int field_idx)
   }
   else  //dense
   {
-    DenseField2D<DataType> oldField =
-      getDense2dField<DataType>(m_fieldNameVec[field_idx]);
+    typename ProductSetType::ConcreteSet prod_set = relDenseSet(oldDataLayout);
+    DenseField2D<DataType> oldField(*this,
+                                    prod_set,
+                                    field_idx,
+                                    old_data_view,
+                                    m_fieldStrideVec[field_idx]);
 
     arr_data = TransposeDenseImpl(oldField, fromRelSet, m_fieldAllocatorId);
   }
