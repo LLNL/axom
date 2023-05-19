@@ -87,7 +87,7 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-ug3vynwpuw3zbkvpscygelocijatm3fu" CACHE
 # Devtools
 #------------------------------------------------------------------------------
 
-set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_11_52_05/._view/sxuebswl4ldukumumvfeorinjdzkyher" CACHE PATH "")
+set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/2023_05_18_11_52_05/._view/btoxy5ovdbouub2brzxcmjwzdhvzatlc" CACHE PATH "")
 
 set(CLANGFORMAT_EXECUTABLE "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib/latest/llvm-10.0.0/bin/clang-format" CACHE PATH "")
 
