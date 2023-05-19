@@ -846,6 +846,13 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
 
   return true;
 }
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_CUDA)
+using GPU_Exec = axom::CUDA_EXEC<256>;
+  #elif defined(AXOM_USE_HIP)
+using GPU_Exec = axom::HIP_EXEC<256>;
+  #endif
+#endif
 
 template <typename Lambda>
 void ExecLambdaForMemory(int length, int allocatorId, Lambda&& function)
@@ -854,11 +861,6 @@ void ExecLambdaForMemory(int length, int allocatorId, Lambda&& function)
   axom::MemorySpace space = axom::detail::getAllocatorSpace(allocatorId);
   if(space == axom::MemorySpace::Device || space == axom::MemorySpace::Unified)
   {
-  #if defined(AXOM_USE_CUDA)
-    using GPU_Exec = axom::CUDA_EXEC<256>;
-  #elif defined(AXOM_USE_HIP)
-    using GPU_Exec = axom::HIP_EXEC<256>;
-  #endif
     axom::for_all<GPU_Exec>(length, function);
     return;
   }
@@ -867,6 +869,61 @@ void ExecLambdaForMemory(int length, int allocatorId, Lambda&& function)
 #endif
   axom::for_all<axom::SEQ_EXEC>(length, function);
 }
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+template <typename ExecSpace, typename IndexType>
+void TransposeRelationImplRAJA(const MultiMat::RelationSetType* oldRelationSet,
+                               axom::Array<IndexType>& beginOffsets,
+                               axom::Array<IndexType>& secondIndexes,
+                               axom::Array<IndexType>& firstIndexes,
+                               axom::Array<IndexType>& flatOldToNew,
+                               axom::Array<IndexType>& flatNewToOld)
+{
+  using AtomicPolicy = typename axom::execution_space<ExecSpace>::atomic_policy;
+  using LoopPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+
+  const auto countsView = beginOffsets.view();
+  const auto firstIdxView = firstIndexes.view();
+  const auto flatNewToOldView = flatNewToOld.view();
+
+  // Count the number of entries for each second set index
+  axom::for_all<ExecSpace>(
+    oldRelationSet->totalSize(),
+    AXOM_LAMBDA(int flatIndex) {
+      int secondIdx = oldRelationSet->flatToSecondIndex(flatIndex);
+      RAJA::atomicAdd<AtomicPolicy>(&countsView[secondIdx], IndexType {1});
+
+      // We create the first indices array and flatNewToOld maps here.
+      firstIdxView[flatIndex] = secondIdx;
+      flatNewToOldView[flatIndex] = flatIndex;
+    });
+
+  // Scan to get the offsets array.
+  RAJA::exclusive_scan_inplace<LoopPolicy>(
+    RAJA::make_span(beginOffsets.data(), beginOffsets.size()));
+
+  // Stable sort to create the first-set indices array and new-to-old index
+  // mapping for the new relation.
+  RAJA::stable_sort_pairs<LoopPolicy>(
+    RAJA::make_span(firstIndexes.data(), firstIndexes.size()),
+    RAJA::make_span(flatNewToOld.data(), flatNewToOld.size()));
+
+  const auto secondIdxView = secondIndexes.view();
+  const auto flatOldToNewView = flatOldToNew.view();
+
+  // With the new-to-old map, we can now fill in the second-set indices array
+  // and the old-to-new map.
+  axom::for_all<ExecSpace>(
+    oldRelationSet->totalSize(),
+    AXOM_LAMBDA(int newFlatIndex) {
+      int oldFlatIndex = flatNewToOldView[newFlatIndex];
+
+      int firstIdx = oldRelationSet->flatToFirstIndex(oldFlatIndex);
+      secondIdxView[newFlatIndex] = firstIdx;
+      flatOldToNewView[oldFlatIndex] = newFlatIndex;
+    });
+}
+#endif  // defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
 template <typename ExecSpace, typename IndexType>
 void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
@@ -881,27 +938,40 @@ void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
 
   int numCols = oldRelationSet->secondSetSize() + 1;
   int relationSize = oldRelationSet->totalSize();
-  IndBufferType counts(numCols, numCols, slamAllocatorID);
   beginOffsets = IndBufferType(numCols, numCols, slamAllocatorID);
   firstIndexes = IndBufferType(relationSize, relationSize, slamAllocatorID);
   secondIndexes = IndBufferType(relationSize, relationSize, slamAllocatorID);
   flatOldToNew = IndBufferType(relationSize, relationSize, slamAllocatorID);
   flatNewToOld = IndBufferType(relationSize, relationSize, slamAllocatorID);
 
+  // Scan to get begin offsets array
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  axom::MemorySpace space = axom::detail::getAllocatorSpace(slamAllocatorID);
+  if(space == axom::MemorySpace::Device || space == axom::MemorySpace::Unified)
+  {
+    TransposeRelationImplRAJA<GPU_Exec>(oldRelationSet,
+                                        beginOffsets,
+                                        secondIndexes,
+                                        firstIndexes,
+                                        flatOldToNew,
+                                        flatNewToOld);
+    return;
+  }
+#endif
+  IndBufferType counts(numCols, numCols, slamAllocatorID);
   const auto countsView = counts.view();
 
   // Count the number of entries for each second set index
-  axom::for_all<ExecSpace>(
+  axom::for_all<axom::SEQ_EXEC>(
     oldRelationSet->totalSize(),
     AXOM_LAMBDA(int flatIndex) {
       int secondIdx = oldRelationSet->flatToSecondIndex(flatIndex);
-      countsView[secondIdx]++;  // TODO: make atomic
+      countsView[secondIdx]++;
     });
 
   const auto beginView = beginOffsets.view();
 
   // Scan to get begin offsets array
-  // TODO: use raja scan?
   axom::for_all<axom::SEQ_EXEC>(
     oldRelationSet->secondSetSize(),
     AXOM_LAMBDA(int secondIdx) {
@@ -915,7 +985,6 @@ void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
   const auto flatNewToOldView = flatNewToOld.view();
 
   // Fill first and second index arrays
-  // TODO: on the GPU, this should be a RAJA::stable_sort_pairs
   axom::for_all<axom::SEQ_EXEC>(
     oldRelationSet->totalSize(),
     AXOM_LAMBDA(int oldFlatIndex) {
