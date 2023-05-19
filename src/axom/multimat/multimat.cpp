@@ -8,9 +8,11 @@
  *
  * \brief Implementation of the MultiMat class
  */
+#include "axom/config.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
 
 #include "axom/multimat/multimat.hpp"
-#include "axom/core/execution/for_all.hpp"
 #include "axom/slic.hpp"
 
 #include <iostream>

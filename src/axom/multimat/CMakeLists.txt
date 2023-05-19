@@ -26,18 +26,23 @@ set(multimat_sources
     )
 
 #------------------------------------------------------------------------------
+# Specify multimat dependencies
+#------------------------------------------------------------------------------
+set(multimat_depends_on slam)
+
+blt_list_append( TO multimat_depends_on ELEMENTS RAJA IF RAJA_FOUND )
+blt_list_append( TO multimat_depends_on ELEMENTS umpire IF UMPIRE_FOUND )
+
+#------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
 axom_add_library(
     NAME        multimat
     SOURCES     ${multimat_sources}
     HEADERS     ${multimat_headers}
-    DEPENDS_ON  slam
+    DEPENDS_ON  ${multimat_depends_on}
     FOLDER      axom/multimat
     )
-
-# Set file back to C++ due to nvcc compiler error
-set_source_files_properties(multimat.cpp PROPERTIES LANGUAGE CXX)
 
 axom_write_unified_header(NAME    multimat
                           HEADERS ${multimat_headers}
