@@ -7,15 +7,15 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: clang@10.0.1.2
+# Compiler Spec: clang@=10.0.1.2
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
 
 else()
 
@@ -97,33 +97,29 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 # TPLs
 #------------------------------------------------------------------------------
 
-# Root directory for generated TPLs
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/clang-10.0.1.2" CACHE PATH "")
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/clang-10.0.1.2" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-ie3cgrjmmkc4kh7revg2yiowgrlyqfsi" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-bpj2k7oovyj2p3tznkbqs53eecda4sen" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-pm3igcwup5ndgzukvnow5hobvjexukcs" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0-5qy2ntrsetjjgdipaewu7wd4pos2lkdq" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-hxf5zzcl5iwejlqnpes42s4vtxdvsvfr" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-zrlz6tijgrrrn67bdc4jrhit45kokhzf" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-nahb4wwkswizpvmqyspzbatzcyzdg4n7" CACHE PATH "")
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-d4g7gvxqi5qwphbjzob5gtgmkfiidzxp" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-xia4pzucvni4rzrur7we277vnia3spet" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-4rbb2bfz2vmrw5ygj6ay67x72j7r4qtk" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-wml4i3ar34frclqzdf5d3t7lle5ddc4f" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-oebrimslxeqlt5r5u6zavswlzws5d5fz" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-oicfjygg65ckdegqa2t3csryh2mwh6ml" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-vjiw2g6k2c2kmqxkbiybieu3yijp6eqs" CACHE PATH "")
-
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2-qhlifupwzuuvzfhjy7jd2ott7etuoumk" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-gnckrv7rwmmsos5nksy3oqnx6xmv6ctl" CACHE PATH "")
 
 # scr not built
 
 #------------------------------------------------------------------------------
 # Devtools
 #------------------------------------------------------------------------------
-
-# Root directory for generated developer tools
 
 set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2023_04_18_13_41_48/._view/srxt35kojgk77f2222mk6mgv7z5jyyzz" CACHE PATH "")
 
