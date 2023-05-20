@@ -19,9 +19,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-### Deprecated
-- Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
-
 ### Added
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element
@@ -49,6 +46,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and by calling `Shaper::setPercentError()` to set a refinement error percentage.
 
 ### Changed
+- Updates blt submodule to HEAD of develop on 24Jan2023
+- Updates uberenv submodule to HEAD of main on 12May2023
+- Updates to [conduit version 0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
+- Updates to [mfem version 4.5](https://github.com/mfem/mfem/releases/tag/v4.5)
+- Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
+- Updates to `c2c` version 1.8.0
 - The Axom library has been broken down into its component libraries (prefixed with `axom_`).
   This change requires no change to downstream CMake users who import our targets.
   The exported CMake target `axom` includes all components, but users who do not import our targets
@@ -66,13 +69,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
   changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
   interfacing variables.
-- Updates mfem dependency to v4.5
-- Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
-- Updates uberenv submodule to HEAD of main on 28Dec2022
-- Updates blt submodule to HEAD of develop on 28Dec2022
 - Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
 - Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
-- Updates [conduit dependency to v0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
 - Adds `vcpkg` port for `lua` as optional dependency on Windows
 - Adds additional parameters to quest's `PointInCell` query to control the Newton solve
   from physical to reference space for a given element
@@ -80,7 +78,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Slam: `IndirectionPolicy::data()` now returns a reference to the underlying buffer
   Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
   returns a mutable pointer to the buffer.
-- Quest: `Shaper::applyTransforms()` is no longer a public method.
+- Quest: `Shaper::applyTransforms()` is no longer a public method
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
@@ -89,6 +87,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and triangles before using the geometry.
 - Improves import logic for `lua` dependency
 - Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
+
+### Deprecated
+- Integer types in `src/axom/core/Types.hpp` are deprecated because `c++11` supports their equivalents.
+
 
 ## [Version 0.7.0] - Release date 2022-08-30
 
