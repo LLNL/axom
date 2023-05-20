@@ -229,11 +229,6 @@ spack:
       externals:
       - spec: zlib@1.2.7
         prefix: /usr
-    curl:
-      buildable: false
-      externals:
-      - spec: curl@7.61.1
-        prefix: /usr
 
     # External dependencies for SCR
     lsf:

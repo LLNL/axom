@@ -7,15 +7,15 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: clang@14.0.0
+# Compiler Spec: clang@=14.0.0
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_11_04/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_19_09_36_48/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_11_04/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_19_09_36_48/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_11_04/spack/lib/spack/env/clang/flang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_19_09_36_48/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
@@ -82,25 +82,23 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-# Root directory for generated TPLs
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_19_09_36_48/clang-14.0.0" CACHE PATH "")
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_11_04/clang-14.0.0" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-7e7dezqy3yd4xniycht5jsusfunmjghg" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-v7vgoulqgm7j2yt5crk6mfmr7pujyamw" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-jhjgx666nyzstsoypqlb3nltxfldr2yh" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0-ahohy3dccjiuzb3lcpfkhzqq6x6hvgms" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-7wiw2z3ffyoeegiqaz46b5bqmlox42sd" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-kave5xogskfhcdp36qqkfcpkgdpuqzri" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-63q4hszz6x5m5bpme25u4bmwjgucxkt5" CACHE PATH "")
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-4ucbr6awuldnztjme3tduygesnmbrsid" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-oboalbf3obehbhpxwiijtadx7gra2l6t" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-fr4sdlno4cbwlqoa52fkefjm6vggtkko" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-5magqvbudhw35i7hnwi2qbfs73lf76pw" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-uwn52fuxaakp5iel6mcbw5zg2anhrauk" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-i2nfecyspzw7hmmmzvdlkdwadakrh2ri" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-4vhcdpjs3ytm4hwtylqs4ojpeacpsz6l" CACHE PATH "")
-
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2-3t3tlk332lbacmutv66nqfnlu7mbexma" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-vatpalnxoikyyieg37wuspflxkauldzh" CACHE PATH "")
 
 # scr not built
 
@@ -108,7 +106,7 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2-3t3tlk332lbacmutv66nqfnlu7mbexma" CACHE
 # Devtools
 #------------------------------------------------------------------------------
 
-# ClangFormat disabled due to disabled devtools
+# ClangFormat disabled due to llvm and devtools not in spec
 
 set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
 

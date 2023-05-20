@@ -7,15 +7,15 @@
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
-# Compiler Spec: gcc@8.3.1.1
+# Compiler Spec: gcc@=8.3.1.1
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/gcc/gcc" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/spack/lib/spack/env/gcc/g++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/gcc/g++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/spack/lib/spack/env/gcc/gfortran" CACHE PATH "")
 
 else()
 
@@ -65,33 +65,29 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 # TPLs
 #------------------------------------------------------------------------------
 
-# Root directory for generated TPLs
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_19_09_25_23/gcc-8.3.1.1" CACHE PATH "")
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_23/gcc-8.3.1.1" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-ispeoxcz4q5bqsfiygltflmevlrd2xbn" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-2f2zltjptphg56abovhewd5q3agtc4s3" CACHE PATH "")
-
-set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0-sdfc6ke6aq2dv5apypvlt6qwvaukj6vl" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-fnlglmvmwuxqd67yp4wpcgyfzo3osc4u" CACHE PATH "")
 
 # MFEM not built
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-ivs5m2jbpifawhxj2a62pkzrneayjspt" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-6h3oyudjh76olx4krvq3f27a4k6v4nsk" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-vcw2jdfaenam5ltzrkd6f5udb2axntku" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-3pbiudalqpbdu5cx65q2mmyi6swfwnr2" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-3363zutlye7ds6uoefevaew5uyxeotw4" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-jxperynylarp3fo4dx2zie4cymxt64nt" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-764ntqw3is5qr3fhilfbe255aulnhhiu" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-ifxthxal5nzwlmw2be4nafiljw3phvc3" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.03.2-zvqoeis2xbe7ivlovqpnufwlqq64y6oe" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-sgtwl7anfljlhetjklpqjkku3ixbzzrb" CACHE PATH "")
 
 # scr not built
 
 #------------------------------------------------------------------------------
 # Devtools
 #------------------------------------------------------------------------------
-
-# Root directory for generated developer tools
 
 set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib_p9/2023_04_18_13_41_48/._view/srxt35kojgk77f2222mk6mgv7z5jyyzz" CACHE PATH "")
 
