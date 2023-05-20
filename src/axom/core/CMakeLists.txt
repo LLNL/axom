@@ -86,6 +86,7 @@ set(core_sources
     numerics/polynomial_solvers.cpp
 
     Path.cpp
+    Types.cpp
     )
 
 #------------------------------------------------------------------------------

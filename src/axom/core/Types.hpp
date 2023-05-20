@@ -68,85 +68,122 @@ using IndexType = std::int32_t;
 
 #ifdef AXOM_USE_MPI
 
+// Note: MSVC complains about uninitialized static const integer class members,
+// but our nvcc/mpi combination complains about static constexpr MPI_Datatypes.
+// Since it's one line per traits class, implement both ways w/ an ifdef
+
 /// Traits class to map Axom types to their corresponding MPI type.
 template <class AxomType>
 struct mpi_traits
 {
-  static const MPI_Datatype type = MPI_DATATYPE_NULL;
+  #ifdef _MSC_VER
+  static constexpr MPI_Datatype type = MPI_DATATYPE_NULL;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
 /// \name Specialization of mpi_traits
 /// @{
-
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<float64>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_DOUBLE;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<float32>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_FLOAT;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::int8_t>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_INT8_T;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::uint8_t>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_UINT8_T;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::int16_t>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_INT16_T;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::uint16_t>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_UINT16_T;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::int32_t>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_INT32_T;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::uint32_t>
 {
+  #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_UINT32_T;
+  #else
+  static const MPI_Datatype type;
+  #endif
 };
 
   #ifndef AXOM_NO_INT64_T
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::int64_t>
 {
+    #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_INT64_T;
+    #else
+  static const MPI_Datatype type;
+    #endif
 };
 
-//------------------------------------------------------------------------------
 template <>
 struct mpi_traits<std::uint64_t>
 {
+    #ifdef _MSC_VER
   static constexpr MPI_Datatype type = MPI_UINT64_T;
+    #else
+  static const MPI_Datatype type;
+    #endif
 };
   #endif  // AXOM_NO_INT64_T
 
