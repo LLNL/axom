@@ -1852,7 +1852,7 @@ private:
 #endif
 
   // Collection of the valid I/O protocols for save and load.
-  static const std::vector<std::string> s_io_protocols;
+  AXOM_SIDRE_EXPORT static const std::vector<std::string> s_io_protocols;
 };
 
 } /* end namespace sidre */
