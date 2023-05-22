@@ -29,7 +29,7 @@ export BUILD_TYPE=${BUILD_TYPE:-Debug}
 
 if [[ "$DO_BUILD" == "yes" ]] ; then
     echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
-    or_die python3 ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -bt ${BUILD_TYPE} -DENABLE_GTEST_DEATH_TESTS=ON ${CMAKE_EXTRA_FLAGS}
+    or_die python3 ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -bt ${BUILD_TYPE} -DENABLE_GTEST_DEATH_TESTS=ON -DCMAKE_UNITY_BUILD=ON ${CMAKE_EXTRA_FLAGS}
     or_die cd build-$HOST_CONFIG-${BUILD_TYPE,,}
     echo "~~~~~~ BUILDING ~~~~~~~~"
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then

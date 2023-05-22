@@ -83,7 +83,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDir: 'build'
-      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
+      cmakeArgs: '-DCMAKE_UNITY_BUILD=ON $(CMAKE_EXTRA_FLAGS) ../src'
     condition: or( eq( variables['Agent.OS'], 'Windows_NT'), eq( variables['Agent.OS'], 'Darwin'))
   - task: VSBuild@1
     inputs:
