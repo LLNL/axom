@@ -69,7 +69,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapView.h
         interface/c_fortran/typesSidre.h
     )
-    list(APPEND sidre_sources
+    set(sidre_generated_sources
         # generated source
         interface/c_fortran/wrapSidre.cpp
         interface/c_fortran/wrapDataStore.cpp
@@ -85,11 +85,18 @@ if (ENABLE_FORTRAN)
              spio/interface/c_fortran/wrapIOManager.h
              spio/interface/c_fortran/typesSPIO.h
         )
-        list(APPEND sidre_sources
+        list(APPEND sidre_generated_sources
              spio/interface/c_fortran/wrapfspio.f
              spio/interface/c_fortran/wrapIOManager.cpp
         )
     endif()
+
+    # Disable unity build inclusion for generated files.
+    set_source_files_properties(
+        ${sidre_generated_sources}
+        PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)
+
+    list(APPEND sidre_sources ${sidre_generated_sources})
 endif()
 
 if (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
