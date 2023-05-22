@@ -854,12 +854,23 @@ using GPU_Exec = axom::HIP_EXEC<256>;
   #endif
 #endif
 
-template <typename Lambda>
-void ExecLambdaForMemory(int length, int allocatorId, Lambda&& function)
+bool AllocatorOnDevice(int allocatorId)
 {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   axom::MemorySpace space = axom::detail::getAllocatorSpace(allocatorId);
   if(space == axom::MemorySpace::Device || space == axom::MemorySpace::Unified)
+  {
+    return true;
+  }
+#endif
+  return false;
+}
+
+template <typename Lambda>
+void ExecLambdaForMemory(int length, int allocatorId, Lambda&& function)
+{
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  if(AllocatorOnDevice(allocatorId))
   {
     axom::for_all<GPU_Exec>(length, function);
     return;
@@ -944,10 +955,8 @@ void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
   flatOldToNew = IndBufferType(relationSize, relationSize, slamAllocatorID);
   flatNewToOld = IndBufferType(relationSize, relationSize, slamAllocatorID);
 
-  // Scan to get begin offsets array
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  axom::MemorySpace space = axom::detail::getAllocatorSpace(slamAllocatorID);
-  if(space == axom::MemorySpace::Device || space == axom::MemorySpace::Unified)
+  if(AllocatorOnDevice(slamAllocatorID))
   {
     TransposeRelationImplRAJA<GPU_Exec>(oldRelationSet,
                                         beginOffsets,
@@ -958,6 +967,7 @@ void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
     return;
   }
 #endif
+
   IndBufferType counts(numCols, numCols, slamAllocatorID);
   const auto countsView = counts.view();
 
@@ -1444,25 +1454,14 @@ void MultiMat::transposeField_helper(int field_idx)
   RelationSetType* fromRelSet = &relSparseSet(m_fieldDataLayoutVec[field_idx]);
 
   auto old_data_view = m_fieldBackingVec[field_idx]->getArrayView<DataType>();
-#ifdef AXOM_USE_UMPIRE
-  bool shallow_data_on_device = false;
-  auto shallow_data_space =
-    axom::detail::getAllocatorSpace(old_data_view.getAllocatorID());
-  if(shallow_data_space == axom::MemorySpace::Device ||
-     shallow_data_space == axom::MemorySpace::Unified)
-  {
-    shallow_data_on_device = true;
-  }
 
-  bool field_allocator_on_device = false;
-  auto field_allocator_space =
-    axom::detail::getAllocatorSpace(m_fieldAllocatorId);
-  if(field_allocator_space == axom::MemorySpace::Device ||
-     field_allocator_space == axom::MemorySpace::Unified)
-  {
-    field_allocator_on_device = true;
-  }
+  bool shallow_data_on_device = AllocatorOnDevice(old_data_view.getAllocatorID());
+  bool field_allocator_on_device = AllocatorOnDevice(m_fieldAllocatorId);
 
+  // An externally-managed array might have a memory space different from the
+  // current allocator for internally-managed fields. We should create a
+  // temporary copy of the field in order to correctly access the data on the
+  // host or device.
   axom::Array<DataType> copied_old_data;
   if(shallow_data_on_device != field_allocator_on_device)
   {
@@ -1470,7 +1469,7 @@ void MultiMat::transposeField_helper(int field_idx)
     copied_old_data = axom::Array<DataType>(old_data_view, m_fieldAllocatorId);
     old_data_view = copied_old_data.view();
   }
-#endif
+
   if(m_fieldSparsityLayoutVec[field_idx] == SparsityLayout::SPARSE)
   {
     typename RelationSetType::ConcreteSet rel_set = relSparseSet(oldDataLayout);
