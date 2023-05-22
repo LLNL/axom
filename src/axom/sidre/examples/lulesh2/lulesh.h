@@ -2,6 +2,8 @@
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
+#ifndef Sidre_Example_Lulesh_HH
+#define Sidre_Example_Lulesh_HH
 
 
 // OpenMP will be compiled in if this flag is set to 1 AND the compiler beging
@@ -799,3 +801,4 @@ void CommMonoQ(Domain& domain);
 // lulesh-init
 void InitMeshDecomp(Int_t numRanks, Int_t myRank,
                     Int_t * col, Int_t * row, Int_t * plane, Int_t * side);
+#endif
