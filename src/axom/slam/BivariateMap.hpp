@@ -702,11 +702,6 @@ public:
    *
    * \param data_arr The array of DataType that contains the data to be copied.
    */
-  void copy(DataType* data_arr)
-  {
-    for(int i = 0; i < m_map.size() * StrPol::stride(); i++)
-      m_map[i] = data_arr[i];
-  }
   void copy(const DataType* data_arr)
   {
     for(int i = 0; i < m_map.size() * StrPol::stride(); i++)
