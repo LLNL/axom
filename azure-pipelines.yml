@@ -35,7 +35,10 @@ jobs:
       linux_clang10:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON
+                            -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"'
         BUILD_TYPE: 'Release'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
@@ -43,7 +46,11 @@ jobs:
       linux_clang10_noraja:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON
+                            -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON 
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"
+                            -U RAJA_DIR'
         BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
@@ -51,7 +58,10 @@ jobs:
       linux_clang10_noumpire:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U UMPIRE_DIR'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"
+                            -U UMPIRE_DIR'
         BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
@@ -59,7 +69,9 @@ jobs:
       linux_clang10_noraja_noumpire:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR -U UMPIRE_DIR'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld" -U RAJA_DIR -U UMPIRE_DIR'
         BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
