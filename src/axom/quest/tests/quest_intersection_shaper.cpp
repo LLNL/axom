@@ -557,11 +557,6 @@ shapes:
 }
 
 //---------------------------------------------------------------------------
-// NOTE: This test was baselined with a C2C that had a fix for splines. It
-//       must not be updated on all platforms since some produce a revolved
-//       volume that looks off. We can re-enable this test once C2C is updated
-//       everywhere.
-#ifdef ENABLE_WHEN_C2C_IS_UPDATED_ON_ALL_PLATFORMS
 void dynamicRefinementTest_Spline(const std::string &policyName, int policy)
 {
   const std::string contour = R"(piece = rz(units=cm,
@@ -599,7 +594,6 @@ shapes:
                                     0.04);
   }
 }
-#endif
 
 //---------------------------------------------------------------------------
 void dynamicRefinementTest_Circle(const std::string &policyName, int policy)
@@ -950,31 +944,29 @@ TEST(IntersectionShaperTest, cone_hip)
 //---------------------------------------------------------------------------
 // Spline
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  #ifdef ENABLE_WHEN_C2C_IS_UPDATED_ON_ALL_PLATFORMS
-    #if defined(RUN_AXOM_SEQ_TESTS)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, spline_seq)
 {
   dynamicRefinementTest_Spline("seq", quest::IntersectionShaper::seq);
 }
-    #endif
-    #if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, spline_omp)
 {
   dynamicRefinementTest_Spline("omp", quest::IntersectionShaper::omp);
 }
-    #endif
-    #if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, spline_cuda)
 {
   dynamicRefinementTest_Spline("cuda", quest::IntersectionShaper::cuda);
 }
-    #endif
-    #if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, spline_hip)
 {
   dynamicRefinementTest_Spline("hip", quest::IntersectionShaper::hip);
 }
-    #endif
   #endif
 #endif
 

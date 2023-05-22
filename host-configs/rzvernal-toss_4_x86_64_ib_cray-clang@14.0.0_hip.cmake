@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_08_47/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_17_18_09_33/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_08_47/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_17_18_09_33/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_08_47/spack/lib/spack/env/clang/flang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_17_18_09_33/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
@@ -84,11 +84,11 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_04_18_16_08_47/clang-14.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_05_17_18_09_33/clang-14.0.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-v7vgoulqgm7j2yt5crk6mfmr7pujyamw" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0-ahohy3dccjiuzb3lcpfkhzqq6x6hvgms" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-5p3b4p4d76ri2qc6zgwnbdjh5lk5b5jq" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-kave5xogskfhcdp36qqkfcpkgdpuqzri" CACHE PATH "")
 

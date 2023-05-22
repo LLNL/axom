@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_27/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_17_18_08_29/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_27/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_17_18_08_29/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_27/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_17_18_08_29/spack/lib/spack/env/clang/gfortran" CACHE PATH "")
 
 else()
 
@@ -99,11 +99,11 @@ set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/usr/tce/packages/gcc/gcc-4.9.3
 
 # Root directory for generated TPLs
 
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_04_18_15_47_27/clang-10.0.1.2" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2023_05_17_18_08_29/clang-10.0.1.2" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-bpj2k7oovyj2p3tznkbqs53eecda4sen" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.3.0-5qy2ntrsetjjgdipaewu7wd4pos2lkdq" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-v3ccu4iwgk43ejpnbt4axdteilqtwbbe" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-zrlz6tijgrrrn67bdc4jrhit45kokhzf" CACHE PATH "")
 
