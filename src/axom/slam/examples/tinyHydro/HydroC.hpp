@@ -2,7 +2,8 @@
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-
+#ifndef Slam_TinyHydro_HydroC_HPP
+#define Slam_TinyHydro_HydroC_HPP
 
 // Hydro driver
 // Fri Mar 27 14:14:28 PDT 2015
@@ -114,3 +115,4 @@ namespace tinyHydro {
   };
 
 } // end namespace tinyHydro
+#endif

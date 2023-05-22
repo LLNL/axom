@@ -2,6 +2,8 @@
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
+#ifndef Slam_Lulesh_Lulesh_HPP
+#define Slam_Lulesh_Lulesh_HPP
 
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
@@ -710,3 +712,4 @@ namespace slamLulesh {
   void  InitMeshDecomp(Int_t numRanks, Int_t myRank, Int_t *col, Int_t *row, Int_t *plane, Int_t *side);
 
 } // end namespace slamLulesh
+#endif

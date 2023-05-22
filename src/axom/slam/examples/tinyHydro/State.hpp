@@ -2,6 +2,8 @@
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
+#ifndef Slam_TinyHydro_State_HPP
+#define Slam_TinyHydro_State_HPP
 
 // State class that holds all the material data.  In the
 // multi-material world, this will mostly be a vector of Part structs
@@ -66,3 +68,4 @@ namespace tinyHydro {
 
 
 } // end namespace tinyHydro
+#endif
