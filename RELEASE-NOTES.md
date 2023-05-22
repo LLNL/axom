@@ -47,6 +47,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   must be further refined. This new dynamic method of shaping complements the existing
   segment-based curve refinement method and it is activated using `Shaper::setRefinementType()`
   and by calling `Shaper::setPercentError()` to set a refinement error percentage.
+- Multimat: adds initial support for fields stored on the GPU. `MultiMat::setAllocatorID()`
+  or `MultiMat::setFieldAllocatorID()` can be called to change the memory space in which a
+  field is allocated.
+- Multimat: adds an `MultiMat::addExternalField()` function to support fields where the
+  memory is managed externally. Fields which are externally-managed cannot be transposed
+  between sparse and dense layouts, or moved between allocator spaces.
+- Multimat: adds a `MultiMat::removeField()` function to remove fields from the Multimat
+  instance.
+- Multimat: adds an overload of `MultiMat::setCellMatRel()` that supports setting a
+  multi-material relation in a compressed sparse-row (CSR) representation.
 
 ### Changed
 - The Axom library has been broken down into its component libraries (prefixed with `axom_`).
@@ -81,6 +91,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
   returns a mutable pointer to the buffer.
 - Quest: `Shaper::applyTransforms()` is no longer a public method.
+- Multimat: fields are now returned as shallow, device-copyable views of a field instead
+  of full copies of field data.
+- Multimat: `MultiMat::addField()` and `MultiMat::setVolfracField()` API now use `axom::ArrayView`
+  to accept data.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
