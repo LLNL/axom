@@ -126,9 +126,14 @@ if (AXOM_ENABLE_MPI)
                               readers/PProEReader.hpp)
     blt_list_append(TO quest_headers IF C2C_FOUND ELEMENTS readers/PC2CReader.hpp)
 
-    list(APPEND quest_sources readers/PSTLReader.cpp
-                              readers/PProEReader.cpp)
-    blt_list_append(TO quest_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
+    set(quest_mpi_sources readers/PSTLReader.cpp
+                          readers/PProEReader.cpp)
+    blt_list_append(TO quest_mpi_sources IF C2C_FOUND ELEMENTS readers/PC2CReader.cpp)
+    # Disable unity build inclusion due to use of anonymous namespace.
+    set_source_files_properties(
+        ${quest_mpi_sources}
+        PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)
+    list(APPEND quest_sources ${quest_mpi_sources})
 endif()
 
 if (SHROUD_FOUND)
