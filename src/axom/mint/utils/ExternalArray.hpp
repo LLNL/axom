@@ -77,10 +77,10 @@ public:
     this->m_shape = shape;
     this->updateStrides();
 
-    SLIC_ERROR_IF(!detail::allNonNegative(shape.m_data),
+    SLIC_ERROR_IF(!axom::detail::allNonNegative(shape.m_data),
                   "Dimensions passed as shape must all be non-negative.");
 
-    this->m_num_elements = detail::packProduct(shape.m_data);
+    this->m_num_elements = axom::detail::packProduct(shape.m_data);
     this->m_capacity = capacity;
 
     if(this->m_num_elements > capacity)
