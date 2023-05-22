@@ -209,7 +209,9 @@ public:
   void setNumberOfCells(int num_cells);
 
   /**
-   * \brief Sets the allocator ID to use for allocations.
+   * \brief Sets the allocator ID to use for allocations. Has the same effect
+   *  as calling setSlamAllocatorID() and setFieldAllocatorID() with the same
+   *  allocator ID.
    *
    * \param The allocator ID to use
    */
