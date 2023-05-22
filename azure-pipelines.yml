@@ -66,7 +66,7 @@ jobs:
         HOST_CONFIG: 'clang@10.0.0'
       osx_gcc:
         VM_ImageName: 'macos-11'
-        CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
+        CMAKE_EXTRA_FLAGS: '-DCMAKE_UNITY_BUILD=ON -DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
         TEST_TARGET: 'osx_gcc'
       windows:
         VM_ImageName: 'windows-2019'
@@ -83,7 +83,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDir: 'build'
-      cmakeArgs: '-DCMAKE_UNITY_BUILD=ON $(CMAKE_EXTRA_FLAGS) ../src'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
     condition: or( eq( variables['Agent.OS'], 'Windows_NT'), eq( variables['Agent.OS'], 'Darwin'))
   - task: VSBuild@1
     inputs:
