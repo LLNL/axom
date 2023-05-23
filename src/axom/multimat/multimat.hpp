@@ -283,6 +283,8 @@ public:
    *
    * \pre The number of materials and cell must be set prior to calling this
    *  function with setNumberOfMaterials(int) and setNumberOfCells(int)
+   * \pre If m_slamAllocatorID points to device-accessible memory, cardinality
+   *  and indices must be device accessible.
    */
   void setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
                      axom::ArrayView<const SetPosType> indices,

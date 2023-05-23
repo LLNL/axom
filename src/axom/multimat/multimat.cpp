@@ -461,7 +461,43 @@ void MultiMat::setCellMatRel(const vector<bool>& vecarr, DataLayout layout)
     counts[i] = cardinality;
   }
 
+  if(AllocatorOnDevice(m_slamAllocatorId))
+  {
+    // Copy counts and indices to GPU memory.
+    counts = IndBufferType(counts, m_slamAllocatorId);
+    indices = IndBufferType(indices, m_slamAllocatorId);
+  }
+
   setCellMatRel(counts, indices, layout);
+}
+
+template <typename ExecSpace, typename IndexType>
+void ScanRelationOffsetsRAJA(const axom::ArrayView<const IndexType> counts,
+                             const axom::ArrayView<IndexType> begins,
+                             const axom::ArrayView<IndexType> firstIndices)
+{
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  using AtomicPolicy = typename axom::execution_space<ExecSpace>::atomic_policy;
+  using LoopPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+
+  // The begins array has one more element than the counts array. The last
+  // element is the size of the relation, so we can just inclusive scan with an
+  // offset to the begins array.
+  RAJA::inclusive_scan<LoopPolicy>(
+    RAJA::make_span(counts.data(), counts.size()),
+    RAJA::make_span(begins.data() + 1, counts.size()));
+
+  // Generate the first indices array on the GPU.
+  axom::for_all<ExecSpace>(
+    counts.size(),
+    AXOM_LAMBDA(int firstIndex) {
+      for(int flatIndex = begins[firstIndex]; flatIndex < begins[firstIndex + 1];
+          flatIndex++)
+      {
+        firstIndices[flatIndex] = firstIndex;
+      }
+    });
+#endif
 }
 
 void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
@@ -484,11 +520,21 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
 
   // Offsets vector is just an inclusive scan of the cardinality
   Rel_beginsVec.resize(set1.size() + 1);
-  Rel_beginsVec[0] = 0;
-  for(SetPosType maj_idx = 1; maj_idx < cardinality.size() + 1; maj_idx++)
+  Rel_firstIndicesVec.resize(indices.size());
+  if(AllocatorOnDevice(m_slamAllocatorId))
   {
-    Rel_beginsVec[maj_idx] =
-      Rel_beginsVec[maj_idx - 1] + cardinality[maj_idx - 1];
+    auto begins = Rel_beginsVec.view();
+    auto firstIndices = Rel_firstIndicesVec.view();
+    ScanRelationOffsetsRAJA<GPU_Exec>(cardinality, begins, firstIndices);
+  }
+  else
+  {
+    Rel_beginsVec[0] = 0;
+    for(SetPosType maj_idx = 1; maj_idx < cardinality.size() + 1; maj_idx++)
+    {
+      Rel_beginsVec[maj_idx] =
+        Rel_beginsVec[maj_idx - 1] + cardinality[maj_idx - 1];
+    }
   }
 
   // Just copy over the indices directly
@@ -498,13 +544,16 @@ void MultiMat::setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
   Rel_ptr.bindBeginOffsets(set1.size(), Rel_beginsVec.view());
   Rel_ptr.bindIndices(Rel_indicesVec.size(), Rel_indicesVec.view());
 
-  Rel_firstIndicesVec =
-    axom::Array<SetPosType>(indices.size(), indices.size(), m_slamAllocatorId);
+  // If we are on the CPU, let the MappedVariableRelation policy construct the
+  // first indices array.
+  bool constructFirstIndices = !AllocatorOnDevice(m_slamAllocatorId);
   Rel_ptr.bindFirstIndices(Rel_firstIndicesVec.size(),
-                           Rel_firstIndicesVec.view());
+                           Rel_firstIndicesVec.view(),
+                           constructFirstIndices);
 
   SLIC_ASSERT(relBeginVec(layout).getAllocatorID() == m_slamAllocatorId);
   SLIC_ASSERT(relIndVec(layout).getAllocatorID() == m_slamAllocatorId);
+  SLIC_ASSERT(relFirstIndVec(layout).getAllocatorID() == m_slamAllocatorId);
 
   SLIC_ASSERT(Rel_ptr.isValid());
 
