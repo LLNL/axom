@@ -50,7 +50,7 @@ quartz_release:
   variables:
     # Use when ellastic ci is on quartz or we go back to ruby
     # ALLOC_COMMAND: "srun --reservation=ci --qos=ci_ruby -t 60 -N 1 "
-    ALLOC_COMMAND: "srun -t 60 -N 1 "
+    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
   extends: [.src_build_script, .on_quartz, .src_workflow]
   needs: [quartz_allocate]
 
@@ -59,7 +59,7 @@ quartz_release:
   variables:
     # Use when ellastic ci is on quartz or we go back to ruby
     # ALLOC_COMMAND: "srun --reservation=ci --qos=ci_ruby -t 60 -N 1 "
-    ALLOC_COMMAND: "srun -t 60 -N 1 "
+    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
   extends: [.full_build_script, .on_quartz, .full_workflow]
   needs: []
 
