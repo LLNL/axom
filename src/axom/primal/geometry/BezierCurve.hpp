@@ -62,7 +62,6 @@ class BezierCurve
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
   using SegmentType = Segment<T, NDIMS>;
   using CoordsVec = axom::Array<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
@@ -85,7 +84,7 @@ public:
   explicit BezierCurve(int ord = -1)
   {
     SLIC_ASSERT(ord >= -1);
-    const int sz = utilities::max(-1, ord + 1);
+    const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
 
     makeNonrational();
@@ -529,10 +528,10 @@ public:
           }
 
           c2.setWeight(k, temp_weight);
-
-          c1[p] = c2[0];
-          c1.setWeight(p, c2.getWeight(0));
         }
+
+        c1[p] = c2[0];
+        c1.setWeight(p, c2.getWeight(0));
       }
     }
     else  // Code can be simpler if not rational Bezier curves
