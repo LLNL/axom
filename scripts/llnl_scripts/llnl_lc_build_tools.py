@@ -71,6 +71,7 @@ def build_info():
     res["built_from_branch"] = "unknown"
     res["built_from_sha1"]   = "unknown"
     res["platform"] = get_platform()
+    res["hostname"] = os.environ["HOSTNAME"]
     rc, out = sexe('git branch -a | grep \"*\"',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
     if rc == 0 and out != "":
