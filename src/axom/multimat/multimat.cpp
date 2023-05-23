@@ -32,14 +32,13 @@ using namespace axom::multimat;
 
 namespace
 {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  #if defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_CUDA)
 using GPU_Exec = axom::CUDA_EXEC<256>;
-  #elif defined(AXOM_USE_HIP)
+#elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE) && \
+  defined(AXOM_USE_HIP)
 using GPU_Exec = axom::HIP_EXEC<256>;
-  #else
+#else
 using GPU_Exec = axom::SEQ_EXEC;
-  #endif
 #endif
 
 bool AllocatorOnDevice(int allocatorId)
