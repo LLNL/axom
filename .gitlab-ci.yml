@@ -42,7 +42,7 @@ stages:
     - echo +++++++++++++++
     - echo +++++++++++++++
     - echo "JOBID is:"
-    - JOBID
+    - printenv JOBID
     - echo "--jobid=${JOBID}"
     - echo +++++++++++++++
     - echo +++++++++++++++
