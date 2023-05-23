@@ -37,7 +37,7 @@ stages:
     - echo +++++++++++++++
     - echo +++++++++++++++
     - echo +++++++++++++++
-    - JOBID=$(if [[ "$SYS_TYPE" == "toss_3_x86_64_ib" ]]; then squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A; fi)
+    - export JOBID=$(if [[ "$SYS_TYPE" == "toss_3_x86_64_ib" ]]; then squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A; fi)
     - echo +++++++++++++++
     - echo +++++++++++++++
     - echo +++++++++++++++
