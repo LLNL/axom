@@ -30,6 +30,46 @@
 using namespace std;
 using namespace axom::multimat;
 
+namespace
+{
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_CUDA)
+using GPU_Exec = axom::CUDA_EXEC<256>;
+  #elif defined(AXOM_USE_HIP)
+using GPU_Exec = axom::HIP_EXEC<256>;
+  #else
+using GPU_Exec = axom::SEQ_EXEC;
+  #endif
+#endif
+
+bool AllocatorOnDevice(int allocatorId)
+{
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  axom::MemorySpace space = axom::detail::getAllocatorSpace(allocatorId);
+  if(space == axom::MemorySpace::Device || space == axom::MemorySpace::Unified)
+  {
+    return true;
+  }
+#endif
+  return false;
+}
+
+template <typename Lambda>
+void ExecLambdaForMemory(int length, int allocatorId, Lambda&& function)
+{
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  if(AllocatorOnDevice(allocatorId))
+  {
+    axom::for_all<GPU_Exec>(length, function);
+    return;
+  }
+#else
+  AXOM_UNUSED_VAR(allocatorId);
+#endif
+  axom::for_all<axom::SEQ_EXEC>(length, function);
+}
+}  // namespace
+
 template <>
 axom::Array<unsigned char>& MultiMat::FieldBacking::getArray<unsigned char>()
 {
@@ -845,42 +885,6 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
   //TODO make all map value zero?
 
   return true;
-}
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  #if defined(AXOM_USE_CUDA)
-using GPU_Exec = axom::CUDA_EXEC<256>;
-  #elif defined(AXOM_USE_HIP)
-using GPU_Exec = axom::HIP_EXEC<256>;
-  #else
-using GPU_Exec = axom::SEQ_EXEC;
-  #endif
-#endif
-
-bool AllocatorOnDevice(int allocatorId)
-{
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  axom::MemorySpace space = axom::detail::getAllocatorSpace(allocatorId);
-  if(space == axom::MemorySpace::Device || space == axom::MemorySpace::Unified)
-  {
-    return true;
-  }
-#endif
-  return false;
-}
-
-template <typename Lambda>
-void ExecLambdaForMemory(int length, int allocatorId, Lambda&& function)
-{
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  if(AllocatorOnDevice(allocatorId))
-  {
-    axom::for_all<GPU_Exec>(length, function);
-    return;
-  }
-#else
-  AXOM_UNUSED_VAR(allocatorId);
-#endif
-  axom::for_all<axom::SEQ_EXEC>(length, function);
 }
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
