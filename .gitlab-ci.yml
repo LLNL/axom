@@ -29,10 +29,25 @@ stages:
 .src_build_script:
   script:
     # Use pre-existing allocation if any
+    - echo +++++++++++++++
+    - echo +++++++++++++++
+    - echo +++++++++++++++
+    - echo "Hostname before calling build_src.py command is:"
+    - hostname
+    - echo +++++++++++++++
+    - echo +++++++++++++++
+    - echo +++++++++++++++
     - JOBID=$(if [[ "$SYS_TYPE" == "toss_3_x86_64_ib" ]]; then squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A; fi)
     - ASSIGN_ID=$(if [[ -n "${JOBID}" ]]; then echo "--jobid=${JOBID}"; fi)
     # BUILD + TEST
     - echo -e "\e[0Ksection_start:$(date +%s):src_build_and_test\r\e[0KSource Build and Test ${CI_PROJECT_NAME}"
+    - echo +++++++++++++++
+    - echo +++++++++++++++
+    - echo +++++++++++++++
+    - ${ALLOC_COMMAND} ${ASSIGN_ID} hostname
+    - echo +++++++++++++++
+    - echo +++++++++++++++
+    - echo +++++++++++++++
     - ${ALLOC_COMMAND} ${ASSIGN_ID} python3 scripts/llnl_scripts/build_src.py -v --host-config ${HOST_CONFIG} --extra-cmake-options '-DENABLE_DOCS=OFF ${EXTRA_CMAKE_OPTIONS}' --build-type ${BUILD_TYPE:-Debug} ${EXTRA_OPTIONS}
     - echo -e "\e[0Ksection_end:$(date +%s):src_build_and_test\r\e[0K"
   artifacts:
