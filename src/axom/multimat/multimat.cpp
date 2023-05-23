@@ -851,6 +851,8 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
 using GPU_Exec = axom::CUDA_EXEC<256>;
   #elif defined(AXOM_USE_HIP)
 using GPU_Exec = axom::HIP_EXEC<256>;
+  #else
+using GPU_Exec = axom::SEQ_EXEC;
   #endif
 #endif
 
