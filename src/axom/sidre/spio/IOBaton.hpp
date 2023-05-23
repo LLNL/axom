@@ -22,6 +22,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
+#include "axom/export/sidre.h"
 
 namespace axom
 {
@@ -100,7 +101,7 @@ private:
 
   void setupReducedRanks();
 
-  static const int s_invalid_rank_id;
+  AXOM_SIDRE_EXPORT static const int s_invalid_rank_id;
 
   MPI_Comm m_mpi_comm;
 
