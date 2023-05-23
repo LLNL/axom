@@ -9,6 +9,7 @@
 set( primal_tests
     primal_bezier_curve.cpp
     primal_bezier_intersect.cpp
+    primal_bezier_patch.cpp
     primal_boundingbox.cpp
     primal_bounding_box_intersect.cpp
     primal_clip.cpp
