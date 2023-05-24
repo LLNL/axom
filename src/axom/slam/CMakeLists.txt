@@ -86,6 +86,7 @@ set(slam_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
+# blt_list_append( TO slam_depends_on ELEMENTS blt::hip IF ENABLE_HIP)
 axom_add_library(
     NAME        slam
     SOURCES     ${slam_sources}

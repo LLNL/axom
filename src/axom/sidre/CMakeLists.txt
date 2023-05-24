@@ -105,6 +105,7 @@ set(sidre_depends
     conduit::conduit
     )
 
+blt_list_append(TO sidre_depends ELEMENTS blt::hip IF ENABLE_HIP)
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO sidre_depends ELEMENTS sparsehash IF SPARSEHASH_FOUND)
 if(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
