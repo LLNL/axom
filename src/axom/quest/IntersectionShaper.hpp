@@ -378,41 +378,18 @@ public:
   //!  @name Functions related to the stages for a given shape
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+
+  // Prepares the ProE mesh cells for the spatial index
   template <typename ExecSpace>
-  void proePrepareShapeQueryImpl(klee::Dimensions shapeDimension,
-                                 const klee::Shape& shape)
+  void prepareProECells()
   {
-    SLIC_INFO(axom::fmt::format("{:-^80}", "proePrepareShapeQueryImpl called!"));
-
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      axom::fmt::format(
-        "Running intersection-based shaper in execution Space: {}",
-        axom::execution_space<ExecSpace>::name())));
-
-    // Save current/default allocator
-    const int current_allocator = axom::getDefaultAllocatorID();
-
-    // Determine new allocator (for CUDA/HIP policy, set to Unified)
-    // Set new default to device
-    axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
-
-    const auto& shapeName = shape.getName();
-    AXOM_UNUSED_VAR(shapeDimension);
-    AXOM_UNUSED_VAR(shapeName);
-
-    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
-
+    // Number of tets in mesh
     m_tetcount = m_surfaceMesh->getNumberOfCells();
 
     SLIC_INFO("Number of tets is " << m_tetcount);
 
     m_tets = axom::Array<TetrahedronType>(m_tetcount, m_tetcount);
     auto m_tets_view = m_tets.view();
-
-    SLIC_INFO("current_allocator ID is " << current_allocator);
-    SLIC_INFO("SET allocator ID is " << axom::getDefaultAllocatorID());
-    SLIC_INFO("m_tets allocator ID is " << m_tets.getAllocatorID());
 
     // Initialize tetrahedra
     axom::Array<IndexType> nodeIds(4);
@@ -428,8 +405,6 @@ public:
       m_surfaceMesh->getNode(nodeIds[3], pts[3].data());
 
       m_tets[i] = TetrahedronType({pts[0], pts[1], pts[2], pts[3]});
-
-      // SLIC_INFO("Tet " << i << " is " << m_tets[i]);
     }
 
     if(this->isVerbose())
@@ -458,7 +433,7 @@ public:
         "DEBUG: Total volume of all generated tetrahedra is {}",
         total_tet_vol.get()));
 
-      // Check if any Tetrahedron are degenerate with all points {0,0,0}
+      // Check if any Tetrahedron are degenerate with zero volume
       RAJA::ReduceSum<REDUCE_POL, int> num_degenerate(0);
       axom::for_all<ExecSpace>(
         m_tetcount,
@@ -469,44 +444,20 @@ public:
           }
         });
 
-      SLIC_INFO(
-        axom::fmt::format("DEBUG: {} Tetrahedra found with all points (0,0,0)",
-                          num_degenerate.get()));
+      SLIC_INFO(axom::fmt::format(
+        "DEBUG: Degenerate {} tetrahedra found with zero volume",
+        num_degenerate.get()));
 
-      // Dump tet mesh
-      axom::mint::write_vtk(m_surfaceMesh, "cup_verbose.vtk");
+      // Dump proe mesh as a tet mesh
+      axom::mint::write_vtk(m_surfaceMesh, "proe_tet.vtk");
 
     }  // end of verbose output for contour
-
-    axom::setDefaultAllocator(current_allocator);
   }
-#endif
 
-/// Initializes the spatial index for shaping
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  // Prepares the C2C mesh cells for the spatial index
   template <typename ExecSpace>
-  void prepareShapeQueryImpl(klee::Dimensions shapeDimension,
-                             const klee::Shape& shape)
+  void prepareC2CCells()
   {
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      axom::fmt::format(
-        "Running intersection-based shaper in execution Space: {}",
-        axom::execution_space<ExecSpace>::name())));
-
-    // Save current/default allocator
-    const int current_allocator = axom::getDefaultAllocatorID();
-
-    // Determine new allocator (for CUDA/HIP policy, set to Unified)
-    // Set new default to device
-    axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
-
-    const auto& shapeName = shape.getName();
-    AXOM_UNUSED_VAR(shapeDimension);
-    AXOM_UNUSED_VAR(shapeName);
-
-    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
-
     // Number of points in polyline
     int pointcount = getSurfaceMesh()->getNumberOfNodes();
 
@@ -627,6 +578,49 @@ public:
     }  // end of verbose output for contour
 
     axom::deallocate(polyline);
+  }
+
+  /// Initializes the spatial index for shaping
+  template <typename ExecSpace>
+  void prepareShapeQueryImpl(klee::Dimensions shapeDimension,
+                             const klee::Shape& shape)
+  {
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      axom::fmt::format(
+        "Running intersection-based shaper in execution Space: {}",
+        axom::execution_space<ExecSpace>::name())));
+
+    // Save current/default allocator
+    const int current_allocator = axom::getDefaultAllocatorID();
+
+    // Determine new allocator (for CUDA/HIP policy, set to Unified)
+    // Set new default to device
+    axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
+
+    const auto& shapeName = shape.getName();
+    AXOM_UNUSED_VAR(shapeDimension);
+    AXOM_UNUSED_VAR(shapeName);
+
+    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
+
+    std::string shapeFormat = shape.getGeometry().getFormat();
+
+    if(shapeFormat == "c2c")
+    {
+      prepareC2CCells<ExecSpace>();
+    }
+
+    else if(shapeFormat == "proe")
+    {
+      prepareProECells<ExecSpace>();
+    }
+    else
+    {
+      SLIC_ERROR(
+        axom::fmt::format("The shape format {} is unsupported", shapeFormat));
+    }
+
     axom::setDefaultAllocator(current_allocator);
   }
 #endif
@@ -1813,83 +1807,49 @@ public:
   {
     std::string shapeFormat = shape.getGeometry().getFormat();
 
-    // Testing separate workflow for Pro/E
-    if(shapeFormat == "proe")
+    // Save m_percentError and m_level in case refineShape needs to change them
+    // to meet the overall desired error tolerance for the volume.
+    const double saved_percentError = m_percentError;
+    const double saved_level = m_level;
+    if(shapeFormat == "c2c")
     {
-      switch(m_execPolicy)
-      {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      case seq:
-        proePrepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
-        break;
-  #if defined(AXOM_USE_OPENMP)
-      case omp:
-        proePrepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
-        break;
-  #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
-      case cuda:
-        proePrepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
-        break;
-  #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
-      case hip:
-        proePrepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
-        break;
-  #endif  // AXOM_USE_HIP
-#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-      default:
-        AXOM_UNUSED_VAR(shapeDimension);
-        AXOM_UNUSED_VAR(shape);
-        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-        break;
-      }
-    }
-
-    else
-    {
-      // Save m_percentError and m_level in case refineShape needs to change them
-      // to meet the overall desired error tolerance for the volume.
-      const double saved_percentError = m_percentError;
-      const double saved_level = m_level;
-
       // Refine the shape, potentially reloading it more refined.
       refineShape(shape);
+    }
 
-      // Now that the mesh is refined, dispatch to device implementations.
-      switch(m_execPolicy)
-      {
+    // Now that the mesh is refined, dispatch to device implementations.
+    switch(m_execPolicy)
+    {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-      case seq:
-        prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
-        break;
+    case seq:
+      prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
+      break;
   #if defined(AXOM_USE_OPENMP)
-      case omp:
-        prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
-        break;
+    case omp:
+      prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
+      break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA)
-      case cuda:
-        prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
-        break;
+    case cuda:
+      prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
+      break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP)
-      case hip:
-        prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
-        break;
+    case hip:
+      prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
+      break;
   #endif  // AXOM_USE_HIP
 #endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
-      default:
-        AXOM_UNUSED_VAR(shapeDimension);
-        AXOM_UNUSED_VAR(shape);
-        SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
-        break;
-      }
-
-      // Restore m_percentError, m_level in case refineShape changed them.
-      m_percentError = saved_percentError;
-      m_level = saved_level;
+    default:
+      AXOM_UNUSED_VAR(shapeDimension);
+      AXOM_UNUSED_VAR(shape);
+      SLIC_ERROR("Unhandled runtime policy case " << m_execPolicy);
+      break;
     }
+
+    // Restore m_percentError, m_level in case refineShape changed them.
+    m_percentError = saved_percentError;
+    m_level = saved_level;
   }
 
   // Runs the shaping query, based on the policy member set
