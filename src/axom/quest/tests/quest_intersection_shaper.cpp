@@ -887,21 +887,22 @@ TEST(IntersectionShaperTest, case4_hip)
 #endif
 
 // proeCase
-#if defined(RUN_AXOM_SEQ_TESTS)
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
 TEST(IntersectionShaperTest, proeCase_seq)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(proeCase, "seq", quest::IntersectionShaper::seq, tolerance);
 }
-#endif
-#if defined(AXOM_USE_OPENMP)
+  #endif
+  #if defined(AXOM_USE_OPENMP)
 TEST(IntersectionShaperTest, proeCase_omp)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(proeCase, "omp", quest::IntersectionShaper::omp, tolerance);
 }
-#endif
-#if defined(AXOM_USE_CUDA)
+  #endif
+  #if defined(AXOM_USE_CUDA)
 TEST(IntersectionShaperTest, proeCase_cuda)
 {
   constexpr double tolerance = 1.e-10;
@@ -910,13 +911,14 @@ TEST(IntersectionShaperTest, proeCase_cuda)
                          quest::IntersectionShaper::cuda,
                          tolerance);
 }
-#endif
-#if defined(AXOM_USE_HIP)
+  #endif
+  #if defined(AXOM_USE_HIP)
 TEST(IntersectionShaperTest, proeCase_hip)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(proeCase, "hip", quest::IntersectionShaper::hip, tolerance);
 }
+  #endif
 #endif
 
 //---------------------------------------------------------------------------
