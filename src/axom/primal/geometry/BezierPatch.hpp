@@ -38,7 +38,7 @@ class BezierPatch;
 
 /*! \brief Overloaded output operator for Bezier Patches*/
 template <typename T, int NDIMS>
-std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bCurve);
+std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch);
 
 /*!
  * \class BezierPatch
@@ -49,12 +49,13 @@ std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bCurve);
  *
  * The order of a Bezier patch with (N+1)(M+1) control points is (N, M).
  * The patch is approximated by the control points,
- * parametrized from t=0 to t=1 and s=0 to s=1.
+ * parametrized from u=0 to u=1 and v=0 to v=1.
  * 
  * Contains a 2D array of positive weights to represent a rational Bezier patch.
  * Nonrational Bezier patches are identified by an empty weights array.
  * Algorithms for Rational Bezier curves derived from 
- * < Not yet known. Probably the same Farin book? >
+ * Gerald Farin, "Algorithms for rational Bezier curves"
+ * Computer-Aided Design, Volume 15, Number 2, 1983,
  */
 template <typename T, int NDIMS = 3>
 class BezierPatch
@@ -75,14 +76,14 @@ public:
                          "A Bezier Patch object must be defined in 3-D");
   AXOM_STATIC_ASSERT_MSG(
     std::is_arithmetic<T>::value,
-    "A Bezier Curve must be defined using an arithmetic type");
+    "A Bezier Patch must be defined using an arithmetic type");
 
 public:
   /*!
    * \brief Constructor for a Bezier Patch that reserves space for
    *  the given order of the surface
    *
-   * \param [in] order the order of the resulting Bezier curve
+   * \param [in] order the order of the resulting Bezier patch
    * \pre order is greater than or equal to -1.
    */
   BezierPatch(int ord_u = -1, int ord_v = -1)
@@ -212,19 +213,19 @@ public:
     SLIC_ASSERT(isValidRational());
   }
 
-  /// Sets the order of the Bezier Curve
+  /// Sets the order of the Bezier Patch
   void setOrder(int ord_u, int ord_v)
   {
     m_controlPoints.resize(ord_u + 1, ord_v + 1);
   }
 
-  /// Returns the order of the Bezier Curve on the first axis
+  /// Returns the order of the Bezier Patch on the first axis
   int getOrder_u() const
   {
     return static_cast<int>(m_controlPoints.shape()[0]) - 1;
   }
 
-  /// Returns the order of the Bezier Curve
+  /// Returns the order of the Bezier Patch on the second axis
   int getOrder_v() const
   {
     return static_cast<int>(m_controlPoints.shape()[1]) - 1;
@@ -316,16 +317,16 @@ public:
     return !(lhs == rhs);
   }
 
-  /// Returns a copy of the Bezier curve's control points
+  /// Returns a copy of the Bezier patch's control points
   CoordsMat getControlPoints() const { return m_controlPoints; }
 
-  /// Returns a copy of the Bezier curve's weights
+  /// Returns a copy of the Bezier patch's weights
   axom::Array<T, 2> getWeights() const { return m_weights; }
 
   /*!
    * \brief Reverses the order of one direction of the Bezier patch's control points and weights
    *
-   * \param [in] axis orientation of curve. 0 to reverse in u, 1 for reverse in v
+   * \param [in] axis orientation of patch. 0 to reverse in u, 1 for reverse in v
    */
   void reverseOrientation(int axis)
   {
@@ -387,14 +388,14 @@ public:
     }
   }
 
-  /// Returns an axis-aligned bounding box containing the Bezier curve
+  /// Returns an axis-aligned bounding box containing the Bezier patch
   BoundingBoxType boundingBox() const
   {
     return BoundingBoxType(m_controlPoints.data(),
                            static_cast<int>(m_controlPoints.size()));
   }
 
-  /// Returns an oriented bounding box containing the Bezier curve
+  /// Returns an oriented bounding box containing the Bezier patch
   OrientedBoundingBoxType orientedBoundingBox() const
   {
     return OrientedBoundingBoxType(m_controlPoints.data(),
@@ -409,7 +410,7 @@ public:
    * \param [in] axis orientation of curve. 0 for fixed u, 1 for fixed v
    * \return p the value of the Bezier patch at (u, v)
    *
-   * \note We typically evaluate the curve at \a u or \a v between 0 and 1
+   * \note We typically evaluate the patch at \a u or \a v between 0 and 1
    */
   BezierCurveType isocurve(T uv, int axis = 0) const
   {
@@ -424,7 +425,7 @@ public:
 
     if(isRational())
     {
-      if(axis == 0)  // Keeping a fixed value of t
+      if(axis == 0)  // Keeping a fixed value of u
       {
         c.setOrder(ord_v);
         c.makeRational();
@@ -457,7 +458,7 @@ public:
           }
       }
       // Run de Casteljau algorithm on each column of control nodes and each dimension
-      else  // Keeping a fixed value of s
+      else  // Keeping a fixed value of v
       {
         c.setOrder(ord_u);
         c.makeRational();
@@ -490,7 +491,7 @@ public:
     }
     else
     {
-      if(axis == 0)  // Keeping a fixed value of t
+      if(axis == 0)  // Keeping a fixed value of u
       {
         c.setOrder(ord_v);
         axom::Array<T> dCarray(ord_u + 1);  // Temp array
@@ -512,7 +513,7 @@ public:
           }
       }
       // Run de Casteljau algorithm on each column of control nodes and each dimension
-      else  // Keeping a fixed value of s
+      else  // Keeping a fixed value of v
       {
         c.setOrder(ord_u);
         axom::Array<T> dCarray(ord_v + 1);  // Temp array
@@ -546,7 +547,7 @@ public:
    * \param [in] v parameter value at which to evaluate on the second axis
    * \return p the value of the Bezier patch at (u, v)
    *
-   * \note We typically evaluate the curve at \a u and \a v between 0 and 1
+   * \note We typically evaluate the patch at \a u and \a v between 0 and 1
    */
   PointType evaluate(T u, T v) const
   {
@@ -562,9 +563,9 @@ public:
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
    * \param [in] axis orientation of vector. 0 for fixed u, 1 for fixed v
-   * \return v a tangent vector of the Bezier curve at (u, v)
+   * \return v a tangent vector of the Bezier patch at (u, v)
    *
-   * \note We typically find the tangent of the curve at \a u and \a v between 0 and 1
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
   VectorType dt(T u, T v, int axis) const
   {
@@ -580,9 +581,9 @@ public:
    *
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
-   * \return vec the normal vector of the Bezier curve at (u, v)
+   * \return vec the normal vector of the Bezier patch at (u, v)
    *
-   * \note We typically find the normal of the curve at \a u and \a v between 0 and 1
+   * \note We typically find the normal of the patch at \a u and \a v between 0 and 1
    */
   VectorType normal(T u, T v) const
   {
@@ -620,7 +621,7 @@ public:
     if(isRational())
     {
       p1.makeRational();  // p2 already rational
-      if(axis == 0)       // Split across a fixed value of t
+      if(axis == 0)       // Split across a fixed value of u
       {
         // Run algorithm across each row of control nodes
         for(int q = 0; q <= ord_v; ++q)
@@ -691,7 +692,7 @@ public:
     }
     else
     {
-      if(axis == 0)  // Split across a fixed value of t
+      if(axis == 0)  // Split across a fixed value of u
       {
         // Do the split for each row of control nodes
         for(int q = 0; q <= ord_v; ++q)
@@ -806,7 +807,7 @@ public:
   }
 
   /*!
-   * \brief Simple formatted print of a Bezier Curve instance
+   * \brief Simple formatted print of a Bezier Patch instance
    *
    * \param os The output stream to write to
    * \return A reference to the modified ostream
@@ -859,7 +860,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-/// Free functions related to BezierCurve
+/// Free functions related to BezierPatch
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch)
