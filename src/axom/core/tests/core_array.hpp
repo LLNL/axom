@@ -751,7 +751,7 @@ void check_external_view(ArrayView<T>& v)
   EXPECT_EQ(data_ptr, v.data());
 }
 
-#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
 
 template <typename T>
 __global__ void assign_raw(T* data, int N)
@@ -919,7 +919,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   }
 }
 
-#endif  // defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#endif  // defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
 
 } /* end namespace internal */
 
@@ -957,7 +957,7 @@ TEST(core_array, checkFill)
 }
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
 TEST(core_array, checkFillDevice)
 {
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
@@ -1279,7 +1279,7 @@ TEST(core_array, checkIterator)
 }
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_USE_UMPIRE)
 void checkIteratorDeviceImpl()
 {
   constexpr int SIZE = 1000;
@@ -1696,8 +1696,8 @@ TEST(core_array, check_multidimensional_view_spacing)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDevice)
 {
-#if !defined(AXOM_GPUCC) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
+#if !defined(AXOM_USE_GPU) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
   GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
                   "in device code";
 #else
@@ -1732,8 +1732,8 @@ TEST(core_array, checkDevice)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDevice2D)
 {
-#if !defined(AXOM_GPUCC) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
+#if !defined(AXOM_USE_GPU) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
   GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
                   "in device code";
 #else
@@ -1796,8 +1796,8 @@ TEST(core_array, checkDefaultInitialization)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDefaultInitializationDevice)
 {
-#if !defined(AXOM_GPUCC) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
+#if !defined(AXOM_USE_GPU) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
   GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
                   "in device code";
 #else
