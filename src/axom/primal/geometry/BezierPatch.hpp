@@ -87,7 +87,7 @@ public:
    */
   BezierPatch(int ord_u = -1, int ord_v = -1)
   {
-    SLIC_ASSERT(ord_u >= -1, ord_v >= -1);
+    SLIC_ASSERT(ord_u >= -1 && ord_v >= -1);
 
     const int sz_u = utilities::max(0, ord_u + 1);
     const int sz_v = utilities::max(0, ord_v + 1);
@@ -109,7 +109,7 @@ public:
   BezierPatch(PointType* pts, int ord_u, int ord_v)
   {
     SLIC_ASSERT(pts != nullptr);
-    SLIC_ASSERT(ord_u >= 0, ord_v >= 0);
+    SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
 
     const int sz_u = utilities::max(0, ord_u + 1);
     const int sz_v = utilities::max(0, ord_v + 1);
@@ -135,7 +135,7 @@ public:
   BezierPatch(PointType* pts, T* weights, int ord_u, int ord_v)
   {
     SLIC_ASSERT(pts != nullptr);
-    SLIC_ASSERT(ord_u >= 0, ord_v >= 0);
+    SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
 
     const int sz_u = utilities::max(0, ord_u + 1);
     const int sz_v = utilities::max(0, ord_v + 1);
@@ -196,7 +196,7 @@ public:
               int ord_u,
               int ord_v)
   {
-    SLIC_ASSERT(ord >= 0);
+    SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
     SLIC_ASSERT(pts.shape()[0] == weights.shape()[0]);
     SLIC_ASSERT(pts.shape()[1] == weights.shape()[1]);
 
@@ -258,7 +258,7 @@ public:
     const int ord_v = getOrder_v();
 
     for(int p = 0; p <= ord_u; ++p)
-      for(int q = 0; q <= ord_v(); ++q) m_controlPoints(p, q) = PointType();
+      for(int q = 0; q <= ord_v; ++q) m_controlPoints(p, q) = PointType();
 
     makeNonrational();
   }
