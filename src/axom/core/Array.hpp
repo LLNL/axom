@@ -158,7 +158,8 @@ public:
         IndexType capacity = 0,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
-  Array(const axom::StackArray<axom::IndexType, DIM>& shape);
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
   /*!
    * \brief Generic constructor for an Array of arbitrary dimension
@@ -883,9 +884,10 @@ Array<T, DIM, SPACE>::Array()
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape)
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            int allocator_id)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape)
-  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+  , m_allocator_id(allocator_id)
 {
   initialize(detail::packProduct(shape.m_data),
              detail::packProduct(shape.m_data),
