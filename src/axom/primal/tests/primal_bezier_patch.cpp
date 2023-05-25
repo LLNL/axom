@@ -98,12 +98,12 @@ TEST(primal_bezierpatch, set_order)
 //------------------------------------------------------------------------------
 TEST(primal_bezierpatch, point_array_constructor)
 {
-  SLIC_INFO("Testing point array constructor");
-
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  SLIC_INFO("Testing point array constructor");
 
   const int order_u = 1;
   const int order_v = 1;
@@ -137,16 +137,14 @@ TEST(primal_bezierpatch, make_rational)
   const int order_u = 1;
   const int order_v = 1;
 
-  SLIC_INFO("Test settings and unsetting rational property");
+  SLIC_INFO("Test rational property");
 
   PointType controlPoints[4] = {PointType {0.0, 0.0, 1.0},
                                 PointType {0.0, 1.0, 0.0},
                                 PointType {1.0, 0.0, 0.0},
                                 PointType {1.0, 1.0, -1.0}};
 
-  BezierPatchType bPatch(controlPoints, order_u, order_v);
   BezierPatchType rPatch(controlPoints, order_u, order_v);
-
   EXPECT_FALSE(rPatch.isRational());
   EXPECT_EQ(rPatch.getWeights().size(), 0);
 
@@ -154,11 +152,13 @@ TEST(primal_bezierpatch, make_rational)
   EXPECT_TRUE(rPatch.isRational());
   EXPECT_EQ(rPatch.getWeights().shape(), rPatch.getControlPoints().shape());
 
-  // makeRational should set all weights to 1, keeping surface the same
+  // makeRational should set all weights to 1
   for(int p = 0; p <= order_u; ++p)
     for(int q = 0; q <= order_v; ++q)
       EXPECT_DOUBLE_EQ(rPatch.getWeight(p, q), 1.0);
 
+  // With all weights 1, the surface should be the same as if unweighted
+  BezierPatchType bPatch(controlPoints, order_u, order_v);
   for(double u = 0; u <= 1.0; u += 0.1)
     for(double v = 0; v <= 1.0; v += 0.1)
     {
@@ -173,7 +173,7 @@ TEST(primal_bezierpatch, make_rational)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_bezierpatch, evaluate_wide)
+TEST(primal_bezierpatch, evaluate)
 {
   SLIC_INFO("Testing bezier Patch evaluation");
 
@@ -214,6 +214,26 @@ TEST(primal_bezierpatch, evaluate_wide)
     EXPECT_DOUBLE_EQ(bPatch.evaluate(0.5, 0.5)[i], interior_1[i]);
     EXPECT_DOUBLE_EQ(bPatch.evaluate(0.25, 0.75)[i], interior_2[i]);
     EXPECT_DOUBLE_EQ(bPatch.evaluate(0.75, 0.25)[i], interior_3[i]);
+  }
+
+  // Evaluate calculation is asymmetric across axes. Swap them, and repeat the tests.
+  bPatch.swapAxes();
+  EXPECT_EQ(bPatch.getOrder_u(), order_v);
+  EXPECT_EQ(bPatch.getOrder_v(), order_u);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_DOUBLE_EQ(bPatch.evaluate(0, 0)[i], controlPoints[0][i]);
+    EXPECT_DOUBLE_EQ(bPatch.evaluate(0, 1)[i], controlPoints[9][i]);
+    EXPECT_DOUBLE_EQ(bPatch.evaluate(1, 0)[i], controlPoints[2][i]);
+    EXPECT_DOUBLE_EQ(bPatch.evaluate(1, 1)[i], controlPoints[11][i]);
+  }
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_DOUBLE_EQ(bPatch.evaluate(0.5, 0.5)[i], interior_1[i]);
+    EXPECT_DOUBLE_EQ(bPatch.evaluate(0.75, 0.25)[i], interior_2[i]);
+    EXPECT_DOUBLE_EQ(bPatch.evaluate(0.25, 0.75)[i], interior_3[i]);
   }
 }
 
@@ -607,6 +627,75 @@ TEST(primal_bezierpatch, isPlanar)
       EXPECT_FALSE(patch.isPlanar(tol_sq));
     }
   }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezierpatch, reverse_orientation)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+
+  SLIC_INFO("Testing reverseOrientation(axis) on Bezier patches");
+
+  const int order_u = 3;
+  const int order_v = 2;
+
+  // clang-format off
+  PointType controlPoints[(order_u + 1) * (order_v + 1)] = {
+    PointType {0, 0, 0}, PointType {0, 4,  0}, PointType {0, 8, -3},
+    PointType {2, 0, 6}, PointType {2, 4,  0}, PointType {2, 8,  0},
+    PointType {4, 0, 0}, PointType {4, 4,  0}, PointType {4, 8,  3},
+    PointType {6, 0, 0}, PointType {6, 4, -3}, PointType {6, 8,  0}};
+  // clang-format on
+
+  BezierPatchType original(controlPoints, order_u, order_v);
+  BezierPatchType reversed(controlPoints, order_u, order_v);
+
+  // Reverse along the u-axis
+  reversed.reverseOrientation(0);
+  for(double u = 0; u <= 1.0; u += 0.1)
+    for(double v = 0; v <= 1.0; v += 0.1)
+    {
+      PointType o_pt = original.evaluate(u, v);
+      PointType r_pt = reversed.evaluate(1 - u, v);
+
+      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+    }
+
+  // Reverse along the u-axis again, should return to original
+  reversed.reverseOrientation(0);
+  for(double u = 0; u <= 1.0; u += 0.1)
+    for(double v = 0; v <= 1.0; v += 0.1)
+    {
+      PointType o_pt = original.evaluate(u, v);
+      PointType r_pt = reversed.evaluate(u, v);
+
+      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+    }
+
+  // Reverse along the v-axis
+  reversed.reverseOrientation(1);
+  for(double u = 0; u <= 1.0; u += 0.1)
+    for(double v = 0; v <= 1.0; v += 0.1)
+    {
+      PointType o_pt = original.evaluate(u, v);
+      PointType r_pt = reversed.evaluate(u, 1 - v);
+
+      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+    }
+
+  // Reverse along the u-axis again
+  reversed.reverseOrientation(0);
+  for(double u = 0; u <= 1.0; u += 0.1)
+    for(double v = 0; v <= 1.0; v += 0.1)
+    {
+      PointType o_pt = original.evaluate(u, v);
+      PointType r_pt = reversed.evaluate(1 - u, 1 - v);
+
+      for(int i = 0; i < DIM; ++i) EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+    }
 }
 
 //------------------------------------------------------------------------------

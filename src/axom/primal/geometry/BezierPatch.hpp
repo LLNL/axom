@@ -322,8 +322,70 @@ public:
   /// Returns a copy of the Bezier curve's weights
   axom::Array<T, 2> getWeights() const { return m_weights; }
 
-  /// Reverses the order of the Bezier curve's control points and weights
-  // void reverseOrientation() {}
+  /*!
+   * \brief Reverses the order of one direction of the Bezier patch's control points and weights
+   *
+   * \param [in] axis orientation of curve. 0 to reverse in u, 1 for reverse in v
+   */
+  void reverseOrientation(int axis)
+  {
+    const int ord_u = getOrder_u();
+    const int mid_u = (ord_u + 1) / 2;
+
+    const int ord_v = getOrder_v();
+    const int mid_v = (ord_v + 1) / 2;
+
+    if(axis == 0)
+    {
+      for(int q = 0; q <= ord_v; ++q)
+      {
+        for(int i = 0; i < mid_u; ++i)
+          axom::utilities::swap(m_controlPoints(i, q),
+                                m_controlPoints(ord_u - i, q));
+
+        if(isRational())
+          for(int i = 0; i < mid_u; ++i)
+            axom::utilities::swap(m_weights(i, q), m_weights(ord_u - i, q));
+      }
+    }
+    else
+    {
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        for(int i = 0; i < mid_v; ++i)
+          axom::utilities::swap(m_controlPoints(p, i),
+                                m_controlPoints(p, ord_v - i));
+
+        if(isRational())
+          for(int i = 0; i < mid_v; ++i)
+            axom::utilities::swap(m_weights(p, i), m_weights(p, ord_v - i));
+      }
+    }
+  }
+
+  /// Swap the axes such that s(u, v) becomes s(v, u)
+  void swapAxes()
+  {
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    CoordsMat new_controlPoints(ord_v + 1, ord_u + 1);
+
+    for(int p = 0; p <= ord_u; ++p)
+      for(int q = 0; q <= ord_v; ++q)
+        new_controlPoints(q, p) = m_controlPoints(p, q);
+
+    m_controlPoints = new_controlPoints;
+
+    if(isRational())
+    {
+      axom::Array<T, 2> new_weights(ord_v + 1, ord_u + 1);
+      for(int p = 0; p <= ord_u; ++p)
+        for(int q = 0; q <= ord_v; ++q) new_weights(q, p) = m_weights(p, q);
+
+      m_weights = new_weights;
+    }
+  }
 
   /// Returns an axis-aligned bounding box containing the Bezier curve
   BoundingBoxType boundingBox() const
