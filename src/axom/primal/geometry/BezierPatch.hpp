@@ -85,73 +85,39 @@ public:
    * \param [in] order the order of the resulting Bezier curve
    * \pre order is greater than or equal to -1.
    */
-  BezierPatch(int ord_t = -1, int ord_s = -1)
+  BezierPatch(int ord_u = -1, int ord_v = -1)
   {
-    SLIC_ASSERT(ord_t >= -1, ord_s >= -1);
+    SLIC_ASSERT(ord_u >= -1, ord_v >= -1);
 
-    const int sz_t = utilities::max(0, ord_t + 1);
-    const int sz_s = utilities::max(0, ord_s + 1);
+    const int sz_u = utilities::max(0, ord_u + 1);
+    const int sz_v = utilities::max(0, ord_v + 1);
 
-    m_controlPoints.resize(sz_t, sz_s);
+    m_controlPoints.resize(sz_u, sz_v);
 
     makeNonrational();
   }
 
   /*!
-   * TODO: Make this constructor work 
-   * (or more likely, don't. That's so many points to initialize in an array...)
-   * \brief Constructor for an order \a ord= n Bezier curve
-   * from a list of coordinates:
-   * \verbatim {x_0, x_1, x_2,...,x_n,
-   *            y_0, y_1, y_2,...,y_n,
-   *            z_0, z_1, z_2,...,z_n}
-   *
-   * \param [in] pts an array with (p+1)*NDIMS entries, ordered by coordinate
-   * then by polynomial order
-   * \param [in] ord Polynomial order of the curve
-   * \pre order is greater than or equal to zero
-   */
-  //BezierCurve(T* pts, int ord)
-  //{
-  //  SLIC_ASSERT(pts != nullptr);
-  //  SLIC_ASSERT(ord >= 0);
-
-  //  const int sz = utilities::max(0, ord + 1);
-  //  m_controlPoints.resize(sz);
-
-  //  for(int p = 0; p <= ord; p++)
-  //  {
-  //    auto& pt = m_controlPoints[p];
-  //    for(int j = 0; j < NDIMS; j++)
-  //    {
-  //      pt[j] = pts[j * (ord + 1) + p];
-  //    }
-  //  }
-
-  //  makeNonrational();
-  //}
-
-  /*!
    * \brief Constructor for a Bezier Patch from a 2D array of coordinates
    *
-   * \param [in] pts an array with ord_t+1 arrays with ord_m+1 control points
-   * \param [in] ord_t The patches's polynomial order in p
-   * \param [in] ord_s The patches's polynomial order in q
+   * \param [in] pts an array with ord_u+1 arrays with ord_m+1 control points
+   * \param [in] ord_u The patches's polynomial order on the first axis
+   * \param [in] ord_v The patches's polynomial order on the second axis
    * \pre order in both directions is greater than or equal to zero
    *
    */
-  BezierPatch(PointType* pts, int ord_t, int ord_s)
+  BezierPatch(PointType* pts, int ord_u, int ord_v)
   {
     SLIC_ASSERT(pts != nullptr);
-    SLIC_ASSERT(ord_t >= 0, ord_s >= 0);
+    SLIC_ASSERT(ord_u >= 0, ord_v >= 0);
 
-    const int sz_t = utilities::max(0, ord_t + 1);
-    const int sz_s = utilities::max(0, ord_s + 1);
+    const int sz_u = utilities::max(0, ord_u + 1);
+    const int sz_v = utilities::max(0, ord_v + 1);
 
-    m_controlPoints.resize(sz_t, sz_s);
+    m_controlPoints.resize(sz_u, sz_v);
 
-    for(int t = 0; t < sz_t * sz_s; ++t)
-      m_controlPoints(t / sz_s, t % sz_s) = pts[t];
+    for(int t = 0; t < sz_u * sz_v; ++t)
+      m_controlPoints(t / sz_v, t % sz_v) = pts[t];
 
     makeNonrational();
   }
@@ -159,25 +125,25 @@ public:
   /*!
    * \brief Constructor for a Rational Bezier Path from an array of coordinates and weights
    *
-   * \param [in] pts a matrix with (ord_t+1) * (ord_s+1) control points
-   * \param [in] weights a matrix with (ord_t+1) * (ord_s+1) positive weights
-   * \param [in] ord_t The patches's polynomial order in p
-   * \param [in] ord_s The patches's polynomial order in q
+   * \param [in] pts a matrix with (ord_u+1) * (ord_v+1) control points
+   * \param [in] weights a matrix with (ord_u+1) * (ord_v+1) positive weights
+   * \param [in] ord_u The patches's polynomial order on the first axis
+   * \param [in] ord_v The patches's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
    *
    */
-  BezierPatch(PointType* pts, T* weights, int ord_t, int ord_s)
+  BezierPatch(PointType* pts, T* weights, int ord_u, int ord_v)
   {
     SLIC_ASSERT(pts != nullptr);
-    SLIC_ASSERT(ord_t >= 0, ord_s >= 0);
+    SLIC_ASSERT(ord_u >= 0, ord_v >= 0);
 
-    const int sz_t = utilities::max(0, ord_t + 1);
-    const int sz_s = utilities::max(0, ord_s + 1);
+    const int sz_u = utilities::max(0, ord_u + 1);
+    const int sz_v = utilities::max(0, ord_v + 1);
 
-    m_controlPoints.resize(sz_t, sz_s);
+    m_controlPoints.resize(sz_u, sz_v);
 
-    for(int t = 0; t < sz_t * sz_s; ++t)
-      m_controlPoints(t / sz_s, t % sz_s) = pts[t];
+    for(int t = 0; t < sz_u * sz_v; ++t)
+      m_controlPoints(t / sz_v, t % sz_v) = pts[t];
 
     if(weights == nullptr)
     {
@@ -185,10 +151,10 @@ public:
     }
     else
     {
-      m_weights.resize(sz_t, sz_s);
+      m_weights.resize(sz_u, sz_v);
 
-      for(int t = 0; t < sz_t * sz_s; ++t)
-        m_weights(t / sz_s, t % sz_s) = weights[t];
+      for(int t = 0; t < sz_u * sz_v; ++t)
+        m_weights(t / sz_v, t % sz_v) = weights[t];
 
       SLIC_ASSERT(isValidRational());
     }
@@ -197,20 +163,20 @@ public:
   /*!
    * \brief Constructor for a Bezier Patch from an matrix of coordinates
    *
-   * \param [in] pts a vector with (ord_t+1) * (ord_s+1) control points
-   * \param [in] ord_t The patch's polynomial order in p
-   * \param [in] ord_s The patch's polynomial order in q
+   * \param [in] pts a vector with (ord_u+1) * (ord_v+1) control points
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
    *
    */
-  BezierPatch(const CoordsMat& pts, int ord_t, int ord_s)
+  BezierPatch(const CoordsMat& pts, int ord_u, int ord_v)
   {
-    SLIC_ASSERT((ord_t >= 0) && (ord_s >= 0));
+    SLIC_ASSERT((ord_u >= 0) && (ord_v >= 0));
 
-    const int sz_t = utilities::max(0, ord_t + 1);
-    const int sz_s = utilities::max(0, ord_s + 1);
+    const int sz_u = utilities::max(0, ord_u + 1);
+    const int sz_v = utilities::max(0, ord_v + 1);
 
-    m_controlPoints.resize(sz_t, sz_s);
+    m_controlPoints.resize(sz_u, sz_v);
     m_controlPoints = pts;
 
     makeNonrational();
@@ -220,48 +186,46 @@ public:
    * \brief Constructor for a Rational Bezier Patch from a matrix
    * of coordinates and weights
    *
-   * \param [in] pts a vector with (ord_t+1) * (ord_s+1) control points
-   * \param [in] ord_t The patch's polynomial order in p
-   * \param [in] ord_s The patch's polynomial order in q
+   * \param [in] pts a vector with (ord_u+1) * (ord_v+1) control points
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
-   *
-   * TODO: Can we just do this entire thing with initalizer lists? 
    */
   BezierPatch(const CoordsMat& pts,
               const axom::Array<axom::Array<T>>& weights,
-              int ord_t,
-              int ord_s)
+              int ord_u,
+              int ord_v)
   {
     SLIC_ASSERT(ord >= 0);
     SLIC_ASSERT(pts.shape()[0] == weights.shape()[0]);
     SLIC_ASSERT(pts.shape()[1] == weights.shape()[1]);
 
-    const int sz_t = utilities::max(0, ord_t + 1);
-    const int sz_s = utilities::max(0, ord_s + 1);
+    const int sz_u = utilities::max(0, ord_u + 1);
+    const int sz_v = utilities::max(0, ord_v + 1);
 
-    m_controlPoints.resize(sz_t, sz_s);
+    m_controlPoints.resize(sz_u, sz_v);
     m_controlPoints = pts;
 
-    m_weights.resize(sz_t, sz_s);
+    m_weights.resize(sz_u, sz_v);
     m_weights = weights;
 
     SLIC_ASSERT(isValidRational());
   }
 
   /// Sets the order of the Bezier Curve
-  void setOrder(int ord_t, int ord_s)
+  void setOrder(int ord_u, int ord_v)
   {
-    m_controlPoints.resize(ord_t + 1, ord_s + 1);
+    m_controlPoints.resize(ord_u + 1, ord_v + 1);
   }
 
   /// Returns the order of the Bezier Curve on the first axis
-  int getOrder_t() const
+  int getOrder_u() const
   {
     return static_cast<int>(m_controlPoints.shape()[0]) - 1;
   }
 
   /// Returns the order of the Bezier Curve
-  int getOrder_s() const
+  int getOrder_v() const
   {
     return static_cast<int>(m_controlPoints.shape()[1]) - 1;
   }
@@ -271,13 +235,13 @@ public:
   {
     if(!isRational())
     {
-      const int ord_t = getOrder_t();
-      const int ord_s = getOrder_s();
+      const int ord_u = getOrder_u();
+      const int ord_v = getOrder_v();
 
-      m_weights.resize(ord_t + 1, ord_s + 1);
+      m_weights.resize(ord_u + 1, ord_v + 1);
 
-      for(int i = 0; i <= ord_t; ++i)
-        for(int j = 0; j <= ord_s; ++j) m_weights[i][j] = 1.0;
+      for(int i = 0; i <= ord_u; ++i)
+        for(int j = 0; j <= ord_v; ++j) m_weights[i][j] = 1.0;
     }
   }
 
@@ -290,55 +254,52 @@ public:
   /// Clears the list of control points, make nonrational
   void clear()
   {
-    const int ord_t = getOrder_t();
-    const int ord_s = getOrder_s();
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
 
-    for(int p = 0; p <= ord; ++p)
-      for(int q = 0; q <= getOrder_s; ++q) m_controlPoints(p, q) = PointType();
+    for(int p = 0; p <= ord_u; ++p)
+      for(int q = 0; q <= ord_v(); ++q) m_controlPoints(p, q) = PointType();
 
     makeNonrational();
   }
 
   /// Retrieves the control point at index \a (idx_p, idx_q)
-  PointType& operator()(int idx_p, int idx_q)
-  {
-    return m_controlPoints(idx_p, idx_q);
-  }
+  PointType& operator()(int ui, int vi) { return m_controlPoints(ui, vi); }
 
   /// Retrieves the vector of control points at index \a idx
-  const PointType& operator()(int idx_p, int idx_q) const
+  const PointType& operator()(int ui, int vi) const
   {
-    return m_controlPoints(idx_p, idx_q);
+    return m_controlPoints(ui, vi);
   }
 
   /*!
    * \brief Get a specific weight
    *
-   * \param [in] idx_p The index of the weight in p
-   * \param [in] idx_q The index of the weight in q
+   * \param [in] ui The index of the weight on the first axis
+   * \param [in] vi The index of the weight on the second axis
    * \pre Requires that the surface be rational
    */
-  const T& getWeight(int idx_p, int idx_q) const
+  const T& getWeight(int ui, int vi) const
   {
     SLIC_ASSERT(isRational());
-    return m_weights(idx_p, idx_q);
+    return m_weights(ui, vi);
   }
 
   /*!
    * \brief Set the weight at a specific index
    *
-   * \param [in] idx_p The index of the weight in p
-   * \param [in] idx_q The index of the weight in q
+   * \param [in] ui The index of the weight in on the first axis
+   * \param [in] vi The index of the weight in on the second axis
    * \param [in] weight The updated value of the weight
    * \pre Requires that the surface be rational
    * \pre Requires that the weight be positive
    */
-  void setWeight(int idx_p, int idx_q, T weight)
+  void setWeight(int ui, int vi, T weight)
   {
     SLIC_ASSERT(isRational());
     SLIC_ASSERT(weight > 0);
 
-    m_weights(idx_p, idx_q) = weight;
+    m_weights(ui, vi) = weight;
   };
 
   /// Checks equality of two Bezier Patches
@@ -379,23 +340,23 @@ public:
   }
 
   /*!
-   * \brief Evaluates a slice Bezier patch for a fixed parameter value of \a t or \a s
+   * \brief Evaluates a slice Bezier patch for a fixed parameter value of \a u or \a v
    *
-   * \param [in] t parameter value at which to evaluate
-   * \param [in] s parameter value at which to evaluate
-   * \param [in] axis orientation of curve. 0 for fixed t, 1 for fixed s
-   * \return p the value of the Bezier patch at (t, s)
+   * \param [in] u parameter value at which to evaluate the first axis
+   * \param [in] v parameter value at which to evaluate the second axis
+   * \param [in] axis orientation of curve. 0 for fixed u, 1 for fixed v
+   * \return p the value of the Bezier patch at (u, v)
    *
-   * \note We typically evaluate the curve at \a t or \a s between 0 and 1
+   * \note We typically evaluate the curve at \a u or \a v between 0 and 1
    */
-  BezierCurveType slice(T ts, int axis = 0) const
+  BezierCurveType isocurve(T uv, int axis = 0) const
   {
     SLIC_ASSERT((axis == 0) || (axis == 1));
 
     using axom::utilities::lerp;
 
-    const int ord_t = getOrder_t();
-    const int ord_s = getOrder_s();
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
 
     BezierCurveType c(-1);
 
@@ -403,29 +364,29 @@ public:
     {
       if(axis == 0)  // Keeping a fixed value of t
       {
-        c.setOrder(ord_s);
+        c.setOrder(ord_v);
         c.makeRational();
 
-        axom::Array<T> dCarray(ord_t + 1);
-        axom::Array<T> dWarray(ord_t + 1);
+        axom::Array<T> dCarray(ord_u + 1);
+        axom::Array<T> dWarray(ord_u + 1);
 
         // Run de Casteljau algorithm on each row of control nodes and each dimension
-        for(int q = 0; q <= ord_s; ++q)
+        for(int q = 0; q <= ord_v; ++q)
           for(int i = 0; i < NDIMS; ++i)
           {
-            for(int p = 0; p <= ord_t; ++p)
+            for(int p = 0; p <= ord_u; ++p)
             {
               dCarray[p] = m_controlPoints(p, q)[i] * m_weights(p, q);
               dWarray[p] = m_weights(p, q);
             }
 
-            for(int p = 1; p <= ord_t; ++p)
+            for(int p = 1; p <= ord_u; ++p)
             {
-              const int end = ord_t - p;
+              const int end = ord_u - p;
               for(int k = 0; k <= end; ++k)
               {
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], ts);
-                dWarray[k] = lerp(dWarray[k], dWarray[k + 1], ts);
+                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
+                dWarray[k] = lerp(dWarray[k], dWarray[k + 1], uv);
               }
             }
 
@@ -436,28 +397,28 @@ public:
       // Run de Casteljau algorithm on each column of control nodes and each dimension
       else  // Keeping a fixed value of s
       {
-        c.setOrder(ord_t);
+        c.setOrder(ord_u);
         c.makeRational();
 
-        axom::Array<T> dCarray(ord_s + 1);
-        axom::Array<T> dWarray(ord_s + 1);
+        axom::Array<T> dCarray(ord_v + 1);
+        axom::Array<T> dWarray(ord_v + 1);
 
-        for(int p = 0; p <= ord_t; ++p)
+        for(int p = 0; p <= ord_u; ++p)
           for(int i = 0; i < NDIMS; ++i)
           {
-            for(int q = 0; q <= ord_s; ++q)
+            for(int q = 0; q <= ord_v; ++q)
             {
               dCarray[q] = m_controlPoints(p, q)[i] * m_weights(p, q);
               dWarray[q] = m_weights(p, q);
             }
 
-            for(int q = 1; q <= ord_s; ++q)
+            for(int q = 1; q <= ord_v; ++q)
             {
-              const int end = ord_s - q;
+              const int end = ord_v - q;
               for(int k = 0; k <= end; ++k)
               {
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], ts);
-                dWarray[k] = lerp(dWarray[k], dWarray[k + 1], ts);
+                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
+                dWarray[k] = lerp(dWarray[k], dWarray[k + 1], uv);
               }
             }
             c[p][i] = dCarray[0] / dWarray[0];
@@ -469,21 +430,21 @@ public:
     {
       if(axis == 0)  // Keeping a fixed value of t
       {
-        c.setOrder(ord_s);
-        axom::Array<T> dCarray(ord_t + 1);  // Temp array
+        c.setOrder(ord_v);
+        axom::Array<T> dCarray(ord_u + 1);  // Temp array
 
         // Run de Casteljau algorithm on each row of control nodes and each dimension
-        for(int q = 0; q <= ord_s; ++q)
+        for(int q = 0; q <= ord_v; ++q)
           for(int i = 0; i < NDIMS; ++i)
           {
-            for(int p = 0; p <= ord_t; ++p)
+            for(int p = 0; p <= ord_u; ++p)
               dCarray[p] = m_controlPoints(p, q)[i];
 
-            for(int p = 1; p <= ord_t; ++p)
+            for(int p = 1; p <= ord_u; ++p)
             {
-              const int end = ord_t - p;
+              const int end = ord_u - p;
               for(int k = 0; k <= end; ++k)
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], ts);
+                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
             }
             c[q][i] = dCarray[0];
           }
@@ -491,21 +452,21 @@ public:
       // Run de Casteljau algorithm on each column of control nodes and each dimension
       else  // Keeping a fixed value of s
       {
-        c.setOrder(ord_t);
-        axom::Array<T> dCarray(ord_s + 1);  // Temp array
+        c.setOrder(ord_u);
+        axom::Array<T> dCarray(ord_v + 1);  // Temp array
 
-        for(int p = 0; p <= ord_t; ++p)
+        for(int p = 0; p <= ord_u; ++p)
           for(int i = 0; i < NDIMS; ++i)
           {
-            for(int q = 0; q <= ord_s; ++q)
+            for(int q = 0; q <= ord_v; ++q)
               dCarray[q] = m_controlPoints(p, q)[i];
 
-            for(int q = 1; q <= ord_s; ++q)
+            for(int q = 1; q <= ord_v; ++q)
             {
-              const int end = ord_s - q;
+              const int end = ord_v - q;
               for(int k = 0; k <= end; ++k)
               {
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], ts);
+                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
               }
             }
             c[p][i] = dCarray[0];
@@ -517,103 +478,109 @@ public:
   }
 
   /*!
-   * \brief Evaluates a Bezier patch at a particular parameter value (\a t, \a s)
+   * \brief Evaluates a Bezier patch at a particular parameter value (\a u, \a v)
    *
-   * \param [in] t parameter value at which to evaluate
-   * \param [in] s parameter value at which to evaluate
-   * \return p the value of the Bezier patch at (t, s)
+   * \param [in] u parameter value at which to evaluate on the first axis
+   * \param [in] v parameter value at which to evaluate on the second axis
+   * \return p the value of the Bezier patch at (u, v)
    *
-   * \note We typically evaluate the curve at \a t and \a s between 0 and 1
+   * \note We typically evaluate the curve at \a u and \a v between 0 and 1
    */
-  PointType evaluate(T t, T s) const { return slice(t).evaluate(s); }
-
-  /*!
-   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a t, \a s) oriented in \a axis
-   *
-   * \param [in] t parameter value at which to evaluate
-   * \param [in] s parameter value at which to evaluate
-   * \param [in] axis orientation of vector. 0 for fixed t, 1 for fixed s
-   * \return v a tangent vector of the Bezier curve at (t, s)
-   *
-   * \note We typically find the tangent of the curve at \a t and \a s between 0 and 1
-   */
-  VectorType dt(T t, T s, int axis) const
+  PointType evaluate(T u, T v) const
   {
-    SLIC_ASSERT((axis == 0) || (axis == 1));
-    if(axis == 0)  // Get slice at fixed s
-      return slice(s, 1).dt(t);
-    else  // Get slice at fixed t
-      return slice(t, 0).dt(s);
+    if(getOrder_u() >= getOrder_v())
+      return isocurve(u, 0).evaluate(v);
+    else
+      return isocurve(v, 1).evaluate(u);
   }
 
   /*!
-   * \brief Computes the normal vector of a Bezier patch at a particular parameter value (\a t, \a s)
+   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along \a axis
    *
-   * \param [in] t parameter value at which to evaluate
-   * \param [in] s parameter value at which to evaluate
-   * \return v the normal vector of the Bezier curve at (t, s)
+   * \param [in] u parameter value at which to evaluate on the first axis
+   * \param [in] v parameter value at which to evaluate on the second axis
+   * \param [in] axis orientation of vector. 0 for fixed u, 1 for fixed v
+   * \return v a tangent vector of the Bezier curve at (u, v)
    *
-   * \note We typically find the normal of the curve at \a t and \a s between 0 and 1
+   * \note We typically find the tangent of the curve at \a u and \a v between 0 and 1
    */
-  VectorType normal(T t, T s) const
+  VectorType dt(T u, T v, int axis) const
   {
-    VectorType tangent_t = dt(t, s, 0);
-    VectorType tangent_s = dt(t, s, 1);
+    SLIC_ASSERT((axis == 0) || (axis == 1));
+    if(axis == 0)  // Get isocurve at fixed v
+      return isocurve(v, 1).dt(u);
+    else  // Get isocurve at fixed u
+      return isocurve(u, 0).dt(v);
+  }
+
+  /*!
+   * \brief Computes the normal vector of a Bezier patch at a particular parameter value (\a u, \a v)
+   *
+   * \param [in] u parameter value at which to evaluate on the first axis
+   * \param [in] v parameter value at which to evaluate on the second axis
+   * \return vec the normal vector of the Bezier curve at (u, v)
+   *
+   * \note We typically find the normal of the curve at \a u and \a v between 0 and 1
+   */
+  VectorType normal(T u, T v) const
+  {
+    VectorType tangent_t = dt(u, v, 0);
+    VectorType tangent_s = dt(u, v, 1);
     return VectorType::cross_product(tangent_t, tangent_s);
   }
 
   /*!
    * \brief Splits a Bezier patch into two Bezier patches
    *
-   * \param [in] ts parameter value between 0 and 1 at which to bisect the patch
-   * \param [in] axis orientation of split. 0 for fixed t, 1 for fixed s
+   * \param [in] uv parameter value between 0 and 1 at which to bisect the patch
+   * \param [in] axis orientation of split. 0 for fixed u, 1 for fixed v
    * \param [out] p1 First output Bezier patch
    * \param [out] p2 Second output Bezier patch
    *
-   * \pre Parameter \a ts must be between 0 and 1
+   * \pre Parameter \a uv must be between 0 and 1
    */
-  void split(T ts, int axis, BezierPatch& p1, BezierPatch& p2) const
+  void split(T uv, int axis, BezierPatch& p1, BezierPatch& p2) const
   {
     SLIC_ASSERT((axis == 0) || (axis == 1));
 
     using axom::utilities::lerp;
 
-    const int ord_t = getOrder_t();
-    const int ord_s = getOrder_s();
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
 
-    SLIC_ASSERT((ord_t >= 0) && (ord_s >= 0));
+    SLIC_ASSERT((ord_u >= 0) && (ord_v >= 0));
 
     // Note: The second patch's control points are computed inline
     //       as we find the first patch's control points
     p2 = *this;
 
-    p1.setOrder(ord_t, ord_s);
+    p1.setOrder(ord_u, ord_v);
     if(isRational())
     {
       p1.makeRational();  // p2 already rational
       if(axis == 0)       // Split across a fixed value of t
       {
         // Run algorithm across each row of control nodes
-        for(int q = 0; q <= ord_s; ++q)
+        for(int q = 0; q <= ord_v; ++q)
         {
           // Do the rational de Casteljau algorithm
           p1(0, q) = p2(0, q);
           p1.setWeight(0, q, p2.getWeight(0, q));
 
-          for(int p = 1; p <= ord_t; ++p)
+          for(int p = 1; p <= ord_u; ++p)
           {
-            const int end = ord_t - p;
+            const int end = ord_u - p;
 
             for(int k = 0; k <= end; ++k)
             {
               double temp_weight =
-                lerp(p2.getWeight(k, q), p2.getWeight(k + 1, q), ts);
+                lerp(p2.getWeight(k, q), p2.getWeight(k + 1, q), uv);
 
               for(int i = 0; i < NDIMS; ++i)
               {
                 p2(k, q)[i] = lerp(p2.getWeight(k, q) * p2(k, q)[i],
                                    p2.getWeight(k + 1, q) * p2(k + 1, q)[i],
-                                   ts) /
+                                   uv) /
                   temp_weight;
               }
 
@@ -628,26 +595,26 @@ public:
       else
       {
         // Run algorithm across each column of control nodes
-        for(int p = 0; p <= ord_t; ++p)
+        for(int p = 0; p <= ord_u; ++p)
         {
           // Do the rational de Casteljau algorithm
           p1(p, 0) = p2(p, 0);
           p1.setWeight(p, 0, p2.getWeight(p, 0));
 
-          for(int q = 1; q <= ord_s; ++q)
+          for(int q = 1; q <= ord_v; ++q)
           {
-            const int end = ord_s - q;
+            const int end = ord_v - q;
 
             for(int k = 0; k <= end; ++k)
             {
               double temp_weight =
-                lerp(p2.getWeight(p, k), p2.getWeight(p, k + 1), ts);
+                lerp(p2.getWeight(p, k), p2.getWeight(p, k + 1), uv);
 
               for(int i = 0; i < NDIMS; ++i)
               {
                 p2(p, k)[i] = lerp(p2.getWeight(p, k) * p2(p, k)[i],
                                    p2.getWeight(p, k + 1) * p2(p, k + 1)[i],
-                                   ts) /
+                                   uv) /
                   temp_weight;
               }
 
@@ -665,16 +632,16 @@ public:
       if(axis == 0)  // Split across a fixed value of t
       {
         // Do the split for each row of control nodes
-        for(int q = 0; q <= ord_s; ++q)
+        for(int q = 0; q <= ord_v; ++q)
         {
           p1(0, q) = m_controlPoints(0, q);
 
           for(int i = 0; i < NDIMS; ++i)
-            for(int p = 1; p <= ord_t; ++p)
+            for(int p = 1; p <= ord_u; ++p)
             {
-              const int end = ord_t - p;
+              const int end = ord_u - p;
               for(int k = 0; k <= end; ++k)
-                p2(k, q)[i] = lerp(p2(k, q)[i], p2(k + 1, q)[i], ts);
+                p2(k, q)[i] = lerp(p2(k, q)[i], p2(k + 1, q)[i], uv);
 
               p1(p, q)[i] = p2(0, q)[i];
             }
@@ -683,16 +650,16 @@ public:
       else
       {
         // Do the split for each column of control nodes
-        for(int p = 0; p <= ord_t; ++p)
+        for(int p = 0; p <= ord_u; ++p)
         {
           p1(p, 0) = m_controlPoints(p, 0);
 
           for(int i = 0; i < NDIMS; ++i)
-            for(int q = 1; q <= ord_s; ++q)
+            for(int q = 1; q <= ord_v; ++q)
             {
-              const int end = ord_s - q;
+              const int end = ord_v - q;
               for(int k = 0; k <= end; ++k)
-                p2(p, k)[i] = lerp(p2(p, k)[i], p2(p, k + 1)[i], ts);
+                p2(p, k)[i] = lerp(p2(p, k)[i], p2(p, k + 1)[i], uv);
 
               p1(p, q)[i] = p2(p, 0)[i];
             }
@@ -704,42 +671,42 @@ public:
   /*!
    * \brief Splits a Bezier patch into four Bezier patches
    *
-   * \param [in] t parameter value between 0 and 1 at which to bisect the patch in t
-   * \param [in] s parameter value between 0 and 1 at which to bisect the patch in s
+   * \param [in] u parameter value between 0 and 1 at which to bisect on the first axis
+   * \param [in] v parameter value between 0 and 1 at which to bisect on the second axis
    * \param [out] p1 First output Bezier patch
    * \param [out] p2 Second output Bezier patch
    * \param [out] p3 Third output Bezier patch
    * \param [out] p4 Fourth output Bezier patch
    *
-   *   s = 1
+   *   v = 1
    *   ----------------------
    *   |         |          |
    *   |   p3    |    p4    |
    *   |         |          |
-   *   --------(t,s)---------
+   *   --------(u,v)---------
    *   |         |          |
    *   |   p1    |    p2    |
    *   |         |          |
-   *   ---------------------- t = 1
+   *   ---------------------- u = 1
    *
-   * \pre Parameter \a t and \a s must be between 0 and 1
+   * \pre Parameter \a u and \a v must be between 0 and 1
    */
-  void split(T t,
-             T s,
+  void split(T u,
+             T v,
              BezierPatch& p1,
              BezierPatch& p2,
              BezierPatch& p3,
              BezierPatch& p4) const
   {
-    // Bisect the patch along the t direction
-    split(t, 0, p1, p2);
+    // Bisect the patch along the u direction
+    split(u, 0, p1, p2);
 
     // Temporarily store the result in each half and split again
     BezierPatch p0(p1);
-    p0.split(s, 1, p1, p3);
+    p0.split(v, 1, p1, p3);
 
     p0 = p2;
-    p0.split(s, 1, p2, p4);
+    p0.split(v, 1, p2, p4);
   }
 
   /*!
@@ -753,22 +720,26 @@ public:
    */
   bool isPlanar(double tol = 1E-8) const
   {
-    const int ord_t = getOrder_t();
-    const int ord_s = getOrder_s();
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
 
-    if(ord_t <= 1 && ord_s <= 1) return true;
+    if(ord_u <= 0 && ord_v <= 0) return true;
+    if(ord_u == 1 && ord_v == 0) return true;
+    if(ord_u == 0 && ord_v == 1) return true;
 
-    SegmentType the_plane =
-      make_plane(m_controlPoints[0][0],
-                 m_controlPoints[0][ord_s] m_controlPoints[ord_t][0]);
+    PlaneType the_plane = make_plane(m_controlPoints(0, 0),
+                                     m_controlPoints(0, ord_v),
+                                     m_controlPoints(ord_u, 0));
 
     double sqDist = 0.0;
 
     // Check all control points for simplicity
-    for(int p = 1; p < ord_t && sqDist <= tol; ++p)
-      for(int q = 1; p < ord_s && sqDist <= tol; ++q)
-        sqDist += squared_distance(m_controlPoints(p, q), the_plane);
-
+    for(int p = 0; p <= ord_u && sqDist <= tol; ++p)
+      for(int q = 0; q <= ord_v && sqDist <= tol; ++q)
+      {
+        double signedDist = the_plane.signedDistance(m_controlPoints(p, q));
+        sqDist += signedDist * signedDist;
+      }
     return (sqDist <= tol);
   }
 
@@ -780,21 +751,21 @@ public:
    */
   std::ostream& print(std::ostream& os) const
   {
-    const int ord_t = getOrder_t();
-    const int ord_s = getOrder_s();
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
 
-    os << "{ order (" << ord_t << ',' << ord_s << ") Bezier Patch ";
+    os << "{ order (" << ord_u << ',' << ord_v << ") Bezier Patch ";
 
-    for(int p = 0; p <= ord_t; ++p)
-      for(int q = 0; q <= ord_s; ++q)
-        os << m_controlPoints(p, q) << ((p < ord_t || q < ord_s) ? "," : "");
+    for(int p = 0; p <= ord_u; ++p)
+      for(int q = 0; q <= ord_v; ++q)
+        os << m_controlPoints(p, q) << ((p < ord_u || q < ord_v) ? "," : "");
 
     if(isRational())
     {
       os << ", weights [";
-      for(int p = 0; p <= ord_t; ++p)
-        for(int q = 0; q <= ord_s; ++q)
-          os << m_weights(p, q) << ((p < ord_t || q < ord_s) ? "," : "");
+      for(int p = 0; p <= ord_u; ++p)
+        for(int q = 0; q <= ord_v; ++q)
+          os << m_weights(p, q) << ((p < ord_u || q < ord_v) ? "," : "");
     }
     os << "}";
 
@@ -808,14 +779,14 @@ private:
   {
     if(!isRational()) return true;
 
-    const int ord_t = getOrder_t();
-    const int ord_s = getOrder_s();
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
 
-    if(m_weights.shape()[0] != (ord_t + 1) || m_weights.shape()[1] != (ord_s + 1))
+    if(m_weights.shape()[0] != (ord_u + 1) || m_weights.shape()[1] != (ord_v + 1))
       return false;
 
-    for(int p = 0; p <= ord_t; ++p)
-      for(int q = 0; q <= ord_s; ++q)
+    for(int p = 0; p <= ord_u; ++p)
+      for(int q = 0; q <= ord_v; ++q)
         if(m_weights(p, q) <= 0) return false;
 
     return true;
