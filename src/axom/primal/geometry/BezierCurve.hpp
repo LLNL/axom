@@ -62,7 +62,6 @@ class BezierCurve
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
   using SegmentType = Segment<T, NDIMS>;
   using CoordsVec = axom::Array<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
@@ -87,38 +86,6 @@ public:
     SLIC_ASSERT(ord >= -1);
     const int sz = utilities::max(-1, ord + 1);
     m_controlPoints.resize(sz);
-
-    makeNonrational();
-  }
-
-  /*!
-   * \brief Constructor for an order \a ord= n Bezier curve
-   * from a list of coordinates:
-   * \verbatim {x_0, x_1, x_2,...,x_n,
-   *            y_0, y_1, y_2,...,y_n,
-   *            z_0, z_1, z_2,...,z_n}
-   *
-   * \param [in] pts an array with (n+1)*NDIMS entries, ordered by coordinate
-   * then by polynomial order
-   * \param [in] ord Polynomial order of the curve
-   * \pre order is greater than or equal to zero
-   */
-  BezierCurve(T* pts, int ord)
-  {
-    SLIC_ASSERT(pts != nullptr);
-    SLIC_ASSERT(ord >= 0);
-
-    const int sz = utilities::max(0, ord + 1);
-    m_controlPoints.resize(sz);
-
-    for(int p = 0; p <= ord; p++)
-    {
-      auto& pt = m_controlPoints[p];
-      for(int j = 0; j < NDIMS; j++)
-      {
-        pt[j] = pts[j * (ord + 1) + p];
-      }
-    }
 
     makeNonrational();
   }
@@ -529,10 +496,9 @@ public:
           }
 
           c2.setWeight(k, temp_weight);
-
-          c1[p] = c2[0];
-          c1.setWeight(p, c2.getWeight(0));
         }
+        c1[p] = c2[0];
+        c1.setWeight(p, c2.getWeight(0));
       }
     }
     else  // Code can be simpler if not rational Bezier curves

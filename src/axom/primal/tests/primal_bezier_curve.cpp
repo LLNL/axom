@@ -104,34 +104,6 @@ TEST(primal_beziercurve, point_array_constructor)
   }
 }
 
-//----------------------------------------------------------------------------------
-TEST(primal_beziercurve, coordinate_array_constructor)
-{
-  SLIC_INFO("Testing coordinate array constructor");
-
-  const int DIM = 3;
-  using CoordType = double;
-  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-
-  // clang-format off
-  // Note: Order of coordinates is by dimension
-  CoordType coords[6] = {0.6, 0.0,  // x-coords for control points
-                         1.2, 1.6,  // y-coords for control points
-                         1.0, 1.8}; // z-coords for control points
-  // clang-format on
-
-  BezierCurveType bCurve(coords, 1);
-  EXPECT_EQ(1, bCurve.getOrder());
-
-  EXPECT_DOUBLE_EQ(coords[0], bCurve[0][0]);
-  EXPECT_DOUBLE_EQ(coords[2], bCurve[0][1]);
-  EXPECT_DOUBLE_EQ(coords[4], bCurve[0][2]);
-
-  EXPECT_DOUBLE_EQ(coords[1], bCurve[1][0]);
-  EXPECT_DOUBLE_EQ(coords[3], bCurve[1][1]);
-  EXPECT_DOUBLE_EQ(coords[5], bCurve[1][2]);
-}
-
 //------------------------------------------------------------------------------
 TEST(primal_beziercurve, evaluate)
 {
@@ -225,13 +197,17 @@ TEST(primal_beziercurve, split_cubic)
   b2Curve.split(.5, b3Curve, b4Curve);
 
   // clang-format off
-  CoordType b3Coords[12] = {0.6, .95, 1.525, 2.05,
-                            1.2, 1.4, 1.7,   2.0875,
-                            1.0, 1.4, 1.725, 2.0375};
-  CoordType b4Coords[12] = {2.05,   2.575, 3.05, 3.2,
-                            2.0875, 2.475, 2.95, 3.5,
-                            2.0375, 2.35,  2.65, 3.0};
-  // clang-format on
+  PointType b3Coords[4] = {PointType {  0.6,    1.2,    1.0}, 
+                           PointType {  .95,    1.4,    1.4},
+                           PointType {1.525,    1.7,  1.725}, 
+                           PointType { 2.05, 2.0875, 2.0375}};
+                           
+                           
+  PointType b4Coords[12] = {PointType{  2.05, 2.0875, 2.0375},
+                            PointType{ 2.575,  2.475,   2.35},
+                            PointType{  3.05,   2.95,   2.65},
+                            PointType{   3.2,    3.5,    3.0}};
+  // clang-format on        
 
   BezierCurveType b3True(b3Coords, 3);
   BezierCurveType b4True(b4Coords, 3);
