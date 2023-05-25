@@ -699,7 +699,7 @@ public:
    *
    * \note If the Array is empty the capacity can still be greater than zero.
    */
-  bool empty() const { return m_num_elements == 0; }
+  AXOM_HOST_DEVICE inline bool empty() const { return m_num_elements == 0; }
 
   /*!
    * \brief Return the number of elements stored in the data array.
