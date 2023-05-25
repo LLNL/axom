@@ -524,8 +524,6 @@ public:
       // Verify that i is slowest in m_coordsViews.
       // It appears conduit stores column major and ArrayView computes offsets
       // assuming row major.
-      std::cout << __WHERE << "array shape: " << shape[0] << ',' << shape[1]
-                << std::endl;
       int n = 0, errCount = 0;
       for(int k = 0; k < shape[0]; ++k)
       {

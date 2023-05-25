@@ -153,32 +153,33 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type mark_crossings_dim()
   {
-#if USE_RAJA_INDEX_VALUE_TYPES == 1
+#if defined(AXOM_USE_RAJA)
+  #if USE_RAJA_INDEX_VALUE_TYPES == 1
     RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
     RAJA_INDEX_VALUE_T(JIDX, axom::IndexType, "JIDX");
     RAJA::TypedRangeSegment<JIDX> jRange(0, m_cShape[0]);
     RAJA::TypedRangeSegment<IIDX> iRange(0, m_cShape[1]);
-#else
+  #else
     RAJA::RangeSegment jRange(0, m_cShape[0]);
     RAJA::RangeSegment iRange(0, m_cShape[1]);
-#endif
+  #endif
     using EXEC_POL = RAJA::KernelPolicy<
       // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
       RAJA::statement::
         For<1, LoopPolicy, RAJA::statement::For<0, LoopPolicy, RAJA::statement::Lambda<0>>>>;
     RAJA::kernel<EXEC_POL>(
       RAJA::make_tuple(iRange, jRange),
-#if USE_RAJA_INDEX_VALUE_TYPES == 1
+  #if USE_RAJA_INDEX_VALUE_TYPES == 1
       // TODO: Why does AXOM_LAMBDA here not compile on rzansel with cuda?
       AXOM_LAMBDA(IIDX it, JIDX jt)
-#else
+  #else
       AXOM_LAMBDA(int i, int j)
-#endif
+  #endif
       {
-#if USE_RAJA_INDEX_VALUE_TYPES == 1
+  #if USE_RAJA_INDEX_VALUE_TYPES == 1
         auto& i = *it;
         auto& j = *jt;
-#endif
+  #endif
         const bool skipZone = !m_maskView.empty() && bool(m_maskView(j, i));
         if(!skipZone)
         {
@@ -194,11 +195,34 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
           m_caseIds(j, i) = crossingCase;
         }
       });
+#else
+    for(int j = 0; j < m_cShape[0]; ++j)
+    {
+      for(int i = 0; i < m_cShape[1]; ++i)
+      {
+        const bool skipZone = !m_maskView.empty() && bool(m_maskView(i, j));
+        if(!skipZone)
+        {
+          // clang-format on
+          double nodalValues[CELL_CORNER_COUNT] = {m_fcnView(j, i),
+                                                   m_fcnView(j, i + 1),
+                                                   m_fcnView(j + 1, i + 1),
+                                                   m_fcnView(j + 1, i)};
+          // clang-format off
+
+          auto crossingCase = compute_crossing_case(nodalValues);
+          SLIC_ASSERT(crossingCase >= 0 && crossingCase < 16);
+          m_caseIds(j,i) = crossingCase;
+        }
+      }
+    }
+#endif
   }
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type mark_crossings_dim()
   {
+#if defined(AXOM_USE_RAJA)
 #if USE_RAJA_INDEX_VALUE_TYPES == 1
     RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
     RAJA_INDEX_VALUE_T(JIDX, axom::IndexType, "JIDX");
@@ -248,6 +272,36 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
           m_caseIds(k, j, i) = crossingCase;
         }
       });
+#else
+    for(int k = 0; k < m_cShape[0]; ++k)
+    {
+      for(int j = 0; j < m_cShape[1]; ++j)
+      {
+        for(int i = 0; i < m_cShape[2]; ++i)
+        {
+          const bool skipZone = !m_maskView.empty() && bool(m_maskView(k, j, i));
+          if(!skipZone)
+          {
+            // clang-format off
+            double nodalValues[CELL_CORNER_COUNT] =
+              { m_fcnView(k  , j  , i+1)
+              , m_fcnView(k  , j+1, i+1)
+              , m_fcnView(k  , j+1, i  )
+              , m_fcnView(k  , j  , i  )
+              , m_fcnView(k+1, j  , i+1)
+              , m_fcnView(k+1, j+1, i+1)
+              , m_fcnView(k+1, j+1, i  )
+              , m_fcnView(k+1, j  , i  ) };
+            // clang-format on
+
+            auto crossingCase = compute_crossing_case(nodalValues);
+            SLIC_ASSERT(crossingCase >= 0 && crossingCase < 256);
+            m_caseIds(k, j, i) = crossingCase;
+          }
+        }
+      }
+    }
+#endif
   }
 
   /*!
@@ -259,6 +313,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
 
+#if defined(AXOM_USE_LAMBDA)
     RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, parentCellCount),
@@ -266,47 +321,82 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
         vsum += bool(num_surface_cells(m_caseIds.flatIndex(n)));
       });
     m_crossingCount = static_cast<axom::IndexType>(vsum.get());
+#else
+    axom::IndexType vsum = 0;
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      vsum += bool(num_surface_cells(m_caseIds.flatIndex(n)));
+    }
+    m_crossingCount = vsum;
+#endif
 
     m_crossings.resize(m_crossingCount, {0, 0});
+    axom::ArrayView<CrossingInfo> crossingsView = m_crossings.view();
 
     axom::Array<int> addCells(m_crossingCount,
                               m_crossingCount,
                               m_crossings.getAllocatorID());
     axom::ArrayView<int> addCellsView = addCells.view();
 
-    axom::IndexType crossingId = 0;
-    // This loop can't be parallelized due to the if statement.
-    // Use sequential policy.
-    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0, parentCellCount),
-                                  [&](axom::IndexType n) {
-                                    auto caseId = m_caseIds.flatIndex(n);
-                                    auto ccc = num_surface_cells(caseId);
-                                    if(ccc != 0)
-                                    {
-                                      addCells[crossingId] = ccc;
-                                      m_crossings[crossingId].caseNum = caseId;
-                                      m_crossings[crossingId].parentCellNum = n;
-                                      ++crossingId;
-                                    }
-                                  });
-    assert(crossingId == m_crossingCount);
+    axom::IndexType* crossingId = axom::allocate<axom::IndexType>(
+      1,
+      axom::execution_space<ExecSpace>::allocatorID());
+    *crossingId = 0;
+    /*
+      This loop can't be parallelized, even with devices, due
+      (*crossingId)'s dependence on the if outcome.  Must use SEQ_EXEC,
+      regardless of ExecSpace.
+
+      NOTE: ExecSpace works anyway.  Why?
+    */
+    axom::for_all<ExecSpace>(
+      0,
+      parentCellCount,
+      AXOM_LAMBDA(axom::IndexType n) {
+        auto caseId = m_caseIds.flatIndex(n);
+        auto ccc = num_surface_cells(caseId);
+        if(ccc != 0)
+        {
+          addCellsView[*crossingId] = ccc;
+          m_crossings[*crossingId].caseNum = caseId;
+          m_crossings[*crossingId].parentCellNum = n;
+          ++(*crossingId);
+        }
+      });
+    assert(*crossingId == m_crossingCount);
+    axom::deallocate(crossingId);
 
     axom::Array<axom::IndexType> prefixSum(m_crossingCount,
                                            m_crossingCount,
                                            m_crossings.getAllocatorID());
     axom::ArrayView<axom::IndexType> prefixSumView = prefixSum.view();
-    axom::ArrayView<CrossingInfo> crossingsView = m_crossings.view();
 
+    auto copyFirstSurfaceCellId = AXOM_LAMBDA(axom::IndexType n)
+    {
+      crossingsView[n].firstSurfaceCellId = prefixSumView[n];
+    };
+#if defined(AXOM_USE_RAJA)
     RAJA::exclusive_scan<LoopPolicy>(
       RAJA::make_span(addCellsView.data(), m_crossingCount),
       RAJA::make_span(prefixSumView.data(), m_crossingCount),
       RAJA::operators::plus<axom::IndexType> {});
+    RAJA::forall<LoopPolicy>(RAJA::RangeSegment(0, m_crossingCount),
+                             copyFirstSurfaceCellId);
+#else
+    if(m_crossingCount > 0)
+    {
+      prefixSumView[0] = 0;
+      for(axom::IndexType i = 1; i < m_crossingCount; ++i)
+      {
+        prefixSumView[i] = prefixSumView[i - 1] + addCellsView[i - 1];
+      }
+      for(axom::IndexType i = 0; i < m_crossingCount; ++i)
+      {
+        copyFirstSurfaceCellId(i);
+      }
+    }
+#endif
 
-    RAJA::forall<LoopPolicy>(
-      RAJA::RangeSegment(0, m_crossingCount),
-      AXOM_LAMBDA(axom::IndexType n) {
-        crossingsView[n].firstSurfaceCellId = prefixSumView[n];
-      });
     m_surfaceCellCount = m_crossings.empty()
       ? 0
       : m_crossings.back().firstSurfaceCellId +
@@ -325,8 +415,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     m_surfaceCellCorners.resize(m_surfaceCellCount);
     m_surfaceCellParents.resize(m_surfaceCellCount);
 
-    RAJA::forall<LoopPolicy>(
-      RAJA::RangeSegment(0, m_crossingCount),
+    axom::for_all<ExecSpace>(
+      0,
+      m_crossingCount,
       AXOM_LAMBDA(axom::IndexType iCrossing) {
         const auto& crossingInfo = m_crossings[iCrossing];
         const IndexType crossingCellCount =
@@ -340,9 +431,15 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
                                      cornerCoords,
                                      cornerValues);
 
-        // Create the new cell and its DIM nodes.
-        // New node are on parent cell edges where they intersects the isosurface.
-        // linear_interp for the exact coordinates.
+        /*
+          Create the new cell and its DIM nodes.  New node are on
+          parent cell edges where they intersects the isosurface.
+          linear_interp for the exact coordinates.
+
+          TODO: The varying crossingCellCount value may inhibit device
+          performance.  Try grouping m_crossings items that have the
+          same values for crossingCellCount.
+        */
         for(int iCell = 0; iCell < crossingCellCount; ++iCell)
         {
           IndexType surfaceCellId = crossingInfo.firstSurfaceCellId + iCell;
