@@ -135,7 +135,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     }
 
     m_caseIds =
-      axom::Array<std::uint16_t, DIM, axom::MemorySpace::Dynamic>(m_cShape);
+      axom::Array<std::uint16_t, DIM>(m_cShape,
+                                      axom::execution_space<ExecSpace>::allocatorID());
   }
 
   /*!
@@ -146,13 +147,14 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   */
   void mark_crossings() override { mark_crossings_dim(); }
 
-// RAJA_INDEX_VALUE_T doesn't work on rzansel.  Maybe old RAJA?
+// RAJA_INDEX_VALUE_T doesn't work on rzansel + cuda.  Reason unknown.
 #define USE_RAJA_INDEX_VALUE_TYPES 0
 
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 2>::type mark_crossings_dim()
   {
+    auto caseIdsView = m_caseIds.view();
 #if defined(AXOM_USE_RAJA)
   #if USE_RAJA_INDEX_VALUE_TYPES == 1
     RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
@@ -163,17 +165,21 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::RangeSegment jRange(0, m_cShape[0]);
     RAJA::RangeSegment iRange(0, m_cShape[1]);
   #endif
-    using EXEC_POL = RAJA::KernelPolicy<
-      // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
-      RAJA::statement::
-        For<1, LoopPolicy, RAJA::statement::For<0, LoopPolicy, RAJA::statement::Lambda<0>>>>;
+    // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
+    using KernelExecPolicy = RAJA::seq_exec;
+    using EXEC_POL =
+      RAJA::KernelPolicy<RAJA::statement::For<
+                           1, KernelExecPolicy,
+                           RAJA::statement::For<
+                             0, KernelExecPolicy,
+                             RAJA::statement::Lambda<0>>>>;
     RAJA::kernel<EXEC_POL>(
       RAJA::make_tuple(iRange, jRange),
   #if USE_RAJA_INDEX_VALUE_TYPES == 1
       // TODO: Why does AXOM_LAMBDA here not compile on rzansel with cuda?
       AXOM_LAMBDA(IIDX it, JIDX jt)
   #else
-      AXOM_LAMBDA(int i, int j)
+      AXOM_LAMBDA(axom::IndexType i, axom::IndexType j)
   #endif
       {
   #if USE_RAJA_INDEX_VALUE_TYPES == 1
@@ -192,7 +198,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
           // clang-format on
 
           auto crossingCase = compute_crossing_case(nodalValues);
-          m_caseIds(j, i) = crossingCase;
+          caseIdsView(j, i) = crossingCase;
         }
       });
 #else
@@ -212,7 +218,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
           auto crossingCase = compute_crossing_case(nodalValues);
           SLIC_ASSERT(crossingCase >= 0 && crossingCase < 16);
-          m_caseIds(j,i) = crossingCase;
+          caseIdsView(j,i) = crossingCase;
         }
       }
     }
@@ -222,6 +228,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type mark_crossings_dim()
   {
+    auto caseIdsView = m_caseIds.view();
 #if defined(AXOM_USE_RAJA)
 #if USE_RAJA_INDEX_VALUE_TYPES == 1
     RAJA_INDEX_VALUE_T(IIDX, axom::IndexType, "IIDX");
@@ -235,17 +242,21 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::RangeSegment jRange(0, m_cShape[1]);
     RAJA::RangeSegment iRange(0, m_cShape[2]);
 #endif
-    using EXEC_POL = RAJA::KernelPolicy<RAJA::statement::For<
-      2,
-      LoopPolicy,
-      RAJA::statement::
-        For<1, LoopPolicy, RAJA::statement::For<0, LoopPolicy, RAJA::statement::Lambda<0>>>>>;
+    // TODO: Why does LoopPolicy here not compile on rzansel with cuda?  I have to use RAJA::seq_exec
+    using KernelExecPolicy = RAJA::seq_exec;
+    using EXEC_POL =
+      RAJA::KernelPolicy<RAJA::statement::For<
+                           2, KernelExecPolicy,
+                           RAJA::statement::For<
+                             1, KernelExecPolicy,
+                             RAJA::statement::For<
+                               0, KernelExecPolicy, RAJA::statement::Lambda<0>>>>>;
     RAJA::kernel<EXEC_POL>(
       RAJA::make_tuple(iRange, jRange, kRange),
 #if USE_RAJA_INDEX_VALUE_TYPES == 1
       AXOM_LAMBDA(IIDX it, JIDX jt, KIDX kt)
 #else
-      AXOM_LAMBDA(int i, int j, int k)
+      AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k)
 #endif
       {
 #if USE_RAJA_INDEX_VALUE_TYPES == 1
@@ -269,7 +280,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
           // clang-format on
 
           auto crossingCase = compute_crossing_case(nodalValues);
-          m_caseIds(k, j, i) = crossingCase;
+          caseIdsView(k, j, i) = crossingCase;
         }
       });
 #else
@@ -296,7 +307,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
             auto crossingCase = compute_crossing_case(nodalValues);
             SLIC_ASSERT(crossingCase >= 0 && crossingCase < 256);
-            m_caseIds(k, j, i) = crossingCase;
+            caseIdsView(k, j, i) = crossingCase;
           }
         }
       }
@@ -312,20 +323,21 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   void scan_crossings() override
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
+    auto caseIdsView = m_caseIds.view();
 
 #if defined(AXOM_USE_LAMBDA)
     RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, parentCellCount),
       AXOM_LAMBDA(RAJA::Index_type n) {
-        vsum += bool(num_surface_cells(m_caseIds.flatIndex(n)));
+        vsum += bool(num_surface_cells(caseIdsView.flatIndex(n)));
       });
     m_crossingCount = static_cast<axom::IndexType>(vsum.get());
 #else
     axom::IndexType vsum = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
-      vsum += bool(num_surface_cells(m_caseIds.flatIndex(n)));
+      vsum += bool(num_surface_cells(caseIdsView.flatIndex(n)));
     }
     m_crossingCount = vsum;
 #endif
@@ -353,7 +365,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       0,
       parentCellCount,
       AXOM_LAMBDA(axom::IndexType n) {
-        auto caseId = m_caseIds.flatIndex(n);
+        auto caseId = caseIdsView.flatIndex(n);
         auto ccc = num_surface_cells(caseId);
         if(ccc != 0)
         {
@@ -405,6 +417,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
   void compute_surface() override
   {
+    auto crossingsView = m_crossings.view();
     /*
       Reserve surface mesh data space so we can add data without
       reallocation.
@@ -419,7 +432,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       0,
       m_crossingCount,
       AXOM_LAMBDA(axom::IndexType iCrossing) {
-        const auto& crossingInfo = m_crossings[iCrossing];
+        const auto& crossingInfo = crossingsView[iCrossing];
         const IndexType crossingCellCount =
           num_surface_cells(crossingInfo.caseNum);
         SLIC_ASSERT(crossingCellCount > 0);
@@ -797,7 +810,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
   //!@brief Crossing case for each computational mesh cell.
   // TODO: Put this in correct memory space.
-  axom::Array<std::uint16_t, DIM, axom::MemorySpace::Dynamic> m_caseIds;
+  axom::Array<std::uint16_t, DIM> m_caseIds;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;

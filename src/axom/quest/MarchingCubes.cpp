@@ -124,11 +124,13 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   SLIC_ASSERT_MSG(
     isValidRuntimePolicy(runtimePolicy),
     fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
+#if 0
   SLIC_ASSERT_MSG(
     m_runtimePolicy != MarchingCubesRuntimePolicy::cuda &&
       m_runtimePolicy != MarchingCubesRuntimePolicy::hip,
     std::string(
       "MarchingCubes is not yet correctly running on devices.  Sorry."));
+#endif
 
   set_domain(dom);
   return;
@@ -192,7 +194,7 @@ void MarchingCubesSingleDomain::allocate_impl()
   using namespace detail::marching_cubes;
 // This code doesn't compile for devices yet.  It's close though.
 // TODO: Get this running for devices.
-#define MARCHING_CUBES_USE_DEVICES 0
+#define MARCHING_CUBES_USE_DEVICES 1
   if(m_runtimePolicy == RuntimePolicy::seq)
   {
     m_impl = m_ndim == 2
