@@ -308,6 +308,12 @@ public:
    */
   void compute_iso_surface(double contourVal = 0.0);
 
+  //!@brief Get number of cells in the generated contour mesh.
+  axom::IndexType get_surface_cell_count() const;
+
+  //!@brief Get number of nodes in the generated contour mesh.
+  axom::IndexType get_surface_node_count() const;
+
   /*!
     @brief Put generated surface in a mint::UnstructuredMesh.
     @param mesh Output mesh

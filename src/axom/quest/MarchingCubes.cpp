@@ -53,6 +53,26 @@ void MarchingCubes::compute_iso_surface(double contourVal)
   }
 }
 
+axom::IndexType MarchingCubes::get_surface_cell_count() const
+{
+  axom::IndexType surfaceCellCount = 0;
+  for(int dId = 0; dId < m_singles.size(); ++dId)
+  {
+    surfaceCellCount += m_singles[dId]->get_surface_cell_count();
+  }
+  return surfaceCellCount;
+}
+
+axom::IndexType MarchingCubes::get_surface_node_count() const
+{
+  axom::IndexType surfaceNodeCount = 0;
+  for(int dId = 0; dId < m_singles.size(); ++dId)
+  {
+    surfaceNodeCount += m_singles[dId]->get_surface_node_count();
+  }
+  return surfaceNodeCount;
+}
+
 void MarchingCubes::populate_surface_mesh(
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
   const std::string& cellIdField,
