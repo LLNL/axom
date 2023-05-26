@@ -63,10 +63,11 @@ class BezierPatch
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
-  using CoordsVec = axom::Array<PointType>;
+
   using CoordsMat = axom::Array<PointType, 2>;
+  using NumsMat = axom::Array<T, 2>;
+
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
   using BezierCurveType = primal::BezierCurve<T, NDIMS>;
@@ -101,11 +102,16 @@ public:
   /*!
    * \brief Constructor for a Bezier Patch from a 2D array of coordinates
    *
-   * \param [in] pts an array with ord_u+1 arrays with ord_m+1 control points
+   * \param [in] pts an array with ord_u+1 arrays with ord_v+1 control points
    * \param [in] ord_u The patches's polynomial order on the first axis
    * \param [in] ord_v The patches's polynomial order on the second axis
    * \pre order in both directions is greater than or equal to zero
    *
+   * Elements of pts[k] are mapped to control nodes (p, q) lexicographically, i.e.
+   * pts[0]               -> nodes[0, 0],     ..., pts[ord_u]           -> nodes[ord_u, 0]
+   * pts[ord_u+1]         -> nodes[0, 1],     ..., pts[2*ord_u]         -> nodes[ord_u, 1]
+   *                                          ...
+   * pts[ord_v*(ord_u-1)] -> nodes[0, ord_v], ..., pts[ord_v,ord_u] -> nodes[ord_u, ord_v]
    */
   BezierPatch(PointType* pts, int ord_u, int ord_v)
   {
@@ -117,8 +123,7 @@ public:
 
     m_controlPoints.resize(sz_u, sz_v);
 
-    for(int t = 0; t < sz_u * sz_v; ++t)
-      m_controlPoints(t / sz_v, t % sz_v) = pts[t];
+    for(int t = 0; t < sz_u * sz_v; ++t) m_controlPoints.flatIndex(t) = pts[t];
 
     makeNonrational();
   }
@@ -143,8 +148,7 @@ public:
 
     m_controlPoints.resize(sz_u, sz_v);
 
-    for(int t = 0; t < sz_u * sz_v; ++t)
-      m_controlPoints(t / sz_v, t % sz_v) = pts[t];
+    for(int t = 0; t < sz_u * sz_v; ++t) m_controlPoints.flatIndex(t) = pts[t];
 
     if(weights == nullptr)
     {
@@ -154,8 +158,7 @@ public:
     {
       m_weights.resize(sz_u, sz_v);
 
-      for(int t = 0; t < sz_u * sz_v; ++t)
-        m_weights(t / sz_v, t % sz_v) = weights[t];
+      for(int t = 0; t < sz_u * sz_v; ++t) m_weights.flatIndex(t) = weights[t];
 
       SLIC_ASSERT(isValidRational());
     }
@@ -192,10 +195,7 @@ public:
    * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
    */
-  BezierPatch(const CoordsMat& pts,
-              const axom::Array<axom::Array<T>>& weights,
-              int ord_u,
-              int ord_v)
+  BezierPatch(const CoordsMat& pts, const NumsMat& weights, int ord_u, int ord_v)
   {
     SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
     SLIC_ASSERT(pts.shape()[0] == weights.shape()[0]);
@@ -213,10 +213,18 @@ public:
     SLIC_ASSERT(isValidRational());
   }
 
-  /// Sets the order of the Bezier Patch
+  /*!
+   * \brief Sets the order of Bezier patch
+   *
+   * \param [in] pts a vector with (ord_u+1) * (ord_v+1) control points
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   *
+   * \note Will only resize the arrays, and likely make the patch invalid
+   */
   void setOrder(int ord_u, int ord_v)
   {
     m_controlPoints.resize(ord_u + 1, ord_v + 1);
+    if(isRational()) m_weights.resize(ord_u + 1, ord_v + 1);
   }
 
   /// Returns the order of the Bezier Patch on the first axis
@@ -240,17 +248,15 @@ public:
       const int ord_v = getOrder_v();
 
       m_weights.resize(ord_u + 1, ord_v + 1);
-
-      for(int i = 0; i <= ord_u; ++i)
-        for(int j = 0; j <= ord_v; ++j) m_weights[i][j] = 1.0;
+      m_weights.fill(1.0);
     }
   }
 
   /// Make nonrational by shrinking array of weights
-  void makeNonrational() { m_weights.resize(0, 0); }
+  void makeNonrational() { m_weights.clear(); }
 
   /// Use array size as flag for rationality
-  bool isRational() const { return (m_weights.size() != 0); }
+  bool isRational() const { return !m_weights.empty(); }
 
   /// Clears the list of control points, make nonrational
   void clear()
@@ -258,9 +264,7 @@ public:
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
 
-    for(int p = 0; p <= ord_u; ++p)
-      for(int q = 0; q <= ord_v; ++q) m_controlPoints(p, q) = PointType();
-
+    m_controlPoints.clear();
     makeNonrational();
   }
 
@@ -321,7 +325,7 @@ public:
   CoordsMat getControlPoints() const { return m_controlPoints; }
 
   /// Returns a copy of the Bezier patch's weights
-  axom::Array<T, 2> getWeights() const { return m_weights; }
+  NumsMat getWeights() const { return m_weights; }
 
   /*!
    * \brief Reverses the order of one direction of the Bezier patch's control points and weights
@@ -380,7 +384,7 @@ public:
 
     if(isRational())
     {
-      axom::Array<T, 2> new_weights(ord_v + 1, ord_u + 1);
+      NumsMat new_weights(ord_v + 1, ord_u + 1);
       for(int p = 0; p <= ord_u; ++p)
         for(int q = 0; q <= ord_v; ++q) new_weights(q, p) = m_weights(p, q);
 
@@ -587,9 +591,7 @@ public:
    */
   VectorType normal(T u, T v) const
   {
-    VectorType tangent_t = dt(u, v, 0);
-    VectorType tangent_s = dt(u, v, 1);
-    return VectorType::cross_product(tangent_t, tangent_s);
+    return VectorType::cross_product(dt(u, v, 0), dt(u, v, 1));
   }
 
   /*!
@@ -856,7 +858,7 @@ private:
   }
 
   CoordsMat m_controlPoints;
-  axom::Array<T, 2> m_weights;
+  NumsMat m_weights;
 };
 
 //------------------------------------------------------------------------------
