@@ -334,37 +334,49 @@ public:
    */
   void reverseOrientation(int axis)
   {
+    if(axis == 0)
+      reverseOrientation_u();
+    else
+      reverseOrientation_v();
+  }
+
+  /// Reverses the order of the Bezier patch's control points and weights on the first axis
+  void reverseOrientation_u()
+  {
     const int ord_u = getOrder_u();
     const int mid_u = (ord_u + 1) / 2;
 
     const int ord_v = getOrder_v();
+
+    for(int q = 0; q <= ord_v; ++q)
+    {
+      for(int i = 0; i < mid_u; ++i)
+        axom::utilities::swap(m_controlPoints(i, q),
+                              m_controlPoints(ord_u - i, q));
+
+      if(isRational())
+        for(int i = 0; i < mid_u; ++i)
+          axom::utilities::swap(m_weights(i, q), m_weights(ord_u - i, q));
+    }
+  }
+
+  /// Reverses the order of the Bezier patch's control points and weights on the second axis
+  void reverseOrientation_v()
+  {
+    const int ord_u = getOrder_u();
+
+    const int ord_v = getOrder_v();
     const int mid_v = (ord_v + 1) / 2;
 
-    if(axis == 0)
+    for(int p = 0; p <= ord_u; ++p)
     {
-      for(int q = 0; q <= ord_v; ++q)
-      {
-        for(int i = 0; i < mid_u; ++i)
-          axom::utilities::swap(m_controlPoints(i, q),
-                                m_controlPoints(ord_u - i, q));
+      for(int i = 0; i < mid_v; ++i)
+        axom::utilities::swap(m_controlPoints(p, i),
+                              m_controlPoints(p, ord_v - i));
 
-        if(isRational())
-          for(int i = 0; i < mid_u; ++i)
-            axom::utilities::swap(m_weights(i, q), m_weights(ord_u - i, q));
-      }
-    }
-    else
-    {
-      for(int p = 0; p <= ord_u; ++p)
-      {
+      if(isRational())
         for(int i = 0; i < mid_v; ++i)
-          axom::utilities::swap(m_controlPoints(p, i),
-                                m_controlPoints(p, ord_v - i));
-
-        if(isRational())
-          for(int i = 0; i < mid_v; ++i)
-            axom::utilities::swap(m_weights(p, i), m_weights(p, ord_v - i));
-      }
+          axom::utilities::swap(m_weights(p, i), m_weights(p, ord_v - i));
     }
   }
 
@@ -416,129 +428,130 @@ public:
    *
    * \note We typically evaluate the patch at \a u or \a v between 0 and 1
    */
-  BezierCurveType isocurve(T uv, int axis = 0) const
+  BezierCurveType isocurve(T uv, int axis) const
   {
     SLIC_ASSERT((axis == 0) || (axis == 1));
 
+    if(axis == 0)
+      return isocurve_u(uv);
+    else
+      return isocurve_v(uv);
+  }
+
+  /// Return an isocurve for a fixed value of u
+  BezierCurveType isocurve_u(T v) const
+  {
     using axom::utilities::lerp;
 
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
 
-    BezierCurveType c(-1);
+    BezierCurveType c(ord_v);
+    axom::Array<T> dCarray(ord_u + 1);
 
     if(isRational())
     {
-      if(axis == 0)  // Keeping a fixed value of u
-      {
-        c.setOrder(ord_v);
-        c.makeRational();
+      c.makeRational();
+      axom::Array<T> dWarray(ord_u + 1);
 
-        axom::Array<T> dCarray(ord_u + 1);
-        axom::Array<T> dWarray(ord_u + 1);
-
-        // Run de Casteljau algorithm on each row of control nodes and each dimension
-        for(int q = 0; q <= ord_v; ++q)
-          for(int i = 0; i < NDIMS; ++i)
+      for(int q = 0; q <= ord_v; ++q)
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          for(int p = 0; p <= ord_u; ++p)
           {
-            for(int p = 0; p <= ord_u; ++p)
-            {
-              dCarray[p] = m_controlPoints(p, q)[i] * m_weights(p, q);
-              dWarray[p] = m_weights(p, q);
-            }
-
-            for(int p = 1; p <= ord_u; ++p)
-            {
-              const int end = ord_u - p;
-              for(int k = 0; k <= end; ++k)
-              {
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
-                dWarray[k] = lerp(dWarray[k], dWarray[k + 1], uv);
-              }
-            }
-
-            c[q][i] = dCarray[0] / dWarray[0];
-            c.setWeight(q, dWarray[0]);
+            dCarray[p] = m_controlPoints(p, q)[i] * m_weights(p, q);
+            dWarray[p] = m_weights(p, q);
           }
-      }
-      // Run de Casteljau algorithm on each column of control nodes and each dimension
-      else  // Keeping a fixed value of v
-      {
-        c.setOrder(ord_u);
-        c.makeRational();
 
-        axom::Array<T> dCarray(ord_v + 1);
-        axom::Array<T> dWarray(ord_v + 1);
-
-        for(int p = 0; p <= ord_u; ++p)
-          for(int i = 0; i < NDIMS; ++i)
+          for(int p = 1; p <= ord_u; ++p)
           {
-            for(int q = 0; q <= ord_v; ++q)
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
             {
-              dCarray[q] = m_controlPoints(p, q)[i] * m_weights(p, q);
-              dWarray[q] = m_weights(p, q);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
+              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], v);
             }
-
-            for(int q = 1; q <= ord_v; ++q)
-            {
-              const int end = ord_v - q;
-              for(int k = 0; k <= end; ++k)
-              {
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
-                dWarray[k] = lerp(dWarray[k], dWarray[k + 1], uv);
-              }
-            }
-            c[p][i] = dCarray[0] / dWarray[0];
-            c.setWeight(p, dWarray[0]);
           }
-      }
+
+          c[q][i] = dCarray[0] / dWarray[0];
+          c.setWeight(q, dWarray[0]);
+        }
     }
     else
     {
-      if(axis == 0)  // Keeping a fixed value of u
-      {
-        c.setOrder(ord_v);
-        axom::Array<T> dCarray(ord_u + 1);  // Temp array
+      for(int q = 0; q <= ord_v; ++q)
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          for(int p = 0; p <= ord_u; ++p) dCarray[p] = m_controlPoints(p, q)[i];
 
-        // Run de Casteljau algorithm on each row of control nodes and each dimension
-        for(int q = 0; q <= ord_v; ++q)
-          for(int i = 0; i < NDIMS; ++i)
+          for(int p = 1; p <= ord_u; ++p)
           {
-            for(int p = 0; p <= ord_u; ++p)
-              dCarray[p] = m_controlPoints(p, q)[i];
-
-            for(int p = 1; p <= ord_u; ++p)
-            {
-              const int end = ord_u - p;
-              for(int k = 0; k <= end; ++k)
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
-            }
-            c[q][i] = dCarray[0];
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
           }
-      }
-      // Run de Casteljau algorithm on each column of control nodes and each dimension
-      else  // Keeping a fixed value of v
-      {
-        c.setOrder(ord_u);
-        axom::Array<T> dCarray(ord_v + 1);  // Temp array
+          c[q][i] = dCarray[0];
+        }
+    }
 
-        for(int p = 0; p <= ord_u; ++p)
-          for(int i = 0; i < NDIMS; ++i)
+    return c;
+  }
+
+  /// Return an isocurve for a fixed value of v
+  BezierCurveType isocurve_v(T u) const
+  {
+    using axom::utilities::lerp;
+
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    BezierCurveType c(ord_u);
+    axom::Array<T> dCarray(ord_v + 1);
+
+    if(isRational())
+    {
+      c.makeRational();
+      axom::Array<T> dWarray(ord_v + 1);
+
+      for(int p = 0; p <= ord_u; ++p)
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          for(int q = 0; q <= ord_v; ++q)
           {
-            for(int q = 0; q <= ord_v; ++q)
-              dCarray[q] = m_controlPoints(p, q)[i];
-
-            for(int q = 1; q <= ord_v; ++q)
-            {
-              const int end = ord_v - q;
-              for(int k = 0; k <= end; ++k)
-              {
-                dCarray[k] = lerp(dCarray[k], dCarray[k + 1], uv);
-              }
-            }
-            c[p][i] = dCarray[0];
+            dCarray[q] = m_controlPoints(p, q)[i] * m_weights(p, q);
+            dWarray[q] = m_weights(p, q);
           }
-      }
+
+          for(int q = 1; q <= ord_v; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+            {
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
+              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], u);
+            }
+          }
+          c[p][i] = dCarray[0] / dWarray[0];
+          c.setWeight(p, dWarray[0]);
+        }
+    }
+    else
+    {
+      for(int p = 0; p <= ord_u; ++p)
+        for(int i = 0; i < NDIMS; ++i)
+        {
+          for(int q = 0; q <= ord_v; ++q) dCarray[q] = m_controlPoints(p, q)[i];
+
+          for(int q = 1; q <= ord_v; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+            {
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
+            }
+          }
+          c[p][i] = dCarray[0];
+        }
     }
 
     return c;
@@ -556,9 +569,9 @@ public:
   PointType evaluate(T u, T v) const
   {
     if(getOrder_u() >= getOrder_v())
-      return isocurve(u, 0).evaluate(v);
+      return isocurve_u(u).evaluate(v);
     else
-      return isocurve(v, 1).evaluate(u);
+      return isocurve_v(v).evaluate(u);
   }
 
   /*!
@@ -574,11 +587,17 @@ public:
   VectorType dt(T u, T v, int axis) const
   {
     SLIC_ASSERT((axis == 0) || (axis == 1));
-    if(axis == 0)  // Get isocurve at fixed v
-      return isocurve(v, 1).dt(u);
-    else  // Get isocurve at fixed u
-      return isocurve(u, 0).dt(v);
+    if(axis == 0)
+      return dt_u(u, v);
+    else
+      return dt_v(u, v);
   }
+
+  /// Compute the directional derivative in u with an isocurve fixed in v
+  VectorType dt_u(T u, T v) const { return isocurve_v(v).dt(u); }
+
+  /// Compute the directional derivative in v with an isocurve fixed in u
+  VectorType dt_v(T u, T v) const { return isocurve_u(u).dt(v); }
 
   /*!
    * \brief Computes the normal vector of a Bezier patch at a particular parameter value (\a u, \a v)
@@ -608,127 +627,143 @@ public:
   {
     SLIC_ASSERT((axis == 0) || (axis == 1));
 
+    if(axis == 0)
+      split_u(uv, p1, p2);
+    else
+      split_v(uv, p1, p2);
+  }
+
+  /// Split the patch along a fixed value of u
+  void split_u(T u, BezierPatch& p1, BezierPatch& p2) const
+  {
     using axom::utilities::lerp;
 
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
 
-    SLIC_ASSERT((ord_u >= 0) && (ord_v >= 0));
+    p1.setOrder(ord_u, ord_v);
 
     // Note: The second patch's control points are computed inline
     //       as we find the first patch's control points
     p2 = *this;
 
-    p1.setOrder(ord_u, ord_v);
     if(isRational())
     {
       p1.makeRational();  // p2 already rational
-      if(axis == 0)       // Split across a fixed value of u
+
+      for(int q = 0; q <= ord_v; ++q)
       {
-        // Run algorithm across each row of control nodes
-        for(int q = 0; q <= ord_v; ++q)
+        // Do the rational de Casteljau algorithm
+        p1(0, q) = p2(0, q);
+        p1.setWeight(0, q, p2.getWeight(0, q));
+
+        for(int p = 1; p <= ord_u; ++p)
         {
-          // Do the rational de Casteljau algorithm
-          p1(0, q) = p2(0, q);
-          p1.setWeight(0, q, p2.getWeight(0, q));
+          const int end = ord_u - p;
 
-          for(int p = 1; p <= ord_u; ++p)
+          for(int k = 0; k <= end; ++k)
           {
-            const int end = ord_u - p;
+            double temp_weight =
+              lerp(p2.getWeight(k, q), p2.getWeight(k + 1, q), u);
 
-            for(int k = 0; k <= end; ++k)
+            for(int i = 0; i < NDIMS; ++i)
             {
-              double temp_weight =
-                lerp(p2.getWeight(k, q), p2.getWeight(k + 1, q), uv);
-
-              for(int i = 0; i < NDIMS; ++i)
-              {
-                p2(k, q)[i] = lerp(p2.getWeight(k, q) * p2(k, q)[i],
-                                   p2.getWeight(k + 1, q) * p2(k + 1, q)[i],
-                                   uv) /
-                  temp_weight;
-              }
-
-              p2.setWeight(k, q, temp_weight);
+              p2(k, q)[i] = lerp(p2.getWeight(k, q) * p2(k, q)[i],
+                                 p2.getWeight(k + 1, q) * p2(k + 1, q)[i],
+                                 u) /
+                temp_weight;
             }
 
-            p1(p, q) = p2(0, q);
-            p1.setWeight(p, q, p2.getWeight(0, q));
+            p2.setWeight(k, q, temp_weight);
           }
-        }
-      }
-      else
-      {
-        // Run algorithm across each column of control nodes
-        for(int p = 0; p <= ord_u; ++p)
-        {
-          // Do the rational de Casteljau algorithm
-          p1(p, 0) = p2(p, 0);
-          p1.setWeight(p, 0, p2.getWeight(p, 0));
 
-          for(int q = 1; q <= ord_v; ++q)
-          {
-            const int end = ord_v - q;
-
-            for(int k = 0; k <= end; ++k)
-            {
-              double temp_weight =
-                lerp(p2.getWeight(p, k), p2.getWeight(p, k + 1), uv);
-
-              for(int i = 0; i < NDIMS; ++i)
-              {
-                p2(p, k)[i] = lerp(p2.getWeight(p, k) * p2(p, k)[i],
-                                   p2.getWeight(p, k + 1) * p2(p, k + 1)[i],
-                                   uv) /
-                  temp_weight;
-              }
-
-              p2.setWeight(p, k, temp_weight);
-            }
-
-            p1(p, q) = p2(p, 0);
-            p1.setWeight(p, q, p2.getWeight(p, 0));
-          }
+          p1(p, q) = p2(0, q);
+          p1.setWeight(p, q, p2.getWeight(0, q));
         }
       }
     }
     else
     {
-      if(axis == 0)  // Split across a fixed value of u
+      for(int q = 0; q <= ord_v; ++q)
       {
-        // Do the split for each row of control nodes
-        for(int q = 0; q <= ord_v; ++q)
+        p1(0, q) = m_controlPoints(0, q);
+
+        for(int i = 0; i < NDIMS; ++i)
+          for(int p = 1; p <= ord_u; ++p)
+          {
+            const int end = ord_u - p;
+            for(int k = 0; k <= end; ++k)
+              p2(k, q)[i] = lerp(p2(k, q)[i], p2(k + 1, q)[i], u);
+
+            p1(p, q)[i] = p2(0, q)[i];
+          }
+      }
+    }
+  }
+
+  void split_v(T v, BezierPatch& p1, BezierPatch& p2) const
+  {
+    using axom::utilities::lerp;
+
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    p1.setOrder(ord_u, ord_v);
+
+    // Note: The second patch's control points are computed inline
+    //       as we find the first patch's control points
+    p2 = *this;
+
+    if(isRational())
+    {
+      p1.makeRational();  // p2 already rational
+
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        // Do the rational de Casteljau algorithm
+        p1(p, 0) = p2(p, 0);
+        p1.setWeight(p, 0, p2.getWeight(p, 0));
+
+        for(int q = 1; q <= ord_v; ++q)
         {
-          p1(0, q) = m_controlPoints(0, q);
+          const int end = ord_v - q;
 
-          for(int i = 0; i < NDIMS; ++i)
-            for(int p = 1; p <= ord_u; ++p)
+          for(int k = 0; k <= end; ++k)
+          {
+            double temp_weight =
+              lerp(p2.getWeight(p, k), p2.getWeight(p, k + 1), v);
+
+            for(int i = 0; i < NDIMS; ++i)
             {
-              const int end = ord_u - p;
-              for(int k = 0; k <= end; ++k)
-                p2(k, q)[i] = lerp(p2(k, q)[i], p2(k + 1, q)[i], uv);
-
-              p1(p, q)[i] = p2(0, q)[i];
+              p2(p, k)[i] = lerp(p2.getWeight(p, k) * p2(p, k)[i],
+                                 p2.getWeight(p, k + 1) * p2(p, k + 1)[i],
+                                 v) /
+                temp_weight;
             }
+
+            p2.setWeight(p, k, temp_weight);
+          }
+
+          p1(p, q) = p2(p, 0);
+          p1.setWeight(p, q, p2.getWeight(p, 0));
         }
       }
-      else
+    }
+    else
+    {
+      for(int p = 0; p <= ord_u; ++p)
       {
-        // Do the split for each column of control nodes
-        for(int p = 0; p <= ord_u; ++p)
-        {
-          p1(p, 0) = m_controlPoints(p, 0);
+        p1(p, 0) = m_controlPoints(p, 0);
 
-          for(int i = 0; i < NDIMS; ++i)
-            for(int q = 1; q <= ord_v; ++q)
-            {
-              const int end = ord_v - q;
-              for(int k = 0; k <= end; ++k)
-                p2(p, k)[i] = lerp(p2(p, k)[i], p2(p, k + 1)[i], uv);
+        for(int i = 0; i < NDIMS; ++i)
+          for(int q = 1; q <= ord_v; ++q)
+          {
+            const int end = ord_v - q;
+            for(int k = 0; k <= end; ++k)
+              p2(p, k)[i] = lerp(p2(p, k)[i], p2(p, k + 1)[i], v);
 
-              p1(p, q)[i] = p2(p, 0)[i];
-            }
-        }
+            p1(p, q)[i] = p2(p, 0)[i];
+          }
       }
     }
   }
@@ -764,14 +799,14 @@ public:
              BezierPatch& p4) const
   {
     // Bisect the patch along the u direction
-    split(u, 0, p1, p2);
+    split_u(u, p1, p2);
 
     // Temporarily store the result in each half and split again
     BezierPatch p0(p1);
-    p0.split(v, 1, p1, p3);
+    p0.split_v(v, p1, p3);
 
     p0 = p2;
-    p0.split(v, 1, p2, p4);
+    p0.split_v(v, p2, p4);
   }
 
   /*!
