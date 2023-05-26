@@ -733,13 +733,6 @@ struct ContourTestBase
 
     mc.set_function_field(function_name());
 
-    sidre::DataStore objectDS;
-    sidre::Group* meshGroup = objectDS.getRoot()->createGroup(name() + "_mesh");
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
-      DIM,
-      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
-      meshGroup);
-
     axom::utilities::Timer computeTimer(false);
 #ifdef AXOM_USE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
@@ -749,11 +742,21 @@ struct ContourTestBase
     computeTimer.stop();
     print_timing_stats(computeTimer, name() + " contour");
 
-    mc.populate_surface_mesh(surfaceMesh, m_parentCellIdField, m_domainIdField);
-    // Non-essential.  Fails for certain hdf5 configs.   meshGroup->save("contourmesh.sidre.hdf5", "sidre_hdf5");
     SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
-                                surfaceMesh.getNumberOfCells(),
-                                surfaceMesh.getNumberOfNodes()));
+                                mc.get_surface_cell_count(),
+                                mc.get_surface_node_count()));
+
+    // Put surface mesh in a mint object for error checking and output.
+    std::string sidreGroupName = name() + "_mesh";
+    sidre::DataStore objectDS;
+    sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
+      DIM,
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
+      meshGroup,
+      mc.get_surface_node_count(),
+      mc.get_surface_cell_count());
+    mc.populate_surface_mesh(surfaceMesh, m_parentCellIdField, m_domainIdField);
 
     int localErrCount = 0;
     if(params.checkResults)
@@ -767,12 +770,14 @@ struct ContourTestBase
         check_cells_containing_contour(computationalMesh, surfaceMesh);
     }
 
+    // Write surface mesh to file.
     add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(),
                                                surfaceMesh);
+    std::string outputName = name() + "_surface_mesh";
+    save_mesh(*meshGroup, outputName);
+    SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", name(), outputName));
 
-    save_mesh(*meshGroup, name() + "_surface_mesh");
-    SLIC_INFO(
-      axom::fmt::format("Wrote {} contour in {}_surface_mesh", name(), name()));
+    objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
 
     return localErrCount;
   }

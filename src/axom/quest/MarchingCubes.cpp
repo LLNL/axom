@@ -92,14 +92,9 @@ void MarchingCubes::populate_surface_mesh(
     mesh.createField<axom::IndexType>(domainIdField, axom::mint::CELL_CENTERED);
   }
 
-  // Reserve space once across single domains.
-  axom::IndexType surfaceCellCount = 0;
-  axom::IndexType surfaceNodeCount = 0;
-  for(int dId = 0; dId < m_singles.size(); ++dId)
-  {
-    surfaceCellCount += m_singles[dId]->get_surface_cell_count();
-    surfaceNodeCount += m_singles[dId]->get_surface_node_count();
-  }
+  // Reserve space once for all single domains.
+  const axom::IndexType surfaceCellCount = get_surface_cell_count();
+  const axom::IndexType surfaceNodeCount = get_surface_node_count();
   mesh.reserveCells(surfaceCellCount);
   mesh.reserveNodes(surfaceNodeCount);
 
