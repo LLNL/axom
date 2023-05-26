@@ -63,6 +63,7 @@ public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
   using SegmentType = Segment<T, NDIMS>;
+  using WeightsVec = axom::Array<T>;
   using CoordsVec = axom::Array<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
@@ -189,7 +190,11 @@ public:
   }
 
   /// Sets the order of the Bezier Curve
-  void setOrder(int ord) { m_controlPoints.resize(ord + 1); }
+  void setOrder(int ord)
+  {
+    m_controlPoints.resize(ord + 1);
+    if(isRational()) m_weights.resize(ord + 1);
+  }
 
   /// Returns the order of the Bezier Curve
   int getOrder() const { return static_cast<int>(m_controlPoints.size()) - 1; }
@@ -201,7 +206,7 @@ public:
     {
       const int ord = getOrder();
       m_weights.resize(ord + 1);
-      for(int i = 0; i <= ord; i++) m_weights[i] = 1.0;
+      m_weights.fill(1.0);
     }
   }
 
@@ -209,17 +214,12 @@ public:
   void makeNonrational() { m_weights.resize(0); }
 
   /// Use array size as flag for rationality
-  bool isRational() const { return (m_weights.size() != 0); }
+  bool isRational() const { return !m_weights.empty(); }
 
   /// Clears the list of control points, make nonrational
   void clear()
   {
-    const int ord = getOrder();
-    for(int p = 0; p <= ord; ++p)
-    {
-      m_controlPoints[p] = PointType();
-    }
-
+    m_controlPoints.clear();
     makeNonrational();
   }
 
@@ -271,11 +271,11 @@ public:
     return !(lhs == rhs);
   }
 
-  /// Returns a copy of the Bezier curve's control points
+  /// Returns a reference to the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
   /// Returns a copy of the Bezier curve's weights
-  axom::Array<T> getWeights() const { return m_weights; }
+  WeightsVec getWeights() const { return m_weights; }
 
   /// Reverses the order of the Bezier curve's control points and weights
   void reverseOrientation()
@@ -590,7 +590,7 @@ private:
   }
 
   CoordsVec m_controlPoints;
-  axom::Array<T> m_weights;
+  WeightsVec m_weights;
 };
 
 //------------------------------------------------------------------------------

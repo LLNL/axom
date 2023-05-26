@@ -203,7 +203,7 @@ TEST(primal_beziercurve, split_cubic)
                            PointType { 2.05, 2.0875, 2.0375}};
                            
                            
-  PointType b4Coords[12] = {PointType{  2.05, 2.0875, 2.0375},
+  PointType b4Coords[4] = {PointType{  2.05, 2.0875, 2.0375},
                             PointType{ 2.575,  2.475,   2.35},
                             PointType{  3.05,   2.95,   2.65},
                             PointType{   3.2,    3.5,    3.0}};
