@@ -44,6 +44,7 @@ blt_list_append(
     TO       primal_tests 
     ELEMENTS primal_integral.cpp 
              primal_winding_number.cpp
+             primal_solid_angle.cpp
     IF       MFEM_FOUND 
                )
 

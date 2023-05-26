@@ -21,6 +21,9 @@
 #include "axom/primal/geometry/CurvedPolygon.hpp"
 #include "axom/primal/operators/detail/winding_number_impl.hpp"
 
+// C++ includes
+#include <cmath>
+
 namespace axom
 {
 namespace primal
@@ -186,6 +189,36 @@ double winding_number(const Point<T, 2>& q,
       detail::curve_winding_number_recursive(q, cpoly[i], false, edge_tol, EPS);
 
   return ret_val;
+}
+
+/*!
+ * \brief Computes the solid angle winding number for a 3D triangle
+ *
+ * \param [in] query The query point to test
+ * \param [in] cpoly The Triangle object
+ *
+ * Computes the winding number using the formula from [Barill 2018]
+ * 
+ * \return float the generalized winding number.
+ */
+template <typename T>
+double winding_number(const Point<T, 3>& q, const Triangle<T, 3>& tri)
+{
+  if(tri.area() == 0) return 0;
+
+  Vector<T, 3> a(q, tri[0]), b(q, tri[1]), c(q, tri[2]);
+
+  // Compute norms. Possibly return early
+  double a_norm = a.norm(), b_norm = b.norm(), c_norm = c.norm();
+  if(a_norm == 0 || b_norm == 0 || c_norm == 0) return 0;
+
+  double num = axom::utilities::abs(Vector<T, 3>::scalar_triple_product(a, b, c));
+  double denom = a_norm * b_norm * c_norm +
+    a_norm * Vector<T, 3>::dot_product(b, c) +
+    b_norm * Vector<T, 3>::dot_product(a, c) +
+    c_norm * Vector<T, 3>::dot_product(a, b);
+
+  return 2 * atan(num / denom);
 }
 
 }  // namespace primal
