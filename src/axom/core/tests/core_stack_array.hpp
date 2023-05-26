@@ -189,7 +189,7 @@ TEST(core_stack_array, less_than)
   // The following would produce a compiler error since Tensor does not have an operator<() !
   //internal::test_less_than<Tensor, N>([](int i) { return Tensor(i + 1); });
 
-#if !defined(AXOM_USE_GPU)
+#if !defined(AXOM_USE_GPU) || !defined(AXOM_GPUCC)
   internal::test_less_than<std::string, N>(
     [](int i) { return std::to_string(i + 1); });
 #endif
