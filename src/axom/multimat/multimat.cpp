@@ -516,7 +516,7 @@ int MultiMat::getFieldIdx(const std::string& field_name) const
 
 std::string MultiMat::getFieldName(int field_idx) const
 {
-  if(field_idx < 0 || field_idx >= m_fieldNameVec.size())
+  if(field_idx < 0 || field_idx >= static_cast<int>(m_fieldNameVec.size()))
   {
     return "";
   }
@@ -832,7 +832,7 @@ void MultiMat::makeOtherRelation(DataLayout layout)
 
   //add them to make this the end index
   {
-    unsigned int i;
+    axom::IndexType i;
     for(i = 1; i < newBeginVec.size() - 1; i++)
     {
       newBeginVec[i] += newBeginVec[i - 1];
