@@ -311,9 +311,7 @@ public:
                      sidre::MFEMSidreDataCollection* dc)
     : Shaper(shapeSet, dc)
   {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     m_free_mat_name = "free";
-#endif
   }
 
   //@{
@@ -322,6 +320,26 @@ public:
   void setLevel(int level) { m_level = level; }
 
   void setExecPolicy(int policy) { m_execPolicy = (ExecPolicy)policy; }
+
+  /*!
+   * \brief Set the name of the material used to account for free volume fractions.
+   * \param name The new name of the material. This name cannot contain 
+   *             underscores and it cannot be set once shaping has started.
+   * \note This should not be called once any shaping has occurred.
+   */
+  void setFreeMaterialName(const std::string& name)
+  {
+    if(name.find("_") != std::string::npos)
+    {
+      SLIC_ERROR("The free material name cannot contain underscores.");
+    }
+    if(m_num_elements > 0)
+    {
+      SLIC_ERROR(
+        "The free material name cannot be set once shaping has occurred.");
+    }
+    m_free_mat_name = name;
+  }
   //@}
 
   /*!
@@ -974,27 +992,8 @@ private:
 
   // Switch back to public. This is done here because the CUDA compiler
   // does not like the following template functions to be private.
-public:
-  /*!
-   * \brief Set the name of the material used to account for free volume fractions.
-   * \param name The new name of the material. This name cannot contain 
-   *             underscores and it cannot be set once shaping has started.
-   * \note This should not be called once any shaping has occurred.
-   */
-  void setFreeMaterialName(const std::string& name)
-  {
-    if(name.find("_") != std::string::npos)
-    {
-      SLIC_ERROR("The free material name cannot contain underscores.");
-    }
-    if(m_num_elements > 0)
-    {
-      SLIC_ERROR(
-        "The free material name cannot be set once shaping has occurred.");
-    }
-    m_free_mat_name = name;
-  }
 
+public:
   /*!
    * \brief Make a new grid function that contains all of the free space not
    *        occupied by existing materials.
@@ -1894,6 +1893,8 @@ private:
   int m_level {DEFAULT_CIRCLE_REFINEMENT_LEVEL};
   double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
   int m_num_elements {0};
+  std::string m_free_mat_name;
+
   double* m_hex_volumes {nullptr};
   double* m_overlap_volumes {nullptr};
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
@@ -1906,7 +1907,6 @@ private:
 
   std::vector<mfem::GridFunction*> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
-  std::string m_free_mat_name;
 #endif
 };
 
