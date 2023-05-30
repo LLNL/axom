@@ -465,7 +465,7 @@ public:
    * with the supplied names as material-based quadrature fields
    */
   void importInitialVolumeFractions(
-    const std::map<std::string, mfem::GridFunction*> initialGridFunctions)
+    const std::map<std::string, mfem::GridFunction*>& initialGridFunctions)
   {
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
