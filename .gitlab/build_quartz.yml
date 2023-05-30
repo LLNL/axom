@@ -28,7 +28,7 @@ quartz_allocate:
   script:
     # Use when ellastic ci is on quartz or we go back to ruby
     #- salloc --reservation=ci --qos=ci_ruby -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
-    - salloc -N 1 -c 36 -t 60 --no-shell --job-name=${PROJECT_ALLOC_NAME}
+    - salloc -N 1 -c 36 -t 60 -p pdebug --no-shell --job-name=${PROJECT_ALLOC_NAME}
   needs: []
 
 ####
@@ -50,7 +50,7 @@ quartz_release:
   variables:
     # Use when ellastic ci is on quartz or we go back to ruby
     # ALLOC_COMMAND: "srun --reservation=ci --qos=ci_ruby -t 60 -N 1 "
-    ALLOC_COMMAND: "srun -t 60 -N 1 "
+    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
   extends: [.src_build_script, .on_quartz, .src_workflow]
   needs: [quartz_allocate]
 
@@ -59,7 +59,7 @@ quartz_release:
   variables:
     # Use when ellastic ci is on quartz or we go back to ruby
     # ALLOC_COMMAND: "srun --reservation=ci --qos=ci_ruby -t 60 -N 1 "
-    ALLOC_COMMAND: "srun -t 60 -N 1 "
+    ALLOC_COMMAND: "srun -t 60 -N 1 -p pdebug"
   extends: [.full_build_script, .on_quartz, .full_workflow]
   needs: []
 
