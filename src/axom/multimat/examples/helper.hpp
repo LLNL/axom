@@ -68,7 +68,7 @@ struct Value_Checker
     }
     else
     {
-      if(values.size() != vec.size())
+      if(static_cast<axom::IndexType>(values.size()) != vec.size())
       {
         SLIC_ERROR(
           axom::fmt::format("Sizes of arrays are different. 'values' has {} "

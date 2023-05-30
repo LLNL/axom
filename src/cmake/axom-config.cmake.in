@@ -162,7 +162,8 @@ if(NOT AXOM_FOUND)
   foreach(_component ${AXOM_COMPONENTS_ENABLED})
     set_property(TARGET axom
                  PROPERTY INTERFACE_LINK_LIBRARIES
-                 axom::${_component})
+                 axom::${_component}
+                 APPEND)
   endforeach()
 
   # HACK: Clear INTERFACE_COMPILE_OPTIONS to avoid requiring OpenMP in user code

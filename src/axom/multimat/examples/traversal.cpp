@@ -83,7 +83,7 @@ void various_traversal_methods(int nmats,
   axom::Array<double> cellmat_arr;
   cellmat_arr.resize((use_sparse ? nfilled : nmats * ncells) * ncomp);
   double x_sum = 0;
-  for(unsigned int i = 0; i < cellmat_arr.size() / ncomp; i++)
+  for(axom::IndexType i = 0; i < cellmat_arr.size() / ncomp; i++)
   {
     if(use_sparse || cellMatRel[i])
     {
