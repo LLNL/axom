@@ -370,6 +370,88 @@ TEST(primal_polygon, area_2d_3d)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_polygon, normal)
+{
+  using Polygon3D = axom::primal::Polygon<double, 3>;
+  using Point3D = axom::primal::Point<double, 3>;
+
+  using Triangle3D = axom::primal::Triangle<double, 3>;
+  using Vector3D = axom::primal::Vector<double, 3>;
+
+  // Test a simple right triangle
+  {
+    Polygon3D poly3D({Point3D {0, 0, 1}, Point3D {1, 0, 0}, Point3D {1, 1, 1}});
+    Vector3D poly_normal = poly3D.normal().unitVector();
+
+    Triangle3D tri3D({Point3D {0, 0, 1}, Point3D {1, 0, 0}, Point3D {1, 1, 1}});
+    Vector3D tri_normal = tri3D.normal().unitVector();
+
+    for(int i = 0; i < 3; ++i)
+      EXPECT_NEAR(poly_normal[i], tri_normal[i], 1e-10);
+  }
+
+  // Test a planar 5-gon inscribed in a circle
+  {
+    Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
+    Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
+    Vector3D exp_normal = Vector3D::cross_product(v1, v2).unitVector();
+
+    Polygon3D poly(5);
+
+    double angles[5] = {0.0, 0.5, 1.2, 3.0, 5.0};
+
+    for(int i = 0; i < 5; ++i)
+      poly.addVertex(Point3D {cos(angles[i]) * v1[0] + sin(angles[i]) * v2[0],
+                              cos(angles[i]) * v1[1] + sin(angles[i]) * v2[1],
+                              cos(angles[i]) * v1[2] + sin(angles[i]) * v2[2]});
+
+    Vector3D obs_normal = poly.normal().unitVector();
+
+    for(int i = 0; i < 3; ++i) EXPECT_NEAR(exp_normal[i], obs_normal[i], 1e-10);
+  }
+
+  // Test a planar "5-gon" with duplicate vertices and colinear points (robustness)
+  {
+    Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
+    Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
+    Vector3D exp_normal = Vector3D::cross_product(v1, v2).unitVector();
+
+    Polygon3D poly(10);
+
+    double angles[8] = {0.0, 0.5, 0.5, 1.2, 3.0, 3.0, 3.0, 5.0};
+
+    // Add point at angle 0
+    poly.addVertex(Point3D {cos(angles[0]) * v1[0] + sin(angles[0]) * v2[0],
+                            cos(angles[0]) * v1[1] + sin(angles[0]) * v2[1],
+                            cos(angles[0]) * v1[2] + sin(angles[0]) * v2[2]});
+    // Add a midpoint between angles 0 and 1
+    poly.addVertex(Point3D::midpoint(
+      poly[0],
+      Point3D {cos(angles[1]) * v1[0] + sin(angles[1]) * v2[0],
+               cos(angles[1]) * v1[1] + sin(angles[1]) * v2[1],
+               cos(angles[1]) * v1[2] + sin(angles[1]) * v2[2]}));
+
+    // Add the rest of the vertices
+    for(int i = 1; i < 8; ++i)
+      poly.addVertex(Point3D {cos(angles[i]) * v1[0] + sin(angles[i]) * v2[0],
+                              cos(angles[i]) * v1[1] + sin(angles[i]) * v2[1],
+                              cos(angles[i]) * v1[2] + sin(angles[i]) * v2[2]});
+
+    // Add another midpoint
+    poly.addVertex(Point3D::midpoint(poly[0], poly[8]));
+
+    // Verify degeneracies
+    EXPECT_NEAR(0.0, Triangle3D(poly[0], poly[1], poly[2]).area(), 1e-10);
+    EXPECT_NEAR(0.0, Triangle3D(poly[2], poly[3], poly[4]).area(), 1e-10);
+
+    Vector3D obs_normal = poly.normal().unitVector();
+
+    EXPECT_EQ(10, poly.numVertices());
+    for(int i = 0; i < 3; ++i) EXPECT_NEAR(exp_normal[i], obs_normal[i], 1e-10);
+  }
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   int result = 0;
