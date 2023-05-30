@@ -34,6 +34,7 @@ namespace detail
  *
  * The winding number for a point with respect to a straight line
  * is the signed angle subtended by the query point to each endpoint.
+ * Colinear points return 0 for their winding number.
  *
  * \return double The winding number
  */

@@ -93,10 +93,11 @@ public:
 
     VectorType normal {0.0, 0.0, 0.0};
 
-    VectorType v0(m_vertices[0], m_vertices[1]);
+    // Iterate over pairs of vertices
+    VectorType v0(m_vertices[0], m_vertices[1]), v1;
     for(int i = 2; i < nverts; ++i)
     {
-      VectorType v1(m_vertices[0], m_vertices[i]);
+      v1 = VectorType(m_vertices[0], m_vertices[i]);
       normal += VectorType::cross_product(v0, v1);
       v0 = v1;
     }
