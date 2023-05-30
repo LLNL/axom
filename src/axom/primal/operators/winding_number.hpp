@@ -56,7 +56,8 @@ double winding_number(const Point<T, 2>& q, const Segment<T, 2>& s, double edge_
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
- * of vertices around the query point. 
+ * of vertices around the query point. Current policy is to return 1 on edges
+ * without strict inclusion, 0 on edges with strict inclusion.
  *
  * Directly uses algorithm in 
  * Kai Hormann, Alexander Agathos, "The point in polygon problem for arbitrary polygons"
@@ -195,14 +196,20 @@ double winding_number(const Point<T, 2>& q,
  * \brief Computes the solid angle winding number for a 3D triangle
  *
  * \param [in] query The query point to test
- * \param [in] cpoly The Triangle object
+ * \param [in] tri The Triangle object
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
  * Computes the winding number using the formula from [Barill 2018]
  * 
  * \return float the generalized winding number.
  */
 template <typename T>
-double winding_number(const Point<T, 3>& q, const Triangle<T, 3>& tri)
+double winding_number(const Point<T, 3>& q,
+                      const Triangle<T, 3>& tri,
+                      const double edge_tol = 1e-8,
+                      const double EPS = 1e-8)
 {
   if(tri.area() == 0) return 0;
 
@@ -210,15 +217,99 @@ double winding_number(const Point<T, 3>& q, const Triangle<T, 3>& tri)
 
   // Compute norms. Possibly return early
   double a_norm = a.norm(), b_norm = b.norm(), c_norm = c.norm();
-  if(a_norm == 0 || b_norm == 0 || c_norm == 0) return 0;
+  if(a_norm < edge_tol || b_norm < edge_tol || c_norm < edge_tol) return 0;
 
-  double num = axom::utilities::abs(Vector<T, 3>::scalar_triple_product(a, b, c));
+  double num = Vector<T, 3>::scalar_triple_product(a, b, c);
+  if(axom::utilities::isNearlyEqual(num, 0.0, EPS)) return 0;
+
   double denom = a_norm * b_norm * c_norm +
     a_norm * Vector<T, 3>::dot_product(b, c) +
     b_norm * Vector<T, 3>::dot_product(a, c) +
     c_norm * Vector<T, 3>::dot_product(a, b);
 
-  return 2 * atan(num / denom);
+  return 0.5 * M_1_PI * atan(num / denom);
+}
+
+/*!
+ * \brief Computes the solid angle winding number for a 3D planar polygon
+ *
+ * \param [in] query The query point to test
+ * \param [in] poly The Polygon object
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * 
+ * Computes the winding number using the formula from [Paeth 1995]
+ * 
+ * \return float the generalized winding number.
+ */
+template <typename T>
+double winding_number(const Point<T, 3>& q,
+                      const Polygon<T, 3>& poly,
+                      const double edge_tol = 1e-8)
+{
+  const int nverts = poly.numVertices();
+  if(nverts < 3) return 0;
+
+  // Declare variables
+  Vector<T, 3> n1, n2, r1;
+  double s, ang, area = 0;
+
+  Vector<T, 3> normal = poly.normal().unitVector();
+
+  // Find furthest vertex from query, and that no vertex is coincident
+  int far_idx = 0;
+  double far_dist = squared_distance(q, poly[far_idx]);
+  if(far_dist < edge_tol) return 0.0;
+
+  for(int i = 1; i < nverts; ++i)
+  {
+    double new_dist = squared_distance(q, poly[i]);
+    if(new_dist < edge_tol) return 0.0;
+    if(new_dist > far_dist)
+    {
+      far_idx = i;
+      far_dist = new_dist;
+    }
+  }
+
+  // Check that the point isn't on the plane containing the polygon
+  if(axom::utilities::isNearlyEqual(
+       Vector<T, 3>::dot_product(normal, Vector<T, 3>(q, poly[far_idx])),
+       0.0,
+       edge_tol))
+    return 0;
+
+  // Compute the solid angle at each vertex
+  Vector<T, 3> v1(poly[0], poly[nverts - 1]), v2;
+  for(int i = 0; i < nverts; ++i)
+  {
+    // Compute vector denoting radius of the sphere
+    r1 = Vector<T, 3>(q, poly[i]);
+
+    v2 = Vector<T, 3>(poly[i], poly[(i + 1) % nverts]);
+
+    // Compute normal vectors to planes that contain great circles corresponding
+    //  to sides of the polygon
+    n1 = Vector<T, 3>::cross_product(v1, r1);
+    n2 = Vector<T, 3>::cross_product(r1, v2);
+
+    // Find the angle between the two planes
+    s = Vector<T, 3>::dot_product(n1, n2) / n1.norm() / n2.norm();
+    ang = M_1_PI * acos(axom::utilities::clampVal(s, -1.0, 1.0));
+
+    // Adjust for if angle is convex or concave after projection.
+    s = Vector<T, 3>::scalar_triple_product(v2, v1, normal);
+    area += s > 0.0 ? 1.0 - ang : 1.0 + ang;
+
+    v1 = -v2;
+  }
+
+  area = 0.25 * (area - (nverts - 2));
+
+  // Line differs from Paeth, flips sign.
+  // Should account for the orientation of the polygon
+  return (Vector<T, 3>::dot_product(normal, r1) > 0.0) ? area : -area;
 }
 
 }  // namespace primal
