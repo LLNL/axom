@@ -258,8 +258,8 @@ double winding_number(const Point<T, 3>& q,
   Vector<T, 3> normal = poly.normal().unitVector();
 
   // Find furthest vertex from query, and that no vertex is coincident
-  int far_idx = 0;
-  double far_dist = squared_distance(q, poly[far_idx]);
+  int idx = 0;
+  double far_dist = squared_distance(q, poly[idx]);
   if(far_dist < edge_tol) return 0.0;
 
   for(int i = 1; i < nverts; ++i)
@@ -268,14 +268,14 @@ double winding_number(const Point<T, 3>& q,
     if(new_dist < edge_tol) return 0.0;
     if(new_dist > far_dist)
     {
-      far_idx = i;
+      idx = i;
       far_dist = new_dist;
     }
   }
 
   // Check that the point isn't on the plane containing the polygon
   if(axom::utilities::isNearlyEqual(
-       Vector<T, 3>::dot_product(normal, Vector<T, 3>(q, poly[far_idx])),
+       Vector<T, 3>::dot_product(normal, Vector<T, 3>(q, poly[idx])),
        0.0,
        edge_tol))
     return 0;
