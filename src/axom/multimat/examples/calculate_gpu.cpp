@@ -117,7 +117,6 @@ void avgDensityCompactFlat(mmat::MultiMat& mm)
 {
   axom::fmt::print("Running average density compact - flat\n");
   int ncells = mm.getNumberOfCells();
-  // int nmats = mm.getNumberOfMaterials();
 
   auto* relationSet = mm.getSparse2dFieldSet(mmat::DataLayout::CELL_DOM);
   int nthreads = relationSet->totalSize();
@@ -134,7 +133,6 @@ void avgDensityCompactFlat(mmat::MultiMat& mm)
     nthreads,
     AXOM_LAMBDA(int flatid) {
       int cell_id = relationSet->flatToFirstIndex(flatid);
-      // int mat_id = relationSet->flatToSecondIndex(flatid);
 
       double density_avg_slot = density[flatid] * vf[flatid];
 
@@ -153,7 +151,6 @@ void avgDensityCompactSubmap(mmat::MultiMat& mm)
 {
   axom::fmt::print("Running average density compact - submap\n");
   int ncells = mm.getNumberOfCells();
-  // int nmats = mm.getNumberOfMaterials();
 
   const auto density = mm.getSparse2dField<double>("Densityfrac");
   const auto vf = mm.getSparse2dField<double>("Volfrac");
@@ -241,7 +238,6 @@ void avgDensityIter(mmat::MultiMat& mm)
 {
   axom::fmt::print("Running average density - iterators\n");
   int ncells = mm.getNumberOfCells();
-  // int nmats = mm.getNumberOfMaterials();
 
   const auto density = mm.getDense2dField<double>("Densityfrac");
   const auto vf = mm.getDense2dField<double>("Volfrac");
