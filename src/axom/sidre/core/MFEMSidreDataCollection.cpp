@@ -2385,24 +2385,20 @@ private:
    */
   std::vector<SharedGeometries> GetSharedGeometries(const Group* mesh_adjset_groups)
   {
-    auto num_groups = mesh_adjset_groups->getNumGroups();
-    std::vector<SharedGeometries> shared_geoms(num_groups);
+    std::vector<SharedGeometries> shared_geoms(mesh_adjset_groups->getNumGroups());
 
     // Iterate over both the *sidre* groups group
     // to fill in the shared geometry data
     int group_idx = 0;
-    for(auto idx = mesh_adjset_groups->getFirstValidGroupIndex();
-        sidre::indexIsValid(idx);
-        idx = mesh_adjset_groups->getNextValidGroupIndex(idx))
+    for(const Group& grp : mesh_adjset_groups->groups())
     {
-      const Group* adjset_grp = mesh_adjset_groups->getGroup(idx);
-      auto& shared_geom = shared_geoms[group_idx];
+      const Group* adjset_grp = &grp;
+      auto& shared_geom = shared_geoms[group_idx++];
 
       // Copy the neighbors array
       const View* group_neighbors = adjset_grp->getView("neighbors");
-      const int* neighbors_array = group_neighbors->getData();
-      std::size_t num_neighbors = group_neighbors->getNumElements();
-      shared_geom.neighbors.Append(neighbors_array, num_neighbors);
+      shared_geom.neighbors.Append(group_neighbors->getData(),
+                                   group_neighbors->getNumElements());
 
       // This group's shared vertices
       if(adjset_grp->hasView("values"))
@@ -2433,7 +2429,6 @@ private:
                                              quads->getNumElements(),
                                              4};
       }
-      group_idx++;
     }
 
     return shared_geoms;
@@ -2716,14 +2711,15 @@ void MFEMSidreDataCollection::reconstructField(Group* field_grp)
 void MFEMSidreDataCollection::reconstructFields()
 {
   sidre::Group* f = m_bp_grp->getGroup("fields");
-  for(auto idx = f->getFirstValidGroupIndex(); sidre::indexIsValid(idx);
-      idx = f->getNextValidGroupIndex(idx))
+  if(f != nullptr)
   {
-    Group* field_grp = f->getGroup(idx);
-    // The nodal grid function will already have been reconstructed
-    if(field_grp->getName() != m_meshNodesGFName)
+    for(auto& field_grp : f->groups())
     {
-      reconstructField(field_grp);
+      // The nodal grid function will already have been reconstructed
+      if(field_grp.getName() != m_meshNodesGFName)
+      {
+        reconstructField(&field_grp);
+      }
     }
   }
 }

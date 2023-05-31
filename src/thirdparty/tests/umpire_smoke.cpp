@@ -8,7 +8,9 @@
 #include "umpire/Allocator.hpp"
 #include "umpire/ResourceManager.hpp"
 
-#include "gtest/gtest.h"  // for gtest
+#include "gtest/gtest.h"
+
+#include <iostream>
 
 //------------------------------------------------------------------------------
 // UNIT TESTS
@@ -26,6 +28,11 @@ TEST(umpire_smoke, check_version)
     EXPECT_TRUE(UMPIRE_VERSION_MINOR >= 0);
   }
   EXPECT_TRUE(UMPIRE_VERSION_PATCH >= 0);
+
+  std::cout << "Umpire version: "           //
+            << UMPIRE_VERSION_MAJOR << "."  //
+            << UMPIRE_VERSION_MINOR << "."  //
+            << UMPIRE_VERSION_PATCH << std::endl;
 }
 
 //------------------------------------------------------------------------------
@@ -55,6 +62,27 @@ TEST(umpire_smoke, basic_use)
 
   allocator.deallocate(data);
   data = nullptr;
+}
+
+TEST(umpire_smoke, available_allocators)
+{
+  auto& rm = umpire::ResourceManager::getInstance();
+
+  std::cout << "Available Umpire allocators: \n";
+  for(const auto& name : rm.getAllocatorNames())
+  {
+    auto alloc = rm.getAllocator(name);
+    std::cout << "  {name: " << alloc.getName()             //
+              << ", id: " << alloc.getId()                  //
+              << ", strategy: " << alloc.getStrategyName()  //
+    // umpire@2022.10 introduced a function to convert a Platform to a string
+#if(UMPIRE_VERSION_MAJOR > 2022) || \
+  (UMPIRE_VERSION_MAJOR == 2022 && UMPIRE_VERSION_MINOR > 3)
+              << ", platform: "
+              << umpire::platform_to_string(alloc.getPlatform())  //
+#endif
+              << "}\n";
+  }
 }
 
 //------------------------------------------------------------------------------
