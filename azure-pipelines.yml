@@ -104,6 +104,11 @@ jobs:
     condition: eq( variables['Agent.OS'], 'Windows_NT')
     displayName: 'Visual Studio Build ($(TEST_TARGET))'
   - script: |
+      sudo apt-get update
+      sudo apt-get install lld
+    condition: eq( variables['Agent.OS'], 'Linux')
+    displayName: 'Install LLVM toolchain ($(TEST_TARGET))'
+  - script: |
       cd build
       ctest -C Debug -T test --output-on-failure -V
     condition: eq( variables['Agent.OS'], 'Windows_NT')
