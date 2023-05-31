@@ -321,9 +321,6 @@ public:
   /// Clears the list of control points, make nonrational
   void clear()
   {
-    const int ord_u = getOrder_u();
-    const int ord_v = getOrder_v();
-
     m_controlPoints.clear();
     makeNonrational();
   }
