@@ -54,6 +54,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   instance.
 - Multimat: adds an overload of `MultiMat::setCellMatRel()` that supports setting a
   multi-material relation in a compressed sparse-row (CSR) representation.
+- Quest: Adds ability to import volume fractions into `SamplingShaper` before processing `Klee` input
 
 ### Changed
 - Updates blt submodule to HEAD of develop on 24Jan2023
