@@ -488,8 +488,15 @@ public:
       const auto& name = entry.first;
       auto* gf = entry.second;
 
+      SLIC_INFO(
+        axom::fmt::format("Importing volume fraction field for '{}' material",
+                          name));
+
       if(gf == nullptr)
       {
+        SLIC_WARNING(axom::fmt::format(
+          "Skipping missing volume fraction field for material '{}'",
+          name));
         continue;
       }
 
