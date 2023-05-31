@@ -33,12 +33,12 @@ namespace axom
 namespace primal
 {
 // Forward declare the templated classes and operator functions
-template <typename T, int NDIMS>
+template <typename T>
 class BezierPatch;
 
 /*! \brief Overloaded output operator for Bezier Patches*/
-template <typename T, int NDIMS>
-std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch);
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch);
 
 /*!
  * \class BezierPatch
@@ -57,24 +57,21 @@ std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch);
  * Gerald Farin, "Algorithms for rational Bezier curves"
  * Computer-Aided Design, Volume 15, Number 2, 1983,
  */
-template <typename T, int NDIMS = 3>
+template <typename T>
 class BezierPatch
 {
 public:
-  using PointType = Point<T, NDIMS>;
-  using VectorType = Vector<T, NDIMS>;
-  using PlaneType = Plane<T, NDIMS>;
+  using PointType = Point<T, 3>;
+  using VectorType = Vector<T, 3>;
+  using PlaneType = Plane<T, 3>;
 
   using CoordsMat = axom::Array<PointType, 2>;
   using NumsMat = axom::Array<T, 2>;
 
-  using BoundingBoxType = BoundingBox<T, NDIMS>;
-  using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
-  using BezierCurveType = primal::BezierCurve<T, NDIMS>;
+  using BoundingBoxType = BoundingBox<T, 3>;
+  using OrientedBoundingBoxType = OrientedBoundingBox<T, 3>;
+  using BezierCurveType = primal::BezierCurve<T, 3>;
 
-  // TODO: Unsure if this behavior is captured by the templating statement above
-  AXOM_STATIC_ASSERT_MSG(NDIMS == 3,
-                         "A Bezier Patch object must be defined in 3-D");
   AXOM_STATIC_ASSERT_MSG(
     std::is_arithmetic<T>::value,
     "A Bezier Patch must be defined using an arithmetic type");
@@ -308,15 +305,15 @@ public:
   };
 
   /// Checks equality of two Bezier Patches
-  friend inline bool operator==(const BezierPatch<T, NDIMS>& lhs,
-                                const BezierPatch<T, NDIMS>& rhs)
+  friend inline bool operator==(const BezierPatch<T>& lhs,
+                                const BezierPatch<T>& rhs)
   {
     return (lhs.m_controlPoints == rhs.m_controlPoints) &&
       (lhs.m_weights == rhs.m_weights);
   }
 
-  friend inline bool operator!=(const BezierPatch<T, NDIMS>& lhs,
-                                const BezierPatch<T, NDIMS>& rhs)
+  friend inline bool operator!=(const BezierPatch<T>& lhs,
+                                const BezierPatch<T>& rhs)
   {
     return !(lhs == rhs);
   }
@@ -455,7 +452,7 @@ public:
       axom::Array<T> dWarray(ord_u + 1);
 
       for(int q = 0; q <= ord_v; ++q)
-        for(int i = 0; i < NDIMS; ++i)
+        for(int i = 0; i < 3; ++i)
         {
           for(int p = 0; p <= ord_u; ++p)
           {
@@ -480,7 +477,7 @@ public:
     else
     {
       for(int q = 0; q <= ord_v; ++q)
-        for(int i = 0; i < NDIMS; ++i)
+        for(int i = 0; i < 3; ++i)
         {
           for(int p = 0; p <= ord_u; ++p) dCarray[p] = m_controlPoints(p, q)[i];
 
@@ -514,7 +511,7 @@ public:
       axom::Array<T> dWarray(ord_v + 1);
 
       for(int p = 0; p <= ord_u; ++p)
-        for(int i = 0; i < NDIMS; ++i)
+        for(int i = 0; i < 3; ++i)
         {
           for(int q = 0; q <= ord_v; ++q)
           {
@@ -538,7 +535,7 @@ public:
     else
     {
       for(int p = 0; p <= ord_u; ++p)
-        for(int i = 0; i < NDIMS; ++i)
+        for(int i = 0; i < 3; ++i)
         {
           for(int q = 0; q <= ord_v; ++q) dCarray[q] = m_controlPoints(p, q)[i];
 
@@ -666,7 +663,7 @@ public:
             double temp_weight =
               lerp(p2.getWeight(k, q), p2.getWeight(k + 1, q), u);
 
-            for(int i = 0; i < NDIMS; ++i)
+            for(int i = 0; i < 3; ++i)
             {
               p2(k, q)[i] = lerp(p2.getWeight(k, q) * p2(k, q)[i],
                                  p2.getWeight(k + 1, q) * p2(k + 1, q)[i],
@@ -688,7 +685,7 @@ public:
       {
         p1(0, q) = m_controlPoints(0, q);
 
-        for(int i = 0; i < NDIMS; ++i)
+        for(int i = 0; i < 3; ++i)
           for(int p = 1; p <= ord_u; ++p)
           {
             const int end = ord_u - p;
@@ -733,7 +730,7 @@ public:
             double temp_weight =
               lerp(p2.getWeight(p, k), p2.getWeight(p, k + 1), v);
 
-            for(int i = 0; i < NDIMS; ++i)
+            for(int i = 0; i < 3; ++i)
             {
               p2(p, k)[i] = lerp(p2.getWeight(p, k) * p2(p, k)[i],
                                  p2.getWeight(p, k + 1) * p2(p, k + 1)[i],
@@ -755,7 +752,7 @@ public:
       {
         p1(p, 0) = m_controlPoints(p, 0);
 
-        for(int i = 0; i < NDIMS; ++i)
+        for(int i = 0; i < 3; ++i)
           for(int q = 1; q <= ord_v; ++q)
           {
             const int end = ord_v - q;
@@ -900,7 +897,7 @@ private:
 /// Free functions related to BezierPatch
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch)
+std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch)
 {
   bPatch.print(os);
   return os;

@@ -21,9 +21,8 @@ namespace primal = axom::primal;
 //------------------------------------------------------------------------------
 TEST(primal_bezierpatch, constructor)
 {
-  const int DIM = 3;
   using CoordType = double;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
   using CoordsMat = BezierPatchType::CoordsMat;
 
   {
@@ -61,7 +60,7 @@ TEST(primal_bezierpatch, set_order)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   SLIC_INFO("Test adding control points to an empty Bezier patch");
 
@@ -101,7 +100,7 @@ TEST(primal_bezierpatch, point_array_constructor)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   SLIC_INFO("Testing point array constructor");
 
@@ -132,7 +131,7 @@ TEST(primal_bezierpatch, make_rational)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 1;
   const int order_v = 1;
@@ -180,7 +179,7 @@ TEST(primal_bezierpatch, evaluate)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -245,7 +244,7 @@ TEST(primal_bezierpatch, evaluate_tall)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 2;
   const int order_v = 3;
@@ -291,7 +290,7 @@ TEST(primal_bezierpatch, evaluation_degenerate)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order = 3;
   PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
@@ -320,7 +319,7 @@ TEST(primal_bezierpatch, tangent)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -372,7 +371,7 @@ TEST(primal_bezierpatch, normal)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -410,7 +409,7 @@ TEST(primal_bezierpatch, split_degenerate)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 0;
   const int order_v = 0;
@@ -442,7 +441,7 @@ TEST(primal_bezierpatch, split_curve)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order = 3;
   PointType data[order + 1] = {PointType {0.6, 1.2, 1.0},
@@ -482,7 +481,7 @@ TEST(primal_bezierpatch, split_plane)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 1;
   const int order_v = 1;
@@ -515,7 +514,7 @@ TEST(primal_bezierpatch, split_patch)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int order_u = 3;
   const int order_v = 2;
@@ -555,7 +554,7 @@ TEST(primal_bezierpatch, isPlanar)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   // order (0, 0) -- always true
   {
@@ -635,7 +634,7 @@ TEST(primal_bezierpatch, reverse_orientation)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   SLIC_INFO("Testing reverseOrientation(axis) on Bezier patches");
 
@@ -708,7 +707,7 @@ TEST(primal_bezierpatch, rational_evaluation_split)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int ord_u = 3;
   const int ord_v = 3;
