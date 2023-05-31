@@ -106,6 +106,7 @@ jobs:
   - script: |
       sudo apt-get update
       sudo apt-get install lld
+      sudo dpkg -L lld-10
     condition: eq( variables['Agent.OS'], 'Linux')
     displayName: 'Install LLVM toolchain ($(TEST_TARGET))'
   - script: |
