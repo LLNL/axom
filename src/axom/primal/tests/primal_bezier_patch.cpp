@@ -95,7 +95,7 @@ TEST(primal_bezierpatch, set_order)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_bezierpatch, point_array_constructor)
+TEST(primal_bezierpatch, array_constructors)
 {
   const int DIM = 3;
   using CoordType = double;
@@ -112,16 +112,134 @@ TEST(primal_bezierpatch, point_array_constructor)
                                 PointType {1.0, 0.0, 0.0},
                                 PointType {1.0, 1.0, -1.0}};
 
-  BezierPatchType bPatch(controlPoints, order_u, order_v);
-  EXPECT_EQ(bPatch.getOrder_u(), order_u);
-  EXPECT_EQ(bPatch.getOrder_v(), order_v);
+  CoordType weights[4] = {1.0, 2.0, 1.0, 0.5};
 
-  for(int p = 0; p <= bPatch.getOrder_u(); ++p)
-    for(int q = 0; q <= bPatch.getOrder_v(); ++q)
+  BezierPatchType nonrational_patch(controlPoints, order_u, order_v);
+  EXPECT_EQ(nonrational_patch.getOrder_u(), order_u);
+  EXPECT_EQ(nonrational_patch.getOrder_v(), order_v);
+  EXPECT_FALSE(nonrational_patch.isRational());
+
+  for(int p = 0; p <= nonrational_patch.getOrder_u(); ++p)
+    for(int q = 0; q <= nonrational_patch.getOrder_v(); ++q)
     {
-      auto& pt = bPatch(p, q);
+      auto& pt = nonrational_patch(p, q);
       for(int i = 0; i < DIM; ++i)
         EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+    }
+
+  BezierPatchType nonrational_patch_again(controlPoints, nullptr, order_u, order_v);
+  EXPECT_EQ(nonrational_patch_again.getOrder_u(), order_u);
+  EXPECT_EQ(nonrational_patch_again.getOrder_v(), order_v);
+  EXPECT_FALSE(nonrational_patch_again.isRational());
+
+  for(int p = 0; p <= nonrational_patch_again.getOrder_u(); ++p)
+    for(int q = 0; q <= nonrational_patch_again.getOrder_v(); ++q)
+    {
+      auto& pt = nonrational_patch_again(p, q);
+      for(int i = 0; i < DIM; ++i)
+        EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+    }
+
+  BezierPatchType rational_patch(controlPoints, weights, order_u, order_v);
+  EXPECT_EQ(rational_patch.getOrder_u(), order_u);
+  EXPECT_EQ(rational_patch.getOrder_v(), order_v);
+  EXPECT_TRUE(rational_patch.isRational());
+
+  for(int p = 0; p <= rational_patch.getOrder_u(); ++p)
+    for(int q = 0; q <= rational_patch.getOrder_v(); ++q)
+    {
+      auto& pt = rational_patch(p, q);
+      for(int i = 0; i < DIM; ++i)
+        EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      EXPECT_DOUBLE_EQ(weights[p * (order_u + 1) + q],
+                       rational_patch.getWeight(p, q));
+    }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezierpatch, axom_array_constructors)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
+
+  SLIC_INFO("Testing point array constructor");
+
+  const int order_u = 1;
+  const int order_v = 1;
+
+  // Construct with 1D axom arrays
+  axom::Array<PointType> controlPoints({PointType {0.0, 0.0, 1.0},
+                                        PointType {0.0, 1.0, 0.0},
+                                        PointType {1.0, 0.0, 0.0},
+                                        PointType {1.0, 1.0, -1.0}});
+
+  axom::Array<CoordType> weights({1.0, 2.0, 1.0, 0.5});
+
+  BezierPatchType nonrational_patch(controlPoints, order_u, order_v);
+  EXPECT_EQ(nonrational_patch.getOrder_u(), order_u);
+  EXPECT_EQ(nonrational_patch.getOrder_v(), order_v);
+  EXPECT_FALSE(nonrational_patch.isRational());
+
+  for(int p = 0; p <= nonrational_patch.getOrder_u(); ++p)
+    for(int q = 0; q <= nonrational_patch.getOrder_v(); ++q)
+    {
+      auto& pt = nonrational_patch(p, q);
+      for(int i = 0; i < DIM; ++i)
+        EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+    }
+
+  BezierPatchType rational_patch(controlPoints, weights, order_u, order_v);
+  EXPECT_EQ(rational_patch.getOrder_u(), order_u);
+  EXPECT_EQ(rational_patch.getOrder_v(), order_v);
+  EXPECT_TRUE(rational_patch.isRational());
+
+  for(int p = 0; p <= rational_patch.getOrder_u(); ++p)
+    for(int q = 0; q <= rational_patch.getOrder_v(); ++q)
+    {
+      auto& pt = rational_patch(p, q);
+      for(int i = 0; i < DIM; ++i)
+        EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+      EXPECT_DOUBLE_EQ(weights[p * (order_u + 1) + q],
+                       rational_patch.getWeight(p, q));
+    }
+
+  // Construct with 2D axom arrays
+  axom::Array<PointType, 2> controlPoints_2D(2, 2);
+  controlPoints_2D(0, 0) = PointType {0.0, 0.0, 1.0};
+  controlPoints_2D(0, 1) = PointType {0.0, 1.0, 0.0};
+  controlPoints_2D(1, 0) = PointType {1.0, 0.0, 0.0};
+  controlPoints_2D(1, 1) = PointType {1.0, 1.0, -1.0};
+
+  axom::Array<CoordType, 2> weights_2D(2, 2);
+  weights_2D(0, 0) = 1.0;
+  weights_2D(0, 1) = 2.0;
+  weights_2D(1, 0) = 1.0;
+  weights_2D(1, 1) = 0.5;
+
+  BezierPatchType nonrational_patch_2D(controlPoints_2D, order_u, order_v);
+  EXPECT_EQ(nonrational_patch_2D.getOrder_u(), order_u);
+  EXPECT_EQ(nonrational_patch_2D.getOrder_v(), order_v);
+  EXPECT_FALSE(nonrational_patch_2D.isRational());
+
+  for(int p = 0; p <= nonrational_patch_2D.getOrder_u(); ++p)
+    for(int q = 0; q <= nonrational_patch_2D.getOrder_v(); ++q)
+      for(int i = 0; i < DIM; ++i)
+        EXPECT_DOUBLE_EQ(controlPoints_2D(p, q)[i],
+                         nonrational_patch_2D(p, q)[i]);
+
+  BezierPatchType rational_patch_2D(controlPoints_2D, weights_2D, order_u, order_v);
+  EXPECT_EQ(rational_patch_2D.getOrder_u(), order_u);
+  EXPECT_EQ(rational_patch_2D.getOrder_v(), order_v);
+  EXPECT_TRUE(rational_patch_2D.isRational());
+
+  for(int p = 0; p <= rational_patch_2D.getOrder_u(); ++p)
+    for(int q = 0; q <= rational_patch_2D.getOrder_v(); ++q)
+    {
+      for(int i = 0; i < DIM; ++i)
+        EXPECT_DOUBLE_EQ(controlPoints_2D(p, q)[i], rational_patch_2D(p, q)[i]);
+      EXPECT_DOUBLE_EQ(weights_2D(p, q), rational_patch_2D.getWeight(p, q));
     }
 }
 

@@ -65,7 +65,9 @@ public:
   using VectorType = Vector<T, 3>;
   using PlaneType = Plane<T, 3>;
 
+  using CoordsVec = axom::Array<PointType, 1>;
   using CoordsMat = axom::Array<PointType, 2>;
+  using NumsVec = axom::Array<T, 1>;
   using NumsMat = axom::Array<T, 2>;
 
   using BoundingBoxType = BoundingBox<T, 3>;
@@ -78,11 +80,14 @@ public:
 
 public:
   /*!
-   * \brief Constructor for a Bezier Patch that reserves space for
-   *  the given order of the surface
+   * \brief Constructor for a nonrational Bezier Patch that reserves 
+   *  space for the given order of the surface
    *
-   * \param [in] order the order of the resulting Bezier patch
-   * \pre order is greater than or equal to -1.
+   * Constructs an empty patch by default (no nodes/weights on either axis)
+   * 
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
+   * \pre ord_u, ord_v greater than or equal to -1.
    */
   BezierPatch(int ord_u = -1, int ord_v = -1)
   {
@@ -97,11 +102,11 @@ public:
   }
 
   /*!
-   * \brief Constructor for a Bezier Patch from a 2D array of coordinates
+   * \brief Constructor for a Bezier Patch from an array of coordinates
    *
-   * \param [in] pts an array with ord_u+1 arrays with ord_v+1 control points
-   * \param [in] ord_u The patches's polynomial order on the first axis
-   * \param [in] ord_v The patches's polynomial order on the second axis
+   * \param [in] pts A 1D C-style array of (ord_u+1)*(ord_v+1) control points
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order in both directions is greater than or equal to zero
    *
    * Elements of pts[k] are mapped to control nodes (p, q) lexicographically, i.e.
@@ -109,6 +114,7 @@ public:
    * pts[ord_u+1]         -> nodes[0, 1],     ..., pts[2*ord_u]         -> nodes[ord_u, 1]
    *                                          ...
    * pts[ord_v*(ord_u-1)] -> nodes[0, ord_v], ..., pts[ord_v,ord_u] -> nodes[ord_u, ord_v]
+   * 
    */
   BezierPatch(PointType* pts, int ord_u, int ord_v)
   {
@@ -126,14 +132,17 @@ public:
   }
 
   /*!
-   * \brief Constructor for a Rational Bezier Path from an array of coordinates and weights
+   * \brief Constructor for a Rational Bezier Patch from arrays of coordinates and weights
    *
-   * \param [in] pts a matrix with (ord_u+1) * (ord_v+1) control points
-   * \param [in] weights a matrix with (ord_u+1) * (ord_v+1) positive weights
-   * \param [in] ord_u The patches's polynomial order on the first axis
-   * \param [in] ord_v The patches's polynomial order on the second axis
+   * \param [in] pts A 1D C-style array of (ord_u+1)*(ord_v+1) control points
+   * \param [in] weights A 1D C-style array of (ord_u+1)*(ord_v+1) positive weights
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
-   *
+   * 
+   * Elements of pts and weights are mapped to control nodes (p, q) lexicographically
+   * 
+   * If \p weights is the null pointer, creates a nonrational curve
    */
   BezierPatch(PointType* pts, T* weights, int ord_u, int ord_v)
   {
@@ -148,23 +157,76 @@ public:
     for(int t = 0; t < sz_u * sz_v; ++t) m_controlPoints.flatIndex(t) = pts[t];
 
     if(weights == nullptr)
-    {
-      m_weights.resize(0, 0);
-    }
+      makeNonrational();
     else
     {
       m_weights.resize(sz_u, sz_v);
 
       for(int t = 0; t < sz_u * sz_v; ++t) m_weights.flatIndex(t) = weights[t];
-
-      SLIC_ASSERT(isValidRational());
     }
+
+    SLIC_ASSERT(isValidRational());
   }
 
   /*!
-   * \brief Constructor for a Bezier Patch from an matrix of coordinates
+   * \brief Constructor for a Bezier Patch from a 1D Axom array of coordinates
    *
-   * \param [in] pts a vector with (ord_u+1) * (ord_v+1) control points
+   * \param [in] pts A 1D Axom array of (ord_u+1)*(ord_v+1) control points
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
+   * \pre order in both directions is greater than or equal to zero
+   * 
+   * Elements of pts are mapped to control nodes (p, q) lexicographically
+   */
+  BezierPatch(const CoordsVec& pts, int ord_u, int ord_v)
+  {
+    SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
+
+    const int sz_u = utilities::max(0, ord_u + 1);
+    const int sz_v = utilities::max(0, ord_v + 1);
+
+    m_controlPoints.resize(sz_u, sz_v);
+
+    for(int t = 0; t < sz_u * sz_v; ++t)
+      m_controlPoints.flatIndex(t) = pts.flatIndex(t);
+
+    makeNonrational();
+  }
+
+  /*!
+   * \brief Constructor for a Rational Bezier Patch from 1D Axom arrays of coordinates and weights
+   *
+   * \param [in] pts A 1D Axom array of (ord_u+1)*(ord_v+1) control points
+   * \param [in] weights A 1D Axom array of (ord_u+1)*(ord_v+1) positive weights
+   * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
+   * \pre order is greater than or equal to zero in each direction
+   * 
+   * Elements of pts and weights are mapped to control nodes (p, q) lexicographically.
+   */
+  BezierPatch(const CoordsVec& pts, const NumsVec& weights, int ord_u, int ord_v)
+  {
+    SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
+    SLIC_ASSERT(weights.size() == pts.size());
+
+    const int sz_u = utilities::max(0, ord_u + 1);
+    const int sz_v = utilities::max(0, ord_v + 1);
+
+    m_controlPoints.resize(sz_u, sz_v);
+    for(int t = 0; t < sz_u * sz_v; ++t)
+      m_controlPoints.flatIndex(t) = pts.flatIndex(t);
+
+    m_weights.resize(sz_u, sz_v);
+    for(int t = 0; t < sz_u * sz_v; ++t)
+      m_weights.flatIndex(t) = weights.flatIndex(t);
+
+    SLIC_ASSERT(isValidRational());
+  }
+
+  /*!
+   * \brief Constructor for a Bezier Patch from an Axom array of coordinates
+   *
+   * \param [in] pts A 2D Axom array with (ord_u+1, ord_v+1) control points
    * \param [in] ord_u The patch's polynomial order on the first axis
    * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
@@ -184,10 +246,11 @@ public:
   }
 
   /*!
-   * \brief Constructor for a Rational Bezier Patch from a matrix
-   * of coordinates and weights
+   * \brief Constructor for a rational Bezier Patch from a 2D Axom array 
+   *   of weights and coordinates
    *
-   * \param [in] pts a vector with (ord_u+1) * (ord_v+1) control points
+   * \param [in] pts A 2D Axom array with (ord_u+1, ord_v+1) control points
+   * \param [in] weights A 2D Axom array with (ord_u+1, ord_v+1) weights
    * \param [in] ord_u The patch's polynomial order on the first axis
    * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
@@ -213,8 +276,8 @@ public:
   /*!
    * \brief Sets the order of Bezier patch
    *
-   * \param [in] pts a vector with (ord_u+1) * (ord_v+1) control points
    * \param [in] ord_u The patch's polynomial order on the first axis
+   * \param [in] ord_v The patch's polynomial order on the second axis
    *
    * \note Will only resize the arrays, and likely make the patch invalid
    */
