@@ -1147,9 +1147,9 @@ struct ContourTestBase
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& surfaceMesh)
   {
 #ifdef AXOM_USE_MPI
-    axom::Array<int> starts(numRanks, numRanks);
+    axom::Array<axom::IndexType> starts(numRanks, numRanks);
     {
-      axom::Array<int> indivDomainCounts(numRanks, numRanks);
+      axom::Array<axom::IndexType> indivDomainCounts(numRanks, numRanks);
       indivDomainCounts.fill(-1);
       MPI_Allgather(&localDomainCount,
                     1,
@@ -1167,7 +1167,8 @@ struct ContourTestBase
 
     const std::string domainIdField = m_domainIdField;
     auto* domainIdPtr =
-      surfaceMesh.getFieldPtr<int>(domainIdField, axom::mint::CELL_CENTERED);
+      surfaceMesh.getFieldPtr<axom::IndexType>(domainIdField,
+                                               axom::mint::CELL_CENTERED);
     int cellCount = surfaceMesh.getNumberOfCells();
 
     for(int i = 0; i < cellCount; ++i)
