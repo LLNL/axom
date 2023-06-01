@@ -74,7 +74,7 @@ public:
 
   enum
   {
-    NUM_OCT_VERTS = 6
+    NUM_VERTS = 6
   };
 
 public:
@@ -121,7 +121,7 @@ public:
   AXOM_HOST_DEVICE
   explicit Octahedron(const PointType* pts)
   {
-    for(int i = 0; i < NUM_OCT_VERTS; i++)
+    for(int i = 0; i < NUM_VERTS; i++)
     {
       m_points[i] = pts[i];
     }
@@ -135,9 +135,9 @@ public:
   AXOM_HOST_DEVICE
   explicit Octahedron(const axom::ArrayView<PointType> pts)
   {
-    SLIC_ASSERT(pts.size() == NUM_OCT_VERTS);
+    SLIC_ASSERT(pts.size() == NUM_VERTS);
 
-    for(int i = 0; i < NUM_OCT_VERTS; i++)
+    for(int i = 0; i < NUM_VERTS; i++)
     {
       m_points[i] = pts[i];
     }
@@ -151,7 +151,7 @@ public:
   AXOM_HOST_DEVICE
   explicit Octahedron(std::initializer_list<PointType> pts)
   {
-    SLIC_ASSERT(pts.size() == NUM_OCT_VERTS);
+    SLIC_ASSERT(pts.size() == NUM_VERTS);
 
     int i = 0;
     for(const auto& pt : pts)
@@ -168,7 +168,7 @@ public:
    */
   AXOM_HOST_DEVICE PointType& operator[](int idx)
   {
-    SLIC_ASSERT(idx >= 0 && idx < NUM_OCT_VERTS);
+    SLIC_ASSERT(idx >= 0 && idx < NUM_VERTS);
     return m_points[idx];
   }
 
@@ -179,7 +179,7 @@ public:
    */
   AXOM_HOST_DEVICE const PointType& operator[](int idx) const
   {
-    SLIC_ASSERT(idx >= 0 && idx < NUM_OCT_VERTS);
+    SLIC_ASSERT(idx >= 0 && idx < NUM_VERTS);
     return m_points[idx];
   }
 
@@ -192,14 +192,14 @@ public:
   bool equals(const Octahedron& other, double eps = 1.e-24) const
   {
     // Two octs are equal if each vertex is closer than eps to a vertex of the other.
-    int matched[NUM_OCT_VERTS];
-    for(int i = 0; i < NUM_OCT_VERTS; ++i)
+    int matched[NUM_VERTS];
+    for(int i = 0; i < NUM_VERTS; ++i)
     {
       matched[i] = 0;
     }
-    for(int ourvert = 0; ourvert < NUM_OCT_VERTS; ++ourvert)
+    for(int ourvert = 0; ourvert < NUM_VERTS; ++ourvert)
     {
-      for(int theirvert = 0; theirvert < NUM_OCT_VERTS; ++theirvert)
+      for(int theirvert = 0; theirvert < NUM_VERTS; ++theirvert)
       {
         if(!matched[theirvert] &&
            squared_distance(m_points[ourvert], other[theirvert]) < eps)
@@ -209,12 +209,12 @@ public:
       }
     }
     int matchedcount = 0;
-    for(int i = 0; i < NUM_OCT_VERTS; ++i)
+    for(int i = 0; i < NUM_VERTS; ++i)
     {
       matchedcount += matched[i];
     }
 
-    return (matchedcount == NUM_OCT_VERTS);
+    return (matchedcount == NUM_VERTS);
   }
 
   /*!
@@ -226,7 +226,7 @@ public:
   {
     for(int i = 0; i < 6; i++)
     {
-      for(int j = i + 1; j < NUM_OCT_VERTS; j++)
+      for(int j = i + 1; j < NUM_VERTS; j++)
       {
         // operator= for Point does not want to play nice...
         if(m_points[i][0] == m_points[j][0] &&
@@ -253,7 +253,7 @@ public:
   }
 
 private:
-  PointType m_points[NUM_OCT_VERTS];
+  PointType m_points[NUM_VERTS];
 };
 
 //------------------------------------------------------------------------------

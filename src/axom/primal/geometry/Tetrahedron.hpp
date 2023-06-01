@@ -38,7 +38,7 @@ public:
   using VectorType = Vector<T, NDIMS>;
   using SphereType = Sphere<T, NDIMS>;
 
-  static constexpr int NUM_TET_VERTS = 4;
+  static constexpr int NUM_VERTS = 4;
 
 public:
   /// \brief Default constructor. Creates a degenerate tetrahedron.
@@ -76,7 +76,7 @@ public:
   AXOM_HOST_DEVICE
   explicit Tetrahedron(const PointType* pts)
   {
-    for(int i = 0; i < NUM_TET_VERTS; i++)
+    for(int i = 0; i < NUM_VERTS; i++)
     {
       m_points[i] = pts[i];
     }
@@ -90,9 +90,9 @@ public:
   AXOM_HOST_DEVICE
   explicit Tetrahedron(const axom::ArrayView<PointType> pts)
   {
-    SLIC_ASSERT(pts.size() == NUM_TET_VERTS);
+    SLIC_ASSERT(pts.size() == NUM_VERTS);
 
-    for(int i = 0; i < NUM_TET_VERTS; i++)
+    for(int i = 0; i < NUM_VERTS; i++)
     {
       m_points[i] = pts[i];
     }
@@ -106,7 +106,7 @@ public:
   AXOM_HOST_DEVICE
   explicit Tetrahedron(std::initializer_list<PointType> pts)
   {
-    SLIC_ASSERT(pts.size() == NUM_TET_VERTS);
+    SLIC_ASSERT(pts.size() == NUM_VERTS);
 
     int i = 0;
     for(const auto& pt : pts)
@@ -123,7 +123,7 @@ public:
    */
   AXOM_HOST_DEVICE PointType& operator[](int idx)
   {
-    SLIC_ASSERT(idx >= 0 && idx < NUM_TET_VERTS);
+    SLIC_ASSERT(idx >= 0 && idx < NUM_VERTS);
     return m_points[idx];
   }
 
@@ -134,7 +134,7 @@ public:
    */
   AXOM_HOST_DEVICE const PointType& operator[](int idx) const
   {
-    SLIC_ASSERT(idx >= 0 && idx < NUM_TET_VERTS);
+    SLIC_ASSERT(idx >= 0 && idx < NUM_VERTS);
     return m_points[idx];
   }
 
@@ -220,7 +220,7 @@ public:
       "Barycentric coordinates must sum to (near) one.");
 
     PointType res;
-    for(int i = 0; i < NUM_TET_VERTS; ++i)
+    for(int i = 0; i < NUM_VERTS; ++i)
     {
       res.array() += bary[i] * m_points[i].array();
     }

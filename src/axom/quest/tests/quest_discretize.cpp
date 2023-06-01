@@ -405,7 +405,7 @@ enum ReflectDimension
 OctType reflect(ReflectDimension d, OctType o)
 {
   OctType out(o);
-  for(int i = 0; i < OctType::NUM_OCT_VERTS; ++i)
+  for(int i = 0; i < OctType::NUM_VERTS; ++i)
   {
     Point3D& pt = out[i];
     pt[d] *= -1;
