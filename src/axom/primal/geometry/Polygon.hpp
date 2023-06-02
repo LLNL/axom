@@ -91,10 +91,9 @@ public:
     SLIC_ASSERT(isValid());
     const int nverts = numVertices();
 
-    VectorType normal {0.0, 0.0, 0.0};
+    VectorType normal, v0(m_vertices[0], m_vertices[1]), v1;
 
-    // Iterate over pairs of vertices
-    VectorType v0(m_vertices[0], m_vertices[1]), v1;
+    // Iterate over each pair of vertices
     for(int i = 2; i < nverts; ++i)
     {
       v1 = VectorType(m_vertices[0], m_vertices[i]);
