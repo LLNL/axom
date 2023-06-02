@@ -5,9 +5,13 @@
 
 #include "axom/core/Types.hpp"
 
+// Note: For MSVC, we had to initialize the mpi_traits::type as a static constextr,
+// but were not able to do so for nvcc/ompi.
+// See comments in the header file for more information.
+
 namespace axom
 {
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && !defined(_MSC_VER)
 
 // Default initialization of mpi_traits
 template <class AxomType>
@@ -26,8 +30,8 @@ const MPI_Datatype mpi_traits<std::uint32_t>::type = MPI_UINT32_T;
   #ifndef AXOM_NO_INT64_T
 const MPI_Datatype mpi_traits<std::int64_t>::type = MPI_INT64_T;
 const MPI_Datatype mpi_traits<std::uint64_t>::type = MPI_UINT64_T;
-  #endif /* end AXOM_NO_INT64_T */
+  #endif  // AXOM_NO_INT64_T
 
-#endif /* end AXOM_USE_MPI */
+#endif  // defined(AXOM_USE_MPI) && !defined(_MSC_VER)
 
 }  // end namespace axom

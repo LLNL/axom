@@ -159,6 +159,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
 {
   using axom::utilities::string::endsWith;
 
+  internal::ScopedLogLevelChanger logLevelChanger(
+    this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
     axom::fmt::format(" Loading shape '{}' ", shape.getName())));

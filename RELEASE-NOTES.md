@@ -19,9 +19,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-### Deprecated
-- Integer types in `src/axom/core/Types.hpp` are deprecated because c++-11 supports their equivalents.
-
 ### Added
 - Adds the following methods to `axom::Array` to conform more closely with the `std::vector` interface:
   - `Array::front()`: returns a reference to the first element
@@ -47,8 +44,28 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   must be further refined. This new dynamic method of shaping complements the existing
   segment-based curve refinement method and it is activated using `Shaper::setRefinementType()`
   and by calling `Shaper::setPercentError()` to set a refinement error percentage.
+- Multimat: adds initial support for fields stored on the GPU. `MultiMat::setAllocatorID()`
+  or `MultiMat::setFieldAllocatorID()` can be called to change the memory space in which a
+  field is allocated.
+- Multimat: adds an `MultiMat::addExternalField()` function to support fields where the
+  memory is managed externally. Fields which are externally-managed cannot be transposed
+  between sparse and dense layouts, or moved between allocator spaces.
+- Multimat: adds a `MultiMat::removeField()` function to remove fields from the Multimat
+  instance.
+- Multimat: adds an overload of `MultiMat::setCellMatRel()` that supports setting a
+  multi-material relation in a compressed sparse-row (CSR) representation.
+- Quest: Adds ability to import volume fractions into `SamplingShaper` before processing `Klee` input
 
 ### Changed
+- Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.
+  A missing factor was added.  If you worked around this by adding the factor yourself,
+  you may want to undo that work-around.
+- Updates blt submodule to HEAD of develop on 24Jan2023
+- Updates uberenv submodule to HEAD of main on 12May2023
+- Updates to [conduit version 0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
+- Updates to [mfem version 4.5](https://github.com/mfem/mfem/releases/tag/v4.5)
+- Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
+- Updates to `c2c` version 1.8.0
 - The Axom library has been broken down into its component libraries (prefixed with `axom_`).
   This change requires no change to downstream CMake users who import our targets.
   The exported CMake target `axom` includes all components, but users who do not import our targets
@@ -66,13 +83,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - `DistributedClosestPoint` interfacing variable names `closest_point` and `min_distance` have been
   changed to `cp_coords` and `cp_distance`, respectively, to match the naming convention of other
   interfacing variables.
-- Updates mfem dependency to v4.5
-- Updates to [fmt version 9.1.0](https://github.com/fmtlib/fmt/releases/tag/9.1.0)
-- Updates uberenv submodule to HEAD of main on 28Dec2022
-- Updates blt submodule to HEAD of develop on 28Dec2022
 - Adds `vcpkg` ports for `RAJA`, `Umpire` with optional `OpenMP` feature for automated Windows build
 - Reduce size of `ArrayView::subspan` to prevent accessing invalid memory.
-- Updates [conduit dependency to v0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
 - Adds `vcpkg` port for `lua` as optional dependency on Windows
 - Adds additional parameters to quest's `PointInCell` query to control the Newton solve
   from physical to reference space for a given element
@@ -81,6 +93,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Rebinding an indirection to a new buffer is now achieved through `IndirectionPolicy::ptr()`, which
   returns a mutable pointer to the buffer.
 - Quest: `Shaper::applyTransforms()` is no longer a public method.
+- Multimat: fields are now returned as shallow, device-copyable views of a field instead
+  of full copies of field data.
+- Multimat: `MultiMat::addField()` and `MultiMat::setVolfracField()` API now use `axom::ArrayView`
+  to accept data.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
@@ -89,6 +105,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and triangles before using the geometry.
 - Improves import logic for `lua` dependency
 - Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
+
+### Deprecated
+- Integer types in `src/axom/core/Types.hpp` are deprecated because `c++11` supports their equivalents.
+
 
 ## [Version 0.7.0] - Release date 2022-08-30
 

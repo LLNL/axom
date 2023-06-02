@@ -127,10 +127,7 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
   inoutQFuncs.Register("positions", pos_coef, true);
 }
 
-/**
- * Compute volume fractions function for shape on a grid of resolution \a gridRes
- * in region defined by bounding box \a queryBounds
- */
+/// Generate a volume fraction from a quadrature field for \a matField using FCT
 void computeVolumeFractions(const std::string& matField,
                             mfem::DataCollection* dc,
                             QFunctionCollection& inoutQFuncs,
@@ -163,24 +160,35 @@ void computeVolumeFractions(const std::string& matField,
                               dim,
                               NE));
 
-  // Project QField onto volume fractions field
+  // Access or create a registered volume fraction grid function from the data collection
+  mfem::FiniteElementSpace* fes = nullptr;
+  mfem::GridFunction* volFrac = nullptr;
+  if(dc->HasField(volFracName))
+  {
+    volFrac = dc->GetField(volFracName);
+    fes = volFrac->FESpace();
+  }
+  else
+  {
+    const auto basis = mfem::BasisType::Positive;
+    auto* fec = new mfem::L2_FECollection(outputOrder, dim, basis);
+    fes = new mfem::FiniteElementSpace(mesh, fec);
+    volFrac = new mfem::GridFunction(fes);
+    volFrac->MakeOwner(fec);
 
-  mfem::L2_FECollection* fec =
-    new mfem::L2_FECollection(outputOrder, dim, mfem::BasisType::Positive);
-  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
-  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
-  volFrac->MakeOwner(fec);
-  dc->RegisterField(volFracName, volFrac);
+    dc->RegisterField(volFracName, volFrac);
+  }
 
+  // Project QField onto volume fractions field using flux corrected transport (FCT)
+  // to keep the range of values between 0 and 1
   axom::utilities::Timer timer(true);
   {
-    mfem::MassIntegrator mass_integrator;  // use the default for exact integration; lower for approximate
-
+    mfem::MassIntegrator mass_integrator;
     mfem::QuadratureFunctionCoefficient qfc(*inout);
     mfem::DomainLFIntegrator rhs(qfc);
 
-    // assume all elts are the same
-    const auto& ir = inout->GetSpace()->GetIntRule(0);
+    const auto& ir =
+      inout->GetSpace()->GetIntRule(0);  // assume all elements are the same
     rhs.SetIntRule(&ir);
 
     mfem::DenseMatrix m;
@@ -200,9 +208,6 @@ void computeVolumeFractions(const std::string& matField,
       rhs.AssembleRHSElementVect(*el, *T, b);
       mInv.Factor(m);
 
-      // Use FCT limiting -- similar to Remap
-      // Limit the function to be between 0 and 1
-      // Q: Is there a better way limiting algorithm for this?
       if(one.Size() != b.Size())
       {
         one.SetSize(b.Size());

@@ -49,25 +49,21 @@ install(EXPORT               axom-targets
 # Generate export symbols
 #------------------------------------------------------------------------------
 include(GenerateExportHeader)
-set(_export_header ${PROJECT_BINARY_DIR}/axom_export_symbols)
-generate_export_header(core
-                       BASE_NAME axom
-                       EXPORT_FILE_NAME ${_export_header})
 
-if(WIN32)
-    foreach(_component ${AXOM_COMPONENTS_ENABLED})
-        # Skip header only libraries
-        get_property(_targetType TARGET ${_component} PROPERTY TYPE)
-        if(${_targetType} STREQUAL "INTERFACE_LIBRARY")
-            continue()
-        endif()
+foreach(_component ${AXOM_COMPONENTS_ENABLED})
+    # Skip header only libraries
+    get_property(_targetType TARGET ${_component} PROPERTY TYPE)
+    if(${_targetType} STREQUAL "INTERFACE_LIBRARY")
+        continue()
+    endif()
 
-        blt_add_target_definitions(
-            TO                 ${_component}
-            SCOPE              PRIVATE
-            TARGET_DEFINITIONS "axom_EXPORTS")
-    endforeach()
-endif()
+    set(_export_header ${PROJECT_BINARY_DIR}/include/axom/export/${_component}.h)
+    generate_export_header( ${_component} 
+                            PREFIX_NAME AXOM_
+                            EXPORT_FILE_NAME ${_export_header})
+    install(FILES ${_export_header} 
+            DESTINATION include/axom/export )
+endforeach()
 
 #------------------------------------------------------------------------------
 # Output some information about the configuration

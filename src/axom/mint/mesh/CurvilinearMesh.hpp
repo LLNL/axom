@@ -7,8 +7,9 @@
 #define MINT_CURVILINEARMESH_HPP_
 
 #include "axom/config.hpp"
-#include "axom/mint/mesh/StructuredMesh.hpp"  // base class
-#include "axom/mint/config.hpp"               // for compile-time definitions
+#include "axom/mint/mesh/StructuredMesh.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/export/mint.h"
 
 namespace axom
 {
@@ -197,10 +198,10 @@ public:
                   IndexType Nj = -1,
                   IndexType Nk = -1);
 
-  AXOM_EXPORT CurvilinearMesh(sidre::Group* group,
-                              IndexType Ni,
-                              IndexType Nj = -1,
-                              IndexType Nk = -1)
+  AXOM_MINT_EXPORT CurvilinearMesh(sidre::Group* group,
+                                   IndexType Ni,
+                                   IndexType Nj = -1,
+                                   IndexType Nk = -1)
     : CurvilinearMesh(group, "", "", Ni, Nj, Nk)
   { }
 

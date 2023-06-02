@@ -16,10 +16,11 @@
 #include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/core/MessageLevel.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
+#include "axom/export/slic.h"
 
 // C/C++ includes
-#include <iostream>  // for std::endl, std::ends
-#include <sstream>   // for std::ostringstream
+#include <iostream>
+#include <sstream>
 
 namespace axom
 {
@@ -27,7 +28,7 @@ namespace slic
 {
 struct debug
 {
-  AXOM_EXPORT static bool checksAreErrors;
+  AXOM_SLIC_EXPORT static bool checksAreErrors;
 };
 
 /*!

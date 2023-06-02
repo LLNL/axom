@@ -38,8 +38,11 @@ using Field2DT = MultiMat::Field2D<double, B>;
 template <DataLayout D, typename B>
 using Field2DTempT = MultiMat::Field2DTemplated<double, D, B>;
 
+using ArrayViewIndirection =
+  slam::policies::ArrayViewIndirection<slam::DefaultPositionType, double>;
+
 template <typename B>
-using BiVarMapT = slam::BivariateMap<double, B>;
+using BiVarMapT = slam::BivariateMap<double, B, ArrayViewIndirection>;
 
 enum class MMFieldMethod
 {
@@ -125,28 +128,30 @@ struct FieldGetter<MMFieldMethod::GenericField, BSet, Layout>
 template <typename BSet, DataLayout Layout>
 struct FieldGetter<MMFieldMethod::BSetTemplatedField, BSet, Layout>
 {
-  static MultiMat::Field2D<double, BSet> get(MultiMat& mm,
-                                             const std::string& fieldName)
+  using ConcreteBSet = typename BSet::ConcreteSet;
+  static MultiMat::Field2D<double, ConcreteBSet> get(MultiMat& mm,
+                                                     const std::string& fieldName)
   {
-    return mm.get2dField<double, BSet>(fieldName);
+    return mm.get2dField<double, ConcreteBSet>(fieldName);
   }
 };
 
 template <typename BSet, DataLayout Layout>
 struct FieldGetter<MMFieldMethod::FullyTemplatedField, BSet, Layout>
 {
-  static MultiMat::Field2DTemplated<double, Layout, BSet> get(
+  using ConcreteBSet = typename BSet::ConcreteSet;
+  static MultiMat::Field2DTemplated<double, Layout, ConcreteBSet> get(
     MultiMat& mm,
     const std::string& fieldName)
   {
-    return mm.getTemplated2DField<double, Layout, BSet>(fieldName);
+    return mm.getTemplated2DField<double, Layout, ConcreteBSet>(fieldName);
   }
 };
 
 template <typename BSet, DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
 {
-  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
 
   static SlamBMap get(MultiMat& mm, const std::string& fieldName)
   {
@@ -154,10 +159,12 @@ struct FieldGetter<MMFieldMethod::SlamField, BSet, Layout>
   }
 };
 
-using RangeSet = slam::RangeSet<>;
-using ConcreteProdSet = slam::ProductSet<RangeSet, RangeSet>;
+using RangeSet = typename slam::RangeSet<>::ConcreteSet;
+using ConcreteProdSet =
+  typename slam::ProductSet<RangeSet, RangeSet>::ConcreteSet;
 using MMRelationType = typename MultiMat::RelationSetType::RelationType;
-using ConcreteRelationSet = slam::RelationSet<MMRelationType, RangeSet, RangeSet>;
+using ConcreteRelationSet =
+  typename slam::RelationSet<MMRelationType, RangeSet, RangeSet>::ConcreteSet;
 
 std::unordered_map<const MultiMat::ProductSetType*, ConcreteProdSet>* g_concretizedProdSets;
 std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>*
@@ -166,21 +173,22 @@ std::unordered_map<const MultiMat::RelationSetType*, ConcreteRelationSet>*
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetType, Layout>
 {
+  using VirtualBSet = typename MultiMat::ProductSetType;
   using BSet = ConcreteProdSet;
-  using SlamBMap = slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
 
   static SlamBMap get(MultiMat& mm, const std::string& fieldName)
   {
-    auto field =
-      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedProdSets->find(field.set()) == g_concretizedProdSets->end())
+    auto field = mm.get2dField<double>(fieldName);
+    auto fieldSet = dynamic_cast<const VirtualBSet*>(field.set());
+    if(g_concretizedProdSets->find(fieldSet) == g_concretizedProdSets->end())
     {
       BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
                    static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      (*g_concretizedProdSets)[field.set()] = prodSet;
+      (*g_concretizedProdSets)[fieldSet] = prodSet;
     }
-    SlamBMap fieldStrided(&((*g_concretizedProdSets)[field.set()]));
-    fieldStrided.copy(field.getMap()->data().data());
+    SlamBMap fieldStrided(&((*g_concretizedProdSets)[fieldSet]),
+                          field.getMap()->data());
     return fieldStrided;
   }
 };
@@ -188,8 +196,9 @@ struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::ProductSetTy
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::ProductSetType, Layout>
 {
+  using VirtualBSet = typename MultiMat::ProductSetType;
   using BSet = ConcreteProdSet;
-  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
   using Stride = slam::policies::StrideOne<int>;
   using Ind = typename SlamBMap::IndirectionPolicy;
 
@@ -197,16 +206,16 @@ struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::Produc
 
   static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
   {
-    auto field =
-      mm.get2dFieldAsSlamBivarMap<double, MultiMat::ProductSetType>(fieldName);
-    if(g_concretizedProdSets->find(field.set()) == g_concretizedProdSets->end())
+    auto field = mm.get2dField<double>(fieldName);
+    auto fieldSet = dynamic_cast<const VirtualBSet*>(field.set());
+    if(g_concretizedProdSets->find(fieldSet) == g_concretizedProdSets->end())
     {
-      BSet prodSet(static_cast<const RangeSet*>(field.set()->getFirstSet()),
-                   static_cast<const RangeSet*>(field.set()->getSecondSet()));
-      (*g_concretizedProdSets)[field.set()] = prodSet;
+      BSet prodSet(static_cast<const RangeSet*>(fieldSet->getFirstSet()),
+                   static_cast<const RangeSet*>(fieldSet->getSecondSet()));
+      (*g_concretizedProdSets)[fieldSet] = prodSet;
     }
-    SlamBMapStrided fieldStrided(&((*g_concretizedProdSets)[field.set()]));
-    fieldStrided.copy(field.getMap()->data().data());
+    SlamBMapStrided fieldStrided(&((*g_concretizedProdSets)[fieldSet]),
+                                 field.getMap()->data());
     return fieldStrided;
   }
 };
@@ -214,8 +223,9 @@ struct FieldGetter<MMFieldMethod::SlamTmplStrideField, typename MultiMat::Produc
 template <DataLayout Layout>
 struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::RelationSetType, Layout>
 {
+  using VirtualBSet = typename MultiMat::RelationSetType;
   using BSet = ConcreteRelationSet;
-  using SlamBMap = typename slam::BivariateMap<double, BSet>;
+  using SlamBMap = BiVarMapT<BSet>;
   using Stride = slam::policies::StrideOne<int>;
   using Ind = typename SlamBMap::IndirectionPolicy;
 
@@ -223,15 +233,15 @@ struct FieldGetter<MMFieldMethod::SlamTmplField, typename MultiMat::RelationSetT
 
   static SlamBMapStrided get(MultiMat& mm, const std::string& fieldName)
   {
-    auto field =
-      mm.get2dFieldAsSlamBivarMap<double, MultiMat::RelationSetType>(fieldName);
-    if(g_concretizedRelSets->find(field.set()) == g_concretizedRelSets->end())
+    auto field = mm.get2dField<double>(fieldName);
+    auto fieldSet = dynamic_cast<const VirtualBSet*>(field.set());
+    if(g_concretizedRelSets->find(fieldSet) == g_concretizedRelSets->end())
     {
-      BSet relSet(field.set()->getRelation());
-      (*g_concretizedRelSets)[field.set()] = relSet;
+      BSet relSet(fieldSet->getRelation());
+      (*g_concretizedRelSets)[fieldSet] = relSet;
     }
-    SlamBMapStrided fieldStrided(&((*g_concretizedRelSets)[field.set()]));
-    fieldStrided.copy(field.getMap()->data().data());
+    SlamBMapStrided fieldStrided(&((*g_concretizedRelSets)[fieldSet]),
+                                 field.getMap()->data());
     return fieldStrided;
   }
 };
@@ -248,9 +258,9 @@ void average_density_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Vol = data.Vol;
 
   SLIC_INFO("-- Averaging Density, Cell-Dominant Full Matrix Array Access --");
   std::vector<double> Density_average(ncells);
@@ -291,9 +301,9 @@ void average_density_cell_dom_full(Robey_data& data)
 void average_density_cell_dom_compact(Robey_data& data)
 {
   int ncells = data.ncells;
-  std::vector<double>& Volfrac = data.Volfrac_sparse;
-  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac_sparse;
+  const auto& Densityfrac = data.Densityfrac_sparse;
+  const auto& Vol = data.Vol;
   std::vector<int>& begin_idx = data.begin_idx;
 
   SLIC_INFO("-- Averaging Density cell-dominant compact array-access --");
@@ -355,7 +365,7 @@ void average_density_cell_dom_mm_direct(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells);
 
@@ -412,7 +422,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells);
 
@@ -461,9 +471,9 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm)
   SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
-  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
-  auto& Volfrac = mm.get2dField<double>("Volfrac");
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto Volfrac = mm.get2dField<double>("Volfrac");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells);
 
@@ -510,9 +520,9 @@ void average_density_cell_dom_mm_flatiter(MultiMat& mm)
                                 << mm.getFieldSparsityLayoutAsString(0));
 
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -564,9 +574,9 @@ void average_density_cell_dom_mm_iter(MultiMat& mm)
   SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -614,9 +624,9 @@ double average_density_mat_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Vol = data.Vol;
 
   SLIC_INFO(
     "-- Averaging Density material-dominant full matrix array-access --");
@@ -665,9 +675,9 @@ double average_density_mat_dom_compact(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac_sparse;
-  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac_sparse;
+  const auto& Densityfrac = data.Densityfrac_sparse;
+  const auto& Vol = data.Vol;
   std::vector<int>& begin_idx = data.begin_idx;
   std::vector<int>& cell_id = data.col_idx;
 
@@ -732,7 +742,7 @@ void average_density_mat_dom_mm_direct(MultiMat& mm)
 
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -796,7 +806,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
 
-  auto& Vol = mm.get1dField<double>("Vol");
+  auto Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -851,9 +861,9 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -906,9 +916,9 @@ void average_density_mat_dom_mm_iter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -961,9 +971,9 @@ void average_density_mat_dom_mm_flatiter(MultiMat& mm)
                                 << mm.getFieldSparsityLayoutAsString(0));
 
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double> Vol = mm.get1dField<double>("Vol");
 
   std::vector<double> Density_average(ncells, 0.0);
 
@@ -1010,9 +1020,9 @@ void average_density_cell_dom_with_if(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Vol = data.Vol;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Vol = data.Vol;
 
   SLIC_INFO("-- Averaging Density with if --");
 
@@ -1060,10 +1070,10 @@ void calculate_pressure_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Temperaturefrac = data.Temperaturefrac;
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Temperaturefrac = data.Temperaturefrac;
+  const auto& nmatconsts = data.nmatconsts;
 
   SLIC_INFO("-- Calculating pressure Cell-Dominant Full Matrix array access--");
   std::vector<double> Pressurefrac(ncells * nmats, 0);
@@ -1111,7 +1121,7 @@ void calculate_pressure_cell_dom_compact(Robey_data& data)
   std::vector<double>& Densityfrac = data.Densityfrac_sparse;
   std::vector<double>& Temperaturefrac = data.Temperaturefrac_sparse;
 
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& nmatconsts = data.nmatconsts;
   std::vector<int>& begin_idx = data.begin_idx;
   std::vector<int>& mat_id = data.col_idx;
 
@@ -1171,7 +1181,7 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
   auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1292,11 +1302,10 @@ void calculate_pressure_cell_dom_full_mm_iter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1355,11 +1364,10 @@ void calculate_pressure_cell_dom_full_mm_flatiter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1412,10 +1420,10 @@ void calculate_pressure_mat_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
-  std::vector<double>& Temperaturefrac = data.Temperaturefrac;
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
+  const auto& Temperaturefrac = data.Temperaturefrac;
+  const auto& nmatconsts = data.nmatconsts;
 
   SLIC_INFO(
     "-- Calculating pressure Material-Dominant Full Matrix array access--");
@@ -1467,7 +1475,7 @@ void calculate_pressure_mat_dom_compact(Robey_data& data)
   std::vector<double>& Volfrac = data.Volfrac_sparse;
   std::vector<double>& Densityfrac = data.Densityfrac_sparse;
   std::vector<double>& Temperaturefrac = data.Temperaturefrac_sparse;
-  std::vector<double>& nmatconsts = data.nmatconsts;
+  const auto& nmatconsts = data.nmatconsts;
   std::vector<int>& begin_idx = data.begin_idx;
   std::vector<int>& cell_id = data.col_idx;
 
@@ -1528,7 +1536,7 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
   auto Densityfrac = FieldGetterType::get(mm, "Densityfrac");
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
   auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1592,7 +1600,7 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   auto Volfrac = FieldGetterType::get(mm, "Volfrac");
   auto Temperaturefrac = FieldGetterType::get(mm, "Tempfrac");
 
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   // Store result in a dense field
   {
@@ -1657,11 +1665,10 @@ void calculate_pressure_mat_dom_full_mm_iter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1720,11 +1727,10 @@ void calculate_pressure_mat_dom_full_mm_flatiter(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> nmatconsts = mm.get1dField<double>("nmatconsts");
 
   std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
@@ -1777,8 +1783,8 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
@@ -2140,8 +2146,8 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
 
   std::vector<double> MatDensity_average(ncells * nmats, 0);
 
@@ -2322,7 +2328,7 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
   //MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
 
   std::vector<double> MatDensity_average(ncells * nmats, 0);
@@ -2420,7 +2426,7 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
 
   std::vector<double> MatDensity_average(ncells * nmats, 0);
 
@@ -2504,8 +2510,8 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  std::vector<double>& Volfrac = data.Volfrac;
-  std::vector<double>& Densityfrac = data.Densityfrac;
+  const auto& Volfrac = data.Volfrac;
+  const auto& Densityfrac = data.Densityfrac;
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
@@ -2851,8 +2857,8 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Volfrac = mm.get2dField<double>("Volfrac");
 
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
@@ -3037,7 +3043,7 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
   //MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
 
   const std::vector<double>& cen = data.cen;
@@ -3129,7 +3135,7 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm,
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> Densityfrac = mm.get2dField<double>("Densityfrac");
 
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
@@ -3247,37 +3253,37 @@ int main(int argc, char** argv)
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Densityfrac[0]);
+                data.Densityfrac.view());
   mm.addField<>("Vol",
                 FieldMapping::PER_CELL,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Vol[0]);
+                data.Vol.view());
   mm.addField<>("Volfrac",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Volfrac[0]);
+                data.Volfrac.view());
   mm.addField<>("Tempfrac",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Temperaturefrac[0]);
+                data.Temperaturefrac.view());
   mm.addField<>("Pressurefrac",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Pressurefrac[0]);
+                data.Pressurefrac.view());
   mm.addField<>("nmatconsts",
                 FieldMapping::PER_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.nmatconsts[0]);
+                data.nmatconsts.view());
   mm.addField<>("MatDensityAverage",
                 FieldMapping::PER_CELL_MAT,
                 DataLayout::CELL_DOM,
                 SparsityLayout::DENSE,
-                &data.Pressurefrac[0]);
+                data.Pressurefrac.view());
 
   //printself and check
   mm.isValid(true);
