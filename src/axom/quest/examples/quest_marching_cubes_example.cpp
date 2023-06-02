@@ -5,7 +5,7 @@
 
 /*!
  \file marching_cubes_example.cpp
- \brief Driver and test for a marching cubes iso-surface generation
+ \brief Driver and test for a marching cubes isocontour generation
 
   The test can generate planar and round contours.  Planar contours
   can be checked to machine-zero accuracy, but it doesn't test a great
@@ -720,7 +720,7 @@ struct ContourTestBase
   //!@brief Return function value at a point.
   virtual double value(const axom::primal::Point<double, DIM>& pt) const = 0;
 
-  //!@brief Return error tolerance for contour surface accuracy check.
+  //!@brief Return error tolerance for contour mesh accuracy check.
   virtual double error_tolerance() const = 0;
 
   const std::string m_parentCellIdField;
@@ -738,42 +738,42 @@ struct ContourTestBase
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
     computeTimer.start();
-    mc.compute_iso_surface(params.contourVal);
+    mc.compute_isocontour(params.contourVal);
     computeTimer.stop();
     print_timing_stats(computeTimer, name() + " contour");
 
     SLIC_INFO(axom::fmt::format("Surface mesh has locally {} cells, {} nodes.",
-                                mc.get_surface_cell_count(),
-                                mc.get_surface_node_count()));
+                                mc.get_contour_cell_count(),
+                                mc.get_contour_node_count()));
 
-    // Put surface mesh in a mint object for error checking and output.
+    // Put mesh mesh in a mint object for error checking and output.
     std::string sidreGroupName = name() + "_mesh";
     sidre::DataStore objectDS;
     sidre::Group* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> surfaceMesh(
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
       meshGroup,
-      mc.get_surface_node_count(),
-      mc.get_surface_cell_count());
-    mc.populate_surface_mesh(surfaceMesh, m_parentCellIdField, m_domainIdField);
+      mc.get_contour_node_count(),
+      mc.get_contour_cell_count());
+    mc.populate_contour_mesh(contourMesh, m_parentCellIdField, m_domainIdField);
 
     int localErrCount = 0;
     if(params.checkResults)
     {
       localErrCount +=
-        check_contour_surface(surfaceMesh, params.contourVal, "diff");
+        check_contour_surface(contourMesh, params.contourVal, "diff");
 
-      localErrCount += check_surface_cell_limits(computationalMesh, surfaceMesh);
+      localErrCount += check_contour_cell_limits(computationalMesh, contourMesh);
 
       localErrCount +=
-        check_cells_containing_contour(computationalMesh, surfaceMesh);
+        check_cells_containing_contour(computationalMesh, contourMesh);
     }
 
-    // Write surface mesh to file.
-    add_rank_offset_to_surface_mesh_domain_ids(computationalMesh.domain_count(),
-                                               surfaceMesh);
-    std::string outputName = name() + "_surface_mesh";
+    // Write contour mesh to file.
+    add_rank_offset_to_contour_mesh_domain_ids(computationalMesh.domain_count(),
+                                               contourMesh);
+    std::string outputName = name() + "_contour_mesh";
     save_mesh(*meshGroup, outputName);
     SLIC_INFO(axom::fmt::format("Wrote {} contour in {}", name(), outputName));
 
@@ -924,7 +924,7 @@ struct ContourTestBase
   /**
      Check that generated cells fall within their parents.
   */
-  int check_surface_cell_limits(
+  int check_contour_cell_limits(
     BlueprintStructuredMesh& computationalMesh,
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
@@ -995,7 +995,7 @@ struct ContourTestBase
           ++errCount;
           SLIC_INFO_IF(
             params.isVerbose(),
-            axom::fmt::format("check_surface_cell_limits: node {} at {} is not "
+            axom::fmt::format("check_contour_cell_limits: node {} at {} is not "
                               "on parent cell boundary.",
                               cellNodeIds[nn],
                               nodeCoords));
@@ -1004,7 +1004,7 @@ struct ContourTestBase
     }
 
     SLIC_INFO_IF(params.isVerbose(),
-                 axom::fmt::format("check_surface_cell_limits: found {} nodes "
+                 axom::fmt::format("check_contour_cell_limits: found {} nodes "
                                    "not on parent cell boundary.",
                                    errCount));
     return errCount;
@@ -1142,9 +1142,9 @@ struct ContourTestBase
    * by adding rank offsets.
    * This is an optional step to make domain ids globally unique.
    */
-  void add_rank_offset_to_surface_mesh_domain_ids(
+  void add_rank_offset_to_contour_mesh_domain_ids(
     int localDomainCount,
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& surfaceMesh)
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& contourMesh)
   {
 #ifdef AXOM_USE_MPI
     axom::Array<axom::IndexType> starts(numRanks, numRanks);
@@ -1167,9 +1167,9 @@ struct ContourTestBase
 
     const std::string domainIdField = m_domainIdField;
     auto* domainIdPtr =
-      surfaceMesh.getFieldPtr<axom::IndexType>(domainIdField,
+      contourMesh.getFieldPtr<axom::IndexType>(domainIdField,
                                                axom::mint::CELL_CENTERED);
-    int cellCount = surfaceMesh.getNumberOfCells();
+    int cellCount = contourMesh.getNumberOfCells();
 
     for(int i = 0; i < cellCount; ++i)
     {

@@ -6,8 +6,8 @@
 /*!
  * \file MarchingCubes.hpp
  *
- * \brief Consists of class implementing marching cubes algorithm to
- * compute iso-surface from a scalar field in a blueprint mesh.
+ * \brief Consists of classes implementing marching cubes algorithm to
+ * compute isocontour from a scalar field in a blueprint mesh.
  */
 
 #ifndef AXOM_PRIMAL_MARCHINGCUBES_H_
@@ -60,41 +60,9 @@ inline auto format_as(MarchingCubesRuntimePolicy pol)
   return fmt::underlying(pol);
 }
 
-/// Predicate to determine if a given \a MarchingCubesRuntimePolicy is valid for this configuration
-inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy)
-{
-  switch(policy)
-  {
-  case MarchingCubesRuntimePolicy::seq:
-    return true;
-
-  case MarchingCubesRuntimePolicy::omp:
-#ifdef _AXOM_MC_USE_OPENMP
-    return true;
-#else
-    return false;
-#endif
-
-  case MarchingCubesRuntimePolicy::cuda:
-#ifdef _AXOM_MC_USE_CUDA
-    return true;
-#else
-    return false;
-#endif
-  case MarchingCubesRuntimePolicy::hip:
-#ifdef _AXOM_MC_USE_HIP
-    return true;
-#else
-    return false;
-#endif
-  }
-
-  return false;
-}
-
 /*!
- * \@brief Class implementing marching cubes algorithm on a single
- * structured mesh domain, alone or within a multi-domain mesh.
+ * \@brief Class implementing marching cubes to compute a contour
+ * mesh from a scalar function on an input mesh.
  *
  * Implementation is for 2D (marching squares) and 3D (marching
  * cubes).
@@ -104,19 +72,23 @@ inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy)
  *
  * Usage example:
  * @beginverbatim
- *   MarchingCubes computationalMesh(meshNode, "coords");
- *   double contourValue = 0.0;
- *   set_function_field("my_function");
- *   mc.compute_iso_surface(contourValue);
- *
- *   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
- *     surfaceMesh(3, min::CellType::Triangle);
- *   mc.populate_surface_mesh( surfaceMesh, "cellIdField");
+ *   void foo( conduit::Node &meshNode,
+ *             const std::string &coordsName,
+ *             const std::string &functionName,
+ *             double contourValue )
+ *   {
+ *     MarchingCubes computationalMesh(meshNode, coordsName);
+ *     set_function_field(functionName);
+ *     mc.compute_isocontour(contourValue);
+ *     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
+ *       contourMesh(3, min::CellType::Triangle);
+ *     mc.populate_contour_mesh( contourMesh, "cellIdField");
+ *   }
  * @endverbatim
  *
- * To avoid confusion between the two meshes, we refer to the mesh
- * with the computational data as "parent" and the generated mesh the
- * "surface".
+ * To avoid confusion between the two meshes, we refer to the input
+ * mesh with the scalar function as "parent" and the generated mesh
+ * as the "contour".
  *
  * \sa MarchingCubes
  */
@@ -125,7 +97,8 @@ class MarchingCubesSingleDomain
 public:
   using RuntimePolicy = MarchingCubesRuntimePolicy;
   /*!
-   * \brief Constructor for applying algorithm in multi-level mesh context.
+   * \brief Constructor for applying algorithm in a single domain.
+   * See MarchingCubes for the multi-domain implementation.
    *
    * \param [in] runtimePolicy A value from MarchingCubesRuntimePolicy.
    * \param [in] dom Blueprint single-domain mesh containing scalar field.
@@ -133,14 +106,14 @@ public:
    * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
    *             cells where this field evaluates to false are skipped.
    *
-   * Mesh data in \a dom should be accessible in the \a runtimePolicy
+   * Data in \a dom should be accessible in the \a runtimePolicy
    * environment.  It's an error if not.
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
    * See set_domain(const conduit::Node &) for requirements on \a dom.
    *
-   * The mesh coordinates should be contiguous.  See
+   * The mesh coordinates should be stored contiguously.  See
    * conduit::blueprint::is_contiguous().  In the future, this
    * requirement may be relaxed, possibly at the cost of a
    * transformation and storage of the temporary contiguous layout.
@@ -150,66 +123,104 @@ public:
                             const std::string &coordsetName,
                             const std::string &maskfield);
 
-  //! @brief Spatial dimension of domain.
-  int dimension() const { return m_ndim; }
-
   /*!
-    @brief Set the field containing the nodal function.
+    @brief Specify the field containing the nodal scalar function
+    in the input mesh.
     \param [in] fcnField Name of node-based scalar function values.
   */
   void set_function_field(const std::string &fcnField);
 
   /*!
-   * \brief Computes the iso-surface.
+   * \brief Compute the isocontour.
    *
-   * \param [in] contourVal iso-contour value
+   * \param [in] contourVal isocontour value
    *
-   * Compute iso-surface using the marching cubes algorithm.
+   * Compute isocontour using the marching cubes algorithm.
+   * To get the isocontour mesh, use populate_contour_mesh.
    */
-  void compute_iso_surface(double contourVal = 0.0);
+  void compute_isocontour(double contourVal = 0.0);
 
   //!@brief Get number of cells in the generated contour mesh.
-  axom::IndexType get_surface_cell_count() const
+  axom::IndexType get_contour_cell_count() const
   {
     SLIC_ASSERT_MSG(
       m_impl,
-      "There are no surface mesh until you call compute_iso_surface()");
-    axom::IndexType cellCount = m_impl->get_surface_cell_count();
+      "There is no contour mesh until you call compute_isocontour()");
+    axom::IndexType cellCount = m_impl->get_contour_cell_count();
     return cellCount;
   }
   //!@brief Get number of nodes in the generated contour mesh.
-  axom::IndexType get_surface_node_count() const
+  axom::IndexType get_contour_node_count() const
   {
-    return m_ndim * get_surface_cell_count();
+    return m_ndim * get_contour_cell_count();
   }
 
   /*!
-    @brief Put generated surface in a mint::UnstructuredMesh.
+    @brief Put generated contour surface in a mint::UnstructuredMesh
+    object.
+
     @param mesh Output mesh
     @param cellIdField Name of field to store the prent cell ids.
       If omitted, the data is not copied.
   */
-  void populate_surface_mesh(
+  void populate_contour_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
     const std::string &cellIdField = {}) const
   {
-    m_impl->populate_surface_mesh(mesh, cellIdField);
+    m_impl->populate_contour_mesh(mesh, cellIdField);
+  }
+
+  /*!
+    @brief Determine whether a given \a MarchingCubesRuntimePolicy is
+    valid for the Axom build configuration.
+  */
+  inline bool isValidRuntimePolicy(MarchingCubesRuntimePolicy policy) const
+  {
+    switch(policy)
+    {
+    case MarchingCubesRuntimePolicy::seq:
+      return true;
+
+    case MarchingCubesRuntimePolicy::omp:
+#ifdef _AXOM_MC_USE_OPENMP
+      return true;
+#else
+      return false;
+#endif
+
+    case MarchingCubesRuntimePolicy::cuda:
+#ifdef _AXOM_MC_USE_CUDA
+      return true;
+#else
+      return false;
+#endif
+    case MarchingCubesRuntimePolicy::hip:
+#ifdef _AXOM_MC_USE_HIP
+      return true;
+#else
+      return false;
+#endif
+    }
+
+    return false;
   }
 
 private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
   /*!
     \brief Computational mesh as a conduit::Node.
-
-    Plan for supporting blueprint mesh in sidre is to shallow-copy the
-    mesh to a conduit::Node on the heap, and point m_dom to it.
   */
   const conduit::Node *m_dom;
   int m_ndim;
 
+  //!@brief Path to coordinate set in m_dom.
   const std::string m_coordsetPath;
+
+  //!@brief Path to nodal scalar function in m_dom.
   std::string m_fcnPath;
-  std::string m_maskPath;
+
+  //!@brief Path to mask in m_dom.
+  const std::string m_maskPath;
 
 public:
   /*!
@@ -232,27 +243,27 @@ public:
     //!@name Phases of the computation
     //!@brief Mark domain cells that cross the contour.
     virtual void mark_crossings() = 0;
-    //!@brief Precompute some metadata for surface mesh.
+    //!@brief Precompute some metadata for contour mesh.
     virtual void scan_crossings() = 0;
-    //!@brief Generate the surface mesh in internal data format.
-    virtual void compute_surface() = 0;
-    //!@brief Get the number of surface mesh cells generated.
+    //!@brief Generate the contour mesh in internal data format.
+    virtual void compute_contour() = 0;
+    //!@brief Get the number of contour mesh cells generated.
     //@}
-    virtual axom::IndexType get_surface_cell_count() const = 0;
+    virtual axom::IndexType get_contour_cell_count() const = 0;
     /*!
-      @brief Populate output mesh object with generated surface.
+      @brief Populate output mesh object with generated contour.
 
       Note: Output format is in flux.  We will likely output
       a blueprint object in the future.
     */
-    virtual void populate_surface_mesh(
+    virtual void populate_contour_mesh(
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
       const std::string &cellIdField) const = 0;
     virtual ~ImplBase() { }
   };
 
 private:
-  std::shared_ptr<ImplBase> m_impl;
+  std::unique_ptr<ImplBase> m_impl;
   //!@brief Allocate implementation object and set m_impl.
   void allocate_impl();
 
@@ -303,20 +314,20 @@ public:
   void set_function_field(const std::string &fcnField);
 
   /*!
-   \brief Computes the iso-surface.
-   \param [in] contourVal iso-contour value
+   \brief Computes the isocontour.
+   \param [in] contourVal isocontour value
    */
-  void compute_iso_surface(double contourVal = 0.0);
+  void compute_isocontour(double contourVal = 0.0);
 
   //!@brief Get number of cells in the generated contour mesh.
-  axom::IndexType get_surface_cell_count() const;
+  axom::IndexType get_contour_cell_count() const;
 
   //!@brief Get number of nodes in the generated contour mesh.
-  axom::IndexType get_surface_node_count() const;
+  axom::IndexType get_contour_node_count() const;
 
   /*!
-    @brief Put generated surface in a mint::UnstructuredMesh.
-    @param mesh Output mesh
+    @brief Put generated contour in a mint::UnstructuredMesh.
+    @param mesh Output contour mesh
     @param cellIdField Name of field to store the (axom::IndexType)
       parent cell ids. If omitted, the data is not provided.
     @param domainIdField Name of field to store the (axom::IndexType)
@@ -324,7 +335,7 @@ public:
 
     If the fields aren't in the mesh, they will be created.
   */
-  void populate_surface_mesh(
+  void populate_contour_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
     const std::string &cellIdField = {},
     const std::string &domainIdField = {});
@@ -333,18 +344,10 @@ private:
   MarchingCubesRuntimePolicy m_runtimePolicy;
 
   //! @brief Single-domain implementations.
-  axom::Array<std::shared_ptr<MarchingCubesSingleDomain>> m_singles;
+  axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
   const std::string m_coordsetPath;
   std::string m_fcnPath;
   std::string m_maskPath;
-
-  /*
-    Non-state variables we don't want to have to propagate down the
-    stack repeatedly during computation.
-  */
-  mutable axom::mint::Mesh *m_surfaceMesh;
-
-  // Use simple pointers for now.  Later, maybe sidre.
 
   void set_mesh(const conduit::Node &bpMesh);
 };

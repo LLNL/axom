@@ -49,30 +49,18 @@ static void reverse(axom::StackArray<T, DIM>& a)
 
   Spatial dimension templating is here, to keep out of higher level
   classes MarchCubes and MarchingCubesSingleDomain.
-
-  Usage example:
-  @beginverbatim
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> outputMesh;
-    MarchingCubesImpl<2, axom::SEQ_EXEC> impl;
-    impl.initialize(&domain, coordsetPath, fcnPath, maskPath);
-    impl.set_contour_value(contourVal);
-    impl.mark_crossings();
-    impl.scan_crossings();
-    impl.compute_surface();
-    impl.populate_surface_mesh(outputMesh, cellIdField);
-  @endverbatim
 */
 template <int DIM, typename ExecSpace>
 struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 {
   using Point = axom::primal::Point<double, DIM>;
-  using MdimIdx = axom::StackArray<axom::IndexType, DIM>;
+  using MIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
   static constexpr auto MemorySpace = execution_space<ExecSpace>::memory_space;
   /*!
     @brief Initialize data to a blueprint domain.
-    @param dom Blueprint structured domain
+    @param dom Blueprint structured mesh domain
     @param coordsetPath Where coordinates are in dom
     @param fcnPath Where nodal function is in dom
     @param maskPath Where cell mask function is in dom
@@ -241,8 +229,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   }
 
   /*!
-    @brief Populate the 1D m_crossings array, one entry for each parent cell that
-    crosses the surface.  We sum up the number of surface cells from the crossings,
+    @brief Populate the 1D m_crossings array, one entry for each
+    parent cell that crosses the contour.
+
+    We sum up the number of contour surface cells from the crossings,
     allocate space, then populate it.
   */
   void scan_crossings() override
@@ -255,14 +245,14 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, parentCellCount),
       AXOM_LAMBDA(RAJA::Index_type n) {
-        vsum += bool(num_surface_cells(caseIdsView.flatIndex(n)));
+        vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
       });
     m_crossingCount = static_cast<axom::IndexType>(vsum.get());
 #else
     axom::IndexType vsum = 0;
     for(axom::IndexType n = 0; n < parentCellCount; ++n)
     {
-      vsum += bool(num_surface_cells(caseIdsView.flatIndex(n)));
+      vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
     }
     m_crossingCount = vsum;
 #endif
@@ -286,7 +276,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       parentCellCount,
       AXOM_LAMBDA(axom::IndexType n) {
         auto caseId = caseIdsView.flatIndex(n);
-        auto ccc = num_surface_cells(caseId);
+        auto ccc = num_contour_cells(caseId);
         if(ccc != 0)
         {
           addCellsView[*crossingId] = ccc;
@@ -329,24 +319,24 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     }
 #endif
 
-    m_surfaceCellCount = m_crossings.empty()
+    m_contourCellCount = m_crossings.empty()
       ? 0
       : m_crossings.back().firstSurfaceCellId +
-        num_surface_cells(m_crossings.back().caseNum);
+        num_contour_cells(m_crossings.back().caseNum);
   }
 
-  void compute_surface() override
+  void compute_contour() override
   {
     auto crossingsView = m_crossings.view();
     /*
-      Reserve surface mesh data space so we can add data without
+      Reserve contour mesh data space so we can add data without
       reallocation.
     */
-    const axom::IndexType surfaceNodeCount = DIM * m_surfaceCellCount;
+    const axom::IndexType contourNodeCount = DIM * m_contourCellCount;
 
-    m_surfaceCoords.resize(surfaceNodeCount);
-    m_surfaceCellCorners.resize(m_surfaceCellCount);
-    m_surfaceCellParents.resize(m_surfaceCellCount);
+    m_contourNodeCoords.resize(contourNodeCount);
+    m_contourCellCorners.resize(m_contourCellCount);
+    m_contourCellParents.resize(m_contourCellCount);
 
     axom::for_all<ExecSpace>(
       0,
@@ -354,7 +344,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       AXOM_LAMBDA(axom::IndexType iCrossing) {
         const auto& crossingInfo = crossingsView[iCrossing];
         const IndexType crossingCellCount =
-          num_surface_cells(crossingInfo.caseNum);
+          num_contour_cells(crossingInfo.caseNum);
         SLIC_ASSERT(crossingCellCount > 0);
 
         // Parent cell data for interpolating new node coordinates.
@@ -366,7 +356,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
         /*
           Create the new cell and its DIM nodes.  New node are on
-          parent cell edges where they intersects the isosurface.
+          parent cell edges where the edge intersects the isocontour.
           linear_interp for the exact coordinates.
 
           TODO: The varying crossingCellCount value may inhibit device
@@ -375,18 +365,18 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
         */
         for(int iCell = 0; iCell < crossingCellCount; ++iCell)
         {
-          IndexType surfaceCellId = crossingInfo.firstSurfaceCellId + iCell;
-          m_surfaceCellParents[surfaceCellId] = crossingInfo.parentCellNum;
+          IndexType contourCellId = crossingInfo.firstSurfaceCellId + iCell;
+          m_contourCellParents[contourCellId] = crossingInfo.parentCellNum;
           for(int d = 0; d < DIM; ++d)
           {
-            IndexType surfaceNodeId = surfaceCellId * DIM + d;
-            m_surfaceCellCorners[surfaceCellId][d] = surfaceNodeId;
+            IndexType contourNodeId = contourCellId * DIM + d;
+            m_contourCellCorners[contourCellId][d] = contourNodeId;
 
             const int edge = cases_table(crossingInfo.caseNum, iCell * DIM + d);
             linear_interp(edge,
                           cornerCoords,
                           cornerValues,
-                          m_surfaceCoords[surfaceNodeId]);
+                          m_contourNodeCoords[contourNodeId]);
           }
         }
       });
@@ -396,7 +386,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   // whether on host or device.  Is there a more elegant way
   // to put static 1D and 2D arrays on host and device?  BTNG.
   template <int TDIM = DIM>
-  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, int>::type num_surface_cells(
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, int>::type num_contour_cells(
     int iCase) const
   {
 #define _MC_LOOKUP_NUM_SEGMENTS
@@ -419,7 +409,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   }
 
   template <int TDIM = DIM>
-  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, int>::type num_surface_cells(
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3, int>::type num_contour_cells(
     int iCase) const
   {
 #define _MC_LOOKUP_NUM_TRIANGLES
@@ -521,7 +511,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     // clang-format on
   }
 
-  void populate_surface_mesh(
+  void populate_contour_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
     const std::string& cellIdField) const override
   {
@@ -533,8 +523,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
                                         DIM);
     }
 
-    const axom::IndexType addedCellCount = m_surfaceCellCorners.size();
-    const axom::IndexType addedNodeCount = m_surfaceCoords.size();
+    const axom::IndexType addedCellCount = m_contourCellCorners.size();
+    const axom::IndexType addedNodeCount = m_contourNodeCoords.size();
     if(addedCellCount != 0)
     {
       const axom::IndexType priorCellCount = mesh.getNumberOfCells();
@@ -542,10 +532,11 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       mesh.reserveNodes(priorNodeCount + addedNodeCount);
       mesh.reserveCells(priorCellCount + addedCellCount);
 
-      mesh.appendNodes((double*)m_surfaceCoords.data(), m_surfaceCoords.size());
+      mesh.appendNodes((double*)m_contourNodeCoords.data(),
+                       m_contourNodeCoords.size());
       for(int n = 0; n < addedCellCount; ++n)
       {
-        MdimIdx cornerIds = m_surfaceCellCorners[n];
+        MIdx cornerIds = m_contourCellCorners[n];
         add_to_StackArray(cornerIds, priorNodeCount);
         mesh.appendCell(cornerIds);
       }
@@ -561,7 +552,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       for(axom::IndexType i = 0; i < addedCellCount; ++i)
       {
         dstView[priorCellCount + i] =
-          multidim_cell_index(m_surfaceCellParents[i]);
+          multidim_cell_index(m_contourCellParents[i]);
       }
     }
   }
@@ -686,11 +677,11 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   //!@brief Clear data so you can rerun with a different contour value.
   void clear()
   {
-    m_surfaceCoords.clear();
-    m_surfaceCellCorners.clear();
-    m_surfaceCellParents.clear();
+    m_contourNodeCoords.clear();
+    m_contourCellCorners.clear();
+    m_contourCellParents.clear();
     m_crossingCount = 0;
-    m_surfaceCellCount = 0;
+    m_contourCellCount = 0;
   }
 
   /*
@@ -698,13 +689,13 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   */
   MarchingCubesImpl()
     : m_crossings(0, 0, execution_space<ExecSpace>::allocatorID())
-    , m_surfaceCoords(0, 0, execution_space<ExecSpace>::allocatorID())
-    , m_surfaceCellCorners(0, 0, execution_space<ExecSpace>::allocatorID())
-    , m_surfaceCellParents(0, 0, execution_space<ExecSpace>::allocatorID())
+    , m_contourNodeCoords(0, 0, execution_space<ExecSpace>::allocatorID())
+    , m_contourCellCorners(0, 0, execution_space<ExecSpace>::allocatorID())
+    , m_contourCellParents(0, 0, execution_space<ExecSpace>::allocatorID())
   { }
 
   /*!
-    @brief Info for a parent cell intersecting the surface.
+    @brief Info for a parent cell intersecting the contour surface.
   */
   struct CrossingInfo
   {
@@ -719,9 +710,9 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   };
   axom::Array<CrossingInfo> m_crossings;
 
-  MdimIdx m_bShape;  //!< @brief Blueprint cell data shape.
-  MdimIdx m_cShape;  //!< @brief Cell-centered array shape for ArrayViews.
-  MdimIdx m_pShape;  //!< @brief Node-centered array shape for ArrayViews.
+  MIdx m_bShape;  //!< @brief Blueprint cell data shape.
+  MIdx m_cShape;  //!< @brief Cell-centered array shape for ArrayViews.
+  MIdx m_pShape;  //!< @brief Node-centered array shape for ArrayViews.
 
   // Views of parent domain data.
   axom::ArrayView<const double, DIM> m_coordsViews[DIM];
@@ -734,26 +725,26 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
-  //!@brief Number of surface cells from crossings.
-  axom::IndexType m_surfaceCellCount = 0;
-  axom::IndexType get_surface_cell_count() const override
+  //!@brief Number of contour surface cells from crossings.
+  axom::IndexType m_contourCellCount = 0;
+  axom::IndexType get_contour_cell_count() const override
   {
-    return m_surfaceCellCount;
+    return m_contourCellCount;
   }
 
   //!@brief Number of corners (nodes) on each cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
 
-  //!@name Internal representation of generated surface mesh.
+  //!@name Internal representation of generated contour mesh.
   //@{
-  //!@brief Coordinates of generated surface nodes.
-  axom::Array<Point> m_surfaceCoords;
+  //!@brief Coordinates of generated surface mesh nodes.
+  axom::Array<Point> m_contourNodeCoords;
 
-  //!@brief Corners (index into m_surfaceCoords) of generated surface cells.
-  axom::Array<MdimIdx> m_surfaceCellCorners;
+  //!@brief Corners (index into m_contourNodeCoords) of generated contour cells.
+  axom::Array<MIdx> m_contourCellCorners;
 
-  //!@brief Computational cell (flat index) crossing the surface cell.
-  axom::Array<IndexType> m_surfaceCellParents;
+  //!@brief Flat index of computational cell crossing the contour cell.
+  axom::Array<IndexType> m_contourCellParents;
   //@}
 
   double m_contourVal = 0.0;

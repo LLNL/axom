@@ -40,40 +40,40 @@ void MarchingCubes::set_function_field(const std::string& fcnField)
   }
 }
 
-void MarchingCubes::compute_iso_surface(double contourVal)
+void MarchingCubes::compute_isocontour(double contourVal)
 {
   SLIC_ASSERT_MSG(
     !m_fcnPath.empty(),
-    "You must call set_function_field before compute_iso_surface.");
+    "You must call set_function_field before compute_isocontour.");
 
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
-    std::shared_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
-    single->compute_iso_surface(contourVal);
+    std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
+    single->compute_isocontour(contourVal);
   }
 }
 
-axom::IndexType MarchingCubes::get_surface_cell_count() const
+axom::IndexType MarchingCubes::get_contour_cell_count() const
 {
-  axom::IndexType surfaceCellCount = 0;
+  axom::IndexType contourCellCount = 0;
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
-    surfaceCellCount += m_singles[dId]->get_surface_cell_count();
+    contourCellCount += m_singles[dId]->get_contour_cell_count();
   }
-  return surfaceCellCount;
+  return contourCellCount;
 }
 
-axom::IndexType MarchingCubes::get_surface_node_count() const
+axom::IndexType MarchingCubes::get_contour_node_count() const
 {
-  axom::IndexType surfaceNodeCount = 0;
+  axom::IndexType contourNodeCount = 0;
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
-    surfaceNodeCount += m_singles[dId]->get_surface_node_count();
+    contourNodeCount += m_singles[dId]->get_contour_node_count();
   }
-  return surfaceNodeCount;
+  return contourNodeCount;
 }
 
-void MarchingCubes::populate_surface_mesh(
+void MarchingCubes::populate_contour_mesh(
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
   const std::string& cellIdField,
   const std::string& domainIdField)
@@ -92,19 +92,19 @@ void MarchingCubes::populate_surface_mesh(
     mesh.createField<axom::IndexType>(domainIdField, axom::mint::CELL_CENTERED);
   }
 
-  // Reserve space once for all single domains.
-  const axom::IndexType surfaceCellCount = get_surface_cell_count();
-  const axom::IndexType surfaceNodeCount = get_surface_node_count();
-  mesh.reserveCells(surfaceCellCount);
-  mesh.reserveNodes(surfaceNodeCount);
+  // Reserve space once for all local domains.
+  const axom::IndexType contourCellCount = get_contour_cell_count();
+  const axom::IndexType contourNodeCount = get_contour_node_count();
+  mesh.reserveCells(contourCellCount);
+  mesh.reserveNodes(contourNodeCount);
 
   // Populate mesh from single domains and add domain id if requested.
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
-    std::shared_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
+    std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
 
     auto nPrev = mesh.getNumberOfCells();
-    single->populate_surface_mesh(mesh, cellIdField);
+    single->populate_contour_mesh(mesh, cellIdField);
     auto nNew = mesh.getNumberOfCells();
 
     if(nNew > nPrev && !domainIdField.empty())
@@ -121,8 +121,8 @@ void MarchingCubes::populate_surface_mesh(
         dId);
     }
   }
-  SLIC_ASSERT(mesh.getNumberOfNodes() == surfaceNodeCount);
-  SLIC_ASSERT(mesh.getNumberOfCells() == surfaceCellCount);
+  SLIC_ASSERT(mesh.getNumberOfNodes() == contourNodeCount);
+  SLIC_ASSERT(mesh.getNumberOfCells() == contourCellCount);
 }
 
 MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy,
@@ -139,13 +139,6 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
   SLIC_ASSERT_MSG(
     isValidRuntimePolicy(runtimePolicy),
     fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
-#if 0
-  SLIC_ASSERT_MSG(
-    m_runtimePolicy != MarchingCubesRuntimePolicy::cuda &&
-      m_runtimePolicy != MarchingCubesRuntimePolicy::hip,
-    std::string(
-      "MarchingCubes is not yet correctly running on devices.  Sorry."));
-#endif
 
   set_domain(dom);
   return;
@@ -190,57 +183,52 @@ void MarchingCubesSingleDomain::set_function_field(const std::string& fcnField)
   SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
 }
 
-void MarchingCubesSingleDomain::compute_iso_surface(double contourVal)
+void MarchingCubesSingleDomain::compute_isocontour(double contourVal)
 {
   SLIC_ASSERT_MSG(
     !m_fcnPath.empty(),
-    "You must call set_function_field before compute_iso_surface.");
+    "You must call set_function_field before compute_isocontour.");
 
   allocate_impl();
   m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
   m_impl->set_contour_value(contourVal);
   m_impl->mark_crossings();
   m_impl->scan_crossings();
-  m_impl->compute_surface();
+  m_impl->compute_contour();
 }
 
 void MarchingCubesSingleDomain::allocate_impl()
 {
   using namespace detail::marching_cubes;
-// This code doesn't compile for devices yet.  It's close though.
-// TODO: Get this running for devices.
-#define MARCHING_CUBES_USE_DEVICES 1
   if(m_runtimePolicy == RuntimePolicy::seq)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>)
-      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
+      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::SEQ_EXEC>)
+      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::SEQ_EXEC>);
   }
 #ifdef _AXOM_MC_USE_OPENMP
   else if(m_runtimePolicy == RuntimePolicy::omp)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>)
-      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
+      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::OMP_EXEC>)
+      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::OMP_EXEC>);
   }
 #endif
-#if MARCHING_CUBES_USE_DEVICES == 1
-  #ifdef _AXOM_MC_USE_CUDA
+#ifdef _AXOM_MC_USE_CUDA
   else if(m_runtimePolicy == RuntimePolicy::cuda)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
-      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
+      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::CUDA_EXEC<256>>)
+      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::CUDA_EXEC<256>>);
   }
-  #endif
-  #ifdef _AXOM_MC_USE_HIP
+#endif
+#ifdef _AXOM_MC_USE_HIP
   else if(m_runtimePolicy == RuntimePolicy::hip)
   {
     m_impl = m_ndim == 2
-      ? std::shared_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
-      : std::shared_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
+      ? std::unique_ptr<ImplBase>(new MarchingCubesImpl<2, axom::HIP_EXEC<256>>)
+      : std::unique_ptr<ImplBase>(new MarchingCubesImpl<3, axom::HIP_EXEC<256>>);
   }
-  #endif
 #endif
   else
   {
