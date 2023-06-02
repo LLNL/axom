@@ -239,6 +239,7 @@ double winding_number(const Point<T, 3>& q,
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  * 
+ * \pre Assumes the polygon is truly planar
  * Computes the winding number using the formula from [Paeth 1995]
  * 
  * \return float the generalized winding number.
@@ -246,48 +247,65 @@ double winding_number(const Point<T, 3>& q,
 template <typename T>
 double winding_number(const Point<T, 3>& q,
                       const Polygon<T, 3>& poly,
-                      const double edge_tol = 1e-8)
+                      const double edge_tol = 1e-8,
+                      const double EPS = 1e-8)
 {
-  const int nverts = poly.numVertices();
-  if(nverts < 3) return 0;
+  const int num_verts = poly.numVertices();
+  if(num_verts < 3) return 0;
 
   // Declare variables
-  Vector<T, 3> n1, n2, r1;
-  double s, ang, area = 0;
+  Vector<T, 3> n1, n2, r1, normal = poly.normal().unitVector();
+  double cos_ang, ang, signedVolume, area = 0;
+  int idx, max_idx = num_verts - 1, skipped_verts = 0;
 
-  Vector<T, 3> normal = poly.normal().unitVector();
+  int far_idx = 0;
+  double curr_dist, far_dist = 0;
 
-  // Find furthest vertex from query, and that no vertex is coincident
-  int idx = 0;
-  double far_dist = squared_distance(q, poly[idx]);
-  if(far_dist < edge_tol) return 0.0;
-
-  for(int i = 1; i < nverts; ++i)
+  // Find the last vertex that isn't coincident
+  Vector<T, 3> v1(poly[0], poly[max_idx]), v2;
+  while(v1.norm() <= edge_tol && max_idx > 0)
   {
-    double new_dist = squared_distance(q, poly[i]);
-    if(new_dist < edge_tol) return 0.0;
-    if(new_dist > far_dist)
-    {
-      idx = i;
-      far_dist = new_dist;
-    }
+    --max_idx;
+    v1 = Vector<T, 3>(poly[0], poly[max_idx]);
+    ++skipped_verts;
   }
 
-  // Check that the point isn't on the plane containing the polygon
-  if(axom::utilities::isNearlyEqual(
-       Vector<T, 3>::dot_product(normal, Vector<T, 3>(q, poly[idx])),
-       0.0,
-       edge_tol))
-    return 0;
+  // Catch the very degenerate case (zero perimeter)
+  if(max_idx == 0) return 0;
 
   // Compute the solid angle at each vertex
-  Vector<T, 3> v1(poly[0], poly[nverts - 1]), v2;
-  for(int i = 0; i < nverts; ++i)
+  for(int i = 0; i <= max_idx; ++i)
   {
     // Compute vector denoting radius of the sphere
     r1 = Vector<T, 3>(q, poly[i]);
 
-    v2 = Vector<T, 3>(poly[i], poly[(i + 1) % nverts]);
+    // Catch case where query is on an endpoint, and find furthest index from query
+    curr_dist = r1.norm();
+    if(curr_dist <= edge_tol) return 0.0;
+    if(curr_dist > far_dist)
+    {
+      far_idx = i;
+      far_dist = curr_dist;
+    }
+
+    // Find the next vertex that isn't coincident, advance the loop
+    idx = i + 1;
+    v2 = Vector<T, 3>(poly[i], poly[idx % num_verts]);
+    while(v2.norm() <= edge_tol)
+    {
+      ++idx;
+      v2 = Vector<T, 3>(poly[i], poly[idx % num_verts]);
+      ++skipped_verts;
+    }
+    i = idx - 1;
+
+    // Skip the vertex if v1 and v2 are colinear
+    signedVolume = Vector<T, 3>::scalar_triple_product(v2, v1, normal);
+    if(axom::utilities::isNearlyEqual(signedVolume, 0.0, EPS))
+    {
+      ++skipped_verts;
+      continue;
+    }
 
     // Compute normal vectors to planes that contain great circles corresponding
     //  to sides of the polygon
@@ -295,17 +313,24 @@ double winding_number(const Point<T, 3>& q,
     n2 = Vector<T, 3>::cross_product(r1, v2);
 
     // Find the angle between the two planes
-    s = Vector<T, 3>::dot_product(n1, n2) / n1.norm() / n2.norm();
-    ang = M_1_PI * acos(axom::utilities::clampVal(s, -1.0, 1.0));
+    cos_ang = Vector<T, 3>::dot_product(n1, n2) / n1.norm() / n2.norm();
+    ang = M_1_PI * acos(axom::utilities::clampVal(cos_ang, -1.0, 1.0));
 
     // Adjust for if angle is convex or concave after projection.
-    s = Vector<T, 3>::scalar_triple_product(v2, v1, normal);
-    area += s > 0.0 ? 1.0 - ang : 1.0 + ang;
+    area += signedVolume > 0.0 ? 1.0 - ang : 1.0 + ang;
 
     v1 = -v2;
   }
 
-  area = 0.25 * (area - (nverts - 2));
+  // Check that the point isn't coplanar with the polygon
+  if(axom::utilities::isNearlyEqual(
+       Vector<T, 3>::dot_product(normal, Vector<T, 3>(q, poly[far_idx])),
+       0.0,
+       edge_tol))
+    return 0;
+
+  // Convert from solid angle to winding number, subtract excess
+  area = 0.25 * (area - (num_verts - skipped_verts - 2));
 
   // Line differs from Paeth, flips sign.
   // Should account for the orientation of the polygon
