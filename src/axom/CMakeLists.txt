@@ -60,9 +60,9 @@ foreach(_component ${AXOM_COMPONENTS_ENABLED})
     set(_export_header ${PROJECT_BINARY_DIR}/include/axom/export/${_component}.h)
     generate_export_header( ${_component} 
                             PREFIX_NAME AXOM_
-                            EXPORT_FILE_NAME ${_export_header}
-                            )
-
+                            EXPORT_FILE_NAME ${_export_header})
+    install(FILES ${_export_header} 
+            DESTINATION include/axom/export )
 endforeach()
 
 #------------------------------------------------------------------------------

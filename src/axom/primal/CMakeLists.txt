@@ -21,6 +21,7 @@ set( primal_headers
 
     ## geometry
     geometry/BezierCurve.hpp
+    geometry/BezierPatch.hpp
     geometry/BoundingBox.hpp
     geometry/CurvedPolygon.hpp
     geometry/Hexahedron.hpp

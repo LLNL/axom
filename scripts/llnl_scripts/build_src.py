@@ -152,6 +152,10 @@ def main():
                         print("[ERROR: Could not find any host-configs in any known path. Try giving fully qualified path.]")
                         return 1
 
+            print("[build info]")
+            binfo_str = json.dumps(build_info(),indent=2)
+            print(binfo_str)
+
             test_root = get_build_and_test_root(repo_dir, timestamp)
             test_root = "{0}_{1}".format(test_root, hostconfig.replace(".cmake", "").replace("@","_"))
             os.mkdir(test_root)

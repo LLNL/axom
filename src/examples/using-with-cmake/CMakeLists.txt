@@ -70,6 +70,14 @@ if(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE)
                      ${BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE})
 endif()
 
+# HACK: Define the `mpi` target as an alias to `axom::mpi` if/when necessary
+# Details: An axom dependency has a link dependency to `mpi`, but it might
+# not be a target. Need to mark axom::mpi as global to use it for an alias.
+if(NOT TARGET mpi AND TARGET axom::mpi)
+    set_target_properties(axom::mpi PROPERTIES IMPORTED_GLOBAL TRUE)
+    add_library(mpi ALIAS axom::mpi)
+endif()
+
 #------------------------------------------------------------------------------
 # Set up example target that depends on axom
 #------------------------------------------------------------------------------

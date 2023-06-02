@@ -335,8 +335,7 @@ protected:
   /*!
    * \brief Allocates space within the Array's View.
    *
-   * \param [in] new_num_tuples the number of tuples which exceeds the current
-   *  capacity.
+   * \param [in] new_capacity the number of elements to allocate.
    */
   void reallocViewData(IndexType new_capacity);
 
