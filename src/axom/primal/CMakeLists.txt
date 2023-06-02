@@ -49,6 +49,7 @@ set( primal_headers
     operators/compute_bounding_box.hpp
     operators/compute_moments.hpp
     operators/in_curved_polygon.hpp
+    operators/in_polyhedron.hpp
     operators/in_polygon.hpp
     operators/in_sphere.hpp
     operators/is_convex.hpp
