@@ -30,6 +30,7 @@ set( primal_tests
     primal_rational_bezier.cpp
     primal_ray_intersect.cpp
     primal_segment.cpp
+    primal_solid_angle.cpp
     primal_sphere.cpp
     primal_split.cpp
     primal_squared_distance.cpp
@@ -37,14 +38,13 @@ set( primal_tests
     primal_octahedron.cpp
     primal_triangle.cpp
     primal_vector.cpp
+    primal_winding_number.cpp
     primal_zip.cpp
    )
 
 blt_list_append(
     TO       primal_tests 
     ELEMENTS primal_integral.cpp 
-             primal_winding_number.cpp
-             primal_solid_angle.cpp
     IF       MFEM_FOUND 
                )
 
