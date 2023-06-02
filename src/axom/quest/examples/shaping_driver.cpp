@@ -549,7 +549,7 @@ int main(int argc, char** argv)
       axom::fmt::format("{:-^80}",
                         axom::fmt::format("Shape format is {}", shapeFormat)));
 
-    // Load the shape from file
+    // Load the shape from file. This also applies any transformations.
     shaper->loadShape(shape);
     slic::flushStreams();
 

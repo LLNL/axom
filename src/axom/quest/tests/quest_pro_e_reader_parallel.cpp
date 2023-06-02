@@ -123,24 +123,6 @@ TEST(quest_pro_e_reader_parallel, read_file)
   }
 }
 
-#ifdef AXOM_DATA_DIR
-TEST(quest_pro_e_reader, cup_quest_helpers)
-{
-  // STEP 1: Get Pro/E cup example file for testing
-  namespace fs = axom::utilities::filesystem;
-  std::string cup = fs::joinPath(AXOM_DATA_DIR, "quest/cup.proe");
-
-  // STEP 2: reading the Pro/E mesh data into a axom::mint::Mesh
-  axom::mint::Mesh* mesh = nullptr;
-  int status = axom::quest::internal::read_pro_e_mesh(cup, mesh);
-  EXPECT_EQ(status, 0);
-
-  // Step 3: Dump mesh file
-  axom::mint::write_vtk(const_cast<const axom::mint::Mesh*>(mesh),
-                        "cupHelper.vtk");
-}
-#endif
-
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {

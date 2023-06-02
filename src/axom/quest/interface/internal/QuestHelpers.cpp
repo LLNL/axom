@@ -478,7 +478,7 @@ int read_pro_e_mesh(const std::string& file, mint::Mesh*& m, MPI_Comm comm)
   // STEP 1: allocate output mesh object
   m = new TetMesh(DIMENSION, mint::TET);
 
-  // STEP 2: construct STL reader
+  // STEP 2: construct Pro/E reader
 #ifdef AXOM_USE_MPI
   quest::PProEReader reader(comm);
 #else

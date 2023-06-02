@@ -386,8 +386,6 @@ public:
     // Number of tets in mesh
     m_tetcount = m_surfaceMesh->getNumberOfCells();
 
-    SLIC_INFO("Number of tets is " << m_tetcount);
-
     m_tets = axom::allocate<TetrahedronType>(m_tetcount);
     axom::StackArray<IndexType, 1> tets_dimensions = {m_tetcount};
     axom::ArrayView<TetrahedronType> tets_view(m_tets, tets_dimensions);
@@ -663,14 +661,14 @@ public:
     axom::StackArray<IndexType, 1> aabs_dimensions = {shape_count};
     axom::ArrayView<BoundingBoxType> aabbs_view(m_aabbs, aabs_dimensions);
 
-    // Get the bounding boxes for the Octahedrons
+    // Get the bounding boxes for the shapes
     axom::for_all<ExecSpace>(
       shape_count,
       AXOM_LAMBDA(axom::IndexType i) {
         aabbs_view[i] = primal::compute_bounding_box<double, 3>(shapes_view[i]);
       });
 
-    // Insert Octahedra Bounding Boxes into BVH.
+    // Insert shapes' Bounding Boxes into BVH.
     //bvh.setAllocatorID(poolID);
     spin::BVH<3, ExecSpace, double> bvh;
     bvh.initialize(m_aabbs, shape_count);
@@ -843,7 +841,7 @@ public:
       NE,
       AXOM_LAMBDA(axom::IndexType i) { totalCandidates += counts_v[i]; });
 
-    // Initialize hexahedron indices and octahedra candidates
+    // Initialize hexahedron indices and shape candidates
     axom::IndexType* hexIndices =
       axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
     axom::IndexType* shapeCandidates =
@@ -857,7 +855,7 @@ public:
     axom::IndexType* tetIndices =
       axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
 
-    // New total number of candidates after omitting degenerate octahedra
+    // New total number of candidates after omitting degenerate shapes
     int* newTotalCandidates = axom::allocate<int>(1);
     axom::copy(newTotalCandidates, ZERO, sizeof(int));
 
@@ -1347,7 +1345,6 @@ public:
       GridFunctionView<ExecSpace> matVFView(matVF.first);
       GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
 
-      // Workaround for HIP so we do not capture through "this" pointer.
       axom::StackArray<IndexType, 1> overlap_volumes_dimensions = {m_num_elements};
       axom::ArrayView<double> overlap_volumes_view(m_overlap_volumes,
                                                    overlap_volumes_dimensions);
@@ -2063,7 +2060,6 @@ private:
   int m_octcount {0};
   int m_tetcount {0};
 
-  // This probably should be templated?
   OctahedronType* m_octs {nullptr};
   TetrahedronType* m_tets {nullptr};
 
