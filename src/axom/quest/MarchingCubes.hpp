@@ -60,6 +60,17 @@ inline auto format_as(MarchingCubesRuntimePolicy pol)
   return fmt::underlying(pol);
 }
 
+namespace detail
+{
+namespace marching_cubes
+{
+template <int DIM, typename ExecSpace>
+class MarchingCubesImpl;
+}
+}  // namespace detail
+
+class MarchingCubesSingleDomain;
+
 /*!
  * \@brief Class implementing marching cubes to compute a contour
  * mesh from a scalar function on an input mesh.
@@ -68,7 +79,8 @@ inline auto format_as(MarchingCubesRuntimePolicy pol)
  * cubes).
  *
  * The input mesh is a Conduit::Node following the Mesh Blueprint
- * convention.
+ * convention.  The mesh must be in multi-domain format.  For
+ * single-domain, see MarchingCubesSingleDomain.
  *
  * Usage example:
  * @beginverbatim
@@ -89,11 +101,89 @@ inline auto format_as(MarchingCubesRuntimePolicy pol)
  * To avoid confusion between the two meshes, we refer to the input
  * mesh with the scalar function as "parent" and the generated mesh
  * as the "contour".
+ */
+class MarchingCubes
+{
+public:
+  using RuntimePolicy = MarchingCubesRuntimePolicy;
+  /*!
+   * \brief Constructor sets up computational mesh and data for running the
+   * marching cubes algorithm.
+   *
+   * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
+   * \param [in] coordsetName Name of blueprint point coordinate set.
+   * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
+   *             cells where this field evaluates to false are skipped.
+   *
+   * Some data from \a bpMesh may be cached by the constructor.
+   * Any change to it after the constructor leads to undefined behavior.
+   *
+   * The mesh coordinates should be contiguous.  See
+   * conduit::blueprint::is_contiguous().  In the future, this
+   * requirement may be relaxed, possibly at the cost of a
+   * transformation and storage of the temporary contiguous layout.
+   */
+  MarchingCubes(RuntimePolicy runtimePolicy,
+                const conduit::Node &bpMesh,
+                const std::string &coordsetName,
+                const std::string &maskField = {});
+
+  /*!
+    @brief Set the field containing the nodal function.
+    \param [in] fcnField Name of node-based scalar function values.
+  */
+  void set_function_field(const std::string &fcnField);
+
+  /*!
+   \brief Computes the isocontour.
+   \param [in] contourVal isocontour value
+   */
+  void compute_isocontour(double contourVal = 0.0);
+
+  //!@brief Get number of cells in the generated contour mesh.
+  axom::IndexType get_contour_cell_count() const;
+
+  //!@brief Get number of nodes in the generated contour mesh.
+  axom::IndexType get_contour_node_count() const;
+
+  /*!
+    @brief Put generated contour in a mint::UnstructuredMesh.
+    @param mesh Output contour mesh
+    @param cellIdField Name of field to store the (axom::IndexType)
+      parent cell ids. If omitted, the data is not provided.
+    @param domainIdField Name of field to store the (axom::IndexType)
+      parent domain ids. If omitted, the data is not provided.
+
+    If the fields aren't in the mesh, they will be created.
+  */
+  void populate_contour_mesh(
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
+    const std::string &cellIdField = {},
+    const std::string &domainIdField = {});
+
+private:
+  MarchingCubesRuntimePolicy m_runtimePolicy;
+
+  //! @brief Single-domain implementations.
+  axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
+  const std::string m_coordsetPath;
+  std::string m_fcnPath;
+  std::string m_maskPath;
+
+  void set_mesh(const conduit::Node &bpMesh);
+};
+
+/*!
+ * \@brief Class implementing marching cubes algorithm for a single
+ *  domain.
  *
  * \sa MarchingCubes
  */
 class MarchingCubesSingleDomain
 {
+  template <int DIM, typename ExecSpace>
+  friend class detail::marching_cubes::MarchingCubesImpl;
+
 public:
   using RuntimePolicy = MarchingCubesRuntimePolicy;
   /*!
@@ -222,7 +312,6 @@ private:
   //!@brief Path to mask in m_dom.
   const std::string m_maskPath;
 
-public:
   /*!
     @brief Base class for implementations templated on dimension
     and execution space.
@@ -262,7 +351,6 @@ public:
     virtual ~ImplBase() { }
   };
 
-private:
   std::unique_ptr<ImplBase> m_impl;
   //!@brief Allocate implementation object and set m_impl.
   void allocate_impl();
@@ -275,82 +363,6 @@ private:
   void set_domain(const conduit::Node &dom);
 
 };  // class MarchingCubesSingleDomain
-
-/*!
- * \@brief Class implementing marching cubes algorithm.
- *
- * \sa MarchingCubesSingleDomain
- */
-class MarchingCubes
-{
-public:
-  using RuntimePolicy = MarchingCubesRuntimePolicy;
-  /*!
-   * \brief Constructor sets up computational mesh and data for running the
-   * marching cubes algorithm.
-   *
-   * \param [in] bpMesh Blueprint multi-domain mesh containing scalar field.
-   * \param [in] coordsetName Name of blueprint point coordinate set.
-   * \param [in] maskField Cell-based std::int32_t mask field.  If provided,
-   *             cells where this field evaluates to false are skipped.
-   *
-   * Some data from \a bpMesh may be cached by the constructor.
-   * Any change to it after the constructor leads to undefined behavior.
-   *
-   * The mesh coordinates should be contiguous.  See
-   * conduit::blueprint::is_contiguous().  In the future, this
-   * requirement may be relaxed, possibly at the cost of a
-   * transformation and storage of the temporary contiguous layout.
-   */
-  MarchingCubes(RuntimePolicy runtimePolicy,
-                const conduit::Node &bpMesh,
-                const std::string &coordsetName,
-                const std::string &maskField = {});
-
-  /*!
-    @brief Set the field containing the nodal function.
-    \param [in] fcnField Name of node-based scalar function values.
-  */
-  void set_function_field(const std::string &fcnField);
-
-  /*!
-   \brief Computes the isocontour.
-   \param [in] contourVal isocontour value
-   */
-  void compute_isocontour(double contourVal = 0.0);
-
-  //!@brief Get number of cells in the generated contour mesh.
-  axom::IndexType get_contour_cell_count() const;
-
-  //!@brief Get number of nodes in the generated contour mesh.
-  axom::IndexType get_contour_node_count() const;
-
-  /*!
-    @brief Put generated contour in a mint::UnstructuredMesh.
-    @param mesh Output contour mesh
-    @param cellIdField Name of field to store the (axom::IndexType)
-      parent cell ids. If omitted, the data is not provided.
-    @param domainIdField Name of field to store the (axom::IndexType)
-      parent domain ids. If omitted, the data is not provided.
-
-    If the fields aren't in the mesh, they will be created.
-  */
-  void populate_contour_mesh(
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-    const std::string &cellIdField = {},
-    const std::string &domainIdField = {});
-
-private:
-  MarchingCubesRuntimePolicy m_runtimePolicy;
-
-  //! @brief Single-domain implementations.
-  axom::Array<std::unique_ptr<MarchingCubesSingleDomain>> m_singles;
-  const std::string m_coordsetPath;
-  std::string m_fcnPath;
-  std::string m_maskPath;
-
-  void set_mesh(const conduit::Node &bpMesh);
-};
 
 }  // namespace quest
 }  // namespace axom

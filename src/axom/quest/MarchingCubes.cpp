@@ -23,6 +23,11 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   , m_fcnPath()
   , m_maskPath(maskField.empty() ? std::string() : "fields/" + maskField)
 {
+  const bool isMultidomain = conduit::blueprint::mesh::is_multi_domain(bpMesh);
+  SLIC_ASSERT_MSG(
+    isMultidomain,
+    "MarchingCubes class input mesh must be in multidomain format.");
+
   m_singles.reserve(conduit::blueprint::mesh::number_of_domains(bpMesh));
   for(auto& dom : bpMesh.children())
   {

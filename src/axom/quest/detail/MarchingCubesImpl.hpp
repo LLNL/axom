@@ -51,8 +51,9 @@ static void reverse(axom::StackArray<T, DIM>& a)
   classes MarchCubes and MarchingCubesSingleDomain.
 */
 template <int DIM, typename ExecSpace>
-struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
+class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 {
+public:
   using Point = axom::primal::Point<double, DIM>;
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
@@ -88,6 +89,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     // m_pShape = m_cShape + 1;
     m_pShape = m_cShape;
     add_to_StackArray(m_pShape, 1);
+
+    m_bStrides[0] = 1;
+    for(int d = 1; d < DIM; ++d)
+      m_bStrides[d] = m_bStrides[d - 1] * m_bShape[d - 1];
 
     // Domain's node coordinates
     {
@@ -134,7 +139,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     @brief Implementation of virtual mark_crossings.
 
     Virtual methods cannot be templated, so this implementation
-    delegates to methods templated on DIM.
+    delegates to a name templated on DIM.
   */
   void mark_crossings() override { mark_crossings_dim(); }
 
@@ -269,8 +274,6 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       1,
       axom::execution_space<ExecSpace>::allocatorID());
     *crossingId = 0;
-    // This loop probably isn't parallelized, even with devices,
-    // due (*crossingId)'s dependence on previous if outcomes.
     axom::for_all<ExecSpace>(
       0,
       parentCellCount,
@@ -328,12 +331,12 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   void compute_contour() override
   {
     auto crossingsView = m_crossings.view();
+
     /*
       Reserve contour mesh data space so we can add data without
       reallocation.
     */
     const axom::IndexType contourNodeCount = DIM * m_contourCellCount;
-
     m_contourNodeCoords.resize(contourNodeCount);
     m_contourCellCorners.resize(m_contourCellCount);
     m_contourCellParents.resize(m_contourCellCount);
@@ -384,7 +387,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 
   // These 4 functions provides access to the look-up table
   // whether on host or device.  Is there a more elegant way
-  // to put static 1D and 2D arrays on host and device?  BTNG.
+  // to put static 1D and 2D arrays on both host and device?  BTNG.
   template <int TDIM = DIM>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, int>::type num_contour_cells(
     int iCase) const
@@ -438,14 +441,11 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   AXOM_HOST_DEVICE axom::StackArray<axom::IndexType, DIM> multidim_cell_index(
     axom::IndexType flatId) const
   {
-    axom::IndexType strides[DIM] = {1};
-    for(int d = 1; d < DIM; ++d) strides[d] = strides[d - 1] * m_bShape[d - 1];
-
     axom::StackArray<axom::IndexType, DIM> rval;
     for(int d = DIM - 1; d >= 0; --d)
     {
-      rval[d] = flatId / strides[d];
-      flatId -= rval[d] * strides[d];
+      rval[d] = flatId / m_bStrides[d];
+      flatId -= rval[d] * m_bStrides[d];
     }
     return rval;
   }
@@ -464,15 +464,15 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     const auto& y = m_coordsViews[1];
 
     // clang-format off
-    cornerCoords[0] = { x(j  ,i  ), y(j  ,i  ) };
-    cornerCoords[1] = { x(j  ,i+1), y(j  ,i+1) };
-    cornerCoords[2] = { x(j+1,i+1), y(j+1,i+1) };
-    cornerCoords[3] = { x(j+1,i  ), y(j+1,i  ) };
+    cornerCoords[0] = { x(j    , i    ), y(j    , i    ) };
+    cornerCoords[1] = { x(j    , i + 1), y(j    , i + 1) };
+    cornerCoords[2] = { x(j + 1, i + 1), y(j + 1, i + 1) };
+    cornerCoords[3] = { x(j + 1, i    ), y(j + 1, i    ) };
 
-    cornerValues[0] = m_fcnView(j  ,i  );
-    cornerValues[1] = m_fcnView(j  ,i+1);
-    cornerValues[2] = m_fcnView(j+1,i+1);
-    cornerValues[3] = m_fcnView(j+1,i  );
+    cornerValues[0] = m_fcnView(j    , i    );
+    cornerValues[1] = m_fcnView(j    , i + 1);
+    cornerValues[2] = m_fcnView(j + 1, i + 1);
+    cornerValues[3] = m_fcnView(j + 1, i    );
     // clang-format on
   }
   template <int TDIM = DIM>
@@ -491,26 +491,27 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     const auto& z = m_coordsViews[2];
 
     // clang-format off
-    cornerCoords[0] = { x(k  ,j  ,i+1), y(k  ,j  ,i+1), z(k  ,j  ,i+1) };
-    cornerCoords[1] = { x(k  ,j+1,i+1), y(k  ,j+1,i+1), z(k  ,j+1,i+1) };
-    cornerCoords[2] = { x(k  ,j+1,i  ), y(k  ,j+1,i  ), z(k  ,j+1,i  ) };
-    cornerCoords[3] = { x(k  ,j  ,i  ), y(k  ,j  ,i  ), z(k  ,j  ,i  ) };
-    cornerCoords[4] = { x(k+1,j  ,i+1), y(k+1,j  ,i+1), z(k+1,j  ,i+1) };
-    cornerCoords[5] = { x(k+1,j+1,i+1), y(k+1,j+1,i+1), z(k+1,j+1,i+1) };
-    cornerCoords[6] = { x(k+1,j+1,i  ), y(k+1,j+1,i  ), z(k+1,j+1,i  ) };
-    cornerCoords[7] = { x(k+1,j  ,i  ), y(k+1,j  ,i  ), z(k+1,j  ,i  ) };
+    cornerCoords[0] = { x(k  , j  , i+1), y(k  , j  , i+1), z(k  , j  , i+1) };
+    cornerCoords[1] = { x(k  , j+1, i+1), y(k  , j+1, i+1), z(k  , j+1, i+1) };
+    cornerCoords[2] = { x(k  , j+1, i  ), y(k  , j+1, i  ), z(k  , j+1, i  ) };
+    cornerCoords[3] = { x(k  , j  , i  ), y(k  , j  , i  ), z(k  , j  , i  ) };
+    cornerCoords[4] = { x(k+1, j  , i+1), y(k+1, j  , i+1), z(k+1, j  , i+1) };
+    cornerCoords[5] = { x(k+1, j+1, i+1), y(k+1, j+1, i+1), z(k+1, j+1, i+1) };
+    cornerCoords[6] = { x(k+1, j+1, i  ), y(k+1, j+1, i  ), z(k+1, j+1, i  ) };
+    cornerCoords[7] = { x(k+1, j  , i  ), y(k+1, j  , i  ), z(k+1, j  , i  ) };
 
-    cornerValues[0] = m_fcnView(k  ,j  ,i+1);
-    cornerValues[1] = m_fcnView(k  ,j+1,i+1);
-    cornerValues[2] = m_fcnView(k  ,j+1,i  );
-    cornerValues[3] = m_fcnView(k  ,j  ,i  );
-    cornerValues[4] = m_fcnView(k+1,j  ,i+1);
-    cornerValues[5] = m_fcnView(k+1,j+1,i+1);
-    cornerValues[6] = m_fcnView(k+1,j+1,i  );
-    cornerValues[7] = m_fcnView(k+1,j  ,i  );
+    cornerValues[0] = m_fcnView(k  , j  , i+1);
+    cornerValues[1] = m_fcnView(k  , j+1, i+1);
+    cornerValues[2] = m_fcnView(k  , j+1, i  );
+    cornerValues[3] = m_fcnView(k  , j  , i  );
+    cornerValues[4] = m_fcnView(k+1, j  , i+1);
+    cornerValues[5] = m_fcnView(k+1, j+1, i+1);
+    cornerValues[6] = m_fcnView(k+1, j+1, i  );
+    cornerValues[7] = m_fcnView(k+1, j  , i  );
     // clang-format on
   }
 
+  //!@brief Output contour mesh to a mint::UnstructuredMesh object.
   void populate_contour_mesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
     const std::string& cellIdField) const override
@@ -557,6 +558,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     }
   }
 
+  //!@brief Interpolate for the contour location crossing a parent edge.
   template <int TDIM = DIM>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2>::type linear_interp(
     int edgeIdx,
@@ -602,6 +604,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
       crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
     }
   }
+  //!@brief Interpolate for the contour location crossing a parent edge.
   template <int TDIM = DIM>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3>::type linear_interp(
     int edgeIdx,
@@ -654,6 +657,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     }
   }
 
+  //!@brief Set a value to find the contour for.
   void set_contour_value(double contourVal) override
   {
     m_contourVal = contourVal;
@@ -684,8 +688,8 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     m_contourCellCount = 0;
   }
 
-  /*
-    Internal data arrays use memory compatible with memory for ExecSpace.
+  /*!
+    @brief Constructor.
   */
   MarchingCubesImpl()
     : m_crossings(0, 0, execution_space<ExecSpace>::allocatorID())
@@ -708,11 +712,12 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     std::uint16_t caseNum;               //!< @brief Index in cases2D or cases3D
     axom::IndexType firstSurfaceCellId;  //!< @brief First index for generated cells.
   };
-  axom::Array<CrossingInfo> m_crossings;
 
+private:
   MIdx m_bShape;  //!< @brief Blueprint cell data shape.
   MIdx m_cShape;  //!< @brief Cell-centered array shape for ArrayViews.
   MIdx m_pShape;  //!< @brief Node-centered array shape for ArrayViews.
+  axom::IndexType m_bStrides[DIM];  //!< @brief Strides for m_bShape arrays.
 
   // Views of parent domain data.
   axom::ArrayView<const double, DIM> m_coordsViews[DIM];
@@ -720,8 +725,10 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
   axom::ArrayView<const int, DIM> m_maskView;
 
   //!@brief Crossing case for each computational mesh cell.
-  // TODO: Put this in correct memory space.
   axom::Array<std::uint16_t, DIM, MemorySpace> m_caseIds;
+
+  //!@brief Info on every parent cell that crosses the contour surface.
+  axom::Array<CrossingInfo> m_crossings;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;
@@ -732,7 +739,7 @@ struct MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
     return m_contourCellCount;
   }
 
-  //!@brief Number of corners (nodes) on each cell.
+  //!@brief Number of corners (nodes) on each parent cell.
   static constexpr std::uint8_t CELL_CORNER_COUNT = (DIM == 3) ? 8 : 4;
 
   //!@name Internal representation of generated contour mesh.
