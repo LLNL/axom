@@ -133,6 +133,7 @@ TEST(primal_solid_angle, polygon)
                   winding_number(queries[n], square_tri2),
                 1e-10);
 
+  // Test on coplanar points
   Point3D troubled_queries[5] = {
     Point3D {0.5, 0.5, 0.0},
     Point3D {1.0, 0.5, 0.0},
@@ -146,6 +147,82 @@ TEST(primal_solid_angle, polygon)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_solid_angle, nonconvex_polygon)
+{
+  using Point3D = primal::Point<double, 3>;
+  using Triangle = primal::Triangle<double, 3>;
+  using Polygon = primal::Polygon<double, 3>;
+
+  Point3D origin {0.0, 0.0, 0.0};
+
+  // Test on a nonconvex pentagon shape, compare with triangularization
+  axom::Array<Point3D> pentagon_vertices({Point3D {1.0, 0.0, 0.0},
+                                          Point3D {0.5, 0.5, 0.0},
+                                          Point3D {1.0, 1.0, 0.0},
+                                          Point3D {0.0, 1.0, 0.0},
+                                          Point3D {0.0, 0.0, 0.0}});
+  Polygon pentagon(pentagon_vertices);
+  Triangle pentagon_tri1(pentagon[0], pentagon[1], pentagon[4]);
+  Triangle pentagon_tri2(pentagon[2], pentagon[3], pentagon[4]);
+
+  Point3D queries[5] = {
+    Point3D {0.0, 4.0, 1.0},
+    Point3D {-1.0, 2.0, 2.0},
+    Point3D {0.0, -5.0, 3.0},
+    Point3D {0.0, 0.0, 4.0},
+    Point3D {3.0, 2.0, 5.0},
+  };
+
+  for(int n = 0; n < 5; ++n)
+    EXPECT_NEAR(winding_number(queries[n], pentagon),
+                winding_number(queries[n], pentagon_tri1) +
+                  winding_number(queries[n], pentagon_tri2),
+                1e-10);
+
+  // Test on coplanar points
+  Point3D troubled_queries[5] = {
+    Point3D {0.5, 0.5, 0.0},
+    Point3D {1.0, 0.5, 0.0},
+    Point3D {0.5, 1.0, 0.0},
+    Point3D {1.5, 1.5, 0.0},
+    Point3D {0.0, 0.0, 0.0},
+  };
+
+  for(int n = 0; n < 5; ++n)
+    EXPECT_NEAR(winding_number(troubled_queries[n], pentagon), 0, 1e-10);
+
+  ////Test on a self-intersecting "square" shape
+  //axom::Array<Point3D> square_vertices({
+  //  Point3D {1.0, 0.0, 0.0},
+  //  Point3D {1.0, 1.0, 0.0},
+  //  Point3D {0.0, 1.0, 0.0},
+  //  Point3D {0.0, 0.0, 0.0},
+  //});
+  //Polygon square(square_vertices);
+
+  //axom::Array<Point3D> squareish_vertices({
+  //  Point3D {1.0, 0.0, 0.0},
+  //  Point3D {1.0, 1.0, 0.0},
+  //  Point3D {0.0, 1.0, 0.0},
+  //  Point3D {0.0, 0.0, 0.0},
+  //  Point3D {1.0, 0.0, 0.0},
+  //  Point3D {1.0, 1.0, 0.0},
+  //  Point3D {0.0, 1.0, 0.0},
+  //  Point3D {0.0, 0.0, 0.0},
+  //});
+
+  //Polygon squareish(squareish_vertices);
+
+  //std::cout << "WEEOOO1 " << winding_number(queries[0], square) << std::endl;
+  //std::cout << "WEEOOO2 " << winding_number(queries[0], squareish) << std::endl;
+
+  //for(int n = 0; n < 5; ++n)
+  //  EXPECT_NEAR(2 * winding_number(queries[n], square),
+  //              winding_number(queries[n], squareish),
+  //              1e-10);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_solid_angle, degenerate_polygon)
 {
   using Point3D = primal::Point<double, 3>;
@@ -156,32 +233,34 @@ TEST(primal_solid_angle, degenerate_polygon)
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
   Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
 
-  Polygon good_poly(5), bad_poly(9);
+  Polygon good_pentagon(5), bad_pentagon(9);
   double good_angles[5] = {0.0, 0.5, 1.2, 3.0, 5.0};
+
+  // Test with final vertex coincident with initial vertex
   double bad_angles[9] = {0.0, 0.5, 0.5, 1.2, 3.0, 3.0, 3.0, 5.0, 0.0};
 
   // Add vertices to good polygon
   for(int i = 0; i < 5; ++i)
-    good_poly.addVertex(
+    good_pentagon.addVertex(
       Point3D {cos(good_angles[i]) * v1[0] + sin(good_angles[i]) * v2[0],
                cos(good_angles[i]) * v1[1] + sin(good_angles[i]) * v2[1],
                cos(good_angles[i]) * v1[2] + sin(good_angles[i]) * v2[2]});
 
   // Create bad polygon with degeneracies
   // Add point at angle 0
-  bad_poly.addVertex(
+  bad_pentagon.addVertex(
     Point3D {cos(bad_angles[0]) * v1[0] + sin(bad_angles[0]) * v2[0],
              cos(bad_angles[0]) * v1[1] + sin(bad_angles[0]) * v2[1],
              cos(bad_angles[0]) * v1[2] + sin(bad_angles[0]) * v2[2]});
   // Add a midpoint between angles 0 and 1
-  bad_poly.addVertex(Point3D::midpoint(
-    bad_poly[0],
+  bad_pentagon.addVertex(Point3D::midpoint(
+    bad_pentagon[0],
     Point3D {cos(bad_angles[1]) * v1[0] + sin(bad_angles[1]) * v2[0],
              cos(bad_angles[1]) * v1[1] + sin(bad_angles[1]) * v2[1],
              cos(bad_angles[1]) * v1[2] + sin(bad_angles[1]) * v2[2]}));
   // Add the rest of the vertices
   for(int i = 1; i < 9; ++i)
-    bad_poly.addVertex(
+    bad_pentagon.addVertex(
       Point3D {cos(bad_angles[i]) * v1[0] + sin(bad_angles[i]) * v2[0],
                cos(bad_angles[i]) * v1[1] + sin(bad_angles[i]) * v2[1],
                cos(bad_angles[i]) * v1[2] + sin(bad_angles[i]) * v2[2]});
@@ -194,11 +273,27 @@ TEST(primal_solid_angle, degenerate_polygon)
     Point3D {3.0, 2.0, 5.0},
   };
 
-  EXPECT_NEAR(good_poly.area(), bad_poly.area(), 1e-10);
+  EXPECT_NEAR(good_pentagon.area(), bad_pentagon.area(), 1e-10);
+  for(int n = 0; n < 5; ++n)
+    EXPECT_NEAR(winding_number(queries[n], good_pentagon),
+                winding_number(queries[n], bad_pentagon),
+                1e-10);
+
+  // Test with duplicate point at endpoint
+  axom::Array<Point3D> good_square_vertices({Point3D {1.0, 0.0, 0.0},
+                                             Point3D {1.0, 1.0, 0.0},
+                                             Point3D {0.0, 1.0, 0.0},
+                                             Point3D {0.0, 0.0, 0.0}});
+
+  axom::Array<Point3D> bad_square_vertices({Point3D {1.0, 0.0, 0.0},
+                                            Point3D {1.0, 1.0, 0.0},
+                                            Point3D {0.0, 1.0, 0.0},
+                                            Point3D {0.0, 0.0, 0.0},
+                                            Point3D {0.0, 0.0, 0.0}});
 
   for(int n = 0; n < 5; ++n)
-    EXPECT_NEAR(winding_number(queries[n], good_poly),
-                winding_number(queries[n], bad_poly),
+    EXPECT_NEAR(winding_number(queries[n], Polygon(good_square_vertices)),
+                winding_number(queries[n], Polygon(bad_square_vertices)),
                 1e-10);
 }
 
