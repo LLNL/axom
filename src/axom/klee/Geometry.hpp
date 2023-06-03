@@ -82,6 +82,9 @@ public:
    */
   const std::string &getPath() const { return m_path; }
 
+  /// Predicate that returns true when the geometry has a path
+  bool hasPath() const { return !m_path.empty(); }
+
   /**
    * Get a GeometryOperator to apply to this geometry. Can be null.
    *

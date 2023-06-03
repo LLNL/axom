@@ -25,6 +25,8 @@ TEST(GeometryTest, dimensions_noOperators)
   Geometry geometry {startProperties, "test format", "test path", nullptr};
   EXPECT_EQ(startProperties, geometry.getStartProperties());
   EXPECT_EQ(startProperties, geometry.getEndProperties());
+
+  EXPECT_TRUE(geometry.hasPath());
 }
 
 TEST(GeometryTest, dimensions_dimensionPreservingOperator)
@@ -41,6 +43,15 @@ TEST(GeometryTest, dimensions_dimensionPreservingOperator)
 
   EXPECT_EQ(startProperties, geometry.getStartProperties());
   EXPECT_EQ(endProperties, geometry.getEndProperties());
+}
+
+TEST(GeometryTest, emptyPath)
+{
+  TransformableGeometryProperties startProperties {Dimensions::Three,
+                                                   LengthUnit::mils};
+  Geometry geometry {startProperties, "none", "", nullptr};
+
+  EXPECT_FALSE(geometry.hasPath());
 }
 
 }  // namespace klee
