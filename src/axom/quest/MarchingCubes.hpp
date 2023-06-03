@@ -90,11 +90,11 @@ class MarchingCubesSingleDomain;
  *             double contourValue )
  *   {
  *     MarchingCubes computationalMesh(meshNode, coordsName);
- *     set_function_field(functionName);
- *     mc.compute_isocontour(contourValue);
+ *     setFunctionField(functionName);
+ *     mc.computeIsocontour(contourValue);
  *     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
  *       contourMesh(3, min::CellType::Triangle);
- *     mc.populate_contour_mesh( contourMesh, "cellIdField");
+ *     mc.populateContourMesh( contourMesh, "cellIdField");
  *   }
  * @endverbatim
  *
@@ -132,19 +132,19 @@ public:
     @brief Set the field containing the nodal function.
     \param [in] fcnField Name of node-based scalar function values.
   */
-  void set_function_field(const std::string &fcnField);
+  void setFunctionField(const std::string &fcnField);
 
   /*!
    \brief Computes the isocontour.
    \param [in] contourVal isocontour value
    */
-  void compute_isocontour(double contourVal = 0.0);
+  void computeIsocontour(double contourVal = 0.0);
 
   //!@brief Get number of cells in the generated contour mesh.
-  axom::IndexType get_contour_cell_count() const;
+  axom::IndexType getContourCellCount() const;
 
   //!@brief Get number of nodes in the generated contour mesh.
-  axom::IndexType get_contour_node_count() const;
+  axom::IndexType getContourNodeCount() const;
 
   /*!
     @brief Put generated contour in a mint::UnstructuredMesh.
@@ -156,7 +156,7 @@ public:
 
     If the fields aren't in the mesh, they will be created.
   */
-  void populate_contour_mesh(
+  void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
     const std::string &cellIdField = {},
     const std::string &domainIdField = {});
@@ -170,7 +170,7 @@ private:
   std::string m_fcnPath;
   std::string m_maskPath;
 
-  void set_mesh(const conduit::Node &bpMesh);
+  void setMesh(const conduit::Node &bpMesh);
 };
 
 /*!
@@ -201,7 +201,7 @@ public:
    *
    * Some data from \a dom may be cached by the constructor.
    * Any change to it after the constructor leads to undefined behavior.
-   * See set_domain(const conduit::Node &) for requirements on \a dom.
+   * See setDomain(const conduit::Node &) for requirements on \a dom.
    *
    * The mesh coordinates should be stored contiguously.  See
    * conduit::blueprint::is_contiguous().  In the future, this
@@ -218,7 +218,7 @@ public:
     in the input mesh.
     \param [in] fcnField Name of node-based scalar function values.
   */
-  void set_function_field(const std::string &fcnField);
+  void setFunctionField(const std::string &fcnField);
 
   /*!
    * \brief Compute the isocontour.
@@ -226,23 +226,23 @@ public:
    * \param [in] contourVal isocontour value
    *
    * Compute isocontour using the marching cubes algorithm.
-   * To get the isocontour mesh, use populate_contour_mesh.
+   * To get the isocontour mesh, use populateContourMesh.
    */
-  void compute_isocontour(double contourVal = 0.0);
+  void computeIsocontour(double contourVal = 0.0);
 
   //!@brief Get number of cells in the generated contour mesh.
-  axom::IndexType get_contour_cell_count() const
+  axom::IndexType getContourCellCount() const
   {
     SLIC_ASSERT_MSG(
       m_impl,
-      "There is no contour mesh until you call compute_isocontour()");
-    axom::IndexType cellCount = m_impl->get_contour_cell_count();
+      "There is no contour mesh until you call computeIsocontour()");
+    axom::IndexType cellCount = m_impl->getContourCellCount();
     return cellCount;
   }
   //!@brief Get number of nodes in the generated contour mesh.
-  axom::IndexType get_contour_node_count() const
+  axom::IndexType getContourNodeCount() const
   {
-    return m_ndim * get_contour_cell_count();
+    return m_ndim * getContourCellCount();
   }
 
   /*!
@@ -253,11 +253,11 @@ public:
     @param cellIdField Name of field to store the prent cell ids.
       If omitted, the data is not copied.
   */
-  void populate_contour_mesh(
+  void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
     const std::string &cellIdField = {}) const
   {
-    m_impl->populate_contour_mesh(mesh, cellIdField);
+    m_impl->populateContourMesh(mesh, cellIdField);
   }
 
   /*!
@@ -327,25 +327,25 @@ private:
                             const std::string &fcnPath,
                             const std::string &maskPath) = 0;
     //!@brief Set the contour value
-    virtual void set_contour_value(double contourVal) = 0;
+    virtual void setContourValue(double contourVal) = 0;
     //@{
     //!@name Phases of the computation
     //!@brief Mark domain cells that cross the contour.
-    virtual void mark_crossings() = 0;
+    virtual void markCrossings() = 0;
     //!@brief Precompute some metadata for contour mesh.
-    virtual void scan_crossings() = 0;
+    virtual void scanCrossings() = 0;
     //!@brief Generate the contour mesh in internal data format.
-    virtual void compute_contour() = 0;
+    virtual void computeContpur() = 0;
     //!@brief Get the number of contour mesh cells generated.
     //@}
-    virtual axom::IndexType get_contour_cell_count() const = 0;
+    virtual axom::IndexType getContourCellCount() const = 0;
     /*!
       @brief Populate output mesh object with generated contour.
 
       Note: Output format is in flux.  We will likely output
       a blueprint object in the future.
     */
-    virtual void populate_contour_mesh(
+    virtual void populateContourMesh(
       axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
       const std::string &cellIdField) const = 0;
     virtual ~ImplBase() { }
@@ -353,14 +353,14 @@ private:
 
   std::unique_ptr<ImplBase> m_impl;
   //!@brief Allocate implementation object and set m_impl.
-  void allocate_impl();
+  void allocateImpl();
 
   /*!
    * \brief Set the blueprint single-domain mesh.
    *
    * Some data from \a dom may be cached by the constructor.
    */
-  void set_domain(const conduit::Node &dom);
+  void setDomain(const conduit::Node &dom);
 
 };  // class MarchingCubesSingleDomain
 

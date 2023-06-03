@@ -36,49 +36,48 @@ MarchingCubes::MarchingCubes(RuntimePolicy runtimePolicy,
   }
 }
 
-void MarchingCubes::set_function_field(const std::string& fcnField)
+void MarchingCubes::setFunctionField(const std::string& fcnField)
 {
   m_fcnPath = "fields/" + fcnField;
   for(auto& s : m_singles)
   {
-    s->set_function_field(fcnField);
+    s->setFunctionField(fcnField);
   }
 }
 
-void MarchingCubes::compute_isocontour(double contourVal)
+void MarchingCubes::computeIsocontour(double contourVal)
 {
-  SLIC_ASSERT_MSG(
-    !m_fcnPath.empty(),
-    "You must call set_function_field before compute_isocontour.");
+  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
+                  "You must call setFunctionField before computeIsocontour.");
 
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
     std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
-    single->compute_isocontour(contourVal);
+    single->computeIsocontour(contourVal);
   }
 }
 
-axom::IndexType MarchingCubes::get_contour_cell_count() const
+axom::IndexType MarchingCubes::getContourCellCount() const
 {
   axom::IndexType contourCellCount = 0;
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
-    contourCellCount += m_singles[dId]->get_contour_cell_count();
+    contourCellCount += m_singles[dId]->getContourCellCount();
   }
   return contourCellCount;
 }
 
-axom::IndexType MarchingCubes::get_contour_node_count() const
+axom::IndexType MarchingCubes::getContourNodeCount() const
 {
   axom::IndexType contourNodeCount = 0;
   for(int dId = 0; dId < m_singles.size(); ++dId)
   {
-    contourNodeCount += m_singles[dId]->get_contour_node_count();
+    contourNodeCount += m_singles[dId]->getContourNodeCount();
   }
   return contourNodeCount;
 }
 
-void MarchingCubes::populate_contour_mesh(
+void MarchingCubes::populateContourMesh(
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
   const std::string& cellIdField,
   const std::string& domainIdField)
@@ -98,8 +97,8 @@ void MarchingCubes::populate_contour_mesh(
   }
 
   // Reserve space once for all local domains.
-  const axom::IndexType contourCellCount = get_contour_cell_count();
-  const axom::IndexType contourNodeCount = get_contour_node_count();
+  const axom::IndexType contourCellCount = getContourCellCount();
+  const axom::IndexType contourNodeCount = getContourNodeCount();
   mesh.reserveCells(contourCellCount);
   mesh.reserveNodes(contourNodeCount);
 
@@ -109,7 +108,7 @@ void MarchingCubes::populate_contour_mesh(
     std::unique_ptr<MarchingCubesSingleDomain>& single = m_singles[dId];
 
     auto nPrev = mesh.getNumberOfCells();
-    single->populate_contour_mesh(mesh, cellIdField);
+    single->populateContourMesh(mesh, cellIdField);
     auto nNew = mesh.getNumberOfCells();
 
     if(nNew > nPrev && !domainIdField.empty())
@@ -145,11 +144,11 @@ MarchingCubesSingleDomain::MarchingCubesSingleDomain(RuntimePolicy runtimePolicy
     isValidRuntimePolicy(runtimePolicy),
     fmt::format("Policy '{}' is not a valid runtime policy", runtimePolicy));
 
-  set_domain(dom);
+  setDomain(dom);
   return;
 }
 
-void MarchingCubesSingleDomain::set_domain(const conduit::Node& dom)
+void MarchingCubesSingleDomain::setDomain(const conduit::Node& dom)
 {
   SLIC_ASSERT_MSG(
     !conduit::blueprint::mesh::is_multi_domain(dom),
@@ -179,7 +178,7 @@ void MarchingCubesSingleDomain::set_domain(const conduit::Node& dom)
     "MarchingCubes currently requires contiguous coordinates layout.");
 }
 
-void MarchingCubesSingleDomain::set_function_field(const std::string& fcnField)
+void MarchingCubesSingleDomain::setFunctionField(const std::string& fcnField)
 {
   m_fcnPath = "fields/" + fcnField;
   SLIC_ASSERT(m_dom->has_path(m_fcnPath));
@@ -188,21 +187,20 @@ void MarchingCubesSingleDomain::set_function_field(const std::string& fcnField)
   SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
 }
 
-void MarchingCubesSingleDomain::compute_isocontour(double contourVal)
+void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
 {
-  SLIC_ASSERT_MSG(
-    !m_fcnPath.empty(),
-    "You must call set_function_field before compute_isocontour.");
+  SLIC_ASSERT_MSG(!m_fcnPath.empty(),
+                  "You must call setFunctionField before computeIsocontour.");
 
-  allocate_impl();
+  allocateImpl();
   m_impl->initialize(*m_dom, m_coordsetPath, m_fcnPath, m_maskPath);
-  m_impl->set_contour_value(contourVal);
-  m_impl->mark_crossings();
-  m_impl->scan_crossings();
-  m_impl->compute_contour();
+  m_impl->setContourValue(contourVal);
+  m_impl->markCrossings();
+  m_impl->scanCrossings();
+  m_impl->computeContpur();
 }
 
-void MarchingCubesSingleDomain::allocate_impl()
+void MarchingCubesSingleDomain::allocateImpl()
 {
   using namespace detail::marching_cubes;
   if(m_runtimePolicy == RuntimePolicy::seq)

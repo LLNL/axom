@@ -136,16 +136,16 @@ public:
   }
 
   /*!
-    @brief Implementation of virtual mark_crossings.
+    @brief Implementation of virtual markCrossings.
 
     Virtual methods cannot be templated, so this implementation
     delegates to a name templated on DIM.
   */
-  void mark_crossings() override { mark_crossings_dim(); }
+  void markCrossings() override { markCrossings_dim(); }
 
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
-  typename std::enable_if<TDIM == 2>::type mark_crossings_dim()
+  typename std::enable_if<TDIM == 2>::type markCrossings_dim()
   {
     auto caseIdsView = m_caseIds.view();
 
@@ -185,7 +185,7 @@ public:
   }
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
-  typename std::enable_if<TDIM == 3>::type mark_crossings_dim()
+  typename std::enable_if<TDIM == 3>::type markCrossings_dim()
   {
     auto caseIdsView = m_caseIds.view();
 
@@ -240,7 +240,7 @@ public:
     We sum up the number of contour surface cells from the crossings,
     allocate space, then populate it.
   */
-  void scan_crossings() override
+  void scanCrossings() override
   {
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
@@ -328,7 +328,7 @@ public:
         num_contour_cells(m_crossings.back().caseNum);
   }
 
-  void compute_contour() override
+  void computeContpur() override
   {
     auto crossingsView = m_crossings.view();
 
@@ -512,7 +512,7 @@ public:
   }
 
   //!@brief Output contour mesh to a mint::UnstructuredMesh object.
-  void populate_contour_mesh(
+  void populateContourMesh(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& mesh,
     const std::string& cellIdField) const override
   {
@@ -658,7 +658,7 @@ public:
   }
 
   //!@brief Set a value to find the contour for.
-  void set_contour_value(double contourVal) override
+  void setContourValue(double contourVal) override
   {
     m_contourVal = contourVal;
   }
@@ -734,7 +734,7 @@ private:
   axom::IndexType m_crossingCount = 0;
   //!@brief Number of contour surface cells from crossings.
   axom::IndexType m_contourCellCount = 0;
-  axom::IndexType get_contour_cell_count() const override
+  axom::IndexType getContourCellCount() const override
   {
     return m_contourCellCount;
   }
