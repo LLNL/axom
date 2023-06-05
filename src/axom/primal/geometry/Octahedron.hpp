@@ -218,28 +218,6 @@ public:
   }
 
   /*!
-   * \brief Determines whether the octahedron has duplicate vertices.
-   * \return True if there are duplicate vertices; False otherwise.
-   */
-  AXOM_HOST_DEVICE
-  bool has_duplicate_vertices() const
-  {
-    for(int i = 0; i < 6; i++)
-    {
-      for(int j = i + 1; j < NUM_VERTS; j++)
-      {
-        // operator= for Point does not want to play nice...
-        if(m_points[i][0] == m_points[j][0] &&
-           m_points[i][1] == m_points[j][1] && m_points[i][2] == m_points[j][2])
-        {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /*!
    * \brief Simple formatted print of an octahedron instance
    * \param os The output stream to write to
    * \return A reference to the modified ostream
