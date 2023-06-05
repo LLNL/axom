@@ -61,6 +61,15 @@ namespace slam
 {
 namespace policies
 {
+
+/*!
+ * \class ConstantCardinality
+ * \brief Represents a mapping between two sets, where each element in the
+ *  first set maps to a fixed number of elements in the second set
+ *
+ * \tparam ElementType the index data type
+ * \tparam StridePolicy policy for number of elements being mapped
+ */
 template <typename ElementType = int, typename StridePolicy = RuntimeStride<ElementType>>
 struct ConstantCardinality
 {
@@ -133,6 +142,14 @@ struct ConstantCardinality
   BeginsSet m_begins;
 };
 
+/*!
+ * \class VariableCardinality
+ * \brief Represents a mapping between two sets, where each element in the
+ *  first set maps to an arbitrary number of elements in the second set.
+ *
+ * \tparam ElementType the index data type
+ * \tparam IndirectionPolicy the policy to use for storing offsets and indices
+ */
 template <typename ElementType = int,
           typename IndirectionPolicy = STLVectorIndirection<ElementType, ElementType>>
 struct VariableCardinality
@@ -215,8 +232,19 @@ struct VariableCardinality
   BeginsSet m_begins;
 };
 
+/*!
+ * \class MappedVariableCardinality
+ * \brief Represents a mapping between two sets, where each element in the
+ *  first set maps to an arbitrary number of elements in the second set.
+ *
+ *  MappedVariableCardinality extends VariableCardinality to map "flat" indices
+ *  in the associated RelationSet to first set indices.
+ *
+ * \tparam ElementType the index data type
+ * \tparam IndirectionPolicy the policy to use for storing offsets and indices
+ */
 template <typename ElementType = int,
-          typename IndirectionPolicy = STLVectorIndirection<ElementType, ElementType>>
+          typename IndirectionPolicy = ArrayIndirection<ElementType, ElementType>>
 struct MappedVariableCardinality
 {
   using BeginsSizePolicy = RuntimeSize<ElementType>;
