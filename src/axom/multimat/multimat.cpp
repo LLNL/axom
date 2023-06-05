@@ -509,7 +509,8 @@ void ScanRelationOffsetsRAJA(const axom::ArrayView<const IndexType> counts,
       }
     });
 #else
-  SLIC_ASSERT_MSG(false,
+  SLIC_ASSERT_MSG(
+    false,
     "Calling ScanRelationOffsetsRAJA requires support for RAJA and Umpire.");
 #endif
 }

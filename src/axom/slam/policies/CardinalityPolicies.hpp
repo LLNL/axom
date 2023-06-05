@@ -61,7 +61,6 @@ namespace slam
 {
 namespace policies
 {
-
 /*!
  * \class ConstantCardinality
  * \brief Represents a mapping between two sets, where each element in the
