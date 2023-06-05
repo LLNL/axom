@@ -2006,4 +2006,50 @@ TEST(core_array, check_subspan_range)
   EXPECT_EQ(&arrv3[arrv3.size() - 1], &arr[n + l - 1]);
 }
 
+//------------------------------------------------------------------------------
+
+template <typename DataType>
+void test_resize_with_stackarray(DataType value)
+{
+  const int I_DIMS = 3;
+  const int J_DIMS = 5;
+  const int K_DIMS = 7;
+  Array<DataType, 2> arr2;
+
+  StackArray<axom::IndexType, 2> dims2 = {I_DIMS, J_DIMS};
+  arr2.resize(dims2, value);
+  EXPECT_EQ(arr2.size(), I_DIMS * J_DIMS);
+  EXPECT_EQ(arr2.shape()[0], I_DIMS);
+  EXPECT_EQ(arr2.shape()[1], J_DIMS);
+  for(int i = 0; i < I_DIMS; i++)
+  {
+    for(int j = 0; j < J_DIMS; j++)
+    {
+      EXPECT_EQ(arr2[i][j], value);
+    }
+  }
+
+  Array<DataType, 3> arr3;
+
+  StackArray<axom::IndexType, 3> dims3 = {I_DIMS, J_DIMS, K_DIMS};
+  arr3.resize(dims3, value);
+  EXPECT_EQ(arr3.size(), I_DIMS * J_DIMS * K_DIMS);
+  EXPECT_EQ(arr3.shape()[0], I_DIMS);
+  EXPECT_EQ(arr3.shape()[1], J_DIMS);
+  EXPECT_EQ(arr3.shape()[2], K_DIMS);
+  for(int i = 0; i < I_DIMS; i++)
+  {
+    for(int j = 0; j < J_DIMS; j++)
+    {
+      for(int k = 0; k < K_DIMS; k++) EXPECT_EQ(arr3[i][j][k], value);
+    }
+  }
+}
+
+TEST(core_array, resize_stackarray)
+{
+  test_resize_with_stackarray<bool>(false);
+  test_resize_with_stackarray<int>(-1);
+}
+
 } /* end namespace axom */
