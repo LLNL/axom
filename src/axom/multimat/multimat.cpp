@@ -470,6 +470,18 @@ void MultiMat::setCellMatRel(const vector<bool>& vecarr, DataLayout layout)
   setCellMatRel(counts, indices, layout);
 }
 
+/*!
+ * \brief Given the cardinality array from a cell-material relation, generates
+ *  arrays to be bound to the associated Slam StaticRelation type.
+ *
+ * \param [in] counts The number of second-set elements associated with the
+ *                    first-set element
+ * \param [out] begins For each first-set element, the first offset for a range of
+ *                     associated second-set elements
+ * \param [out] firstIndices For each flat index, the associated first-set element
+ *
+ * \pre Requires that Multimat is built with support for RAJA and Umpire
+ */
 template <typename ExecSpace, typename IndexType>
 void ScanRelationOffsetsRAJA(const axom::ArrayView<const IndexType> counts,
                              const axom::ArrayView<IndexType> begins,
@@ -496,6 +508,9 @@ void ScanRelationOffsetsRAJA(const axom::ArrayView<const IndexType> counts,
         firstIndices[flatIndex] = firstIndex;
       }
     });
+#else
+  SLIC_ASSERT_MSG(false,
+    "Calling ScanRelationOffsetsRAJA requires support for RAJA and Umpire.");
 #endif
 }
 
@@ -936,6 +951,29 @@ bool MultiMat::removeEntry(int cell_id, int mat_id)
 }
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+/*!
+ * \brief Transposes a sparse relation between cells and materials, generating
+ *  the complementary data layout. Also generates transposition maps for flat
+ *  indices, enabling quick transpositions of fields between cell-dominant and
+ *  material-dominant layouts.
+ *
+ *  For example, a cell-dominant relation would be transposed into a material-
+ *  dominant relation, and vice versa.
+ *
+ *  This function may run on the GPU if an appropriate execution space is
+ *  provided.
+ *
+ * \param [in] oldRelationSet the sparse relation to transpose
+ * \param [out] beginOffsets the new relation's begin offsets
+ * \param [out] secondIndexes the new relation's second-set indices map
+ * \param [out] firstIndexes the new relation's first-set indices map
+ * \param [out] flatOldToNew mapping of flat indices from old to new relation
+ * \param [out] flatNewToOld mapping of flat indices from old to new relation
+ *
+ * \tparam ExecSpace the execution space to run the transposition in
+ *
+ * \pre Requires that Multimat is built with support for RAJA and Umpire
+ */
 template <typename ExecSpace, typename IndexType>
 void TransposeRelationImplRAJA(const MultiMat::RelationSetType* oldRelationSet,
                                axom::Array<IndexType>& beginOffsets,
@@ -990,6 +1028,22 @@ void TransposeRelationImplRAJA(const MultiMat::RelationSetType* oldRelationSet,
 }
 #endif  // defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
+/*!
+ * \brief Transposes a sparse relation between cells and materials, generating
+ *  the complementary data layout. Also generates transposition maps for flat
+ *  indices, enabling quick transpositions of fields between cell-dominant and
+ *  material-dominant layouts.
+ *
+ *  For example, a cell-dominant relation would be transposed into a material-
+ *  dominant relation, and vice versa.
+ *
+ * \param [in] oldRelationSet the sparse relation to transpose
+ * \param [out] beginOffsets the new relation's begin offsets
+ * \param [out] secondIndexes the new relation's second-set indices map
+ * \param [out] firstIndexes the new relation's first-set indices map
+ * \param [out] flatOldToNew mapping of flat indices from old to new relation
+ * \param [out] flatNewToOld mapping of flat indices from old to new relation
+ */
 template <typename ExecSpace, typename IndexType>
 void TransposeRelationImpl(const MultiMat::RelationSetType* oldRelationSet,
                            axom::Array<IndexType>& beginOffsets,
@@ -1300,6 +1354,15 @@ void MultiMat::convertFieldToDense(int field_idx)
   m_fieldSparsityLayoutVec[field_idx] = SparsityLayout::DENSE;
 }
 
+/*!
+ * \brief Converts a dense-layout field to a sparse-layout field.
+ *
+ * \param [in] oldField the field to convert
+ * \param [in] prodSet the associated relation set for the new field
+ * \param [in] allocatorId allocator to use for the new array
+ *
+ * \return the associated sparse-layout data
+ */
 template <typename DataType>
 axom::Array<DataType> ConvertToSparseImpl(
   const MultiMat::DenseField2D<DataType> oldField,
@@ -1347,6 +1410,15 @@ void MultiMat::convertToSparse_helper(int map_i)
   m_fieldBackingVec[map_i]->getArray<DataType>() = std::move(sparseFieldData);
 }
 
+/*!
+ * \brief Converts a sparse-layout field to a dense-layout field.
+ *
+ * \param [in] oldField the field to convert
+ * \param [in] prodSet the associated product set for the new field
+ * \param [in] allocatorId allocator to use for the new array
+ *
+ * \return the associated dense-layout data
+ */
 template <typename DataType>
 axom::Array<DataType> ConvertToDenseImpl(
   const MultiMat::SparseField2D<DataType> oldField,
@@ -1414,6 +1486,17 @@ SparsityLayout MultiMat::getFieldSparsityLayout(int field_idx) const
   return m_fieldSparsityLayoutVec[field_idx];
 }
 
+/*!
+ * \brief Transposes a sparse field to a complementary data layout.
+ *
+ * \param [in] oldField the field to convert
+ * \param [in] relationSet the associated relation set for the field
+ * \param [in] flatTransposeMap the map of flat indices from the old relation
+ *                              to the new relation
+ * \param [in] allocatorId allocator to use for the new array
+ *
+ * \return the sparse field transposed into the complementary data layout
+ */
 template <typename DataType, typename IndexType>
 axom::Array<DataType> TransposeSparseImpl(
   const MultiMat::SparseField2D<DataType> oldField,
@@ -1443,6 +1526,15 @@ axom::Array<DataType> TransposeSparseImpl(
   return sparseField;
 }
 
+/*!
+ * \brief Transposes a dense field to a complementary data layout.
+ *
+ * \param [in] oldField the field to convert
+ * \param [in] relationSet the associated relation set for the field's layout
+ * \param [in] allocatorId allocator to use for the new array
+ *
+ * \return the dense field transposed into the complementary data layout
+ */
 template <typename DataType>
 axom::Array<DataType> TransposeDenseImpl(
   const MultiMat::DenseField2D<DataType> oldField,
