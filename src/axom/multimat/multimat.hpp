@@ -84,7 +84,7 @@ private:
   using IndViewPolicy = slam::policies::ArrayViewIndirection<SetPosType, T>;
 
   using VariableCardinality =
-    slam::policies::VariableCardinality<SetPosType, IndViewPolicy<SetElemType>>;
+    slam::policies::MappedVariableCardinality<SetPosType, IndViewPolicy<SetElemType>>;
   using StaticVariableRelationType =
     slam::StaticRelation<SetPosType,
                          SetElemType,
@@ -283,6 +283,8 @@ public:
    *
    * \pre The number of materials and cell must be set prior to calling this
    *  function with setNumberOfMaterials(int) and setNumberOfCells(int)
+   * \pre If m_slamAllocatorID points to device-accessible memory, cardinality
+   *  and indices must be device accessible.
    */
   void setCellMatRel(axom::ArrayView<const SetPosType> cardinality,
                      axom::ArrayView<const SetPosType> indices,
@@ -681,6 +683,14 @@ private:  //private functions
   IndBufferType& relIndVec(DataLayout layout);
 
   /*!
+   * \brief Returns a reference to the corresponding array of indices for
+   *        a static relation corresponding to a layout.
+   *
+   * \param layout The layout type of the relation (cell- or mat-dominant)
+   */
+  IndBufferType& relFirstIndVec(DataLayout layout);
+
+  /*!
    * \brief Returns a reference to the static relation corresponding to a
    *        layout.
    *
@@ -780,9 +790,11 @@ private:
   //cell to mat relation data
   IndBufferType m_cellMatRel_beginsVec;
   IndBufferType m_cellMatRel_indicesVec;
+  IndBufferType m_cellMatRel_firstIndicesVec;
   //mat to cell relation data
   IndBufferType m_matCellRel_beginsVec;
   IndBufferType m_matCellRel_indicesVec;
+  IndBufferType m_matCellRel_firstIndicesVec;
   //relation objects stored in unified memory
   axom::Array<StaticVariableRelationType> m_staticRelations;
   axom::Array<DynamicVariableRelationType> m_dynamicRelations;
@@ -791,6 +803,11 @@ private:
   axom::Array<RelationSetType> m_sparseBivarSet;
   // dense layout bivariate sets
   axom::Array<ProductSetType> m_denseBivarSet;
+
+  // Transposition maps for sparse conversions of data layout
+  // These map flat indices between cell-dominant and material-dominant layouts
+  IndBufferType m_flatCellToMatIndexMap;
+  IndBufferType m_flatMatToCellIndexMap;
 
   struct FieldBacking
   {

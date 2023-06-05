@@ -608,7 +608,8 @@ TEST(multimat, construct_multimat_3_array)
 
 template <typename DataType, int Stride>
 void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
-                              std::pair<DataLayout, SparsityLayout> to)
+                              std::pair<DataLayout, SparsityLayout> to,
+                              int allocatorID = axom::getDefaultAllocatorID())
 {
   const int num_cells = 20;
   const int num_mats = 10;
@@ -654,6 +655,7 @@ void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
   mm.setVolfracField(volFracMap.find(from)->second.view(),
                      layout_used,
                      sparsity_used);
+  mm.setAllocatorID(allocatorID);
 
   SLIC_INFO(axom::fmt::format("Constructing Multimat object with layout {}/{}",
                               mm.getFieldDataLayoutAsString(0),
@@ -707,18 +709,18 @@ void test_multimat_conversion(std::pair<DataLayout, SparsityLayout> from,
   check_values<DataType>(mm, "UnownedField", data);
 }
 
+const std::vector<std::pair<DataLayout, SparsityLayout>> g_test_layouts {
+  {DataLayout::CELL_DOM, SparsityLayout::DENSE},
+  {DataLayout::CELL_DOM, SparsityLayout::SPARSE},
+  {DataLayout::MAT_DOM, SparsityLayout::DENSE},
+  {DataLayout::MAT_DOM, SparsityLayout::SPARSE},
+};
+
 TEST(multimat, convert_multimat_1_array)
 {
-  std::vector<std::pair<DataLayout, SparsityLayout>> layouts {
-    {DataLayout::CELL_DOM, SparsityLayout::DENSE},
-    {DataLayout::CELL_DOM, SparsityLayout::SPARSE},
-    {DataLayout::MAT_DOM, SparsityLayout::DENSE},
-    {DataLayout::MAT_DOM, SparsityLayout::SPARSE},
-  };
-
-  for(auto layout_from : layouts)
+  for(auto layout_from : g_test_layouts)
   {
-    for(auto layout_to : layouts)
+    for(auto layout_to : g_test_layouts)
     {
       test_multimat_conversion<int, 1>(layout_from, layout_to);
       test_multimat_conversion<float, 1>(layout_from, layout_to);
@@ -729,16 +731,9 @@ TEST(multimat, convert_multimat_1_array)
 
 TEST(multimat, convert_multimat_3_array)
 {
-  std::vector<std::pair<DataLayout, SparsityLayout>> layouts {
-    {DataLayout::CELL_DOM, SparsityLayout::DENSE},
-    {DataLayout::CELL_DOM, SparsityLayout::SPARSE},
-    {DataLayout::MAT_DOM, SparsityLayout::DENSE},
-    {DataLayout::MAT_DOM, SparsityLayout::SPARSE},
-  };
-
-  for(auto layout_from : layouts)
+  for(auto layout_from : g_test_layouts)
   {
-    for(auto layout_to : layouts)
+    for(auto layout_to : g_test_layouts)
     {
       test_multimat_conversion<int, 3>(layout_from, layout_to);
       test_multimat_conversion<float, 3>(layout_from, layout_to);
@@ -746,6 +741,42 @@ TEST(multimat, convert_multimat_3_array)
     }
   }
 }
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+TEST(multimat, convert_multimat_1_array_gpu)
+{
+  int unifiedAllocID =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+
+  for(auto layout_from : g_test_layouts)
+  {
+    for(auto layout_to : g_test_layouts)
+    {
+      test_multimat_conversion<int, 1>(layout_from, layout_to, unifiedAllocID);
+      test_multimat_conversion<float, 1>(layout_from, layout_to, unifiedAllocID);
+      test_multimat_conversion<double, 1>(layout_from, layout_to, unifiedAllocID);
+    }
+  }
+}
+
+TEST(multimat, convert_multimat_3_array_gpu)
+{
+  int unifiedAllocID =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+
+  for(auto layout_from : g_test_layouts)
+  {
+    for(auto layout_to : g_test_layouts)
+    {
+      test_multimat_conversion<int, 3>(layout_from, layout_to, unifiedAllocID);
+      test_multimat_conversion<float, 3>(layout_from, layout_to, unifiedAllocID);
+      test_multimat_conversion<double, 3>(layout_from, layout_to, unifiedAllocID);
+    }
+  }
+}
+  #endif  // defined(AXOM_USE_CUDA) || defined(AXOM_USE_HIP)
+#endif    // defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
 /* Test dynamic mode */
 TEST(multimat, test_dynamic_multimat_1_array)
