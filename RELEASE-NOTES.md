@@ -110,6 +110,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and triangles before using the geometry.
 - Improves import logic for `lua` dependency
 - Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
+- Fixes ambiguity when calling `Array::resize(size, value)` for `Array<bool>`
 
 ### Deprecated
 - Integer types in `src/axom/core/Types.hpp` are deprecated because `c++11` supports their equivalents.

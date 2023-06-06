@@ -719,7 +719,7 @@ public:
                   "constructible. Use Array<T>::reserve() and emplace_back()"
                   "instead.");
     const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
-    resize(dims, true);
+    resizeImpl(dims, true);
   }
 
   /// \overload
@@ -727,18 +727,18 @@ public:
   void resize(ArrayOptions::Uninitialized, Args... args)
   {
     const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
-    resize(dims, false);
+    resizeImpl(dims, false);
   }
 
   template <int Dims = DIM, typename Enable = std::enable_if_t<Dims == 1>>
   void resize(IndexType size, const T& value)
   {
-    resize({size}, true, &value);
+    resizeImpl({size}, true, &value);
   }
 
-  void reshape(const StackArray<IndexType, DIM>& size, const T& value)
+  void resize(const StackArray<IndexType, DIM>& size, const T& value)
   {
-    resize(size, true, &value);
+    resizeImpl(size, true, &value);
   }
 
   /*!
@@ -821,9 +821,9 @@ protected:
    * \param [in] value pointer to the value to fill new elements in the array
    *             with. If null, will default-construct elements in place.
    */
-  void resize(const StackArray<IndexType, DIM>& dims,
-              bool construct_with_values,
-              const T* value = nullptr);
+  void resizeImpl(const StackArray<IndexType, DIM>& dims,
+                  bool construct_with_values,
+                  const T* value = nullptr);
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
@@ -1310,9 +1310,9 @@ inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-inline void Array<T, DIM, SPACE>::resize(const StackArray<IndexType, DIM>& dims,
-                                         bool construct_with_values,
-                                         const T* value)
+inline void Array<T, DIM, SPACE>::resizeImpl(const StackArray<IndexType, DIM>& dims,
+                                             bool construct_with_values,
+                                             const T* value)
 {
   assert(detail::allNonNegative(dims.m_data));
   const auto new_num_elements = detail::packProduct(dims.m_data);

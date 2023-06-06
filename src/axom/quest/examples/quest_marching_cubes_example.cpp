@@ -1035,7 +1035,7 @@ struct ContourTestBase
       computationalMesh.domainLengths(domId, domLengths);
 
       axom::Array<bool, DIM>& hasContour = hasContours[domId];
-      hasContour.reshape(domLengths, false);
+      hasContour.resize(domLengths, false);
 
       // Add 1 to count nodes.  Reverse to match Conduit data.
       reverse(domLengths);
