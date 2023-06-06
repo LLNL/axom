@@ -20,6 +20,7 @@
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
+#include "axom/primal/operators/winding_number.hpp"
 
 // C++ includes
 #include <cmath>
@@ -49,11 +50,12 @@ template <typename T>
 bool in_polygon(const Point<T, 2>& query,
                 const Polygon<T, 2>& poly,
                 bool useNonzeroRule = true,
-                bool strict = false,
+                bool useStrictInclusion = false,
                 double EPS = 1e-8)
 {
-  return useNonzeroRule ? winding_number(query, poly, strict, EPS) != 0
-                        : (winding_number(query, poly, strict, EPS) % 2) == 1;
+  return useNonzeroRule
+    ? winding_number(query, poly, useStrictInclusion, EPS) != 0
+    : (winding_number(query, poly, useStrictInclusion, EPS) % 2) == 1;
 }
 
 }  // namespace primal

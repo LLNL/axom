@@ -9,7 +9,8 @@
 // Axom includes
 #include "axom/config.hpp"  // for compile-time configuration options
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/operators/in_polygon.hpp"
 #include "axom/primal/operators/is_convex.hpp"

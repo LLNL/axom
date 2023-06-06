@@ -67,8 +67,8 @@ public:
 
   using CoordsVec = axom::Array<PointType, 1>;
   using CoordsMat = axom::Array<PointType, 2>;
-  using NumsVec = axom::Array<T, 1>;
-  using NumsMat = axom::Array<T, 2>;
+  using WeightsVec = axom::Array<T, 1>;
+  using WeightsMat = axom::Array<T, 2>;
 
   using BoundingBoxType = BoundingBox<T, 3>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, 3>;
@@ -204,7 +204,7 @@ public:
    * 
    * Elements of pts and weights are mapped to control nodes (p, q) lexicographically.
    */
-  BezierPatch(const CoordsVec& pts, const NumsVec& weights, int ord_u, int ord_v)
+  BezierPatch(const CoordsVec& pts, const WeightsVec& weights, int ord_u, int ord_v)
   {
     SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
     SLIC_ASSERT(weights.size() == pts.size());
@@ -255,7 +255,7 @@ public:
    * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
    */
-  BezierPatch(const CoordsMat& pts, const NumsMat& weights, int ord_u, int ord_v)
+  BezierPatch(const CoordsMat& pts, const WeightsMat& weights, int ord_u, int ord_v)
   {
     SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
     SLIC_ASSERT(pts.shape()[0] == weights.shape()[0]);
@@ -382,7 +382,7 @@ public:
   CoordsMat getControlPoints() const { return m_controlPoints; }
 
   /// Returns a copy of the Bezier patch's weights
-  NumsMat getWeights() const { return m_weights; }
+  WeightsMat getWeights() const { return m_weights; }
 
   /*!
    * \brief Reverses the order of one direction of the Bezier patch's control points and weights
@@ -453,7 +453,7 @@ public:
 
     if(isRational())
     {
-      NumsMat new_weights(ord_v + 1, ord_u + 1);
+      WeightsMat new_weights(ord_v + 1, ord_u + 1);
       for(int p = 0; p <= ord_u; ++p)
         for(int q = 0; q <= ord_v; ++q) new_weights(q, p) = m_weights(p, q);
 
@@ -950,7 +950,7 @@ private:
   }
 
   CoordsMat m_controlPoints;
-  NumsMat m_weights;
+  WeightsMat m_weights;
 };
 
 //------------------------------------------------------------------------------

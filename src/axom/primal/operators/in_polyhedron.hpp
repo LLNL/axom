@@ -37,6 +37,8 @@ namespace primal
  * \param [in] poly The Polygon object to test for containment
  * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
  * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Determines containment using the winding number with respect to the 

@@ -268,7 +268,7 @@ public:
     return !(lhs == rhs);
   }
 
-  /// Returns a reference to the Bezier curve's control points
+  /// Returns a copy of the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
   /// Returns a copy of the Bezier curve's weights

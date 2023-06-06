@@ -17,6 +17,10 @@
 #include "axom/config.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
+#include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
 #include "axom/primal/operators/detail/winding_number_impl.hpp"
@@ -32,12 +36,8 @@ namespace primal
  * \brief Compute the winding number with respect to a line segment
  *
  * \param [in] q The query point to test
- * \param [in] c0 The initial point of the line segment
- * \param [in] c1 The terminal point of the line segment
+ * \param [in] s The line segment
  * \param [in] edge_tol The tolerance at which a point is on the line
- *
- * The winding number for a point with respect to a straight line
- * is the signed angle subtended by the query point to each endpoint.
  *
  * \return double The winding number
  */
@@ -144,7 +144,7 @@ int winding_number(const Point<T, 2>& R,
  * \brief Computes the generalized winding number for a single Bezier curve
  *
  * \param [in] query The query point to test
- * \param [in] cpoly The Bezier curve object 
+ * \param [in] c The Bezier curve object 
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
@@ -172,9 +172,7 @@ double winding_number(const Point<T, 2>& q,
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
- * Computes the winding number using a recursive, bisection algorithm.
- * Iterates over the edges of a curved polygon object, and uses nearly-linear 
- * Bezier curves as a base case.
+ * Computes the winding number by summing the winding number for each curve
  * 
  * \return float the generalized winding number.
  */
@@ -196,12 +194,14 @@ double winding_number(const Point<T, 2>& q,
  * \brief Computes the solid angle winding number for a 3D triangle
  *
  * \param [in] query The query point to test
- * \param [in] tri The Triangle object
+ * \param [in] tri The 3D Triangle object
+ * \param [in] isOnFace An optional return parameter if the point is on the triangle
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
- * Computes the winding number using the formula from [Barill 2018]
+ * Computes the winding number using the formula from [Barill 2018],
+ *  with extra adjustments if the triangle takes up a full octant
  * 
  * \return float the generalized winding number.
  */
@@ -268,7 +268,6 @@ double winding_number(const Point<T, 3>& q,
  * 
  * \pre Assumes the polygon is truly planar
  * Triangulates the polygon and computes the triangular solid angle for each part
- * If on the boundary of a face, return 1.0
  * 
  * \return float the generalized winding number.
  */
@@ -321,8 +320,7 @@ double winding_number(const Point<T, 3>& q,
  * \pre Expects the polyhedron to be convex
  * 
  * Computes the faces of the polygon and computes the winding number for each.
- * Current policy is to return 1 on faces without strict inclusion, 0 on faces 
- *  with strict inclusion. 
+ *
  * \return int The integer winding number.
  */
 template <typename T>
