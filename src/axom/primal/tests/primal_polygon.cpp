@@ -48,7 +48,7 @@ TEST(primal_polygon, winding_number)
   EXPECT_EQ(winding_number(PointType {2.5, 0.0}, poly), 0);
 
   // Current policy is to return 1 on edges without strict inclusion,
-  //  0 on edges with strict inclusion, as 0 always indicates "interior"
+  //  0 on edges with strict inclusion, as 0 always indicates "exterior"
   EXPECT_EQ(winding_number(PointType {0.0, 0.0}, poly, !useStrictInclusion), 1);
   EXPECT_EQ(winding_number(PointType {0.0, 0.0}, poly, useStrictInclusion), 0);
 }
