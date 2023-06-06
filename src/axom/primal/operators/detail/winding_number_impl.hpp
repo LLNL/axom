@@ -9,7 +9,8 @@
 // Axom includes
 #include "axom/config.hpp"  // for compile-time configuration options
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/operators/in_polygon.hpp"
 #include "axom/primal/operators/is_convex.hpp"
@@ -175,27 +176,27 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  */
 template <typename T>
 double curve_winding_number_recursive(const Point<T, 2>& q,
-                                const BezierCurve<T, 2>& c,
-                                bool isConvexControlPolygon,
-                                double edge_tol = 1e-8,
-                                double EPS = 1e-8)
+                                      const BezierCurve<T, 2>& c,
+                                      bool isConvexControlPolygon,
+                                      double edge_tol = 1e-8,
+                                      double EPS = 1e-8)
 {
   const int ord = c.getOrder();
   if(ord <= 0) return 0.0;  // Catch degenerate cases
 
-  // If q is outside a convex shape that contains the entire curve, the winding 
+  // If q is outside a convex shape that contains the entire curve, the winding
   //   number for the shape connected at the endpoints with straight lines is zero.
   //   We then subtract the contribution of this line segment.
-  
+
   // Simplest convex shape containing c is its bounding box
   BoundingBox<T, 2> bBox(c.boundingBox());
   if(!bBox.contains(q))
     return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
 
-  // Use linearity as base case for recursion. 
+  // Use linearity as base case for recursion.
   if(c.isLinear(EPS)) return linear_winding_number(q, c[0], c[ord], edge_tol);
 
-  // Check if our control polygon is convex. 
+  // Check if our control polygon is convex.
   //  If so, all subsequent control polygons will be convex as well
   Polygon<T, 2> controlPolygon(c.getControlPoints());
   if(!isConvexControlPolygon)

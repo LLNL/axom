@@ -98,7 +98,7 @@ TEST(primal_solid_angle, triangle)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_solid_angle, polygon)
+TEST(primal_solid_angle, simple_polygon)
 {
   using Point3D = primal::Point<double, 3>;
   using Triangle = primal::Triangle<double, 3>;
