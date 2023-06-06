@@ -55,6 +55,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Multimat: adds an overload of `MultiMat::setCellMatRel()` that supports setting a
   multi-material relation in a compressed sparse-row (CSR) representation.
 - Quest: Adds ability to import volume fractions into `SamplingShaper` before processing `Klee` input
+- Slam: adds a `slam::MappedVariableCardinality` policy to accelerate mapping flat indices
+  back to first-set indices when used in a `StaticRelation`
 
 ### Changed
 - Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.
@@ -97,6 +99,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   of full copies of field data.
 - Multimat: `MultiMat::addField()` and `MultiMat::setVolfracField()` API now use `axom::ArrayView`
   to accept data.
+- Multimat: Ported field data/sparsity layout conversion methods to GPU.
+- Multimat: `MultiMat::makeOtherRelation()` now runs on the GPU with an appropriately-set allocator ID.
+- Multimat: `MultiMat::setCellMatRel(counts, indices)` now runs on the GPU, and accepts GPU-side data.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
@@ -105,6 +110,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   and triangles before using the geometry.
 - Improves import logic for `lua` dependency
 - Improves import logic for `mfem` dependency in device builds when `mfem` is configured with `caliper`
+- Fixes ambiguity when calling `Array::resize(size, value)` for `Array<bool>`
 
 ### Deprecated
 - Integer types in `src/axom/core/Types.hpp` are deprecated because `c++11` supports their equivalents.
