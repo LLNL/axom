@@ -2041,7 +2041,10 @@ void test_resize_with_stackarray(DataType value)
   {
     for(int j = 0; j < J_DIMS; j++)
     {
-      for(int k = 0; k < K_DIMS; k++) EXPECT_EQ(arr3[i][j][k], value);
+      for(int k = 0; k < K_DIMS; k++)
+      {
+        EXPECT_EQ(arr3[i][j][k], value);
+      }
     }
   }
 }
