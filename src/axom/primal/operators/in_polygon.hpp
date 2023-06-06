@@ -52,7 +52,6 @@ bool in_polygon(const Point<T, 2>& query,
                 bool strict = false,
                 double EPS = 1e-8)
 {
-  // Else, use EvenOdd rule
   return useNonzeroRule ? winding_number(query, poly, strict, EPS) != 0
                         : (winding_number(query, poly, strict, EPS) % 2) == 1;
 }

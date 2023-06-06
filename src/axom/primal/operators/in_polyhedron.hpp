@@ -21,6 +21,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
+#include "axom/primal/operators/winding_number.hpp"
 
 // C++ includes
 #include <cmath>
@@ -47,21 +48,19 @@ namespace primal
  * \return boolean value indicating containment.
  */
 template <typename T>
-bool in_polyhedron(const Point<T, 2>& query,
-                   const Polyhedron<T, 2>& poly,
+bool in_polyhedron(const Point<T, 3>& query,
+                   const Polyhedron<T, 3>& poly,
+                   bool useStrictInclusion = false,
                    bool useNonzeroRule = true,
                    double edge_tol = 1e-8,
                    double EPS = 1e-8)
 {
-  SLIC_ASSERT(poly.hasNeighbors());
-
-  // For each face
-  // winding_number += winding_number( query, poly, edge_tol, EPS );
-  // return useNonzeroRule ? std::lround( winding_number ) != 0
-  //                      : (std::lround( winding_number ) % 2) == 1;
+  return useNonzeroRule
+    ? (winding_number(query, poly, useStrictInclusion, edge_tol, EPS) != 0)
+    : (winding_number(query, poly, useStrictInclusion, edge_tol, EPS) % 2) == 1;
 }
 
 }  // namespace primal
 }  // namespace axom
 
-#endif  // AXOM_PRIMAL_IN_CURVED_POLYGON_H_
+#endif  // AXOM_PRIMAL_IN_POLYHEDRON_H_
