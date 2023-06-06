@@ -7,17 +7,10 @@
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/detail/marching_cubes_lookup.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/constants.hpp"
 #include "axom/mint/execution/internal/structured_exec.hpp"
 #include "conduit_blueprint.hpp"
 #include "axom/fmt.hpp"
-
-#ifndef __WHERE
-  #define __STRINGIZE(x) __STRINGIZE2(x)
-  #define __STRINGIZE2(x) #x
-  //!@brief String literal for code location
-  #define __WHERE \
-    __FILE__ ":" __STRINGIZE(__LINE__) "(" + std::string(__func__) + ") "
-#endif
 
 namespace axom
 {
@@ -328,7 +321,7 @@ public:
         num_contour_cells(m_crossings.back().caseNum);
   }
 
-  void computeContpur() override
+  void computeContour() override
   {
     auto crossingsView = m_crossings.view();
 
@@ -596,7 +589,7 @@ public:
     }
 
     // STEP 3: point is in between the edge points, interpolate its position
-    constexpr double ptiny = 1.0e-80;
+    constexpr double ptiny = axom::primal::PRIMAL_TINY;
     const double df = f2 - f1 + ptiny;  //add ptiny to avoid division by zero
     const double w = (m_contourVal - f1) / df;
     for(int d = 0; d < DIM; ++d)
@@ -648,7 +641,7 @@ public:
     }
 
     // STEP 3: point is not at corner; interpolate its position
-    constexpr double ptiny = 1.0e-80;
+    constexpr double ptiny = axom::primal::PRIMAL_TINY;
     const double df = f2 - f1 + ptiny;  //add ptiny to avoid division by zero
     const double w = (m_contourVal - f1) / df;
     for(int d = 0; d < DIM; ++d)

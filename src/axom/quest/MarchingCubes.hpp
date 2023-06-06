@@ -75,6 +75,9 @@ class MarchingCubesSingleDomain;
  * \@brief Class implementing marching cubes to compute a contour
  * mesh from a scalar function on an input mesh.
  *
+ * This implementation is for the original algorithm of Lorensen and
+ * Cline, 1987.
+ *
  * Implementation is for 2D (marching squares) and 3D (marching
  * cubes).
  *
@@ -335,7 +338,7 @@ private:
     //!@brief Precompute some metadata for contour mesh.
     virtual void scanCrossings() = 0;
     //!@brief Generate the contour mesh in internal data format.
-    virtual void computeContpur() = 0;
+    virtual void computeContour() = 0;
     //!@brief Get the number of contour mesh cells generated.
     //@}
     virtual axom::IndexType getContourCellCount() const = 0;

@@ -45,14 +45,6 @@
 #include <vector>
 #include <cmath>
 
-#ifndef __WHERE
-  #define __STRINGIZE(x) __STRINGIZE2(x)
-  #define __STRINGIZE2(x) #x
-  //!@brief String literal for code location
-  #define __WHERE \
-    __FILE__ ":" __STRINGIZE(__LINE__) "(" + std::string(__func__) + ") "
-#endif
-
 namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace mint = axom::mint;
@@ -86,7 +78,7 @@ public:
   std::vector<double> inPlane;
   std::vector<double> perpDir;
 
-  size_t ndim {0};
+  std::size_t ndim {0};
 
   // TODO: Ensure that fcnCenter, inPlane and perpDir sizes match dimensionality.
 

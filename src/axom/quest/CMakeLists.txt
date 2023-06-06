@@ -38,9 +38,6 @@ set( quest_headers
     detail/inout/InOutOctreeStats.hpp
     detail/inout/InOutOctreeValidator.hpp
 
-    ## Marching cubes
-    detail/MarchingCubesImpl.hpp
-
     # Mesh tester
     MeshTester.hpp
     detail/MeshTester_detail.hpp
@@ -110,7 +107,7 @@ endif()
 
 blt_list_append(
     TO       quest_headers
-    ELEMENTS MarchingCubes.hpp
+    ELEMENTS MarchingCubes.hpp detail/MarchingCubesImpl.hpp
     IF       CONDUIT_FOUND
                )
 

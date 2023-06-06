@@ -197,7 +197,7 @@ void MarchingCubesSingleDomain::computeIsocontour(double contourVal)
   m_impl->setContourValue(contourVal);
   m_impl->markCrossings();
   m_impl->scanCrossings();
-  m_impl->computeContpur();
+  m_impl->computeContour();
 }
 
 void MarchingCubesSingleDomain::allocateImpl()
