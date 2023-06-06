@@ -208,6 +208,7 @@ double winding_number(const Point<T, 2>& q,
 template <typename T>
 double winding_number(const Point<T, 3>& q,
                       const Triangle<T, 3>& tri,
+                      bool& isOnFace,
                       const double edge_tol = 1e-8,
                       const double EPS = 1e-8)
 {
@@ -220,7 +221,11 @@ double winding_number(const Point<T, 3>& q,
   if(a_norm < edge_tol || b_norm < edge_tol || c_norm < edge_tol) return 0;
 
   double num = Vector<T, 3>::scalar_triple_product(a, b, c);
-  if(axom::utilities::isNearlyEqual(num, 0.0, EPS)) return 0;
+  if(axom::utilities::isNearlyEqual(num, 0.0, EPS))
+  {
+    isOnFace = true;
+    return 0;
+  }
 
   double denom = a_norm * b_norm * c_norm +
     a_norm * Vector<T, 3>::dot_product(b, c) +
@@ -237,22 +242,40 @@ double winding_number(const Point<T, 3>& q,
 }
 
 /*!
+ * \brief Computes the solid angle winding number for a 3D triangle
+ *
+ * Overload function without additional returning parameter
+ */
+template <typename T>
+double winding_number(const Point<T, 3>& q,
+                      const Triangle<T, 3>& tri,
+                      const double edge_tol = 1e-8,
+                      const double EPS = 1e-8)
+{
+  bool isOnFace;
+  return winding_number(q, tri, isOnFace, edge_tol, EPS);
+}
+
+/*!
  * \brief Computes the solid angle winding number for a 3D planar polygon
  *
  * \param [in] query The query point to test
  * \param [in] poly The Polygon object
+ * \param [in] isOnFace Return variable to show if the point is on the polygon
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  * 
  * \pre Assumes the polygon is truly planar
  * Triangulates the polygon and computes the triangular solid angle for each part
+ * If on the boundary of a face, return 1.0
  * 
  * \return float the generalized winding number.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& q,
                       const Polygon<T, 3>& poly,
+                      bool& isOnFace,
                       const double edge_tol = 1e-8,
                       const double EPS = 1e-8)
 {
@@ -261,12 +284,83 @@ double winding_number(const Point<T, 3>& q,
 
   double wn = 0.0;
   for(int i = 0; i < num_verts - 2; ++i)
-  {
-    double the_wn =
-      winding_number(q, Triangle<T, 3>(poly[0], poly[i + 1], poly[i + 2]));
-    wn += the_wn;
-  }
+    wn += winding_number(q,
+                         Triangle<T, 3>(poly[0], poly[i + 1], poly[i + 2]),
+                         isOnFace,
+                         edge_tol,
+                         EPS);
+
   return wn;
+}
+
+/*!
+ * \brief Computes the solid angle winding number for a 3D planar polygon
+ *
+ * Overload function without additional returning parameter
+ */
+template <typename T>
+double winding_number(const Point<T, 3>& q,
+                      const Polygon<T, 3>& poly,
+                      const double edge_tol = 1e-8,
+                      const double EPS = 1e-8)
+{
+  bool isOnFace;
+  return winding_number(q, poly, isOnFace, edge_tol, EPS);
+}
+
+/*!
+ * \brief Computes the solid angle winding number for a 3D convex polyhedron
+ *
+ * \param [in] query The query point to test
+ * \param [in] poly The Polyhedron object
+ * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ * 
+ * \pre Expects the polyhedron to be convex
+ * 
+ * Computes the faces of the polygon and computes the winding number for each.
+ * Current policy is to return 1 on faces without strict inclusion, 0 on faces 
+ *  with strict inclusion. 
+ * \return int The integer winding number.
+ */
+template <typename T>
+int winding_number(const Point<T, 3>& query,
+                   const Polyhedron<T, 3>& poly,
+                   bool useStrictInclusion = false,
+                   double edge_tol = 1e-8,
+                   double EPS = 1e-8)
+{
+  SLIC_ASSERT(poly.hasNeighbors());
+  const int num_verts = poly.numVertices();
+
+  int* faces = new int[num_verts * num_verts];
+  int* face_size = new int[2 * num_verts];
+  int* face_offset = new int[2 * num_verts];
+  int face_count;
+
+  poly.getFaces(faces, face_size, face_offset, face_count);
+
+  bool isOnFace = false;
+  double wn = 0;
+  for(int i = 0; i < face_count; ++i)
+  {
+    const int N = face_size[i];
+    const int i_offset = face_offset[i];
+    Polygon<T, 3> the_face(N);
+    for(int j = 0; j < N; ++j) the_face.addVertex(poly[faces[i_offset + j]]);
+
+    wn += winding_number(query, the_face, isOnFace, edge_tol, EPS);
+
+    if(isOnFace) return !useStrictInclusion;
+  }
+
+  delete[] faces;
+  delete[] face_size;
+  delete[] face_offset;
+
+  return std::lround(wn);
 }
 
 }  // namespace primal
