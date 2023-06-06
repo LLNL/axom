@@ -94,7 +94,7 @@ TEST(primal_solid_angle, triangle)
 
   // Test with point at vertex
   Point3D vertex {0.0, 1.0, 0.0};
-  EXPECT_DOUBLE_EQ(0.0, winding_number(vertex, octant), 1e-10);
+  EXPECT_NEAR(0.0, winding_number(vertex, octant), 1e-10);
 }
 
 //------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ TEST(primal_solid_angle, selfintersecting_star)
   using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
 
-  Point3D query {0, 0, 10};
+  Point3D single_query {1, 2, 3};
 
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
   Vector3D v2 = Vector3D({2.0, -1.0, 0.5}).unitVector();
@@ -346,9 +346,9 @@ TEST(primal_solid_angle, selfintersecting_star)
 
   // Add up components of the star
   double star_components = 0;
-  star_components += winding_number(query, pentagon);
+  star_components += winding_number(single_query, pentagon);
   for(int i = 0; i < 5; ++i)
-    star_components += winding_number(query, star_tips[i]);
+    star_components += winding_number(single_query, star_tips[i]);
 
   // Triangulate the pentagram directly
   Polygon pentagram_tris[5 - 2];
@@ -359,30 +359,23 @@ TEST(primal_solid_angle, selfintersecting_star)
   // Add up components of the pentagram triangulation
   double pentagram_triangulation = 0;
   for(int i = 0; i < 5 - 2; ++i)
-    pentagram_triangulation += winding_number(query, pentagram_tris[i]);
-
-  // Test equality of various iterations of star and pentagram
-  Point3D queries[5] = {
-    Point3D {0.0, 4.0, 1.0},
-    Point3D {-1.0, 2.0, 2.0},
-    Point3D {0.0, -5.0, 3.0},
-    Point3D {0.0, 0.0, 4.0},
-    Point3D {3.0, 2.0, 5.0},
-  };
+    pentagram_triangulation += winding_number(single_query, pentagram_tris[i]);
 
   for(int n = 0; n < 5; ++n)
   {
     // Nonoverlapping star should equal sum of tips + pentagon
-    EXPECT_NEAR(star_components, winding_number(query, full_star), 1e-10);
+    EXPECT_NEAR(star_components, winding_number(single_query, full_star), 1e-10);
 
     // Pentagram should be full star + extra pentagon
-    EXPECT_NEAR(
-      winding_number(query, full_star) + winding_number(query, pentagon),
-      pentagram_triangulation,
-      1e-10);
+    EXPECT_NEAR(winding_number(single_query, full_star) +
+                  winding_number(single_query, pentagon),
+                pentagram_triangulation,
+                1e-10);
 
     // Pentagram should equal it's triangulation
-    EXPECT_NEAR(winding_number(query, pentagram), pentagram_triangulation, 1e-10);
+    EXPECT_NEAR(winding_number(single_query, pentagram),
+                pentagram_triangulation,
+                1e-10);
   }
 }
 
