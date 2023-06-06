@@ -893,30 +893,12 @@ public:
           {
             int shapeIdx = candidates_v[offsets_v[i] + j];
 
-            bool has_duplicate_vertices = false;
-            for(int v1 = 0; v1 < ShapeType::NUM_VERTS; v1++)
+            for(int k = 0; k < NUM_TETS_PER_HEX; k++)
             {
-              for(int v2 = v1 + 1; v2 < ShapeType::NUM_VERTS; v2++)
-              {
-                // operator= for Point does not want to play nice...
-                if((shapes_view[shapeIdx][v1][0] == shapes_view[shapeIdx][v2][0]) &&
-                   (shapes_view[shapeIdx][v1][1] == shapes_view[shapeIdx][v2][1]) &&
-                   (shapes_view[shapeIdx][v1][2] == shapes_view[shapeIdx][v2][2]))
-                {
-                  has_duplicate_vertices = true;
-                }
-              }
-            }
-
-            if(!has_duplicate_vertices)
-            {
-              for(int k = 0; k < NUM_TETS_PER_HEX; k++)
-              {
-                auto idx = RAJA::atomicAdd<ATOMIC_POL>(newTotalCandidates, 1);
-                hexIndices[idx] = i;
-                shapeCandidates[idx] = shapeIdx;
-                tetIndices[idx] = i * NUM_TETS_PER_HEX + k;
-              }
+              auto idx = RAJA::atomicAdd<ATOMIC_POL>(newTotalCandidates, 1);
+              hexIndices[idx] = i;
+              shapeCandidates[idx] = shapeIdx;
+              tetIndices[idx] = i * NUM_TETS_PER_HEX + k;
             }
           }
         }););
