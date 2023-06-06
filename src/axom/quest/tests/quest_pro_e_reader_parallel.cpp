@@ -13,9 +13,6 @@
 
 #include "mpi.h"
 
-#include "axom/quest/interface/internal/QuestHelpers.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"  // for write_vtk
-
 //------------------------------------------------------------------------------
 // HELPER METHODS
 //------------------------------------------------------------------------------
