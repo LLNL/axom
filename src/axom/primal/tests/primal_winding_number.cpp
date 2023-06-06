@@ -55,6 +55,7 @@ TEST(primal_winding_number, simple_cases)
   // Test points that are straightforwardly "inside" or "outside"
   //  the closed shape
   using Point2D = primal::Point<double, 2>;
+  using Triangle = primal::Triangle<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
   using CPolygon = primal::CurvedPolygon<double, 2>;
 
@@ -124,6 +125,28 @@ TEST(primal_winding_number, simple_cases)
   EXPECT_NEAR(winding_number(Point2D({0.4, 0.21}), cubic_loop, edge_tol, EPS),
               -0.630526441742,
               abs_tol);
+
+  // Test containment on a 2D triangle
+  Triangle tri(Point2D {1.0, -1.0}, Point2D {0.5, 2.0}, Point2D {-2.0, 0.5});
+  for(double y = -2.0; y < 2.0; y += 0.15)
+  {
+    auto q = Point2D {0.0, y};
+    if(tri.checkInTriangle(q))
+      EXPECT_EQ(winding_number(q, tri), 1);
+    else
+      EXPECT_EQ(winding_number(q, tri), 0);
+  }
+
+  // Reverse the orientation, which flips the winding number
+  tri = Triangle(Point2D {1.0, -1.0}, Point2D {2.0, 0.5}, Point2D {0.5, -2.0});
+  for(double y = -2.0; y < 2.0; y += 0.15)
+  {
+    auto q = Point2D {0.0, y};
+    if(tri.checkInTriangle(q))
+      EXPECT_EQ(winding_number(q, tri), -1);
+    else
+      EXPECT_EQ(winding_number(q, tri), 0);
+  }
 }
 
 TEST(primal_winding_number, closure_edge_cases)
@@ -131,19 +154,19 @@ TEST(primal_winding_number, closure_edge_cases)
   // Tests for when query is on the linear closure
   using Point2D = primal::Point<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
+  using Segment = primal::Segment<double, 2>;
 
   double abs_tol = 1e-8;
   double edge_tol = 1e-8;
   double EPS = primal::PRIMAL_TINY;
 
   // Test on linear cases
-  Point2D linear_nodes[] = {Point2D {0.0, 0.0}, Point2D {1.0, 1.0}};
-  Bezier linear(linear_nodes, 1);
+  Segment linear(Point2D {0.0, 0.0}, Point2D {1.0, 1.0});
 
-  EXPECT_NEAR(winding_number(Point2D({-0.45, -0.45}), linear, edge_tol, EPS),
+  EXPECT_NEAR(winding_number(Point2D({-0.45, -0.45}), linear, edge_tol),
               0.0,
               abs_tol);
-  EXPECT_NEAR(winding_number(Point2D({1.45, 1.45}), linear, edge_tol, EPS),
+  EXPECT_NEAR(winding_number(Point2D({1.45, 1.45}), linear, edge_tol),
               0.0,
               abs_tol);
 

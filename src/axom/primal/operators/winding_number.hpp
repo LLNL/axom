@@ -39,12 +39,36 @@ namespace primal
  * \param [in] s The line segment
  * \param [in] edge_tol The tolerance at which a point is on the line
  *
- * \return double The winding number
+ * \return double The generalized winding number
  */
 template <typename T>
-double winding_number(const Point<T, 2>& q, const Segment<T, 2>& s, double edge_tol)
+double winding_number(const Point<T, 2>& q,
+                      const Segment<T, 2>& s,
+                      double edge_tol = 1e-8)
 {
-  return linear_winding_number(q, s[0], s[1], edge_tol);
+  return detail::linear_winding_number(q, s[0], s[1], edge_tol);
+}
+
+/*
+ * \brief Compute the winding number with respect to a 2D triangle
+ *
+ * \param [in] q The query point to test
+ * \param [in] tri The triangle
+ * \param [in] edge_tol The tolerance at which a point is on the line
+ *
+ * \return int The integer winding number
+ */
+template <typename T>
+int winding_number(const Point<T, 2>& q,
+                   const Triangle<T, 2>& tri,
+                   bool useStrictInclusion = false,
+                   double edge_tol = 1e-8)
+{
+  return winding_number(
+    q,
+    Polygon<T, 2>(axom::Array<Point<T, 2>>({tri[0], tri[1], tri[2]})),
+    useStrictInclusion,
+    edge_tol);
 }
 
 /*!
