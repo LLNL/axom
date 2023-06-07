@@ -26,7 +26,7 @@ TEST(GeometryTest, dimensions_noOperators)
   EXPECT_EQ(startProperties, geometry.getStartProperties());
   EXPECT_EQ(startProperties, geometry.getEndProperties());
 
-  EXPECT_TRUE(geometry.hasPath());
+  EXPECT_TRUE(geometry.hasGeometry());
 }
 
 TEST(GeometryTest, dimensions_dimensionPreservingOperator)
@@ -51,7 +51,7 @@ TEST(GeometryTest, emptyPath)
                                                    LengthUnit::mils};
   Geometry geometry {startProperties, "none", "", nullptr};
 
-  EXPECT_FALSE(geometry.hasPath());
+  EXPECT_FALSE(geometry.hasGeometry());
 }
 
 }  // namespace klee
