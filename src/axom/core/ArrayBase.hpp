@@ -313,20 +313,6 @@ public:
     std::swap(m_strides, other.m_strides);
   }
 
-  /// \brief Set the shape
-  AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, DIM>& shape_)
-  {
-#ifndef NDEBUG
-    for(auto s : shape_)
-    {
-      assert(s >= 0);
-    }
-#endif
-
-    m_shape = shape_;
-    updateStrides();
-  }
-
   /// \brief Returns the dimensions of the Array
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& shape() const
   {
@@ -347,6 +333,20 @@ public:
   AXOM_HOST_DEVICE IndexType spacing() const { return m_strides[DIM - 1]; }
 
 protected:
+  /// \brief Set the shape
+  AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, DIM>& shape_)
+  {
+#ifndef NDEBUG
+    for(auto s : shape_)
+    {
+      assert(s >= 0);
+    }
+#endif
+
+    m_shape = shape_;
+    updateStrides();
+  }
+
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    * For example, 2 would be the chunk size of a 2D array whose second dimension is of size 2.
