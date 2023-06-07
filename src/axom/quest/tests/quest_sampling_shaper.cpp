@@ -43,6 +43,8 @@ namespace
 const std::string unit_circle_contour =
   "piece = circle(origin=(0cm, 0cm), radius=1cm, start=0deg, end=360deg)";
 
+constexpr bool very_verbose_output = false;
+
 /// RAII utility class to write a file at construction time and remove it
 /// once the instance is out of scope
 class ScopedTemporaryFile
@@ -163,7 +165,7 @@ public:
   sidre::MFEMSidreDataCollection& getDC() { return m_dc; }
   mfem::Mesh& getMesh() { return *m_dc.GetMesh(); }
 
-  // parse and validate the Klee shapefile; fail the test if invalid
+  /// parse and validate the Klee shapefile; fail the test if invalid
   void validateShapeFile(const std::string& shapefile)
   {
     axom::klee::ShapeSet shapeSet;
@@ -195,28 +197,35 @@ public:
     }
   }
 
+  /// Runs the shaping query over a shapefile using the supplie initial volume fractions
   void runShaping(const std::string& shapefile,
                   const std::map<std::string, mfem::GridFunction*>& init_vf_map = {})
   {
-    SLIC_INFO(axom::fmt::format("Reading shape set from {}", shapefile));
+    SLIC_INFO_IF(very_verbose_output,
+                 axom::fmt::format("Reading shape set from {}", shapefile));
     klee::ShapeSet shapeSet(klee::readShapeSet(shapefile));
 
-    SLIC_INFO(axom::fmt::format("Shaping materials..."));
+    SLIC_INFO_IF(very_verbose_output, axom::fmt::format("Shaping materials..."));
     quest::SamplingShaper shaper(shapeSet, &m_dc);
-    shaper.setVerbosity(true);
+    shaper.setVerbosity(very_verbose_output);
 
     if(!init_vf_map.empty())
     {
       shaper.importInitialVolumeFractions(init_vf_map);
     }
-    shaper.printRegisteredFieldNames("*** After importing volume fractions");
+
+    if(very_verbose_output)
+    {
+      shaper.printRegisteredFieldNames("*** After importing volume fractions");
+    }
 
     const auto shapeDim = shapeSet.getDimensions();
     for(const auto& shape : shapeSet.getShapes())
     {
-      SLIC_INFO(axom::fmt::format("\tshape {} -> material {}",
-                                  shape.getName(),
-                                  shape.getMaterial()));
+      SLIC_INFO_IF(very_verbose_output,
+                   axom::fmt::format("\tshape {} -> material {}",
+                                     shape.getName(),
+                                     shape.getMaterial()));
 
       shaper.loadShape(shape);
       shaper.prepareShapeQuery(shapeDim, shape);
@@ -227,7 +236,10 @@ public:
 
     shaper.adjustVolumeFractions();
 
-    shaper.printRegisteredFieldNames("*** After shaping volume fractions");
+    if(very_verbose_output)
+    {
+      shaper.printRegisteredFieldNames("*** After shaping volume fractions");
+    }
   }
 
   BBox2D meshBoundingBox()
@@ -251,6 +263,7 @@ public:
     return *gf * vol_form;
   }
 
+  /// Registers and allocates a volume fraction grid function within the datastore
   mfem::GridFunction* registerVolFracGridFunction(const std::string& name,
                                                   int vfOrder = 2)
   {
@@ -277,6 +290,11 @@ public:
     return vf;
   }
 
+  /** 
+   * \brief Initializes the values of the DOFs of a volume fraction grid function
+   * using a provided lambda w/ parameters for the cell index, DOF position and cell attribute
+   * The signature of DOFInitializer is [](int idx, Point2D& pt, int attribute) -> double
+   */
   template <typename DOFInitializer>
   void initializeVolFracGridFunction(mfem::GridFunction* vf,
                                      DOFInitializer&& dof_initializer)
@@ -329,6 +347,7 @@ public:
     }
   }
 
+  /// Helper to check integrated volume of a volume fraction grid fucntion
   void checkExpectedVolumeFractions(const std::string& material_name,
                                     double expected_volume,
                                     double EPS = 1e-2)
@@ -427,6 +446,7 @@ shapes:
                                                    circle_material,
                                                    contour_file.getFileName()));
 
+  if(very_verbose_output)
   {
     SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
     SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
@@ -440,7 +460,10 @@ shapes:
   this->checkExpectedVolumeFractions(circle_material, expected_volume);
 
   // Save meshes and fields
-  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
 }
 
 TEST_F(SamplingShaperTest, disk_via_replacement)
@@ -479,6 +502,7 @@ shapes:
     axom::fmt::format("{}.yaml", testname),
     axom::fmt::format(shape_template, contour_file.getFileName()));
 
+  if(very_verbose_output)
   {
     SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
     SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
@@ -494,7 +518,10 @@ shapes:
   this->checkExpectedVolumeFractions(outer_material, expected_outer_area);
   this->checkExpectedVolumeFractions(inner_material, expected_inner_area);
 
-  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
 }
 
 TEST_F(SamplingShaperTest, disk_via_replacement_with_background)
@@ -566,7 +593,8 @@ shapes:
   }
 
   // clean up data collection
-  for(const auto& name : {"void", "hole", "disk", "init_vf_bg"})
+  for(const auto& name :
+      {"vol_frac_void", "vol_frac_hole", "vol_frac_disk", "init_vf_bg"})
   {
     this->getDC().DeregisterField(name);
   }
@@ -602,7 +630,10 @@ shapes:
     this->checkExpectedVolumeFractions("void", expected_void_area);
   }
 
-  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
 }
 
 TEST_F(SamplingShaperTest, preshaped_materials)
@@ -637,6 +668,11 @@ shapes:
   ScopedTemporaryFile shape_file(
     axom::fmt::format("{}.yaml", testname),
     axom::fmt::format(shape_template, "void", "left", "odds"));
+
+  if(very_verbose_output)
+  {
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
 
   // Create an initial background material set to 1 everywhere
   std::map<std::string, mfem::GridFunction*> initialGridFunctions;
@@ -683,7 +719,10 @@ shapes:
   this->checkExpectedVolumeFractions("odds", expected_odds_area);
   this->checkExpectedVolumeFractions("void", expected_void_area);
 
-  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
 }
 
 TEST_F(SamplingShaperTest, disk_with_multiple_preshaped_materials)
@@ -736,6 +775,7 @@ shapes:
     axom::fmt::format("{}.yaml", testname),
     axom::fmt::format(shape_template, contour_file.getFileName()));
 
+  if(very_verbose_output)
   {
     SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
     SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
@@ -744,12 +784,14 @@ shapes:
   // Create an initial background material set to 1 everywhere
   std::map<std::string, mfem::GridFunction*> initialGridFunctions;
   {
+    // initial background void material is set everywhere
     auto* vf = this->registerVolFracGridFunction("init_vf_bg");
     this->initializeVolFracGridFunction(
       vf,
       [](int, const Point2D&, int) -> double { return 1.; });
     initialGridFunctions["void"] = vf;
 
+    // initial left material is set based on mesh attributes
     // Note: element attributes were set earlier based on quadrant of cell's centroid (1, 2, 3 and 4)
     vf = this->registerVolFracGridFunction("init_vf_left");
     this->initializeVolFracGridFunction(
@@ -759,6 +801,7 @@ shapes:
       });
     initialGridFunctions["left"] = vf;
 
+    // initial "odds" material is based on the parity of the element indices
     vf = this->registerVolFracGridFunction("init_vf_odds");
     this->initializeVolFracGridFunction(
       vf,
@@ -768,6 +811,12 @@ shapes:
     initialGridFunctions["odds"] = vf;
   }
 
+  // For this example, we keep the full disk between radii 1 and .5
+  // The 'left' material is set for all cells to the left of the y-axis
+  // but does not replace the disk material
+  // The interior hole is within radius .5, but is replaced by left and odds
+  // The odds material is all cells w/ odd index, but not covering 'left' or 'disk'
+  // The end result for the void background is everything that's left
   this->validateShapeFile(shape_file.getFileName());
   this->runShaping(shape_file.getFileName(), initialGridFunctions);
 
@@ -789,7 +838,10 @@ shapes:
   this->checkExpectedVolumeFractions("hole", expected_hole_area);
   this->checkExpectedVolumeFractions("void", expected_void_area);
 
-  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  if(very_verbose_output)
+  {
+    this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+  }
 }
 
 //-----------------------------------------------------------------------------
