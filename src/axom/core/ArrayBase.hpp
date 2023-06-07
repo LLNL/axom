@@ -334,10 +334,8 @@ public:
   }
 
   /*!
-    \brief Returns the logical strides of the Array.
-
-    Note: Memory stride is logical stride times spacing.
-  */
+   * \brief Returns the memory strides of the Array.
+   */
   AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
   {
     return m_strides;
@@ -404,27 +402,23 @@ private:
     return static_cast<const ArrayType&>(*this);
   }
 
-  /*!
-    \brief Logical offset to get to the given multidimensional index.
-
-    To get from logical offset to memory offset, multiply by spacing().
-  */
+  //// \brief Memory offset to get to the given multidimensional index.
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, DIM>& idx) const
   {
     return numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
   }
 
   /*!
-   * \brief Returns the logical number of elements.
+   * \brief Returns the number of elements in memory.
    *
    *  offset() will return a value between [0, logicalSize()).
    */
-  AXOM_HOST_DEVICE IndexType logicalSize() const
+  AXOM_HOST_DEVICE IndexType memorySize() const
   {
     return m_strides[0] * m_shape[0];
   }
 
-  /// Logical offset to a slice at the given lower-dimensional index.
+  /// \brief Memory offset to a slice at the given lower-dimensional index.
   template <int UDim>
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, UDim>& idx) const
   {
@@ -439,7 +433,7 @@ private:
   /*! \brief Test if idx is within bounds */
   AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
-    return idx >= 0 && idx < logicalSize();
+    return idx >= 0 && idx < memorySize();
   }
   /// @}
 
@@ -614,12 +608,8 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
-  /*!
-   * \brief Returns the logical number of elements.
-   *
-   *  offset() will return a value between [0, logicalSize()).
-   */
-  AXOM_HOST_DEVICE IndexType logicalSize() const
+  /// \brief Returns the number of elements in memory.
+  AXOM_HOST_DEVICE IndexType memorySize() const
   {
     return m_stride * shape()[0];
   }
@@ -627,7 +617,7 @@ private:
   /*! \brief Test if idx is within bounds */
   AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
-    return idx >= 0 && idx < logicalSize();
+    return idx >= 0 && idx < memorySize();
   }
   /// @}
 
