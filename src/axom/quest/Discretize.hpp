@@ -36,17 +36,19 @@ using Point2D = primal::Point<double, 2>;
  * \param [in] s The sphere to approximate
  * \param [in] levels The number of refinements to perform, in addition to
  *   a central level-zero octahedron
- * \param [out] out The newly-allocated array of octahedra representing \a s
+ * \param [out] out The newly-initialized Array of octahedra representing \a s
  * \param [out] octcount The number of elements in \a out
  * \return false for invalid input or error in computation; true otherwise
  *
  * This routine generates O(4^level) octahedra.  That's exponential growth.
  * Use appropriate caution.
  *
- * This routine allocates an array pointed to by \a out.  The caller is responsible
- * to free the array.
+ * This routine initializes an Array, \a out.
  */
-bool discretize(const SphereType& s, int levels, OctType*& out, int& octcount);
+bool discretize(const SphereType& s,
+                int levels,
+                axom::Array<OctType>& out,
+                int& octcount);
 
 /*!
  * \brief Given a 2D polyline revolved around the positive X-axis, allocate
@@ -55,7 +57,7 @@ bool discretize(const SphereType& s, int levels, OctType*& out, int& octcount);
  * \param [in] len The number of points in \a polyline
  * \param [in] levels The number of refinements to perform, in addition to
  *   a central level-zero octahedron in each segment
- * \param [out] out The newly-allocated array of octahedra representing the
+ * \param [out] out The newly-initialized Array of octahedra representing the
  *   revolved polyline
  * \param [out] octcount The number of elements in \a out
  * \return false for invalid input or error in computation; true otherwise
@@ -64,14 +66,13 @@ bool discretize(const SphereType& s, int levels, OctType*& out, int& octcount);
  * segments in \a polyline (one less than the length).
  * That's exponential growth.  Use appropriate caution.
  *
- * This routine allocates an array pointed to by \a out.  The caller is responsible
- * to free the array.
+ * This routine initializes an Array, \a out.
  */
 template <typename ExecSpace>
-bool discretize(Point2D*& polyline,
+bool discretize(axom::Array<Point2D>& polyline,
                 int len,
                 int levels,
-                OctType*& out,
+                axom::Array<OctType>& out,
                 int& octcount);
 
 /// @}
@@ -106,7 +107,7 @@ bool discretize(Point2D*& polyline,
  *  the caller is responsible for properly deallocating the mesh object that
  *  the return mesh pointer points to.
  */
-int mesh_from_discretized_polyline(const OctType* octs,
+int mesh_from_discretized_polyline(axom::ArrayView<OctType>& octs,
                                    int octcount,
                                    int segcount,
                                    mint::Mesh*& mesh);

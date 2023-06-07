@@ -386,9 +386,8 @@ public:
     // Number of tets in mesh
     m_tetcount = m_surfaceMesh->getNumberOfCells();
 
-    m_tets = axom::allocate<TetrahedronType>(m_tetcount);
-    axom::StackArray<IndexType, 1> tets_dimensions = {m_tetcount};
-    axom::ArrayView<TetrahedronType> tets_view(m_tets, tets_dimensions);
+    m_tets = axom::Array<TetrahedronType>(m_tetcount, m_tetcount);
+    axom::ArrayView<TetrahedronType> tets_view = m_tets.view();
 
     // Initialize tetrahedra
     axom::Array<IndexType> nodeIds(4);
@@ -403,7 +402,7 @@ public:
       m_surfaceMesh->getNode(nodeIds[2], pts[2].data());
       m_surfaceMesh->getNode(nodeIds[3], pts[3].data());
 
-      m_tets[i] = TetrahedronType({pts[0], pts[1], pts[2], pts[3]});
+      tets_view[i] = TetrahedronType({pts[0], pts[1], pts[2], pts[3]});
     }
 
     if(this->isVerbose())
@@ -460,7 +459,7 @@ public:
     // Number of points in polyline
     int pointcount = getSurfaceMesh()->getNumberOfNodes();
 
-    Point2D* polyline = axom::allocate<Point2D>(pointcount);
+    axom::Array<Point2D> polyline(pointcount, pointcount);
 
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
@@ -485,8 +484,7 @@ public:
                                                                 m_octs,
                                                                 m_octcount);
 
-    axom::StackArray<IndexType, 1> octs_dimensions = {m_octcount};
-    axom::ArrayView<OctahedronType> octs_view(m_octs, octs_dimensions);
+    axom::ArrayView<OctahedronType> octs_view = m_octs.view();
 
     AXOM_UNUSED_VAR(disc_status);  // silence warnings in release configs
     SLIC_ASSERT_MSG(
@@ -503,7 +501,7 @@ public:
       BoundingBoxType all_oct_bb;
       for(int i = 0; i < m_octcount; i++)
       {
-        all_oct_bb.addBox(primal::compute_bounding_box(m_octs[i]));
+        all_oct_bb.addBox(primal::compute_bounding_box(octs_view[i]));
       }
       SLIC_INFO(axom::fmt::format(
         "DEBUG: Bounding box containing all generated octahedra "
@@ -567,7 +565,7 @@ public:
 
       // Dump discretized octs as a tet mesh
       axom::mint::Mesh* tetmesh;
-      axom::quest::mesh_from_discretized_polyline(m_octs,
+      axom::quest::mesh_from_discretized_polyline(octs_view,
                                                   m_octcount,
                                                   polyline_size - 1,
                                                   tetmesh);
@@ -575,8 +573,6 @@ public:
       delete tetmesh;
 
     }  // end of verbose output for contour
-
-    axom::deallocate(polyline);
   }
 
   /// Initializes the spatial index for shaping
@@ -627,7 +623,7 @@ public:
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   template <typename ExecSpace, typename ShapeType>
   void runShapeQueryImpl(const klee::Shape& shape,
-                         ShapeType* shapes,
+                         axom::Array<ShapeType>& shapes,
                          int shape_count)
 
   {
@@ -650,8 +646,7 @@ public:
     // Access-aligned bounding boxes
     m_aabbs = axom::Array<BoundingBoxType>(shape_count, shape_count);
 
-    axom::StackArray<IndexType, 1> shape_dimensions = {shape_count};
-    axom::ArrayView<ShapeType> shapes_view(shapes, shape_dimensions);
+    axom::ArrayView<ShapeType> shapes_view = shapes.view();
 
     axom::ArrayView<BoundingBoxType> aabbs_view = m_aabbs.view();
 
@@ -922,7 +917,6 @@ public:
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each tet-shape pair "));
-    slic::flushStreams();
 
     constexpr double EPS = 1e-10;
     constexpr bool checkSign = true;
@@ -969,15 +963,11 @@ public:
                                 this->allReduceSum(totalOverlap)));
     SLIC_INFO(axom::fmt::format("Total mesh volume is {}",
                                 this->allReduceSum(totalHex)));
-    slic::flushStreams();
-    // Deallocate no longer needed variables
 
+    // Deallocate no longer needed variables
     axom::deallocate(hex_indices);
     axom::deallocate(shape_candidates);
     axom::deallocate(tet_indices);
-
-    axom::deallocate(m_octs);
-    axom::deallocate(m_tets);
 
     axom::setDefaultAllocator(current_allocator);
   }  // end of runShapeQuery() function
@@ -2036,8 +2026,8 @@ private:
   int m_octcount {0};
   int m_tetcount {0};
 
-  OctahedronType* m_octs {nullptr};
-  TetrahedronType* m_tets {nullptr};
+  axom::Array<OctahedronType> m_octs;
+  axom::Array<TetrahedronType> m_tets;
 
   axom::Array<BoundingBoxType> m_aabbs;
   axom::Array<HexahedronType> m_hexes;
