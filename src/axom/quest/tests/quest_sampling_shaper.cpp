@@ -33,12 +33,16 @@
 #include <iostream>
 
 namespace klee = axom::klee;
-namespace slic = axom::slic;
-namespace sidre = axom::sidre;
+namespace primal = axom::primal;
 namespace quest = axom::quest;
+namespace sidre = axom::sidre;
+namespace slic = axom::slic;
 
 namespace
 {
+const std::string unit_circle_contour =
+  "piece = circle(origin=(0cm, 0cm), radius=1cm, start=0deg, end=360deg)";
+
 /// RAII utility class to write a file at construction time and remove it
 /// once the instance is out of scope
 class ScopedTemporaryFile
@@ -75,6 +79,10 @@ private:
 /// Test fixture for SamplingShaper tests on MFEM meshes
 class SamplingShaperTest : public ::testing::Test
 {
+public:
+  using Point2D = primal::Point<double, 2>;
+  using BBox2D = primal::BoundingBox<double, 2>;
+
 public:
   SamplingShaperTest() : m_dc("test", nullptr, true) { }
 
@@ -153,7 +161,8 @@ public:
     }
   }
 
-  void runShaping(const std::string& shapefile)
+  void runShaping(const std::string& shapefile,
+                  const std::map<std::string, mfem::GridFunction*>& init_vf_map = {})
   {
     SLIC_INFO(axom::fmt::format("Reading shape set from {}", shapefile));
     klee::ShapeSet shapeSet(klee::readShapeSet(shapefile));
@@ -161,6 +170,12 @@ public:
     SLIC_INFO(axom::fmt::format("Shaping materials..."));
     quest::SamplingShaper shaper(shapeSet, &m_dc);
     shaper.setVerbosity(true);
+
+    if(!init_vf_map.empty())
+    {
+      shaper.importInitialVolumeFractions(init_vf_map);
+    }
+    shaper.printRegisteredFieldNames("*** After importing volume fractions");
 
     const auto shapeDim = shapeSet.getDimensions();
     for(const auto& shape : shapeSet.getShapes())
@@ -177,6 +192,16 @@ public:
     }
 
     shaper.adjustVolumeFractions();
+
+    shaper.printRegisteredFieldNames("*** After shaping volume fractions");
+  }
+
+  BBox2D meshBoundingBox()
+  {
+    mfem::Vector bbmin, bbmax;
+    getMesh().GetBoundingBox(bbmin, bbmax);
+
+    return BBox2D(Point2D(bbmin.GetData()), Point2D(bbmax.GetData()));
   }
 
   // Computes the total volume of the associated volume fraction grid function
@@ -190,6 +215,105 @@ public:
     vol_form.Assemble();
 
     return *gf * vol_form;
+  }
+
+  mfem::GridFunction* registerVolFracGridFunction(const std::string& name,
+                                                  int vfOrder = 2)
+  {
+    SLIC_ASSERT(!m_dc.HasField(name));
+
+    auto& mesh = getMesh();
+    const int dim = mesh.Dimension();
+
+    // create grid function
+    auto* coll =
+      new mfem::L2_FECollection(vfOrder, dim, mfem::BasisType::Positive);
+    auto* fes = new mfem::FiniteElementSpace(&mesh, coll);
+    auto* vf = new mfem::GridFunction(fes);
+    vf->MakeOwner(coll);
+
+    // allocate grid function via sidre
+    const int sz = fes->GetVSize();
+    mfem::Vector v(m_dc.AllocNamedBuffer(name, sz)->getData(), sz);
+    vf->MakeRef(fes, v, 0);
+
+    // register grid function w/ data collection
+    m_dc.RegisterField(name, vf);
+
+    return vf;
+  }
+
+  template <typename DOFInitializer>
+  void initializeVolFracGridFunction(mfem::GridFunction* vf,
+                                     DOFInitializer&& dof_initializer)
+  {
+    auto& mesh = this->getMesh();
+    const int dim = mesh.Dimension();
+    const int NE = mesh.GetNE();
+
+    // Assume all elements have the same integration rule
+    const auto* fes = vf->FESpace();
+    auto* fe = fes->GetFE(0);
+    auto& ir = fe->GetNodes();
+    const int nq = ir.GetNPoints();
+
+    // Get positions of DOFs
+    mfem::DenseTensor pos_coef(dim, nq, NE);
+    {
+      const auto* geomFactors =
+        mesh.GetGeometricFactors(ir, mfem::GeometricFactors::COORDINATES);
+
+      // Rearrange positions
+      for(int i = 0; i < NE; ++i)
+      {
+        for(int j = 0; j < dim; ++j)
+        {
+          for(int k = 0; k < nq; ++k)
+          {
+            pos_coef(j, k, i) = geomFactors->X((i * nq * dim) + (j * nq) + k);
+          }
+        }
+      }
+    }
+
+    // Initialize volume fraction DOFs using passed in lambda based on cell index, DOF position and attribute
+    mfem::Vector res(nq);
+    mfem::Array<int> dofs;
+    for(int idx = 0; idx < NE; ++idx)
+    {
+      const int attr = mesh.GetAttribute(idx);
+
+      mfem::DenseMatrix& m = pos_coef(idx);
+      for(int p = 0; p < nq; ++p)
+      {
+        const Point2D pt(m.GetColumn(p), dim);
+        res(p) = dof_initializer(idx, pt, attr);
+      }
+
+      fes->GetElementDofs(idx, dofs);
+      vf->SetSubVector(dofs, res);
+    }
+  }
+
+  void checkExpectedVolumeFractions(const std::string& material_name,
+                                    double expected_volume,
+                                    double EPS = 1e-2)
+  {
+    auto vf_name = axom::fmt::format("vol_frac_{}", material_name);
+
+    EXPECT_TRUE(m_dc.HasField(vf_name)) << axom::fmt::format(
+      "Did not have expected volume fraction '{:.4}' for material '{}'",
+      material_name,
+      vf_name);
+
+    const double actual_volume = this->gridFunctionVolume(vf_name);
+    SLIC_INFO(axom::fmt::format(
+      "Shaped volume fraction of '{}' is {:.4}  (expected: {:.4})",
+      material_name,
+      actual_volume,
+      expected_volume));
+
+    EXPECT_NEAR(expected_volume, actual_volume, EPS);
   }
 
 protected:
@@ -223,6 +347,8 @@ TEST(ScopedTemporaryFile, basic)
   EXPECT_FALSE(pathExists(filename));
 }
 
+//-----------------------------------------------------------------------------
+
 TEST_F(SamplingShaperTest, check_mesh)
 {
   auto& mesh = this->getMesh();
@@ -235,14 +361,8 @@ TEST_F(SamplingShaperTest, check_mesh)
   SLIC_INFO(axom::fmt::format("The mesh has {} vertices", NV));
   EXPECT_GT(NV, 0);
 
-  mfem::Vector mn, mx;
-  mesh.GetBoundingBox(mn, mx);
-  SLIC_INFO(
-    axom::fmt::format("The mesh bounding box is:  {{min: {}, {}, max: {},{}}}",
-                      mn[0],
-                      mn[1],
-                      mx[0],
-                      mx[1]));
+  const auto bbox = this->meshBoundingBox();
+  SLIC_INFO(axom::fmt::format("The mesh bounding box is: {}", bbox));
 }
 
 //-----------------------------------------------------------------------------
@@ -251,9 +371,6 @@ TEST_F(SamplingShaperTest, basic_circle)
 {
   const auto& testname =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
-
-  const std::string contour_contents =
-    "piece = circle(origin=(0cm, 0cm), radius=1cm, start=0deg, end=360deg)";
 
   const std::string shape_template = R"(
 dimensions: 2
@@ -269,7 +386,7 @@ shapes:
   const std::string circle_material = "circleMat";
 
   ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
-                                   contour_contents);
+                                   unit_circle_contour);
 
   ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
                                  axom::fmt::format(shape_template,
@@ -282,25 +399,176 @@ shapes:
   }
 
   this->validateShapeFile(shape_file.getFileName());
+  this->runShaping(shape_file.getFileName());
+
+  // check that the result has a volume fraction field associated with the circle material
+  constexpr double expected_volume = M_PI;
+  this->checkExpectedVolumeFractions(circle_material, expected_volume);
+
+  // Save meshes and fields
+  this->getDC().Save();
+}
+
+TEST_F(SamplingShaperTest, disk_via_replacement)
+{
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+units: cm
+
+shapes:
+- name: circle_outer
+  material: outer
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+- name: void_inner
+  material: inner
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: .5
+)";
+
+  const std::string outer_material = "outer";
+  const std::string inner_material = "inner";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, contour_file.getFileName()));
+
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
 
   this->runShaping(shape_file.getFileName());
 
   // check that the result has a volume fraction field associated with the circle material
-  auto& dc = this->getDC();
-  const std::string vf_name = axom::fmt::format("vol_frac_{}", circle_material);
-  EXPECT_TRUE(dc.HasField(vf_name))
-    << "Did not have material '" << vf_name << "'";
+  constexpr double expected_inner_area = .5 * .5 * M_PI;
+  constexpr double expected_outer_area = M_PI - expected_inner_area;
+  this->checkExpectedVolumeFractions(outer_material, expected_outer_area);
+  this->checkExpectedVolumeFractions(inner_material, expected_inner_area);
 
-  // check shaped-in volume fraction of unit circle -- should be around PI
-  SLIC_INFO("Shaped volume fraction of unit circle is "
-            << this->gridFunctionVolume(vf_name));
-
-  EXPECT_NEAR(M_PI, this->gridFunctionVolume(vf_name), 1e-2);
-
-  //---------------------------------------------------------------------------
   // Save meshes and fields
-  //---------------------------------------------------------------------------
-  dc.Save();
+  this->getDC().Save();
+}
+
+TEST_F(SamplingShaperTest, disk_via_replacement_with_background)
+{
+  using Point2D = typename SamplingShaperTest::Point2D;
+
+  const auto& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+units: cm
+
+shapes:
+- name: background
+  material: {1}
+  geometry:
+    format: none
+- name: circle_outer
+  material: {2}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+- name: void_inner
+  material: {3}
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: .5
+)";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  // Set background material to 'void' (which is not present elsewhere)
+  {
+    ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                   axom::fmt::format(shape_template,
+                                                     contour_file.getFileName(),
+                                                     "void",
+                                                     "disk",
+                                                     "hole"));
+
+    // Create an initial background material set to 1 everywhere
+    std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+    {
+      auto* vf = this->registerVolFracGridFunction("init_vf_bg");
+      this->initializeVolFracGridFunction(
+        vf,
+        [](int, const Point2D&, int) -> double { return 1.; });
+      initialGridFunctions["void"] = vf;
+    }
+
+    this->validateShapeFile(shape_file.getFileName());
+    this->runShaping(shape_file.getFileName(), initialGridFunctions);
+
+    // check that the result has a volume fraction field associated with the circle material
+    constexpr double expected_hole_area = .5 * .5 * M_PI;
+    constexpr double expected_disk_area = M_PI - expected_hole_area;
+    const auto range = this->meshBoundingBox().range();
+    const double expected_bg_area = range[0] * range[1] - M_PI;
+
+    this->checkExpectedVolumeFractions("disk", expected_disk_area);
+    this->checkExpectedVolumeFractions("hole", expected_hole_area);
+    this->checkExpectedVolumeFractions("void", expected_bg_area);
+  }
+
+  // clean up data collection
+  for(const auto& name : {"void", "hole", "disk", "init_vf_bg"})
+  {
+    this->getDC().DeregisterField(name);
+  }
+
+  // Set background and inner hole materials to 'void'
+  {
+    ScopedTemporaryFile shape_file(axom::fmt::format("{}.yaml", testname),
+                                   axom::fmt::format(shape_template,
+                                                     contour_file.getFileName(),
+                                                     "void",
+                                                     "disk",
+                                                     "void"));
+
+    // Create an initial background material set to 1 everywhere
+    std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+    {
+      auto* vf = this->registerVolFracGridFunction("init_vf_bg");
+      this->initializeVolFracGridFunction(
+        vf,
+        [](int, const Point2D&, int) -> double { return 1.; });
+      initialGridFunctions["void"] = vf;
+    }
+
+    this->validateShapeFile(shape_file.getFileName());
+    this->runShaping(shape_file.getFileName(), initialGridFunctions);
+
+    // check that the result has a volume fraction field associated with the circle material
+    constexpr double expected_disk_area = M_PI - .5 * .5 * M_PI;
+    ;
+    const auto range = this->meshBoundingBox().range();
+    const double expected_void_area = range[0] * range[1] - expected_disk_area;
+
+    this->checkExpectedVolumeFractions("disk", expected_disk_area);
+    this->checkExpectedVolumeFractions("void", expected_void_area);
+  }
 }
 
 //-----------------------------------------------------------------------------
