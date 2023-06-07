@@ -177,6 +177,25 @@ public:
     return slice;
   }
 
+  /*!
+   * \brief Returns an ArrayView that is a subspan of the original range of
+   *  elements.
+   *
+   * \param [in] offset The index in each dimension where the subspan should
+   *  begin.
+   * \param [in] count The number of elements in each dimension to include in
+   *  the subspan. -1 in any dimension indicates to take all elements after
+   *  the offset for that domain.
+   *
+   * \return An ArrayView that spans in each dimension the indices:
+   *   * [offsets[i], offsets[i] + counts[i])
+   *   * or [offsets[i], shape[i]) if count < 0.
+   *
+   * \pre offsets[i] + counts[i] < shape[i] for 0 <= i < DIM
+   */
+  AXOM_HOST_DEVICE ArrayView subspan(const StackArray<IndexType, DIM>& offsets,
+                                     const StackArray<IndexType, DIM>& counts);
+
 private:
   T* m_data = nullptr;
   /// \brief The full number of elements in the array
@@ -299,6 +318,47 @@ ArrayView<T, DIM, SPACE>::ArrayView(
     utilities::processAbort();
   }
 #endif
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE> ArrayView<T, DIM, SPACE>::subspan(
+  const StackArray<IndexType, DIM>& offsets,
+  const StackArray<IndexType, DIM>& counts)
+{
+#ifdef AXOM_DEBUG
+  for(int dim = 0; dim < DIM; dim++)
+  {
+    assert(offsets[dim] >= 0 && offsets[dim] < this->shape()[dim]);
+    if(counts[dim] >= 0)
+    {
+      assert(offsets[dim] + counts[dim] <= this->shape()[dim]);
+    }
+  }
+#endif
+  // Compute flat offset into existing data.
+  IndexType offset =
+    numerics::dot_product(offsets.m_data, this->strides().m_data, DIM);
+
+  // Setup new shape array.
+  StackArray<IndexType, DIM> newShape;
+  for(int dim = 0; dim < DIM; dim++)
+  {
+    if(counts[dim] < 0)
+    {
+      newShape[dim] = this->shape()[dim] - offsets[dim];
+    }
+    else
+    {
+      newShape[dim] = counts[dim];
+    }
+  }
+
+  ArrayView slice = *this;
+  slice.m_data += offset;
+  slice.m_num_elements = detail::packProduct(newShape.m_data);
+  slice.setShapeAndStride(newShape, this->strides());
+  return slice;
 }
 
 } /* namespace axom */

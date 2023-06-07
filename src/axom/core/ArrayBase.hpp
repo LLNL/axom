@@ -347,6 +347,21 @@ protected:
     updateStrides();
   }
 
+  /// \brief Set the shape and stride
+  AXOM_HOST_DEVICE void setShapeAndStride(const StackArray<IndexType, DIM>& shape,
+                                          const StackArray<IndexType, DIM>& stride)
+  {
+#ifdef AXOM_DEBUG
+    for(int dim = DIM - 1; dim > 0; dim--)
+    {
+      assert(stride[dim - 1] >= stride[dim] * shape[dim]);
+      assert(stride[dim - 1] % stride[dim] == 0);
+    }
+#endif
+    m_shape = shape;
+    m_strides = stride;
+  }
+
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    * For example, 2 would be the chunk size of a 2D array whose second dimension is of size 2.
