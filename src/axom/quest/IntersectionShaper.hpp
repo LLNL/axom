@@ -826,16 +826,10 @@ public:
       AXOM_LAMBDA(axom::IndexType i) { totalCandidates += counts_v[i]; });
 
     // Initialize hexahedron indices and shape candidates
-    axom::Array<axom::IndexType> hex_indices(
-      totalCandidates.get() * NUM_TETS_PER_HEX,
-      totalCandidates.get() * NUM_TETS_PER_HEX);
-    axom::ArrayView<axom::IndexType> hex_indices_view = hex_indices.view();
-
-    axom::Array<axom::IndexType> shape_candidates(
-      totalCandidates.get() * NUM_TETS_PER_HEX,
-      totalCandidates.get() * NUM_TETS_PER_HEX);
-    axom::ArrayView<axom::IndexType> shape_candidates_view =
-      shape_candidates.view();
+    axom::IndexType* hex_indices =
+      axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
+    axom::IndexType* shape_candidates =
+      axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
 
     // Tetrahedrons from hexes (24 for each hex)
     axom::Array<TetrahedronType> tets_from_hexes(NE * NUM_TETS_PER_HEX,
@@ -844,10 +838,8 @@ public:
       tets_from_hexes.view();
 
     // Index into 'tets'
-    axom::Array<axom::IndexType> tet_indices(
-      totalCandidates.get() * NUM_TETS_PER_HEX,
-      totalCandidates.get() * NUM_TETS_PER_HEX);
-    axom::ArrayView<axom::IndexType> tet_indices_view = tet_indices.view();
+    axom::IndexType* tet_indices =
+      axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
 
     // New total number of candidates after omitting degenerate shapes
     axom::Array<IndexType> newTotalCandidates(1, 1);
@@ -893,10 +885,9 @@ public:
                                    IndexType idx = RAJA::atomicAdd<ATOMIC_POL>(
                                      &newTotalCandidates_view[0],
                                      IndexType {1});
-                                   hex_indices_view[idx] = i;
-                                   shape_candidates_view[idx] = shapeIdx;
-                                   tet_indices_view[idx] =
-                                     i * NUM_TETS_PER_HEX + k;
+                                   hex_indices[idx] = i;
+                                   shape_candidates[idx] = shapeIdx;
+                                   tet_indices[idx] = i * NUM_TETS_PER_HEX + k;
                                  }
                                }
                              }););
@@ -941,9 +932,9 @@ public:
       axom::for_all<ExecSpace>(
         newTotalCandidates_view[0],
         AXOM_LAMBDA(axom::IndexType i) {
-          int index = hex_indices_view[i];
-          int shapeIndex = shape_candidates_view[i];
-          int tetIndex = tet_indices_view[i];
+          int index = hex_indices[i];
+          int shapeIndex = shape_candidates[i];
+          int tetIndex = tet_indices[i];
 
           PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
                                              tets_from_hexes_view[tetIndex],
@@ -980,6 +971,11 @@ public:
                                 this->allReduceSum(totalHex)));
     slic::flushStreams();
     // Deallocate no longer needed variables
+
+    axom::deallocate(hex_indices);
+    axom::deallocate(shape_candidates);
+    axom::deallocate(tet_indices);
+
     axom::deallocate(m_octs);
     axom::deallocate(m_tets);
 
