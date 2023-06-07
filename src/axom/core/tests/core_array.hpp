@@ -1685,6 +1685,10 @@ TEST(core_array, check_multidimensional_view_spacing)
         EXPECT_EQ(windOnly(i, j, k), pvalue + .2);
         EXPECT_EQ(fireOnly(i, j, k), pvalue + .3);
 
+        EXPECT_EQ(earthOnly[i][j][k], pvalue + .1);
+        EXPECT_EQ(windOnly[i][j][k], pvalue + .2);
+        EXPECT_EQ(fireOnly[i][j][k], pvalue + .3);
+
         EXPECT_EQ(&earthOnly(i, j, k), &mdElemArray(i, j, k).earth);
         EXPECT_EQ(&windOnly(i, j, k), &mdElemArray(i, j, k).wind);
         EXPECT_EQ(&fireOnly(i, j, k), &mdElemArray(i, j, k).fire);
