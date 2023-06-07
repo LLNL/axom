@@ -299,6 +299,11 @@ public:
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
+    if(!shape.getGeometry().hasGeometry())
+    {
+      return;
+    }
+
     SLIC_INFO(axom::fmt::format("{:-^80}", " Generating the octree "));
 
     const auto& shapeName = shape.getName();
@@ -350,6 +355,11 @@ public:
     internal::ScopedLogLevelChanger logLevelChanger(
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
+    if(!shape.getGeometry().hasGeometry())
+    {
+      return;
+    }
+
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format(" Querying the octree for shape '{}'", shape.getName())));
@@ -373,28 +383,42 @@ public:
       this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     const auto& shapeName = shape.getName();
+    const auto& thisMatName = shape.getMaterial();
+
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
-      axom::fmt::format("Applying replacement rules over for shape '{}'",
-                        shapeName)));
+      axom::fmt::format("Applying replacement rules for shape '{}'", shapeName)));
 
-    // Get inout qfunc for this shape
-    auto* shapeQFunc =
-      m_inoutShapeQFuncs.Get(axom::fmt::format("inout_{}", shapeName));
-    SLIC_ASSERT_MSG(
-      shapeQFunc != nullptr,
-      axom::fmt::format("Missing inout samples for shape '{}'", shapeName));
+    mfem::QuadratureFunction* shapeQFunc = nullptr;
+
+    if(shape.getGeometry().hasGeometry())
+    {
+      // Get inout qfunc for this shape
+      shapeQFunc =
+        m_inoutShapeQFuncs.Get(axom::fmt::format("inout_{}", shapeName));
+
+      SLIC_ASSERT_MSG(
+        shapeQFunc != nullptr,
+        axom::fmt::format("Missing inout samples for shape '{}'", shapeName));
+    }
+    else
+    {
+      // No input geometry for the shape, get inout qfunc for associated material
+      shapeQFunc =
+        m_inoutMaterialQFuncs.Get(axom::fmt::format("mat_inout_{}", thisMatName));
+
+      SLIC_ASSERT_MSG(
+        shapeQFunc != nullptr,
+        axom::fmt::format("Missing inout samples for material '{}'", thisMatName));
+    }
 
     // Create a copy of the inout samples for this shape
     // Replacements will be applied to this and then copied into our shape's material
     auto* shapeQFuncCopy = new mfem::QuadratureFunction(*shapeQFunc);
 
     // apply replacement rules to all other materials
-    const auto& thisMatName = shape.getMaterial();
-    for(auto& mat : m_inoutMaterialQFuncs)
+    for(auto& otherMatName : m_knownMaterials)
     {
-      const std::string otherMatName = rsplitN(mat.first, 2, '_')[1];
-
       // We'll handle the current shape's material at the end
       if(otherMatName == thisMatName)
       {
@@ -409,7 +433,8 @@ public:
         thisMatName,
         shouldReplace ? "yes" : "no"));
 
-      auto* otherMatQFunc = mat.second;
+      auto* otherMatQFunc = m_inoutMaterialQFuncs.Get(
+        axom::fmt::format("mat_inout_{}", otherMatName));
       SLIC_ASSERT_MSG(
         otherMatQFunc != nullptr,
         axom::fmt::format("Missing inout samples for material '{}'",
@@ -439,6 +464,8 @@ public:
       delete shapeQFuncCopy;
       shapeQFuncCopy = nullptr;
     }
+
+    m_knownMaterials.insert(thisMatName);
   }
 
   void finalizeShapeQuery() override
@@ -538,6 +565,79 @@ public:
     }
   }
 
+  /// Prints out the names of the registered fields related to shapes and materials
+  /// This function is intended to help with debugging
+  void printRegisteredFieldNames(const std::string& initialMessage)
+  {
+    std::stringstream sstr;
+    sstr << "List of registered fields in the SamplingShaper " << initialMessage
+         << std::endl;
+    {
+      std::vector<std::string> names;
+      for(auto kv : m_dc->GetFieldMap())
+      {
+        names.push_back(kv.first);
+      }
+      sstr << fmt::format("\t* Data collection grid funcs: {}",
+                          fmt::join(names, ", "))
+           << std::endl;
+    }
+    {
+      std::vector<std::string> names;
+      for(auto kv : m_dc->GetQFieldMap())
+      {
+        names.push_back(kv.first);
+      }
+      sstr << fmt::format("\t* Data collection qfuncs: {}",
+                          fmt::join(names, ", "))
+           << std::endl;
+    }
+
+    {
+      std::vector<std::string> names;
+      for(auto name : m_knownMaterials)
+      {
+        names.push_back(name);
+      }
+      sstr << fmt::format("\t* Known materials: {}", fmt::join(names, ", "))
+           << std::endl;
+    }
+
+    if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_QPTS)
+    {
+      {
+        std::vector<std::string> names;
+        for(auto kv : m_inoutShapeQFuncs)
+        {
+          names.push_back(kv.first);
+        }
+        sstr << fmt::format("\t* Shape qfuncs: {}", fmt::join(names, ", "))
+             << std::endl;
+      }
+      {
+        std::vector<std::string> names;
+        for(auto kv : m_inoutMaterialQFuncs)
+        {
+          names.push_back(kv.first);
+        }
+        sstr << fmt::format("\t* Mat qfuncs: {}", fmt::join(names, ", "))
+             << std::endl;
+      }
+    }
+    else if(m_vfSampling == shaping::VolFracSampling::SAMPLE_AT_DOFS)
+    {
+      std::vector<std::string> names;
+      for(auto kv : m_inoutDofs)
+      {
+        names.push_back(kv.first);
+      }
+      sstr << fmt::format("\t* Shape samples at DOFs: {}",
+                          fmt::join(names, ", "))
+           << std::endl;
+    }
+    SLIC_INFO(sstr.str());
+  }
+
 private:
   // Handles 2D or 3D shaping, based on the template and associated parameter
   template <typename InOutSamplerType>
@@ -558,13 +658,14 @@ private:
   }
 
 private:
-  // TODO: Use MfemSidreDataCollection QFuncs for this when we upgrade to post mfem@4.3
   shaping::QFunctionCollection m_inoutShapeQFuncs;
   shaping::QFunctionCollection m_inoutMaterialQFuncs;
   shaping::DenseTensorCollection m_inoutDofs;
 
   shaping::InOutSampler<2>* m_inoutSampler2D {nullptr};
   shaping::InOutSampler<3>* m_inoutSampler3D {nullptr};
+
+  std::set<std::string> m_knownMaterials;
 
   shaping::VolFracSampling m_vfSampling {shaping::VolFracSampling::SAMPLE_AT_QPTS};
   int m_quadratureOrder {5};
