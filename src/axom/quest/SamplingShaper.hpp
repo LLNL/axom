@@ -459,7 +459,10 @@ public:
         matQFunc != nullptr,
         axom::fmt::format("Missing inout samples for material '{}'", thisMatName));
 
-      quest::shaping::copyShapeIntoMaterial(shapeQFuncCopy, matQFunc);
+      const bool reuseExisting = shape.getGeometry().hasGeometry();
+      quest::shaping::copyShapeIntoMaterial(shapeQFuncCopy,
+                                            matQFunc,
+                                            reuseExisting);
 
       delete shapeQFuncCopy;
       shapeQFuncCopy = nullptr;

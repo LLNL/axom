@@ -45,9 +45,17 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
                      mfem::QuadratureFunction* materialQFunc,
                      bool shouldReplace);
 
-/// Utility function to copy inout quadrature point values from \a shapeQFunc to \a materialQFunc
+/**
+ * \brief Utility function to copy inout quadrature point values from \a shapeQFunc to \a materialQFunc
+ *
+ * \param shapeQFunc The inout samples for the current shape
+ * \param materialQFunc The inout samples for the material we're writing into
+ * \param reuseExisting When a value is not set in \a shapeQFunc, should we retain existing values 
+ * from \a materialQFunc or overwrite them based on \a shapeQFunc. The default is to retain values
+ */
 void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
-                           mfem::QuadratureFunction* materialQFunc);
+                           mfem::QuadratureFunction* materialQFunc,
+                           bool reuseExisting = true);
 
 /// Generates a quadrature function corresponding to the mesh positions
 void generatePositionsQFunction(mfem::Mesh* mesh,

@@ -105,13 +105,47 @@ public:
                                                  hi[0] - lo[0],
                                                  hi[1] - lo[1]));
 
+    const int NE = mesh->GetNE();
+    const int NV = mesh->GetNV();
+
     // Offset the mesh to lie w/in the bounding box
-    for(int i = 0; i < mesh->GetNV(); ++i)
+    for(int i = 0; i < NV; ++i)
     {
       double* v = mesh->GetVertex(i);
       for(int d = 0; d < dim; ++d)
       {
         v[d] += lo[d];
+      }
+    }
+
+    // Set element attributes based on quadrant where centroid is located
+    // These will be used later in some cases when setting volume fractions
+    mfem::Array<int> v;
+    for(int i = 0; i < NE; ++i)
+    {
+      mesh->GetElementVertices(i, v);
+      BBox2D bbox;
+      for(int j = 0; j < v.Size(); ++j)
+      {
+        bbox.addPoint(Point2D(mesh->GetVertex(v[j]), 2));
+      }
+
+      auto centroid = bbox.getCentroid();
+      if(centroid[0] >= 0 && centroid[1] >= 0)
+      {
+        mesh->SetAttribute(i, 1);
+      }
+      else if(centroid[0] >= 0 && centroid[1] < 0)
+      {
+        mesh->SetAttribute(i, 2);
+      }
+      else if(centroid[0] < 0 && centroid[1] >= 0)
+      {
+        mesh->SetAttribute(i, 3);
+      }
+      else
+      {
+        mesh->SetAttribute(i, 4);
       }
     }
 
@@ -406,7 +440,7 @@ shapes:
   this->checkExpectedVolumeFractions(circle_material, expected_volume);
 
   // Save meshes and fields
-  this->getDC().Save();
+  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
 }
 
 TEST_F(SamplingShaperTest, disk_via_replacement)
@@ -460,8 +494,7 @@ shapes:
   this->checkExpectedVolumeFractions(outer_material, expected_outer_area);
   this->checkExpectedVolumeFractions(inner_material, expected_inner_area);
 
-  // Save meshes and fields
-  this->getDC().Save();
+  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
 }
 
 TEST_F(SamplingShaperTest, disk_via_replacement_with_background)
@@ -562,13 +595,201 @@ shapes:
 
     // check that the result has a volume fraction field associated with the circle material
     constexpr double expected_disk_area = M_PI - .5 * .5 * M_PI;
-    ;
     const auto range = this->meshBoundingBox().range();
     const double expected_void_area = range[0] * range[1] - expected_disk_area;
 
     this->checkExpectedVolumeFractions("disk", expected_disk_area);
     this->checkExpectedVolumeFractions("void", expected_void_area);
   }
+
+  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+}
+
+TEST_F(SamplingShaperTest, preshaped_materials)
+{
+  using Point2D = typename SamplingShaperTest::Point2D;
+
+  const std::string& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+units: cm
+
+shapes:
+- name: background
+  material: {0}
+  geometry:
+    format: none
+# Left replaces background void
+- name: left_side
+  material: {1}
+  geometry:
+    format: none
+# Odd cells replace background void, but not left
+- name: odd_cells
+  material: {2}
+  geometry:
+    format: none
+  does_not_replace: [{1}]
+)";
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, "void", "left", "odds"));
+
+  // Create an initial background material set to 1 everywhere
+  std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+  {
+    auto* vf = this->registerVolFracGridFunction("init_vf_bg");
+    this->initializeVolFracGridFunction(
+      vf,
+      [](int, const Point2D&, int) -> double { return 1.; });
+    initialGridFunctions["void"] = vf;
+
+    // Note: element attributes were set earlier based on quadrant of cell's centroid (1, 2, 3 and 4)
+    vf = this->registerVolFracGridFunction("init_vf_left");
+    this->initializeVolFracGridFunction(
+      vf,
+      [](int, const Point2D&, int attr) -> double {
+        return (attr == 3 || attr == 4) ? 1. : 0;
+      });
+    initialGridFunctions["left"] = vf;
+
+    vf = this->registerVolFracGridFunction("init_vf_odds");
+    this->initializeVolFracGridFunction(
+      vf,
+      [](int idx, const Point2D&, int) -> double {
+        return idx % 2 == 1 ? 1. : 0;
+      });
+    initialGridFunctions["odds"] = vf;
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->runShaping(shape_file.getFileName(), initialGridFunctions);
+
+  // check that the result has a volume fraction field associated with the circle material
+  const auto range = this->meshBoundingBox().range();
+
+  // Left covers half the mesh and is not replaced
+  const double expected_left_area = range[0] * range[1] / 2.;
+  // Odds should cover half of the right side of the mesh
+  const double expected_odds_area = range[0] * range[1] / 4.;
+  // The rest should be void
+  const double expected_void_area =
+    range[0] * range[1] - expected_left_area - expected_odds_area;
+
+  this->checkExpectedVolumeFractions("left", expected_left_area);
+  this->checkExpectedVolumeFractions("odds", expected_odds_area);
+  this->checkExpectedVolumeFractions("void", expected_void_area);
+
+  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
+}
+
+TEST_F(SamplingShaperTest, disk_with_multiple_preshaped_materials)
+{
+  using Point2D = typename SamplingShaperTest::Point2D;
+
+  const std::string& testname =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  const std::string shape_template = R"(
+dimensions: 2
+units: cm
+
+shapes:
+- name: background
+  material: void
+  geometry:
+    format: none
+- name: circle_outer
+  material: disk
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+- name: circle_inner
+  material: hole
+  geometry:
+    format: c2c
+    path: {0}
+    units: cm
+    operators:
+      - scale: .5
+  replaces: [void, disk]
+- name: left_side
+  material: left
+  geometry:
+    format: none
+  does_not_replace: [disk]
+- name: odd_cells
+  material: odds
+  geometry:
+    format: none
+  replaces: [void, hole]
+)";
+
+  ScopedTemporaryFile contour_file(axom::fmt::format("{}.contour", testname),
+                                   unit_circle_contour);
+
+  ScopedTemporaryFile shape_file(
+    axom::fmt::format("{}.yaml", testname),
+    axom::fmt::format(shape_template, contour_file.getFileName()));
+
+  {
+    SLIC_INFO("Contour file: \n" << contour_file.getFileContents());
+    SLIC_INFO("Shape file: \n" << shape_file.getFileContents());
+  }
+
+  // Create an initial background material set to 1 everywhere
+  std::map<std::string, mfem::GridFunction*> initialGridFunctions;
+  {
+    auto* vf = this->registerVolFracGridFunction("init_vf_bg");
+    this->initializeVolFracGridFunction(
+      vf,
+      [](int, const Point2D&, int) -> double { return 1.; });
+    initialGridFunctions["void"] = vf;
+
+    // Note: element attributes were set earlier based on quadrant of cell's centroid (1, 2, 3 and 4)
+    vf = this->registerVolFracGridFunction("init_vf_left");
+    this->initializeVolFracGridFunction(
+      vf,
+      [](int, const Point2D&, int attr) -> double {
+        return (attr == 3 || attr == 4) ? 1. : 0;
+      });
+    initialGridFunctions["left"] = vf;
+
+    vf = this->registerVolFracGridFunction("init_vf_odds");
+    this->initializeVolFracGridFunction(
+      vf,
+      [](int idx, const Point2D&, int) -> double {
+        return idx % 2 == 1 ? 1. : 0;
+      });
+    initialGridFunctions["odds"] = vf;
+  }
+
+  this->validateShapeFile(shape_file.getFileName());
+  this->runShaping(shape_file.getFileName(), initialGridFunctions);
+
+  // check that the result has the correct volume fractions
+  const auto range = this->meshBoundingBox().range();
+  const auto total_area = range[0] * range[1];
+  const auto left_orig = total_area / 2;
+  constexpr auto hole_orig = .5 * .5 * M_PI;
+
+  constexpr double expected_disk_area = M_PI - hole_orig;
+  const double expected_left_area = left_orig - expected_disk_area / 2;
+  const double expected_hole_area = 0.19683;  // from program output
+  const double expected_odds_area = 3.41180;  // from program output
+  const double expected_void_area = 3.21497;  // from program output
+
+  this->checkExpectedVolumeFractions("left", expected_left_area);
+  this->checkExpectedVolumeFractions("disk", expected_disk_area);
+  this->checkExpectedVolumeFractions("odds", expected_odds_area);
+  this->checkExpectedVolumeFractions("hole", expected_hole_area);
+  this->checkExpectedVolumeFractions("void", expected_void_area);
+
+  this->getDC().Save(testname, axom::sidre::Group::getDefaultIOProtocol());
 }
 
 //-----------------------------------------------------------------------------
