@@ -643,23 +643,17 @@ public:
     // Set new default to device
     axom::setDefaultAllocator(axom::execution_space<ExecSpace>::allocatorID());
 
-    int* ZERO = axom::allocate<int>(
-      1,
-      axom::getUmpireResourceAllocatorID(umpire::resource::Host));
-    ZERO[0] = 0;
-
     SLIC_INFO(axom::fmt::format("{:-^80}",
                                 " Inserting shapes' bounding boxes into BVH "));
 
     // Generate the BVH tree over the shapes
     // Access-aligned bounding boxes
-    m_aabbs = axom::allocate<BoundingBoxType>(shape_count);
+    m_aabbs = axom::Array<BoundingBoxType>(shape_count, shape_count);
 
     axom::StackArray<IndexType, 1> shape_dimensions = {shape_count};
     axom::ArrayView<ShapeType> shapes_view(shapes, shape_dimensions);
 
-    axom::StackArray<IndexType, 1> aabs_dimensions = {shape_count};
-    axom::ArrayView<BoundingBoxType> aabbs_view(m_aabbs, aabs_dimensions);
+    axom::ArrayView<BoundingBoxType> aabbs_view = m_aabbs.view();
 
     // Get the bounding boxes for the shapes
     axom::for_all<ExecSpace>(
@@ -671,7 +665,7 @@ public:
     // Insert shapes' Bounding Boxes into BVH.
     //bvh.setAllocatorID(poolID);
     spin::BVH<3, ExecSpace, double> bvh;
-    bvh.initialize(m_aabbs, shape_count);
+    bvh.initialize(aabbs_view, shape_count);
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
@@ -704,20 +698,20 @@ public:
     this->getDC()->RegisterField(volFracName, volFrac);
 
     // Initialize hexahedral elements
-    m_hexes = axom::allocate<HexahedronType>(NE);
-    m_hex_bbs = axom::allocate<BoundingBoxType>(NE);
+    m_hexes = axom::Array<HexahedronType>(NE, NE);
+    axom::ArrayView<HexahedronType> hexes_view = m_hexes.view();
 
-    axom::StackArray<IndexType, 1> hexes_dimensions = {NE};
-    axom::ArrayView<HexahedronType> hexes_view(m_hexes, hexes_dimensions);
-    axom::StackArray<IndexType, 1> hex_bbs_dimensions = {NE};
-    axom::ArrayView<BoundingBoxType> hex_bbs_view(m_hex_bbs, hex_bbs_dimensions);
+    m_hex_bbs = axom::Array<BoundingBoxType>(NE, NE);
+    axom::ArrayView<BoundingBoxType> hex_bbs_view = m_hex_bbs.view();
 
     // Initialize vertices from mfem mesh and
     // set each shape volume fraction to 1
     // Allocation size is:
     // # of elements * # of vertices per hex * # of components per vertex
-    double* vertCoords =
-      axom::allocate<double>(NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT);
+    axom::Array<double> vertCoords(NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+                                   NE * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT);
+    axom::ArrayView<double> verts_view = vertCoords.view();
+
     for(int i = 0; i < NE; i++)
     {
       // Get the indices of this element's vertices
@@ -734,7 +728,7 @@ public:
       {
         for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
         {
-          vertCoords[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+          verts_view[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
                      (j * NUM_COMPS_PER_VERT) + k] =
             (mesh->GetVertex(verts[j]))[k];
         }
@@ -751,9 +745,9 @@ public:
         {
           int vertIndex = (i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
             j * NUM_COMPS_PER_VERT;
-          hexes_view[i][j] = Point3D({vertCoords[vertIndex],
-                                      vertCoords[vertIndex + 1],
-                                      vertCoords[vertIndex + 2]});
+          hexes_view[i][j] = Point3D({verts_view[vertIndex],
+                                      verts_view[vertIndex + 1],
+                                      verts_view[vertIndex + 2]});
 
           // Set hexahedra components to zero if within threshold
           if(axom::utilities::isNearlyEqual(hexes_view[i][j][0],
@@ -781,9 +775,6 @@ public:
         // Get bounding box for hexahedral element
         hex_bbs_view[i] = primal::compute_bounding_box<double, 3>(hexes_view[i]);
       });  // end of loop to initialize hexahedral elements and bounding boxes
-
-    // Deallocate no longer needed
-    axom::deallocate(vertCoords);
 
     // Set shape components to zero if within threshold
     axom::for_all<ExecSpace>(
@@ -822,14 +813,7 @@ public:
     axom::Array<IndexType> offsets(NE);
     axom::Array<IndexType> counts(NE);
     axom::Array<IndexType> candidates;
-    bvh.findBoundingBoxes(offsets,
-                          counts,
-                          candidates,
-                          NE,
-                          reinterpret_cast<BoundingBoxType*>(m_hex_bbs));
-
-    //Deallocate no longer needed variables
-    axom::deallocate(m_aabbs);
+    bvh.findBoundingBoxes(offsets, counts, candidates, NE, hex_bbs_view);
 
     // Get the total number of candidates
     using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -856,8 +840,9 @@ public:
       axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
 
     // New total number of candidates after omitting degenerate shapes
-    int* newTotalCandidates = axom::allocate<int>(1);
-    axom::copy(newTotalCandidates, ZERO, sizeof(int));
+    axom::Array<IndexType> newTotalCandidates(1, 1);
+    const auto newTotalCandidates_view = newTotalCandidates.view();
+    newTotalCandidates_view[0] = 0;
 
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
@@ -884,24 +869,25 @@ public:
 
     const auto offsets_v = offsets.view();
     const auto candidates_v = candidates.view();
-    AXOM_PERF_MARK_SECTION(
-      "init_candidates",
-      axom::for_all<ExecSpace>(
-        NE,
-        AXOM_LAMBDA(axom::IndexType i) {
-          for(int j = 0; j < counts_v[i]; j++)
-          {
-            int shapeIdx = candidates_v[offsets_v[i] + j];
+    AXOM_PERF_MARK_SECTION("init_candidates",
+                           axom::for_all<ExecSpace>(
+                             NE,
+                             AXOM_LAMBDA(axom::IndexType i) {
+                               for(int j = 0; j < counts_v[i]; j++)
+                               {
+                                 int shapeIdx = candidates_v[offsets_v[i] + j];
 
-            for(int k = 0; k < NUM_TETS_PER_HEX; k++)
-            {
-              auto idx = RAJA::atomicAdd<ATOMIC_POL>(newTotalCandidates, 1);
-              hexIndices[idx] = i;
-              shapeCandidates[idx] = shapeIdx;
-              tetIndices[idx] = i * NUM_TETS_PER_HEX + k;
-            }
-          }
-        }););
+                                 for(int k = 0; k < NUM_TETS_PER_HEX; k++)
+                                 {
+                                   IndexType idx = RAJA::atomicAdd<ATOMIC_POL>(
+                                     &newTotalCandidates_view[0],
+                                     IndexType {1});
+                                   hexIndices[idx] = i;
+                                   shapeCandidates[idx] = shapeIdx;
+                                   tetIndices[idx] = i * NUM_TETS_PER_HEX + k;
+                                 }
+                               }
+                             }););
 
     // Overlap volume is the volume of clip(oct,tet)
     m_overlap_volumes = axom::allocate<double>(NE);
@@ -944,7 +930,7 @@ public:
     AXOM_PERF_MARK_SECTION(
       "tet_shape_volume",
       axom::for_all<ExecSpace>(
-        newTotalCandidates[0],
+        newTotalCandidates_view[0],
         AXOM_LAMBDA(axom::IndexType i) {
           int index = hexIndices[i];
           int shapeIndex = shapeCandidates[i];
@@ -983,14 +969,11 @@ public:
                                 this->allReduceSum(totalHex)));
 
     // Deallocate no longer needed variables
-    axom::deallocate(ZERO);
-    axom::deallocate(m_hexes);
-    axom::deallocate(m_hex_bbs);
+
     axom::deallocate(hexIndices);
     axom::deallocate(shapeCandidates);
     axom::deallocate(tets);
     axom::deallocate(tetIndices);
-    axom::deallocate(newTotalCandidates);
     axom::deallocate(m_octs);
     axom::deallocate(m_tets);
 
@@ -2060,9 +2043,9 @@ private:
   OctahedronType* m_octs {nullptr};
   TetrahedronType* m_tets {nullptr};
 
-  BoundingBoxType* m_aabbs {nullptr};
-  HexahedronType* m_hexes {nullptr};
-  BoundingBoxType* m_hex_bbs {nullptr};
+  axom::Array<BoundingBoxType> m_aabbs;
+  axom::Array<HexahedronType> m_hexes;
+  axom::Array<BoundingBoxType> m_hex_bbs;
 
   std::vector<mfem::GridFunction*> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
