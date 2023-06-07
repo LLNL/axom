@@ -168,10 +168,11 @@ public:
    *
    * \param [in] shape Array size in each direction.
    */
-  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape)
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
+                             int spacing = 1)
     : m_shape {shape}
   {
-    m_strides[DIM - 1] = 1;
+    m_strides[DIM - 1] = spacing;
     updateStrides();
   }
 
@@ -342,6 +343,11 @@ public:
     return m_strides;
   }
 
+  /*!
+   * \brief Returns the spacing between adjacent items.
+   */
+  AXOM_HOST_DEVICE IndexType spacing() const { return m_strides[DIM - 1]; }
+
 protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
@@ -408,6 +414,16 @@ private:
     return numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
   }
 
+  /*!
+   * \brief Returns the logical number of elements.
+   *
+   *  offset() will return a value between [0, logicalSize()).
+   */
+  AXOM_HOST_DEVICE IndexType logicalSize() const
+  {
+    return m_strides[0] * m_shape[0];
+  }
+
   /// Logical offset to a slice at the given lower-dimensional index.
   template <int UDim>
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, UDim>& idx) const
@@ -423,7 +439,7 @@ private:
   /*! \brief Test if idx is within bounds */
   AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
-    return idx >= 0 && idx < asDerived().size();
+    return idx >= 0 && idx < logicalSize();
   }
   /// @}
 
@@ -450,7 +466,7 @@ private:
   {
     const IndexType baseIdx = offset(idx);
     assert(inBounds(baseIdx));
-    return asDerived().data()[baseIdx * asDerived().spacing()];
+    return asDerived().data()[baseIdx];
   }
 
   /// \overload
@@ -459,7 +475,7 @@ private:
   {
     const IndexType baseIdx = offset(idx);
     assert(inBounds(baseIdx));
-    return asDerived().data()[baseIdx * asDerived().spacing()];
+    return asDerived().data()[baseIdx];
   }
   /// @}
 
@@ -489,7 +505,9 @@ public:
 
   AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { }
 
-  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&) { }
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&, int spacing = 1)
+    : m_stride(spacing)
+  { }
 
   // Empty implementation because no member data
   template <typename OtherArrayType>
@@ -510,6 +528,11 @@ public:
   }
 
   /*!
+   * \brief Returns the spacing between adjacent items.
+   */
+  AXOM_HOST_DEVICE IndexType spacing() const { return m_stride; }
+
+  /*!
    * \brief Accessor, returns a reference to the given value.
    * For multidimensional arrays, indexes into the (flat) raw data.
    *
@@ -523,13 +546,13 @@ public:
   AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
 
   /*!
@@ -545,13 +568,13 @@ public:
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
   /// @}
 
@@ -567,7 +590,7 @@ protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    */
-  IndexType blockSize() const { return 1; }
+  IndexType blockSize() const { return m_stride; }
 
   /*!
    * \brief Updates the internal dimensions and striding based on the insertion
@@ -591,12 +614,24 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
+  /*!
+   * \brief Returns the logical number of elements.
+   *
+   *  offset() will return a value between [0, logicalSize()).
+   */
+  AXOM_HOST_DEVICE IndexType logicalSize() const
+  {
+    return m_stride * shape()[0];
+  }
+
   /*! \brief Test if idx is within bounds */
   AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
-    return idx >= 0 && idx < asDerived().size();
+    return idx >= 0 && idx < logicalSize();
   }
   /// @}
+
+  int m_stride {1};
 };
 
 //------------------------------------------------------------------------------
@@ -1388,7 +1423,7 @@ class ArraySubslice
 public:
   AXOM_HOST_DEVICE ArraySubslice(BaseArray* array,
                                  const StackArray<IndexType, NumIndices>& idxs)
-    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()))
+    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()), array->spacing())
     , m_array(array)
     , m_inds(idxs)
   { }
@@ -1416,7 +1451,7 @@ public:
     IndexType offset = numerics::dot_product(m_inds.begin(),
                                              m_array->strides().begin(),
                                              NumIndices);
-    return m_array->data() + offset * m_array->spacing();
+    return m_array->data() + offset;
   }
 
   /// @}
