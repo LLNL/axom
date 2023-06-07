@@ -826,18 +826,28 @@ public:
       AXOM_LAMBDA(axom::IndexType i) { totalCandidates += counts_v[i]; });
 
     // Initialize hexahedron indices and shape candidates
-    axom::IndexType* hexIndices =
-      axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
-    axom::IndexType* shapeCandidates =
-      axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
+    axom::Array<axom::IndexType> hex_indices(
+      totalCandidates.get() * NUM_TETS_PER_HEX,
+      totalCandidates.get() * NUM_TETS_PER_HEX);
+    axom::ArrayView<axom::IndexType> hex_indices_view = hex_indices.view();
+
+    axom::Array<axom::IndexType> shape_candidates(
+      totalCandidates.get() * NUM_TETS_PER_HEX,
+      totalCandidates.get() * NUM_TETS_PER_HEX);
+    axom::ArrayView<axom::IndexType> shape_candidates_view =
+      shape_candidates.view();
 
     // Tetrahedrons from hexes (24 for each hex)
-    TetrahedronType* tets =
-      axom::allocate<TetrahedronType>(NE * NUM_TETS_PER_HEX);
+    axom::Array<TetrahedronType> tets_from_hexes(NE * NUM_TETS_PER_HEX,
+                                                 NE * NUM_TETS_PER_HEX);
+    axom::ArrayView<TetrahedronType> tets_from_hexes_view =
+      tets_from_hexes.view();
 
     // Index into 'tets'
-    axom::IndexType* tetIndices =
-      axom::allocate<axom::IndexType>(totalCandidates.get() * NUM_TETS_PER_HEX);
+    axom::Array<axom::IndexType> tet_indices(
+      totalCandidates.get() * NUM_TETS_PER_HEX,
+      totalCandidates.get() * NUM_TETS_PER_HEX);
+    axom::ArrayView<axom::IndexType> tet_indices_view = tet_indices.view();
 
     // New total number of candidates after omitting degenerate shapes
     axom::Array<IndexType> newTotalCandidates(1, 1);
@@ -859,7 +869,8 @@ public:
 
                                for(int j = 0; j < NUM_TETS_PER_HEX; j++)
                                {
-                                 tets[i * NUM_TETS_PER_HEX + j] = cur_tets[j];
+                                 tets_from_hexes_view[i * NUM_TETS_PER_HEX + j] =
+                                   cur_tets[j];
                                }
                              }););
 
@@ -882,25 +893,22 @@ public:
                                    IndexType idx = RAJA::atomicAdd<ATOMIC_POL>(
                                      &newTotalCandidates_view[0],
                                      IndexType {1});
-                                   hexIndices[idx] = i;
-                                   shapeCandidates[idx] = shapeIdx;
-                                   tetIndices[idx] = i * NUM_TETS_PER_HEX + k;
+                                   hex_indices_view[idx] = i;
+                                   shape_candidates_view[idx] = shapeIdx;
+                                   tet_indices_view[idx] =
+                                     i * NUM_TETS_PER_HEX + k;
                                  }
                                }
                              }););
 
     // Overlap volume is the volume of clip(oct,tet)
-    m_overlap_volumes = axom::allocate<double>(NE);
+    m_overlap_volumes = axom::Array<double>(NE, NE);
 
     // Hex volume is the volume of the hexahedron element
-    m_hex_volumes = axom::allocate<double>(NE);
+    m_hex_volumes = axom::Array<double>(NE, NE);
 
-    axom::StackArray<IndexType, 1> overlap_volumes_dimensions = {NE};
-    axom::ArrayView<double> overlap_volumes_view(m_overlap_volumes,
-                                                 overlap_volumes_dimensions);
-    axom::StackArray<IndexType, 1> hex_volumes_dimensions = {NE};
-    axom::ArrayView<double> hex_volumes_view(m_hex_volumes,
-                                             hex_volumes_dimensions);
+    axom::ArrayView<double> overlap_volumes_view = m_overlap_volumes.view();
+    axom::ArrayView<double> hex_volumes_view = m_hex_volumes.view();
 
     // Set initial values to 0
     axom::for_all<ExecSpace>(
@@ -923,6 +931,7 @@ public:
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each tet-shape pair "));
+    slic::flushStreams();
 
     constexpr double EPS = 1e-10;
     constexpr bool checkSign = true;
@@ -932,12 +941,14 @@ public:
       axom::for_all<ExecSpace>(
         newTotalCandidates_view[0],
         AXOM_LAMBDA(axom::IndexType i) {
-          int index = hexIndices[i];
-          int shapeIndex = shapeCandidates[i];
-          int tetIndex = tetIndices[i];
+          int index = hex_indices_view[i];
+          int shapeIndex = shape_candidates_view[i];
+          int tetIndex = tet_indices_view[i];
 
-          PolyhedronType poly =
-            primal::clip(shapes_view[shapeIndex], tets[tetIndex], EPS, checkSign);
+          PolyhedronType poly = primal::clip(shapes_view[shapeIndex],
+                                             tets_from_hexes_view[tetIndex],
+                                             EPS,
+                                             checkSign);
 
           // Poly is valid
           if(poly.numVertices() >= 4)
@@ -967,13 +978,8 @@ public:
                                 this->allReduceSum(totalOverlap)));
     SLIC_INFO(axom::fmt::format("Total mesh volume is {}",
                                 this->allReduceSum(totalHex)));
-
+    slic::flushStreams();
     // Deallocate no longer needed variables
-
-    axom::deallocate(hexIndices);
-    axom::deallocate(shapeCandidates);
-    axom::deallocate(tets);
-    axom::deallocate(tetIndices);
     axom::deallocate(m_octs);
     axom::deallocate(m_tets);
 
@@ -1325,12 +1331,8 @@ public:
       GridFunctionView<ExecSpace> matVFView(matVF.first);
       GridFunctionView<ExecSpace> shapeVFView(shapeVolFrac);
 
-      axom::StackArray<IndexType, 1> overlap_volumes_dimensions = {m_num_elements};
-      axom::ArrayView<double> overlap_volumes_view(m_overlap_volumes,
-                                                   overlap_volumes_dimensions);
-      axom::StackArray<IndexType, 1> hex_volumes_dimensions = {m_num_elements};
-      axom::ArrayView<double> hex_volumes_view(m_hex_volumes,
-                                               hex_volumes_dimensions);
+      axom::ArrayView<double> overlap_volumes_view = m_overlap_volumes.view();
+      axom::ArrayView<double> hex_volumes_view = m_hex_volumes.view();
 
       axom::for_all<ExecSpace>(
         dataSize,
@@ -1414,8 +1416,6 @@ public:
   {
     // Implementation here -- destroy BVH tree and other shape-based data structures
     delete m_surfaceMesh;
-    axom::deallocate(m_hex_volumes);
-    axom::deallocate(m_overlap_volumes);
 
     m_surfaceMesh = nullptr;
   }
@@ -2033,8 +2033,8 @@ private:
   int m_num_elements {0};
   std::string m_free_mat_name;
 
-  double* m_hex_volumes {nullptr};
-  double* m_overlap_volumes {nullptr};
+  axom::Array<double> m_hex_volumes;
+  axom::Array<double> m_overlap_volumes;
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   double m_vertexWeldThreshold {1.e-10};
   int m_octcount {0};
