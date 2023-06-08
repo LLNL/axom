@@ -34,7 +34,7 @@ namespace primal
  * \brief Determines containment for a point in a polygon
  *
  * \param [in] query The query point to test
- * \param [in] poly The Polygon object to test for containment
+ * \param [in] poly The Polyhedron object to test for containment
  * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
  * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
  * \param [in] edge_tol The physical distance level at which objects are 
