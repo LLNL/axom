@@ -91,14 +91,16 @@ public:
     SLIC_ASSERT(isValid());
     const int nverts = numVertices();
 
-    VectorType normal, v0(m_vertices[0], m_vertices[1]), v1;
+    VectorType v0(m_vertices[nverts - 1]), v1(m_vertices[0]);
+
+    VectorType normal = VectorType::cross_product(v0, v1);
 
     // Iterate over each pair of vertices
-    for(int i = 2; i < nverts; ++i)
+    for(int i = 1; i < nverts; ++i)
     {
-      v1 = VectorType(m_vertices[0], m_vertices[i]);
-      normal += VectorType::cross_product(v0, v1);
       v0 = v1;
+      v1 = VectorType(m_vertices[i]);
+      normal += VectorType::cross_product(v0, v1);
     }
 
     return normal;
