@@ -92,7 +92,7 @@ class MarchingCubesSingleDomain;
  *             const std::string &functionName,
  *             double contourValue )
  *   {
- *     MarchingCubes computationalMesh(meshNode, coordsName);
+ *     MarchingCubes mc(meshNode, coordsName);
  *     setFunctionField(functionName);
  *     mc.computeIsocontour(contourValue);
  *     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>
