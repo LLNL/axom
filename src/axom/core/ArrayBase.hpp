@@ -177,6 +177,20 @@ public:
   }
 
   /*!
+   * \brief Parameterized constructor that sets up the array shape and stride.
+   *
+   * \param [in] shape Array size in each direction.
+   * \param [in] stride Array stride for each direction.
+   */
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
+                             const StackArray<IndexType, DIM>& stride)
+    : m_shape {shape}
+    , m_strides {stride}
+  {
+    validateShapeAndStride(shape, stride);
+  }
+
+  /*!
    * \brief Copy constructor for arrays of different type
    * Because the element type (T) and dimension (DIM) are still locked down,
    * this function is nominally used for copying ArrayBase metadata from

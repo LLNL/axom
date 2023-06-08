@@ -86,6 +86,17 @@ public:
                              const StackArray<IndexType, DIM>& shape,
                              IndexType spacing_ = 1);
 
+  /*!
+   * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
+   *
+   * \param [in] data the external data this ArrayView will wrap.
+   * \param [in] shape Array size in each dimension.
+   * \param [in] strides Array strides for each dimension.
+   */
+  AXOM_HOST_DEVICE ArrayView(T* data,
+                             const StackArray<IndexType, DIM>& shape,
+                             const StackArray<IndexType, DIM>& stride);
+
   /*! 
    * \brief Constructor for transferring between memory spaces
    * 
@@ -230,6 +241,55 @@ AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
   const StackArray<IndexType, DIM>& shape,
   IndexType spacing)
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, spacing)
+  , m_data(data)
+#ifndef AXOM_DEVICE_CODE
+  , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
+#endif
+{
+#if defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
+  static_assert((SPACE != MemorySpace::Constant) || std::is_const<T>::value,
+                "T must be const if memory space is Constant memory");
+#endif
+  // Intel hits internal compiler error when casting as part of function call
+  if(data != nullptr)
+  {
+    m_num_elements = detail::packProduct(shape.m_data);
+  }
+  else
+  {
+    m_num_elements = 0;
+  }
+
+#if !defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
+  // If we have Umpire, we can try and see what space the pointer is allocated in
+  // Probably not worth checking this if SPACE != Dynamic, we *could* error out
+  // if e.g., the user gives a host pointer to ArrayView<T, DIM, Device>, but even
+  // Thrust doesn't guard against this.
+
+  // FIXME: Is it worth trying to get rid of this at compile time?
+  // (using a workaround since we don't have "if constexpr")
+  if(SPACE == MemorySpace::Dynamic)
+  {
+    auto& rm = umpire::ResourceManager::getInstance();
+
+    using NonConstT = typename std::remove_const<T>::type;
+    // TODO: There's no reason these Umpire methods should take a non-const pointer.
+    if(rm.hasAllocator(const_cast<NonConstT*>(data)))
+    {
+      auto alloc = rm.getAllocator(const_cast<NonConstT*>(data));
+      m_allocator_id = alloc.getId();
+    }
+  }
+#endif
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
+  T* data,
+  const StackArray<IndexType, DIM>& shape,
+  const StackArray<IndexType, DIM>& stride)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, stride)
   , m_data(data)
 #ifndef AXOM_DEVICE_CODE
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
