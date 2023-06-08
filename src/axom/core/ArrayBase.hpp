@@ -344,7 +344,15 @@ public:
   /*!
    * \brief Returns the spacing between adjacent items.
    */
-  AXOM_HOST_DEVICE IndexType spacing() const { return m_strides[DIM - 1]; }
+  AXOM_HOST_DEVICE IndexType spacing() const
+  {
+    IndexType minStride = m_strides[0];
+    for(int dim = 1; dim < DIM; dim++)
+    {
+      minStride = axom::utilities::min(minStride, m_strides[dim]);
+    }
+    return minStride;
+  }
 
 protected:
   /// \brief Set the shape
@@ -1475,7 +1483,8 @@ class ArraySubslice
 public:
   AXOM_HOST_DEVICE ArraySubslice(BaseArray* array,
                                  const StackArray<IndexType, NumIndices>& idxs)
-    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()), array->spacing())
+    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()),
+                detail::takeLastElems<SliceDim>(array->strides()))
     , m_array(array)
     , m_inds(idxs)
   { }
