@@ -76,6 +76,10 @@ TEST(primal_beziercurve, set_order)
       EXPECT_DOUBLE_EQ(controlPoints[p][i], pt[i]);
     }
   }
+
+  bCurve.clear();
+  EXPECT_EQ(-1, bCurve.getOrder());
+  EXPECT_FALSE(bCurve.isRational());
 }
 
 //----------------------------------------------------------------------------------
