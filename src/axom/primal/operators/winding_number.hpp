@@ -54,20 +54,23 @@ double winding_number(const Point<T, 2>& q,
  *
  * \param [in] q The query point to test
  * \param [in] tri The triangle
+ * \param [in] includeBoundary If true, points on the boundary are considered interior.
  * \param [in] edge_tol The tolerance at which a point is on the line
  *
+ * The triangle is assumed to be closed, so the winding number is an integer
+ * 
  * \return int The integer winding number
  */
 template <typename T>
 int winding_number(const Point<T, 2>& q,
                    const Triangle<T, 2>& tri,
-                   bool useStrictInclusion = false,
+                   bool includeBoundary = false,
                    double edge_tol = 1e-8)
 {
   return winding_number(
     q,
     Polygon<T, 2>(axom::Array<Point<T, 2>>({tri[0], tri[1], tri[2]})),
-    useStrictInclusion,
+    includeBoundary,
     edge_tol);
 }
 
@@ -76,13 +79,15 @@ int winding_number(const Point<T, 2>& q,
  *
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
- * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
+ * \param [in] includeBoundary If true, points on the boundary are considered interior.
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
  * of vertices around the query point. Current policy is to return 1 on edges
  * without strict inclusion, 0 on edges with strict inclusion.
  *
+ * The polygon is assumed to be closed, so the winding number is an integer
+ * 
  * Directly uses algorithm in 
  * Kai Hormann, Alexander Agathos, "The point in polygon problem for arbitrary polygons"
  * Computational Geometry, Volume 20, Issue 3, 2001,
@@ -92,7 +97,7 @@ int winding_number(const Point<T, 2>& q,
 template <typename T>
 int winding_number(const Point<T, 2>& R,
                    const Polygon<T, 2>& P,
-                   bool useStrictInclusion = false,
+                   bool includeBoundary = false,
                    double EPS = 1e-8)
 {
   const int nverts = P.numVertices();
@@ -101,7 +106,7 @@ int winding_number(const Point<T, 2>& R,
   //  as "inside" by evenodd or nonzero protocols
   if(axom::utilities::isNearlyEqual(P[0][0], R[0], EPS) &&
      axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
-    return !useStrictInclusion;
+    return includeBoundary;
 
   int winding_num = 0;
   for(int i = 0; i < nverts; i++)
@@ -111,15 +116,14 @@ int winding_number(const Point<T, 2>& R,
     if(axom::utilities::isNearlyEqual(P[j][1], R[1], EPS))
     {
       if(axom::utilities::isNearlyEqual(P[j][0], R[0], EPS))
-        return !useStrictInclusion;  // On vertex
+        return includeBoundary;  // On vertex
       else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
-        return !useStrictInclusion;  // On horizontal edge
+        return includeBoundary;  // On horizontal edge
     }
 
     // Check if edge crosses horizontal line
     if((P[i][1] < R[1]) != (P[j][1] < R[1]))
     {
-      double det;
       if(P[i][0] >= R[0])
       {
         if(P[j][0] > R[0])
@@ -127,13 +131,13 @@ int winding_number(const Point<T, 2>& R,
         else
         {
           // clang-format off
-          det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
-                                            P[i][1] - R[1], P[j][1] - R[1]);
+          double det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
+                                                  P[i][1] - R[1], P[j][1] - R[1]);
           // clang-format on
 
           // On edge
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
-            return !useStrictInclusion;
+            return includeBoundary;
 
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
@@ -145,13 +149,13 @@ int winding_number(const Point<T, 2>& R,
         if(P[j][0] > R[0])
         {
           // clang-format off
-          det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
-                                            P[i][1] - R[1], P[j][1] - R[1]);
+          double det = axom::numerics::determinant(P[i][0] - R[0], P[j][0] - R[0],
+                                                   P[i][1] - R[1], P[j][1] - R[1]);
           // clang-format on
 
           // On edge
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
-            return !useStrictInclusion;
+            return includeBoundary;
 
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
@@ -176,7 +180,7 @@ int winding_number(const Point<T, 2>& R,
  * Computes the winding number using a recursive, bisection algorithm,
  * using nearly-linear Bezier curves as a base case.
  * 
- * \return float the generalized winding number.
+ * \return double the generalized winding number.
  */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
@@ -198,7 +202,7 @@ double winding_number(const Point<T, 2>& q,
  *
  * Computes the winding number by summing the winding number for each curve
  * 
- * \return float the generalized winding number.
+ * \return double the generalized winding number.
  */
 template <typename T>
 double winding_number(const Point<T, 2>& q,
@@ -224,10 +228,12 @@ double winding_number(const Point<T, 2>& q,
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
- * Computes the winding number using the formula from [Barill 2018],
- *  with extra adjustments if the triangle takes up a full octant
+ * Computes the winding number using the formula from 
+ *  Oosterom, Strackee, "The Solid Angle of a Plane Triangle" 
+ *  IEEE Transactions on Biomedical Engineering, Vol BME-30, No. 2, February 1983
+ * with extra adjustments if the triangle takes up a full octant
  * 
- * \return float the generalized winding number.
+ * \return double the generalized winding number.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& q,
@@ -241,7 +247,10 @@ double winding_number(const Point<T, 3>& q,
   Vector<T, 3> a(q, tri[0]), b(q, tri[1]), c(q, tri[2]);
 
   // Compute norms. Possibly return early
-  double a_norm = a.norm(), b_norm = b.norm(), c_norm = c.norm();
+  const double a_norm = a.norm();
+  const double b_norm = b.norm();
+  const double c_norm = c.norm();
+
   if(a_norm < edge_tol || b_norm < edge_tol || c_norm < edge_tol) return 0;
 
   double num = Vector<T, 3>::scalar_triple_product(a, b, c);
@@ -293,7 +302,7 @@ double winding_number(const Point<T, 3>& q,
  * \pre Assumes the polygon is truly planar
  * Triangulates the polygon and computes the triangular solid angle for each part
  * 
- * \return float the generalized winding number.
+ * \return double the generalized winding number.
  */
 template <typename T>
 double winding_number(const Point<T, 3>& q,
@@ -341,9 +350,9 @@ double winding_number(const Point<T, 3>& q,
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  * 
- * \pre Expects the polyhedron to be convex
+ * \pre Expects the polyhedron to be convex and closed so that the returned value is an integer.
  * 
- * Computes the faces of the polygon and computes the winding number for each.
+ * Computes the faces of the polyhedron and computes the winding number for each.
  *
  * \return int The integer winding number.
  */
