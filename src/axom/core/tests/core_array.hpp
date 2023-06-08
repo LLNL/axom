@@ -1639,6 +1639,71 @@ TEST(core_array, check_multidimensional_view)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(core_array, check_multidimensional_view_subspan)
+{
+  constexpr double GHOST_DOUBLE = -1.0;
+
+  // Create a block of 2 * 3 * 4 doubles wrapped by a layer of -1s, representing
+  // a layer of "ghost zones."
+  double v_double_arr[4 * 5 * 6];
+  std::fill_n(v_double_arr, 4 * 5 * 6, GHOST_DOUBLE);
+
+  // For the non-ghost values, fill them with unique values.
+  constexpr int I_STRIDE = 6 * 5;
+  constexpr int J_STRIDE = 6;
+  constexpr int K_STRIDE = 1;
+  for(int i = 1; i < 3; i++)
+  {
+    for(int j = 1; j < 4; j++)
+    {
+      for(int k = 1; k < 5; k++)
+      {
+        double i_comp = (i - 1) * 0.1;
+        double j_comp = (j - 1) * 1.0;
+        double k_comp = (k - 1) * 10.0;
+        double value = i_comp + j_comp + k_comp;
+        v_double_arr[i * I_STRIDE + j * J_STRIDE + k] = value;
+      }
+    }
+  }
+
+  ArrayView<double, 3> double_view(v_double_arr, {4, 5, 6});
+
+  EXPECT_EQ(double_view.size(), 4 * 5 * 6);
+  EXPECT_EQ(double_view.strides()[0], I_STRIDE);
+  EXPECT_EQ(double_view.strides()[1], J_STRIDE);
+  EXPECT_EQ(double_view.strides()[2], K_STRIDE);
+
+  // Construct a subspan view starting at (1, 1, 1) and spanning 2 x 3 x 4
+  // elements.
+  ArrayView<double, 3> double_view_real =
+    double_view.subspan({1, 1, 1}, {2, 3, 4});
+
+  EXPECT_EQ(double_view_real.size(), 2 * 3 * 4);
+  EXPECT_EQ(double_view_real.shape()[0], 2);
+  EXPECT_EQ(double_view_real.shape()[1], 3);
+  EXPECT_EQ(double_view_real.shape()[2], 4);
+  EXPECT_EQ(double_view_real.strides(), double_view.strides());
+
+  // Iterate over logical indexes and check for validity.
+  for(int i = 0; i < 2; i++)
+  {
+    for(int j = 0; j < 3; j++)
+    {
+      for(int k = 0; k < 4; k++)
+      {
+        double i_comp = i * 0.1;
+        double j_comp = j * 1.0;
+        double k_comp = k * 10.0;
+        double value = i_comp + j_comp + k_comp;
+        EXPECT_EQ(double_view_real(i, j, k), value);
+        EXPECT_EQ(double_view_real[i][j][k], value);
+      }
+    }
+  }
+}
+
 struct Elem
 {
   double earth, wind, fire;
