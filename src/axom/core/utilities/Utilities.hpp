@@ -347,6 +347,31 @@ inline AXOM_HOST_DEVICE bool isNearlyEqualRelative(RealType a,
 }
 
 /*!
+ * \brief Insertion sort of an array.
+ * \accelerated
+ * \param [in] array The array to sort.
+ * \param [in] n The number of entries in the array.
+ * \param [in] cmp The comparator to use for comparing elements; "less than"
+ *  by default.
+ */
+template <typename DataType, typename Predicate = std::less<DataType>>
+inline AXOM_HOST_DEVICE void insertion_sort(DataType* array,
+                                            IndexType n,
+                                            Predicate cmp = {})
+{
+  for(int i = 1; i < n; i++)
+  {
+    int j = i;
+    // Keep swapping elements until we're not out-of-order.
+    while(j > 0 && cmp(array[j], array[j - 1]))
+    {
+      axom::utilities::swap(array[j], array[j - 1]);
+      j--;
+    }
+  }
+}
+
+/*!
  * \brief Compares std::vector< T > in lexicographic order
  *
  * \note T must support > and < operators.

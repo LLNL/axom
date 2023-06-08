@@ -352,11 +352,7 @@ protected:
                                           const StackArray<IndexType, DIM>& stride)
   {
 #ifdef AXOM_DEBUG
-    for(int dim = DIM - 1; dim > 0; dim--)
-    {
-      assert(stride[dim - 1] >= stride[dim] * shape[dim]);
-      assert(stride[dim - 1] % stride[dim] == 0);
-    }
+    validateShapeAndStride(shape, stride);
 #endif
     m_shape = shape;
     m_strides = stride;
@@ -430,7 +426,12 @@ private:
    */
   AXOM_HOST_DEVICE IndexType memorySize() const
   {
-    return m_strides[0] * m_shape[0];
+    IndexType maxSize = 0;
+    for(int dim = 0; dim < DIM; dim++)
+    {
+      maxSize = axom::utilities::max(maxSize, m_strides[dim] * m_shape[dim]);
+    }
+    return maxSize;
   }
 
   /// \brief Memory offset to a slice at the given lower-dimensional index.
@@ -450,6 +451,33 @@ private:
   {
     return idx >= 0 && idx < memorySize();
   }
+
+  /// \brief Checks a shape and stride array for correct bounds.
+  AXOM_HOST_DEVICE inline void validateShapeAndStride(
+    const StackArray<IndexType, DIM>& shape,
+    const StackArray<IndexType, DIM>& stride)
+  {
+    int sorted_dims[DIM];
+    for(int dim = 0; dim < DIM; dim++)
+    {
+      sorted_dims[dim] = dim;
+    }
+    // Sort the dimensions by stride.
+    axom::utilities::insertion_sort(sorted_dims,
+                                    DIM,
+                                    [&](int dim_a, int dim_b) -> bool {
+                                      return stride[dim_a] < stride[dim_b];
+                                    });
+    // Work from the smallest-strided dimension to the largest-strided.
+    for(int dim = 0; dim < DIM - 1; dim++)
+    {
+      int minor_dim = sorted_dims[dim];
+      int major_dim = sorted_dims[dim + 1];
+      assert(stride[major_dim] >= stride[minor_dim] * shape[minor_dim]);
+      assert(stride[major_dim] % stride[minor_dim] == 0);
+    }
+  }
+
   /// @}
 
   /// \name Internal subarray slicing methods
