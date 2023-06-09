@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -170,7 +170,7 @@ of our email lists:
 Chat Room
 ---------
 
-We also have the 'Axom' chat room on the LLNL Microsoft Teams server. This 
+We also have the 'Axom Users' chat room on the LLNL Microsoft Teams server. This 
 is open to anyone with access to the LLNL network. Just log onto Teams and 
 join the room.
 
@@ -181,7 +181,7 @@ Axom Copyright and License Information
 
 Please see the :ref:`axom-license`.
 
-Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC.
+Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
 
 LLNL-CODE-741217

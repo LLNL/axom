@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,7 +35,7 @@ Axom.
 Unless otherwise specified, Spack will default to a compiler.  This is generally not a good idea when
 developing large codes. To specify which compiler to use, add the compiler specification to the ``--spec`` Uberenv
 command line option. Supported compiler specs can be found in the Spack compiler files in our repository:
-``scripts/spack/configs/<platform>/compilers.yaml``.
+``scripts/spack/configs/<platform>/spack.yaml``.
 
 We currently regularly test the following Spack configuration files:
 
@@ -44,9 +44,9 @@ We currently regularly test the following Spack configuration files:
 * BlueOS (On Lassen at LC)
 
 To install Axom on a new platform, it is a good idea to start with a known Spack configuration directory
-(located in the Axom repo at ``scripts/spack/configs/<platform>``). The ``compilers.yaml`` file
-describes the compilers and associated flags required for the platform and the ``packages.yaml`` file
-describes the low-level libraries on the system to prevent Spack from building the world. Documentation on
+(located in the Axom repo at ``scripts/spack/configs/<platform>``). The ``spack.yaml`` file
+describes the compilers, associated flags required for the platform, and the
+the low-level libraries on the system to prevent Spack from building the world. Documentation on
 these configuration files is located in the `Spack docs <https://spack.readthedocs.io/en/latest/configuration.html>`_.
 
 Some helpful uberenv options include :
@@ -54,7 +54,7 @@ Some helpful uberenv options include :
 * ``--spec=+cuda`` (build Axom with CUDA support)
 * ``--spec=+devtools`` (also build the devtools with one command)
 * ``--spec=%clang@10.0.0`` (build with a specific compiler as defined in the ``compiler.yaml`` file)
-* ``--spack-config-dir=<Path to spack configuration directory>`` (use specific Spack configuration files)
+* ``--spack-env-file=<Path to Spack Environment file>`` (use specific Spack configuration file)
 * ``--prefix=<Path>`` (required, build and install the dependencies in a particular location)
 
 There is more thorough `uberenv documentation here <https://uberenv.readthedocs.io/en/latest/>`_.
@@ -93,7 +93,7 @@ must be specified using either:
 
 **Ubuntu 20.04**
 
-``python3 scripts/uberenv/uberenv.py --spack-config-dir=scripts/spack/configs/linux_ubuntu_20 --prefix=path/to/install/libraries``
+``python3 scripts/uberenv/uberenv.py --spack-env-file=scripts/spack/configs/linux_ubuntu_20/spack.yaml --prefix=path/to/install/libraries``
 
 
 

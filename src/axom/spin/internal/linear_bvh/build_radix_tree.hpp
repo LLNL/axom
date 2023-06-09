@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,7 +48,7 @@ namespace linear_bvh
 //Returns 30 bit morton code for coordinates for
 // x, y, and z are expecting to be between [0,1]
 template <typename FloatType, int Dims>
-static inline AXOM_HOST_DEVICE axom::int32 morton32_encode(
+static inline AXOM_HOST_DEVICE std::int32_t morton32_encode(
   const primal::Vector<FloatType, Dims>& point)
 {
   //for a float, take the first 10 bits. Note, 2^10 = 1024
@@ -56,47 +56,49 @@ static inline AXOM_HOST_DEVICE axom::int32 morton32_encode(
   constexpr FloatType FLOAT_TO_INT = 1 << NUM_BITS_PER_DIM;
   constexpr FloatType FLOAT_CEILING = FLOAT_TO_INT - 1;
 
-  int32 int_coords[Dims];
+  std::int32_t int_coords[Dims];
   for(int i = 0; i < Dims; i++)
   {
     int_coords[i] =
       fmin(fmax(point[i] * FLOAT_TO_INT, (FloatType)0), FLOAT_CEILING);
   }
 
-  primal::Point<int32, Dims> integer_pt(int_coords);
+  primal::Point<std::int32_t, Dims> integer_pt(int_coords);
 
-  return convertPointToMorton<int32>(integer_pt);
+  return convertPointToMorton<std::int32_t>(integer_pt);
 }
 
 //------------------------------------------------------------------------------
 //Returns 30 bit morton code for coordinates for
 //coordinates in the unit cude
-static inline AXOM_HOST_DEVICE axom::int64 morton64_encode(axom::float32 x,
-                                                           axom::float32 y,
-                                                           axom::float32 z = 0.0)
+static inline AXOM_HOST_DEVICE std::int64_t morton64_encode(axom::float32 x,
+                                                            axom::float32 y,
+                                                            axom::float32 z = 0.0)
 {
   //take the first 21 bits. Note, 2^21= 2097152.0f
   x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
   y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
   z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
 
-  primal::Point<int64, 3> integer_pt =
-    primal::Point<int64, 3>::make_point((int64)x, (int64)y, (int64)z);
+  primal::Point<std::int64_t, 3> integer_pt =
+    primal::Point<std::int64_t, 3>::make_point((std::int64_t)x,
+                                               (std::int64_t)y,
+                                               (std::int64_t)z);
 
-  return convertPointToMorton<int64>(integer_pt);
+  return convertPointToMorton<std::int64_t>(integer_pt);
 }
 
 template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
 void transform_boxes(const BoxIndexable boxes,
                      ArrayView<primal::BoundingBox<FloatType, NDIMS>> aabbs,
-                     int32 size,
+                     std::int32_t size,
                      FloatType scale_factor)
 {
   AXOM_PERF_MARK_FUNCTION("transform_boxes");
 
   for_all<ExecSpace>(
     size,
-    AXOM_LAMBDA(int32 i) {
+    AXOM_LAMBDA(std::int32_t i) {
       primal::BoundingBox<FloatType, NDIMS> aabb = boxes[i];
 
       aabb.scale(scale_factor);
@@ -109,7 +111,7 @@ void transform_boxes(const BoxIndexable boxes,
 template <typename ExecSpace, typename FloatType, int NDIMS>
 primal::BoundingBox<FloatType, NDIMS> reduce(
   ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
-  int32 size)
+  std::int32_t size)
 {
   AXOM_PERF_MARK_FUNCTION("reduce_abbs");
 
@@ -128,7 +130,7 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
 
     for_all<ExecSpace>(
       size,
-      AXOM_LAMBDA(int32 i) {
+      AXOM_LAMBDA(std::int32_t i) {
         const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
         min_coord.min(aabb.getMin()[dim]);
         max_coord.max(aabb.getMax()[dim]);
@@ -145,7 +147,8 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
 
   primal::BoundingBox<FloatType, NDIMS> global_bounds;
 
-  for_all<ExecSpace>(size, [&](int32 i) { global_bounds.addBox(aabbs[i]); });
+  for_all<ExecSpace>(size,
+                     [&](std::int32_t i) { global_bounds.addBox(aabbs[i]); });
 
   return global_bounds;
 #endif
@@ -154,9 +157,9 @@ primal::BoundingBox<FloatType, NDIMS> reduce(
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
 void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
-                int32 size,
+                std::int32_t size,
                 const primal::BoundingBox<FloatType, NDIMS>& bounds,
-                const ArrayView<uint32> mcodes)
+                const ArrayView<std::uint32_t> mcodes)
 {
   AXOM_PERF_MARK_FUNCTION("get_mcodes");
 
@@ -175,7 +178,7 @@ void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
 
   for_all<ExecSpace>(
     size,
-    AXOM_LAMBDA(int32 i) {
+    AXOM_LAMBDA(std::int32_t i) {
       const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
       // get the center and normalize it
@@ -197,7 +200,7 @@ void array_counting(ArrayView<IntType> iterator,
 
   for_all<ExecSpace>(
     size,
-    AXOM_LAMBDA(int32 i) { iterator[i] = start + i * step; });
+    AXOM_LAMBDA(std::int32_t i) { iterator[i] = start + i * step; });
 }
 
 //------------------------------------------------------------------------------
@@ -208,9 +211,9 @@ void array_counting(ArrayView<IntType> iterator,
 // result  [b,a,c]
 //
 template <typename ExecSpace, typename T>
-void reorder(const ArrayView<const int32> indices,
+void reorder(const ArrayView<const std::int32_t> indices,
              Array<T>& array,
-             int32 size,
+             std::int32_t size,
              int allocatorID)
 {
   AXOM_PERF_MARK_FUNCTION("reorder");
@@ -222,8 +225,8 @@ void reorder(const ArrayView<const int32> indices,
 
   for_all<ExecSpace>(
     size,
-    AXOM_LAMBDA(int32 i) {
-      int32 in_idx = indices[i];
+    AXOM_LAMBDA(std::int32_t i) {
+      std::int32_t in_idx = indices[i];
       temp_v[i] = array_v[in_idx];
     });
 
@@ -236,7 +239,9 @@ void reorder(const ArrayView<const int32> indices,
    ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12)))
 
 template <typename ExecSpace>
-void sort_mcodes(ArrayView<uint32> mcodes, int32 size, ArrayView<int32> iter)
+void sort_mcodes(ArrayView<std::uint32_t> mcodes,
+                 std::int32_t size,
+                 ArrayView<std::int32_t> iter)
 {
   AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 
@@ -253,18 +258,21 @@ void sort_mcodes(ArrayView<uint32> mcodes, int32 size, ArrayView<int32> iter)
 
 // fall back to std::stable_sort
 template <typename ExecSpace>
-void sort_mcodes(Array<uint32>& mcodes, int32 size, const ArrayView<int32> iter)
+void sort_mcodes(Array<std::uint32_t>& mcodes,
+                 std::int32_t size,
+                 const ArrayView<std::int32_t> iter)
 {
   AXOM_PERF_MARK_FUNCTION("sort_mcodes");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
 
-  AXOM_PERF_MARK_SECTION(
-    "cpu_sort",
+  AXOM_PERF_MARK_SECTION("cpu_sort",
 
-    std::stable_sort(iter.begin(),
-                     iter.begin() + size,
-                     [=](int32 i1, int32 i2) { return mcodes[i1] < mcodes[i2]; });
+                         std::stable_sort(iter.begin(),
+                                          iter.begin() + size,
+                                          [&](std::int32_t i1, std::int32_t i2) {
+                                            return mcodes[i1] < mcodes[i2];
+                                          });
 
   );
 
@@ -284,15 +292,15 @@ AXOM_HOST_DEVICE IntType delta(const IntType& a,
   bool tie = false;
   bool out_of_range = (b < 0 || b > inner_size);
   //still make the call but with a valid adderss
-  const int32 bb = (out_of_range) ? 0 : b;
-  const uint32 acode = mcodes[a];
-  const uint32 bcode = mcodes[bb];
+  const std::int32_t bb = (out_of_range) ? 0 : b;
+  const std::uint32_t acode = mcodes[a];
+  const std::uint32_t bcode = mcodes[bb];
   //use xor to find where they differ
-  uint32 exor = acode ^ bcode;
+  std::uint32_t exor = acode ^ bcode;
   tie = (exor == 0);
   //break the tie, a and b must always differ
-  exor = tie ? uint32(a) ^ uint32(bb) : exor;
-  int32 count = axom::utilities::leadingZeros(exor);
+  exor = tie ? std::uint32_t(a) ^ std::uint32_t(bb) : exor;
+  std::int32_t count = axom::utilities::leadingZeros(exor);
   if(tie) count += 32;
   count = (out_of_range) ? -1 : count;
   return count;
@@ -310,7 +318,7 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
   // of a huge amount of pain and suffering due so cuda
   // lambda captures of pointers inside a struct. Bad memories
   // of random segfaults ........ be warned
-  const int32 inner_size = data.m_inner_size;
+  const std::int32_t inner_size = data.m_inner_size;
   const auto lchildren_ptr = data.m_left_children.view();
   const auto rchildren_ptr = data.m_right_children.view();
   const auto parent_ptr = data.m_parents.view();
@@ -318,22 +326,22 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
 
   for_all<ExecSpace>(
     inner_size,
-    AXOM_LAMBDA(int32 i) {
+    AXOM_LAMBDA(std::int32_t i) {
       //determine range direction
-      int32 d = 0 > (delta(i, i + 1, inner_size, mcodes_ptr) -
-                     delta(i, i - 1, inner_size, mcodes_ptr))
+      std::int32_t d = 0 > (delta(i, i + 1, inner_size, mcodes_ptr) -
+                            delta(i, i - 1, inner_size, mcodes_ptr))
         ? -1
         : 1;
 
       //find upper bound for the length of the range
-      int32 min_delta = delta(i, i - d, inner_size, mcodes_ptr);
-      int32 lmax = 2;
+      std::int32_t min_delta = delta(i, i - d, inner_size, mcodes_ptr);
+      std::int32_t lmax = 2;
       while(delta(i, i + lmax * d, inner_size, mcodes_ptr) > min_delta)
         lmax *= 2;
 
       //binary search to find the lower bound
-      int32 l = 0;
-      for(int32 t = lmax / 2; t >= 1; t /= 2)
+      std::int32_t l = 0;
+      for(std::int32_t t = lmax / 2; t >= 1; t /= 2)
       {
         if(delta(i, i + (l + t) * d, inner_size, mcodes_ptr) > min_delta)
         {
@@ -341,13 +349,13 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         }
       }
 
-      int32 j = i + l * d;
-      int32 delta_node = delta(i, j, inner_size, mcodes_ptr);
-      int32 s = 0;
+      std::int32_t j = i + l * d;
+      std::int32_t delta_node = delta(i, j, inner_size, mcodes_ptr);
+      std::int32_t s = 0;
       FloatType div_factor = 2.f;
       //find the split postition using a binary search
-      for(int32 t = (int32)ceil(float32(l) / div_factor);;
-          div_factor *= 2, t = (int32)ceil(float32(l) / div_factor))
+      for(std::int32_t t = (std::int32_t)ceil(float32(l) / div_factor);;
+          div_factor *= 2, t = (std::int32_t)ceil(float32(l) / div_factor))
       {
         if(delta(i, i + (s + t) * d, inner_size, mcodes_ptr) > delta_node)
         {
@@ -356,7 +364,7 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
         if(t == 1) break;
       }
 
-      int32 split = i + s * d + utilities::min(d, 0);
+      std::int32_t split = i + s * d + utilities::min(d, 0);
       // assign parent/child pointers
       if(utilities::min(i, j) == split)
       {
@@ -537,22 +545,23 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
     inner_size,
     AXOM_LAMBDA(IndexType idx) { inner_aabb_ptr[idx] = BoxType {}; });
 
-  Array<int32> counters(inner_size, inner_size, allocatorID);
+  Array<std::int32_t> counters(inner_size, inner_size, allocatorID);
   const auto counters_ptr = counters.view();
 
   for_all<ExecSpace>(
     leaf_size,
-    AXOM_LAMBDA(int32 i) {
+    AXOM_LAMBDA(std::int32_t i) {
       BoxType aabb = leaf_aabb_ptr[i];
-      int32 last_node = inner_size + i;
-      int32 current_node = parent_ptr[inner_size + i];
+      std::int32_t last_node = inner_size + i;
+      std::int32_t current_node = parent_ptr[inner_size + i];
 
       while(current_node != -1)
       {
         // TODO: If RAJA atomics get memory ordering policies in the future,
         // we should look at replacing the sync_load/sync_stores by changing
         // the below atomic to an acquire/release atomic.
-        int32 old = atomic_increment<ExecSpace>(&(counters_ptr[current_node]));
+        std::int32_t old =
+          atomic_increment<ExecSpace>(&(counters_ptr[current_node]));
 
         if(old == 0)
         {
@@ -560,10 +569,10 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
           return;
         }
 
-        int32 lchild = lchildren_ptr[current_node];
-        int32 rchild = rchildren_ptr[current_node];
+        std::int32_t lchild = lchildren_ptr[current_node];
+        std::int32_t rchild = rchildren_ptr[current_node];
 
-        int32 other_child = (lchild == last_node) ? rchild : lchild;
+        std::int32_t other_child = (lchild == last_node) ? rchild : lchild;
 
         primal::BoundingBox<FloatType, NDIMS> other_aabb;
         if(other_child >= inner_size)

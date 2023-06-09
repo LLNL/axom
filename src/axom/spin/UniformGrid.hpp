@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -515,7 +515,9 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
 
   const IndexType numBins = getNumBins();
   // 1. Get number of elements to insert into each bin
-  axom::Array<IndexType> binCounts(numBins);
+  axom::Array<IndexType> binCounts(numBins,
+                                   numBins,
+                                   StoragePolicy::getAllocatorID());
   // TODO: There's an error on operator[] if this isn't const and it only
   // happens for GCC 8.1.0
   const axom::ArrayView<IndexType> binCountsView = binCounts;
@@ -525,14 +527,17 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
 #endif
 
   primal::NumericArray<int, NDIMS> strides = m_strides;
+  primal::NumericArray<int, NDIMS> resolution = m_resolution;
+  LatticeType lattice = m_lattice;
+
   axom::for_all<ExecSpace>(
     bboxes.size(),
     AXOM_LAMBDA(IndexType idx) {
       const BoxType bbox = bboxes[idx];
       const GridCell lowerCell =
-        getClampedGridCell(m_lattice, m_resolution, bbox.getMin());
+        getClampedGridCell(lattice, resolution, bbox.getMin());
       const GridCell upperCell =
-        getClampedGridCell(m_lattice, m_resolution, bbox.getMax());
+        getClampedGridCell(lattice, resolution, bbox.getMax());
       const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
       const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
       const int kStride = (NDIMS == 2) ? 1 : strides[2];
@@ -557,7 +562,7 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
     });
 
   // 2. Resize bins with counts
-  StoragePolicy::initialize(binCounts);
+  StoragePolicy::template initialize<ExecSpace>(binCounts);
 
   // 3. Reset bin-specific counters
   binCounts.fill(0);
@@ -569,9 +574,9 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
     AXOM_LAMBDA(IndexType idx) {
       const BoxType bbox = bboxes[idx];
       const GridCell lowerCell =
-        getClampedGridCell(m_lattice, m_resolution, bbox.getMin());
+        getClampedGridCell(lattice, resolution, bbox.getMin());
       const GridCell upperCell =
-        getClampedGridCell(m_lattice, m_resolution, bbox.getMax());
+        getClampedGridCell(lattice, resolution, bbox.getMax());
       const int kLower = (NDIMS == 2) ? 0 : lowerCell[2];
       const int kUpper = (NDIMS == 2) ? 0 : upperCell[2];
       const int kStride = (NDIMS == 2) ? 1 : strides[2];
@@ -792,11 +797,11 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getCandidatesAsArray(
     for_all<ExecSpace>(
       qsize,
       AXOM_LAMBDA(IndexType i) {
-        int startIdx = offsets_view[i];
         int count = counts_view[i];
         if(count > 0)
         {
   #ifndef AXOM_DEVICE_CODE
+          int startIdx = offsets_view[i];
           std::sort(candidates_view.begin() + startIdx,
                     candidates_view.begin() + startIdx + count);
   #endif

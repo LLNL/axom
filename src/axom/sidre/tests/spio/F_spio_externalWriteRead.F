@@ -1,4 +1,4 @@
-! Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+! Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 ! other Axom Project Developers. See the top-level LICENSE file for details.
 !
 ! SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,7 +15,7 @@ program spio_external_write_read
   include 'mpif.h'
 
   integer, parameter :: nvals = 10
-  integer orig_vals1(nvals), restored_vals1(nvals)
+  integer(C_INT), target :: orig_vals1(nvals), restored_vals1(nvals)
   integer(C_INT), target :: orig_vals2(nvals), restored_vals2(nvals)
   integer my_rank, num_ranks, mpierr
   integer num_output, num_files
@@ -61,7 +61,6 @@ program spio_external_write_read
 
   ga = flds%create_group("a")
   gb = flds2%create_group("b")
-  
   view1 = ga%create_array_view("external_array", orig_vals1)
   view1 = gb%create_view("external_undescribed")
   call view1%set_external_data_ptr(c_loc(orig_vals2))

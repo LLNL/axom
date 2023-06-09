@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -170,13 +170,58 @@ void DataStore::setConduitDefaultMessageHandlers()
 /*
  *************************************************************************
  *
- * Return number of Buffers in the DataStore *
+ * Return number of Buffers in the DataStore
  *
  *************************************************************************
  */
 IndexType DataStore::getNumBuffers() const
 {
   return m_buffer_coll->getNumItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return number of Buffers in the DataStore that are referenced 
+ * by at least one View
+ *
+ *************************************************************************
+ */
+IndexType DataStore::getNumReferencedBuffers() const
+{
+  IndexType num_buffers_referenced = 0;
+
+  for(const auto& buf : buffers())
+  {
+    if(buf.getNumViews() > 0)
+    {
+      num_buffers_referenced++;
+    }
+  }
+
+  return num_buffers_referenced;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return total bytes allocated in Buffers in the DataStore
+ *
+ *************************************************************************
+ */
+IndexType DataStore::getTotalAllocatedBytesInBuffers() const
+{
+  IndexType num_bytes_allocated = 0;
+
+  for(const auto& buf : buffers())
+  {
+    if(buf.isAllocated())
+    {
+      num_bytes_allocated += buf.getTotalBytes();
+    }
+  }
+
+  return num_bytes_allocated;
 }
 
 /*
@@ -189,6 +234,26 @@ IndexType DataStore::getNumBuffers() const
 bool DataStore::hasBuffer(IndexType idx) const
 {
   return m_buffer_coll->hasItem(idx);
+}
+
+/*
+ *************************************************************************
+ *
+ * Insert information about DataStore Buffers in fields of given
+ * Conduit Node.
+ *
+ *************************************************************************
+ */
+void DataStore::getBufferInfo(Node& n) const
+{
+  IndexType num_buffers = getNumBuffers();
+  IndexType num_buffers_referenced = getNumReferencedBuffers();
+  IndexType num_bytes_allocated = getTotalAllocatedBytesInBuffers();
+
+  n["num_buffers"] = num_buffers;
+  n["num_buffers_referenced"] = num_buffers_referenced;
+  n["num_buffers_detached"] = num_buffers - num_buffers_referenced;
+  n["num_bytes_allocated"] = num_bytes_allocated;
 }
 
 /*

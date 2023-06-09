@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,12 +65,26 @@ public:
    *
    * \pre sizeof...(Args) == DIM
    *
-   * \post size() == num_elements
+   * This constructor doesn't support non-unit spacing.
    */
-  template <typename... Args>
+  template <
+    typename... Args,
+    typename Enable = typename std::enable_if<
+      sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
   ArrayView(T* data, Args... args);
 
-  AXOM_HOST_DEVICE ArrayView(T* data, const StackArray<IndexType, DIM>& shape);
+  /*!
+   * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
+   *
+   * \param [in] data the external data this ArrayView will wrap.
+   * \param [in] shape Array size in each dimension.
+   * \param [in] spacing_ Spacing between consecutive items.
+   *
+   * This constructor supports non-unit spacing.
+   */
+  AXOM_HOST_DEVICE ArrayView(T* data,
+                             const StackArray<IndexType, DIM>& shape,
+                             IndexType spacing_ = 1);
 
   /*! 
    * \brief Constructor for transferring between memory spaces
@@ -96,6 +110,11 @@ public:
   inline AXOM_HOST_DEVICE IndexType size() const { return m_num_elements; }
 
   /*!
+   * \brief Returns true iff the ArrayView stores no elements.
+   */
+  bool empty() const { return m_num_elements == 0; }
+
+  /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
    */
   AXOM_HOST_DEVICE
@@ -118,6 +137,13 @@ public:
   /// @}
 
   /*!
+    \brief Returns spacing between adjacent items.
+
+    Spacing is set by constructor and cannot change.
+  */
+  AXOM_HOST_DEVICE IndexType spacing() const { return m_spacing; }
+
+  /*!
    * \brief Get the ID for the umpire allocator
    */
   int getAllocatorID() const { return m_allocator_id; }
@@ -130,18 +156,27 @@ public:
    * \param [in] count The number of elements to include in the subspan, or -1
    *  to take all elements after offset (default).
    *
-   * \return A subspan ArrayView that spans the indices [offsets, offsets + count),
-   *  or [offsets, num_elements) if count == -1.
+   * \return An ArrayView that spans the indices [offset, offset + count),
+   *  or [offset, num_elements) if count < 0.
    *
-   * \pre offset + count <= m_num_elements if count != -1
+   * \pre offset + count <= m_num_elements if count < 0
    */
   template <int UDIM = DIM, typename Enable = typename std::enable_if<UDIM == 1>::type>
   AXOM_HOST_DEVICE ArrayView subspan(IndexType offset, IndexType count = -1) const
   {
-    assert(offset + count <= m_num_elements);
+    assert(offset >= 0 && offset < m_num_elements);
+    if(count >= 0)
+    {
+      assert(offset + count <= m_num_elements);
+    }
+
     ArrayView slice = *this;
     slice.m_data += offset;
-    if(count != -1)
+    if(count < 0)
+    {
+      slice.m_num_elements -= offset;
+    }
+    else
     {
       slice.m_num_elements = count;
     }
@@ -153,6 +188,7 @@ private:
   /// \brief The full number of elements in the array
   ///  i.e., 3 for a 1D Array of size 3, 9 for a 3x3 2D array, etc
   IndexType m_num_elements = 0;
+  IndexType m_spacing = 1;
   /// \brief The allocator ID for the memory space in which m_data was allocated
   int m_allocator_id;
 };
@@ -167,7 +203,7 @@ using MCArrayView = ArrayView<T, 2>;
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-template <typename... Args>
+template <typename... Args, typename Enable>
 ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   : ArrayView(data, StackArray<IndexType, DIM> {static_cast<IndexType>(args)...})
 {
@@ -179,9 +215,11 @@ ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
 template <typename T, int DIM, MemorySpace SPACE>
 AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
   T* data,
-  const StackArray<IndexType, DIM>& shape)
+  const StackArray<IndexType, DIM>& shape,
+  IndexType spacing_)
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape)
   , m_data(data)
+  , m_spacing(spacing_)
 #ifndef AXOM_DEVICE_CODE
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 #endif
@@ -191,7 +229,14 @@ AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
                 "T must be const if memory space is Constant memory");
 #endif
   // Intel hits internal compiler error when casting as part of function call
-  m_num_elements = detail::packProduct(shape.m_data);
+  if(data != nullptr)
+  {
+    m_num_elements = detail::packProduct(shape.m_data);
+  }
+  else
+  {
+    m_num_elements = 0;
+  }
 
 #if !defined(AXOM_DEVICE_CODE) && defined(AXOM_USE_UMPIRE)
   // If we have Umpire, we can try and see what space the pointer is allocated in
@@ -223,6 +268,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(ArrayBase<T, DIM, OtherArrayType>& other)
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
   , m_data(static_cast<OtherArrayType&>(other).data())
   , m_num_elements(static_cast<OtherArrayType&>(other).size())
+  , m_spacing(static_cast<OtherArrayType&>(other).spacing())
   , m_allocator_id(static_cast<OtherArrayType&>(other).getAllocatorID())
 {
 #ifdef AXOM_DEBUG
@@ -246,6 +292,7 @@ ArrayView<T, DIM, SPACE>::ArrayView(
   : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(other)
   , m_data(static_cast<const OtherArrayType&>(other).data())
   , m_num_elements(static_cast<const OtherArrayType&>(other).size())
+  , m_spacing(static_cast<const OtherArrayType&>(other).spacing())
   , m_allocator_id(static_cast<const OtherArrayType&>(other).getAllocatorID())
 {
   static_assert(

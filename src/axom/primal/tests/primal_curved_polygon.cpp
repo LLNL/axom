@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -377,7 +377,7 @@ TEST(primal_curvedpolygon, moments_triangle_mixed_order)
   CoordType trueA = -.0906666666666666666666;
   PointType trueC {.2970147058823527, 1.55764705882353};
 
-  checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-15);
+  checkMoments(bPolygon, trueA, trueC, 1e-14, 1e-14);
 }
 
 //----------------------------------------------------------------------------------

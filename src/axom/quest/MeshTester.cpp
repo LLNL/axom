@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -221,7 +221,7 @@ WatertightStatus isSurfaceMeshWatertight(detail::UMesh* surface_mesh)
 void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
 {
   // Note: Use 64-bit index to accomodate small values of epsilon
-  using IdxType = axom::int64;
+  using IdxType = std::int64_t;
   using Lattice3 = spin::RectangularLattice<3, double, IdxType>;
   using GridCell = Lattice3::GridCell;
 

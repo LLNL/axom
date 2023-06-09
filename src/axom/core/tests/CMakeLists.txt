@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,23 +47,20 @@ set(core_serial_tests
     )
 
 set(core_test_depends
-    axom
+    core
     gtest
     )
-
-blt_list_append( TO core_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
-blt_list_append( TO core_test_depends ELEMENTS blt::hip IF ${ENABLE_HIP} )
 
 #------------------------------------------------------------------------------
 # Serial GTests
 #------------------------------------------------------------------------------
 
-# Only enable this test in serial mode if ENABLE_MPI is off
-if (NOT ENABLE_MPI)
+# Only enable this test in serial mode if AXOM_ENABLE_MPI is off
+if (NOT AXOM_ENABLE_MPI)
   list(APPEND core_serial_tests core_types.hpp)
 endif()
 
-blt_add_executable( NAME       core_serial_tests
+axom_add_executable(NAME       core_serial_tests
                     SOURCES    core_serial_main.cpp
                     HEADERS    ${core_serial_tests}
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -79,12 +76,12 @@ endforeach()
 #------------------------------------------------------------------------------
 # MPI GTests
 #------------------------------------------------------------------------------
-if (ENABLE_MPI)
+if (AXOM_ENABLE_MPI)
   set( core_mpi_tests
        core_types.hpp
        )
 
-  blt_add_executable( NAME       core_mpi_tests
+  axom_add_executable(NAME       core_mpi_tests
                       SOURCES    core_mpi_main.cpp
                       HEADERS    ${core_mpi_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
@@ -102,16 +99,16 @@ endif()
 #------------------------------------------------------------------------------
 # OpenMP GTests
 #------------------------------------------------------------------------------
-if (ENABLE_OPENMP AND AXOM_USE_RAJA)
+if (AXOM_ENABLE_OPENMP AND AXOM_USE_RAJA)
   set( core_openmp_tests
        core_openmp_map.hpp
        )
 
-  blt_add_executable( NAME       core_openmp_tests
+  axom_add_executable(NAME       core_openmp_tests
                       SOURCES    core_openmp_main.cpp
                       HEADERS    ${core_mpi_tests}
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON ${core_test_depends} openmp
+                      DEPENDS_ON ${core_test_depends}
                       FOLDER     axom/core/tests )
 
   foreach( test_suite ${core_openmp_tests} )
@@ -129,7 +126,7 @@ set(utils_config_test_depends core gtest )
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF MFEM_FOUND )
 
-blt_add_executable( NAME       utils_config_test
+axom_add_executable(NAME       utils_config_test
                     SOURCES    utils_config.cpp
                     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                     DEPENDS_ON ${utils_config_test_depends}

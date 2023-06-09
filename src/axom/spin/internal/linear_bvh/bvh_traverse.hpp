@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,7 @@ namespace linear_bvh
  * \return status true if the node is a leaf node, otherwise, false.
  */
 AXOM_HOST_DEVICE
-inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
+inline bool leaf_node(const std::int32_t& nodeIdx) { return (nodeIdx < 0); }
 
 /*!
  * \brief Generic BVH traversal routine.
@@ -58,6 +58,10 @@ inline bool leaf_node(const int32& nodeIdx) { return (nodeIdx < 0); }
  * \note Moreover, the functor `B` returns a boolean status that indicates
  *  if the specified traversal predicate is satisfied.
  *
+ * \note Functors A, B and Comp may access only memory available in
+ * the execution space.  For example, GPU execution may access only
+ * device and unified memory.
+ *
  */
 template <int NDIMS,
           typename FloatType,
@@ -67,8 +71,8 @@ template <int NDIMS,
           typename TraversePref>
 AXOM_HOST_DEVICE inline void bvh_traverse(
   axom::ArrayView<const primal::BoundingBox<FloatType, NDIMS>> inner_nodes,
-  axom::ArrayView<const int32> inner_node_children,
-  axom::ArrayView<const int32> leaf_nodes,
+  axom::ArrayView<const std::int32_t> inner_node_children,
+  axom::ArrayView<const std::int32_t> leaf_nodes,
   const PrimitiveType& p,
   InBinCheck&& B,
   LeafAction&& A,
@@ -77,14 +81,14 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
   using BBoxType = primal::BoundingBox<FloatType, NDIMS>;
 
   // setup stack
-  constexpr int32 STACK_SIZE = 64;
-  constexpr int32 BARRIER = -2000000000;
-  int32 todo[STACK_SIZE];
-  int32 stackptr = 0;
+  constexpr std::int32_t STACK_SIZE = 64;
+  constexpr std::int32_t BARRIER = -2000000000;
+  std::int32_t todo[STACK_SIZE];
+  std::int32_t stackptr = 0;
   todo[stackptr] = BARRIER;
 
-  int32 found_leaf = 0;
-  int32 current_node = 0;
+  std::int32_t found_leaf = 0;
+  std::int32_t current_node = 0;
 
   while(current_node != BARRIER)
   {
@@ -93,10 +97,10 @@ AXOM_HOST_DEVICE inline void bvh_traverse(
     {
       BBoxType left_bin = inner_nodes[current_node + 0];
       BBoxType right_bin = inner_nodes[current_node + 1];
-      const bool in_left = B(p, left_bin);
-      const bool in_right = B(p, right_bin);
-      int32 l_child = inner_node_children[current_node + 0];
-      int32 r_child = inner_node_children[current_node + 1];
+      const bool in_left = left_bin.isValid() ? B(p, left_bin) : false;
+      const bool in_right = right_bin.isValid() ? B(p, right_bin) : false;
+      std::int32_t l_child = inner_node_children[current_node + 0];
+      std::int32_t r_child = inner_node_children[current_node + 1];
       bool swap = Comp(left_bin, right_bin, p);
 
       if(!in_left && !in_right)

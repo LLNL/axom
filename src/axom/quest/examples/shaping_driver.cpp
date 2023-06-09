@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,6 +82,9 @@ public:
   int samplesPerKnotSpan {25};
   int refinementLevel {7};
   double weldThresh {1e-9};
+  double percentError {-1.};
+
+  std::string backgroundMaterial;
 
   VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
 
@@ -147,7 +150,15 @@ public:
       ->check(axom::CLI::NonNegativeNumber)
       ->capture_default_str();
 
-    // Parameter to determine if we're using a file or a box mesh
+    app.add_option("-e,--percent-error", percentError)
+      ->description(
+        "Percent error used for calculating curve refinement and revolved "
+        "volume.\n"
+        "If this value is provided then dynamic curve refinement will be used\n"
+        "instead of segment-based curve refinement.")
+      ->check(axom::CLI::PositiveNumber)
+      ->capture_default_str();
+
     std::map<std::string, ShapingMethod> methodMap {
       {"sampling", ShapingMethod::Sampling},
       {"intersection", ShapingMethod::Intersection}};
@@ -158,65 +169,71 @@ public:
       ->transform(
         axom::CLI::CheckedTransformer(methodMap, axom::CLI::ignore_case));
 
+    app.add_option("--background-material", backgroundMaterial)
+      ->description("Sets the name of the background material");
+
     // parameters that only apply to the sampling method
-    auto* sampling_options =
-      app.add_option_group("sampling",
-                           "Options related to sampling-based queries");
+    {
+      auto* sampling_options =
+        app.add_option_group("sampling",
+                             "Options related to sampling-based queries");
 
-    sampling_options->add_option("-o,--order", outputOrder)
-      ->description("order of the output grid function")
-      ->capture_default_str()
-      ->check(axom::CLI::NonNegativeNumber);
+      sampling_options->add_option("-o,--order", outputOrder)
+        ->description("Order of the output grid function")
+        ->capture_default_str()
+        ->check(axom::CLI::NonNegativeNumber);
 
-    sampling_options->add_option("-q,--quadrature-order", quadratureOrder)
-      ->description(
-        "Quadrature order for sampling the inout field. \n"
-        "Determines number of samples per element in determining "
-        "volume fraction field")
-      ->capture_default_str()
-      ->check(axom::CLI::PositiveNumber);
+      sampling_options->add_option("-q,--quadrature-order", quadratureOrder)
+        ->description(
+          "Quadrature order for sampling the inout field. \n"
+          "Determines number of samples per element in determining "
+          "volume fraction field")
+        ->capture_default_str()
+        ->check(axom::CLI::PositiveNumber);
 
-    std::map<std::string, VolFracSampling> vfsamplingMap {
-      {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
-      {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
-    sampling_options->add_option("-s,--sampling-type", vfSampling)
-      ->description(
-        "Sampling strategy. \n"
-        "Sampling either at quadrature points or collocated with "
-        "degrees of freedom")
-      ->capture_default_str()
-      ->transform(
-        axom::CLI::CheckedTransformer(vfsamplingMap, axom::CLI::ignore_case));
+      std::map<std::string, VolFracSampling> vfsamplingMap {
+        {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
+        {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
+      sampling_options->add_option("-s,--sampling-type", vfSampling)
+        ->description(
+          "Sampling strategy. \n"
+          "Sampling either at quadrature points or collocated with "
+          "degrees of freedom")
+        ->capture_default_str()
+        ->transform(
+          axom::CLI::CheckedTransformer(vfsamplingMap, axom::CLI::ignore_case));
+    }
 
     // parameters that only apply to the intersection method
-    auto* intersection_options =
-      app.add_option_group("intersection",
-                           "Options related to intersection-based queries");
+    {
+      auto* intersection_options =
+        app.add_option_group("intersection",
+                             "Options related to intersection-based queries");
 
-    intersection_options->add_option("-r, --refinements", refinementLevel)
-      ->description("Number of refinements to perform for revolved contour")
-      ->capture_default_str()
-      ->check(axom::CLI::NonNegativeNumber);
+      intersection_options->add_option("-r, --refinements", refinementLevel)
+        ->description("Number of refinements to perform for revolved contour")
+        ->capture_default_str()
+        ->check(axom::CLI::NonNegativeNumber);
 
-    std::stringstream pol_sstr;
-    pol_sstr << "Set runtime policy for intersection-based sampling method.";
+      std::stringstream pol_sstr;
+      pol_sstr << "Set runtime policy for intersection-based sampling method.";
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    pol_sstr << "\nSet to \'seq\' or 0 to use the RAJA sequential policy.";
+      pol_sstr << "\nSet to 'seq' or 0 to use the RAJA sequential policy.";
   #ifdef AXOM_USE_OPENMP
-    pol_sstr << "\nSet to \'omp\' or 1 to use the RAJA OpenMP policy.";
+      pol_sstr << "\nSet to 'omp' or 1 to use the RAJA OpenMP policy.";
   #endif
   #ifdef AXOM_USE_CUDA
-    pol_sstr << "\nSet to \'cuda\' or 2 to use the RAJA CUDA policy.";
+      pol_sstr << "\nSet to 'cuda' or 2 to use the RAJA CUDA policy.";
   #endif
   #ifdef AXOM_USE_HIP
-    pol_sstr << "\nSet to \'hip\' or 3 to use the RAJA HIP policy.";
+      pol_sstr << "\nSet to 'hip' or 3 to use the RAJA HIP policy.";
   #endif
 #endif
 
-    intersection_options->add_option("-p, --policy", policy, pol_sstr.str())
-      ->capture_default_str()
-      ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
-
+      intersection_options->add_option("-p, --policy", policy, pol_sstr.str())
+        ->capture_default_str()
+        ->transform(axom::CLI::CheckedTransformer(s_validPolicies));
+    }
     app.get_formatter()->column_width(50);
 
     // could throw an exception
@@ -455,6 +472,15 @@ int main(int argc, char** argv)
   shaper->setSamplesPerKnotSpan(params.samplesPerKnotSpan);
   shaper->setVertexWeldThreshold(params.weldThresh);
   shaper->setVerbosity(params.isVerbose());
+  if(params.percentError > 0.)
+  {
+    shaper->setPercentError(params.percentError);
+    shaper->setRefinementType(quest::Shaper::RefinementDynamic);
+  }
+
+  // Associate any fields that begin with "vol_frac" with "material" so when
+  // the data collection is written, a matset will be created.
+  shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
 
   // Set specific parameters for a SamplingShaper, if appropriate
   if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
@@ -469,6 +495,47 @@ int main(int argc, char** argv)
   {
     intersectionShaper->setLevel(params.refinementLevel);
     intersectionShaper->setExecPolicy(params.policy);
+
+    if(!params.backgroundMaterial.empty())
+    {
+      intersectionShaper->setFreeMaterialName(params.backgroundMaterial);
+    }
+  }
+
+  //---------------------------------------------------------------------------
+  // Project initial volume fractions, if applicable
+  //---------------------------------------------------------------------------
+  if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
+  {
+    std::map<std::string, mfem::GridFunction*> initial_grid_functions;
+
+    // Generate a background material (w/ volume fractions set to 1) if user provided a name
+    if(!params.backgroundMaterial.empty())
+    {
+      auto material = params.backgroundMaterial;
+      auto name = axom::fmt::format("vol_frac_{}", material);
+
+      const int order = params.outputOrder;
+      const int dim = shapingMesh->Dimension();
+      const auto basis = mfem::BasisType::Positive;
+
+      auto* coll = new mfem::L2_FECollection(order, dim, basis);
+      auto* fes = new mfem::FiniteElementSpace(shapingDC.GetMesh(), coll);
+      const int sz = fes->GetVSize();
+
+      auto* view = shapingDC.AllocNamedBuffer(name, sz);
+      auto* volFrac = new mfem::GridFunction(fes, view->getArray());
+      volFrac->MakeOwner(coll);
+
+      (*volFrac) = 1.;
+
+      shapingDC.RegisterField(name, volFrac);
+
+      initial_grid_functions[material] = shapingDC.GetField(name);
+    }
+
+    // Project provided volume fraction grid functions as quadrature point data
+    samplingShaper->importInitialVolumeFractions(initial_grid_functions);
   }
 
   //---------------------------------------------------------------------------
@@ -477,12 +544,8 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& shape : params.shapeSet.getShapes())
   {
-    // Load the shape from file
+    // Load the shape from file. This also applies any transformations.
     shaper->loadShape(shape);
-    slic::flushStreams();
-
-    // Apply the specified geometric transforms
-    shaper->applyTransforms(shape);
     slic::flushStreams();
 
     // Generate a spatial index over the shape

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,15 +59,15 @@ bool STLReader::isAsciiFormat() const
 
   // Find out the file size
   ifs.seekg(0, ifs.end);
-  axom::int32 fileSize = static_cast<axom::int32>(ifs.tellg());
+  std::int32_t fileSize = static_cast<std::int32_t>(ifs.tellg());
 
-  const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(axom::int32));
+  const int totalHeaderSize = (BINARY_HEADER_SIZE + sizeof(std::int32_t));
   if(fileSize < totalHeaderSize) return true;
 
   // Find the number of triangles (if the file were binary)
   int numTris = 0;
   ifs.seekg(BINARY_HEADER_SIZE, ifs.beg);
-  ifs.read((char*)&numTris, sizeof(axom::int32));
+  ifs.read((char*)&numTris, sizeof(std::int32_t));
 
   if(!utilities::isLittleEndian())
   {
@@ -132,13 +132,13 @@ int STLReader::readBinarySTL()
   // A local union data structure for triangles in a binary STL
   union BinarySTLTri
   {
-    axom::int8 raw[BINARY_TRI_SIZE];
+    std::int8_t raw[BINARY_TRI_SIZE];
 
     struct
     {
       float normal[3];
       float vert[9];
-      axom::uint16 attr;
+      std::uint16_t attr;
     } data;
 
   } tri;
@@ -156,7 +156,7 @@ int STLReader::readBinarySTL()
   ifs.seekg(BINARY_HEADER_SIZE);
 
   // read the num faces and reserve room for the vertex positions
-  ifs.read((char*)&m_num_faces, sizeof(axom::int32));
+  ifs.read((char*)&m_num_faces, sizeof(std::int32_t));
 
   if(!isLittleEndian)
   {

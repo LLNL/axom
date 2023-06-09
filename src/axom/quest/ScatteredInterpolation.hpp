@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -249,7 +249,7 @@ public:
   using CoordType = typename PointType::CoordType;
 
 private:
-  using MortonIndexType = axom::uint64;
+  using MortonIndexType = std::uint64_t;
 
   using VertexSet = typename DelaunayTriangulation::IAMeshType::VertexSet;
   using VertexIndirectionSet =
@@ -316,7 +316,7 @@ private:
 
     // We use a Morton index, quantized over the mesh bounding box to
     // order the points on each level
-    using QuantizedCoordType = axom::uint32;
+    using QuantizedCoordType = std::uint32_t;
     using MortonizerType =
       spin::Mortonizer<QuantizedCoordType, MortonIndexType, DIM>;
 

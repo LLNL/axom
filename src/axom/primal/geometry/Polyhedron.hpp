@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,11 +14,14 @@
 
 #include "axom/core/StackArray.hpp"
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/primal/geometry/Octahedron.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
-#include <ostream>  // for std::ostream
+#include <ostream>
 
 namespace axom
 {
@@ -43,7 +46,7 @@ public:
   static constexpr int MAX_VERTS = 32;
   static constexpr int MAX_NBRS_PER_VERT = 8;
 
-  using VertexNbrs = axom::StackArray<axom::int8, MAX_NBRS_PER_VERT>;
+  using VertexNbrs = axom::StackArray<std::int8_t, MAX_NBRS_PER_VERT>;
 
 public:
   /*!
@@ -118,14 +121,14 @@ public:
    *
    * \pre vtx < MAX_VERTS
    */
-  AXOM_HOST_DEVICE void addNeighbors(axom::int8 vtx,
-                                     std::initializer_list<axom::int8> nbrIds)
+  AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx,
+                                     std::initializer_list<std::int8_t> nbrIds)
   {
     SLIC_ASSERT(num_nbrs[vtx] + nbrIds.size() <= MAX_NBRS_PER_VERT);
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
-    for(axom::int8 nbr : nbrIds)
+    for(std::int8_t nbr : nbrIds)
     {
-      axom::int8 idx_insert = num_nbrs[vtx];
+      std::int8_t idx_insert = num_nbrs[vtx];
       nbrs[vtx][idx_insert] = nbr;
       num_nbrs[vtx]++;
     }
@@ -139,11 +142,11 @@ public:
    *
    * \pre vtx < MAX_VERTS
    */
-  AXOM_HOST_DEVICE void addNeighbors(axom::int8 vtx, axom::int8 nbrId)
+  AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx, std::int8_t nbrId)
   {
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
-    axom::int8 idx_insert = num_nbrs[vtx];
+    std::int8_t idx_insert = num_nbrs[vtx];
     nbrs[vtx][idx_insert] = nbrId;
     num_nbrs[vtx]++;
   };
@@ -159,14 +162,14 @@ public:
    * \pre vtx < MAX_VERTS
    * \pre pos <= num_nbrs[vtx]
    */
-  AXOM_HOST_DEVICE void insertNeighborAtPos(axom::int8 vtx,
-                                            axom::int8 nbr,
-                                            axom::int8 pos)
+  AXOM_HOST_DEVICE void insertNeighborAtPos(std::int8_t vtx,
+                                            std::int8_t nbr,
+                                            std::int8_t pos)
   {
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     SLIC_ASSERT(pos <= num_nbrs[vtx]);
-    axom::uint8 old_nbrs[MAX_NBRS_PER_VERT];
+    std::uint8_t old_nbrs[MAX_NBRS_PER_VERT];
     // copy elements from [pos, nnbrs)
     for(int ip = pos; ip < num_nbrs[vtx]; ip++)
     {
@@ -199,35 +202,39 @@ public:
   }
 
 private:
-  axom::int8 num_nbrs[MAX_VERTS];
+  std::int8_t num_nbrs[MAX_VERTS];
   VertexNbrs nbrs[MAX_VERTS];
 };
 
 /*!
  * \class Polyhedron
  *
- * \brief Represents a polyhedron defined by an array of points and optionally
- *        their neighbors (a point is a neighbor of another point if there is
- *        an edge between them)
+ * \brief Represents a convex polyhedron defined by an array of points and
+ *        optionally their neighbors (a point is a neighbor of another point if
+ *        there is an edge between them)
  *
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
  * \note The Polyhedron functions do not check that points defining a face are
  *       coplanar. It is the responsibility of the caller to pass a
- *       valid set of points and neighbors.
+ *       valid set of points and neighbors representing a convex polyhedron.
  *
  * \note The polyhedron neighbors should be ordered counter clockwise
  *       as when viewing the polyhedron externally.
  *
- *          4--------7
- *         /|       /|
- *        / |      / |
- *       5--------6  |
- *       |  0-----|--3
- *       | /      | /
+ *       <pre>
+ *
+ *          4--------5          +y
+ *         /|       /|               +z
+ *        / |      / |           ^  >
+ *       7--------6  |           | /
+ *       |  0-----|--1           |/
+ *       | /      | /            -----> +x
  *       |/       |/
- *       1--------2
+ *       3--------2
+ *
+ *       </pre>
  *
  *       For example, vertex 5 above should have neighbors (4,1,6).
  *
@@ -280,7 +287,7 @@ public:
    * \param [in] nbrs The neighbors to add to the list of neighbors
    */
   AXOM_HOST_DEVICE
-  void addNeighbors(const PointType& pt, std::initializer_list<axom::int8> nbrs)
+  void addNeighbors(const PointType& pt, std::initializer_list<std::int8_t> nbrs)
   {
     for(int i = 0; i < m_num_vertices; i++)
     {
@@ -303,7 +310,7 @@ public:
    * \pre vtxId < getVertices()
    */
   AXOM_HOST_DEVICE
-  void addNeighbors(int vtxId, std::initializer_list<axom::int8> nbrs)
+  void addNeighbors(int vtxId, std::initializer_list<std::int8_t> nbrs)
   {
     m_neighbors.addNeighbors(vtxId, nbrs);
   }
@@ -376,23 +383,33 @@ public:
 
     NumArrayType sum;
 
-    for(int i = 0; i < numVertices(); ++i)
+    const int nVerts = numVertices();
+    if(nVerts > 0)
     {
-      sum += m_vertices[i].array();
+      for(int i = 0; i < nVerts; ++i)
+      {
+        sum += m_vertices[i].array();
+      }
+      sum /= nVerts;
     }
-    sum /= numVertices();
-
     return PointType(sum);
   }
 
-private:
   /*!
-   * \brief Finds the faces of the Polyhedron, assuming the vertex neighbors
-   *        are in counter-clockwise ordering.
+   * \brief Helper function to find the faces of the Polyhedron, assuming the
+   *        vertex neighbors are in counter-clockwise ordering.
    *
-   * param [out] faces is the vertex indices for faces
-   * param [out] face_offset is the offset for each face
-   * param [out] face_size is the number of vertices for each face
+   * \param [out] faces is the vertex indices for faces
+   * \param [out] face_offset is the offset for each face
+   * \param [out] face_size is the number of vertices for each face
+   * \param [out] face_count is the number of faces
+   *
+   * \warning Function is experimental, input parameters and/or output may
+   *          change in the future.
+   *
+   * \note This function does not check that the provided buffers are
+   *       large enough to hold all values. It is the responsibility of the
+   *       caller to know ahead of time and pass buffers with appropriate size.
    *
    * \note Function is based off extractFaces() in Mike Owen's PolyClipper.
    *
@@ -401,14 +418,14 @@ private:
   AXOM_HOST_DEVICE
   void getFaces(int* faces, int* face_size, int* face_offset, int& face_count) const
   {
-    axom::int8 curFaceIndex = 0;
-    axom::int8 checkedSize = 0;
-    axom::int8 facesAdded = 0;
+    std::int8_t curFaceIndex = 0;
+    std::int8_t checkedSize = 0;
+    std::int8_t facesAdded = 0;
     // # edges * (# vertices per edge) * (# orientation per edge)
-    axom::int8 checkedEdges[MAX_VERTS * 2 * 2] = {0};
+    std::int8_t checkedEdges[MAX_VERTS * 2 * 2] = {0};
 
     // Check each vertex
-    for(int i = 0; i < numVertices(); i++)
+    for(int i = 0; i < numVertices(); ++i)
     {
       // Check each neighbor index (edge) of the vertex
       for(int j = 0; j < m_neighbors.getNumNeighbors(i); j++)
@@ -433,10 +450,10 @@ private:
         {
           face_offset[facesAdded] = curFaceIndex;
           faces[curFaceIndex++] = i;
-          axom::int8 curFaceSize = 1;
-          axom::int8 vstart = i;
-          axom::int8 vnext = ni;
-          axom::int8 vprev = i;
+          std::int8_t curFaceSize = 1;
+          std::int8_t vstart = i;
+          std::int8_t vnext = ni;
+          std::int8_t vprev = i;
 
           // Add neighboring vertices until we reach the starting vertex.
           while(vnext != vstart)
@@ -480,7 +497,6 @@ private:
     face_count = facesAdded;
   }
 
-public:
   /*!
    * \brief Finds the volume of the polyhedron.
    *
@@ -495,8 +511,7 @@ public:
   {
     double retVol = 0.0;
 
-    // 0 if less than 4 vertices
-    if(numVertices() < 4)
+    if(!isValid())
     {
       return retVol;
     }
@@ -516,27 +531,25 @@ public:
       int face_count;
       getFaces(faces, face_size, face_offset, face_count);
 
-      VectorType origin(m_vertices[0].data());
+      const PointType& origin = m_vertices[0];
 
-      for(int i = 0; i < face_count; i++)
+      for(int i = 0; i < face_count; ++i)
       {
-        int n = face_size[i];
-        VectorType v0(m_vertices[faces[face_offset[i]]].data());
-        v0 -= origin;
+        const int N = face_size[i];
+        const int i_offset = face_offset[i];
+        const VectorType v0 = m_vertices[faces[i_offset]] - origin;
 
-        for(int j = 1; j < n - 1; ++j)
+        for(int j = 1, k = 2; j < N - 1; ++j, ++k)
         {
-          VectorType v1(m_vertices[faces[face_offset[i] + j]].data());
-          v1 -= origin;
-          VectorType v2(m_vertices[faces[face_offset[i] + ((j + 1) % n)]].data());
-          v2 -= origin;
-          double partialVol = v0.dot(VectorType::cross_product(v1, v2));
-          retVol += partialVol;
+          retVol += VectorType::scalar_triple_product(
+            v0,
+            m_vertices[faces[i_offset + j]] - origin,
+            m_vertices[faces[i_offset + k]] - origin);
         }
       }
     }
 
-    return retVol / 6.0;
+    return retVol / 6.;
   }
 
   /*!
@@ -616,6 +629,219 @@ public:
     return has_nbrs;
   }
 
+  /*!
+ * \brief Creates a Polyhedron from a given Hexahedron's vertices.
+ *
+ * \param [in] hex The hexahedron
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             Polyhedron is positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
+ * \return A Polyhedron with the Hexahedron's vertices and added
+ *         vertex neighbors
+ *
+ * \note The Hexahedron is assumed to have a specific vertex order:
+ * \verbatim
+ *
+ *          7--------6          +y
+ *         /|       /|               +z
+ *        / |      / |           ^  >
+ *       3--------2  |           | /
+ *       |  4-----|--5           |/
+ *       | /      | /            -----> +x
+ *       |/       |/
+ *       0--------1
+ *
+ * \endverbatim
+ *
+ *       The Polyhedron's vertex neighbors are created assuming this vertex
+ *       ordering.
+ *
+ * \note checkSign flag does not guarantee the Polyhedron's vertex order
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       a Hexahedron with a valid vertex order.
+ */
+  AXOM_HOST_DEVICE
+  static Polyhedron from_primitive(const Hexahedron<T, NDIMS>& hex,
+                                   bool checkSign = false)
+  {
+    // Initialize our polyhedron to return
+    Polyhedron<T, NDIMS> poly;
+
+    poly.addVertex(hex[0]);
+    poly.addVertex(hex[1]);
+    poly.addVertex(hex[2]);
+    poly.addVertex(hex[3]);
+    poly.addVertex(hex[4]);
+    poly.addVertex(hex[5]);
+    poly.addVertex(hex[6]);
+    poly.addVertex(hex[7]);
+
+    poly.addNeighbors(0, {1, 4, 3});
+    poly.addNeighbors(1, {0, 2, 5});
+    poly.addNeighbors(2, {1, 3, 6});
+    poly.addNeighbors(3, {2, 0, 7});
+    poly.addNeighbors(4, {0, 5, 7});
+    poly.addNeighbors(5, {1, 6, 4});
+    poly.addNeighbors(6, {2, 7, 5});
+    poly.addNeighbors(7, {3, 4, 6});
+
+    // Reverses order of vertices 1,3 and 5,7 if volume is negative
+    if(checkSign)
+    {
+      if(poly.volume() < 0)
+      {
+        axom::utilities::swap<Point<T, NDIMS>>(poly[1], poly[3]);
+        axom::utilities::swap<Point<T, NDIMS>>(poly[5], poly[7]);
+      }
+    }
+
+    return poly;
+  }
+
+  /*!
+ * \brief Creates a Polyhedron from a given Octahedron's vertices.
+ *
+ * \param [in] oct The octahedron
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             Polyhedron is positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
+ * \return A Polyhedron with the Octahedron's vertices and added
+ *         vertex neighbors
+ *
+ * \note The Octahedron is assumed to have a specific vertex order:
+ * \verbatim
+ *
+ *            0                +y
+ *            /\                    +z
+ *       4 --/  \-- 5           ^  >
+ *         \/    \ /            | /
+ *         /      \             |/
+ *       2 -------- 1           -----> +x
+ *            \/
+ *            3
+ *
+ * \endverbatim
+ *
+ *       The Polyhedron's vertex neighbors are created assuming this vertex
+ *       ordering.
+ *
+ * \note checkSign flag does not guarantee the Polyhedron's vertex order
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       a Octahedron with a valid vertex order.
+ */
+  AXOM_HOST_DEVICE
+  static Polyhedron from_primitive(const Octahedron<T, NDIMS>& oct,
+                                   bool checkSign = false)
+  {
+    // Initialize our polyhedron to return
+    Polyhedron<T, NDIMS> poly;
+
+    poly.addVertex(oct[0]);
+    poly.addVertex(oct[1]);
+    poly.addVertex(oct[2]);
+    poly.addVertex(oct[3]);
+    poly.addVertex(oct[4]);
+    poly.addVertex(oct[5]);
+
+    poly.addNeighbors(0, {1, 5, 4, 2});
+    poly.addNeighbors(1, {0, 2, 3, 5});
+    poly.addNeighbors(2, {0, 4, 3, 1});
+    poly.addNeighbors(3, {1, 2, 4, 5});
+    poly.addNeighbors(4, {0, 5, 3, 2});
+    poly.addNeighbors(5, {0, 1, 3, 4});
+
+    // Reverses order of vertices 1,2 and 4,5 if volume is negative.
+    // Expanded swap operations for HIP workaround.
+    if(checkSign)
+    {
+      double vol = poly.volume();
+      if(vol < 0)
+      {
+        PointType p2({poly[4][0], poly[4][1], poly[4][2]});
+        poly[4][0] = poly[5][0];
+        poly[4][1] = poly[5][1];
+        poly[4][2] = poly[5][2];
+        poly[5][0] = p2[0];
+        poly[5][1] = p2[1];
+        poly[5][2] = p2[2];
+
+        PointType p1({poly[1][0], poly[1][1], poly[1][2]});
+        poly[1][0] = poly[2][0];
+        poly[1][1] = poly[2][1];
+        poly[1][2] = poly[2][2];
+        poly[2][0] = p1[0];
+        poly[2][1] = p1[1];
+        poly[2][2] = p1[2];
+      }
+    }
+
+    return poly;
+  }
+
+  /*!
+ * \brief Creates a Polyhedron from a given Tetrahedron's vertices.
+ *
+ * \param [in] tet The tetrahedron
+ * \param [in] checkSign If true (default is false), checks the volume of the
+ *             Polyhedron is positive. If volume is negative, order of some
+ *             vertices will be swapped.
+ *
+ * \return A Polyhedron with the Tetrahedron's vertices and added
+ *         vertex neighbors
+ *
+ * \note The Tetrahedron is assumed to have a specific vertex order:
+ * \verbatim
+ *
+ *              3                    +y
+ *             / \\                       +z
+ *            /   \ \                 ^  >
+ *           /     \  \               | /
+ *          /       \   \             |/
+ *         /         \    2           -----> +x
+ *        /           \  /
+ *       /_____________\/
+ *      0               1
+ *
+ * \endverbatim
+ *
+ *       The Polyhedron's vertex neighbors are created assuming this vertex
+ *       ordering.
+ *
+ * \note checkSign flag does not guarantee the Polyhedron's vertex order
+ *       will be valid. It is the responsiblity of the caller to pass
+ *       a Tetrahedron with a valid vertex order.
+ */
+  AXOM_HOST_DEVICE
+  static Polyhedron from_primitive(const Tetrahedron<T, NDIMS>& tet,
+                                   bool checkSign = false)
+  {
+    // Initialize our polyhedron to return
+    Polyhedron<T, NDIMS> poly;
+
+    poly.addVertex(tet[0]);
+    poly.addVertex(tet[1]);
+    poly.addVertex(tet[2]);
+    poly.addVertex(tet[3]);
+
+    poly.addNeighbors(0, {1, 3, 2});
+    poly.addNeighbors(1, {0, 2, 3});
+    poly.addNeighbors(2, {0, 3, 1});
+    poly.addNeighbors(3, {0, 1, 2});
+
+    // Reverses order of vertices 1 and 2 if volume is negative
+    if(checkSign)
+    {
+      if(tet.signedVolume() < 0)
+      {
+        axom::utilities::swap<PointType>(poly[1], poly[2]);
+      }
+    }
+
+    return poly;
+  }
+
 private:
   int m_num_vertices;
   Coords m_vertices;
@@ -634,5 +860,10 @@ std::ostream& operator<<(std::ostream& os, const Polyhedron<T, NDIMS>& poly)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Polyhedron using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Polyhedron<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_POLYHEDRON_HPP_

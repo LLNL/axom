@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -79,6 +79,7 @@ struct ArrayTraits<Array<T, DIM, SPACE>>
  *
  * \tparam T the type of the values to hold.
  * \tparam DIM The dimension of the array.
+ * \tparam SPACE The memory space of the array.
  * 
  * \pre T must be CopyAssignable and Erasable
  * \see https://en.cppreference.com/w/cpp/named_req
@@ -200,7 +201,7 @@ public:
   /*! 
    * \brief Move constructor for an Array instance 
    */
-  Array(Array&& other);
+  Array(Array&& other) noexcept;
 
   /*!
    * \brief Constructor for transferring between memory spaces
@@ -278,7 +279,7 @@ public:
   /*! 
    * \brief Move assignment operator for Array
    */
-  Array& operator=(Array&& other)
+  Array& operator=(Array&& other) noexcept
   {
     if(this != &other)
     {
@@ -340,6 +341,11 @@ public:
 
   /// @}
 
+  /*!
+    \brief Returns spacing between adjacent items.
+  */
+  AXOM_HOST_DEVICE IndexType spacing() const { return 1; }
+
   /// @}
 
   /// \name Array methods to modify the data.
@@ -351,6 +357,19 @@ public:
    * \param [in] value the value to set to.
    */
   void fill(const T& value);
+
+  /*!
+   * \brief Set a range of elements to a given value.
+   *
+   * \param [in] value the value to set to.
+   * \param [in] n the number of elements to write.
+   * \param [in] pos the position at which to begin writing.
+   *
+   * \note The size is unchanged by calls to fill.
+   *
+   * \pre pos + n <= m_num_elements.
+   */
+  void fill(const T& value, IndexType n, IndexType pos);
 
   /*!
    * \brief Modify the values of existing elements.
@@ -632,6 +651,42 @@ public:
   ConstArrayIterator end() const { return ConstArrayIterator(size(), this); }
 
   /*!
+   * \brief Returns a reference to the first element in the Array.
+   *
+   * \pre array.empty() == false
+   */
+  T& front()
+  {
+    assert(!empty());
+    return *begin();
+  }
+
+  /// \overload
+  const T& front() const
+  {
+    assert(!empty());
+    return *begin();
+  }
+
+  /*!
+   * \brief Returns a reference to the last element in the Array.
+   *
+   * \pre array.size() > 0
+   */
+  T& back()
+  {
+    assert(!empty());
+    return *(end() - 1);
+  }
+
+  /// \overload
+  const T& back() const
+  {
+    assert(!empty());
+    return *(end() - 1);
+  }
+
+  /*!
    * \brief Shrink the capacity to be equal to the size.
    */
   void shrink() { setCapacity(m_num_elements); }
@@ -653,23 +708,34 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
-  template <typename... Args>
+  template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
   void resize(Args... args)
   {
-    static_assert(sizeof...(Args) == DIM,
-                  "Array size must match number of dimensions");
+    static_assert(std::is_default_constructible<T>::value,
+                  "Cannot call Array<T>::resize() when T is non-trivially-"
+                  "constructible. Use Array<T>::reserve() and emplace_back()"
+                  "instead.");
     const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
-    resize(dims, true);
+    resizeImpl(dims, true);
   }
 
   /// \overload
-  template <typename... Args>
+  template <typename... Args, typename Enable = std::enable_if_t<sizeof...(Args) == DIM>>
   void resize(ArrayOptions::Uninitialized, Args... args)
   {
-    static_assert(sizeof...(Args) == DIM,
-                  "Array size must match number of dimensions");
     const StackArray<IndexType, DIM> dims {static_cast<IndexType>(args)...};
-    resize(dims, false);
+    resizeImpl(dims, false);
+  }
+
+  template <int Dims = DIM, typename Enable = std::enable_if_t<Dims == 1>>
+  void resize(IndexType size, const T& value)
+  {
+    resizeImpl({size}, true, &value);
+  }
+
+  void resize(const StackArray<IndexType, DIM>& size, const T& value)
+  {
+    resizeImpl(size, true, &value);
   }
 
   /*!
@@ -747,10 +813,14 @@ protected:
    * \brief Updates the number of elements stored in the data array.
    *
    * \param [in] dims the number of elements to allocate in each dimension
-   * \param [in] default_construct if true, default-constructs any new elements
-   *  in the array
+   * \param [in] construct_with_values if true, sets new elements in the array
+   *             to a specified value
+   * \param [in] value pointer to the value to fill new elements in the array
+   *             with. If null, will default-construct elements in place.
    */
-  void resize(const StackArray<IndexType, DIM>& dims, bool default_construct);
+  void resizeImpl(const StackArray<IndexType, DIM>& dims,
+                  bool construct_with_values,
+                  const T* value = nullptr);
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
@@ -924,7 +994,7 @@ Array<T, DIM, SPACE>::Array(const Array& other)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-Array<T, DIM, SPACE>::Array(Array&& other)
+Array<T, DIM, SPACE>::Array(Array&& other) noexcept
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<ArrayBase<T, DIM, Array<T, DIM, SPACE>>&&>(std::move(other)))
   , m_resize_ratio(0.0)
@@ -1019,6 +1089,17 @@ inline void Array<T, DIM, SPACE>::fill(const T& value)
 {
   OpHelper::destroy(m_data, 0, m_num_elements, m_allocator_id);
   OpHelper::fill(m_data, 0, m_num_elements, m_allocator_id, value);
+}
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+inline void Array<T, DIM, SPACE>::fill(const T& value, IndexType n, IndexType pos)
+{
+  assert(pos >= 0);
+  assert(pos + n <= m_num_elements);
+
+  OpHelper::destroy(m_data, pos, n, m_allocator_id);
+  OpHelper::fill(m_data, pos, n, m_allocator_id, value);
 }
 
 //------------------------------------------------------------------------------
@@ -1214,8 +1295,9 @@ inline void Array<T, DIM, SPACE>::emplace_back(Args&&... args)
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
-inline void Array<T, DIM, SPACE>::resize(const StackArray<IndexType, DIM>& dims,
-                                         bool default_construct)
+inline void Array<T, DIM, SPACE>::resizeImpl(const StackArray<IndexType, DIM>& dims,
+                                             bool construct_with_values,
+                                             const T* value)
 {
   assert(detail::allNonNegative(dims.m_data));
   const auto new_num_elements = detail::packProduct(dims.m_data);
@@ -1230,13 +1312,25 @@ inline void Array<T, DIM, SPACE>::resize(const StackArray<IndexType, DIM>& dims,
     dynamicRealloc(new_num_elements);
   }
 
-  if(prev_num_elements < new_num_elements && default_construct)
+  if(prev_num_elements < new_num_elements && construct_with_values)
   {
-    // Default-initialize the new elements
-    OpHelper::init(m_data,
-                   prev_num_elements,
-                   new_num_elements - prev_num_elements,
-                   m_allocator_id);
+    if(value)
+    {
+      // Copy-construct new elements with value
+      OpHelper::fill(m_data,
+                     prev_num_elements,
+                     new_num_elements - prev_num_elements,
+                     m_allocator_id,
+                     *value);
+    }
+    else
+    {
+      // Default-initialize the new elements
+      OpHelper::init(m_data,
+                     prev_num_elements,
+                     new_num_elements - prev_num_elements,
+                     m_allocator_id);
+    }
   }
   else if(prev_num_elements > new_num_elements)
   {

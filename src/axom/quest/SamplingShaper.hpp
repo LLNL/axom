@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,6 @@
 #include "mfem.hpp"
 
 #include "axom/fmt.hpp"
-#include "axom/fmt/locale.h"
 
 namespace axom
 {
@@ -126,8 +125,8 @@ public:
 
     // Access the positions QFunc and associated QuadratureSpace
     mfem::QuadratureFunction* pos_coef = inoutQFuncs.Get("positions");
-    mfem::QuadratureSpace* sp = pos_coef->GetSpace();
-    const int nq = sp->GetElementIntRule(0).GetNPoints();
+    auto* sp = pos_coef->GetSpace();
+    const int nq = sp->GetIntRule(0).GetNPoints();
 
     // Sample the in/out field at each point
     // store in QField which we register with the QFunc collection
@@ -142,8 +141,8 @@ public:
     axom::utilities::Timer timer(true);
     for(int i = 0; i < NE; ++i)
     {
-      pos_coef->GetElementValues(i, m);
-      inout->GetElementValues(i, res);
+      pos_coef->GetValues(i, m);
+      inout->GetValues(i, res);
 
       for(int p = 0; p < nq; ++p)
       {
@@ -297,12 +296,12 @@ public:
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
-    const auto& shapeName = shape.getName();
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Generating the octree "));
 
-    internal::ScopedLogLevelChanger logLevelChanger(
-      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+    const auto& shapeName = shape.getName();
 
     switch(shapeDimension)
     {
@@ -348,12 +347,12 @@ public:
 
   void runShapeQuery(const klee::Shape& shape) override
   {
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format(" Querying the octree for shape '{}'", shape.getName())));
-
-    internal::ScopedLogLevelChanger logLevelChanger(
-      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     switch(getShapeDimension())
     {
@@ -370,14 +369,14 @@ public:
   {
     using axom::utilities::string::rsplitN;
 
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
     const auto& shapeName = shape.getName();
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format("Applying replacement rules over for shape '{}'",
                         shapeName)));
-
-    internal::ScopedLogLevelChanger logLevelChanger(
-      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
     // Get inout qfunc for this shape
     auto* shapeQFunc =
@@ -457,6 +456,60 @@ public:
   //@}
 
 public:
+  /**
+   * \brief Import an initial set of material volume fractions before shaping
+   *
+   * \param [in] initialGridFuncions The input data as a map from material names to grid functions
+   * 
+   * The imported grid functions are interpolated at quadrature points and registered
+   * with the supplied names as material-based quadrature fields
+   */
+  void importInitialVolumeFractions(
+    const std::map<std::string, mfem::GridFunction*>& initialGridFunctions)
+  {
+    internal::ScopedLogLevelChanger logLevelChanger(
+      this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+
+    auto* mesh = m_dc->GetMesh();
+
+    // ensure we have a starting quadrature field for the positions
+    if(!m_inoutShapeQFuncs.Has("positions"))
+    {
+      shaping::generatePositionsQFunction(mesh,
+                                          m_inoutShapeQFuncs,
+                                          m_quadratureOrder);
+    }
+    auto* positionsQSpace = m_inoutShapeQFuncs.Get("positions")->GetSpace();
+
+    // Interpolate grid functions at quadrature points & register material quad functions
+    // assume all elements have same integration rule
+    for(auto& entry : initialGridFunctions)
+    {
+      const auto& name = entry.first;
+      auto* gf = entry.second;
+
+      SLIC_INFO(
+        axom::fmt::format("Importing volume fraction field for '{}' material",
+                          name));
+
+      if(gf == nullptr)
+      {
+        SLIC_WARNING(axom::fmt::format(
+          "Skipping missing volume fraction field for material '{}'",
+          name));
+        continue;
+      }
+
+      auto* matQFunc = new mfem::QuadratureFunction(*positionsQSpace);
+      const auto& ir = matQFunc->GetSpace()->GetIntRule(0);
+      const auto* interp = gf->FESpace()->GetQuadratureInterpolator(ir);
+      interp->Values(*gf, *matQFunc);
+
+      const auto matName = axom::fmt::format("mat_inout_{}", name);
+      m_inoutMaterialQFuncs.Register(matName, matQFunc, true);
+    }
+  }
+
   void adjustVolumeFractions() override
   {
     internal::ScopedLogLevelChanger logLevelChanger(

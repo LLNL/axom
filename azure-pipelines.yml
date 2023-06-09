@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,8 +9,8 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG10_IMAGENAME: 'axom/tpls:clang-10_06-24-22_05h-21m'
-  GCC11_IMAGENAME: 'axom/tpls:gcc-11_06-24-22_05h-21m'
+  CLANG10_IMAGENAME: 'axom/tpls:clang-10_02-02-23_01h-47m'
+  GCC11_IMAGENAME: 'axom/tpls:gcc-11_02-02-23_01h-47m'
   system.debug: false
 
 jobs:
@@ -24,14 +24,14 @@ jobs:
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc11'
-        HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-gcc@11.1.0'
+        HOST_CONFIG: 'gcc@11.1.0'
       linux_gcc11_64bit:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(GCC11_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc11'
-        HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-gcc@11.1.0'
+        HOST_CONFIG: 'gcc@11.1.0'
       linux_clang10:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
@@ -39,7 +39,31 @@ jobs:
         BUILD_TYPE: 'Release'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
-        HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-clang@10.0.0'
+        HOST_CONFIG: 'clang@10.0.0'
+      linux_clang10_noraja:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'clang@10.0.0'
+      linux_clang10_noumpire:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U UMPIRE_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'clang@10.0.0'
+      linux_clang10_noraja_noumpire:
+        VM_ImageName: 'ubuntu-20.04'
+        Compiler_ImageName: '$(CLANG10_IMAGENAME)'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -U RAJA_DIR -U UMPIRE_DIR'
+        BUILD_TYPE: 'Debug'
+        COMPILER: 'clang++'
+        TEST_TARGET: 'linux_clang10'
+        HOST_CONFIG: 'clang@10.0.0'
       osx_gcc:
         VM_ImageName: 'macos-11'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF'
@@ -101,7 +125,7 @@ jobs:
     VM_ImageName: 'ubuntu-20.04'
     Compiler_ImageName: '$(CLANG10_IMAGENAME)'
     TEST_TARGET: 'linux_clang10'
-    HOST_CONFIG: 'docker-linux-ubuntu20.04-x86_64-clang@10.0.0'
+    HOST_CONFIG: 'clang@10.0.0'
     CMAKE_EXTRA_FLAGS: '-DENABLE_CLANGFORMAT=ON'
   pool:
       vmImage: $(VM_ImageName)

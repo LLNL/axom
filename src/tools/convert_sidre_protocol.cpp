@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -211,7 +211,7 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
     axom::fmt::memory_buffer out;
     for(auto i : viewInds.positions())
     {
-      axom::fmt::format_to(out,
+      axom::fmt::format_to(std::back_inserter(out),
                            "\n\ti: {0}; index: {1}; arr[{1}] = {2}",
                            i,
                            viewInds[i],
@@ -247,7 +247,10 @@ void modifyFinalValuesImpl(sidre::View* view, int origSize)
     axom::fmt::memory_buffer out;
     for(auto i : ViewSet(newSz).positions())
     {
-      axom::fmt::format_to(out, "\n\ti: {0}; arr[{0}] = {1}", i, newArr[i]);
+      axom::fmt::format_to(std::back_inserter(out),
+                           "\n\ti: {0}; arr[{0}] = {1}",
+                           i,
+                           newArr[i]);
     }
     SLIC_DEBUG("After truncation" << axom::fmt::to_string(out));
   }
@@ -261,28 +264,28 @@ void modifyFinalValues(sidre::View* view, int origSize)
   switch(view->getTypeID())
   {
   case sidre::INT8_ID:
-    modifyFinalValuesImpl<axom::int8>(view, origSize);
+    modifyFinalValuesImpl<std::int8_t>(view, origSize);
     break;
   case sidre::INT16_ID:
-    modifyFinalValuesImpl<axom::int16>(view, origSize);
+    modifyFinalValuesImpl<std::int16_t>(view, origSize);
     break;
   case sidre::INT32_ID:
-    modifyFinalValuesImpl<axom::int32>(view, origSize);
+    modifyFinalValuesImpl<std::int32_t>(view, origSize);
     break;
   case sidre::INT64_ID:
-    modifyFinalValuesImpl<axom::int64>(view, origSize);
+    modifyFinalValuesImpl<std::int64_t>(view, origSize);
     break;
   case sidre::UINT8_ID:
-    modifyFinalValuesImpl<axom::uint8>(view, origSize);
+    modifyFinalValuesImpl<std::uint8_t>(view, origSize);
     break;
   case sidre::UINT16_ID:
-    modifyFinalValuesImpl<axom::uint16>(view, origSize);
+    modifyFinalValuesImpl<std::uint16_t>(view, origSize);
     break;
   case sidre::UINT32_ID:
-    modifyFinalValuesImpl<axom::uint32>(view, origSize);
+    modifyFinalValuesImpl<std::uint32_t>(view, origSize);
     break;
   case sidre::UINT64_ID:
-    modifyFinalValuesImpl<axom::uint64>(view, origSize);
+    modifyFinalValuesImpl<std::uint64_t>(view, origSize);
     break;
   case sidre::FLOAT32_ID:
     modifyFinalValuesImpl<axom::float32>(view, origSize);

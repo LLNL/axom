@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,6 +36,18 @@ namespace sidre
 // Initialization of static path delimiter character for methods that
 // support path syntax.
 const char Group::s_path_delimiter = '/';
+
+// Initialization of static members holding I/O protocol strings
+const std::vector<std::string> Group::s_io_protocols = {
+#ifdef AXOM_USE_HDF5
+  "sidre_hdf5",
+  "conduit_hdf5",
+#endif
+  "sidre_json",
+  "sidre_conduit_json",
+  "conduit_bin",
+  "conduit_json",
+  "json"};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -102,6 +114,141 @@ std::string Group::getPath() const
   }
 
   return thePath;
+}
+
+/*
+ *************************************************************************
+ *
+ * Insert information about data associated with Group subtree with this 
+ * Group at root of tree (default 'recursive' is true), or for this Group 
+ * only ('recursive' is false) in fields of given Conduit Node.
+ *
+ *************************************************************************
+ */
+void Group::getDataInfo(Node& n, bool recursive) const
+{
+  //
+  // Initialize Node fields
+  //
+  IndexType num_groups = 0;
+  IndexType num_views = 0;
+  IndexType num_views_empty = 0;
+  IndexType num_views_buffer = 0;
+  IndexType num_views_external = 0;
+  IndexType num_views_scalar = 0;
+  IndexType num_views_string = 0;
+  IndexType num_bytes_assoc_with_views = 0;
+  IndexType num_bytes_external = 0;
+
+  n["num_groups"] = num_groups;
+  n["num_views"] = num_views;
+  n["num_views_empty"] = num_views_empty;
+  n["num_views_buffer"] = num_views_buffer;
+  n["num_views_external"] = num_views_external;
+  n["num_views_scalar"] = num_views_scalar;
+  n["num_views_string"] = num_views_string;
+  n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
+  n["num_bytes_external"] = num_bytes_external;
+
+  std::set<IndexType> buffer_ids;
+
+  getDataInfoHelper(n, buffer_ids, recursive);
+
+  const DataStore* ds = getDataStore();
+  IndexType num_bytes_in_buffers = 0;
+  for(auto it = buffer_ids.begin(); it != buffer_ids.end(); ++it)
+  {
+    num_bytes_in_buffers += ds->getBuffer(*it)->getTotalBytes();
+  }
+  n["num_bytes_in_buffers"] = num_bytes_in_buffers;
+}
+
+/*
+ *************************************************************************
+ *
+ * Private helper method to support getDataInfo() method.
+ *
+ *************************************************************************
+ */
+void Group::getDataInfoHelper(Node& n,
+                              std::set<IndexType>& buffer_ids,
+                              bool recursive) const
+{
+  //
+  // Grab Node entries for updating data info for this Group
+  //
+  IndexType num_groups = n["num_groups"].value();
+  IndexType num_views = n["num_views"].value();
+  IndexType num_views_empty = n["num_views_empty"].value();
+  IndexType num_views_buffer = n["num_views_buffer"].value();
+  IndexType num_views_external = n["num_views_external"].value();
+  IndexType num_views_scalar = n["num_views_scalar"].value();
+  IndexType num_views_string = n["num_views_string"].value();
+  IndexType num_bytes_assoc_with_views = n["num_bytes_assoc_with_views"].value();
+  IndexType num_bytes_external = n["num_bytes_external"].value();
+
+  num_groups += 1;  // count this group
+  num_views += getNumViews();
+
+  //
+  // Gather info from Views owned by this Group
+  //
+  for(auto& view : views())
+  {
+    if(view.isExternal())
+    {
+      num_views_external += 1;
+      num_bytes_external += view.getTotalBytes();
+    }
+    else if(view.isScalar())
+    {
+      num_views_scalar += 1;
+      num_bytes_assoc_with_views += view.getTotalBytes();
+    }
+    else if(view.isString())
+    {
+      num_views_string += 1;
+      num_bytes_assoc_with_views += view.getTotalBytes();
+    }
+    else if(view.hasBuffer())
+    {
+      num_views_buffer += 1;
+      const Buffer* buf = view.getBuffer();
+      if(buf->isAllocated())
+      {
+        buffer_ids.insert(buf->getIndex());
+        num_bytes_assoc_with_views += view.getTotalBytes();
+      }
+    }
+    else
+    {
+      num_views_empty += 1;
+    }
+  }
+
+  //
+  // Update Node entries with data info for this Group
+  //
+  n["num_groups"] = num_groups;
+  n["num_views"] = num_views;
+  n["num_views_empty"] = num_views_empty;
+  n["num_views_buffer"] = num_views_buffer;
+  n["num_views_external"] = num_views_external;
+  n["num_views_scalar"] = num_views_scalar;
+  n["num_views_string"] = num_views_string;
+  n["num_bytes_assoc_with_views"] = num_bytes_assoc_with_views;
+  n["num_bytes_external"] = num_bytes_external;
+
+  //
+  // Recursively gather info for Group subtree, if requested
+  //
+  if(recursive)
+  {
+    for(auto& group : groups())
+    {
+      group.getDataInfoHelper(n, buffer_ids, recursive);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -232,10 +379,20 @@ View* Group::createView(const std::string& path)
 
     if(group == nullptr)
     {
-      SLIC_CHECK_MSG(group != nullptr,
-                     SIDRE_GROUP_LOG_PREPEND
-                       << "Could not find or create path '" << path << "'."
-                       << "There is already a view with that name.");
+      if(m_is_list)
+      {
+        SLIC_CHECK_MSG(group != nullptr,
+                       SIDRE_GROUP_LOG_PREPEND
+                         << "Could not find or create View '" << path << "'."
+                         << "for a Group using the list format.");
+      }
+      else
+      {
+        SLIC_CHECK_MSG(group != nullptr,
+                       SIDRE_GROUP_LOG_PREPEND
+                         << "Could not find or create path '" << path << "'."
+                         << "There is already a View with that name.");
+      }
       return nullptr;
     }
     else if(intpath.empty() || group->hasChildView(intpath) ||
@@ -922,10 +1079,20 @@ Group* Group::createGroup(const std::string& path, bool is_list)
 
   if(group == nullptr)
   {
-    SLIC_CHECK_MSG(group != nullptr,
-                   SIDRE_GROUP_LOG_PREPEND
-                     << "Could not find or create path '" << path
-                     << "'. There is already a Group with that name");
+    if(m_is_list)
+    {
+      SLIC_CHECK_MSG(group != nullptr,
+                     SIDRE_GROUP_LOG_PREPEND
+                       << "Could not find or create Group '" << path << "'."
+                       << "for a Group using the list format.");
+    }
+    else
+    {
+      SLIC_CHECK_MSG(group != nullptr,
+                     SIDRE_GROUP_LOG_PREPEND
+                       << "Could not find or create path '" << path
+                       << "'. There is already a Group with that name");
+    }
     return nullptr;
   }
   else if(intpath.empty() || group->hasChildGroup(intpath) ||
@@ -1013,6 +1180,31 @@ void Group::destroyGroup(const std::string& path)
 /*
  *************************************************************************
  *
+ * Detach child Group with given name or path and destroy it, and destroy
+ * any data that becomes disassociated from all Views
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupAndData(const std::string& path)
+{
+  std::string intpath(path);
+  bool create_groups_in_path = false;
+  Group* group = walkPath(intpath, create_groups_in_path);
+
+  if(group != nullptr)
+  {
+    Group* targetgroup = group->detachGroup(intpath);
+    if(targetgroup != nullptr)
+    {
+      targetgroup->destroyGroupSubtreeAndData();
+      delete targetgroup;
+    }
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Detach child Group with given index and destroy it.
  *
  *************************************************************************
@@ -1022,6 +1214,24 @@ void Group::destroyGroup(IndexType idx)
   Group* group = detachGroup(idx);
   if(group != nullptr)
   {
+    delete group;
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach child Group with given index and destroy it, and destroy any data
+ * that becomes disassociated from all Views
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupAndData(IndexType idx)
+{
+  Group* group = detachGroup(idx);
+  if(group != nullptr)
+  {
+    group->destroyGroupSubtreeAndData();
     delete group;
   }
 }
@@ -1045,6 +1255,41 @@ void Group::destroyGroups()
   }
 
   m_group_coll->removeAllItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach all child Groups and destroy them, and destroy any data that
+ * becomes disassociated with all Views.
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupsAndData()
+{
+  IndexType gidx = getFirstValidGroupIndex();
+  while(indexIsValid(gidx))
+  {
+    destroyGroupAndData(gidx);
+
+    gidx = getNextValidGroupIndex(gidx);
+  }
+
+  m_group_coll->removeAllItems();
+}
+
+/*
+ *************************************************************************
+ *
+ * Detach all child Groups and Views and destroy them, and destroy any data
+ * that becomes disassociated with all Views.
+ *
+ *************************************************************************
+ */
+void Group::destroyGroupSubtreeAndData()
+{
+  destroyViewsAndData();
+  destroyGroupsAndData();
 }
 
 /*
@@ -1186,6 +1431,43 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
   }
 
   return hasSavedViews;
+}
+
+/*
+ *************************************************************************
+ *
+ * Copy Group layout to the given Conduit node, including only the metadata
+ * for Views and not the actual data the Views hold.
+ *
+ *************************************************************************
+ */
+
+void Group::createNoDataLayout(Node& n, const Attribute* attr) const
+{
+  n.set(DataType::object());
+
+  // Dump the group's views
+  for(auto& view : views())
+  {
+    // Check that the view's name is not also a child group name
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view.getName()),
+                   SIDRE_GROUP_LOG_PREPEND
+                     << "'" << view.getName()
+                     << "' is the name of both a group and a view.");
+
+    if(attr == nullptr || view.hasAttributeValue(attr))
+    {
+      conduit::Node& child_node = m_is_list ? n.append() : n[view.getName()];
+      view.copyMetadataToNode(child_node);
+    }
+  }
+
+  // Recursively dump the child groups
+  for(auto& group : groups())
+  {
+    conduit::Node& child_node = m_is_list ? n.append() : n[group.getName()];
+    group.createNoDataLayout(child_node, attr);
+  }
 }
 
 /*
@@ -1470,6 +1752,14 @@ void Group::save(const std::string& path,
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, "json");
   }
+  else if(protocol == "sidre_layout_json")
+  {
+    Node n;
+    exportWithoutBufferData(n["sidre"], attr);
+    ds->saveAttributeLayout(n["sidre/attribute"]);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::save(n, path, "conduit_json");
+  }
   else if(protocol == "conduit_hdf5")
   {
     Node n;
@@ -1484,6 +1774,13 @@ void Group::save(const std::string& path,
     createNativeLayout(n, attr);
     n["sidre_group_name"] = m_name;
     conduit::relay::io::save(n, path, protocol);
+  }
+  else if(protocol == "conduit_layout_json")
+  {
+    Node n;
+    createNoDataLayout(n, attr);
+    n["sidre_group_name"] = m_name;
+    conduit::relay::io::save(n, path, "conduit_json");
   }
   else
   {
@@ -1955,7 +2252,9 @@ Group* Group::detachGroup(IndexType idx)
  *
  *************************************************************************
  */
-bool Group::exportTo(conduit::Node& result, const Attribute* attr) const
+bool Group::exportTo(conduit::Node& result,
+                     const Attribute* attr,
+                     bool export_buffer) const
 {
   result.set(DataType::object());
   // TODO - This implementation will change in the future.  We want to write
@@ -1987,7 +2286,14 @@ bool Group::exportTo(conduit::Node& result, const Attribute* attr) const
       std::ostringstream oss;
       oss << "buffer_id_" << *s_it;
       Node& n_buffer = bnode.fetch(oss.str());
-      getDataStore()->getBuffer(*s_it)->exportTo(n_buffer);
+      if(export_buffer)
+      {
+        getDataStore()->getBuffer(*s_it)->exportTo(n_buffer);
+      }
+      else
+      {
+        getDataStore()->getBuffer(*s_it)->exportMetadata(n_buffer);
+      }
     }
   }
 
@@ -2055,6 +2361,21 @@ bool Group::exportTo(conduit::Node& result,
   }
 
   return hasSavedViews;
+}
+
+/*
+ *************************************************************************
+ *
+ * Exports the contents of the Group, excluding the data arrays held
+ * by any Buffers attached to the Views.
+ *
+ *************************************************************************
+ */
+
+bool Group::exportWithoutBufferData(conduit::Node& result,
+                                    const Attribute* attr) const
+{
+  return exportTo(result, attr, false);
 }
 
 /*
@@ -2275,13 +2596,14 @@ bool Group::importConduitTreeExternal(conduit::Node& node, bool preserve_content
     while(itr.has_next())
     {
       Node& cld_node = itr.next();
-      std::string cld_name = itr.name();
+      std::string cld_name = m_is_list ? "" : itr.name();
       DataType cld_dtype = cld_node.dtype();
 
       if(cld_dtype.is_object() || cld_dtype.is_list())
       {
         // create group
-        Group* grp = createGroup(cld_name, cld_dtype.is_list());
+        Group* grp = m_is_list ? createUnnamedGroup(cld_dtype.is_list())
+                               : createGroup(cld_name, cld_dtype.is_list());
         success = grp->importConduitTreeExternal(cld_node, preserve_contents);
       }
       else if(cld_dtype.is_empty())
@@ -2352,34 +2674,48 @@ Group* Group::walkPath(std::string& path, bool create_groups_in_path)
 
   if(path_parts.size() > 0)
   {
-    // Find stopping point (right before last part of path)
-    std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
-
-    // Navigate path down to desired Group
-    for(std::vector<std::string>::const_iterator iter = path_parts.begin();
-        iter < stop;
-        ++iter)
+    if(m_is_list && path_parts.size() > 1)
     {
-      if(group_ptr->hasChildGroup(*iter))
-      {
-        group_ptr = group_ptr->getGroup(*iter);
-      }
-      else if(create_groups_in_path)
-      {
-        group_ptr = group_ptr->createGroup(*iter);
+      // A size > 1 indicates that a delimited path string was provided.
+      // A path string is invalid when this Group uses the list format.
+      SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+                   << "A delimited path string '" << path
+                   << "' cannot be used as the name of an object "
+                   << "to be created by a Group that uses the list format. "
+                   << "A null pointer will be returned.");
+      group_ptr = nullptr;
+    }
+    else
+    {
+      // Find stopping point (right before last part of path)
+      std::vector<std::string>::const_iterator stop = path_parts.end() - 1;
 
-        if(group_ptr == nullptr)
+      // Navigate path down to desired Group
+      for(std::vector<std::string>::const_iterator iter = path_parts.begin();
+          iter < stop;
+          ++iter)
+      {
+        if(group_ptr->hasChildGroup(*iter))
+        {
+          group_ptr = group_ptr->getGroup(*iter);
+        }
+        else if(create_groups_in_path)
+        {
+          group_ptr = group_ptr->createGroup(*iter);
+
+          if(group_ptr == nullptr)
+          {
+            iter = stop;
+          }
+        }
+        else
         {
           iter = stop;
+          group_ptr = nullptr;
         }
       }
-      else
-      {
-        iter = stop;
-        group_ptr = nullptr;
-      }
+      path = path_parts.back();
     }
-    path = path_parts.back();
   }
 
   return group_ptr;

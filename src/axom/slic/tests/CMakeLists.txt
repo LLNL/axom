@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,13 +16,15 @@ set(serial_slic_tests
     slic_macros.cpp
     slic_uninit.cpp )
 
+set(slic_tests_depends slic gtest fmt)
+
 foreach(test ${serial_slic_tests})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable(NAME       ${test_name}_test
-                       SOURCES    ${test}
-                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON axom gtest fmt
-                       FOLDER     axom/slic/tests )
+    axom_add_executable(NAME       ${test_name}_test
+                        SOURCES    ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON ${slic_tests_depends}
+                        FOLDER     axom/slic/tests )
     axom_add_test(NAME    ${test_name}
                   COMMAND ${test_name}_test )
 endforeach()
@@ -31,17 +33,17 @@ endforeach()
 #
 # Parallel Unit Tests
 #
-if (ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
+if (AXOM_ENABLE_MPI AND AXOM_ENABLE_LUMBERJACK)
     set(parallel_slic_tests
         slic_macros_parallel.cpp )
 
     foreach(test ${parallel_slic_tests})
         get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable(NAME       ${test_name}_test
-                           SOURCES    ${test}
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON axom gtest fmt
-                           FOLDER     axom/slic/tests )
+        axom_add_executable(NAME       ${test_name}_test
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON ${slic_tests_depends}
+                            FOLDER     axom/slic/tests )
         axom_add_test(NAME          ${test_name}
                       COMMAND       ${test_name}_test 
                       NUM_MPI_TASKS 4)
@@ -59,11 +61,11 @@ if (ENABLE_BENCHMARKS)
     foreach(test ${slic_benchmarks})
         get_filename_component( test_name ${test} NAME_WE )
 
-        blt_add_executable(NAME       ${test_name}
-                           SOURCES    ${test}
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON axom gbenchmark
-                           FOLDER     axom/slic/benchmarks )
+        axom_add_executable(NAME       ${test_name}
+                            SOURCES    ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON slic gbenchmark
+                            FOLDER     axom/slic/benchmarks )
 
         blt_add_benchmark(
             NAME    ${test_name}
@@ -81,11 +83,11 @@ if (ENABLE_FORTRAN)
 
     foreach(test ${fruit_slic_tests})
         get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable(NAME ${test_name}_test
-                           SOURCES ${test}
-                           OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON slic fruit
-                           FOLDER axom/slic/tests )
+        axom_add_executable(NAME ${test_name}_test
+                            SOURCES ${test}
+                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                            DEPENDS_ON slic fruit
+                            FOLDER axom/slic/tests )
         axom_add_test(NAME    ${test_name}
                       COMMAND ${test_name}_test )
     endforeach()

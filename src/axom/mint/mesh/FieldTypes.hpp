@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -55,14 +55,14 @@ struct field_traits<axom::float64>
 
 //------------------------------------------------------------------------------
 template <>
-struct field_traits<axom::int32>
+struct field_traits<std::int32_t>
 {
   static constexpr int type() { return INT32_FIELD_TYPE; };
 };
 
 //------------------------------------------------------------------------------
 template <>
-struct field_traits<axom::int64>
+struct field_traits<std::int64_t>
 {
   static constexpr int type() { return INT64_FIELD_TYPE; };
 };

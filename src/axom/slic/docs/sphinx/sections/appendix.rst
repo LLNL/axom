@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -100,3 +100,9 @@ The table below details which SLIC macros are collective:
 +----------------------------+----------------------------------------------------------------------------+
 
 Doxygen generated API documentation on Macros can be found here: `SLIC Macros <../../../../doxygen/html/slic__macros_8hpp.html>`_
+
+.. #############################################################################
+..  CITATIONS
+.. #############################################################################
+
+.. include:: citations.rst

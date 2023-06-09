@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,7 @@
 #
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.14)
 
 project(using_with_blt)
 
@@ -47,9 +47,11 @@ if(NOT DEFINED AXOM_DIR OR NOT EXISTS ${AXOM_DIR}/lib/cmake/axom-config.cmake)
     message(FATAL_ERROR "Missing required 'AXOM_DIR' variable pointing to an installed axom")
 endif()
 
-find_package(axom REQUIRED
-             NO_DEFAULT_PATH 
-             PATHS ${AXOM_DIR}/lib/cmake)
+include(CMakeFindDependencyMacro)
+
+find_dependency(axom REQUIRED
+                NO_DEFAULT_PATH 
+                PATHS ${AXOM_DIR}/lib/cmake)
 
 #------------------------------------------------------------------------------
 # Set up example target that depends on axom
@@ -57,14 +59,14 @@ find_package(axom REQUIRED
 
 blt_add_executable(NAME       example 
                    SOURCES    example.cpp
-                   DEPENDS_ON axom fmt)
+                   DEPENDS_ON axom axom::fmt)
 
 
 #------------------------------------------------------------------------------
 # Optionally, print out information about imported targets
 #------------------------------------------------------------------------------
 if(EXAMPLE_VERBOSE_OUTPUT)
-    foreach(_target axom cli11 fmt sparsehash conduit::conduit example)
+    foreach(_target axom axom::cli11 axom::fmt axom::sparsehash conduit::conduit example)
         blt_print_target_properties(TARGET ${_target})  
     endforeach()
 endif()

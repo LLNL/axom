@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -68,6 +68,24 @@ public:
    * \return the shape's geometry
    */
   const Geometry &getGeometry() const { return m_geometry; }
+
+  /**
+   * Get the vector of materials that this shape can replace.
+   * \return A reference to the material name vector.
+   */
+  const std::vector<std::string> &getMaterialsReplaced() const
+  {
+    return m_materialsReplaced;
+  }
+
+  /**
+   * Get the vector of materials that this shape cannot replace.
+   * \return A reference to the material name vector.
+   */
+  const std::vector<std::string> &getMaterialsNotReplaced() const
+  {
+    return m_materialsNotReplaced;
+  }
 
 private:
   std::string m_name;

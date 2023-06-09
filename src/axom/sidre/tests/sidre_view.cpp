@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1182,18 +1182,18 @@ TEST(sidre_view, view_offset_and_stride)
 
   typedef std::vector<View*> ViewVec;
   ViewVec views;
-  axom::uint8 ui8 = 3;
-  axom::uint16 ui16 = 4;
-  axom::uint32 ui32 = 5;
+  std::uint8_t ui8 = 3;
+  std::uint16_t ui16 = 4;
+  std::uint32_t ui32 = 5;
 #ifndef AXOM_NO_INT46_T
-  axom::uint64 ui64 = 6;
+  std::uint64_t ui64 = 6;
 #endif
 
-  axom::int8 i8 = -3;
-  axom::int16 i16 = -4;
-  axom::int32 i32 = -5;
+  std::int8_t i8 = -3;
+  std::int16_t i16 = -4;
+  std::int32_t i32 = -5;
 #ifndef AXOM_NO_INT46_T
-  axom::int64 i64 = -6;
+  std::int64_t i64 = -6;
 #endif
 
   axom::float32 f32 = 7.7f;

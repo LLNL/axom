@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,8 +17,8 @@ namespace axom
  * \class StackArray
  * 
  * \brief Provides a wrapper for a compile time sized array, similar to
- *  std::array. This class is needed because NVCC doesn't caputure standard
- *  stack arrays in device lambdas. Furthermore we can't use std::array becuase
+ *  std::array. This class is needed because NVCC doesn't capture standard
+ *  stack arrays in device lambdas. Furthermore we can't use std::array because
  *  it is not host-device decorated.
  *
  * \tparam T the type of the values to hold.

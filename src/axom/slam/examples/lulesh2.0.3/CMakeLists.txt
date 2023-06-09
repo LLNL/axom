@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,27 +22,28 @@ set(lulesh_sources
 
 
 # Ignore omp pragmas when openMP is not defined
-if ( NOT ENABLE_OPENMP )
+if ( NOT AXOM_ENABLE_OPENMP )
     set_source_files_properties(${lulesh_sources}
         PROPERTIES COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
-set(slam_tests_depends_on core slic slam)
-
-blt_list_append( TO slam_tests_depends_on ELEMENTS mpi IF ${ENABLE_MPI} )
-blt_list_append( TO slam_tests_depends_on ELEMENTS openmp IF ${ENABLE_OPENMP} )
-blt_list_append( TO slam_tests_depends_on ELEMENTS blt::hip IF ${ENABLE_HIP} )
-
-blt_add_executable(
+axom_add_executable(
     NAME        slam_lulesh_ex
     SOURCES     ${lulesh_sources}
     HEADERS     ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tests_depends_on}
+    DEPENDS_ON  slam
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS)
-    if(ENABLE_MPI)
+    if(AXOM_ENABLE_MPI)
+
+        # CMake inserts Fortran flag that forces one OpenMP thread when
+        # compiling with MPI and xlf
+        if(ENABLE_FORTRAN)
+          list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "xlomp_ser")
+        endif()
+
         axom_add_test(NAME        slam_lulesh
                       COMMAND     slam_lulesh_ex
                       NUM_MPI_TASKS   8
@@ -53,4 +54,3 @@ if(AXOM_ENABLE_TESTS)
                       NUM_OMP_THREADS 4 )
     endif()
 endif()
-

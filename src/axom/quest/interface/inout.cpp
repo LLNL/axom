@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -97,16 +97,18 @@ struct InOutHelper
 
     // load the mesh
     int rc = QUEST_INOUT_FAILED;
-
+    double revolvedVolume = 0.;
     switch(DIM)
     {
     case 2:
 #ifdef AXOM_USE_C2C
-      rc = internal::read_c2c_mesh(file,
-                                   m_params.m_segmentsPerKnotSpan,
-                                   m_params.m_vertexWeldThreshold,
-                                   mesh,
-                                   comm);
+      rc = internal::read_c2c_mesh_uniform(file,
+                                           numerics::Matrix<double>::identity(4),
+                                           m_params.m_segmentsPerKnotSpan,
+                                           m_params.m_vertexWeldThreshold,
+                                           mesh,
+                                           revolvedVolume,
+                                           comm);
 #else
       SLIC_WARNING(fmt::format(
         "Cannot read contour file: C2C not enabled in this configuration.",

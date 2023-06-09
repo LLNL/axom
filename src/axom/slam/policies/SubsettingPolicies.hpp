@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@
 #include "axom/core/Macros.hpp"
 
 #include "axom/slam/NullSet.hpp"
+#include "axom/export/slam.h"
 
 #include <set>
 
@@ -44,10 +45,10 @@ namespace policies
 
 struct NoSubset
 {
-  AXOM_EXPORT static const NullSet<> s_nullSet;
+  AXOM_SLAM_EXPORT static const NullSet<> s_nullSet;
   using ParentSetType = const Set<>;
 
-  NoSubset() { }
+  AXOM_HOST_DEVICE NoSubset() { }
 
   // This empty .ctor is here to satisfy the SubsettingPolicy API
   NoSubset(ParentSetType*) { }
@@ -67,7 +68,7 @@ struct NoSubset
 
 struct VirtualParentSubset
 {
-  AXOM_EXPORT static NullSet<> s_nullSet;
+  AXOM_SLAM_EXPORT static NullSet<> s_nullSet;
 
   using ParentSetType = Set<>;
 

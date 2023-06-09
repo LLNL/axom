@@ -9,10 +9,9 @@
 #define AXOM_FMT_OS_H_
 
 #include <cerrno>
-#include <clocale>  // for locale_t
 #include <cstddef>
 #include <cstdio>
-#include <cstdlib>  // for strtod_l
+#include <system_error>  // std::system_error
 
 #if defined __APPLE__ || defined(__FreeBSD__)
 #  include <xlocale.h>  // for LC_NUMERIC_MASK on OS X
@@ -20,17 +19,20 @@
 
 #include "format.h"
 
+#ifndef AXOM_FMT_USE_FCNTL
 // UWP doesn't provide _pipe.
-#if AXOM_FMT_HAS_INCLUDE("winapifamily.h")
-#  include <winapifamily.h>
-#endif
-#if (AXOM_FMT_HAS_INCLUDE(<fcntl.h>) || defined(__APPLE__) || \
-     defined(__linux__)) &&                              \
-    (!defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
-#  include <fcntl.h>  // for O_RDONLY
-#  define AXOM_FMT_USE_FCNTL 1
-#else
-#  define AXOM_FMT_USE_FCNTL 0
+#  if AXOM_FMT_HAS_INCLUDE("winapifamily.h")
+#    include <winapifamily.h>
+#  endif
+#  if (AXOM_FMT_HAS_INCLUDE(<fcntl.h>) || defined(__APPLE__) || \
+       defined(__linux__)) &&                              \
+      (!defined(WINAPI_FAMILY) ||                          \
+       (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
+#    include <fcntl.h>  // for O_RDONLY
+#    define AXOM_FMT_USE_FCNTL 1
+#  else
+#    define AXOM_FMT_USE_FCNTL 0
+#  endif
 #endif
 
 #ifndef AXOM_FMT_POSIX
@@ -69,6 +71,7 @@
 #define AXOM_FMT_RETRY(result, expression) AXOM_FMT_RETRY_VAL(result, expression, -1)
 
 AXOM_FMT_BEGIN_NAMESPACE
+AXOM_FMT_MODULE_EXPORT_BEGIN
 
 /**
   \rst
@@ -117,19 +120,28 @@ template <typename Char> class basic_cstring_view {
 using cstring_view = basic_cstring_view<char>;
 using wcstring_view = basic_cstring_view<wchar_t>;
 
-// An error code.
-class error_code {
- private:
-  int value_;
+template <typename Char> struct formatter<std::error_code, Char> {
+  template <typename ParseContext>
+  AXOM_FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
 
- public:
-  explicit error_code(int value = 0) AXOM_FMT_NOEXCEPT : value_(value) {}
-
-  int get() const AXOM_FMT_NOEXCEPT { return value_; }
+  template <typename FormatContext>
+  AXOM_FMT_CONSTEXPR auto format(const std::error_code& ec, FormatContext& ctx) const
+      -> decltype(ctx.out()) {
+    auto out = ctx.out();
+    out = detail::write_bytes(out, ec.category().name(),
+                              basic_format_specs<Char>());
+    out = detail::write<Char>(out, Char(':'));
+    out = detail::write<Char>(out, ec.value());
+    return out;
+  }
 };
 
 #ifdef _WIN32
-namespace detail {
+AXOM_FMT_API const std::error_category& system_category() noexcept;
+
+AXOM_FMT_BEGIN_DETAIL_NAMESPACE
 // A converter from UTF-16 to UTF-8.
 // It is only provided for Windows since other systems support UTF-8 natively.
 class utf16_to_utf8 {
@@ -138,7 +150,7 @@ class utf16_to_utf8 {
 
  public:
   utf16_to_utf8() {}
-  AXOM_FMT_API explicit utf16_to_utf8(wstring_view s);
+  AXOM_FMT_API explicit utf16_to_utf8(basic_string_view<wchar_t> s);
   operator string_view() const { return string_view(&buffer_[0], size()); }
   size_t size() const { return buffer_.size() - 1; }
   const char* c_str() const { return &buffer_[0]; }
@@ -147,58 +159,66 @@ class utf16_to_utf8 {
   // Performs conversion returning a system error code instead of
   // throwing exception on conversion error. This method may still throw
   // in case of memory allocation error.
-  AXOM_FMT_API int convert(wstring_view s);
+  AXOM_FMT_API int convert(basic_string_view<wchar_t> s);
 };
 
 AXOM_FMT_API void format_windows_error(buffer<char>& out, int error_code,
-                                  string_view message) AXOM_FMT_NOEXCEPT;
-}  // namespace detail
+                                  const char* message) noexcept;
+AXOM_FMT_END_DETAIL_NAMESPACE
 
-/** A Windows error. */
-class windows_error : public system_error {
- private:
-  AXOM_FMT_API void init(int error_code, string_view format_str, format_args args);
+AXOM_FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
+                                         format_args args);
 
- public:
-  /**
-   \rst
-   Constructs a :class:`axom::fmt::windows_error` object with the description
-   of the form
+/**
+ \rst
+ Constructs a :class:`std::system_error` object with the description
+ of the form
 
-   .. parsed-literal::
-     *<message>*: *<system-message>*
+ .. parsed-literal::
+   *<message>*: *<system-message>*
 
-   where *<message>* is the formatted message and *<system-message>* is the
-   system message corresponding to the error code.
-   *error_code* is a Windows error code as given by ``GetLastError``.
-   If *error_code* is not a valid error code such as -1, the system message
-   will look like "error -1".
+ where *<message>* is the formatted message and *<system-message>* is the
+ system message corresponding to the error code.
+ *error_code* is a Windows error code as given by ``GetLastError``.
+ If *error_code* is not a valid error code such as -1, the system message
+ will look like "error -1".
 
-   **Example**::
+ **Example**::
 
-     // This throws a windows_error with the description
-     //   cannot open file 'madeup': The system cannot find the file specified.
-     // or similar (system message may vary).
-     const char *filename = "madeup";
-     LPOFSTRUCT of = LPOFSTRUCT();
-     HFILE file = OpenFile(filename, &of, OF_READ);
-     if (file == HFILE_ERROR) {
-       throw axom::fmt::windows_error(GetLastError(),
-                                "cannot open file '{}'", filename);
-     }
-   \endrst
-  */
-  template <typename... Args>
-  windows_error(int error_code, string_view message, const Args&... args) {
-    init(error_code, message, make_format_args(args...));
-  }
-};
+   // This throws a system_error with the description
+   //   cannot open file 'madeup': The system cannot find the file specified.
+   // or similar (system message may vary).
+   const char *filename = "madeup";
+   LPOFSTRUCT of = LPOFSTRUCT();
+   HFILE file = OpenFile(filename, &of, OF_READ);
+   if (file == HFILE_ERROR) {
+     throw axom::fmt::windows_error(GetLastError(),
+                              "cannot open file '{}'", filename);
+   }
+ \endrst
+*/
+template <typename... Args>
+std::system_error windows_error(int error_code, string_view message,
+                                const Args&... args) {
+  return vwindows_error(error_code, message, axom::fmt::make_format_args(args...));
+}
 
 // Reports a Windows error without throwing an exception.
 // Can be used to report errors from destructors.
-AXOM_FMT_API void report_windows_error(int error_code,
-                                  string_view message) AXOM_FMT_NOEXCEPT;
+AXOM_FMT_API void report_windows_error(int error_code, const char* message) noexcept;
+#else
+inline const std::error_category& system_category() noexcept {
+  return std::system_category();
+}
 #endif  // _WIN32
+
+// std::system is not available on some platforms such as iOS (#2248).
+#ifdef __OSX__
+template <typename S, typename... Args, typename Char = char_t<S>>
+void say(const S& format_str, Args&&... args) {
+  std::system(format("say \"{}\"", format(format_str, args...)).c_str());
+}
+#endif
 
 // A buffered file.
 class buffered_file {
@@ -214,13 +234,13 @@ class buffered_file {
   void operator=(const buffered_file&) = delete;
 
   // Constructs a buffered_file object which doesn't represent any file.
-  buffered_file() AXOM_FMT_NOEXCEPT : file_(nullptr) {}
+  buffered_file() noexcept : file_(nullptr) {}
 
   // Destroys the object closing the file it represents if any.
-  AXOM_FMT_API ~buffered_file() AXOM_FMT_NOEXCEPT;
+  AXOM_FMT_API ~buffered_file() noexcept;
 
  public:
-  buffered_file(buffered_file&& other) AXOM_FMT_NOEXCEPT : file_(other.file_) {
+  buffered_file(buffered_file&& other) noexcept : file_(other.file_) {
     other.file_ = nullptr;
   }
 
@@ -238,11 +258,9 @@ class buffered_file {
   AXOM_FMT_API void close();
 
   // Returns the pointer to a FILE object representing this file.
-  FILE* get() const AXOM_FMT_NOEXCEPT { return file_; }
+  FILE* get() const noexcept { return file_; }
 
-  // We place parentheses around fileno to workaround a bug in some versions
-  // of MinGW that define fileno as a macro.
-  AXOM_FMT_API int(fileno)() const;
+  AXOM_FMT_API int descriptor() const;
 
   void vprint(string_view format_str, format_args args) {
     axom::fmt::vprint(file_, format_str, args);
@@ -250,18 +268,18 @@ class buffered_file {
 
   template <typename... Args>
   inline void print(string_view format_str, const Args&... args) {
-    vprint(format_str, make_format_args(args...));
+    vprint(format_str, axom::fmt::make_format_args(args...));
   }
 };
 
 #if AXOM_FMT_USE_FCNTL
 // A file. Closed file is represented by a file object with descriptor -1.
-// Methods that are not declared with AXOM_FMT_NOEXCEPT may throw
+// Methods that are not declared with noexcept may throw
 // axom::fmt::system_error in case of failure. Note that some errors such as
 // closing the file multiple times will cause a crash on Windows rather
 // than an exception. You can get standard behavior by overriding the
 // invalid parameter handler with _set_invalid_parameter_handler.
-class file {
+class AXOM_FMT_API file {
  private:
   int fd_;  // File descriptor.
 
@@ -280,18 +298,19 @@ class file {
   };
 
   // Constructs a file object which doesn't represent any file.
-  file() AXOM_FMT_NOEXCEPT : fd_(-1) {}
+  file() noexcept : fd_(-1) {}
 
   // Opens a file and constructs a file object representing this file.
-  AXOM_FMT_API file(cstring_view path, int oflag);
+  file(cstring_view path, int oflag);
 
  public:
   file(const file&) = delete;
   void operator=(const file&) = delete;
 
-  file(file&& other) AXOM_FMT_NOEXCEPT : fd_(other.fd_) { other.fd_ = -1; }
+  file(file&& other) noexcept : fd_(other.fd_) { other.fd_ = -1; }
 
-  file& operator=(file&& other) AXOM_FMT_NOEXCEPT {
+  // Move assignment is not noexcept because close may throw.
+  file& operator=(file&& other) {
     close();
     fd_ = other.fd_;
     other.fd_ = -1;
@@ -299,51 +318,52 @@ class file {
   }
 
   // Destroys the object closing the file it represents if any.
-  AXOM_FMT_API ~file() AXOM_FMT_NOEXCEPT;
+  ~file() noexcept;
 
   // Returns the file descriptor.
-  int descriptor() const AXOM_FMT_NOEXCEPT { return fd_; }
+  int descriptor() const noexcept { return fd_; }
 
   // Closes the file.
-  AXOM_FMT_API void close();
+  void close();
 
   // Returns the file size. The size has signed type for consistency with
   // stat::st_size.
-  AXOM_FMT_API long long size() const;
+  long long size() const;
 
   // Attempts to read count bytes from the file into the specified buffer.
-  AXOM_FMT_API size_t read(void* buffer, size_t count);
+  size_t read(void* buffer, size_t count);
 
   // Attempts to write count bytes from the specified buffer to the file.
-  AXOM_FMT_API size_t write(const void* buffer, size_t count);
+  size_t write(const void* buffer, size_t count);
 
   // Duplicates a file descriptor with the dup function and returns
   // the duplicate as a file object.
-  AXOM_FMT_API static file dup(int fd);
+  static file dup(int fd);
 
   // Makes fd be the copy of this file descriptor, closing fd first if
   // necessary.
-  AXOM_FMT_API void dup2(int fd);
+  void dup2(int fd);
 
   // Makes fd be the copy of this file descriptor, closing fd first if
   // necessary.
-  AXOM_FMT_API void dup2(int fd, error_code& ec) AXOM_FMT_NOEXCEPT;
+  void dup2(int fd, std::error_code& ec) noexcept;
 
   // Creates a pipe setting up read_end and write_end file objects for reading
   // and writing respectively.
-  AXOM_FMT_API static void pipe(file& read_end, file& write_end);
+  static void pipe(file& read_end, file& write_end);
 
   // Creates a buffered_file object associated with this file and detaches
   // this file object from the file.
-  AXOM_FMT_API buffered_file fdopen(const char* mode);
+  buffered_file fdopen(const char* mode);
 };
 
 // Returns the memory page size.
 long getpagesize();
 
-namespace detail {
+AXOM_FMT_BEGIN_DETAIL_NAMESPACE
 
 struct buffer_size {
+  buffer_size() = default;
   size_t value = 0;
   buffer_size operator=(size_t val) const {
     auto bs = buffer_size();
@@ -368,23 +388,27 @@ struct ostream_params {
       : ostream_params(params...) {
     this->buffer_size = bs.value;
   }
-};
-}  // namespace detail
 
-static constexpr detail::buffer_size buffer_size;
+// Intel has a bug that results in failure to deduce a constructor
+// for empty parameter packs.
+#  if defined(__INTEL_COMPILER) && __INTEL_COMPILER < 2000
+  ostream_params(int new_oflag) : oflag(new_oflag) {}
+  ostream_params(detail::buffer_size bs) : buffer_size(bs.value) {}
+#  endif
+};
+
+AXOM_FMT_END_DETAIL_NAMESPACE
+
+// Added {} below to work around default constructor error known to
+// occur in Xcode versions 7.2.1 and 8.2.1.
+constexpr detail::buffer_size buffer_size{};
 
 /** A fast output stream which is not thread-safe. */
-class ostream final : private detail::buffer<char> {
+class AXOM_FMT_API ostream final : private detail::buffer<char> {
  private:
   file file_;
 
-  void flush() {
-    if (size() == 0) return;
-    file_.write(data(), size());
-    clear();
-  }
-
-  AXOM_FMT_API void grow(size_t) override final;
+  void grow(size_t) override;
 
   ostream(cstring_view path, const detail::ostream_params& params)
       : file_(path, params.oflag) {
@@ -395,11 +419,18 @@ class ostream final : private detail::buffer<char> {
   ostream(ostream&& other)
       : detail::buffer<char>(other.data(), other.size(), other.capacity()),
         file_(std::move(other.file_)) {
+    other.clear();
     other.set(nullptr, 0);
   }
   ~ostream() {
     flush();
     delete[] data();
+  }
+
+  void flush() {
+    if (size() == 0) return;
+    file_.write(data(), size());
+    clear();
   }
 
   template <typename... T>
@@ -411,13 +442,12 @@ class ostream final : private detail::buffer<char> {
   }
 
   /**
-    Formats ``args`` according to specifications in ``format_str`` and writes
-    the output to the file.
+    Formats ``args`` according to specifications in ``fmt`` and writes the
+    output to the file.
    */
-  template <typename S, typename... Args>
-  void print(const S& format_str, Args&&... args) {
-    format_to(detail::buffer_appender<char>(*this), format_str,
-              std::forward<Args>(args)...);
+  template <typename... T> void print(format_string<T...> fmt, T&&... args) {
+    vformat_to(detail::buffer_appender<char>(*this), fmt,
+               axom::fmt::make_format_args(args...));
   }
 };
 
@@ -427,7 +457,7 @@ class ostream final : private detail::buffer<char> {
 
   * ``<integer>``: Flags passed to `open
     <https://pubs.opengroup.org/onlinepubs/007904875/functions/open.html>`_
-    (``file::WRONLY | file::CREATE`` by default)
+    (``file::WRONLY | file::CREATE | file::TRUNC`` by default)
   * ``buffer_size=<integer>``: Output buffer size
 
   **Example**::
@@ -442,50 +472,7 @@ inline ostream output_file(cstring_view path, T... params) {
 }
 #endif  // AXOM_FMT_USE_FCNTL
 
-#ifdef AXOM_FMT_LOCALE
-// A "C" numeric locale.
-class locale {
- private:
-#  ifdef _WIN32
-  using locale_t = _locale_t;
-
-  static void freelocale(locale_t loc) { _free_locale(loc); }
-
-  static double strtod_l(const char* nptr, char** endptr, _locale_t loc) {
-    return _strtod_l(nptr, endptr, loc);
-  }
-#  endif
-
-  locale_t locale_;
-
- public:
-  using type = locale_t;
-  locale(const locale&) = delete;
-  void operator=(const locale&) = delete;
-
-  locale() {
-#  ifndef _WIN32
-    locale_ = AXOM_FMT_SYSTEM(newlocale(LC_NUMERIC_MASK, "C", nullptr));
-#  else
-    locale_ = _create_locale(LC_NUMERIC, "C");
-#  endif
-    if (!locale_) AXOM_FMT_THROW(system_error(errno, "cannot create locale"));
-  }
-  ~locale() { freelocale(locale_); }
-
-  type get() const { return locale_; }
-
-  // Converts string to floating-point number and advances str past the end
-  // of the parsed input.
-  double strtod(const char*& str) const {
-    char* end = nullptr;
-    double result = strtod_l(str, &end, locale_);
-    str = end;
-    return result;
-  }
-};
-using Locale AXOM_FMT_DEPRECATED_ALIAS = locale;
-#endif  // AXOM_FMT_LOCALE
+AXOM_FMT_MODULE_EXPORT_END
 AXOM_FMT_END_NAMESPACE
 
 #endif  // AXOM_FMT_OS_H_

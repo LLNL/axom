@@ -1,7 +1,7 @@
 #!/bin/sh
 "exec" "python3" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -151,6 +151,10 @@ def main():
                         print("[WARNING: Predefined Docker host-config not found]")
                         print("[ERROR: Could not find any host-configs in any known path. Try giving fully qualified path.]")
                         return 1
+
+            print("[build info]")
+            binfo_str = json.dumps(build_info(),indent=2)
+            print(binfo_str)
 
             test_root = get_build_and_test_root(repo_dir, timestamp)
             test_root = "{0}_{1}".format(test_root, hostconfig.replace(".cmake", "").replace("@","_"))

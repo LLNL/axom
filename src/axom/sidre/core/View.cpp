@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -856,6 +856,20 @@ void View::createNativeLayout(Node& n) const
   // Note: const_cast the pointer to satisfy conduit's interface
   void* data_ptr = const_cast<void*>(m_node.data_ptr());
   n.set_external(m_node.schema(), data_ptr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Copy the metadata for the View.
+ *
+ *************************************************************************
+ */
+void View::copyMetadataToNode(Node& n) const
+{
+  n["state"] = getStateStringName(m_state);
+  n["schema"] = m_schema.to_json();
+  n["is_applied"] = m_is_applied;
 }
 
 /*

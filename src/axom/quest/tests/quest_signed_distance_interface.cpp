@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -234,7 +234,7 @@ void check_analytic_plane(bool use_shared = false)
   EXPECT_FALSE(quest::signed_distance_initialized());
 
 #ifdef REMOVE_FILES
-  std::remove(file.c_str());
+  axom::utilities::filesystem::removeFile(file);
 #endif
 }
 
@@ -365,7 +365,7 @@ TEST(quest_signed_distance_interface, initialize)
 
   // remove temp STL file
 #ifdef REMOVE_FILES
-  std::remove(fileName.c_str());
+  axom::utilities::filesystem::removeFile(fileName);
 #endif
 }
 

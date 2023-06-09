@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -120,28 +120,22 @@ set( mint_sources
 # Make/Install the library
 #------------------------------------------------------------------------------
 set( mint_dependencies
-     core
      slic
      )
 
 if (AXOM_MINT_USE_SIDRE)
-   list( APPEND mint_dependencies sidre conduit::conduit )
+   list( APPEND mint_dependencies sidre)
    blt_list_append( TO mint_dependencies ELEMENTS hdf5 IF HDF5_FOUND )
 endif()
 
 blt_list_append( TO mint_dependencies ELEMENTS RAJA IF RAJA_FOUND )
 
-blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
-
-blt_list_append( TO mint_dependencies ELEMENTS cuda IF ENABLE_CUDA )
-
-blt_add_library(
+axom_add_library(
     NAME       mint
     SOURCES    ${mint_sources}
     HEADERS    ${mint_headers}
     DEPENDS_ON ${mint_dependencies}
     FOLDER     axom/mint
-    OBJECT     TRUE
    )
 
 axom_write_unified_header(NAME    mint

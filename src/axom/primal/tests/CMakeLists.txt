@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,12 +9,15 @@
 set( primal_tests
     primal_bezier_curve.cpp
     primal_bezier_intersect.cpp
+    primal_bezier_patch.cpp
     primal_boundingbox.cpp
+    primal_bounding_box_intersect.cpp
     primal_clip.cpp
     primal_closest_point.cpp
     primal_compute_bounding_box.cpp
     primal_compute_moments.cpp
     primal_curved_polygon.cpp
+    primal_hexahedron.cpp
     primal_in_sphere.cpp
     primal_intersect.cpp
     primal_intersect_impl.cpp
@@ -27,7 +30,6 @@ set( primal_tests
     primal_polyhedron.cpp
     primal_rational_bezier.cpp
     primal_ray_intersect.cpp
-    primal_bounding_box_intersect.cpp
     primal_segment.cpp
     primal_sphere.cpp
     primal_split.cpp
@@ -47,17 +49,13 @@ blt_list_append(
     IF       MFEM_FOUND 
                )
 
-set(primal_test_depends axom fmt gtest)
-
-blt_list_append( TO primal_test_depends ELEMENTS cuda IF ENABLE_CUDA )
-blt_list_append( TO primal_test_depends ELEMENTS blt::hip IF ENABLE_HIP )
-blt_list_append( TO primal_test_depends ELEMENTS openmp IF ENABLE_OPENMP )
+set(primal_test_depends primal fmt gtest)
 
 foreach ( test ${primal_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
 
-   blt_add_executable(
+   axom_add_executable(
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}

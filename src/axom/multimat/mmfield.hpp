@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,12 +19,11 @@ namespace multimat
  * layout (dense/sparse, mat/cell dom, and maybe more). 
  */
 template <typename DataType, typename BiSet = MultiMat::BivariateSetType>
-class MMField2D : public MultiMat::BivariateMapTypeStrideOne<DataType, BiSet>
+class MMField2D : public MultiMat::BivariateMapType<DataType, BiSet>
 {
 public:
   using BiVarSetType = BiSet;
-  using BiVarMapType =
-    MultiMat::BivariateMapTypeStrideOne<DataType, BiVarSetType>;
+  using BiVarMapType = MultiMat::BivariateMapType<DataType, BiVarSetType>;
   using ProductSetType = MultiMat::ProductSetType;
   using RelationSetType = MultiMat::RelationSetType;
 
@@ -47,11 +46,25 @@ public:
   //  const DataType* data_arr = nullptr,
   //  int stride = 1);
   // Constructor given the bivariate set
-  MMField2D(MultiMat& mm,
+  MMField2D(const MultiMat& mm,
             const BiSet*,
-            const std::string& arr_name = "unnamed",
-            const DataType* data_arr = nullptr,
+            const int fieldIdx,
+            axom::ArrayView<DataType> data_arr = {},
             int stride = 1);
+
+  template <typename BiSetType = BiSet,
+            typename Enable = std::enable_if_t<!std::is_abstract<BiSetType>::value>>
+  MMField2D(const MultiMat& mm,
+            const BiSetType&,
+            const int fieldIdx,
+            axom::ArrayView<DataType> data_arr = {},
+            int stride = 1);
+
+  bool operator==(const MMField2D& other) const
+  {
+    return ((m_mm == other.m_mm) && (this->set() == other.set()) &&
+            (this->getMap()->data() == other.getMap()->data()));
+  }
 
   using BiVarMapType::operator();  //why is this needed?
 
@@ -60,12 +73,12 @@ public:
   {
     return operator()(firstIdx);
   }
-  SubFieldType operator()(SetPosition firstIdx)
+  AXOM_HOST_DEVICE SubFieldType operator()(SetPosition firstIdx)
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
     return SubFieldType(this, firstIdx, hasInd);
   }
-  const ConstSubFieldType operator()(SetPosition firstIdx) const
+  AXOM_HOST_DEVICE const ConstSubFieldType operator()(SetPosition firstIdx) const
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
     return ConstSubFieldType(this, firstIdx, hasInd);
@@ -77,7 +90,7 @@ public:
     return BiVarMapType::operator()(firstIdx);
   }
 
-  std::string getName() { return m_field_name; };
+  std::string getName() { return m_mm->getFieldName(m_fieldIdx); };
 
   MultiMat::IndexSet getSubfieldIndexingSet(int idx)
   {
@@ -90,12 +103,12 @@ public:
   bool isMatDom() const { return m_data_layout == DataLayout::MAT_DOM; }
 
 private:
-  MultiMat* m_mm;
+  const MultiMat* m_mm;
 
   DataLayout m_data_layout;
   SparsityLayout m_sparsity_layout;
 
-  std::string m_field_name;
+  int m_fieldIdx;
 };
 
 //////////////////////// Implementation of MMField2D ////////////////////////////
@@ -111,68 +124,40 @@ private:
 
 // Constructor given the biset
 template <typename DataType, typename BiSet>
-inline MMField2D<DataType, BiSet>::MMField2D(MultiMat& mm,
+inline MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
                                              const BiSet* biset,
-                                             const std::string& arr_name,
-                                             const DataType* data_arr,
+                                             const int fieldIdx,
+                                             axom::ArrayView<DataType> data_arr,
                                              int stride)
   :  //call Bivariate map constructor
-  BiVarMapType(biset, DataType(), stride)
+  BiVarMapType(biset, data_arr, stride)
   , m_mm(&mm)
-  , m_field_name(arr_name)
+  , m_fieldIdx(fieldIdx)
 {
   SLIC_ASSERT(stride > 0);
 
-  if(data_arr != nullptr) this->copy(data_arr);
+  m_data_layout = mm.getFieldDataLayout(fieldIdx);
+  m_sparsity_layout = mm.getFieldSparsityLayout(fieldIdx);
+}
 
-  if(biset == mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(biset ==
-          mm.get_mapped_biSet(DataLayout::CELL_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::CELL_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else if(biset == mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::DENSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::DENSE;
-  }
-  else if(biset ==
-          mm.get_mapped_biSet(DataLayout::MAT_DOM, SparsityLayout::SPARSE))
-  {
-    m_data_layout = DataLayout::MAT_DOM;
-    m_sparsity_layout = SparsityLayout::SPARSE;
-  }
-  else
-  {
-    SLIC_ASSERT(false);
-  }
+template <typename DataType, typename BiSet>
+template <typename BiSetType, typename Enable>
+MMField2D<DataType, BiSet>::MMField2D(const MultiMat& mm,
+                                      const BiSetType& bisetValue,
+                                      const int fieldIdx,
+                                      axom::ArrayView<DataType> data_arr,
+                                      int stride)
+  : BiVarMapType(bisetValue, data_arr, stride)
+  , m_mm(&mm)
+  , m_fieldIdx(fieldIdx)
+{
+  SLIC_ASSERT(stride > 0);
 
-  m_mm = &mm;
+  m_data_layout = mm.getFieldDataLayout(fieldIdx);
+  m_sparsity_layout = mm.getFieldSparsityLayout(fieldIdx);
 }
 
 //////////////////////// MMField2D Templated ////////////////////////////
-
-// A helping struct to map a bivariate set to the corresponding SparsityLayout
-template <typename Biset>
-struct MMBiSet2Sparsity
-{ };
-
-template <>
-struct MMBiSet2Sparsity<MultiMat::ProductSetType>
-{
-  SparsityLayout sparsity = SparsityLayout::DENSE;
-};
-
-template <>
-struct MMBiSet2Sparsity<MultiMat::RelationSetType>
-{
-  SparsityLayout sparsity = SparsityLayout::SPARSE;
-};
 
 // Child class of MMField2D, typed with layout (cell/mat dom) and sparsity
 template <typename DataType, DataLayout DataLayoutT, typename BiSet = MultiMat::BivariateSetType>
@@ -182,13 +167,12 @@ class MMField2DTemplated : public MMField2D<DataType, BiSet>
 
 public:
   MMField2DTemplated(MultiMat& mm,
-                     const std::string& arr_name = "unnamed",
-                     const DataType* data_arr = nullptr,
+                     int fieldIdx,
+                     axom::ArrayView<DataType> data_arr = {},
                      int stride = 1)
     : Field2DType(mm,
-                  (BiSet*)mm.get_mapped_biSet(DataLayoutT,
-                                              MMBiSet2Sparsity<BiSet>().sparsity),
-                  arr_name,
+                  mm.getCompatibleBivarSet<BiSet>(fieldIdx),
+                  fieldIdx,
                   data_arr,
                   stride)
   { }

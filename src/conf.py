@@ -20,15 +20,6 @@ import shlex
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
 
-    # Makes sure directory exists for doxygen output
-    cwd=os.getcwd()
-    buildpath=os.path.join(cwd,"_build")
-    if (os.path.isdir(buildpath) == 0):
-        os.mkdir(buildpath)
-    htmlpath=os.path.join(buildpath,"html")
-    if (os.path.isdir(htmlpath) == 0):
-        os.mkdir(htmlpath)
-
     # Modify Doxyfile for ReadTheDocs compatibility
     with open('./docs/doxygen/Doxyfile.in', 'r') as f:
         fdata = f.read()
@@ -36,7 +27,7 @@ if read_the_docs_build:
     with open('./docs/doxygen/Doxyfile.in', 'w') as f:
         f.write(fdata)
     with open('./docs/doxygen/Doxyfile.in', 'a') as f:
-        f.write("\nOUTPUT_DIRECTORY=./_build/html/doxygen")
+        f.write("\nOUTPUT_DIRECTORY=../_readthedocs/html/doxygen")
 
     # Call doxygen
     from subprocess import call
@@ -86,7 +77,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Axom'
-copyright = u'2017-2022, Lawrence Livermore National Security, LLNS'
+copyright = u'2017-2023, Lawrence Livermore National Security, LLNS'
 
 # -- Option for numbering figures/tables/etc.-----------------------------------
 # Note: numfig requires Sphinx (1.3+)
@@ -106,7 +97,7 @@ numfig = True
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'English'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

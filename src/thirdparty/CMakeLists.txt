@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,7 +24,6 @@ if (LUA_FOUND)
   install(FILES        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol.hpp
                        ${PROJECT_SOURCE_DIR}/thirdparty/axom/sol_forward.hpp
           DESTINATION include/axom )
-  install(EXPORT axom-targets DESTINATION lib/cmake)
 
   set(SOL_FOUND TRUE CACHE INTERNAL "")
 else()
@@ -49,7 +48,6 @@ install(TARGETS              cli11
         INCLUDES DESTINATION include)
 install(FILES       ${PROJECT_SOURCE_DIR}/thirdparty/axom/CLI11.hpp
         DESTINATION include/axom )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(CLI11_FOUND)
@@ -78,13 +76,14 @@ set(fmt_headers
     axom/fmt/color.h
     axom/fmt/compile.h
     axom/fmt/core.h
-    axom/fmt/format-inl.h
     axom/fmt/format.h
-    axom/fmt/locale.h
+    axom/fmt/format-inl.h
     axom/fmt/os.h
     axom/fmt/ostream.h
     axom/fmt/printf.h
     axom/fmt/ranges.h
+    axom/fmt/std.h
+    axom/fmt/xchar.h
     )
 
 blt_add_library(NAME    fmt
@@ -111,7 +110,6 @@ install(FILES   ${axom_fmt_headers}
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/fmt
         DESTINATION include/axom
         )
-install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -177,8 +175,6 @@ if (AXOM_ENABLE_SPARSEHASH)
 
     install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/axom/sparsehash
             DESTINATION include/axom)
-
-    install(EXPORT axom-targets DESTINATION lib/cmake)
 endif()
 
 #------------------------------------------------------------------------------

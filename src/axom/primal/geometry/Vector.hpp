@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,6 +11,7 @@
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/fmt.hpp"
 
 // Primal includes
 #include "axom/primal/constants.hpp"
@@ -709,5 +710,10 @@ inline Vector<T, NDIMS> Vector<T, NDIMS>::make_vector(const T& x,
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Vector using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Vector<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_VECTOR_HPP_

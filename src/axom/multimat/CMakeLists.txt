@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,17 +26,22 @@ set(multimat_sources
     )
 
 #------------------------------------------------------------------------------
+# Specify multimat dependencies
+#------------------------------------------------------------------------------
+set(multimat_depends_on slam)
+
+blt_list_append( TO multimat_depends_on ELEMENTS RAJA IF RAJA_FOUND )
+blt_list_append( TO multimat_depends_on ELEMENTS umpire IF UMPIRE_FOUND )
+
+#------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(multimat_depends_on core slam slic)
-
-blt_add_library(
+axom_add_library(
     NAME        multimat
     SOURCES     ${multimat_sources}
     HEADERS     ${multimat_headers}
     DEPENDS_ON  ${multimat_depends_on}
     FOLDER      axom/multimat
-    OBJECT      TRUE
     )
 
 axom_write_unified_header(NAME    multimat

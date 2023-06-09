@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include "shaping_helpers.hpp"
 
 #include "axom/config.hpp"
@@ -5,7 +10,6 @@
 #include "axom/slic.hpp"
 
 #include "axom/fmt.hpp"
-#include "axom/fmt/locale.h"
 
 #ifndef AXOM_USE_MFEM
   #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
@@ -123,10 +127,7 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
   inoutQFuncs.Register("positions", pos_coef, true);
 }
 
-/**
- * Compute volume fractions function for shape on a grid of resolution \a gridRes
- * in region defined by bounding box \a queryBounds
- */
+/// Generate a volume fraction from a quadrature field for \a matField using FCT
 void computeVolumeFractions(const std::string& matField,
                             mfem::DataCollection* dc,
                             QFunctionCollection& inoutQFuncs,
@@ -140,8 +141,8 @@ void computeVolumeFractions(const std::string& matField,
   // Grab a pointer to the inout samples QFunc
   mfem::QuadratureFunction* inout = inoutQFuncs.Get(matField);
 
-  const int sampleOrder = inout->GetSpace()->GetElementIntRule(0).GetOrder();
-  const int sampleNQ = inout->GetSpace()->GetElementIntRule(0).GetNPoints();
+  const int sampleOrder = inout->GetSpace()->GetIntRule(0).GetOrder();
+  const int sampleNQ = inout->GetSpace()->GetIntRule(0).GetNPoints();
   const int sampleSZ = inout->GetSpace()->GetSize();
   SLIC_INFO(axom::fmt::format(std::locale("en_US.UTF-8"),
                               "In computeVolumeFractions(): sample order {} | "
@@ -159,24 +160,35 @@ void computeVolumeFractions(const std::string& matField,
                               dim,
                               NE));
 
-  // Project QField onto volume fractions field
+  // Access or create a registered volume fraction grid function from the data collection
+  mfem::FiniteElementSpace* fes = nullptr;
+  mfem::GridFunction* volFrac = nullptr;
+  if(dc->HasField(volFracName))
+  {
+    volFrac = dc->GetField(volFracName);
+    fes = volFrac->FESpace();
+  }
+  else
+  {
+    const auto basis = mfem::BasisType::Positive;
+    auto* fec = new mfem::L2_FECollection(outputOrder, dim, basis);
+    fes = new mfem::FiniteElementSpace(mesh, fec);
+    volFrac = new mfem::GridFunction(fes);
+    volFrac->MakeOwner(fec);
 
-  mfem::L2_FECollection* fec =
-    new mfem::L2_FECollection(outputOrder, dim, mfem::BasisType::Positive);
-  mfem::FiniteElementSpace* fes = new mfem::FiniteElementSpace(mesh, fec);
-  mfem::GridFunction* volFrac = new mfem::GridFunction(fes);
-  volFrac->MakeOwner(fec);
-  dc->RegisterField(volFracName, volFrac);
+    dc->RegisterField(volFracName, volFrac);
+  }
 
+  // Project QField onto volume fractions field using flux corrected transport (FCT)
+  // to keep the range of values between 0 and 1
   axom::utilities::Timer timer(true);
   {
-    mfem::MassIntegrator mass_integrator;  // use the default for exact integration; lower for approximate
-
+    mfem::MassIntegrator mass_integrator;
     mfem::QuadratureFunctionCoefficient qfc(*inout);
     mfem::DomainLFIntegrator rhs(qfc);
 
-    // assume all elts are the same
-    const auto& ir = inout->GetSpace()->GetElementIntRule(0);
+    const auto& ir =
+      inout->GetSpace()->GetIntRule(0);  // assume all elements are the same
     rhs.SetIntRule(&ir);
 
     mfem::DenseMatrix m;
@@ -196,9 +208,6 @@ void computeVolumeFractions(const std::string& matField,
       rhs.AssembleRHSElementVect(*el, *T, b);
       mInv.Factor(m);
 
-      // Use FCT limiting -- similar to Remap
-      // Limit the function to be between 0 and 1
-      // Q: Is there a better way limiting algorithm for this?
       if(one.Size() != b.Size())
       {
         one.SetSize(b.Size());
@@ -366,7 +375,7 @@ void computeVolumeFractionsIdentity(mfem::DataCollection* dc,
                                     mfem::QuadratureFunction* inout,
                                     const std::string& name)
 {
-  const int order = inout->GetSpace()->GetElementIntRule(0).GetOrder();
+  const int order = inout->GetSpace()->GetIntRule(0).GetOrder();
 
   mfem::Mesh* mesh = dc->GetMesh();
   const int dim = mesh->Dimension();

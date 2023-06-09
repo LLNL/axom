@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -556,6 +556,7 @@ void check_insert_iterator(Array<T>& v)
     capacity = calc_new_capacity(v, 1);
     typename axom::Array<T>::ArrayIterator ret3 = v.insert(v.begin(), 1, i);
     EXPECT_EQ(ret3, v.begin());
+    EXPECT_EQ(i, v.front());
     size++;
   }
 
@@ -641,6 +642,7 @@ void check_emplace(Array<T>& v)
     capacity = calc_new_capacity(v, 1);
     typename axom::Array<T>::ArrayIterator ret3 = v.emplace(v.begin(), i);
     EXPECT_EQ(ret3, v.begin());
+    EXPECT_EQ(i, v.front());
     size++;
   }
 
@@ -749,7 +751,7 @@ void check_external_view(ArrayView<T>& v)
   EXPECT_EQ(data_ptr, v.data());
 }
 
-#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
 
 template <typename T>
 __global__ void assign_raw(T* data, int N)
@@ -823,7 +825,7 @@ void check_device(Array<T, DIM, SPACE>& v)
 template <typename T>
 __global__ void assign_raw_2d(T* data, int M, int N)
 {
-  for(int i = 0; i < N; i++)
+  for(int i = 0; i < M; i++)
   {
     for(int j = 0; j < N; j++)
     {
@@ -917,7 +919,7 @@ void check_device_2D(Array<T, 2, SPACE>& v)
   }
 }
 
-#endif  // defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#endif  // defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
 
 } /* end namespace internal */
 
@@ -955,7 +957,7 @@ TEST(core_array, checkFill)
 }
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
 TEST(core_array, checkFillDevice)
 {
   for(IndexType capacity = 2; capacity < 512; capacity *= 2)
@@ -1235,7 +1237,9 @@ TEST(core_array, checkIterator)
   }
 
   EXPECT_EQ(*v_int.begin(), 0);
+  EXPECT_EQ(v_int.front(), 0);
   EXPECT_EQ(*(v_int.end() - 1), SIZE - 1);
+  EXPECT_EQ(v_int.back(), SIZE - 1);
   EXPECT_EQ(v_int.size(), SIZE);
 
   /* Erase nothing */
@@ -1251,7 +1255,9 @@ TEST(core_array, checkIterator)
 
   EXPECT_EQ(ret2, v_int.begin());
   EXPECT_EQ(*v_int.begin(), SIZE / 2);
+  EXPECT_EQ(v_int.front(), SIZE / 2);
   EXPECT_EQ(*(v_int.end() - 1), SIZE - 1);
+  EXPECT_EQ(v_int.back(), SIZE - 1);
   EXPECT_EQ(v_int.size(), SIZE / 2);
 
   /* Erase first, last elements */
@@ -1259,11 +1265,13 @@ TEST(core_array, checkIterator)
 
   EXPECT_EQ(ret3, v_int.begin());
   EXPECT_EQ(*v_int.begin(), SIZE / 2 + 1);
+  EXPECT_EQ(v_int.front(), SIZE / 2 + 1);
 
   axom::Array<int>::ArrayIterator ret4 = v_int.erase(v_int.end() - 1);
 
   EXPECT_EQ(ret4, v_int.end());
   EXPECT_EQ(*(v_int.end() - 1), SIZE - 2);
+  EXPECT_EQ(v_int.back(), SIZE - 2);
 
   /* Clear the rest of the array */
   v_int.clear();
@@ -1271,14 +1279,12 @@ TEST(core_array, checkIterator)
 }
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_GPU) && defined(AXOM_GPUCC) && defined(AXOM_USE_UMPIRE)
 void checkIteratorDeviceImpl()
 {
   constexpr int SIZE = 1000;
   axom::Array<int, 1, axom::MemorySpace::Host> v_int_host(SIZE);
   axom::Array<int, 1, axom::MemorySpace::Device> v_int(SIZE);
-
-  auto v_int_view = v_int.view();
 
   /* Push 0...999 elements */
   for(int i = 0; i < SIZE; i++)
@@ -1633,11 +1639,65 @@ TEST(core_array, check_multidimensional_view)
   }
 }
 
+struct Elem
+{
+  double earth, wind, fire;
+};
+//------------------------------------------------------------------------------
+TEST(core_array, check_multidimensional_view_spacing)
+{
+  // NUM_COMPS is the spacing between consecutive values of the
+  // same type (earth, wind or fire).
+  constexpr int NUM_COMPS = sizeof(Elem) / sizeof(double);
+  constexpr int NUM_DIMS = 3;
+
+  // Initialize a multidimensional, multicomponent array.
+  StackArray<IndexType, NUM_DIMS> shape {3, 2, 4};
+  Array<Elem, 3> mdElemArray(shape[0], shape[1], shape[2]);
+  for(int i = 0; i < shape[0]; ++i)
+  {
+    for(int j = 0; j < shape[1]; ++j)
+    {
+      for(int k = 0; k < shape[2]; ++k)
+      {
+        int pvalue = 1000 * i + 100 * j + 10 * k;
+        mdElemArray(i, j, k).earth = pvalue + .1;
+        mdElemArray(i, j, k).wind = pvalue + .2;
+        mdElemArray(i, j, k).fire = pvalue + .3;
+      }
+    }
+  }
+
+  // Verify views of the 3 individual components in mdElemArray.
+  IndexType spacing = NUM_COMPS;
+  ArrayView<double, 3> earthOnly(&mdElemArray(0, 0, 0).earth, shape, spacing);
+  ArrayView<double, 3> windOnly(&mdElemArray(0, 0, 0).wind, shape, spacing);
+  ArrayView<double, 3> fireOnly(&mdElemArray(0, 0, 0).fire, shape, spacing);
+
+  for(int i = 0; i < shape[0]; ++i)
+  {
+    for(int j = 0; j < shape[1]; ++j)
+    {
+      for(int k = 0; k < shape[2]; ++k)
+      {
+        int pvalue = 1000 * i + 100 * j + 10 * k;
+        EXPECT_EQ(earthOnly(i, j, k), pvalue + .1);
+        EXPECT_EQ(windOnly(i, j, k), pvalue + .2);
+        EXPECT_EQ(fireOnly(i, j, k), pvalue + .3);
+
+        EXPECT_EQ(&earthOnly(i, j, k), &mdElemArray(i, j, k).earth);
+        EXPECT_EQ(&windOnly(i, j, k), &mdElemArray(i, j, k).wind);
+        EXPECT_EQ(&fireOnly(i, j, k), &mdElemArray(i, j, k).fire);
+      }
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 TEST(core_array, checkDevice)
 {
-#if !defined(AXOM_GPUCC) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
+#if !defined(AXOM_USE_GPU) || !defined(AXOM_GPUCC) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
   GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
                   "in device code";
 #else
@@ -1672,8 +1732,8 @@ TEST(core_array, checkDevice)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDevice2D)
 {
-#if !defined(AXOM_GPUCC) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
+#if !defined(AXOM_USE_GPU) || !defined(AXOM_GPUCC) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
   GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
                   "in device code";
 #else
@@ -1736,8 +1796,8 @@ TEST(core_array, checkDefaultInitialization)
 //------------------------------------------------------------------------------
 TEST(core_array, checkDefaultInitializationDevice)
 {
-#if !defined(AXOM_GPUCC) || !defined(AXOM_USE_UMPIRE) || \
-  !defined(UMPIRE_ENABLE_DEVICE)
+#if !defined(AXOM_USE_GPU) || !defined(AXOM_GPUCC) || \
+  !defined(AXOM_USE_UMPIRE) || !defined(UMPIRE_ENABLE_DEVICE)
   GTEST_SKIP() << "CUDA or HIP is not available, skipping tests that use Array "
                   "in device code";
 #else
@@ -1921,6 +1981,78 @@ TEST(core_array, checkVariadicCtors)
   Array<int, 3> arr10(s, i, s);
   Array<int, 3> arr11(s, s, i);
   Array<int, 3> arr12(s, s, s);
+}
+
+//------------------------------------------------------------------------------
+
+TEST(core_array, check_subspan_range)
+{
+  int m = 10;
+  int n = 3;
+  int l = 5;
+  Array<int> arr(m);
+
+  ArrayView<int> arrv1(arr);
+  EXPECT_EQ(arrv1.size(), arr.size());
+
+  ArrayView<int> arrv2 = arrv1.subspan(n);
+  EXPECT_EQ(arrv2.size() + n, arrv1.size());
+  EXPECT_EQ(&arrv2[0], &arr[n]);
+  EXPECT_EQ(&arrv2[arrv2.size() - 1], &arr[arr.size() - 1]);
+
+  ArrayView<int> arrv3 = arrv1.subspan(n, l);
+  EXPECT_EQ(arrv3.size(), l);
+  EXPECT_EQ(&arrv3[0], &arr[n]);
+  EXPECT_EQ(&arrv3[arrv3.size() - 1], &arr[n + l - 1]);
+}
+
+//------------------------------------------------------------------------------
+
+template <typename DataType>
+void test_resize_with_stackarray(DataType value)
+{
+  const int I_DIMS = 3;
+  const int J_DIMS = 5;
+  const int K_DIMS = 7;
+  Array<DataType, 2> arr2;
+
+  StackArray<axom::IndexType, 2> dims2 = {I_DIMS, J_DIMS};
+  arr2.resize(dims2, value);
+  EXPECT_EQ(arr2.size(), I_DIMS * J_DIMS);
+  EXPECT_EQ(arr2.shape()[0], I_DIMS);
+  EXPECT_EQ(arr2.shape()[1], J_DIMS);
+  for(int i = 0; i < I_DIMS; i++)
+  {
+    for(int j = 0; j < J_DIMS; j++)
+    {
+      EXPECT_EQ(arr2[i][j], value);
+    }
+  }
+
+  Array<DataType, 3> arr3;
+
+  StackArray<axom::IndexType, 3> dims3 = {I_DIMS, J_DIMS, K_DIMS};
+  arr3.resize(dims3, value);
+  EXPECT_EQ(arr3.size(), I_DIMS * J_DIMS * K_DIMS);
+  EXPECT_EQ(arr3.shape()[0], I_DIMS);
+  EXPECT_EQ(arr3.shape()[1], J_DIMS);
+  EXPECT_EQ(arr3.shape()[2], K_DIMS);
+  for(int i = 0; i < I_DIMS; i++)
+  {
+    for(int j = 0; j < J_DIMS; j++)
+    {
+      for(int k = 0; k < K_DIMS; k++)
+      {
+        EXPECT_EQ(arr3[i][j][k], value);
+      }
+    }
+  }
+}
+
+TEST(core_array, resize_stackarray)
+{
+  test_resize_with_stackarray<bool>(false);
+  test_resize_with_stackarray<int>(-1);
 }
 
 } /* end namespace axom */

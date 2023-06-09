@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -165,10 +165,10 @@ bool compareData(axom::ArrayView<ElemType> a, axom::ArrayView<ElemType> b)
 
 // Tests several types of indirection sets
 using MyTypes =
-  ::testing::Types<slam::CArrayIndirectionSet<axom::int32, axom::int64>,
-                   slam::VectorIndirectionSet<axom::int32, axom::int64>,
-                   slam::ArrayIndirectionSet<axom::int32, axom::int64>,
-                   slam::ArrayViewIndirectionSet<axom::int32, axom::int64>>;
+  ::testing::Types<slam::CArrayIndirectionSet<std::int32_t, std::int64_t>,
+                   slam::VectorIndirectionSet<std::int32_t, std::int64_t>,
+                   slam::ArrayIndirectionSet<std::int32_t, std::int64_t>,
+                   slam::ArrayViewIndirectionSet<std::int32_t, std::int64_t>>;
 
 TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
 
@@ -199,7 +199,7 @@ TYPED_TEST(IndirectionSetTester, constuct)
       << "IndirectionSet not valid until we set the indirection buffer";
 
     // Add data to the set
-    this->getDataBuffer(s.data());
+    this->getDataBuffer(s.ptr());
 
     EXPECT_FALSE(s.empty());
     EXPECT_EQ(MAX_SET_SIZE, s.size());
@@ -372,10 +372,10 @@ TYPED_TEST(IndirectionSetTester, equality)
   // Test equality against a set with the same array
   SetType s0_b(typename SetType::SetBuilder()  //
                  .size(MAX_SET_SIZE)           //
-                 .data(s0.data()));
+                 .data(s0.ptr()));
   EXPECT_TRUE(s0_b.isValid());
   EXPECT_EQ(s0, s0_b);
-  EXPECT_EQ(s0.data(), s0_b.data());
+  EXPECT_EQ(s0.ptr(), s0_b.ptr());
 
   // Test equality against a set with a different array (same values)
 

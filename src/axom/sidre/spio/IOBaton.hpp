@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,6 +22,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
+#include "axom/export/sidre.h"
 
 namespace axom
 {
@@ -100,7 +101,7 @@ private:
 
   void setupReducedRanks();
 
-  static const int s_invalid_rank_id;
+  AXOM_SIDRE_EXPORT static const int s_invalid_rank_id;
 
   MPI_Comm m_mpi_comm;
 

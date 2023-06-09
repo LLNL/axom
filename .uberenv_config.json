@@ -4,12 +4,12 @@
 "package_final_phase": "initconfig",
 "package_source_dir": "../..",
 "spack_url": "https://github.com/spack/spack.git",
-"spack_commit": "30f239478285d721b5b296a7715c65c2b8972f37",
+"spack_commit": "af0f0942920ffb1fd15e5458e9796f4bd7c8a9d1",
 "spack_configs_path": "scripts/spack/configs",
 "spack_packages_path": "scripts/spack/packages",
 "spack_concretizer": "clingo",
 "vcpkg_url": "https://github.com/microsoft/vcpkg",
-"vcpkg_commit": "cef0b3ec767df6e83806899fe9525f6cf8d7bc91",
+"vcpkg_commit": "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2",
 "vcpkg_triplet": "x64-windows",
 "vcpkg_ports_path": "scripts/vcpkg_ports"
 }

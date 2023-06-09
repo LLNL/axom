@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,6 +11,7 @@
 #define SLAM_UTILITIES_H_
 
 #include "axom/core.hpp"
+#include "axom/fmt.hpp"
 
 #include <string>
 #include <iostream>
@@ -167,5 +168,10 @@ T distance(const Point3<T>& pt1, const Point3<T>& pt2)
 }  // end namespace util
 }  // end namespace slam
 }  // end namespace axom
+
+/// Overload to format an axom::slam::util::Point3 using fmt
+template <typename DataType>
+struct axom::fmt::formatter<axom::slam::util::Point3<DataType>> : ostream_formatter
+{ };
 
 #endif  //  SLAM_UTILITIES_H_

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,13 +13,15 @@
     - if: '$CI_COMMIT_BRANCH =~ /_qnone/ || $ON_TIOGA == "OFF"' #run except if ...
       when: never
     - when: on_success
+  before_script:
+    - module load cmake/3.21.1
 
 ####
 # Template
 .src_build_on_tioga:
   stage: build
   variables:
-    ALLOC_COMMAND: "flux mini run --time-limit=25m --nodes=1"
+    ALLOC_COMMAND: "flux mini run --exclusive --time-limit=25m --nodes=1"
     EXTRA_OPTIONS: "--test-serial"
   extends: [.src_build_script, .on_tioga, .src_workflow]
   needs: []
@@ -27,13 +29,13 @@
 .full_build_on_tioga:
   stage: build
   variables:
-    ALLOC_COMMAND: "flux mini run --time-limit=60m --nodes=1"
+    ALLOC_COMMAND: "flux mini run --exclusive --time-limit=60m --nodes=1"
   extends: [.full_build_script, .on_tioga, .full_workflow]
   needs: []
 
 ####
 # PR Build jobs
-tioga-clang_14_0_0_hip-src:
+tioga-clang_14_0_0_hip_5_1_1-src:
   variables:
     COMPILER: "clang@14.0.0_hip"
     HOST_CONFIG: "tioga-toss_4_x86_64_ib_cray-${COMPILER}.cmake"
@@ -42,7 +44,7 @@ tioga-clang_14_0_0_hip-src:
 
 ####
 # Full Build jobs
-tioga-clang_14_0_0_hip-full:
+tioga-clang_14_0_0_hip_5_1_1-full:
   variables:
     COMPILER: "clang@14.0.0_hip"
     SPEC: "%${COMPILER}~openmp+rocm+mfem+c2c"

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -232,7 +232,7 @@ void check_fields(const Mesh* mesh, int assoc, bool newValues = false)
   {
     for(IndexType j = 0; j < num_components; ++j)
     {
-      EXPECT_EQ(data[i * num_components + j], fieldValue(i, j));
+      EXPECT_DOUBLE_EQ(data[i * num_components + j], fieldValue(i, j));
     }
   }
 }

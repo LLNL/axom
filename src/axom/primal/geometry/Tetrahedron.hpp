@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,6 +64,57 @@ public:
               const PointType& D)
     : m_points {A, B, C, D}
   { }
+
+  /*!
+   * \brief Tetrahedron constructor from an array of Points
+   *
+   * \param [in] pts An array containing at least 4 Points.
+   *
+   * \note It is the responsiblity of the caller to pass
+   *       an array with at least 4 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Tetrahedron(const PointType* pts)
+  {
+    for(int i = 0; i < NUM_TET_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Tetrahedron constructor from an Array of Points.
+   *
+   * \param [in] pts An ArrayView containing 4 Points.
+   */
+  AXOM_HOST_DEVICE
+  explicit Tetrahedron(const axom::ArrayView<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_TET_VERTS);
+
+    for(int i = 0; i < NUM_TET_VERTS; i++)
+    {
+      m_points[i] = pts[i];
+    }
+  }
+
+  /*!
+   * \brief Tetrahedron constructor from an initializer list of Points
+   *
+   * \param [in] pts an initializer list containing 4 Points
+   */
+  AXOM_HOST_DEVICE
+  explicit Tetrahedron(std::initializer_list<PointType> pts)
+  {
+    SLIC_ASSERT(pts.size() == NUM_TET_VERTS);
+
+    int i = 0;
+    for(const auto& pt : pts)
+    {
+      m_points[i] = pt;
+      i++;
+    }
+  }
 
   /*!
    * \brief Index operator to get the i^th vertex
@@ -283,5 +334,11 @@ std::ostream& operator<<(std::ostream& os, const Tetrahedron<T, NDIMS>& tet)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::Tetrahedron using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::Tetrahedron<T, NDIMS>>
+  : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_TETRAHEDRON_HPP_

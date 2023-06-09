@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,7 +42,7 @@ set(sidre_sources
     core/AttrValues.cpp )
 
 # Add spio headers and sources when MPI is available
-if(ENABLE_MPI)
+if(AXOM_ENABLE_MPI)
    list(APPEND sidre_headers
         spio/IOManager.hpp
         spio/IOBaton.hpp )
@@ -80,7 +80,7 @@ if (ENABLE_FORTRAN)
     )
 
     # Add spio's C API when MPI is available
-    if(ENABLE_MPI)
+    if(AXOM_ENABLE_MPI)
         list(APPEND sidre_headers
              spio/interface/c_fortran/wrapIOManager.h
              spio/interface/c_fortran/typesSPIO.h
@@ -101,9 +101,9 @@ endif()
 # Build and install the library
 #------------------------------------------------------------------------------
 set(sidre_depends
-    core
+    slic
     conduit::conduit
-    slic)
+    )
 
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO sidre_depends ELEMENTS sparsehash IF SPARSEHASH_FOUND)
@@ -112,20 +112,18 @@ if(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
     blt_list_append(TO sidre_depends ELEMENTS fmt)
 endif()
 
-# Include additional dependencides for spio when MPI is available
-if(ENABLE_MPI)
-    list(APPEND sidre_depends fmt mpi)
-    blt_list_append(TO sidre_depends ELEMENTS conduit::conduit_mpi IF ENABLE_MPI)
+# Include additional dependencies for spio when MPI is available
+if(AXOM_ENABLE_MPI)
+    list(APPEND sidre_depends conduit::conduit_mpi fmt)
     blt_list_append(TO sidre_depends ELEMENTS scr IF SCR_FOUND)
 endif()
 
 
-blt_add_library( NAME       sidre
+axom_add_library(NAME       sidre
                  SOURCES    ${sidre_sources}
                  HEADERS    ${sidre_headers}
                  DEPENDS_ON ${sidre_depends}
-                 FOLDER     axom/sidre
-                 OBJECT     TRUE )
+                 FOLDER     axom/sidre)
 
 axom_write_unified_header(NAME    sidre
                           HEADERS ${sidre_headers})
@@ -134,7 +132,7 @@ axom_install_component(NAME    sidre
                        HEADERS ${sidre_headers}
                        )
 
-if(ENABLE_FORTRAN AND ENABLE_MPI)
+if(ENABLE_FORTRAN AND AXOM_ENABLE_MPI)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)
 endif()
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -444,7 +444,7 @@ struct Input
   int dimension {2};
   std::vector<double> boundsMin;
   std::vector<double> boundsMax;
-  std::string outputProtocol = SIDRE_DEFAULT_PROTOCOL;
+  std::string outputProtocol = sidre::Group::getDefaultIOProtocol();
 
   const std::set<std::string> s_validProtocols {"json",
                                                 "sidre_json"

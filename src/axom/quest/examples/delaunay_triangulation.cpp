@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,7 +30,6 @@ struct Input
   std::vector<double> boundsMin;
   std::vector<double> boundsMax;
 
-private:
 public:
   bool shouldOutputSteps() const { return numOutputSteps != 0; }
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -110,6 +110,12 @@ else()
         string(FIND  "${mfem_tpl_lnk_flags}" "\n" mfem_tpl_lnl_flags_end_pos )
         string(SUBSTRING "${mfem_tpl_lnk_flags}" 0 ${mfem_tpl_lnl_flags_end_pos} mfem_tpl_lnk_flags)
         string(STRIP "${mfem_tpl_lnk_flags}" mfem_tpl_lnk_flags)
+
+        # filter out items containing "Xlinker"
+        set(_mfem_tpl_list ${mfem_tpl_lnk_flags})
+        separate_arguments(_mfem_tpl_list)
+        list(FILTER _mfem_tpl_list EXCLUDE REGEX Xlinker)
+        list(JOIN _mfem_tpl_list " " mfem_tpl_lnk_flags)
     else()
         message(WARNING "No third party library flags found in ${MFEM_CFG_DIR}/config.mk")
     endif()
@@ -118,7 +124,7 @@ else()
 
     # Check if MFEM was built with CUDA
     if(mfem_cfg_file_txt MATCHES "MFEM_USE_CUDA += YES")
-        if(NOT ENABLE_CUDA)
+        if(NOT AXOM_ENABLE_CUDA)
             message(WARNING "MFEM was built with CUDA but CUDA is not enabled")
         endif()
         list(APPEND MFEM_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
@@ -129,7 +135,7 @@ else()
 
     # Check if MFEM was built with MPI
     if(mfem_cfg_file_txt MATCHES "MFEM_USE_MPI += YES")
-        if(NOT ENABLE_MPI)
+        if(NOT AXOM_ENABLE_MPI)
             message(WARNING "MFEM was built with MPI but MPI is not enabled")
         endif()
         set(MFEM_USE_MPI ON CACHE BOOL "")

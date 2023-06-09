@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,12 +24,12 @@ set(tinyHydro_lib_sources
     )
 
 
-set(slam_tiny_hydro_lib_depends_on core slam slic fmt)
+set(slam_tiny_hydro_lib_depends_on slam fmt)
 
 #------------------------------------------------------------------------------
 # Build the tinyHydro library
 #------------------------------------------------------------------------------
-blt_add_library(
+axom_add_library(
     NAME        slam_tinyHydro_ex
     SOURCES     ${tinyHydro_lib_sources}
                 ${tinyHydro_lib_headers}
@@ -37,17 +37,15 @@ blt_add_library(
     FOLDER      axom/slam/examples 
     OBJECT      TRUE )
 
-list(APPEND slam_tiny_hydro_tests_depends_on slam_tinyHydro_ex)
-
 #------------------------------------------------------------------------------
 # Add gtest based tests for tinyHydro
 #------------------------------------------------------------------------------
 if(AXOM_ENABLE_TESTS)
-    blt_add_executable(
+    axom_add_executable(
         NAME        slam_tinyHydro_unitTests_ex
         SOURCES     tests/slam_tinyHydro_unitTests.cpp
         OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} gtest
+        DEPENDS_ON  slam_tinyHydro_ex gtest
         FOLDER      axom/slam/examples )
 
     axom_add_test(
@@ -58,11 +56,11 @@ endif()
 #------------------------------------------------------------------------------
 # Add the standalone executables for the sod example
 #------------------------------------------------------------------------------
-blt_add_executable(
+axom_add_executable(
     NAME        slam_tinyHydro_sod_ex
     SOURCES     tests/slam_tinyHydro_sod1DTwoPart.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} 
+    DEPENDS_ON  slam_tinyHydro_ex 
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS)
@@ -75,10 +73,10 @@ endif()
 # Add the standalone executables for the sedov example
 # Note: Not a test since the runtime is a bit high in debug mode (~40s)
 #------------------------------------------------------------------------------
-blt_add_executable(
+axom_add_executable(
     NAME        slam_tinyHydro_sedov_ex
     SOURCES     tests/slam_tinyHydro_sedovTwoPart.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on}
+    DEPENDS_ON  slam_tinyHydro_ex
     FOLDER      axom/slam/examples )
 

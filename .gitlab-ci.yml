@@ -1,9 +1,10 @@
-# Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 variables:
+  LLNL_SERVICE_USER: atk
   GIT_SUBMODULE_STRATEGY: recursive
   PROJECT_ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
   BUILD_ROOT: ${CI_PROJECT_DIR}
@@ -28,7 +29,7 @@ stages:
 .src_build_script:
   script:
     # Use pre-existing allocation if any
-    - JOBID=$(if [[ "$SYS_TYPE" == "toss_3_x86_64_ib" ]]; then squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A; fi)
+    - export JOBID=$(if [[ "$SYS_TYPE" == "toss_4_x86_64_ib" ]]; then squeue -h --name=${PROJECT_ALLOC_NAME} --format=%A; fi)
     - ASSIGN_ID=$(if [[ -n "${JOBID}" ]]; then echo "--jobid=${JOBID}"; fi)
     # BUILD + TEST
     - echo -e "\e[0Ksection_start:$(date +%s):src_build_and_test\r\e[0KSource Build and Test ${CI_PROJECT_NAME}"
@@ -49,12 +50,12 @@ stages:
   artifacts:
     paths:
       - ${FULL_BUILD_ROOT}/${SYS_TYPE}/*/_axom_build_and_test_*/output.log*.txt
-      - ${FULL_BUILD_ROOT}}/${SYS_TYPE}/*/_axom_build_and_test_*/build-*/output.log*.txt
+      - ${FULL_BUILD_ROOT}/${SYS_TYPE}/*/_axom_build_and_test_*/build-*/output.log*.txt
     reports:
       junit: ${FULL_BUILD_ROOT}/${SYS_TYPE}/*/_axom_build_and_test_*/build-*/junit.xml
 
 # This is where jobs are included
 include:
-  - local: .gitlab/build_ruby.yml
+  - local: .gitlab/build_quartz.yml
   - local: .gitlab/build_lassen.yml
   - local: .gitlab/build_tioga.yml

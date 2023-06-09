@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -144,7 +144,8 @@ private:
     m_qspace = new mfem::QuadratureSpace(m_mesh, /*order=*/1);
     // Set the data to nullptr so the datacollection will initialize it with
     // its own managed data (needed for a restart)
-    m_qfunc = new mfem::QuadratureFunction(m_qspace, nullptr);
+    m_qfunc = new mfem::QuadratureFunction(m_qspace);
+    m_qfunc->NewDataAndSize(nullptr, m_qfunc->GetSpace()->GetSize());
     m_datacoll.RegisterQField("qpt_data", m_qfunc);
     *m_qfunc = 0.0;
 
@@ -167,7 +168,7 @@ private:
     m_fespace = m_soln_field->FESpace();
     m_fecoll = m_fespace->FEColl();
     m_qfunc = m_datacoll.GetQField("qpt_data");
-    m_qspace = m_qfunc->GetSpace();
+    m_qspace = dynamic_cast<mfem::QuadratureSpace*>(m_qfunc->GetSpace());
   }
 
   // FEM-related objects needed as part of a simulation

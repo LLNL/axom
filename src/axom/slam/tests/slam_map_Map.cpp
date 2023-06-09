@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -349,8 +349,8 @@ void constructAndTestMapIteratorWithStride(int stride)
       EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
       for(auto idx2 = 0; idx2 < iter.numComp(); ++idx2)
       {
-        EXPECT_EQ(iter(idx2),
-                  static_cast<double>(idx * multFac + idx2 * multFac2));
+        EXPECT_DOUBLE_EQ(iter(idx2),
+                         static_cast<double>(idx * multFac + idx2 * multFac2));
       }
       idx++;
     }
@@ -372,6 +372,230 @@ TEST(slam_map, iterate_with_stride)
 
   SLIC_INFO("Done");
 }
+
+//----------------------------------------------------------------------
+namespace testing
+{
+//------------------------------------------------------------------------------
+// Define some mappings between execution space and allocator.
+//  - Host/OpenMP -> Umpire host allocator/default
+//  - CUDA/HIP -> Umpire device/unified allocator
+//------------------------------------------------------------------------------
+template <typename ExecSpace>
+struct ExecTraits
+{
+  constexpr static bool OnDevice = false;
+  static int getAllocatorId()
+  {
+#ifdef AXOM_USE_UMPIRE
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Host);
+#else
+    return axom::getDefaultAllocatorID();
+#endif
+  }
+
+  static int getUnifiedAllocatorId()
+  {
+#ifdef AXOM_USE_UMPIRE
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Host);
+#else
+    return axom::getDefaultAllocatorID();
+#endif
+  }
+};
+
+#ifdef AXOM_USE_CUDA
+template <int BLK_SZ>
+struct ExecTraits<axom::CUDA_EXEC<BLK_SZ>>
+{
+  constexpr static bool OnDevice = true;
+
+  static int getAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+
+  static int getUnifiedAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
+  }
+};
+#endif
+
+#ifdef AXOM_USE_HIP
+template <int BLK_SZ>
+struct ExecTraits<axom::HIP_EXEC<BLK_SZ>>
+{
+  constexpr static bool OnDevice = true;
+
+  static int getAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Device);
+  }
+
+  static int getUnifiedAllocatorId()
+  {
+    return axom::getUmpireResourceAllocatorID(
+      umpire::resource::MemoryResourceType::Unified);
+  }
+};
+#endif
+
+//------------------------------------------------------------------------------
+//  This test harness defines some types that are useful for the tests below
+//------------------------------------------------------------------------------
+template <typename ExecutionSpace>
+class slam_map_templated : public ::testing::Test
+{
+public:
+  using ExecSpace = ExecutionSpace;
+  using ConcreteSetType =
+    typename slam::RangeSet<SetPosition, SetElement>::ConcreteSet;
+
+  using RealData = axom::Array<double>;
+  using IndirectionPolicy =
+    slam::policies::ArrayViewIndirection<SetPosition, double>;
+  using StridePolicy = slam::policies::RuntimeStride<int>;
+  using InterfacePolicy = slam::policies::ConcreteInterface;
+
+  using RealMap =
+    slam::Map<double, ConcreteSetType, IndirectionPolicy, StridePolicy, InterfacePolicy>;
+
+  slam_map_templated()
+    : m_allocatorId(ExecTraits<ExecSpace>::getAllocatorId())
+    , m_unifiedAllocatorId(ExecTraits<ExecSpace>::getUnifiedAllocatorId())
+  { }
+
+  void initializeWithStride(int stride)
+  {
+    // Create associated set.
+    m_set = ConcreteSetType(MAX_SET_SIZE);
+
+    SLIC_INFO("\nCreating set of size " << m_set.size());
+
+    EXPECT_EQ(m_set.size(), MAX_SET_SIZE);
+    EXPECT_TRUE(m_set.isValid());
+
+    // Create array of elements to back the map.
+    m_allocatorId = ExecTraits<ExecSpace>::getAllocatorId();
+    axom::IndexType backingSize = m_set.size() * stride;
+
+    m_realBacking = RealData(backingSize, backingSize, m_allocatorId);
+  }
+
+protected:
+  int m_allocatorId;
+  int m_unifiedAllocatorId;
+  ConcreteSetType m_set;
+  RealData m_realBacking;
+};
+
+using MyTypes = ::testing::Types<
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+  axom::OMP_EXEC,
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  axom::CUDA_EXEC<256>,
+#endif
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+  axom::HIP_EXEC<256>,
+#endif
+  axom::SEQ_EXEC>;
+
+TYPED_TEST_SUITE(slam_map_templated, MyTypes);
+
+//----------------------------------------------------------------------
+AXOM_TYPED_TEST(slam_map_templated, constructAndTestStride1)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using MapType = typename TestFixture::RealMap;
+
+  const int stride = 1;
+
+  this->initializeWithStride(stride);
+
+  SLIC_INFO("\nCreating double map with stride 1 on the set ");
+  MapType m(this->m_set, this->m_realBacking.view(), stride);
+
+  EXPECT_EQ(m.stride(), stride);
+
+  SLIC_INFO("\nSetting the elements.");
+  const double multFac = 100.0001;
+  axom::for_all<ExecSpace>(
+    this->m_set.size(),
+    AXOM_LAMBDA(int index) { m(index) = index * multFac; });
+
+  SLIC_INFO("\nChecking the elements.");
+  int totalSize = this->m_set.size() * stride;
+  axom::Array<int> isValid(totalSize, totalSize, this->m_unifiedAllocatorId);
+  const auto isValid_view = isValid.view();
+
+  axom::for_all<ExecSpace>(
+    this->m_set.size(),
+    AXOM_LAMBDA(int index) {
+      bool entryValid = (m(index) == index * multFac);
+      isValid_view[index] = entryValid;
+    });
+
+  for(int validEntry : isValid)
+  {
+    EXPECT_TRUE(validEntry);
+  }
+}
+
+//----------------------------------------------------------------------
+AXOM_TYPED_TEST(slam_map_templated, constructAndTestStride3)
+{
+  using ExecSpace = typename TestFixture::ExecSpace;
+  using MapType = typename TestFixture::RealMap;
+
+  const int stride = 3;
+
+  this->initializeWithStride(stride);
+
+  SLIC_INFO("\nCreating double map with stride 3 on the set ");
+  MapType m(this->m_set, this->m_realBacking.view(), stride);
+
+  EXPECT_EQ(m.stride(), stride);
+
+  SLIC_INFO("\nSetting the elements.");
+  const double multFac = 100.0001;
+  const double multFac2 = 1.010;
+  axom::for_all<ExecSpace>(
+    this->m_set.size(),
+    AXOM_LAMBDA(int index) {
+      for(int comp = 0; comp < stride; comp++)
+      {
+        m(index, comp) = index * multFac + comp * multFac2;
+      }
+    });
+
+  SLIC_INFO("\nChecking the elements.");
+  int totalSize = this->m_set.size() * stride;
+  axom::Array<int> isValid(totalSize, totalSize, this->m_unifiedAllocatorId);
+  const auto isValid_view = isValid.data();
+
+  axom::for_all<ExecSpace>(
+    this->m_set.size(),
+    AXOM_LAMBDA(int index) {
+      for(int comp = 0; comp < stride; comp++)
+      {
+        bool entryValid = (m(index, comp) == index * multFac + comp * multFac2);
+        isValid_view[index * stride + comp] = entryValid;
+      }
+    });
+
+  for(int validEntry : isValid)
+  {
+    EXPECT_TRUE(validEntry);
+  }
+}
+}  // namespace testing
 
 //----------------------------------------------------------------------
 

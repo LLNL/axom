@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -250,6 +250,11 @@ public:
    * \brief Exports Buffer's state to a Conduit node.
    */
   void exportTo(conduit::Node& data_holder);
+
+  /*!
+   * \brief Exports Buffer's metadata to a Conduit node.
+   */
+  void exportMetadata(conduit::Node& data_holder);
 
   /*!
    * \brief Import Buffer's state from a Conduit node.

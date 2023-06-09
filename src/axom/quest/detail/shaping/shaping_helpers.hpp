@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -55,8 +55,16 @@ void generatePositionsQFunction(mfem::Mesh* mesh,
                                 int sampleRes);
 
 /**
- * Compute volume fractions function for shape on a grid of resolution \a gridRes
- * in region defined by bounding box \a queryBounds
+ * \brief Compute volume fractions for a given material using its associated quadrature function
+ *
+ * \param [in] matField The name of the material
+ * \param [in] dc The DataCollection containing the specified material
+ * \param [in] inoutQFuncs A collection of quadrature functions containing the quadrature
+ * values associated with the specified material
+ * \param [in] outputOrder The order the grid function that we're generating
+ *
+ * The generated grid function will be prefixed by `vol_frac_`
+ * 
  */
 void computeVolumeFractions(const std::string& matField,
                             mfem::DataCollection* dc,

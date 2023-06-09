@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -186,7 +186,7 @@ TEST(spio_parallel, parallel_writeread)
    */
   IOManager reader(MPI_COMM_WORLD);
 
-  reader.read(ds2->getRoot(), root_name);
+  reader.read(ds2->getRoot(), root_name, PROTOCOL);
   // _parallel_io_load_end
 
   /*
@@ -958,7 +958,7 @@ TEST(spio_parallel, parallel_decrease_procs)
 
   MPI_Comm_free(&split_comm);
 
-#endif
+#endif  // AXOM_USE_HDF5
 }
 
 TEST(spio_parallel, sidre_simple_blueprint_example)
@@ -993,7 +993,7 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   n_mesh["fields/rank/values"].set(conduit::DataType::int64(4));
 
   // fill rank field values
-  axom::int64* rank_vals_ptr = n_mesh["fields/rank/values"].value();
+  std::int64_t* rank_vals_ptr = n_mesh["fields/rank/values"].value();
 
   for(int i = 0; i < 4; i++)
   {
@@ -1027,5 +1027,5 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
                                        "out_spio_blueprint_example.root",
                                        "mesh");
 
-#endif
+#endif  // AXOM_USE_HDF5
 }

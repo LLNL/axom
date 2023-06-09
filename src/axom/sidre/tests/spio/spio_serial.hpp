@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,7 +6,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"      // for AXOM_USE_HDF5
-#include "axom/core/Types.hpp"  // for common::int64
+#include "axom/core/Types.hpp"  // for common::std::int64_t
 #include "axom/sidre.hpp"
 #include <list>
 
@@ -16,7 +16,7 @@ using axom::sidre::DataStore;
 using axom::sidre::Group;
 using axom::sidre::IOManager;
 
-using axom::int64;
+using std::int64_t;
 
 //------------------------------------------------------------------------------
 
@@ -33,8 +33,8 @@ TEST(spio_serial, basic_writeread)
   Group* gb = flds2->createGroup("b");
 
   // Note: use 64-bit integers since that is the native type for json
-  ga->createViewScalar<int64>("i0", 101);
-  gb->createViewScalar<int64>("i1", 404);
+  ga->createViewScalar<std::int64_t>("i0", 101);
+  gb->createViewScalar<std::int64_t>("i1", 404);
 
   int num_files = 1;
   IOManager writer(MPI_COMM_WORLD);
@@ -51,9 +51,9 @@ TEST(spio_serial, basic_writeread)
 
   EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
 
-  int64 testvalue1 =
+  std::int64_t testvalue1 =
     ds1->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
-  int64 testvalue2 =
+  std::int64_t testvalue2 =
     ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
   EXPECT_EQ(testvalue1, testvalue2);
@@ -100,8 +100,8 @@ TEST(spio_serial, basic_writeread_protocols)
     Group* gb = flds2->createGroup("b");
 
     // Note: use 64-bit integers since that is the native type for json
-    ga->createViewScalar<int64>("i0", 101);
-    gb->createViewScalar<int64>("i1", 404);
+    ga->createViewScalar<std::int64_t>("i0", 101);
+    gb->createViewScalar<std::int64_t>("i1", 404);
 
     int num_files = 1;
     IOManager writer(MPI_COMM_WORLD);
@@ -118,9 +118,9 @@ TEST(spio_serial, basic_writeread_protocols)
 
     EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
 
-    int64 testvalue1 =
+    std::int64_t testvalue1 =
       ds1->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
-    int64 testvalue2 =
+    std::int64_t testvalue2 =
       ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
 
     EXPECT_EQ(testvalue1, testvalue2);
@@ -177,6 +177,7 @@ TEST(spio_serial, write_read_write)
 }
 
 //------------------------------------------------------------------------------
+#ifdef AXOM_USE_HDF5
 TEST(spio_serial, rootfile_suffix)
 {
   // This test verifies the usage of the string passed to writer.write() to
@@ -221,3 +222,4 @@ TEST(spio_serial, rootfile_suffix)
   EXPECT_EQ(ds_suffix.getRoot()->getView("grp/i")->getData<int>(),
             ds_nosuffix.getRoot()->getView("grp/i")->getData<int>());
 }
+#endif  // AXOM_USE_HDF5

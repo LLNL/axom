@@ -15,6 +15,7 @@ _axom_build_and_test_*
 tpl_dirs_summary.json
 *.swp
 *.vscode*
+.vs/*
 uberenv_libs
 *_build*
 .idea

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,7 +45,7 @@ public:
    * \brief Get the number of entities in the set used by this map
    * \return The number of entities in the set used in the map.
    */
-  virtual SetPosition size() const = 0;
+  AXOM_HOST_DEVICE virtual SetPosition size() const = 0;
 
   /**
    * \brief Checks whether the Map is valid.
