@@ -134,10 +134,12 @@ TEST(primal_polygon, containment_invariants)
     {PointType {0, 0}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
   PolygonType poly;
   for(int i = 0; i < 4; i++)
+  {
     for(int j = 0; j < 3; j++)  // Duplicate each element 3 times
     {
       poly.addVertex(vertices[i]);
     }
+  }
 
   EXPECT_TRUE(in_polygon(PointType {0.25, 0.5}, poly));
   EXPECT_TRUE(in_polygon(PointType {0.75, 0.5}, poly));
@@ -151,7 +153,10 @@ TEST(primal_polygon, containment_invariants)
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
-    for(int j = 0; j < 4; j++) poly.addVertex(vertices[(j + i) % 4]);
+    for(int j = 0; j < 4; j++)
+    {
+      poly.addVertex(vertices[(j + i) % 4]);
+    }
     EXPECT_TRUE(in_polygon(PointType {0.25, 0.5}, poly));
     EXPECT_TRUE(in_polygon(PointType {0.75, 0.5}, poly));
     EXPECT_FALSE(in_polygon(PointType {0.5, 0.25}, poly));
@@ -242,10 +247,12 @@ TEST(primal_polygon, convexity)
     {PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
   poly.clear();
   for(int i = 0; i < 4; i++)
+  {
     for(int j = 0; j < 3; j++)  // Duplicate each element 3 times
     {
       poly.addVertex(vertices[i]);
     }
+  }
 
   EXPECT_TRUE(is_convex(poly));
 
@@ -256,7 +263,10 @@ TEST(primal_polygon, convexity)
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
-    for(int j = 0; j < 4; j++) poly.addVertex(vertices[(j + i) % 4]);
+    for(int j = 0; j < 4; j++)
+    {
+      poly.addVertex(vertices[(j + i) % 4]);
+    }
     EXPECT_FALSE(is_convex(poly));
   }
 
@@ -266,7 +276,10 @@ TEST(primal_polygon, convexity)
   for(int i = 0; i < 4; i++)
   {
     poly.clear();
-    for(int j = 0; j < 4; j++) poly.addVertex(vertices[(j + i) % 4]);
+    for(int j = 0; j < 4; j++)
+    {
+      poly.addVertex(vertices[(j + i) % 4]);
+    }
     EXPECT_TRUE(is_convex(poly));
   }
 }
@@ -388,7 +401,9 @@ TEST(primal_polygon, normal)
     Vector3D tri_normal = tri3D.normal().unitVector();
 
     for(int i = 0; i < 3; ++i)
+    {
       EXPECT_NEAR(poly_normal[i], tri_normal[i], 1e-10);
+    }
   }
 
   // Test a planar 5-gon inscribed in a circle
@@ -402,13 +417,18 @@ TEST(primal_polygon, normal)
     double angles[5] = {0.0, 0.5, 1.2, 3.0, 5.0};
 
     for(int i = 0; i < 5; ++i)
+    {
       poly.addVertex(Point3D {cos(angles[i]) * v1[0] + sin(angles[i]) * v2[0],
                               cos(angles[i]) * v1[1] + sin(angles[i]) * v2[1],
                               cos(angles[i]) * v1[2] + sin(angles[i]) * v2[2]});
+    }
 
     Vector3D obs_normal = poly.normal().unitVector();
 
-    for(int i = 0; i < 3; ++i) EXPECT_NEAR(exp_normal[i], obs_normal[i], 1e-10);
+    for(int i = 0; i < 3; ++i)
+    {
+      EXPECT_NEAR(exp_normal[i], obs_normal[i], 1e-10);
+    }
   }
 
   // Test a planar "5-gon" with duplicate vertices and colinear points (robustness)
@@ -434,9 +454,11 @@ TEST(primal_polygon, normal)
 
     // Add the rest of the vertices
     for(int i = 1; i < 8; ++i)
+    {
       poly.addVertex(Point3D {cos(angles[i]) * v1[0] + sin(angles[i]) * v2[0],
                               cos(angles[i]) * v1[1] + sin(angles[i]) * v2[1],
                               cos(angles[i]) * v1[2] + sin(angles[i]) * v2[2]});
+    }
 
     // Add another midpoint
     poly.addVertex(Point3D::midpoint(poly[0], poly[8]));
@@ -448,7 +470,10 @@ TEST(primal_polygon, normal)
     Vector3D obs_normal = poly.normal().unitVector();
 
     EXPECT_EQ(10, poly.numVertices());
-    for(int i = 0; i < 3; ++i) EXPECT_NEAR(exp_normal[i], obs_normal[i], 1e-10);
+    for(int i = 0; i < 3; ++i)
+    {
+      EXPECT_NEAR(exp_normal[i], obs_normal[i], 1e-10);
+    }
   }
 }
 

@@ -107,7 +107,10 @@ public:
     const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
 
-    for(int p = 0; p <= ord; ++p) m_controlPoints[p] = pts[p];
+    for(int p = 0; p <= ord; ++p)
+    {
+      m_controlPoints[p] = pts[p];
+    }
 
     makeNonrational();
   }
@@ -128,14 +131,22 @@ public:
 
     const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
-    for(int p = 0; p <= ord; ++p) m_controlPoints[p] = pts[p];
+    for(int p = 0; p <= ord; ++p)
+    {
+      m_controlPoints[p] = pts[p];
+    }
 
     if(weights == nullptr)
+    {
       makeNonrational();
+    }
     else
     {
       m_weights.resize(sz);
-      for(int p = 0; p <= ord; ++p) m_weights[p] = weights[p];
+      for(int p = 0; p <= ord; ++p)
+      {
+        m_weights[p] = weights[p];
+      }
       SLIC_ASSERT(isValidRational());
     }
   }
@@ -190,7 +201,10 @@ public:
   void setOrder(int ord)
   {
     m_controlPoints.resize(ord + 1);
-    if(isRational()) m_weights.resize(ord + 1);
+    if(isRational())
+    {
+      m_weights.resize(ord + 1);
+    }
   }
 
   /// Returns the order of the Bezier Curve
@@ -285,10 +299,12 @@ public:
     }
 
     if(isRational())
+    {
       for(int i = 0; i < mid; ++i)
       {
         axom::utilities::swap(m_weights[i], m_weights[ord - i]);
       }
+    }
   }
 
   /// Returns an axis-aligned bounding box containing the Bezier curve
@@ -562,7 +578,9 @@ public:
     {
       os << ", weights [";
       for(int p = 0; p <= ord; ++p)
+      {
         os << m_weights[p] << (p < ord ? ", " : "]");
+      }
     }
     os << "}";
 
@@ -578,10 +596,18 @@ private:
 
     const int ord = getOrder();
 
-    if(m_weights.size() != (ord + 1)) return false;
+    if(m_weights.size() != (ord + 1))
+    {
+      return false;
+    }
 
     for(int i = 0; i <= ord; ++i)
-      if(m_weights[i] <= 0) return false;
+    {
+      if(m_weights[i] <= 0)
+      {
+        return false;
+      }
+    }
 
     return true;
   }

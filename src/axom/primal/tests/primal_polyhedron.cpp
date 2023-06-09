@@ -111,25 +111,33 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   bool EPS = 0.0;
 
   for(double x = -0.5; x <= 1.5; x += 0.1)
+  {
     for(double y = -0.5; y <= 1.5; y += 0.1)
+    {
       for(double z = -0.5; z <= 1.5; z += 0.1)
       {
         if((x >= 0.0 && x <= 1.0) && (y >= 0.0 && y <= 1.0) &&
            (z >= 0.0 && z <= 1.0))
+        {
           EXPECT_TRUE(in_polyhedron(PointType({x, y, z}),
                                     poly,
                                     useStrictInclusion,
                                     useNonzeroRule,
                                     edge_tol,
                                     EPS));
+        }
         else
+        {
           EXPECT_FALSE(in_polyhedron(PointType({x, y, z}),
                                      poly,
                                      useStrictInclusion,
                                      useNonzeroRule,
                                      edge_tol,
                                      EPS));
+        }
       }
+    }
+  }
 
   // Verify includeBoundary behavior
   const bool includeBoundary = true;
@@ -183,19 +191,23 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
     for(double z = -1.5; z < 1.5; z += 0.1)
     {
       if((z >= -1.0) && (z <= 1.0))
+      {
         EXPECT_TRUE(in_polyhedron(PointType({0.0, 0.0, z}),
                                   poly,
                                   includeBoundary,
                                   useNonzeroRule,
                                   edge_tol,
                                   EPS));
+      }
       else
+      {
         EXPECT_FALSE(in_polyhedron(PointType({0.0, 0.0, z}),
                                    poly,
                                    includeBoundary,
                                    useNonzeroRule,
                                    edge_tol,
                                    EPS));
+      }
     }
   }
 

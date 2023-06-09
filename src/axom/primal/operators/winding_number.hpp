@@ -106,7 +106,9 @@ int winding_number(const Point<T, 2>& R,
   //  as "inside" by evenodd or nonzero protocols
   if(axom::utilities::isNearlyEqual(P[0][0], R[0], EPS) &&
      axom::utilities::isNearlyEqual(P[0][1], R[1], EPS))
+  {
     return includeBoundary;
+  }
 
   int winding_num = 0;
   for(int i = 0; i < nverts; i++)
@@ -116,9 +118,13 @@ int winding_number(const Point<T, 2>& R,
     if(axom::utilities::isNearlyEqual(P[j][1], R[1], EPS))
     {
       if(axom::utilities::isNearlyEqual(P[j][0], R[0], EPS))
+      {
         return includeBoundary;  // On vertex
+      }
       else if(P[i][1] == R[1] && ((P[j][0] > R[0]) == (P[i][0] < R[0])))
+      {
         return includeBoundary;  // On horizontal edge
+      }
     }
 
     // Check if edge crosses horizontal line
@@ -127,7 +133,9 @@ int winding_number(const Point<T, 2>& R,
       if(P[i][0] >= R[0])
       {
         if(P[j][0] > R[0])
+        {
           winding_num += 2 * (P[j][1] > P[i][1]) - 1;
+        }
         else
         {
           // clang-format off
@@ -137,11 +145,15 @@ int winding_number(const Point<T, 2>& R,
 
           // On edge
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
+          {
             return includeBoundary;
+          }
 
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
+          {
             winding_num += 2 * (P[j][1] > P[i][1]) - 1;
+          }
         }
       }
       else
@@ -155,11 +167,15 @@ int winding_number(const Point<T, 2>& R,
 
           // On edge
           if(axom::utilities::isNearlyEqual(det, 0.0, EPS))
+          {
             return includeBoundary;
+          }
 
           // Check if edge intersects horitonal ray to the right of R
           if((det > 0) == (P[j][1] > P[i][1]))
+          {
             winding_num += 2 * (P[j][1] > P[i][1]) - 1;
+          }
         }
       }
     }
@@ -212,8 +228,10 @@ double winding_number(const Point<T, 2>& q,
 {
   double ret_val = 0.0;
   for(int i = 0; i < cpoly.numEdges(); i++)
+  {
     ret_val +=
       detail::curve_winding_number_recursive(q, cpoly[i], false, edge_tol, EPS);
+  }
 
   return ret_val;
 }
@@ -267,13 +285,26 @@ double winding_number(const Point<T, 3>& q,
 
   // Handle direct cases where argument to atan is undefined
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
+  {
     return (num > 0) ? 0.25 : -0.25;
+  }
 
-  if(denom > 0) return 0.5 * M_1_PI * atan(num / denom);
-  if(num > 0) return 0.5 * M_1_PI * atan(num / denom) + 0.5;
-  if(num < 0) return 0.5 * M_1_PI * atan(num / denom) - 0.5;
+  if(denom > 0)
+  {
+    return 0.5 * M_1_PI * atan(num / denom);
+  }
+  else
+  {
+    if(num > 0)
+    {
+      return 0.5 * M_1_PI * atan(num / denom) + 0.5;
+    }
+    if(num < 0)
+    {
+      return 0.5 * M_1_PI * atan(num / denom) - 0.5;
+    }
+  }
 }
-
 /*!
  * \brief Computes the solid angle winding number for a 3D triangle
  *
@@ -312,15 +343,20 @@ double winding_number(const Point<T, 3>& q,
                       const double EPS = 1e-8)
 {
   const int num_verts = poly.numVertices();
-  if(num_verts < 3) return 0;
+  if(num_verts < 3)
+  {
+    return 0;
+  }
 
   double wn = 0.0;
   for(int i = 0; i < num_verts - 2; ++i)
+  {
     wn += winding_number(q,
                          Triangle<T, 3>(poly[0], poly[i + 1], poly[i + 2]),
                          isOnFace,
                          edge_tol,
                          EPS);
+  }
 
   return wn;
 }
@@ -379,11 +415,17 @@ int winding_number(const Point<T, 3>& query,
     const int N = face_size[i];
     const int i_offset = face_offset[i];
     Polygon<T, 3> the_face(N);
-    for(int j = 0; j < N; ++j) the_face.addVertex(poly[faces[i_offset + j]]);
+    for(int j = 0; j < N; ++j)
+    {
+      the_face.addVertex(poly[faces[i_offset + j]]);
+    }
 
     wn += winding_number(query, the_face, isOnFace, edge_tol, EPS);
 
-    if(isOnFace) return includeBoundary;
+    if(isOnFace)
+    {
+      return includeBoundary;
+    }
   }
 
   return std::lround(wn);
