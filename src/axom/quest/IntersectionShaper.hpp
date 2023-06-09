@@ -446,7 +446,7 @@ public:
         "DEBUG: Degenerate {} tetrahedra found with zero volume",
         num_degenerate.get()));
 
-      // Dump proe mesh as a tet mesh
+      // Dump tet mesh as a vtk mesh
       axom::mint::write_vtk(m_surfaceMesh, "proe_tet.vtk");
 
     }  // end of verbose output for contour
@@ -861,9 +861,9 @@ public:
                                }
                              }););
 
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      " Linearizing each tetrahedron, shape candidate pair "));
+    SLIC_INFO(
+      axom::fmt::format("{:-^80}",
+                        " Creating an array of candidate pairs for shaping "));
 
     const auto offsets_v = offsets.view();
     const auto candidates_v = candidates.view();
