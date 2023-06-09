@@ -1266,7 +1266,7 @@ TEST(primal_clip, tet_tet_clip_special_case_1)
   constexpr double EPS = 1e-10;
   constexpr bool CHECK_SIGN = true;
 
-  // Tets do not intersect, but share a coplanar face
+  // Tets do not intersect, but share a face
   TetrahedronType tet1(PointType {0.5, 0.5, -0.125},
                        PointType {0, 0, -0.25},
                        PointType {1, 0, -0.25},

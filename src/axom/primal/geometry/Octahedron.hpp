@@ -72,10 +72,7 @@ public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
 
-  enum
-  {
-    NUM_VERTS = 6
-  };
+  static constexpr int NUM_VERTS = 6;
 
 public:
   /*!

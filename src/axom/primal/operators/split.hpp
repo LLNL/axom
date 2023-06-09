@@ -58,7 +58,7 @@ void split(const Octahedron<Tp, NDIMS>& oct,
   {
     c += oct[i].array();
   }
-  c = c / (double)Oct::NUM_VERTS;
+  c = c / static_cast<double>(Oct::NUM_VERTS);
   typename Oct::PointType C(c);
 
   // Step 2: Now store the new tets.  The documentation for the Octahedron class

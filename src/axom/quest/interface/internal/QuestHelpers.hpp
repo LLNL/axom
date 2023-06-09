@@ -347,7 +347,7 @@ int read_c2c_mesh_non_uniform(const std::string& file,
  * \note The caller is responsible for properly de-allocating the mesh object
  *  that is returned by this function.
  *
- * \return status set to zero on success, or to a non-zero value otherwise.
+ * \return zero on success, or a non-zero value otherwise.
  *
  * \pre m == nullptr
  * \pre !file.empty()
