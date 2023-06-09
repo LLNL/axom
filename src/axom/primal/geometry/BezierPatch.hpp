@@ -25,7 +25,6 @@
 
 #include "axom/primal/operators/squared_distance.hpp"
 
-#include <vector>
 #include <ostream>
 
 namespace axom
@@ -45,7 +44,6 @@ std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch);
  *
  * \brief Represents a 3D Bezier patch defined by a 2D array of control points
  * \tparam T the coordinate type, e.g., double, float, etc.
- * \tparam NDIMS the number of dimensions
  *
  * The order of a Bezier patch with (N+1)(M+1) control points is (N, M).
  * The patch is approximated by the control points,

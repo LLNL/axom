@@ -32,8 +32,12 @@ namespace axom
 {
 namespace primal
 {
+
+//@{
+//! @name Winding number operations between 2D points and primatives
+
 /*
- * \brief Compute the winding number with respect to a line segment
+ * \brief Compute the winding number with respect to a 2D line segment
  *
  * \param [in] q The query point to test
  * \param [in] s The line segment
@@ -75,7 +79,7 @@ int winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Computes the winding number for a point and a polygon
+ * \brief Computes the winding number for a point and a 2D polygon
  *
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
@@ -185,7 +189,7 @@ int winding_number(const Point<T, 2>& R,
 }
 
 /*!
- * \brief Computes the generalized winding number for a single Bezier curve
+ * \brief Computes the generalized winding number for a single 2D Bezier curve
  *
  * \param [in] query The query point to test
  * \param [in] c The Bezier curve object 
@@ -208,7 +212,7 @@ double winding_number(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Computes the generalized winding number for a curved polygon
+ * \brief Computes the generalized winding number for a 2D curved polygon
  *
  * \param [in] query The query point to test
  * \param [in] cpoly The CurvedPolygon object
@@ -235,6 +239,11 @@ double winding_number(const Point<T, 2>& q,
 
   return ret_val;
 }
+
+//@}
+
+//@{
+//! @name Winding number operations between 3D points and primatives
 
 /*!
  * \brief Computes the solid angle winding number for a 3D triangle
@@ -330,7 +339,8 @@ double winding_number(const Point<T, 3>& q,
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  * 
- * \pre Assumes the polygon is truly planar
+ * \pre Assumes the polygon is planar. Otherwise, a meaningless value is returned.
+ * 
  * Triangulates the polygon and computes the triangular solid angle for each part
  * 
  * \return double the generalized winding number.
@@ -430,6 +440,8 @@ int winding_number(const Point<T, 3>& query,
 
   return std::lround(wn);
 }
+
+//@}
 
 }  // namespace primal
 }  // namespace axom
