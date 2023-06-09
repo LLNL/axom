@@ -97,13 +97,14 @@ TEST(primal_winding_number, simple_cases)
 
   // Test containment on a 2D triangle
   Triangle tri(Point2D {1.0, -1.0}, Point2D {0.5, 2.0}, Point2D {-2.0, 0.5});
+  const bool includeBoundary = true;
   for(double y = -2.0; y < 2.0; y += 0.15)
   {
     auto q = Point2D {0.0, y};
     if(tri.checkInTriangle(q))
-      EXPECT_EQ(winding_number(q, tri), 1);
+      EXPECT_EQ(winding_number(q, tri, includeBoundary), 1);
     else
-      EXPECT_EQ(winding_number(q, tri), 0);
+      EXPECT_EQ(winding_number(q, tri, includeBoundary), 0);
   }
 
   // Reverse the orientation, which flips the winding number
@@ -112,9 +113,9 @@ TEST(primal_winding_number, simple_cases)
   {
     auto q = Point2D {0.0, y};
     if(tri.checkInTriangle(q))
-      EXPECT_EQ(winding_number(q, tri), -1);
+      EXPECT_EQ(winding_number(q, tri, includeBoundary), -1);
     else
-      EXPECT_EQ(winding_number(q, tri), 0);
+      EXPECT_EQ(winding_number(q, tri, includeBoundary), 0);
   }
 }
 

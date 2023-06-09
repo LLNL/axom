@@ -191,14 +191,22 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
   // Simplest convex shape containing c is its bounding box
   BoundingBox<T, 2> bBox(c.boundingBox());
   if(!bBox.contains(q))
+  {
     return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+  }
 
   // Use linearity as base case for recursion.
-  if(c.isLinear(EPS)) return linear_winding_number(q, c[0], c[ord], edge_tol);
+  if(c.isLinear(EPS))
+  {
+    return linear_winding_number(q, c[0], c[ord], edge_tol);
+  }
 
   // Check if our control polygon is convex.
   //  If so, all subsequent control polygons will be convex as well
   Polygon<T, 2> controlPolygon(c.getControlPoints());
+  const bool includeBoundary = true;
+  const bool useNonzeroRule = true;
+
   if(!isConvexControlPolygon)
   {
     isConvexControlPolygon = is_convex(controlPolygon, EPS);
@@ -206,13 +214,17 @@ double curve_winding_number_recursive(const Point<T, 2>& q,
   else  // Formulas for winding number only work if shape is convex
   {
     // Bezier curves are always contained in their convex control polygon
-    if(!in_polygon(q, controlPolygon, true, false, EPS))
+    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, EPS))
+    {
       return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+    }
 
     // If the query point is at either endpoint, use direct formula
     if((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
        (squared_distance(q, c[ord]) <= edge_tol * edge_tol))
+    {
       return convex_endpoint_winding_number(q, c, edge_tol, EPS);
+    }
   }
 
   // Recursively split curve until query is outside some known convex region
