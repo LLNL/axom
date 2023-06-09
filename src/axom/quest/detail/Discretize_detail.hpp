@@ -151,7 +151,7 @@ template <typename ExecSpace>
 int discrSeg(const Point2D &a,
              const Point2D &b,
              int levels,
-             axom::ArrayView<OctType> &out,
+             const axom::ArrayView<OctType> &out,
              int idx)
 {
   // Assert input assumptions

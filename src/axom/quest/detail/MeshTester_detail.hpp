@@ -146,7 +146,7 @@ protected:
    * \note This should be implemented in derived CandidateFinder template
    *  specializations for each supported acceleration data structure.
    */
-  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+  virtual axom::Array<IndexType, 1, Space> getCandidates(
     axom::Array<IndexType, 1, Space>& offsets,
     axom::Array<IndexType, 1, Space>& counts) = 0;
 
@@ -219,7 +219,7 @@ void CandidateFinderBase<ExecSpace, FloatType>::findTriMeshIntersections(
 
   // Get CSR arrays for candidate data
   IndexArray offsets, counts;
-  IndexView candidates = getCandidates(offsets, counts);
+  IndexView candidates = getCandidates(offsets, counts).view();
 
   IndexArray indices(candidates.size());
   IndexArray validCandidates(candidates.size());
@@ -328,7 +328,7 @@ struct CandidateFinder<AccelType::BVH, ExecSpace, FloatType>
   using BaseClass::HostSpace;
   using BaseClass::Space;
 
-  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+  virtual axom::Array<IndexType, 1, Space> getCandidates(
     axom::Array<IndexType, 1, Space>& offsets,
     axom::Array<IndexType, 1, Space>& counts) override
   {
@@ -417,7 +417,7 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
     m_resolutions = axom::primal::Point<IndexType, 3>(spatialIndexResolution);
   }
 
-  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+  virtual axom::Array<IndexType, 1, Space> getCandidates(
     axom::Array<IndexType, 1, Space>& offsets,
     axom::Array<IndexType, 1, Space>& counts) override
   {
@@ -471,7 +471,7 @@ struct CandidateFinder<AccelType::UniformGrid, ExecSpace, FloatType>
     m_resolutions = axom::primal::NumericArray<int, 3>(spatialIndexResolution);
   }
 
-  virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
+  virtual axom::Array<IndexType, 1, Space> getCandidates(
     axom::Array<IndexType, 1, Space>& offsets,
     axom::Array<IndexType, 1, Space>& counts) override
   {
