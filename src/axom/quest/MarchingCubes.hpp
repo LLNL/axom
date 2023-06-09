@@ -242,6 +242,7 @@ public:
     axom::IndexType cellCount = m_impl->getContourCellCount();
     return cellCount;
   }
+
   //!@brief Get number of nodes in the generated contour mesh.
   axom::IndexType getContourNodeCount() const
   {
@@ -320,7 +321,7 @@ private:
     and execution space.
 
     This class allows m_impl to refer to any implementation used
-    at run time.
+    at runtime.
   */
   struct ImplBase
   {

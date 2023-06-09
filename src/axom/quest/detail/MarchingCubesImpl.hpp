@@ -176,6 +176,7 @@ public:
     }
 #endif
   }
+
   //!@brief Populate m_caseIds with crossing indices.
   template <int TDIM = DIM>
   typename std::enable_if<TDIM == 3>::type markCrossings_dim()
@@ -597,6 +598,7 @@ public:
       crossingPt[d] = p1[d] + w * (p2[d] - p1[d]);
     }
   }
+
   //!@brief Interpolate for the contour location crossing a parent edge.
   template <int TDIM = DIM>
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 3>::type linear_interp(

@@ -258,6 +258,7 @@ public:
     SLIC_ASSERT(domainIdx >= 0 && domainIdx < _domCount);
     return _mdMesh.child(domainIdx);
   }
+
   const conduit::Node& domain(axom::IndexType domainIdx) const
   {
     SLIC_ASSERT(domainIdx >= 0 && domainIdx < _domCount);
@@ -366,7 +367,7 @@ public:
   /*!
     @return largest mesh spacing in a domain.
 
-    This method takes shorcuts by assuming
+    This method takes shortcuts by assuming
     the mesh is structured and cartesian, with explicit coordinates.
   */
   double maxSpacing1(axom::IndexType domId) const
@@ -429,7 +430,6 @@ public:
       slic::flushStreams();
       return false;
     }
-    // info.print();
     return true;
   }
 
