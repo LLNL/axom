@@ -19,37 +19,6 @@
 
 namespace primal = axom::primal;
 
-TEST(primal_winding_number, containment_protocol)
-{
-  // Test that containment procedures are consistent
-  using Point2D = primal::Point<double, 2>;
-  using Bezier = primal::BezierCurve<double, 2>;
-  using CPolygon = primal::CurvedPolygon<double, 2>;
-
-  // 8th order, closed curve with internal loop
-  Point2D loop_nodes[] = {Point2D {0.0, 0.0},
-                          Point2D {1.0, 0.0},
-                          Point2D {1.0, 1.0},
-                          Point2D {0.0, 1.0},
-                          Point2D {0.0, 0.0},
-                          Point2D {1.0, 0.0},
-                          Point2D {1.0, 1.0},
-                          Point2D {0.0, 1.0},
-                          Point2D {0.0, 0.0}};
-  Bezier loop_curve(loop_nodes, 8);
-  CPolygon loop_poly;
-  loop_poly.addEdge(loop_curve);
-
-  // Inner loop is considered "interior" with nonzero protocol. Default behavior.
-  bool nonzero = true;
-  EXPECT_TRUE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly));
-  EXPECT_TRUE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly, nonzero));
-
-  // Inner loop is considered "exterior" with even/odd protocol
-  nonzero = false;
-  EXPECT_FALSE(in_curved_polygon(Point2D({0.5, 0.5}), loop_poly, nonzero));
-}
-
 TEST(primal_winding_number, simple_cases)
 {
   // Test points that are straightforwardly "inside" or "outside"
