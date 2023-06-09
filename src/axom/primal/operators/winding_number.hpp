@@ -366,12 +366,11 @@ int winding_number(const Point<T, 3>& query,
   SLIC_ASSERT(poly.hasNeighbors());
   const int num_verts = poly.numVertices();
 
-  int* faces = new int[num_verts * num_verts];
-  int* face_size = new int[2 * num_verts];
-  int* face_offset = new int[2 * num_verts];
+  axom::Array<int> faces(num_verts * num_verts), face_size(2 * num_verts),
+    face_offset(2 * num_verts);
   int face_count;
 
-  poly.getFaces(faces, face_size, face_offset, face_count);
+  poly.getFaces(faces.data(), face_size.data(), face_offset.data(), face_count);
 
   bool isOnFace = false;
   double wn = 0;
@@ -386,10 +385,6 @@ int winding_number(const Point<T, 3>& query,
 
     if(isOnFace) return includeBoundary;
   }
-
-  delete[] faces;
-  delete[] face_size;
-  delete[] face_offset;
 
   return std::lround(wn);
 }
