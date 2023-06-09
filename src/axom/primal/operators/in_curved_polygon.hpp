@@ -47,17 +47,15 @@ namespace primal
  * \return A boolean value indicating containment.
  */
 template <typename T>
-inline bool in_curved_polygon(const Point<T, 2>& query,
-                              const CurvedPolygon<T, 2>& cpoly,
-                              bool useNonzeroRule = true,
-                              double edge_tol = 1e-8,
-                              double EPS = 1e-8)
+bool in_curved_polygon(const Point<T, 2>& query,
+                       const CurvedPolygon<T, 2>& cpoly,
+                       bool useNonzeroRule = true,
+                       double edge_tol = 1e-8,
+                       double EPS = 1e-8)
 {
-  double winding_num = winding_number(query, cpoly, edge_tol, EPS);
-
-  // Else, use EvenOdd rule
-  return useNonzeroRule ? (std::lround(winding_num) != 0)
-                        : (std::lround(winding_num) % 2) == 1;
+  return useNonzeroRule
+    ? (std::lround(winding_number(query, cpoly, edge_tol, EPS)) != 0)
+    : (std::lround(winding_number(query, cpoly, edge_tol, EPS)) % 2) == 1;
 }
 
 }  // namespace primal

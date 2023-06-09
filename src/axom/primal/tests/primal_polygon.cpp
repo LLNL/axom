@@ -22,8 +22,6 @@ TEST(primal_polygon, winding_number)
   using PolygonType = axom::primal::Polygon<double, 2>;
   using PointType = axom::primal::Point<double, 2>;
 
-  const bool useStrictInclusion = true;
-
   axom::Array<PointType> vertices(
     {PointType {0, 0}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
   PolygonType poly(vertices);
@@ -47,10 +45,11 @@ TEST(primal_polygon, winding_number)
   EXPECT_EQ(winding_number(PointType {-2.0, 0.0}, poly), 0);
   EXPECT_EQ(winding_number(PointType {2.5, 0.0}, poly), 0);
 
-  // Current policy is to return 1 on edges without strict inclusion,
-  //  0 on edges with strict inclusion, as 0 always indicates "exterior"
-  EXPECT_EQ(winding_number(PointType {0.0, 0.0}, poly, !useStrictInclusion), 1);
-  EXPECT_EQ(winding_number(PointType {0.0, 0.0}, poly, useStrictInclusion), 0);
+  // Current policy is to return 1 on a boundary when it is included,
+  //  0 on boundaries when it is not, as 0 always indicates "exterior"
+  const bool includeBoundary = true;
+  EXPECT_EQ(winding_number(PointType {0.0, 0.0}, poly, includeBoundary), 1);
+  EXPECT_EQ(winding_number(PointType {0.0, 0.0}, poly, !includeBoundary), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -58,9 +57,6 @@ TEST(primal_polygon, containment)
 {
   using PolygonType = axom::primal::Polygon<double, 2>;
   using PointType = axom::primal::Point<double, 2>;
-
-  const bool useNonzeroRule = true;
-  const bool useEvenOddRule = false;
 
   axom::Array<PointType> vertices(
     {PointType {0, 0}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
@@ -94,11 +90,16 @@ TEST(primal_polygon, containment)
   poly = PolygonType(vertices);
 
   // true denotes nonzero protocol. Default for SVG
+  const bool useNonzeroRule = true;
+  const bool useEvenOddRule = false;
+  const bool includeBoundary = false;
   EXPECT_TRUE(in_polygon(PointType {-0.1, 0.0}, poly));
-  EXPECT_TRUE(in_polygon(PointType {-0.1, 0.0}, poly, useNonzeroRule));
+  EXPECT_TRUE(
+    in_polygon(PointType {-0.1, 0.0}, poly, includeBoundary, useNonzeroRule));
 
   // false denotes evenodd protocol
-  EXPECT_FALSE(in_polygon(PointType {-0.1, 0.0}, poly, useEvenOddRule));
+  EXPECT_FALSE(
+    in_polygon(PointType {-0.1, 0.0}, poly, includeBoundary, useEvenOddRule));
 
   // Test in/out on degenerate example in Hormann2001, Figure 6
   axom::Array<PointType> init_vertices(
@@ -170,35 +171,35 @@ TEST(primal_polygon, containment_edge)
                                    PointType {0, 1}});
   PolygonType poly(vertices);
 
-  // Edge cases. Default is that points on edges are "inside".
+  // Edge cases. Default is that points on edges are "outside".
   //  Should work in either in/out protocol
-  const bool useStrictInclusion = true;
+  const bool includeBoundary = true;
   for(bool useNonzeroRule : {true, false})
   {
     EXPECT_TRUE(
-      in_polygon(PointType {0, 0.5}, poly, useNonzeroRule, !useStrictInclusion));
+      in_polygon(PointType {0, 0.5}, poly, includeBoundary, useNonzeroRule));
     EXPECT_TRUE(
-      in_polygon(PointType {0.5, 0.5}, poly, useNonzeroRule, !useStrictInclusion));
+      in_polygon(PointType {0.5, 0.5}, poly, includeBoundary, useNonzeroRule));
     EXPECT_TRUE(
-      in_polygon(PointType {.25, .25}, poly, useNonzeroRule, !useStrictInclusion));
+      in_polygon(PointType {.25, .25}, poly, includeBoundary, useNonzeroRule));
     EXPECT_TRUE(
-      in_polygon(PointType {.25, .75}, poly, useNonzeroRule, !useStrictInclusion));
+      in_polygon(PointType {.25, .75}, poly, includeBoundary, useNonzeroRule));
     EXPECT_TRUE(
-      in_polygon(PointType {1, 0.5}, poly, useNonzeroRule, !useStrictInclusion));
+      in_polygon(PointType {1, 0.5}, poly, includeBoundary, useNonzeroRule));
   }
 
   for(bool useNonzeroRule : {true, false})
   {
     EXPECT_FALSE(
-      in_polygon(PointType {0, 0.5}, poly, useNonzeroRule, useStrictInclusion));
+      in_polygon(PointType {0, 0.5}, poly, !includeBoundary, useNonzeroRule));
     EXPECT_FALSE(
-      in_polygon(PointType {0.5, 0.5}, poly, useNonzeroRule, useStrictInclusion));
+      in_polygon(PointType {0.5, 0.5}, poly, !includeBoundary, useNonzeroRule));
     EXPECT_FALSE(
-      in_polygon(PointType {.25, .25}, poly, useNonzeroRule, useStrictInclusion));
+      in_polygon(PointType {.25, .25}, poly, !includeBoundary, useNonzeroRule));
     EXPECT_FALSE(
-      in_polygon(PointType {.25, .75}, poly, useNonzeroRule, useStrictInclusion));
+      in_polygon(PointType {.25, .75}, poly, !includeBoundary, useNonzeroRule));
     EXPECT_FALSE(
-      in_polygon(PointType {1, 0.5}, poly, useNonzeroRule, useStrictInclusion));
+      in_polygon(PointType {1, 0.5}, poly, !includeBoundary, useNonzeroRule));
   }
 
   // Corner cases, where query is on a vertex
@@ -212,12 +213,12 @@ TEST(primal_polygon, containment_edge)
   for(auto& vtx : vertices)
   {
     // Nonzero in/out protocol
-    EXPECT_TRUE(in_polygon(vtx, poly, true, !useStrictInclusion));
-    EXPECT_FALSE(in_polygon(vtx, poly, true, useStrictInclusion));
+    EXPECT_TRUE(in_polygon(vtx, poly, includeBoundary, true));
+    EXPECT_FALSE(in_polygon(vtx, poly, !includeBoundary, true));
 
     // Evenodd in/out protocol
-    EXPECT_TRUE(in_polygon(vtx, poly, false, !useStrictInclusion));
-    EXPECT_FALSE(in_polygon(vtx, poly, false, useStrictInclusion));
+    EXPECT_TRUE(in_polygon(vtx, poly, includeBoundary, false));
+    EXPECT_FALSE(in_polygon(vtx, poly, !includeBoundary, false));
   }
 }
 

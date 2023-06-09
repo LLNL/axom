@@ -35,8 +35,8 @@ namespace primal
  *
  * \param [in] query The query point to test
  * \param [in] poly The Polyhedron object to test for containment
+ * \param [in] includeBoundary If true, points on the boundary are considered interior.
  * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
- * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS The tolerance level for collinearity
@@ -52,14 +52,14 @@ namespace primal
 template <typename T>
 bool in_polyhedron(const Point<T, 3>& query,
                    const Polyhedron<T, 3>& poly,
-                   bool useStrictInclusion = false,
+                   bool includeBoundary = false,
                    bool useNonzeroRule = true,
                    double edge_tol = 1e-8,
                    double EPS = 1e-8)
 {
   return useNonzeroRule
-    ? (winding_number(query, poly, useStrictInclusion, edge_tol, EPS) != 0)
-    : (winding_number(query, poly, useStrictInclusion, edge_tol, EPS) % 2) == 1;
+    ? (winding_number(query, poly, includeBoundary, edge_tol, EPS) != 0)
+    : (winding_number(query, poly, includeBoundary, edge_tol, EPS) % 2) == 1;
 }
 
 }  // namespace primal

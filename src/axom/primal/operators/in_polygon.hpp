@@ -34,8 +34,8 @@ namespace primal
  *
  * \param [in] query The query point to test
  * \param [in] poly The Polygon object to test for containment
+ * \param [in] includeBoundary If true, points on the boundary are considered interior.
  * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
- * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Determines containment using the winding number with respect to the 
@@ -49,13 +49,13 @@ namespace primal
 template <typename T>
 bool in_polygon(const Point<T, 2>& query,
                 const Polygon<T, 2>& poly,
+                bool includeBoundary = false,
                 bool useNonzeroRule = true,
-                bool useStrictInclusion = false,
                 double EPS = 1e-8)
 {
   return useNonzeroRule
-    ? winding_number(query, poly, useStrictInclusion, EPS) != 0
-    : (winding_number(query, poly, useStrictInclusion, EPS) % 2) == 1;
+    ? winding_number(query, poly, includeBoundary, EPS) != 0
+    : (winding_number(query, poly, includeBoundary, EPS) % 2) == 1;
 }
 
 }  // namespace primal

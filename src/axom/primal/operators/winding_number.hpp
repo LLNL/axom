@@ -345,7 +345,7 @@ double winding_number(const Point<T, 3>& q,
  *
  * \param [in] query The query point to test
  * \param [in] poly The Polyhedron object
- * \param [in] useStrictInclusion If true, points on the boundary are considered exterior.
+ * \param [in] includeBoundary If true, points on the boundary are considered interior.
  * \param [in] edge_tol The physical distance level at which objects are 
  *                      considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
@@ -359,7 +359,7 @@ double winding_number(const Point<T, 3>& q,
 template <typename T>
 int winding_number(const Point<T, 3>& query,
                    const Polyhedron<T, 3>& poly,
-                   bool useStrictInclusion = false,
+                   bool includeBoundary = false,
                    double edge_tol = 1e-8,
                    double EPS = 1e-8)
 {
@@ -384,7 +384,7 @@ int winding_number(const Point<T, 3>& query,
 
     wn += winding_number(query, the_face, isOnFace, edge_tol, EPS);
 
-    if(isOnFace) return !useStrictInclusion;
+    if(isOnFace) return includeBoundary;
   }
 
   delete[] faces;
