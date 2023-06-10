@@ -112,7 +112,8 @@ public:
   /*!
    * \brief Returns true iff the ArrayView stores no elements.
    */
-  bool empty() const { return m_num_elements == 0; }
+  AXOM_HOST_DEVICE
+  inline bool empty() const { return m_num_elements == 0; }
 
   /*!
    * \brief Returns an ArrayViewIterator to the first element of the Array
