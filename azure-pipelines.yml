@@ -37,8 +37,8 @@ jobs:
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON
                             -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON
-                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=ld.lld-10"
-                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=ld.lld-10"'
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"'
         BUILD_TYPE: 'Release'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
@@ -48,8 +48,8 @@ jobs:
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON
                             -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON 
-                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=ld.lld-10"
-                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=ld.lld-10"
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"
                             -U RAJA_DIR'
         BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
@@ -59,8 +59,8 @@ jobs:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON
-                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=ld.lld-10"
-                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=ld.lld-10"
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"
                             -U UMPIRE_DIR'
         BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
@@ -70,8 +70,8 @@ jobs:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(CLANG10_IMAGENAME)'
         CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON
-                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=ld.lld-10"
-                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=ld.lld-10" -U RAJA_DIR -U UMPIRE_DIR'
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld" -U RAJA_DIR -U UMPIRE_DIR'
         BUILD_TYPE: 'Debug'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang10'
@@ -103,12 +103,6 @@ jobs:
       vsVersion: 'latest'
     condition: eq( variables['Agent.OS'], 'Windows_NT')
     displayName: 'Visual Studio Build ($(TEST_TARGET))'
-  - script: |
-      sudo apt-get update
-      sudo apt-get install lld
-      sudo dpkg -L lld-10
-    condition: eq( variables['Agent.OS'], 'Linux')
-    displayName: 'Install LLVM toolchain ($(TEST_TARGET))'
   - script: |
       cd build
       ctest -C Debug -T test --output-on-failure -V

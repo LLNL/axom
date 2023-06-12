@@ -17,6 +17,9 @@ function or_die () {
     fi
 }
 
+sudo apt-get update
+sudo apt-get install lld
+
 or_die cd axom
 git submodule init
 git submodule update
