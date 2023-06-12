@@ -1738,7 +1738,7 @@ TEST(core_array, check_multidimensional_view_subspan_colmaj)
                                    {I_STRIDE, J_STRIDE, K_STRIDE});
 
   EXPECT_EQ(double_view.size(), 4 * 5 * 6);
-  EXPECT_EQ(double_view.spacing(), 1);
+  EXPECT_EQ(double_view.minStride(), 1);
   EXPECT_EQ(double_view.strides()[0], I_STRIDE);
   EXPECT_EQ(double_view.strides()[1], J_STRIDE);
   EXPECT_EQ(double_view.strides()[2], K_STRIDE);
@@ -1806,7 +1806,7 @@ TEST(core_array, check_multidimensional_view_subspan_stride)
                                    {I_STRIDE, J_STRIDE, K_STRIDE});
 
   EXPECT_EQ(double_view.size(), 4 * 5 * 6);
-  EXPECT_EQ(double_view.spacing(), 1);
+  EXPECT_EQ(double_view.minStride(), 1);
   EXPECT_EQ(double_view.strides()[0], I_STRIDE);
   EXPECT_EQ(double_view.strides()[1], J_STRIDE);
   EXPECT_EQ(double_view.strides()[2], K_STRIDE);

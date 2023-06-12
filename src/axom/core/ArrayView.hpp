@@ -60,12 +60,14 @@ public:
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
    *
+   *  This constructor assumes that the data is laid out in a dense row-major
+   *  layout; that is, elements are laid out contiguously with respect to the
+   *  last (DIM-1) dimension.
+   *
    * \param [in] data the external data this ArrayView will wrap.
    * \param [in] args The parameter pack containing the "shape" of the ArrayView
    *
    * \pre sizeof...(Args) == DIM
-   *
-   * This constructor doesn't support non-unit spacing.
    */
   template <
     typename... Args,
@@ -76,15 +78,18 @@ public:
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
    *
+   *  This constructor assumes that the data is laid out in a row-major layout,
+   *  but accepts a min_stride parameter for the stride between consecutive
+   *  elements in the last dimension.
+   *
    * \param [in] data the external data this ArrayView will wrap.
    * \param [in] shape Array size in each dimension.
-   * \param [in] spacing_ Spacing between consecutive items.
-   *
-   * This constructor supports non-unit spacing.
+   * \param [in] min_stride Minimum stride between consecutive items in the
+   *  last dimension
    */
   AXOM_HOST_DEVICE ArrayView(T* data,
                              const StackArray<IndexType, DIM>& shape,
-                             IndexType spacing_ = 1);
+                             IndexType min_stride = 1);
 
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
@@ -239,8 +244,8 @@ template <typename T, int DIM, MemorySpace SPACE>
 AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(
   T* data,
   const StackArray<IndexType, DIM>& shape,
-  IndexType spacing)
-  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, spacing)
+  IndexType min_stride)
+  : ArrayBase<T, DIM, ArrayView<T, DIM, SPACE>>(shape, min_stride)
   , m_data(data)
 #ifndef AXOM_DEVICE_CODE
   , m_allocator_id(axom::detail::getAllocatorID<SPACE>())

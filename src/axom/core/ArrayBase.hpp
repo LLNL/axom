@@ -119,7 +119,6 @@ bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
  * IndexType size() const;
  * T* data();
  * const T* data() const;
- * IndexType spacing() const;
  * int getAllocatorID() const;
  * \endcode
  *
@@ -167,12 +166,14 @@ public:
    * \brief Parameterized constructor that sets up the array shape.
    *
    * \param [in] shape Array size in each direction.
+   * \param [in] min_stride The minimum stride between two consecutive
+   *  elements in row-major order.
    */
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
-                             int spacing = 1)
+                             int min_stride = 1)
     : m_shape {shape}
   {
-    m_strides[DIM - 1] = spacing;
+    m_strides[DIM - 1] = min_stride;
     updateStrides();
   }
 
@@ -303,20 +304,20 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.data() + idx * spacing()).
+   * \note equivalent to *(array.data() + idx * minStride()).
    *
    * \pre 0 <= idx < asDerived().size()
    */
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * asDerived().minStride()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * asDerived().minStride()];
   }
   /// @}
 
@@ -342,9 +343,9 @@ public:
   }
 
   /*!
-   * \brief Returns the spacing between adjacent items.
+   * \brief Returns the minimum stride between adjacent items.
    */
-  AXOM_HOST_DEVICE IndexType spacing() const
+  AXOM_HOST_DEVICE IndexType minStride() const
   {
     IndexType minStride = m_strides[0];
     for(int dim = 1; dim < DIM; dim++)
@@ -564,8 +565,8 @@ public:
 
   AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { }
 
-  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&, int spacing = 1)
-    : m_stride(spacing)
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&, int stride = 1)
+    : m_stride(stride)
   { }
 
   AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&,
@@ -592,9 +593,9 @@ public:
   }
 
   /*!
-   * \brief Returns the spacing between adjacent items.
+   * \brief Returns the stride between adjacent items.
    */
-  AXOM_HOST_DEVICE IndexType spacing() const { return m_stride; }
+  AXOM_HOST_DEVICE IndexType minStride() const { return m_stride; }
 
   /*!
    * \brief Accessor, returns a reference to the given value.
@@ -625,7 +626,7 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.data() + idx * array.spacing()).
+   * \note equivalent to *(array.data() + idx * array.minStride()).
    *
    * \pre 0 <= idx < asDerived().size()
    */
