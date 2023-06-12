@@ -487,11 +487,11 @@ private:
       sorted_dims[dim] = dim;
     }
     // Sort the dimensions by stride.
-    axom::utilities::insertion_sort(sorted_dims,
-                                    DIM,
-                                    [&](int dim_a, int dim_b) -> bool {
-                                      return stride[dim_a] < stride[dim_b];
-                                    });
+    axom::utilities::insertionSort(sorted_dims,
+                                   DIM,
+                                   [&](int dim_a, int dim_b) -> bool {
+                                     return stride[dim_a] < stride[dim_b];
+                                   });
     // Work from the smallest-strided dimension to the largest-strided.
     for(int dim = 0; dim < DIM - 1; dim++)
     {

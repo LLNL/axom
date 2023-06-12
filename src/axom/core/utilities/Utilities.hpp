@@ -355,9 +355,9 @@ inline AXOM_HOST_DEVICE bool isNearlyEqualRelative(RealType a,
  *  by default.
  */
 template <typename DataType, typename Predicate = std::less<DataType>>
-inline AXOM_HOST_DEVICE void insertion_sort(DataType* array,
-                                            IndexType n,
-                                            Predicate cmp = {})
+inline AXOM_HOST_DEVICE void insertionSort(DataType* array,
+                                           IndexType n,
+                                           Predicate cmp = {})
 {
   for(int i = 1; i < n; i++)
   {

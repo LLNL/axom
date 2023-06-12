@@ -34,7 +34,7 @@ TEST(core_utilities, insertion_sort_int)
     std::shuffle(data, data + NUM_INTS, mersenne_twister);
 
     // Sort the data.
-    axom::utilities::insertion_sort(data, NUM_INTS);
+    axom::utilities::insertionSort(data, NUM_INTS);
 
     // The result should be our ordered range 0...31
     for(int i = 0; i < NUM_INTS; i++)
@@ -68,7 +68,7 @@ TEST(core_utilities, insertion_sort_doubles)
     std::shuffle(data, data + NUM_DBLS, mersenne_twister);
 
     // Sort the data.
-    axom::utilities::insertion_sort(data, NUM_DBLS);
+    axom::utilities::insertionSort(data, NUM_DBLS);
 
     // Check that the range is now sorted.
     for(int i = 0; i < NUM_DBLS - 1; i++)
