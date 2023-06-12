@@ -62,8 +62,8 @@ class BezierCurve
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
   using SegmentType = Segment<T, NDIMS>;
+  using WeightsVec = axom::Array<T>;
   using CoordsVec = axom::Array<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
@@ -87,38 +87,6 @@ public:
     SLIC_ASSERT(ord >= -1);
     const int sz = utilities::max(-1, ord + 1);
     m_controlPoints.resize(sz);
-
-    makeNonrational();
-  }
-
-  /*!
-   * \brief Constructor for an order \a ord= n Bezier curve
-   * from a list of coordinates:
-   * \verbatim {x_0, x_1, x_2,...,x_n,
-   *            y_0, y_1, y_2,...,y_n,
-   *            z_0, z_1, z_2,...,z_n}
-   *
-   * \param [in] pts an array with (n+1)*NDIMS entries, ordered by coordinate
-   * then by polynomial order
-   * \param [in] ord Polynomial order of the curve
-   * \pre order is greater than or equal to zero
-   */
-  BezierCurve(T* pts, int ord)
-  {
-    SLIC_ASSERT(pts != nullptr);
-    SLIC_ASSERT(ord >= 0);
-
-    const int sz = utilities::max(0, ord + 1);
-    m_controlPoints.resize(sz);
-
-    for(int p = 0; p <= ord; p++)
-    {
-      auto& pt = m_controlPoints[p];
-      for(int j = 0; j < NDIMS; j++)
-      {
-        pt[j] = pts[j * (ord + 1) + p];
-      }
-    }
 
     makeNonrational();
   }
@@ -163,14 +131,22 @@ public:
 
     const int sz = utilities::max(0, ord + 1);
     m_controlPoints.resize(sz);
-    for(int p = 0; p <= ord; ++p) m_controlPoints[p] = pts[p];
+    for(int p = 0; p <= ord; ++p)
+    {
+      m_controlPoints[p] = pts[p];
+    }
 
     if(weights == nullptr)
-      m_weights.resize(0);
+    {
+      makeNonrational();
+    }
     else
     {
       m_weights.resize(sz);
-      for(int p = 0; p <= ord; ++p) m_weights[p] = weights[p];
+      for(int p = 0; p <= ord; ++p)
+      {
+        m_weights[p] = weights[p];
+      }
       SLIC_ASSERT(isValidRational());
     }
   }
@@ -222,7 +198,14 @@ public:
   }
 
   /// Sets the order of the Bezier Curve
-  void setOrder(int ord) { m_controlPoints.resize(ord + 1); }
+  void setOrder(int ord)
+  {
+    m_controlPoints.resize(ord + 1);
+    if(isRational())
+    {
+      m_weights.resize(ord + 1);
+    }
+  }
 
   /// Returns the order of the Bezier Curve
   int getOrder() const { return static_cast<int>(m_controlPoints.size()) - 1; }
@@ -234,7 +217,7 @@ public:
     {
       const int ord = getOrder();
       m_weights.resize(ord + 1);
-      for(int i = 0; i <= ord; i++) m_weights[i] = 1.0;
+      m_weights.fill(1.0);
     }
   }
 
@@ -242,17 +225,12 @@ public:
   void makeNonrational() { m_weights.resize(0); }
 
   /// Use array size as flag for rationality
-  bool isRational() const { return (m_weights.size() != 0); }
+  bool isRational() const { return !m_weights.empty(); }
 
   /// Clears the list of control points, make nonrational
   void clear()
   {
-    const int ord = getOrder();
-    for(int p = 0; p <= ord; ++p)
-    {
-      m_controlPoints[p] = PointType();
-    }
-
+    m_controlPoints.clear();
     makeNonrational();
   }
 
@@ -308,7 +286,7 @@ public:
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
   /// Returns a copy of the Bezier curve's weights
-  axom::Array<T> getWeights() const { return m_weights; }
+  WeightsVec getWeights() const { return m_weights; }
 
   /// Reverses the order of the Bezier curve's control points and weights
   void reverseOrientation()
@@ -321,10 +299,12 @@ public:
     }
 
     if(isRational())
+    {
       for(int i = 0; i < mid; ++i)
       {
         axom::utilities::swap(m_weights[i], m_weights[ord - i]);
       }
+    }
   }
 
   /// Returns an axis-aligned bounding box containing the Bezier curve
@@ -529,10 +509,9 @@ public:
           }
 
           c2.setWeight(k, temp_weight);
-
-          c1[p] = c2[0];
-          c1.setWeight(p, c2.getWeight(0));
         }
+        c1[p] = c2[0];
+        c1.setWeight(p, c2.getWeight(0));
       }
     }
     else  // Code can be simpler if not rational Bezier curves
@@ -599,7 +578,9 @@ public:
     {
       os << ", weights [";
       for(int p = 0; p <= ord; ++p)
+      {
         os << m_weights[p] << (p < ord ? ", " : "]");
+      }
     }
     os << "}";
 
@@ -615,16 +596,24 @@ private:
 
     const int ord = getOrder();
 
-    if(m_weights.size() != (ord + 1)) return false;
+    if(m_weights.size() != (ord + 1))
+    {
+      return false;
+    }
 
     for(int i = 0; i <= ord; ++i)
-      if(m_weights[i] <= 0) return false;
+    {
+      if(m_weights[i] <= 0)
+      {
+        return false;
+      }
+    }
 
     return true;
   }
 
   CoordsVec m_controlPoints;
-  axom::Array<T> m_weights;
+  WeightsVec m_weights;
 };
 
 //------------------------------------------------------------------------------

@@ -21,7 +21,8 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
-#include "axom/primal/operators/detail/in_curved_polygon_impl.hpp"
+
+#include "axom/primal/operators/winding_number.hpp"
 
 namespace axom
 {
@@ -46,68 +47,15 @@ namespace primal
  * \return A boolean value indicating containment.
  */
 template <typename T>
-inline bool in_curved_polygon(const Point<T, 2>& query,
-                              const CurvedPolygon<T, 2>& cpoly,
-                              bool useNonzeroRule = true,
-                              double edge_tol = 1e-8,
-                              double EPS = 1e-8)
+bool in_curved_polygon(const Point<T, 2>& query,
+                       const CurvedPolygon<T, 2>& cpoly,
+                       bool useNonzeroRule = true,
+                       double edge_tol = 1e-8,
+                       double EPS = 1e-8)
 {
-  double winding_num = winding_number(query, cpoly, edge_tol, EPS);
-
-  // Else, use EvenOdd rule
-  return useNonzeroRule ? (std::lround(winding_num) != 0)
-                        : (std::lround(winding_num) % 2) == 1;
-}
-
-/*!
- * \brief Computes the generalized winding number for a curved polygon
- *
- * \param [in] query The query point to test
- * \param [in] cpoly The CurvedPolygon object
- * \param [in] edge_tol The physical distance level at which objects are 
- *                      considered indistinguishable
- * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
- *
- * Computes the winding number using a recursive, bisection algorithm.
- * Iterates over the edges of a curved polygon object, and uses nearly-linear 
- * Bezier curves as a base case.
- * 
- * \return float the generalized winding number.
- */
-template <typename T>
-double winding_number(const Point<T, 2>& q,
-                      const CurvedPolygon<T, 2>& cpoly,
-                      double edge_tol = 1e-8,
-                      double EPS = 1e-8)
-{
-  double ret_val = 0.0;
-  for(int i = 0; i < cpoly.numEdges(); i++)
-    ret_val += detail::adaptive_winding_number(q, cpoly[i], false, edge_tol, EPS);
-
-  return ret_val;
-}
-
-/*!
- * \brief Computes the generalized winding number for a single Bezier curve
- *
- * \param [in] query The query point to test
- * \param [in] cpoly The Bezier curve object 
- * \param [in] edge_tol The physical distance level at which objects are 
- *                      considered indistinguishable
- * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
- *
- * Computes the winding number using a recursive, bisection algorithm,
- * using nearly-linear Bezier curves as a base case.
- * 
- * \return float the generalized winding number.
- */
-template <typename T>
-double winding_number(const Point<T, 2>& q,
-                      const BezierCurve<T, 2>& c,
-                      double edge_tol = 1e-8,
-                      double EPS = 1e-8)
-{
-  return detail::adaptive_winding_number(q, c, false, edge_tol, EPS);
+  return useNonzeroRule
+    ? (std::lround(winding_number(query, cpoly, edge_tol, EPS)) != 0)
+    : (std::lround(winding_number(query, cpoly, edge_tol, EPS)) % 2) == 1;
 }
 
 }  // namespace primal

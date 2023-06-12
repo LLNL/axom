@@ -4,22 +4,23 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file in_polygon.hpp
+ * \file in_polyhedron.hpp
  *
  * \brief Consists of methods that test whether a given query point is
- * inside a given polygon.
+ * inside a given polyhedron.
  *
- * Uses a ray casting algorithm
+ * Uses a winding number algorithm
  */
 
-#ifndef AXOM_PRIMAL_IN_POLYGON_HPP_
-#define AXOM_PRIMAL_IN_POLYGON_HPP_
+#ifndef AXOM_PRIMAL_IN_POLYHEDRON_HPP_
+#define AXOM_PRIMAL_IN_POLYHEDRON_HPP_
 
 // Axom includes
 #include "axom/config.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
+#include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/operators/winding_number.hpp"
 
 // C++ includes
@@ -33,9 +34,11 @@ namespace primal
  * \brief Determines containment for a point in a polygon
  *
  * \param [in] query The query point to test
- * \param [in] poly The Polygon object to test for containment
+ * \param [in] poly The Polyhedron object to test for containment
  * \param [in] includeBoundary If true, points on the boundary are considered interior.
  * \param [in] useNonzeroRule If false, use even/odd protocol for inclusion
+ * \param [in] edge_tol The physical distance level at which objects are 
+ *                      considered indistinguishable
  * \param [in] EPS The tolerance level for collinearity
  * 
  * Determines containment using the winding number with respect to the 
@@ -47,18 +50,19 @@ namespace primal
  * \return boolean value indicating containment.
  */
 template <typename T>
-bool in_polygon(const Point<T, 2>& query,
-                const Polygon<T, 2>& poly,
-                bool includeBoundary = false,
-                bool useNonzeroRule = true,
-                double EPS = 1e-8)
+bool in_polyhedron(const Point<T, 3>& query,
+                   const Polyhedron<T, 3>& poly,
+                   bool includeBoundary = false,
+                   bool useNonzeroRule = true,
+                   double edge_tol = 1e-8,
+                   double EPS = 1e-8)
 {
   return useNonzeroRule
-    ? winding_number(query, poly, includeBoundary, EPS) != 0
-    : (winding_number(query, poly, includeBoundary, EPS) % 2) == 1;
+    ? (winding_number(query, poly, includeBoundary, edge_tol, EPS) != 0)
+    : (winding_number(query, poly, includeBoundary, edge_tol, EPS) % 2) == 1;
 }
 
 }  // namespace primal
 }  // namespace axom
 
-#endif  // AXOM_PRIMAL_IN_CURVED_POLYGON_H_
+#endif  // AXOM_PRIMAL_IN_POLYHEDRON_H_

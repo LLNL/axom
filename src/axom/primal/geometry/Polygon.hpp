@@ -43,6 +43,7 @@ class Polygon
 {
 public:
   using PointType = Point<T, NDIMS>;
+  using VectorType = Vector<T, NDIMS>;
 
 public:
   /// Default constructor for an empty polygon
@@ -78,6 +79,32 @@ public:
   PointType& operator[](int idx) { return m_vertices[idx]; }
   /// Retrieves the vertex at index idx
   const PointType& operator[](int idx) const { return m_vertices[idx]; }
+
+  /*! 
+   * \brief Robustly returns the normal of the polygon (not normalized)
+   * \pre This function is only valid when NDIMS = 3 and the polygon is valid
+   * \return normal polygon normal vector
+   */
+  template <int TDIM = NDIMS>
+  typename std::enable_if<TDIM == 3, VectorType>::type normal() const
+  {
+    SLIC_ASSERT(isValid());
+    const int nverts = numVertices();
+
+    VectorType v0(m_vertices[nverts - 1]), v1(m_vertices[0]);
+
+    VectorType normal = VectorType::cross_product(v0, v1);
+
+    // Iterate over each pair of vertices
+    for(int i = 1; i < nverts; ++i)
+    {
+      v0 = v1;
+      v1 = VectorType(m_vertices[i]);
+      normal += VectorType::cross_product(v0, v1);
+    }
+
+    return normal;
+  }
 
   /*!
    * \brief Computes the average of the polygon's vertex positions

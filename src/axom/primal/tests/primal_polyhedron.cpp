@@ -12,6 +12,9 @@
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 
+#include "axom/primal/operators/in_polyhedron.hpp"
+#include "axom/primal/operators/winding_number.hpp"
+
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
@@ -35,6 +38,8 @@ TEST(primal_polyhedron, polyhedron_empty)
 TEST(primal_polyhedron, polyhedron_unit_cube)
 {
   using PolyhedronType = primal::Polyhedron<double, 3>;
+  using PointType = primal::Point<double, 3>;
+
   PolyhedronType poly;
   poly.addVertex({0, 0, 0});
   poly.addVertex({1, 0, 0});
@@ -96,6 +101,53 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
       EXPECT_EQ(faces[f_index], faces_expect[f_index]);
     }
   }
+
+  // Test containment using winding numbers
+  bool useStrictInclusion = false;
+  bool useNonzeroRule = true;
+
+  // Use zero numerical tolerances
+  bool edge_tol = 0.0;
+  bool EPS = 0.0;
+
+  for(double x = -0.5; x <= 1.5; x += 0.1)
+  {
+    for(double y = -0.5; y <= 1.5; y += 0.1)
+    {
+      for(double z = -0.5; z <= 1.5; z += 0.1)
+      {
+        if((x >= 0.0 && x <= 1.0) && (y >= 0.0 && y <= 1.0) &&
+           (z >= 0.0 && z <= 1.0))
+        {
+          EXPECT_TRUE(in_polyhedron(PointType({x, y, z}),
+                                    poly,
+                                    useStrictInclusion,
+                                    useNonzeroRule,
+                                    edge_tol,
+                                    EPS));
+        }
+        else
+        {
+          EXPECT_FALSE(in_polyhedron(PointType({x, y, z}),
+                                     poly,
+                                     useStrictInclusion,
+                                     useNonzeroRule,
+                                     edge_tol,
+                                     EPS));
+        }
+      }
+    }
+  }
+
+  // Verify includeBoundary behavior
+  const bool includeBoundary = true;
+  EXPECT_TRUE(
+    in_polyhedron(poly[0], poly, includeBoundary, useNonzeroRule, edge_tol, EPS));
+  EXPECT_FALSE(
+    in_polyhedron(poly[0], poly, !includeBoundary, useNonzeroRule, edge_tol, EPS));
+
+  EXPECT_EQ(winding_number(poly[0], poly, includeBoundary, edge_tol, EPS), 1);
+  EXPECT_EQ(winding_number(poly[0], poly, !includeBoundary, edge_tol, EPS), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -127,6 +179,36 @@ TEST(primal_polyhedron, polyhedron_tetrahedron)
 
     EXPECT_NEAR(tet.volume(), poly.volume(), EPS);
     EXPECT_NEAR(2.6666, poly.volume(), EPS);
+
+    // Test containment using winding numbers
+    const bool includeBoundary = true;
+    const bool useNonzeroRule = true;
+
+    // Use zero numerical tolerances
+    const bool edge_tol = 0.0;
+    const bool EPS = 0.0;
+
+    for(double z = -1.5; z < 1.5; z += 0.1)
+    {
+      if((z >= -1.0) && (z <= 1.0))
+      {
+        EXPECT_TRUE(in_polyhedron(PointType({0.0, 0.0, z}),
+                                  poly,
+                                  includeBoundary,
+                                  useNonzeroRule,
+                                  edge_tol,
+                                  EPS));
+      }
+      else
+      {
+        EXPECT_FALSE(in_polyhedron(PointType({0.0, 0.0, z}),
+                                   poly,
+                                   includeBoundary,
+                                   useNonzeroRule,
+                                   edge_tol,
+                                   EPS));
+      }
+    }
   }
 
   {

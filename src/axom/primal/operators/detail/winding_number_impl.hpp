@@ -3,13 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef PRIMAL_IN_CURVED_POLYGON_IMPL_HPP_
-#define PRIMAL_IN_CURVED_POLYGON_IMPL_HPP_
+#ifndef PRIMAL_WINDING_NUMBER_IMPL_HPP_
+#define PRIMAL_WINDING_NUMBER_IMPL_HPP_
 
 // Axom includes
 #include "axom/config.hpp"  // for compile-time configuration options
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/operators/in_polygon.hpp"
 #include "axom/primal/operators/is_convex.hpp"
@@ -34,6 +35,7 @@ namespace detail
  *
  * The winding number for a point with respect to a straight line
  * is the signed angle subtended by the query point to each endpoint.
+ * Colinear points return 0 for their winding number.
  *
  * \return double The winding number
  */
@@ -165,54 +167,72 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  *   isLinear, isNearlyZero, in_polygon, is_convex
  * 
  * Use a recursive algorithm that checks if the query point is exterior to
- * the convex control polygon of a Bezier curve, in which case we have a direct formula
- * for the winding number. If not, we bisect our curve and run the algorithm on 
+ * some convex shape containing the Bezier curve, in which case we have a direct 
+ * formula for the winding number. If not, we bisect our curve and run the algorithm on 
  * each half. Use the proximity of the query point to endpoints and approximate
  * linearity of the Bezier curve as base cases.
  * 
  * \return double The winding number.
  */
 template <typename T>
-double adaptive_winding_number(const Point<T, 2>& q,
-                               const BezierCurve<T, 2>& c,
-                               bool isConvexControlPolygon,
-                               double edge_tol = 1e-8,
-                               double EPS = 1e-8)
+double curve_winding_number_recursive(const Point<T, 2>& q,
+                                      const BezierCurve<T, 2>& c,
+                                      bool isConvexControlPolygon,
+                                      double edge_tol = 1e-8,
+                                      double EPS = 1e-8)
 {
   const int ord = c.getOrder();
   if(ord <= 0) return 0.0;  // Catch degenerate cases
 
-  // Use linearity as base case for recursion
-  if(c.isLinear(EPS)) return linear_winding_number(q, c[0], c[ord], edge_tol);
+  // If q is outside a convex shape that contains the entire curve, the winding
+  //   number for the shape connected at the endpoints with straight lines is zero.
+  //   We then subtract the contribution of this line segment.
 
+  // Simplest convex shape containing c is its bounding box
+  BoundingBox<T, 2> bBox(c.boundingBox());
+  if(!bBox.contains(q))
+  {
+    return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+  }
+
+  // Use linearity as base case for recursion.
+  if(c.isLinear(EPS))
+  {
+    return linear_winding_number(q, c[0], c[ord], edge_tol);
+  }
+
+  // Check if our control polygon is convex.
+  //  If so, all subsequent control polygons will be convex as well
   Polygon<T, 2> controlPolygon(c.getControlPoints());
+  const bool includeBoundary = true;
+  const bool useNonzeroRule = true;
 
-  // Check if our new curve is convex.
-  //  If so, all subcurves will be convex as well
   if(!isConvexControlPolygon)
   {
     isConvexControlPolygon = is_convex(controlPolygon, EPS);
   }
   else  // Formulas for winding number only work if shape is convex
   {
-    // If q is outside the control polygon, for an open Bezier curve, the winding
-    //  number for the shape connected at the endpoints with straight lines is zero.
-    //  We then subtract the contribution of this line segment.
-    if(!in_polygon(q, controlPolygon, true, false, EPS))
+    // Bezier curves are always contained in their convex control polygon
+    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, EPS))
+    {
       return 0.0 - linear_winding_number(q, c[ord], c[0], edge_tol);
+    }
 
     // If the query point is at either endpoint, use direct formula
     if((squared_distance(q, c[0]) <= edge_tol * edge_tol) ||
        (squared_distance(q, c[ord]) <= edge_tol * edge_tol))
+    {
       return convex_endpoint_winding_number(q, c, edge_tol, EPS);
+    }
   }
 
-  // Recursively split curve until query is outside each control polygon
+  // Recursively split curve until query is outside some known convex region
   BezierCurve<T, 2> c1, c2;
   c.split(0.5, c1, c2);
 
-  return adaptive_winding_number(q, c1, isConvexControlPolygon, edge_tol, EPS) +
-    adaptive_winding_number(q, c2, isConvexControlPolygon, edge_tol, EPS);
+  return curve_winding_number_recursive(q, c1, isConvexControlPolygon, edge_tol, EPS) +
+    curve_winding_number_recursive(q, c2, isConvexControlPolygon, edge_tol, EPS);
 }
 
 }  // end namespace detail

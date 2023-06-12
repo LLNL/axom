@@ -25,7 +25,6 @@
 
 #include "axom/primal/operators/squared_distance.hpp"
 
-#include <vector>
 #include <ostream>
 
 namespace axom
@@ -45,7 +44,6 @@ std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch);
  *
  * \brief Represents a 3D Bezier patch defined by a 2D array of control points
  * \tparam T the coordinate type, e.g., double, float, etc.
- * \tparam NDIMS the number of dimensions
  *
  * The order of a Bezier patch with (N+1)(M+1) control points is (N, M).
  * The patch is approximated by the control points,
@@ -67,8 +65,8 @@ public:
 
   using CoordsVec = axom::Array<PointType, 1>;
   using CoordsMat = axom::Array<PointType, 2>;
-  using NumsVec = axom::Array<T, 1>;
-  using NumsMat = axom::Array<T, 2>;
+  using WeightsVec = axom::Array<T, 1>;
+  using WeightsMat = axom::Array<T, 2>;
 
   using BoundingBoxType = BoundingBox<T, 3>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, 3>;
@@ -126,7 +124,10 @@ public:
 
     m_controlPoints.resize(sz_u, sz_v);
 
-    for(int t = 0; t < sz_u * sz_v; ++t) m_controlPoints.flatIndex(t) = pts[t];
+    for(int t = 0; t < sz_u * sz_v; ++t)
+    {
+      m_controlPoints.flatIndex(t) = pts[t];
+    }
 
     makeNonrational();
   }
@@ -154,7 +155,10 @@ public:
 
     m_controlPoints.resize(sz_u, sz_v);
 
-    for(int t = 0; t < sz_u * sz_v; ++t) m_controlPoints.flatIndex(t) = pts[t];
+    for(int t = 0; t < sz_u * sz_v; ++t)
+    {
+      m_controlPoints.flatIndex(t) = pts[t];
+    }
 
     if(weights == nullptr)
       makeNonrational();
@@ -162,7 +166,10 @@ public:
     {
       m_weights.resize(sz_u, sz_v);
 
-      for(int t = 0; t < sz_u * sz_v; ++t) m_weights.flatIndex(t) = weights[t];
+      for(int t = 0; t < sz_u * sz_v; ++t)
+      {
+        m_weights.flatIndex(t) = weights[t];
+      }
     }
 
     SLIC_ASSERT(isValidRational());
@@ -188,7 +195,9 @@ public:
     m_controlPoints.resize(sz_u, sz_v);
 
     for(int t = 0; t < sz_u * sz_v; ++t)
+    {
       m_controlPoints.flatIndex(t) = pts.flatIndex(t);
+    }
 
     makeNonrational();
   }
@@ -204,7 +213,7 @@ public:
    * 
    * Elements of pts and weights are mapped to control nodes (p, q) lexicographically.
    */
-  BezierPatch(const CoordsVec& pts, const NumsVec& weights, int ord_u, int ord_v)
+  BezierPatch(const CoordsVec& pts, const WeightsVec& weights, int ord_u, int ord_v)
   {
     SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
     SLIC_ASSERT(weights.size() == pts.size());
@@ -214,11 +223,15 @@ public:
 
     m_controlPoints.resize(sz_u, sz_v);
     for(int t = 0; t < sz_u * sz_v; ++t)
+    {
       m_controlPoints.flatIndex(t) = pts.flatIndex(t);
+    }
 
     m_weights.resize(sz_u, sz_v);
     for(int t = 0; t < sz_u * sz_v; ++t)
+    {
       m_weights.flatIndex(t) = weights.flatIndex(t);
+    }
 
     SLIC_ASSERT(isValidRational());
   }
@@ -255,7 +268,7 @@ public:
    * \param [in] ord_v The patch's polynomial order on the second axis
    * \pre order is greater than or equal to zero in each direction
    */
-  BezierPatch(const CoordsMat& pts, const NumsMat& weights, int ord_u, int ord_v)
+  BezierPatch(const CoordsMat& pts, const WeightsMat& weights, int ord_u, int ord_v)
   {
     SLIC_ASSERT(ord_u >= 0 && ord_v >= 0);
     SLIC_ASSERT(pts.shape()[0] == weights.shape()[0]);
@@ -284,7 +297,10 @@ public:
   void setOrder(int ord_u, int ord_v)
   {
     m_controlPoints.resize(ord_u + 1, ord_v + 1);
-    if(isRational()) m_weights.resize(ord_u + 1, ord_v + 1);
+    if(isRational())
+    {
+      m_weights.resize(ord_u + 1, ord_v + 1);
+    }
   }
 
   /// Returns the order of the Bezier Patch on the first axis
@@ -382,7 +398,7 @@ public:
   CoordsMat getControlPoints() const { return m_controlPoints; }
 
   /// Returns a copy of the Bezier patch's weights
-  NumsMat getWeights() const { return m_weights; }
+  WeightsMat getWeights() const { return m_weights; }
 
   /*!
    * \brief Reverses the order of one direction of the Bezier patch's control points and weights
@@ -392,9 +408,13 @@ public:
   void reverseOrientation(int axis)
   {
     if(axis == 0)
+    {
       reverseOrientation_u();
+    }
     else
+    {
       reverseOrientation_v();
+    }
   }
 
   /// Reverses the order of the Bezier patch's control points and weights on the first axis
@@ -408,12 +428,18 @@ public:
     for(int q = 0; q <= ord_v; ++q)
     {
       for(int i = 0; i < mid_u; ++i)
+      {
         axom::utilities::swap(m_controlPoints(i, q),
                               m_controlPoints(ord_u - i, q));
+      }
 
       if(isRational())
+      {
         for(int i = 0; i < mid_u; ++i)
+        {
           axom::utilities::swap(m_weights(i, q), m_weights(ord_u - i, q));
+        }
+      }
     }
   }
 
@@ -428,12 +454,18 @@ public:
     for(int p = 0; p <= ord_u; ++p)
     {
       for(int i = 0; i < mid_v; ++i)
+      {
         axom::utilities::swap(m_controlPoints(p, i),
                               m_controlPoints(p, ord_v - i));
+      }
 
       if(isRational())
+      {
         for(int i = 0; i < mid_v; ++i)
+        {
           axom::utilities::swap(m_weights(p, i), m_weights(p, ord_v - i));
+        }
+      }
     }
   }
 
@@ -446,16 +478,25 @@ public:
     CoordsMat new_controlPoints(ord_v + 1, ord_u + 1);
 
     for(int p = 0; p <= ord_u; ++p)
+    {
       for(int q = 0; q <= ord_v; ++q)
+      {
         new_controlPoints(q, p) = m_controlPoints(p, q);
+      }
+    }
 
     m_controlPoints = new_controlPoints;
 
     if(isRational())
     {
-      NumsMat new_weights(ord_v + 1, ord_u + 1);
+      WeightsMat new_weights(ord_v + 1, ord_u + 1);
       for(int p = 0; p <= ord_u; ++p)
-        for(int q = 0; q <= ord_v; ++q) new_weights(q, p) = m_weights(p, q);
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          new_weights(q, p) = m_weights(p, q);
+        }
+      }
 
       m_weights = new_weights;
     }
@@ -490,9 +531,13 @@ public:
     SLIC_ASSERT((axis == 0) || (axis == 1));
 
     if(axis == 0)
+    {
       return isocurve_u(uv);
+    }
     else
+    {
       return isocurve_v(uv);
+    }
   }
 
   /// Return an isocurve for a fixed value of u
@@ -512,6 +557,7 @@ public:
       axom::Array<T> dWarray(ord_u + 1);
 
       for(int q = 0; q <= ord_v; ++q)
+      {
         for(int i = 0; i < 3; ++i)
         {
           for(int p = 0; p <= ord_u; ++p)
@@ -533,22 +579,30 @@ public:
           c[q][i] = dCarray[0] / dWarray[0];
           c.setWeight(q, dWarray[0]);
         }
+      }
     }
     else
     {
       for(int q = 0; q <= ord_v; ++q)
+      {
         for(int i = 0; i < 3; ++i)
         {
-          for(int p = 0; p <= ord_u; ++p) dCarray[p] = m_controlPoints(p, q)[i];
+          for(int p = 0; p <= ord_u; ++p)
+          {
+            dCarray[p] = m_controlPoints(p, q)[i];
+          }
 
           for(int p = 1; p <= ord_u; ++p)
           {
             const int end = ord_u - p;
             for(int k = 0; k <= end; ++k)
+            {
               dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
+            }
           }
           c[q][i] = dCarray[0];
         }
+      }
     }
 
     return c;
@@ -571,6 +625,7 @@ public:
       axom::Array<T> dWarray(ord_v + 1);
 
       for(int p = 0; p <= ord_u; ++p)
+      {
         for(int i = 0; i < 3; ++i)
         {
           for(int q = 0; q <= ord_v; ++q)
@@ -591,13 +646,18 @@ public:
           c[p][i] = dCarray[0] / dWarray[0];
           c.setWeight(p, dWarray[0]);
         }
+      }
     }
     else
     {
       for(int p = 0; p <= ord_u; ++p)
+      {
         for(int i = 0; i < 3; ++i)
         {
-          for(int q = 0; q <= ord_v; ++q) dCarray[q] = m_controlPoints(p, q)[i];
+          for(int q = 0; q <= ord_v; ++q)
+          {
+            dCarray[q] = m_controlPoints(p, q)[i];
+          }
 
           for(int q = 1; q <= ord_v; ++q)
           {
@@ -609,6 +669,7 @@ public:
           }
           c[p][i] = dCarray[0];
         }
+      }
     }
 
     return c;
@@ -626,9 +687,13 @@ public:
   PointType evaluate(T u, T v) const
   {
     if(getOrder_u() >= getOrder_v())
+    {
       return isocurve_u(u).evaluate(v);
+    }
     else
+    {
       return isocurve_v(v).evaluate(u);
+    }
   }
 
   /*!
@@ -645,9 +710,13 @@ public:
   {
     SLIC_ASSERT((axis == 0) || (axis == 1));
     if(axis == 0)
+    {
       return dt_u(u, v);
+    }
     else
+    {
       return dt_v(u, v);
+    }
   }
 
   /// Compute the directional derivative in u with an isocurve fixed in v
@@ -685,9 +754,13 @@ public:
     SLIC_ASSERT((axis == 0) || (axis == 1));
 
     if(axis == 0)
+    {
       split_u(uv, p1, p2);
+    }
     else
+    {
       split_v(uv, p1, p2);
+    }
   }
 
   /// Split the patch along a fixed value of u
@@ -746,14 +819,18 @@ public:
         p1(0, q) = m_controlPoints(0, q);
 
         for(int i = 0; i < 3; ++i)
+        {
           for(int p = 1; p <= ord_u; ++p)
           {
             const int end = ord_u - p;
             for(int k = 0; k <= end; ++k)
+            {
               p2(k, q)[i] = lerp(p2(k, q)[i], p2(k + 1, q)[i], u);
+            }
 
             p1(p, q)[i] = p2(0, q)[i];
           }
+        }
       }
     }
   }
@@ -813,14 +890,18 @@ public:
         p1(p, 0) = m_controlPoints(p, 0);
 
         for(int i = 0; i < 3; ++i)
+        {
           for(int q = 1; q <= ord_v; ++q)
           {
             const int end = ord_v - q;
             for(int k = 0; k <= end; ++k)
+            {
               p2(p, k)[i] = lerp(p2(p, k)[i], p2(p, k + 1)[i], v);
+            }
 
             p1(p, q)[i] = p2(p, 0)[i];
           }
+        }
       }
     }
   }
@@ -892,11 +973,14 @@ public:
 
     // Check all control points for simplicity
     for(int p = 0; p <= ord_u && sqDist <= tol; ++p)
+    {
       for(int q = 0; q <= ord_v && sqDist <= tol; ++q)
       {
         double signedDist = the_plane.signedDistance(m_controlPoints(p, q));
         sqDist += signedDist * signedDist;
       }
+    }
+
     return (sqDist <= tol);
   }
 
@@ -914,15 +998,23 @@ public:
     os << "{ order (" << ord_u << ',' << ord_v << ") Bezier Patch ";
 
     for(int p = 0; p <= ord_u; ++p)
+    {
       for(int q = 0; q <= ord_v; ++q)
+      {
         os << m_controlPoints(p, q) << ((p < ord_u || q < ord_v) ? "," : "");
+      }
+    }
 
     if(isRational())
     {
       os << ", weights [";
       for(int p = 0; p <= ord_u; ++p)
+      {
         for(int q = 0; q <= ord_v; ++q)
+        {
           os << m_weights(p, q) << ((p < ord_u || q < ord_v) ? "," : "");
+        }
+      }
     }
     os << "}";
 
@@ -940,17 +1032,26 @@ private:
     const int ord_v = getOrder_v();
 
     if(m_weights.shape()[0] != (ord_u + 1) || m_weights.shape()[1] != (ord_v + 1))
+    {
       return false;
+    }
 
     for(int p = 0; p <= ord_u; ++p)
+    {
       for(int q = 0; q <= ord_v; ++q)
-        if(m_weights(p, q) <= 0) return false;
+      {
+        if(m_weights(p, q) <= 0)
+        {
+          return false;
+        }
+      }
+    }
 
     return true;
   }
 
   CoordsMat m_controlPoints;
-  NumsMat m_weights;
+  WeightsMat m_weights;
 };
 
 //------------------------------------------------------------------------------
