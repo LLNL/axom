@@ -443,9 +443,10 @@ private:
   }
 
   /*!
-   * \brief Returns the number of elements in memory.
+   * \brief Returns the size of the range of memory in which elements are
+   *  located. This is equivalent to size() * minStride().
    *
-   *  offset() will return a value between [0, logicalSize()).
+   *  offset() will return a value between [0, memorySize()).
    */
   AXOM_HOST_DEVICE IndexType memorySize() const
   {
@@ -679,7 +680,10 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
-  /// \brief Returns the number of elements in memory.
+  /*!
+   * \brief Returns the size of the range of memory in which elements are
+   *  located. This is equivalent to size() * minStride().
+   */
   AXOM_HOST_DEVICE IndexType memorySize() const
   {
     return m_stride * shape()[0];
