@@ -119,7 +119,6 @@ bool operator!=(const ArrayBase<T1, DIM, LArrayType>& lhs,
  * IndexType size() const;
  * T* data();
  * const T* data() const;
- * IndexType spacing() const;
  * int getAllocatorID() const;
  * \endcode
  *
@@ -167,12 +166,29 @@ public:
    * \brief Parameterized constructor that sets up the array shape.
    *
    * \param [in] shape Array size in each direction.
+   * \param [in] min_stride The minimum stride between two consecutive
+   *  elements in row-major order.
    */
-  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape)
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
+                             int min_stride = 1)
     : m_shape {shape}
   {
-    m_strides[DIM - 1] = 1;
+    m_strides[DIM - 1] = min_stride;
     updateStrides();
+  }
+
+  /*!
+   * \brief Parameterized constructor that sets up the array shape and stride.
+   *
+   * \param [in] shape Array size in each direction.
+   * \param [in] stride Array stride for each direction.
+   */
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, DIM>& shape,
+                             const StackArray<IndexType, DIM>& stride)
+    : m_shape {shape}
+    , m_strides {stride}
+  {
+    validateShapeAndStride(shape, stride);
   }
 
   /*!
@@ -288,20 +304,20 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.data() + idx * spacing()).
+   * \note equivalent to *(array.data() + idx * minStride()).
    *
    * \pre 0 <= idx < asDerived().size()
    */
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * asDerived().minStride()];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * asDerived().minStride()];
   }
   /// @}
 
@@ -312,6 +328,34 @@ public:
     std::swap(m_strides, other.m_strides);
   }
 
+  /// \brief Returns the dimensions of the Array
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& shape() const
+  {
+    return m_shape;
+  }
+
+  /*!
+   * \brief Returns the memory strides of the Array.
+   */
+  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
+  {
+    return m_strides;
+  }
+
+  /*!
+   * \brief Returns the minimum stride between adjacent items.
+   */
+  AXOM_HOST_DEVICE IndexType minStride() const
+  {
+    IndexType minStride = m_strides[0];
+    for(int dim = 1; dim < DIM; dim++)
+    {
+      minStride = axom::utilities::min(minStride, m_strides[dim]);
+    }
+    return minStride;
+  }
+
+protected:
   /// \brief Set the shape
   AXOM_HOST_DEVICE void setShape(const StackArray<IndexType, DIM>& shape_)
   {
@@ -326,23 +370,17 @@ public:
     updateStrides();
   }
 
-  /// \brief Returns the dimensions of the Array
-  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& shape() const
+  /// \brief Set the shape and stride
+  AXOM_HOST_DEVICE void setShapeAndStride(const StackArray<IndexType, DIM>& shape,
+                                          const StackArray<IndexType, DIM>& stride)
   {
-    return m_shape;
+#ifdef AXOM_DEBUG
+    validateShapeAndStride(shape, stride);
+#endif
+    m_shape = shape;
+    m_strides = stride;
   }
 
-  /*!
-    \brief Returns the logical strides of the Array.
-
-    Note: Memory stride is logical stride times spacing.
-  */
-  AXOM_HOST_DEVICE const StackArray<IndexType, DIM>& strides() const
-  {
-    return m_strides;
-  }
-
-protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    * For example, 2 would be the chunk size of a 2D array whose second dimension is of size 2.
@@ -398,17 +436,29 @@ private:
     return static_cast<const ArrayType&>(*this);
   }
 
-  /*!
-    \brief Logical offset to get to the given multidimensional index.
-
-    To get from logical offset to memory offset, multiply by spacing().
-  */
+  //// \brief Memory offset to get to the given multidimensional index.
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, DIM>& idx) const
   {
     return numerics::dot_product((const IndexType*)idx, m_strides.begin(), DIM);
   }
 
-  /// Logical offset to a slice at the given lower-dimensional index.
+  /*!
+   * \brief Returns the size of the range of memory in which elements are
+   *  located. This is equivalent to size() * minStride().
+   *
+   *  offset() will return a value between [0, memorySize()).
+   */
+  AXOM_HOST_DEVICE IndexType memorySize() const
+  {
+    IndexType maxSize = 0;
+    for(int dim = 0; dim < DIM; dim++)
+    {
+      maxSize = axom::utilities::max(maxSize, m_strides[dim] * m_shape[dim]);
+    }
+    return maxSize;
+  }
+
+  /// \brief Memory offset to a slice at the given lower-dimensional index.
   template <int UDim>
   AXOM_HOST_DEVICE IndexType offset(const StackArray<IndexType, UDim>& idx) const
   {
@@ -423,8 +473,35 @@ private:
   /*! \brief Test if idx is within bounds */
   AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
-    return idx >= 0 && idx < asDerived().size();
+    return idx >= 0 && idx < memorySize();
   }
+
+  /// \brief Checks a shape and stride array for correct bounds.
+  AXOM_HOST_DEVICE inline void validateShapeAndStride(
+    const StackArray<IndexType, DIM>& shape,
+    const StackArray<IndexType, DIM>& stride)
+  {
+    int sorted_dims[DIM];
+    for(int dim = 0; dim < DIM; dim++)
+    {
+      sorted_dims[dim] = dim;
+    }
+    // Sort the dimensions by stride.
+    axom::utilities::insertionSort(sorted_dims,
+                                   DIM,
+                                   [&](int dim_a, int dim_b) -> bool {
+                                     return stride[dim_a] < stride[dim_b];
+                                   });
+    // Work from the smallest-strided dimension to the largest-strided.
+    for(int dim = 0; dim < DIM - 1; dim++)
+    {
+      int minor_dim = sorted_dims[dim];
+      int major_dim = sorted_dims[dim + 1];
+      assert(stride[major_dim] >= stride[minor_dim] * shape[minor_dim]);
+      assert(stride[major_dim] % stride[minor_dim] == 0);
+    }
+  }
+
   /// @}
 
   /// \name Internal subarray slicing methods
@@ -450,7 +527,7 @@ private:
   {
     const IndexType baseIdx = offset(idx);
     assert(inBounds(baseIdx));
-    return asDerived().data()[baseIdx * asDerived().spacing()];
+    return asDerived().data()[baseIdx];
   }
 
   /// \overload
@@ -459,7 +536,7 @@ private:
   {
     const IndexType baseIdx = offset(idx);
     assert(inBounds(baseIdx));
-    return asDerived().data()[baseIdx * asDerived().spacing()];
+    return asDerived().data()[baseIdx];
   }
   /// @}
 
@@ -489,7 +566,14 @@ public:
 
   AXOM_HOST_DEVICE ArrayBase(IndexType = 0) { }
 
-  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&) { }
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&, int stride = 1)
+    : m_stride(stride)
+  { }
+
+  AXOM_HOST_DEVICE ArrayBase(const StackArray<IndexType, 1>&,
+                             const StackArray<IndexType, 1>& stride)
+    : m_stride(stride[0])
+  { }
 
   // Empty implementation because no member data
   template <typename OtherArrayType>
@@ -510,6 +594,11 @@ public:
   }
 
   /*!
+   * \brief Returns the stride between adjacent items.
+   */
+  AXOM_HOST_DEVICE IndexType minStride() const { return m_stride; }
+
+  /*!
    * \brief Accessor, returns a reference to the given value.
    * For multidimensional arrays, indexes into the (flat) raw data.
    *
@@ -523,13 +612,13 @@ public:
   AXOM_HOST_DEVICE T& operator[](const IndexType idx)
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& operator[](const IndexType idx) const
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
 
   /*!
@@ -538,20 +627,20 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.data() + idx * array.spacing()).
+   * \note equivalent to *(array.data() + idx * array.minStride()).
    *
    * \pre 0 <= idx < asDerived().size()
    */
   AXOM_HOST_DEVICE T& flatIndex(const IndexType idx)
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
   /// \overload
   AXOM_HOST_DEVICE RealConstT& flatIndex(const IndexType idx) const
   {
     assert(inBounds(idx));
-    return asDerived().data()[idx * asDerived().spacing()];
+    return asDerived().data()[idx * m_stride];
   }
   /// @}
 
@@ -567,7 +656,7 @@ protected:
   /*!
    * \brief Returns the minimum "chunk size" that should be allocated
    */
-  IndexType blockSize() const { return 1; }
+  IndexType blockSize() const { return m_stride; }
 
   /*!
    * \brief Updates the internal dimensions and striding based on the insertion
@@ -591,12 +680,23 @@ private:
   /// \name Internal bounds-checking routines
   /// @{
 
+  /*!
+   * \brief Returns the size of the range of memory in which elements are
+   *  located. This is equivalent to size() * minStride().
+   */
+  AXOM_HOST_DEVICE IndexType memorySize() const
+  {
+    return m_stride * shape()[0];
+  }
+
   /*! \brief Test if idx is within bounds */
   AXOM_HOST_DEVICE inline bool inBounds(IndexType idx) const
   {
-    return idx >= 0 && idx < asDerived().size();
+    return idx >= 0 && idx < memorySize();
   }
   /// @}
+
+  int m_stride {1};
 };
 
 //------------------------------------------------------------------------------
@@ -1388,7 +1488,8 @@ class ArraySubslice
 public:
   AXOM_HOST_DEVICE ArraySubslice(BaseArray* array,
                                  const StackArray<IndexType, NumIndices>& idxs)
-    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()))
+    : BaseClass(detail::takeLastElems<SliceDim>(array->shape()),
+                detail::takeLastElems<SliceDim>(array->strides()))
     , m_array(array)
     , m_inds(idxs)
   { }
@@ -1416,7 +1517,7 @@ public:
     IndexType offset = numerics::dot_product(m_inds.begin(),
                                              m_array->strides().begin(),
                                              NumIndices);
-    return m_array->data() + offset * m_array->spacing();
+    return m_array->data() + offset;
   }
 
   /// @}
