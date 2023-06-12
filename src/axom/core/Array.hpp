@@ -158,6 +158,9 @@ public:
         IndexType capacity = 0,
         int allocator_id = axom::detail::getAllocatorID<SPACE>());
 
+  Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+        int allocator_id = axom::detail::getAllocatorID<SPACE>());
+
   /*!
    * \brief Generic constructor for an Array of arbitrary dimension
    *
@@ -696,7 +699,7 @@ public:
    *
    * \note If the Array is empty the capacity can still be greater than zero.
    */
-  bool empty() const { return m_num_elements == 0; }
+  AXOM_HOST_DEVICE inline bool empty() const { return m_num_elements == 0; }
 
   /*!
    * \brief Return the number of elements stored in the data array.
@@ -878,6 +881,18 @@ template <typename T, int DIM, MemorySpace SPACE>
 Array<T, DIM, SPACE>::Array()
   : m_allocator_id(axom::detail::getAllocatorID<SPACE>())
 { }
+
+//------------------------------------------------------------------------------
+template <typename T, int DIM, MemorySpace SPACE>
+Array<T, DIM, SPACE>::Array(const axom::StackArray<axom::IndexType, DIM>& shape,
+                            int allocator_id)
+  : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(shape)
+  , m_allocator_id(allocator_id)
+{
+  initialize(detail::packProduct(shape.m_data),
+             detail::packProduct(shape.m_data),
+             false);
+}
 
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>

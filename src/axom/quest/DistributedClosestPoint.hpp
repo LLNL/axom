@@ -682,10 +682,10 @@ public:
       copy_components_to_interleaved(queryCoordsValues, xferDom["coords"]);
 
       xferDom["cp_index"].set_external(fields.fetch_existing("cp_index/values"));
-      xferDom["cp_domain_index"].set_external(fields.fetch_existing("cp_domain_index/values"));
       xferDom["cp_rank"].set_external(fields.fetch_existing("cp_rank/values"));
       copy_components_to_interleaved(fields.fetch_existing("cp_coords/values"),
                                      xferDom["cp_coords"]);
+      xferDom["cp_domain_index"].set_external(fields.fetch_existing("cp_domain_index/values"));
 
       if(fields.has_path("cp_distance"))
       {
