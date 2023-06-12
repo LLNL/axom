@@ -32,7 +32,6 @@ namespace axom
 {
 namespace primal
 {
-
 //@{
 //! @name Winding number operations between 2D points and primatives
 
