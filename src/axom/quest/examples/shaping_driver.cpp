@@ -544,6 +544,11 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format("{:=^80}", "Sampling InOut fields for shapes"));
   for(const auto& shape : params.shapeSet.getShapes())
   {
+    std::string shapeFormat = shape.getGeometry().getFormat();
+    SLIC_INFO(
+      axom::fmt::format("{:-^80}",
+                        axom::fmt::format("Shape format is {}", shapeFormat)));
+
     // Load the shape from file. This also applies any transformations.
     shaper->loadShape(shape);
     slic::flushStreams();

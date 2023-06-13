@@ -110,7 +110,10 @@ OctType new_inscribed_oct(const SphereType& sphere, OctType& o, int s, int t, in
  * This routine allocates an array pointed to by \a out.  The caller is responsible
  * to free the array.
  */
-bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcount)
+bool discretize(const SphereType& sphere,
+                int levels,
+                axom::Array<OctType>& out,
+                int& octcount)
 {
   // Check input.  Negative radius: return false.
   if(sphere.getRadius() < 0)
@@ -126,7 +129,7 @@ bool discretize(const SphereType& sphere, int levels, OctType*& out, int& octcou
 
   octcount = count_sphere_octahedra(levels);
 
-  out = axom::allocate<OctType>(octcount);
+  out = axom::Array<OctType>(octcount, octcount);
 
   // index points to an octahedron of the last generation.  We'll generate
   // new octahedra based on out[index].
@@ -215,12 +218,12 @@ double octPolyVolume(const OctType& o)
 }  // namespace
 
 //------------------------------------------------------------------------------
-int mesh_from_discretized_polyline(const OctType* octs,
+int mesh_from_discretized_polyline(axom::ArrayView<OctType>& octs,
                                    int octcount,
                                    int segcount,
                                    mint::Mesh*& mesh)
 {
-  SLIC_ASSERT(octs != nullptr);
+  SLIC_ASSERT(octs.data() != nullptr);
 
   const int tetcount = 8 * octcount;
   const int vertcount = 4 * tetcount;

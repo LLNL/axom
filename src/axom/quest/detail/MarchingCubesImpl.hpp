@@ -262,7 +262,7 @@ public:
     axom::Array<int> addCells(m_crossingCount,
                               m_crossingCount,
                               m_crossings.getAllocatorID());
-    axom::ArrayView<int> addCellsView = addCells.view();
+    const axom::ArrayView<int> addCellsView = addCells.view();
 
     axom::IndexType* crossingId = axom::allocate<axom::IndexType>(
       1,
@@ -288,7 +288,7 @@ public:
     axom::Array<axom::IndexType> prefixSum(m_crossingCount,
                                            m_crossingCount,
                                            m_crossings.getAllocatorID());
-    axom::ArrayView<axom::IndexType> prefixSumView = prefixSum.view();
+    const axom::ArrayView<axom::IndexType> prefixSumView = prefixSum.view();
 
     auto copyFirstSurfaceCellId = AXOM_LAMBDA(axom::IndexType n)
     {

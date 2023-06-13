@@ -511,7 +511,7 @@ public:
   {
     double retVol = 0.0;
 
-    if(!isValid())
+    if(!isValid() || hasDuplicateVertices())
     {
       return retVol;
     }
@@ -606,6 +606,31 @@ public:
    */
   AXOM_HOST_DEVICE
   bool isValid() const { return m_num_vertices >= 4; }
+
+  /*!
+   * \brief Check if any vertices are duplicate, within a tolerance
+   *
+   * \param [in] eps The tolerance
+   *
+   * \return True, if the polyhedron has duplicate vertices, False otherwise
+   */
+  AXOM_HOST_DEVICE
+  bool hasDuplicateVertices(double eps = 1.e-10) const
+  {
+    for(int i = 0; i < m_num_vertices; i++)
+    {
+      for(int j = i + 1; j < m_num_vertices; j++)
+      {
+        if(axom::utilities::isNearlyEqual(m_vertices[i][0], m_vertices[j][0], eps) &&
+           axom::utilities::isNearlyEqual(m_vertices[i][1], m_vertices[j][1], eps) &&
+           axom::utilities::isNearlyEqual(m_vertices[i][2], m_vertices[j][2], eps))
+        {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   /*!
    * \brief Check if vertex neighbors information is available

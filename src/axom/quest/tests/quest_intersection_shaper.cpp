@@ -62,6 +62,9 @@ std::vector<std::string> case3 {"shaping/case3/case3_012.yaml",
 std::vector<std::string> case4 {"shaping/case4/case4.yaml",
                                 "shaping/case4/case4_overwrite.yaml"};
 
+std::vector<std::string> proeCase {"shaping/proeCase/proeCase1.yaml",
+                                   "shaping/proeCase/proeCase2.yaml"};
+
 namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace sidre = axom::sidre;
@@ -879,6 +882,41 @@ TEST(IntersectionShaperTest, case4_hip)
 {
   constexpr double tolerance = 1.e-10;
   replacementRuleTestSet(case4, "hip", quest::IntersectionShaper::hip, tolerance);
+}
+  #endif
+#endif
+
+// proeCase
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(RUN_AXOM_SEQ_TESTS)
+TEST(IntersectionShaperTest, proeCase_seq)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase, "seq", quest::IntersectionShaper::seq, tolerance);
+}
+  #endif
+  #if defined(AXOM_USE_OPENMP)
+TEST(IntersectionShaperTest, proeCase_omp)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase, "omp", quest::IntersectionShaper::omp, tolerance);
+}
+  #endif
+  #if defined(AXOM_USE_CUDA)
+TEST(IntersectionShaperTest, proeCase_cuda)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase,
+                         "cuda",
+                         quest::IntersectionShaper::cuda,
+                         tolerance);
+}
+  #endif
+  #if defined(AXOM_USE_HIP)
+TEST(IntersectionShaperTest, proeCase_hip)
+{
+  constexpr double tolerance = 1.e-10;
+  replacementRuleTestSet(proeCase, "hip", quest::IntersectionShaper::hip, tolerance);
 }
   #endif
 #endif

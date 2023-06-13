@@ -62,6 +62,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   striding layouts.
 - Adds an `ArrayView::subspan()` overload for multi-dimensional subspans
 - Adds an `axom::utilities::insertionSort()` method.
+- Quest: Adds Pro/E tetrahedral meshes as input to the `IntersectionShaper`
 
 ### Changed
 - Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.
