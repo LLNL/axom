@@ -21,14 +21,18 @@ jobs:
       linux_gcc11:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(GCC11_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION:BOOL=ON
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc11'
         HOST_CONFIG: 'gcc@11.1.0'
       linux_gcc11_64bit:
         VM_ImageName: 'ubuntu-20.04'
         Compiler_ImageName: '$(GCC11_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_USE_64BIT_INDEXTYPE:BOOL=ON
+                            -DCMAKE_CXX_FLAGS:STRING="-fuse-ld=lld"
+                            -DCMAKE_C_FLAGS:STRING="-fuse-ld=lld"'
         COMPILER: 'g++'
         TEST_TARGET: 'linux_gcc11'
         HOST_CONFIG: 'gcc@11.1.0'

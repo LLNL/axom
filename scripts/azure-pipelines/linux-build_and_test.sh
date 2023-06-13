@@ -18,7 +18,7 @@ function or_die () {
 }
 
 sudo apt-get update
-sudo apt-get install lld
+sudo apt-get install lld -y
 
 or_die cd axom
 git submodule init
