@@ -216,7 +216,7 @@ TEST(IOTest, readShapeSet_missingGeometryPath)
     }
     catch(const KleeError &err)
     {
-      FAIL() << "Should not have thrown";
+      FAIL() << "Should not have thrown. Error message: " << err.what();
     }
   }
 }
