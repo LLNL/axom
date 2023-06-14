@@ -488,7 +488,6 @@ void ScanRelationOffsetsRAJA(const axom::ArrayView<const IndexType> counts,
                              const axom::ArrayView<IndexType> firstIndices)
 {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-  using AtomicPolicy = typename axom::execution_space<ExecSpace>::atomic_policy;
   using LoopPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
 
   // The begins array has one more element than the counts array. The last
