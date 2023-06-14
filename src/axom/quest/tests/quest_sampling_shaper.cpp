@@ -255,8 +255,8 @@ public:
   {
     mfem::GridFunction* gf = m_dc.GetField(name);
 
-    mfem::LinearForm vol_form(gf->FESpace());
     mfem::ConstantCoefficient one(1.0);
+    mfem::LinearForm vol_form(gf->FESpace());
     vol_form.AddDomainIntegrator(new mfem::DomainLFIntegrator(one));
     vol_form.Assemble();
 

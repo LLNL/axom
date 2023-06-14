@@ -580,6 +580,29 @@ int main(int argc, char** argv)
   shaper->adjustVolumeFractions();
 
   //---------------------------------------------------------------------------
+  // Compute and print volumes of each material's volume fraction
+  //---------------------------------------------------------------------------
+  using axom::utilities::string::startsWith;
+  for(auto& kv : shaper->getDC()->GetFieldMap())
+  {
+    if(startsWith(kv.first, "vol_frac_"))
+    {
+      const auto mat_name = kv.first.substr(9);
+      auto* gf = kv.second;
+
+      mfem::ConstantCoefficient one(1.0);
+      mfem::LinearForm vol_form(gf->FESpace());
+      vol_form.AddDomainIntegrator(new mfem::DomainLFIntegrator(one));
+      vol_form.Assemble();
+
+      const double volume = *gf * vol_form;
+
+      SLIC_INFO(
+        axom::fmt::format("Volume of material '{}' is {}", mat_name, volume));
+    }
+  }
+
+  //---------------------------------------------------------------------------
   // Save meshes and fields
   //---------------------------------------------------------------------------
 #ifdef MFEM_USE_MPI
