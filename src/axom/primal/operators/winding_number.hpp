@@ -268,9 +268,13 @@ double winding_number(const Point<T, 3>& q,
                       const double edge_tol = 1e-8,
                       const double EPS = 1e-8)
 {
+  using Vec3 = Vector<T, 3>;
+
   if(tri.area() == 0) return 0;
 
-  Vector<T, 3> a(q, tri[0]), b(q, tri[1]), c(q, tri[2]);
+  const Vec3 a = tri[0] - q;
+  const Vec3 b = tri[1] - q;
+  const Vec3 c = tri[2] - q;
 
   // Compute norms. Possibly return early
   const double a_norm = a.norm();
@@ -279,17 +283,15 @@ double winding_number(const Point<T, 3>& q,
 
   if(a_norm < edge_tol || b_norm < edge_tol || c_norm < edge_tol) return 0;
 
-  double num = Vector<T, 3>::scalar_triple_product(a, b, c);
+  const double num = Vec3::scalar_triple_product(a, b, c);
   if(axom::utilities::isNearlyEqual(num, 0.0, EPS))
   {
     isOnFace = true;
     return 0;
   }
 
-  double denom = a_norm * b_norm * c_norm +
-    a_norm * Vector<T, 3>::dot_product(b, c) +
-    b_norm * Vector<T, 3>::dot_product(a, c) +
-    c_norm * Vector<T, 3>::dot_product(a, b);
+  const double denom = a_norm * b_norm * c_norm  //
+    + a_norm * b.dot(c) + b_norm * a.dot(c) + c_norm * a.dot(b);
 
   // Handle direct cases where argument to atan is undefined
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
@@ -297,22 +299,18 @@ double winding_number(const Point<T, 3>& q,
     return (num > 0) ? 0.25 : -0.25;
   }
 
+  // Note: denom==0 and num==0 handled above
   if(denom > 0)
   {
     return 0.5 * M_1_PI * atan(num / denom);
   }
   else
   {
-    if(num > 0)
-    {
-      return 0.5 * M_1_PI * atan(num / denom) + 0.5;
-    }
-    if(num < 0)
-    {
-      return 0.5 * M_1_PI * atan(num / denom) - 0.5;
-    }
+    return (num > 0) ? 0.5 * M_1_PI * atan(num / denom) + 0.5
+                     : 0.5 * M_1_PI * atan(num / denom) - 0.5;
   }
 }
+
 /*!
  * \brief Computes the solid angle winding number for a 3D triangle
  *

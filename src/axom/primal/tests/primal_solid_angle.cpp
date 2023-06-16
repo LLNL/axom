@@ -22,7 +22,6 @@ namespace primal = axom::primal;
 TEST(primal_solid_angle, triangle)
 {
   using Point3D = primal::Point<double, 3>;
-  using Vector3D = primal::Vector<double, 3>;
   using Triangle = primal::Triangle<double, 3>;
 
   Point3D origin {0.0, 0.0, 0.0};
@@ -207,7 +206,6 @@ TEST(primal_solid_angle, degenerate_polygon)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
 
   Vector3D v1 = Vector3D({0.0, 1.0, 2.0}).unitVector();
@@ -282,7 +280,6 @@ TEST(primal_solid_angle, selfintersecting_star)
 {
   using Point3D = primal::Point<double, 3>;
   using Vector3D = primal::Vector<double, 3>;
-  using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
 
   Point3D single_query {1, 2, 3};
@@ -383,7 +380,6 @@ TEST(primal_solid_angle, selfintersecting_star)
 TEST(primal_solid_angle, selfintersecting_quadrilateral)
 {
   using Point3D = primal::Point<double, 3>;
-  using Vector3D = primal::Vector<double, 3>;
   using Triangle = primal::Triangle<double, 3>;
   using Polygon = primal::Polygon<double, 3>;
 

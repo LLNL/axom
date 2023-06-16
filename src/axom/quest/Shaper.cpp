@@ -143,7 +143,8 @@ void Shaper::setRefinementType(Shaper::RefinementType t)
 
 bool Shaper::isValidFormat(const std::string& format) const
 {
-  return (format == "stl" || format == "proe" || format == "c2c");
+  return (format == "stl" || format == "proe" || format == "c2c" ||
+          format == "none");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
@@ -166,11 +167,19 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     "{:-^80}",
     axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
-  std::string file_format = shape.getGeometry().getFormat();
-
+  const std::string& file_format = shape.getGeometry().getFormat();
   SLIC_ASSERT_MSG(
     this->isValidFormat(file_format),
     axom::fmt::format("Shape has unsupported format: '{}", file_format));
+
+  if(!shape.getGeometry().hasGeometry())
+  {
+    SLIC_DEBUG(
+      fmt::format("Current shape '{}' of material '{}' has no geometry",
+                  shape.getName(),
+                  shape.getMaterial()));
+    return;
+  }
 
   std::string shapePath = m_shapeSet.resolvePath(shape.getGeometry().getPath());
   SLIC_INFO("Reading file: " << shapePath << "...");
@@ -239,8 +248,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   {
     SLIC_ERROR(
       axom::fmt::format("Unsupported filetype for this Axom configuration. "
-                        "Provided file was '{}'",
-                        shapePath));
+                        "Provided file was '{}', with format '{}'",
+                        shapePath,
+                        file_format));
   }
 }
 

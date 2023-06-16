@@ -824,7 +824,6 @@ TEST(primal_bezierpatch, rational_evaluation_split)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using VectorType = primal::Vector<CoordType, DIM>;
   using BezierPatchType = primal::BezierPatch<CoordType>;
 
   const int ord_u = 3;

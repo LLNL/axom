@@ -53,7 +53,8 @@ void replaceMaterial(mfem::QuadratureFunction* shapeQFunc,
 
 /// Utility function to copy in_out quadrature samples from one QFunc to another
 void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
-                           mfem::QuadratureFunction* materialQFunc)
+                           mfem::QuadratureFunction* materialQFunc,
+                           bool reuseExisting)
 {
   SLIC_ASSERT(shapeQFunc != nullptr);
   SLIC_ASSERT(materialQFunc != nullptr);
@@ -63,9 +64,20 @@ void copyShapeIntoMaterial(const mfem::QuadratureFunction* shapeQFunc,
   double* mData = materialQFunc->GetData();
   const double* sData = shapeQFunc->GetData();
 
-  for(int j = 0; j < SZ; ++j)
+  // When reuseExisting, don't reset material values; otherwise, just copy values over
+  if(reuseExisting)
   {
-    mData[j] = sData[j] > 0 ? 1 : mData[j];
+    for(int j = 0; j < SZ; ++j)
+    {
+      mData[j] = sData[j] > 0 ? 1 : mData[j];
+    }
+  }
+  else
+  {
+    for(int j = 0; j < SZ; ++j)
+    {
+      mData[j] = sData[j];
+    }
   }
 }
 
