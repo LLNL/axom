@@ -109,6 +109,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Multimat: `MultiMat::makeOtherRelation()` now runs on the GPU with an appropriately-set allocator ID.
 - Multimat: `MultiMat::setCellMatRel(counts, indices)` now runs on the GPU, and accepts GPU-side data.
 - Renames `ArrayView::spacing()` to `ArrayView::minStride()`.
+- Klee: A shape's geometry no longer needs a `path` field when its `format` is "none"
+- Quest: Shapes without geometry can participate in replacement rules for sample-based shaping. Volume
+fractions for the associated materials must be supplied before shaping.
 
 ###  Fixed
 - Fixed issues with CUDA build in CMake versions 3.14.5 and above. Now require CMake 3.18+
