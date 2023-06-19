@@ -1953,6 +1953,11 @@ struct HasDefault
   {
     return (member == other.member);
   }
+
+  friend std::ostream& operator<<(std::ostream& os, const HasDefault& hd)
+  {
+    return os << hd.member;
+  }
 };
 
 //------------------------------------------------------------------------------
