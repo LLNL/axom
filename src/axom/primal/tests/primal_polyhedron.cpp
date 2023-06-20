@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Hexahedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
@@ -15,10 +16,8 @@
 #include "axom/primal/operators/in_polyhedron.hpp"
 #include "axom/primal/operators/winding_number.hpp"
 
-#include "axom/core.hpp"
-#include "axom/slic.hpp"
-
-#include <cmath>
+#include <math.h>
+#include "gtest/gtest.h"
 
 namespace primal = axom::primal;
 

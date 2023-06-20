@@ -7,7 +7,7 @@
 #define PRIMAL_WINDING_NUMBER_IMPL_HPP_
 
 // Axom includes
-#include "axom/config.hpp"  // for compile-time configuration options
+#include "axom/config.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
@@ -17,7 +17,7 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 // C++ includes
-#include <cmath>
+#include <math.h>
 
 namespace axom
 {
