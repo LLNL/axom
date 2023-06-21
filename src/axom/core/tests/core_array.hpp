@@ -872,7 +872,7 @@ void check_device_2D(axom::Array<T, 2, SPACE>& v)
   {
     for(int j = 0; j < N; j++)
     {
-      EXPECT_EQ(check_raw_axom::Array_host(i, j), i * i + j);
+      EXPECT_EQ(check_raw_array_host(i, j), i * i + j);
     }
   }
 
@@ -952,10 +952,10 @@ TEST(core_array, checkFillDevice)
   for(axom::IndexType capacity = 2; capacity < 512; capacity *= 2)
   {
     axom::IndexType size = capacity / 2;
-    axom::Array<int, 1, MemorySpace::Device> v_int(size, capacity);
+    axom::Array<int, 1, axom::MemorySpace::Device> v_int(size, capacity);
     ::check_fill(v_int);
 
-    axom::Array<double, 1, MemorySpace::Device> v_double(size, capacity);
+    axom::Array<double, 1, axom::MemorySpace::Device> v_double(size, capacity);
     ::check_fill(v_double);
   }
 }
