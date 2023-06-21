@@ -33,6 +33,21 @@ spack:
         fc: /opt/rocm-5.4.3/llvm/bin/amdflang
       spec: clang@15.0.0
       target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      flags:
+        cflags: -Wno-int-conversion
+        fflags: -Mfreeform
+      modules: []
+      operating_system: rhel8
+      paths:
+        cc: /opt/rocm-5.5.1/llvm/bin/amdclang
+        cxx: /opt/rocm-5.5.1/llvm/bin/amdclang++
+        f77: /opt/rocm-5.5.1/llvm/bin/amdflang
+        fc: /opt/rocm-5.5.1/llvm/bin/amdflang
+      spec: clang@16.0.0
+      target: x86_64
 
   packages:
     all:
@@ -43,53 +58,60 @@ spack:
         mpi: [cray-mpich]
 
     hip:
-      version: [5.4.3]
       buildable: false
       externals:
       - spec: hip@5.4.3
         prefix: /opt/rocm-5.4.3/hip
+      - spec: hip@5.5.1
+        prefix: /opt/rocm-5.5.1/hip
 
     llvm-amdgpu:
-      version: [5.4.3]
       buildable: false
       externals:
       - spec: llvm-amdgpu@5.4.3
         prefix: /opt/rocm-5.4.3/llvm
+      - spec: llvm-amdgpu@5.5.1
+        prefix: /opt/rocm-5.5.1/llvm
 
     hsa-rocr-dev:
-      version: [5.4.3]
       buildable: false
       externals:
       - spec: hsa-rocr-dev@5.4.3
         prefix: /opt/rocm-5.4.3/
+      - spec: hsa-rocr-dev@5.5.1
+        prefix: /opt/rocm-5.5.1/
 
     rocblas:
-      version: [5.4.3]
       buildable: false
       externals:
       - spec: rocblas@5.4.3
         prefix: /opt/rocm-5.4.3/
+      - spec: rocblas@5.5.1
+        prefix: /opt/rocm-5.5.1/
 
     rocminfo:
-      version: [5.4.3]
       buildable: false
       externals:
       - spec: rocminfo@5.4.3
         prefix: /opt/rocm-5.4.3/
+      - spec: rocminfo@5.5.1
+        prefix: /opt/rocm-5.5.1/
 
     rocprim:
-      version: [5.4.3]
       buildable: false
       externals:
       - spec: rocprim@5.4.3
         prefix: /opt/rocm-5.4.3/
+      - spec: rocprim@5.5.1
+        prefix: /opt/rocm-5.5.1/
 
     rocm-device-libs:
-      version: [5.4.3]
       buildable: false
       externals:
       - spec: rocm-device-libs@5.4.3
         prefix: /opt/rocm-5.4.3/
+      - spec: rocm-device-libs@5.5.1
+        prefix: /opt/rocm-5.5.1/
 
     # Lock down which MPI we are using
     mpi:
@@ -99,6 +121,8 @@ spack:
       externals:
       - spec: cray-mpich@8.1.25%clang@15.0.0+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3/
+      - spec: cray-mpich@8.1.25%clang@16.0.0+slurm
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.5.1/
 
     # blas is a bit more complicated because its a virtual package so fake it with
     # the following per spack docs
