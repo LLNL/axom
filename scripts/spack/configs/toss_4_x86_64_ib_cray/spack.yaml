@@ -22,6 +22,7 @@ spack:
       environment: {}
       extra_rpaths: []
       flags:
+        # -Wno-int-conversion flag needed for building HDF5
         cflags: -Wno-int-conversion
         fflags: -Mfreeform
       modules: []
@@ -36,8 +37,11 @@ spack:
   - compiler:
       environment: {}
       extra_rpaths: []
+      # -Wno-int-conversion flag needed for building HDF5
+      # -O1 flag necessary for bypassing HIP out of memory error
       flags:
-        cflags: -Wno-int-conversion
+        cflags: -Wno-int-conversion -O1
+        cxxflags: -O1
         fflags: -Mfreeform
       modules: []
       operating_system: rhel8

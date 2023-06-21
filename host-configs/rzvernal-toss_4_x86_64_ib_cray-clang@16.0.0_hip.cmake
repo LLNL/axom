@@ -11,11 +11,11 @@
 #------------------------------------------------------------------------------
 if(DEFINED ENV{SPACK_CC})
 
-  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_11_54_21/spack/lib/spack/env/clang/clang" CACHE PATH "")
+  set(CMAKE_C_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_15_15_50/spack/lib/spack/env/clang/clang" CACHE PATH "")
 
-  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_11_54_21/spack/lib/spack/env/clang/clang++" CACHE PATH "")
+  set(CMAKE_CXX_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_15_15_50/spack/lib/spack/env/clang/clang++" CACHE PATH "")
 
-  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_11_54_21/spack/lib/spack/env/clang/flang" CACHE PATH "")
+  set(CMAKE_Fortran_COMPILER "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_15_15_50/spack/lib/spack/env/clang/flang" CACHE PATH "")
 
 else()
 
@@ -27,7 +27,9 @@ else()
 
 endif()
 
-set(CMAKE_C_FLAGS "-Wno-int-conversion" CACHE STRING "")
+set(CMAKE_C_FLAGS "-Wno-int-conversion -O1" CACHE STRING "")
+
+set(CMAKE_CXX_FLAGS "-O1" CACHE STRING "")
 
 set(CMAKE_Fortran_FLAGS "-Mfreeform" CACHE STRING "")
 
@@ -84,23 +86,23 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 # TPLs
 #------------------------------------------------------------------------------
 
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_11_54_21/clang-16.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_4_x86_64_ib_cray/2023_06_21_15_15_50/clang-16.0.0" CACHE PATH "")
 
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-2623e4ss3d2kmkrbr2eswebilfjvx26n" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.8.6-oiux3iddh3ydtt3gpf3wc7gcrv3esbur" CACHE PATH "")
 
-set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-iosktjap7jjffwubfa35mhkqyh2j7i65" CACHE PATH "")
+set(C2C_DIR "${TPL_ROOT}/c2c-1.8.0-6cl7fautbwiyg5xrzg4ym7zdvtxnful3" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-nai7svowewkwzrcy26fza7dkdyw2vtr6" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.5.0-osogxfid4s3udah4krtpwyqkeoir7olw" CACHE PATH "")
 
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-zwxzx3gfu5wiuqo2wdd6ivbv6hmh2t75" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.22-gcvagwbam5hyzbe6pwyq4oxdnqy7qnjx" CACHE PATH "")
 
-set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-5acjldaybgd75c63mcjoccjlwnfwcy24" CACHE PATH "")
+set(LUA_DIR "${TPL_ROOT}/lua-5.4.4-dgrwt7rgqs3mdznsd3stmuagccpwo7ii" CACHE PATH "")
 
-set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-6mb7qwwa5sqsz36k7swu4hfwf4ez2ek6" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-2022.03.0-nsaff7hwt6a6z6o6e24upyl7qxzw4yui" CACHE PATH "")
 
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-tru75ixcrjsxgjij6li46d2ptiwqzuxm" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2022.03.1-aiekpwakkr3nags5wi35q5bruw2u3ikf" CACHE PATH "")
 
-set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-e6v5cpexlkpqlciko4nnz5k7hapc47lk" CACHE PATH "")
+set(CAMP_DIR "${TPL_ROOT}/camp-2022.10.1-2qt2zsc3op7z7e2g2v3h6zbdpuy4che7" CACHE PATH "")
 
 # scr not built
 
