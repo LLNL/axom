@@ -42,8 +42,13 @@ static void reverse(axom::StackArray<T, DIM>& a)
 
   Spatial dimension templating is here, to keep out of higher level
   classes MarchCubes and MarchingCubesSingleDomain.
+
+  ExecSpace is the general execution space, like axom::SEQ_EXEC and
+  axom::CUDA_EXEC<256>.  SequentialLoopPolicy is used for loops that
+  cannot be parallelized.  Use something like RAJA::seq_exec or
+  RAJA::cuda_exec<1>.
 */
-template <int DIM, typename ExecSpace>
+template <int DIM, typename ExecSpace, typename SequentialLoopPolicy>
 class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 {
 public:
@@ -239,7 +244,7 @@ public:
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds.view();
 
-#if defined(AXOM_USE_LAMBDA)
+#if defined(AXOM_USE_RAJA)
     RAJA::ReduceSum<ReducePolicy, axom::IndexType> vsum(0);
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, parentCellCount),
@@ -266,22 +271,43 @@ public:
 
     axom::IndexType* crossingId = axom::allocate<axom::IndexType>(
       1,
-      axom::execution_space<ExecSpace>::allocatorID());
+      axom::detail::getAllocatorID<MemorySpace::Dynamic>());
     *crossingId = 0;
-    axom::for_all<ExecSpace>(
-      0,
-      parentCellCount,
-      AXOM_LAMBDA(axom::IndexType n) {
-        auto caseId = caseIdsView.flatIndex(n);
-        auto ccc = num_contour_cells(caseId);
-        if(ccc != 0)
+
+    auto loopBody = AXOM_LAMBDA(axom::IndexType n)
+    {
+      auto caseId = caseIdsView.flatIndex(n);
+      auto ccc = num_contour_cells(caseId);
+      if(ccc != 0)
+      {
+        addCellsView[*crossingId] = ccc;
+        m_crossings[*crossingId].caseNum = caseId;
+        m_crossings[*crossingId].parentCellNum = n;
+        ++(*crossingId);
+      }
+    };
+
+#if defined(AXOM_USE_RAJA)
+    /*
+      The m_crossings filling loop isn't data-parallel and shouldn't
+      be parallelized.  The contrived RAJA::forall forces it to run
+      sequentially.
+    */
+    RAJA::forall<SequentialLoopPolicy>(
+      RAJA::RangeSegment(0, 1),
+      [=] AXOM_HOST_DEVICE(int /* i */) {
+        for(axom::IndexType n = 0; n < parentCellCount; ++n)
         {
-          addCellsView[*crossingId] = ccc;
-          m_crossings[*crossingId].caseNum = caseId;
-          m_crossings[*crossingId].parentCellNum = n;
-          ++(*crossingId);
+          loopBody(n);
         }
       });
+#else
+    for(axom::IndexType n = 0; n < parentCellCount; ++n)
+    {
+      loopBody(n);
+    }
+#endif
+
     SLIC_ASSERT(*crossingId == m_crossingCount);
     axom::deallocate(crossingId);
 
@@ -335,48 +361,46 @@ public:
     m_contourCellCorners.resize(m_contourCellCount);
     m_contourCellParents.resize(m_contourCellCount);
 
-    axom::for_all<ExecSpace>(
-      0,
-      m_crossingCount,
-      AXOM_LAMBDA(axom::IndexType iCrossing) {
-        const auto& crossingInfo = crossingsView[iCrossing];
-        const IndexType crossingCellCount =
-          num_contour_cells(crossingInfo.caseNum);
-        SLIC_ASSERT(crossingCellCount > 0);
+    auto loopBody = AXOM_LAMBDA(axom::IndexType iCrossing)
+    {
+      const auto& crossingInfo = crossingsView[iCrossing];
+      const IndexType crossingCellCount = num_contour_cells(crossingInfo.caseNum);
+      SLIC_ASSERT(crossingCellCount > 0);
 
-        // Parent cell data for interpolating new node coordinates.
-        Point cornerCoords[CELL_CORNER_COUNT];
-        double cornerValues[CELL_CORNER_COUNT];
-        get_corner_coords_and_values(crossingInfo.parentCellNum,
-                                     cornerCoords,
-                                     cornerValues);
+      // Parent cell data for interpolating new node coordinates.
+      Point cornerCoords[CELL_CORNER_COUNT];
+      double cornerValues[CELL_CORNER_COUNT];
+      get_corner_coords_and_values(crossingInfo.parentCellNum,
+                                   cornerCoords,
+                                   cornerValues);
 
-        /*
-          Create the new cell and its DIM nodes.  New node are on
-          parent cell edges where the edge intersects the isocontour.
-          linear_interp for the exact coordinates.
+      /*
+        Create the new cell and its DIM nodes.  New nodes are on
+        parent cell edges where the edge intersects the isocontour.
+        linear_interp for the exact coordinates.
 
-          TODO: The varying crossingCellCount value may inhibit device
-          performance.  Try grouping m_crossings items that have the
-          same values for crossingCellCount.
-        */
-        for(int iCell = 0; iCell < crossingCellCount; ++iCell)
+        TODO: The varying crossingCellCount value may inhibit device
+        performance.  Try grouping m_crossings items that have the
+        same values for crossingCellCount.
+      */
+      for(int iCell = 0; iCell < crossingCellCount; ++iCell)
+      {
+        IndexType contourCellId = crossingInfo.firstSurfaceCellId + iCell;
+        m_contourCellParents[contourCellId] = crossingInfo.parentCellNum;
+        for(int d = 0; d < DIM; ++d)
         {
-          IndexType contourCellId = crossingInfo.firstSurfaceCellId + iCell;
-          m_contourCellParents[contourCellId] = crossingInfo.parentCellNum;
-          for(int d = 0; d < DIM; ++d)
-          {
-            IndexType contourNodeId = contourCellId * DIM + d;
-            m_contourCellCorners[contourCellId][d] = contourNodeId;
+          IndexType contourNodeId = contourCellId * DIM + d;
+          m_contourCellCorners[contourCellId][d] = contourNodeId;
 
-            const int edge = cases_table(crossingInfo.caseNum, iCell * DIM + d);
-            linear_interp(edge,
-                          cornerCoords,
-                          cornerValues,
-                          m_contourNodeCoords[contourNodeId]);
-          }
+          const int edge = cases_table(crossingInfo.caseNum, iCell * DIM + d);
+          linear_interp(edge,
+                        cornerCoords,
+                        cornerValues,
+                        m_contourNodeCoords[contourNodeId]);
         }
-      });
+      }
+    };
+    axom::for_all<ExecSpace>(0, m_crossingCount, loopBody);
   }
 
   // These 4 functions provides access to the look-up table

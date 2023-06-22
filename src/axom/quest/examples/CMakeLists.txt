@@ -138,6 +138,7 @@ if(CONDUIT_FOUND)
                 axom_add_test(
                     NAME    ${_test}
                     COMMAND quest_marching_cubes_ex
+                                --policy ${_pol}
                                 --mesh-file ${quest_data_dir}/${_mesh}.root
                                 --fields-file ${_test}.field
                                 --dir ${_dir}
