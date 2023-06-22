@@ -68,7 +68,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fixed bug in `mint::mesh::UnstructuredMesh` constructors, affecting capacity.
   A missing factor was added.  If you worked around this by adding the factor yourself,
   you may want to undo that work-around.
-- Updates blt submodule to HEAD of develop on 24Jan2023
+- Updates blt submodule to blt@0.5.3
 - Updates uberenv submodule to HEAD of main on 12May2023
 - Updates to [conduit version 0.8.6](https://github.com/LLNL/conduit/compare/v0.8.3...v0.8.6)
 - Updates to [mfem version 4.5](https://github.com/mfem/mfem/releases/tag/v4.5)
