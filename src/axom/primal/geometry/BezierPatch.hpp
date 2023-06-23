@@ -554,8 +554,28 @@ public:
     if(isRational())
     {
       c.makeRational();
-      axom::Array<T> dWarray(ord_u + 1);
+      // If looking for an edge, don't need to use De Casteljau
+      if(u == 0.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(0, q);
+          c.setWeight(q, m_weights(0, q));
+        }
+        return c;
+      }
+      if(u == 1.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(ord_u, q);
+          c.setWeight(q, m_weights(ord_u, q));
+        }
+        return c;
+      }
 
+      // Otherwise, do De Casteljau along the v-axis
+      axom::Array<T> dWarray(ord_u + 1);
       for(int q = 0; q <= ord_v; ++q)
       {
         for(int i = 0; i < 3; ++i)
@@ -583,6 +603,25 @@ public:
     }
     else
     {
+      // If looking for an edge, don't need to use De Casteljau
+      if(u == 0.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(0, q);
+        }
+        return c;
+      }
+      if(u == 1.0)
+      {
+        for(int q = 0; q <= ord_v; ++q)
+        {
+          c[q] = m_controlPoints(ord_u, q);
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the v-axis
       for(int q = 0; q <= ord_v; ++q)
       {
         for(int i = 0; i < 3; ++i)
@@ -622,8 +661,29 @@ public:
     if(isRational())
     {
       c.makeRational();
-      axom::Array<T> dWarray(ord_v + 1);
 
+      // If looking for an edge, don't need to use De Casteljau
+      if(v == 0.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, 0);
+          c.setWeight(p, m_weights(p, 0));
+        }
+        return c;
+      }
+      if(v == 1.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, ord_v);
+          c.setWeight(p, m_weights(p, ord_v));
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the u-axis
+      axom::Array<T> dWarray(ord_v + 1);
       for(int p = 0; p <= ord_u; ++p)
       {
         for(int i = 0; i < 3; ++i)
@@ -650,6 +710,25 @@ public:
     }
     else
     {
+      // If looking for an edge, don't need to use De Casteljau
+      if(v == 0.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, 0);
+        }
+        return c;
+      }
+      if(v == 1.0)
+      {
+        for(int p = 0; p <= ord_u; ++p)
+        {
+          c[p] = m_controlPoints(p, ord_v);
+        }
+        return c;
+      }
+
+      // Otherwise, do De Casteljau along the u-axis
       for(int p = 0; p <= ord_u; ++p)
       {
         for(int i = 0; i < 3; ++i)
@@ -998,7 +1077,13 @@ public:
     if(!isPlanar(tol)) return false;
 
     // Check if each bounding curve is planar
-    if(!isocurve_u(0).isLinear(tol)) }
+    if(!isocurve_u(0).isLinear(tol)) return false;
+    if(!isocurve_v(0).isLinear(tol)) return false;
+    if(!isocurve_u(1).isLinear(tol)) return false;
+    if(!isocurve_v(1).isLinear(tol)) return false;
+
+    return true;
+  }
 
   /*!
    * \brief Simple formatted print of a Bezier Patch instance
