@@ -541,7 +541,7 @@ public:
   }
 
   /// Return an isocurve for a fixed value of u
-  BezierCurveType isocurve_u(T v) const
+  BezierCurveType isocurve_u(T u) const
   {
     using axom::utilities::lerp;
 
@@ -571,8 +571,8 @@ public:
             const int end = ord_u - p;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
-              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], v);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
+              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], u);
             }
           }
 
@@ -597,7 +597,7 @@ public:
             const int end = ord_u - p;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
             }
           }
           c[q][i] = dCarray[0];
@@ -609,7 +609,7 @@ public:
   }
 
   /// Return an isocurve for a fixed value of v
-  BezierCurveType isocurve_v(T u) const
+  BezierCurveType isocurve_v(T v) const
   {
     using axom::utilities::lerp;
 
@@ -639,8 +639,8 @@ public:
             const int end = ord_v - q;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
-              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], u);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
+              dWarray[k] = lerp(dWarray[k], dWarray[k + 1], v);
             }
           }
           c[p][i] = dCarray[0] / dWarray[0];
@@ -664,7 +664,7 @@ public:
             const int end = ord_v - q;
             for(int k = 0; k <= end; ++k)
             {
-              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], u);
+              dCarray[k] = lerp(dCarray[k], dCarray[k + 1], v);
             }
           }
           c[p][i] = dCarray[0];
@@ -697,33 +697,26 @@ public:
   }
 
   /*!
-   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along \a axis
+   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the u axis
    *
    * \param [in] u parameter value at which to evaluate on the first axis
    * \param [in] v parameter value at which to evaluate on the second axis
-   * \param [in] axis orientation of vector. 0 for fixed u, 1 for fixed v
-   * \return v a tangent vector of the Bezier patch at (u, v)
+   * \return vec a tangent vector of the Bezier patch at (u, v)
    *
    * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
    */
-  VectorType dt(T u, T v, int axis) const
-  {
-    SLIC_ASSERT((axis == 0) || (axis == 1));
-    if(axis == 0)
-    {
-      return dt_u(u, v);
-    }
-    else
-    {
-      return dt_v(u, v);
-    }
-  }
+  VectorType du(T u, T v) const { return isocurve_v(v).dt(u); }
 
-  /// Compute the directional derivative in u with an isocurve fixed in v
-  VectorType dt_u(T u, T v) const { return isocurve_v(v).dt(u); }
-
-  /// Compute the directional derivative in v with an isocurve fixed in u
-  VectorType dt_v(T u, T v) const { return isocurve_u(u).dt(v); }
+  /*!
+   * \brief Computes a tangent of a Bezier patch at a particular parameter value (\a u, \a v) along the v axis
+   *
+   * \param [in] u parameter value at which to evaluate on the first axis
+   * \param [in] v parameter value at which to evaluate on the second axis
+   * \return vec a tangent vector of the Bezier patch at (u, v)
+   *
+   * \note We typically find the tangent of the patch at \a u and \a v between 0 and 1
+   */
+  VectorType dv(T u, T v) const { return isocurve_u(u).dt(v); }
 
   /*!
    * \brief Computes the normal vector of a Bezier patch at a particular parameter value (\a u, \a v)
@@ -736,7 +729,7 @@ public:
    */
   VectorType normal(T u, T v) const
   {
-    return VectorType::cross_product(dt(u, v, 0), dt(u, v, 1));
+    return VectorType::cross_product(du(u, v), dv(u, v));
   }
 
   /*!
@@ -985,6 +978,29 @@ public:
   }
 
   /*!
+   * \brief Predicate to check if the Bezier patch is approximately planar-polygonal
+   *
+   * This function checks if the edges of a BezierPatch are approximately linear
+   *
+   * \param [in] tol Threshold for sum of squared distances
+   * \return True if c1 is near-planar-polygonal
+   */
+  bool isPolygonal(double tol = 1E-8) const
+  {
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    if(ord_u <= 0 && ord_v <= 0) return true;
+    if(ord_u == 1 && ord_v == 0) return true;
+    if(ord_u == 0 && ord_v == 1) return true;
+
+    // Check if the patch is planar
+    if(!isPlanar(tol)) return false;
+
+    // Check if each bounding curve is planar
+    if(!isocurve_u(0).isLinear(tol)) }
+
+  /*!
    * \brief Simple formatted print of a Bezier Patch instance
    *
    * \param os The output stream to write to
@@ -1017,6 +1033,44 @@ public:
       }
     }
     os << "}";
+
+    return os;
+  }
+
+  std::ostream& python_print(std::ostream& os,
+                             int name = 0,
+                             bool plot_normal = false,
+                             const char* cmap = "cm.Reds") const
+  {
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    printf("my_surf_%d = my_BezierPatch(%d, %d, [", name, ord_u, ord_v);
+    printf("(%f,%f,%f)",
+           m_controlPoints(0, 0)[0],
+           m_controlPoints(0, 0)[1],
+           m_controlPoints(0, 0)[2]);
+    for(int i = 0; i <= ord_u; ++i)
+      for(int j = (i == 0 ? 1 : 0); j <= ord_v; ++j)
+        printf(",(%f,%f,%f)",
+               m_controlPoints(i, j)[0],
+               m_controlPoints(i, j)[1],
+               m_controlPoints(i, j)[2]);
+    if(isRational())
+    {
+      printf(" ], [%f", m_weights(0, 0));
+      if(isRational())
+        for(int i = 0; i <= ord_u; ++i)
+          for(int j = (i == 0 ? 1 : 0); j <= ord_v; ++j)
+            printf(",%f", m_weights(i, j));
+    }
+    printf("] )\n");
+    if(plot_normal)
+      printf("my_surf_%d.plot( fig, ax, None, %s, plot_normal=True )\n\n",
+             name,
+             cmap);
+    else
+      printf("my_surf_%d.plot( fig, ax, None, %s )\n\n", name, cmap);
 
     return os;
   }
@@ -1057,7 +1111,7 @@ private:
 //------------------------------------------------------------------------------
 /// Free functions related to BezierPatch
 //------------------------------------------------------------------------------
-template <typename T, int NDIMS>
+template <typename T>
 std::ostream& operator<<(std::ostream& os, const BezierPatch<T>& bPatch)
 {
   bPatch.print(os);

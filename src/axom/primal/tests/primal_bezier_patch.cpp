@@ -355,6 +355,38 @@ TEST(primal_bezierpatch, evaluate)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_bezierpatch, isocurve)
+{
+  SLIC_INFO("Testing bezier Patch isocurve conventions");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType>;
+
+  const int order_u = 3;
+  const int order_v = 2;
+
+  // clang-format off
+  PointType controlPoints[(order_u + 1) * (order_v + 1)] = {
+    PointType {0, 0, 0}, PointType {0, 4,  0}, PointType {0, 8, -3},
+    PointType {2, 0, 6}, PointType {2, 4,  0}, PointType {2, 8,  0},
+    PointType {4, 0, 0}, PointType {4, 4,  0}, PointType {4, 8,  3},
+    PointType {6, 0, 0}, PointType {6, 4, -3}, PointType {6, 8,  0}};
+  // clang-format on
+
+  BezierPatchType bPatch(controlPoints, order_u, order_v);
+
+  // isocurve_u should *fix* a value of u, returning a curve parameterized by v
+  EXPECT_EQ(bPatch.isocurve_u(0.5).getOrder(), order_v);
+  EXPECT_EQ(bPatch.isocurve(0, 0.5).getOrder(), order_v);
+
+  // isocurve_v should *fix* a value of v, returning a curve parameterized by u
+  EXPECT_EQ(bPatch.isocurve_v(0.5).getOrder(), order_u);
+  EXPECT_EQ(bPatch.isocurve(1, 0.5).getOrder(), order_v);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_bezierpatch, evaluate_tall)
 {
   SLIC_INFO("Testing bezier Patch evaluation with axes swapped");
@@ -459,8 +491,8 @@ TEST(primal_bezierpatch, tangent)
 
   for(int i = 0; i < DIM; ++i)
   {
-    EXPECT_NEAR(order_u * node00_u[i], bPatch.dt(0, 0, 0)[i], 1e-10);
-    EXPECT_NEAR(order_v * node00_v[i], bPatch.dt(0, 0, 1)[i], 1e-10);
+    EXPECT_NEAR(order_u * node00_u[i], bPatch.du(0, 0)[i], 1e-10);
+    EXPECT_NEAR(order_v * node00_v[i], bPatch.dv(0, 0)[i], 1e-10);
   }
 
   // Evaluate the tangent at some interior nodes
@@ -472,11 +504,11 @@ TEST(primal_bezierpatch, tangent)
 
   for(int i = 0; i < DIM; ++i)
   {
-    EXPECT_NEAR(interior1_u[i], bPatch.dt(0.25, 0.75, 0)[i], 1e-10);
-    EXPECT_NEAR(interior1_v[i], bPatch.dt(0.25, 0.75, 1)[i], 1e-10);
+    EXPECT_NEAR(interior1_u[i], bPatch.du(0.25, 0.75)[i], 1e-10);
+    EXPECT_NEAR(interior1_v[i], bPatch.dv(0.25, 0.75)[i], 1e-10);
 
-    EXPECT_NEAR(interior2_u[i], bPatch.dt(0.75, 0.25, 0)[i], 1e-10);
-    EXPECT_NEAR(interior2_v[i], bPatch.dt(0.75, 0.25, 1)[i], 1e-10);
+    EXPECT_NEAR(interior2_u[i], bPatch.du(0.75, 0.25)[i], 1e-10);
+    EXPECT_NEAR(interior2_v[i], bPatch.dv(0.75, 0.25)[i], 1e-10);
   }
 }
 
