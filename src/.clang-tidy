@@ -1,6 +1,6 @@
 Checks:          '-*,readability-braces-around-statements'
 WarningsAsErrors: ''
-HeaderFilterRegex: ''
+HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle: none
 CheckOptions:
