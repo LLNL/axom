@@ -1037,18 +1037,33 @@ public:
     if(ord_u == 1 && ord_v == 0) return true;
     if(ord_u == 0 && ord_v == 1) return true;
 
-    PlaneType the_plane = make_plane(m_controlPoints(0, 0),
-                                     m_controlPoints(0, ord_v),
-                                     m_controlPoints(ord_u, 0));
+    // Check that the four corners aren't coplanar
+    VectorType v1(m_controlPoints(0, 0), m_controlPoints(0, ord_v));
+    VectorType v2(m_controlPoints(0, 0), m_controlPoints(ord_u, 0));
+    VectorType v3(m_controlPoints(0, 0), m_controlPoints(ord_u, ord_v));
+    if(!axom::utilities::isNearlyEqual(
+         VectorType::scalar_triple_product(v1, v2, v3),
+         0.0,
+         tol))
+      return false;
+
+    // Find three points that produce a nonzero normal
+    Vector3D plane_normal = VectorType::cross_product(v1, v2);
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+      plane_normal = VectorType::cross_product(v1, v3);
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+      plane_normal = VectorType::cross_product(v2, v3);
 
     double sqDist = 0.0;
 
     // Check all control points for simplicity
     for(int p = 0; p <= ord_u && sqDist <= tol; ++p)
     {
-      for(int q = 0; q <= ord_v && sqDist <= tol; ++q)
+      for(int q = ((p == 0) ? 1 : 0); q <= ord_v && sqDist <= tol; ++q)
       {
-        double signedDist = the_plane.signedDistance(m_controlPoints(p, q));
+        double signedDist = VectorType::dot_product(
+          plane_normal,
+          Vector3D(m_controlPoints(0, 0), m_controlPoints(p, q)));
         sqDist += signedDist * signedDist;
       }
     }
